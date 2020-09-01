@@ -30,5 +30,10 @@ public interface QualityGeneratorRef {
 	public String RESOURCEABLE_TYPE_NAME = "generator";
 	
 	public Long getKey();
+	
+	public static QualityGeneratorRef of(String keyString) {
+		Long key = Long.valueOf(keyString);
+		return () -> key;
+	}
 
 }

@@ -33,10 +33,12 @@ import java.util.stream.Collectors;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.quality.QualityDataCollection;
@@ -50,8 +52,10 @@ import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccessRightProvider;
 import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.model.QualityDataCollectionImpl;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -344,9 +348,38 @@ public class QualityDataCollectionDAO {
 				.getResultList();
 		return keys != null && !keys.isEmpty() && keys.get(0) != null;
 	}
-
+	
+	List<QualityGenerator> loadGenerators(QualityDataCollectionViewSearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct(collection.generator)");
+		sb.append("  from qualitydatacollection as collection");
+		appendWhereClause(sb, searchParams);
+		
+		TypedQuery<QualityGenerator> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityGenerator.class);
+		appendParameter(query, searchParams);
+		
+		return query.getResultList();
+	}
+	
+	public List<RepositoryEntry> loadFormEntries(QualityDataCollectionViewSearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct(form)");
+		sb.append("  from qualitydatacollection as collection");
+		sb.append("       join evaluationformsurvey survey on survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+		sb.append("                                       and survey.resId = collection.key");
+		sb.append("       join survey.formEntry as form");
+		appendWhereClause(sb, searchParams);
+		
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class);
+		appendParameter(query, searchParams);
+		
+		return query.getResultList();
+	}
+	
 	int getDataCollectionCount(QualityDataCollectionViewSearchParams searchParams) {
-		QueryBuilder sb = new QueryBuilder(256);
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(collection)");
 		sb.append("  from qualitydatacollection as collection");
 		appendWhereClause(sb, searchParams);
@@ -435,6 +468,48 @@ public class QualityDataCollectionDAO {
 		if (searchParams != null) {
 			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
 				sb.and().append("collection.key = :collectionKey");
+			}
+			if (searchParams.getFormEntryRefs() != null) {
+				sb.and().append("form.key in (:formKeys)");
+			}
+			if (StringHelper.containsNonWhitespace(searchParams.getTitle())) {
+				sb.and().append("lower(collection.title) like :title");
+			}
+			if (searchParams.getStartAfter() != null) {
+				sb.and().append("collection.start >= :startAfter");
+			}
+			if (searchParams.getStartBefore() != null) {
+				sb.and().append("collection.start <= :startBefore");
+			}
+			if (searchParams.getDeadlineAfter() != null) {
+				sb.and().append("collection.deadline >= :deadlineAfter");
+			}
+			if (searchParams.getDeadlineBefore() != null) {
+				sb.and().append("collection.deadline <= :deadlineBefore");
+			}
+			if (StringHelper.containsNonWhitespace(searchParams.getTopic())
+					|| StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+				sb.and().append("(");
+				sb.append("lower(collection.topicCustom) like :topic");
+				sb.append(" or lower(user.lastName) like :topic");
+				sb.append(" or lower(user.firstName) like :topic");
+				sb.append(" or lower(organisation.displayName) like :topic");
+				sb.append(" or lower(curriculum.displayName) like :topic");
+				sb.append(" or lower(curriculumElement.displayName) like :topic");
+				sb.append(" or lower(repository.displayname) like :topic");
+				if (StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+					sb.append(" or lower(collection.title) like :topic");
+				}
+				sb.append(")");
+			}
+			if (searchParams.getTopicTypes() != null) {
+				sb.and().append("collection.topicType in (:topicTypes)");
+			}
+			if (searchParams.getGeneratorRefs() != null) {
+				sb.and().append("collection.generator.key in (:generatorKeys)");
+			}
+			if (searchParams.getStatus() != null) {
+				sb.and().append("collection.status in (:status)");
 			}
 			// (searchParams.getOrgansationRefs() == null): show all data collections
 			if (searchParams.getOrgansationRefs() != null) {
@@ -562,6 +637,41 @@ public class QualityDataCollectionDAO {
 			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
 				query.setParameter("collectionKey", searchParams.getDataCollectionRef().getKey());
 			}
+			if (searchParams.getFormEntryRefs() != null) {
+				List<Long> generatorKeys = searchParams.getFormEntryRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());
+				query.setParameter("formKeys", generatorKeys);
+			}
+			if (StringHelper.containsNonWhitespace(searchParams.getTitle())) {
+				query.setParameter("title", PersistenceHelper.makeFuzzyQueryString(searchParams.getTitle().toLowerCase()));
+			}
+			if (searchParams.getStartAfter() != null) {
+				query.setParameter("startAfter", searchParams.getStartAfter());
+			}
+			if (searchParams.getStartBefore() != null) {
+				query.setParameter("startBefore", searchParams.getStartBefore());
+			}
+			if (searchParams.getDeadlineAfter() != null) {
+				query.setParameter("deadlineAfter", searchParams.getDeadlineAfter());
+			}
+			if (searchParams.getDeadlineBefore() != null) {
+				query.setParameter("deadlineBefore", searchParams.getDeadlineBefore());
+			}
+			if (StringHelper.containsNonWhitespace(searchParams.getTopic())) {
+				query.setParameter("topic", PersistenceHelper.makeFuzzyQueryString(searchParams.getTopic().toLowerCase()));
+			}
+			if (StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+				query.setParameter("topic", PersistenceHelper.makeFuzzyQueryString(searchParams.getSearchString().toLowerCase()));
+			}
+			if (searchParams.getTopicTypes() != null) {
+				query.setParameter("topicTypes", searchParams.getTopicTypes());
+			}
+			if (searchParams.getGeneratorRefs() != null) {
+				List<Long> generatorKeys = searchParams.getGeneratorRefs().stream().map(QualityGeneratorRef::getKey).collect(toList());
+				query.setParameter("generatorKeys", generatorKeys);
+			}
+			if (searchParams.getStatus() != null) {
+				query.setParameter("status", searchParams.getStatus());
+			}
 			// (searchParams.getOrgansationRefs() == null): show all data collections
 			if (searchParams.getOrgansationRefs() != null) {
 				List<Long> organiationKeys = searchParams.getOrgansationRefs().stream().map(OrganisationRef::getKey).collect(toList());
@@ -600,4 +710,5 @@ public class QualityDataCollectionDAO {
 		}
 		return sb;
 	}
+
 }

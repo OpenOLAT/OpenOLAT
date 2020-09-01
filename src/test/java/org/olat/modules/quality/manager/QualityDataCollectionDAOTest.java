@@ -36,11 +36,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRelationshipService;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.RelationRight;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.commons.persistence.DB;
@@ -49,7 +51,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.course.certificate.CertificateEmailRightProvider;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -98,6 +104,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	private CurriculumService curriculumService;
 	@Autowired
 	private IdentityRelationshipService identityRelationshipService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Autowired
 	private QualityDataCollectionDAO sut;
@@ -479,7 +487,47 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(dataCollection1, dataCollection2)
 				.doesNotContain(dataCollectionOtherKey, dataCollectionNoKey);
 	}
-
+	
+	@Test
+	public void shouldLoadGenerators() {
+		String title = JunitTestHelper.random();
+		QualityGenerator generator1 = qualityTestHelper.createGenerator();
+		QualityGenerator generator2 = qualityTestHelper.createGenerator();
+		QualityDataCollection dataCollection11 = sut.createDataCollection(generator1, 123l);
+		dataCollection11.setTitle(title);
+		dataCollection11 = sut.updateDataCollection(dataCollection11);
+		QualityDataCollection dataCollection12 = sut.createDataCollection(generator1, 124l);
+		dataCollection12.setTitle(title);
+		dataCollection12 = sut.updateDataCollection(dataCollection12);
+		QualityDataCollection dataCollection21 = sut.createDataCollection(generator2, 123l);
+		dataCollection21.setTitle(title);
+		dataCollection21 = sut.updateDataCollection(dataCollection21);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setTitle(title);
+		List<QualityGenerator> generators = sut.loadGenerators(searchParams);
+		
+		assertThat(generators).containsExactlyInAnyOrder(generator1, generator2);
+	}
+	
+	@Test
+	public void shouldLoadFormEntries() {
+		RepositoryEntry formEntry1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		qualityTestHelper.createDataCollection(organisation, formEntry1);
+		qualityTestHelper.createDataCollection(organisation, formEntry1);
+		qualityTestHelper.createDataCollection(organisation, formEntry2);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		List<RepositoryEntry> formEntries = sut.loadFormEntries(searchParams);
+		
+		assertThat(formEntries).containsExactlyInAnyOrder(formEntry1, formEntry2);
+	}
+	
 	@Test
 	public void shouldGetDataCollectionCount() {
 		int numberOfDataCollections = 3;
@@ -968,6 +1016,370 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 						dcNoAccess.getKey(),
 						dcAccessDenied.getKey()
 						);
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByFormEntries() {
+		RepositoryEntry formEntry1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation, formEntry1);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation, formEntry1);
+		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection(organisation, formEntry2);
+		QualityDataCollection dataCollectionOther = qualityTestHelper.createDataCollection(organisation, formEntryOther);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setFormEntryRefs(Arrays.asList(formEntry1, formEntry2));
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection1.getKey(),
+						dataCollection2.getKey(),
+						dataCollection3.getKey())
+				.doesNotContain(
+						dataCollectionOther.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsBySearchString() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollectionTitle = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionTitle.setTitle("Are lions evil?");
+		dataCollectionTitle = sut.updateDataCollection(dataCollectionTitle);
+		QualityDataCollection dataCollectionCustom = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionCustom.setTopicCustom("liOn");
+		dataCollectionCustom = sut.updateDataCollection(dataCollectionCustom);
+		QualityDataCollection dataCollectionCustomOther = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionCustomOther.setTopicCustom("cat");
+		dataCollectionCustomOther = sut.updateDataCollection(dataCollectionCustomOther);
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		searchParams.setSearchString("lion");
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollectionTitle.getKey(),
+						dataCollectionCustom.getKey())
+				.doesNotContain(
+						dataCollectionCustomOther.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByTitle() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection1.setTitle("lion");
+		dataCollection1 = sut.updateDataCollection(dataCollection1);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection2.setTitle("Lion King");
+		dataCollection2 = sut.updateDataCollection(dataCollection2);
+		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection3.setTitle("My lion is the king");
+		dataCollection3 = sut.updateDataCollection(dataCollection3);
+		QualityDataCollection dataCollectionOther = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionOther.setTitle("tiger");
+		dataCollectionOther = sut.updateDataCollection(dataCollectionOther);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		searchParams.setTitle("lion");
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection1.getKey(),
+						dataCollection2.getKey(),
+						dataCollection3.getKey())
+				.doesNotContain(
+						dataCollectionOther.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByStartAfter() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection1.setStart(qualityTestHelper.getDateInFuture());
+		qualityService.updateDataCollection(dataCollection1);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection2.setStart(qualityTestHelper.getDateInFuture());
+		qualityService.updateDataCollection(dataCollection2);
+		QualityDataCollection dataCollectionOther = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionOther.setStart(qualityTestHelper.getDateInPast());
+		qualityService.updateDataCollection(dataCollectionOther);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		searchParams.setStartAfter(new Date());
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection1.getKey(),
+						dataCollection2.getKey())
+				.doesNotContain(
+						dataCollectionOther.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByStartBefore() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection1.setStart(qualityTestHelper.getDateInPast());
+		qualityService.updateDataCollection(dataCollection1);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection2.setStart(qualityTestHelper.getDateInPast());
+		qualityService.updateDataCollection(dataCollection2);
+		QualityDataCollection dataCollectionOther = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionOther.setStart(qualityTestHelper.getDateInFuture());
+		qualityService.updateDataCollection(dataCollectionOther);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		searchParams.setStartBefore(new Date());
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection1.getKey(),
+						dataCollection2.getKey())
+				.doesNotContain(
+						dataCollectionOther.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByDeadlineAfter() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection1.setDeadline(qualityTestHelper.getDateInFuture());
+		qualityService.updateDataCollection(dataCollection1);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection2.setDeadline(qualityTestHelper.getDateInFuture());
+		qualityService.updateDataCollection(dataCollection2);
+		QualityDataCollection dataCollectionOther = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionOther.setDeadline(qualityTestHelper.getDateInPast());
+		qualityService.updateDataCollection(dataCollectionOther);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		searchParams.setDeadlineAfter(new Date());
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection1.getKey(),
+						dataCollection2.getKey())
+				.doesNotContain(
+						dataCollectionOther.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByDeadlineBefore() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection1.setDeadline(qualityTestHelper.getDateInPast());
+		qualityService.updateDataCollection(dataCollection1);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection2.setDeadline(qualityTestHelper.getDateInPast());
+		qualityService.updateDataCollection(dataCollection2);
+		QualityDataCollection dataCollectionOther = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionOther.setDeadline(qualityTestHelper.getDateInFuture());
+		qualityService.updateDataCollection(dataCollectionOther);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		searchParams.setDeadlineBefore(new Date());
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection1.getKey(),
+						dataCollection2.getKey())
+				.doesNotContain(
+						dataCollectionOther.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByTopicType() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection1.setTopicType(QualityDataCollectionTopicType.CUSTOM);
+		dataCollection1 = sut.updateDataCollection(dataCollection1);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection2.setTopicType(QualityDataCollectionTopicType.CUSTOM);
+		dataCollection2 = sut.updateDataCollection(dataCollection2);
+		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection3.setTopicType(QualityDataCollectionTopicType.CURRICULUM);
+		dataCollection3 = sut.updateDataCollection(dataCollection3);
+		QualityDataCollection dataCollectionOther = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionOther.setTopicType(QualityDataCollectionTopicType.IDENTIY);
+		dataCollectionOther = sut.updateDataCollection(dataCollectionOther);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		searchParams.setTopicTypes(Arrays.asList(QualityDataCollectionTopicType.CUSTOM, QualityDataCollectionTopicType.CURRICULUM));
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection1.getKey(),
+						dataCollection2.getKey(),
+						dataCollection3.getKey())
+				.doesNotContain(
+						dataCollectionOther.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByTopic() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		
+		// Custom
+		QualityDataCollection dataCollectionCustom = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionCustom.setTopicCustom("liOn");
+		dataCollectionCustom = sut.updateDataCollection(dataCollectionCustom);
+
+		QualityDataCollection dataCollectionCustomOther = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionCustomOther.setTopicCustom("cat");
+		dataCollectionCustomOther = sut.updateDataCollection(dataCollectionCustomOther);
+		
+		// Identity
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("LION");
+		QualityDataCollection dataCollectionIdentity = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionIdentity.setTopicIdentity(identity);
+		dataCollectionIdentity = sut.updateDataCollection(dataCollectionIdentity);
+		
+		// Organisation
+		Organisation topicOrganisation = organisationService.createOrganisation("The lions cage", UUID.randomUUID().toString(), null, null, null);
+		QualityDataCollection dataCollectionOrganisation = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionOrganisation.setTopicOrganisation(topicOrganisation);
+		dataCollectionOrganisation = sut.updateDataCollection(dataCollectionOrganisation);
+		
+		// Curriculum
+		Curriculum curriculum = curriculumService.createCurriculum("i", "Lions training", "d", organisation);;
+		QualityDataCollection dataCollectionCurriculum = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionCurriculum.setTopicCurriculum(curriculum);
+		dataCollectionCurriculum = sut.updateDataCollection(dataCollectionCurriculum);
+		
+		// CurriculumElement
+		Curriculum curriculumCE = curriculumService.createCurriculum("i", "d", "d", organisation);;
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("ident", "LIONS Physiognomy", CurriculumElementStatus.active, null, null, null,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculumCE);
+		QualityDataCollection dataCollectionCurElement = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionCurElement.setTopicCurriculumElement(curriculumElement);
+		dataCollectionCurElement = sut.updateDataCollection(dataCollectionCurElement);
+		
+		// RepositoryEntry
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		entry.setDisplayname("Course with Lions");
+		entry = repositoryService.update(entry);
+		QualityDataCollection dataCollectionRepoEntry = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionRepoEntry.setTopicRepositoryEntry(entry);
+		dataCollectionRepoEntry = sut.updateDataCollection(dataCollectionRepoEntry);
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		searchParams.setTopic("lion");
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollectionCustom.getKey(),
+						dataCollectionIdentity.getKey(),
+						dataCollectionOrganisation.getKey(),
+						dataCollectionCurriculum.getKey(),
+						dataCollectionCurElement.getKey(),
+						dataCollectionRepoEntry.getKey())
+				.doesNotContain(
+						dataCollectionCustomOther.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByGeneratorRefs() {
+		Collection<Organisation> organisations = Collections.singletonList(qualityTestHelper.createOrganisation());
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String title = JunitTestHelper.random();
+		QualityGenerator generator1 = qualityTestHelper.createGenerator();
+		QualityGenerator generator2 = qualityTestHelper.createGenerator();
+		QualityGenerator generatorOther = qualityTestHelper.createGenerator();
+		QualityDataCollection dataCollection11 = qualityService.createDataCollection(organisations, formEntry, generator1, 123l);
+		dataCollection11.setTitle(title);
+		dataCollection11 = sut.updateDataCollection(dataCollection11);
+		QualityDataCollection dataCollection12 = qualityService.createDataCollection(organisations, formEntry, generator1, 124l);
+		dataCollection12.setTitle(title);
+		dataCollection12 = sut.updateDataCollection(dataCollection12);
+		QualityDataCollection dataCollection21 = qualityService.createDataCollection(organisations, formEntry, generator2, 123l);
+		dataCollection21.setTitle(title);
+		dataCollection21 = sut.updateDataCollection(dataCollection21);
+		QualityDataCollection dataCollectionOther = qualityService.createDataCollection(organisations, formEntry, generatorOther, 123l);
+		dataCollectionOther.setTitle(title);
+		dataCollectionOther = sut.updateDataCollection(dataCollectionOther);
+		QualityDataCollection dataCollectionNoGenerator = sut.createDataCollection();
+		dataCollectionNoGenerator.setTitle(title);
+		dataCollectionNoGenerator = sut.updateDataCollection(dataCollectionNoGenerator);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setTitle(title);
+		searchParams.setGeneratorRefs(Arrays.asList(generator1, generator2));
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection11.getKey(),
+						dataCollection12.getKey(),
+						dataCollection21.getKey())
+				.doesNotContain(
+						dataCollectionOther.getKey(),
+						dataCollectionNoGenerator.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByStatus() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection1 = sut.updateDataCollectionStatus(dataCollection1, READY);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection2 = sut.updateDataCollectionStatus(dataCollection2, READY);
+		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection3 = sut.updateDataCollectionStatus(dataCollection3, FINISHED);
+		QualityDataCollection dataCollectionOther = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionOther = sut.updateDataCollectionStatus(dataCollectionOther, PREPARATION);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		searchParams.setStatus(Arrays.asList(READY, FINISHED));
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection1.getKey(),
+						dataCollection2.getKey(),
+						dataCollection3.getKey())
+				.doesNotContain(
+						dataCollectionOther.getKey());
 	}
 	
 	@Test

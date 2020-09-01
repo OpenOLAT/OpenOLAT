@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.quality.ui.security.MainSecurityCallback;
 
 /**
  * 
@@ -38,13 +37,11 @@ import org.olat.modules.quality.ui.security.MainSecurityCallback;
 public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<DataCollectionRow> {
 
 	private final Translator translator;
-	private final MainSecurityCallback secCallback;
 	
 	public DataCollectionDataModel(FlexiTableDataSourceDelegate<DataCollectionRow> dataSource,
-			FlexiTableColumnModel columnsModel, Translator translator, MainSecurityCallback secCallback) {
+			FlexiTableColumnModel columnsModel, Translator translator) {
 		super(dataSource, columnsModel);
 		this.translator = translator;
-		this.secCallback = secCallback;
 	}
 	
 	public DataCollectionRow getObjectByKey(Long key) {
@@ -61,6 +58,7 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 	public Object getValueAt(int row, int col) {
 		DataCollectionRow dataCollectionRow = getObject(row);
 		switch (DataCollectionCols.values()[col]) {
+			case key: return dataCollectionRow.getKey();
 			case status: return dataCollectionRow.getStatus();
 			case title: {
 				String title = dataCollectionRow.getTitle();
@@ -82,10 +80,11 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 
 	@Override
 	public DefaultFlexiTableDataSourceModel<DataCollectionRow> createCopyWithEmptyList() {
-		return new DataCollectionDataModel(getSourceDelegate(), getTableColumnModel(), translator, secCallback);
+		return new DataCollectionDataModel(getSourceDelegate(), getTableColumnModel(), translator);
 	}
 
 	public enum DataCollectionCols implements FlexiSortableColumnDef {
+		key("data.collection.id"),
 		status("data.collection.status"),
 		title("data.collection.title"),
 		start("data.collection.start"),

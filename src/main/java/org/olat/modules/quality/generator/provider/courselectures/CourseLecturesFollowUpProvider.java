@@ -148,7 +148,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		String previousGeneratorKey = configs.getValue(CONFIG_KEY_PREVIOUS_GENERATOR_KEY);
-		QualityGeneratorRef previousGeneratorRef = getQualityGeneratorRef(previousGeneratorKey);
+		QualityGeneratorRef previousGeneratorRef = QualityGeneratorRef.of(previousGeneratorKey);
 		QualityGeneratorConfigs previosGeneratorConfigs = getPreviosGeneratorConfigs(previousGeneratorRef);
 		
 		SearchParameters searchParams = getSeachParameters(generator, configs, organisations, fromDate, toDate,
@@ -190,7 +190,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		
 		String previousGeneratorKey = configs.getValue(CONFIG_KEY_PREVIOUS_GENERATOR_KEY);
-		QualityGeneratorRef previousGeneratorRef = getQualityGeneratorRef(previousGeneratorKey);
+		QualityGeneratorRef previousGeneratorRef = QualityGeneratorRef.of(previousGeneratorKey);
 		QualityGeneratorConfigs previosGeneratorConfigs = getPreviosGeneratorConfigs(previousGeneratorRef);
 		
 		SearchParameters searchParams = getSeachParameters(generator, configs, organisations, fromDate, toDate,
@@ -448,11 +448,6 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 	private QualityGeneratorConfigs getPreviosGeneratorConfigs(QualityGeneratorRef generatorRef) {
 		QualityGenerator generator = generatorService.loadGenerator(generatorRef);
 		return generatorService.loadGeneratorConfigs(generator);
-	}
-	
-	private QualityGeneratorRef getQualityGeneratorRef(String keyString) {
-		Long key = Long.valueOf(keyString);
-		return () -> key;
 	}
 
 }

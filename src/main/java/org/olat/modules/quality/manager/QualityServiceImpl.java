@@ -364,6 +364,16 @@ public class QualityServiceImpl
 		}
 		return statistics;
 	}
+	
+	@Override
+	public List<QualityGenerator> getGenerators(QualityDataCollectionViewSearchParams searchParams) {
+		return dataCollectionDao.loadGenerators(searchParams);
+	}
+	
+	@Override
+	public List<RepositoryEntry> getFormEntries(QualityDataCollectionViewSearchParams searchParams) {
+		return dataCollectionDao.loadFormEntries(searchParams);
+	}
 
 	@Override
 	public int getDataCollectionCount(QualityDataCollectionViewSearchParams searchParams) {

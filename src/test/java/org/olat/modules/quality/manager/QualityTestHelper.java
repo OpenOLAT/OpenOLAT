@@ -177,13 +177,13 @@ public class QualityTestHelper {
 		return dataCollection;
 	}
 
-	private Date getDateInPast() {
+	public Date getDateInPast() {
 		Calendar calendar = Calendar.getInstance();
 		calendar.add(Calendar.YEAR, -1);
 		return calendar.getTime();
 	}
 
-	private Date getDateInFuture() {
+	public Date getDateInFuture() {
 		Calendar calendar = Calendar.getInstance();
 		calendar.add(Calendar.YEAR, 1);
 		return calendar.getTime();

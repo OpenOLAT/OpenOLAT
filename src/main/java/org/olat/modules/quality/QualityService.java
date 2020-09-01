@@ -91,6 +91,10 @@ public interface QualityService {
 	 * @param until the date to evaluate if a deadline has passed
 	 */
 	public void startDataCollection(Date until);
+	
+	public List<QualityGenerator> getGenerators(QualityDataCollectionViewSearchParams searchParams);
+	
+	public List<RepositoryEntry> getFormEntries(QualityDataCollectionViewSearchParams searchParams);
 
 	public int getDataCollectionCount(QualityDataCollectionViewSearchParams searchParams);
 

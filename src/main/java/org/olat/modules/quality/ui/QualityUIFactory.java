@@ -582,6 +582,31 @@ public class QualityUIFactory {
 		return allOk;
 	}
 	
+	public static boolean validateLong(TextElement el, long min, long max) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled() && el.isVisible()) {
+			String val = el.getValue();
+			if(StringHelper.containsNonWhitespace(val)) {
+				
+				try {
+					long value = Long.parseLong(val);
+					if(min > value) {
+						el.setErrorKey("error.number.greater", new String[] {String.valueOf(min)});
+						allOk = false;
+					} else if(max < value) {
+						el.setErrorKey("error.number.lower", new String[] {String.valueOf(max)});
+						allOk = false;
+					}
+				} catch (NumberFormatException e) {
+					el.setErrorKey("error.wrong.number", null);
+					allOk = false;
+				}
+			}
+		}
+		return allOk;
+	}
+	
 	public static boolean validateDouble(TextElement el, int min, int max) {
 		boolean allOk = true;
 		el.clearError();
