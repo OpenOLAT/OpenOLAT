@@ -344,8 +344,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	private void sendUserEmailTo(Identity identity, MailTemplate template, String type) {
 		// for backwards compatibility
 		template.addToContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
-		template.putVariablesInMailContext(template.getContext(), identity);
-		
+
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(null, identity, template, null, null, result);
 		if(bundle != null) {

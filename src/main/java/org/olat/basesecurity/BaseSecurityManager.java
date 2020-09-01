@@ -949,7 +949,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public String findAuthenticationName(IdentityRef identity) {
-		List<Authentication> authentications = authenticationDao.getAuthentications(identity);
+		List<Authentication> authentications = authenticationDao.getAuthenticationsNoFetch(identity);
 		String authusername = findAuthenticationName(authentications, LDAPAuthenticationController.PROVIDER_LDAP);
 		if(authusername == null) {
 			authusername = findAuthenticationName(authentications, ShibbolethDispatcher.PROVIDER_SHIB);
