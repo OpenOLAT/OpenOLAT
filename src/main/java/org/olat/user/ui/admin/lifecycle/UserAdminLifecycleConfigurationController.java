@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -240,7 +241,42 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		allOk &= validateInteger(numberOfInactiveDayDeactivationEl);
+		allOk &= validateInteger(numberOfDayBeforeDeactivationMailEl);
+		allOk &= validateInteger(numberOfInactiveDayDeletionEl);
+		allOk &= validateInteger(numberOfDayBeforeDeletionMailEl);
+		return allOk;
+	}
+	
+	private boolean validateInteger(TextElement element) {
+		boolean allOk = true;
+		
+		element.clearError();
+		if(element.isVisible()) {
+			if(StringHelper.containsNonWhitespace(element.getValue())) {
+				try {
+					int value = Integer.parseInt(element.getValue());
+					if(value < 1) {
+						element.setErrorKey("form.error.nointeger", null);
+						allOk &= false;
+					}
+				} catch (NumberFormatException e) {
+					element.setErrorKey("form.error.nointeger", null);
+					allOk &= false;
+				}
+			} else {
+				element.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
+	}
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		boolean automaticDeactivation = enableDeactivationEl.isAtLeastSelected(1);
