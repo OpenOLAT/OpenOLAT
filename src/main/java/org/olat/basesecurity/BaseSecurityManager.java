@@ -1054,7 +1054,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	public boolean isIdentityLoginAllowed(Identity identity) {
 		if(identity == null || identity.getStatus() == null) return false;
 		int status = identity.getStatus().intValue();
-		return status < Identity.STATUS_VISIBLE_LIMIT.intValue() || status == Identity.STATUS_INACTIVE.intValue();
+		return status < Identity.STATUS_VISIBLE_LIMIT.intValue();
 	}
 
 	@Override
