@@ -20,16 +20,16 @@
 package org.olat.core.gui.components.tabbedpane;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.Controller;
 
 /**
  * 
- * Initial date: 22 juin 2017<br>
+ * Initial date: 1 sept. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface TabCreator {
+public interface TabControllerCreator {
 	
-	public Component create(UserRequest ureq);
+	public Controller create(UserRequest ureq);
 
 }

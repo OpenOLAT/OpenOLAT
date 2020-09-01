@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -157,6 +158,8 @@ public class CurriculumElementListController extends FormBasicController impleme
     private RepositoryManager repositoryManager;
     @Autowired
     private AssessmentService assessmentService;
+    @Autowired
+    private BaseSecurity securityManager;
 
     public CurriculumElementListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
                                            Identity assessedIdentity, List<CurriculumRef> curriculumRefList, CurriculumSecurityCallback curriculumSecurityCallback, UserRelationSecurityCallback userRelationSecurityCallback) {
@@ -358,7 +361,9 @@ public class CurriculumElementListController extends FormBasicController impleme
             }
         }
 
-        SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(assessedIdentity, roles);
+        Roles assessedRoles = securityManager.getRoles(assessedIdentity);
+        SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(assessedIdentity, assessedRoles);
+        params.setMembershipMandatory(true);
         List<RepositoryEntryMyView> courses = repositoryService.searchMyView(params, 0, 0);
         // Filter for entries which are already in a curriculum
 

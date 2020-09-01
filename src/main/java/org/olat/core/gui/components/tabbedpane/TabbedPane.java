@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -42,7 +43,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -83,31 +83,24 @@ public class TabbedPane extends Container implements Activateable2 {
 		this.hideDisabledTab = hideDisabledTab;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		// the taid indicates which tab the user clicked
-		String s_taid = ureq.getParameter(PARAM_PANE_ID);
+		String taid = ureq.getParameter(PARAM_PANE_ID);
 		try {
-			int newTaid = Integer.parseInt(s_taid);
+			int newTaid = Integer.parseInt(taid);
 			dispatchRequest(ureq, newTaid);
 		} catch (NumberFormatException e) {
-			log.warn("Not a number: " + s_taid);
+			log.warn("Not a number: {}", taid);
 		}
 	}
 
-	/**
-	 * @param ureq
-	 * @param newTaid
-	 */
 	private void dispatchRequest(UserRequest ureq, int newTaid) {
 		if (isEnabled(newTaid) && newTaid >= 0 && newTaid < getTabCount()) {
 			TabPane pane = getTabPaneAt(selectedPane);	
 			setSelectedPane(ureq, newTaid);
 			TabPane newPane = getTabPaneAt(selectedPane);
-			fireEvent(ureq, new TabbedPaneChangedEvent(pane.getComponent(), newPane.getComponent()));
+			fireEvent(ureq, new TabbedPaneChangedEvent(pane.getComponent(), newPane.getComponent(), newPane.getController()));
 		}
 	}
 	
@@ -127,7 +120,7 @@ public class TabbedPane extends Container implements Activateable2 {
 		selectedPane = newSelectedPane;
 		TabPane newSelectedTab = getTabPaneAt(newSelectedPane);
 		Component component = newSelectedTab.getComponent();
-		if(component == null && newSelectedTab.getTabCreator() != null) {
+		if(component == null && newSelectedTab.hasTabCreator()) {
 			component = newSelectedTab.createComponent(ureq);
 		}
 		super.put("atp", component); 
@@ -166,7 +159,20 @@ public class TabbedPane extends Container implements Activateable2 {
 		return tabPanes.size() - 1;
 	}
 	
-	public int addTab(UserRequest ureq, String displayName, TabCreator creator) {
+	public int addTab(UserRequest ureq, String displayName, TabComponentCreator creator) {
+		TabPane tab = new TabPane(displayName, creator);
+		tabPanes.add(tab);
+		if (selectedPane == -1) {
+			selectedPane = 0; // if no pane has been selected, select the first one
+			if(tab.getComponent() == null) {
+				tab.createComponent(ureq);
+			}
+			super.put("atp", tab.getComponent()); 
+		}
+		return tabPanes.size() - 1;
+	}
+	
+	public int addTabControllerCreator(UserRequest ureq, String displayName, TabControllerCreator creator) {
 		TabPane tab = new TabPane(displayName, creator);
 		tabPanes.add(tab);
 		if (selectedPane == -1) {
@@ -204,6 +210,15 @@ public class TabbedPane extends Container implements Activateable2 {
 	public int indexOfTab(Component component) {
 		for(int i=tabPanes.size(); i-->0; ) {
 			if(tabPanes.get(i).getComponent() == component) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public int indexOfTab(Controller controller) {
+		for(int i=tabPanes.size(); i-->0; ) {
+			if(tabPanes.get(i).getController() == controller) {
 				return i;
 			}
 		}
@@ -294,10 +309,10 @@ public class TabbedPane extends Container implements Activateable2 {
 	}
 
 	/**
-	 * @return
+	 * @return The number of tabs
 	 */
 	protected int getTabCount() {
-		return (tabPanes == null ? 0 : tabPanes.size());
+		return tabPanes.size();
 	}
 
 	/**
@@ -336,9 +351,6 @@ public class TabbedPane extends Container implements Activateable2 {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
-	 */
 	@Override
 	public String getExtendedDebugInfo() {
 		return "selectedPane:" + selectedPane;
@@ -393,7 +405,8 @@ public class TabbedPane extends Container implements Activateable2 {
 		private final String displayName;
 		private Component component;
 		private Controller controller;
-		private TabCreator creator;
+		private TabComponentCreator componentCreator;
+		private TabControllerCreator controllerCreator;
 		
 		public TabPane(String displayName, Component component) {
 			this.displayName = displayName;
@@ -408,9 +421,15 @@ public class TabbedPane extends Container implements Activateable2 {
 			this.enabled = true;
 		}
 		
-		public TabPane(String displayName, TabCreator creator) {
+		public TabPane(String displayName, TabComponentCreator componentCreator) {
 			this.displayName = displayName;
-			this.creator = creator;
+			this.componentCreator = componentCreator;
+			this.enabled = true;
+		}
+		
+		public TabPane(String displayName, TabControllerCreator controllerCreator) {
+			this.displayName = displayName;
+			this.controllerCreator = controllerCreator;
 			this.enabled = true;
 		}
 		
@@ -426,12 +445,17 @@ public class TabbedPane extends Container implements Activateable2 {
 			return displayName;
 		}
 		
-		public TabCreator getTabCreator() {
-			return creator;
+		public boolean hasTabCreator() {
+			return componentCreator != null || controllerCreator != null;
 		}
 		
 		public Component createComponent(UserRequest ureq) {
-			component = creator.create(ureq);
+			if(componentCreator != null) {
+				component = componentCreator.create(ureq);
+			} else if(controllerCreator != null) {
+				controller = controllerCreator.create(ureq);
+				component = controller.getInitialComponent();
+			}
 			return component;
 		}
 		

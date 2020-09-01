@@ -20,9 +20,7 @@
 package org.olat.modules.coach.ui;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.admin.user.UserChangePasswordController;
 import org.olat.admin.user.UserShortDescription;
@@ -42,12 +40,12 @@ import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
@@ -103,8 +101,16 @@ public class UserRelationOverviewController extends BasicController implements A
 	private static final String CMD_PROFILE = "Profile";
 	private static final String CMD_ENROLLMENTS = "Enrollments";
 
-	private VelocityContainer mainVC;
+	private final VelocityContainer mainVC;
 
+	private int orderTabIndex;
+	private int courseTabIndex;
+	private int lecturesTabIndex;
+	private int certificatesTabIndex;
+	private int groupTabIndex;
+	private int calendarTabIndex;
+	private int profileTabIndex;
+	
 	private Link homeLink, contactLink, resetLink;
 	private Link nextStudent, detailsStudentCmp, previousStudent;
 
@@ -126,7 +132,6 @@ public class UserRelationOverviewController extends BasicController implements A
 	private CourseListWrapperController courseListWrapperController;
 
 	private TabbedPane functionsTabbedPane;
-	private Map<Integer, String> positionsMap;
 
 	private final int index;
 	private final int numOfStudents;
@@ -161,12 +166,11 @@ public class UserRelationOverviewController extends BasicController implements A
 		this.numOfStudents = numOfStudents;
 		this.userRelationSecurityCallback = userRelationSecurityCallback;
 		this.relationRole = relationRole;
-		this.positionsMap = new HashMap<>();
 
 		mainVC = createVelocityContainer("user_relation_overview");
 
 		initUserDetails(ureq, mentee);
-		initTabbedPane(ureq, mentee);
+		initTabbedPane(ureq);
 
 		putInitialPanel(mainVC);
 	}
@@ -236,74 +240,74 @@ public class UserRelationOverviewController extends BasicController implements A
 		userShortDescriptionController = new UserShortDescription(ureq, getWindowControl(), identity, userRelationSecurityCallback.isAdministrativeUser());
 		userDetails.put("userShortDescription", userShortDescriptionController.getInitialComponent());
 	}
+	
 
-	private void initTabbedPane(UserRequest ureq, Identity identity) {
+
+	private void initTabbedPane(UserRequest ureq) {
 		functionsTabbedPane = new TabbedPane("functionsTabbedPane", ureq.getLocale());
 		functionsTabbedPane.addListener(this);
-		int totalTabs = 0;
 
 		if (userRelationSecurityCallback.canViewCoursesAndCurriculum()) {
 			List<CurriculumRef> curriculumRefs = curriculumService.getMyActiveCurriculumRefs(mentee);
 			CurriculumSecurityCallback curriculumSecurityCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
 
-			functionsTabbedPane.addTab(ureq, translate("enrollments"), uureq -> {
-				courseListWrapperController = new CourseListWrapperController(uureq, getWindowControl(), stackPanel, mentee, curriculumSecurityCallback, userRelationSecurityCallback, curriculumRefs, statEntry);
+			courseTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("enrollments"), uureq -> {
+				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_ENROLLMENTS), null);
+				courseListWrapperController = new CourseListWrapperController(uureq, bwControl, stackPanel, mentee, curriculumSecurityCallback, userRelationSecurityCallback, curriculumRefs, statEntry);
 				listenTo(courseListWrapperController);
-				return courseListWrapperController.getInitialComponent();
+				return courseListWrapperController;
 			});
-			positionsMap.put(totalTabs++, CMD_ENROLLMENTS);
 		}
 
 		if (userRelationSecurityCallback.canViewResourcesAndBookings()) {
-			functionsTabbedPane.addTab(ureq, translate("bookings"), uureq -> {
-				userOrderController = new UserOrderController(uureq, getWindowControl(), mentee);
+			orderTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("bookings"), uureq -> {
+				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_BOOKINGS), null);
+				userOrderController = new UserOrderController(uureq, bwControl, mentee);
 				listenTo(userOrderController);
-				return userOrderController.getInitialComponent();
+				return userOrderController;
 			});
-			positionsMap.put(totalTabs++, CMD_BOOKINGS);
 		}
 
 		if (lectureModule.isEnabled() && userRelationSecurityCallback.canViewLecturesAndAbsences()) {
-			functionsTabbedPane.addTab(ureq, translate("lectures"), uureq -> {
-				lecturesController = new ParticipantLecturesOverviewController(uureq, getWindowControl(), mentee, null, true, true, true, true, false, true);
+			lecturesTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("lectures"), uureq -> {
+				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_LECTURES), null);
+				lecturesController = new ParticipantLecturesOverviewController(uureq, bwControl, mentee, null, true, true, true, true, false, true);
 				lecturesController.setBreadcrumbPanel(stackPanel);
 				listenTo(lecturesController);
-				return lecturesController.getInitialComponent();
+				return lecturesController;
 			});
-			positionsMap.put(totalTabs++, CMD_LECTURES);
 		}
 
 		if (userRelationSecurityCallback.canViewEfficiencyStatements()) {
-			functionsTabbedPane.addTab(ureq, translate("statements"), uureq -> {
-				efficiencyStatementListController = new CertificateAndEfficiencyStatementListController(ureq, getWindowControl(), mentee, true);
+			certificatesTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("statements"), uureq -> {
+				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_STATEMENTS), null);
+				efficiencyStatementListController = new CertificateAndEfficiencyStatementListController(ureq, bwControl, mentee, true);
 				efficiencyStatementListController.setBreadcrumbPanel(stackPanel);
 				listenTo(efficiencyStatementListController);
-				return efficiencyStatementListController.getInitialComponent();
+				return efficiencyStatementListController;
 			});
-			positionsMap.put(totalTabs++, CMD_STATEMENTS);
 		}
 
 		if (userRelationSecurityCallback.canViewGroupMemberships()) {
-			functionsTabbedPane.addTab(ureq, translate("groups.menu.title"), uureq -> {
-				groupOverviewController = new GroupOverviewController(ureq, getWindowControl(), mentee, false, false);
+			groupTabIndex = functionsTabbedPane.addTab(ureq, translate("groups.menu.title"), uureq -> {
+				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_GROUPS), null);
+				groupOverviewController = new GroupOverviewController(ureq, bwControl, mentee, false, false);
 				listenTo(groupOverviewController);
 				return groupOverviewController.getInitialComponent();
 			});
-			positionsMap.put(totalTabs++, CMD_GROUPS);
 		}
 
 		if (userRelationSecurityCallback.canViewCalendar()) {
-			functionsTabbedPane.addTab(ureq, translate("calendar"), uureq -> doOpenCalendar(uureq).getInitialComponent());
-			positionsMap.put(totalTabs++, CMD_CALENDAR);
+			calendarTabIndex = functionsTabbedPane.addTab(ureq, translate("calendar"), uureq -> doOpenCalendar(uureq).getInitialComponent());
 		}
 
 		if (userRelationSecurityCallback.canViewAndEditProfile()) {
-			functionsTabbedPane.addTab(ureq, translate("profile"), uureq -> {
-				profileAndHomePageEditController =  new ProfileAndHomePageEditController(ureq, getWindowControl(), identity, userRelationSecurityCallback.isAdministrativeUser());
+			profileTabIndex = functionsTabbedPane.addTab(ureq, translate("profile"), uureq -> {
+				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_PROFILE), null);
+				profileAndHomePageEditController =  new ProfileAndHomePageEditController(ureq, bwControl, mentee, userRelationSecurityCallback.isAdministrativeUser());
 				listenTo(profileAndHomePageEditController);
 				return profileAndHomePageEditController.getInitialComponent();
-			} );
-			positionsMap.put(totalTabs, CMD_PROFILE);
+			});
 		}
 
 		mainVC.put("functionsTabbedPane", functionsTabbedPane);
@@ -318,14 +322,12 @@ public class UserRelationOverviewController extends BasicController implements A
 
 	@Override
 	public void event(Event event) {
-
+		//
 	}
 
 	public StudentStatEntry getEntry() {
 		return statEntry;
 	}
-
-
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
@@ -338,8 +340,12 @@ public class UserRelationOverviewController extends BasicController implements A
 		} else if (source == resetLink) {
 			resetPassword(ureq);
 		} else if (source == functionsTabbedPane) {
-			OLATResourceable ores = OresHelper.createOLATResourceableType(positionsMap.get(functionsTabbedPane.getSelectedPane()));
-			addToHistory(ureq, ores, null);
+			if(event instanceof TabbedPaneChangedEvent) {
+				TabbedPaneChangedEvent pce = (TabbedPaneChangedEvent)event;
+				if(pce.getNewController() != null) {
+					addToHistory(ureq, pce.getNewController());
+				}
+			}
 		}
 	}
 
@@ -372,23 +378,30 @@ public class UserRelationOverviewController extends BasicController implements A
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 
-		ContextEntry ce = entries.get(0);
-		OLATResourceable ores = ce.getOLATResourceable();
-		String oresName = ores.getResourceableTypeName();
-
-		if (positionsMap.values().contains(oresName)) {
-			functionsTabbedPane.setSelectedPane(ureq, positionsMap.entrySet().stream().filter(entry -> entry.getValue().equals(oresName)).findAny().get().getKey());
-			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-
-			Controller controller = functionsTabbedPane.getSelectedController();
-
-			if (controller == null) {
-			} else {
-				if (functionsTabbedPane.getSelectedController() instanceof ControllerCreator) {
-					Activateable2 selectedCtrl = (Activateable2) functionsTabbedPane.getSelectedController();
-					selectedCtrl.activate(ureq, subEntries, ce.getTransientState());
-				}
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(CMD_ENROLLMENTS.equalsIgnoreCase(type) && courseTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, courseTabIndex);
+			if(courseListWrapperController != null) {
+				courseListWrapperController.activate(ureq, entries.subList(1, entries.size()), null);
 			}
+		} else if(CMD_BOOKINGS.equalsIgnoreCase(type) && orderTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, orderTabIndex);
+		} else if(CMD_LECTURES.equalsIgnoreCase(type) && lecturesTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, lecturesTabIndex);
+			if(lecturesController != null) {
+				lecturesController.activate(ureq, entries.subList(1, entries.size()), null);
+			}
+		} else if(CMD_CALENDAR.equalsIgnoreCase(type) && calendarTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, calendarTabIndex);
+			if(calendarController != null) {
+				calendarController.activate(ureq, entries.subList(1, entries.size()), null);
+			}
+		} else if(CMD_STATEMENTS.equalsIgnoreCase(type) && certificatesTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, certificatesTabIndex);
+		} else if(CMD_GROUPS.equalsIgnoreCase(type) && groupTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, groupTabIndex);
+		} else if(CMD_PROFILE.equalsIgnoreCase(type) && profileTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, profileTabIndex);
 		}
 	}
 
@@ -446,7 +459,8 @@ public class UserRelationOverviewController extends BasicController implements A
 		calendars.add(calendarWrapper);
 
 		OLATResourceable callerOres = OresHelper.createOLATResourceableInstance(mentee.getName(), mentee.getKey());
-		calendarController = new WeeklyCalendarController(ureq, getWindowControl(), calendars,
+		WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(CMD_CALENDAR), null);
+		calendarController = new WeeklyCalendarController(ureq, bwControl, calendars,
 				CalendarController.CALLER_CURRICULUM, callerOres, false);
 		listenTo(calendarController);
 

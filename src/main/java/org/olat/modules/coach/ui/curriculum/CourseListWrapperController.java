@@ -1,3 +1,22 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.modules.coach.ui.curriculum;
 
 import java.util.List;
@@ -27,8 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class CourseListWrapperController extends BasicController implements Activateable2, GenericEventListener {
 
-    private final static String WITH_CURRICULUM = "Curriculum";
-    private final static String WITHOUT_CURRICULM = "List";
+    private static final String WITH_CURRICULUM = "Curriculum";
+    private static final String WITHOUT_CURRICULM = "List";
 
     private final TooledStackedPanel stackPanel;
     private final Identity mentee;
@@ -112,43 +131,41 @@ public class CourseListWrapperController extends BasicController implements Acti
 
     @Override
     public void event(Event event) {
-
+    	//
     }
 
     @Override
     protected void doDispose() {
-
+    	//
     }
 
     public Activateable2 showCurriculumStructure(UserRequest ureq) {
         showCurriculum = true;
 
-        WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(WITH_CURRICULUM, 0l), null);
-
         if (curriculumListController == null) {
+            WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(WITH_CURRICULUM), null);
             curriculumListController = new CurriculumElementListController(ureq, bwControl, stackPanel, mentee, curriculumRefs, curriculumSecurityCallback, userRelationSecurityCallback);
             listenTo(curriculumListController);
         }
 
         content.contextPut("showCurriculum", showCurriculum);
         content.put("content", curriculumListController.getInitialComponent());
-
+    	addToHistory(ureq, curriculumListController);
         return curriculumListController;
     }
 
     public Activateable2 hideCurriculumStructure(UserRequest ureq) {
         showCurriculum = false;
 
-        WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(WITHOUT_CURRICULM, 0l), null);
-
         if (userRelationEnrollmentListController == null) {
+            WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(WITHOUT_CURRICULM), null);
             userRelationEnrollmentListController = new UserRelationEnrollmentListController(ureq, bwControl, stackPanel, statEntry, mentee, userRelationSecurityCallback);
             listenTo(userRelationEnrollmentListController);
         }
 
         content.contextPut("showCurriculum", showCurriculum);
         content.put("content", userRelationEnrollmentListController.getInitialComponent());
-
+    	addToHistory(ureq, userRelationEnrollmentListController);
         return userRelationEnrollmentListController;
     }
 }

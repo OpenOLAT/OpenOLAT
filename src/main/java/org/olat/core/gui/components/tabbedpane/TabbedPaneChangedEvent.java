@@ -27,6 +27,7 @@
 package org.olat.core.gui.components.tabbedpane;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 
 /**
@@ -43,15 +44,17 @@ public class TabbedPaneChangedEvent extends Event {
 
 	private Component oldComponent;
 	private Component newComponent;
+	private Controller newController;
 
 	/**
 	 * @param oldComponent
 	 * @param newComponent
 	 */
-	public TabbedPaneChangedEvent(Component oldComponent, Component newComponent) {
+	public TabbedPaneChangedEvent(Component oldComponent, Component newComponent, Controller newController) {
 		super(TAB_CHANGED);
 		this.oldComponent = oldComponent;
 		this.newComponent = newComponent;
+		this.newController = newController;
 	}
 
 	/**
@@ -59,6 +62,11 @@ public class TabbedPaneChangedEvent extends Event {
 	 */
 	public Component getNewComponent() {
 		return newComponent;
+	}
+	
+	
+	public Controller getNewController() {
+		return newController;
 	}
 
 	/**
