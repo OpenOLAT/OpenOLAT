@@ -186,6 +186,42 @@ public interface CatalogEntry extends CatalogEntryRef, CreateInfo, Persistable, 
 	 * @param shortTitle
 	 */
 	public void setShortTitle(String shortTitle);
+
+	/**
+	 * Returns whether new entries should be added on top, bottom or alphabetically
+	 * 0 - Alphabetically
+	 * 1 - On top
+	 * 2 - On bottom
+	 *
+	 * @return
+	 */
+	public Integer getEntryAddPosition();
+
+	/**
+	 * Set how new entries should be added
+	 * 0 - Alphabetically
+	 * 1 - On top
+	 * 2 - On bottom
+	 */
+	public void setEntryAddPosition(Integer addEntryPosition);
+
+	/**
+	 * Returns whether new categories should be added on top, bottom or alphabetically
+	 * 0 - Alphabetically
+	 * 1 - On top
+	 * 2 - On bottom
+	 *
+	 * @return
+	 */
+	public Integer getCategoryAddPosition();
+
+	/**
+	 * Set how new entries should be added
+	 * 0 - Alphabetically
+	 * 1 - On top
+	 * 2 - On bottom
+	 */
+	public void setCategoryAddPosition(Integer addCategoryPosition);
 	
 	
 	public enum OrderBy {
@@ -197,6 +233,5 @@ public interface CatalogEntry extends CatalogEntryRef, CreateInfo, Persistable, 
 		tiles,
 		list,
 		compact,
-		
 	}
 }
