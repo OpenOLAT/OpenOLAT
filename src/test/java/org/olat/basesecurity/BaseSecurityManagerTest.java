@@ -729,6 +729,29 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	}
 
 	@Test
+	public void updateLastLoginAndInactivationDate() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("last-login-0");
+		((IdentityImpl)id).setInactivationEmailDate(new Date());
+		id = dbInstance.getCurrentEntityManager().merge(id);
+		dbInstance.commitAndCloseSession();
+
+		id = securityManager.loadIdentityByKey(id.getKey());
+		Date mergedInactivationDate = ((IdentityImpl)id).getInactivationEmailDate();
+		Assert.assertNotNull(mergedInactivationDate);
+		dbInstance.commitAndCloseSession();
+		
+		securityManager.setIdentityLastLogin(id);
+		dbInstance.commitAndCloseSession();
+
+		id = securityManager.loadIdentityByKey(id.getKey());
+		Date lastLogin = id.getLastLogin();
+		Assert.assertNotNull(lastLogin);
+		Date inactivationDate = ((IdentityImpl)id).getInactivationEmailDate();
+		Assert.assertNull(inactivationDate);
+	}
+	
+	
+	@Test
 	public void countUniqueUserLoginsSince() {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DAY_OF_YEAR, -100);
