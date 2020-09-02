@@ -138,7 +138,7 @@ public class DataCollectionListController extends FormBasicController implements
 		tableEl.setElementCssClass("o_qual_dc_list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-data-collection");
 		tableEl.setEmtpyTableMessageKey("data.collection.empty.table");
-		tableEl.setSearchEnabled(true); //TODO uh search and advanced search
+		tableEl.setSearchEnabled(true);
 		tableEl.setExtendedSearch(searchCtrl);
 	}
 
