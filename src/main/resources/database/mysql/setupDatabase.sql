@@ -263,6 +263,8 @@ create table if not exists o_catentry (
    parent_id bigint,
    order_index bigint, 
    short_title varchar(255),
+   add_entry_position int,
+   add_category_position int,
    primary key (id)
 );
 create table if not exists o_note (
@@ -4196,7 +4198,3 @@ alter table o_ap_participation add constraint ap_part_identity_idx foreign key (
 
 insert into hibernate_unique_key values ( 0 );
 SET FOREIGN_KEY_CHECKS = 1;
-
--- Catalog
-alter table o_catentry add column add_entry_position int;
-alter table o_catentry add column add_category_position int;
