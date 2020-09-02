@@ -20,6 +20,7 @@
 package org.olat.user.ui.admin.authentication;
 
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
@@ -56,6 +58,8 @@ public class UserAuthenticationEditController extends FormBasicController {
 	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	public UserAuthenticationEditController(UserRequest ureq, WindowControl wControl, Authentication authentication,
 			AuthenticationProviderSPI provider) {
@@ -89,7 +93,7 @@ public class UserAuthenticationEditController extends FormBasicController {
 
 		loginEl.clearError();
 		if(!StringHelper.containsNonWhitespace(loginEl.getValue())) {
-			loginEl.setErrorKey("", null);
+			loginEl.setErrorKey("form.legende.mandatory", null);
 			allOk = false;
 		} else {
 			ValidationResult result = provider.validateAuthenticationUsername(loginEl.getValue(), authentication.getIdentity());
@@ -109,7 +113,8 @@ public class UserAuthenticationEditController extends FormBasicController {
 		String newUsername = loginEl.getValue();
 		String oldValue = authentication.getAuthusername();
 		if(provider.changeAuthenticationUsername(authentication, newUsername)) {
-			User user = authentication.getIdentity().getUser();
+			Identity identity = securityManager.loadIdentityByKey(authentication.getIdentity().getKey());
+			User user = identity.getUser();
 			if(oldValue.equals(user.getProperty(UserConstants.NICKNAME, getLocale()))) {
 				user.setProperty(UserConstants.NICKNAME, newUsername);
 				userManager.updateUser(user);

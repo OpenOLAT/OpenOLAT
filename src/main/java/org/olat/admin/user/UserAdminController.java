@@ -299,7 +299,7 @@ public class UserAdminController extends BasicController implements Activateable
 			if (event == Event.DONE_EVENT) {
 				// rebuild authentication tab, could be wrong now
 				if (authenticationsCtr != null) {
-					authenticationsCtr.loadModel();
+					authenticationsCtr.reloadModel();
 				}
 			}
 		} else if (userProfileCtr == source || authenticationsCtr == source) {
@@ -308,6 +308,7 @@ public class UserAdminController extends BasicController implements Activateable
 				editedIdentity = securityManager.loadIdentityByKey(editedIdentity.getKey());
 				exposeUserDataToVC(ureq, editedIdentity);
 				userProfileCtr.resetForm(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(source == exportDataCtrl) {
 			cmc.deactivate();

@@ -37,6 +37,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -54,6 +56,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.login.auth.AuthenticationProviderSPI;
 import org.olat.user.UserManager;
@@ -66,14 +69,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserAuthenticationsEditorController extends FormBasicController {
 	
+	private FormLink editNickNameLink;
+	private StaticTextElement nickNameEl;
 	private FlexiTableElement tableEl;
 	private AuthenticationsTableDataModel tableModel;
 
 	private CloseableModalController cmc;
 	private DialogBoxController confirmationDialog;
 	private UserAuthenticationEditController editCtrl;
+	private UserNickNameEditController editNickNameCtrl;
 	
-	private final Identity changeableIdentity;
+	private Identity changeableIdentity;
 	
 	@Autowired
 	private UserManager userManager;
@@ -90,11 +96,16 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		
 		this.changeableIdentity = changeableIdentity;
 		initForm(ureq);
-		loadModel();
+		reloadModel();
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		nickNameEl = uifactory.addStaticTextElement("username", "", formLayout);
+		nickNameEl.getComponent().setSpanAsDomReplaceable(true);
+		editNickNameLink =  uifactory.addFormLink("edit", formLayout);
+		editNickNameLink.setIconLeftCSS("o_icon o_icon_edit");
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.provider));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.login));
@@ -113,10 +124,18 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		//
 	}
 	
+	public void reloadModel() {
+		changeableIdentity = securityManager.loadIdentityByKey(changeableIdentity.getKey());
+		loadModel();
+	}
+	
 	/**
 	 * Rebuild the authentications table data model
 	 */
-	public void loadModel() {
+	private void loadModel() {
+		String nickName = changeableIdentity.getUser().getProperty(UserConstants.NICKNAME, getLocale());
+		nickNameEl.setValue(nickName);
+
 		Map<String, AuthenticationProviderSPI> providers = CoreSpringFactory.getBeansOfType(AuthenticationProviderSPI.class);
 		List<Authentication> authentications = securityManager.getAuthentications(changeableIdentity);
 		List<UserAuthenticationRow> rows = new ArrayList<>(authentications.size());
@@ -146,7 +165,9 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(editNickNameLink == source) {
+			doEditNickName(ureq);
+		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				if("delete".equals(se.getCommand())) {
@@ -165,9 +186,9 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 			if (DialogBoxUIFactory.isYesEvent(event)) { 
 				doDelete((Authentication)confirmationDialog.getUserObject());
 			}
-		} else if(editCtrl == source) {
+		} else if(editCtrl == source || editNickNameCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadModel();
+				reloadModel();
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 			cmc.deactivate();
@@ -178,14 +199,28 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(editNickNameCtrl);
 		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(cmc);
+		editNickNameCtrl = null;
 		editCtrl = null;
 		cmc = null;
 	}
 	
+	private void doEditNickName(UserRequest ureq) {
+		editNickNameCtrl = new UserNickNameEditController(ureq, getWindowControl(),
+				changeableIdentity, tableModel.getObjects());
+		listenTo(editNickNameCtrl);
+		
+		String title = translate("edit.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", editNickNameCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doEdit(UserRequest ureq, UserAuthenticationRow row) {
-		editCtrl = new UserAuthenticationEditController(ureq, getWindowControl(), row.getAuthentication(), row.getProvider());
+		editCtrl = new UserAuthenticationEditController(ureq, getWindowControl(),
+				row.getAuthentication(), row.getProvider());
 		listenTo(editCtrl);
 		
 		String title = translate("edit.title");

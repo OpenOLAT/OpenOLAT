@@ -58,6 +58,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -131,6 +132,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
+	private boolean tableDirty = false;
 	private SearchIdentityParams currentSearchParams;
 
 	@Autowired
@@ -159,6 +161,9 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
 		initForm(ureq);
+		if(stackPanel != null) {
+			stackPanel.addListener(this);
+		}
 	}
 
 	@Override
@@ -289,7 +294,9 @@ public class UserSearchTableController extends FormBasicController implements Ac
 
 	@Override
 	protected void doDispose() {
-		//
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 
 	@Override
@@ -344,6 +351,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 			if(event instanceof IdentityDeletedEvent) {
 				reloadTable();
 				stackPanel.popController(userAdminCtr);
+			} else if(event == Event.CHANGED_EVENT) {
+				tableDirty = true;
 			}
 		} else if(contactCtr == source) {
 			cmc.deactivate();
@@ -414,6 +423,14 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		} else if(previousLink == source) {
 			Index index = (Index)previousLink.getUserObject();
 			doPrevious(ureq, index.getRow(), index.isVcard()); 
+		} else if(stackPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(tableDirty && pe.getController() == userAdminCtr) {
+					tableEl.reset(false, false, true);
+					tableDirty = false;
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}

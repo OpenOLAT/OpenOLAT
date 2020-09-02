@@ -53,6 +53,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -194,8 +195,8 @@ public class ProfileFormController extends FormBasicController {
 			
 			// add input field to container
 			FormItem formItem = userPropertyHandler.addFormItem(getLocale(), user, usageIdentifier, isAdministrativeUser, groupContainer);
-			if(formItem.isEnabled() && !canModify) {
-				formItem.setEnabled(canModify);
+			if(formItem.isEnabled() && (!canModify || UserConstants.NICKNAME.equals(userPropertyHandler.getName()))) {
+				formItem.setEnabled(false);
 			}
 			
 			String propertyName = userPropertyHandler.getName();
