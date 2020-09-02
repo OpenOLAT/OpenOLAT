@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.impl.elements.table;
+package org.olat.core.configuration.gui;
 
 import java.util.List;
 
@@ -26,6 +26,13 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -34,11 +41,13 @@ import org.olat.core.util.StringHelper;
 
 /**
  * 
- * Initial date: 15 nov. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 27.08.2020<br>
+ * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
-public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
+public class ConfigurationTreeCellRenderer implements FlexiCellRenderer {
+	
+
 
 	private FlexiCellRenderer labelDelegate = new TextFlexiCellRenderer();
 	
@@ -46,20 +55,20 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 	private boolean flatBySort;
 	private final String action;
 	
-	public TreeNodeFlexiCellRenderer() {
+	public ConfigurationTreeCellRenderer() {
 		action = "tt-focus";
 	}
 	
-	public TreeNodeFlexiCellRenderer(String action) {
+	public ConfigurationTreeCellRenderer(String action) {
 		this.action = action;
 	}
 	
-	public TreeNodeFlexiCellRenderer(FlexiCellRenderer labelDelegate) {
+	public ConfigurationTreeCellRenderer(FlexiCellRenderer labelDelegate) {
 		this.labelDelegate = labelDelegate;
 		this.action = null;
 	}
 	
-	public TreeNodeFlexiCellRenderer(FlexiCellRenderer labelDelegate, String action) {
+	public ConfigurationTreeCellRenderer(FlexiCellRenderer labelDelegate, String action) {
 		this.labelDelegate = labelDelegate;
 		this.action = action;
 	}
@@ -85,6 +94,9 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		FlexiTableElementImpl ftE = source.getFlexiTableElement();
 		FlexiTreeTableDataModel<?> treeTableModel = ftE.getTreeTableDataModel();
+		Object content = source.getFlexiTableElement().getTableDataModel().getObject(row);
+		
+		
 		if(treeTableModel != null) {
 			if(isFlat(ftE)) {
 				labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
@@ -155,7 +167,7 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			} else {
 				target.append("o_icon_open_tree");
 			}
-			target.append("'> </i></a> ");
+			target.append("'> </i> ");
 		}
 		
 		if(action == null) {
@@ -164,9 +176,9 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			NameValuePair pair = new NameValuePair(action, Integer.toString(row));
 			String href = href(source, row);
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, false, pair);
-			target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\">");
+//			target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\">");
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
-			target.append("</a></div>");
+//			target.append("</a></div>");
 		}
 	}
 	
@@ -177,9 +189,9 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			Object object = source.getFlexiTableElement().getTableDataModel().getObject(row);
 			href = ((FlexiBusinessPathModel)model).getUrl(source, object, action);
 		}
-		if(!StringHelper.containsNonWhitespace(href)) {
+		if(StringHelper.containsNonWhitespace(href)) {
 			href = "javascript:;";
-		}
+		} 
 		return href;
 	}
 }
