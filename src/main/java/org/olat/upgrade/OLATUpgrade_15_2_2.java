@@ -39,11 +39,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OLATUpgrade_15_2_3 extends OLATUpgrade {
+public class OLATUpgrade_15_2_2 extends OLATUpgrade {
 
-	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_15_2_3.class);
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_15_2_2.class);
 
-	private static final String VERSION = "OLAT_15.2.3";
+	private static final String VERSION = "OLAT_15.2.2";
 	private static final String MIGRATE_CATALOG_SORTING = "MIGRATE CATALOG SORTING";
 
 	private static final String CATALOG_ADD_LAST = "catalog.add.last";
@@ -53,7 +53,7 @@ public class OLATUpgrade_15_2_3 extends OLATUpgrade {
 	@Autowired
 	CatalogManager catalogManager;
 
-	public OLATUpgrade_15_2_3() {
+	public OLATUpgrade_15_2_2() {
 		super();
 	}
 	
