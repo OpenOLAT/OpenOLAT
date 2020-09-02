@@ -123,7 +123,13 @@ public class CatalogEntryImpl implements CatalogEntry {
 	@GeneratedValue
 	@Column(name = "order_index", updatable = false, insertable = false)
 	private Integer position;
-	
+
+	@Column(name = "add_entry_position", unique = false, nullable = true)
+	private Integer addEntryPosition;
+
+	@Column(name = "add_category_position", unique = false, nullable = true)
+	private Integer addCategoryPosition;
+
 	
 	public CatalogEntryImpl() {
 	// for hibernate
@@ -159,6 +165,26 @@ public class CatalogEntryImpl implements CatalogEntry {
 	@Override 
 	public void setShortTitle(String shortTitle) {
 		this.shortTitle = shortTitle;
+	}
+
+	@Override
+	public Integer getEntryAddPosition() {
+		return addEntryPosition;
+	}
+
+	@Override
+	public void setEntryAddPosition(Integer addEntryPosition) {
+		this.addEntryPosition = addEntryPosition;
+	}
+
+	@Override
+	public Integer getCategoryAddPosition() {
+		return addCategoryPosition;
+	}
+
+	@Override
+	public void setCategoryAddPosition(Integer addCategoryPosition) {
+		this.addCategoryPosition = addCategoryPosition;
 	}
 
 	public String getStyleString() {

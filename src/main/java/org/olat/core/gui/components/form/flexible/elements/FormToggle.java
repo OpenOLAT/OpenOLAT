@@ -61,4 +61,10 @@ public void setToggledOnCSS(String toggledOnCSS);
  */
 public void setToggledOffCSS(String toggledOffCSS);
 
+/**
+ * set the i18n key
+ * @param i18n
+ */
+public void setI18nKey(String i18n);
+
 }

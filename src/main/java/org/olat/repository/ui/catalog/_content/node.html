@@ -75,6 +75,9 @@
 	## Render node list component
 	#if($isOrdering)
 		$r.render("nodeEntries")
+		#if($r.available("entries"))
+			<hr>
+		#end
 	#end
 	
 	## Render course list component
