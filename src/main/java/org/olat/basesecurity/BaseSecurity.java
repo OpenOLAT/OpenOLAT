@@ -89,6 +89,8 @@ public interface BaseSecurity {
 	public Identity findIdentityByLogin(String login);
 	
 	public Identity findIdentityByNickName(String name);
+	
+	public List<Identity> findIdentitiesByNickName(String name);
 
 	/**
 	 * Find an identity by its name. This is an exact match. Use the

@@ -17,8 +17,19 @@
 	}
 }
 
-.o_useradmin .o_user_infos .o_user_infos_inner {
-	margin-right: 45px;
+.o_useradmin {
+	.o_user_infos .o_user_infos_inner {
+		margin-right: 45px;
+	}
+	
+	.o_user_edit_username {
+		.form-inline .form-control-static {
+			padding-top: 0;
+		}
+		.form-inline>a {
+			margin-left: 2em;
+		}
+	}
 }
 
 div.o_skype_button {
