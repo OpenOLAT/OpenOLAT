@@ -64,7 +64,7 @@
 				<bean id="upgrade_15_pre_6_ae" class="org.olat.upgrade.OLATUpgrade_15_pre_6_ae"/>
 				<bean id="upgrade_15_1_0" class="org.olat.upgrade.OLATUpgrade_15_1_0"/>
 				<bean id="upgrade_15_2_0" class="org.olat.upgrade.OLATUpgrade_15_2_0"/>
-				<bean id="upgrade_15_2_3" class="org.olat.upgrade.OLATUpgrade_15_2_3"/>
+				<bean id="upgrade_15_2_3" class="org.olat.upgrade.OLATUpgrade_15_2_2"/>
 			</list>
 		</property>
 	</bean>

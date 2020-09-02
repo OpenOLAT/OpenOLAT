@@ -4392,6 +4392,9 @@ create index idx_ap_part_identitiy_idx on o_ap_participation(fk_identity_id);
 insert into o_stat_lastupdated (until_datetime, from_datetime, lastupdated) values (to_date('1999-01-01', 'YYYY-mm-dd'), to_date('1999-01-01', 'YYYY-mm-dd'), to_date('1999-01-01', 'YYYY-mm-dd'));
 insert into hibernate_unique_key values ( 0 );
 
+-- Catalog
+alter table o_catentry add add_entry_position number default null;
+alter table o_catentry add add_category_position number default null;
 
 commit
 /

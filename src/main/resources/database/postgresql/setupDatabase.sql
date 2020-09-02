@@ -4283,3 +4283,7 @@ alter table o_ap_participation add constraint ap_part_identity_idx foreign key (
 create index idx_ap_part_identitiy_idx on o_ap_participation(fk_identity_id);
 
 insert into hibernate_unique_key values ( 0 );
+
+-- Catalog
+alter table o_catentry add column add_entry_position int;
+alter table o_catentry add column add_category_position int;
