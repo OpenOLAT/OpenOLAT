@@ -73,7 +73,7 @@ public class LinkChooserController extends BasicController {
 	 *          internalLinkTreeModel is null.
 	 */
 	public LinkChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
-			String uploadRelPath, String absolutPath, String[] suffixes, boolean uriValidation, boolean htmlExtraValidation, String fileName,
+			String uploadRelPath, String absolutPath, String[] suffixes, boolean uriValidation, String fileName,
 			CustomLinkTreeModel customLinkTreeModel, CustomLinkTreeModel toolLinkTreeModel, boolean allowCustomMediaChooserFactory) {
 		super(ureq, wControl);
 		
@@ -83,7 +83,7 @@ public class LinkChooserController extends BasicController {
 		tabbedPaneViewVC.put("linkChooserTabbedPane", linkChooserTabbedPane);
 
 		fileLinkChooserController = new FileLinkChooserController(ureq, wControl, rootDir, uploadRelPath, absolutPath, suffixes,
-				uriValidation, htmlExtraValidation, fileName);		
+				uriValidation, fileName);		
 		listenTo(fileLinkChooserController);
 		linkChooserTabbedPane.addTab(translate("linkchooser.tabbedpane.label.filechooser"), fileLinkChooserController.getInitialComponent());
 		
@@ -119,34 +119,58 @@ public class LinkChooserController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {		
 		if (event instanceof URLChoosenEvent) {
-			// send choosen URL to parent window via JavaScript and close the window
-			URLChoosenEvent urlChoosenEvent = (URLChoosenEvent) event;		
-			closeVC = createVelocityContainer("close");
-			String url = urlChoosenEvent.getURL();
-			closeVC.contextPut("isJsUrl", Boolean.FALSE);
-			if (url.contains("gotonode") || url.contains("gototool")) {
-				closeVC.contextPut("isJsUrl", Boolean.TRUE);
-			}
-			closeVC.contextPut("imagepath", url);
-			if(urlChoosenEvent.getWidth() > 0) {
-				closeVC.contextPut("width", Integer.toString(urlChoosenEvent.getWidth()));
-			}
-			if(urlChoosenEvent.getHeight() > 0) {
-				closeVC.contextPut("height", Integer.toString(urlChoosenEvent.getHeight()));
-			}
-			mainPanel.setContent(closeVC);
-			
+			URLChoosenEvent urlChoosenEvent = (URLChoosenEvent)event;
+			doSendUrlToTiny(urlChoosenEvent);
 		} else if (event == Event.CANCELLED_EVENT) {
-			removeAsListenerAndDispose(fileLinkChooserController);
-			removeAsListenerAndDispose(courseLinkChooserController);
-			removeAsListenerAndDispose(courseToolLinkChooserController);
-			removeAsListenerAndDispose(customMediaChooserCtr);
-			
-			// Close the window, no URL selected
-			closeVC = createVelocityContainer("close");
-			closeVC.contextPut("imagepath", "");
-			mainPanel.setContent(closeVC);
+			doCancel();
 		}
+	}
+	
+	private void doSendUrlToTiny(URLChoosenEvent urlChoosenEvent) {
+		cleanUp();
+		
+		// send choosen URL to parent window via JavaScript and close the window
+		closeVC = createVelocityContainer("close");
+		String url = urlChoosenEvent.getURL();
+		closeVC.contextPut("isJsUrl", Boolean.FALSE);
+		
+		String escapedUrl;
+		if (url.contains("gotonode") || url.contains("gototool")) {
+			escapedUrl = url;
+			closeVC.contextPut("isJsUrl", Boolean.TRUE);
+		} else if(url.startsWith("http://") || url.startsWith("https://")) {
+			escapedUrl = url;
+		} else {
+			escapedUrl = escapeUrl(url);
+		}
+		closeVC.contextPut("imagepath", escapedUrl);
+		if(urlChoosenEvent.getWidth() > 0) {
+			closeVC.contextPut("width", Integer.toString(urlChoosenEvent.getWidth()));
+		}
+		if(urlChoosenEvent.getHeight() > 0) {
+			closeVC.contextPut("height", Integer.toString(urlChoosenEvent.getHeight()));
+		}
+		mainPanel.setContent(closeVC);
+	}
+	
+	private String escapeUrl(String url) {
+		return url.replace("+", "%2b");
+	}
+	
+	private void doCancel() {
+		cleanUp();
+		
+		// Close the window, no URL selected
+		closeVC = createVelocityContainer("close");
+		closeVC.contextPut("imagepath", "");
+		mainPanel.setContent(closeVC);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(fileLinkChooserController);
+		removeAsListenerAndDispose(courseLinkChooserController);
+		removeAsListenerAndDispose(courseToolLinkChooserController);
+		removeAsListenerAndDispose(customMediaChooserCtr);
 	}
 
 	@Override
