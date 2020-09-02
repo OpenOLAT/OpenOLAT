@@ -478,7 +478,7 @@
 	<property name="order" value="7211" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.core.configuration.SetupPropertiesController"/>
+				<property name="className" value="org.olat.core.configuration.PropertiesSegmentController"/>
 			</bean>
 		</property>
 		<property name="navigationKey" value="properties" />
@@ -489,7 +489,7 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
-		<property name="parentTreeNodeIdentifier" value="develParent" /> 
+		<property name="parentTreeNodeIdentifier" value="systemParent" /> 
 	</bean>
 
 		<!-- Help module -->
