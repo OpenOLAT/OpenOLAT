@@ -274,8 +274,7 @@ public class CatalogManagerTest extends OlatTestCase {
 		catalogManager.saveCatalogEntry(child1);
 		child2.setParent(rootEntry);
 		catalogManager.saveCatalogEntry(child2);
-		dbInstance.commit();
-
+	
 		List<CatalogEntry> children = rootEntry.getChildren();
 		children.add(child1);
 		children.add(child2);
@@ -606,6 +605,8 @@ public class CatalogManagerTest extends OlatTestCase {
 		assertThat(catalogManager.moveCatalogEntry(parentEntryAA, parentEntryBA));
 		assertThat(catalogEntryB1.getPosition()).isEqualTo(1);
 		assertThat(parentEntryAA.getPosition()).isEqualTo(0);
+		
+		
 	}
 	
 	@Test
