@@ -18,17 +18,17 @@
 		<table class="table table-condensed table-striped">
 			#if($r.available("im.link"))
 			<tr class="o_im_status">
-				<th>$r.translate("status")</th>
+				<th scope="row">$r.translate("status")</th>
 				<td colspan="3"><div id="o_im_buddy">$r.render("im.link")</div></td>
 			</tr>			
 			#end
 	
 			#foreach($propertyHandler in $userPropertyHandlers )
 			<tr>
-				<th>$r.translate($propertyHandler.i18nFormElementLabelKey()) </th>
+				<th scope="row">$r.translate($propertyHandler.i18nFormElementLabelKey()) </th>
 				#if($propertyHandler.name == "userInterests" && $userSearchedInterestsHandler)
 					<td>$!propertyHandler.getUserPropertyAsHTML($user, $locale)</td>
-					<th>$r.translate($userSearchedInterestsHandler.i18nFormElementLabelKey())</th>
+					<th scope="row">$r.translate($userSearchedInterestsHandler.i18nFormElementLabelKey())</th>
 					<td>$!userSearchedInterestsHandler.getUserPropertyAsHTML($user, $locale)</td>
 				#else
 					<td colspan="3">$!propertyHandler.getUserPropertyAsHTML($user, $locale)</td>
@@ -38,7 +38,7 @@
 			
 			#if($r.isNotEmpty($organisations))
 			<tr valign="top" class="o_usser_organisations">
-				<th>$r.translate("form.organisations")</th>
+				<th scope="row">$r.translate("form.organisations")</th>
 				<td colspan="3"><ul class="list-unstyled">
 				#foreach($organisation in $organisations)
 					<li>$r.escapeHtml($organisation)</li>
@@ -46,10 +46,10 @@
 				</ul></td>
 			</tr>
 			#end				
-			#if( $homepageConfig.getTextAboutMe() && ($homepageConfig.getTextAboutMe() != "") )
+			#if($r.isNotEmpty($aboutMe))
 			<tr valign="top" class="o_user_aboutme">
-				<th>$r.translate("form.text")</th>
-				<td colspan="3">$!r.formatLatexFormulas($homepageConfig.getTextAboutMe())</td>
+				<th scope="row">$r.translate("form.text")</th>
+				<td colspan="3">$!r.formatLatexFormulas($aboutMe)</td>
 			</tr>		
 			#end
 		</table>
@@ -63,11 +63,9 @@
 	<div class="o_copy_code o_nowrap">
 		<a href="javascript:;" id="o_extlink" data-original-title="" title=""><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"> </i></a><input type="text" value="$extLink" onclick="this.select()"/>
 		<script>
-		/* <![CDATA[ */
-			jQuery(function() {
-				o_QRCodePopup('o_extlink', '$extLink', 'right');
-			});
-		/* ]]> */
+		jQuery(function() {
+			o_QRCodePopup('o_extlink', '$extLink', 'right');
+		});
 		</script>
 	</div>
 </div>

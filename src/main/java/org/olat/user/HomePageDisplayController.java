@@ -125,7 +125,11 @@ public class HomePageDisplayController extends BasicController {
 		
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
 		mainVC.contextPut("userSearchedInterestsHandler", userSearchedInterestsHandler);
-		mainVC.contextPut("homepageConfig", hpc);	
+		
+		if(userModule.isUserAboutMeEnabled()) {
+			String aboutMe = hpc.getTextAboutMe();
+			mainVC.contextPut("aboutMe", aboutMe);	
+		}
 		
 		// Add external link to visiting card
 		StringBuilder extLink = new StringBuilder();
