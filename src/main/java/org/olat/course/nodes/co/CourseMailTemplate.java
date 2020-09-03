@@ -74,9 +74,9 @@ public class CourseMailTemplate extends MailTemplate {
 			vContext.put("fullName", fullName); 
 			vContext.put("mail", userManager.getUserDisplayEmail(user, locale));
 			vContext.put("email", userManager.getUserDisplayEmail(user, locale));
-			String loginName = securityManager.findAuthenticationName(recipient);
+			String loginName = securityManager.findAuthenticationName(sender);
 			if(!StringHelper.containsNonWhitespace(loginName)) {
-				loginName = recipient.getName();
+				loginName = sender.getName();
 			}
 			vContext.put("username", loginName);
 		}
