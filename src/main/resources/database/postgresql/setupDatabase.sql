@@ -3369,6 +3369,7 @@ create index idx_auth_ident_idx on o_bs_authentication (identity_fk);
 create index provider_idx on o_bs_authentication (provider);
 create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);
+create index low_authusername_idx on o_bs_authentication (lower(authusername));
 
 alter table o_bs_authentication_history add constraint auth_hist_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_auth_hist_to_ident_idx on o_bs_authentication_history (fk_identity);

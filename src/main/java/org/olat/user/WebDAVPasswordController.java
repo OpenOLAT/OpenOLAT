@@ -161,17 +161,7 @@ public class WebDAVPasswordController extends FormBasicController {
 	}
 	
 	private String getUsernames(List<Authentication> authentications) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(getIdentity().getName());
-		if(userModule.isEmailUnique()) {
-			if(StringHelper.containsNonWhitespace(getIdentity().getUser().getEmail())) {
-				sb.append(", ").append(getIdentity().getUser().getEmail());
-			}
-			if(StringHelper.containsNonWhitespace(getIdentity().getUser().getInstitutionalEmail())) {
-				sb.append(", ").append(getIdentity().getUser().getInstitutionalEmail());
-			}
-		}
-
+		StringBuilder sb = new StringBuilder(64);
 		for(Authentication auth : authentications) {
 			if(WebDAVAuthManager.PROVIDER_WEBDAV.equals(auth.getProvider())
 					|| WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL.equals(auth.getProvider())
@@ -179,14 +169,24 @@ public class WebDAVPasswordController extends FormBasicController {
 					|| WebDAVAuthManager.PROVIDER_HA1.equals(auth.getProvider())
 					|| WebDAVAuthManager.PROVIDER_HA1_EMAIL.equals(auth.getProvider())
 					|| WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL.equals(auth.getProvider())) {
-				String authUsername = auth.getAuthusername();
-				if(sb.indexOf(authUsername) < 0) {
-					sb.append(", ").append(authUsername);
+				appendUsername(auth.getAuthusername(), sb);
+			} else if(BaseSecurityModule.getDefaultAuthProviderIdentifier().equals(auth.getProvider())) {
+				appendUsername(auth.getAuthusername(), sb);
+				if(userModule.isEmailUnique()) {
+					appendUsername(getIdentity().getUser().getEmail(), sb);
+					appendUsername(getIdentity().getUser().getInstitutionalEmail(), sb);
 				}
 			}
 		}
 		
 		return sb.toString();
+	}
+	
+	private void appendUsername(String authUsername, StringBuilder sb) {
+		if(StringHelper.containsNonWhitespace(authUsername) && sb.indexOf(authUsername) < 0) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(authUsername);
+		}
 	}
 	
 	@Override
