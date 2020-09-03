@@ -21,6 +21,7 @@ package org.olat.repository.manager;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.LockModeType;
@@ -132,15 +133,16 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 			dbInstance.getCurrentEntityManager().detach(re.getStatistics());
 		}
 		
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select stats from ").append(RepositoryEntryStatistics.class.getName()).append(" as stats")
 		  .append(" where stats.key in (select v.statistics.key from ").append(RepositoryEntry.class.getName()).append(" as v where v.key=:key)");
 		
-		return dbInstance.getCurrentEntityManager()
+		List<RepositoryEntryStatistics> statistics = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntryStatistics.class)
 				.setParameter("key", repositoryEntryRes.getResourceableId())
 				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
-				.getSingleResult();
+				.getResultList();
+		return statistics == null || statistics.isEmpty() ? null : statistics.get(0);
 	}
 
 	@Override
