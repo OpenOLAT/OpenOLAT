@@ -198,13 +198,13 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		if(!empty && ftE.getExportButton() != null && ftE.isExportEnabled()) {
 			sb.append("<div class='btn-group'>");
 			ftE.getExportButton().setEnabled(!empty);
-			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, args);
+			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, null);
 			sb.append("</div> ");
 		}
 		if(!empty && ftE.getCustomButton() != null && ftE.isCustomizeColumns()
 				&& (ftE.getRendererType() == null || ftE.getRendererType() == FlexiTableRendererType.classic)) {
 			sb.append("<div class='btn-group'>");
-			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, args);
+			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, null);
 			sb.append("</div> ");
 		}
 		
@@ -213,7 +213,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		if(!empty && types.length > 1) {
 			sb.append("<div class='btn-group'>");
 			for(FlexiTableRendererType type:types) {
-				renderHeaderSwitchType(type, renderer, sb, ftE, ubu, translator, renderResult, args);
+				renderHeaderSwitchType(type, renderer, sb, ftE, ubu, translator, renderResult, null);
 			}
 			sb.append("</div> ");
 		}
@@ -246,7 +246,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			
 			sb.append("<div class='o_table_search input-group o_noprint'>");
 			if(searchInput) {
-				renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
+				renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, null);
 				sb.append("<div class='input-group-btn'>");
 				// reset quick search
 				String id = ftE.getSearchElement().getFormDispatchId();
@@ -256,9 +256,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				  .append("\" class='btn o_reset_quick_search'><i class='o_icon o_icon_remove_filters' aria-label='")
 				  .append(translator.translate("aria.reset.search")).append("'> </i></a>");
 							
-				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
+				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
 				if(ftE.getExtendedSearchButton() != null) {
-					renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
+					renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, null);
 				}
 			}
 			
