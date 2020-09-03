@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
@@ -161,27 +162,31 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 
 		if (isCategorySortingManually(ce) || isEntrySortingManually(ce)) {
 			// Create 3 lists: Categories, entries, closed entries
-			String closed = RepositoryEntryStatusEnum.closed.name();
-			List<CatalogEntry> categories = children.stream().filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_NODE).collect(Collectors.toList());
-			children.removeAll(categories);
-			List<CatalogEntry> entries = children.stream().filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_LEAF && !catalogEntry.getRepositoryEntry().getStatus().equals(closed)).collect(Collectors.toList());
-			children.removeAll(entries);
+			List<CatalogEntry> categories = children.stream()
+					.filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_NODE)
+					.collect(Collectors.toList());
+
+			List<CatalogEntry> entries = children.stream().filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_LEAF
+					&& (catalogEntry.getRepositoryEntry() == null || !RepositoryEntryStatusEnum.closed.equals(catalogEntry.getRepositoryEntry().getEntryStatus())))
+					.collect(Collectors.toList());
 			// To be sure only correct entries are in the final list, the last step is also filtered
-			List<CatalogEntry> closedEntries = children.stream().filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_LEAF && catalogEntry.getRepositoryEntry().getStatus().equals(closed)).collect(Collectors.toList());
+			List<CatalogEntry> closedEntries = children.stream().filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_LEAF
+					&& catalogEntry.getRepositoryEntry() != null && RepositoryEntryStatusEnum.closed.equals(catalogEntry.getRepositoryEntry().getEntryStatus()))
+					.collect(Collectors.toList());
 			// Now remove all remaining entries
-			children.removeAll(children);
 
 			Collator collator = Collator.getInstance();
 			collator.setStrength(Collator.IDENTICAL);
 
 			if (isCategorySortingManually(ce)) {
-				categories.sort(Comparator.comparing(CatalogEntry::getName, collator));
+				categories.sort(new CatalogEntryNameComparator(collator));
 			}
 			if (isEntrySortingManually(ce)) {
-				entries.sort(Comparator.comparing(CatalogEntry::getName, collator));
-				closedEntries.sort(Comparator.comparing(CatalogEntry::getName, collator));
+				entries.sort(new CatalogEntryNameComparator(collator));
+				closedEntries.sort(new CatalogEntryNameComparator(collator));
 			}
 
+			children = new ArrayList<>(children.size());
 			children.addAll(categories);
 			children.addAll(entries);
 			children.addAll(closedEntries);
@@ -629,7 +634,6 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		parentEntry = loadCatalogEntry(parentEntry);
 		newEntry = loadCatalogEntry(newEntry);
 		List<CatalogEntry> catEntries = parentEntry.getChildren();
-		String closed = RepositoryEntryStatusEnum.closed.name();
 		RepositoryEntry repoEntry = newEntry.getRepositoryEntry();
 		
 		if(catEntries.isEmpty()) {
@@ -640,14 +644,22 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		cleanNullEntries(catEntries);
 
 		// Create 3 lists: Categories, entries, closed entries
-		List<CatalogEntry> categories = catEntries.stream().filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_NODE).collect(Collectors.toList());
-		catEntries.removeAll(categories);
-		List<CatalogEntry> entries = catEntries.stream().filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_LEAF && !catalogEntry.getRepositoryEntry().getStatus().equals(closed)).collect(Collectors.toList());
-		catEntries.removeAll(entries);
+		List<CatalogEntry> categories = catEntries.stream()
+				.filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_NODE)
+				.collect(Collectors.toList());
+
+		List<CatalogEntry> entries = catEntries.stream()
+				.filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_LEAF
+				&& (catalogEntry.getRepositoryEntry() == null || !RepositoryEntryStatusEnum.closed.equals(catalogEntry.getRepositoryEntry().getEntryStatus())))
+				.collect(Collectors.toList());
+
 		// To be sure only correct entries are in the final list, the last step is also filtered
-		List<CatalogEntry> closedEntries = catEntries.stream().filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_LEAF && catalogEntry.getRepositoryEntry().getStatus().equals(closed)).collect(Collectors.toList());
+		List<CatalogEntry> closedEntries = catEntries.stream()
+				.filter(catalogEntry -> catalogEntry.getType() == CatalogEntry.TYPE_LEAF
+				&& catalogEntry.getRepositoryEntry() != null && RepositoryEntryStatusEnum.closed.equals(catalogEntry.getRepositoryEntry().getEntryStatus()))
+				.collect(Collectors.toList());
 		// Now remove all remaining entries
-		catEntries.removeAll(catEntries);
+		catEntries.clear();
 
 		// Add to categories
 		if (newEntry.getType() == CatalogEntry.TYPE_NODE) {
@@ -663,7 +675,8 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 
 		}
 		// Add to entries
-		else if (newEntry.getType() == CatalogEntry.TYPE_LEAF && !newEntry.getRepositoryEntry().getStatus().equals(closed)) {
+		else if (newEntry.getType() == CatalogEntry.TYPE_LEAF &&
+				(newEntry.getRepositoryEntry() == null || RepositoryEntryStatusEnum.closed.equals(newEntry.getRepositoryEntry().getEntryStatus()))) {
 			// If added on top or alphabetically
 			if ((parentEntry.getEntryAddPosition() == null && repositoryModule.getCatalogAddEntryPosition() == 1)
 				|| (parentEntry.getEntryAddPosition() != null && parentEntry.getEntryAddPosition() == 1)) {
@@ -1033,5 +1046,47 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 
 	public boolean isCategorySortingManually(CatalogEntry ce) {
 		return !((ce.getCategoryAddPosition() != null && ce.getCategoryAddPosition() == 0) || (ce.getCategoryAddPosition() == null && repositoryModule.getCatalogAddCategoryPosition() == 0));
+	}
+	
+	public static class CatalogEntryNameComparator implements Comparator<CatalogEntry> {
+		
+		private final Collator collator;
+		
+		public CatalogEntryNameComparator(Collator collator) {
+			this.collator = collator;
+		}
+
+		@Override
+		public int compare(CatalogEntry o1, CatalogEntry o2) {
+			int c = 0;
+			if(o1 == null || o2 == null) {
+				c = compareNullObjects(o1, o2);
+			} else {
+				String n1 = o1.getName();
+				String n2 = o2.getName();
+				if(n1 == null || n2 == null) {
+					c = compareNullObjects(n1, n2);
+				} else {
+					c = collator.compare(n1, n2);
+				}
+				
+				if(c == 0) {
+					Long k1 = o1.getKey();
+					Long k2 = o2.getKey();
+					if(k1 == null || k2 == null) {
+						c = compareNullObjects(k1, k2);
+					} else {
+						c = k1.compareTo(k2);
+					}
+				}
+			}
+			return c;
+		}
+		
+		private final int compareNullObjects(final Object a, final Object b) {
+			boolean ba = (a == null);
+			boolean bb = (b == null);
+			return ba? (bb? 0: -1):(bb? 1: 0);
+		}
 	}
 }

@@ -392,15 +392,15 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 * @return
 	 */
 	@Override
-	public Identity createAndPersistIdentityAndUserWithOrganisation(String legacyName, String loginName, String externalId, User newUser,
+	public Identity createAndPersistIdentityAndUserWithOrganisation(String legacyName, String nickName, String externalId, User newUser,
 			String provider, String authusername, String pwd, Organisation organisation) {
 		Identity ident;
 		if (pwd == null) {
-			ident = createAndPersistIdentityAndUser(legacyName, loginName, externalId, newUser, provider, loginName, null);
-			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={},authusername={}) but no password", provider, authusername, loginName);
+			ident = createAndPersistIdentityAndUser(legacyName, nickName, externalId, newUser, provider, authusername, null);
+			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={},authusername={}) but no password", provider, authusername, nickName);
  		} else {
-			ident = createAndPersistIdentityAndUser(legacyName, loginName, externalId, newUser, provider, loginName, pwd);
-			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={},authusername={})", provider, authusername, loginName);
+			ident = createAndPersistIdentityAndUser(legacyName, nickName, externalId, newUser, provider, authusername, pwd);
+			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={},authusername={})", provider, authusername, nickName);
 		}
 		
 		if(organisation == null) {
