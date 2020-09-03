@@ -49,11 +49,6 @@ public class RepositoryEntryLifecycleAfterValidFromRuleSPI implements Repository
 	}
 	
 	@Override
-	public String getCategory() {
-		return "course";
-	}
-	
-	@Override
 	public ReminderRule clone(ReminderRule rule, CourseEnvironmentMapper envMapper) {
 		return rule.clone();
 	}

@@ -41,11 +41,6 @@ import org.olat.repository.RepositoryEntry;
 public abstract class AbstractLaunchDateRuleSPI  implements FilterRuleSPI {
 
 	@Override
-	public String getCategory() {
-		return "course";
-	}
-
-	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new CourseLaunchRuleEditor(rule, this.getClass().getSimpleName());
 	}

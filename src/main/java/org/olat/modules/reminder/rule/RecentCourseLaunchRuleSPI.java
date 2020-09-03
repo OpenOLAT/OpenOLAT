@@ -49,11 +49,6 @@ public class RecentCourseLaunchRuleSPI extends AbstractLaunchDateRuleSPI {
 	}
 
 	@Override
-	public String getCategory() {
-		return "general";
-	}
-	
-	@Override
 	public ReminderRule clone(ReminderRule rule, CourseEnvironmentMapper envMapper) {
 		return rule.clone();
 	}

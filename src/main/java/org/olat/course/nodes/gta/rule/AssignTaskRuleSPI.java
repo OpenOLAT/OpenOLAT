@@ -49,11 +49,6 @@ public class AssignTaskRuleSPI extends AbstractDueDateTaskRuleSPI {
 	}
 
 	@Override
-	public String getCategory() {
-		return "assessment";
-	}
-
-	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new BeforeDateTaskRuleEditor(rule, entry, AssignTaskRuleSPI.class.getSimpleName());
 	}

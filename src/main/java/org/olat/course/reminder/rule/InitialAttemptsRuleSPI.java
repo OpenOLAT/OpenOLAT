@@ -56,11 +56,6 @@ public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI {
 	}
 
 	@Override
-	public String getCategory() {
-		return "assessment";
-	}
-
-	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new InitialAttemptsRuleEditor(rule, entry);
 	}

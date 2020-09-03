@@ -46,11 +46,6 @@ public class UserPropertyRuleSPI implements RuleSPI {
 	}
 
 	@Override
-	public String getCategory() {
-		return "user";
-	}
-
-	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new UserPropertyEditor(rule);
 	}

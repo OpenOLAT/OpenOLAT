@@ -32,8 +32,6 @@ public interface RuleSPI {
 	
 	public String getLabelI18nKey();
 	
-	public String getCategory();
-	
 	/**
 	 * @param entry SPIs may be enabled depending on course configurations.
 	 */

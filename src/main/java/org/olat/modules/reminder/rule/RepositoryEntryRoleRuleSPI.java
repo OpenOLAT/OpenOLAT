@@ -55,11 +55,6 @@ public class RepositoryEntryRoleRuleSPI implements IdentitiesProviderRuleSPI  {
 	}
 
 	@Override
-	public String getCategory() {
-		return "course";
-	}
-
-	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new RepositoryEntryRoleEditor(rule);
 	}

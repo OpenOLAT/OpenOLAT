@@ -60,11 +60,6 @@ public class AttemptsRuleSPI implements FilterRuleSPI {
 	}
 
 	@Override
-	public String getCategory() {
-		return "assessment";
-	}
-
-	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new AttemptsRuleEditor(rule, entry);
 	}

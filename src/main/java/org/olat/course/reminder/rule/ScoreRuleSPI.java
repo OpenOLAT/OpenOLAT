@@ -70,11 +70,6 @@ public class ScoreRuleSPI implements FilterRuleSPI {
 	}
 
 	@Override
-	public String getCategory() {
-		return "assessment";
-	}
-
-	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new ScoreRuleEditor(rule, entry);
 	}

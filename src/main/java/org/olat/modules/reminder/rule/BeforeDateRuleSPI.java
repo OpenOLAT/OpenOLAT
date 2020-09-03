@@ -54,11 +54,6 @@ public class BeforeDateRuleSPI implements RuleSPI {
 	}
 
 	@Override
-	public String getCategory() {
-		return "general";
-	}
-
-	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new BeforeDateRuleEditor(rule);
 	}

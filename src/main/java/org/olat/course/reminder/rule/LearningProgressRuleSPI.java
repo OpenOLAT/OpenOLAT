@@ -59,11 +59,6 @@ public class LearningProgressRuleSPI implements FilterRuleSPI {
 	}
 
 	@Override
-	public String getCategory() {
-		return "assessment";
-	}
-
-	@Override
 	public boolean isEnabled(RepositoryEntry entry) {
 		ICourse course = CourseFactory.loadCourse(entry);
 		return LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
