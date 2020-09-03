@@ -271,14 +271,14 @@ public class CatalogEntryEditController extends FormBasicController {
 		catalogEntry.setShortTitle(shortTitleEl.getValue());
 
 		if (!nodesSortSelect.getSelectedKey().equals(sortSelectKeys[0])) {
-			catalogManager.setCategoryAddPosition(catalogEntry, Arrays.asList(sortSelectKeys).indexOf(nodesSortSelect.getSelectedKey()) - 1);
+			catalogEntry.setCategoryAddPosition(Arrays.asList(sortSelectKeys).indexOf(nodesSortSelect.getSelectedKey()) - 1);
 		} else {
-			catalogManager.setCategoryAddPosition(catalogEntry, null);
+			catalogEntry.setCategoryAddPosition(null);
 		}
 		if (!entriesSortSelect.getSelectedKey().equals(sortSelectKeys[0])) {
-			catalogManager.setEntryAddPosition(catalogEntry, Arrays.asList(sortSelectKeys).indexOf(entriesSortSelect.getSelectedKey()) - 1);
+			catalogEntry.setEntryAddPosition(Arrays.asList(sortSelectKeys).indexOf(entriesSortSelect.getSelectedKey()) - 1);
 		} else {
-			catalogManager.setEntryAddPosition(catalogEntry,null);
+			catalogEntry.setEntryAddPosition(null);
 		}
 		
 		if(catalogEntry.getKey() == null) {

@@ -762,7 +762,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			parentCe = loadCatalogEntry(parentCe);
 		}
 		ce.setParent(parentCe);
-		saveCatalogEntry(ce);	
+		ce = saveCatalogEntry(ce);	
 		
 		addToChildren(parentCe, ce);
 		
@@ -1026,18 +1026,6 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		} else {
 			return -1;
 		}
-	}
-
-	public void setCategoryAddPosition(CatalogEntry catEntry, Integer position) {
-		catEntry = loadCatalogEntry(catEntry);
-		catEntry.setCategoryAddPosition(position);
-		updateCatalogEntry(catEntry);
-	}
-
-	public void setEntryAddPosition(CatalogEntry catEntry, Integer position) {
-		catEntry = loadCatalogEntry(catEntry);
-		catEntry.setEntryAddPosition(position);
-		updateCatalogEntry(catEntry);
 	}
 
 	public boolean isEntrySortingManually(CatalogEntry ce) {
