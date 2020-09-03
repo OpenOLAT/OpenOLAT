@@ -109,7 +109,7 @@ public class UserShortDescription extends BasicController {
 
 		// Show user name to administrative users if not already in user properties defined
 		if(!alreadyDefinedUsername && (getIdentity().equals(identity) || isAdministrativeUser)) {
-			mainVC.contextPut("username", identity.getName());
+			mainVC.contextPut("username", identity.getUser().getProperty(UserConstants.NICKNAME, getLocale()));
 			mainVC.contextPut("usernameLabel", usernameLabel);
 			mainVC.contextPut("usernamePosition", "top");
 		}
@@ -168,24 +168,23 @@ public class UserShortDescription extends BasicController {
 		public static Builder builder() {
 			return new Builder();
 		}
-
-		public static final class Builder {
-			
-			private List<Row> rows = new ArrayList<>();
-
-			private Builder() {
-			}
-
-			public Builder addRow(String column1, String column2) {
-				rows.add(new Row(column1, column2));
-				return this;
-			}
-
-			public Rows build() {
-				return new Rows(this);
-			}
-		}
+	}
+	
+	public static final class Builder {
 		
+		private List<Row> rows = new ArrayList<>();
+
+		private Builder() {
+		}
+
+		public Builder addRow(String column1, String column2) {
+			rows.add(new Row(column1, column2));
+			return this;
+		}
+
+		public Rows build() {
+			return new Rows(this);
+		}
 	}
 	
 	public static class Row {

@@ -3,19 +3,19 @@
 	#if($r.isNotNull($usernamePosition) && $usernamePosition == "top")
 		#if($r.isNotNull($username))
 		<tr class="o_prop o_username">
-			<th>$usernameLabel</th>
+			<th scope="row">$usernameLabel</th>
 			<td>$username</td>
 		</tr>
 		#end
 	<tr class="o_prop o_id">
-		<th>Identity</th>
+		<th scope="row">Identity</th>
 		<td>$identityKey</td>
 	</tr>
 	#end
 	#foreach( $propertyHandler in $userPropertyHandlers )
 	    #if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")
 		<tr class="o_prop o_${propertyHandler.name}">
-			<th>$r.translate($propertyHandler.i18nFormElementLabelKey())</th>
+			<th scope="row">$r.translate($propertyHandler.i18nFormElementLabelKey())</th>
 			<td>$propertyHandler.getUserPropertyAsHTML($user, $locale)</td>
 		</tr>
 		#end
@@ -23,18 +23,18 @@
 	#if($r.isNotNull($usernamePosition) && $usernamePosition == "bottom")
 		#if($r.isNotNull($username))
 		<tr class="o_prop o_username">
-			<th>$usernameLabel</th>
+			<th scope="row">$usernameLabel</th>
 			<td>$username</td>
 		</tr>
 		#end
 	<tr class="o_prop o_id">
-		<th>Identity</th>
+		<th scope="row">Identity</th>
 		<td>$identityKey</td>
 	</tr>
 	#end
 	#foreach($row in $additionalRows.getRows())
 		<tr class="o_prop">
-			<th>$row.getColumn1()</th>
+			<th scope="row">$row.getColumn1()</th>
 			<td>$row.getColumn2()</td>
 		</tr>
 	#end

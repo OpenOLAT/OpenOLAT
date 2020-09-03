@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.admin.user.UserShortDescription;
+import org.olat.admin.user.UserShortDescription.Builder;
 import org.olat.admin.user.UserShortDescription.Rows;
-import org.olat.admin.user.UserShortDescription.Rows.Builder;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
