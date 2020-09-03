@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -156,17 +157,20 @@ public class UserSearchForm extends FormBasicController {
 		Translator tr = Util.createPackageTranslator(UserPropertyHandler.class, getLocale(),  getTranslator());
 
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler == null) continue;
+			if (userPropertyHandler == null || (userPropertyHandler.getName().equals(UserConstants.NICKNAME) && isAdminProps)) {
+				continue;
+			}
 			
 			FormItem fi = userPropertyHandler.addFormItem(getLocale(), null, getClass().getCanonicalName(), false, formLayout);
 			fi.setTranslator(tr);
 			
 			// DO NOT validate email field => see OLAT-3324, OO-155, OO-222
-			if (userPropertyHandler instanceof EmailProperty && fi instanceof TextElement) {
+			if ((userPropertyHandler instanceof EmailProperty || userPropertyHandler.getName().equals(UserConstants.NICKNAME)) 
+					&& fi instanceof TextElement) {
 				TextElement textElement = (TextElement)fi;
 				textElement.setItemValidatorProvider(null);
 			}
-			
+
 			fi.setElementCssClass("o_sel_user_search_".concat(userPropertyHandler.getName().toLowerCase()));
 			propFormItems.put(userPropertyHandler.getName(), fi);
 		}
