@@ -81,6 +81,15 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 		linkCmp.setDomReplacementWrapperRequired(false);
 		dropdown.addComponent(linkCmp);
 	}
+	
+	public void removeAllFormItems() {
+		items.clear();
+		dropdown.removeAllComponents();
+	}
+	
+	public int size() {
+		return items.size();
+	}
 
 	@Override
 	protected Component getFormItemComponent() {

@@ -98,7 +98,6 @@ public class HelpAdminController extends FormBasicController {
 
 		addHelpDropDown = uifactory.addDropdownMenu("help.admin.add.help", "help.admin.add.help", formLayout, getTranslator());
 		addHelpDropDown.setOrientation(DropdownOrientation.right);
-		addHelpDropDown.setVisible(helpModule.getRemainingPlugins().length > 0 );
 
 		addAcademy = uifactory.addFormLink("help.admin.academy", formLayout);
 		addOOTeach = uifactory.addFormLink("help.admin.ooTeach", formLayout);
@@ -140,7 +139,9 @@ public class HelpAdminController extends FormBasicController {
 		tableEl.setCustomizeColumns(false);
 	}
 
-	private void loadData() {	
+	private void loadData() {
+		addHelpDropDown.removeAllFormItems();
+		
 		// Fill drop down element
 		for (String helpPlugin : helpModule.getRemainingPlugins()) {
 			switch (helpPlugin) {
@@ -172,8 +173,8 @@ public class HelpAdminController extends FormBasicController {
 				break;
 			}
 		}
-
-		addHelpDropDown.reset();
+		
+		addHelpDropDown.setVisible(addHelpDropDown.size() > 0);
 
 		// Fill table
 		List<HelpAdminTableContentRow> tableRows = new ArrayList<>();
@@ -287,6 +288,7 @@ public class HelpAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 	@Override
@@ -340,9 +342,9 @@ public class HelpAdminController extends FormBasicController {
 				loadData();
 			}
 		} else if (source == addController) {
-			if (event.equals(FormEvent.CANCELLED_EVENT)) {
+			if (event.equals(Event.CANCELLED_EVENT)) {
 				cleanUp();
-			} else if (event.equals(FormEvent.DONE_EVENT)) {
+			} else if (event.equals(Event.DONE_EVENT)) {
 				cleanUp();
 				initForm(ureq);
 				loadData();
@@ -418,10 +420,6 @@ public class HelpAdminController extends FormBasicController {
 		addController = null;
 		editController = null;
 		cmc = null;
-
-		if (helpModule.getRemainingPlugins().length > 0) {
-			addHelpDropDown.reset();
-		}
 	}
 
 	private void doOpenAddHelpDialog(UserRequest ureq, String helpPluginToAdd) {
