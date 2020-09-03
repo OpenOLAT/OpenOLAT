@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -88,7 +89,9 @@ public class CourseReminderEditController extends FormBasicController {
 		this.reminder = reminder;
 		this.entry = reminder.getEntry();
 		
-		List<RuleSPI> orderedRuleSpies = new ArrayList<>(reminderModule.getRuleSPIList());
+		List<RuleSPI> orderedRuleSpies = reminderModule.getRuleSPIList().stream()
+				.filter(spi -> spi.isEnabled(entry))
+				.collect(Collectors.toList());
 		Collections.sort(orderedRuleSpies, new RuleSpiComparator());
 		
 		typeKeys = new String[orderedRuleSpies.size()];

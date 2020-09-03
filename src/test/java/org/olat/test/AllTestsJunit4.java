@@ -191,6 +191,7 @@ import org.junit.runners.Suite;
 	org.olat.course.assessment.AssessmentManagerTest.class,
 	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,
 	org.olat.course.assessment.manager.AssessmentModeManagerTest.class,
+	org.olat.course.reminder.manager.ReminderRuleDAOTest.class,
 	org.olat.course.run.scoring.AssessmentAccountingTest.class,
 	org.olat.course.statistic.DailyStatisticUpdateManagerTest.class,
 	org.olat.course.statistic.DayOfWeekStatisticUpdateManagerTest.class,

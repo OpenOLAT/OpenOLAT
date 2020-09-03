@@ -30,8 +30,10 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -191,6 +193,31 @@ public class ReminderRuleDAO {
 				Boolean passed = (Boolean)infos[1];
 				dateMap.put(identityKey, passed);
 			}
+		}
+		return dateMap;
+	}
+	
+	public Map<Long, Double> getRootCompletions(RepositoryEntry entry, List<Identity> identities) {
+		if(identities == null || identities.isEmpty()) {
+			return new HashMap<>();
+		}
+
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select data.identity.key, data.completion");
+		sb.append("  from assessmententry data");
+		sb.and().append(" data.entryRoot = true");
+		sb.and().append(" data.repositoryEntry.key = :courseEntryKey");
+		sb.and().append(" data.identity.key in (:identityKeys)");
+
+		List<Object[]> infoList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("courseEntryKey", entry.getKey())
+				.setParameter("identityKeys", PersistenceHelper.toKeys(identities))
+				.getResultList();
+
+		Map<Long, Double> dateMap = new HashMap<>();
+		for (Object[] infos:infoList) {
+			dateMap.put((Long)infos[0], (Double)infos[1]);
 		}
 		return dateMap;
 	}
