@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
@@ -45,9 +44,9 @@ public class OlatPropertiesTableModel extends DefaultFlexiTableDataModel<OlatPro
 implements FlexiTableDataModel<OlatPropertiesTableContentRow>, FilterableFlexiTableModel {
 
 	private static final Logger log = Tracing.createLoggerFor(StudentsTableDataModel.class);
-	List<OlatPropertiesTableContentRow> backup; 
+	private List<OlatPropertiesTableContentRow> backup; 
 	
-	public OlatPropertiesTableModel(FlexiTableColumnModel columnModel, UserRequest ureq) {
+	public OlatPropertiesTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
 

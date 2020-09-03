@@ -143,7 +143,13 @@ public class ConfigurationPropertiesController extends FormBasicController {
 		List<File>listOfFiles = new ArrayList<>(Arrays.asList(folder.listFiles()));
 
 		for (File file : listOfFiles) {
-			if (file.isFile()) {
+			String extension = "";
+
+			int i = file.getName().lastIndexOf('.');
+			if (i > 0) {
+			    extension = file.getName().substring(i+1);
+			}
+			if (file.isFile() && extension.equals("properties")) {
 				Properties fileProperties = getPropertyFile(file.getName());
 				if(fileProperties != null){
 					properties.put(file.getName(), fileProperties);

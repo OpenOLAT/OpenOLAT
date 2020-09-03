@@ -124,7 +124,7 @@ public class SetupPropertiesController extends FormBasicController {
 		columnModel.addFlexiColumnModel(systemValueColumn);
 		columnModel.addFlexiColumnModel(hasRedundantEntryColumn);
 
-		defaultPropsTableModel = new OlatPropertiesTableModel(columnModel, ureq);
+		defaultPropsTableModel = new OlatPropertiesTableModel(columnModel);
 		defaultPropsTableEl = uifactory.addTableElement(getWindowControl(), "defaultProps", defaultPropsTableModel, 50,
 				false, getTranslator(), formLayout);
 		defaultPropsTableEl.setExportEnabled(true);
