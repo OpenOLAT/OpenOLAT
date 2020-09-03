@@ -1,6 +1,11 @@
-<div class="form-group $f.getElementCssClass($item) o_user_edit_username clearfix">
-	$r.render("username_LABEL", $f.getItemId("username"), "col-sm-3")
-	<div class="col-sm-3 form-inline">$r.render("username") $r.render("edit")</div>
-</div>
-
-$r.render("table")
+<fieldset>
+	<legend>$r.translate("change.username.title")</legend>
+	<div class="form-group $f.getElementCssClass($item) o_user_edit_username clearfix">
+		$r.render("username_LABEL", $f.getItemId("username"), "col-sm-3")
+		<div class="col-sm-3 form-inline">$r.render("username") $r.render("edit")</div>
+	</div>
+</fieldset>
+<fieldset>
+	<legend>$r.translate("authentications.title")</legend>
+	$r.render("table")
+</fieldset>
