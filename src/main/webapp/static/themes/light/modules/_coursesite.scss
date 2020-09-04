@@ -298,6 +298,8 @@
 
 			margin: 0 0 0 $o-coursesite-rowelem-width-md;
 			padding: 1em 0.5em 0.5em 2em;
+			
+			overflow-y: hidden;
 
 			.o_title {
 				margin: 0; /* box moves down otherwhise, replaced with padding */

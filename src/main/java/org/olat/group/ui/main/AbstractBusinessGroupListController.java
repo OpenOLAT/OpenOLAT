@@ -839,6 +839,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				//mails are send by the last controller of the wizard
+				wControl.setInfo(translate("msg.send.ok"));
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
