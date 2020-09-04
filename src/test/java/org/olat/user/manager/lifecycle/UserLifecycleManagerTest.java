@@ -206,13 +206,16 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 	@Test
 	public void inactivateIdentities() {
 		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+		userModule.setMailBeforeDeactivation(true);
+		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
+		userModule.setNumberOfDayBeforeDeactivationMail(30);
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-9");
 		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205));
 		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, null);
 
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-10");
-		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -1308));
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -708));
 		id2 = securityManager.saveIdentityStatus(id2, Identity.STATUS_PENDING, null);
 
 		dbInstance.commitAndCloseSession();
@@ -236,16 +239,17 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		Assert.assertEquals(Identity.STATUS_PENDING, informedId2.getStatus());
 		Assert.assertNotNull(((IdentityImpl)informedId2).getInactivationEmailDate());
 		
+		// check mails sent
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertTrue(hasTo(informedId1.getUser().getEmail(), messages));
+		Assert.assertTrue(hasTo(informedId2.getUser().getEmail(), messages));
+		getSmtpServer().reset();
+		
 		// Artificially mail in past
 		((IdentityImpl)informedId1).setInactivationEmailDate(DateUtils.addDays(new Date(), -31));
 		informedId1 = identityDao.saveIdentity(informedId1);
-		((IdentityImpl)informedId2).setInactivationEmailDate(DateUtils.addDays(new Date(), -31));
+		((IdentityImpl)informedId2).setInactivationEmailDate(DateUtils.addDays(new Date(), -21));
 		informedId2 = identityDao.saveIdentity(informedId2);
-		
-		// check mails sent
-		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
-		Assert.assertTrue(messages.size() >= 2);
-		getSmtpServer().reset();
 
 		Set<Identity> vetoed2 = new HashSet<>();
 		lifecycleManager.inactivateIdentities(vetoed2);
@@ -263,7 +267,18 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		
 		// check mails sent
 		List<SmtpMessage> inactivedMessages = getSmtpServer().getReceivedEmails();
-		Assert.assertTrue(inactivedMessages.size() >= 2);
+		Assert.assertTrue(hasTo(informedId1.getUser().getEmail(), inactivedMessages));
+		Assert.assertFalse(hasTo(informedId2.getUser().getEmail(), inactivedMessages));
+		getSmtpServer().reset();
+	}
+	
+	private boolean hasTo(String to, List<SmtpMessage> messages) {
+		for(SmtpMessage message:messages) {
+			if(message.getHeaderValue("To").contains(to)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Test
