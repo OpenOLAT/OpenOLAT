@@ -594,12 +594,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	public List<IdentityShort> searchIdentityShort(String search,
 			List<? extends OrganisationRef> searcheableOrgnisations, GroupRoles repositoryEntryRole, int maxResults) {
 		String[] searchArr = search.split(" ");
-		String[] attributes = new String[]{ "name", "firstName", "lastName", "email" };
+		String[] attributes = new String[]{ "name", "nickName", "firstName", "lastName", "email" };
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident from bidentityshort as ident ")
 		  .append(" where ident.status<").append(Identity.STATUS_VISIBLE_LIMIT).append(" and (");
-		
+
 		boolean start = true;
 		for(int i=0; i<searchArr.length; i++) {
 			for(String attribute:attributes) {
@@ -608,16 +608,13 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 				} else {
 					sb.append(" or ");
 				}
-				
-				if (searchArr[i].contains("_") && dbInstance.isOracle()) {
-					//oracle needs special ESCAPE sequence to search for escaped strings
-					sb.append(" lower(ident.").append(attribute).append(") like :search").append(i).append(" ESCAPE '\\'");
-				} else if (dbInstance.isMySQL()) {
-					sb.append(" ident.").append(attribute).append(" like :search").append(i);
-				} else {
-					sb.append(" lower(ident.").append(attribute).append(") like :search").append(i);
-				}
+				PersistenceHelper.appendFuzzyLike(sb, "ident." + attribute, "search" + i, dbInstance.getDbVendor());
 			}
+			
+			sb.append(" or exists (select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+			  .append("  where ident.key=auth.identity.key and");
+			PersistenceHelper.appendFuzzyLike(sb, "auth.authusername", "search" + i, dbInstance.getDbVendor());
+			sb.append(")");
 		}
 		sb.append(")");
 		if(searcheableOrgnisations != null && !searcheableOrgnisations.isEmpty()) {
