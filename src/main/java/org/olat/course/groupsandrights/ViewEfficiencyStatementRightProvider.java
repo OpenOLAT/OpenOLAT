@@ -24,6 +24,8 @@ import java.util.Locale;
 import org.olat.basesecurity.RelationRightProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.modules.coach.security.CoursesAndCurriculumRightProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,16 +37,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class ViewEfficiencyStatementRightProvider implements RelationRightProvider {
 
+	@Autowired
+	private CoursesAndCurriculumRightProvider parentRight;
+
 	public static final String RELATION_RIGHT = CourseRightsEnum.viewEfficiencyStatement.name();
 
 	@Override
 	public RelationRightProvider getParent() {
-		return null;
+		return parentRight;
 	}
 
 	@Override
 	public int getPosition() {
-		return 0;
+		return Order.ViewEfficiencyStatementRight.ordinal();
 	}
 
 	@Override

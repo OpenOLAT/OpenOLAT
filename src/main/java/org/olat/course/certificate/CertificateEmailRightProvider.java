@@ -50,7 +50,7 @@ public class CertificateEmailRightProvider implements RelationRightProvider {
 
 	@Override
 	public int getPosition() {
-		return 0;
+		return Order.CertificateEmailRight.ordinal();
 	}
 
 	@Override

@@ -37,4 +37,19 @@ public interface RelationRightProvider {
 
 	public String getTranslatedName(Locale locale);
 
+	public enum Order {
+		CourseAndCurriculumRight,
+		CourseProgressAndStatusRight,
+		LecturesAndAbsencesRight,
+		ViewEfficiencyStatementRight,
+		ViewCourseCalendarRight,
+		ResourceAndBookinsRight,
+		ViewGroupMemebershipsRight,
+		ViewAndEditProfileRight,
+		ResetPasswordRight,
+		ContactFormRight,
+		QualityReportAccessRight,
+		CertificateEmailRight,
+		AdministrativePropertiesRight;
+	}
 }

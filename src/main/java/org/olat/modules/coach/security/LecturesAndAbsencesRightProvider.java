@@ -25,6 +25,7 @@ import org.olat.basesecurity.RelationRightProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.ui.CoachMainController;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /* 
@@ -33,17 +34,20 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class LecturesAndAbsencesRightProvider implements RelationRightProvider {
-	
+
+	@Autowired
+	private CoursesAndCurriculumRightProvider parentRight;
+
 	public static final String RELATION_RIGHT = "showLecturesAndAbsences";
 	
 	@Override
 	public RelationRightProvider getParent() {
-		return null;
+		return parentRight;
 	}
 
 	@Override
 	public int getPosition() {
-		return 0;
+		return Order.LecturesAndAbsencesRight.ordinal();
 	}
 	
 	@Override

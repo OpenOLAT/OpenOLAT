@@ -43,7 +43,7 @@ public class ResetPasswordRightProvider implements RelationRightProvider {
 
 	@Override
 	public int getPosition() {
-		return 0;
+		return Order.ResetPasswordRight.ordinal();
 	}
 	
 	@Override

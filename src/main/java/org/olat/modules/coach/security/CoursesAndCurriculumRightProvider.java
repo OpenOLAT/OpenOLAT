@@ -43,7 +43,7 @@ public class CoursesAndCurriculumRightProvider implements RelationRightProvider{
 
 	@Override
 	public int getPosition() {
-		return 0;
+		return Order.CourseAndCurriculumRight.ordinal();
 	}
 	
 	@Override

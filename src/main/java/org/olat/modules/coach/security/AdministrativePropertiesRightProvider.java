@@ -43,7 +43,7 @@ public class AdministrativePropertiesRightProvider implements RelationRightProvi
 
 	@Override
 	public int getPosition() {
-		return 0;
+		return Order.AdministrativePropertiesRight.ordinal();
 	}
 	
 	@Override

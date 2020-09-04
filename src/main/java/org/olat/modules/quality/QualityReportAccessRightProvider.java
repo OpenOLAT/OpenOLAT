@@ -45,7 +45,7 @@ public class QualityReportAccessRightProvider implements RelationRightProvider {
 
 	@Override
 	public int getPosition() {
-		return 0;
+		return Order.QualityReportAccessRight.ordinal();
 	}
 	
 	@Override

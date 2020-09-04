@@ -44,7 +44,7 @@ public class ViewCourseCalendarRightProvider implements RelationRightProvider {
 
 	@Override
 	public int getPosition() {
-		return 0;
+		return Order.ViewCourseCalendarRight.ordinal();
 	}
 
 	@Override
