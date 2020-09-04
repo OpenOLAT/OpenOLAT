@@ -92,7 +92,6 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		formLayout.add(buttonsLayout);
 		uifactory.addFormSubmitButton("save", buttonsLayout);
 	}
-	
 
 	protected void initDeactivationForm(FormItemContainer formLayout) {
 		String[] onValues = new String[] { translate("enabled") };
@@ -116,8 +115,8 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		initDays(numberOfDayBeforeDeactivationMailEl);
 		
 		// subject + content mail
-		TranslationBundle beforeBundleSubject = initForm("mail.before.deactivation.subject.label", "mail.before.deactivation.subject", formLayout);
-		TranslationBundle beforeBundle = initForm("mail.before.deactivation.body.label", "mail.before.deactivation.body", formLayout);
+		TranslationBundle beforeBundleSubject = initForm("mail.before.deactivation.subject.label", "mail.before.deactivation.subject", false, formLayout);
+		TranslationBundle beforeBundle = initForm("mail.before.deactivation.body.label", "mail.before.deactivation.body", true, formLayout);
 		mailBeforeDeactivationBundles = new TranslationBundles(beforeBundleSubject, beforeBundle);
 
 		// enable mail after
@@ -126,8 +125,8 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		enableMailAfterDeactivationEl.select(onKeys[0], userModule.isMailAfterDeactivation());
 
 		// subject + content mail
-		TranslationBundle afterBundleSubject = initForm("mail.after.deactivation.subject.label", "mail.after.deactivation.subject", formLayout);
-		TranslationBundle afterBundle = initForm("mail.after.deactivation.body.label", "mail.after.deactivation.body", formLayout);
+		TranslationBundle afterBundleSubject = initForm("mail.after.deactivation.subject.label", "mail.after.deactivation.subject", false, formLayout);
+		TranslationBundle afterBundle = initForm("mail.after.deactivation.body.label", "mail.after.deactivation.body", true, formLayout);
 		mailAfterDeactivationBundles = new TranslationBundles(afterBundleSubject, afterBundle);
 	}
 
@@ -152,8 +151,8 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		initDays(numberOfDayBeforeDeletionMailEl);
 		
 		// subject + content mail
-		TranslationBundle beforeBundleSubject = initForm("mail.before.deletion.subject.label", "mail.before.deletion.subject", formLayout);
-		TranslationBundle beforeBundle = initForm("mail.before.deletion.body.label", "mail.before.deletion.body", formLayout);
+		TranslationBundle beforeBundleSubject = initForm("mail.before.deletion.subject.label", "mail.before.deletion.subject", false, formLayout);
+		TranslationBundle beforeBundle = initForm("mail.before.deletion.body.label", "mail.before.deletion.body", true, formLayout);
 		mailBeforeDeletionBundles = new TranslationBundles(beforeBundleSubject, beforeBundle);
 		
 		// enable mail after
@@ -162,17 +161,17 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		enableMailAfterDeletionEl.select(onKeys[0], userModule.isMailAfterDeletion());
 		
 		// subject + content mail
-		TranslationBundle afterBundleSubject = initForm("mail.after.deletion.subject.label", "mail.after.deletion.subject", formLayout);
-		TranslationBundle afterBundle = initForm("mail.after.deletion.body.label", "mail.after.deletion.body", formLayout);
+		TranslationBundle afterBundleSubject = initForm("mail.after.deletion.subject.label", "mail.after.deletion.subject", false, formLayout);
+		TranslationBundle afterBundle = initForm("mail.after.deletion.body.label", "mail.after.deletion.body", true, formLayout);
 		mailAfterDeletionBundles = new TranslationBundles(afterBundleSubject, afterBundle);
 		
 	}
 	
-	private TranslationBundle initForm(String labelI18nKey, String textI18nKey, FormItemContainer formLayout) {
+	private TranslationBundle initForm(String labelI18nKey, String textI18nKey, boolean textArea, FormItemContainer formLayout) {
 		String text = translate(textI18nKey);
 		StaticTextElement viewEl = uifactory.addStaticTextElement("view." + counter++, labelI18nKey, text, formLayout);
 		FormLink translationLink = uifactory.addFormLink("translate." + counter++, "translation.edit", null, formLayout, Link.LINK);
-		TranslationBundle bundle = new TranslationBundle(textI18nKey, labelI18nKey, viewEl, translationLink);
+		TranslationBundle bundle = new TranslationBundle(textI18nKey, labelI18nKey, viewEl, translationLink, textArea);
 		translationLink.setUserObject(bundle);
 		return bundle;
 	}
@@ -310,7 +309,7 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		if(guardModalController(translatorCtrl)) return;
 		
 		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), bundle.getI18nKey(),
-				UserAdminLifecycleConfigurationController.class);
+				UserAdminLifecycleConfigurationController.class, bundle.isTextArea());
 		translatorCtrl.setUserObject(bundle);
 		listenTo(translatorCtrl);
 
@@ -326,12 +325,14 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	
 	private static class TranslationBundle {
 		
+		private final boolean textArea;
 		private final String i18nKey;
 		private final String labelI18nKey;
 		private final StaticTextElement viewEl;
 		private final FormLink translationLink;
 		
-		public TranslationBundle(String i18nKey, String labelI18nKey, StaticTextElement viewEl, FormLink translationLink) {
+		public TranslationBundle(String i18nKey, String labelI18nKey, StaticTextElement viewEl, FormLink translationLink, boolean textArea) {
+			this.textArea = textArea;
 			this.i18nKey = i18nKey;
 			this.viewEl = viewEl;
 			this.labelI18nKey = labelI18nKey;
@@ -340,6 +341,10 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 
 		public StaticTextElement getViewEl() {
 			return viewEl;
+		}
+		
+		public boolean isTextArea() {
+			return textArea;
 		}
 
 		public String getI18nKey() {

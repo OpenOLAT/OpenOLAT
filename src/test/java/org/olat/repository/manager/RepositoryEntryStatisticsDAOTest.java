@@ -41,6 +41,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -131,6 +132,14 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 		RepositoryEntryStatistics stats = reStatisticsDao.loadStatistics(re);
 		Assert.assertNotNull(stats);
 		Assert.assertEquals(1, stats.getNumOfComments());
+	}
+	
+	@Test
+	public void updateCommentsStatisticsOfGhostResource() {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("LifeIsBeautiful", 42l);
+		boolean updated = reStatisticsDao.update(ores, "apath", 3);
+		Assert.assertFalse(updated);
+		dbInstance.commit();// ensure the session is viable
 	}
 	
 	@Test

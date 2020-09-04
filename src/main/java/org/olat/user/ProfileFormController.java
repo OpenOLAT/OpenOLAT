@@ -235,20 +235,22 @@ public class ProfileFormController extends FormBasicController {
 		}
 		
 		// add the "about me" text field.
-		FormLayoutContainer groupContainer = FormLayoutContainer.createDefaultFormLayout("group.about", getTranslator());
-		groupContainer.setFormTitle(translate("form.group.about"));
-		groupContainer.setElementCssClass("o_user_aboutme");
-		formLayout.add(groupContainer);
+		FormLayoutContainer aboutMeContainer = FormLayoutContainer.createDefaultFormLayout("group.about", getTranslator());
+		aboutMeContainer.setFormTitle(translate("form.group.about"));
+		aboutMeContainer.setElementCssClass("o_user_aboutme");
+		aboutMeContainer.setVisible(userModule.isUserAboutMeEnabled());
+		formLayout.add(aboutMeContainer);
 		
 		HomePageConfig conf = hpcm.loadConfigFor(identityToModify);
 		textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text",
-				conf.getTextAboutMe(), 10, -1, false, null, null, groupContainer,
+				conf.getTextAboutMe(), 10, -1, false, null, null, aboutMeContainer,
 				ureq.getUserSession(), getWindowControl());
+		textAboutMe.setVisible(userModule.isUserAboutMeEnabled());
 		textAboutMe.setEnabled(canModify);
 		textAboutMe.setMaxLength(10000);
 		
 		//upload image
-		groupContainer = FormLayoutContainer.createDefaultFormLayout("portraitupload", getTranslator());
+		FormLayoutContainer groupContainer = FormLayoutContainer.createDefaultFormLayout("portraitupload", getTranslator());
 		groupContainer.setFormTitle(translate("ul.header"));
 		formLayout.add(groupContainer);
 

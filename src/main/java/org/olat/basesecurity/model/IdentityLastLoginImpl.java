@@ -42,7 +42,7 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="bidentitylastlogin")
 @Table(name="o_bs_identity")
-@NamedQuery(name="updateIdentityLastLogin", query="update bidentitylastlogin set lastLogin=:now where key=:identityKey")
+@NamedQuery(name="updateIdentityLastLogin", query="update bidentitylastlogin set lastLogin=:now, inactivationEmailDate=null where key=:identityKey")
 public class IdentityLastLoginImpl implements Persistable, IdentityRef {
 
 	private static final long serialVersionUID = 2090002193918262648L;
@@ -55,6 +55,10 @@ public class IdentityLastLoginImpl implements Persistable, IdentityRef {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastlogin", nullable=false, insertable=true, updatable=true)
 	private Date lastLogin;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="inactivationemaildate", nullable=false, insertable=true, updatable=true)
+	private Date inactivationEmailDate;
 	
 	public IdentityLastLoginImpl() {
 		//

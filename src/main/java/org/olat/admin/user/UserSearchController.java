@@ -295,13 +295,15 @@ public class UserSearchController extends BasicController {
 		for (UserPropertyHandler userPropertyHandler : searchform.userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 			FormItem ui = searchform.propFormItems.get(userPropertyHandler.getName());
-			String uiValue = userPropertyHandler.getStringValue(ui);
-			if(userPropertyHandler.getName().startsWith("genericCheckboxProperty")) {
-				if(!"false".equals(uiValue)) {
+			if(ui != null) {
+				String uiValue = userPropertyHandler.getStringValue(ui);
+				if(userPropertyHandler.getName().startsWith("genericCheckboxProperty")) {
+					if(!"false".equals(uiValue)) {
+						userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
+					}
+				} else if (StringHelper.containsNonWhitespace(uiValue)) {
 					userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
 				}
-			} else if (StringHelper.containsNonWhitespace(uiValue)) {
-				userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
 			}
 		}
 		if (userPropertiesSearch.isEmpty()) {

@@ -72,6 +72,7 @@ public class UserModule extends AbstractSpringModule {
 	private static final String ALLOW_REQUEST_DELETE_ACCOUNT_DISCLAIMER = "allow.request.delete.account.disclaimer";
 	private static final String MAIL_REQUEST_DELETE_ACCOUNT = "request.delete.account.mail";
 	private static final String PORTRAIT_MANAGED = "user.portrait.managed";
+	private static final String ABOUT_ME_ENABLED = "user.about.me";
 	private static final String USER_AUTOMATIC_DEACTIVATION = "user.automatic.deactivation";
 	private static final String USER_AUTOMATIC_DELETION = "user.automatic.deletion";
 	
@@ -113,6 +114,9 @@ public class UserModule extends AbstractSpringModule {
 	
 	@Value("${user.portrait.managed:false}")
 	private boolean portraitManaged;
+	
+	@Value("${user.about.me:true}")
+	private boolean userAboutMeEnabled;
 	
 	@Value("${user.automatic.deactivation:false}")
 	private boolean userAutomaticDeactivation;
@@ -419,6 +423,15 @@ public class UserModule extends AbstractSpringModule {
 	public void setPortraitManaged(boolean portraitManaged) {
 		this.portraitManaged = portraitManaged;
 		setStringProperty(PORTRAIT_MANAGED, Boolean.toString(portraitManaged), true);
+	}
+
+	public boolean isUserAboutMeEnabled() {
+		return userAboutMeEnabled;
+	}
+
+	public void setUserAboutMeEnabled(boolean enabled) {
+		this.userAboutMeEnabled = enabled;
+		setStringProperty(ABOUT_ME_ENABLED, Boolean.toString(enabled), true);
 	}
 
 	public boolean isUserAutomaticDeactivation() {

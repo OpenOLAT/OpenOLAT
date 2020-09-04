@@ -122,6 +122,25 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getIdentitiesWithCamelCaseLogin() {
+		String token = UUID.randomUUID().toString();
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(auth);
+
+		List<Identity> lowerIdentities = authenticationDao.getIdentitiesWithLogin(ident.getLogin().toLowerCase());
+		Assert.assertNotNull(lowerIdentities);
+		Assert.assertEquals(1, lowerIdentities.size());
+		Assert.assertEquals(ident.getIdentity(), lowerIdentities.get(0));
+
+		List<Identity> upperIdentities = authenticationDao.getIdentitiesWithLogin(ident.getLogin().toUpperCase());
+		Assert.assertNotNull(upperIdentities);
+		Assert.assertEquals(1, upperIdentities.size());
+		Assert.assertEquals(ident.getIdentity(), upperIdentities.get(0));
+	}
+	
+	@Test
 	public void getAuthentication() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
@@ -154,6 +173,23 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getAuthenticationByAuthusernameCamelCase() {
+		String token = UUID.randomUUID().toString();
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2low-");
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(auth);
+
+		Authentication lowerAuthentication = authenticationDao.getAuthenticationByAuthusername(ident.getLogin().toLowerCase(), "OLAT");
+		Assert.assertNotNull(lowerAuthentication);
+		Assert.assertEquals(ident.getIdentity(), lowerAuthentication.getIdentity());
+		
+		Authentication upperAuthentication = authenticationDao.getAuthenticationByAuthusername(ident.getLogin().toUpperCase(), "OLAT");
+		Assert.assertNotNull(upperAuthentication);
+		Assert.assertEquals(ident.getIdentity(), upperAuthentication.getIdentity());
+	}
+	
+	@Test
 	public void getAuthenticationsByAuthusername() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
@@ -165,6 +201,25 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(olatAuthentications);
 		Assert.assertEquals(1, olatAuthentications.size());
 		Assert.assertEquals(ident.getIdentity(), olatAuthentications.get(0).getIdentity());
+	}
+	
+	@Test
+	public void getAuthenticationsByAuthusernameCamelCase() {
+		String token = UUID.randomUUID().toString();
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(auth);
+
+		List<Authentication> lowerAuthentications = authenticationDao.getAuthenticationsByAuthusername(ident.getLogin().toLowerCase());
+		Assert.assertNotNull(lowerAuthentications);
+		Assert.assertEquals(1, lowerAuthentications.size());
+		Assert.assertEquals(ident.getIdentity(), lowerAuthentications.get(0).getIdentity());
+		
+		List<Authentication> upperAuthentications = authenticationDao.getAuthenticationsByAuthusername(ident.getLogin().toUpperCase());
+		Assert.assertNotNull(upperAuthentications);
+		Assert.assertEquals(1, upperAuthentications.size());
+		Assert.assertEquals(ident.getIdentity(), upperAuthentications.get(0).getIdentity());
 	}
 	
 	@Test
@@ -199,6 +254,27 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		List<Authentication> ldapAuthentications = authenticationDao.getAuthenticationsByAuthusername(ident.getLogin(), ldapProviderList);
 		Assert.assertNotNull(ldapAuthentications);
 		Assert.assertTrue(ldapAuthentications.isEmpty());
+	}
+	
+	@Test
+	public void getAuthenticationsByAuthusername_providersCamelList() {
+		String token = UUID.randomUUID().toString();
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(auth);
+
+		List<String> providerList = Collections.singletonList("OLAT");
+		List<Authentication> lowerAuthentications = authenticationDao.getAuthenticationsByAuthusername(ident.getLogin().toLowerCase(), providerList);
+		Assert.assertNotNull(lowerAuthentications);
+		Assert.assertEquals(1, lowerAuthentications.size());
+		Assert.assertEquals(ident.getIdentity(), lowerAuthentications.get(0).getIdentity());
+		
+		// negative test
+		List<Authentication> upperAuthentications = authenticationDao.getAuthenticationsByAuthusername(ident.getLogin().toUpperCase(), providerList);
+		Assert.assertNotNull(upperAuthentications);
+		Assert.assertEquals(1, upperAuthentications.size());
+		Assert.assertEquals(ident.getIdentity(), upperAuthentications.get(0).getIdentity());
 	}
 	
 	@Test

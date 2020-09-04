@@ -53,12 +53,12 @@ public class AuthenticationDAO {
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
 		  .append(" inner join fetch ident.user identUser")
-		  .append(" where auth.provider=:provider and auth.authusername=:authusername");
+		  .append(" where auth.provider=:provider and lower(auth.authusername)=:authusername");
 
 		List<Authentication> results = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
 				.setParameter("provider", provider)
-				.setParameter("authusername", authusername)
+				.setParameter("authusername", authusername.toLowerCase())
 				.getResultList();
 		if (results.isEmpty()) return null;
 		if (results.size() != 1) {
@@ -72,11 +72,11 @@ public class AuthenticationDAO {
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
 		  .append(" inner join fetch ident.user identUser")
-		  .append(" where auth.authusername=:authusername");
+		  .append(" where lower(auth.authusername)=:authusername");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
-				.setParameter("authusername", authusername)
+				.setParameter("authusername", authusername.toLowerCase())
 				.getResultList();
 	}
 	
@@ -85,11 +85,11 @@ public class AuthenticationDAO {
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
 		  .append(" inner join fetch ident.user identUser")
-		  .append(" where auth.authusername=:authusername and auth.provider in (:providers)");
+		  .append(" where lower(auth.authusername)=:authusername and auth.provider in (:providers)");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
-				.setParameter("authusername", authusername)
+				.setParameter("authusername", authusername.toLowerCase())
 				.setParameter("providers", providers)
 				.getResultList();
 	}
@@ -104,10 +104,10 @@ public class AuthenticationDAO {
 		sb.append("select ident from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join auth.identity as ident")
 		  .append(" inner join ident.user as user")
-		  .append(" where auth.authusername=:login");
+		  .append(" where lower(auth.authusername)=:login");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
-				.setParameter("login", login)
+				.setParameter("login", login.toLowerCase())
 				.getResultList();
 	}
 	
@@ -185,10 +185,10 @@ public class AuthenticationDAO {
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join auth.identity as ident")
 		  .append(" inner join ident.user as user")
-		  .append(" where auth.authusername=:authUsername and auth.provider=:provider");
+		  .append(" where lower(auth.authusername)=:authUsername and auth.provider=:provider");
 		List<Authentication> authentications = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
-				.setParameter("authUsername", authUsername)
+				.setParameter("authUsername", authUsername.toLowerCase())
 				.setParameter("provider", provider)
 				.setFirstResult(0)
 				.setMaxResults(1)
