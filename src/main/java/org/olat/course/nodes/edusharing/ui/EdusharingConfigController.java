@@ -93,6 +93,7 @@ public class EdusharingConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("edit.title");
+		setFormContextHelp("Knowledge Transfer#_edusharing");
 		
 		noItemEl = uifactory.addStaticTextElement("edit.no.item", "edit.no.item",
 				translate("edit.no.item.text"), formLayout);

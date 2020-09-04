@@ -62,6 +62,7 @@ public class AppointmentsConfigController extends FormBasicController {
 		FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
 		formLayout.add(rightsCont);
 		rightsCont.setFormTitle(translate("user.rights"));
+		rightsCont.setFormContextHelp("Administration and Organisation#_terminvergabe");
 		
 		editTopicEl = uifactory.addCheckboxesVertical("config.edit.topic", rightsCont, EDIT_TOPIC_KEYS,
 				translateAll(getTranslator(), EDIT_TOPIC_KEYS), 1);
