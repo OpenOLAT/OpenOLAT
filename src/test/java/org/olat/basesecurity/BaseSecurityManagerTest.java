@@ -283,6 +283,74 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(identities.contains(id2));
 	}
 	
+	@Test
+	public void testLoadIdentityByKey() {
+		//create a security group with 2 identities
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("load-1-sec-");
+		dbInstance.commitAndCloseSession();
+
+		Identity identity = securityManager.loadIdentityByKey(id1.getKey());
+		Assert.assertNotNull(identity);
+		Assert.assertEquals(id1, identity);
+	}
+	
+	@Test
+	public void searchIdentityShort() {
+		//create a security group with 2 identities
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("short-1-search-");
+		dbInstance.commitAndCloseSession();
+
+		String login = id.getLogin().substring(0, 12);
+		List<IdentityShort> identities = securityManager.searchIdentityShort(login, 32000);
+		Assert.assertNotNull(identities);
+		
+		boolean found = false;
+		for(IdentityShort identity:identities) {
+			if(identity.getKey().equals(id.getKey())) {
+				found = true;
+			}
+		}
+		Assert.assertTrue(found);
+	}
+	
+	@Test
+	public void searchIdentityShort_multiWords() {
+		//create a security group with 2 identities
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("short-2-search-");
+		dbInstance.commitAndCloseSession();
+
+		String login = id.getLogin().substring(0, 12);
+		List<IdentityShort> identities = securityManager.searchIdentityShort(login + " hello world", 32000);
+		Assert.assertNotNull(identities);
+		
+		boolean found = false;
+		for(IdentityShort identity:identities) {
+			if(identity.getKey().equals(id.getKey())) {
+				found = true;
+			}
+		}
+		Assert.assertTrue(found);
+	}
+	
+	/**
+	 * The test checks only if the query is valid.
+	 * 
+	 */
+	@Test
+	public void searchIdentityShortLongAllParameters() {
+		//create a security group with 2 identities
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("short-2-search-");
+		dbInstance.commitAndCloseSession();
+
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+
+		String login = id.getLogin().substring(0, 12);
+		List<IdentityShort> identities = securityManager.searchIdentityShort(login + " hello world",
+				Collections.singletonList(defOrganisation), GroupRoles.participant,  32000);
+		Assert.assertNotNull(identities);
+	}
+	
+	
 	/**
 	 * Update roles
 	 */
