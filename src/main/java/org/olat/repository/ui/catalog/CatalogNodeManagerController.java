@@ -906,6 +906,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(addEntryCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadEntryInfos();
+				loadResources(ureq);
 				loadNodesChildren();
 			}
 			cmc.deactivate();
@@ -914,8 +916,9 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		} else if(editEntryCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				catalogEntry = editEntryCtrl.getEditedCatalogEntry();
-				loadNodesChildren();
 				loadEntryInfos();
+				loadResources(ureq);
+				loadNodesChildren();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -929,8 +932,10 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				moveMe = categoryMoveCtrl.getMoveMe();
 			} else if(event.equals(Event.FAILED_EVENT)){
 				showError("tools.move.catalog.entry.failed");
-				loadNodesChildren();
 			}
+			loadEntryInfos();
+			loadResources(ureq);
+			loadNodesChildren();
 			cleanUp();
 			
 			// in any case, remove the lock
@@ -959,7 +964,9 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				toolbarPanel.popUpToController(this);
 				removeAsListenerAndDispose(childNodeCtrl);
 				childNodeCtrl = null;
-				
+
+				loadEntryInfos();
+				loadResources(ureq);
 				loadNodesChildren();
 			}
 		} else if(entrySearchCtrl == source) {
