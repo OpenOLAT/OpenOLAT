@@ -676,7 +676,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		}
 		// Add to entries
 		else if (newEntry.getType() == CatalogEntry.TYPE_LEAF &&
-				(newEntry.getRepositoryEntry() == null || RepositoryEntryStatusEnum.closed.equals(newEntry.getRepositoryEntry().getEntryStatus()))) {
+				(newEntry.getRepositoryEntry() == null || !RepositoryEntryStatusEnum.closed.equals(newEntry.getRepositoryEntry().getEntryStatus()))) {
 			// If added on top or alphabetically
 			if ((parentEntry.getEntryAddPosition() == null && repositoryModule.getCatalogAddEntryPosition() == 1)
 				|| (parentEntry.getEntryAddPosition() != null && parentEntry.getEntryAddPosition() == 1)) {
