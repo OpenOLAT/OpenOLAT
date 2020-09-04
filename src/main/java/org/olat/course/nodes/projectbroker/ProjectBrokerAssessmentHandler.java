@@ -19,29 +19,8 @@
  */
 package org.olat.course.nodes.projectbroker;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
-import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.assessment.handler.AssessmentHandler;
-import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
-import org.olat.course.config.CourseConfig;
-import org.olat.course.learningpath.evaluation.LearningPathEvaluatorBuilder;
-import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
-import org.olat.course.nodes.CourseNode;
+import org.olat.course.learningpath.LearningPathOnlyAssessmentHandler;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
-import org.olat.course.run.scoring.AccountingEvaluators;
-import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
-import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.ui.AssessmentToolContainer;
-import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
-import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
 /**
@@ -51,51 +30,11 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class ProjectBrokerAssessmentHandler implements AssessmentHandler {
+public class ProjectBrokerAssessmentHandler extends LearningPathOnlyAssessmentHandler {
 
 	@Override
 	public String acceptCourseNodeType() {
 		return ProjectBrokerCourseNode.TYPE;
-	}
-
-	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
-		return new ProjectBrokerAssessmentConfig(courseNode.getModuleConfiguration());
-	}
-
-	@Override
-	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getAssessmentEntry(courseNode, assessedIdentity);
-	}
-	
-	@Override
-	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig) {
-		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
-			return LearningPathEvaluatorBuilder.buildDefault();
-		}
-		return AccountingEvaluatorsBuilder.defaultConventional();
-	}
-
-	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		return null;
-	}
-
-	@Override
-	public boolean hasCustomIdentityList() {
-		return true;
-	}
-	
-	@Override
-	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
-			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
-			AssessmentToolSecurityCallback assessmentCallback) {
-		return new ProjectBrokerIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, group,
-				courseNode, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 }
