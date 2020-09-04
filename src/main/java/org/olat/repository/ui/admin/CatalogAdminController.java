@@ -88,17 +88,6 @@ public class CatalogAdminController extends FormBasicController {
 		String[] addEntryKeys = {AddEntryPosition.alphabetical.name(), AddEntryPosition.top.name(), AddEntryPosition.bottom.name()};
 		String[] addEntryValues = {translate("catalog.add.position." + AddEntryPosition.alphabetical.name()), translate("catalog.add.position." + AddEntryPosition.top.name()), translate("catalog.add.position." + AddEntryPosition.bottom.name())};
 
-		addEntryPosEl = uifactory.addDropdownSingleselect("catalog.add.entry.position", "catalog.add.entry.position", formLayout, addEntryKeys, addEntryValues);
-		if (repositoryModule.getCatalogAddEntryPosition() == 2) {
-			addEntryPosEl.select(AddEntryPosition.bottom.name(), true);
-		} else if (repositoryModule.getCatalogAddEntryPosition() == 1) {
-			addEntryPosEl.select(AddEntryPosition.top.name(), true);
-		} else {
-			addEntryPosEl.select(AddEntryPosition.alphabetical.name(), true);
-		}
-		addEntryPosEl.setEnabled(enabled);
-		addEntryPosEl.addActionListener(FormEvent.ONCHANGE);
-
 		addCategoryPosEl = uifactory.addDropdownSingleselect("catalog.add.category.position", "catalog.add.category.position", formLayout, addEntryKeys, addEntryValues);
 		if (repositoryModule.getCatalogAddCategoryPosition() == 2) {
 			addCategoryPosEl.select(AddEntryPosition.bottom.name(), true);
@@ -110,6 +99,17 @@ public class CatalogAdminController extends FormBasicController {
 
 		addCategoryPosEl.setEnabled(enabled);
 		addCategoryPosEl.addActionListener(FormEvent.ONCHANGE);
+
+		addEntryPosEl = uifactory.addDropdownSingleselect("catalog.add.entry.position", "catalog.add.entry.position", formLayout, addEntryKeys, addEntryValues);
+		if (repositoryModule.getCatalogAddEntryPosition() == 2) {
+			addEntryPosEl.select(AddEntryPosition.bottom.name(), true);
+		} else if (repositoryModule.getCatalogAddEntryPosition() == 1) {
+			addEntryPosEl.select(AddEntryPosition.top.name(), true);
+		} else {
+			addEntryPosEl.select(AddEntryPosition.alphabetical.name(), true);
+		}
+		addEntryPosEl.setEnabled(enabled);
+		addEntryPosEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	@Override
