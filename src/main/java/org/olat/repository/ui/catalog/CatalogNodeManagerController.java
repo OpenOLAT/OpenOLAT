@@ -315,7 +315,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		
 		FlexiTableColumnModel nodeEntriesColumnsModel = getNodeFlexiTableColumnModel("nodes-", showCategoryUpDownColumn);
 		nodeEntriesModel = new NodeEntryRowModel(nodeEntriesColumnsModel);
-		nodeEntriesEl = uifactory.addTableElement(getWindowControl(), "nodeEntries", nodeEntriesModel, getTranslator(), formLayout);
+		nodeEntriesEl = uifactory.addTableElement(getWindowControl(), "nodeEntries", nodeEntriesModel, 20, false, getTranslator(), formLayout);
 	}
 	
 	private FlexiTableColumnModel getCatalogFlexiTableColumnModel(String cmdPrefix, boolean sortEnabled, boolean showUpDownColumn) {
