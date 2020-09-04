@@ -104,7 +104,6 @@
 		margin-bottom: floor($line-height-computed / 2);
 	}
 	.o_fileinput {
-		cursor: pointer;
 		position: relative;
 		/* the fake chooser is what the user sees. this is on layer 1, only for display */
 		.o_fakechooser {
@@ -113,6 +112,7 @@
 		}
 		/* real file chooser is transparent but on layer 2, click events trigger realchooser, not fakechooser */
 		.o_realchooser { 
+			cursor: pointer;
 			position: absolute; 
 			top: 0; right: 0;
 			z-index: 2; 
@@ -120,6 +120,29 @@
 		}
 		.o_realchooser.o_chooser_with_delete {
 			right: 38px;
+		}
+	}
+	.o_fileinput.o_area {
+		padding: 15px 30px ;
+		border-style: dashed;
+		
+		.o_dnd {
+			text-align: center;
+			
+			.o_dnd_icon {
+				font-size: 3em;
+				color: #ccc;
+			}
+			
+			.o_dnd_info {
+				margin-bottom: 20px;
+				color: #999;
+			}
+		}
+		
+		.o_realchooser {
+			padding: 98px;
+		
 		}
 	}
 	/* hide error icon for file element - clash with file element controls */

@@ -99,7 +99,7 @@ public class WebDocumentRunController extends BasicController {
 					mainVC.contextPut("height", 480);
 					mainVC.contextPut("width", 640);
 				}
-			} else if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), extension, Mode.EMBEDDED, true)) {
+			} else if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), extension, Mode.EMBEDDED, true, false)) {
 				DocEditorConfigs docEditorConfigs = DocEditorConfigs.builder()
 						.withMode(Mode.EMBEDDED)
 						.addConfig(new DocEditorConfig("o_web_document"))

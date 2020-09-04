@@ -1,0 +1,66 @@
+#if($item)
+	<div class="o_cnd_document well">
+		<div class="o_cnd_header">
+			<h4>
+				<i class="o_icon $item.getCssClass()"> </i> $item.getDisplayName() &nbsp;&nbsp;&nbsp;<small>$r.render("config.preview")</small>
+			</h4>
+			$r.render("config.edit")
+		</div>
+		<div class="o_cnd_file">
+			#if($item.isThumbnailAvailable())
+				<div class="o_cnd_thumbnail">
+					<img src="$item.getThumbnailUrl()"/>
+				</div>
+			#else
+				<div class="o_cnd_file_icon">
+					<i class='o_icon $item.getIconCssClass()'> </i>
+				</div>
+			#end
+			<div class="o_cnd_info">
+				#if($item.description)
+					<div>$item.description</div>
+				#end
+				<div class="text-muted small">
+					#if($item.fileSize)
+						<div><span class="o_legend">$r.translate("legend.file.size"): </span>$item.fileSize</div>
+					#end
+					#if($item.licenseName)
+						<div><span class="o_legend">$r.translate("legend.license"): </span>$item.licenseName</div>
+					#end
+					#if($item.licensor)
+						<div><span class="o_legend">$r.translate("legend.licensor"): </span>$item.licensor</div>
+					#end
+					#if($item.storageLocation)
+						<div><span class="o_legend">$r.translate("legend.storage.location"): </span>$item.storageLocation</div>
+					#end
+				</div>
+			</div>
+		</div>
+		<div class="o_cnd_meta_toggle">
+			$r.render("metadata.toggle")
+		</div>
+		#set ( $info = $item.getMetaInfo() )
+		#if ($metadataToggle && $r.isNotNull($info))
+			<div class="o_cnd_meta clearfix">
+				<table class="table table-condensed">
+					#if ($info.getCreator())<tr><th>$r.translate("mf.creator")</th><td>$info.getCreator()</td></tr>#end
+					#if ($item.getLocalizedPublicationDate())<tr><th>$r.translate("mf.publishDate")</th><td>$item.getLocalizedPublicationDate()</td></tr>#end
+					#if ($info.getFilename())<tr><th>$r.translate("mf.filename")</th><td>$info.getFilename()</td></tr>#end
+					#if ($info.getComment())<tr><th>$r.translate("mf.comment")</th><td>$info.getComment()</td></tr>#end
+					#if ($info.getPublisher())<tr><th>$r.translate("mf.publisher")</th><td>$info.getPublisher()</td></tr>#end
+					#if ($info.getSource())<tr><th>$r.translate("mf.source")</th><td>$info.getSource()</td></tr>#end
+					#if ($info.getCity())<tr><th>$r.translate("mf.city")</th><td>$info.getCity()</td></tr>#end
+					#if ($info.getPages())<tr><th>$r.translate("mf.pages")</th><td>$info.getPages()</td></tr>#end
+					#if ($info.getLanguage())<tr><th>$r.translate("mf.language")</th><td>$info.getLanguage()</td></tr>#end
+					#if ($info.getUrl())<tr><th>$r.translate("mf.url")</th><td>$info.getUrl()</td></tr>#end
+					#if ($item.getLocalizedLastModified())<tr><th>$r.translate("mf.lastModified")</th><td>$item.getLocalizedLastModified()</td></tr>#end
+					#if ($info.getFormattedSize())<tr><th>$r.translate("mf.size")</th><td>$info.getFormattedSize()</td></tr>#end
+				</table>
+			</div>
+		#end
+	</div>
+#else
+	<div class='o_warning'>
+		$r.translate("error.no.document")
+	</div>
+#end

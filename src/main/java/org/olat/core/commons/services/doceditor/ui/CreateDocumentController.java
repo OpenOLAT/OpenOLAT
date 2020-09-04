@@ -102,6 +102,10 @@ public class CreateDocumentController extends FormBasicController {
 		docTypeEl = uifactory.addDropdownSingleselect("create.doc.type", docCont, docTypeKV.keys(), docTypeKV.values());
 		docTypeEl.setElementCssClass("o_sel_folder_new_doc_type");
 		docTypeEl.setMandatory(true);
+		if (docTypeEl.getKeys().length == 1) {
+			docTypeEl.setEnabled(false);
+			docTypeEl.select(docTypeEl.getKey(0), true);
+		}
 		
 		docNameEl = uifactory.addTextElement("create.doc.name", -1, "", docCont);
 		docNameEl.setElementCssClass("o_sel_folder_new_doc_name");

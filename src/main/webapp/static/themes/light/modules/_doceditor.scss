@@ -42,6 +42,30 @@ body.o_doceditor_body {
 		}
 	}
 	
+	&.o_cnd_run {
+		.o_collabora, .o_onlyoffice, .o_office365 {
+			iframe {
+				width: 100%;
+				height: 800px;        // Fallback if css variable not supported
+				height: calc(var(--cndcontentheight) - 90px);
+				margin-top: 0px;
+				margin-bottom: 0px;
+				border-width: 1px;
+			}
+		}
+	}
+	&.o_cnd_preview {
+		.o_collabora, .o_onlyoffice, .o_office365 {
+			iframe {
+				width: 100%;
+				height: 800px;
+				margin-top: 0px;
+				margin-bottom: 0px;
+				border-width: 1px;
+			}
+		}
+	}
+	
 	.o_file_editor,
 	.o_doceditor_data_transfer {
 		margin-right: 15px;

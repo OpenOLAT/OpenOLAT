@@ -44,6 +44,8 @@ public interface DocEditor {
 	String getType();
 	
 	String getDisplayName(Locale locale);
+	
+	boolean isCollaborative();
 
 	boolean isDataTransferConfirmationEnabled();
 	

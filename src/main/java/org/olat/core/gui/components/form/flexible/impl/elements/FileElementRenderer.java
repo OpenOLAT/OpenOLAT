@@ -95,7 +95,18 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			
 			sb.append("<div class='o_fileinput")
 			  .append(" o_sel_file_uploaded", fileElem.getUploadFile() != null)
+			  .append(" o_area panel-placeholder", fileElem.isArea())
 			  .append("'>");
+			if(fileElem.isArea()) {
+				sb.append("<div class='o_dnd'>");
+				sb.append("<div class='o_dnd_icon'>");
+				sb.append("<i class='o_icon o_icon o_icon_upload'></i>");
+				sb.append("</div>");
+				sb.append("<div class='o_dnd_info'>");
+				sb.append(trans.translate("file.element.dnd.info"));
+				sb.append("</div>");
+				sb.append("</div>");
+			}
 			// input.Browse is the real filebrowser, but set to be transparent. 
 			// the div.o_fakechooser is layered below the input.Browse and represents the visual GUI. 
 			// Since input.Browse is layered above div.o_fakechooser, all click events to go input.Browse
@@ -140,7 +151,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				  .append(";\" onclick=\"\" ")
 				  .append(" title=\"").appendHtmlEscaped(trans.translate("file.element.delete")).append("\" ><i class='o_icon o_icon_delete'> </i></a>");
 			}
-			sb.append("</div></div>");
+			sb.append("</div>");
 			// Add example text and  max upload size
 			if(fileElem.getExampleText() != null) {
 				sb.append("<div class='help-block'>")
@@ -158,6 +169,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				.append(trans.translate("file.element.select.maxsize", new String[]{maxUpload}))
 				.append(")</div>");	
 			}
+			sb.append("</div>");
 			
 			// Add set dirty form on change
 			FormJSHelper.appendFlexiFormDirty(sb, fileElem.getRootForm(), fileComp.getFormDispatchId());

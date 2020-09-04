@@ -73,6 +73,11 @@ public class OnlyOfficeEditor implements DocEditor {
 	}
 
 	@Override
+	public boolean isCollaborative() {
+		return true;
+	}
+
+	@Override
 	public boolean isDataTransferConfirmationEnabled() {
 		return onlyOfficeModule.isDataTransferConfirmationEnabled();
 	}

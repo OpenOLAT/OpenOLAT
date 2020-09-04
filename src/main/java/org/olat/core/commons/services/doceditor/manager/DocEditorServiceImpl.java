@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -77,15 +78,23 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	private PropertyManager propertyManager;
 	
 	@Override
-	public boolean hasEditor(Identity identity, Roles roles, String suffix, Mode mode, boolean metadataAvailable) {
+	public boolean hasEditor(Identity identity, Roles roles, String suffix, Mode mode, boolean metadataAvailable,
+			boolean collaborativeOnly) {
 		if (mode == null) return false;
 		
 		return editors.stream()
 				.filter(DocEditor::isEnable)
+				.filter(collaborativeFilter(collaborativeOnly))
 				.filter(editor -> editor.isEnabledFor(identity, roles))
 				.filter(editor -> editor.isSupportingFormat(suffix, mode, metadataAvailable))
 				.findFirst()
 				.isPresent();
+	}
+
+	private Predicate<? super DocEditor> collaborativeFilter(boolean collaborativeOnly) {
+		return (docEditor) -> {
+			return collaborativeOnly? docEditor.isCollaborative(): true;
+		};
 	}
 
 	@Override

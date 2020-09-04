@@ -124,6 +124,10 @@ public interface FileElement extends FormMultipartItem {
 	
 	public void setDeleteEnabled(boolean enable);
 	
+	public boolean isArea();
+	
+	public void setArea(boolean area);
+	
 	//
 	// Methods that are used when a file has been uploaded
 

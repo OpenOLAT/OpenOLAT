@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.ImageService;
@@ -51,7 +52,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -103,6 +103,7 @@ public class FileElementImpl extends FormItemImpl
 	private boolean checkForMaxFileSize = false;
 	private boolean checkForMimeTypes = false;
 	private boolean cropSelectionEnabled = false;
+	private boolean area = false;
 	// error keys
 	private String i18nErrMandatory;
 	private String i18nErrMaxSize;
@@ -364,6 +365,16 @@ public class FileElementImpl extends FormItemImpl
 	@Override
 	public void setCropSelectionEnabled(boolean enable) {
 		this.cropSelectionEnabled = enable;
+	}
+
+	@Override
+	public boolean isArea() {
+		return area;
+	}
+
+	@Override
+	public void setArea(boolean area) {
+		this.area = area;
 	}
 
 	@Override

@@ -604,3 +604,76 @@ div.o_correction_navigation {
 	}
 }
 
+/* Document course element */
+.o_cnd_document {
+	.o_cnd_header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		
+		div:last-child {
+			margin-left: auto
+		}
+	}
+	
+	.o_cnd_file {
+		display: flex;
+	
+		.o_cnd_thumbnail {
+			width: 150px;
+			min-height: 150px;
+			background-color: #fff;
+			border-radius: $thumbnail-border-radius;
+			border: 1px solid $thumbnail-border;
+			margin-right: 10px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.o_cnd_file_icon {
+			margin-right: 10px;
+			i {
+				font-size: 5em;
+			}
+		}
+
+		.o_legend {
+			font-weight: bold;
+		}
+	}
+	
+	.o_cnd_meta_toggle {
+		display: flex;
+		:last-child {
+			margin-left: auto
+		}
+	}
+	
+	.o_cnd_meta {
+		padding-top: 20px;
+		
+		.table {
+			table-layout: fixed;
+			word-wrap: break-word;
+			margin-bottom: 0;
+		}
+		
+		@media (min-width: $screen-sm-min) {
+			table {
+				tbody { vertical-align: top; }
+				tr, th, td { display: inline-block; }
+				tr { width: 49%; }
+				th { width: 30%; }
+				td { width: 70%; }
+			}
+		}
+	}
+}
+
+.o_cnd_run {
+	padding-bottom: 15px;
+}
+
+.o_cnd_peekview {
+	padding-top: 5px;
+}

@@ -74,16 +74,16 @@ class GTAUIFactory {
 	static DocTemplates htmlOffice(Identity identity, Roles roles, Locale locale) {
 		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
 		Builder builder = DocTemplates.builder(locale);
-		if (docEditorService.hasEditor(identity, roles, "html", EDIT, true)) {
+		if (docEditorService.hasEditor(identity, roles, "html", EDIT, true, false)) {
 			builder.addHtml();
 		}
-		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, true)) {
+		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, true, false)) {
 			builder.addDocx();
 		}
-		if (docEditorService.hasEditor(identity, roles, "xlsx", EDIT, true)) {
+		if (docEditorService.hasEditor(identity, roles, "xlsx", EDIT, true, false)) {
 			builder.addXlsx();
 		}
-		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, true)) {
+		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, true, false)) {
 			builder.addPptx();
 		}
 		return builder.build();

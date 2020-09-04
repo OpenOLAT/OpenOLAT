@@ -45,9 +45,10 @@ public interface DocEditorService {
 	 * @param suffix
 	 * @param mode
 	 * @param metadataAvailable
+	 * @param collaborativeOnly 
 	 * @return
 	 */
-	public boolean hasEditor(Identity identity, Roles roles, String suffix, Mode mode, boolean metadataAvailable);
+	public boolean hasEditor(Identity identity, Roles roles, String suffix, Mode mode, boolean metadataAvailable, boolean collaborativeOnly);
 	
 	/**
 	 * Get all enabled editors which support a file with a specific suffix.

@@ -73,6 +73,11 @@ public class CollaboraEditor implements DocEditor {
 	}
 
 	@Override
+	public boolean isCollaborative() {
+		return true;
+	}
+
+	@Override
 	public boolean isDataTransferConfirmationEnabled() {
 		return collaboraModule.isDataTransferConfirmationEnabled();
 	}

@@ -77,7 +77,7 @@ public class DocumentEditorDelegate implements WebDocumentCreateDelegate, WebDoc
 
 	private boolean canEdit(Identity identity, Roles roles) {
 		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
-		return docEditorService.hasEditor(identity, roles, type.getSuffix(), Mode.EDIT, true);
+		return docEditorService.hasEditor(identity, roles, type.getSuffix(), Mode.EDIT, true, false);
 	}
 	
 	@Override

@@ -76,8 +76,12 @@
 		<property name="order" value="100" />
 	</bean>
 	
-	<bean id="bc" class="org.olat.course.nodes.bc.BCCourseNodeConfiguration" scope="prototype">
+	<bean id="document" class="org.olat.course.nodes.document.DocumentCourseNodeConfiguration" scope="prototype">
 		<property name="order" value="51" />
+	</bean>
+	
+	<bean id="bc" class="org.olat.course.nodes.bc.BCCourseNodeConfiguration" scope="prototype">
+		<property name="order" value="52" />
 	</bean>
 	
 	<bean id="ms" class="org.olat.course.nodes.ms.MSCourseNodeConfiguration" scope="prototype">

@@ -1,0 +1,11 @@
+<fieldset class="clearfix">
+	<legend>$r.contextHelpWithWrapper("Content#_document")
+	$r.translate("config.title")</legend>
+	$r.render("display")
+	#if($r.visible("rights"))
+		$r.render("rights")
+	#end
+	#if($r.visible("selection"))
+		$r.render("selection")
+	#end
+</fieldset>

@@ -814,7 +814,7 @@ public class PageRunController extends BasicController implements TooledControll
 		private boolean isCreateFilePossible(Roles roles) {
 			List<DocTemplate> editableTemplates = CreateFileHandler.getEditableTemplates(getIdentity(), roles, getLocale()).getTemplates();
 			for (DocTemplate docTemplate: editableTemplates) {
-				if (docEditorService.hasEditor(getIdentity(), roles,  docTemplate.getSuffix(), Mode.EDIT, true)) {
+				if (docEditorService.hasEditor(getIdentity(), roles,  docTemplate.getSuffix(), Mode.EDIT, true, false)) {
 					return true;
 				}
 			}

@@ -73,6 +73,11 @@ public class FileEditor implements DocEditor {
 	}
 
 	@Override
+	public boolean isCollaborative() {
+		return false;
+	}
+
+	@Override
 	public boolean isDataTransferConfirmationEnabled() {
 		return false;
 	}

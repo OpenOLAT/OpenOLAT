@@ -1,0 +1,39 @@
+<div class="o_cnd_run">
+	<div class="o_button_group o_button_group_right">
+		#if($r.available("run.edit"))
+			$r.render("run.edit")
+		#end
+		#if($r.available("run.view"))
+			$r.render("run.view")
+		#end
+		#if($r.available("run.download"))
+			$r.render("run.download")
+		#end
+	</div>
+	#if($r.available("run.file"))
+		$r.render("run.file")
+	#end
+	#if($image)
+		<img src="$mediaUrl/$filename" />
+	#elseif($r.available("audio"))
+		<div class="clearfix">
+			$r.render("audio")
+		</div>
+	#elseif($r.available("content"))
+		<div id="cndContent" class="o_content clearfix">
+			$r.render("content")
+		</div>
+		<script>
+		/* <![CDATA[ */
+			b_resizeIframeToMainMaxHeight("cndContent");
+			var contentHeight = jQuery('#o_main_center_content').height();
+			document.documentElement.style.setProperty('--cndcontentheight', `${contentHeight}px`);
+			jQuery(document).on("oo.window.resize.after", () => {
+				b_resizeIframeToMainMaxHeight("cndContent");
+				var contentHeight = jQuery('#o_main_center_content').height();
+				document.documentElement.style.setProperty('--cndcontentheight', `${contentHeight}px`);
+			});
+		/* ]]> */
+		</script>
+	#end
+</div>

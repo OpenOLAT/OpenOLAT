@@ -4,10 +4,10 @@
 		<script>
 		/* <![CDATA[ */
 			## https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
-			let vh = window.innerHeight * 0.01;
+			var vh = window.innerHeight * 0.01;
 			document.documentElement.style.setProperty('--doceditorvh', `${vh}px`);
-			window.addEventListener('resize', () => {
-				let vh = window.innerHeight * 0.01;
+			jQuery(document).on("oo.window.resize.after", () => {
+				var vh = window.innerHeight * 0.01;
 				document.documentElement.style.setProperty('--doceditorvh', `${vh}px`);
 			});
 		/* ]]> */

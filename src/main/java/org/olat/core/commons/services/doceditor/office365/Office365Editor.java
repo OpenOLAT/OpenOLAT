@@ -69,6 +69,11 @@ public class Office365Editor implements DocEditor {
 		Translator translator = Util.createPackageTranslator(Office365EditorController.class, locale);
 		return translator.translate("editor.display.name");
 	}
+
+	@Override
+	public boolean isCollaborative() {
+		return true;
+	}
 	
 	@Override
 	public boolean isDataTransferConfirmationEnabled() {
