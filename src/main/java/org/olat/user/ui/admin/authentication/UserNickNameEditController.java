@@ -73,7 +73,9 @@ public class UserNickNameEditController extends FormBasicController {
 	}
 	
 	private List<UserAuthenticationRow> getManageableProviders(List<UserAuthenticationRow> auths) {
-		return auths.stream().filter(auth -> auth.getProvider()
+		return auths.stream()
+			.filter(auth -> auth.getProvider() != null)
+			.filter(auth -> auth.getProvider()
 				.canChangeAuthenticationUsername(auth.getAuthentication().getProvider()))
 			.collect(Collectors.toList());
 	}
