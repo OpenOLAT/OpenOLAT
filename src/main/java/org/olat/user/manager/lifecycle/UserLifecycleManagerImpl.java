@@ -199,10 +199,10 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		Date lastLoginDate = getDate(numOfDaysBeforeDeactivation);
 		List<Identity> identities;
 		if(sendMailBeforeDeactivation) {
-			identities = getIdentitiesToInactivate(lastLoginDate, null);
-		} else {
 			Date emailBeforeDate = getDate(numOfDaysBeforeEmail);
 			identities = getIdentitiesToInactivate(lastLoginDate, emailBeforeDate);
+		} else {
+			identities = getIdentitiesToInactivate(lastLoginDate, null);
 		}
 		
 		for(Identity identity:identities) {
