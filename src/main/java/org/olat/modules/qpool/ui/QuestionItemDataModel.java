@@ -106,7 +106,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 				}
 				return type;
 			}
-			case learningTime: return item.getEducationalLearningTime();
+			case educationalLearningTime: return item.getEducationalLearningTime();
 			case rating: return round(item.getRating());
 			case numberOfRatings: return item.getNumberOfRatings();
 			case format: return item.getFormat();
@@ -144,7 +144,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		differentiation("question.differentiation"),
 		numOfAnswerAlternatives("question.numOfAnswerAlternatives"),
 		usage("question.usage"),
-		learningTime("educational.learningTime"),
+		educationalLearningTime("educational.learningTime"),
 		type("question.type"),
 		format("technical.format"),
 		rating("rating"),
