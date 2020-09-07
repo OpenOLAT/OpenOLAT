@@ -1040,6 +1040,11 @@ public class BusinessGroupDAO {
 				query.setParameter("atDate", new Date());
 			}
 		}
+		
+		// last usage
+		if(params.getLastUsageBefore() != null) {
+			query.setParameter("lastUsageBefore", params.getLastUsageBefore());
+		}
 	}
 	
 	private void filterBusinessGroupToSearch(StringBuilder sb, BusinessGroupQueryParams params, boolean includeMemberships) {
@@ -1182,6 +1187,12 @@ public class BusinessGroupDAO {
 			sb.append(" not exists (select headMembership.key from bgroupmember as headMembership")
 			  .append("   where bGroup.key=headMembership.group.key and headMembership.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
 			  .append(" )");
+		}
+		
+		// last usage
+		if(params.getLastUsageBefore() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" bgi.lastUsage <= :lastUsageBefore");
 		}
 	}
 	

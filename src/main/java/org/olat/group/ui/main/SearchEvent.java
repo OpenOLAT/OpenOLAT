@@ -19,6 +19,8 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.Date;
+
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -44,6 +46,7 @@ public class SearchEvent extends Event implements StateEntry {
 	private Boolean publicGroups;
 	private Boolean managed;
 	private Boolean resources;
+	private Date lastUsageBefore;
 	
 	public SearchEvent() {
 		super("search");
@@ -145,6 +148,14 @@ public class SearchEvent extends Event implements StateEntry {
 		this.headless = headless;
 	}
 	
+	public Date getLastUsageBefore() {
+		return lastUsageBefore;
+	}
+
+	public void setLastUsageBefore(Date lastUsageBefore) {
+		this.lastUsageBefore = lastUsageBefore;
+	}
+
 	public BusinessGroupQueryParams convertToBusinessGroupQueriesParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setIdRef(StringHelper.containsNonWhitespace(idRef) ? idRef : null);
@@ -159,6 +170,7 @@ public class SearchEvent extends Event implements StateEntry {
 		params.setManaged(getManaged());
 		params.setResources(getResources());
 		params.setHeadless(isHeadless());
+		params.setLastUsageBefore(getLastUsageBefore());
 		return params;
 	}
 
@@ -175,7 +187,9 @@ public class SearchEvent extends Event implements StateEntry {
 		clone.waiting = waiting;
 		clone.headless = headless;
 		clone.publicGroups = publicGroups;
+		clone.publicGroups = publicGroups;
 		clone.resources = resources;
+		clone.lastUsageBefore = lastUsageBefore;
 		return clone;
 	}
 }
