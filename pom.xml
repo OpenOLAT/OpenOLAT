@@ -1708,7 +1708,7 @@
 		<dependency>
 		    <groupId>com.github.scribejava</groupId>
 		    <artifactId>scribejava-apis</artifactId>
-		    <version>6.5.1</version>
+		    <version>7.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

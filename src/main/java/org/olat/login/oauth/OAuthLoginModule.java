@@ -67,6 +67,12 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private String adfsApiSecret;
 	private String adfsOAuth2Endpoint;
 	
+	private boolean azureAdfsEnabled;
+	private boolean azureAdfsRootEnabled;
+	private String azureAdfsApiKey;
+	private String azureAdfsApiSecret;
+	private String azureAdfsTenant;
+	
 	private boolean tequilaEnabled;
 	private String tequilaApiKey;
 	private String tequilaApiSecret;
@@ -137,6 +143,15 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		adfsApiKey = getStringPropertyValue("adfsApiKey", false);
 		adfsApiSecret = getStringPropertyValue("adfsApiSecret", false);
 		adfsOAuth2Endpoint = getStringPropertyValue("adfsOAuth2Endpoint", false);
+		
+		//Azure ADFS
+		String azureAdfsEnabledObj = getStringPropertyValue("azureAdfsEnabled", true);
+		azureAdfsEnabled = "true".equals(azureAdfsEnabledObj);
+		String azureAdfsRootEnabledObj = getStringPropertyValue("azureAdfsRootEnabled", true);
+		azureAdfsRootEnabled = "true".equals(azureAdfsRootEnabledObj);
+		azureAdfsApiKey = getStringPropertyValue("azureAdfsApiKey", false);
+		azureAdfsApiSecret = getStringPropertyValue("azureAdfsApiSecret", false);
+		azureAdfsTenant = getStringPropertyValue("azureAdfsTenant", false);
 		
 		//tequila
 		String tequilaEnabledObj = getStringPropertyValue("tequilaEnabled", true);
@@ -435,6 +450,51 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	public void setAdfsOAuth2Endpoint(String adfsOAuth2Endpoint) {
 		this.adfsOAuth2Endpoint = adfsOAuth2Endpoint;
 		setStringProperty("adfsOAuth2Endpoint", adfsOAuth2Endpoint, true);
+	}
+	
+	public boolean isAzureAdfsEnabled() {
+		return azureAdfsEnabled;
+	}
+
+	public void setAzureAdfsEnabled(boolean azureAdfsEnabled) {
+		this.azureAdfsEnabled = azureAdfsEnabled;
+		setStringProperty("azureAdfsEnabled", azureAdfsEnabled ? "true" : "false", true);
+	}
+
+	public boolean isAzureAdfsRootEnabled() {
+		return azureAdfsRootEnabled;
+	}
+
+	public void setAzureAdfsRootEnabled(boolean azureAdfsRootEnabled) {
+		this.azureAdfsRootEnabled = azureAdfsRootEnabled;
+		setStringProperty("azureAdfsRootEnabled", azureAdfsRootEnabled ? "true" : "false", true);
+	}
+
+	public String getAzureAdfsApiKey() {
+		return azureAdfsApiKey;
+	}
+
+	public void setAzureAdfsApiKey(String azureAdfsApiKey) {
+		this.azureAdfsApiKey = azureAdfsApiKey;
+		setStringProperty("azureAdfsApiKey", azureAdfsApiKey, true);
+	}
+	
+	public String getAzureAdfsApiSecret() {
+		return azureAdfsApiSecret;
+	}
+
+	public void setAzureAdfsApiSecret(String azureAdfsApiSecret) {
+		this.azureAdfsApiSecret = azureAdfsApiSecret;
+		setStringProperty("azureAdfsApiSecret", azureAdfsApiSecret, true);
+	}
+
+	public String getAzureAdfsTenant() {
+		return azureAdfsTenant;
+	}
+
+	public void setAzureAdfsTenant(String azureAdfsTenant) {
+		this.azureAdfsTenant = azureAdfsTenant;
+		setStringProperty("azureAdfsTenant", azureAdfsTenant, true);
 	}
 
 	public boolean isTequilaEnabled() {

@@ -20,6 +20,7 @@
 package org.olat.login.oauth.spi;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.concurrent.ExecutionException;
@@ -83,8 +84,8 @@ public class TequilaApi extends DefaultApi20 {
     
 	@Override
     public TequilaAuth2Service createService(String apiKey, String apiSecret, String callback, String defaultScope,
-            String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
-        return new TequilaAuth2Service(this, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
+            String responseType, OutputStream debugStream, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+        return new TequilaAuth2Service(this, apiKey, apiSecret, callback, defaultScope, responseType, debugStream, userAgent, httpClientConfig, httpClient);
     }
 	
 	public static class TequilaBearerExtractor implements TokenExtractor<OAuth2AccessToken> {
@@ -132,8 +133,8 @@ public class TequilaApi extends DefaultApi20 {
 		private final TequilaApi api;
     	
         public TequilaAuth2Service(TequilaApi api, String apiKey, String apiSecret, String callback, String defaultScope,
-        	            String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
-            super(api, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
+        	            String responseType, OutputStream debugStream, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+            super(api, apiKey, apiSecret, callback, defaultScope, responseType, debugStream, userAgent, httpClientConfig, httpClient);
             this.api = api;
         }
 

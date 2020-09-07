@@ -20,6 +20,7 @@
 package org.olat.login.oauth.spi;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.concurrent.ExecutionException;
 
 import org.olat.core.CoreSpringFactory;
@@ -85,8 +86,8 @@ public class ADFSApi extends DefaultApi20 {
 
 	@Override
     public ADFSOAuth2Service createService(String apiKey, String apiSecret, String callback, String defaultScope,
-            String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
-        return new ADFSOAuth2Service(this, apiKey, apiSecret, callback, defaultScope, responseType, userAgent,
+            String responseType, OutputStream debugStream, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+        return new ADFSOAuth2Service(this, apiKey, apiSecret, callback, defaultScope, responseType, debugStream, userAgent,
                 httpClientConfig, httpClient);
     }
     
@@ -98,8 +99,8 @@ public class ADFSApi extends DefaultApi20 {
 		private final ADFSApi api;
     	
         public ADFSOAuth2Service(ADFSApi api, String apiKey, String apiSecret, String callback, String defaultScope,
-                String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
-            super(api, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
+                String responseType, OutputStream debugStream, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+            super(api, apiKey, apiSecret, callback, defaultScope, responseType, debugStream, userAgent, httpClientConfig, httpClient);
             this.api = api;
         }
 

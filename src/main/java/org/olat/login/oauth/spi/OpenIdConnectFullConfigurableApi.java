@@ -19,6 +19,7 @@
  */
 package org.olat.login.oauth.spi;
 
+import java.io.OutputStream;
 import java.util.UUID;
 
 import org.json.JSONException;
@@ -78,15 +79,15 @@ public class OpenIdConnectFullConfigurableApi extends DefaultApi20 {
     
     @Override
     public OpenIdConnectFullConfigurableService createService(String apiKey, String apiSecret, String callback, String defaultScope,
-            String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
-        return new OpenIdConnectFullConfigurableService(this, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
+            String responseType, OutputStream debugStream, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+        return new OpenIdConnectFullConfigurableService(this, apiKey, apiSecret, callback, defaultScope, responseType, debugStream, userAgent, httpClientConfig, httpClient);
     }
     
     public class OpenIdConnectFullConfigurableService extends OAuth20Service {
 
         public OpenIdConnectFullConfigurableService(OpenIdConnectFullConfigurableApi api, String apiKey, String apiSecret, String callback, String defaultScope,
-	            String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
-            super(api, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
+	            String responseType, OutputStream debugStream, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+            super(api, apiKey, apiSecret, callback, defaultScope, responseType, debugStream, userAgent, httpClientConfig, httpClient);
         }
         
         public OAuth2AccessToken getAccessToken(OpenIDVerifier oVerifier) {

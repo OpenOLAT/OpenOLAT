@@ -19,6 +19,7 @@
  */
 package org.olat.login.oauth.spi;
 
+import java.io.OutputStream;
 import java.util.UUID;
 
 import org.json.JSONException;
@@ -80,15 +81,15 @@ public class OpenIdConnectApi extends DefaultApi20 {
     
     @Override
     public OAuth20Service createService(String apiKey, String apiSecret, String callback, String defaultScope,
-            String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
-        return new OpenIdConnectService(this, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
+            String responseType, OutputStream debugStream, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+        return new OpenIdConnectService(this, apiKey, apiSecret, callback, defaultScope, responseType, debugStream, userAgent, httpClientConfig, httpClient);
     }
     
     public class OpenIdConnectService extends OAuth20Service {
 
         public OpenIdConnectService(DefaultApi20 api, String apiKey, String apiSecret, String callback, String defaultScope,
-                String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
-            super(api, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
+                String responseType, OutputStream debugStream, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+            super(api, apiKey, apiSecret, callback, defaultScope, responseType, debugStream, userAgent, httpClientConfig, httpClient);
         }
         
         public OAuth2AccessToken getAccessToken(OpenIDVerifier oVerifier) {

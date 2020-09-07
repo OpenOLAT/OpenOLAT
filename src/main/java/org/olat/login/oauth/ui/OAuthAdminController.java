@@ -82,6 +82,12 @@ public class OAuthAdminController extends FormBasicController {
 	private TextElement adfsApiSecretEl;
 	private TextElement adfsOAuth2EndpointEl;
 	
+	private MultipleSelectionElement azureAdfsEl;
+	private MultipleSelectionElement azureAdfsDefaultEl;
+	private TextElement azureAdfsApiKeyEl;
+	private TextElement azureAdfsApiSecretEl;
+	private TextElement azureAdfsTenantEl;
+	
 	private MultipleSelectionElement tequilaEl;
 	private TextElement tequilaApiKeyEl;
 	private TextElement tequilaApiSecretEl;
@@ -129,6 +135,7 @@ public class OAuthAdminController extends FormBasicController {
 		initGoogleForm(formLayout);
 		initFacebookForm(formLayout);
 		initAdfsForm(formLayout);
+		initAzureAdfsForm(formLayout);
 		initTequilaForm(formLayout);
 		initOpenIDConnectForm(formLayout);
 		
@@ -159,8 +166,8 @@ public class OAuthAdminController extends FormBasicController {
 		
 		linkedInEl = uifactory.addCheckboxesHorizontal("linkedin.enabled", linkedinCont, keys, values);
 		linkedInEl.addActionListener(FormEvent.ONCHANGE);
-		String ApiKey = oauthModule.getLinkedInApiKey();
-		linkedInApiKeyEl = uifactory.addTextElement("linkedin.id", "linkedin.api.id", 256, ApiKey, linkedinCont);
+		String apiKey = oauthModule.getLinkedInApiKey();
+		linkedInApiKeyEl = uifactory.addTextElement("linkedin.id", "linkedin.api.id", 256, apiKey, linkedinCont);
 		String apiSecret = oauthModule.getLinkedInApiSecret();
 		linkedInApiSecretEl = uifactory.addTextElement("linkedin.secret", "linkedin.api.secret", 256, apiSecret, linkedinCont);
 		if(oauthModule.isLinkedInEnabled()) {
@@ -271,6 +278,42 @@ public class OAuthAdminController extends FormBasicController {
 		}
 	}
 	
+	private void initAzureAdfsForm(FormItemContainer formLayout) {
+		FormLayoutContainer adfsCont = FormLayoutContainer.createDefaultFormLayout("azuredfs", getTranslator());
+		adfsCont.setFormTitle(translate("azure.adfs.admin.title"));
+		adfsCont.setFormTitleIconCss("o_icon o_icon_provider_adfs");
+		adfsCont.setRootForm(mainForm);
+		formLayout.add(adfsCont);
+		
+		azureAdfsEl = uifactory.addCheckboxesHorizontal("azure.adfs.enabled", adfsCont, keys, values);
+		azureAdfsEl.addActionListener(FormEvent.ONCHANGE);
+		
+		azureAdfsDefaultEl = uifactory.addCheckboxesHorizontal("azure.adfs.default.enabled", adfsCont, keys, values);
+		azureAdfsDefaultEl.addActionListener(FormEvent.ONCHANGE);
+		
+		String azureAdfsTenant = oauthModule.getAzureAdfsTenant();
+		azureAdfsTenantEl = uifactory.addTextElement("azure.adfs.tenant", "azure.adfs.tenant", 256, azureAdfsTenant, adfsCont);
+		azureAdfsTenantEl.setExampleKey("azure.adfs.tenant.hint", null);
+		
+		String azureAdfsApiKey = oauthModule.getAzureAdfsApiKey();
+		azureAdfsApiKeyEl = uifactory.addTextElement("azure.adfs.id", "adfs.api.id", 256, azureAdfsApiKey, adfsCont);
+		String azureAdfsApiSecret = oauthModule.getAzureAdfsApiSecret();
+		azureAdfsApiSecretEl = uifactory.addTextElement("azure.adfs.secret", "adfs.api.secret", 256, azureAdfsApiSecret, adfsCont);
+		
+		if(oauthModule.isAzureAdfsEnabled()) {
+			azureAdfsEl.select(keys[0], true);
+		} else {
+			azureAdfsApiKeyEl.setVisible(false);
+			azureAdfsApiSecretEl.setVisible(false);
+			azureAdfsDefaultEl.setVisible(false);
+			azureAdfsTenantEl.setVisible(false);
+		}
+		
+		if(oauthModule.isAzureAdfsRootEnabled()) {
+			azureAdfsDefaultEl.select(keys[0], true);
+		}
+	}
+	
 	private void initTequilaForm(FormItemContainer formLayout) {
 		FormLayoutContainer tequilaCont = FormLayoutContainer.createDefaultFormLayout("tequila", getTranslator());
 		tequilaCont.setFormTitle(translate("tequila.admin.title"));
@@ -375,7 +418,7 @@ public class OAuthAdminController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		//linkedin
 		allOk &= mandatory(linkedInEl, linkedInApiKeyEl, linkedInApiSecretEl);
 		//twitter
@@ -386,7 +429,9 @@ public class OAuthAdminController extends FormBasicController {
 		allOk &= mandatory(facebookEl, facebookApiKeyEl, facebookApiSecretEl);
 		//adfs
 		allOk &= mandatory(adfsEl, adfsApiKeyEl, adfsOAuth2EndpointEl);
-		//teqiula
+		//Azure ADFS
+		allOk &= mandatory(azureAdfsEl, azureAdfsApiKeyEl, azureAdfsApiSecretEl);
+		//tequila
 		allOk &= mandatory(tequilaEl, tequilaApiKeyEl, tequilaApiSecretEl, tequilaOAuth2EndpointEl);
 		//open id connect
 		allOk &= mandatory(openIdConnectIFEl, openIdConnectIFAuthorizationEndPointEl, openIdConnectIFApiKeyEl, openIdConnectIFApiSecretEl);
@@ -395,7 +440,7 @@ public class OAuthAdminController extends FormBasicController {
 			allOk &= wrapper.validateFormLogic();
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean mandatory(MultipleSelectionElement selectEl, TextElement... textEls) {
@@ -457,7 +502,12 @@ public class OAuthAdminController extends FormBasicController {
 			adfsApiSecretEl.setVisible(adfsEl.isAtLeastSelected(1));
 			adfsDefaultEl.setVisible(adfsEl.isAtLeastSelected(1));
 			adfsOAuth2EndpointEl.setVisible(adfsEl.isAtLeastSelected(1));
-		}  else if(source == tequilaEl) {
+		} else if(source == azureAdfsEl) {
+			azureAdfsApiKeyEl.setVisible(azureAdfsEl.isAtLeastSelected(1));
+			azureAdfsApiSecretEl.setVisible(azureAdfsEl.isAtLeastSelected(1));
+			azureAdfsDefaultEl.setVisible(azureAdfsEl.isAtLeastSelected(1));
+			azureAdfsTenantEl.setVisible(azureAdfsEl.isAtLeastSelected(1));
+		} else if(source == tequilaEl) {
 			tequilaApiKeyEl.setVisible(tequilaEl.isAtLeastSelected(1));
 			tequilaApiSecretEl.setVisible(tequilaEl.isAtLeastSelected(1));
 			tequilaOAuth2EndpointEl.setVisible(tequilaEl.isAtLeastSelected(1));
@@ -535,6 +585,20 @@ public class OAuthAdminController extends FormBasicController {
 			oauthModule.setAdfsApiSecret("");
 			oauthModule.setAdfsRootEnabled(false);
 			oauthModule.setAdfsOAuth2Endpoint("");
+		}
+		
+		if(azureAdfsEl.isAtLeastSelected(1)) {
+			oauthModule.setAzureAdfsEnabled(true);
+			oauthModule.setAzureAdfsApiKey(azureAdfsApiKeyEl.getValue());
+			oauthModule.setAzureAdfsApiSecret(azureAdfsApiSecretEl.getValue());
+			oauthModule.setAzureAdfsRootEnabled(azureAdfsDefaultEl.isAtLeastSelected(1));
+			oauthModule.setAzureAdfsTenant(azureAdfsTenantEl.getValue());
+		} else {
+			oauthModule.setAzureAdfsEnabled(false);
+			oauthModule.setAzureAdfsApiKey("");
+			oauthModule.setAzureAdfsApiSecret("");
+			oauthModule.setAzureAdfsRootEnabled(false);
+			oauthModule.setAzureAdfsTenant("");
 		}
 		
 		if(tequilaEl.isAtLeastSelected(1)) {
@@ -626,7 +690,6 @@ public class OAuthAdminController extends FormBasicController {
 		
 		private FormLayoutContainer openIdConnectIFCont;
 		
-		private FormLink deleteButton;
 		private MultipleSelectionElement openIdConnectIFConfEl;
 		private TextElement openIdConnectIFConfName;
 		private TextElement openIdConnectIFConfDisplayName;
@@ -678,7 +741,7 @@ public class OAuthAdminController extends FormBasicController {
 			openIdConnectIFConfAuthorizationEndPointEl = uifactory.addTextElement("openidconnectif." + counter + ".authorization.endpoint", "openidconnectif.authorization.endpoint", 256, endPoint, openIdConnectIFCont);
 			openIdConnectIFConfAuthorizationEndPointEl.setExampleKey("openidconnectif.authorization.endpoint.example", null);
 
-			deleteButton  = uifactory.addFormLink("delete.".concat(counter), "delete", "delete", null, openIdConnectIFCont, Link.BUTTON);
+			FormLink deleteButton  = uifactory.addFormLink("delete.".concat(counter), "delete", "delete", null, openIdConnectIFCont, Link.BUTTON);
 			deleteButton.setUserObject(this);
 		}
 
