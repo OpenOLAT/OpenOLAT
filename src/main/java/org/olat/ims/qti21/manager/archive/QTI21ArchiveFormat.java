@@ -49,6 +49,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
@@ -623,7 +624,7 @@ public class QTI21ArchiveFormat {
 						}
 					}
 					if (exportConfig.isCommentCol()) {
-						dataRow.addCell(col++, itemSession.getCoachComment(), null);	
+						dataRow.addCell(col++, getCoachComment(itemSession), null);	
 					}
 					if (exportConfig.isTimeCols()) {
 						if (anonymizerCallback == null){
@@ -644,6 +645,16 @@ public class QTI21ArchiveFormat {
 				}
 			}
 		}
+	}
+	
+	private String getCoachComment(AssessmentItemSession itemSession) {
+		if(itemSession == null || !StringHelper.containsNonWhitespace(itemSession.getCoachComment())) return null;
+		
+		String comment = itemSession.getCoachComment();
+		if(StringHelper.isHtml(comment)) {
+			comment = FilterFactory.getHtmlTagAndDescapingFilter().filter(comment);
+		}
+		return comment;
 	}
 	
 	private BigDecimal calculateSectionScore(SessionResponses responses, SectionInfos section) {

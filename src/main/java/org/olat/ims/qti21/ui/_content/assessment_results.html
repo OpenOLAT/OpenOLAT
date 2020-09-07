@@ -481,7 +481,7 @@
 		#if($r.isNotEmpty($itemResult.comment))
 		<div class="o_sel_assessmentitem_comment o_qti_item_comment">
 			<h4>$r.translate("results.comment")</h4>
-			$r.escapeHtml($itemResult.comment) 
+			$r.xssScan($itemResult.comment) 
 		</div>
 		#end
 		

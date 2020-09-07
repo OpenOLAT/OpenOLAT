@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -41,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -106,12 +108,11 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	private static final String[] onKeys = new String[] { "on" };
 
 	private TextElement scoreEl;
-	private TextElement commentEl;
+	private RichTextElement commentEl;
 	private StaticTextElement statusEl;
 	private FormLink viewSolutionButton;
 	private FormLink overrideScoreButton;
 	private FormLink viewCorrectSolutionButton;
-	private ItemBodyResultFormItem answerItem;
 	private ItemBodyResultFormItem solutionItem;
 	private FeedbackResultFormItem correctSolutionItem;
 	private MultipleSelectionElement toReviewEl;
@@ -180,7 +181,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		AssessmentTestSession testSession = correction.getTestSession();
 		TestSessionState testSessionState = correction.getTestSessionState();
 		
-		answerItem = initFormInteraction(testPlanNodeKey, testSessionState, testSession, formLayout, true, false);	
+		ItemBodyResultFormItem answerItem = initFormInteraction(testPlanNodeKey, testSessionState, testSession, formLayout, true, false);	
 		formLayout.add("answer", answerItem);
 		
 		viewSolutionButton = uifactory.addFormLink("view.solution", formLayout);
@@ -258,7 +259,10 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			overrideScoreButton.setDomReplacementWrapperRequired(false);
 			overrideScoreButton.setVisible(!readOnly);
 		}
-		commentEl = uifactory.addTextAreaElement("commentItem", "comment", 2500, 4, 60, false, false, coachComment, scoreCont);
+		commentEl = uifactory.addRichTextElementForStringData("commentItem", "comment", coachComment, 8, -1,
+				false, null, null, null, scoreCont, ureq.getUserSession(), getWindowControl());
+		commentEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		commentEl.getEditorConfiguration().setPathInStatusBar(false);
 		commentEl.setHelpText(translate("comment.help"));
 		commentEl.setEnabled(!readOnly);
 		IdentityAssessmentItemWrapper wrapper = new IdentityAssessmentItemWrapper(fullname, assessmentItem, correction, responseItems,
