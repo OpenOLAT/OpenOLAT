@@ -90,6 +90,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case lastModified: return item.getLastModified();
 			case taxonomyLevel: return item.getTaxonomyLevelName();
 			case taxonomyPath: return item.getTaxonomicPath();
+			case educationalContext: return item.getEducationalContextLevel();
 			case difficulty: return MetaUIFactory.bigDToString(item.getDifficulty());
 			case stdevDifficulty: return MetaUIFactory.bigDToString(item.getStdevDifficulty());
 			case differentiation: return MetaUIFactory.bigDToString(item.getDifferentiation());
@@ -105,6 +106,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 				}
 				return type;
 			}
+			case learningTime: return item.getEducationalLearningTime();
 			case rating: return round(item.getRating());
 			case numberOfRatings: return item.getNumberOfRatings();
 			case format: return item.getFormat();
@@ -136,11 +138,13 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		lastModified("technical.lastModified"),
 		taxonomyLevel("classification.taxonomy.level"),
 		taxonomyPath("classification.taxonomic.path"),
+		educationalContext("educational.context"),
 		difficulty("question.difficulty"),
 		stdevDifficulty("question.stdevDifficulty"),
 		differentiation("question.differentiation"),
 		numOfAnswerAlternatives("question.numOfAnswerAlternatives"),
 		usage("question.usage"),
+		learningTime("educational.learningTime"),
 		type("question.type"),
 		format("technical.format"),
 		rating("rating"),
