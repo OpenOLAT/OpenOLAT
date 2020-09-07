@@ -29,7 +29,9 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Assert;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
@@ -64,6 +66,7 @@ import com.dumbster.smtp.SmtpMessage;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UserLifecycleManagerTest extends OlatTestCase {
 	
 	@Autowired
@@ -204,7 +207,32 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void inactivateIdentities() {
+	public void inactivateASingleInformedIdentity() {
+		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+		userModule.setMailBeforeDeactivation(true);
+		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
+		userModule.setNumberOfDayBeforeDeactivationMail(30);
+		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-12");
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205));
+		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, null);
+		// Artificially mail in past
+		((IdentityImpl)id1).setInactivationEmailDate(DateUtils.addDays(new Date(), -31));
+		id1 = identityDao.saveIdentity(id1);
+		dbInstance.commitAndCloseSession();
+		
+		Set<Identity> vetoed = new HashSet<>();
+		lifecycleManager.inactivateIdentities(vetoed);
+		dbInstance.commitAndCloseSession();
+		
+		// check mails sent
+		List<SmtpMessage> inactivedMessages = getSmtpServer().getReceivedEmails();
+		Assert.assertTrue(hasTo(id1.getUser().getEmail(), inactivedMessages));
+		getSmtpServer().reset();
+	}
+	
+	@Test
+	public void inactivateBIdentities() {
 		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
 		userModule.setMailBeforeDeactivation(true);
 		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
