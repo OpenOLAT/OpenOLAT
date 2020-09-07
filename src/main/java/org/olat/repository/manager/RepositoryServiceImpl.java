@@ -843,9 +843,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 	
 	@Override
-	public Map<RepositoryEntryRef,List<TaxonomyLevel>> getTaxonomy(List<RepositoryEntryRef> entries) {
+	public Map<RepositoryEntryRef,List<TaxonomyLevel>> getTaxonomy(List<? extends RepositoryEntryRef> entries, boolean fetchParents) {
 		if(entries == null || entries.isEmpty()) return Collections.emptyMap();
-		return repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entries);
+		return repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entries, fetchParents);
 	}
 
 	@Override

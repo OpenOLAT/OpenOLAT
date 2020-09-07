@@ -108,6 +108,7 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.quality.QualityDataCollectionLight;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
@@ -182,6 +183,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FormLink addOwnersButton;
 
 	private LockResult lockResult;
+	private final boolean taxonomyEnabled;
 	private final AtomicInteger counter = new AtomicInteger();
 	//only used as marker for dirty, model cannot load specific rows
 	private final List<Long> dirtyRows = new ArrayList<>();
@@ -212,7 +214,9 @@ public class AuthorListController extends FormBasicController implements Activat
 	private LearningPathService learningPathService;
 	@Autowired
 	private HelpModule helpModule;
-	
+	@Autowired
+	private TaxonomyModule taxonomyModule;
+
 	public AuthorListController(UserRequest ureq, WindowControl wControl, String i18nName,
 			SearchAuthorRepositoryEntryViewParams searchParams, boolean withSearch, boolean withClosedfilter) {
 		super(ureq, wControl, "entries");
@@ -229,8 +233,10 @@ public class AuthorListController extends FormBasicController implements Activat
 		Roles roles = ureq.getUserSession().getRoles();
 		hasAdministratorRight = roles.isAdministrator() || roles.isLearnResourceManager();
 		hasAuthorRight =  hasAdministratorRight || roles.isAuthor();
-
-		dataSource = new AuthoringEntryDataSource(searchParams, this, !withSearch);
+		
+		taxonomyEnabled = taxonomyModule.isEnabled() && StringHelper.isLong(repositoryModule.getTaxonomyTreeKey());
+		
+		dataSource = new AuthoringEntryDataSource(searchParams, this, !withSearch, taxonomyEnabled);
 		initForm(ureq);
 
 		stackPanel = new TooledStackedPanel(i18nName, getTranslator(), this);
@@ -368,6 +374,16 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
 				true, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
+		if (taxonomyEnabled) {
+			DefaultFlexiColumnModel taxonomyLevelColumnModel = new DefaultFlexiColumnModel(true, Cols.taxonomyLevels.i18nKey(),
+					Cols.taxonomyLevels.ordinal(), false, null);
+			taxonomyLevelColumnModel.setCellRenderer(new TaxonomyLevelRenderer());
+			columnsModel.addFlexiColumnModel(taxonomyLevelColumnModel);
+			DefaultFlexiColumnModel taxonomyLevelPathColumnModel = new DefaultFlexiColumnModel(true, Cols.taxonomyPaths.i18nKey(),
+					Cols.taxonomyPaths.ordinal(), false, null);
+			taxonomyLevelPathColumnModel.setCellRenderer(new TaxonomyPathsRenderer());
+			columnsModel.addFlexiColumnModel(taxonomyLevelPathColumnModel);
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.author.i18nKey(), Cols.author.ordinal(),
 				true, OrderBy.author.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.access.i18nKey(), Cols.access.ordinal(),
@@ -873,6 +889,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setDescription(null);
 		searchParams.setLicenseTypeKeys(null);
 		searchParams.setEntryOrganisations(null);
+		searchParams.setTaxonomyLevels(null);
 		
 		tableEl.resetSearch(ureq);
 	}
@@ -893,6 +910,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setDescription(se.getDescription());
 		searchParams.setLicenseTypeKeys(se.getLicenseTypeKeys());
 		searchParams.setEntryOrganisations(se.getEntryOrganisations());
+		searchParams.setTaxonomyLevels(se.getTaxonomyLevels());
 		tableEl.reset(true, true, true);
 		
 		AuthorListState stateEntry = new AuthorListState();

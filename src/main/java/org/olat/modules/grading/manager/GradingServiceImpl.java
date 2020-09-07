@@ -513,7 +513,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 				entryRefs.add(row.getReferenceEntry());
 			}
 			
-			Map<RepositoryEntryRef,List<TaxonomyLevel>> levelsMap = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(new ArrayList<>(entryRefs));
+			Map<RepositoryEntryRef,List<TaxonomyLevel>> levelsMap = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(new ArrayList<>(entryRefs), false);
 			for(GradingAssignmentWithInfos row:rows) {
 				List<TaxonomyLevel> levels = levelsMap.get(row.getReferenceEntry());
 				String levelsToString = taxonomyLevelToString(levels);

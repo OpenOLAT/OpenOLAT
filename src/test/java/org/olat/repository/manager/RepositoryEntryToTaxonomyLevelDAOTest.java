@@ -118,7 +118,7 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Map<RepositoryEntryRef,List<TaxonomyLevel>> loadedLevels = repositoryEntryToTaxonomyLevelDao
-				.getTaxonomyLevels(Collections.singletonList(re));
+				.getTaxonomyLevels(Collections.singletonList(re), true);
 		Assert.assertNotNull(loadedLevels);
 		Assert.assertEquals(1, loadedLevels.size());
 		Assert.assertEquals(re, loadedLevels.keySet().iterator().next());

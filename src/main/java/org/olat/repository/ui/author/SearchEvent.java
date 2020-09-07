@@ -27,6 +27,7 @@ import java.util.Set;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.context.StateEntry;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
 
 /**
@@ -49,6 +50,7 @@ public class SearchEvent extends Event implements StateEntry {
 	private ResourceUsage resourceUsage;
 	private Set<Long> licenseTypeKeys;
 	private List<OrganisationRef> entryOrganisations;
+	private List<TaxonomyLevelRef> taxonomyLevels;
 	
 	public SearchEvent() {
 		super("re-search");
@@ -134,6 +136,14 @@ public class SearchEvent extends Event implements StateEntry {
 		this.entryOrganisations = entryOrganisations;
 	}
 
+	public List<TaxonomyLevelRef> getTaxonomyLevels() {
+		return taxonomyLevels;
+	}
+
+	public void setTaxonomyLevels(List<TaxonomyLevelRef> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
+	}
+
 	@Override
 	public SearchEvent clone() {
 		SearchEvent clone = new SearchEvent();
@@ -147,6 +157,7 @@ public class SearchEvent extends Event implements StateEntry {
 		clone.closed = closed;
 		clone.licenseTypeKeys = (licenseTypeKeys == null ? null : new HashSet<>(licenseTypeKeys));
 		clone.entryOrganisations = (entryOrganisations == null ? null : new ArrayList<>(entryOrganisations));
+		clone.taxonomyLevels = taxonomyLevels != null? new ArrayList<>(taxonomyLevels): null;
 		return clone;
 	}
 }

@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.author;
 
+import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
+import static org.olat.core.gui.components.util.KeyValues.entry;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,6 +52,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -59,7 +63,14 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
+import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
@@ -88,16 +99,20 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private SingleSelection resourceUsageEl;
 	private MultipleSelectionElement organisationsEl;
 	private MultipleSelectionElement ownedResourcesOnlyEl;
+	private MultipleSelectionElement taxonomyLevelPathEl;
 	private MultipleSelectionElement licenseEl;
 	private FormLink searchButton;
 	
 	private String[] typeKeys;
-	private boolean cancelAllowed;
+	private final boolean cancelAllowed;
+	private final TaxonomyRef taxonomyRef;
 	private boolean enabled = true;
 	private final Map<String,Organisation> organisationMap = new HashMap<>();
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private LicenseService licenseService;
 	@Autowired
@@ -107,6 +122,8 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
@@ -115,6 +132,12 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		super(ureq, wControl, "search");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.cancelAllowed = cancelAllowed;
+		
+		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
+		taxonomyRef = StringHelper.isLong(taxonomyTreeKey)
+				? new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey))
+				: null;
+				
 		initForm(ureq);
 	}
 
@@ -122,6 +145,12 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		super(ureq, wControl, LAYOUT_CUSTOM, "search", form);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.cancelAllowed = cancelAllowed;
+		
+		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
+		taxonomyRef = StringHelper.isLong(taxonomyTreeKey)
+				? new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey))
+				: null;
+		
 		initForm(ureq);
 	}
 	
@@ -147,6 +176,10 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		
 		if(organisationModule.isEnabled()) {
 			initFormOrganisations(leftContainer, ureq.getUserSession());
+		}
+		
+		if (taxonomyRef != null) {
+			initFormTaxonomyLevels(leftContainer);
 		}
 		
 		// RIGHT part of form
@@ -225,6 +258,32 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "cif.organisations", formLayout,
 				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]));
 		organisationsEl.setVisible(keyList.size() > 1);
+	}
+	
+	private void initFormTaxonomyLevels(FormLayoutContainer formLayout) {
+		List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
+
+		KeyValues keyValues = new KeyValues();
+		for (TaxonomyLevel level:allTaxonomyLevels) {
+			String key = Long.toString(level.getKey());
+			ArrayList<String> names = new ArrayList<>();
+			addParentNames(names, level);
+			Collections.reverse(names);
+			String value = String.join(" / ", names);
+			keyValues.add(entry(key, value));
+		}
+		keyValues.sort(VALUE_ASC);
+	
+		taxonomyLevelPathEl = uifactory.addCheckboxesDropdown("taxonomyLevelPaths", "table.header.taxonomy.paths", formLayout,
+				keyValues.keys(), keyValues.values());
+	}
+	
+	private void addParentNames(List<String> names, TaxonomyLevel level) {
+		names.add(level.getDisplayName());
+		TaxonomyLevel parent = level.getParent();
+		if (parent != null) {
+			addParentNames(names, parent);
+		}
 	}
 	
 	public void update(SearchEvent se) {
@@ -344,6 +403,16 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		return organisations;
 	}
 	
+	private List<TaxonomyLevelRef> getTaxonomyLevels() {
+		if (taxonomyLevelPathEl != null && taxonomyLevelPathEl.isVisible() && taxonomyLevelPathEl.isAtLeastSelected(1)) {
+			return taxonomyLevelPathEl.getSelectedKeys().stream()
+					.map(Long::valueOf)
+					.map(TaxonomyLevelRefImpl::new)
+					.collect(Collectors.toList());
+		}
+		return null;
+	}
+	
 	@Override
 	public void setEnabled(boolean enable) {
 		this.enabled = enable;
@@ -398,6 +467,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		e.setResourceUsage(getResourceUsage());
 		e.setClosed(getClosed());
 		e.setEntryOrganisations(getEntryOrganisations());
+		e.setTaxonomyLevels(getTaxonomyLevels());
 		if (licenseModule.isEnabled(licenseHandler)) {
 			Set<Long> licenceKeys = licenseEl.getSelectedKeys().stream().map(Long::valueOf).collect(Collectors.toSet());
 			e.setLicenseTypeKeys(licenceKeys);

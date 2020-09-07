@@ -26,6 +26,7 @@ import java.util.Set;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 
 /**
  * 
@@ -54,6 +55,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private List<String> resourceTypes;
 	private Set<Long> licenseTypeKeys;
 	private List<OrganisationRef> entryOrganisations;
+	private List<TaxonomyLevelRef> taxonomyLevels;
 	
 	public SearchAuthorRepositoryEntryViewParams(IdentityRef identity, Roles roles) {
 		this.identity = identity;
@@ -213,6 +215,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setEntryOrganisations(List<OrganisationRef> entryOrganisations) {
 		this.entryOrganisations = entryOrganisations;
+	}
+
+	public List<TaxonomyLevelRef> getTaxonomyLevels() {
+		return taxonomyLevels;
+	}
+
+	public void setTaxonomyLevels(List<TaxonomyLevelRef> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
 	}
 
 	public enum OrderBy {

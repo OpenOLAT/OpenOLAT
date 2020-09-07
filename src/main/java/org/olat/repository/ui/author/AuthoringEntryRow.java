@@ -28,6 +28,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -79,6 +80,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	private final Date deletionDate;
 	
 	private List<PriceMethod> accessTypes;
+	private List<TaxonomyLevel> taxonomyLevels;
 
 	private OLATResourceable olatResource;
 	
@@ -188,7 +190,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	public String getShortenedDescription() {
 		return shortenedDescription;
 	}
-	
+
 	public String getExternalId() {
 		return externalId;
 	}
@@ -247,6 +249,14 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 
 	public void setAccessTypes(List<PriceMethod> accessTypes) {
 		this.accessTypes = accessTypes;
+	}
+	
+	public List<TaxonomyLevel> getTaxonomyLevels() {
+		return taxonomyLevels;
+	}
+
+	public void setTaxonomyLevels(List<TaxonomyLevel> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
 	}
 
 	public OLATResourceable getRepositoryEntryResourceable() {

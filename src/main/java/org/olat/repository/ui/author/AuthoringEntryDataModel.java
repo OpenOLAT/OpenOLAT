@@ -123,6 +123,8 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case lifecycleSoftkey: return item.getLifecycleSoftKey();
 			case lifecycleStart: return item.getLifecycleStart();
 			case lifecycleEnd: return item.getLifecycleEnd();
+			case taxonomyLevels: return item.getTaxonomyLevels();
+			case taxonomyPaths: return item.getTaxonomyLevels();
 			case externalId: return item.getExternalId();
 			case externalRef: return item.getExternalRef();
 			case author: return item.getAuthor();
@@ -176,6 +178,8 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		lifecycleSoftkey("table.header.lifecycle.softkey"),
 		lifecycleStart("table.header.lifecycle.start"),
 		lifecycleEnd("table.header.lifecycle.end"),
+		taxonomyLevels("table.header.taxonomy.levels"),
+		taxonomyPaths("table.header.taxonomy.paths"),
 		externalId("table.header.externalid"),
 		externalRef("table.header.externalref"),
 		displayName("cif.displayname"),

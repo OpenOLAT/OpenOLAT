@@ -39,8 +39,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.Resourceable;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
@@ -72,12 +74,14 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 	private final AuthoringEntryDataSourceUIFactory uifactory;
 	private Integer count;
 	private final boolean useFilters;
+	private final boolean taxonomyEnabled;
 	
 	public AuthoringEntryDataSource(SearchAuthorRepositoryEntryViewParams searchParams,
-			AuthoringEntryDataSourceUIFactory uifactory, boolean useFilters) {
+			AuthoringEntryDataSourceUIFactory uifactory, boolean useFilters, boolean taxonomyEnabled) {
 		this.searchParams = searchParams;
 		this.uifactory = uifactory;
 		this.useFilters = useFilters;
+		this.taxonomyEnabled = taxonomyEnabled;
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
@@ -155,6 +159,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		
 		Map<String,String> fullNames = userManager.getUserDisplayNamesByUserName(newNames);
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
+		Map<Long, List<TaxonomyLevel>> entryKeyToTaxonomyLevels = getTaxonomyLevels(repoEntries);
 		Map<Resourceable,ResourceLicense> licenses = getLicenses(repoEntries);
 		
 		List<AuthoringEntryRow> items = new ArrayList<>();
@@ -192,6 +197,10 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 				row.setAccessTypes(types);
 			}
 			
+			// Taxonomy Level
+			List<TaxonomyLevel> taxonomyLevels = entryKeyToTaxonomyLevels.get(entry.getKey());
+			row.setTaxonomyLevels(taxonomyLevels);
+			
 			// license
 			ResourceLicense license = licenses.get(new Resourceable(entry.getOlatResource()));
 			row.setLicense(license);
@@ -202,7 +211,15 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		}
 		return items;
 	}
-	
+
+	private Map<Long, List<TaxonomyLevel>> getTaxonomyLevels(List<RepositoryEntryAuthorView> repoEntries) {
+		Map<RepositoryEntryRef, List<TaxonomyLevel>> entryRefToTaxonomyLevels = taxonomyEnabled
+				? repositoryService.getTaxonomy(repoEntries, true)
+				: Collections.emptyMap();
+		return entryRefToTaxonomyLevels.entrySet().stream()
+				.collect(Collectors.toMap(e -> e.getKey().getKey(), e -> e.getValue()));
+	}
+
 	private Map<Resourceable,ResourceLicense> getLicenses(List<RepositoryEntryAuthorView> repoEntries) {
 		Collection<OLATResourceable> resources = repoEntries.stream().map(RepositoryEntryAuthorView::getOlatResource).collect(Collectors.toList());
 		List<ResourceLicense> licenses = licenseService.loadLicenses(resources);	

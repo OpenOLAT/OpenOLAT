@@ -68,12 +68,15 @@ public class RepositoryEntryToTaxonomyLevelDAO {
 				.getResultList();
 	}
 	
-	public Map<RepositoryEntryRef,List<TaxonomyLevel>> getTaxonomyLevels(List<RepositoryEntryRef> entries) {
+	public Map<RepositoryEntryRef,List<TaxonomyLevel>> getTaxonomyLevels(List<? extends RepositoryEntryRef> entries, boolean fetchParents) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rel from repositoryentrytotaxonomylevel rel")
 		  .append(" inner join fetch rel.entry v")
-		  .append(" inner join fetch rel.taxonomyLevel as level")
-		  .append(" where v.key in (:entryKeys)");
+		  .append(" inner join fetch rel.taxonomyLevel as level");
+		if (fetchParents) {
+			sb.append(" left join fetch level.parent as parent");
+		}
+		sb.append(" where v.key in (:entryKeys)");
 
 		List<Long> entryKeys = entries.stream()
 				.map(RepositoryEntryRef::getKey)

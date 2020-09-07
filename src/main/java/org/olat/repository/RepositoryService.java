@@ -359,10 +359,11 @@ public interface RepositoryService {
 	 * doesn't fetch any thing of the levels but returns the same instances of
 	 * repository entries.
 	 * 
-	 * @param entry A list of repository entries
+	 * @param entries A list of repository entries
+	 * @param fetchParents 
 	 * @return A map entries to taxonomy level
 	 */
-	public Map<RepositoryEntryRef,List<TaxonomyLevel>> getTaxonomy(List<RepositoryEntryRef> entries);
+	public Map<RepositoryEntryRef,List<TaxonomyLevel>> getTaxonomy(List<? extends RepositoryEntryRef> entries, boolean fetchParents);
 	
 	/**
 	 * Add a link between a taxonomy level and the specified repository entry.

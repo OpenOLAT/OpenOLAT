@@ -19,6 +19,9 @@
  */
 package org.olat.repository.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -28,11 +31,15 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.test.JunitTestHelper;
@@ -57,9 +64,13 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private RepositoryEntryAuthorQueries repositoryEntryAuthorViewQueries;
+	@Autowired
+	private TaxonomyService taxomomyService;
 	
 	@Test
 	public void searchViews() {
@@ -490,6 +501,38 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 
 		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
 		Assert.assertTrue(contains(reOwner, results));
+	}
+	
+	@Test
+	public void searchViews_taxonomyLevels() {
+		Identity reOwner = JunitTestHelper.createAndPersistIdentityAsRndAuthor(random());
+		Taxonomy taxonomy = taxomomyService.createTaxonomy(random(), random(), random(), null);
+		TaxonomyLevel level1 = taxomomyService.createTaxonomyLevel(random(), random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxomomyService.createTaxonomyLevel(random(), random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel levelOther = taxomomyService.createTaxonomyLevel(random(), random(), random(), null, null, null, taxonomy);
+		
+		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryEntryRelationDao.addRole(reOwner, entry1, GroupRoles.owner.name());
+		repositoryService.addTaxonomyLevel(entry1, level1);
+		repositoryService.addTaxonomyLevel(entry1, level2);
+		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryEntryRelationDao.addRole(reOwner, entry2, GroupRoles.owner.name());
+		repositoryService.addTaxonomyLevel(entry2, level1);
+		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryEntryRelationDao.addRole(reOwner, entryOther, GroupRoles.owner.name());
+		repositoryService.addTaxonomyLevel(entryOther, levelOther);
+		RepositoryEntry entryNoLevel = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryEntryRelationDao.addRole(reOwner, entryNoLevel, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+		
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(reOwner, Roles.administratorRoles());
+		params.setTaxonomyLevels(Arrays.asList(level1, level2));
+
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertTrue(contains(entry1, results));
+		Assert.assertTrue(contains(entry2, results));
+		Assert.assertFalse(contains(entryOther, results));
+		Assert.assertFalse(contains(entryNoLevel, results));
 	}
 	
 	@Test

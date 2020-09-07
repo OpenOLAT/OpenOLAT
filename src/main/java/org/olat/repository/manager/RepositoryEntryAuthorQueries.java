@@ -41,6 +41,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
@@ -221,6 +222,10 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" and exists (select reToOrg.key from repoentrytoorganisation as reToOrg")
 			  .append("  where reToOrg.entry.key=v.key and reToOrg.organisation.key in (:organisationKeys))");
 		}
+		if (params.getTaxonomyLevels() != null) {
+			sb.append(" and exists (select reToTax.key from repositoryentrytotaxonomylevel as reToTax")
+			  .append("  where reToTax.entry.key=v.key and reToTax.taxonomyLevel.key in (:taxonomyLevelKeys))");
+		}
 		
 		String author = null;
 		if (StringHelper.containsNonWhitespace(params.getAuthor())) { // fuzzy author search
@@ -348,6 +353,11 @@ public class RepositoryEntryAuthorQueries {
 			List<Long> organisationKeys = params.getEntryOrganisation().stream()
 					.map(OrganisationRef::getKey).collect(Collectors.toList());
 			dbQuery.setParameter("organisationKeys", organisationKeys);
+		}
+		if (params.getTaxonomyLevels() != null) {
+			List<Long> taxonomyLevelKeys = params.getTaxonomyLevels().stream()
+					.map(TaxonomyLevelRef::getKey).collect(Collectors.toList());
+			dbQuery.setParameter("taxonomyLevelKeys", taxonomyLevelKeys);
 		}
 		return dbQuery;
 	}
