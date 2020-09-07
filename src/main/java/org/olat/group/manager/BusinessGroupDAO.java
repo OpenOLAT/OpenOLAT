@@ -1152,6 +1152,15 @@ public class BusinessGroupDAO {
 			}
 		}
 		
+		if(params.getManaged() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			if(params.getManaged().booleanValue()) {
+				sb.append(" (bgi.managedFlagsString is not null or bgi.externalId is not null)");
+			} else {
+				sb.append(" (bgi.managedFlagsString is null and bgi.externalId is null)");
+			}
+		}
+		
 		if(params.getRepositoryEntry() != null) {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append(" bgi.baseGroup.key in (select entryRel.group.key from repoentrytogroup as entryRel where entryRel.entry.key=:repoEntryKey)");

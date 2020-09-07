@@ -65,6 +65,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	private FormLink searchButton;
 	private SingleSelection rolesEl;
 	private SingleSelection publicEl;
+	private SingleSelection managedEl;
 	private SingleSelection resourceEl;
 	private MultipleSelectionElement headlessEl;
 	
@@ -75,6 +76,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	private String[] roleKeys = {"all", "owner", "attendee", "waiting"};
 	private String[] adminRoleKeys = {"none", "all", "owner", "attendee", "waiting"};
 	private String[] openKeys = {"all", "yes", "no"};
+	private String[] managedKeys = {"all", "yes", "no"};
 	private String[] resourceKeys = {"all", "yes", "no"};
 	
 	private final boolean admin;
@@ -160,6 +162,14 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		publicEl.setElementCssClass("o_sel_group_search_public_field");
 		publicEl.select("all", true);
 
+		//managed
+		String[] managedValues = new String[managedKeys.length];
+		for(int i=managedKeys.length; i-->0; ) {
+			managedValues[i] = translate("search." + managedKeys[i]);
+		}
+		managedEl = uifactory.addRadiosHorizontal("managedBg", "search.managed", rightContainer, managedKeys, managedValues);
+		managedEl.select("all", true);
+		
 		//resources
 		String[] resourceValues = new String[resourceKeys.length];
 		for(int i=resourceKeys.length; i-->0; ) {
@@ -307,6 +317,14 @@ public class BusinessGroupSearchController extends FormBasicController implement
 			}
 		}
 		
+		if(e.getManaged() != null && managedEl != null) {
+			if(e.getManaged().booleanValue()) {
+				managedEl.select("yes", true);
+			} else {
+				managedEl.select("no", true);
+			}
+		}
+		
 		if(e.getResources() != null && resourceEl != null) {
 			if(e.getResources().booleanValue()) {
 				resourceEl.select("yes", true);
@@ -348,6 +366,14 @@ public class BusinessGroupSearchController extends FormBasicController implement
 				e.setPublicGroups(Boolean.TRUE);
 			} else if(publicEl.isSelected(2)) {
 				e.setPublicGroups(Boolean.FALSE);
+			}
+		}
+		
+		if(managedEl.isVisible() && managedEl.isOneSelected()) {
+			if(managedEl.isSelected(1)) {
+				e.setManaged(Boolean.TRUE);
+			} else if(managedEl.isSelected(2)) {
+				e.setManaged(Boolean.FALSE);
 			}
 		}
 		

@@ -42,6 +42,7 @@ public class SearchEvent extends Event implements StateEntry {
 	private boolean waiting;
 	private boolean headless = false;
 	private Boolean publicGroups;
+	private Boolean managed;
 	private Boolean resources;
 	
 	public SearchEvent() {
@@ -119,6 +120,14 @@ public class SearchEvent extends Event implements StateEntry {
 	public void setPublicGroups(Boolean publicGroups) {
 		this.publicGroups = publicGroups;
 	}
+	
+	public Boolean getManaged() {
+		return managed;
+	}
+
+	public void setManaged(Boolean managed) {
+		this.managed = managed;
+	}
 
 	public Boolean getResources() {
 		return resources;
@@ -127,7 +136,7 @@ public class SearchEvent extends Event implements StateEntry {
 	public void setResources(Boolean resources) {
 		this.resources = resources;
 	}
-	
+
 	public boolean isHeadless() {
 		return headless;
 	}
@@ -147,6 +156,7 @@ public class SearchEvent extends Event implements StateEntry {
 		params.setAttendee(isAttendee());
 		params.setWaiting(isWaiting());
 		params.setPublicGroups(getPublicGroups());
+		params.setManaged(getManaged());
 		params.setResources(getResources());
 		params.setHeadless(isHeadless());
 		return params;

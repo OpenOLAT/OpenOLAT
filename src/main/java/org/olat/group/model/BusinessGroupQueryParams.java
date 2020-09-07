@@ -43,6 +43,7 @@ public class BusinessGroupQueryParams {
 	private boolean attendee;
 	private boolean waiting;
 	private Boolean publicGroups;
+	private Boolean managed;
 	private boolean marked;
 	private Boolean resources;
 	private boolean headless = false;
@@ -146,6 +147,14 @@ public class BusinessGroupQueryParams {
 
 	public void setPublicGroups(Boolean publicGroups) {
 		this.publicGroups = publicGroups;
+	}
+
+	public Boolean getManaged() {
+		return managed;
+	}
+
+	public void setManaged(Boolean managed) {
+		this.managed = managed;
 	}
 
 	public boolean isMarked() {
