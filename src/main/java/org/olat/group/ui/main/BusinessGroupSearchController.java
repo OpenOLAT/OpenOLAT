@@ -20,11 +20,13 @@
 package org.olat.group.ui.main;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -43,6 +45,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupModule;
 
@@ -68,6 +71,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	private SingleSelection managedEl;
 	private SingleSelection resourceEl;
 	private MultipleSelectionElement headlessEl;
+	private TextElement lastUsageEl;
 	
 	private final boolean showRoles;
 	private final boolean showAdminTools;
@@ -184,6 +188,17 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		headlessEl = uifactory.addCheckboxesHorizontal("headless.groups", "search.headless", rightContainer, keys, values);
 		headlessEl.setElementCssClass("o_sel_group_search_headless_field");
 		headlessEl.setVisible(showAdminTools);
+		
+		// Last usage
+		String page = velocity_root + "/last_usage.html";
+		FormLayoutContainer lastUsageCont = FormLayoutContainer.createCustomFormLayout("lastUsage", getTranslator(), page);
+		rightContainer.add("lastUsage", lastUsageCont);
+		lastUsageCont.setLabel("search.last.usage", null);
+		lastUsageCont.setRootForm(mainForm);
+		
+		lastUsageEl = uifactory.addTextElement("search.last.usage", 10, null, lastUsageCont);
+		((AbstractComponent)lastUsageEl.getComponent()).setDomReplacementWrapperRequired(false);
+		lastUsageEl.setDisplaySize(5);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
@@ -250,7 +265,26 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	protected boolean validateFormLogic(UserRequest ureq) {
 		if(!enabled) return true;
 		
-		return super.validateFormLogic(ureq);
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		lastUsageEl.clearError();
+		if (lastUsageEl != null && lastUsageEl.isVisible()) {
+			String lastUsage = lastUsageEl.getValue();
+			if (StringHelper.containsNonWhitespace(lastUsage)) {
+				try {
+					int lastUsageInt = Integer.parseInt(lastUsage);
+					if (lastUsageInt < 1) {
+						allOk &= false;
+						lastUsageEl.setErrorKey("error.int.positive", null);
+					}
+				} catch(Exception e) {
+					allOk &= false;
+					lastUsageEl.setErrorKey("error.int.positive", null);
+				}
+			}
+		}
+		
+		return allOk;
 	}
 
 	@Override
@@ -275,7 +309,9 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton) {
-			fireSearchEvent(ureq);
+			if (validateFormLogic(ureq)) {
+				fireSearchEvent(ureq);
+			}
 		}
 	}
 	
@@ -384,6 +420,13 @@ public class BusinessGroupSearchController extends FormBasicController implement
 				e.setResources(Boolean.FALSE);
 			}
 		}
+		
+		if (StringHelper.containsNonWhitespace(lastUsageEl.getValue())) {
+			Integer lastUsage = Integer.valueOf(lastUsageEl.getValue());
+			Date lastUsageBefore = DateUtils.addDays(new Date(), -lastUsage.intValue());
+			e.setLastUsageBefore(lastUsageBefore);
+		}
+		
 		fireEvent(ureq, e);
 	}
 }

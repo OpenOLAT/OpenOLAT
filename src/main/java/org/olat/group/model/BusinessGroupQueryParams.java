@@ -19,6 +19,7 @@
 **/
 package org.olat.group.model;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.repository.RepositoryEntryRef;
@@ -48,6 +49,7 @@ public class BusinessGroupQueryParams {
 	private Boolean resources;
 	private boolean headless = false;
 	private boolean authorConnection;
+	private Date lastUsageBefore;
 	
 	private List<Long> businessGroupKeys;
 	private RepositoryEntryRef repositoryEntry;
@@ -215,5 +217,13 @@ public class BusinessGroupQueryParams {
 	 */
 	public void setHeadless(boolean headless) {
 		this.headless = headless;
+	}
+
+	public Date getLastUsageBefore() {
+		return lastUsageBefore;
+	}
+
+	public void setLastUsageBefore(Date lastUsageBefore) {
+		this.lastUsageBefore = lastUsageBefore;
 	}
 }
