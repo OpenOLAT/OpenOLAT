@@ -173,6 +173,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		}
 		managedEl = uifactory.addRadiosHorizontal("managedBg", "search.managed", rightContainer, managedKeys, managedValues);
 		managedEl.select("all", true);
+		managedEl.setVisible(managedEnable);
 		
 		//resources
 		String[] resourceValues = new String[resourceKeys.length];
