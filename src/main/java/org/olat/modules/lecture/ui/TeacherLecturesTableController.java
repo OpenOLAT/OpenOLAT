@@ -111,6 +111,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private final String id;
 	private final boolean admin;
 	private final boolean sortAsc;
+	private final int defaultPageSize;
 	private final String emptyI18nKey;
 	private final boolean withTeachers;
 	private final boolean withAssessment;
@@ -129,7 +130,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private AssessmentModeManager assessmentModeMgr;
 	
 	public TeacherLecturesTableController(UserRequest ureq, WindowControl wControl,
-			boolean admin, String emptyI18nKey, boolean sortAsc, String id,
+			boolean admin, String emptyI18nKey, boolean sortAsc, String id, int defaultPageSize,
 			boolean withRepositoryEntry, boolean withTeachers, boolean withAssessment) {
 		super(ureq, wControl, "teacher_view_table");
 		this.id = id;
@@ -138,6 +139,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		this.emptyI18nKey = emptyI18nKey;
 		this.withTeachers = withTeachers;
 		this.withAssessment = withAssessment;
+		this.defaultPageSize = defaultPageSize;
 		this.withRepositoryEntry = withRepositoryEntry;
 		
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
@@ -178,7 +180,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(toolsCol);
 		
 		tableModel = new TeacherOverviewDataModel(columnsModel, getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, defaultPageSize, false, getTranslator(), formLayout);
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(TeachCols.date.name(), sortAsc));
