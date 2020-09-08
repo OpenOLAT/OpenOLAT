@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -129,6 +130,9 @@ public class OAuthAdminController extends FormBasicController {
 		if(oauthModule.isAllowUserCreation()) {
 			userCreationEl.select(keys[0], true);
 		}
+		String callbackUrl = "<span class='o_copy_code o_nowrap'><input type='text' value='" + oauthModule.getCallbackUrl() + "' onclick='this.select()'/></span>";
+		uifactory.addStaticTextElement("oauth.redirect.uri", callbackUrl, oauthCont);
+
 
 		initLinkedInForm(formLayout);
 		initTwitterForm(formLayout);
@@ -293,12 +297,13 @@ public class OAuthAdminController extends FormBasicController {
 		
 		String azureAdfsTenant = oauthModule.getAzureAdfsTenant();
 		azureAdfsTenantEl = uifactory.addTextElement("azure.adfs.tenant", "azure.adfs.tenant", 256, azureAdfsTenant, adfsCont);
-		azureAdfsTenantEl.setExampleKey("azure.adfs.tenant.hint", null);
+		azureAdfsTenantEl.setHelpText(translate("azure.adfs.tenant.hint"));
 		
 		String azureAdfsApiKey = oauthModule.getAzureAdfsApiKey();
 		azureAdfsApiKeyEl = uifactory.addTextElement("azure.adfs.id", "adfs.api.id", 256, azureAdfsApiKey, adfsCont);
 		String azureAdfsApiSecret = oauthModule.getAzureAdfsApiSecret();
 		azureAdfsApiSecretEl = uifactory.addTextElement("azure.adfs.secret", "adfs.api.secret", 256, azureAdfsApiSecret, adfsCont);
+				
 		
 		if(oauthModule.isAzureAdfsEnabled()) {
 			azureAdfsEl.select(keys[0], true);

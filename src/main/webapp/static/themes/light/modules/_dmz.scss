@@ -220,9 +220,13 @@ body.o_dmz {
 			@include button-variant(#fff, $brand-primary, darken($brand-primary, 5%));
 		}
 		
+		.o_sel_auth_azureAdfs {
+			@include button-variant(#fff, rgb(0, 114, 198), darken(rgb(0, 114, 198), 5%));
+		
+		}
 		.btn-default.o_sel_auth_OpenIDConnect {
 			@include button-variant(#fff, $brand-primary, darken($brand-primary, 5%));
-		}
+		}		
 	}
 }
 
