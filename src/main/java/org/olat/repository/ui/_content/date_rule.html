@@ -1,5 +1,5 @@
 <div class='form-inline'>
-	$r.render("${prefix}-value") $r.render("${prefix}-unit") <span class="form-control-static">$r.translate("after.course.end")</span>
+	$r.render("${prefix}-value") $r.render("${prefix}-unit") <span class="form-control-static">$ruleMsg</span>
 	#if($f.hasError("${prefix}-value"))
 		<br/>$r.render("${prefix}-value_ERROR")
 	#end

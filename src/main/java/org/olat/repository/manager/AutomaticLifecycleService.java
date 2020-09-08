@@ -59,6 +59,7 @@ public class AutomaticLifecycleService {
 	public void manage() {
 		close();
 		delete();
+		definitivelyDelete();
 	}
 	
 	private void close() {
@@ -66,12 +67,12 @@ public class AutomaticLifecycleService {
 		if(StringHelper.containsNonWhitespace(autoClose)) {
 			RepositoryEntryLifeCycleValue autoCloseVal = RepositoryEntryLifeCycleValue.parse(autoClose);
 			Date markerDate = autoCloseVal.limitDate(new Date());
-			List<RepositoryEntry> entriesToClose = getRepositoryEntriesToClose(markerDate);
+			List<RepositoryEntry> entriesToClose = getRepositoryEntries(markerDate, RepositoryEntryStatusEnum.preparationToPublished());
 			for(RepositoryEntry entry:entriesToClose) {
 				try {
 					boolean closeManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close);
 					if(!closeManaged) {
-						log.info(Tracing.M_AUDIT, "Automatic closing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
+						log.info(Tracing.M_AUDIT, "Automatic closing course: {} [{}]", entry.getDisplayname(), entry.getKey());
 						repositoryService.closeRepositoryEntry(entry, null, false);
 						dbInstance.commit();
 					}
@@ -83,13 +84,57 @@ public class AutomaticLifecycleService {
 		}
 	}
 	
-	public List<RepositoryEntry> getRepositoryEntriesToClose(Date date) {
+	private void delete() {
+		String autoDelete = repositoryModule.getLifecycleAutoDelete();
+		if(StringHelper.containsNonWhitespace(autoDelete)) {
+			RepositoryEntryLifeCycleValue autoDeleteVal = RepositoryEntryLifeCycleValue.parse(autoDelete);
+			Date markerDate = autoDeleteVal.limitDate(new Date());
+			List<RepositoryEntry> entriesToDelete = getRepositoryEntries(markerDate, RepositoryEntryStatusEnum.preparationToClosed());
+			for(RepositoryEntry entry:entriesToDelete) {
+				try {
+					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
+					if(!deleteManaged) {
+						log.info(Tracing.M_AUDIT, "Automatic deleting (soft) course: {} [{}]", entry.getDisplayname(), entry.getKey() );
+						repositoryService.deleteSoftly(entry, null, true, false);
+						dbInstance.commit();
+					}
+				} catch (Exception e) {
+					log.error("",  e);
+					dbInstance.commitAndCloseSession();
+				}
+			}
+		}
+	}
+	
+	private void definitivelyDelete() {
+		String autoDefinitivelyDelete = repositoryModule.getLifecycleAutoDefinitivelyDelete();
+		if(StringHelper.containsNonWhitespace(autoDefinitivelyDelete)) {
+			RepositoryEntryLifeCycleValue autoDefinitivelyDeleteVal = RepositoryEntryLifeCycleValue.parse(autoDefinitivelyDelete);
+			Date markerDate = autoDefinitivelyDeleteVal.limitDate(new Date());
+			List<RepositoryEntry> entriesToDelete = getRepositoryEntriesInTrash(markerDate);
+			for(RepositoryEntry entry:entriesToDelete) {
+				try {
+					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
+					if(!deleteManaged) {
+						log.info(Tracing.M_AUDIT, "Automatic deleting (definitively) course: {} [{}]", entry.getDisplayname(), entry.getKey());
+						repositoryService.deletePermanently(entry, null, null, null);
+						dbInstance.commit();
+					}
+				} catch (Exception e) {
+					log.error("",  e);
+					dbInstance.commitAndCloseSession();
+				}
+			}
+		}
+	}
+	
+	protected List<RepositoryEntry> getRepositoryEntries(Date date, RepositoryEntryStatusEnum[] states) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as ores")
-		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" inner join fetch v.lifecycle as lifecycle")
-		  .append(" where lifecycle.validTo<:now and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
+		  .append(" left join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where lifecycle.validTo<:now and v.status ").in(states);
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -102,35 +147,13 @@ public class AutomaticLifecycleService {
 				.getResultList();
 	}
 	
-	private void delete() {
-		String autoDelete = repositoryModule.getLifecycleAutoDelete();
-		if(StringHelper.containsNonWhitespace(autoDelete)) {
-			RepositoryEntryLifeCycleValue autoDeleteVal = RepositoryEntryLifeCycleValue.parse(autoDelete);
-			Date markerDate = autoDeleteVal.limitDate(new Date());
-			List<RepositoryEntry> entriesToDelete = getRepositoryEntriesToDelete(markerDate);
-			for(RepositoryEntry entry:entriesToDelete) {
-				try {
-					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
-					if(!deleteManaged) {
-						log.info(Tracing.M_AUDIT, "Automatic deleting (soft) course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
-						repositoryService.deleteSoftly(entry, null, true, false);
-						dbInstance.commit();
-					}
-				} catch (Exception e) {
-					log.error("",  e);
-					dbInstance.commitAndCloseSession();
-				}
-			}
-		}
-	}
-	
-	public List<RepositoryEntry> getRepositoryEntriesToDelete(Date date) {
+	protected List<RepositoryEntry> getRepositoryEntriesInTrash(Date date) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as ores")
-		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" inner join fetch v.lifecycle as lifecycle")
-		  .append(" where lifecycle.validTo<:now and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
+		  .append(" left join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where v.deletionDate<:now and v.status ").in(RepositoryEntryStatusEnum.trash);
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);

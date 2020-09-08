@@ -26,7 +26,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -47,11 +46,9 @@ import org.olat.core.id.Persistable;
 @Cacheable(false)
 @Entity(name="repositoryentrylifecycle")
 @Table(name="o_repositoryentry_cycle")
-@NamedQueries({
-	@NamedQuery(name="loadReLifeCycle", query="select relifecycle from repositoryentrylifecycle relifecycle where relifecycle.key=:key order by relifecycle.validFrom desc"),
-	@NamedQuery(name="loadPublicReLifeCycle", query="select relifecycle from repositoryentrylifecycle relifecycle where relifecycle.privateCycle=false order by relifecycle.validFrom desc"),
-	@NamedQuery(name="countPublicReLifeCycle", query="select count(relifecycle) from repositoryentrylifecycle relifecycle where relifecycle.privateCycle=false")
-})
+@NamedQuery(name="loadReLifeCycle", query="select relifecycle from repositoryentrylifecycle relifecycle where relifecycle.key=:key order by relifecycle.validFrom desc")
+@NamedQuery(name="loadPublicReLifeCycle", query="select relifecycle from repositoryentrylifecycle relifecycle where relifecycle.privateCycle=false order by relifecycle.validFrom desc")
+@NamedQuery(name="countPublicReLifeCycle", query="select count(relifecycle) from repositoryentrylifecycle relifecycle where relifecycle.privateCycle=false")
 public class RepositoryEntryLifecycle implements Persistable, CreateInfo, ModifiedInfo {
 
 	private static final long serialVersionUID = -8484159601386853047L;

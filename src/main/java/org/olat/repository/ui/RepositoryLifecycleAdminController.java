@@ -55,10 +55,18 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		};
 	
 	private MultipleSelectionElement notificationEl;
-	private MultipleSelectionElement toCloseEl, toDeleteEl;
-	private TextElement closeValueEl, deleteValueEl;
-	private SingleSelection closeUnitEl, deleteUnitEl;
-	private FormLayoutContainer closeRuleCont, deleteRuleCont;
+	private MultipleSelectionElement toCloseEl;
+	private MultipleSelectionElement toDeleteEl;
+	private MultipleSelectionElement toDefinitivelyDeleteEl;
+	private TextElement closeValueEl;
+	private TextElement deleteValueEl;
+	private TextElement definitivelyDeleteValueEl;
+	private SingleSelection closeUnitEl;
+	private SingleSelection deleteUnitEl;
+	private SingleSelection definitivelyDeleteUnitEl;
+	private FormLayoutContainer closeRuleCont;
+	private FormLayoutContainer deleteRuleCont;
+	private FormLayoutContainer definitivelyDeleteRuleCont;
 	
 	@Autowired
 	private RepositoryModule repositoryModule;
@@ -83,53 +91,9 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 				translate(RepositoryEntryLifeCycleUnit.month.name()), translate(RepositoryEntryLifeCycleUnit.year.name())
 			};
 		
-		RepositoryEntryLifeCycleValue autoCloseValue = repositoryModule.getLifecycleAutoCloseValue();
-		String[] toCloseValues = new String[] { translate("change.to.close.text") };
-		toCloseEl = uifactory.addCheckboxesHorizontal("change.to.close", lifecycleCont, onKeys, toCloseValues);
-		toCloseEl.addActionListener(FormEvent.ONCHANGE);
-		if(autoCloseValue != null) {
-			toCloseEl.select(onKeys[0], true);
-		}
-		
-		closeRuleCont = FormLayoutContainer.createCustomFormLayout("close.".concat(id), lifecycleCont.getTranslator(), page);
-		closeRuleCont.setLabel(null, null);
-		closeRuleCont.setVisible(toCloseEl.isAtLeastSelected(1));
-		closeRuleCont.contextPut("prefix", "clo");
-		lifecycleCont.add(closeRuleCont);
-		closeRuleCont.setRootForm(mainForm);
-		
-		String currentCloseValue = autoCloseValue == null ? null : Integer.toString(autoCloseValue.getValue());
-		closeValueEl = uifactory.addTextElement("clo-value", null, 128, currentCloseValue, closeRuleCont);
-		closeValueEl.setDomReplacementWrapperRequired(false);
-		closeValueEl.setDisplaySize(3);
-
-		closeUnitEl = uifactory.addDropdownSingleselect("clo-unit", null, closeRuleCont, unitKeys, unitValues, null);
-		closeUnitEl.setDomReplacementWrapperRequired(false);
-		selectUnitEl(closeUnitEl, autoCloseValue);
-		
-		RepositoryEntryLifeCycleValue autoDeleteValue = repositoryModule.getLifecycleAutoDeleteValue();
-		String[] toDeleteValues = new String[] { translate("change.to.delete.text") };
-		toDeleteEl = uifactory.addCheckboxesHorizontal("change.to.delete", lifecycleCont, onKeys, toDeleteValues);
-		toDeleteEl.addActionListener(FormEvent.ONCHANGE);
-		if(autoDeleteValue != null) {
-			toDeleteEl.select(onKeys[0], true);
-		}
-		
-		deleteRuleCont = FormLayoutContainer.createCustomFormLayout("delete.".concat(id), lifecycleCont.getTranslator(), page);
-		deleteRuleCont.setLabel(null, null);
-		deleteRuleCont.setVisible(toDeleteEl.isAtLeastSelected(1));
-		deleteRuleCont.contextPut("prefix", "del");
-		lifecycleCont.add(deleteRuleCont);
-		deleteRuleCont.setRootForm(mainForm);
-		
-		String currentDeleteValue = autoDeleteValue == null ? null : Integer.toString(autoDeleteValue.getValue());
-		deleteValueEl = uifactory.addTextElement("del-value", null, 128, currentDeleteValue, deleteRuleCont);
-		deleteValueEl.setDomReplacementWrapperRequired(false);
-		deleteValueEl.setDisplaySize(3);
-
-		deleteUnitEl = uifactory.addDropdownSingleselect("del-unit", null, deleteRuleCont, unitKeys, unitValues, null);
-		deleteUnitEl.setDomReplacementWrapperRequired(false);
-		selectUnitEl(deleteUnitEl, autoDeleteValue);
+		initCloseForm(id, page, unitValues, lifecycleCont);
+		initDeleteForm(id, page, unitValues, lifecycleCont);
+		initDefinitivelyDeleteForm(id, page, unitValues, lifecycleCont);
 		
 		FormLayoutContainer notificationsCont = FormLayoutContainer.createDefaultFormLayout("notis", getTranslator());
 		notificationsCont.setFormTitle(translate("repository.admin.lifecycle.notifications.title"));
@@ -148,6 +112,87 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		buttonsCont.setRootForm(mainForm);
 		notificationsCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
+	
+	private void initCloseForm(String id, String page, String[] unitValues, FormLayoutContainer lifecycleCont) {
+		RepositoryEntryLifeCycleValue autoCloseValue = repositoryModule.getLifecycleAutoCloseValue();
+		String[] toCloseValues = new String[] { translate("change.to.close.text") };
+		toCloseEl = uifactory.addCheckboxesHorizontal("change.to.close", lifecycleCont, onKeys, toCloseValues);
+		toCloseEl.addActionListener(FormEvent.ONCHANGE);
+		if(autoCloseValue != null) {
+			toCloseEl.select(onKeys[0], true);
+		}
+		
+		closeRuleCont = FormLayoutContainer.createCustomFormLayout("close.".concat(id), lifecycleCont.getTranslator(), page);
+		closeRuleCont.contextPut("ruleMsg", translate("after.course.end"));
+		closeRuleCont.setLabel(null, null);
+		closeRuleCont.setVisible(toCloseEl.isAtLeastSelected(1));
+		closeRuleCont.contextPut("prefix", "clo");
+		lifecycleCont.add(closeRuleCont);
+		closeRuleCont.setRootForm(mainForm);
+		
+		String currentCloseValue = autoCloseValue == null ? null : Integer.toString(autoCloseValue.getValue());
+		closeValueEl = uifactory.addTextElement("clo-value", null, 128, currentCloseValue, closeRuleCont);
+		closeValueEl.setDomReplacementWrapperRequired(false);
+		closeValueEl.setDisplaySize(3);
+
+		closeUnitEl = uifactory.addDropdownSingleselect("clo-unit", null, closeRuleCont, unitKeys, unitValues, null);
+		closeUnitEl.setDomReplacementWrapperRequired(false);
+		selectUnitEl(closeUnitEl, autoCloseValue);
+	}
+	
+	private void initDeleteForm(String id, String page, String[] unitValues, FormLayoutContainer lifecycleCont) {
+		RepositoryEntryLifeCycleValue autoDeleteValue = repositoryModule.getLifecycleAutoDeleteValue();
+		String[] toDeleteValues = new String[] { translate("change.to.delete.text") };
+		toDeleteEl = uifactory.addCheckboxesHorizontal("change.to.delete", lifecycleCont, onKeys, toDeleteValues);
+		toDeleteEl.addActionListener(FormEvent.ONCHANGE);
+		if(autoDeleteValue != null) {
+			toDeleteEl.select(onKeys[0], true);
+		}
+		
+		deleteRuleCont = FormLayoutContainer.createCustomFormLayout("delete.".concat(id), lifecycleCont.getTranslator(), page);
+		deleteRuleCont.contextPut("ruleMsg", translate("after.course.end"));
+		deleteRuleCont.setLabel(null, null);
+		deleteRuleCont.setVisible(toDeleteEl.isAtLeastSelected(1));
+		deleteRuleCont.contextPut("prefix", "del");
+		lifecycleCont.add(deleteRuleCont);
+		deleteRuleCont.setRootForm(mainForm);
+		
+		String currentDeleteValue = autoDeleteValue == null ? null : Integer.toString(autoDeleteValue.getValue());
+		deleteValueEl = uifactory.addTextElement("del-value", null, 128, currentDeleteValue, deleteRuleCont);
+		deleteValueEl.setDomReplacementWrapperRequired(false);
+		deleteValueEl.setDisplaySize(3);
+
+		deleteUnitEl = uifactory.addDropdownSingleselect("del-unit", null, deleteRuleCont, unitKeys, unitValues, null);
+		deleteUnitEl.setDomReplacementWrapperRequired(false);
+		selectUnitEl(deleteUnitEl, autoDeleteValue);
+	}
+	
+	private void initDefinitivelyDeleteForm(String id, String page, String[] unitValues, FormLayoutContainer lifecycleCont) {
+		RepositoryEntryLifeCycleValue autoDefinitivelyDeleteValue = repositoryModule.getLifecycleAutoDefinitivelyDeleteValue();
+		String[] toDeleteValues = new String[] { translate("change.to.delete.definitively.text") };
+		toDefinitivelyDeleteEl = uifactory.addCheckboxesHorizontal("change.to.delete.definitively", lifecycleCont, onKeys, toDeleteValues);
+		toDefinitivelyDeleteEl.addActionListener(FormEvent.ONCHANGE);
+		if(autoDefinitivelyDeleteValue != null) {
+			toDefinitivelyDeleteEl.select(onKeys[0], true);
+		}
+		
+		definitivelyDeleteRuleCont = FormLayoutContainer.createCustomFormLayout("def-delete.".concat(id), lifecycleCont.getTranslator(), page);
+		definitivelyDeleteRuleCont.contextPut("ruleMsg", translate("after.course.deletion"));
+		definitivelyDeleteRuleCont.setLabel(null, null);
+		definitivelyDeleteRuleCont.setVisible(toDefinitivelyDeleteEl.isAtLeastSelected(1));
+		definitivelyDeleteRuleCont.contextPut("prefix", "def-del");
+		lifecycleCont.add(definitivelyDeleteRuleCont);
+		definitivelyDeleteRuleCont.setRootForm(mainForm);
+		
+		String currentDeleteValue = autoDefinitivelyDeleteValue == null ? null : Integer.toString(autoDefinitivelyDeleteValue.getValue());
+		definitivelyDeleteValueEl = uifactory.addTextElement("def-del-value", null, 128, currentDeleteValue, definitivelyDeleteRuleCont);
+		definitivelyDeleteValueEl.setDomReplacementWrapperRequired(false);
+		definitivelyDeleteValueEl.setDisplaySize(3);
+
+		definitivelyDeleteUnitEl = uifactory.addDropdownSingleselect("def-del-unit", null, definitivelyDeleteRuleCont, unitKeys, unitValues, null);
+		definitivelyDeleteUnitEl.setDomReplacementWrapperRequired(false);
+		selectUnitEl(definitivelyDeleteUnitEl, autoDefinitivelyDeleteValue);
 	}
 	
 	private void selectUnitEl(SingleSelection unitEl, RepositoryEntryLifeCycleValue currentUnit) {
@@ -177,19 +222,15 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		
 		allOk &= validateFormLogic(toCloseEl, closeValueEl, closeUnitEl);
 		allOk &= validateFormLogic(toDeleteEl, deleteValueEl, deleteUnitEl);
+		allOk &= validateFormLogic(toDefinitivelyDeleteEl, definitivelyDeleteValueEl, definitivelyDeleteUnitEl);
 		
 		RepositoryEntryLifeCycleValue autoClose = getValue(toCloseEl, closeValueEl, closeUnitEl);
 		RepositoryEntryLifeCycleValue autoDelete = getValue(toDeleteEl, deleteValueEl, deleteUnitEl);
-
-		if(autoDelete != null) {
-			if(autoClose != null) {
-				if(autoDelete.compareTo(autoClose) <= 0) {
-					deleteValueEl.setErrorKey("error.lifecycle.after", null);
-					allOk &= false;
-				}
-			}
+		if(autoDelete != null && autoClose != null && autoDelete.compareTo(autoClose) <= 0) {
+			deleteValueEl.setErrorKey("error.lifecycle.after", null);
+			allOk &= false;
 		}
-		
+
 		return allOk;
 	}
 	
@@ -228,6 +269,8 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 			closeRuleCont.setVisible(toCloseEl.isAtLeastSelected(1));
 		} else if(toDeleteEl == source) {
 			deleteRuleCont.setVisible(toDeleteEl.isAtLeastSelected(1));
+		} else if(toDefinitivelyDeleteEl == source) {
+			definitivelyDeleteRuleCont.setVisible(toDefinitivelyDeleteEl.isAtLeastSelected(1));
 		}
 	}
 
@@ -237,6 +280,8 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		repositoryModule.setLifecycleAutoClose(autoClose);
 		String autoDelete = getStringValue(toDeleteEl, deleteValueEl, deleteUnitEl);
 		repositoryModule.setLifecycleAutoDelete(autoDelete);
+		String autoDefinitivelyDelete = getStringValue(toDefinitivelyDeleteEl, definitivelyDeleteValueEl, definitivelyDeleteUnitEl);
+		repositoryModule.setLifecycleAutoDefinitivelyDelete(autoDefinitivelyDelete);
 		boolean notification = notificationEl.isAtLeastSelected(1);
 		repositoryModule.setLifecycleNotificationByCloseDeleteEnabled(notification);
 	}

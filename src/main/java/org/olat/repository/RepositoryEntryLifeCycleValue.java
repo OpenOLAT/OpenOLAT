@@ -107,13 +107,14 @@ public class RepositoryEntryLifeCycleValue implements Comparable<RepositoryEntry
 
 	public static RepositoryEntryLifeCycleValue parse(String string) {
 		RepositoryEntryLifeCycleValue val = null;
-		if(StringHelper.containsNonWhitespace(string)) {
+		if(StringHelper.containsNonWhitespace(string) && !"-".equals(string)) {
 			char lastCh = string.charAt(string.length() - 1);
 			switch(lastCh) {
 				case 'y': val = parse(string, RepositoryEntryLifeCycleUnit.day); break;//day
 				case 'k': val = parse(string, RepositoryEntryLifeCycleUnit.week); break;//week
 				case 'h': val = parse(string, RepositoryEntryLifeCycleUnit.month); break;//month
 				case 'r': val = parse(string, RepositoryEntryLifeCycleUnit.year); break;//year
+				default: val = null;
 			}
 		}
 		return val;

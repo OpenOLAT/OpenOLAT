@@ -68,6 +68,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	
 	private static final String LIFECYCLE_AUTO_CLOSE = "repo.lifecycle.auto.close";
 	private static final String LIFECYCLE_AUTO_DELETE = "repo.lifecycle.auto.delete";
+	private static final String LIFECYCLE_AUTO_DEFINITIVELY_DELETE = "repo.lifecycle.auto.definitively.delete";
 	private static final String LIFECYCLE_NOTIFICATION_CLOSE_DELETE = "rrepo.lifecylce.notification.close.delete";
 	
 	private static final String TAXONOMY_TREE_KEY = "taxonomy.tree.key";
@@ -100,6 +101,8 @@ public class RepositoryModule extends AbstractSpringModule {
 	private String lifecycleAutoClose;
 	@Value("${repo.lifecycle.auto.delete:}")
 	private String lifecycleAutoDelete;
+	@Value("${repo.lifecycle.auto.definitively.delete:6month}")
+	private String lifecycleAutoDefinitivelyDelete;
 	@Value("${repo.lifecylce.notification.close.delete:}")
 	private String lifecycleNotificationByCloseDelete;
 	
@@ -212,6 +215,8 @@ public class RepositoryModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(autoDelete)) {
 			lifecycleAutoDelete = autoDelete;
 		}
+		
+		lifecycleAutoDefinitivelyDelete = getStringPropertyValue(LIFECYCLE_AUTO_DEFINITIVELY_DELETE, lifecycleAutoDefinitivelyDelete);
 		
 		String notificationCloseDelete = getStringPropertyValue(LIFECYCLE_NOTIFICATION_CLOSE_DELETE, true);
 		if(StringHelper.containsNonWhitespace(notificationCloseDelete)) {
@@ -376,8 +381,8 @@ public class RepositoryModule extends AbstractSpringModule {
 	}
 
 	public void setLifecycleAutoClose(String lifecycleAutoClose) {
-		this.lifecycleAutoClose = lifecycleAutoClose;
-		setStringProperty(LIFECYCLE_AUTO_CLOSE, lifecycleAutoClose, true);
+		this.lifecycleAutoClose = StringHelper.containsNonWhitespace(lifecycleAutoClose) ? lifecycleAutoClose : "-";
+		setStringProperty(LIFECYCLE_AUTO_CLOSE, this.lifecycleAutoClose, true);
 	}
 
 	public String getLifecycleAutoDelete() {
@@ -389,9 +394,23 @@ public class RepositoryModule extends AbstractSpringModule {
 	}
 
 	public void setLifecycleAutoDelete(String lifecycleAutoDelete) {
-		this.lifecycleAutoDelete = lifecycleAutoDelete;
-		setStringProperty(LIFECYCLE_AUTO_DELETE, lifecycleAutoDelete, true);
+		this.lifecycleAutoDelete = StringHelper.containsNonWhitespace(lifecycleAutoDelete) ? lifecycleAutoDelete : "-";
+		setStringProperty(LIFECYCLE_AUTO_DELETE, this.lifecycleAutoDelete, true);
 	}
+	
+	public String getLifecycleAutoDefinitivelyDelete() {
+		return lifecycleAutoDefinitivelyDelete;
+	}
+	
+	public RepositoryEntryLifeCycleValue getLifecycleAutoDefinitivelyDeleteValue() {
+		return RepositoryEntryLifeCycleValue.parse(lifecycleAutoDefinitivelyDelete);
+	}
+
+	public void setLifecycleAutoDefinitivelyDelete(String lifecycleAutoDefinitivelyDelete) {
+		this.lifecycleAutoDefinitivelyDelete = StringHelper.containsNonWhitespace(lifecycleAutoDefinitivelyDelete) ? lifecycleAutoDefinitivelyDelete: "-";
+		setStringProperty(LIFECYCLE_AUTO_DEFINITIVELY_DELETE, this.lifecycleAutoDefinitivelyDelete, true);
+	}
+	
 
 	public boolean isLifecycleNotificationByCloseDeleteEnabled() {
 		return "enabled".equals(lifecycleNotificationByCloseDelete);
