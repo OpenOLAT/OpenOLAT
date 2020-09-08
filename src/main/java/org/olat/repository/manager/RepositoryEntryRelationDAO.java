@@ -698,6 +698,20 @@ public class RepositoryEntryRelationDAO {
 			.getResultList();
 	}
 	
+	public RepositoryEntryToGroupRelation loadRelationByKey(Long key) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rel from repoentrytogroup as rel")
+		  .append(" inner join fetch rel.entry as entry")
+		  .append(" inner join fetch rel.group as baseGroup")
+		  .append(" where rel.key=:key");
+
+		List<RepositoryEntryToGroupRelation> relations = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)
+			.setParameter("key", key)
+			.getResultList();
+		return relations == null || relations.isEmpty() ? null : relations.get(0);
+	}
+	
 	public List<Long> getBusinessGroupsKeyOwnedAsAuthor(IdentityRef owner) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bg.key from repoentrytogroup as rel")
@@ -791,6 +805,38 @@ public class RepositoryEntryRelationDAO {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return keys != null && keys.size() > 0 && keys.get(0) != null;
+		return keys != null && !keys.isEmpty() && keys.get(0) != null;
+	}
+	
+	public List<Long> getBrokenGroupDependencies(int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select relGroup.key, relGroup.defaultGroup, baseGroup.key, businessGroup.key, curEl.key, relOrg.key")
+		  .append(" from repoentrytogroup as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
+		  .append(" left join curriculumelement as curEl on (curEl.group.key=baseGroup.key)")
+		  .append(" left join organisation as relOrg on (relOrg.group.key=baseGroup.key)")
+		  .append(" where relGroup.defaultGroup=false and businessGroup.key is null and curEl.key is null and relOrg.key is null")
+		  .append(" order by relGroup.key");
+
+		List<Object[]> dependenciesRaw = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
+		List<Long> relationKeys = new ArrayList<>();
+		for(Object[] dependencies:dependenciesRaw) {
+			Long relationKey = (Long)dependencies[0];
+			Boolean defaultGroup = (Boolean)dependencies[1];
+			Long businessGroupKey = (Long)dependencies[3];
+			Long curriculumElementKey = (Long)dependencies[4];
+			Long organisationKey = (Long)dependencies[5];
+			if(defaultGroup != null && !defaultGroup.booleanValue()
+					&& businessGroupKey == null && curriculumElementKey == null && organisationKey == null) {
+				relationKeys.add(relationKey);
+			}
+			
+		}
+		return relationKeys;
 	}
 }
