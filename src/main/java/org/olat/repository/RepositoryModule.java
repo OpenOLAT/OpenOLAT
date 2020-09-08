@@ -355,7 +355,7 @@ public class RepositoryModule extends AbstractSpringModule {
 			try {
 				return RepositoryEntryAllowToLeaveOptions.valueOf(defaultAllowToLeaveOption);
 			} catch (Exception e) {
-				log.error("Unrecognised option for repo.allow.to.leave: " + defaultAllowToLeaveOption);
+				log.error("Unrecognised option for repo.allow.to.leave: {}", defaultAllowToLeaveOption);
 				return RepositoryEntryAllowToLeaveOptions.atAnyTime;
 			}
 		}
@@ -373,7 +373,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	}
 
 	public String getLifecycleAutoClose() {
-		return lifecycleAutoClose;
+		return "-".equals(lifecycleAutoClose) ? null : lifecycleAutoClose;
 	}
 	
 	public RepositoryEntryLifeCycleValue getLifecycleAutoCloseValue() {
@@ -386,7 +386,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	}
 
 	public String getLifecycleAutoDelete() {
-		return lifecycleAutoDelete;
+		return "-".equals(lifecycleAutoDelete) ? null : lifecycleAutoDelete;
 	}
 	
 	public RepositoryEntryLifeCycleValue getLifecycleAutoDeleteValue() {
@@ -399,7 +399,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	}
 	
 	public String getLifecycleAutoDefinitivelyDelete() {
-		return lifecycleAutoDefinitivelyDelete;
+		return "-".equals(lifecycleAutoDefinitivelyDelete) ? null : lifecycleAutoDefinitivelyDelete;
 	}
 	
 	public RepositoryEntryLifeCycleValue getLifecycleAutoDefinitivelyDeleteValue() {
