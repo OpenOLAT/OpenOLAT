@@ -64,7 +64,7 @@
 		<targetJdk>1.8</targetJdk>
 		<org.springframework.version>5.2.8.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.4.21.Final</org.hibernate.version>
-		<apache.cxf>3.3.7</apache.cxf>
+		<apache.cxf>3.4.0</apache.cxf>
 		<apache.pdfbox>2.0.21</apache.pdfbox>
 		<apache.poi>4.1.2</apache.poi>
 		<apache.log4j>2.13.3</apache.log4j>
