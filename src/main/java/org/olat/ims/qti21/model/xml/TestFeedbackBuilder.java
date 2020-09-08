@@ -60,7 +60,7 @@ public class TestFeedbackBuilder {
 	
 	private static final Logger log = Tracing.createLoggerFor(TestFeedbackBuilder.class);
 	
-	private final TestFeedback testFeedback;
+	private TestFeedback testFeedback;
 	private final AssessmentTest assessmentTest;
 	
 	private String title;
@@ -79,6 +79,10 @@ public class TestFeedbackBuilder {
 	
 	public TestFeedback getTestFeedback() {
 		return testFeedback;
+	}
+	
+	public void setTestFeedback(TestFeedback testFeedback) {
+		this.testFeedback = testFeedback;
 	}
 	
 	public Identifier getModalFeedbackIdentifier() {

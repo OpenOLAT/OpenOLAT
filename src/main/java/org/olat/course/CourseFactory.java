@@ -1070,7 +1070,7 @@ public class CourseFactory {
 
 			String archiveName = cn.getType() + "_"
 					+ StringHelper.transformDisplayNameToFileSystemName(cn.getShortName())
-					+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+					+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())) + ".zip";
 
 			File exportFile = new File(exportPath, archiveName);
 			try(FileOutputStream fileStream = new FileOutputStream(exportFile);

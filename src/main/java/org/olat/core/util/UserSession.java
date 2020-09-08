@@ -84,7 +84,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private TransientAssessmentMode lockMode;
 	private List<TransientAssessmentMode> assessmentModes;
 	
-	private transient final WindowedResourceableList resourceList = new WindowedResourceableList();
+	private transient WindowedResourceableList resourceList = new WindowedResourceableList();
 	
 	private transient Map<String,Object> store;
 	/**
@@ -122,6 +122,8 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	protected Object readResolve() {
 		store = new HashMap<>(4);
 		nonClearedStore = new HashMap<>();
+		lockStores = new Object();
+		resourceList = new WindowedResourceableList();
 		singleUserSystemBus = CoordinatorManager.getInstance().getCoordinator().createSingleUserInstance();
 		savedSession = true;
 		authenticated = false;//reset authentication

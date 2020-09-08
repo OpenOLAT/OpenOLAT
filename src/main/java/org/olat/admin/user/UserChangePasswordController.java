@@ -71,6 +71,10 @@ public class UserChangePasswordController extends BasicController {
 		user = changeableUser;
 		mainVC = createVelocityContainer("pwd");
 		String authenticationUsername = olatAuthenticationSpi.getAuthenticationUsername(changeableUser);
+		if (authenticationUsername == null) { // create new authentication for provider OLAT
+			authenticationUsername = olatAuthenticationSpi.getOlatAuthusernameFromIdentity(changeableUser);
+		}
+		
 		chPwdForm = new ChangeUserPasswordForm(ureq, wControl, user, authenticationUsername);
 		listenTo(chPwdForm);
 		mainVC.put("chPwdForm", chPwdForm.getInitialComponent());
