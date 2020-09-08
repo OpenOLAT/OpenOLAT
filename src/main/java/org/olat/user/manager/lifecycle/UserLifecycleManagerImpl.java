@@ -205,7 +205,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		}
 		
 		for(Identity identity:identities) {
-			if(!vetoed.contains(identity)) {
+			if(vetoed.isEmpty() || !vetoed.contains(identity)) {
 				identity = setIdentityAsInactive(identity);
 				if(userModule.isMailAfterDeactivation()) {
 					sendEmail(identity, "mail.after.deactivation.subject", "mail.after.deactivation.body", "after deactiviation");
