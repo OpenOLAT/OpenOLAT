@@ -170,7 +170,7 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 		}
 	}
 	
-	protected String href(FlexiTableComponent source, int row) {
+	private String href(FlexiTableComponent source, int row) {
 		String href = null;
 		FlexiTableDataModel<?> model = source.getFlexiTableElement().getTableDataModel();
 		if(model instanceof FlexiBusinessPathModel) {

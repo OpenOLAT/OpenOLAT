@@ -60,6 +60,7 @@ import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -199,9 +200,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 		tableEl.setFilters("activity", getFilters(), false);
 		tableEl.setSelectedFilterKey("active");
 		
-		//VelocityContainer row = createVelocityContainer("curriculum_element_row");
-		//row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
-		//tableEl.setRowRenderer(row, this);
+		VelocityContainer row = createVelocityContainer("curriculum_element_row");
+		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		tableEl.setRowRenderer(row, this);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v3-"
 					+ (assessedIdentity.equals(getIdentity()) ? "" : "look-") + curriculum.getKey());
