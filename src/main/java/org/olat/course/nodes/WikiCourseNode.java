@@ -263,6 +263,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		} else {
 			currentPath = "wiki_"
 					+ StringHelper.transformDisplayNameToFileSystemName(getShortName())
+					+ "_" + getIdent()
 					+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
 		}
 		
