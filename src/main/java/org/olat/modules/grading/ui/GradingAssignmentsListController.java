@@ -156,6 +156,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	
 	private int counter = 0;
 	private Identity grader;
+	private final boolean isManager;
 	private RepositoryEntry testEntry;
 	private GradingAssessedIdentityVisibility testEntryAssessedIdentityVisibility;
 	
@@ -213,6 +214,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.grader = grader;
 		this.testEntry = testEntry;
+		isManager = (testEntry == null && grader == null);
 		myView = grader != null && grader.getKey().equals(getIdentity().getKey())
 				&& secCallback.canGrade() && !secCallback.canManage();
 		if(testEntry != null) {
@@ -386,7 +388,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			}
 		}
 		
-		if(testEntry == null && grader == null) {
+		if(isManager) {
 			searchParams.setManager(getIdentity());
 		}
 		
@@ -395,7 +397,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	
 	private GradingAssignmentRow forgeRow(GradingAssignmentWithInfos assignment) {
 		boolean canGrade = secCallback.canGrade() && secCallback.canGrade(assignment.getAssignment());
-		GradingAssignmentRow row = new GradingAssignmentRow(assignment, canGrade);
+		GradingAssignmentRow row = new GradingAssignmentRow(assignment, canGrade, isManager);
 		
 		// tools
 		String linkName = "tools-" + counter++;

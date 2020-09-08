@@ -53,12 +53,12 @@ public class GradingAssignmentRow implements GradingAssignmentRef {
 	
 	private FormLink toolsLink;
 	
-	public GradingAssignmentRow(GradingAssignmentWithInfos assignmentInfos, boolean canGrade) {
+	public GradingAssignmentRow(GradingAssignmentWithInfos assignmentInfos, boolean canGrade, boolean isManager) {
 		this.assignment = assignmentInfos.getAssignment();
 		referenceEntry = assignmentInfos.getReferenceEntry();
 		assessmentEntry = assignmentInfos.getAssessmentEntry();
 		assessedIdentity = assignmentInfos.getAssessedIdentity();
-		assessedIdentityVisible = assignmentInfos.isAssessedIdentityVisible();
+		assessedIdentityVisible = isManager || assignmentInfos.isAssessedIdentityVisible();
 		courseElementTitle = assignmentInfos.getCourseElementTitle();
 		taxonomyLevels = assignmentInfos.getTaxonomyLevels();
 		timeRecord = assignmentInfos.getTimeRecord();
