@@ -221,7 +221,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_ok:before { content: $fa-var-check; color: $brand-success}
 .o_icon_open_tree:before { content: $fa-var-caret-right;}
 .o_icon_open_togglebox:before { content: $fa-var-caret-right;}
-.o_icon_openolat:before, %o_icon_openolat { content:"\E600"; font-family: openolat; font-size: 10px; }
+.o_icon_openolat:before, %o_icon_openolat { content:"\E600"; font-family: openolat; }
 .o_icon_options:before { content: $fa-var-toggle-on; }
 .o_icon_origin:before { content: $fa-var-globe; }
 .o_icon_others:before { content: $fa-var-star; }

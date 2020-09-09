@@ -143,7 +143,9 @@ body.o_dmz {
 			}
 		}
 		.o_icon_provider_olat {
-			font-size: 1em;
+			font-size: 1.25em;
+			padding-top: 0.25em;
+			padding-bottom: 0.25em;
 		}
 	} 
 	.o_login_provider {
@@ -228,6 +230,11 @@ body.o_dmz {
 			@include button-variant(#fff, $brand-primary, darken($brand-primary, 5%));
 		}		
 	}
+}
+
+#o_navbar_about .o_icon_openolat:before {
+	font-size: 0.5em;
+	vertical-align: middle;
 }
 
 .o_old_browser {
