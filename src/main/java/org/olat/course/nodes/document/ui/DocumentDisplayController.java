@@ -275,8 +275,8 @@ public class DocumentDisplayController extends BasicController {
 		editDropdown.setEmbbeded(true);
 		editDropdown.setOrientation(DropdownOrientation.right);
 		
-		boolean isEntry = documentSource.getEntry() != null;
-		if (isEntry) {
+		boolean isNotEntry = documentSource.getEntry() == null;
+		if (isNotEntry) {
 			editMetadataLink = LinkFactory.createLink("config.metadata", mainVC, this);
 			editDropdown.addComponent(editMetadataLink);
 		}
@@ -291,7 +291,7 @@ public class DocumentDisplayController extends BasicController {
 		changeDocumentLink = LinkFactory.createLink("config.change.document", mainVC, this);
 		editDropdown.addComponent(changeDocumentLink);
 		
-		if (isEntry) {
+		if (isNotEntry) {
 			if (isCopyToRepositorySupported()) {
 				copyToRepositoryLink = LinkFactory.createLink("config.copy.to.repository", mainVC, this);
 				editDropdown.addComponent(copyToRepositoryLink);
