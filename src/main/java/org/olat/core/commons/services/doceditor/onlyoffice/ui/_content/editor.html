@@ -8,9 +8,21 @@
 		<script src="$apiUrl"></script>
 		<script>
 		/* <![CDATA[ */
-			jQuery('$id').ready(function(){
-				new DocsAPI.DocEditor("$id", $apiConfig);
-			});
+		## Make sure the OnlyOffice JS-Library is loaded and ready.
+		function loadEditor() {
+			var waitForLoad = function() {
+				if (typeof DocsAPI != "undefined") {
+					new DocsAPI.DocEditor("$id", $apiConfig);
+				} else {
+					window.setTimeout(waitForLoad, 500);
+				}
+			};
+			window.setTimeout(waitForLoad, 500);
+		}
+
+		jQuery("$id").ready(function() {
+			loadEditor();
+		});
 		/* ]]> */
 		</script>
 	#end
