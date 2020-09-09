@@ -93,7 +93,7 @@ public class Formats {
 		if (TEXT_EDIT.contains(lowerSuffix))         return true;
 		if (SPREADSHEET_EDIT.contains(lowerSuffix))  return true;
 		if (PRESENTATION_EDIT.contains(lowerSuffix)) return true;
-		if (Mode.VIEW.equals(mode)) {
+		if (Mode.VIEW == mode || Mode.EMBEDDED == mode) {
 			if (TEXT_VIEW.contains(lowerSuffix))         return true;
 			if (SPREADSHEET_VIEW.contains(lowerSuffix))  return true;
 			if (PRESENTATION_VIEW.contains(lowerSuffix)) return true;
