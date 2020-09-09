@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.olat.core.logging.AssertException;
+
 /**
  * 
  * Initial date: 15 nov. 2017<br>
@@ -102,7 +104,8 @@ public class FlexiTreeNodeComparator implements Comparator<FlexiTreeTableNode> {
 	
 	private FlexiTreeTableNode root(FlexiTreeTableNode node) {
 		FlexiTreeTableNode root = node;
-		for(FlexiTreeTableNode parent=node.getParent(); parent != null; parent = parent.getParent()) {
+		int i = 0;
+		for(FlexiTreeTableNode parent=node.getParent(); parent != null && i < 100; parent = parent.getParent(), i++) {
 			root = parent;
 		}
 		return root;
@@ -112,6 +115,9 @@ public class FlexiTreeNodeComparator implements Comparator<FlexiTreeTableNode> {
 		List<FlexiTreeTableNode> nodes = new ArrayList<>();
 		for(FlexiTreeTableNode parent=node; parent != null; parent = parent.getParent()) {
 			nodes.add(parent);
+			if(nodes.size() > 255) {
+				throw new AssertException("Flexi tree parent line in an infinite loop");
+			}
 		}
 		Collections.reverse(nodes);
 		return nodes;
