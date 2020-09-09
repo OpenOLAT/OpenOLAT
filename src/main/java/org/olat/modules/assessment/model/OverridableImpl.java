@@ -105,5 +105,15 @@ public class OverridableImpl<T> implements Overridable<T> {
 	public Date getModDate() {
 		return modDate;
 	}
+	
+	@Override
+	public Overridable<T> clone() {
+		OverridableImpl<T> clone = new OverridableImpl<>();
+		clone.current = this.current;
+		clone.original = this.original;
+		clone.modBy = this.modBy;
+		clone.modDate = this.modDate;
+		return clone;
+	}
 
 }

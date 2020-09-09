@@ -55,7 +55,7 @@ public class ConfigEndDateEvaluator implements EndDateEvaluator {
 
 	@Override
 	public Overridable<Date> getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
-		Overridable<Date> endDate = currentEvaluation.getEndDate();
+		Overridable<Date> endDate = currentEvaluation.getEndDate().clone();
 		if (AssessmentObligation.mandatory == currentEvaluation.getObligation().getCurrent()) {
 			Date configEndDate = configDateFunction.apply(courseNode);
 			if (configEndDate == null) {
