@@ -34,8 +34,8 @@ import javax.naming.ldap.LdapContext;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.olat.basesecurity.Authentication;
@@ -96,8 +96,8 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	@Rule
-	public EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder
+	@ClassRule
+	public static final EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder
 	        .newInstance()
 	        .usingDomainDsn("dc=olattest,dc=org")
 	        .importingLdifs("org/olat/ldap/junittestdata/olattest.ldif")
