@@ -189,6 +189,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private RepositoryEntry entry;
 	private String subIdent;
 	private final boolean authorMode;
+	private final Date controllerCreationDate = new Date();
 	
 	private final boolean anonym;
 	private final Identity assessedIdentity;
@@ -772,10 +773,19 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @return The test duration in milliseconds
 	 */
 	private long getAssessmentTestDuration() {
-		TestSessionState testSessionState = testSessionController.getTestSessionState();
+		if(testSessionController == null || candidateSession == null
+				|| testSessionController.getTestSessionState() == null) {
+			return -1;
+		}
 		
-		Date timestamp = new Date();
+		TestSessionState testSessionState = testSessionController.getTestSessionState();
 		Date startTime = testSessionState.getDurationIntervalStartTime();
+		if(startTime == null) {
+			startTime = candidateSession.getCreationDate();
+		}
+
+		Date timestamp = new Date();
+		startTime = startTime == null ? controllerCreationDate : startTime;
         final long durationDelta = timestamp.getTime() - startTime.getTime();
         return testSessionState.getDurationAccumulated() + durationDelta;
 	}
