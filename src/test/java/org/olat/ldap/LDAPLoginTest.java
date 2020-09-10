@@ -24,7 +24,7 @@ import javax.naming.ldap.LdapContext;
 
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +49,8 @@ public class LDAPLoginTest extends OlatTestCase {
 	@Autowired
 	private LDAPSyncConfiguration syncConfiguration;
 	
-	@Rule
-	public EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder
+	@ClassRule
+	public static final EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder
 	        .newInstance()
 	        .usingDomainDsn("dc=olattest,dc=org")
 	        .importingLdifs("org/olat/ldap/junittestdata/olattest.ldif")

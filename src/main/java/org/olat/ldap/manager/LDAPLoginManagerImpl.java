@@ -1399,12 +1399,12 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		for(LDAPUser ldapUser:ldapUsers) {
 			List<String> groupIds = ldapUser.getGroupIds();
 			List<String> coachedGroupIds = ldapUser.getCoachedGroupIds();
-			if((groupIds != null && groupIds.size() > 0) || (coachedGroupIds != null && coachedGroupIds.size() > 0)) {
+			if((groupIds != null && !groupIds.isEmpty()) || (coachedGroupIds != null && !coachedGroupIds.isEmpty())) {
 				IdentityRef identity = ldapUser.getCachedIdentity();
 				if(identity == null) {
-					log.error("Identity with dn=" + ldapUser.getDn() + " not found");
+					log.error("Identity with dn={} not found", ldapUser.getDn());
 				} else {
-					if(groupIds != null && groupIds.size() > 0) {
+					if(groupIds != null && !groupIds.isEmpty()) {
 						for(String groupId:groupIds) {
 							if(!cnToGroupMap.containsKey(groupId)) {
 								cnToGroupMap.put(groupId, new LDAPGroup(groupId));
@@ -1413,7 +1413,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 						}
 					}
 					
-					if(coachedGroupIds != null && coachedGroupIds.size() > 0) {
+					if(coachedGroupIds != null && !coachedGroupIds.isEmpty()) {
 						for(String coachedGroupId:coachedGroupIds) {
 							if(!cnToGroupMap.containsKey(coachedGroupId)) {
 								cnToGroupMap.put(coachedGroupId, new LDAPGroup(coachedGroupId));

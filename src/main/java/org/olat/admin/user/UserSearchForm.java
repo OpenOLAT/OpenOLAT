@@ -59,7 +59,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserSearchForm extends FormBasicController {
 	
-	private final boolean isAdminProps, cancelButton, allowReturnKey;
+	private final boolean isAdminProps;
+	private final boolean cancelButton;
+	private final boolean allowReturnKey;
 	private FormLink searchButton;
 	
 	protected TextElement login;
@@ -113,14 +115,16 @@ public class UserSearchForm extends FormBasicController {
 		// "this e-mail exists already"
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem ui = propFormItems.get(userPropertyHandler.getName());
-			String uiValue = userPropertyHandler.getStringValue(ui);
-			// add value for later non-empty search check
-			if (StringHelper.containsNonWhitespace(uiValue)) {
-				full.append(uiValue.trim());
-				filled = true;
+			if(ui != null) {
+				String uiValue = userPropertyHandler.getStringValue(ui);
+				// add value for later non-empty search check
+				if (StringHelper.containsNonWhitespace(uiValue)) {
+					full.append(uiValue.trim());
+					filled = true;
+				}
+	
+				lastFormElement = ui;
 			}
-
-			lastFormElement = ui;
 		}
 
 		// Don't allow searches with * or %  or @ chars only (wild cards). We don't want

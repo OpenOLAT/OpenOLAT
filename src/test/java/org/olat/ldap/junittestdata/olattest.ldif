@@ -88,6 +88,7 @@ mail: halpen@openolat.com
 o: Bauer
 sn: Alpen
 uid: halpen
+employeeNumber: 234
 userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
 
 dn: uid=kmeier,ou=person,dc=olattest,dc=org
@@ -102,6 +103,7 @@ mail: kmeier@openolat.com
 o: Informatik
 sn: Meier
 uid: kmeier
+employeeNumber: author
 userPassword: olat
 
 dn: uid=hhuerlimann,ou=person,dc=olattest,dc=org
@@ -163,6 +165,36 @@ uid: sramljak
 userPassword: olat
 modifyTimestamp: 20100630180000Z
 
+dn: uid=gstieger,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Gerda Stieger
+givenname: Gerda
+labeleduri: https://www.openolat.com/gstieger
+mail: gstieger@openolat.com
+o: Informatik
+sn: gstieger
+uid: gstieger
+userPassword: olat
+memberOf: ldapopenolat,ldapcoaching
+modifyTimestamp: 20100630180000Z
+
+dn: uid=hcoulter,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Heinrich Coulter
+givenname: Heinrich
+labeleduri: https://www.openolat.com/hcoulter
+mail: hcoulter@openolat.com
+o: Informatik
+sn: hcoulter
+uid: hcoulter
+userPassword: olat
+
 dn: uid=cguerrera,ou=person,dc=olattest,dc=org
 objectClass: organizationalPerson
 objectClass: person
@@ -205,6 +237,7 @@ mail: ahentschel@openolat.com
 o: Informatik
 sn: Hentschel
 uid: ahentschel
+memberOf: ldapteaching
 userPassword: olat
 modifyTimestamp: 20100630180000Z
 
@@ -220,9 +253,38 @@ mail: LP7AFreimann@openolat.com
 o: Informatik
 sn: Freimann
 uid: LP7AFreimann
+employeeNumber: 7235
+employeeType: ldaplearning
 userPassword: olat
 modifyTimestamp: 20100630180000Z
 
+dn: cn=ldaplearning,ou=groups,dc=olattest,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: ldaplearning
+member: uid=halpen,ou=person,dc=olattest,dc=org
+member: uid=LP7AFreimann,ou=person,dc=olattest,dc=org
+member: uid=hcoulter,ou=person,dc=olattest,dc=org
+
+dn: cn=ldapteaching,ou=groups,dc=olattest,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: ldapteaching
+member: uid=hcoulter,ou=person,dc=olattest,dc=org
+
+dn: cn=ldapcoaching,ou=groups,dc=olattest,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: ldapcoaching
+member: uid=gstieger,ou=person,dc=olattest,dc=org
+member: uid=dforster,ou=person,dc=olattest,dc=org
+
+dn: cn=ldapopenolat,ou=groups,dc=olattest,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: ldapopenolat
+member: uid=gstieger,ou=person,dc=olattest,dc=org
+member: uid=dforster,ou=person,dc=olattest,dc=org
 
 
 

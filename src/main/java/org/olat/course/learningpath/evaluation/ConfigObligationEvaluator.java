@@ -41,7 +41,7 @@ public class ConfigObligationEvaluator implements ObligationEvaluator {
 	public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode) {
 		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
 		AssessmentObligation configObligation = learningPathService.getConfigs(courseNode).getObligation();
-		Overridable<AssessmentObligation> obligation = currentEvaluation.getObligation();
+		Overridable<AssessmentObligation> obligation = currentEvaluation.getObligation().clone();
 		obligation.setCurrent(configObligation);
 		return obligation;
 	}
