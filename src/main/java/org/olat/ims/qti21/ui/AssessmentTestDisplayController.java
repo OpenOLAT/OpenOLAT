@@ -781,6 +781,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
 		Date startTime = testSessionState.getDurationIntervalStartTime();
 		if(startTime == null) {
+			startTime = testSessionState.getEntryTime();
+		}
+		if(startTime == null) {
 			startTime = candidateSession.getCreationDate();
 		}
 
