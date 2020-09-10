@@ -1328,7 +1328,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			  .append("  formName:'").append(form.getFormName()).append("',\n")
 			  .append("  dispIdField:'").append(form.getDispatchFieldId()).append("',\n")
 			  .append("  dispId:'").append(component.getQtiItem().getFormDispatchId()).append("',\n")
-			  .append("  eventIdField:'").append(form.getEventFieldId()).append("'\n")
+			  .append("  eventIdField:'").append(form.getEventFieldId()).append("',\n")
+			  .append("  csrf:'").append(renderer.getRenderer().getCsrfToken()).append("',\n")
 			  .append(" }).tabOverride();\n")
 			  .append("})\n")
 			  .append(FormJSHelper.getJSEnd());

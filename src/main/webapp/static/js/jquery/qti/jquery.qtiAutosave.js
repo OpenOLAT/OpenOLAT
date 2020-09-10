@@ -1,11 +1,14 @@
 (function ($) {
+    "use strict";
+    
     $.fn.qtiAutosave = function(options) {
     	var settings = $.extend({
     		responseUniqueId: null,
     		formName: null,//form name
     		dispIdField: null,//form dispatch id
     		dispId: null,//item id
-    		eventIdField: null // form eventFieldId
+    		eventIdField: null, // form eventFieldId
+    		csrf: null
         }, options );
     	
     	var wrapperId = this.attr('id');
@@ -23,6 +26,7 @@
 	    			data['qtiworks_presented_' + settings.responseUniqueId] = '1';
 	    			data['qtiworks_response_' + settings.responseUniqueId] = jQuery('#oo_' + settings.responseUniqueId).val();
 	    			data['no-response'] = 'oo-no-response';
+	    			data['_csrf'] = settings.csrf;
 
 	    			var targetUrl = jQuery('#' + settings.formName).attr("action");
 	    			jQuery.ajax(targetUrl,{
@@ -30,7 +34,7 @@
 	    				data: data,
 	    				cache: false,
 	    				dataType: 'json',
-	    				success: function(data, textStatus, jqXHR) {
+	    				success: function(responseData, textStatus, jqXHR) {
 	    					var now = new Date();
 	    					var hours = now.getHours();
 	    					var minutes = now.getMinutes()
