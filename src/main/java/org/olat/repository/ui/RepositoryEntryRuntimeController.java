@@ -846,6 +846,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		reloadSecurity(ureq);
 		launchContent(ureq);
 		cleanUp();
+		initToolbar();
 	}
 	
 	protected final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
