@@ -19,6 +19,9 @@
  */
 package org.olat.ldap.manager;
 
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +33,7 @@ import javax.naming.ldap.LdapContext;
 
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,13 +41,19 @@ import org.junit.runners.MethodSorters;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder.Algorithm;
+import org.olat.core.util.mail.MailPackage;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ldap.LDAPError;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
@@ -83,6 +93,8 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private LDAPSyncConfiguration syncConfiguration;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	@Rule
 	public EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder
@@ -92,6 +104,20 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 	        .bindingToAddress("localhost")
 	        .bindingToPort(1389)
 	        .build();
+	
+	@Before
+	public void resetSynchronizationSettings() {
+		syncConfiguration.setLdapGroupBases(Collections.emptyList());
+		syncConfiguration.setCoachedGroupAttribute(null);
+		syncConfiguration.setCoachedGroupAttributeSeparator(null);
+		syncConfiguration.setCoachRoleAttribute(null);
+		syncConfiguration.setCoachRoleValue(null);
+		syncConfiguration.setGroupCoachAsParticipant("false");
+		syncConfiguration.setAuthorRoleAttribute(null);
+		syncConfiguration.setAuthorRoleValue(null);
+		
+		securityModule.setIdentityName("auto");
+	}
 	
 	/**
 	 * a to be the first to be called.
@@ -107,6 +133,227 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		// historic
 		Identity identity = userManager.findUniqueIdentityByEmail("hhuerlimann@openolat.com");
 		Assert.assertNotNull(identity);
+	}
+	
+	/**
+	 * Synchronize the member of a LDAP group as participants.
+	 */
+	@Test
+	public void syncGroupsParticipantsOnly() {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setExactName("ldaplearning");
+		List<BusinessGroup> ldapGroups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		Assert.assertEquals(1, ldapGroups.size());
+		
+		BusinessGroup ldapGroup = ldapGroups.get(0);
+		Assert.assertEquals("ldaplearning", ldapGroup.getName());
+		Assert.assertEquals("ldaplearning", ldapGroup.getExternalId());
+		Assert.assertEquals("ldaplearning", ldapGroup.getDescription());
+		Assert.assertEquals("membersmanagement,delete", ldapGroup.getManagedFlagsString());
+		Assert.assertEquals(Boolean.FALSE, ldapGroup.getWaitingListEnabled());
+		
+		List<Identity> participants = businessGroupService.getMembers(ldapGroup, GroupRoles.participant.name());
+		Assert.assertEquals(3, participants.size());
+		assertThat(participants)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("halpen", "LP7AFreimann", "hcoulter");
+		List<Identity> coaches = businessGroupService.getMembers(ldapGroup, GroupRoles.coach.name());		
+		Assert.assertEquals(0, coaches.size());	
+	}
+	
+	/**
+	 * Synchronize the members of a LDAP group as participants,
+	 * a member has an attribute with the list of the groups he
+	 * coaches.
+	 */
+	@Test
+	public void syncGroupsParticipantsAndCoachByAttribute() {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setCoachedGroupAttribute("employeeType");
+		syncConfiguration.setCoachedGroupAttributeSeparator(",");
+		
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setExactName("ldaplearning");
+		List<BusinessGroup> ldapGroups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		Assert.assertEquals(1, ldapGroups.size());
+		
+		BusinessGroup ldapGroup = ldapGroups.get(0);
+		Assert.assertEquals("ldaplearning", ldapGroup.getName());
+		Assert.assertEquals("ldaplearning", ldapGroup.getExternalId());
+		Assert.assertEquals("ldaplearning", ldapGroup.getDescription());
+		Assert.assertEquals("membersmanagement,delete", ldapGroup.getManagedFlagsString());
+		Assert.assertEquals(Boolean.FALSE, ldapGroup.getWaitingListEnabled());
+		
+		List<Identity> participants = businessGroupService.getMembers(ldapGroup, GroupRoles.participant.name());
+		Assert.assertEquals(2, participants.size());
+		assertThat(participants)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("halpen", "hcoulter");
+		
+		List<Identity> coaches = businessGroupService.getMembers(ldapGroup, GroupRoles.coach.name());
+		Assert.assertEquals(1, coaches.size());
+		assertThat(coaches)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("LP7AFreimann");
+	}
+	
+	/**
+	 * Synchronize the members of the LDAP group as participants.
+	 * Synchronization check the flag employeeNumber = 234 to find
+	 * the coaches.
+	 */
+	@Test
+	public void syncGroupsParticipantsAndCoachByRole() {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setCoachRoleAttribute("employeeNumber");
+		syncConfiguration.setCoachRoleValue("234");
+		syncConfiguration.setGroupCoachAsParticipant("false");
+		
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setExactName("ldaplearning");
+		List<BusinessGroup> ldapGroups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		Assert.assertEquals(1, ldapGroups.size());
+		
+		BusinessGroup ldapGroup = ldapGroups.get(0);
+		List<Identity> participants = businessGroupService.getMembers(ldapGroup, GroupRoles.participant.name());
+		Assert.assertEquals(2, participants.size());
+		assertThat(participants)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("LP7AFreimann", "hcoulter");
+		
+		List<Identity> coaches = businessGroupService.getMembers(ldapGroup, GroupRoles.coach.name());
+		Assert.assertEquals(1, coaches.size());
+		assertThat(coaches)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("halpen");
+	}
+	
+	/**
+	 * Synchronize the members of the LDAP group as participants.
+	 * Synchronization check the flag employeeNumber = 234 to find
+	 * the coaches. But with the setting: coach are automatically
+	 * participant too.
+	 */
+	@Test
+	public void syncGroupsParticipantsAndCoachAsParticipantByRole() {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setCoachRoleAttribute("employeeNumber");
+		syncConfiguration.setCoachRoleValue("234");
+		syncConfiguration.setGroupCoachAsParticipant("true");
+		
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setExactName("ldaplearning");
+		List<BusinessGroup> ldapGroups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		Assert.assertEquals(1, ldapGroups.size());
+		
+		BusinessGroup ldapGroup = ldapGroups.get(0);
+		List<Identity> participants = businessGroupService.getMembers(ldapGroup, GroupRoles.participant.name());
+		Assert.assertEquals(3, participants.size());
+		assertThat(participants)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("LP7AFreimann", "halpen", "hcoulter");
+		
+		List<Identity> coaches = businessGroupService.getMembers(ldapGroup, GroupRoles.coach.name());
+		Assert.assertEquals(1, coaches.size());
+		assertThat(coaches)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("halpen");
+	}
+	
+	/**
+	 * Synchronize the members of the LDAP group as participants.
+	 * Members based on member attribute of the group (default) and
+	 * memberOf attribute of the person.
+	 */
+	@Test
+	public void syncGroupsParticipantsByAttribute() {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setGroupAttribute("memberOf");
+		
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setExactName("ldapteaching");
+		List<BusinessGroup> ldapGroups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		Assert.assertEquals(1, ldapGroups.size());
+		
+		BusinessGroup ldapGroup = ldapGroups.get(0);
+		List<Identity> participants = businessGroupService.getMembers(ldapGroup, GroupRoles.participant.name());
+		Assert.assertEquals(2, participants.size());
+		assertThat(participants)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("ahentschel", "hcoulter");
+		
+		List<Identity> coaches = businessGroupService.getMembers(ldapGroup, GroupRoles.coach.name());
+		Assert.assertEquals(0, coaches.size());
+	}
+	
+	/**
+	 * Synchronize the members of the LDAP group as participants.
+	 * Members based on member attribute of the group (default) and
+	 * memberOf attribute of the person.
+	 */
+	@Test
+	public void gSyncGroupsAuthorRole() {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setAuthorRoleAttribute("employeeNumber");
+		syncConfiguration.setAuthorRoleValue("author");
+		
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		Identity author = securityManager.findIdentityByLogin("kmeier");
+		Roles roles = securityManager.getRoles(author);
+		// meier is author
+		Assert.assertTrue(roles.isAuthor());
+		// but nothing else
+		Assert.assertFalse(roles.isAdministrator());
+		Assert.assertFalse(roles.isCurriculumManager());
+		Assert.assertFalse(roles.isGroupManager());
+		Assert.assertFalse(roles.isLearnResourceManager());
+		Assert.assertFalse(roles.isLectureManager());
+		Assert.assertFalse(roles.isLineManager());
+		Assert.assertFalse(roles.isPoolManager());
+		Assert.assertFalse(roles.isPrincipal());
+		Assert.assertFalse(roles.isQualityManager());
+		Assert.assertFalse(roles.isRolesManager());
+		Assert.assertFalse(roles.isSystemAdmin());
+		Assert.assertFalse(roles.isUserManager());
 	}
 	
 	@Test
@@ -157,6 +404,113 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		Assert.assertEquals("Herschell", reloadIdentity.getUser().getLastName());
 		Assert.assertEquals("ahentschel@openolat.com", reloadIdentity.getUser().getEmail());
 		Assert.assertEquals("ahentschel", reloadIdentity.getUser().getProperty(UserConstants.NICKNAME, null));
+	}
+	
+	@Test
+	public void syncUserGroups() throws LDAPException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-ldap");
+		
+		// sync the groups first (sync by user only doesn't creates the groups)
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		// first remove all members of the LDAP group
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setExactName("ldapcoaching");
+		List<BusinessGroup> ldapGroups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		Assert.assertEquals(1, ldapGroups.size());
+
+		BusinessGroup ldapGroup = ldapGroups.get(0);
+		List<Identity> currentMembers = businessGroupService.getMembers(ldapGroup, GroupRoles.coach.name(), GroupRoles.participant.name());
+		businessGroupService.removeMembers(admin, currentMembers, ldapGroup.getResource(), new MailPackage(false), true);
+		dbInstance.commitAndCloseSession();
+		
+		int numOfMembers = businessGroupService.countMembers(ldapGroup, GroupRoles.coach.name(), GroupRoles.participant.name());
+		Assert.assertEquals(0, numOfMembers);
+		
+		// set synchronization settings
+		syncConfiguration.setCoachedGroupAttribute("memberOf");
+		syncConfiguration.setCoachedGroupAttributeSeparator(",");
+		
+		Identity id1 = securityManager.findIdentityByLogin("dforster");
+		ldapManager.syncUserGroups(id1);
+		dbInstance.commitAndCloseSession();
+		
+		// has additional coach attribute
+		Identity id2 = securityManager.findIdentityByLogin("gstieger");
+		ldapManager.syncUserGroups(id2);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> participants = businessGroupService.getMembers(ldapGroup, GroupRoles.participant.name());
+		Assert.assertEquals(1, participants.size());
+		assertThat(participants)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("dforster");
+		
+		List<Identity> coaches = businessGroupService.getMembers(ldapGroup, GroupRoles.coach.name());
+		Assert.assertEquals(1, coaches.size());
+		assertThat(coaches)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("gstieger");
+	}
+	
+	@Test
+	public void syncUserGroupsCoachAsParticipantsToo() throws LDAPException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-ldap");
+		
+		// sync the groups first (sync by user only doesn't creates the groups)
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		// first remove all members of the LDAP group
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setExactName("ldapopenolat");
+		List<BusinessGroup> ldapGroups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		Assert.assertEquals(1, ldapGroups.size());
+
+		BusinessGroup ldapGroup = ldapGroups.get(0);
+		List<Identity> currentMembers = businessGroupService.getMembers(ldapGroup, GroupRoles.coach.name(), GroupRoles.participant.name());
+		businessGroupService.removeMembers(admin, currentMembers, ldapGroup.getResource(), new MailPackage(false), true);
+		dbInstance.commitAndCloseSession();
+		
+		int numOfMembers = businessGroupService.countMembers(ldapGroup, GroupRoles.coach.name(), GroupRoles.participant.name());
+		Assert.assertEquals(0, numOfMembers);
+		
+		// set synchronization settings
+		syncConfiguration.setCoachedGroupAttribute("memberOf");
+		syncConfiguration.setCoachedGroupAttributeSeparator(",");
+		syncConfiguration.setGroupCoachAsParticipant("true");
+		
+		Identity id1 = securityManager.findIdentityByLogin("dforster");
+		ldapManager.syncUserGroups(id1);
+		dbInstance.commitAndCloseSession();
+		
+		// has additional coach attribute
+		Identity id2 = securityManager.findIdentityByLogin("gstieger");
+		ldapManager.syncUserGroups(id2);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> participants = businessGroupService.getMembers(ldapGroup, GroupRoles.participant.name());
+		Assert.assertEquals(2, participants.size());
+		assertThat(participants)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("dforster", "gstieger");
+		
+		List<Identity> coaches = businessGroupService.getMembers(ldapGroup, GroupRoles.coach.name());
+		Assert.assertEquals(1, coaches.size());
+		assertThat(coaches)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("gstieger");
 	}
 	
 	@Test
@@ -327,7 +681,6 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		ldapManager.deleteIdentities(deleteList, null);
 		dbInstance.commitAndCloseSession();
 		
-		String currentIdentityNameGenerator = securityModule.getIdentityName();
 		securityModule.setIdentityName("manual");
 		
 		// Create the user without OLAT login
@@ -350,7 +703,6 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 
 		// revert configuration
 		ldapLoginModule.setConvertExistingLocalUsersToLDAPUsers(currentConvertExistingLocalUsers);
-		securityModule.setIdentityName(currentIdentityNameGenerator);
 		
 		// check
 		Assert.assertEquals(identity, convertedIdentity);
