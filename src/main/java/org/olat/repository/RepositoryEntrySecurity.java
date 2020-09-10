@@ -73,6 +73,10 @@ public interface RepositoryEntrySecurity {
 	 */
 	boolean isAuthor();
 
+	public boolean isAdministrator();
+	
+	public boolean isLearnResourceManager();
+	
 	/**
 	 * @return true if the user has the role principal
 	 */

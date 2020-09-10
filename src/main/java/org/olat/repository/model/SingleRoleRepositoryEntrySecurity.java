@@ -19,8 +19,9 @@
  */
 package org.olat.repository.model;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.olat.repository.RepositoryEntrySecurity;
 
@@ -31,8 +32,33 @@ import org.olat.repository.RepositoryEntrySecurity;
  *
  */
 public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurity {
+	
+	public enum Role { 
+		owner("role.owner", "o_icon_owner"),
+		administrator("role.administrator", "o_icon_administrator"),
+		learningResourceManager("role.learning.resource.manager", "o_icon_lrm"),
+		coach("role.coach", "o_icon_coach"),
+		principal("role.principal", "o_icon_principal"),
+		masterCoach("role.master.coach", "o_icon_master_coach"),
+		participant("role.participant", "o_icon_user");
+		
+		private final String i18nKey;
+		private final String iconCssClass;
+		
+		private Role(String i18nKey, String iconCssClass) {
+			this.i18nKey = i18nKey;
+			this.iconCssClass = iconCssClass;
+		}
 
-	public enum Role { owner, coach, participant };
+		public String getI18nKey() {
+			return i18nKey;
+		}
+
+		public String getIconCssClass() {
+			return iconCssClass;
+		}
+		
+	};
 	
 	private Role currentRole;
 	private RepositoryEntrySecurity wrappedSecurity;
@@ -43,10 +69,18 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 	}
 
 	private Role getDefaultRole() {
-		 if (wrappedSecurity.isEntryAdmin() || wrappedSecurity.isPrincipal() || wrappedSecurity.isMasterCoach()) {
+		if (wrappedSecurity.isOwner()) {
 			return Role.owner;
-		} else if (wrappedSecurity.isCoach() || wrappedSecurity.isMasterCoach()) {
+		} else if (wrappedSecurity.isAdministrator()) {
+			return Role.administrator;
+		} else if (wrappedSecurity.isLearnResourceManager()) {
+			return Role.learningResourceManager;
+		} else if (wrappedSecurity.isCoach()) {
 			return Role.coach;
+		} else if (wrappedSecurity.isPrincipal()) {
+			return Role.principal;
+		} else if (wrappedSecurity.isMasterCoach()) {
+			return Role.masterCoach;
 		}
 		return Role.participant;
 	}
@@ -66,50 +100,66 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 	public void setWrappedSecurity(RepositoryEntrySecurity wrappedSecurity) {
 		this.wrappedSecurity = wrappedSecurity;
 		// current role no longer possible
-		if ((Role.participant.equals(currentRole) && !isParticipant())
-			|| (Role.coach.equals(currentRole) && !isCoach())
-			|| (Role.owner.equals(currentRole) && !isOwner())) {
+		if ((Role.owner == currentRole && !wrappedSecurity.isOwner())
+			|| (Role.administrator == currentRole && !wrappedSecurity.isAdministrator())
+			|| (Role.learningResourceManager == currentRole && !wrappedSecurity.isLearnResourceManager())
+			|| (Role.coach == currentRole && !wrappedSecurity.isCoach())
+			|| (Role.principal == currentRole && !wrappedSecurity.isPrincipal())
+			|| (Role.masterCoach == currentRole && !wrappedSecurity.isMasterCoach())
+			|| (Role.participant == currentRole && !wrappedSecurity.isParticipant())) {
 			currentRole = getDefaultRole();
 		}
 	}
 	
-	public Set<Role> getOtherRoles() {
-		Set<Role> otherRoles = new HashSet<>();
-		if (!Role.participant.equals(currentRole) && wrappedSecurity.isParticipant()) {
-			otherRoles.add(Role.participant);
+	public Collection<Role> getOtherRoles() {
+		List<Role> otherRoles = new ArrayList<>(Role.values().length);
+		if (Role.owner != currentRole && wrappedSecurity.isOwner()) {
+			otherRoles.add(Role.owner);
 		}
-		if (!Role.coach.equals(currentRole) && (wrappedSecurity.isCoach() || wrappedSecurity.isMasterCoach())) {
+		if (Role.administrator != currentRole && wrappedSecurity.isAdministrator()) {
+			otherRoles.add(Role.administrator);
+		}
+		if (Role.learningResourceManager != currentRole && wrappedSecurity.isLearnResourceManager()) {
+			otherRoles.add(Role.learningResourceManager);
+		}
+		if (Role.coach != currentRole && wrappedSecurity.isCoach()) {
 			otherRoles.add(Role.coach);
 		}
-		if (!Role.owner.equals(currentRole) && (wrappedSecurity.isEntryAdmin() || wrappedSecurity.isPrincipal() || wrappedSecurity.isMasterCoach())) {
-			otherRoles.add(Role.owner);
+		if (Role.principal != currentRole && wrappedSecurity.isPrincipal()) {
+			otherRoles.add(Role.principal);
+		}
+		if (Role.masterCoach != currentRole && wrappedSecurity.isMasterCoach()) {
+			otherRoles.add(Role.masterCoach);
+		}
+		if (Role.participant != currentRole && wrappedSecurity.isParticipant()) {
+			otherRoles.add(Role.participant);
 		}
 		return otherRoles;
 	}
 
 	@Override
 	public boolean isOwner() {
-		return Role.owner.equals(currentRole) && wrappedSecurity.isOwner();
+		return Role.owner == currentRole;
 	}
 
 	@Override
 	public boolean isCoach() {
-		return Role.coach.equals(currentRole) && wrappedSecurity.isCoach();
+		return Role.coach == currentRole;
 	}
 
 	@Override
 	public boolean isParticipant() {
-		return Role.participant.equals(currentRole) && wrappedSecurity.isParticipant();
+		return Role.participant == currentRole;
 	}
 
 	@Override
 	public boolean isMasterCoach() {
-		return Role.coach.equals(currentRole) && wrappedSecurity.isMasterCoach();
+		return Role.masterCoach == currentRole;
 	}
 
 	@Override
 	public boolean isEntryAdmin() {
-		return Role.owner.equals(currentRole) && wrappedSecurity.isEntryAdmin();
+		return Role.owner == currentRole || Role.administrator == currentRole || Role.learningResourceManager == currentRole;
 	}
 
 	@Override
@@ -169,17 +219,27 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 
 	@Override
 	public boolean isPrincipal() {
-		return Role.owner.equals(currentRole) && wrappedSecurity.isPrincipal();
+		return Role.principal == currentRole;
+	}
+
+	@Override
+	public boolean isAdministrator() {
+		return Role.administrator == currentRole;
+	}
+
+	@Override
+	public boolean isLearnResourceManager() {
+		return Role.learningResourceManager == currentRole;
 	}
 
 	@Override
 	public boolean isOnlyPrincipal() {
-		return Role.owner.equals(currentRole) && wrappedSecurity.isOnlyPrincipal();
+		return Role.principal == currentRole && wrappedSecurity.isOnlyPrincipal();
 	}
 
 	@Override
 	public boolean isOnlyMasterCoach() {
-		return Role.coach.equals(currentRole) && wrappedSecurity.isOnlyMasterCoach();
+		return Role.masterCoach == currentRole && wrappedSecurity.isOnlyMasterCoach();
 	}
 	
 }

@@ -647,7 +647,7 @@ public class RepositoryManager {
 				isCourseParticipant, isCourseCoach,
 				isGroupParticipant, isGroupCoach, isGroupWaiting,
 				isCurriculumParticipant, isCurriculumCoach, isMasterCoach,
-				isAuthor, isPrincipal, canLaunch, readOnly);
+				isAuthor, isAdministrator, isLearnRessourceManager, isPrincipal, canLaunch, readOnly);
 	}
 
 	public RepositoryEntry setAccess(final RepositoryEntry re, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {

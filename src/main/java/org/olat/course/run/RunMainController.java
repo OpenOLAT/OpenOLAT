@@ -98,8 +98,8 @@ import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.tools.OpenCourseToolEvent;
 import org.olat.course.run.tools.CourseTool;
+import org.olat.course.run.tools.OpenCourseToolEvent;
 import org.olat.course.run.userview.AssessmentModeTreeFilter;
 import org.olat.course.run.userview.InvisibleTreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -387,7 +387,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else {
 			waitingLists = Collections.emptyList();
 		}
-		uce.setCourseReadOnly(reSecurity.isReadOnly());
 		uce.setGroupMemberships(coachedGroups, participatedGroups, waitingLists);
 		needsRebuildAfterRunDone = true;
 	}

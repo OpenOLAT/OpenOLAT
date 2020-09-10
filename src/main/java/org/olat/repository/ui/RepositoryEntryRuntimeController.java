@@ -19,9 +19,9 @@
  */
 package org.olat.repository.ui;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.NewControllerFactory;
@@ -138,9 +138,13 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected Link settingsLink;
 	
 	private Dropdown rolesDropdown;
-	private Link participantLink;
-	private Link coachLink;
 	private Link ownerLink;
+	private Link administratorLink;
+	private Link learningResourceManagerLink;
+	private Link coachLink;
+	private Link principalLink;
+	private Link masterCoachLink;
+	private Link participantLink;
 	
 	private Link preparationLink;
 	private Link reviewLink;
@@ -384,41 +388,56 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private void initRole() {
 		rolesDropdown = new Dropdown("toolbox.roles", "role.switch", false, getTranslator());
 		rolesDropdown.setElementCssClass("o_sel_switch_role o_with_labeled");
-		rolesDropdown.setIconCSS("o_icon " + getCurrentRoleIcon());
-		rolesDropdown.setInnerText(translate("role." + reSecurity.getCurrentRole()));
+		rolesDropdown.setIconCSS("o_icon " + reSecurity.getCurrentRole().getIconCssClass());
+		rolesDropdown.setInnerText(translate(reSecurity.getCurrentRole().getI18nKey()));
 		rolesDropdown.setInnerCSS("o_labeled");
 		
-		Set<Role> otherRoles = reSecurity.getOtherRoles();
-		if (otherRoles.contains(Role.participant)) {
-			participantLink = LinkFactory.createToolLink("role.participant", translate("role.participant"), this);
-			participantLink.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
-			participantLink.setElementCssClass("o_labeled o_repo_role");
-			rolesDropdown.addComponent(participantLink);
+		Collection<Role> otherRoles = reSecurity.getOtherRoles();
+		if (otherRoles.contains(Role.owner)) {
+			ownerLink = LinkFactory.createToolLink("role.owner", translate(Role.owner.getI18nKey()), this);
+			ownerLink.setIconLeftCSS("o_icon o_icon-fw " + Role.owner.getIconCssClass());
+			ownerLink.setElementCssClass("o_labeled o_repo_role");
+			rolesDropdown.addComponent(ownerLink);
+		}
+		if (otherRoles.contains(Role.administrator)) {
+			administratorLink = LinkFactory.createToolLink("role.administrator", translate(Role.administrator.getI18nKey()), this);
+			administratorLink.setIconLeftCSS("o_icon o_icon-fw " + Role.administrator.getIconCssClass());
+			administratorLink.setElementCssClass("o_labeled o_repo_role");
+			rolesDropdown.addComponent(administratorLink);
+		}
+		if (otherRoles.contains(Role.learningResourceManager)) {
+			learningResourceManagerLink = LinkFactory.createToolLink("role.learning.resource.manager", translate(Role.learningResourceManager.getI18nKey()), this);
+			learningResourceManagerLink.setIconLeftCSS("o_icon o_icon-fw " + Role.learningResourceManager.getIconCssClass());
+			learningResourceManagerLink.setElementCssClass("o_labeled o_repo_role");
+			rolesDropdown.addComponent(learningResourceManagerLink);
 		}
 		if (otherRoles.contains(Role.coach)) {
-			coachLink = LinkFactory.createToolLink("role.coach", translate("role.coach"), this);
-			coachLink.setIconLeftCSS("o_icon o_icon-fw o_icon_coach");
+			coachLink = LinkFactory.createToolLink("role.coach", translate(Role.coach.getI18nKey()), this);
+			coachLink.setIconLeftCSS("o_icon o_icon-fw " + Role.coach.getIconCssClass());
 			coachLink.setElementCssClass("o_labeled o_repo_role");
 			rolesDropdown.addComponent(coachLink);
 		}
-		if (otherRoles.contains(Role.owner)) {
-			ownerLink = LinkFactory.createToolLink("role.owner", translate("role.owner"), this);
-			ownerLink.setIconLeftCSS("o_icon o_icon-fw o_icon_owner");
-			ownerLink.setElementCssClass("o_labeled o_repo_role");
-			rolesDropdown.addComponent(ownerLink);
+		if (otherRoles.contains(Role.principal)) {
+			principalLink = LinkFactory.createToolLink("role.principal", translate(Role.principal.getI18nKey()), this);
+			principalLink.setIconLeftCSS("o_icon o_icon-fw " + Role.principal.getIconCssClass());
+			principalLink.setElementCssClass("o_labeled o_repo_role");
+			rolesDropdown.addComponent(principalLink);
+		}
+		if (otherRoles.contains(Role.masterCoach)) {
+			masterCoachLink = LinkFactory.createToolLink("role.master.coach", translate(Role.masterCoach.getI18nKey()), this);
+			masterCoachLink.setIconLeftCSS("o_icon o_icon-fw " + Role.masterCoach.getIconCssClass());
+			masterCoachLink.setElementCssClass("o_labeled o_repo_role");
+			rolesDropdown.addComponent(masterCoachLink);
+		}
+		if (otherRoles.contains(Role.participant)) {
+			participantLink = LinkFactory.createToolLink("role.participant", translate(Role.participant.getI18nKey()), this);
+			participantLink.setIconLeftCSS("o_icon o_icon-fw " + Role.participant.getIconCssClass());
+			participantLink.setElementCssClass("o_labeled o_repo_role");
+			rolesDropdown.addComponent(participantLink);
 		}
 		if (rolesDropdown.size() > 0) {
 			toolbarPanel.addTool(rolesDropdown, Align.right);
 		}
-	}
-	
-	private String getCurrentRoleIcon() {
-		switch(reSecurity.getCurrentRole()) {
-		case participant: return "o_icon_user";
-		case coach: return "o_icon_coach";
-		case owner: return "o_icon_owner";
-		}
-		return "";
 	}
 
 	protected void initToolbar(Dropdown toolsDropdown) {
@@ -695,12 +714,20 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			doDownload(ureq);
 		} else if(deleteLink == source) {
 			doDelete(ureq);
-		} else if (participantLink == source) {
-			doSwitchRole(ureq, Role.participant);
-		} else if (coachLink == source) {
-			doSwitchRole(ureq, Role.coach);
 		} else if (ownerLink == source) {
 			doSwitchRole(ureq, Role.owner);
+		} else if (administratorLink == source) {
+			doSwitchRole(ureq, Role.administrator);
+		} else if (learningResourceManagerLink == source) {
+			doSwitchRole(ureq, Role.learningResourceManager);
+		} else if (coachLink == source) {
+			doSwitchRole(ureq, Role.coach);
+		} else if (principalLink == source) {
+			doSwitchRole(ureq, Role.principal);
+		} else if (masterCoachLink == source) {
+			doSwitchRole(ureq, Role.masterCoach);
+		} else if (participantLink == source) {
+			doSwitchRole(ureq, Role.participant);
 		} else if(preparationLink == source) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.preparation);
 		} else if(reviewLink == source) {

@@ -672,7 +672,7 @@ public class CourseFactory {
 
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
-			RepositoryEntrySecurity reSecurity = new RepositoryEntrySecurityImpl(false, false, false, false, false, false, false, false, false, false, false, false, true, false);
+			RepositoryEntrySecurity reSecurity = new RepositoryEntrySecurityImpl(false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false);
 			return new RunMainController(ureq, bwControl, null, course, entry, reSecurity, null);
 		}
 	}

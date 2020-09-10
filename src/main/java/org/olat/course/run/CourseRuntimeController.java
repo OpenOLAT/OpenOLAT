@@ -153,6 +153,7 @@ import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.repository.ui.RepositoryEntryLifeCycleChangeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.resource.OLATResource;
@@ -307,7 +308,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 		if(uce != null) {
 			uce.setUserRoles(reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach(), reSecurity.isCoach(), reSecurity.isParticipant());
-			if(reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach()) {
+			if(reSecurity.isPrincipal() || reSecurity.isMasterCoach()) {
 				uce.setCourseReadOnly(Boolean.TRUE);
 			} else if(reSecurity.isReadOnly()) {
 				if(overrideReadOnly) {
@@ -322,8 +323,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		courseRightsCache = new HashMap<>();
-		if(!reSecurity.isEntryAdmin() && !isGuestOnly) {
-			GroupRoles role = GroupRoles.valueOf(reSecurity.getCurrentRole().name());
+		Role currentRole = reSecurity.getCurrentRole();
+		if((Role.participant == currentRole || Role.coach == currentRole) && !isGuestOnly) {
+			GroupRoles role = GroupRoles.valueOf(currentRole.name());
 			List<String> rights = cgm.getRights(getIdentity(), role);
 			courseRightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_GROUPMANAGEMENT)));
 			courseRightsCache.put(CourseRights.RIGHT_MEMBERMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_MEMBERMANAGEMENT)));

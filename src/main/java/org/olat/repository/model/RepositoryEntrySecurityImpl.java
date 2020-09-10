@@ -34,6 +34,8 @@ public class RepositoryEntrySecurityImpl implements RepositoryEntrySecurity {
 	private final boolean entryAdmin;
 	private final boolean readOnly;
 	private final boolean author;
+	private final boolean administrator;
+	private final boolean learnResourceManager;
 	private final boolean principal;
 	private final boolean masterCoach;
 	
@@ -50,12 +52,14 @@ public class RepositoryEntrySecurityImpl implements RepositoryEntrySecurity {
 			boolean courseParticipant, boolean courseCoach,
 			boolean groupParticipant, boolean groupCoach, boolean groupWaiting,
 			boolean curriculumParticipant, boolean curriculumCoach, boolean masterCoach,
-			boolean author, boolean principal,
+			boolean author, boolean administrator, boolean learnResourceManager, boolean principal,
 			boolean canLaunch, boolean readOnly) {
 		this.owner = owner;
 		this.canLaunch = canLaunch;
 		this.entryAdmin = entryAdmin;
 		this.author = author;
+		this.administrator = administrator;
+		this.learnResourceManager = learnResourceManager;
 		this.principal = principal;
 		this.masterCoach = masterCoach;
 		
@@ -154,28 +158,26 @@ public class RepositoryEntrySecurityImpl implements RepositoryEntrySecurity {
 		return owner || courseParticipant || courseCoach || groupParticipant || groupCoach || curriculumParticipant || curriculumCoach;
 	}
 	
-	/**
-	 * @return true if the user has the role author in an organization
-	 * 		linked by the repository entry
-	 */
 	@Override
 	public boolean isAuthor() {
 		return author;
 	}
 	
-	/**
-	 * @return true if the user has the role principal
-	 */
+	@Override
+	public boolean isAdministrator() {
+		return administrator;
+	}
+
+	@Override
+	public boolean isLearnResourceManager() {
+		return learnResourceManager;
+	}
+
 	@Override
 	public boolean isPrincipal() {
 		return principal;
 	}
 	
-	/**
-	 * @return true if the user has the role principal but
-	 * 		is not a member or an administrator of the repository
-	 * 		entry.
-	 */
 	@Override
 	public boolean isOnlyPrincipal() {
 		return principal && !isMember() && !isEntryAdmin();

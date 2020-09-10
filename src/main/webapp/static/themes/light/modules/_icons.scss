@@ -31,6 +31,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_actions:before { content: $fa-var-gears;}
 .o_icon_activate:before { content: $fa-var-check-circle-o; }
 .o_icon_add_html:before { content: $fa-var-code; }
+.o_icon_administrator:before { content: $fa-var-bolt; }
 .o_icon_align_left:before { content: $fa-var-align-left; }
 .o_icon_align_middle:before { content: $fa-var-align-center; }
 .o_icon_align_right:before { content: $fa-var-align-right; }
@@ -180,10 +181,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_log:before { content: $fa-var-file-text;}
 .o_icon_login:before { content: $fa-var-sign-in;}
 .o_icon_logout:before { content: $fa-var-sign-out;}
+.o_icon_lrm:before { content: $fa-var-university;}
 .o_icon_mandatory:before { content: $fa-var-asterisk; color: #f0ad4e;}
 .o_icon_managed:before { content: $fa-var-retweet; color: $text-muted}
 .o_icon_manual:before { content: $fa-var-book; cursor: help;}
 .o_icon_mail:before { content: $fa-var-envelope-o; }
+.o_icon_master_coach:before { content: $fa-var-eye;}
 .o_icon_math:before { content: "\03a3"; }
 .o_icon_media:before { content: $fa-var-image; }
 .o_icon_mediacenter:before { content: $fa-var-folder-open; }
@@ -239,6 +242,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_previous_page:before { content: $fa-var-angle-double-left; }
 .o_icon_previous_step:before { content: $fa-var-angle-double-left; }
 .o_icon_previous_toolbar:before { content: $fa-var-caret-left; }
+.o_icon_principal:before { content: $fa-var-eye;}
 .o_icon_print:before { content: $fa-var-print;}
 .o_icon_private:before { content: $fa-var-print;}
 .o_icon_progress_success:before { content: $fa-var-check; color: #e5efe5}
