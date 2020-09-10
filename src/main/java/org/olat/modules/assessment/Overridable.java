@@ -73,5 +73,7 @@ public interface Overridable<T> {
 	public Identity getModBy();
 
 	public Date getModDate();
+
+	public Overridable<T> clone();
 	
 }
