@@ -223,7 +223,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		qaf.exportCourseElement(exportFolderName + "/" + label, zout);
 	}
 	
-	private List<ResultDetail> createResultDetail (Identity identity, ZipOutputStream zout, String idDir) throws IOException {
+	private List<ResultDetail> createResultDetail(Identity identity, ZipOutputStream zout, String idDir) throws IOException {
 		List<ResultDetail> assessments = new ArrayList<>();
 		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, courseNode.getIdent(), identity, true);
 		for (AssessmentTestSession session : sessions) {
@@ -267,6 +267,12 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			File submissionDir = qtiService.getSubmissionDirectory(session);
 			String baseDir = idPath + "submissions";
 			ZipUtil.addDirectoryToZip(submissionDir.toPath(), baseDir, zout);
+
+			File assessmentDocsDir = qtiService.getAssessmentDocumentsDirectory(session);
+			if(assessmentDocsDir.exists()) {
+				String assessmentDocsBaseDir = idPath + "assessmentdocs";
+				ZipUtil.addDirectoryToZip(assessmentDocsDir.toPath(), assessmentDocsBaseDir, zout);
+			}
 		}
 		return assessments;
 	}

@@ -1516,6 +1516,18 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			auditLogger.logCandidateOutcomes(candidateSession, outcomes);
 		}
 	}
+	
+	@Override
+	public File getAssessmentDocumentsDirectory(AssessmentTestSession candidateSession) {
+		File myStore = testSessionDao.getSessionStorage(candidateSession);
+        return new File(myStore, "assessmentdocs");
+	}
+	
+	@Override
+	public File getAssessmentDocumentsDirectory(AssessmentTestSession candidateSession, AssessmentItemSession itemSession) {
+        File assessmentDocsDir = getAssessmentDocumentsDirectory(candidateSession);
+        return new File(assessmentDocsDir, itemSession.getKey().toString());
+	}
 
 	@Override
 	public File getSubmissionDirectory(AssessmentTestSession candidateSession) {

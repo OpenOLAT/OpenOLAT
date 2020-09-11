@@ -520,6 +520,19 @@ public interface QTI21Service {
 	
 	public File importFileSubmission(AssessmentTestSession candidateSession, String filename, byte[] data);
 	
+	
+	public File getAssessmentDocumentsDirectory(AssessmentTestSession candidateSession);
+	
+	/**
+	 * The method allow to prevent creation of a lot of empty directories.
+	 * 
+	 * @param candidateSession The assessment test session
+	 * @param itemSession The assessment item session
+	 * @param createDirectory Create a directory, if false and the directory doesn't exist, return null
+	 * @return The directory or null if @createDirectory is false and the directory doesn't exist
+	 */
+	public File getAssessmentDocumentsDirectory(AssessmentTestSession candidateSession, AssessmentItemSession itemSession);
+	
 	/**
 	 * Returns the sum of the correction time set in metadata of the test. Only
 	 * the items proposed to the assessed user are counted (with or without response

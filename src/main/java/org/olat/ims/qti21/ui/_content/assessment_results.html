@@ -467,11 +467,20 @@
 					<i class="o_icon o_icon_passed"></i> 
 					$r.translate("passed.yes")
 				#elseif(!${itemResult.getPass().booleanValue()})		
-					<i class="o_icon o_icon_failed"></i> 
+					<i class="o_icon o_icon_failed"> </i> 
 					$r.translate("passed.no")
 				#else
 					$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
 				#end
+				</td>
+			</tr>
+			#end
+			#if($r.isNotEmpty(${itemResult.getAssessmentDocuments()}))
+			<tr>
+				<th scope="row">$r.translate("assessment.item.docs")</th>
+				<td><ul class="list-unstyled">#foreach($doc in ${itemResult.getAssessmentDocuments()})
+					<li><a href="$submissionMapperUri/assessmentdocs/${itemResult.itemSessionKey}/${doc.filename}?href=assessmentdocs/${candidateSessionKey}/${itemResult.itemSessionKey}/${doc.filename}" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($doc.filename)"> </i> $r.escapeHtml($doc.filename)</a></li>
+				#end</ul>
 				</td>
 			</tr>
 			#end

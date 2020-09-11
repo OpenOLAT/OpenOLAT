@@ -45,6 +45,7 @@ public class ResourcesMapper implements Mapper {
 	
 	private static final Logger log = Tracing.createLoggerFor(ResourcesMapper.class);
 	private static final String SUBMISSION_SUBPATH = "submissions/";
+	private static final String ASSESSMENTDOCS_SUBPATH = "assessmentdocs/";
 	
 	private final URI assessmentObjectUri;
 	private final File submissionDirectory;
@@ -97,38 +98,10 @@ public class ResourcesMapper implements Mapper {
 				String realPath = request.getServletContext().getRealPath("/static/images/transparent.gif");
 				resource = new FileMediaResource(new File(realPath), true);
 			} else {
-				String submissionName = null;
-				File storage = null;
 				if(filename != null && filename.contains(SUBMISSION_SUBPATH)) {
-					int submissionIndex = filename.indexOf(SUBMISSION_SUBPATH) + SUBMISSION_SUBPATH.length();
-					String submission = filename.substring(submissionIndex);
-					int candidateSessionIndex = submission.indexOf('/');
-					if(candidateSessionIndex > 0) {
-						submissionName = submission.substring(candidateSessionIndex + 1);
-						if(submissionDirectory != null) {
-							storage = submissionDirectory;
-						} else if(submissionDirectoryMaps != null) {
-							String sessionKey = submission.substring(0, candidateSessionIndex);
-							if(StringHelper.isLong(sessionKey)) {
-								try {
-									storage = submissionDirectoryMaps.get(Long.valueOf(sessionKey));
-								} catch (Exception e) {
-									log.error("", e);
-								}
-							}
-						}
-					}
-				}
-				
-				if(storage != null && StringHelper.containsNonWhitespace(submissionName)) {
-					File submissionFile = new File(storage, submissionName);
-					if(submissionFile.exists()) {
-						resource = new FileMediaResource(submissionFile, true);
-					} else {
-						resource = new NotFoundMediaResource();
-					}
-				} else {
-					resource = new NotFoundMediaResource();
+					resource = submission(filename);
+				} else if(filename != null && filename.contains(ASSESSMENTDOCS_SUBPATH)) {
+					resource = assessmentDocuments(filename);
 				}
 			}
 		} catch (Exception e) {
@@ -136,5 +109,81 @@ public class ResourcesMapper implements Mapper {
 			resource = new NotFoundMediaResource();
 		}
 		return resource;
+	}
+	
+	private MediaResource submission(String filename) {
+		int submissionIndex = filename.indexOf(SUBMISSION_SUBPATH) + SUBMISSION_SUBPATH.length();
+		String submission = filename.substring(submissionIndex);
+		int candidateSessionIndex = submission.indexOf('/');
+		
+		File storage = null;
+		String submissionName = null;
+		if(candidateSessionIndex > 0) {
+			submissionName = submission.substring(candidateSessionIndex + 1);
+			if(submissionDirectory != null) {
+				storage = submissionDirectory;
+			} else if(submissionDirectoryMaps != null) {
+				String sessionKey = submission.substring(0, candidateSessionIndex);
+				storage = getStorageInMap(sessionKey);
+			}
+		}
+		return toResource(storage, submissionName);
+	}
+	
+	private MediaResource assessmentDocuments(String filename) {
+		int assessmentIndex = filename.indexOf(ASSESSMENTDOCS_SUBPATH) + ASSESSMENTDOCS_SUBPATH.length();
+		String assessment = filename.substring(assessmentIndex);
+		int testSessionIndex = assessment.indexOf('/');
+		if(testSessionIndex < 0) {
+			return new NotFoundMediaResource();
+		}
+		int itemSessionIndex = assessment.indexOf('/', testSessionIndex + 1);
+		if(itemSessionIndex < 0 || itemSessionIndex <= testSessionIndex) {
+			return new NotFoundMediaResource();
+		}
+		
+		File storage = null;
+		String submissionName = null;
+		if(testSessionIndex > 0) {
+			File submissionDir = null;
+			if(submissionDirectory != null) {
+				submissionDir = submissionDirectory;
+			} else if(submissionDirectoryMaps != null) {
+				String testSession = assessment.substring(0, testSessionIndex);
+				submissionDir = getStorageInMap(testSession);
+			}
+			
+			if(submissionDir != null) {
+				submissionName = assessment.substring(itemSessionIndex + 1);
+				String itemSession = assessment.substring(testSessionIndex + 1, itemSessionIndex);
+				storage = new File(submissionDir.getParentFile(), "assessmentdocs");
+				storage = new File(storage, itemSession);
+			}
+		}
+
+		return toResource(storage, submissionName);
+	}
+	
+	private MediaResource toResource(File storage, String filename) {
+		if(storage != null && StringHelper.containsNonWhitespace(filename)) {
+			File submissionFile = new File(storage, filename);
+			if(submissionFile.exists()) {
+				return new FileMediaResource(submissionFile, true);
+			}
+		}
+		return new NotFoundMediaResource();
+	}
+	
+	private File getStorageInMap(String sessionKey) {
+		File storage = null;
+		if(StringHelper.isLong(sessionKey)) {
+			try {
+				storage = submissionDirectoryMaps.get(Long.valueOf(sessionKey));
+			} catch (Exception e) {
+				log.error("", e);
+				
+			}
+		}
+		return storage;
 	}
 }
