@@ -30,6 +30,7 @@ import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -66,7 +67,9 @@ public class OnlyOfficeEditorController extends BasicController {
 			final DocEditorConfigs configs, Access runAccess) {
 		super(ureq, wControl);
 		access = runAccess;
-
+		
+		wControl.getWindowBackOffice().getWindow().addListener(this);
+		
 		if (Mode.EDIT == access.getMode() && !onlyOfficeService.isEditLicenseAvailable()) {
 			access = docEditorService.updateMode(access, Mode.VIEW);
 			showWarning("editor.warning.no.edit.license");
@@ -113,11 +116,18 @@ public class OnlyOfficeEditorController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(event == Window.CLOSE_WINDOW) {
+			deleteAccess();
+		}
 	}
 
 	@Override
 	protected void doDispose() {
+		deleteAccess();
+		getWindowControl().getWindowBackOffice().getWindow().removeListener(this);
+	}
+	
+	private void deleteAccess() {
 		if (access != null) {
 			log.info("Document (key={}) closed with ONLYOFFICE ({}) by {}", openVfsMetadataKey, openMode,
 					getIdentity());

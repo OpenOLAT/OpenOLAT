@@ -145,6 +145,8 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 
 		
 	public static final Event AFTER_VALIDATING = new Event("before_validate");
+	
+	public static final Event CLOSE_WINDOW = new Event("close-window");
 
 	/**
 	 * fired just before the targetcomponent.dispatch takes places
@@ -306,6 +308,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	/**
 	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		dispatchRequest(ureq, false);
 	}
@@ -320,8 +323,9 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		final String timestampID = ureq.getTimestampID() == null ? "1" : ureq.getTimestampID();
 		final String componentID = ureq.getComponentID();
 		final boolean closeWindow = "close-window".equals(ureq.getParameter("cid"));
-		
-		setMarkToBeRemoved(false);
+		if(!closeWindow) {
+			setMarkToBeRemoved(false);
+		}
 
 		// case windowId timestamp componentId
 		// --------------------------------------------
@@ -432,9 +436,10 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							forceReload = dispatchResult.isForceReload();
 							if (isDebugLog) {
 								long durationAfterDoDispatchToComponent = System.currentTimeMillis() - debug_start;
-								log.debug("Perf-Test: Window durationAfterDoDispatchToComponent=" + durationAfterDoDispatchToComponent);
+								log.debug("Perf-Test: Window durationAfterDoDispatchToComponent={}", durationAfterDoDispatchToComponent);
 							}
 							if(closeWindow) {
+								fireEvent(ureq, CLOSE_WINDOW);
 								ureq.getHttpResp().setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 								return;
 							}
@@ -649,6 +654,9 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 				inline = true;
 				validate = true;
 				wbackofficeImpl.fireCycleEvent(BEFORE_RENDER_ONLY);
+				if(closeWindow) {
+					fireEvent(ureq, CLOSE_WINDOW);
+				}
 			} else if (validatingCausedRerendering && timestampID.equals("-1")) {
 				// the first request after the 302 redirect cause by a component validation 
 				// -> just rerender, but clear the flag for further async media requests
@@ -722,6 +730,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 					debugMsg.append("disp_comp:").append(diff).append(LOG_SEPARATOR);
 				}
 				if(closeWindow) {
+					fireEvent(ureq, CLOSE_WINDOW);
 					ureq.getHttpResp().setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 					return;
 				}
