@@ -106,6 +106,7 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 		}
 		if (updated) {
 			refreshLock(vfsLeaf);
+			vfsRepositoryService.resetThumbnails(vfsLeaf);
 		}
 		return updated;
 	}

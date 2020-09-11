@@ -71,6 +71,11 @@ public class Office365Editor implements DocEditor {
 	}
 
 	@Override
+	public boolean isViewOnly() {
+		return false;
+	}
+
+	@Override
 	public boolean isCollaborative() {
 		return true;
 	}

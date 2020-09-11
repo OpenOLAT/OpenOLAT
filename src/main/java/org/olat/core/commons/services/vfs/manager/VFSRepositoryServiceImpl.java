@@ -696,6 +696,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			try {
 				FinalSize finalSize = thumbnailService.generateThumbnail(file, thumbnailLeaf, maxWidth, maxHeight, fill);
 				if(finalSize == null) {
+					thumbnailLeaf.deleteSilently();
 					thumbnailLeaf = null;
 					metadata.setCannotGenerateThumbnails(Boolean.TRUE);
 					metadataDao.updateMetadata(metadata);

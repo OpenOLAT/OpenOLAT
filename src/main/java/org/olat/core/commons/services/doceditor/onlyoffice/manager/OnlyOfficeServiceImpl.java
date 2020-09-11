@@ -272,6 +272,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		if (updated) {
 			log.debug("File updated. File name: " + vfsLeaf.getName());
 			refreshLock(vfsLeaf);
+			vfsRepositoryService.resetThumbnails(vfsLeaf);
 		}
 		
 		return updated;
@@ -289,10 +290,10 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	public boolean isEditLicenseAvailable() {
 		Integer licenseEdit = onlyOfficeModule.getLicenseEdit();
 		if (licenseEdit == null) return true;
-		if (licenseEdit.intValue() == 0) return false;
+		if (licenseEdit.intValue() <= 0) return false;
 		
 		Long accessCount = documentEditorServie.getAccessCount(OnlyOfficeEditor.TYPE, Mode.EDIT);
-		return accessCount < licenseEdit.byteValue();
+		return accessCount < licenseEdit.intValue();
 	}
 
 	@Override

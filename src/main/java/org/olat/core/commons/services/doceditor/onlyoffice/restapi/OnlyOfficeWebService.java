@@ -94,7 +94,7 @@ public class OnlyOfficeWebService {
 		log.debug("ONLYOFFICE REST post callback request for File ID: " + fileId);
 		logRequestHeaders(httpHeaders);
 		
-		if (!onlyOfficeModule.isEnabled()) {
+		if (!onlyOfficeModule.isEnabled() || !onlyOfficeModule.isEditorEnabled()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
@@ -223,7 +223,7 @@ public class OnlyOfficeWebService {
 		log.debug("ONLYOFFICE REST get file contents request for File ID: " + fileId);
 		logRequestHeaders(httpHeaders);
 		
-		if (!onlyOfficeModule.isEnabled()) {
+		if (!onlyOfficeModule.isEnabled() || !onlyOfficeModule.isEditorEnabled()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		

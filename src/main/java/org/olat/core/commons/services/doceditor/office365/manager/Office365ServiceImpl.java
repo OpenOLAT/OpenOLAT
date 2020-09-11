@@ -112,6 +112,7 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 		}
 		if (updated) {
 			refreshLock(vfsLeaf);
+			vfsRepositoryService.resetThumbnails(vfsLeaf);
 		}
 		return updated;
 	}

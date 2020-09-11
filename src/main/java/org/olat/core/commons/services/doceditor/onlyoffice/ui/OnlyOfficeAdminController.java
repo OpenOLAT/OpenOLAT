@@ -31,10 +31,13 @@ import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecuritySer
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
@@ -59,9 +62,13 @@ public class OnlyOfficeAdminController extends FormBasicController {
 	private MultipleSelectionElement enabledEl;
 	private TextElement baseUrlEl;
 	private TextElement jwtSecretEl;
+	private MultipleSelectionElement editorEnabledEl;
+	private MultipleSelectionElement viewOnlyEl;
 	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
 	private TextElement licenseEditEl;
+	private StaticTextElement licenseInUseEl;
 	private MultipleSelectionElement usageRolesEl;
+	private MultipleSelectionElement thumbnailsEnabledEl;
 
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
@@ -74,6 +81,7 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(DocEditorController.class, getLocale(), getTranslator()));
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -81,7 +89,9 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		setFormTitle("admin.title");
 		setFormDescription("admin.desc");
 		
-		enabledEl = uifactory.addCheckboxesHorizontal("admin.enabled", formLayout, ENABLED_KEYS, translateAll(getTranslator(), ENABLED_KEYS));
+		// General
+		String[] enabledValues = translateAll(getTranslator(), ENABLED_KEYS);
+		enabledEl = uifactory.addCheckboxesHorizontal("admin.enabled", formLayout, ENABLED_KEYS, enabledValues);
 		enabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isEnabled());
 		
 		String url = onlyOfficeModule.getBaseUrl();
@@ -92,19 +102,23 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		jwtSecretEl = uifactory.addTextElement("admin.jwt.secret", 128, secret, formLayout);
 		jwtSecretEl.setMandatory(true);
 		
+		// Editor
+		uifactory.addSpacerElement("spacer.editor", formLayout, false);
+		
+		editorEnabledEl = uifactory.addCheckboxesHorizontal("admin.editor.enabled", formLayout, ENABLED_KEYS, enabledValues);
+		editorEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		editorEnabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isEditorEnabled());
+
 		dataTransferConfirmationEnabledEl = uifactory.addCheckboxesHorizontal(
-				"admin.data.transfer.confirmation.enabled", formLayout, ENABLED_KEYS,
-				translateAll(getTranslator(), ENABLED_KEYS));
-		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isDataTransferConfirmationEnabled());
+				"admin.data.transfer.confirmation.enabled", formLayout, ENABLED_KEYS, enabledValues);
 		
-		String licenseEdit = onlyOfficeModule.getLicenseEdit() != null
-				? onlyOfficeModule.getLicenseEdit().toString()
-				: null;
-		licenseEditEl = uifactory.addTextElement("admin.license.edit", 10, licenseEdit, formLayout);
+		viewOnlyEl = uifactory.addCheckboxesHorizontal("admin.view.only", formLayout, ENABLED_KEYS, enabledValues);
+		viewOnlyEl.setHelpTextKey("admin.view.only.help", null);
+		viewOnlyEl.addActionListener(FormEvent.ONCHANGE);
 		
-		Long editLicensesInUse = onlyOfficeService.getEditLicensesInUse();
-		editLicensesInUse = editLicensesInUse != null? editLicensesInUse: 0;
-		uifactory.addStaticTextElement("admin.license.edit.in.use", editLicensesInUse.toString(), formLayout);
+		licenseEditEl = uifactory.addTextElement("admin.license.edit", 10, "", formLayout);
+		
+		licenseInUseEl = uifactory.addStaticTextElement("admin.license.edit.in.use", "", formLayout);
 		
 		KeyValues usageRolesKV = new KeyValues();
 		usageRolesKV.add(entry(USAGE_AUTHOR, translate("admin.usage.roles.author")));
@@ -112,15 +126,74 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		usageRolesKV.add(entry(USAGE_MANAGERS, translate("admin.usage.roles.managers")));
 		usageRolesEl = uifactory.addCheckboxesVertical("admin.usage.roles", formLayout, usageRolesKV.keys(), usageRolesKV.values(), 1);
 		usageRolesEl.setHelpTextKey("admin.usage.roles.help", null);
-		usageRolesEl.select(USAGE_AUTHOR, onlyOfficeModule.isUsageRestrictedToAuthors());
-		usageRolesEl.select(USAGE_COACH, onlyOfficeModule.isUsageRestrictedToCoaches());
-		usageRolesEl.select(USAGE_MANAGERS, onlyOfficeModule.isUsageRestrictedToManagers());
+		
+		// Thumbnails
+		uifactory.addSpacerElement("spacer.thumbnails", formLayout, false);
+		
+		thumbnailsEnabledEl = uifactory.addCheckboxesHorizontal("admin.thumbnails.enabled", formLayout, ENABLED_KEYS, enabledValues);
+		thumbnailsEnabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isThumbnailsEnabled());
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 	}
 	
+	private void initEditorValues() {
+		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isDataTransferConfirmationEnabled());
+		
+		Integer licenseEdit = onlyOfficeModule.getLicenseEdit();
+		boolean viewOnly = licenseEdit != null && licenseEdit.intValue() <= 0;
+		viewOnlyEl.select(ENABLED_KEYS[0], viewOnly);
+		
+		usageRolesEl.select(USAGE_AUTHOR, onlyOfficeModule.isUsageRestrictedToAuthors());
+		usageRolesEl.select(USAGE_COACH, onlyOfficeModule.isUsageRestrictedToCoaches());
+		usageRolesEl.select(USAGE_MANAGERS, onlyOfficeModule.isUsageRestrictedToManagers());
+	}
+
+	private void initLicenseValues() {
+		Integer licenseEdit = onlyOfficeModule.getLicenseEdit();
+		String licenseEditValue = licenseEdit != null && licenseEdit.intValue() > -1? licenseEdit.toString() : null;
+		licenseEditEl.setValue(licenseEditValue);
+		
+		Long editLicensesInUse = onlyOfficeService.getEditLicensesInUse();
+		editLicensesInUse = editLicensesInUse != null? editLicensesInUse: 0;
+		licenseInUseEl.setValue(editLicensesInUse.toString());
+	}
+	
+	private void updateUI() {
+		boolean editorEnabled = editorEnabledEl.isAtLeastSelected(1);
+		if (editorEnabled) {
+			initEditorValues();
+		}
+		dataTransferConfirmationEnabledEl.setVisible(editorEnabled);
+		viewOnlyEl.setVisible(editorEnabled);
+		usageRolesEl.setVisible(editorEnabled);
+		
+		updateLicenseUI();
+	}
+
+	private void updateLicenseUI() {
+		boolean editorEnabled = editorEnabledEl.isAtLeastSelected(1);
+		boolean notViewOnly = !viewOnlyEl.isAtLeastSelected(1);
+		
+		if (editorEnabled && notViewOnly) {
+			initLicenseValues();
+		}
+		
+		licenseEditEl.setVisible(editorEnabled && notViewOnly);
+		licenseInUseEl.setVisible(editorEnabled && notViewOnly);
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == editorEnabledEl) {
+			updateUI();
+		} else if (source == viewOnlyEl) {
+			updateLicenseUI();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
@@ -153,19 +226,31 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		String jwtSecret = jwtSecretEl.getValue();
 		onlyOfficeModule.setJwtSecret(jwtSecret);
 		
-		boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
-		onlyOfficeModule.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
+		boolean editorEnabled = editorEnabledEl.isAtLeastSelected(1);
+		onlyOfficeModule.setEditorEnabled(editorEnabled);
 		
-		String licenseEditValue = licenseEditEl.getValue();
-		Integer licenseEdit = StringHelper.containsNonWhitespace(licenseEditValue)
-				? Integer.valueOf(licenseEditValue)
-				: null;
-		onlyOfficeModule.setLicenseEdit(licenseEdit);
+		if (editorEnabled) {
+			boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
+			onlyOfficeModule.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
+			
+			Integer licenseEdit = -1;
+			boolean viewOnly = viewOnlyEl.isAtLeastSelected(1);
+			if (!viewOnly) {
+				String licenseEditValue = licenseEditEl.getValue();
+				licenseEdit = StringHelper.containsNonWhitespace(licenseEditValue)
+						? Integer.valueOf(licenseEditValue)
+						: null;
+			}
+			onlyOfficeModule.setLicenseEdit(licenseEdit);
+			
+			Collection<String> restrictionKeys = usageRolesEl.getSelectedKeys();
+			onlyOfficeModule.setUsageRestrictedToAuthors(restrictionKeys.contains(USAGE_AUTHOR));
+			onlyOfficeModule.setUsageRestrictedToCoaches(restrictionKeys.contains(USAGE_COACH));
+			onlyOfficeModule.setUsageRestrictedToManagers(restrictionKeys.contains(USAGE_MANAGERS));
+		}
 		
-		Collection<String> restrictionKeys = usageRolesEl.getSelectedKeys();
-		onlyOfficeModule.setUsageRestrictedToAuthors(restrictionKeys.contains(USAGE_AUTHOR));
-		onlyOfficeModule.setUsageRestrictedToCoaches(restrictionKeys.contains(USAGE_COACH));
-		onlyOfficeModule.setUsageRestrictedToManagers(restrictionKeys.contains(USAGE_MANAGERS));
+		boolean thumbnailsEnabled = thumbnailsEnabledEl.isAtLeastSelected(1);
+		onlyOfficeModule.setThumbnailsEnabled(thumbnailsEnabled);
 	}
 
 	@Override

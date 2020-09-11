@@ -73,6 +73,11 @@ public class FileEditor implements DocEditor {
 	}
 
 	@Override
+	public boolean isViewOnly() {
+		return false;
+	}
+
+	@Override
 	public boolean isCollaborative() {
 		return false;
 	}

@@ -53,7 +53,6 @@ public class OnlyOfficeEditorController extends BasicController {
 	private static final Logger log = Tracing.createLoggerFor(OnlyOfficeEditorController.class);
 	
 	private Access access;
-	private Mode openMode;
 	private Long openVfsMetadataKey;
 	
 	@Autowired
@@ -129,7 +128,7 @@ public class OnlyOfficeEditorController extends BasicController {
 	
 	private void deleteAccess() {
 		if (access != null) {
-			log.info("Document (key={}) closed with ONLYOFFICE ({}) by {}", openVfsMetadataKey, openMode,
+			log.info("Document (key={}) closed with ONLYOFFICE ({}) by {}", openVfsMetadataKey, access.getMode(),
 					getIdentity());
 			docEditorService.deleteAccess(access);
 		}

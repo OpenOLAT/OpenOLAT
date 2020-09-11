@@ -111,6 +111,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		return editors.stream()
 				.filter(editor -> !FileEditor.TYPE.equals(editor.getType()))
 				.filter(DocEditor::isEnable)
+				.filter(editor -> !editor.isViewOnly())
 				.filter(editor -> editor.isEnabledFor(identity, roles))
 				.collect(Collectors.toList());
 	}

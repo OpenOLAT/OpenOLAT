@@ -20,7 +20,6 @@
 
 package org.olat.core.commons.services.thumbnail.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
@@ -30,6 +29,8 @@ import org.olat.core.commons.services.thumbnail.ThumbnailService;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -40,9 +41,11 @@ import org.olat.core.util.vfs.VFSLeaf;
  * Initial Date:  30 mar. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Service
 public class ThumbnailServiceImpl implements ThumbnailService {
 
-	private final List<ThumbnailSPI> thumbnailSPIes = new ArrayList<>();
+	@Autowired
+	private List<ThumbnailSPI> thumbnailSPIes;
 	
 	public ThumbnailServiceImpl() {
 		//

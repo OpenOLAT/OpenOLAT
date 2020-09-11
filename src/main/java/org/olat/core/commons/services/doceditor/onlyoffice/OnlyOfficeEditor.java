@@ -58,7 +58,7 @@ public class OnlyOfficeEditor implements DocEditor {
 
 	@Override
 	public boolean isEnable() {
-		return onlyOfficeModule.isEnabled();
+		return onlyOfficeModule.isEnabled() && onlyOfficeModule.isEnabled();
 	}
 
 	@Override
@@ -70,6 +70,12 @@ public class OnlyOfficeEditor implements DocEditor {
 	public String getDisplayName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(OnlyOfficeEditorController.class, locale);
 		return translator.translate("editor.display.name");
+	}
+
+	@Override
+	public boolean isViewOnly() {
+		Integer licenseEdit = onlyOfficeModule.getLicenseEdit();
+		return licenseEdit != null && licenseEdit.intValue() <= 0? true: false;
 	}
 
 	@Override

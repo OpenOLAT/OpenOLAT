@@ -19,8 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.onlyoffice;
 
-import org.olat.core.commons.services.doceditor.onlyoffice.model.DocumentImpl;
-import org.olat.core.commons.services.doceditor.onlyoffice.model.EditorConfigImpl;
+import java.util.Map;
 
 /**
  * 
@@ -51,7 +50,7 @@ public interface OnlyOfficeSecurityService {
 	 * @param editorConfig
 	 * @return jwtToken
 	 */
-	String getApiConfigToken(DocumentImpl document, EditorConfigImpl editorConfig);
+	String getApiConfigToken(Document document, EditorConfig editorConfig);
 	
 	/**
 	 * Creates the JWT token to use for download a file.
@@ -61,6 +60,7 @@ public interface OnlyOfficeSecurityService {
 	 * @return jwtToken
 	 */
 	String getFileDonwloadToken();
-
+	
+	String getToken(Map<String, Object> claims);
 
 }

@@ -29,7 +29,6 @@
 	<import resource="classpath:/org/olat/core/gui/components/form/flexible/impl/elements/richText/_spring/richTextCorecontext.xml"/> 
 	
 	<import resource="classpath:/org/olat/core/commons/services/_spring/servicesCorecontext.xml"/>
-	<import resource="classpath:/org/olat/core/commons/services/thumbnail/_spring/thumbnailserviceContext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/webdav/_spring/webdavContext.xml"/>
 
 	<bean class="org.olat.core.gui.render.velocity.VelocityModule" depends-on="org.olat.core.helpers.Settings,coordinatorManager" init-method="init">

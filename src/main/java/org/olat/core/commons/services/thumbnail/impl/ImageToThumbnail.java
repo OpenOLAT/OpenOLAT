@@ -23,6 +23,7 @@ package org.olat.core.commons.services.thumbnail.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 
 import org.olat.core.commons.services.image.ImageService;
@@ -30,6 +31,8 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailSPI;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -40,27 +43,20 @@ import org.olat.core.util.vfs.VFSLeaf;
  * Initial Date:  30 mar. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Service
 public class ImageToThumbnail implements ThumbnailSPI {
 	
 	private final List<String> extensions = new ArrayList<>();
 	
+	@Autowired
 	private ImageService imageHelper;
-	
-	/**
-	 * [used by Spring]
-	 * @param imageHelper
-	 */
-	public void setImageHelper(ImageService imageHelper) {
-		this.imageHelper = imageHelper;
-	}
 
-
-	public ImageToThumbnail() {
+	@PostConstruct
+	private void initExtensions() {
 		for(String imageIOSuffix : ImageIO.getWriterFileSuffixes()) {
 			extensions.add(imageIOSuffix);
 		}
 	}
-	
 	
 	@Override
 	public List<String> getExtensions() {

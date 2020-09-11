@@ -29,6 +29,8 @@ import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailSPI;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -38,17 +40,14 @@ import org.olat.core.util.vfs.VFSLeaf;
  * <P>
  * Initial Date:  30 mar. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
- */
+ */ @Service
 public class PDFToThumbnail implements ThumbnailSPI {
 
 	private List<String> extensions = Collections.singletonList("pdf");
 	
+	@Autowired
 	private ImageService imageHelper;
 	
-	/**
-	 * [used by Spring]
-	 * @param imageHelper
-	 */
 	public void setImageHelper(ImageService imageHelper) {
 		this.imageHelper = imageHelper;
 	}

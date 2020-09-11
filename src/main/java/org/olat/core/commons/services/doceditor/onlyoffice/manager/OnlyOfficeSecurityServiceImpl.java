@@ -21,15 +21,16 @@ package org.olat.core.commons.services.doceditor.onlyoffice.manager;
 
 import java.io.IOException;
 import java.security.Key;
+import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.onlyoffice.Callback;
+import org.olat.core.commons.services.doceditor.onlyoffice.Document;
+import org.olat.core.commons.services.doceditor.onlyoffice.EditorConfig;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.CallbackImpl;
-import org.olat.core.commons.services.doceditor.onlyoffice.model.DocumentImpl;
-import org.olat.core.commons.services.doceditor.onlyoffice.model.EditorConfigImpl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -102,7 +103,7 @@ public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService 
 	}
 
 	@Override
-	public String getApiConfigToken(DocumentImpl document, EditorConfigImpl editorConfig) {
+	public String getApiConfigToken(Document document, EditorConfig editorConfig) {
 		return Jwts.builder()
 				.claim("document", document)
 				.claim("editorConfig", editorConfig)
@@ -114,6 +115,14 @@ public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService 
 	public String getFileDonwloadToken() {
 		return Jwts.builder()
 				.setSubject("download") // not specified by ONLYOFFICE, but jjwt forces us to set something
+				.signWith(onlyOfficeModule.getJwtSignKey())
+				.compact();
+	}
+
+	@Override
+	public String getToken(Map<String, Object> claims) {
+		return Jwts.builder()
+				.setClaims(claims)
 				.signWith(onlyOfficeModule.getJwtSignKey())
 				.compact();
 	}
