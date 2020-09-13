@@ -173,17 +173,20 @@ public class QTI21EditForm extends FormBasicController {
 		
 		boolean testDateDependent = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST);
 		testDateDependentEl = uifactory.addCheckboxesHorizontal("qti_datetest", "qti.form.test.date", formLayout, new String[]{"xx"}, new String[]{null});
+		testDateDependentEl.setElementCssClass("o_qti_21_datetest");
 		testDateDependentEl.select("xx", testDateDependent);
 		testDateDependentEl.setHelpTextKey("qti.form.test.date.help", null);
 		testDateDependentEl.addActionListener(FormEvent.ONCLICK);
 	
 		Date startTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
 		startTestDateElement = uifactory.addDateChooser("qti_form_start_test_date", "qti.form.date.start", startTestDate, formLayout);
+		startTestDateElement.setElementCssClass("o_qti_21_datetest_start");
 		startTestDateElement.setDateChooserTimeEnabled(true);
 		startTestDateElement.setMandatory(true);
 		
 		Date endTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
 		endTestDateElement = uifactory.addDateChooser("qti_form_end_test_date", "qti.form.date.end", endTestDate, formLayout);
+		endTestDateElement.setElementCssClass("o_qti_21_datetest_end");
 		endTestDateElement.setDateChooserTimeEnabled(true);
 	}
 	
