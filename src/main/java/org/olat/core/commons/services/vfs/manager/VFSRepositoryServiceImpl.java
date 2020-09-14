@@ -490,13 +490,20 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			revisionDao.deleteRevision(revision);
 		}
 		
+		dbInstance.commit();
+	
+		int count = 0;
 		int deleted = 0;
-		
 		List<VFSMetadata> children = getChildren(data);
 		for(VFSMetadata child:children) {
 			deleted += deleteMetadata(child);
+			if(count++ % 10 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
 		}
 		metadataDao.removeMetadata(data);
+		dbInstance.commit();
+		
 		deleted++;
 		return deleted;
 	}
@@ -661,6 +668,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					thumbnailLeaf = (VFSLeaf)item;
 				} else if(item == null) {
 					thumbnailDao.removeThumbnail(thumbnail);
+					dbInstance.commit();// free lock ASAP
 				}
 			}
 		}
@@ -762,6 +770,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			}
 			thumbnailDao.removeThumbnail(thumbnail);
 		}
+		dbInstance.commit();
 	}
 
 	@Override
