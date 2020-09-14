@@ -46,7 +46,7 @@ public class AssessmentTestOverviewDataModel extends DefaultFlexiTableDataModel<
 		ControlObjectRow partRow = getObject(row);
 		switch(PartCols.values()[col]) {
 			case title: return partRow;
-			case maxScore: return partRow.getMaxScore();
+			case maxScore: return partRow.getEstimatedMaxScore();
 			case attempts: return partRow.getAttemptOption();
 			case skipping: return partRow.getSkipping();
 			case comment: return partRow.getComment();

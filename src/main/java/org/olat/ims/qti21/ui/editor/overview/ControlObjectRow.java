@@ -25,6 +25,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.LOMDuration;
@@ -38,6 +39,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.ControlObject;
 import uk.ac.ed.ph.jqtiplus.node.test.ItemSessionControl;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -55,6 +57,7 @@ public class ControlObjectRow {
 	private String metadataIdentifier;
 	
 	private Double maxScore;
+	private Double estimatedMaxScore;
 	private Boolean feedbacks;
 	private QTI21QuestionType type;
 
@@ -73,9 +76,10 @@ public class ControlObjectRow {
 		this.iconCssClass = iconCssClass;
 	}
 	
-	public static ControlObjectRow valueOf(AssessmentTest assessmentTest) {
+	public static ControlObjectRow valueOf(AssessmentTest assessmentTest, ResolvedAssessmentTest resolvedAssessmentTest) {
 		ControlObjectRow row = new ControlObjectRow(assessmentTest.getTitle(), assessmentTest, "o_qtiassessment_icon");
 		row.maxScore = QtiNodesExtractor.extractMaxScore(assessmentTest);
+		row.estimatedMaxScore = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
 
 		boolean hasFeedbacks = !assessmentTest.getTestFeedbacks().isEmpty();
 		row.feedbacks = Boolean.valueOf(hasFeedbacks);
@@ -114,6 +118,7 @@ public class ControlObjectRow {
 		}
 		ControlObjectRow row = new ControlObjectRow(assessmentItem.getTitle(), itemRef, itemCssClass);
 		row.maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+		row.estimatedMaxScore = row.maxScore;
 		row.type = type;
 		boolean hasFeedbacks = !assessmentItem.getModalFeedbacks().isEmpty();
 		row.feedbacks = Boolean.valueOf(hasFeedbacks);
@@ -288,6 +293,14 @@ public class ControlObjectRow {
 	
 	public void setMaxScore(Double maxScore) {
 		this.maxScore = maxScore;
+	}
+	
+	public Double getEstimatedMaxScore() {
+		return estimatedMaxScore;
+	}
+	
+	public void setEstimatedMaxScore(Double estimatedMaxScore) {
+		this.estimatedMaxScore = estimatedMaxScore;
 	}
 	
 	public QTI21QuestionType getType() {

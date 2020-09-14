@@ -56,6 +56,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.assessment.components.QuestionTypeFlexiCellRenderer;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
@@ -150,7 +151,10 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		creatorEl.setEnabled(false);
 		DateChooser creationEl = uifactory.addDateChooser("form.metadata.creationDate", testEntry.getCreationDate(), infosLayout);
 		creationEl.setEnabled(false);
-		Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentTest);
+		Double maxScore = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
+		if(maxScore == null) {
+			maxScore = QtiNodesExtractor.extractMaxScore(assessmentTest);
+		}
 		String maxScoreStr = AssessmentHelper.getRoundedScore(maxScore);
 		TextElement maxScoreEl = uifactory.addTextElement("max.score", "max.score", 255, maxScoreStr, infosLayout);
 		maxScoreEl.setEnabled(false);
@@ -198,7 +202,7 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		tableColumnModel.addFlexiColumnModel(titleCol);
 		// score
 		DefaultFlexiColumnModel scoreCol = new DefaultFlexiColumnModel(PartCols.maxScore, SelectionTarget.maxpoints.name());
-		scoreCol.setCellRenderer(new AssessmentSectionScoreCellRenderer(SelectionTarget.maxpoints.name()));
+		scoreCol.setCellRenderer(new AssessmentSectionScoreCellRenderer(SelectionTarget.maxpoints.name(), getTranslator()));
 		tableColumnModel.addFlexiColumnModel(scoreCol);
 		// typical learning time
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.learningTime, new DurationFlexiCellRenderer(getTranslator())));
@@ -254,7 +258,7 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		List<ControlObjectRow> rows = new ArrayList<>();
 		
 		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
-		ControlObjectRow testRow = ControlObjectRow.valueOf(test);
+		ControlObjectRow testRow = ControlObjectRow.valueOf(test, resolvedAssessmentTest);
 		rows.add(testRow);
 
 		AggregatedValues aggregatedValues = new AggregatedValues();
@@ -333,6 +337,10 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		
 		if(aggregatedValues.getMaxScore() != null) {
 			partRow.setMaxScore(aggregatedValues.getMaxScore());
+			Double estimatedMaxScore = QtiMaxScoreEstimator.estimateMaxScore(part, resolvedAssessmentTest);
+			if(estimatedMaxScore != null) {
+				partRow.setEstimatedMaxScore(estimatedMaxScore);
+			}
 		}
 		if(aggregatedValues.getLearningTime() != null) {
 			partRow.setLearningTime(aggregatedValues.getLearningTime());
@@ -361,6 +369,10 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		
 		if(aggregatedValues.getMaxScore() != null) {
 			sectionRow.setMaxScore(aggregatedValues.getMaxScore());
+			Double estimatedMaxScore = QtiMaxScoreEstimator.estimateMaxScore(section, resolvedAssessmentTest);
+			if(estimatedMaxScore != null) {
+				sectionRow.setEstimatedMaxScore(estimatedMaxScore);
+			}
 		}
 		if(aggregatedValues.getLearningTime() != null) {
 			sectionRow.setLearningTime(aggregatedValues.getLearningTime());

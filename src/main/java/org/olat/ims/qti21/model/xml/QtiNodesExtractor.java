@@ -87,7 +87,7 @@ public interface QtiNodesExtractor {
 			if(defaultValue != null) {
 				Value evaluatedValue = defaultValue.evaluate();
 				if(evaluatedValue instanceof FloatValue) {
-					doubleValue = new Double(((FloatValue)evaluatedValue).doubleValue());
+					doubleValue = Double.valueOf(((FloatValue)evaluatedValue).doubleValue());
 				}
 			}
 		}
@@ -196,7 +196,7 @@ public interface QtiNodesExtractor {
 	}
 	
 	public static Double extractCutValue(OutcomeIf outcomeIf) {
-		if(outcomeIf != null && outcomeIf.getExpressions().size() > 0) {
+		if(outcomeIf != null && !outcomeIf.getExpressions().isEmpty()) {
 			Expression gte = outcomeIf.getExpressions().get(0);
 			if(gte.getExpressions().size() > 1) {
 				Expression baseValue = gte.getExpressions().get(1);
