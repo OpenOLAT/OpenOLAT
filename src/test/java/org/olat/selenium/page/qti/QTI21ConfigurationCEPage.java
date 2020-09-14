@@ -19,6 +19,9 @@
  */
 package org.olat.selenium.page.qti;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -97,6 +100,53 @@ public class QTI21ConfigurationCEPage {
 		By correctionBy = By.xpath("//fieldset[contains(@class,'o_qti_21_correction')]//div[@id='o_cocorrection_mode']//input[@value='" + mode + "'][@name='correction.mode'][@type='radio']");
 		OOGraphene.waitElement(correctionBy, browser);
 		browser.findElement(correctionBy).click();
+		return this;
+	}
+	
+	public QTI21ConfigurationCEPage setTime(Date start, Date end) {
+		By enableDateTest = By.cssSelector(".o_qti_21_datetest input[type='checkbox']");
+		browser.findElement(enableDateTest).click();
+		OOGraphene.waitBusy(browser);
+		
+		// confirm
+		By confirmBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
+		OOGraphene.waitElement(confirmBy, browser);
+		browser.findElement(confirmBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		OOGraphene.moveTo(By.className("o_qti_21_datetest_end"), browser);
+		
+		// set dates
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(start);
+		setTime("o_qti_21_datetest_start", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE));
+		cal.setTime(end);
+		setTime("o_qti_21_datetest_end", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE));
+		return this;
+	}
+	
+	private QTI21ConfigurationCEPage setTime(String fieldClass, int hour, int minutes) {
+		By untilAltBy = By.cssSelector("div." + fieldClass + " div.o_date_picker span.input-group-addon i");
+		browser.findElement(untilAltBy).click();
+		
+		By todayBy = By.xpath("//div[@id='ui-datepicker-div']//td[contains(@class,'ui-datepicker-today')]/a");
+		try {
+			OOGraphene.waitElement(todayBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Datetest", browser);
+			throw e;
+		}
+		browser.findElement(todayBy).click();
+		OOGraphene.waitElementDisappears(todayBy, 5, browser);
+		
+		By hourBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dch_o_')]");
+		WebElement hourEl = browser.findElement(hourBy);
+		hourEl.clear();
+		hourEl.sendKeys(Integer.toString(hour));
+		By minuteBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dcm_o_')]");
+		WebElement minuteEl = browser.findElement(minuteBy);
+		minuteEl.clear();
+		minuteEl.sendKeys(Integer.toString(minutes));
 		return this;
 	}
 	

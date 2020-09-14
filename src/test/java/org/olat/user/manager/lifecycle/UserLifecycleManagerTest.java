@@ -299,14 +299,83 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		Assert.assertFalse(hasTo(informedId2.getUser().getEmail(), inactivedMessages));
 		getSmtpServer().reset();
 	}
+
+	@Test
+	public void inactivateIdentityWithoutLogin() {
+		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+		userModule.setMailBeforeDeactivation(true);
+		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
+		userModule.setNumberOfDayBeforeDeactivationMail(30);
+		
+		Identity idWithoutLogin = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-9");
+		setCreationDate(idWithoutLogin, DateUtils.addDays(new Date(), -1205));
+		idWithoutLogin = securityManager.saveIdentityStatus(idWithoutLogin, Identity.STATUS_ACTIV, null);
+		dbInstance.commitAndCloseSession();
+		
+		Set<Identity> vetoed = new HashSet<>();
+		lifecycleManager.inactivateIdentities(vetoed);
+		dbInstance.commitAndCloseSession();
+		
+		Identity inactiveIdWithoutLogin = securityManager.loadIdentityByKey(idWithoutLogin.getKey());
+		Assert.assertEquals(Identity.STATUS_INACTIVE, inactiveIdWithoutLogin.getStatus());
+		Assert.assertNotNull(inactiveIdWithoutLogin.getInactivationDate());
+		Assert.assertNull(((IdentityImpl)inactiveIdWithoutLogin).getInactivationEmailDate());
+		
+		// vetoed for the rest of the process
+		Assert.assertTrue(vetoed.contains(idWithoutLogin));
+		// check mails sent
+		List<SmtpMessage> inactivedMessages = getSmtpServer().getReceivedEmails();
+		Assert.assertFalse(hasTo(idWithoutLogin.getUser().getEmail(), inactivedMessages));
+		getSmtpServer().reset();	
+	}
 	
-	private boolean hasTo(String to, List<SmtpMessage> messages) {
-		for(SmtpMessage message:messages) {
-			if(message.getHeaderValue("To").contains(to)) {
-				return true;
-			}
-		}
-		return false;
+	@Test
+	public void inactivateIdentityNegativeTest() {
+		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+		userModule.setMailBeforeDeactivation(true);
+		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
+		userModule.setNumberOfDayBeforeDeactivationMail(30);
+		
+		Identity idWithoutLogin = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-20");
+		setCreationDate(idWithoutLogin, DateUtils.addDays(new Date(), -600));
+		idWithoutLogin = securityManager.saveIdentityStatus(idWithoutLogin, Identity.STATUS_ACTIV, null);
+
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-21");
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -600));
+		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, null);
+
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-22");
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -600));
+		id2 = securityManager.saveIdentityStatus(id2, Identity.STATUS_PENDING, null);
+		
+		dbInstance.commitAndCloseSession();
+		
+		Set<Identity> vetoed = new HashSet<>();
+		lifecycleManager.inactivateIdentities(vetoed);
+		dbInstance.commitAndCloseSession();
+		
+		// check no status changed
+		Identity activeIdWithoutLogin = securityManager.loadIdentityByKey(idWithoutLogin.getKey());
+		Assert.assertEquals(Identity.STATUS_ACTIV, activeIdWithoutLogin.getStatus());
+		Assert.assertNull(activeIdWithoutLogin.getInactivationDate());
+		Assert.assertNull(((IdentityImpl)activeIdWithoutLogin).getInactivationEmailDate());
+		
+		Identity activeId1 = securityManager.loadIdentityByKey(id1.getKey());
+		Assert.assertEquals(Identity.STATUS_ACTIV, activeId1.getStatus());
+		Assert.assertNull(activeId1.getInactivationDate());
+		Assert.assertNull(((IdentityImpl)activeId1).getInactivationEmailDate());
+		
+		Identity activeId2 = securityManager.loadIdentityByKey(id2.getKey());
+		Assert.assertEquals(Identity.STATUS_PENDING, activeId2.getStatus());
+		Assert.assertNull(activeId2.getInactivationDate());
+		Assert.assertNull(((IdentityImpl)activeId2).getInactivationEmailDate());
+		
+		// check no mails were sent
+		List<SmtpMessage> inactivedMessages = getSmtpServer().getReceivedEmails();
+		Assert.assertFalse(hasTo(idWithoutLogin.getUser().getEmail(), inactivedMessages));
+		Assert.assertFalse(hasTo(id1.getUser().getEmail(), inactivedMessages));
+		Assert.assertFalse(hasTo(id2.getUser().getEmail(), inactivedMessages));
+		getSmtpServer().reset();	
 	}
 	
 	@Test
@@ -446,6 +515,77 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 	
 	
 	@Test
+	public void deleteIdentityWithoutLogin() {
+		Assert.assertTrue(userModule.isUserAutomaticDeletion());
+		
+		Identity idWithoutLogin = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-11");
+		setCreationDate(idWithoutLogin, DateUtils.addDays(new Date(), -1205));
+		idWithoutLogin = securityManager.saveIdentityStatus(idWithoutLogin, Identity.STATUS_INACTIVE, null);
+		((IdentityImpl)idWithoutLogin).setInactivationDate(DateUtils.addDays(new Date(), -1000));
+		idWithoutLogin = identityDao.saveIdentity(idWithoutLogin);
+		dbInstance.commitAndCloseSession();
+
+		Set<Identity> vetoed = new HashSet<>();
+		lifecycleManager.deleteIdentities(vetoed);
+		dbInstance.commitAndCloseSession();
+		
+		Identity deletedIdWithoutLogin = securityManager.loadIdentityByKey(idWithoutLogin.getKey());
+		Assert.assertEquals(Identity.STATUS_DELETED, deletedIdWithoutLogin.getStatus());
+		Assert.assertNotNull(((IdentityImpl)deletedIdWithoutLogin).getDeletedDate());
+		Assert.assertNull(((IdentityImpl)deletedIdWithoutLogin).getDeletionEmailDate());
+		
+		getSmtpServer().reset();
+	}
+	
+	@Test
+	public void deleteIdentitiesProcessNegativeTest() {
+		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+
+		
+		Identity idWithoutLogin = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-30");
+		setCreationDate(idWithoutLogin, DateUtils.addDays(new Date(), -740));
+		idWithoutLogin = securityManager.saveIdentityStatus(idWithoutLogin, Identity.STATUS_ACTIV, null);
+
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-31");
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -750));
+		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, null);
+
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-32");
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -782));
+		id2 = securityManager.saveIdentityStatus(id2, Identity.STATUS_PENDING, null);
+		
+		dbInstance.commitAndCloseSession();
+		
+		Set<Identity> vetoed = new HashSet<>();
+		lifecycleManager.deleteIdentities(vetoed);
+		dbInstance.commitAndCloseSession();
+		
+		// check no status changed
+		Identity activeIdWithoutLogin = securityManager.loadIdentityByKey(idWithoutLogin.getKey());
+		Assert.assertEquals(Identity.STATUS_ACTIV, activeIdWithoutLogin.getStatus());
+		Assert.assertNull(activeIdWithoutLogin.getInactivationDate());
+		Assert.assertNull(((IdentityImpl)activeIdWithoutLogin).getInactivationEmailDate());
+		
+		Identity activeId1 = securityManager.loadIdentityByKey(id1.getKey());
+		Assert.assertEquals(Identity.STATUS_ACTIV, activeId1.getStatus());
+		Assert.assertNull(activeId1.getInactivationDate());
+		Assert.assertNull(((IdentityImpl)activeId1).getInactivationEmailDate());
+		
+		Identity activeId2 = securityManager.loadIdentityByKey(id2.getKey());
+		Assert.assertEquals(Identity.STATUS_PENDING, activeId2.getStatus());
+		Assert.assertNull(activeId2.getInactivationDate());
+		Assert.assertNull(((IdentityImpl)activeId2).getInactivationEmailDate());
+		
+		// check no mails were sent
+		List<SmtpMessage> inactivedMessages = getSmtpServer().getReceivedEmails();
+		Assert.assertFalse(hasTo(idWithoutLogin.getUser().getEmail(), inactivedMessages));
+		Assert.assertFalse(hasTo(id1.getUser().getEmail(), inactivedMessages));
+		Assert.assertFalse(hasTo(id2.getUser().getEmail(), inactivedMessages));
+		getSmtpServer().reset();	
+	}
+	
+	
+	@Test
 	public void deleteIdentity() {
 		String username = "id-to-del-" + UUID.randomUUID();
 		String email = username + "@frentix.com";
@@ -554,6 +694,24 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		Assert.assertFalse(StringHelper.containsNonWhitespace(deletedUser.getProperty(UserConstants.INSTITUTIONALNAME, null)));
 		Assert.assertFalse(StringHelper.containsNonWhitespace(deletedUser.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null)));
 		Assert.assertFalse(StringHelper.containsNonWhitespace(deletedUser.getProperty(UserConstants.EMAIL, null)));
+	}
+	
+	private void setCreationDate(Identity id, Date date) {
+		String q = "update " + IdentityImpl.class.getName() + " set creationDate=:date where key=:key";
+		dbInstance.getCurrentEntityManager()
+			.createQuery(q)
+			.setParameter("date", date)
+			.setParameter("key", id.getKey())
+			.executeUpdate();
+	}
+	
+	private boolean hasTo(String to, List<SmtpMessage> messages) {
+		for(SmtpMessage message:messages) {
+			if(message.getHeaderValue("To").contains(to)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -420,6 +422,125 @@ public class ImsQTI21Test extends Deployments {
 			.assertOnAssessmentTestMaxScore(2)
 			.assertOnAssessmentTestScore(2);
 	}
+	
+
+	/**
+	 * Upload a test in QTI 2.1 format, create a course, bind
+	 * the test in a course element, customize the options
+	 * with full window mode, show scores, assessment results
+	 * and a start and end dates for the assessment.<br>
+	 * Then a user will run it and check if the assessment results appears
+	 * after the time reserved to the test ended.
+	 * 
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21Course_dateTest(@Drone @Participant WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Hakufu");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Timed QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_test.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile);
+		
+		//create a course
+		String courseTitle = "Course QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		String testNodeTitle = "QTI21Test-8";
+		
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("iqtest")
+			.nodeTitle(testNodeTitle)
+			.selectTabLearnContent()
+			.chooseTest(qtiTestTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLayoutConfiguration()
+			.overrideConfiguration()
+			.fullWindow()
+			.saveLayoutConfiguration();
+		
+		Calendar cal = Calendar.getInstance();
+		int currentSeconds = cal.get(Calendar.SECOND);
+		cal.set(Calendar.SECOND, 0);
+		cal.add(Calendar.MINUTE, -1);
+		Date start = cal.getTime();
+		int addMinutes = (currentSeconds < 30) ? 2 : 3;
+		cal.add(Calendar.MINUTE, addMinutes);
+		Date end = cal.getTime();
+		configPage
+			.selectConfiguration()
+			.setTime(start, end)
+			.showScoreOnHomepage(true)
+			.showResultsOnHomepage(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.saveConfiguration();
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the CP
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		
+		// add a participant
+		course
+			.members()
+			.quickAdd(participant);
+		
+		//a user search the course and make the test
+		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword())
+			.resume();
+		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(courseTitle)
+			.select(courseTitle);
+		
+		// open the course and see the test
+		CoursePageFragment participantCourse = CoursePageFragment.getCourse(participantBrowser);		
+		participantCourse
+			.clickTree()
+			.selectWithTitle(testNodeTitle);
+		QTI21Page qtiPage = QTI21Page
+				.getQTI21Page(participantBrowser);
+		qtiPage
+			.assertOnStart()
+			.start()
+			.answerSingleChoiceWithParagraph("Right") 
+			.saveAnswer()
+			.assertOnAssessmentResults(180)
+			.closeAssessmentResults()
+			.assertOnCourseAttempts(1)
+			.assertOnCourseAssessmentTestScore(1)
+			.assertOnCourseAssessmentTestPassed()
+			.assertOnAssessmentResults();
+	}
+	
 	
 	/**
 	 * Test suspend. An author upload a test, set "enable suspend"

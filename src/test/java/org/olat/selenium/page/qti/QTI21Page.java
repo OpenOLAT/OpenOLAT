@@ -890,7 +890,7 @@ public class QTI21Page {
 	 */
 	public QTI21Page assertOnAssessmentResults(int timeout) {
 		By resultsBy = By.cssSelector("div.o_sel_results_details");
-		OOGraphene.waitElement(resultsBy, timeout, browser);
+		OOGraphene.waitElementSlowly(resultsBy, timeout, browser);
 		return this;
 	}
 	

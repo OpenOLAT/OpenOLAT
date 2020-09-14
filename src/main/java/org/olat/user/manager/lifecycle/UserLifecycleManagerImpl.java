@@ -115,9 +115,9 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user as user")
-		  .append(" where ident.status in (:statusList) and ((ident.lastLogin = null and ident.creationDate < :lastLogin) or ident.lastLogin < :lastLogin)");
+		  .append(" where ident.status in (:statusList) and ((ident.lastLogin is null and ident.creationDate < :lastLogin) or ident.lastLogin < :lastLogin)");
 		if(emailBeforeDate != null) {
-			sb.append(" and ident.inactivationEmailDate<:emailDate");	
+			sb.append(" and (ident.inactivationEmailDate<:emailDate or ident.lastLogin is null)");	
 		}
 
 		List<Integer> statusList = Arrays.asList(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
@@ -151,7 +151,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		  .append(" inner join fetch ident.user as user")
 		  .append(" where ident.status=:status and ident.inactivationDate<:inactivationDate");
 		if(emailBeforeDate != null) {
-			sb.append(" and ident.deletionEmailDate<:emailDate");	
+			sb.append(" and (ident.deletionEmailDate<:emailDate or ident.lastLogin is null)");	
 		}
 
 		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
@@ -189,9 +189,11 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			List<Identity> identities = getReadyToInactivateIdentities(lastLoginDate);
 			if(!identities.isEmpty()) {
 				for(Identity identity:identities) {
-					sendEmail(identity, "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactiviation");
-					identity = setIdentityInactivationMail(identity);
-					vetoed.add(identity);
+					if(identity.getLastLogin() != null) {
+						sendEmail(identity, "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactiviation");
+						identity = setIdentityInactivationMail(identity);
+						vetoed.add(identity);
+					}
 				}
 			}
 		}
@@ -208,7 +210,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		for(Identity identity:identities) {
 			if(vetoed.isEmpty() || !vetoed.contains(identity)) {
 				identity = setIdentityAsInactive(identity);
-				if(userModule.isMailAfterDeactivation()) {
+				if(identity.getLastLogin() != null && userModule.isMailAfterDeactivation()) {
 					sendEmail(identity, "mail.after.deactivation.subject", "mail.after.deactivation.body", "after deactiviation");
 				}
 				vetoed.add(identity);
@@ -229,9 +231,11 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			List<Identity> identities = getReadyToDeleteIdentities(lastLoginDate);
 			if(!identities.isEmpty()) {
 				for(Identity identity:identities) {
-					sendEmail(identity, "mail.before.deletion.subject", "mail.before.deletion.body", "before deletion");
-					identity = setIdentityDeletionMail(identity);
-					vetoed.add(identity);
+					if(identity.getLastLogin() != null) {
+						sendEmail(identity, "mail.before.deletion.subject", "mail.before.deletion.body", "before deletion");
+						identity = setIdentityDeletionMail(identity);
+						vetoed.add(identity);
+					}
 				}
 			}
 		}
@@ -247,7 +251,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		if(procentToDelete < userModule.getUserAutomaticDeletionUsersPercentage()) {
 			for(Identity identity:identities) {
 				if(!vetoed.contains(identity)) {
-					if(userModule.isMailAfterDeletion()) {
+					if(identity.getLastLogin() != null && userModule.isMailAfterDeletion()) {
 						sendEmail(identity, "mail.after.deletion.subject", "mail.after.deletion.body", "after deletion");
 					}
 					deleteIdentity(identity, null);

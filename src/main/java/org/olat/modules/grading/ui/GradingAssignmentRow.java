@@ -21,6 +21,7 @@ package org.olat.modules.grading.ui;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
@@ -46,7 +47,7 @@ public class GradingAssignmentRow implements GradingAssignmentRef {
 	private final GradingAssignment assignment;
 	private final AssessmentEntry assessmentEntry;
 	private final RepositoryEntry referenceEntry;
-	private final GradingTimeRecord timeRecord;
+	private final List<GradingTimeRecord> timeRecords;
 	
 	private final String courseElementTitle;
 	private final String taxonomyLevels;
@@ -61,7 +62,7 @@ public class GradingAssignmentRow implements GradingAssignmentRef {
 		assessedIdentityVisible = isManager || assignmentInfos.isAssessedIdentityVisible();
 		courseElementTitle = assignmentInfos.getCourseElementTitle();
 		taxonomyLevels = assignmentInfos.getTaxonomyLevels();
-		timeRecord = assignmentInfos.getTimeRecord();
+		timeRecords = assignmentInfos.getTimeRecords();
 		this.canGrade = canGrade;
 	}
 	
@@ -91,11 +92,28 @@ public class GradingAssignmentRow implements GradingAssignmentRef {
 	}
 	
 	public Long getRecordedSeconds() {
-		return timeRecord == null ? null : timeRecord.getTime();
+		if(timeRecords == null || timeRecords.isEmpty()) return null;
+		
+		long seconds = 0l;
+		for(GradingTimeRecord timeRecord:timeRecords) {
+			seconds += timeRecord.getTime();
+		}
+		return Long.valueOf(seconds);
 	}
 	
 	public Long getRecordedMetadataSeconds() {
-		return timeRecord == null ? null : timeRecord.getMetadataTime();
+		if(timeRecords == null || timeRecords.isEmpty()) return null;
+		
+		long seconds = 0l;
+		// return the first found value, the metadata time is calculated
+		// for the whole test at once
+		for(GradingTimeRecord timeRecord:timeRecords) {
+			if(timeRecord.getMetadataTime() > 0) {
+				seconds = timeRecord.getMetadataTime();
+				break;
+			}
+		}
+		return Long.valueOf(seconds);
 	}
 	
 	public GradingAssignmentStatus getAssignmentStatus() {

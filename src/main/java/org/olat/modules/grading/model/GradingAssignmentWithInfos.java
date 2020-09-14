@@ -20,7 +20,9 @@
 package org.olat.modules.grading.model;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -42,16 +44,15 @@ public class GradingAssignmentWithInfos {
 	private final GradingAssignment assignment;
 	private final AssessmentEntry assessmentEntry;
 	private final RepositoryEntry referenceEntry;
-	private final GradingTimeRecord timeRecord;
+	private final List<GradingTimeRecord> timeRecords = new ArrayList<>(3);
 	private final GraderToIdentity grader;
 	
 	private String courseElementTitle;
 	private String taxonomyLevels;
 	
-	public GradingAssignmentWithInfos(GradingAssignment assignment, GradingTimeRecord timeRecord, RepositoryEntry referenceEntry) {
+	public GradingAssignmentWithInfos(GradingAssignment assignment, RepositoryEntry referenceEntry) {
 		this.assignment = assignment;
 		this.referenceEntry = referenceEntry;
-		this.timeRecord = timeRecord;
 		assessmentEntry = assignment.getAssessmentEntry();
 		assessedIdentity = assessmentEntry.getIdentity();
 		grader = assignment.getGrader();
@@ -82,16 +83,42 @@ public class GradingAssignmentWithInfos {
 		return assessmentEntry;
 	}
 	
-	public GradingTimeRecord getTimeRecord() {
-		return timeRecord;
+	public List<GradingTimeRecord> getTimeRecords() {
+		return timeRecords;
+	}
+	
+	public void addTimeRecord(GradingTimeRecord timeRecord) {
+		if(timeRecord == null) return;
+		timeRecords.add(timeRecord);
 	}
 	
 	public Long getTimeRecordedInSeconds() {
-		return timeRecord == null ? null : timeRecord.getTime();
+		if(timeRecords.isEmpty()) return null;
+		
+		long seconds = 0l;
+		for(GradingTimeRecord timeRecord:timeRecords) {
+			seconds += timeRecord.getTime();
+		}
+		return Long.valueOf(seconds);
 	}
 	
+	/**
+	 * The metadata time is not dependent of the day.
+	 * 
+	 * @return
+	 */
 	public Long getMetadataTimeRecordedInSeconds() {
-		return timeRecord == null ? null : timeRecord.getMetadataTime();
+		if(timeRecords.isEmpty()) return null;
+
+		long seconds = 0l;
+		// return the first found value
+		for(GradingTimeRecord timeRecord:timeRecords) {
+			if(timeRecord.getMetadataTime() > 0) {
+				seconds = timeRecord.getMetadataTime();
+				break;
+			}
+		}
+		return Long.valueOf(seconds);
 	}
 	
 	public Identity getAssessedIdentity() {
