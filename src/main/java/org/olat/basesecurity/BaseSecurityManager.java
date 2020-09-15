@@ -1063,6 +1063,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	public Identity saveIdentityStatus(Identity identity, Integer status, Identity doer) {
 		IdentityImpl reloadedIdentity = loadForUpdate(identity);
 		if(reloadedIdentity != null) {
+			Integer previousStatus = reloadedIdentity.getStatus();
 			reloadedIdentity.setStatus(status);
 			if(status.equals(Identity.STATUS_DELETED)) {
 				if(doer != null && reloadedIdentity.getDeletedBy() == null) {
@@ -1071,8 +1072,13 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 				reloadedIdentity.setDeletedDate(new Date());
 			} else if(status.equals(Identity.STATUS_INACTIVE)) {
 				reloadedIdentity.setInactivationDate(new Date());
-			} else if(status.equals(Identity.STATUS_ACTIV)
-					|| status.equals(Identity.STATUS_PERMANENT)
+				reloadedIdentity.setReactivationDate(null);
+			} else if(status.equals(Identity.STATUS_ACTIV)) {
+				reloadedIdentity.setInactivationDate(null);
+				if(Identity.STATUS_INACTIVE.equals(previousStatus)) {
+					reloadedIdentity.setReactivationDate(new Date());
+				}
+			} else if(status.equals(Identity.STATUS_PERMANENT)
 					|| status.equals(Identity.STATUS_PENDING)
 					|| status.equals(Identity.STATUS_LOGIN_DENIED)) {
 				reloadedIdentity.setInactivationDate(null);

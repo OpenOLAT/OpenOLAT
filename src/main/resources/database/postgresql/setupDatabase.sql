@@ -175,6 +175,7 @@ create table o_bs_identity (
    deletedby varchar(128),
    inactivationdate timestamp,
    inactivationemaildate timestamp,
+   reactivationdate timestamp,
    deletionemaildate timestamp,
    primary key (id)
 );

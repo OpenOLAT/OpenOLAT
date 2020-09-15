@@ -58,6 +58,7 @@ public class IdentityImpl implements Identity, IdentityRef, CreateInfo, Persista
 
 	private Date inactivationDate;
 	private Date inactivationEmailDate;
+	private Date reactivationDate;
 	
 	private Date deletedDate;
 	private String deletedBy;
@@ -217,6 +218,14 @@ public class IdentityImpl implements Identity, IdentityRef, CreateInfo, Persista
 
 	public void setInactivationEmailDate(Date inactivationEmailDate) {
 		this.inactivationEmailDate = inactivationEmailDate;
+	}
+
+	public Date getReactivationDate() {
+		return reactivationDate;
+	}
+
+	public void setReactivationDate(Date reactivationDate) {
+		this.reactivationDate = reactivationDate;
 	}
 
 	@Override
