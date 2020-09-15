@@ -115,6 +115,20 @@ public class VFSRevisionDAO {
 				.setParameter("metadataKey", metadata.getKey())
 				.getResultList();
 	}
+	
+	/**
+	 * @param metadata The metadata
+	 * @return A list of revisions, without any fetch data, not ordered
+	 */
+	public List<VFSRevision> getRevisionsOnly(VFSMetadataRef metadata) {
+		if(metadata == null) return new ArrayList<>();
+
+		String sb = "select rev from vfsrevision rev where rev.metadata.key=:metadataKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb, VFSRevision.class)
+				.setParameter("metadataKey", metadata.getKey())
+				.getResultList();
+	}
 
 	public List<VFSRevision> getRevisions(List<VFSMetadataRef> metadatas) {
 		if(metadatas == null || metadatas.isEmpty()) return new ArrayList<>();

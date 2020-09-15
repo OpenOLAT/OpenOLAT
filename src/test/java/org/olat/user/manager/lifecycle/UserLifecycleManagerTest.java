@@ -104,7 +104,8 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Date beforeDate = DateUtils.addDays(new Date(), -900);
-		List<Identity> identitiesToInactivate = lifecycleManager.getReadyToInactivateIdentities(beforeDate);
+		Date reactivationDateLimite = DateUtils.addDays(new Date(), -30);
+		List<Identity> identitiesToInactivate = lifecycleManager.getReadyToInactivateIdentities(beforeDate, reactivationDateLimite);
 		Assert.assertNotNull(identitiesToInactivate);
 		Assert.assertTrue(identitiesToInactivate.contains(id1));
 		Assert.assertFalse(identitiesToInactivate.contains(id2));
@@ -133,7 +134,8 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Date beforeDate = DateUtils.addDays(new Date(), -900);
-		List<Identity> identitiesToInactivate = lifecycleManager.getIdentitiesToInactivate(beforeDate, null);
+		Date reactivationDatebefore = DateUtils.addDays(new Date(), -30);
+		List<Identity> identitiesToInactivate = lifecycleManager.getIdentitiesToInactivate(beforeDate, null, reactivationDatebefore);
 		Assert.assertNotNull(identitiesToInactivate);
 		Assert.assertTrue(identitiesToInactivate.contains(id1));
 		Assert.assertFalse(identitiesToInactivate.contains(id2));
@@ -229,6 +231,30 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		List<SmtpMessage> inactivedMessages = getSmtpServer().getReceivedEmails();
 		Assert.assertTrue(hasTo(id1.getUser().getEmail(), inactivedMessages));
 		getSmtpServer().reset();
+	}
+	
+	@Test
+	public void reactivateIdentity() {
+		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+		userModule.setMailBeforeDeactivation(true);
+		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
+		userModule.setNumberOfDayBeforeDeactivationMail(30);
+		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-1");
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -910));
+		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_INACTIVE, id1);
+		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, id1);
+		dbInstance.commitAndCloseSession();
+		
+		Identity reloadedId1 = securityManager.loadIdentityByKey(id1.getKey());
+		Assert.assertNotNull(((IdentityImpl)reloadedId1).getReactivationDate());
+
+		Set<Identity> vetoed = new HashSet<>();
+		lifecycleManager.inactivateIdentities(vetoed);
+		dbInstance.commitAndCloseSession();
+		
+		reloadedId1 = securityManager.loadIdentityByKey(id1.getKey());
+		Assert.assertEquals(Identity.STATUS_ACTIV, reloadedId1.getStatus());
 	}
 	
 	@Test

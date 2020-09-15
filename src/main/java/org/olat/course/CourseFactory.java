@@ -72,6 +72,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -439,7 +440,9 @@ public class CourseFactory {
 
 		// delete course directory
 		VFSContainer fCourseBasePath = getCourseBaseContainer(res.getResourceableId());
+		long start4 = System.nanoTime();
 		VFSStatus status = fCourseBasePath.deleteSilently();
+		CodeHelper.printMilliSecondTime(start4, "Delete all files");
 		boolean deletionSuccessful = (status == VFSConstants.YES || status == VFSConstants.SUCCESS);
 		log.info("deleteCourse: finished deletion. res="+res+", deletion successful: "+deletionSuccessful+", duration: "+(System.currentTimeMillis()-start)+" ms.");
 	}

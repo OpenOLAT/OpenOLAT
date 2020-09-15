@@ -96,22 +96,23 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	private RepositoryDeletionModule repositoryDeletionModule;
 	
 
-	public List<Identity> getReadyToInactivateIdentities(Date loginDate) {
+	public List<Identity> getReadyToInactivateIdentities(Date loginDate, Date reactivationDateLimit) {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user as user")
 		  .append(" where ident.status in (:statusList) and ((ident.lastLogin = null and ident.creationDate < :lastLogin) or ident.lastLogin < :lastLogin)")
-		  .append(" and ident.inactivationEmailDate is null");
+		  .append(" and ident.inactivationEmailDate is null and (ident.reactivationDate is null or ident.reactivationDate<:reactivationDateLimit)");
 		
 		List<Integer> statusList = Arrays.asList(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("statusList", statusList)
 				.setParameter("lastLogin", loginDate, TemporalType.TIMESTAMP)
+				.setParameter("reactivationDateLimit", reactivationDateLimit)
 				.getResultList();
 	}
 	
-	public List<Identity> getIdentitiesToInactivate(Date loginDate, Date emailBeforeDate) {
+	public List<Identity> getIdentitiesToInactivate(Date loginDate, Date emailBeforeDate, Date reactivationDateLimit) {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user as user")
@@ -119,12 +120,14 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		if(emailBeforeDate != null) {
 			sb.append(" and (ident.inactivationEmailDate<:emailDate or ident.lastLogin is null)");	
 		}
+		sb.append(" and (ident.reactivationDate is null or ident.reactivationDate<:reactivationDateLimit)");
 
 		List<Integer> statusList = Arrays.asList(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
 		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("statusList", statusList)
-				.setParameter("lastLogin", loginDate, TemporalType.TIMESTAMP);
+				.setParameter("lastLogin", loginDate, TemporalType.TIMESTAMP)
+				.setParameter("reactivationDateLimit", reactivationDateLimit);
 		if(emailBeforeDate != null) {
 			query.setParameter("emailDate", emailBeforeDate);	
 		}
@@ -182,11 +185,12 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	public void inactivateIdentities(Set<Identity> vetoed) {
 		int numOfDaysBeforeDeactivation = userModule.getNumberOfInactiveDayBeforeDeactivation();
 		int numOfDaysBeforeEmail = userModule.getNumberOfDayBeforeDeactivationMail();
+		Date reactivationDatebefore = getDate(30);
 		boolean sendMailBeforeDeactivation = userModule.isMailBeforeDeactivation() && numOfDaysBeforeEmail > 0;
 		if(sendMailBeforeDeactivation) {
 			int days = numOfDaysBeforeDeactivation - numOfDaysBeforeEmail;
 			Date lastLoginDate = getDate(days);
-			List<Identity> identities = getReadyToInactivateIdentities(lastLoginDate);
+			List<Identity> identities = getReadyToInactivateIdentities(lastLoginDate, reactivationDatebefore);
 			if(!identities.isEmpty()) {
 				for(Identity identity:identities) {
 					if(identity.getLastLogin() != null) {
@@ -202,9 +206,9 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		List<Identity> identities;
 		if(sendMailBeforeDeactivation) {
 			Date emailBeforeDate = getDate(numOfDaysBeforeEmail);
-			identities = getIdentitiesToInactivate(lastLoginDate, emailBeforeDate);
+			identities = getIdentitiesToInactivate(lastLoginDate, emailBeforeDate, reactivationDatebefore);
 		} else {
-			identities = getIdentitiesToInactivate(lastLoginDate, null);
+			identities = getIdentitiesToInactivate(lastLoginDate, null, reactivationDatebefore);
 		}
 		
 		for(Identity identity:identities) {

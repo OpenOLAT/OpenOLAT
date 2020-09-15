@@ -29,6 +29,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -50,6 +51,7 @@ import org.olat.core.util.StringHelper;
  */
 @Entity(name="filemetadata")
 @Table(name="o_vfs_metadata")
+@NamedQuery(name="metadataOnlyByParent", query="select metadata from filemetadata metadata where metadata.parent.key=:parentKey")
 public class VFSMetadataImpl implements Persistable, VFSMetadata {
 
 	private static final long serialVersionUID = 1360000029480576628L;

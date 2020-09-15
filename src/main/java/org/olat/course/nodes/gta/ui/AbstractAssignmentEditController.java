@@ -355,6 +355,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		String text = translate("warning.tasks.in.process.delete.text");
 		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
 		confirmDeleteCtrl.setUserObject(row);
+		confirmDeleteCtrl.setCssClass("o_warning");
 	}
 	
 	private void doDelete(UserRequest ureq, TaskDefinition taskDef) {

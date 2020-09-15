@@ -111,6 +111,7 @@ public class GTAAssignedTaskController extends BasicController {
 			downloadButton.setTitle(taskInfos);
 			downloadButton.setIconLeftCSS("o_icon o_icon_download");
 			downloadButton.setTarget("_blank");
+			downloadButton.setVisible(taskFile.exists());
 	
 			downloadLink = LinkFactory.createCustomLink("download.link", "download.link", null, Link.NONTRANSLATED, mainVC, this);
 			if(taskDef != null) {
