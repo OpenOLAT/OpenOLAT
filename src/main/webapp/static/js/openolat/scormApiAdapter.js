@@ -224,7 +224,16 @@ function LMSInitialize (s) {
 	return passApiCall('LMSInitialize',s,'');
 }
 function LMSFinish (s) {
-	return passApiCall('LMSFinish',s,'');
+	var finishedResult = passApiCall('LMSFinish',s,'');
+	// Immediately close module, ping OpenOlat main window to take over control
+	setTimeout(function(){
+		try {
+			pingAfterFinish();					
+		} catch(e) {
+			if (window.console) console.log("Problem pinging OpenOlat: ", e);
+		}	
+	});
+	return finishedResult;
 }
 function LMSSetValue (l, r) {
 	return passApiCall('LMSSetValue',l,r);

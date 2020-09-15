@@ -7,6 +7,11 @@
 		var frameId = "$frameId";
 		var blancURL = "$r.staticLink("blanc.html")";
 		var lastRequest = new Date().getTime();
+		## method to send a ping to the framework to draw itself after finish
+		function pingAfterFinish() { 
+			window.suppressOlatOnUnloadOnce = true;
+			$r.javaScriptCommand('ping'); 
+		}
 	</script>
 	<script>
 		var jsHttpRequest = new scormApiRequest(olatCommandUri);
