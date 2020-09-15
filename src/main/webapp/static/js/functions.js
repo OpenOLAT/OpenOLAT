@@ -1529,11 +1529,14 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 		}
 		return o_showFormDirtyDialog(onIgnoreCallback);
 	} else {
+		// Start event execution, start server to prevent concurrent executions of other events.
+		// This check will call o_beforeserver(). 
+		// o_afterserver() called when AJAX call terminates
 		if(!o2cl_noDirtyCheck()) return false;
 	}	
-	// Start event execution, start server to prevent concurrent executions of other events. 
-	// o_afterserver() called when AJAX call terminates
-	o_beforeserver();
+	// Don't call o_beforeserver() here because already called in o2cl_noDirtyCheck()
+	// The window.suppressOlatOnUnloadOnce works only once (needed in SCORM).
+	// o_beforeserver();
 	
 	var data = new Object();
 	if(submit) {
@@ -1653,11 +1656,17 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 		}
 		return o_showFormDirtyDialog(onIgnoreCallback);		
 	} else {
+		// Start event execution, start server to prevent concurrent executions of other events.
+		// This check will call o_beforeserver(). 
+		// o_afterserver() called when AJAX call terminates
 		if(!o2cl_noDirtyCheck()) return false;
-	}
-	// Start event execution, start server to prevend concurrent executions of other events. 
-	// o_afterserver() called when AJAX call terminates
-	o_beforeserver();
+	}	
+	// Don't call o_beforeserver() here because already called in o2cl_noDirtyCheck()
+	// The window.suppressOlatOnUnloadOnce works only once (needed in SCORM).
+	// o_beforeserver();
+
+	
+	
 	
 	var data = new Object();
 	var openInNewWindow = false;
