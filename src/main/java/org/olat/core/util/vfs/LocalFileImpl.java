@@ -162,7 +162,7 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 	public VFSStatus deleteSilently() {
 		if(canMeta() == VFSConstants.YES) {
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
-			CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
+			CoreSpringFactory.getImpl(DB.class).commit();
 			
 		} else {
 			// some lock can create a metadata object with canMeta() == NO

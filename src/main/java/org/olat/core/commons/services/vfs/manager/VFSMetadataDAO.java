@@ -219,6 +219,13 @@ public class VFSMetadataDAO {
 			.getResultList();
 	}
 	
+	public List<VFSMetadata> getMetadatasOnly(VFSMetadataRef parentMetadata) {
+		return dbInstance.getCurrentEntityManager()
+			.createNamedQuery("metadataOnlyByParent", VFSMetadata.class)
+			.setParameter("parentKey", parentMetadata.getKey())
+			.getResultList();
+	}
+	
 	/**
 	 * This is an exact match to find the direct children of a specific
 	 * directory.

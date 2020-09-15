@@ -22,8 +22,10 @@ package org.olat.core.commons.services.vfs.manager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
@@ -39,6 +41,9 @@ import org.olat.core.commons.services.license.manager.LicenseCleaner;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -47,6 +52,7 @@ import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * Versioning is test with @see org.olat.core.commons.services.vfs.manager.VFSVersioningTest
  * 
  * Initial date: 12 mars 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -72,7 +78,7 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getMetadataFor_file() {
+	public void getMetadataForVFSLeaf() {
 		VFSLeaf leaf = createFile();
 		
 		// create metadata
@@ -85,6 +91,83 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		Assert.assertNotNull(metadata.getFileLastModified());
 		Assert.assertEquals(leaf.getName(), metadata.getFilename());
 		Assert.assertFalse(metadata.isDirectory());	
+	}
+	
+	@Test
+	public void getMetadataForFile() {
+		VFSLeaf leaf = createFile();
+		File file = ((LocalFileImpl)leaf).getBasefile();
+		
+		// create metadata
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(metadata);
+		Assert.assertNotNull(metadata.getKey());
+		Assert.assertNotNull(metadata.getCreationDate());
+		Assert.assertNotNull(metadata.getLastModified());
+		Assert.assertNotNull(metadata.getFileLastModified());
+		Assert.assertEquals(leaf.getName(), metadata.getFilename());
+		Assert.assertFalse(metadata.isDirectory());	
+	}
+	
+	@Test
+	public void deleteMetadata() {
+		VFSLeaf leaf = createImage();
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(leaf);
+		Assert.assertNotNull(metadata);
+		
+		VFSLeaf thumbnail1 = vfsRepositoryService.getThumbnail(leaf, 200, 200, true);
+		Assert.assertNotNull(thumbnail1);
+		Assert.assertTrue(thumbnail1.getSize() > 32);
+		VFSLeaf thumbnail2 = vfsRepositoryService.getThumbnail(leaf, 180, 180, false);
+		Assert.assertNotNull(thumbnail2);
+		Assert.assertTrue(thumbnail2.getSize() > 32);
+		
+		vfsRepositoryService.deleteMetadata(metadata);
+		dbInstance.commitAndCloseSession();
+	}
+	
+	@Test
+	public void deleteMetadataFolder() {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSContainer container = createContainerRecursive(testContainer, 0, 2, 5, 5);
+	
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(container);
+		dbInstance.commitAndCloseSession();
+		
+		String containerPath = metadata.getRelativePath() + "/" + metadata.getFilename();
+		List<VFSMetadata> children = vfsRepositoryService.getChildren(containerPath);
+		Assert.assertNotNull(children);
+		Assert.assertEquals(10, children.size());
+		
+		container.deleteSilently();
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSMetadata> afterChildren = vfsRepositoryService.getChildren(containerPath);
+		Assert.assertNotNull(afterChildren);
+		Assert.assertEquals(0, afterChildren.size());
+	}
+	
+	@Test
+	public void deleteDirsAndFiles() {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSContainer container = createContainerRecursive(testContainer, 0, 2, 3, 3);
+	
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(container);
+		dbInstance.commitAndCloseSession();
+		
+		String containerPath = metadata.getRelativePath() + "/" + metadata.getFilename();
+		List<VFSMetadata> children = vfsRepositoryService.getChildren(containerPath);
+		Assert.assertNotNull(children);
+		Assert.assertEquals(6, children.size());
+		
+		File dir = ((LocalFolderImpl)container).getBasefile();
+		FileUtils.deleteDirsAndFiles(dir, true, true);
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSMetadata> afterChildren = vfsRepositoryService.getChildren(containerPath);
+		Assert.assertNotNull(afterChildren);
+		Assert.assertEquals(0, afterChildren.size());
 	}
 	
 	@Test
@@ -140,7 +223,7 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
 		VFSLeaf leaf = testContainer.createChildLeaf(filename);
 		Assert.assertEquals(VFSConstants.YES, leaf.canMeta());
-		copyTestTxt(leaf);
+		copyTestTxt(leaf, "test.txt");
 		
 		VFSMetadata metaInfo = leaf.getMetaInfo();
 		metaInfo.setComment("A little comment");
@@ -153,7 +236,7 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		
 		String secondFilename = UUID.randomUUID() + ".txt";
 		VFSLeaf secondLeaf = testContainer.createChildLeaf(secondFilename);
-		copyTestTxt(secondLeaf);
+		copyTestTxt(secondLeaf, "test.txt");
 
 		VFSMetadata secondMetaInfo = leaf.getMetaInfo();
 		String comment = null;
@@ -170,13 +253,49 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		String filename = UUID.randomUUID() + ".txt";
 		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
 		VFSLeaf firstLeaf = testContainer.createChildLeaf(filename);
-		copyTestTxt(firstLeaf);
+		copyTestTxt(firstLeaf, "test.txt");
 		return firstLeaf;
 	}
 	
-	private int copyTestTxt(VFSLeaf file) {
+	private VFSLeaf createImage() {
+		String filename = UUID.randomUUID() + ".jpg";
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSLeaf firstLeaf = testContainer.createChildLeaf(filename);
+		copyTestTxt(firstLeaf, "IMG_1491.jpg");
+		return firstLeaf;
+	}
+	
+	private VFSContainer createContainerRecursive(VFSContainer parent, int depth, int maxDepth, int numOfFiles, int numOfContainers) {
+		if(depth > maxDepth) {
+			return null;
+		}
+		
+		String filename = UUID.randomUUID().toString();
+		VFSContainer container = parent.createChildContainer(filename);
+		
+		for(int i=0; i<numOfFiles; i++) {
+			String imageName = "IMG_" + depth + "_" + i + ".jpg";
+			VFSLeaf image = container.createChildLeaf(imageName);
+			copyTestTxt(image, "IMG_1491.jpg");
+			
+			for(int j=1; j<5; j++) {
+				VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(image, j * 20, j * 20, true);
+				Assert.assertNotNull(thumbnail);
+				Assert.assertTrue(thumbnail.getSize() > 32);
+			}
+			dbInstance.commitAndCloseSession();
+		}
+		
+		for(int i=0; i<numOfContainers; i++) {
+			createContainerRecursive(container, depth + 1, maxDepth, numOfFiles, numOfContainers);
+		}
+		dbInstance.commitAndCloseSession();
+		return container;
+	}
+	
+	private int copyTestTxt(VFSLeaf file, String sourceFilename) {
 		try(OutputStream out = file.getOutputStream(false);
-				InputStream in = VFSRepositoryServiceTest.class.getResourceAsStream("test.txt")) {
+				InputStream in = VFSRepositoryServiceTest.class.getResourceAsStream(sourceFilename)) {
 			return IOUtils.copy(in, out);
 		} catch(Exception e) {
 			log.error("", e);

@@ -468,46 +468,69 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	public int deleteMetadata(VFSMetadata data) {
 		if(data == null) return 0; // nothing to do
 		
-		List<VFSThumbnailMetadata> thumbnails = thumbnailDao.loadByMetadata(data);
-		for(VFSThumbnailMetadata thumbnail:thumbnails) {
-			VFSItem item = VFSManager.olatRootLeaf("/" + data.getRelativePath(), thumbnail.getFilename());
-			if(item != null && item.exists()) {
-				item.deleteSilently();
-			}
-			thumbnailDao.removeThumbnail(thumbnail);
-		}
-		
-		List<VFSRevision> revisions = getRevisions(data);
-		for(VFSRevision revision:revisions) {
-			File revFile = getRevisionFile(revision);
-			if(revFile != null && revFile.exists()) {
-				try {
-					Files.delete(revFile.toPath());
-				} catch (IOException e) {
-					log.error("Cannot delete thumbnail: {}", revFile, e);
-				}
-			}
-			revisionDao.deleteRevision(revision);
-		}
-		
-		dbInstance.commit();
-	
-		int count = 0;
 		int deleted = 0;
-		List<VFSMetadata> children = getChildren(data);
+		List<VFSMetadata> children = metadataDao.getMetadatasOnly(data);
 		for(VFSMetadata child:children) {
 			deleted += deleteMetadata(child);
-			if(count++ % 10 == 0) {
-				dbInstance.commitAndCloseSession();
-			}
 		}
 		
+		deleteThumbnailsOfMetadata(data);
+		deleteRevisionsOfMetadata(data);
+
 		data = dbInstance.getCurrentEntityManager().getReference(VFSMetadataImpl.class, data.getKey());
 		metadataDao.removeMetadata(data);
 		dbInstance.commit();
 		
 		deleted++;
 		return deleted;
+	}
+	
+	private void deleteRevisionsOfMetadata(VFSMetadata data) {
+		List<VFSRevision> revisions = revisionDao.getRevisionsOnly(data);
+		for(VFSRevision revision:revisions) {
+			File revFile = getRevisionFile(revision);
+			if(revFile != null && revFile.exists()) {
+				try {
+					Files.delete(revFile.toPath());
+				} catch (IOException e) {
+					log.error("Cannot delete revision: {}", revFile, e);
+				}
+			}
+			revisionDao.deleteRevision(revision);
+		}
+		if(!revisions.isEmpty()) {
+			dbInstance.commit();
+		}
+	}
+	
+	private void deleteThumbnailsOfMetadata(VFSMetadata data) {
+		boolean hasThumbnailMetadata = false;
+		List<VFSThumbnailMetadata> thumbnails = thumbnailDao.loadByMetadata(data);
+		for(VFSThumbnailMetadata thumbnail:thumbnails) {
+			VFSItem item = VFSManager.olatRootLeaf("/" + data.getRelativePath(), thumbnail.getFilename());
+			if(item != null && item.exists()) {
+				if(item instanceof LocalFileImpl) {
+					File thumbnailFile = ((LocalFileImpl)item).getBasefile();
+					try {
+						Files.delete(thumbnailFile.toPath());
+					} catch (IOException e) {
+						log.error("Cannot delete thumbnail: {}", thumbnailFile, e);
+					}
+					
+					VFSMetadata thumbnailMetadata = metadataDao.getMetadata(data.getRelativePath(), thumbnail.getFilename(), false);
+					if(thumbnailMetadata != null) {
+						metadataDao.removeMetadata(thumbnailMetadata);
+						hasThumbnailMetadata = true;
+					}
+				} else {
+					item.deleteSilently();
+				}
+			}
+			thumbnailDao.removeThumbnail(thumbnail);
+		}
+		if(!thumbnails.isEmpty() || hasThumbnailMetadata) {
+			dbInstance.commit();
+		}
 	}
 
 	@Override
