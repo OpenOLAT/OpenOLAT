@@ -73,8 +73,8 @@ public class FileEditor implements DocEditor {
 	}
 
 	@Override
-	public boolean isViewOnly() {
-		return false;
+	public boolean isEditEnabled() {
+		return true;
 	}
 
 	@Override

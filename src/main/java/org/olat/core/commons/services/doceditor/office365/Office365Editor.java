@@ -71,8 +71,8 @@ public class Office365Editor implements DocEditor {
 	}
 
 	@Override
-	public boolean isViewOnly() {
-		return false;
+	public boolean isEditEnabled() {
+		return true;
 	}
 
 	@Override

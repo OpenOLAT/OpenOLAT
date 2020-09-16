@@ -68,7 +68,7 @@ public class OnlyOfficeAdminController extends FormBasicController {
 	private MultipleSelectionElement editorEnabledEl;
 	private MultipleSelectionElement mobileModeEl;
 	private TextElement mobileQueryEl;
-	private MultipleSelectionElement viewOnlyEl;
+	private MultipleSelectionElement editEnabledEl;
 	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
 	private TextElement licenseEditEl;
 	private StaticTextElement licenseInUseEl;
@@ -127,9 +127,9 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		dataTransferConfirmationEnabledEl = uifactory.addCheckboxesHorizontal(
 				"admin.data.transfer.confirmation.enabled", formLayout, ENABLED_KEYS, enabledValues);
 		
-		viewOnlyEl = uifactory.addCheckboxesHorizontal("admin.view.only", formLayout, ENABLED_KEYS, enabledValues);
-		viewOnlyEl.setHelpTextKey("admin.view.only.help", null);
-		viewOnlyEl.addActionListener(FormEvent.ONCHANGE);
+		editEnabledEl = uifactory.addCheckboxesHorizontal("admin.edit.enabled", formLayout, ENABLED_KEYS, enabledValues);
+		editEnabledEl.setHelpTextKey("admin.edit.enabled.help", null);
+		editEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
 		licenseEditEl = uifactory.addTextElement("admin.license.edit", 10, "", formLayout);
 		
@@ -163,8 +163,8 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isDataTransferConfirmationEnabled());
 		
 		Integer licenseEdit = onlyOfficeModule.getLicenseEdit();
-		boolean viewOnly = licenseEdit != null && licenseEdit.intValue() <= 0;
-		viewOnlyEl.select(ENABLED_KEYS[0], viewOnly);
+		boolean editEnabled = licenseEdit == null || licenseEdit.intValue() >= 1;
+		editEnabledEl.select(ENABLED_KEYS[0], editEnabled);
 		
 		usageRolesEl.select(USAGE_AUTHOR, onlyOfficeModule.isUsageRestrictedToAuthors());
 		usageRolesEl.select(USAGE_COACH, onlyOfficeModule.isUsageRestrictedToCoaches());
@@ -188,7 +188,7 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		}
 		mobileModeEl.setVisible(editorEnabled);
 		dataTransferConfirmationEnabledEl.setVisible(editorEnabled);
-		viewOnlyEl.setVisible(editorEnabled);
+		editEnabledEl.setVisible(editorEnabled);
 		usageRolesEl.setVisible(editorEnabled);
 		
 		updateMobileUI();
@@ -204,21 +204,21 @@ public class OnlyOfficeAdminController extends FormBasicController {
 
 	private void updateLicenseUI() {
 		boolean editorEnabled = editorEnabledEl.isAtLeastSelected(1);
-		boolean notViewOnly = !viewOnlyEl.isAtLeastSelected(1);
+		boolean editEnabled = editEnabledEl.isAtLeastSelected(1);
 		
-		if (editorEnabled && notViewOnly) {
+		if (editorEnabled && editEnabled) {
 			initLicenseValues();
 		}
 		
-		licenseEditEl.setVisible(editorEnabled && notViewOnly);
-		licenseInUseEl.setVisible(editorEnabled && notViewOnly);
+		licenseEditEl.setVisible(editorEnabled && editEnabled);
+		licenseInUseEl.setVisible(editorEnabled && editEnabled);
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == editorEnabledEl) {
 			updateUI();
-		} else if (source == viewOnlyEl) {
+		} else if (source == editEnabledEl) {
 			updateLicenseUI();
 		} else if (source == mobileModeEl) {
 			updateMobileUI();
@@ -276,8 +276,8 @@ public class OnlyOfficeAdminController extends FormBasicController {
 			onlyOfficeModule.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
 			
 			Integer licenseEdit = -1;
-			boolean viewOnly = viewOnlyEl.isAtLeastSelected(1);
-			if (!viewOnly) {
+			boolean editEnabled = editEnabledEl.isAtLeastSelected(1);
+			if (editEnabled) {
 				String licenseEditValue = licenseEditEl.getValue();
 				licenseEdit = StringHelper.containsNonWhitespace(licenseEditValue)
 						? Integer.valueOf(licenseEditValue)

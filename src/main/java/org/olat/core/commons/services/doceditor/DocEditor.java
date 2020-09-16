@@ -45,7 +45,7 @@ public interface DocEditor {
 	
 	String getDisplayName(Locale locale);
 	
-	boolean isViewOnly();
+	boolean isEditEnabled();
 	
 	boolean isCollaborative();
 

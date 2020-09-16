@@ -73,9 +73,9 @@ public class OnlyOfficeEditor implements DocEditor {
 	}
 
 	@Override
-	public boolean isViewOnly() {
+	public boolean isEditEnabled() {
 		Integer licenseEdit = onlyOfficeModule.getLicenseEdit();
-		return licenseEdit != null && licenseEdit.intValue() <= 0? true: false;
+		return licenseEdit == null || licenseEdit.intValue() >= 1;
 	}
 
 	@Override
@@ -112,6 +112,8 @@ public class OnlyOfficeEditor implements DocEditor {
 
 	@Override
 	public boolean isSupportingFormat(String suffix, Mode mode, boolean metadataAvailable) {
+		if (Mode.EDIT == mode && !isEditEnabled()) return false;
+		
 		return metadataAvailable && onlyOfficeService.isSupportedFormat(suffix, mode);
 	}
 
