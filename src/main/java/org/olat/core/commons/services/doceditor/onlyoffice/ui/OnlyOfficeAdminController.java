@@ -25,7 +25,10 @@ import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
@@ -63,6 +66,8 @@ public class OnlyOfficeAdminController extends FormBasicController {
 	private TextElement baseUrlEl;
 	private TextElement jwtSecretEl;
 	private MultipleSelectionElement editorEnabledEl;
+	private MultipleSelectionElement mobileModeEl;
+	private TextElement mobileQueryEl;
 	private MultipleSelectionElement viewOnlyEl;
 	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
 	private TextElement licenseEditEl;
@@ -108,6 +113,16 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		editorEnabledEl = uifactory.addCheckboxesHorizontal("admin.editor.enabled", formLayout, ENABLED_KEYS, enabledValues);
 		editorEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		editorEnabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isEditorEnabled());
+		
+		KeyValues mobileModesKV = new KeyValues();
+		mobileModesKV.add(KeyValues.entry(Mode.VIEW.name(), translate("admin.mode.view")));
+		mobileModesKV.add(KeyValues.entry(Mode.EMBEDDED .name(), translate("admin.mode.embedded")));
+		mobileModesKV.add(KeyValues.entry(Mode.EDIT.name(), translate("admin.mode.edit")));
+		mobileModeEl = uifactory.addCheckboxesHorizontal("admin.mobile.modes", formLayout, mobileModesKV.keys(), mobileModesKV.values());
+		mobileModeEl.addActionListener(FormEvent.ONCHANGE);
+
+		mobileQueryEl = uifactory.addTextElement("admin.mobile.query", 1000, "", formLayout);
+		mobileQueryEl.setHelpTextKey("admin.mobile.query.help", null);
 
 		dataTransferConfirmationEnabledEl = uifactory.addCheckboxesHorizontal(
 				"admin.data.transfer.confirmation.enabled", formLayout, ENABLED_KEYS, enabledValues);
@@ -139,6 +154,12 @@ public class OnlyOfficeAdminController extends FormBasicController {
 	}
 	
 	private void initEditorValues() {
+		for (Mode mode : onlyOfficeModule.getMobileModes()) {
+			mobileModeEl.select(mode.name(), true);
+		}
+		
+		mobileQueryEl.setValue(onlyOfficeModule.getMobileQuery());
+		
 		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isDataTransferConfirmationEnabled());
 		
 		Integer licenseEdit = onlyOfficeModule.getLicenseEdit();
@@ -165,11 +186,20 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		if (editorEnabled) {
 			initEditorValues();
 		}
+		mobileModeEl.setVisible(editorEnabled);
 		dataTransferConfirmationEnabledEl.setVisible(editorEnabled);
 		viewOnlyEl.setVisible(editorEnabled);
 		usageRolesEl.setVisible(editorEnabled);
 		
+		updateMobileUI();
 		updateLicenseUI();
+	}
+
+	private void updateMobileUI() {
+		boolean editorEnabled = editorEnabledEl.isAtLeastSelected(1);
+		boolean mobileEnabled = mobileModeEl.isAtLeastSelected(1);
+		
+		mobileQueryEl.setVisible(editorEnabled && mobileEnabled);
 	}
 
 	private void updateLicenseUI() {
@@ -190,6 +220,8 @@ public class OnlyOfficeAdminController extends FormBasicController {
 			updateUI();
 		} else if (source == viewOnlyEl) {
 			updateLicenseUI();
+		} else if (source == mobileModeEl) {
+			updateMobileUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -207,6 +239,10 @@ public class OnlyOfficeAdminController extends FormBasicController {
 				jwtSecretOk = false;
 			}
 			allOk &= jwtSecretOk;
+			
+			if (mobileModeEl.isAtLeastSelected(1)) {
+				allOk &= validateIsMandatory(mobileQueryEl);
+			}
 			
 			allOk &= validatePositiveInteger(licenseEditEl);
 		}
@@ -230,6 +266,12 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		onlyOfficeModule.setEditorEnabled(editorEnabled);
 		
 		if (editorEnabled) {
+			Set<Mode> mobileModes = mobileModeEl.getSelectedKeys().stream().map(Mode::valueOf).collect(Collectors.toSet());
+			onlyOfficeModule.setMobileModes(mobileModes);
+			
+			String mobileQuery = mobileQueryEl.getValue();
+			onlyOfficeModule.setMobileQuery(mobileQuery);
+			
 			boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
 			onlyOfficeModule.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
 			

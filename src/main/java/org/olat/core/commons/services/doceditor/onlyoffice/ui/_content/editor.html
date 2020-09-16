@@ -12,7 +12,16 @@
 		function loadEditor() {
 			var waitForLoad = function() {
 				if (typeof DocsAPI != "undefined") {
-					new DocsAPI.DocEditor("$id", $apiConfig);
+					var apiConfig = $apiConfig;
+					console.log("befor");
+					if ($mobileEnabled) {
+						var mobile = window.matchMedia("$mobileQuery").matches;
+						console.log("mobile " + mobile);
+						if (mobile) {
+							apiConfig.type = 'mobile';
+						}
+					}
+					new DocsAPI.DocEditor("$id", apiConfig);
 				} else {
 					window.setTimeout(waitForLoad, 500);
 				}

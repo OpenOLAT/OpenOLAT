@@ -103,6 +103,8 @@ public class OnlyOfficeEditorController extends BasicController {
 				mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
 				mainVC.contextPut("apiUrl", onlyOfficeModule.getApiUrl());
 				mainVC.contextPut("apiConfig", apiConfigJson);
+				mainVC.contextPut("mobileEnabled", onlyOfficeModule.getMobileModes().contains(access.getMode()));
+				mainVC.contextPut("mobileQuery", onlyOfficeModule.getMobileQuery());
 				
 				openVfsMetadataKey = vfsMetadata.getKey();
 				log.info("Document (key={}) opened with ONLYOFFICE ({}) by {}", openVfsMetadataKey, access.getMode(),

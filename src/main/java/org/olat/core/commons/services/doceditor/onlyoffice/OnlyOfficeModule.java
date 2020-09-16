@@ -20,8 +20,13 @@
 package org.olat.core.commons.services.doceditor.onlyoffice;
 
 import java.security.Key;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.logging.Tracing;
@@ -48,6 +53,8 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String ONLYOFFICE_BASE_URL = "onlyoffice.baseUrl";
 	private static final String ONLYOFFICE_JWT_SECRET = "onlyoffice.jwt.secret";
 	private static final String ONLYOFFICE_EDITOR_ENABLED = "onlyoffice.editor.enabled";
+	private static final String ONLYOFFICE_MOBILE_MODES = "onlyoffice.mobile.modes";
+	private static final String ONLYOFFICE_MOBILE_QUERY = "onlyoffice.mobile.query";
 	private static final String ONLYOFFICE_LICENSE_EDIT = "onlyoffice.license.edit";
 	private static final String ONLYOFFICE_DATA_TRANSER_CONFIRMATION_ENABLED = "onlyoffice.data.transfer.confirmation.enabled";
 	private static final String ONLYOFFICE_USAGE_AUTHORS = "onlyoffice.usage.authors";
@@ -69,6 +76,11 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private Key jwtSignKey;
 	@Value("${onlyoffice.editor.enabled:false}")
 	private boolean editorEnabled;
+	@Value("${onlyoffice.mobile.modes}")
+	private String mobileModesConfig;
+	private Set<Mode> mobileModes;
+	@Value("${onlyoffice.mobile.query}")
+	private String mobileQuery;
 	@Value("${onlyoffice.license.edit}")
 	private Integer licenseEdit;
 	@Value("${onlyoffice.data.transfer.confirmation.enabled:false}")
@@ -118,6 +130,9 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		if(StringHelper.containsNonWhitespace(editorEnabledObj)) {
 			editorEnabled = "true".equals(editorEnabledObj);
 		}
+		
+		mobileModesConfig = getStringPropertyValue(ONLYOFFICE_MOBILE_MODES, mobileModesConfig);
+		mobileQuery = getStringPropertyValue(ONLYOFFICE_MOBILE_QUERY, mobileQuery);
 		
 		String dataTransferConfirmationEnabledObj = getStringPropertyValue(ONLYOFFICE_DATA_TRANSER_CONFIRMATION_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(dataTransferConfirmationEnabledObj)) {
@@ -220,6 +235,31 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	public void setEditorEnabled(boolean editorEnabled) {
 		this.editorEnabled = enabled;
 		setStringProperty(ONLYOFFICE_EDITOR_ENABLED, Boolean.toString(editorEnabled), true);
+	}
+
+	public Set<Mode> getMobileModes() {
+		if (mobileModes == null) {
+			if (StringHelper.containsNonWhitespace(mobileModesConfig)) {
+				mobileModes = Arrays.stream(mobileModesConfig.split(",")).map(Mode::valueOf).collect(Collectors.toSet());
+			}
+			mobileModes = Collections.emptySet();
+		}
+		return mobileModes;
+	}
+
+	public void setMobileModes(Set<Mode> mobileModes) {
+		this.mobileModes = mobileModes;
+		this.mobileModesConfig = mobileModes.stream().map(Mode::name).collect(Collectors.joining(","));
+		setStringProperty(ONLYOFFICE_MOBILE_MODES, mobileModesConfig, true);
+	}
+
+	public String getMobileQuery() {
+		return mobileQuery;
+	}
+
+	public void setMobileQuery(String mobileQuery) {
+		this.mobileQuery = mobileQuery;
+		setStringProperty(ONLYOFFICE_MOBILE_QUERY, mobileQuery, true);
 	}
 
 	public Integer getLicenseEdit() {
