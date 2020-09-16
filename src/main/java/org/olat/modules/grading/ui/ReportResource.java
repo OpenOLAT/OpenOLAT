@@ -271,8 +271,8 @@ public class ReportResource extends OpenXMLWorkbookResource {
 	
 	private void createAssignmentsData(OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
 		GradingAssignmentSearchParameters searchParams = new GradingAssignmentSearchParameters();
-		searchParams.setGradingFromDate(from);
-		searchParams.setGradingToDate(to);
+		searchParams.setClosedFromDate(from);
+		searchParams.setClosedToDate(to);
 		searchParams.setGrader(grader);
 		searchParams.setManager(manager);
 		searchParams.setReferenceEntry(referenceEntry);

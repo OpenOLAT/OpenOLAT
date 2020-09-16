@@ -46,6 +46,8 @@ public class GradingAssignmentSearchParameters {
 	
 	private Date gradingToDate;
 	private Date gradingFromDate;
+	private Date closedToDate;
+	private Date closedFromDate;
 	private List<TaxonomyLevel> taxonomyLevels;
 	private List<SearchStatus> assignmentStatus;
 	
@@ -105,6 +107,22 @@ public class GradingAssignmentSearchParameters {
 
 	public void setGradingFromDate(Date gradingFromDate) {
 		this.gradingFromDate = gradingFromDate;
+	}
+
+	public Date getClosedToDate() {
+		return closedToDate;
+	}
+
+	public void setClosedToDate(Date closedToDate) {
+		this.closedToDate = closedToDate;
+	}
+
+	public Date getClosedFromDate() {
+		return closedFromDate;
+	}
+
+	public void setClosedFromDate(Date closedFromDate) {
+		this.closedFromDate = closedFromDate;
 	}
 
 	public BigDecimal getScoreFrom() {

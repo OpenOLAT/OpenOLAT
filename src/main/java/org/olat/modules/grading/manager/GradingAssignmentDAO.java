@@ -263,6 +263,14 @@ public class GradingAssignmentDAO {
 		if(searchParams.getPassed() != null) {
 			sb.and().append("assessmentEntry.passed=:passed");
 		}
+		
+		if(searchParams.getClosedFromDate() != null && searchParams.getClosedToDate() != null) {
+			sb.and().append("assignment.closingDate>=:closedFromDate and assignment.closingDate<=:closedToDate");
+		} else if(searchParams.getClosedFromDate() != null) {
+			sb.and().append("assignment.closingDate>=:closedFromDate");
+		} else if(searchParams.getClosedToDate() != null) {
+			sb.and().append("assignment.closingDate<=:closedToDate");
+		}
 
 		applyAssignmentSearchParameters(sb, searchParams.getGradingFromDate(), searchParams.getGradingToDate());
 		
@@ -345,6 +353,12 @@ public class GradingAssignmentDAO {
 		}
 		if(searchParams.getGradingToDate() != null) {
 			query.setParameter("gradingToDate", searchParams.getGradingToDate(), TemporalType.TIMESTAMP);
+		}
+		if(searchParams.getClosedFromDate() != null) {
+			query.setParameter("closedFromDate", searchParams.getClosedFromDate(), TemporalType.TIMESTAMP);
+		}
+		if(searchParams.getClosedToDate() != null) {
+			query.setParameter("closedToDate", searchParams.getClosedToDate(), TemporalType.TIMESTAMP);
 		}
 		if(searchParams.getScoreFrom() != null) {
 			query.setParameter("scoreFrom", searchParams.getScoreFrom());
