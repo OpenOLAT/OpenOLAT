@@ -315,6 +315,10 @@ public class GradingAssignmentDAO {
 				}
 			}
 			sb.append(")");
+			
+			if(!searchParams.getAssignmentStatus().contains(SearchStatus.closed)) {
+				sb.and().append(" not(assignment.status ").in(GradingAssignmentStatus.done).append(")");
+			}
 		} else {
 			sb.and().append("assignment.status ").in(GradingAssignmentStatus.unassigned, GradingAssignmentStatus.assigned,
 					GradingAssignmentStatus.inProcess, GradingAssignmentStatus.done);
