@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.st;
 
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -269,12 +271,7 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 				if (selectedPeekviewChildren == null || selectedPeekviewChildren.getSelectedKeys().isEmpty()) {
 					moduleConfig.remove(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES);
 				} else {
-					StringBuilder config = new StringBuilder();
-					for (String childKey : selectedPeekviewChildren.getSelectedKeys()) {
-						if (selectedPeekviewChildNodesConfig.length() > 0) config.append(",");
-						config.append(childKey);
-					}
-					selectedPeekviewChildNodesConfig = config.toString();
+					selectedPeekviewChildNodesConfig = selectedPeekviewChildren.getSelectedKeys().stream().collect(Collectors.joining(","));
 					moduleConfig.set(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, selectedPeekviewChildNodesConfig);
 				}
 			} else if (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE.equals(displayType)) {
