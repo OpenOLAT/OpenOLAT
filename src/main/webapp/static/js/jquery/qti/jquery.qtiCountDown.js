@@ -21,7 +21,6 @@
     	var periodic = jQuery.periodic({period: 1000, decay:1.0, max_period: availableTime + 1000 }, function() {
 			var remaining = availableTime - (Date.now() - startTime);
 			if(jQuery("#" + settings.formName).length == 0) {
-				console.log('Cancelled');
 				periodic.cancel();
 				if(window.qti21CountDown == periodic) {
 					window.qti21CountDown = null;

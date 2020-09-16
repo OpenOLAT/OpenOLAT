@@ -114,8 +114,6 @@ public class QTI21ConfigurationCEPage {
 		browser.findElement(confirmBy).click();
 		OOGraphene.waitBusy(browser);
 		
-		OOGraphene.moveTo(By.className("o_qti_21_datetest_end"), browser);
-		
 		// set dates
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(start);
