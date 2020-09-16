@@ -298,6 +298,8 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	public void close() {
 		if(columnLayoutCtr instanceof LayoutMain3ColsBackController) {
 			((LayoutMain3ColsBackController)columnLayoutCtr).deactivate();
+		} else if(columnLayoutCtr instanceof LayoutMain3ColsPreviewController) {
+			((LayoutMain3ColsPreviewController)columnLayoutCtr).deactivate();
 		}
 	}
 	
@@ -315,8 +317,12 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		} else if (source == myContent && event.getCommand().equals("abort")) {
 			// user has wrong browser - abort
 			fireEvent(ureq, Event.FAILED_EVENT);
-		}
-		 
+		} else if (source == myContent && event.getCommand().equals("ping")) {
+			// Nothing to do, just let the framework redraw itself if necessary
+			// This is used when LMS-Finished has been called and it is configured to 
+			// close the module automatically
+			myContent.setDirty(false);
+		}		 
 	}
 	
 	@Override

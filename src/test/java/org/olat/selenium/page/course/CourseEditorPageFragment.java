@@ -536,11 +536,10 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public PublisherPageFragment publish() {
-		WebElement publishButton = browser.findElement(publishButtonBy);
-		Assert.assertTrue(publishButton.isDisplayed());
-		publishButton.click();
+		OOGraphene.waitElement(publishButtonBy, browser);
+		browser.findElement(publishButtonBy).click();
 		OOGraphene.waitBusyAndScrollTop(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_nodes"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_nodes"), browser);
 		return new PublisherPageFragment(browser);
 	}
 	

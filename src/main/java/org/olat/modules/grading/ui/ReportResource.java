@@ -263,16 +263,16 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		
 		Boolean passed = assignmentWithInfos.getPassed();
 		if(passed != null && passed.booleanValue()) {
-			row.addCell(pos, translator.translate("passed.true"));
+			row.addCell(pos, translator.translate("passed.true.label"));
 		} else if(passed != null && !passed.booleanValue()) {
-			row.addCell(pos, translator.translate("passed.false"));
+			row.addCell(pos, translator.translate("passed.false.label"));
 		}
 	}
 	
 	private void createAssignmentsData(OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
 		GradingAssignmentSearchParameters searchParams = new GradingAssignmentSearchParameters();
-		searchParams.setGradingFromDate(from);
-		searchParams.setGradingToDate(to);
+		searchParams.setClosedFromDate(from);
+		searchParams.setClosedToDate(to);
 		searchParams.setGrader(grader);
 		searchParams.setManager(manager);
 		searchParams.setReferenceEntry(referenceEntry);
