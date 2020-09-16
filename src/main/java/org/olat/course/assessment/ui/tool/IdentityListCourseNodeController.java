@@ -474,7 +474,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			List<GradingAssignment> assignments = assessmentToolManager.getGradingAssignments(getIdentity(), params, null);
 			assessmentEntriesKeysToGraders = assignments.stream()
 					.collect(Collectors.toMap(assignment -> assignment.getAssessmentEntry().getKey(),
-							assignment -> userManager.getUserDisplayName(assignment.getGrader().getIdentity())));
+							assignment -> userManager.getUserDisplayName(assignment.getGrader().getIdentity()), (u, v) -> u));
 		}
 
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
