@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Date;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
@@ -48,6 +49,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
@@ -147,6 +149,10 @@ public class WebDocumentHandler extends FileHandler {
 			} else if (AnimationFileResource.TYPE_NAME.equals(supportedType) && AnimationFileResource.validate(filename)) {
 				eval.setValid(true);
 			}
+		}
+		if (eval.getDisplayname() == null) {
+			// use filename, better than nothing
+			eval.setDisplayname(filename + " - " + Formatter.formatShortDateFilesystem(new Date()));
 		}
 		return eval;
 	}
