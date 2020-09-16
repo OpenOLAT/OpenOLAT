@@ -140,7 +140,9 @@ public class DirectoryController extends BasicController implements Activateable
 			linkNames.add(new DocumentInfos(link.getComponentName(), uploadedBy, lastModified));
 		}
 		mainVC.contextPut("linkNames", linkNames);
-		bulkReviewLink.setVisible(!linkNames.isEmpty());
+		if(bulkReviewLink != null) {
+			bulkReviewLink.setVisible(!linkNames.isEmpty());
+		}
 
 		putInitialPanel(mainVC);
 	}
