@@ -177,7 +177,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			RepositoryEntry ores = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			SurveyRunSecurityCallback secCallback = new SurveyRunSecurityCallback(getModuleConfiguration(), userCourseEnv);
 			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-			return new SurveyStatisticResourceResult(of(ores, getIdent()), identity, secCallback);
+			return new SurveyStatisticResourceResult(ores, this, identity, secCallback);
 		}
 		return null;
 	}

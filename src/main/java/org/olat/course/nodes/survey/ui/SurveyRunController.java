@@ -65,6 +65,7 @@ public class SurveyRunController extends BasicController {
 	private EvaluationFormExecutionController executionCtrl;
 	
 	private final UserCourseEnvironment userCourseEnv;
+	private final RepositoryEntry courseEntry;
 	private final SurveyCourseNode courseNode;
 	private final SurveyRunSecurityCallback secCallback;
 	private final EvaluationFormSurveyIdentifier surveyIdent;
@@ -79,7 +80,7 @@ public class SurveyRunController extends BasicController {
 		super(ureq, wControl);
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = courseNode;
-		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		this.courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		this.surveyIdent = surveyManager.getSurveyIdentifier(courseNode, courseEntry);
 		this.secCallback = secCallback;
 
@@ -204,7 +205,7 @@ public class SurveyRunController extends BasicController {
 	private void doShowReporting(UserRequest ureq) {
 		removeAllComponents();
 		participation = loadOrCreateParticipation(ureq);
-		Controller reportingCtrl = new SurveyReportingController(ureq, getWindowControl(), survey);
+		Controller reportingCtrl = new SurveyReportingController(ureq, getWindowControl(), courseEntry, courseNode, survey);
 		mainVC.put("reporting", reportingCtrl.getInitialComponent());
 	}
 

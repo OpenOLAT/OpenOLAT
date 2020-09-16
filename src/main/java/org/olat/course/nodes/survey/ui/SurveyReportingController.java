@@ -25,13 +25,17 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.nodes.survey.SurveyManager;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.Figures;
+import org.olat.modules.forms.FiguresBuilder;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.EvaluationFormReportsController;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -47,14 +51,20 @@ public class SurveyReportingController extends BasicController {
 	@Autowired
 	private SurveyManager surveyManager;
 
-	public SurveyReportingController(UserRequest ureq, WindowControl wControl, EvaluationFormSurvey survey) {
+	public SurveyReportingController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			SurveyCourseNode courseNode, EvaluationFormSurvey survey) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("reporting");
 
 		Form form = surveyManager.loadForm(survey);
 		DataStorage storage = surveyManager.loadStorage(survey);
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
-		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, storage, filter);
+		
+		Figures figures = FiguresBuilder.builder()
+				.addCustomFigure(translate("figure.course"), courseEntry.getDisplayname())
+				.addCustomFigure(translate("figure.course.node"), courseNode.getShortTitle())
+				.build();
+		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, storage, filter, figures);
 		mainVC.put("report", reportsCtrl.getInitialComponent());
 
 		putInitialPanel(mainVC);
