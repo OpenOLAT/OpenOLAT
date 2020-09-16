@@ -106,7 +106,10 @@ public class ReportCalloutController extends FormBasicController {
 	}
 	
 	private void doCustomReport(UserRequest ureq) {
-		doReport(ureq, fromDatesEl.getDate(), toDatesEl.getDate());
+		Date start = fromDatesEl.getDate();
+		Date end = toDatesEl.getDate();
+		end = CalendarUtils.endOfDay(end);
+		doReport(ureq, start, end);
 	}
 	
 	private void doLastMonthReport(UserRequest ureq) {
