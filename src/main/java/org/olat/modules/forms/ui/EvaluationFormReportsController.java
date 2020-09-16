@@ -71,13 +71,9 @@ public class EvaluationFormReportsController extends BasicController {
 	@Autowired
 	private PdfModule pdfModule;
 
-	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter) {
-		this(ureq, wControl, form, storage, filter, null);
-	}
-
-	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter,
-			ReportSegment show) {
-		this(ureq, wControl, form, storage, filter, show, null, null, null);
+	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
+			SessionFilter filter, Figures figures) {
+		this(ureq, wControl, form, storage, filter, null, null, figures, null);
 	}
 
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter,

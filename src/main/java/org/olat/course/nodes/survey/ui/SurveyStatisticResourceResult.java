@@ -30,12 +30,14 @@ import org.olat.core.gui.control.generic.messages.SimpleMessageController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -46,16 +48,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SurveyStatisticResourceResult implements StatisticResourceResult {
 	
-	private final EvaluationFormSurveyIdentifier surveyIdent;
+	private final RepositoryEntry courseEntry;
+	private final SurveyCourseNode courseNode;
 	private final Identity identity;
 	private final SurveyRunSecurityCallback secCallback;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public SurveyStatisticResourceResult(EvaluationFormSurveyIdentifier surveyIdent, Identity identity,
+	public SurveyStatisticResourceResult(RepositoryEntry courseEntry, SurveyCourseNode courseNode, Identity identity,
 			SurveyRunSecurityCallback secCallback) {
-		this.surveyIdent = surveyIdent;
+		this.courseEntry = courseEntry;
+		this.courseNode = courseNode;
 		this.identity = identity;
 		this.secCallback = secCallback;
 		CoreSpringFactory.autowireObject(this);
@@ -69,10 +73,10 @@ public class SurveyStatisticResourceResult implements StatisticResourceResult {
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			TreeNode selectedNode) {
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(surveyIdent);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(EvaluationFormSurveyIdentifier.of(courseEntry, courseNode.getIdent()));
 		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, identity);
 		if (secCallback.canViewReporting(participation)) {
-			return new SurveyReportingController(ureq, wControl, survey);
+			return new SurveyReportingController(ureq, wControl, courseEntry, courseNode, survey);
 		}
 		Translator translator = Util.createPackageTranslator(SurveyReportingController.class, ureq.getLocale());
 		String noAccess = translator.translate("report.noaccess");
