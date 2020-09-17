@@ -21,9 +21,7 @@ package org.olat.core.commons.services.doceditor.ui;
 
 import java.util.List;
 
-import org.olat.core.commons.services.doceditor.collabora.ui.CollaboraAdminController;
-import org.olat.core.commons.services.doceditor.office365.ui.Office365AdminController;
-import org.olat.core.commons.services.doceditor.onlyoffice.ui.OnlyOfficeAdminController;
+import org.olat.core.commons.services.doceditor.DocEditorAdminSegment;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -40,6 +38,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -47,41 +46,45 @@ import org.olat.core.util.resource.OresHelper;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AdminDocEditorController extends BasicController implements Activateable2  {
+public class AdminDocEditorController extends BasicController implements Activateable2 {
 
-	private static final String COLLABORA_RES_TYPE = "Collabora";
-	private static final String ONLY_OFFICE_RES_TYPE = "OnlyOffice";
-	private static final String OFFICE365_RES_TYPE = "Office365";
 	private static final String DOCUMENTS_IN_USE_RES_TYPE = "OpenDocuments";
 
 	private VelocityContainer mainVC;
-	private final Link collaboraLink;
-	private final Link onlyOfficeLink;
-	private final Link office365Link;
 	private final Link documentsInUseLink;
 	private final SegmentViewComponent segmentView;
 	
-	private Controller collaboraCtrl;
-	private Controller onlyOfficeCtrl;
-	private Controller office365Ctrl;
+	private Controller editorCtrl;
 	private DocumentsInUseListController documentsInUseCtrl;
+	
+	private int counter = 0;
 
+	@Autowired
+	private List<DocEditorAdminSegment> adminSegments;
+	
 	public AdminDocEditorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("admin");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		collaboraLink = LinkFactory.createLink("admin.collabora", mainVC, this);
-		segmentView.addSegment(collaboraLink, true);
-		onlyOfficeLink = LinkFactory.createLink("admin.onlyoffice", mainVC, this);
-		segmentView.addSegment(onlyOfficeLink, false);
-		office365Link = LinkFactory.createLink("admin.office365", mainVC, this);
-		segmentView.addSegment(office365Link, false);
+		
+		adminSegments.sort((s1, s2) -> s1.getLinkName(getLocale()).compareToIgnoreCase(s2.getLinkName(getLocale())));
+		for (DocEditorAdminSegment adminSegment : adminSegments) {
+			String name = "ed-" + (++counter);
+			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, Link.NONTRANSLATED);
+			link.setCustomDisplayText(adminSegment.getLinkName(getLocale()));
+			link.setUserObject(adminSegment);
+			segmentView.addSegment(link, false);
+		}
+		
 		documentsInUseLink = LinkFactory.createLink("admin.documents.in.use", mainVC, this);
 		segmentView.addSegment(documentsInUseLink, false);
-
-		doOpenCollabora(ureq);
+		
+		Component firstLink = segmentView.getSegments().get(0);
+		segmentView.select(firstLink);
+		doOpenAdminSegment(ureq, adminSegments.get(0));
+		
 		putInitialPanel(mainVC);
 	}
 	
@@ -90,19 +93,32 @@ public class AdminDocEditorController extends BasicController implements Activat
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(COLLABORA_RES_TYPE.equalsIgnoreCase(type)) {
-			doOpenCollabora(ureq);
-			segmentView.select(collaboraLink);
-		} else if(ONLY_OFFICE_RES_TYPE.equalsIgnoreCase(type)) {
-			doOpenOnlyOffice(ureq);
-			segmentView.select(onlyOfficeLink);
-		} else if(OFFICE365_RES_TYPE.equalsIgnoreCase(type)) {
-			doOpenOffice365(ureq);
-			segmentView.select(office365Link);
-		} else if(DOCUMENTS_IN_USE_RES_TYPE.equalsIgnoreCase(type)) {
+		if (DOCUMENTS_IN_USE_RES_TYPE.equalsIgnoreCase(type)) {
 			doOpenDocumentsInUse(ureq);
 			segmentView.select(documentsInUseLink);
+		} else {
+			DocEditorAdminSegment adminSegment = getAdminSegment(type);
+			if (adminSegment != null) {
+				doOpenAdminSegment(ureq, adminSegment);
+			}
 		}
+	}
+
+	private DocEditorAdminSegment getAdminSegment(String type) {
+		for (Component component : segmentView.getSegments()) {
+			if (component instanceof Link) {
+				Link link = (Link)component;
+				Object userObject = link.getUserObject();
+				if (userObject instanceof DocEditorAdminSegment) {
+					DocEditorAdminSegment adminSegment = (DocEditorAdminSegment)userObject;
+					if (adminSegment.getBusinessPathType().equalsIgnoreCase(type)) {
+						segmentView.select(component);
+						return adminSegment;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -112,50 +128,28 @@ public class AdminDocEditorController extends BasicController implements Activat
 				SegmentViewEvent sve = (SegmentViewEvent)event;
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == collaboraLink) {
-					doOpenCollabora(ureq);
-				} else if (clickedLink == onlyOfficeLink) {
-					doOpenOnlyOffice(ureq);
-				} else if (clickedLink == office365Link) {
-					doOpenOffice365(ureq);
-				} else if (clickedLink == documentsInUseLink) {
+				if (clickedLink == documentsInUseLink) {
 					doOpenDocumentsInUse(ureq);
+				} else if (clickedLink instanceof Link) {
+					Link link = (Link)clickedLink;
+					Object userObject = link.getUserObject();
+					if (userObject instanceof DocEditorAdminSegment) {
+						DocEditorAdminSegment adminSegment = (DocEditorAdminSegment)userObject;
+						doOpenAdminSegment(ureq, adminSegment);
+					}
 				}
 			}
 		}
 	}
 	
-	private void doOpenCollabora(UserRequest ureq) {
-		if(collaboraCtrl == null) {
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(COLLABORA_RES_TYPE), null);
-			collaboraCtrl = new CollaboraAdminController(ureq, swControl);
-			listenTo(collaboraCtrl);
-		} else {
-			addToHistory(ureq, collaboraCtrl);
-		}
-		mainVC.put("segmentCmp", collaboraCtrl.getInitialComponent());
-	}
-	
-	private void doOpenOnlyOffice(UserRequest ureq) {
-		if(onlyOfficeCtrl == null) {
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ONLY_OFFICE_RES_TYPE), null);
-			onlyOfficeCtrl = new OnlyOfficeAdminController(ureq, swControl);
-			listenTo(onlyOfficeCtrl);
-		} else {
-			addToHistory(ureq, onlyOfficeCtrl);
-		}
-		mainVC.put("segmentCmp", onlyOfficeCtrl.getInitialComponent());
-	}
-	
-	private void doOpenOffice365(UserRequest ureq) {
-		if(office365Ctrl == null) {
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(OFFICE365_RES_TYPE), null);
-			office365Ctrl = new Office365AdminController(ureq, swControl);
-			listenTo(office365Ctrl);
-		} else {
-			addToHistory(ureq, office365Ctrl);
-		}
-		mainVC.put("segmentCmp", office365Ctrl.getInitialComponent());
+	private void doOpenAdminSegment(UserRequest ureq, DocEditorAdminSegment adminSegment) {
+		removeAsListenerAndDispose(editorCtrl);
+		editorCtrl = null;
+		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(adminSegment.getBusinessPathType()), null);
+		editorCtrl = adminSegment.createController(ureq, swControl);
+		listenTo(editorCtrl);
+		mainVC.put("segmentCmp", editorCtrl.getInitialComponent());
 	}
 	
 	private void doOpenDocumentsInUse(UserRequest ureq) {
