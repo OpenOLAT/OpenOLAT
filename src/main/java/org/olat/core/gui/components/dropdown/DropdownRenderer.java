@@ -58,6 +58,8 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
 			sb.append(" ").append(dropdown.getElementCssClass());
 		}
+		String btnDomID = "dd_btn_" + dropdown.getDispatchID();
+		sb.append("' id='").append(btnDomID);
 		sb.append("' data-toggle='dropdown'>");		
 
 		String dropdownInnerCss = dropdown.getInnerCSS();
@@ -103,10 +105,11 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		}
 		if(dropdown.getOrientation() == DropdownOrientation.right) {
 			sb.append(" dropdown-menu-right");
-		}
-		
-		sb.append("' role='menu'>");
-		
+		}		
+		String itemsDomID = "dd_items_" + dropdown.getDispatchID();
+		sb.append("' id='").append(itemsDomID).append("'");
+		sb.append(" role='menu'>");
+
 		boolean wantSpacer = false;
 		for(Component component:components) {
 			if(component instanceof Spacer) {
@@ -129,5 +132,13 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			}
 		}
 		sb.append("</ul>").append("</div>", dropdown.isEmbbeded());
+
+		// Check if dropdown has enough space in center main container, enlarge if necessary
+		if (dropdown.isExpandContentHeight()) {
+			sb.append("<script>setTimeout(function(){");
+			sb.append("OPOL.adjustContentHeightForAbsoluteElement('#").append(itemsDomID).append("');");
+			sb.append("});</script>");
+		}
+		
 	}
 }

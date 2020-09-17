@@ -105,6 +105,8 @@ public class DocumentSelectionController extends FormBasicController {
 				templateLink.setUserObject(docTemplate);
 				createDropdown.addElement(templateLink);
 			}
+			// prevent cut drop downs
+			createDropdown.setExpandContentHeight(true); 
 		}
 	}
 

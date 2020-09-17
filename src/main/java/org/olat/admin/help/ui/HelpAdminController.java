@@ -98,6 +98,7 @@ public class HelpAdminController extends FormBasicController {
 
 		addHelpDropDown = uifactory.addDropdownMenu("help.admin.add.help", "help.admin.add.help", formLayout, getTranslator());
 		addHelpDropDown.setOrientation(DropdownOrientation.right);
+		addHelpDropDown.setExpandContentHeight(true); // prevent cut drop downs
 
 		addAcademy = uifactory.addFormLink("help.admin.academy", formLayout);
 		addOOTeach = uifactory.addFormLink("help.admin.ooTeach", formLayout);

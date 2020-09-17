@@ -1040,12 +1040,55 @@ OPOL.adjustHeight = function() {
 		}
 		if (col3El.length > 0) {
 			jQuery('#o_main_center').css({'min-height' : contentHeight + "px"});
-			jQuery('#o_main_center_content').css({'min-height' : contentHeight + "px"});
 		}
 	} catch (e) {
 		if(window.console)	console.log(e);
 	}
 };
+
+/**
+ * Method to make the center content larger if it contains an element that does not have enough 
+ */
+OPOL.adjustContentHeightForAbsoluteElement = function(itemDomSelector) {
+	try {
+		var itemsDom = jQuery(itemDomSelector);
+		if(itemsDom.length == 0) {
+			// Element not found in DOM
+			return;
+		}
+		itemsDom = jQuery(itemsDom[0]);
+		var mainDom = itemsDom.closest('#o_main_center_content_inner');
+		if(mainDom == null) {
+			// Not within center column, nothing to adjust
+			return;
+		}
+		// Current available height
+		mainDom = jQuery(mainDom);
+		var mainOffset = mainDom.offset();
+		var mainHeight = mainDom.outerHeight(true);
+		var availableHeight = mainOffset.top + mainHeight;
+		
+		// Calculate minimum required height based on the position of the previous DOM element 
+		// (e.g. the pull-down button). Absolute positioned element have not offset
+		var prevDom = itemsDom.prev();
+		if (prevDom.length == 0) { 
+			// No previous element, don't know what to do
+			return;
+		}
+		var prevOffset = prevDom.offset();
+		var prevHeight = prevDom.outerHeight(true);
+		var itemsHeight = itemsDom.outerHeight(true);
+		var requiredHeight = prevOffset.top + prevHeight + itemsHeight;
+		// Check if entire element fits into main element, if not enlarge
+		var missingHeight = (requiredHeight - availableHeight);
+		if (missingHeight > 0) {
+			var newHeight = (mainHeight + missingHeight) + 'px';
+			mainDom.css('min-height', newHeight);
+		}			
+	} catch (e) {
+		if(window.console)	console.log(e);
+	}
+}
 
 /* Set the container page width to full width of the window or use standard page width */
 OPOL.setContainerFullWidth = function(full) {
@@ -1201,7 +1244,7 @@ function b_resizeIframeToMainMaxHeight(iframeId) {
 		potentialHeight = potentialHeight - theIframe.offset().top;
 		// resize now
 		var height = (potentialHeight > colsHeight ? potentialHeight : colsHeight);
-		theIframe.height(height);
+		theIframe.height(height);			
 	}
 }
 // for gui debug mode
@@ -2381,6 +2424,7 @@ var OOEdusharing = {
 				var goToData = OOEdusharing.replaceGoTo(data, identifier);
 				var esNode = container.append(goToData);
 				node.replaceWith(esNode);
+				OPOL.adjustContentHeightForAbsoluteElement('.o_edusharing_container .edusharing_metadata_wrapper');
 			},
 			error : function(XMLHttpRequest, textStatus, errorThrown) {
 				node.replaceWith("<div class='o_warning'>edu-sharing not available</div>");

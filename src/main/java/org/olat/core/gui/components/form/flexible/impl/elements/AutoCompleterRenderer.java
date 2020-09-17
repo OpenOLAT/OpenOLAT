@@ -98,6 +98,9 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 			  .append("	  source: fullNameTypeahead.ttAdapter()\n")
 			  .append(" }).on('typeahead:selected', function (e, object) {\n")
 			  .append("	  ").append(command).append(",'key',object.value,'value',object.fullName);\n")
+			  .append(" })")
+			  .append(".on('typeahead:render', function (e, object) {\n") // extend main height if rendered within the main content area and there is not enough space
+			  .append("	  OPOL.adjustContentHeightForAbsoluteElement('#o_main_center_content_inner .tt-menu');\n")
 			  .append(" });\n")
 			  .append("});\n")
 			  .append("</script>");

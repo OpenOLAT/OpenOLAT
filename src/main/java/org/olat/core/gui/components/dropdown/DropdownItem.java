@@ -125,4 +125,23 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 	public void reset() {
 		//
 	}
+
+	/**
+	 * Trigger content height check to see if drop down has enough space. If not,
+	 * enlarge content. Only set this to true if you have cut drop downs in the 
+	 * GUI. 
+	 * 
+	 * @param expandContentHeight
+	 */
+	public void setExpandContentHeight(boolean expandContentHeight) {
+		dropdown.setExpandContentHeight(expandContentHeight);
+	}
+	
+	/**
+	 * @return true: check if drop down fits into content area and expand if
+	 *         necessary; false: don't check.
+	 */
+	public boolean isExpandContentHeight() {
+		return dropdown.isExpandContentHeight();
+	}
 }

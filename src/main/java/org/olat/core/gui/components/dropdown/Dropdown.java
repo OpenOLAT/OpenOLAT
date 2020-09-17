@@ -48,6 +48,7 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	private boolean button = false;
 	private ButtonSize buttonSize = ButtonSize.regular;
 	private boolean embbeded = false;
+	private boolean expandContentHeight = false;
 	private boolean translated = false;
 	private DropdownOrientation orientation = DropdownOrientation.normal;
 	private String iconCSS;
@@ -275,6 +276,25 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 		} else {			
 			this.innerCSS = null;
 		}
+	}
+
+	/**
+	 * Trigger content height check to see if drop down has enough space. If not,
+	 * enlarge content. Only set this to true if you have cut drop downs in the 
+	 * GUI. 
+	 * 
+	 * @param expandContentHeight
+	 */
+	public void setExpandContentHeight(boolean expandContentHeight) {
+		this.expandContentHeight = expandContentHeight;
+	}
+	
+	/**
+	 * @return true: check if drop down fits into content area and expand if
+	 *         necessary; false: don't check.
+	 */
+	public boolean isExpandContentHeight() {
+		return expandContentHeight;
 	}
 
 	public static class Spacer extends AbstractComponent {
