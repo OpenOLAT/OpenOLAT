@@ -28,6 +28,8 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -244,17 +246,20 @@ public class HTMLEditorController extends FormBasicController {
 		return fileName;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
+
 	@Override
 	protected void doDispose() {
 		releaseLock();
 	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(event == Window.CLOSE_WINDOW) {
+			releaseLock();
+		}
+		super.event(ureq, source, event);
+	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// do not save data, Tomcat will not send content bigger than the maxPostSize

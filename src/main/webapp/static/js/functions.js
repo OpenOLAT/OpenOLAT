@@ -507,7 +507,11 @@ function o_postInvoke(r, newWindow) {
 			if(co == 8) {
 				var url = acmd["cda"].nwrurl;
 				if(url == "close-window") {
-					newWindow.close();
+					if(newWindow == null) {
+						newWindow.close();
+					} else {
+						window.close();
+					}
 				} else {
 					newWindow.location.href = url;
 					newWindow.focus();
@@ -1720,10 +1724,12 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 		}
 	}
 	
-	var newTargetWindow = null;
+	var targetWindow = null;
 	if(openInNewWindow) {
-		newTargetWindow = window.open("","_blank");
-		newTargetWindow.blur();
+		targetWindow = window.open("","_blank");
+		targetWindow.blur();
+	} else {
+		targetWindow = window;
 	}
 
 	jQuery.ajax(targetUrl,{
@@ -1747,7 +1753,7 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 					}
 				}
 				o_ainvoke(responseData);
-				o_postInvoke(responseData, newTargetWindow);
+				o_postInvoke(responseData, targetWindow);
 			} catch(e) {
 				if(window.console) console.log(e);
 			} finally {

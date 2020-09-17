@@ -26,6 +26,7 @@ import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,6 +55,8 @@ public class CollaboraEditorController extends BasicController {
 	public CollaboraEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf, Access access) {
 		super(ureq, wControl);
 		this.access = access;
+		
+		wControl.getWindowBackOffice().getWindow().addListener(this);
 	
 		if (collaboraService.isLockNeeded(access.getMode())) {
 			if (collaboraService.isLockedForMe(vfsLeaf, getIdentity())) {
@@ -88,14 +91,21 @@ public class CollaboraEditorController extends BasicController {
 			if (!Mode.EMBEDDED.equals(access.getMode())) {
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
+		} else if(event == Window.CLOSE_WINDOW) {
+			deleteAccess();
 		}
 	}
 
 	@Override
 	protected void doDispose() {
+		deleteAccess();
+		getWindowControl().getWindowBackOffice().getWindow().removeListener(this);
+	}
+	
+	private void deleteAccess() {
 		if (access != null) {
 			collaboraService.deleteAccessAndUnlock(access, lock);
+			access = null;
 		}
 	}
-
 }

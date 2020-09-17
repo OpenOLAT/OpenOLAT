@@ -38,6 +38,7 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs.Config;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -68,6 +69,8 @@ public class FileEditorController extends BasicController {
 		super(ureq, wControl);
 		this.vfsLeaf = vfsLeaf;
 		
+		wControl.getWindowBackOffice().getWindow().addListener(this);
+		
 		boolean isEdit = Mode.EDIT.equals(configs.getMode());
 		if (isEdit) {
 			if(vfsLockManager.isLockedForMe(vfsLeaf, ureq.getIdentity(), VFSLockApplicationType.vfs, null)) {
@@ -86,8 +89,8 @@ public class FileEditorController extends BasicController {
 			Config configObj = configs.getConfig(HTMLEditorConfig.TYPE);
 			HTMLEditorConfig config = null;
 			if (!(configObj instanceof HTMLEditorConfig)) {
-				log.error("FileEditor started without configuration! Displayd blank page. File: " + vfsLeaf + ", Identity: "
-					+ getIdentity());
+				log.error("FileEditor started without configuration! Displayd blank page. File: {}, Identity: {}",
+						vfsLeaf, getIdentity());
 				editCtrl = new BlankController(ureq, wControl);
 			}
 			config = (HTMLEditorConfig) configObj;
@@ -126,13 +129,16 @@ public class FileEditorController extends BasicController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		// nothing to do here
+		if(event == Window.CLOSE_WINDOW) {
+			editCtrl.dispatchEvent(ureq, source, event);
+			doUnlock();
+		}
 	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == editCtrl) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doUnlock();
 				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
@@ -140,6 +146,7 @@ public class FileEditorController extends BasicController {
 				fireEvent(ureq, event);
 			}
 		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -151,7 +158,9 @@ public class FileEditorController extends BasicController {
 	
 	private void doUnlock() {
 		if (temporaryLock) {
+			log.info("Unlock HTML editor: {}", vfsLeaf);
 			vfsLockManager.unlock(vfsLeaf, VFSLockApplicationType.vfs);
+			temporaryLock = false;
 		}
 	}
 }
