@@ -113,6 +113,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		
 		uploadFileEl = uifactory.addFileElement(getWindowControl(), "upload", "import.file", formLayout);
 		uploadFileEl.addActionListener(FormEvent.ONCHANGE);
+		uploadFileEl.setArea(true);
+
 		
 		SpacerElement spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);
 		spacerEl.setVisible(false);

@@ -834,13 +834,15 @@ $o-drawing-border-color		: $brand-primary;
 $o-drawing-border-width		: 2px !default;
 
 /* Placeholder panels */
-$o-panel-placeholder-border-width	: 2px !default;
-$o-panel-placeholder-border-radius	: 10px !default;
-$o-panel-placeholder-color			: #888 !default;
-$o-panel-placeholder-font-weight	: bold !default;
-$o-panel-placeholder-border-color	: #ccc!default;
-$o-panel-placeholder-bg				: #fcfcfc !default;
-$o-panel-placeholder-padding		: 10px !default;
+$o-panel-placeholder-border-width			: 2px !default;
+$o-panel-placeholder-border-radius			: 10px !default;
+$o-panel-placeholder-color					: #888 !default;
+$o-panel-placeholder-font-weight			: bold !default;
+$o-panel-placeholder-border-color			: #ccc!default;
+$o-panel-placeholder-border-active-color	: $brand-primary !default;
+$o-panel-placeholder-bg						: #fcfcfc !default;
+$o-panel-placeholder-bg-active				: #f7f7f7 !default;
+$o-panel-placeholder-padding				: 10px !default;
 
 /* Citations */
 $o-cit-quote-font-size			: $font-size-large !default;

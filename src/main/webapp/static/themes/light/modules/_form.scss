@@ -122,13 +122,15 @@
 			right: 38px;
 		}
 	}
-	.o_fileinput.o_area {
-		padding: 15px 30px ;
-		border-style: dashed;
-		
-		.o_dnd {
-			text-align: center;
+	.o_fileinput {
+	
+		&.o_area {
+			padding: 15px 30px ;
+			border-style: dashed;
 			
+			.o_dnd {
+				text-align: center;
+			}
 			.o_dnd_icon {
 				font-size: 3em;
 				color: #ccc;
@@ -137,12 +139,18 @@
 			.o_dnd_info {
 				margin-bottom: 20px;
 				color: #999;
+			}			
+			.o_realchooser {
+				padding: 98px;			
 			}
-		}
-		
-		.o_realchooser {
-			padding: 98px;
-		
+			
+			&.o_dnd_over {
+				border-color: $o-panel-placeholder-border-active-color;
+				background: $o-panel-placeholder-bg-active;
+				.o_dnd_icon {
+					color: $o-panel-placeholder-border-active-color;
+				}
+			}
 		}
 	}
 	/* hide error icon for file element - clash with file element controls */
