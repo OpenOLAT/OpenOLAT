@@ -14,29 +14,51 @@
 #if ($r.available("rtfElement"))
 	<script>
 	function b_resizetofit_htmleditor() {
-		var height = o_viewportHeight() / 3 * 2;
+		var mceEditEl = jQuery('.mce-edit-area');
+		if (mceEditEl.lengh == 0) {
+			return;
+		}
+		var availableHeight = window.innerHeight;
+		// minus the mce top space
+		editorWrapperEl = jQuery(mceEditEl[0]);
+		availableHeight -= editorWrapperEl.offset().top;
+		// minus the mce status bar
+		var mceStatusEl = jQuery('.mce-statusbar');
+		if (mceStatusEl.lengh == 0) {
+			return;
+		}
+		availableHeight -= jQuery(mceStatusEl[0]).outerHeight();
+		// minus the oo save buttons
+		var saveEl = jQuery('#o_save');
+		if (saveEl.lengh == 0) {
+			return;
+		}
+		availableHeight -= jQuery(saveEl[0]).outerHeight();
+		// minus the oo footer
+		var footerEl = jQuery('#o_footer_wrapper');
+		if (footerEl != null) {
+			availableHeight -= footerEl.outerHeight();
+		}
+		// use new height in editor
 		var edi = jQuery("#$f.getItemId("rtfElement")_ifr");
 		if (edi) {		
 			## use calculated height
-			edi.height(parseInt(height)+"px");		
+			edi.height(parseInt(availableHeight)+"px");		
 		} else {
 			## editor not available anymore - remove listener
 			Event.stopObserving(window, 'resize', b_resizetofit_htmleditor);
 		}
-		## reuse for next start of html editor
-		var toolbar = jQuery("#$f.getItemId("rtfElement")_tbl tr.mceFirst");
-		if (toolbar) height = height + toolbar.height();
-		var footer = jQuery("#$f.getItemId("rtfElement")_tbl tr.mceLast");
-		if (footer) height = height + footer.height();
-		o_info.optimized_htmleditor_height = height;
+		// keep for later reusage
+		o_info.optimized_htmleditor_height = availableHeight;
+		return availableHeight;
 	}
-	## execute once and attach handler on window resize 
+	## attach handler on window resize 
 	jQuery(window).resize(b_resizetofit_htmleditor);	
 
 	## method to use the last editor height as a preset to reduce flickering.
 	function b_initialEditorHeight() {
 		if (o_info.optimized_htmleditor_height) return o_info.optimized_htmleditor_height;
-		else return 400;
+		else return window.innerHeight - 200;
 	}
 	
 	## Check for dirtyness and mark buttons accordingly, each second

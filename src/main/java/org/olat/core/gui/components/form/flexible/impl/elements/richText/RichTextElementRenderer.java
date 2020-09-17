@@ -227,9 +227,11 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			sb.append("    height: ").append(currentHeight).append(",\n");
 		}
 		sb.append("    setup: function(ed){\n")
-		  .append("      ed.on('init', function(e) {\n")
-		  .append("        ").append(onInit.get(0).replace(".curry(", "(")).append(";\n")
-		  .append("      });\n")
+		  .append("      ed.on('init', function(e) {\n");
+		for (String initFunction : onInit) {
+			sb.append("        ").append(initFunction.replace(".curry(", "(")).append(";\n");
+		}
+		sb.append("      });\n")
 		  .append("      ed.on('change', function(e) {\n")
 		  .append("        BTinyHelper.triggerOnChange('").append(domID).append("');\n")
 		  .append("      });\n")
