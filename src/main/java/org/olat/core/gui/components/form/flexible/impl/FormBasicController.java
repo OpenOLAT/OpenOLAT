@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.InlineElement;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Disposable;
@@ -441,7 +442,9 @@ public abstract class FormBasicController extends BasicController {
 				flc.setDirty(true);
 			}
 		} else if(fiSrc instanceof InlineElement) {
-			if(!((InlineElement) fiSrc).isInlineEditingElement()) {
+			if(fiSrc instanceof RichTextElement) {
+				// ignore
+			} else if(!((InlineElement) fiSrc).isInlineEditingElement()) {
 				//the container need to be redrawn because every form item element
 				//is made of severals components. If a form item is set to invisible
 				//the layout which glue the different components stay visible

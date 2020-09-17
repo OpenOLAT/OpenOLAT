@@ -190,9 +190,6 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		return value;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		String paramId = component.getFormDispatchId();
@@ -200,6 +197,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		String submitValue = getRootForm().getRequestParameter(paramId);
 		String sizeParamId = "rtinye_".concat(paramId);
 		String size = getRootForm().getRequestParameter(sizeParamId);
+		String browser = getRootForm().getRequestParameter("browser");
 		
 		if(StringHelper.containsNonWhitespace(submitValue)) {
 			if(renderingMode == TextMode.oneLine) {
@@ -233,31 +231,25 @@ public class RichTextElementImpl extends AbstractTextElement implements
 				component.setCurrentTextMode(TextMode.formatted);
 			} else if(TextMode.multiLine.name().equals(cmd)) {
 				component.setCurrentTextMode(TextMode.multiLine);
-			}  else if(TextMode.oneLine.name().equals(cmd)) {
+			} else if(TextMode.oneLine.name().equals(cmd)) {
 				component.setCurrentTextMode(TextMode.oneLine);
+			} else if(StringHelper.containsNonWhitespace(browser)) {
+				component.dispatchRequest(ureq);
+				component.setDirty(false);
 			}
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.RichTextElement#getRichTextConfiguration()
-	 */
 	@Override
 	public RichTextConfiguration getEditorConfiguration() {
 		return configuration;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#getFormItemComponent()
-	 */
 	@Override
 	protected Component getFormItemComponent() {
 		return component;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Disposable#dispose()
-	 */
 	@Override
 	public void dispose() {
 		// cleanup stuff in the configuration (base url maper)
@@ -279,7 +271,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	@Override
 	public void setNewOriginalValue(String value) {
 		if (value == null) value = "";
-		original = new String(value);
+		original = value;
 		originalInitialised = true;
 		//the check is made on the raw values instead of the getValue()
 		if (getRawValue() != null && !getRawValue().equals(value)) {

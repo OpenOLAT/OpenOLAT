@@ -51,7 +51,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -306,7 +305,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 	
 	private void doCopy(UserRequest ureq) {
 		VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
-		fileCopyCtr = new MyLinkChooserController(ureq, getWindowControl(), courseContainer, null);
+		fileCopyCtr = new LinkChooserController(ureq, getWindowControl(), courseContainer, null, null, null, false, "", null, null, true);
 		listenTo(fileCopyCtr);
 		
 		removeAsListenerAndDispose(cmc);
@@ -340,26 +339,6 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 	private void markPublisherNews() {
 		if (secCallback.getSubscriptionContext() != null) {
 			notificationsManager.markPublisherNews(secCallback.getSubscriptionContext(), getIdentity(), true);
-		}
-	}
-	
-	private class MyLinkChooserController extends LinkChooserController {
-		
-		public MyLinkChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String uploadRelPath) {
-			super(ureq, wControl, rootDir, uploadRelPath, null, null, false, "", null, null, true);
-		}
-		
-		@Override
-		//this is a hack to overwrite the package used by the BasicController
-		protected VelocityContainer createVelocityContainer(String page) {
-			setTranslator(Util.createPackageTranslator(LinkChooserController.class, getLocale()));
-			velocity_root = Util.getPackageVelocityRoot(LinkChooserController.class);
-			return super.createVelocityContainer(page);
-		}
-
-		@Override
-		public void event(UserRequest ureq, Controller source, Event event) {
-			fireEvent(ureq, event);
 		}
 	}
 }

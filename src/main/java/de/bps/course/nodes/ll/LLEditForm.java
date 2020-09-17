@@ -25,10 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.commons.controllers.linkchooser.MediaChooserController;
+import org.olat.core.commons.controllers.linkchooser.LinkChooserController;
 import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,7 +37,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.ItemValidatorProvider;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -69,7 +67,6 @@ public class LLEditForm extends FormBasicController {
 	private static final String SELF_KEY  = "_self";
 
 	private ModuleConfiguration moduleConfig;
-	private FormSubmit subm;
 	private List<TextElement> lTargetInputList;
 	private List<SingleSelection> lHtmlTargetInputList;
 	private List<TextElement> lDescriptionInputList;
@@ -79,7 +76,7 @@ public class LLEditForm extends FormBasicController {
 	private List<LLModel> linkList;
 	private List<FormLink> lAddButtonList;
 	private long counter = 0;
-	private MediaChooserController mediaChooserController;
+	private LinkChooserController mediaChooserController;
 	private CloseableModalController mediaDialogBox;
 	private LLModel currentLink;
 	private final CourseEnvironment courseEnv;
@@ -190,26 +187,25 @@ public class LLEditForm extends FormBasicController {
 				}
 			} else if (lCustomMediaButtonList.contains(source)) {
 				currentLink = (LLModel) ((FormLink) source).getUserObject();
-				
-				removeAsListenerAndDispose(mediaDialogBox);
-				removeAsListenerAndDispose(mediaChooserController);
-				
-				VFSContainer courseContainer = courseEnv.getCourseFolderContainer();
-				mediaChooserController = new MediaChooserController(ureq, getWindowControl(), courseContainer, null, null, "", null, true);
-				listenTo(mediaChooserController);
-				
-				mediaDialogBox = new CloseableModalController(getWindowControl(), translate("choose"), mediaChooserController.getInitialComponent());
-				mediaDialogBox.activate();
-				listenTo(mediaDialogBox);
+				doChooseMedia(ureq);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		super.event(ureq, source, event);
+	private void doChooseMedia(UserRequest ureq) {
+		removeAsListenerAndDispose(mediaDialogBox);
+		removeAsListenerAndDispose(mediaChooserController);
+		
+		VFSContainer courseContainer = courseEnv.getCourseFolderContainer();
+		mediaChooserController = new LinkChooserController(ureq, getWindowControl(), courseContainer, null, null, null, false, "", null, null, true);
+		listenTo(mediaChooserController);
+		
+		mediaDialogBox = new CloseableModalController(getWindowControl(), translate("close"),
+				mediaChooserController.getInitialComponent(), mediaChooserController.getTitle());
+		mediaDialogBox.activate();
+		listenTo(mediaDialogBox);
 	}
 
 	@Override
@@ -276,8 +272,7 @@ public class LLEditForm extends FormBasicController {
 		flc.contextPut("lDelButtonList", lDelButtonList);
 		flc.contextPut("lCustomMediaButtonList", lCustomMediaButtonList);
 		
-		subm = uifactory.addFormSubmitButton("submit", formLayout);
-		formLayout.add(subm);
+		uifactory.addFormSubmitButton("submit", formLayout);
 	}
 
 	/**

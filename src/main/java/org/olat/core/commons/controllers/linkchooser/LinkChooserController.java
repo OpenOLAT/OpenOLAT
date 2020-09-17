@@ -29,7 +29,6 @@ package org.olat.core.commons.controllers.linkchooser;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -46,9 +45,6 @@ import org.olat.core.util.vfs.VFSContainer;
  * @author Christian Guretzki
  */
 public class LinkChooserController extends BasicController {
-
-	private VelocityContainer tabbedPaneViewVC, closeVC;
-	private StackedPanel mainPanel;
 
 	private TabbedPane linkChooserTabbedPane;
 	private FileLinkChooserController fileLinkChooserController;
@@ -77,7 +73,7 @@ public class LinkChooserController extends BasicController {
 			CustomLinkTreeModel customLinkTreeModel, CustomLinkTreeModel toolLinkTreeModel, boolean allowCustomMediaChooserFactory) {
 		super(ureq, wControl);
 		
-		tabbedPaneViewVC = createVelocityContainer("linkchooser");
+		VelocityContainer tabbedPaneViewVC = createVelocityContainer("linkchooser");
 
 		linkChooserTabbedPane = new TabbedPane("linkChooserTabbedPane", ureq.getLocale());
 		tabbedPaneViewVC.put("linkChooserTabbedPane", linkChooserTabbedPane);
@@ -108,7 +104,11 @@ public class LinkChooserController extends BasicController {
 				linkChooserTabbedPane.addTab(customMediaChooserCtr.getTabbedPaneTitle(), customMediaChooserCtr.getInitialComponent());				
 			}				
 		}
-		mainPanel = putInitialPanel(tabbedPaneViewVC);
+		putInitialPanel(tabbedPaneViewVC);
+	}
+	
+	public String getTitle() {
+		return translate("linkchooser.select.title");
 	}
 
 	@Override
@@ -118,61 +118,9 @@ public class LinkChooserController extends BasicController {
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {		
-		if (event instanceof URLChoosenEvent) {
-			URLChoosenEvent urlChoosenEvent = (URLChoosenEvent)event;
-			doSendUrlToTiny(urlChoosenEvent);
-		} else if (event == Event.CANCELLED_EVENT) {
-			doCancel();
-		}
+		fireEvent(ureq, event);
 	}
 	
-	private void doSendUrlToTiny(URLChoosenEvent urlChoosenEvent) {
-		cleanUp();
-		
-		// send choosen URL to parent window via JavaScript and close the window
-		closeVC = createVelocityContainer("close");
-		String url = urlChoosenEvent.getURL();
-		closeVC.contextPut("isJsUrl", Boolean.FALSE);
-		
-		String escapedUrl;
-		if (url.contains("gotonode") || url.contains("gototool")) {
-			escapedUrl = url;
-			closeVC.contextPut("isJsUrl", Boolean.TRUE);
-		} else if(url.startsWith("http://") || url.startsWith("https://")) {
-			escapedUrl = url;
-		} else {
-			escapedUrl = escapeUrl(url);
-		}
-		closeVC.contextPut("imagepath", escapedUrl);
-		if(urlChoosenEvent.getWidth() > 0) {
-			closeVC.contextPut("width", Integer.toString(urlChoosenEvent.getWidth()));
-		}
-		if(urlChoosenEvent.getHeight() > 0) {
-			closeVC.contextPut("height", Integer.toString(urlChoosenEvent.getHeight()));
-		}
-		mainPanel.setContent(closeVC);
-	}
-	
-	private String escapeUrl(String url) {
-		return url.replace("+", "%2b");
-	}
-	
-	private void doCancel() {
-		cleanUp();
-		
-		// Close the window, no URL selected
-		closeVC = createVelocityContainer("close");
-		closeVC.contextPut("imagepath", "");
-		mainPanel.setContent(closeVC);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(fileLinkChooserController);
-		removeAsListenerAndDispose(courseLinkChooserController);
-		removeAsListenerAndDispose(courseToolLinkChooserController);
-		removeAsListenerAndDispose(customMediaChooserCtr);
-	}
-
 	@Override
 	protected void doDispose() {
 		// controllers disposed by basic controller

@@ -289,10 +289,13 @@ public class HTMLEditorController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
+	@Override
+	protected void propagateDirtinessToContainer(FormItem source, FormEvent event) {
+		if(source == save || source == saveClose || source == cancel) {
+			super.propagateDirtinessToContainer(source, event);
+		}
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (fileToLargeError != null) {

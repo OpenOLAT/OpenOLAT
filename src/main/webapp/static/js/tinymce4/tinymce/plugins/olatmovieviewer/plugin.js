@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'https://www.frentix.com',
 				infourl : 'https://www.frentix.com',
-				version : '2.5.0'
+				version : '2.5.1'
 			};
 		},
 
@@ -36,7 +36,6 @@
 		init : function(ed, url) {
 			
 			var cachedTrans, cachedCoreTrans;
-			var cachedHelp;
 			
 			// Load the OLAT translator.
 			function translator() {	
@@ -113,7 +112,7 @@
 			
 			function getNextDomId() {
 				var count = 0;
-				var domIdentity = "olatFlashMovieViewer";
+				var domIdentity;
 				var placeHolders = ed.dom.select("img.mceItemOlatMovieViewer");
 				do {
 					domIdentity = "olatFlashMovieViewer" + (~~(Math.random() * 1000000));
@@ -192,7 +191,6 @@
 				var controlbar = typeof(p.controlbar) != "undefined" ? p.controlbar : true;
 				var provider = typeof(p.provider) != "undefined" ? p.provider : undefined;
 				var streamer = typeof(p.streamer) != "undefined" ? p.streamer : undefined;
-				var domIdentity = typeof(p.domIdentity) != "undefined" ? p.domIdentity : getNextDomId();
 				
 				//scale the video if to big to not overlap the buttons
 				var maxHeight = 400;
@@ -430,7 +428,7 @@
 				pl += 'height:' + (settingsArr[3] - playerOffsetHeight) + ',';
 				pl += 'poster:' + settingsArr[11];
 				return pl;
-			};
+			}
 			
 			//The video player code.
 			function getPlayerHtmlNode(editor,p) {
@@ -461,7 +459,7 @@
 					"style":'display:block;border:solid 1px #000; width:' + playerWidth + 'px; height:' + playerHeight + 'px;'
 				},h);
 				return node;
-			};
+			}
 
 			ed.addButton('olatmovieviewer', {
 				title : translator().translate('olatmovieviewer.desc'),
@@ -487,11 +485,13 @@
 			});
 			
 			ed.addCommand('updateOOMovie', function (ui, value) {
+				if(win == null || win === "undefined") return;
+				
 				var link = value['link'];
 				var width = value['width'];
 				var height = value['height'];
-				var hasWidth = !(typeof width === "undefined");
-				var hasHeight = !(typeof height === "undefined");
+				var hasWidth = (typeof width !== "undefined");
+				var hasHeight = (typeof height !== "undefined");
 				if(hasWidth) {
 					win.find('#width')[0].value(width);
 				}

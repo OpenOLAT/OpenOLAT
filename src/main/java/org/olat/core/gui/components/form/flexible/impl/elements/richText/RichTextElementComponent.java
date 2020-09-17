@@ -22,17 +22,19 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.controllers.linkchooser.LinkChooserController;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -49,7 +51,7 @@ import org.olat.core.util.vfs.VFSContainer;
  * 
  * @author gnaegi
  */
-class RichTextElementComponent extends FormBaseComponentImpl {
+class RichTextElementComponent extends FormBaseComponentImpl implements ControllerEventListener {
 	private static final String CMD_IMAGEBROWSER = "image";
 	private static final String CMD_FLASHPLAYERBROWSER = "flashplayer";
 	private static final String CMD_FILEBROWSER = "file";
@@ -61,6 +63,9 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 	private int rows;
 	private Integer currentHeight;
 	private TextMode currentTextMode;
+	
+	private CloseableModalController cmc;
+	private LinkChooserController myLinkChooserController;
 
 	/**
 	 * Constructor for a text area element
@@ -119,6 +124,7 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 
 	protected void setCurrentTextMode(TextMode currentTextMode) {
 		this.currentTextMode = currentTextMode;
+		setDirty(true);
 	}
 
 	@Override
@@ -140,6 +146,9 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 			String fileName = getRichTextElementImpl().getEditorConfiguration().getLinkBrowserRelativeFilePath();
 			createFileSelectorPopupWindow(ureq, moduleUri, fileName);
 			setDirty(false);
+		} else if(StringHelper.containsNonWhitespace(ureq.getParameter("browser"))) {
+			String fileName = getRichTextElementImpl().getEditorConfiguration().getLinkBrowserRelativeFilePath();
+			createFileSelectorPopupWindow(ureq, ureq.getParameter("browser"), fileName);
 		} else {
 			String cmd = ureq.getParameter("cmd");
 			if(StringHelper.containsNonWhitespace(cmd)) {
@@ -149,7 +158,58 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		}
 	}
 	
+	@Override
+	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+		if(source == cmc) {
+			cleanUp();
+		} else if(source == myLinkChooserController) {
+			if(event instanceof URLChoosenEvent) {
+				doSendUrlToTiny(ureq, (URLChoosenEvent)event);
+			}
+			cmc.deactivate();
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
+		myLinkChooserController.removeControllerListener(this);
+		cmc.removeControllerListener(this);
+		myLinkChooserController = null;
+		cmc = null;
+	}
+	
+	private void doSendUrlToTiny(UserRequest ureq, URLChoosenEvent urlChoosenEvent) {
+		String escapedUrl;
+		String url = urlChoosenEvent.getURL();
+		if (url.contains("gotonode") || url.contains("gototool")) {
+			escapedUrl = url;
+		} else if(url.startsWith("http://") || url.startsWith("https://")) {
+			escapedUrl = url;
+		} else {
+			escapedUrl = escapeUrl(url);
+		}
+		
+		StringBuilder cmd = new StringBuilder();
+		cmd.append("BTinyHelper.writeLinkSelectionToTiny('").append(escapedUrl).append("'");
+		if(urlChoosenEvent.getWidth() > 0) {
+			cmd.append(",").append(urlChoosenEvent.getWidth());
+		}
+		if(urlChoosenEvent.getHeight() > 0) {
+			cmd.append(",").append(urlChoosenEvent.getHeight());
+		}
+		cmd.append(");");
+		
+		JSCommand writeLinkSelectionToTiny = new JSCommand(cmd.toString());
+		 Windows.getWindows(ureq).getWindow(ureq).getWindowBackOffice().sendCommandTo(writeLinkSelectionToTiny);
+	}
+	
+	private String escapeUrl(String url) {
+		return url.replace("+", "%2b");
+	}
+
 	private void createFileSelectorPopupWindow(final UserRequest ureq, final String type, final String fileName) {
+		if(myLinkChooserController != null) return;
+		
 		// Get allowed suffixes from configuration and requested media browser type from event
 		final RichTextConfiguration config = element.getEditorConfiguration();
 		final boolean allowCustomMediaFactory = config.isAllowCustomMediaFactory();
@@ -170,26 +230,27 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		// icc gets disposed by ccc
 		
 		//helper code which is used to create link chooser controller
-		ControllerCreator linkChooserControllerCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq,WindowControl lwControl) {
-				LinkChooserController myLinkChooserController;
-				VFSContainer baseContainer = config.getLinkBrowserBaseContainer();
-				String uploadRelPath = config.getLinkBrowserUploadRelPath();
-				String absolutePath = config.getLinkBrowserAbsolutFilePath();
-				CustomLinkTreeModel linkBrowserCustomTreeModel = config.getLinkBrowserCustomLinkTreeModel();
-				CustomLinkTreeModel toolLinkTreeModel = config.getToolLinkTreeModel();
-				if (type.equals(CMD_FILEBROWSER)) {
-					// when in file mode we include the internal links to the selection
-					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, uriValidation, fileName, linkBrowserCustomTreeModel, toolLinkTreeModel, allowCustomMediaFactory);			
-				} else {
-					// in media or image mode, internal links make no sense here
-					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, uriValidation, fileName, null, null, allowCustomMediaFactory);						
-				}
-				return new LayoutMain3ColsController(lureq, lwControl, myLinkChooserController);
-			}
-		};
-		PopupBrowserWindow pbw = Windows.getWindows(ureq).getWindowManager().createNewPopupBrowserWindowFor(ureq, linkChooserControllerCreator);
-		pbw.open(ureq);
+		
+		WindowControl wControl = Windows.getWindows(ureq).getWindow(ureq).getWindowBackOffice().getChiefController().getWindowControl();
+
+		VFSContainer baseContainer = config.getLinkBrowserBaseContainer();
+		String uploadRelPath = config.getLinkBrowserUploadRelPath();
+		String absolutePath = config.getLinkBrowserAbsolutFilePath();
+		CustomLinkTreeModel linkBrowserCustomTreeModel = config.getLinkBrowserCustomLinkTreeModel();
+		CustomLinkTreeModel toolLinkTreeModel = config.getToolLinkTreeModel();
+		if (type.equals(CMD_FILEBROWSER)) {
+			// when in file mode we include the internal links to the selection
+			myLinkChooserController = new LinkChooserController(ureq, wControl, baseContainer, uploadRelPath, absolutePath, suffixes, uriValidation, fileName, linkBrowserCustomTreeModel, toolLinkTreeModel, allowCustomMediaFactory);			
+		} else {
+			// in media or image mode, internal links make no sense here
+			myLinkChooserController = new LinkChooserController(ureq, wControl, baseContainer, uploadRelPath, absolutePath, suffixes, uriValidation, fileName, null, null, allowCustomMediaFactory);						
+		}
+		myLinkChooserController.addControllerListener(this);
+
+		cmc = new CloseableModalController(wControl, "close", myLinkChooserController.getInitialComponent(), true, myLinkChooserController.getTitle());
+		cmc.suppressDirtyFormWarning();
+		cmc.tinyMceModal();
+		cmc.activate();
+		cmc.addControllerListener(this);
 	}
 }

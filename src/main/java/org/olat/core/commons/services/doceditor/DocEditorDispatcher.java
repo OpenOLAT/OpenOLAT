@@ -39,7 +39,6 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -177,25 +176,28 @@ public class DocEditorDispatcher implements Dispatcher {
 			Access access, DocEditorConfigs configs) {
 		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 		I18nManager.updateLocaleInfoToThread(usess);
-		
-		DmzBFWCParts bfwcParts = new DmzBFWCParts();
-		bfwcParts.showTopNav(false);
-		ControllerCreator controllerCreator = (lureq, lwControl) -> {
-			return new DocEditorStandaloneController(lureq, lwControl, access, configs);
-		};
-		bfwcParts.setContentControllerCreator(controllerCreator);
-		
+
 		Windows windows = Windows.getWindows(usess);
 		String uriPrefixWithAccess = uriPrefix + access.getToken() + "/";
 		boolean windowHere = windows.isExisting(ureq);
 		if (!windowHere) {
 			synchronized (windows) {
+				DmzBFWCParts bfwcParts = new DmzBFWCParts();
+				bfwcParts.showTopNav(false);
+				bfwcParts.setContentControllerCreator((lureq, lwControl) ->
+					new DocEditorStandaloneController(lureq, lwControl, access, configs));
 				ChiefController cc = new BaseFullWebappController(ureq, bfwcParts);
 				Window window = cc.getWindow();
 				window.setUriPrefix(uriPrefixWithAccess);
 				ureq.overrideWindowComponentID(window.getDispatchID());
 				windows.registerWindow(cc);
 			}
+		}
+		
+		if(windowHere && ureq.isValidDispatchURI()) {
+			Window w = windows.getWindow(ureq);
+			w.dispatchRequest(ureq, false);
+			return;
 		}
 
 		windows.getWindowManager().setAjaxWanted(ureq);

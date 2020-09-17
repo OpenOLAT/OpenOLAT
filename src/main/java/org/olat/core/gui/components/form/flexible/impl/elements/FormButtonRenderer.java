@@ -83,18 +83,19 @@ class FormButtonRenderer extends DefaultComponentRenderer {
 			sb.append(" ").append(fs.getElementCssClass());
 		}
 		
-		sb.append("\"><span>").append(fs.getTranslated()).append("</span></button>");
+		sb.append("\"><span>").append(fs.getTranslated()).append("</span>");
 		
 		if(source.isEnabled() && fsC.getIsSubmitAndValidate()){
 			//it is a submitting and validating button (e.g. FormSubmit)
-			sb.append("<script>\n /* <![CDATA[ */ \n");
+			sb.append("<script>\n");
 			sb.append(FormJSHelper.getJSSubmitRegisterFn(fs.getRootForm(),id));
 			if(!fs.getRootForm().isSubmittedAndValid()){
 				//mark as dirty, because form is not yet submitted or
 				//it was submitted but has errors.
 				sb.append(FormJSHelper.getSetFlexiFormDirtyFnCallOnly(fs.getRootForm()));
 			}
-			sb.append("\n/* ]]> */ \n</script>");
+			sb.append("</script>");
 		}
+		sb.append("</button>");
 	}
 }

@@ -154,6 +154,23 @@ public class CloseableModalController extends DefaultController implements Modal
 		}
 	}
 	
+	/**
+	 * This will complete suppress the warning. It especially useful
+	 * for modal dialog which works as resources picker as file browser.
+	 */
+	public void suppressDirtyFormWarning() {
+		myContent.contextPut("suppressDirty", Boolean.TRUE);
+	}
+	
+	/**
+	 * Special feature pop the modal above the TinyMCE dialog
+	 * box which have an hard coded z-index of 65536.
+	 */
+	public void tinyMceModal() {
+		myContent.contextPut("tinyMceModal", Boolean.TRUE);
+		
+	}
+	
 	public void setCustomCSS(String className){
 		myContent.contextPut("cssClass", className);
 	}
@@ -169,10 +186,7 @@ public class CloseableModalController extends DefaultController implements Modal
 		myContent.setTranslator(trans);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == closeIcon){
 			getWindowControl().pop();
@@ -180,9 +194,7 @@ public class CloseableModalController extends DefaultController implements Modal
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#getInitialComponent()
-	 */
+	@Override
 	public Component getInitialComponent() {
 		throw new RuntimeException("please use activate() instead");
 	}

@@ -122,8 +122,6 @@ public class RichTextConfiguration implements Disposable {
 	private static final String AUTORESIZE_BOTTOM_MARGIN = "autoresize_bottom_margin";
 	private static final String AUTORESIZE_MAX_HEIGHT = "autoresize_max_height";
 	private static final String AUTORESIZE_MIN_HEIGHT = "autoresize_min_height";
-	// private static final String AUTORESIZE_OVERFLOW_PADDING =
-	// "autoresize_overflow_padding";
 
 	//
 	// Generic boolean true / false values

@@ -9,6 +9,7 @@ OPOL = {};
 //used to mark form dirty and warn user to save first.
 var o2c=0;
 var o3c=new Array();//array holds flexi.form id's
+var o2cExclusions=new Array();
 // o_info is a global object that contains global variables
 o_info.guibusy = false;
 o_info.linkbusy = false;
@@ -334,7 +335,7 @@ function o2cl() {
 		if (o_info.linkbusy) {
 			return false;
 		} else {
-			var doreq = (o2c==0 || confirm(o_info.dirty_form));
+			var doreq = (!isFlexiFormDirty() || confirm(o_info.dirty_form));
 			if (doreq) o_beforeserver();
 			return doreq;
 		}
@@ -350,7 +351,7 @@ function o2cl_dirtyCheckOnly() {
 		if (o_info.linkbusy) {
 			return false;
 		} else {
-			return (o2c==0 || confirm(o_info.dirty_form));
+			return (!isFlexiFormDirty() || confirm(o_info.dirty_form));
 		}
 	} catch(e) {
 		if(window.console) console.log(e);
@@ -388,7 +389,7 @@ function o_onc(response) {
 	var te = response.responseText;
 	BLoader.executeGlobalJS("o_info.last_o_onc="+te+";", 'o_onc');
 	//asynchronous! from polling
-	o_ainvoke(o_info.last_o_onc,false);
+	o_ainvoke(o_info.last_o_onc);
 }
 
 function o_allowNextClick() {
@@ -409,18 +410,15 @@ Array.prototype.search = function(s,q){
     if(this[i].constructor == Array){
       if(this[i].search(s,q)){
         return true;
-        break;
       }
      } else {
        if(q){
          if(this[i].indexOf(s) != -1){
            return true;
-           break;
          }
       } else {
         if(this[i]==s){
           return true;
-          break;
         }
       }
     }
@@ -1560,7 +1558,7 @@ function o_showFormDirtyDialog(onIgnoreCallback) {
 }
 
 function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirtyCheck, push, submit) {
-	if(dirtyCheck && o2c==1) {
+	if(dirtyCheck && isFlexiFormDirty()) {
 		// Copy function arguments and set the dirtyCheck to false for execution in callback.
 		// Note that the argument list is dynamic, there are potentially more arguments than
 		// listed in the function (e.g. in QTI2)
@@ -1687,7 +1685,7 @@ function o_XHRWikiEvent(link) {
 }
 
 function o_XHREvent(targetUrl, dirtyCheck, push) {
-	if(dirtyCheck && o2c==1) {
+	if(dirtyCheck && isFlexiFormDirty()) {
 		// Copy function arguments and set the dirtyCheck to false for execution in callback.
 		// Note that the argument list is dynamic, there are potentially more arguments than
 		// listed in the function
@@ -1708,9 +1706,6 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 	// The window.suppressOlatOnUnloadOnce works only once (needed in SCORM).
 	// o_beforeserver();
 
-	
-	
-	
 	var data = new Object();
 	var openInNewWindow = false;
 	if(arguments.length > 3) {
@@ -1933,14 +1928,34 @@ function setFlexiFormDirty(formId, hideMessage){
 	});
 }
 
-//
-//
+function isFlexiFormDirty() {
+	if(o2c == 1) {
+		for (var i=0; i<o2cExclusions.length; i++) {
+	        if(document.getElementById(o2cExclusions[i]) != null) {
+	        	return false;
+	        }
+	    }
+		return true;
+	}
+	return false;
+}
+
+function addFormDirtyExclusion(elementId) {
+	for (var i=0; i<o2cExclusions.length; i++) {
+        if (o2cExclusions[i] === elementId) {
+            return;
+        }
+    }
+	
+	o2cExclusions.push(elementId);
+}
+
 function o_ffRegisterSubmit(formId, submElmId){
 	jQuery('#'+formId).data('FlexiSubmit', submElmId);
 }
 
 function dismissInfoBox(uuid) {
-	javascript:jQuery('#' + uuid).remove();
+	jQuery('#' + uuid).remove();
 	return true;
 }
 /*

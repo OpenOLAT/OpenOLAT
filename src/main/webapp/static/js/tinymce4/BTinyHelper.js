@@ -31,9 +31,9 @@ var BTinyHelper = {
 			BTinyHelper.currentField = win.document.forms[0].elements[field_name];	
 			BTinyHelper.currentFieldId = field_name;
 			BTinyHelper.currentWindow = win;
-			var currentMediaUrl = BTinyHelper.editorMediaUris.get(formitemId);
-			var currentField = win.document.forms[0].elements[field_name];	
-			o_openPopUp(currentMediaUrl + type + '?url=' + encodeURIComponent(url), "chooser", 800, 700, false);
+			var editor = top.tinymce.activeEditor;
+			var ffxhrevent = editor.settings.ffxhrevent;
+			o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, '2', false, false, true, 'browser', type);
 		}
 	},
 
