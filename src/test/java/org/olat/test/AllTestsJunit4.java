@@ -479,7 +479,6 @@ import org.junit.runners.Suite;
 	/**
 	 * Pure JUnit test without need of framework
 	 */
-	org.olat.core.commons.services.doceditor.office365.manager.UrlParserTest.class,
 	org.olat.core.commons.services.doceditor.onlyoffice.manager.OnlyOfficeSecurityServiceImplTest.class,
 	org.olat.core.commons.services.doceditor.onlyoffice.manager.OnlyOfficeServiceImplTest.class,
 	org.olat.core.commons.services.doceditor.discovery.manager.DiscoveryServiceImplTest.class,
