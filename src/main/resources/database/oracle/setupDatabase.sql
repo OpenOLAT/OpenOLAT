@@ -1829,7 +1829,6 @@ create table o_de_access (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    o_editor_type varchar(64) not null,
-   o_token varchar(64) not null,
    o_expires_at timestamp not null,
    o_mode varchar(64) not null,
    o_version_controlled number default 0 not null,
@@ -3975,7 +3974,6 @@ alter table o_vfs_revision add constraint fvers_to_lic_type_idx foreign key (fk_
 create index idx_fvers_to_lic_type_idx on o_vfs_revision (fk_license_type);
 
 -- Document editor
-create unique index idx_de_token_idx on o_de_access(o_token);
 create unique index idx_de_userinfo_ident_idx on o_de_user_info(fk_identity);
 
 -- portfolio

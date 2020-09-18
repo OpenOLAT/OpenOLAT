@@ -119,7 +119,7 @@ public interface DocEditorService {
 
 	public void deleteAccess(Access access);
 
-	public Access getAccess(String accessToken);
+	public Access getAccess(AccessRef accessRef);
 
 	public List<Access> getAccesses(Mode mode);
 	
@@ -152,6 +152,8 @@ public interface DocEditorService {
 	 * @return the URL pointing to the document
 	 */
 	public String prepareDocumentUrl(UserSession userSession, DocEditorConfigs configs);
+	
+	public String getConfigKey(Access access);
 	
 	public UserInfo createOrUpdateUserInfo(Identity identity, String info);
 	

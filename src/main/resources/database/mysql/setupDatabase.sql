@@ -1903,7 +1903,6 @@ create table o_de_access (
    creationdate datetime not null,
    lastmodified datetime not null,
    o_editor_type varchar(64) not null,
-   o_token varchar(64) not null,
    o_expires_at datetime not null,
    o_mode varchar(64) not null,
    o_version_controlled bool not null,
@@ -3964,7 +3963,6 @@ alter table o_vfs_revision add constraint fvers_to_meta_idx foreign key (fk_meta
 alter table o_vfs_metadata add constraint fvers_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 
 -- Document editor
-create unique index idx_de_token_idx on o_de_access(o_token);
 create unique index idx_de_userinfo_ident_idx on o_de_user_info(fk_identity);
 
 -- quality management

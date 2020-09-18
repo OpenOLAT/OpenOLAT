@@ -102,7 +102,7 @@ public class Office365WebService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response checkFileInfo(
 			@PathParam("fileId") String fileId,
-			@QueryParam("access_token") String accessToken,
+			@QueryParam("access_token") Long accessKey,
 			@Context UriInfo uriInfo,
 			@Context HttpHeaders httpHeaders) {
 		log.debug("WOPI REST CheckFileInfo request for file: " + fileId);
@@ -116,15 +116,15 @@ public class Office365WebService {
 		String timeStamp = httpHeaders.getHeaderString("X-WOPI-TimeStamp");
 		String proofKey = httpHeaders.getHeaderString("X-WOPI-Proof");
 		String oldProofKey = httpHeaders.getHeaderString("X-WOPI-ProofOld");
-		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessToken, timeStamp, proofKey, oldProofKey);
+		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessKey.toString(), timeStamp, proofKey, oldProofKey);
 		if (!proofVerified) {
-			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessKey);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
-		Access access = docEditorService.getAccess(accessToken);
+		Access access = docEditorService.getAccess(() -> accessKey);
 		if (access == null) {
-			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("No access for token. File ID: " + fileId + ", token: " + accessKey);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -179,7 +179,7 @@ public class Office365WebService {
 	@ApiResponse(responseCode = "404", description = "File not found")
 	public Response post(
 			@PathParam("fileId") String fileId,
-			@QueryParam("access_token") String accessToken,
+			@QueryParam("access_token") Long accessKey,
 			@Context UriInfo uriInfo,
 			@Context HttpHeaders httpHeaders,
 			String body) {
@@ -194,15 +194,15 @@ public class Office365WebService {
 		String timeStamp = httpHeaders.getHeaderString("X-WOPI-TimeStamp");
 		String proofKey = httpHeaders.getHeaderString("X-WOPI-Proof");
 		String oldProofKey = httpHeaders.getHeaderString("X-WOPI-ProofOld");
-		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessToken, timeStamp, proofKey, oldProofKey);
+		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessKey.toString(), timeStamp, proofKey, oldProofKey);
 		if (!proofVerified) {
-			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessKey);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
-		Access access = docEditorService.getAccess(accessToken);
+		Access access = docEditorService.getAccess(() -> accessKey);
 		if (access == null) {
-			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("No access for token. File ID: " + fileId + ", token: " + accessKey);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -359,7 +359,7 @@ public class Office365WebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	public Response getFile(
 			@PathParam("fileId") String fileId,
-			@QueryParam("access_token") String accessToken,
+			@QueryParam("access_token") Long accessKey,
 			@Context UriInfo uriInfo,
 			@Context HttpHeaders httpHeaders) {
 		log.debug("WOPI REST GetFile request for file: " + fileId);
@@ -373,15 +373,15 @@ public class Office365WebService {
 		String timeStamp = httpHeaders.getHeaderString("X-WOPI-TimeStamp");
 		String proofKey = httpHeaders.getHeaderString("X-WOPI-Proof");
 		String oldProofKey = httpHeaders.getHeaderString("X-WOPI-ProofOld");
-		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessToken, timeStamp, proofKey, oldProofKey);
+		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessKey.toString(), timeStamp, proofKey, oldProofKey);
 		if (!proofVerified) {
-			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessKey);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
-		Access access = docEditorService.getAccess(accessToken);
+		Access access = docEditorService.getAccess(() -> accessKey);
 		if (access == null) {
-			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("No access for token. File ID: " + fileId + ", token: " + accessKey);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -411,7 +411,7 @@ public class Office365WebService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response putFile(
 			@PathParam("fileId") String fileId,
-			@QueryParam("access_token") String accessToken,
+			@QueryParam("access_token") Long accessKey,
 			@Context UriInfo uriInfo,
 			@Context HttpHeaders httpHeaders,
 			InputStream fileInputStream) {
@@ -426,15 +426,15 @@ public class Office365WebService {
 		String timeStamp = httpHeaders.getHeaderString("X-WOPI-TimeStamp");
 		String proofKey = httpHeaders.getHeaderString("X-WOPI-Proof");
 		String oldProofKey = httpHeaders.getHeaderString("X-WOPI-ProofOld");
-		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessToken, timeStamp, proofKey, oldProofKey);
+		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessKey.toString(), timeStamp, proofKey, oldProofKey);
 		if (!proofVerified) {
-			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessKey);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
-		Access access = docEditorService.getAccess(accessToken);
+		Access access = docEditorService.getAccess(() -> accessKey);
 		if (access == null) {
-			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("No access for token. File ID: " + fileId + ", token: " + accessKey);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		

@@ -67,8 +67,6 @@ public class AccessImpl implements Access, Persistable {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 
-	@Column(name="o_token", nullable=false, insertable=true, updatable=false)
-	private String token;
 	@Column(name="o_editor_type", nullable=false, insertable=true, updatable=false)
 	private String editorType;
 	@Column(name="o_expires_at", nullable=true, insertable=true, updatable=true)
@@ -112,15 +110,6 @@ public class AccessImpl implements Access, Persistable {
 	@Override
 	public void setLastModified(Date date) {
 		lastModified = date;
-	}
-
-	@Override
-	public String getToken() {
-		return token;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
 	}
 
 	@Override

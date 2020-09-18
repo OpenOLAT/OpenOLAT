@@ -28,6 +28,7 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.doceditor.Access;
+import org.olat.core.commons.services.doceditor.AccessRef;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.model.AccessImpl;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -54,13 +55,12 @@ public class AccessDAO {
 		dbInstance.commitAndCloseSession();
 	}
 
-	public Access createAccess(VFSMetadata metadata, Identity identity, String editorType, String token, Mode mode,
-			boolean versionControlled, Date expiresAt) {
+	public Access createAccess(VFSMetadata metadata, Identity identity, String editorType, Mode mode, boolean versionControlled,
+			Date expiresAt) {
 		AccessImpl access = new AccessImpl();
 		access.setCreationDate(new Date());
 		access.setLastModified(access.getCreationDate());
 		access.setEditorType(editorType);
-		access.setToken(token);
 		access.setMode(mode);
 		access.setVersionControlled(versionControlled);
 		access.setExpiresAt(expiresAt);
@@ -90,19 +90,19 @@ public class AccessDAO {
 		return access;
 	}
 
-	public Access loadAccess(String token) {
-		if (!StringHelper.containsNonWhitespace(token)) return null;
+	public Access loadAccess(AccessRef accessRef) {
+		if (accessRef == null) return null;
 		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select access");
 		sb.append("  from doceditoraccess access");
 		sb.append("       join fetch access.metadata metadata");
 		sb.append("       join fetch access.identity identity");
-		sb.and().append("access.token = :token");
+		sb.and().append("access.key = :accessKey");
 
 		List<Access> accesses = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Access.class)
-				.setParameter("token", token)
+				.setParameter("accessKey", accessRef.getKey())
 				.getResultList();
 		return accesses.isEmpty() ? null : accesses.get(0);
 	}
@@ -161,16 +161,16 @@ public class AccessDAO {
 				.getSingleResult();
 	}
 	
-	public void deleteByToken(String token) {
-		if (!StringHelper.containsNonWhitespace(token)) return;
+	public void delete(AccessRef accessRef) {
+		if (accessRef == null) return;
 		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete from doceditoraccess access");
-		sb.and().append("access.token = :token");
+		sb.and().append("access.key = :accessKey");
 		
 		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
-				.setParameter("token", token)
+				.setParameter("accessKey", accessRef.getKey())
 				.executeUpdate();
 	}
 

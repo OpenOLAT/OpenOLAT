@@ -19,32 +19,14 @@
  */
 package org.olat.core.commons.services.doceditor;
 
-import java.util.Date;
-
-import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
-
 /**
  * 
- * Initial date: 6 Mar 2019<br>
+ * Initial date: 17 Sep 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Access extends AccessRef, ModifiedInfo, CreateInfo {
+public interface AccessRef {
 	
-	String getEditorType();
-	
-	Date getExpiresAt();
-	
-	Mode getMode();
-	
-	boolean isVersionControlled();
-	
-	VFSMetadata getMetadata();
-	
-	Identity getIdentity();
+	public Long getKey();
 
 }

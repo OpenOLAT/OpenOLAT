@@ -74,7 +74,7 @@ public class Office365EditorController extends BasicController {
 				mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
 			} else {
 				mainVC.contextPut("actionUrl", actionUrl);
-				mainVC.contextPut("accessToken", access.getToken());
+				mainVC.contextPut("accessToken", access.getKey().toString());
 				mainVC.contextPut("accessTokenTtl", access.getExpiresAt().getTime());
 			}
 		}

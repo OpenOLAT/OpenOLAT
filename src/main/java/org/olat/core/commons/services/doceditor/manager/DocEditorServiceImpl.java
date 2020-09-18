@@ -24,21 +24,25 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.logging.log4j.Logger;
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.editor.fileeditor.FileEditor;
 import org.olat.core.commons.services.doceditor.Access;
+import org.olat.core.commons.services.doceditor.AccessRef;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
-import org.olat.core.commons.services.doceditor.DocEditorDispatcher;
+import org.olat.core.commons.services.doceditor.DocEditorContextEntryControllerCreator;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.UserInfo;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
@@ -63,6 +67,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 
 	private static final Logger log = Tracing.createLoggerFor(DocEditorServiceImpl.class);
 	
+	private static final String CONTEXT_ENTRY_KEY = "Document";
 	private static final String PROPERTY_CATEGOTY = "document.editor";
 	private static final String PROPERTY_PREF_EDITOR = "pref.editor";
 
@@ -76,6 +81,12 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private PropertyManager propertyManager;
+	
+	@PostConstruct
+	private void init() {
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(CONTEXT_ENTRY_KEY,
+				new DocEditorContextEntryControllerCreator(this));
+	}
 	
 	@Override
 	public boolean hasEditor(Identity identity, Roles roles, String suffix, Mode mode, boolean metadataAvailable,
@@ -92,9 +103,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	}
 
 	private Predicate<? super DocEditor> collaborativeFilter(boolean collaborativeOnly) {
-		return (docEditor) -> {
-			return collaborativeOnly? docEditor.isCollaborative(): true;
-		};
+		return docEditor -> (collaborativeOnly? docEditor.isCollaborative(): true);
 	}
 
 	@Override
@@ -111,7 +120,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		return editors.stream()
 				.filter(editor -> !FileEditor.TYPE.equals(editor.getType()))
 				.filter(DocEditor::isEnable)
-				.filter(editor -> editor.isEditEnabled())
+				.filter(DocEditor::isEditEnabled)
 				.filter(editor -> editor.isEnabledFor(identity, roles))
 				.collect(Collectors.toList());
 	}
@@ -185,12 +194,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	public Access createAccess(Identity identity, Roles roles, DocEditorConfigs configs) {
 		Date expiresAt = Date.from(Instant.now().plus(Duration.ofHours(10)));
 		DocEditor editor = getPreferredEditor(identity, roles, configs);
-		return accessDao.createAccess(configs.getVfsLeaf().getMetaInfo(), identity, editor.getType(), createToke(), configs.getMode(),
-				configs.isVersionControlled(), expiresAt);
-	}
-	
-	private String createToke() {
-		return UUID.randomUUID().toString().replaceAll("-", "");
+		return accessDao.createAccess(configs.getVfsLeaf().getMetaInfo(), identity, editor.getType(), configs.getMode(), configs.isVersionControlled(),
+				expiresAt);
 	}
  
 	private DocEditor getPreferredEditor(Identity identity, Roles roles, DocEditorConfigs configs) {
@@ -232,15 +237,15 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	@Override
 	public void deleteAccess(Access access) {
 		if (access != null) {
-			accessDao.deleteByToken(access.getToken());
+			accessDao.delete(access);
 		}
 	}
 
 	@Override
-	public Access getAccess(String accessToken) {
-		Access access = accessDao.loadAccess(accessToken);
+	public Access getAccess(AccessRef accessRef) {
+		Access access = accessDao.loadAccess(accessRef);
 		if (expired(access)) {
-			accessDao.deleteByToken(accessToken);
+			accessDao.delete(accessRef);
 			access = null;
 		}
 		return access;
@@ -283,20 +288,46 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 				DocEditor docEditor = editor.get();
 				if (docEditor.hasDocumentBaseUrl()) {
 					String documenBasetUrl = docEditor.getDocumentBaseUrl();
-					url = documenBasetUrl + DocEditorDispatcher.getDocumentPath(access);
+					url = documenBasetUrl + getDocumentPath(access);
 				} else {
-					url = DocEditorDispatcher.getDocumentUrl(access);
+					url = createDocumentUrl(access);
 				}
 			}
 		}
 		return url;
 	}
+	
+	private String createDocumentUrl(Access access) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(Settings.getServerContextPathURI());
+		appendDocumentPath(sb, access);
+		return sb.toString();
+	}
+	
+	private String getDocumentPath(Access access) {
+		StringBuilder sb = new StringBuilder();
+		appendDocumentPath(sb, access);
+		return sb.toString();
+	}
+
+	private static final void appendDocumentPath(StringBuilder sb, Access access) {
+		sb.append("/auth/")
+			.append(CONTEXT_ENTRY_KEY)
+			.append("/")
+			.append(access.getKey());
+	}
 
 	@Override
 	public String prepareDocumentUrl(UserSession userSession, DocEditorConfigs configs) {
 		Access access = createAccess(userSession.getIdentity(), userSession.getRoles(), configs);
-		userSession.putEntryInNonClearedStore(access.getToken(), configs);
+		String configKey = getConfigKey(access);
+		userSession.putEntryInNonClearedStore(configKey, configs);
 		return getDocumentUrl(access);
+	}
+	
+	@Override
+	public String getConfigKey(Access access) {
+		return "access-key-" + access.getKey();
 	}
 
 	@Override

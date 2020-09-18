@@ -97,7 +97,7 @@ public class CollaboraWebService {
 	
 	public Response checkFileInfo(
 			@PathParam("fileId") String fileId,
-			@QueryParam("access_token") String accessToken,
+			@QueryParam("access_token") Long accessKey,
 			@Context HttpHeaders httpHeaders) {
 		log.debug("Collabora REST CheckFileInfo request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
@@ -106,9 +106,9 @@ public class CollaboraWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		Access access = docEditorService.getAccess(accessToken);
+		Access access = docEditorService.getAccess(() -> accessKey);
 		if (access == null) {
-			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("No access for key. File ID: " + fileId + ", key: " + accessKey);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -147,7 +147,7 @@ public class CollaboraWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	public Response getFile(
 			@PathParam("fileId") String fileId,
-			@QueryParam("access_token") String accessToken,
+			@QueryParam("access_token") Long accessKey,
 			@Context HttpHeaders httpHeaders) {
 		log.debug("Collabora REST GetFile request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
@@ -156,9 +156,9 @@ public class CollaboraWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		Access access = docEditorService.getAccess(accessToken);
+		Access access = docEditorService.getAccess(() -> accessKey);
 		if (access == null) {
-			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("No access for key. File ID: " + fileId + ", key: " + accessKey);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -181,14 +181,14 @@ public class CollaboraWebService {
 	@ApiResponse(responseCode = "200", description = "The contents", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = PutFileVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = PutFileVO.class)) })
-	@ApiResponse(responseCode = "401", description = "No access for token")
+	@ApiResponse(responseCode = "401", description = "No access for key")
 	@ApiResponse(responseCode = "403", description = "Forbidden")
 	@ApiResponse(responseCode = "404", description = "File not found")
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response putFile(
 			@PathParam("fileId") String fileId,
-			@QueryParam("access_token") String accessToken,
+			@QueryParam("access_token") Long accessKey,
 			@Context HttpHeaders httpHeaders,
 			InputStream fileInputStream) {
 		log.debug("Collabora REST PutFile request for file: " + fileId);
@@ -198,9 +198,9 @@ public class CollaboraWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		Access access = docEditorService.getAccess(accessToken);
+		Access access = docEditorService.getAccess(() -> accessKey);
 		if (access == null) {
-			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("No access for key. File ID: " + fileId + ", key: " + accessKey);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -212,13 +212,13 @@ public class CollaboraWebService {
 		
 		boolean canUpdate = collaboraService.canUpdateContent(access, fileId);
 		if (!canUpdate) {
-			log.debug("Access has not right to update file. File ID: " + fileId + ", token: " + accessToken);
+			log.debug("Access has not right to update file. File ID: " + fileId + ", key: " + accessKey);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
 		// Further Headers see: https://github.com/LibreOffice/online/blob/master/wsd/reference.md#putfile-headers
 		String timestamp = getFirstRequestHeader(httpHeaders, "X-LOOL-WOPI-Timestamp");
-		log.debug("File changed at " + timestamp + ". File ID: " + fileId + ", token: " + accessToken);
+		log.debug("File changed at " + timestamp + ". File ID: " + fileId + ", key: " + accessKey);
 		
 		try {
 			boolean updated = collaboraService.updateContent(access, fileInputStream);

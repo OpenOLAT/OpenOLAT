@@ -64,9 +64,6 @@
 				<entry key="/edusharing/">
 					<ref bean="edusharingwebbean" />
 				</entry>
-				<entry key="/document/">
-					<ref bean="docEditorBean" />
-				</entry>
 				<entry key="/bigbluebutton/">
 					<ref bean="bigbluebuttonguestjoinbean" />
 				</entry>
@@ -279,9 +276,6 @@
 	<bean id="bigbluebuttonguestjoinbean"
 		class="org.olat.modules.bigbluebutton.BigBlueButtonDispatcher" />
 		
-	<bean id="docEditorBean"
-		class="org.olat.core.commons.services.doceditor.DocEditorDispatcher" />
-
 	<!-- podcast media dispatcher -->
 	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher">
 		<property name="feedManager" ref="feedManager"/>

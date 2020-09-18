@@ -82,7 +82,7 @@ class CollaboraEditorUrlBuilder {
 		url.append("WOPISrc=");
 		url.append(StringHelper.urlEncodeUTF8(filesPath.toString()));
 		
-		url.append("&access_token=").append(access.getToken());
+		url.append("&access_token=").append(access.getKey());
 		
 		if (StringHelper.containsNonWhitespace(lang)) {
 			url.append("&lang=").append(lang);
