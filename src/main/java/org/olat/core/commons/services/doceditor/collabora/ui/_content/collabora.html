@@ -5,25 +5,5 @@
 		</div>
 	#else
 		<iframe id="$id" src="$url" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
-		<script>
-		/* <![CDATA[ */
-			jQuery('$id').ready(function(){
-				window.addEventListener('message', function(e){
-					try {
-						var msg = JSON.parse(e.data);
-						var msgId = msg.MessageId;
-						var args = msg.Values;
-						var deprecated = !!args.Deprecated;
-					} catch(exc) {
-						msgId = e.data;
-					}
-					
-					if (msgId === 'UI_Close' || msgId === 'close' /* deprecated */) {
-						$r.openJavaScriptCommand("close"));
-					}
-				});
-			});
-		/* ]]> */
-		</script>
 	#end
 </div>

@@ -125,9 +125,10 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 			String discoveryUrl = getDiscoveryUrl();
 			discovery = discoveryService.getDiscovery(discoveryUrl);
 			if (discovery != null) {
-				log.info("Recieved new document editor discovery from " + discoveryUrl);
+				log.info("Recieved new document editor discovery from {}", discoveryUrl);
+			} else {
+				log.warn("Not able to fetch new document editor discovery from {}", discoveryUrl);
 			}
-				log.warn("Not able to fetch new document editor discovery from " + discoveryUrl);
 		}
 		return discovery;
 	}

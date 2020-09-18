@@ -19,8 +19,8 @@
  */
 package org.olat.modules.edubase;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.olat.core.commons.services.csp.CSPDirectiveProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +69,7 @@ public class EdubaseDirectiveProvider implements CSPDirectiveProvider {
 	}
 
 	private Collection<String> getUrls() {
-		return edubaseModule.isEnabled()? Collections.singletonList(edubaseModule.getLtiBaseUrl()): null;
+		return edubaseModule.isEnabled()? Arrays.asList(edubaseModule.getLtiBaseUrl(), edubaseModule.getReaderUrl(), "https://*.edubase.ch/"): null;
 	}
 
 }
