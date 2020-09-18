@@ -61,7 +61,7 @@
 		level if necessary. -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<targetJdk>1.8</targetJdk>
+		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.2.8.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.4.21.Final</org.hibernate.version>
 		<apache.cxf>3.4.0</apache.cxf>
@@ -1496,7 +1496,7 @@
 										<version>3.0.5</version>
 									</requireMavenVersion>
 									<requireJavaVersion>
-										<version>1.8+</version>
+										<version>11+</version>
 									</requireJavaVersion>
 								</rules>
 							</configuration>
@@ -1907,9 +1907,15 @@
 		</dependency>
 		<!-- J2EE dependencies but provided -->
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>4.0.4</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.websocket</groupId>
+			<artifactId>jakarta.websocket-api</artifactId>
+			<version>1.1.2</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
