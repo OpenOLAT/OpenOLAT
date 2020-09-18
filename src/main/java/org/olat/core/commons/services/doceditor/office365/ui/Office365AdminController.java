@@ -61,7 +61,7 @@ public class Office365AdminController extends FormBasicController {
 	
 	private MultipleSelectionElement enabledEl;
 	private TextElement baseUrlEl;
-	private TextElement documentBaseUrlEl;
+	private TextElement hostEditBaseUrlEl;
 	private FormLink refreshDiscoveryLink;
 	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
 	private MultipleSelectionElement usageRolesEl;
@@ -88,9 +88,9 @@ public class Office365AdminController extends FormBasicController {
 		baseUrlEl = uifactory.addTextElement("admin.url", 128, url, formLayout);
 		baseUrlEl.setMandatory(true);
 		
-		String documentBaseUrl = office365Module.getDocumentBaseUrl();
-		documentBaseUrlEl = uifactory.addTextElement("admin.document.url", 128, documentBaseUrl, formLayout);
-		documentBaseUrlEl.setMandatory(true);
+		String hostEditBaseUrl = office365Module.getHostEditBaseUrl();
+		hostEditBaseUrlEl = uifactory.addTextElement("admin.document.url", 128, hostEditBaseUrl, formLayout);
+		hostEditBaseUrlEl.setMandatory(true);
 		
 		refreshDiscoveryLink = uifactory.addFormLink("admin.refresh.discovery", "admin.refresh.discovery", "admin.refresh.discovery.label", formLayout, Link.BUTTON);
 		refreshDiscoveryLink.setHelpTextKey("admin.refresh.discovery.help", null);
@@ -129,7 +129,7 @@ public class Office365AdminController extends FormBasicController {
 		
 		if (enabledEl.isAtLeastSelected(1)) {
 			allOk &= validateIsMandatory(baseUrlEl);
-			allOk &= validateIsMandatory(documentBaseUrlEl);
+			allOk &= validateIsMandatory(hostEditBaseUrlEl);
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
@@ -148,9 +148,9 @@ public class Office365AdminController extends FormBasicController {
 			doRefreshDiscovery();
 		}
 		
-		String documentBaseUrl = documentBaseUrlEl.getValue();
-		documentBaseUrl = documentBaseUrl.endsWith("/")? documentBaseUrl.substring(0, documentBaseUrl.length() - 1): documentBaseUrl;
-		office365Module.setDocumentBaseUrl(documentBaseUrl);
+		String hostEditBaseUrl = hostEditBaseUrlEl.getValue();
+		hostEditBaseUrl = hostEditBaseUrl.endsWith("/")? hostEditBaseUrl.substring(0, hostEditBaseUrl.length() - 1): hostEditBaseUrl;
+		office365Module.setHostEditBaseUrl(hostEditBaseUrl);
 		
 		boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
 		office365Module.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);

@@ -92,7 +92,7 @@ public class Office365Editor implements DocEditor {
 
 	@Override
 	public String getDocumentBaseUrl() {
-		return office365Module.getDocumentBaseUrl();
+		return office365Module.getHostEditBaseUrl();
 	}
 
 	@Override

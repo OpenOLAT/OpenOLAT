@@ -39,7 +39,7 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 	private static final String OFFICE365_ENABLED = "office365.enabled";
 	private static final String OFFICE365_BASE_URL = "office365.baseUrl";
 	private static final String OFFICE365_DATA_TRANSER_CONFIRMATION_ENABLED = "office365.data.transfer.confirmation.enabled";
-	private static final String OFFICE365_DOCUMENT_BASE_URL = "office365.document.baseUrl";
+	private static final String OFFICE365_HOST_EDIT_BASE_URL = "office365.host.edit.baseUrl";
 	private static final String OFFICE365_USAGE_AUTHORS = "office365.usage.authors";
 	private static final String OFFICE365_USAGE_COACHES = "office365.usage.coaches";
 	private static final String OFFICE365_USAGE_MANAGERS = "office365.usage.managers";
@@ -50,8 +50,8 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 	private String baseUrl;
 	@Value("${office365.data.transfer.confirmation.enabled:false}")
 	private boolean dataTransferConfirmationEnabled;
-	@Value("${office365.document.baseUrl}")
-	private String documentBaseUrl;
+	@Value("${office365.host.edit.baseUrl}")
+	private String hostEditBaseUrl;
 	@Value("${office365.usage.restricted.authors:false}")
 	private boolean usageRestrictedToAuthors;
 	@Value("${office365.usage.restricted.coaches:false}")
@@ -90,7 +90,7 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 			dataTransferConfirmationEnabled = "true".equals(dataTransferConfirmationEnabledObj);
 		}
 		
-		documentBaseUrl = getStringPropertyValue(OFFICE365_DOCUMENT_BASE_URL, documentBaseUrl);
+		hostEditBaseUrl = getStringPropertyValue(OFFICE365_HOST_EDIT_BASE_URL, hostEditBaseUrl);
 		
 		String usageRestrictedToAuthorsObj = getStringPropertyValue(OFFICE365_USAGE_AUTHORS, true);
 		if(StringHelper.containsNonWhitespace(usageRestrictedToAuthorsObj)) {
@@ -136,13 +136,13 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 		setStringProperty(OFFICE365_DATA_TRANSER_CONFIRMATION_ENABLED, Boolean.toString(dataTransferConfirmationEnabled), true);
 	}
 	
-	public String getDocumentBaseUrl() {
-		return documentBaseUrl;
+	public String getHostEditBaseUrl() {
+		return hostEditBaseUrl;
 	}
 
-	public void setDocumentBaseUrl(String documentBaseUrl) {
-		this.documentBaseUrl = documentBaseUrl;
-		setStringProperty(OFFICE365_DOCUMENT_BASE_URL, documentBaseUrl, true);
+	public void setHostEditBaseUrl(String hostEditBaseUrl) {
+		this.hostEditBaseUrl = hostEditBaseUrl;
+		setStringProperty(OFFICE365_HOST_EDIT_BASE_URL, hostEditBaseUrl, true);
 	}
 
 	public boolean isUsageRestricted() {
