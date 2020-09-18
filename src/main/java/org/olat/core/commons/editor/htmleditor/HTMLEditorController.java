@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -44,7 +45,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.FileUtils;
@@ -81,7 +85,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author gnaegi
  */
-public class HTMLEditorController extends FormBasicController {
+public class HTMLEditorController extends FormBasicController implements Activateable2 {
 	// HTML constants
 	public static final String DOCTYPE = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
 	public static final String OPEN_HTML = "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
@@ -105,14 +109,20 @@ public class HTMLEditorController extends FormBasicController {
 	private String body; // Content of body tag
 	private String charSet = UTF_8; // default for first parse attempt
 
-	private String fileName, fileRelPath, mediaPath;
+	private String fileName;
+	private String fileRelPath;
+	private String mediaPath;
+	private String lockToken;
 	private LockResult lock;
+	private LockResult releasedLock;
+	private OLATResourceable lockResourceable;
 
 	private RichTextElement htmlElement;
 	private VFSContainer baseContainer;
 	private VFSLeaf fileLeaf;
 	private FormCancel cancel;
-	private FormLink save, saveClose;
+	private FormLink save;
+	private FormLink saveClose;
 	private CustomLinkTreeModel customLinkTreeModel;
 	private CustomLinkTreeModel toolLinkTreeModel;
 	
@@ -193,7 +203,6 @@ public class HTMLEditorController extends FormBasicController {
 			fileToLargeError = translate("plaintext.error.tolarge", new String[]{(size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000)+""});
 			this.body = "";
 			this.editable = false;
-			
 			return;
 		}		
 		
@@ -201,11 +210,12 @@ public class HTMLEditorController extends FormBasicController {
 		if (fileLeaf instanceof LocalFileImpl) {
 			// Cast to LocalFile necessary because the VFSItem is missing some
 			// ID mechanism that identifies an item within the system
-			OLATResourceable lockResourceable = createLockResourceable(fileLeaf);
+			lockResourceable = createLockResourceable(fileLeaf);
 			// OLAT-5066: the use of "fileName" gives users the (false) impression that the file they wish to access
 			// is already locked by someone else. Since the lock token must be smaller than 50 characters we us an 
 			// MD5 hash of the absolute file path which will always be 32 characters long and virtually unique.
-			String lockToken = createLockToken(bContainer, relFilePath);
+			lockToken = createLockToken(bContainer, relFilePath);
+
 			lock = CoordinatorManager.getInstance().getCoordinator().getLocker()
 					.acquireLock(lockResourceable, getIdentity(), lockToken, getWindow());
 			VelocityContainer vc = (VelocityContainer) flc.getComponent();
@@ -251,11 +261,25 @@ public class HTMLEditorController extends FormBasicController {
 	protected void doDispose() {
 		releaseLock();
 	}
-	
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(lock == null && releasedLock != null) {
+			LockResult reacquiredLock = CoordinatorManager.getInstance().getCoordinator().getLocker()
+					.acquireLock(lockResourceable, getIdentity(), lockToken, getWindow());
+			if(reacquiredLock.isSuccess()) {
+				lock = reacquiredLock;
+			}
+		}
+	}
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(event == Window.CLOSE_WINDOW) {
-			releaseLock();
+			LockResult rLock = releaseLock();
+			if(rLock != null) {
+				releasedLock = rLock;
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -279,12 +303,16 @@ public class HTMLEditorController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 		if (source == htmlElement) {
 			// nothing to catch
-		} else if (source == save && lock != null) {
-			if(doSaveData()) {
+		} else if (source == save) {
+			if(lock == null) {
+				showError("error.lock.lost");
+			} else if(doSaveData()) {
 				newFile = false;//saved, it's not a new file anymore
 			}
-		} else if (source == saveClose && lock != null) {
-			if(doSaveData()) {
+		} else if (source == saveClose) {
+			if(lock == null) {
+				showError("error.lock.lost");
+			} else if(doSaveData()) {
 				fireEvent(ureq, Event.DONE_EVENT);
 				releaseLock();
 			}
@@ -552,8 +580,8 @@ public class HTMLEditorController extends FormBasicController {
 		} else {
 			VFSContainer dir = root;
 			while (dir != null) {
-					path = "/" + dir.getName() + path;
-					dir = dir.getParentContainer();
+				path = "/" + dir.getName() + path;
+				dir = dir.getParentContainer();
 			}
 		}
 		return path;
@@ -562,11 +590,14 @@ public class HTMLEditorController extends FormBasicController {
 	/**
 	 * Releases the lock for this page if set
 	 */
-	private void releaseLock() {
+	private LockResult releaseLock() {
+		LockResult rLock = null;
 		if (lock != null) {
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
+			rLock = lock;
 			lock = null;
 		}
+		return rLock;
 	}
 
 	public boolean isNewFile() {

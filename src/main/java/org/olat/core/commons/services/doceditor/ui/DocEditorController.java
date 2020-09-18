@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.ui;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.olat.core.commons.services.doceditor.Access;
@@ -34,6 +35,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -46,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DocEditorController extends BasicController {
+public class DocEditorController extends BasicController implements Activateable2 {
 
 	private static final String PROPERTY_CATEGOTY = "doc.editor";
 
@@ -82,6 +86,13 @@ public class DocEditorController extends BasicController {
 		} 
 		
 		putInitialPanel(mainVC);
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(editorCtrl instanceof Activateable2) {
+			((Activateable2)editorCtrl).activate(ureq, entries, state);
+		}
 	}
 
 	@Override

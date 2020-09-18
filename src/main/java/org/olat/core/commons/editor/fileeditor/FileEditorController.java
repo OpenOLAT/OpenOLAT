@@ -26,6 +26,8 @@
 
 package org.olat.core.commons.editor.fileeditor;
 
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
@@ -45,14 +47,17 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.controller.BlankController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class FileEditorController extends BasicController {
+public class FileEditorController extends BasicController implements Activateable2 {
 
 	private static final Logger log = Tracing.createLoggerFor(FileEditorController.class);
 
@@ -125,6 +130,13 @@ public class FileEditorController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("file_editor");
 		mainVC.put("editor", editCtrl.getInitialComponent());
 		putInitialPanel(mainVC);
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(editCtrl instanceof Activateable2) {
+			((Activateable2)editCtrl).activate(ureq, entries, state);
+		}
 	}
 
 	@Override

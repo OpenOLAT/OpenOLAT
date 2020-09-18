@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.doceditor.ui;
 
+import java.util.List;
+
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.gui.UserRequest;
@@ -29,6 +31,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 
 /**
  * 
@@ -36,10 +41,10 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DocEditorStandaloneController extends BasicController {
+public class DocEditorStandaloneController extends BasicController implements Activateable2 {
 	
-	private VelocityContainer mainVC;
-	private DocEditorController editorCtrl;
+	private final VelocityContainer mainVC;
+	private final DocEditorController editorCtrl;
 	
 	public DocEditorStandaloneController(UserRequest ureq, WindowControl wControl, Access access, DocEditorConfigs configs) {
 		super(ureq, wControl);
@@ -52,6 +57,11 @@ public class DocEditorStandaloneController extends BasicController {
 		cc.addBodyCssClass("o_doceditor_body");
 
 		putInitialPanel(mainVC);
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		editorCtrl.activate(ureq, entries, state);
 	}
 
 	@Override
