@@ -7,9 +7,12 @@ package org.olat.core.servlets;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -19,26 +22,13 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.analytics.AnalyticsModule;
-import org.olat.core.commons.services.analytics.AnalyticsSPI;
-import org.olat.core.commons.services.analytics.spi.GoogleAnalyticsSPI;
-import org.olat.core.commons.services.analytics.spi.MatomoSPI;
-import org.olat.core.commons.services.csp.CSPModule;
-import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
-import org.olat.core.commons.services.doceditor.office365.Office365Module;
-import org.olat.core.commons.services.doceditor.office365.Office365Service;
-import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
-import org.olat.core.helpers.Settings;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.csp.CSPDirectiveProvider;
+import org.olat.core.commons.services.csp.CSPModule;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
-import org.olat.modules.card2brain.Card2BrainModule;
-import org.olat.modules.edubase.EdubaseModule;
-import org.olat.modules.edusharing.EdusharingModule;
-import org.olat.modules.openmeetings.OpenMeetingsModule;
-import org.olat.modules.vitero.ViteroModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -53,25 +43,7 @@ public class HeadersFilter implements Filter {
 	@Autowired
 	private CSPModule securityModule;
 	@Autowired
-	private ViteroModule viteroModule;
-	@Autowired
-	private EdubaseModule edubaseModule;
-	@Autowired
-	private AnalyticsModule analyticsModule;
-	@Autowired
-	private CollaboraModule collaboraModule;
-	@Autowired
-	private Office365Module office365Module;
-	@Autowired
-	private Office365Service office365Service;
-	@Autowired
-	private EdusharingModule edusharingModule;
-	@Autowired
-	private OnlyOfficeModule onlyOfficeModule;
-	@Autowired
-	private Card2BrainModule card2BrainModule;
-	@Autowired
-	private OpenMeetingsModule openMeetingsModule;
+	private List<CSPDirectiveProvider> directiveProviders;
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -85,12 +57,7 @@ public class HeadersFilter implements Filter {
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		if(securityModule == null || edubaseModule == null
-				|| analyticsModule == null || card2BrainModule == null
-				|| openMeetingsModule == null|| edusharingModule == null
-				|| viteroModule == null || onlyOfficeModule == null
-				|| office365Module == null ||  office365Service == null
-				|| collaboraModule == null) {
+		if(securityModule == null || directiveProviders == null) {
 			CoreSpringFactory.autowireObject(this);
 		}
 		addSecurityHeaders(response);
@@ -173,8 +140,7 @@ public class HeadersFilter implements Filter {
 			sb.append(" ").append(securityModule.getContentSecurityPolicyFontSrc());
 		}
 		
-		appendEdusharingUrl(sb);
-		sb.append(";");
+		sb.append(" ").append(getProvidedUrls(CSPDirectiveProvider::getFontSrcUrls)).append(";");
 	}
 	
 	private void appendConnectSrcDirective(StringBuilder sb, boolean standard) {
@@ -184,9 +150,7 @@ public class HeadersFilter implements Filter {
 			sb.append(" ").append(securityModule.getContentSecurityPolicyConnectSrc());
 		}
 		
-		appendAnalyticsUrl(sb);
-		appendEdusharingUrl(sb);
-		sb.append(";");
+		sb.append(" ").append(getProvidedUrls(CSPDirectiveProvider::getConnectSrcUrls)).append(";");
 	}
 	
 	private void appendScriptSrcDirective(StringBuilder sb, boolean standard) {
@@ -196,11 +160,7 @@ public class HeadersFilter implements Filter {
 			sb.append(" ").append(securityModule.getContentSecurityPolicyScriptSrc());
 		}
 		
-		appendMathJaxUrl(sb);
-		appendAnalyticsUrl(sb);
-		appendEdusharingUrl(sb);
-		appendOnlyOfficeUrl(sb);
-		sb.append(";");
+		sb.append(" ").append(getProvidedUrls(CSPDirectiveProvider::getScriptSrcUrls)).append(";");
 	}
 	
 	private void appendImgSrcDirective(StringBuilder sb, boolean standard) {
@@ -209,10 +169,8 @@ public class HeadersFilter implements Filter {
 		if(!standard && StringHelper.containsNonWhitespace(securityModule.getContentSecurityPolicyImgSrc())) {
 			sb.append(" ").append(securityModule.getContentSecurityPolicyImgSrc());
 		}
-		appendAnalyticsUrl(sb);
-		appendEdubaseUrl(sb);
-		appendEdusharingUrl(sb);
-		sb.append(";");
+		
+		sb.append(" ").append(getProvidedUrls(CSPDirectiveProvider::getImgSrcUrls)).append(";");
 	}
 	
 	private void appendMediaSrcDirective(StringBuilder sb, boolean standard) {
@@ -221,9 +179,8 @@ public class HeadersFilter implements Filter {
 		if(!standard && StringHelper.containsNonWhitespace(securityModule.getContentSecurityPolicyMediaSrc())) {
 			sb.append(" ").append(securityModule.getContentSecurityPolicyMediaSrc());
 		}
-		appendOpenMeetingsUrl(sb);
-		appendEdusharingUrl(sb);
-		sb.append(";");
+
+		sb.append(" ").append(getProvidedUrls(CSPDirectiveProvider::getMediaSrcUrls)).append(";");
 	}
 	
 	private void appendFrameSrcDirective(StringBuilder sb, boolean standard) {
@@ -233,14 +190,7 @@ public class HeadersFilter implements Filter {
 			sb.append(" ").append(securityModule.getContentSecurityPolicyFrameSrc());
 		}
 		
-		appendCard2BrainUrl(sb);
-		appendEdubaseUrl(sb);
-		appendEdusharingUrl(sb);
-		appendOnlyOfficeUrl(sb);
-		appendCollaboraUrl(sb);
-		appendOffice365Urls(sb);
-		appendViteroUrl(sb);
-		sb.append(";");
+		sb.append(" ").append(getProvidedUrls(CSPDirectiveProvider::getFrameSrcUrls)).append(";");
 	}
 	
 	private void appendDirective(StringBuilder sb, String directiveName, String options, String mandatoryOptions) {
@@ -257,95 +207,26 @@ public class HeadersFilter implements Filter {
 		}
 	}
 	
-	private void appendMathJaxUrl(StringBuilder sb) {
-		String mathJaxCdn = WebappHelper.getMathJaxCdn();
-		if(StringHelper.containsNonWhitespace(mathJaxCdn)
-				&& (mathJaxCdn.startsWith("//") || mathJaxCdn.startsWith("https://") || mathJaxCdn.startsWith("http://"))) {
-			try {
-				if(mathJaxCdn.startsWith("//")) {
-					mathJaxCdn = "https:" + mathJaxCdn;
-				}
-				URL url = URI.create(mathJaxCdn).toURL();
-				sb.append(" ").append(url.getProtocol()).append("://").append(url.getHost());
-			} catch (MalformedURLException e) {
-				log.error("", e);
-			}
-		}
+	private String getProvidedUrls(Function<CSPDirectiveProvider, Collection<String>> urlMethod) {
+		return directiveProviders.stream()
+				.map(urlMethod)
+				.filter(Objects::nonNull)
+				.flatMap(Collection::stream)
+				.map(this::normalizeUrl)
+				.filter(Objects::nonNull)
+				.collect(Collectors.joining(" "));
 	}
 	
-	private void appendOpenMeetingsUrl(StringBuilder sb) {
-		if(openMeetingsModule != null && openMeetingsModule.isEnabled()) {
-			appendUrl(sb, openMeetingsModule.getOpenMeetingsURI().toString());
-		}
-	}
-	
-	private void appendAnalyticsUrl(StringBuilder sb) {
-		if(analyticsModule != null) {
-			AnalyticsSPI spi = analyticsModule.getAnalyticsProvider();
-			if(spi instanceof GoogleAnalyticsSPI) {
-				sb.append(" ").append("https://www.google-analytics.com");
-			} else if(spi instanceof MatomoSPI) {
-				String trackerUrl = ((MatomoSPI)spi).getTrackerUrl();
-				if(StringHelper.containsNonWhitespace(trackerUrl)) {
-					sb.append(" ").append(trackerUrl);
-				}
-			}
-		}
-	}
-	
-	private void appendEdubaseUrl(StringBuilder sb) {
-		if(edubaseModule != null && edubaseModule.isEnabled()) {
-			appendUrl(sb, edubaseModule.getLtiBaseUrl());
-		}
-	}
-	
-	private void appendEdusharingUrl(StringBuilder sb) {
-		if(edusharingModule != null && edusharingModule.isEnabled()) {
-			appendUrl(sb, edusharingModule.getBaseUrl());
-		}
-	}
-	
-	private void appendCollaboraUrl(StringBuilder sb) {
-		if(collaboraModule != null && collaboraModule.isEnabled()) {
-			appendUrl(sb, collaboraModule.getBaseUrl());
-		}
-	}
-	
-	private void appendOffice365Urls(StringBuilder sb) {
-		if(office365Module != null && office365Module.isEnabled()) {
-			Collection<String> contentSecurityPolicyUrls = office365Service.getContentSecurityPolicyUrls();
-			for (String url : contentSecurityPolicyUrls) {
-				appendUrl(sb, url);
-			}
-		}
-	}
-	
-	private void appendOnlyOfficeUrl(StringBuilder sb) {
-		if(onlyOfficeModule != null && onlyOfficeModule.isEnabled()) {
-			appendUrl(sb, onlyOfficeModule.getBaseUrl());
-		}
-	}
-	
-	private void appendCard2BrainUrl(StringBuilder sb) {
-		if(card2BrainModule != null && card2BrainModule.isEnabled()) {
-			appendUrl(sb, card2BrainModule.getVerifyLtiUrl());
-		}
-	}
-	
-	private void appendViteroUrl(StringBuilder sb) {
-		if(viteroModule != null && viteroModule.isEnabled()) {
-			appendUrl(sb, viteroModule.getVmsURI().toString());
-		}
-	}
-	
-	private void appendUrl(StringBuilder sb, String urlString) {
+	private String normalizeUrl(String urlString) {
 		try {
 			URL url = new URL(urlString);
 			String protocol = url.getProtocol();
 			String host = url.getHost();
-			sb.append(" ").append(protocol).append("://").append(host);
+			return new StringBuilder().append(protocol).append("://").append(host).toString();
 		} catch (MalformedURLException e) {
 			log.error("", e);
 		}
+		return null;
 	}
+	
 }
