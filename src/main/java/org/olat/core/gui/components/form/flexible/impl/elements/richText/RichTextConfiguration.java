@@ -133,13 +133,12 @@ public class RichTextConfiguration implements Disposable {
 
 	private static final String FILE_BROWSER_CALLBACK = "file_browser_callback";
 	private static final String FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER = "BTinyHelper.openLinkBrowser";
-	private static final String ONINIT_CALLBACK_VALUE_START_DIRTY_OBSERVER = "BTinyHelper.startFormDirtyObserver";
 	private static final String URLCONVERTER_CALLBACK = "urlconverter_callback";
 	private static final String URLCONVERTER_CALLBACK_VALUE_BRASATO_URL_CONVERTER = "BTinyHelper.linkConverter";
 
 	private Map<String, String> quotedConfigValues = new HashMap<>();
 	private Map<String, String> nonQuotedConfigValues = new HashMap<>();
-	private List<String> oninit = new ArrayList<>();
+	private List<String> onInit = new ArrayList<>();
 
 	// Supported image and media suffixes
 	private static final String[] IMAGE_SUFFIXES_VALUES = { "jpg", "gif", "jpeg", "png" };
@@ -191,7 +190,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param rootFormDispatchId The dispatch ID of the root form that deals with
 	 *                           the submit button
 	 */
-	public RichTextConfiguration(String domID, String rootFormDispatchId, Locale locale) {
+	public RichTextConfiguration(String domID, String rootFormDispatchId2, Locale locale) {
 		this.domID = domID;
 		this.locale = locale;
 		// use exact mode that only applies to this DOM element
@@ -204,12 +203,6 @@ public class RichTextConfiguration implements Disposable {
 		setNonQuotedConfigValue("allow_script_urls", "true");
 		// use modal windows, all OLAT workflows are implemented to work this way
 		setModalWindowsEnabled(true);
-		// Start observing of diry richt text element and trigger calling of
-		// setFlexiFormDirty() method
-		// This check is initialized after the editor has fully loaded
-		addOnInitCallbackFunction(
-				ONINIT_CALLBACK_VALUE_START_DIRTY_OBSERVER + "('" + rootFormDispatchId + "','" + domID + "')");
-		addOnInitCallbackFunction("tinyMCE.get('" + domID + "').focus()");
 	}
 
 	/**
@@ -518,12 +511,12 @@ public class RichTextConfiguration implements Disposable {
 	 */
 	public void addOnInitCallbackFunction(String functionName) {
 		if (functionName != null) {
-			oninit.add(functionName);
+			onInit.add(functionName);
 		}
 	}
 
 	protected List<String> getOnInit() {
-		return oninit;
+		return onInit;
 	}
 
 	/**
@@ -585,12 +578,10 @@ public class RichTextConfiguration implements Disposable {
 	 *                                  'mceNonEditable'
 	 */
 	private void setNoneditableContentEnabled(boolean noneditableContentEnabled, String nonEditableCSSClass) {
-		if (noneditableContentEnabled) {
-			if (nonEditableCSSClass != null
+		if (noneditableContentEnabled && nonEditableCSSClass != null
 					&& !nonEditableCSSClass.equals(NONEDITABLE_NONEDITABLE_CLASS_VALUE_MCENONEDITABLE)) {
-				// Add non editable class but only when it differs from the default name
-				setQuotedConfigValue(NONEDITABLE_NONEDITABLE_CLASS, nonEditableCSSClass);
-			}
+			// Add non editable class but only when it differs from the default name
+			setQuotedConfigValue(NONEDITABLE_NONEDITABLE_CLASS, nonEditableCSSClass);
 		}
 	}
 
@@ -623,10 +614,9 @@ public class RichTextConfiguration implements Disposable {
 	 * @param row                The row where to place the plugin buttons
 	 */
 	private void setFullscreenEnabled(boolean fullScreenEnabled, boolean inNewWindowEnabled) {
-		if (fullScreenEnabled) {
-			// enabled if needed, disabled by default
-			if (inNewWindowEnabled)
-				setNonQuotedConfigValue(FULLSCREEN_NEW_WINDOW, VALUE_FALSE);
+		// enabled if needed, disabled by default
+		if (fullScreenEnabled && inNewWindowEnabled) {
+			setNonQuotedConfigValue(FULLSCREEN_NEW_WINDOW, VALUE_FALSE);
 		}
 	}
 

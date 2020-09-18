@@ -341,8 +341,8 @@
 					    	    	label: translator().translate('olatmovieviewer.provider'),
 					    	    	values: buildProviderList(),
 					    	    	onselect: function(e) {
-					    	    		var streaming = (this.value() == 'rtmp' || this.value() == 'http');
-					    	    		win.find('#streamer')[0].parent().visible(streaming);
+					    	    		var streamingProtocol = (this.value() == 'rtmp' || this.value() == 'http');
+					    	    		win.find('#streamer')[0].parent().visible(streamingProtocol);
 					    	    	}
 					    	    },
 					    	    { name: 'streamer', type: 'textbox', label: translator().translate('olatmovieviewer.streamer') },
@@ -387,8 +387,8 @@
 				} else {
 					fe = ed.dom.select("img.mceItemOlatMovieViewer", fe);
 					if (fe.length == 1 && /mceItemOlatMovieViewer/.test(ed.dom.getAttrib(fe[0], "class"))) {
-						var pl = "x={" + ed.dom.getAttrib(fe[0], "title") + "};";
-						deserializeParameters(pl, fe[0]);
+						var params = "x={" + ed.dom.getAttrib(fe[0], "title") + "};";
+						deserializeParameters(params, fe[0]);
 						setTimeout(generatePreview, 500);
 					}
 				}
@@ -432,7 +432,6 @@
 			
 			//The video player code.
 			function getPlayerHtmlNode(editor,p) {
-				var h = '', n, l = '';
 				// player configuration
 				var playerOffsetHeight = ed.getParam("olatmovieviewer_playerOffsetHeight");
 				var playerOffsetWidth = ed.getParam("olatmovieviewer_playerOffsetWidth");
@@ -485,7 +484,7 @@
 			});
 			
 			ed.addCommand('updateOOMovie', function (ui, value) {
-				if(win == null || win === "undefined") return;
+				if(typeof win === "undefined" || win == null) return;
 				
 				var link = value['link'];
 				var width = value['width'];
@@ -547,7 +546,7 @@
 			
 			//fallback for the old movies with settings in comments
 			ed.on('BeforeSetContent',function(e) {
-				if(e.content.indexOf('--omvs::') > 0) {
+				if(e.content.indexOf('--omvs::') >= 0) {
 					var imgUrl = ed.getParam("olatmovieviewer_transparentImage");
 					e.content = e.content.replace(/\n/gi, "");
 					var widthMatch = e.content.match(/(?:<!--omvs::.*?width:')([0-9]+)(?:'.*?<!--omve-->)/i);

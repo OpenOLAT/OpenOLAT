@@ -50,7 +50,7 @@ public class DialogConfigurationPage {
 		browser.findElement(uploadBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
-		By inputBy = By.xpath("//div[contains(@class,'modal-body')]//div[@class='o_fileinput']/input[@type='file']");
+		By inputBy = By.xpath("//div[contains(@class,'modal-body')]//div[contains(@class,'o_fileinput')]/input[@type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
 		OOGraphene.waitBusy(browser);
 		By uploadedBy = By.cssSelector("div.modal-body .o_sel_file_uploaded");
