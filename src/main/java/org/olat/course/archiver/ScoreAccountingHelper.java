@@ -41,10 +41,10 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -118,6 +118,7 @@ public class ScoreAccountingHelper {
 						}
 					}
 				}
+				DBFactory.getInstance().commitAndCloseSession();
 			}
 		}
 	}
@@ -134,8 +135,15 @@ public class ScoreAccountingHelper {
 	 * @param bos The output stream (which will be closed at the end, if you use a zip stream don't forget to shield it).
 	 */
 	public static void createCourseResultsOverviewXMLTable(List<Identity> identities, List<CourseNode> myNodes, ICourse course, Locale locale, OutputStream bos) {
+		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(bos, 1)) {
+			createCourseResultsOverviewXMLTable(identities, myNodes, course, locale, workbook);
+		} catch(Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	private static void createCourseResultsOverviewXMLTable(List<Identity> identities, List<CourseNode> myNodes, ICourse course, Locale locale, OpenXMLWorkbook workbook) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		OpenXMLWorkbook workbook = new OpenXMLWorkbook(bos, 1);
 		OpenXMLWorksheet sheet = workbook.nextWorksheet();
 		sheet.setHeaderRows(2);
 		
@@ -348,6 +356,7 @@ public class ScoreAccountingHelper {
 					}
 				}
 			}
+			DBFactory.getInstance().commitAndCloseSession();
 		}
 
 		//min. max. informations
@@ -397,8 +406,6 @@ public class ScoreAccountingHelper {
 			cutRow.addCell(2, "cutValue");
 			cutRow.addCell(3, cutVal);
 		}
-		
-		IOUtils.closeQuietly(workbook);
 	}
 	
 	

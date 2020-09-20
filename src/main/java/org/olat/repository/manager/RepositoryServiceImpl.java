@@ -509,7 +509,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			return errors;
 		}
 
-		if(debug) log.debug("deleteRepositoryEntry after load entry=" + entry);
+		log.info(Tracing.M_AUDIT, "deleteRepositoryEntry after load entry={}", entry);
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 		OLATResource resource = entry.getOlatResource();
 		//delete old context
@@ -555,21 +555,23 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if (handler != null) {
 			handler.cleanupOnDelete(entry, resource);
 		}
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 
 		//delete all test sessions
 		assessmentTestSessionDao.deleteAllUserTestSessionsByCourse(entry);
+		dbInstance.commit();
 		//nullify the reference
 		assessmentEntryDao.removeEntryForReferenceEntry(entry);
 		assessmentEntryDao.deleteEntryForRepositoryEntry(entry);
+		dbInstance.commit();
 		repositoryEntryToOrganisationDao.delete(entry);
 		repositoryEntryToTaxonomyLevelDao.deleteRelation(entry);
 		dbInstance.commit();
 
-		if(debug) log.debug("deleteRepositoryEntry after reload entry=" + entry);
+		if(debug) log.debug("deleteRepositoryEntry after reload entry={}", entry);
 		deleteRepositoryEntryAndBaseGroups(entry);
 
-		if(debug) log.debug("deleteRepositoryEntry Done");
+		log.info(Tracing.M_AUDIT, "deleteRepositoryEntry Done");
 		return errors;
 	}
 
