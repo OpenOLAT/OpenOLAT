@@ -479,7 +479,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 		data = dbInstance.getCurrentEntityManager().getReference(VFSMetadataImpl.class, data.getKey());
 		metadataDao.removeMetadata(data);
-		dbInstance.commit();
+		if(children.isEmpty()) {
+			dbInstance.commit();
+		} else {
+			dbInstance.commitAndCloseSession();
+		}
 		
 		deleted++;
 		return deleted;
