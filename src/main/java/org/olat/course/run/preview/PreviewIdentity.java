@@ -165,6 +165,11 @@ public final class PreviewIdentity implements Identity, User {
 	}
 
 	@Override
+	public Date getReactivationDate() {
+		return null;
+	}
+
+	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}

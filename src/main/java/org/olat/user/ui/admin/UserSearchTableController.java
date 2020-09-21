@@ -50,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -83,6 +84,7 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.co.ContactFormController;
+import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -146,6 +148,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
+	private UserLifecycleManager userLifecycleManager;
+	@Autowired
 	private UserBulkChangeManager userBulkChangesManager;
 	
 	public UserSearchTableController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
@@ -172,13 +176,12 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		previousLink.setTitle(translate("command.previous"));
 		nextLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next_toolbar");
 		nextLink.setTitle(translate("command.next"));
-		
-		
+
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.status, new IdentityStatusCellRenderer(getTranslator())));
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.id));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.status, new IdentityStatusCellRenderer(getTranslator())));
 
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -191,20 +194,20 @@ public class UserSearchTableController extends FormBasicController implements Ac
 			colPos++;
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.creationDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.lastLogin));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(settings.isLifecycleColumnsDefault(), UserCols.lastLogin));
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.inactivationDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(settings.isLifecycleColumnsDefault(), UserCols.inactivationDate, new DateFlexiCellRenderer(getLocale())));
 		if(userModule.isUserAutomaticDeactivation()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.daysToInactivation));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(settings.isLifecycleColumnsDefault(), UserCols.daysToInactivation));
 		}
 		if(userModule.isUserAutomaticDeletion()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.daysToDeletion));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(settings.isLifecycleColumnsDefault(), UserCols.daysToDeletion));
 		}
 		if(settings.isVCard()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.vcard", translate("table.identity.vcard"), "vcard"));
 		}
 		
-		tableModel = new UserSearchTableModel(new EmptyDataSource(), columnsModel, userModule);
+		tableModel = new UserSearchTableModel(new EmptyDataSource(), columnsModel, userModule, userLifecycleManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("error.no.user.found");

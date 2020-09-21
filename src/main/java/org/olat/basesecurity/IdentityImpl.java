@@ -220,6 +220,7 @@ public class IdentityImpl implements Identity, IdentityRef, CreateInfo, Persista
 		this.inactivationEmailDate = inactivationEmailDate;
 	}
 
+	@Override
 	public Date getReactivationDate() {
 		return reactivationDate;
 	}

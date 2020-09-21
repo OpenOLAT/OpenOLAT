@@ -17,43 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.user;
+package org.olat.core.id;
 
 import java.util.Date;
-import java.util.Set;
-
-import org.olat.core.id.Identity;
-import org.olat.core.id.IdentityLifecycle;
 
 /**
  * 
- * Initial date: 4 juin 2020<br>
+ * Initial date: 21 sept. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface UserLifecycleManager {
+public interface IdentityLifecycle {
+	
+	/**
+	 * @return Current identity status 
+	 */
+	public Integer getStatus();
+	
+	public Date getCreationDate();
+	
+	/**
+	 * @return Last date when the user logged in.
+	 */
+	public Date getLastLogin();
 	
 
-	public long getDaysUntilDeactivation(IdentityLifecycle identity, Date referenceDate);
+	public Date getInactivationDate();
 	
-	public long getDaysUntilDeletion(IdentityLifecycle identity, Date referenceDate);
-	
-	/**
-	 * Check if there are identities to deactivate.
-	 * 
-	 * @param vetoed Build a list to ignore.
-	 */
-	public void inactivateIdentities(Set<Identity> vetoed);
-	
-	public void deleteIdentities(Set<Identity> vetoed);
-	
-	/**
-	 * Delete all user-data in registered deleteable resources.
-	 * 
-	 * @param identity The identity to delete
-	 * @param doer The identity which want to delete someone (optional)
-	 * @return true: delete was successful; false: delete could not finish
-	 */
-	public boolean deleteIdentity(Identity identity, Identity doer);
+	public Date getReactivationDate();
 
 }

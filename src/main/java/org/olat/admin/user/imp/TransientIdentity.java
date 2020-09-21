@@ -137,6 +137,11 @@ public class TransientIdentity implements Identity, User {
 	}
 
 	@Override
+	public Date getReactivationDate() {
+		return null;
+	}
+
+	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return super.equals(persistable);
 	}

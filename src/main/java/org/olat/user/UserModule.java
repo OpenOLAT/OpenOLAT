@@ -128,6 +128,8 @@ public class UserModule extends AbstractSpringModule {
 	private boolean mailAfterDeactivation;
 	@Value("${user.days.before.mail.automatic.deactivation:30}")
 	private int numberOfDayBeforeDeactivationMail;
+	@Value("${user.days.reactivation.period:30}")
+	private int numberOfDayReactivationPeriod;
 	
 	@Value("${user.automatic.deletion:false}")
 	private boolean userAutomaticDeletion;
@@ -479,6 +481,14 @@ public class UserModule extends AbstractSpringModule {
 		setIntProperty(USER_NUM_OF_DAYS_BEFORE_MAIL_AUTOMATIC_DEACTIVATION, days, true);
 	}
 	
+	public int getNumberOfDayReactivationPeriod() {
+		return numberOfDayReactivationPeriod;
+	}
+
+	public void setNumberOfDayReactivationPeriod(int numberOfDayReactivationPeriod) {
+		this.numberOfDayReactivationPeriod = numberOfDayReactivationPeriod;
+	}
+
 	public boolean isUserAutomaticDeletion() {
 		return userAutomaticDeletion;
 	}
