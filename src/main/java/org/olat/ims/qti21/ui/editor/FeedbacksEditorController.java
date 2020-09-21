@@ -355,7 +355,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 				helpText += ".single";
 			}
 			textEl.setHelpTextKey(helpText + ".help", null);
-			textEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
+			textEl.setHelpUrlForManualPage("Configure test questions#_tab_feedback");
 			textEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback");
 			RichTextConfiguration richTextConfig2 = textEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
@@ -475,7 +475,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			textEl.setEnabled(!readOnly);
 			textEl.setVisible(!readOnly);
 			textEl.setHelpTextKey("feedback." + feedbackType.name() + ".help", null);
-			textEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
+			textEl.setHelpUrlForManualPage("Configure test questions#_tab_feedback");
 			textEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback");
 			RichTextConfiguration richTextConfig2 = textEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir

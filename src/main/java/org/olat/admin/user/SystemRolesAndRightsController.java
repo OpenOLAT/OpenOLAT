@@ -27,6 +27,7 @@ package org.olat.admin.user;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -60,6 +62,9 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
+import org.olat.core.util.Formatter;
+import org.olat.user.UserLifecycleManager;
+import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -81,6 +86,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  * There should be no need to use it anywhere else.
  */
 public class SystemRolesAndRightsController extends FormBasicController {
+	
+	private StaticTextElement lastLoginEl;
+	private StaticTextElement inactivationDateEl;
+	private StaticTextElement reactivationDateEl;
+	private StaticTextElement daysInactivationEl;
+	private StaticTextElement daysDeletionEl;
 	
 	private SpacerElement rolesSep;
 	private SingleSelection statusEl;
@@ -110,9 +121,13 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private UserModule userModule;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private UserLifecycleManager userLifecycleManager;
 	@Autowired
 	private UserBulkChangeManager userBulkChangeManager;
 	
@@ -182,23 +197,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		formLayout.add(rolesCont);
 		
 		initFormRoles();
-		
-		FormLayoutContainer statusCont = FormLayoutContainer.createDefaultFormLayout("statusc", getTranslator());
-		formLayout.add(statusCont);
-		
-		statusEl = uifactory.addRadiosVertical("status", "rightsForm.status", statusCont, statusKeys.keys(), statusKeys.values());
-		statusEl.addActionListener(FormEvent.ONCHANGE);
-		sendLoginDeniedEmailEl = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", statusCont, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")});
-		sendLoginDeniedEmailEl.setLabel(null, null);
-		
-		rolesSep.setVisible(iAmAdmin);
-		statusEl.setVisible(iAmAdmin || iAmUserManager);
-		sendLoginDeniedEmailEl.setVisible(false);
-		
-		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
-		statusCont.add(buttonGroupLayout);
-		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("submit", buttonGroupLayout);
+		initFormStatus(ureq, formLayout, iAmAdmin, iAmUserManager);
 	}
 
 	private void initFormRoles() {
@@ -212,6 +211,33 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		}
 
 		rolesSep = uifactory.addSpacerElement("rolesSep", rolesCont, false);
+	}
+	
+	private void initFormStatus(UserRequest ureq, FormItemContainer formLayout, boolean iAmAdmin, boolean iAmUserManager) {
+		FormLayoutContainer statusCont = FormLayoutContainer.createDefaultFormLayout("statusc", getTranslator());
+		formLayout.add(statusCont);
+		
+		// status
+		statusEl = uifactory.addRadiosVertical("status", "rightsForm.status", statusCont, statusKeys.keys(), statusKeys.values());
+		statusEl.addActionListener(FormEvent.ONCHANGE);
+		sendLoginDeniedEmailEl = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", statusCont, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")});
+		sendLoginDeniedEmailEl.setLabel(null, null);
+		
+		rolesSep.setVisible(iAmAdmin);
+		statusEl.setVisible(iAmAdmin || iAmUserManager);
+		sendLoginDeniedEmailEl.setVisible(false);
+		
+		// life cycle information
+		lastLoginEl = uifactory.addStaticTextElement("rightsForm.last.login", "", statusCont);
+		inactivationDateEl = uifactory.addStaticTextElement("rightsForm.inactivation.date", "", statusCont);
+		reactivationDateEl = uifactory.addStaticTextElement("rightsForm.reactivation.date", "", statusCont);
+		daysInactivationEl = uifactory.addStaticTextElement("rightsForm.days.inactivation", "", statusCont);
+		daysDeletionEl = uifactory.addStaticTextElement("rightsForm.days.deletion", "", statusCont);
+		
+		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
+		statusCont.add(buttonGroupLayout);
+		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("submit", buttonGroupLayout);
 	}
 	
 	private void initFormRoles(FormItemContainer formLayout, Organisation organisation) {
@@ -357,6 +383,29 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		setStatus(editedIdentity.getStatus());
 		wrapper.getRolesEl().setVisible(!isAnonymous());
 		rolesSep.setVisible(!isAnonymous());
+		
+		Formatter formatter = Formatter.getInstance(getLocale());
+		lastLoginEl.setValue(formatter.formatDateAndTime(editedIdentity.getLastLogin()));
+		
+		Date inactivationDate = editedIdentity.getInactivationDate();
+		inactivationDateEl.setValue(formatter.formatDate(inactivationDate));
+		inactivationDateEl.setVisible(inactivationDate != null);
+		
+		Date reactivationDate = editedIdentity.getReactivationDate();
+		reactivationDateEl.setValue(formatter.formatDate(reactivationDate));
+		reactivationDateEl.setVisible(reactivationDate != null);
+		
+		Date now = new Date();
+		long daysBeforeDeactivation = userLifecycleManager.getDaysUntilDeactivation(editedIdentity, now);
+		daysInactivationEl.setValue(Long.toString(daysBeforeDeactivation));
+		daysInactivationEl.setVisible(userModule.isUserAutomaticDeactivation()
+				&& (editedIdentity.getStatus().equals(Identity.STATUS_ACTIV)
+						|| editedIdentity.getStatus().equals(Identity.STATUS_PENDING)
+						|| editedIdentity.getStatus().equals(Identity.STATUS_LOGIN_DENIED)));
+		
+		long daysBeforeDeletion = userLifecycleManager.getDaysUntilDeletion(editedIdentity, now);
+		daysDeletionEl.setValue(Long.toString(daysBeforeDeletion));
+		daysDeletionEl.setVisible(userModule.isUserAutomaticDeletion() && editedIdentity.getInactivationDate() != null);
 	}
 	
 	private void setStatus(Integer status) {

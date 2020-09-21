@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.ui.TeacherRollCallController;
+import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserModule;
 
 /**
@@ -41,11 +42,13 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 	
 	private final Date now;
 	private final UserModule userModule;
+	private final UserLifecycleManager lifecycleManager;
 	
 	public UserSearchTableModel(FlexiTableDataSourceDelegate<IdentityPropertiesRow> source,
-			FlexiTableColumnModel columnModel, UserModule userModule) {
+			FlexiTableColumnModel columnModel, UserModule userModule, UserLifecycleManager lifecycleManager) {
 		super(source, columnModel);
 		this.userModule = userModule;
+		this.lifecycleManager = lifecycleManager;
 		now = CalendarUtils.startOfDay(new Date());
 	}
 
@@ -75,28 +78,21 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 				&& (userRow.getStatus().equals(Identity.STATUS_ACTIV)
 						|| userRow.getStatus().equals(Identity.STATUS_PENDING)
 						|| userRow.getStatus().equals(Identity.STATUS_LOGIN_DENIED))) {
-			Date lastLogin = userRow.getLastLogin();
-			if(lastLogin == null) {
-				lastLogin = userRow.getCreationDate();
-			}
-			long days = userModule.getNumberOfInactiveDayBeforeDeactivation() - CalendarUtils.numOfDays(now, lastLogin);
-			return days > 0l ? days : 1l;
+			return lifecycleManager.getDaysUntilDeactivation(userRow, now);
 		}
 		return null;
 	}
 	
 	private Long getDaysToDeletion(IdentityPropertiesRow userRow) {
 		if(userModule.isUserAutomaticDeletion() && userRow.getInactivationDate() != null) {
-			Date inactivationDate = userRow.getInactivationDate();
-			long days = userModule.getNumberOfInactiveDayBeforeDeletion() - CalendarUtils.numOfDays(now, inactivationDate);
-			return days > 0l ? days : 1l;
+			return lifecycleManager.getDaysUntilDeletion(userRow, now);
 		}
 		return null;
 	}
 	
 	@Override
 	public DefaultFlexiTableDataSourceModel<IdentityPropertiesRow> createCopyWithEmptyList() {
-		return new UserSearchTableModel(null, getTableColumnModel(), userModule);
+		return new UserSearchTableModel(null, getTableColumnModel(), userModule, lifecycleManager);
 	}
 	
 	public enum UserCols implements FlexiSortableColumnDef {

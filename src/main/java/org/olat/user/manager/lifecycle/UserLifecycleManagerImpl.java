@@ -45,6 +45,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityLifecycle;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
@@ -95,7 +96,31 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	@Autowired
 	private RepositoryDeletionModule repositoryDeletionModule;
 	
+	@Override
+	public long getDaysUntilDeactivation(IdentityLifecycle identity, Date referenceDate) {
+		long days;
+		Date reactivationDate = identity.getReactivationDate();
+		if(reactivationDate != null ) {
+			days = userModule.getNumberOfDayReactivationPeriod() - CalendarUtils.numOfDays(referenceDate, reactivationDate);
+		} else {
+			Date lastLogin = identity.getLastLogin();
+			if(lastLogin == null) {
+				lastLogin = identity.getCreationDate();
+			}
+			days = userModule.getNumberOfInactiveDayBeforeDeactivation() - CalendarUtils.numOfDays(referenceDate, lastLogin);
+		}
+		return days > 0l ? days : 1l;
+	}
 
+	@Override
+	public long getDaysUntilDeletion(IdentityLifecycle identity, Date referenceDate) {
+		if(identity == null || identity.getInactivationDate() == null) return -1;
+		
+		Date inactivationDate = identity.getInactivationDate();
+		long days = userModule.getNumberOfInactiveDayBeforeDeletion() - CalendarUtils.numOfDays(referenceDate, inactivationDate);
+		return days > 0l ? days : 1l;
+	}
+	
 	public List<Identity> getReadyToInactivateIdentities(Date loginDate, Date reactivationDateLimit) {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
@@ -185,7 +210,8 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	public void inactivateIdentities(Set<Identity> vetoed) {
 		int numOfDaysBeforeDeactivation = userModule.getNumberOfInactiveDayBeforeDeactivation();
 		int numOfDaysBeforeEmail = userModule.getNumberOfDayBeforeDeactivationMail();
-		Date reactivationDatebefore = getDate(30);
+		int numOfDaysReactivation = userModule.getNumberOfDayReactivationPeriod();
+		Date reactivationDatebefore = getDate(numOfDaysReactivation);
 		boolean sendMailBeforeDeactivation = userModule.isMailBeforeDeactivation() && numOfDaysBeforeEmail > 0;
 		if(sendMailBeforeDeactivation) {
 			int days = numOfDaysBeforeDeactivation - numOfDaysBeforeEmail;
