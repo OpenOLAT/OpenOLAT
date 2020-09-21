@@ -37,6 +37,11 @@ public abstract class DefaultContextEntryControllerCreator implements ContextEnt
 	public abstract ContextEntryControllerCreator clone();
 
 	@Override
+	public boolean isResumable() {
+		return true;
+	}
+
+	@Override
 	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
 		return null;
 	}

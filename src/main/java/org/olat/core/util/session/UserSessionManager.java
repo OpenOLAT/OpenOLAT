@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -36,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Disposable;
@@ -45,7 +47,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryManager;
+import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
@@ -395,9 +399,9 @@ public class UserSessionManager implements GenericEventListener {
 				SessionInfo sessionInfo = usess.getSessionInfo();
 				IdentityEnvironment identityEnvironment = usess.getIdentityEnvironment();
 				Identity identity = identityEnvironment.getIdentity();
-				log.info(Tracing.M_AUDIT, "Logged off: " + sessionInfo);
+				log.info(Tracing.M_AUDIT, "Logged off: {}", sessionInfo);
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new SignOnOffEvent(identity, false), ORES_USERSESSION);
-				if(isDebug) log.debug("signOffAndClear() deregistering usersession from eventbus, id="+sessionInfo);
+				if(isDebug) log.debug("signOffAndClear() deregistering usersession from eventbus, id={}", sessionInfo);
 				//fxdiff FXOLAT-231: event on GUI Preferences extern changes
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Preferences.class, identity.getKey());
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(usess, ores);
@@ -409,7 +413,6 @@ public class UserSessionManager implements GenericEventListener {
 		usess.init();
 		if(isDebug) log.debug("signOffAndClear() END");
 	}
-
 
 	/**
 	 * called from signOffAndClear()
@@ -426,11 +429,9 @@ public class UserSessionManager implements GenericEventListener {
 		final IdentityEnvironment identityEnvironment = usess.getIdentityEnvironment();
 		final SessionInfo sessionInfo = usess.getSessionInfo();
 		final Identity ident = identityEnvironment.getIdentity();
-		if (isDebug) log.debug("UserSession:::logging off: " + sessionInfo);
+		if (isDebug) log.debug("UserSession:::logging off: {}", sessionInfo);
 
-		if(usess.isAuthenticated() && usess.getLastHistoryPoint() != null && !usess.getRoles().isGuestOnly()) {
-			historyManager.persistHistoryPoint(ident, usess.getLastHistoryPoint());
-		}
+		persistHistory(usess, ident);
 
 		/**
 		 * use not RunnableWithException, as exceptionHandlng is inside the run
@@ -486,12 +487,12 @@ public class UserSessionManager implements GenericEventListener {
 			//see also SIDEEFFECT!! line in signOn(..)
 			Identity previousSignedOn = identityEnvironment.getIdentity();
 			if (previousSignedOn != null && previousSignedOn.getKey() != null) {
-				if(isDebug) log.debug("signOffAndClearWithout() removing from userNameToIdentity: " + previousSignedOn.getKey());
+				if(isDebug) log.debug("signOffAndClearWithout() removing from userNameToIdentity: {}", previousSignedOn.getKey());
 				userNameToIdentity.remove(previousSignedOn.getKey());
 				userSessionCache.remove(previousSignedOn.getKey());
 			}
 		} else if (isDebug) {
-			log.info("UserSession already removed! for ["+ident+"]");			
+			log.info("UserSession already removed! for [{}]", ident);			
 		}
 			
 		// update logged in users counters
@@ -506,6 +507,23 @@ public class UserSessionManager implements GenericEventListener {
 		}
 		
 		if (isDebug) log.debug("signOffAndClearWithout() END");
+	}
+	
+	private void persistHistory(final UserSession usess, final Identity ident) {
+		if(usess.isAuthenticated() && usess.getLastHistoryPoint() != null && !usess.getRoles().isGuestOnly()) {
+			Predicate<HistoryPoint> filter =  point -> {
+				List<ContextEntry> entries = point.getEntries();
+				if(entries == null || entries.isEmpty()) {
+					return false;
+				}
+				String resType = entries.get(0).getOLATResourceable().getResourceableTypeName();
+				return NewControllerFactory.getInstance().canResume(resType);
+			};
+			HistoryPoint lastPoint = usess.getLastHistoryPoint(filter);
+			if(lastPoint != null) {
+				historyManager.persistHistoryPoint(ident, lastPoint);
+			}
+		}
 	}
 
 	/**

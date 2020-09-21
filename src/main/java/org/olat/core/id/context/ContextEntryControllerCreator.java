@@ -51,6 +51,11 @@ public interface ContextEntryControllerCreator {
 	 * @return
 	 */
 	public ContextEntryControllerCreator clone();
+	
+	/**
+	 * @return true if the context can be resumed
+	 */
+	public boolean isResumable();
 
 	/**
 	 * Factory method to create the run controller for this contex.

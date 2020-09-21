@@ -24,10 +24,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.resource.Resourceable;
@@ -92,15 +93,13 @@ public class HistoryManager {
 	}
 	
 	public void persistHistoryPoint(Identity identity, HistoryPoint historyPoint) {
-		try {
-			String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity);
-			File resumeXml = new File(pathHomePage, "resume.xml");
+		String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity);
+		File resumeXml = new File(pathHomePage, "resume.xml");
+		try(OutputStream out = new FileOutputStream(resumeXml)) {
 			if(!resumeXml.getParentFile().exists()) {
 				resumeXml.getParentFile().mkdirs();
 			}
-			FileOutputStream out = new FileOutputStream(resumeXml);
 			historyWriteStream.toXML(historyPoint, out);
-			FileUtils.closeSafely(out);
 		} catch (Exception e) {
 			log.error("UserSession:::logging off write resume: ", e);
 		}

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -50,7 +51,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.TabContext;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -121,6 +121,11 @@ public class NewControllerFactory {
 	 */
 	public boolean canLaunch(String key) {
 		return contextEntryControllerCreators.containsKey(key);
+	}
+	
+	public boolean canResume(String key) {
+		ContextEntryControllerCreator creator = contextEntryControllerCreators.get(key);
+		return creator != null && creator.isResumable();
 	}
 
 	/**

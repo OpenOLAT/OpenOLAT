@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
@@ -397,6 +398,20 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			return null;
 		}
 		return history.lastElement();
+	}
+	
+	public HistoryPoint getLastHistoryPoint(Predicate<HistoryPoint> accept) {
+		if(history.isEmpty()) {
+			return null;
+		}
+		
+		for(int i=history.size(); i-->0; ) {
+			HistoryPoint point = history.get(i);
+			if(accept.test(point)) {
+				return point;
+			}
+		}
+		return null;
 	}
 	
 	public HistoryPoint getHistoryPoint(String id) {
