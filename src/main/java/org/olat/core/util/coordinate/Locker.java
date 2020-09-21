@@ -83,25 +83,6 @@ public interface Locker {
 	 * @return
 	 */
 	public LockEntry getLockEntry(OLATResourceable ores, String locksubkey);
-	
-	/**
-	 * 
-	 * acquires a persistent lock.
-	 * 
-	 * @param ores
-	 * @param ident
-	 * @param locksubkey may not be longer than 30 chars
-	 * @return the LockResult of this lock trial.
-	 */
-	//public LockResult aquirePersistentLock(OLATResourceable ores, Identity ident, String locksubkey);
-	
-	
-	/**
-	 * releases a persistent lock.
-	 * 
-	 * @param le the LockResult which stems from the lock acquired previously
-	 */
-	//public void releasePersistentLock(LockResult le);
 
 	/**
 	 * for admin purposes only.

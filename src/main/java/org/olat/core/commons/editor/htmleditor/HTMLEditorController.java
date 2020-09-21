@@ -218,18 +218,12 @@ public class HTMLEditorController extends FormBasicController implements Activat
 
 			lock = CoordinatorManager.getInstance().getCoordinator().getLocker()
 					.acquireLock(lockResourceable, getIdentity(), lockToken, getWindow());
-			VelocityContainer vc = (VelocityContainer) flc.getComponent();
-			if (!lock.isSuccess()) {
-				vc.contextPut("locked", Boolean.TRUE);
-				String fullname = userManager.getUserDisplayName(lock.getOwner());
-				vc.contextPut("lockOwner", fullname);
-				vc.contextPut("lockOwnerSameUser", Boolean.valueOf(lock.isDifferentWindows()));
+			if (lock.isSuccess()) {
+				unsetLockError();
+			} else {
+				setLockedError(lock);
 				editable = false;
 				return;
-			} else {
-				vc.contextPut("locked", Boolean.FALSE);
-				vc.contextRemove("lockOwner");	
-				vc.contextRemove("lockOwnerSameUser");	
 			}
 		}
 		// Parse the content of the page
@@ -238,6 +232,20 @@ public class HTMLEditorController extends FormBasicController implements Activat
 			this.edusharingProvider = edusharingProvider;
 			this.edusharingProvider.setSubPath(fileLeaf);
 		}
+	}
+	
+	private void unsetLockError() {
+		flc.contextPut("locked", Boolean.FALSE);
+		flc.contextRemove("lockOwner");	
+		flc.contextRemove("lockOwnerSameUser");
+		flc.setDirty(true);
+	}
+	
+	private void setLockedError(LockResult lockResult) {
+		flc.contextPut("locked", Boolean.TRUE);
+		String fullname = userManager.getUserDisplayName(lockResult.getOwner());
+		flc.contextPut("lockOwner", fullname);
+		flc.contextPut("lockOwnerSameUser", Boolean.valueOf(lockResult.isDifferentWindows()));
 	}
 	
 	public Object getUserObject() {
@@ -269,6 +277,10 @@ public class HTMLEditorController extends FormBasicController implements Activat
 					.acquireLock(lockResourceable, getIdentity(), lockToken, getWindow());
 			if(reacquiredLock.isSuccess()) {
 				lock = reacquiredLock;
+				unsetLockError();
+			} else {
+				setLockedError(reacquiredLock);
+				editable = false;
 			}
 		}
 	}
