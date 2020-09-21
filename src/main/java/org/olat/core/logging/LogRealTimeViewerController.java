@@ -57,6 +57,7 @@ public class LogRealTimeViewerController extends BasicController {
 	private final Level level;
 	private String loggingPackage;
 	private boolean collectLog = true;
+	private final String appenderName;
 	private final LogWriter writer = new LogWriter();
 	
 	private Link stopLink;
@@ -80,6 +81,8 @@ public class LogRealTimeViewerController extends BasicController {
 		super(ureq, control);
 		this.level = level;
 		this.loggingPackage = loggingPackage;
+		appenderName = "LogRealTimeApppender-" + getIdentity().getKey();
+		
 		logViewerVC = createVelocityContainer("logviewer");
 		logViewerVC.contextPut("loggingPackage", loggingPackage);
 
@@ -108,7 +111,7 @@ public class LogRealTimeViewerController extends BasicController {
 		WriterAppender appender = WriterAppender.newBuilder()
 				.setLayout(layout)
 				.setTarget(writer)
-				.setName("LogRealTimeApppender")
+				.setName(appenderName)
 				.build();
 		appender.start();
 		config.addAppender(appender);
@@ -118,10 +121,7 @@ public class LogRealTimeViewerController extends BasicController {
 		refList.addAll(currentRefs);
 		refList.add(ref);
 		
-		AppenderRef[] refs = refList.toArray(new AppenderRef[refList.size()]);
-		LoggerConfig loggerConfig = LoggerConfig.createLogger(false, level, loggingPackage, "true", refs, null, config, null);
-		loggerConfig.addAppender(appender, level, null);
-		config.addLogger(loggingPackage, loggerConfig);
+		currentLoggerConfig.addAppender(appender, level, null);
 		ctx.updateLoggers();
 	}
 
@@ -131,7 +131,10 @@ public class LogRealTimeViewerController extends BasicController {
 	}
 	
 	private void removeConfiguration() {
-		Tracing.resetLevelForAllLoggers();
+		final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		final Configuration config = ctx.getConfiguration();
+		LoggerConfig currentLoggerConfig = config.getLoggerConfig(loggingPackage);
+		currentLoggerConfig.removeAppender(appenderName);
 	}
 
 	@Override
