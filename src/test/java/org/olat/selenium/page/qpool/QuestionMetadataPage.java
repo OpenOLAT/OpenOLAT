@@ -80,6 +80,7 @@ public class QuestionMetadataPage {
 		if(taxonomy != null) {
 			By taxonomyBy = By.cssSelector("div.o_sel_qpool_metadata_taxonomy select");
 			new Select(browser.findElement(taxonomyBy)).selectByVisibleText(taxonomy);
+			OOGraphene.waitBusy(browser);
 		}
 		
 		if(level != null) {
