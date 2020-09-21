@@ -508,11 +508,15 @@ function o_postInvoke(r, newWindow) {
 				var url = acmd["cda"].nwrurl;
 				if(url == "close-window") {
 					if(newWindow == null) {
-						newWindow.close();
+						try {
+							window.close();// try without much hope
+						} catch(e) {
+							//
+						}
 					} else {
-						window.close();
+						newWindow.close();
 					}
-				} else {
+				} else if(newWindow != null) {
 					newWindow.location.href = url;
 					newWindow.focus();
 				}
