@@ -119,19 +119,18 @@ public class EditRelationRoleController extends FormBasicController {
 			predefinedLabelEl.select(predefinedLabelKeys[0], true);
 		}
 
+		String[] cssClasses = new String[rightKeys.length];
 		for(int i=0; i < relationRights.size(); i++) {
 			StringBuilder valueBuilder = new StringBuilder();
 			if (relationRights.get(i).getParent() != null) {
-				for (int k = 6; k-->0;) {
-					valueBuilder.append(INTENDING);
-				}
+				cssClasses[i] = "o_checkbox_indented";
 			}
 			valueBuilder.append(relationRights.get(i).getTranslatedName(getLocale()));
 			rightKeys[i] = relationRights.get(i).getRight();
 			rightValues[i] = valueBuilder.toString();
 			rightProviders.add(i, relationRights.get(i));
 		}
-		rightsEl = uifactory.addCheckboxesVertical("role.rights", formLayout, rightKeys, rightValues, 1);
+		rightsEl = uifactory.addCheckboxesVertical("role.rights", "role.rights", formLayout, rightKeys, rightValues, cssClasses, null,1);
 		rightsEl.setEnabled(!RelationRoleManagedFlag.isManaged(relationRole, RelationRoleManagedFlag.rights));
 		rightsEl.addActionListener(FormEvent.ONCLICK);
 
