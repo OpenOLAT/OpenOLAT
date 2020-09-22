@@ -137,8 +137,7 @@ public class SetupPropertiesController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		// TODO Auto-generated method stub
-
+		//
 	}
 
 	private void initFilters(FlexiTableElement tableElement) {

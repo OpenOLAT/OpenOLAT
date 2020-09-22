@@ -94,9 +94,6 @@ public class ConfigurationTreeCellRenderer implements FlexiCellRenderer {
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		FlexiTableElementImpl ftE = source.getFlexiTableElement();
 		FlexiTreeTableDataModel<?> treeTableModel = ftE.getTreeTableDataModel();
-		Object content = source.getFlexiTableElement().getTableDataModel().getObject(row);
-		
-		
 		if(treeTableModel != null) {
 			if(isFlat(ftE)) {
 				labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
@@ -173,12 +170,7 @@ public class ConfigurationTreeCellRenderer implements FlexiCellRenderer {
 		if(action == null) {
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 		} else {
-			NameValuePair pair = new NameValuePair(action, Integer.toString(row));
-			String href = href(source, row);
-			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, false, pair);
-//			target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\">");
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
-//			target.append("</a></div>");
 		}
 	}
 	

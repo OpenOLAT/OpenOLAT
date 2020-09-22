@@ -39,7 +39,6 @@ import org.olat.core.util.StringHelper;
  */
 public class PropertyValueCellRenderer implements FlexiCellRenderer{
 	
-	private static final int maxLength = 4000000;
 	private static final String[] protectedKeys = {
 		"ldap.trustStorePwd",
 		"smtp.pwd",

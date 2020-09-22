@@ -50,8 +50,7 @@ public class PropertiesSegmentController extends BasicController {
 
 	public PropertiesSegmentController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		// TODO Auto-generated constructor stub
-		
+
 		mainVC = createVelocityContainer("segments");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 
@@ -79,13 +78,11 @@ public class PropertiesSegmentController extends BasicController {
 				}
 			}
 		}
-		
 	}
 
 	@Override
 	public void doDispose() {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	private void showSetUpProperties(UserRequest ureq) {
