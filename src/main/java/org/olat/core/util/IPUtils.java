@@ -51,13 +51,17 @@ public class IPUtils {
 		ipWithMask = ipWithMask.trim();
 		int maskIndex = ipWithMask.indexOf('/');
 		if(maskIndex > 0) {
-			long bits = Long.parseLong(ipWithMask.substring(maskIndex + 1));
-			long subnet = ipToLong(textToNumericFormatV4(ipWithMask.substring(0, maskIndex)));
-			long ip = ipToLong(textToNumericFormatV4(address));
-			
-			long mask = -1 << (32 - bits);
-			if ((subnet & mask) == (ip & mask)) {
-				allOk = true;
+			try {
+				long bits = Long.parseLong(ipWithMask.substring(maskIndex + 1));
+				long subnet = ipToLong(textToNumericFormatV4(ipWithMask.substring(0, maskIndex)));
+				long ip = ipToLong(textToNumericFormatV4(address));
+				
+				long mask = -1 << (32 - bits);
+				if ((subnet & mask) == (ip & mask)) {
+					allOk = true;
+				}
+			} catch(Exception e) {
+				log.warn("Range not valid: {} for IP: {}", ipWithMask, address);
 			}
 		}
 		return allOk;
