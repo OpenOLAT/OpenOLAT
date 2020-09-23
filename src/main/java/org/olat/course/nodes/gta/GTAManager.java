@@ -232,7 +232,7 @@ public interface GTAManager {
 	 * @param by The role of the doer
 	 * @return true if the status is done
 	 */
-	public boolean syncAssessmentEntry(Task task, GTACourseNode cNode, UserCourseEnvironment assessedUserCourseEnv, Identity doerIdentity, Role by);
+	public boolean syncAssessmentEntry(Task task, GTACourseNode cNode, UserCourseEnvironment assessedUserCourseEnv, boolean incrementUserAttempts, Identity doerIdentity, Role by);
 	
 	/**
 	 * Are users already processing this task?
