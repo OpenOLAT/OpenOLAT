@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -573,8 +574,31 @@ public class AssessmentModeEditController extends FormBasicController {
 			} else if(value.length() > ipListEl.getMaxLength()) {
 				ipListEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(ipListEl.getMaxLength()) } );
 				allOk &= false;
+			} else {
+				allOk &= validIpList(ipListEl.getValue());
 			}
 		}
+		return allOk;
+	}
+	
+	/**
+	 * Try to begin some validation of the list but the list allowed
+	 * a lot of possibilities.
+	 * 
+	 * @param ipList The list of IPs
+	 * @return true if valid
+	 */
+	private boolean validIpList(String ipList) {
+		boolean allOk = true;
+		
+		for(StringTokenizer tokenizer = new StringTokenizer(ipList, "\n\r", false); tokenizer.hasMoreTokens(); ) {
+			String ipRange = tokenizer.nextToken();
+			if(StringHelper.containsNonWhitespace(ipRange) && ipRange.startsWith("/")) {
+				ipListEl.setErrorKey("error.ip.range.cannot.start.slash", new String[] { ipRange } );
+				allOk &= false;
+			}
+		}
+		
 		return allOk;
 	}
 

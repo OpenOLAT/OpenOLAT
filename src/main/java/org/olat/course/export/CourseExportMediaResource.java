@@ -48,6 +48,7 @@ import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSRevisionsAndThumbnailsFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
@@ -391,7 +392,7 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 			String nodeDirectory = ZipUtil.concat(ICourse.EXPORTED_DATA_FOLDERNAME, courseNode.getIdent());
 			zout.putNextEntry(new ZipEntry(ZipUtil.concat(nodeDirectory, "oonode.zip")));
 			
-			ZipUtil.zip(nodeContainer, fOut);
+			ZipUtil.zip(nodeContainer, fOut, new VFSRevisionsAndThumbnailsFilter(), true);
 			
 			zout.closeEntry();
 		} catch (IOException e) {

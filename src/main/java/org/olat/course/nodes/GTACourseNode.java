@@ -619,7 +619,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			if (solutions.exists()) {
 				String solutionDirName = dirName + "/solutions";
 				for(VFSItem solution:solutions.getItems(new VFSSystemItemFilter())) {
-					ZipUtil.addToZip(solution, solutionDirName, exportStream);
+					ZipUtil.addToZip(solution, solutionDirName, exportStream, new VFSSystemItemFilter(), false);
 				}
 			}
 		}

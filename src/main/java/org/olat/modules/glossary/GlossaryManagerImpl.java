@@ -172,7 +172,7 @@ public class GlossaryManagerImpl implements GlossaryManager {
 		String exportFileName = repoEntry.getDisplayname();
 		exportFileName = StringHelper.transformDisplayNameToFileSystemName(exportFileName);
 		VFSContainer glossaryRoot = getGlossaryRootFolder(res);
-		return new ZippedContainerMediaResource(exportFileName, glossaryRoot);
+		return new ZippedContainerMediaResource(exportFileName, glossaryRoot, false);
 	}
 	
 	

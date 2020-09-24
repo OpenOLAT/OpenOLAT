@@ -152,16 +152,18 @@ public class ExportManager {
 		
 		File outFile = new File(dir, filename);
 		// trigger the course log exporter - it will store the file to outFile
-		log.info("createLogFile: start exporting course log file "+outFile.getAbsolutePath());
+		log.info("createLogFile: start exporting course log file {}", outFile);
 		courseLogExporter.exportCourseLog(outFile, oresID, begin, end, resourceAdminAction, anonymize, isAdministrativeUser);
-		log.info("createLogFile: finished exporting course log file "+outFile.getAbsolutePath());
+		log.info("createLogFile: finished exporting course log file {}", outFile);
 		return outFile;
 	}
 	
 	private void saveFile(String targetDir, String zipName, File tmpDir, List<File> files, String email, String emailI18nSubkey, Locale locale) {
 		File zipFile = new File(targetDir, zipName);
-		Set<String> filenames = files.stream().map(File::getName).collect(Collectors.toSet());
-		if (ZipUtil.zip(filenames, tmpDir, zipFile)) {
+		Set<String> filenames = files.stream()
+				.map(File::getName)
+				.collect(Collectors.toSet());
+		if (ZipUtil.zip(filenames, tmpDir, zipFile, false)) {
 			sendEMail(email, locale, emailI18nSubkey);
 		}
 		FileUtils.deleteDirsAndFiles(tmpDir, true, true);

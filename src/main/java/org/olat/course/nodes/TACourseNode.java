@@ -516,7 +516,7 @@ public class TACourseNode extends GenericCourseNode {
 			if (solutionDir.exists()) {
 				for(VFSItem child:solutionDir.getItems(new VFSSystemItemFilter())) {
 					dataFound = true;
-					ZipUtil.addToZip(child, dirName + "/solutions", exportStream);
+					ZipUtil.addToZip(child, dirName + "/solutions", exportStream, new VFSSystemItemFilter(), false);
 				}
 			}
 				
@@ -527,7 +527,7 @@ public class TACourseNode extends GenericCourseNode {
 				for (VFSItem file:dropBoxContent) {
 					if((dropboxNames == null || dropboxNames.contains(file.getName())) && VFSManager.isDirectoryAndNotEmpty(file)){
 						dataFound = true;
-						ZipUtil.addToZip(file, dirName + "/dropboxes", exportStream);
+						ZipUtil.addToZip(file, dirName + "/dropboxes", exportStream, new VFSSystemItemFilter(), false);
 					}
 				}
 			}
@@ -542,7 +542,7 @@ public class TACourseNode extends GenericCourseNode {
 					VFSItem item = taskfolderDir.resolve(assignedTask);
 					if(item != null) {
 						// copy choosen task to user folder
-						ZipUtil.addToZip(item, dirName + "/taskfolders/" + identity.getName(), exportStream);
+						ZipUtil.addToZip(item, dirName + "/taskfolders/" + identity.getName(), exportStream, new VFSSystemItemFilter(), false);
 						dataFound = true;
 					}
 				}
@@ -555,7 +555,7 @@ public class TACourseNode extends GenericCourseNode {
 				for (VFSItem file : returnBoxContent) {
 					if((dropboxNames == null || dropboxNames.contains(file.getName())) && VFSManager.isDirectoryAndNotEmpty(file)){
 						dataFound = true;
-						ZipUtil.addToZip(file, dirName + "/returnboxes", exportStream);
+						ZipUtil.addToZip(file, dirName + "/returnboxes", exportStream, new VFSSystemItemFilter(), false);
 					}
 				}
 			}

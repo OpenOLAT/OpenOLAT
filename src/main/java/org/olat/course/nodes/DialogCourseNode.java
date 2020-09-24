@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -307,7 +308,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		
 		VFSContainer forumContainer =  depm.getDialogContainer(element);
 		for(VFSItem item: forumContainer.getItems(new VFSLeafFilter())) {
-			ZipUtil.addToZip(item, exportDirName, exportStream);
+			ZipUtil.addToZip(item, exportDirName, exportStream, new VFSSystemItemFilter(), false);
 		}
 		
 		try {

@@ -619,7 +619,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				
 				if(gtaManager.firstStep(gtaNode) == TaskProcess.solution) {
 					assignedTask = gtaManager.ensureTaskExists(assignedTask, assessedGroup, assessedIdentity, courseEntry, gtaNode);
-					gtaManager.syncAssessmentEntry(assignedTask, gtaNode, userCourseEnv, getIdentity(), Role.user);
+					gtaManager.syncAssessmentEntry(assignedTask, gtaNode, userCourseEnv, false, getIdentity(), Role.user);
 				}
 			} else {
 				VelocityContainer waitVC = createVelocityContainer("no_solutions_foryou");

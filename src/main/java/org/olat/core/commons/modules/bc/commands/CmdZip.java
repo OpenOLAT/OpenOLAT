@@ -50,6 +50,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -170,7 +171,7 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 				vfsFiles.add(item);
 			}
 		}
-		if (!ZipUtil.zip(vfsFiles, (VFSLeaf)zipFile, true)) {
+		if (!ZipUtil.zip(vfsFiles, (VFSLeaf)zipFile, new VFSSystemItemFilter(), false)) {
 			// cleanup zip file
 			zipFile.delete();				
 			status = FolderCommandStatus.STATUS_FAILED;

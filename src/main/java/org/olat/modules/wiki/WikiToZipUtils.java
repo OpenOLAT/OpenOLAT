@@ -42,6 +42,7 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.filters.VFSAllItemsFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 
 /**
@@ -116,7 +117,7 @@ public class WikiToZipUtils {
 		}
 		VFSLeaf zipFile = (VFSLeaf)rootContainer.resolve("wiki.zip");
 		if(rootContainer.resolve("wiki.zip") != null) zipFile.delete();
-		ZipUtil.zip(filesTozip, rootContainer.createChildLeaf("wiki.zip"), true);
+		ZipUtil.zip(filesTozip, rootContainer.createChildLeaf("wiki.zip"), VFSAllItemsFilter.ACCEPT_ALL, false);
 		return (VFSLeaf)rootContainer.resolve("wiki.zip");
 	}
 	
@@ -135,7 +136,7 @@ public class WikiToZipUtils {
 					exportStream.closeEntry();
 				}
 				for(VFSItem wikiItem:items) {
-					ZipUtil.addToZip(wikiItem, currentPath, exportStream);
+					ZipUtil.addToZip(wikiItem, currentPath, exportStream, VFSAllItemsFilter.ACCEPT_ALL, false);
 				}
 			}
 		}

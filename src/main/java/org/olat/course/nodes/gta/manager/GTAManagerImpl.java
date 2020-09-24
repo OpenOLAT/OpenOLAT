@@ -1019,7 +1019,7 @@ public class GTAManagerImpl implements GTAManager {
 					task = dbInstance.getCurrentEntityManager().merge(task);
 				}	
 				dbInstance.commit();
-				syncAssessmentEntry(task, cNode, null, doerIdentity, Role.user);
+				syncAssessmentEntry(task, cNode, null, false, doerIdentity, Role.user);
 				response = new AssignmentResponse(task, Status.ok);
 			}
 		} else {
@@ -1027,7 +1027,7 @@ public class GTAManagerImpl implements GTAManager {
 				((TaskImpl)currentTask).setTaskStatus(TaskProcess.submit);
 			}
 			currentTask = dbInstance.getCurrentEntityManager().merge(currentTask);
-			syncAssessmentEntry(currentTask, cNode, null, doerIdentity, Role.user);
+			syncAssessmentEntry(currentTask, cNode, null, false, doerIdentity, Role.user);
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
 		
@@ -1150,7 +1150,7 @@ public class GTAManagerImpl implements GTAManager {
 				TaskImpl task = createTask(taskName, reloadedTasks, nextStep, businessGroup, identity, cNode);
 				task.setAssignmentDate(new Date());
 				dbInstance.getCurrentEntityManager().persist(task);
-				syncAssessmentEntry(task, cNode, null, doerIdentity, Role.user);
+				syncAssessmentEntry(task, cNode, null, false, doerIdentity, Role.user);
 				response = new AssignmentResponse(task, Status.ok);
 			}
 			dbInstance.commit();
@@ -1163,7 +1163,7 @@ public class GTAManagerImpl implements GTAManager {
 				}
 			}
 			currentTask = dbInstance.getCurrentEntityManager().merge(currentTask);
-			syncAssessmentEntry(currentTask, cNode, null, doerIdentity, Role.user);
+			syncAssessmentEntry(currentTask, cNode, null, false, doerIdentity, Role.user);
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
 		return response;
@@ -1415,7 +1415,7 @@ public class GTAManagerImpl implements GTAManager {
 		taskImpl.setTaskStatus(nextStep);
 		TaskImpl mergedTask = dbInstance.getCurrentEntityManager().merge(taskImpl);
 		dbInstance.commit();//make the thing definitive
-		syncAssessmentEntry(mergedTask, cNode, null, doerIdentity, by);
+		syncAssessmentEntry(mergedTask, cNode, null, incrementUserAttempts, doerIdentity, by);
 		return mergedTask;
 	}
 	
@@ -1644,7 +1644,7 @@ public class GTAManagerImpl implements GTAManager {
 		taskImpl.setTaskStatus(newStatus);
 		syncDates(taskImpl, newStatus);
 		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
-		syncAssessmentEntry(taskImpl, cNode, null, doerIdentity, by);
+		syncAssessmentEntry(taskImpl, cNode, null, incrementUserAttempts, doerIdentity, by);
 		
 		// mark the publishers
 		OLATResource resource = taskImpl.getTaskList().getEntry().getOlatResource();
@@ -1695,7 +1695,7 @@ public class GTAManagerImpl implements GTAManager {
 		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
 		//log date
 		createAndPersistTaskRevisionDate(taskImpl, iteration, newStatus);
-		syncAssessmentEntry(taskImpl, cNode, null, doerIdentity, by);
+		syncAssessmentEntry(taskImpl, cNode, null, incrementUserAttempts, doerIdentity, by);
 		return taskImpl;
 	}
 
@@ -1763,7 +1763,7 @@ public class GTAManagerImpl implements GTAManager {
 
 	@Override
 	public boolean syncAssessmentEntry(Task taskImpl, GTACourseNode cNode,
-			UserCourseEnvironment assessedUserCourseEnv, Identity doerIdentity, Role by) {
+			UserCourseEnvironment assessedUserCourseEnv, boolean incrementUserAttempts, Identity doerIdentity, Role by) {
 		if(taskImpl == null || taskImpl.getTaskStatus() == null || cNode == null) return false;
 		
 		TaskList taskList = getTaskList(taskImpl);
@@ -1782,7 +1782,7 @@ public class GTAManagerImpl implements GTAManager {
 				}
 				AssessmentEvaluation scoreEvaluation = courseAssessmentService.getAssessmentEvaluation(cNode, userCourseEnv);
 				AssessmentEvaluation newScoreEvaluation = new AssessmentEvaluation(scoreEvaluation, assessmentStatus);
-	 			courseAssessmentService.saveScoreEvaluation(cNode, doerIdentity, newScoreEvaluation, userCourseEnv, false, by);
+	 			courseAssessmentService.saveScoreEvaluation(cNode, doerIdentity, newScoreEvaluation, userCourseEnv, incrementUserAttempts, by);
 	 			if(doerIdentity != null && doerIdentity.equals(assessedIdentity)) {
 	 				currentAssessmentStatus = scoreEvaluation.getAssessmentStatus();
 	 			}
@@ -1799,7 +1799,7 @@ public class GTAManagerImpl implements GTAManager {
 			AssessmentEvaluation scoreEvaluation = courseAssessmentService.getAssessmentEvaluation(cNode, userCourseEnv);
 			currentAssessmentStatus = scoreEvaluation.getAssessmentStatus();
 			AssessmentEvaluation newScoreEvaluation = new AssessmentEvaluation(scoreEvaluation, assessmentStatus);
- 			courseAssessmentService.saveScoreEvaluation(cNode, doerIdentity, newScoreEvaluation, userCourseEnv, false, by);
+ 			courseAssessmentService.saveScoreEvaluation(cNode, doerIdentity, newScoreEvaluation, userCourseEnv, incrementUserAttempts, by);
 		}
 		return currentAssessmentStatus != assessmentStatus;
 	}

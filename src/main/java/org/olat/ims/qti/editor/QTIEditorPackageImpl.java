@@ -58,6 +58,7 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.filters.VFSAllItemsFilter;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -303,7 +304,7 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 		files.add(ImsRepositoryResolver.QTI_FILE);
 		files.add("media");
 		files.add("changelog");
-		return ZipUtil.zip(files, packageDir, fOut, false);
+		return ZipUtil.zip(files, packageDir, fOut, VFSAllItemsFilter.ACCEPT_ALL, false);
 	}
 	
 	/**

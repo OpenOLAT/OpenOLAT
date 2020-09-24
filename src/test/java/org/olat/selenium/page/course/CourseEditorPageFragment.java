@@ -403,31 +403,20 @@ public class CourseEditorPageFragment {
 		OOGraphene.waitBusy(browser);
 		//popup
 		By referenceableEntriesBy = By.className("o_sel_search_referenceable_entries");
-		OOGraphene.waitElement(referenceableEntriesBy, 1, browser);
+		OOGraphene.waitElement(referenceableEntriesBy, browser);
 		WebElement popup = browser.findElement(referenceableEntriesBy);
 		popup.findElement(By.cssSelector("a.o_sel_repo_popup_my_resources")).click();
 		OOGraphene.waitBusy(browser);
 		
 		//find the row
-		WebElement selectRow = null;
-		List<WebElement> rows = popup.findElements(By.cssSelector("div.o_segments_content table.o_table tr"));
-		for(WebElement row:rows) {
-			String text = row.getText();
-			if(text.contains(resourceTitle)) {
-				selectRow = row;
-				break;
-			}
-		}
-		Assert.assertNotNull(selectRow);
-		
-		//find the select in the row
-		selectRow.findElement(By.xpath("//a[contains(@onclick,'rtbSelectLink')]")).click();
+		By rowBy = By.xpath("//div[contains(@class,'')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + resourceTitle + "')]]");
+		OOGraphene.waitElement(rowBy, browser);
+		browser.findElement(rowBy).click();
 		OOGraphene.waitBusy(browser);
 		
 		//double check that the resource is selected (search the preview link)
 		By previewLink = By.xpath("//a/span[text()[contains(.,'" + resourceTitle + "')]]");
-		browser.findElement(previewLink);
-
+		OOGraphene.waitElement(previewLink, browser);
 		return this;
 	}
 	
