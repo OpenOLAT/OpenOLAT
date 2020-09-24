@@ -30,6 +30,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.filters.VFSRevisionsAndThumbnailsFilter;
 
 /**
  * 
@@ -42,10 +43,12 @@ public class ZippedContainerMediaResource implements MediaResource {
 	private static final Logger log = Tracing.createLoggerFor(ZippedContainerMediaResource.class);
 	
 	private final String filename;
+	private final boolean withMetadata;
 	private final VFSContainer unzipContainer;
 	
-	public ZippedContainerMediaResource(String filename, VFSContainer unzipContainer) {
+	public ZippedContainerMediaResource(String filename, VFSContainer unzipContainer, boolean withMetadata) {
 		this.filename = filename;
+		this.withMetadata = withMetadata;
 		this.unzipContainer = unzipContainer;
 	}
 
@@ -91,7 +94,7 @@ public class ZippedContainerMediaResource implements MediaResource {
 		hres.setHeader("Content-Description", urlEncodedLabel);
 	
 		try(OutputStream out=hres.getOutputStream()) {
-			ZipUtil.zip(unzipContainer, out);
+			ZipUtil.zip(unzipContainer, out, new VFSRevisionsAndThumbnailsFilter(), withMetadata);
 		} catch (IOException e) {
 			log.error("", e);
 		}

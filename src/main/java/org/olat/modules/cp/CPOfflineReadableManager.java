@@ -53,6 +53,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.filters.VFSAllItemsFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.cp.CPManifestTreeModel.UserObject;
 
@@ -306,10 +307,9 @@ public class CPOfflineReadableManager {
 		for (int i = 0; i < cpFiles.length; i++) {
 			allFilesInUnzippedDir.add(cpFiles[i]);
 		}
-		boolean zipResult = ZipUtil.zip(allFilesInUnzippedDir, unzippedDir, targetZip, true);
-
-		if(!targetZip.exists()){
-			log.warn("targetZip does not exists after zipping. zip-result is: "+ zipResult);
+		boolean zipResult = ZipUtil.zip(allFilesInUnzippedDir, unzippedDir, targetZip, VFSAllItemsFilter.ACCEPT_ALL, false);
+		if(!targetZip.exists()) {
+			log.warn("targetZip does not exists after zipping. zip-result is: {}", zipResult);
 		}
 	}
 

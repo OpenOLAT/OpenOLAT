@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSRevisionsAndThumbnailsFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -202,7 +203,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		File fNodeExportDir = new File(exportDirectory, getIdent());
 		fNodeExportDir.mkdirs();
 		File outputFile = new File(fNodeExportDir, "oonode.zip");
-		ZipUtil.zip(nodeContainer, outputFile);
+		ZipUtil.zip(nodeContainer, outputFile, new VFSRevisionsAndThumbnailsFilter(), true);
 	}
 
 	@Override

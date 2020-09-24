@@ -54,6 +54,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -302,7 +303,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 						} else {
 							usedNames.add(checkbox.getTitle());
 						}
-						ZipUtil.addToZip(item, path, exportStream);
+						ZipUtil.addToZip(item, path, exportStream, new VFSSystemItemFilter(), false);
 					}
 				}
 			}

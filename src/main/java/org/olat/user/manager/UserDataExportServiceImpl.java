@@ -184,7 +184,7 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 		// make zip
 		File[] files = archiveDirectory.listFiles(SystemFileFilter.DIRECTORY_FILES);
 		Set<String> filenames = Arrays.stream(files).map(File::getName).collect(Collectors.toSet());
-		ZipUtil.zip(filenames, archiveDirectory, archive);
+		ZipUtil.zip(filenames, archiveDirectory, archive, false);
 		// delete the temporary files
 		for(File file:files) {
 			FileUtils.deleteDirsAndFiles(file, true, true);

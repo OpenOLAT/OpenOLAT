@@ -47,6 +47,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 
 /**
  * 
@@ -194,7 +195,7 @@ public class CmdDownloadZip implements FolderCommand {
 				}
 				
 				for (VFSItem item:vfsFiles) {
-					ZipUtil.addToZip(item, "", zout);
+					ZipUtil.addToZip(item, "", zout, new VFSSystemItemFilter(), false);
 				}
 				zout.flush();
 			} catch (IOException e) {

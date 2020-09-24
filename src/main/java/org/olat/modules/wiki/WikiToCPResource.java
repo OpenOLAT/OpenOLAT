@@ -21,6 +21,7 @@ package org.olat.modules.wiki;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -39,6 +40,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.filters.VFSAllItemsFilter;
 import org.olat.modules.cp.CPOfflineReadableManager;
 
 /**
@@ -127,19 +129,19 @@ public class WikiToCPResource implements MediaResource {
 		// create the ims manifest
 		String manifest = export.createIMSManifest(wiki, identity);
 		zout.putNextEntry(new ZipEntry("imsmanifest.xml"));
-		IOUtils.write(manifest, zout, "UTF-8");
+		IOUtils.write(manifest, zout, StandardCharsets.UTF_8);
 		zout.closeEntry();
 
 		VFSContainer mediaContainer = WikiManager.getInstance().getMediaFolder(ores);
 		List<VFSItem> images = mediaContainer.getItems();
 		for (VFSItem image:images) {
-			ZipUtil.addToZip(image, "", zout);
+			ZipUtil.addToZip(image, "", zout, VFSAllItemsFilter.ACCEPT_ALL, false);
 		}
 
 		// create the javascript mapping file
 		String jsContent = export.createJsMappingContent(wiki);
 		zout.putNextEntry(new ZipEntry("mapping.js"));
-		IOUtils.write(jsContent, zout, "UTF-8");
+		IOUtils.write(jsContent, zout, StandardCharsets.UTF_8);
 		zout.closeEntry();
 		
 		
@@ -147,7 +149,7 @@ public class WikiToCPResource implements MediaResource {
 		for (WikiPage page: pages) {
 			String htmlPage = export.wikiPageToHtml(page);
 			zout.putNextEntry(new ZipEntry(page.getPageId() + ".html"));
-			IOUtils.write(htmlPage, zout, "UTF-8");
+			IOUtils.write(htmlPage, zout, StandardCharsets.UTF_8);
 			zout.closeEntry();
 		}
 		

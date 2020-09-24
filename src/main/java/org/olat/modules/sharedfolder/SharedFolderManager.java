@@ -93,7 +93,7 @@ public class SharedFolderManager {
 		VFSContainer sharedFolder = getSharedFolder(res);
 		// do intermediate commit to avoid transaction timeout
 		DBFactory.getInstance().intermediateCommit();
-		return new ZippedContainerMediaResource(exportFileName, sharedFolder);
+		return new ZippedContainerMediaResource(exportFileName, sharedFolder, true);
 	}
 
 	public boolean exportSharedFolder(String sharedFolderSoftkey, File exportedDataDir) {

@@ -635,7 +635,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 					if (!VFSManager.isDirectoryAndNotEmpty(userFolder))
 						continue;
 					String path = exportDirName + "/dropboxes/" + themaItem.getName();
-					ZipUtil.addToZip(userFolder, path, exportStream);
+					ZipUtil.addToZip(userFolder, path, exportStream, new VFSSystemItemFilter(), false);
 				}
 			}
 		}
@@ -650,7 +650,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 					if (!VFSManager.isDirectoryAndNotEmpty(userFolder))
 						continue;
 					String path = exportDirName + "/returnboxes/" + themaItem.getName();
-					ZipUtil.addToZip(userFolder, path, exportStream);
+					ZipUtil.addToZip(userFolder, path, exportStream, new VFSSystemItemFilter(), false);
 				}
 			}
 		}

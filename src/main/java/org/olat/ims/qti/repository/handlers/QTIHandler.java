@@ -106,7 +106,7 @@ public abstract class QTIHandler extends FileHandler {
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
 		File zipDir = new File(fResourceFileroot, FileResourceManager.ZIPDIR);
 		FileResource.copyResource(file, filename, zipDir);
-		ZipUtil.zipAll(zipDir, new File(fResourceFileroot, "qti.zip"));
+		ZipUtil.zipAll(zipDir, new File(fResourceFileroot, "qti.zip"), false);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname, description,
 				resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
@@ -124,7 +124,7 @@ public abstract class QTIHandler extends FileHandler {
 
 		File targetDir = new File(targetRootDir, FileResourceManager.ZIPDIR);
 		FileResource.copyResource(sourceFile, sourceFile.getName(), targetDir, new ChangeLogFilter());
-		ZipUtil.zipAll(targetDir, new File(targetRootDir, "qti.zip"));
+		ZipUtil.zipAll(targetDir, new File(targetRootDir, "qti.zip"), false);
 		return target;
 	}
 	

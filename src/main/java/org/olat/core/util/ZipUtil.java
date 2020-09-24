@@ -68,6 +68,8 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSAllItemsFilter;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 
 /**
@@ -543,10 +545,11 @@ public class ZipUtil {
 	 * @param files		Filenames to add to ZIP, relative to root
 	 * @param root		Base path.
 	 * @param target	Target ZIP file.
-	 * @param compress to compress ot just store
-	 * @return true if successfull, false otherwise.
+	 * @param filter    Filter to accept files in the ZIP
+	 * @param withMetadata Add metadata as shadow file
+	 * @return true if successful, false otherwise.
 	 */
-	public static boolean zip(Set<String> files, File root, File target, boolean compress) {
+	public static boolean zip(Set<String> files, File root, File target, VFSItemFilter filter, boolean withMetadata) {
 		//	Create a buffer for reading the files
 		if (target.exists()) return false;
 		List<VFSItem> vfsFiles = new ArrayList<>();
@@ -558,8 +561,8 @@ public class ZipUtil {
 			}
 			vfsFiles.add(item);
 		}
-		return zip(vfsFiles, new LocalFileImpl(target), compress);
-	} // zip
+		return zip(vfsFiles, new LocalFileImpl(target), filter, withMetadata);
+	}
 	
 	/**
 	 * Add the set of files residing in root to the ZIP file named target.
@@ -568,11 +571,11 @@ public class ZipUtil {
 	 * @param files		Filenames to add to ZIP, relative to root
 	 * @param root		Base path.
 	 * @param target	Target ZIP file.
-	 * @param compress to compress ot just store
-	 * @return true if successfull, false otherwise.
+	 * @param withMetadata Add metadata as shadow file
+	 * @return true if successful, false otherwise.
 	 */
-	public static boolean zip(Set<String> files, File root, File target) {
-		return zip(files, root, target, true);
+	public static boolean zip(Set<String> files, File root, File target, boolean withMetadata) {
+		return zip(files, root, target, VFSAllItemsFilter.ACCEPT_ALL, withMetadata);
 	}
 	
 	/**
@@ -583,9 +586,9 @@ public class ZipUtil {
 	 * @param outputFile The output ZIP file
 	 * @return true if successful
 	 */
-	public static boolean zip(VFSContainer container, File outputFile) {
+	public static boolean zip(VFSContainer container, File outputFile, VFSItemFilter filter, boolean withMetadata) {
 		try(OutputStream out = new FileOutputStream(outputFile)) {
-			zip(container, out);
+			zip(container, out, filter, withMetadata);
 			return true;
 		} catch(IOException e) {
 			handleIOException("", e);
@@ -601,11 +604,11 @@ public class ZipUtil {
 	 * @param out The output stream
 	 * @return true if successful
 	 */
-	public static boolean zip(VFSContainer container, OutputStream out) {
+	public static boolean zip(VFSContainer container, OutputStream out, VFSItemFilter filter, boolean withMetadata) {
 		try(ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(out, FileUtils.BSIZE))) {
 			List<VFSItem> items=container.getItems(new VFSSystemItemFilter());
 			for(VFSItem item:items) {
-				addToZip(item, "", zipOut);
+				addToZip(item, "", zipOut, filter, withMetadata);
 			}
 			return true;
 		} catch(IOException e) {
@@ -614,7 +617,7 @@ public class ZipUtil {
 		}
 	}
 	
-	public static boolean zip(List<VFSItem> vfsFiles, VFSLeaf target, boolean compress) {
+	public static boolean zip(List<VFSItem> vfsFiles, VFSLeaf target, VFSItemFilter filter, boolean withMetadata) {
 		boolean success = true;
 		
 		String zname = target.getName();
@@ -624,9 +627,9 @@ public class ZipUtil {
 
 		try(OutputStream out = target.getOutputStream(false);
 				ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(out, FileUtils.BSIZE))) {
-			zipOut.setLevel(compress?9:0);
+			zipOut.setLevel(9);
 			for (VFSItem item:vfsFiles) {
-				success = addToZip(item, "", zipOut);
+				success = addToZip(item, "", zipOut, filter, withMetadata);
 			}
 			zipOut.flush();
 		} catch (IOException e) {
@@ -636,39 +639,43 @@ public class ZipUtil {
 		return success;
 	}
 	
-	public static boolean addToZip(VFSItem vfsItem, String currentPath, ZipOutputStream out) {
+	public static boolean addToZip(VFSItem vfsItem, String currentPath, ZipOutputStream out, VFSItemFilter filter, boolean withMetadata) {
 		boolean success = true;
 		try {
+			if(filter == null) {
+				filter = VFSAllItemsFilter.ACCEPT_ALL;
+			}
+			
 			// The separator / is the separator defined by the ZIP standard
 			String itemName = currentPath.length() == 0 ?
 					vfsItem.getName() : currentPath + "/" + vfsItem.getName();
+			if(filter.accept(vfsItem)) {
+				if (vfsItem instanceof VFSContainer ) {
+					out.putNextEntry(new ZipEntry(itemName + "/"));
+					out.closeEntry();
 					
-			if (vfsItem instanceof VFSContainer) {
-				out.putNextEntry(new ZipEntry(itemName + "/"));
-				out.closeEntry();
-				
-				List<VFSItem> items = ((VFSContainer)vfsItem).getItems();
-				for (VFSItem item:items) {
-					if (!addToZip(item, itemName, out)) {
-						success = false;
-						break;
+					List<VFSItem> items = ((VFSContainer)vfsItem).getItems();
+					for (VFSItem item:items) {
+						if (!addToZip(item, itemName, out, filter, withMetadata)) {
+							success = false;
+							break;
+						}
 					}
-				}
-				
-			} else {
-				VFSLeaf leaf = (VFSLeaf)vfsItem;
-				ZipEntry entry = new ZipEntry(itemName);
-				out.putNextEntry(entry);
-				copyShielded(leaf, out);
-				out.closeEntry();
-				
-				if(leaf.canMeta() == VFSConstants.YES) {
-					byte[] metadata = MetaInfoReader.toBinaries(leaf.getMetaInfo());
-					if(metadata != null && metadata.length > 0) {
-						ZipEntry metaEntry = new ZipEntry("._oo_meta_".concat(itemName));
-						out.putNextEntry(metaEntry);
-						out.write(metadata);
-						out.closeEntry();
+				} else {
+					VFSLeaf leaf = (VFSLeaf)vfsItem;
+					ZipEntry entry = new ZipEntry(itemName);
+					out.putNextEntry(entry);
+					copyShielded(leaf, out);
+					out.closeEntry();
+					
+					if(withMetadata && leaf.canMeta() == VFSConstants.YES) {
+						byte[] metadata = MetaInfoReader.toBinaries(leaf.getMetaInfo());
+						if(metadata != null && metadata.length > 0) {
+							ZipEntry metaEntry = new ZipEntry(currentPath + "/._oo_meta_".concat(vfsItem.getName()));
+							out.putNextEntry(metaEntry);
+							out.write(metadata);
+							out.closeEntry();
+						}
 					}
 				}
 			}
@@ -689,16 +696,16 @@ public class ZipUtil {
 	 * 
 	 * @param rootFile
 	 * @param targetZipFile
-	 * @param compress to compress or just store (if already compressed)
+	 * @param withMetadata A metadata as shadow file
 	 * @return true = success, false = exception/error
 	 */
-	public static boolean zipAll(File rootFile, File targetZipFile, boolean compress) {
+	public static boolean zipAll(File rootFile, File targetZipFile, boolean withMetadata) {
 		Set<String> fileSet = new HashSet<>();
 		String[] files = rootFile.list();
 		for (int i = 0; i < files.length; i++) {
 			fileSet.add(files[i]);
 		}		
-		return zip(fileSet, rootFile, targetZipFile, compress);
+		return zip(fileSet, rootFile, targetZipFile, VFSAllItemsFilter.ACCEPT_ALL, withMetadata);
 	}
 	
 	/**
@@ -830,17 +837,6 @@ public class ZipUtil {
 		} catch (IOException e) {
 			handleIOException("", e);
 		}
-	}
-	
-	/**
-	 * Zip all files under a certain root directory. (with compression)
-	 * 
-	 * @param rootFile
-	 * @param targetZipFile
-	 * @return true = success, false = exception/error
-	 */
-	public static boolean zipAll(File rootFile, File targetZipFile) {
-		return zipAll(rootFile, targetZipFile, true);
 	}
 	
 	/**

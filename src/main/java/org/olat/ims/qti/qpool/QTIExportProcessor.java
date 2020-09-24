@@ -49,6 +49,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.editor.QTIEditHelper;
@@ -84,7 +85,7 @@ public class QTIExportProcessor {
 		List<VFSItem> items = container.getItems();
 		addMetadata(fullItem, rootDir, zout);
 		for(VFSItem item:items) {
-			ZipUtil.addToZip(item, rootDir, zout);
+			ZipUtil.addToZip(item, rootDir, zout, new VFSSystemItemFilter(), false);
 		}
 	}
 	
