@@ -268,7 +268,7 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 				AssessmentEntry assessmentEntry, boolean author) {
 			AssessmentTestSession lastSession = qtiService.getResumableAssessmentItemsSession(getIdentity(), null, courseEntry, subIdent, testEntry, author);
 			if(lastSession == null) {
-				candidateSession = qtiService.createAssessmentTestSession(getIdentity(), null, assessmentEntry, courseEntry, subIdent, testEntry, author);
+				candidateSession = qtiService.createAssessmentTestSession(getIdentity(), null, assessmentEntry, courseEntry, subIdent, testEntry, null, author);
 				return candidateSession;
 			}
 			return lastSession;

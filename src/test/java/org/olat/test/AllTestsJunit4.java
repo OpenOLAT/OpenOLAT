@@ -219,6 +219,8 @@ import org.junit.runners.Suite;
 	org.olat.modules.bigbluebutton.manager.BigBlueButtonMeetingTemplateDAOTest.class,
 	org.olat.modules.bigbluebutton.manager.BigBlueButtonRecordingReferenceDAOTest.class,
 	org.olat.modules.bigbluebutton.manager.BigBlueButtonUriBuilderTest.class,
+	org.olat.modules.dcompensation.manager.DisadvantageCompensationDAOTest.class,
+	org.olat.modules.dcompensation.manager.DisadvantageCompensationAuditLogDAOTest.class,
 	org.olat.modules.iq.IQManagerTest.class,
 	org.olat.modules.fo.ForumManagerTest.class,//fail
 	org.olat.modules.wiki.WikiUnitTest.class,

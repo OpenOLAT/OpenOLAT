@@ -23,13 +23,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
@@ -58,7 +59,7 @@ public class AssessmentSessionAuditFileLog implements AssessmentSessionAuditLogg
 	public AssessmentSessionAuditFileLog(OutputStream outputStream) throws IOException {
 		this.outputStream = outputStream;
 		debugLog = Settings.isDebuging() ? new AssessmentSessionAuditOLog() : new DefaultAssessmentSessionAuditLogger();
-		writer = new OutputStreamWriter(outputStream, "UTF-8");
+		writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
 	}
 	
 	@Override
@@ -142,10 +143,13 @@ public class AssessmentSessionAuditFileLog implements AssessmentSessionAuditLogg
 	}
 
 	@Override
-	public void logTestExtend(AssessmentTestSession candidateSession, int extraTime, Identity coach) {
+	public void logTestExtend(AssessmentTestSession candidateSession, int extraTime, boolean compensation, Identity coach) {
 		try {
 			AuditLogFormatter.logDate(writer);
 			writer.write("Test session extened " + extraTime + " by " + coach.getKey());
+			if(compensation) {
+				writer.write(" (compensation for disadvantages)");
+			}
 			writer.write("\n");
 			writer.flush();
 			debugLog.logTestRetrieved(candidateSession, coach);
@@ -161,6 +165,6 @@ public class AssessmentSessionAuditFileLog implements AssessmentSessionAuditLogg
 
 	@Override
 	public void close() {
-		IOUtils.closeQuietly(outputStream);
+		FileUtils.closeSafely(outputStream);
 	}
 }

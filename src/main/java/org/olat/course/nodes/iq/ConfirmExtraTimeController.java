@@ -73,7 +73,7 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("fullnames", sessionToFullnames());
-			if(assessmentModes.size() > 0) {
+			if(!assessmentModes.isEmpty()) {
 				currentAssessmentModeMessage(layoutCont);
 			}
 		}
@@ -138,7 +138,7 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		extraTimeInMinEl.clearError();
 		if(StringHelper.containsNonWhitespace(extraTimeInMinEl.getValue())) {
@@ -157,7 +157,7 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

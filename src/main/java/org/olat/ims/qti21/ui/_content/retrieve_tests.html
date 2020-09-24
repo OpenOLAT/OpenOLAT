@@ -1,4 +1,9 @@
 <div>$msg</div>
+#if($r.visible("with.compensation"))
+<div>
+	$r.render("with.compensation")
+</div>
+#end
 <div class="o_button_group">
 	$r.render("cancel")
 	$r.render("menu.retrieve.tests.title")

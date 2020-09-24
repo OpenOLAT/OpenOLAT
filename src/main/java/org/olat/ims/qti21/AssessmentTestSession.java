@@ -75,6 +75,11 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	public Integer getExtraTime();
 	
 	/**
+	 * @return The additional time in seconds for compensation for disadvantage
+	 */
+	public Integer getCompensationExtraTime();
+	
+	/**
 	 * @return The score + manual score
 	 */
 	@Transient

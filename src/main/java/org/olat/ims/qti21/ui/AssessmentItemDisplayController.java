@@ -238,7 +238,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	
 	protected AssessmentTestSession initOrResumeAssessmentTestSession(RepositoryEntry courseEntry, String subIdent, RepositoryEntry referenceEntry,
 			AssessmentEntry assessmentEntry, boolean authorMode) {
-		return qtiService.createAssessmentTestSession(getIdentity(), null, assessmentEntry, courseEntry, subIdent, referenceEntry, authorMode);
+		return qtiService.createAssessmentTestSession(getIdentity(), null, assessmentEntry, courseEntry, subIdent, referenceEntry, null, authorMode);
 	}
 	
 	private void initQtiWorks(UserRequest ureq) {

@@ -558,8 +558,9 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	@Override
 	public AssessmentTestSession createAssessmentTestSession(Identity identity, String anonymousIdentifier,
 			AssessmentEntry assessmentEntry,  RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,
-			boolean authorMode) {
-		return testSessionDao.createAndPersistTestSession(testEntry, entry, subIdent, assessmentEntry, identity, anonymousIdentifier, authorMode);
+			Integer compensationExtraTime, boolean authorMode) {
+		return testSessionDao.createAndPersistTestSession(testEntry, entry, subIdent, assessmentEntry,
+				identity, anonymousIdentifier, compensationExtraTime, authorMode);
 	}
 
 	@Override
@@ -973,104 +974,26 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		testSessionDao.extraTime(session, extraTime);
 		dbInstance.commit();//commit before event
 		
-
 		AssessmentSessionAuditLogger candidateAuditLogger = getAssessmentSessionAuditLogger(session, false);
-		candidateAuditLogger.logTestExtend(session, extraTime, actor);
+		candidateAuditLogger.logTestExtend(session, extraTime, false, actor);
 		
 		RetrieveAssessmentTestSessionEvent event = new RetrieveAssessmentTestSessionEvent(session.getKey());
 		OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, sessionOres);
 	}
-	/*
+	
 	@Override
-	public AssessmentTestSession reopenAssessmentTestSession(AssessmentTestSession session, Identity actor) {
-		// update test session on the database
-		AssessmentTestSession reloadedSession = testSessionDao.loadByKey(session.getKey());
-
-		//update the XMl test session state
-		TestSessionState testSessionState = loadTestSessionState(reloadedSession);
-		testSessionState.setEndTime(null);
-		testSessionState.setExitTime(null);
-		for(TestPartSessionState testPartSessionState:testSessionState.getTestPartSessionStates().values()) {
-			testPartSessionState.setEndTime(null);
-			testPartSessionState.setExitTime(null);
-		}
-		for(AssessmentSectionSessionState sessionState:testSessionState.getAssessmentSectionSessionStates().values()) {
-			sessionState.setEndTime(null);
-			sessionState.setExitTime(null);
-		}
+	public void compensationExtraTimeAssessmentTestSession(AssessmentTestSession session, int extraTime, Identity actor) {
+		testSessionDao.compensationExtraTime(session, extraTime);
+		dbInstance.commit();//commit before event
 		
-		TestPlanNodeKey lastEntryItemKey = null;
-		ItemSessionState lastEntryItemSessionState = null;
-		for(Map.Entry<TestPlanNodeKey, ItemSessionState> entry:testSessionState.getItemSessionStates().entrySet()) {
-			ItemSessionState itemSessionState = entry.getValue();
-			itemSessionState.setEndTime(null);
-			itemSessionState.setExitTime(null);
-			if(itemSessionState.getEntryTime() != null &&
-					(lastEntryItemSessionState == null || itemSessionState.getEntryTime().after(lastEntryItemSessionState.getEntryTime()))) {
-				lastEntryItemKey = entry.getKey();
-				lastEntryItemSessionState = itemSessionState;
-			}
-		}
+		AssessmentSessionAuditLogger candidateAuditLogger = getAssessmentSessionAuditLogger(session, false);
+		candidateAuditLogger.logTestExtend(session, extraTime, true, actor);
 		
-		if(lastEntryItemKey != null) {
-			Date now = new Date();
-			TestPlan plan = testSessionState.getTestPlan();
-			TestPlanNodeKey currentTestPartKey = null;
-			for(TestPlanNode currentNode = plan.getNode(lastEntryItemKey); currentNode != null; currentNode = currentNode.getParent()) {
-				TestNodeType type = currentNode.getTestNodeType();
-				TestPlanNodeKey currentNodeKey = currentNode.getKey();
-				switch(type) {
-					case TEST_PART: {
-						currentTestPartKey = currentNodeKey;
-						TestPartSessionState state = testSessionState.getTestPartSessionStates().get(currentNodeKey);
-						if(state != null) {
-							state.setDurationIntervalStartTime(now);
-						}
-						break;
-					}
-					case ASSESSMENT_SECTION: {
-						AssessmentSectionSessionState sessionState = testSessionState.getAssessmentSectionSessionStates().get(currentNodeKey);
-						if(sessionState != null) {
-							sessionState.setDurationIntervalStartTime(now);
-						}
-						break;
-					}
-					case ASSESSMENT_ITEM_REF: {
-						ItemSessionState itemState = testSessionState.getItemSessionStates().get(currentNodeKey);
-						if(itemState != null) {
-							itemState.setDurationIntervalStartTime(now);
-						}
-						break;
-					}
-					default: {
-						//root doesn't match any session state
-						break;
-					}
-				}
-			}
-			
-			//if all the elements are started again, allow to reopen the test
-			if(currentTestPartKey != null) {
-				testSessionState.setCurrentTestPartKey(currentTestPartKey);
-				testSessionState.setCurrentItemKey(lastEntryItemKey);
-				storeTestSessionState(reloadedSession, testSessionState);
-				
-				reloadedSession.setFinishTime(null);
-				reloadedSession.setTerminationTime(null);
-				reloadedSession = testSessionDao.update(reloadedSession);
-				
-				AssessmentSessionAuditLogger candidateAuditLogger = getAssessmentSessionAuditLogger(session, false);
-				candidateAuditLogger.logTestReopen(session, actor);
-				
-				RetrieveAssessmentTestSessionEvent event = new RetrieveAssessmentTestSessionEvent(session.getKey());
-				OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
-				coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, sessionOres);
-				return reloadedSession;
-			}
-		}
-		return null;
-	}*/
+		RetrieveAssessmentTestSessionEvent event = new RetrieveAssessmentTestSessionEvent(session.getKey());
+		OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
+		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, sessionOres);
+	}
 
 	@Override
 	public AssessmentTestSession reopenAssessmentTestSession(AssessmentTestSession session, Identity actor) {

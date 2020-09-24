@@ -147,9 +147,16 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
     @Column(name="q_num_answered_questions", nullable=true, insertable=true, updatable=true)
     private Integer numOfAnsweredQuestions;
     
+    /**
+     * Can only be updated via the service
+     */
     @Column(name="q_extra_time", nullable=true, insertable=false, updatable=false)
     private Integer extraTime;
-
+    /**
+     * Can only be inserted, after need to be updated via the service
+     */
+    @Column(name="q_compensation_extra_time", nullable=true, insertable=true, updatable=false)
+    private Integer compensationExtraTime;
 
     /**
      * Flag to indicate if this session blew up while running, either because
@@ -312,6 +319,15 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 
 	public void setExtraTime(Integer extraTime) {
 		this.extraTime = extraTime;
+	}
+
+	@Override
+	public Integer getCompensationExtraTime() {
+		return compensationExtraTime;
+	}
+
+	public void setCompensationExtraTime(Integer compensationExtraTime) {
+		this.compensationExtraTime = compensationExtraTime;
 	}
 
 	@Override

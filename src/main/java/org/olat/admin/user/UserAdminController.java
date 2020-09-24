@@ -67,6 +67,7 @@ import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.ui.CurriculumListController;
+import org.olat.modules.dcompensation.ui.UserDisadvantageCompensationListController;
 import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.ui.GraderUserOverviewController;
 import org.olat.modules.lecture.LectureModule;
@@ -114,6 +115,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_EDIT_UROLES			= "edit.uroles";
 	private static final String NLS_EDIT_RELATIONS		= "edit.urelations";
 	private static final String NLS_EDIT_UQUOTA			= "edit.uquota";
+	private static final String NLS_EDIT_DISADVANTAGE	= "edit.udisadvantage";
 	private static final String NLS_VIEW_GROUPS			= "view.groups";
 	private static final String NLS_VIEW_COURSES		= "view.courses";
 	private static final String NLS_VIEW_ACCESS			= "view.access";
@@ -483,6 +485,13 @@ public class UserAdminController extends BasicController implements Activateable
 				efficicencyCtrl.setBreadcrumbPanel(efficiencyPanel);
 				efficiencyPanel.setInvisibleCrumb(1);
 				return efficiencyPanel;
+			});
+			
+			userTabP.addTab(ureq, translate(NLS_EDIT_DISADVANTAGE), uureq -> {
+				boolean canModify = isAdminOf || isRolesManagerOf;
+				Controller compensationCtrl = new UserDisadvantageCompensationListController(uureq, getWindowControl(), identity, canModify);
+				listenTo(compensationCtrl);
+				return compensationCtrl.getInitialComponent();
 			});
 		}
 

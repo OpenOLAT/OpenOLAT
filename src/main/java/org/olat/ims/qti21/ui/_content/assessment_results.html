@@ -102,6 +102,19 @@
 				</span>
 			</td>
 		</tr>
+		#if($r.isNotEmpty($extraTimeInMinutes) || $r.isNotEmpty($compensationExtraTimeInMinutes))
+		<tr class="o_qti_run_extratime">
+			<th scope="row">$r.translate("results.extra.time.label")</th>
+			<td class="o_sel_assessmenttest_extratime">
+			#if($r.isNotEmpty($extraTimeInMinutes))
+				<span><i class="o_icon o_icon_extra_time"> </i> $r.translate("results.extra.time", ${extraTimeInMinutes})</span>
+			#end
+			#if($r.isNotEmpty($compensationExtraTimeInMinutes))
+				<span><i class="o_icon o_icon_disadvantage_compensation"> </i> $r.translate("results.extra.time.compensation", ${compensationExtraTimeInMinutes})</span>
+			#end
+			</td>
+		</tr>
+		#end
 		<tr class="o_qti_run_questioninfo">
 			<th scope="row">$r.translate("question.progress.answered")</th>
 			<td>
@@ -144,11 +157,9 @@
 			<th scope="row">$r.translate("passed.yourpassed")</th>
 			<td> 
 				#if(${testResults.getCalculatedPassed().booleanValue()})	
-					<i class="o_icon o_icon_passed"></i> 
-					$r.translate("passed.yes")
+					<i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")
 				#elseif(!${testResults.getCalculatedPassed().booleanValue()})		
-					<i class="o_icon o_icon_failed"></i> 
-					$r.translate("passed.no")
+					<i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")
 				#else
 					$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
 				#end

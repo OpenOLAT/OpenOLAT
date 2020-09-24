@@ -1349,6 +1349,36 @@ create table o_as_entry (
    unique (fk_identity, fk_entry, a_subident)
 );
 
+create table o_as_compensation (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   a_subident varchar(512),
+   a_subident_name varchar(512),
+   a_extra_time bigint not null,
+   a_approved_by varchar(2000),
+   a_approval timestamp,
+   a_status varchar(32),
+   fk_identity bigint not null,
+   fk_creator bigint not null,
+   fk_entry bigint not null,
+   primary key (id)
+);
+
+create table o_as_compensation_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   a_action varchar(32) not null,
+   a_val_before mediumtext,
+   a_val_after mediumtext,
+   a_subident varchar(512),
+   fk_entry_id bigint not null,
+   fk_identity_id bigint not null,
+   fk_compensation_id bigint not null,
+   fk_author_id bigint,
+   primary key (id)
+);
+
 create table o_as_mode_course (
    id bigint not null,
    creationdate datetime not null,
@@ -1621,6 +1651,7 @@ create table o_qti_assessmenttest_session (
    q_num_questions bigint,
    q_num_answered_questions bigint,
    q_extra_time bigint,
+   q_compensation_extra_time bigint,
    q_storage varchar(1024),
    fk_reference_entry bigint not null,
    fk_entry bigint,
@@ -3352,6 +3383,8 @@ alter table o_as_eff_statement ENGINE = InnoDB;
 alter table o_as_user_course_infos ENGINE = InnoDB;
 alter table o_as_mode_course ENGINE = InnoDB;
 alter table o_as_entry ENGINE = InnoDB;
+alter table o_as_compensation ENGINE = InnoDB;
+alter table o_as_compensation_log ENGINE = InnoDB;
 alter table o_as_mode_course_to_area ENGINE = InnoDB;
 alter table o_as_mode_course_to_cur_el ENGINE = InnoDB;
 alter table o_cal_use_config ENGINE = InnoDB;
@@ -3835,6 +3868,14 @@ alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_r
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 create index idx_as_entry_start_idx on o_as_entry (a_date_start);
+
+-- disadvantage compensation
+alter table o_as_compensation add constraint compensation_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_as_compensation add constraint compensation_crea_idx foreign key (fk_creator) references o_bs_identity (id);
+alter table o_as_compensation add constraint compensation_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
+create index comp_log_entry_idx on o_as_compensation_log (fk_entry_id);
+create index comp_log_ident_idx on o_as_compensation_log (fk_identity_id);
 
 -- gotomeeting
 alter table o_goto_organizer add constraint goto_organ_owner_idx foreign key (fk_identity) references o_bs_identity (id);

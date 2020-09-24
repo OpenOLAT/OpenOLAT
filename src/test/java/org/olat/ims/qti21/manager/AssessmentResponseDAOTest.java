@@ -71,7 +71,7 @@ public class AssessmentResponseDAOTest extends OlatTestCase {
 		String responseIdentifier = UUID.randomUUID().toString();
 		
 		//make test, item and response
-		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, null, true);
+		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, null, null, true);
 		Assert.assertNotNull(testSession);
 		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, null, itemIdentifier);
 		Assert.assertNotNull(itemSession);
@@ -93,7 +93,7 @@ public class AssessmentResponseDAOTest extends OlatTestCase {
 		//make test, item and response
 		String itemIdentifier = UUID.randomUUID().toString();
 		String responseIdentifier = UUID.randomUUID().toString();
-		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, null, true);
+		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, null, null, true);
 		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, null, itemIdentifier);
 		AssessmentResponse response = responseDao.createAssessmentResponse(testSession, itemSession, responseIdentifier, ResponseLegality.VALID, ResponseDataType.FILE);
 		response.setStringuifiedResponse("Hello QTI 2.1");
@@ -117,7 +117,7 @@ public class AssessmentResponseDAOTest extends OlatTestCase {
 		//make test, item and response
 		String itemIdentifier = UUID.randomUUID().toString();
 		String responseIdentifier = UUID.randomUUID().toString();
-		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, null, true);
+		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, null, null, true);
 		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, null, itemIdentifier);
 		AssessmentResponse response = responseDao.createAssessmentResponse(testSession, itemSession, responseIdentifier, ResponseLegality.VALID, ResponseDataType.FILE);
 		response.setStringuifiedResponse("Hello QTI 2.1");

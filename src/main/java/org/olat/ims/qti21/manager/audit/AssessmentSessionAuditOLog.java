@@ -52,7 +52,7 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 		try {
 			StringOutput sb = new StringOutput(255);
 			AuditLogFormatter.log(candidateEvent, null, sb);
-			log.info(Tracing.M_AUDIT, sb.toString());
+			log.info(Tracing.M_AUDIT, sb);
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -63,7 +63,7 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 		try {
 			StringOutput sb = new StringOutput(255);
 			AuditLogFormatter.log(candidateEvent, candidateResponseMap, sb);
-			log.info(Tracing.M_AUDIT, sb.toString());
+			log.info(Tracing.M_AUDIT, sb);
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -74,7 +74,7 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 		try {
 			StringOutput sb = new StringOutput(255);
 			AuditLogFormatter.logOutcomes(outcomes, sb);
-			log.info(Tracing.M_AUDIT, sb.toString());
+			log.info(Tracing.M_AUDIT, sb);
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -92,7 +92,7 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 			}
 			sb.append(" ");
 			AuditLogFormatter.logCorrection(itemSession, coach, sb);
-			log.info(Tracing.M_AUDIT, sb.toString());
+			log.info(Tracing.M_AUDIT, sb);
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -108,7 +108,7 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 			sb.append(candidateSession.getAnonymousIdentifier());
 		}
 		sb.append(" ) retrieved by coach ").append(coach.getKey());
-		log.info(Tracing.M_AUDIT, sb.toString());
+		log.info(Tracing.M_AUDIT, sb);
 	}
 	
 	
@@ -123,11 +123,11 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 			sb.append(candidateSession.getAnonymousIdentifier());
 		}
 		sb.append(" ) reopened by coach ").append(coach.getKey());
-		log.info(Tracing.M_AUDIT, sb.toString());
+		log.info(Tracing.M_AUDIT, sb);
 	}
 
 	@Override
-	public void logTestExtend(AssessmentTestSession candidateSession, int extraTime, Identity coach) {
+	public void logTestExtend(AssessmentTestSession candidateSession, int extraTime, boolean compensation, Identity coach) {
 		StringBuilder sb = new StringBuilder(255);
 		sb.append("Test session ").append(candidateSession.getKey()).append(" (assessed identity=");
 		if(candidateSession.getIdentity() != null) {
@@ -136,7 +136,10 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 			sb.append(candidateSession.getAnonymousIdentifier());
 		}
 		sb.append(" ) extended of ").append(extraTime).append(" by coach ").append(coach.getKey());
-		log.info(Tracing.M_AUDIT, sb.toString());
+		if(compensation) {
+			sb.append(" (compensation for disadvantages)");
+		}
+		log.info(Tracing.M_AUDIT, sb);
 	}
 
 	@Override

@@ -1,0 +1,9 @@
+<div class="o_info"><p>$msg</p>
+#if($r.isNotEmpty($compensationMsg))
+	<p>$compensationMsg</p>
+#end
+</div>
+<div class="o_button_group">
+	$r.render("cancel")
+	$r.render("stop")
+</div>

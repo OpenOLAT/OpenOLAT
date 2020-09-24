@@ -48,6 +48,8 @@ public class AssessmentTestSessionExtraTime implements Persistable {
 	
     @Column(name="q_extra_time", nullable=true, insertable=false, updatable=true)
     private Integer extraTime;
+    @Column(name="q_compensation_extra_time", nullable=true, insertable=false, updatable=true)
+    private Integer compensationExtraTime;
     
     @Override
 	public Long getKey() {
@@ -64,6 +66,14 @@ public class AssessmentTestSessionExtraTime implements Persistable {
 
 	public void setExtraTime(Integer extraTime) {
 		this.extraTime = extraTime;
+	}
+
+	public Integer getCompensationExtraTime() {
+		return compensationExtraTime;
+	}
+
+	public void setCompensationExtraTime(Integer compensationExtraTime) {
+		this.compensationExtraTime = compensationExtraTime;
 	}
 
 	@Override

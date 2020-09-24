@@ -233,7 +233,7 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 		//number of selected questions
 		Integer randomSelection = null;
 		if(StringHelper.containsNonWhitespace(randomSelectedEl.getSelectedKey())) {
-			randomSelection = new Integer(randomSelectedEl.getSelectedKey());
+			randomSelection = Integer.valueOf(randomSelectedEl.getSelectedKey());
 		}
 		if(randomSelection == null || randomSelection.intValue() < 1) {
 			section.setSelection(null);

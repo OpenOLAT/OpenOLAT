@@ -103,6 +103,8 @@ import org.olat.ims.qti21.ui.event.RestartEvent;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.dcompensation.DisadvantageCompensation;
+import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -199,6 +201,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * Additional time in seconds
 	 */
 	private Integer extraTime;
+	private Integer compensationExtraTime;
 	private boolean sessionDeleted = false;
 	private final boolean showCloseResults;
 	private OutcomesListener outcomesListener;
@@ -211,6 +214,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private QTI21Service qtiService;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	/**
 	 * 
@@ -348,10 +353,19 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			boolean manualCorrections = AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
 			outcomesListener = new AssessmentEntryOutcomesListener(entry, testEntry, assessmentEntry, manualCorrections, assessmentService, authorMode);
 		}
+		
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			DisadvantageCompensation compensation = disadvantageCompensationService.getActiveDisadvantageCompensation(getIdentity(), entry, subIdent);
+			if(compensation != null) {
+				compensationExtraTime = compensation.getExtraTime();
+			} else {
+				compensationExtraTime = null;
+			}
+		}
 
 		AssessmentTestSession lastSession = qtiService.getResumableAssessmentTestSession(assessedIdentity, anonymousIdentifier, entry, subIdent, testEntry, authorMode);
 		if(lastSession == null) {
-			initNewAssessmentTestSession(ureq, assessmentEntry, authorMode);
+			initNewAssessmentTestSession(ureq, assessmentEntry, compensationExtraTime, authorMode);
 		} else {
 			candidateSession = lastSession;
 			extraTime = lastSession.getExtraTime();
@@ -365,11 +379,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				try {
 					testSessionController = resumeSession(ureq);
 					if(!checkAuthorSession()) {
-						initNewAssessmentTestSession(ureq, assessmentEntry, authorMode);
+						initNewAssessmentTestSession(ureq, assessmentEntry, compensationExtraTime, authorMode);
 					}
 				} catch(Exception e) {
 					logWarn("Cannot resume session as author", e);
-					initNewAssessmentTestSession(ureq, assessmentEntry, authorMode);
+					initNewAssessmentTestSession(ureq, assessmentEntry, compensationExtraTime, authorMode);
 				}
 			} else {
 				testSessionController = resumeSession(ureq);
@@ -377,8 +391,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 	}
 	
-	private void initNewAssessmentTestSession(UserRequest ureq, AssessmentEntry assessmentEntry, boolean authorMode) {
-		candidateSession = qtiService.createAssessmentTestSession(assessedIdentity, anonymousIdentifier, assessmentEntry, entry, subIdent, testEntry, authorMode);
+	private void initNewAssessmentTestSession(UserRequest ureq, AssessmentEntry assessmentEntry, Integer compensationTime, boolean authorMode) {
+		candidateSession = qtiService.createAssessmentTestSession(assessedIdentity, anonymousIdentifier, assessmentEntry,
+				entry, subIdent, testEntry, compensationTime, authorMode);
 		candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, authorMode);
 		testSessionController = enterSession(ureq);
 	}
@@ -491,7 +506,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		if(candidateSession != null && candidateSession.getKey().equals(rats.getAssessmentTestSessionKey())) {
 			candidateSession = qtiService.reloadAssessmentTestSession(candidateSession);
 			extraTime = candidateSession.getExtraTime();
-			if(extraTime != null) {
+			compensationExtraTime = candidateSession.getCompensationExtraTime();
+			if(extraTime != null || compensationExtraTime != null) {
 				qtiWorksCtrl.extraTime();
 			}
 		}
@@ -717,6 +733,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 */
 	private Long getAssessmentTestMaxTimeLimit() {
 		int extra = extraTime == null ? 0 : extraTime.intValue();
+		int extraCompensation = compensationExtraTime == null ? 0 : compensationExtraTime.intValue();
+		int totalExtra = extra + extraCompensation;
+		
 		Long leadingTimeInMilliSeconds = getLeadingTimeEndTestOption();
 		long leadingDuration = Long.MAX_VALUE;
 		if(leadingTimeInMilliSeconds != null) {
@@ -725,15 +744,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 		if(overrideOptions != null && overrideOptions.getAssessmentTestMaxTimeLimit() != null) {
 			long timeLimits = overrideOptions.getAssessmentTestMaxTimeLimit().longValue();
-			return timeLimits > 0 ? Math.min(leadingDuration, timeLimits) + extra : null;
+			return timeLimits > 0 ? Math.min(leadingDuration, timeLimits) + totalExtra : null;
 		}
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 		if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
 			long timeLimits = assessmentTest.getTimeLimits().getMaximum().longValue();
-			return Math.min(leadingDuration, timeLimits) + extra;
+			return Math.min(leadingDuration, timeLimits) + totalExtra;
 		}
 		if(leadingTimeInMilliSeconds != null) {
-			return leadingDuration + extra;
+			return leadingDuration + totalExtra;
 		}
 		return null;
 	}
@@ -1060,8 +1079,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
             	logError("CANNOT_SOLUTION_TEST_ITEM", null);
                 return;
             }
-        }
-        catch (final QtiCandidateStateException e) {
+        } catch (final QtiCandidateStateException e) {
             candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_SOLUTION_TEST_ITEM, e);
             logError("CANNOT_SOLUTION_TEST_ITEM", e);
         	return;

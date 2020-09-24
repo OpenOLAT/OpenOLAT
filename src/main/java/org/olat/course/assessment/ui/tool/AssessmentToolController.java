@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarUtils;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -40,8 +39,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -54,7 +51,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
-import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -97,14 +93,12 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private final ButtonGroupComponent segmentButtonsCmp;
 
 	private CloseableModalController cmc;
-	private DialogBoxController stopDialogBox;
+	private ConfirmStopAssessmentModeController stopCtrl;
 	private AssessmentCourseTreeController courseTreeCtrl;
 	private AssessmentCourseOverviewController overviewCtrl;
 	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
 	private AssessmentResetController assessmentResetCtrl;
 	
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
@@ -113,8 +107,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private AssessmentService assessmentService;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
-	@Autowired
-	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	@Autowired
 	private NodeAccessService nodeAccessService;
 	
@@ -324,10 +316,12 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			} else if(event instanceof AssessmentModeStatusEvent) {
 				assessmentModeMessage();
 			}
-		} else if(stopDialogBox == source) {
-			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				doStop((AssessmentMode)stopDialogBox.getUserObject());
+		} else if(stopCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doAfterStop();
 			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == assessmentResetCtrl) {
 			if (event instanceof AssessmentResetEvent) {
 				AssessmentResetEvent are = (AssessmentResetEvent)event;
@@ -345,9 +339,11 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private void cleanUp() {
 		removeAsListenerAndDispose(bulkAssessmentOverviewCtrl);
 		removeAsListenerAndDispose(assessmentResetCtrl);
+		removeAsListenerAndDispose(stopCtrl);
 		removeAsListenerAndDispose(cmc);
 		bulkAssessmentOverviewCtrl = null;
 		assessmentResetCtrl = null;
+		stopCtrl = null;
 		cmc = null;
 	}
 	
@@ -428,16 +424,18 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	}
 	
 	private void doConfirmStop(UserRequest ureq, AssessmentMode mode) {
+		if(guardModalController(stopCtrl)) return;
+		
+		stopCtrl = new ConfirmStopAssessmentModeController(ureq, getWindowControl(), mode);
+		listenTo(stopCtrl);
+
 		String title = translate("confirm.stop.title");
-		String text = translate("confirm.stop.text.details", new String[] { StringHelper.escapeHtml(mode.getName()) });
-		stopDialogBox = activateYesNoDialog(ureq, title, text, stopDialogBox);
-		stopDialogBox.setUserObject(mode);
+		cmc = new CloseableModalController(getWindowControl(), "close", stopCtrl.getInitialComponent(), true, title, true);
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
-	private void doStop(AssessmentMode mode) {
-		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
-		assessmentModeCoordinationService.stopAssessment(mode);
-		dbInstance.commit();
+	private void doAfterStop() {
 		assessmentModeMessage();
 		overviewCtrl.reloadAssessmentModes();
 	}

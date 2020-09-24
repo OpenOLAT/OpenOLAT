@@ -57,6 +57,7 @@ public class ExtraTimeCellRenderer implements FlexiCellRenderer {
 		if(cellValue instanceof ExtraTimeInfos) {
 			ExtraTimeInfos infos = (ExtraTimeInfos)cellValue;
 			Integer extraTimeInSeconds = infos.getExtraTimeInSeconds();
+			Integer compensationExtraTimeInSeconds = infos.getCompensationExtraTimeInSeconds();
 			
 			if(renderDueDate) {
 				if(infos.getStart() != null) {
@@ -89,9 +90,15 @@ public class ExtraTimeCellRenderer implements FlexiCellRenderer {
 						target.append(formatter.formatDateAndTime(dueDate));
 					}
 				}
-			} else if(extraTimeInSeconds != null) {
-				int extraTimeInMinutes = extraTimeInSeconds.intValue() / 60;
-				target.append("+").append(extraTimeInMinutes).append("m");
+			}  else {
+				if(extraTimeInSeconds != null) {
+					int extraTimeInMinutes = extraTimeInSeconds.intValue() / 60;
+					target.append("<i class='o_icon o_icon_extra_time'> </i> ").append("+").append(extraTimeInMinutes).append("m");
+				}
+				if(compensationExtraTimeInSeconds != null) {
+					int extraTimeInMinutes = compensationExtraTimeInSeconds.intValue() / 60;
+					target.append("<i class='o_icon o_icon_disadvantage_compensation'> </i> ").append("+").append(extraTimeInMinutes).append("m");
+				}
 			}
 		}
 	}

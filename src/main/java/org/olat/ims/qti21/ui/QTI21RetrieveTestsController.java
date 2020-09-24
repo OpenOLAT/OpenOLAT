@@ -24,13 +24,16 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,6 +57,8 @@ import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.dcompensation.DisadvantageCompensation;
+import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -68,11 +73,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QTI21RetrieveTestsController extends FormBasicController {
 
+	private MultipleSelectionElement withCompensationEl;
 	private RepositoryEntry assessedEntry;
 	private IQTESTCourseNode courseNode;
 	
 	private List<Identity> identities;
 	private List<AssessmentTestSession> sessions;
+	private Set<Long> identityKeysWithCompensations;
 	
 	@Autowired
 	private DB dbInstance;
@@ -84,6 +91,8 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	public QTI21RetrieveTestsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			AssessmentToolOptions asOptions, IQTESTCourseNode courseNode) {
@@ -92,8 +101,10 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 
 		this.courseNode = courseNode;
 		identities = getIdentities(asOptions, courseEnv);
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		sessions = qtiService
-				.getRunningAssessmentTestSession(courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
+				.getRunningAssessmentTestSession(courseEntry, courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
+		identityKeysWithCompensations = getDisadvanatgeCompensationsOfSessions(courseEntry, sessions);
 		
 		initForm(ureq);
 	}
@@ -105,6 +116,8 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 		this.courseNode = courseNode;
 		identities = Collections.singletonList(session.getIdentity());
 		sessions = Collections.singletonList(session);
+		identityKeysWithCompensations = getDisadvanatgeCompensationsOfSessions(session.getRepositoryEntry(), sessions);
+		
 		initForm(ureq);
 	}
 	
@@ -116,6 +129,21 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 		identities = getIdentities(asOptions, null);
 		sessions = qtiService.getRunningAssessmentTestSession(assessedEntry, null, assessedEntry);
 		initForm(ureq);
+	}
+	
+	private Set<Long> getDisadvanatgeCompensationsOfSessions(RepositoryEntry courseEntry, List<AssessmentTestSession> sessionsList) {
+		if(courseNode == null) return Collections.emptySet();
+		
+		Set<Long> identityKeys = sessionsList.stream()
+				.map(session -> session.getIdentity().getKey())
+				.collect(Collectors.toSet());
+		
+		List<DisadvantageCompensation> allCompensations = disadvantageCompensationService
+				.getDisadvantageCompensations(courseEntry, courseNode.getIdent());
+		return allCompensations.stream()
+				.filter(compensation -> identityKeys.contains(compensation.getIdentity().getKey()))
+				.map(compensation -> compensation.getIdentity().getKey())
+				.collect(Collectors.toSet());
 	}
 	
 	private List<Identity> getIdentities(AssessmentToolOptions asOptions, CourseEnvironment courseEnv) {
@@ -164,6 +192,13 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 			layoutCont.contextPut("msg", msg);
 		}
 		
+		if(!identityKeysWithCompensations.isEmpty()) {
+			KeyValues keyValues = new KeyValues();
+			keyValues.add(KeyValues.entry("on", translate("retrievetest.confirm.with.compensation")));
+			withCompensationEl = uifactory.addCheckboxesHorizontal("with.compensation", null, formLayout,
+					keyValues.keys(), keyValues.values());
+		}
+		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("menu.retrieve.tests.title", formLayout);
 	}
@@ -175,8 +210,12 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		boolean withCompensations = withCompensationEl != null && withCompensationEl.isAtLeastSelected(1);
 		for(AssessmentTestSession session:sessions) {
-			doRetrieveTest(session);
+			boolean compensation = identityKeysWithCompensations.contains(session.getIdentity().getKey());
+			if(!compensation || withCompensations) {
+				doRetrieveTest(session);
+			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

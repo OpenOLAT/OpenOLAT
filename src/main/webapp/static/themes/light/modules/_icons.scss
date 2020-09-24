@@ -117,6 +117,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_description:before { content: $fa-var-info-circle; }
 .o_icon_dev:before { content: $fa-var-bug;}
 .o_icon_disabled:before { content: $fa-var-circle-o;}
+.o_icon_disadvantage_compensation:before { content: $fa-var-universal-access;}
 .o_icon_dispensation_authorized:before { content: $fa-var-check-circle-o; color: $brand-success }
 .o_icon_dispensation_unauthorized:before { content: $fa-var-exclamation-triangle; color: $brand-warning }
 .o_icon_download:before { content: $fa-var-download;}

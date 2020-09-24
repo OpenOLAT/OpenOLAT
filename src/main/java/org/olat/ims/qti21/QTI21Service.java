@@ -215,7 +215,7 @@ public interface QTI21Service {
 	
 	public AssessmentTestSession createAssessmentTestSession(Identity identity, String anonymousIdentifier,
 			AssessmentEntry assessmentEntry, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,
-			boolean authorMode);
+			Integer compensationExtraTime, boolean authorMode);
 	
 	
 	/**
@@ -291,8 +291,18 @@ public interface QTI21Service {
 	 * 
 	 * @param session The session to extend
 	 * @param extraTime The extra time in seconds
+	 * @param actor The user which do the change
 	 */
 	public void extraTimeAssessmentTestSession(AssessmentTestSession session, int extraTime, Identity actor);
+	
+	/**
+	 * Add some extra time due to compensation for disadvantages to a test session.
+	 * 
+	 * @param session The session to extend
+	 * @param extraTime The extra time in seconds
+	 * @param actor The user which do the change
+	 */
+	public void compensationExtraTimeAssessmentTestSession(AssessmentTestSession session, int extraTime, Identity actor);
 	
 	/**
 	 * Reopen a closed test. The method remove end and exit date, set a current

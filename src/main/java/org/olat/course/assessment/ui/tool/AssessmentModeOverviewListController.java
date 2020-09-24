@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarUtils;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -46,6 +45,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
@@ -92,15 +92,14 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 	private FlexiTableElement tableEl;
 	private AssessmentModeOverviewListTableModel model;
 
-	private DialogBoxController stopDialogBox;
+	private CloseableModalController cmc;
 	private DialogBoxController startDialogBox;
+	private ConfirmStopAssessmentModeController stopCtrl;
 	
 	private int count = 0;
 	private final RepositoryEntry courseEntry;
 	private final AssessmentToolSecurityCallback assessmentCallback;
-	
-	@Autowired
-	private DB dbInstance;
+
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
@@ -286,13 +285,23 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 				doStart((AssessmentModeOverviewRow)startDialogBox.getUserObject());
 				fireEvent(ureq, new AssessmentModeStatusEvent());
 			}
-		} else if(stopDialogBox == source) {
-			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				doStop((AssessmentModeOverviewRow)stopDialogBox.getUserObject());
-				fireEvent(ureq, new AssessmentModeStatusEvent());
+		} else if(stopCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel();
 			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(stopCtrl);
+		removeAsListenerAndDispose(cmc);
+		stopCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -328,18 +337,17 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		loadModel();
 	}
 	
-	private void doConfirmStop(UserRequest ureq, AssessmentModeOverviewRow mode) {
-		String title = translate("confirm.stop.title");
-		String text = translate("confirm.stop.text");
-		stopDialogBox = activateYesNoDialog(ureq, title, text, stopDialogBox);
-		stopDialogBox.setUserObject(mode);
-	}
-	
-	private void doStop(AssessmentModeOverviewRow row) {
+	private void doConfirmStop(UserRequest ureq, AssessmentModeOverviewRow row) {
+		if(guardModalController(stopCtrl)) return;
+
 		AssessmentMode mode = asssessmentModeManager.getAssessmentModeById(row.getAssessmentMode().getKey());
-		assessmentModeCoordinationService.stopAssessment(mode);
-		dbInstance.commit();
-		loadModel();
+		stopCtrl = new ConfirmStopAssessmentModeController(ureq, getWindowControl(), mode);
+		listenTo(stopCtrl);
+		
+		String title = translate("confirm.stop.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", stopCtrl.getInitialComponent(), true, title, true);
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	private void doJumpTo(UserRequest ureq, CourseNode node) {

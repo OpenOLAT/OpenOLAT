@@ -71,7 +71,7 @@ public class AssessmentTestSessionDAO {
 	public AssessmentTestSession createAndPersistTestSession(RepositoryEntry testEntry,
 			RepositoryEntry repositoryEntry, String subIdent,
 			AssessmentEntry assessmentEntry, Identity identity, String anonymousIdentifier,
-			boolean authorMode) {
+			Integer compensationExtraTime, boolean authorMode) {
 		
 		AssessmentTestSessionImpl testSession = new AssessmentTestSessionImpl();
 		Date now = new Date();
@@ -86,6 +86,7 @@ public class AssessmentTestSessionDAO {
 		testSession.setCancelled(false);
 		testSession.setIdentity(identity);
 		testSession.setAnonymousIdentifier(anonymousIdentifier);
+		testSession.setCompensationExtraTime(compensationExtraTime);
 		testSession.setStorage(createSessionStorage(testSession));
 		dbInstance.getCurrentEntityManager().persist(testSession);
 		return testSession;
@@ -282,6 +283,16 @@ public class AssessmentTestSessionDAO {
 				.setParameter("sessionKey", testSession.getKey())
 				.executeUpdate();
 	}
+	
+	public int compensationExtraTime(AssessmentTestSession testSession, int extraTime) {
+		String q = "update qtiassessmenttestsessionextratime set compensationExtraTime=:extraTime where key=:sessionKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("extraTime", extraTime)
+				.setParameter("sessionKey", testSession.getKey())
+				.executeUpdate();
+	}
+	
 	
 	/**
 	 * Search test session without the author mode flag set to true.

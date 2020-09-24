@@ -42,6 +42,7 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
     private Date finishTime;
     private Date terminationTime;
     private Integer extraTime;
+    private Integer compensationExtraTime;
    
     private Long duration;
     private Boolean passed;
@@ -139,6 +140,15 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 
 	public void setExtraTime(Integer extraTime) {
 		this.extraTime = extraTime;
+	}
+
+	@Override
+	public Integer getCompensationExtraTime() {
+		return compensationExtraTime;
+	}
+
+	public void setCompensationExtraTime(Integer compensationExtraTime) {
+		this.compensationExtraTime = compensationExtraTime;
 	}
 
 	@Override

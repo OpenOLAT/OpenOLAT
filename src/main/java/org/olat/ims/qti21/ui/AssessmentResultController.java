@@ -257,6 +257,15 @@ public class AssessmentResultController extends FormBasicController {
 						layoutCont.contextPut("testId", testRE.getResourceableId());
 						layoutCont.contextPut("testExternalRef", testRE.getExternalRef());
 					}
+					
+					if(candidateSession.getExtraTime() != null && candidateSession.getExtraTime().intValue() > 0) {
+						int extraTimeInMinutes = candidateSession.getExtraTime().intValue() / 60;
+						layoutCont.contextPut("extraTimeInMinutes", Integer.toString(extraTimeInMinutes));
+					}
+					if(candidateSession.getCompensationExtraTime() != null && candidateSession.getCompensationExtraTime().intValue() > 0) {
+						int extraTimeInMinutes = candidateSession.getCompensationExtraTime().intValue() / 60;
+						layoutCont.contextPut("compensationExtraTimeInMinutes", Integer.toString(extraTimeInMinutes));
+					}
 				}
 				
 				layoutCont.contextPut("title", Boolean.valueOf(withTitle));
@@ -656,6 +665,8 @@ public class AssessmentResultController extends FormBasicController {
 		private Date entryTime;
 		private Date endTime;
 		private Long duration;
+		private Integer extraTime;
+		private Integer compensationExtraTime;
 		
 		private BigDecimal score;
 		private Double manualScore;
@@ -788,6 +799,14 @@ public class AssessmentResultController extends FormBasicController {
 
 		public Long getDuration() {
 			return duration;
+		}
+		
+		public Integer getExtraTime() {
+			return extraTime;
+		}
+		
+		public Integer getCompensationExtraTime() {
+			return compensationExtraTime;
 		}
 		
 		public boolean hasScore() {

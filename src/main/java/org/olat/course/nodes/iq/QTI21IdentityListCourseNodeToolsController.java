@@ -56,6 +56,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
@@ -75,6 +76,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private Link pullTestLink;
 	private Link reopenLink;
 	private Link deleteDataLink;
+	private Link compensationExtraTimeLink;
 	private TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
@@ -84,6 +86,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private QTI21RetrieveTestsController retrieveConfirmationCtr;
 	private CorrectionIdentityAssessmentItemListController correctionCtrl;
 	private ConfirmReopenAssessmentEntryController reopenForCorrectionCtrl;
+	private ConfirmCompensationExtraTimeController compensationExtraTimeCtrl;
 	
 	private RepositoryEntry testEntry;
 	private RepositoryEntry courseEntry;
@@ -94,6 +97,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
@@ -139,12 +144,16 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 
 		addSeparator();
 		
-		if(lastSession != null && lastSession.getFinishTime() == null) {
-			// test: extra time
-			if(testCourseNode.hasQTI21TimeLimit(testEntry)) {
-				extraTimeLink = addLink("tool.extra.time", "tool.extra.time", "o_icon o_icon-fw o_icon_extra_time");
-			}
-			// test: retrieve
+		boolean hasTimeLimit = testCourseNode.hasQTI21TimeLimit(testEntry);
+		boolean lastSessionActive = (lastSession != null && lastSession.getFinishTime() == null);
+		
+		if(lastSessionActive && hasTimeLimit) {
+			extraTimeLink = addLink("tool.extra.time", "tool.extra.time", "o_icon o_icon-fw o_icon_extra_time");
+		}
+		if(hasTimeLimit) {
+			compensationExtraTimeLink = addLink("tool.extra.time.compensation", "tool.extra.time.compensation", "o_icon o_icon-fw o_icon_disadvantage_compensation");
+		}
+		if(lastSessionActive) {
 			pullTestLink = addLink("tool.pull", "tool.pull", "o_icon o_icon-fw o_icon_pull");
 		}
 	}
@@ -178,6 +187,9 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		} else if(extraTimeLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doConfirmExtraTime(ureq);
+		} else if(compensationExtraTimeLink == source) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
+			doConfirmCompensationExtraTime(ureq);
 		} else if(reopenLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doConfirmReopenTest(ureq);
@@ -201,7 +213,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 				cleanUp();
 				fireEvent(ureq, event);
 			}
-		} else if(resetDataCtrl == source || extraTimeCtrl == source || reopenCtrl == source) {
+		} else if(resetDataCtrl == source || extraTimeCtrl == source || compensationExtraTimeCtrl == source || reopenCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
 			fireAlteredEvent(ureq, event);
@@ -227,11 +239,13 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(compensationExtraTimeCtrl);
 		removeAsListenerAndDispose(reopenForCorrectionCtrl);
 		removeAsListenerAndDispose(correctionCtrl);
 		removeAsListenerAndDispose(extraTimeCtrl);
 		removeAsListenerAndDispose(resetDataCtrl);
 		removeAsListenerAndDispose(cmc);
+		compensationExtraTimeCtrl = null;
 		reopenForCorrectionCtrl = null;
 		correctionCtrl = null;
 		extraTimeCtrl = null;
@@ -311,6 +325,18 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 
 		String title = translate("extra.time");
 		cmc = new CloseableModalController(getWindowControl(), null, extraTimeCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doConfirmCompensationExtraTime(UserRequest ureq) {
+		compensationExtraTimeCtrl = new ConfirmCompensationExtraTimeController(ureq, getWindowControl(),
+				assessedIdentity, courseEntry, courseNode, lastSession);
+		listenTo(compensationExtraTimeCtrl);
+
+		String fullName  = userManager.getUserDisplayName(assessedIdentity);
+		String title = translate("extra.time.compensation", new String[] { fullName });
+		cmc = new CloseableModalController(getWindowControl(), null, compensationExtraTimeCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

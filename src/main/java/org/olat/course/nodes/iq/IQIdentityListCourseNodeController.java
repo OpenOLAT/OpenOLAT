@@ -95,6 +95,8 @@ import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
+import org.olat.modules.dcompensation.DisadvantageCompensation;
+import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
@@ -135,6 +137,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private BusinessGroupService groupService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	public IQIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
@@ -283,7 +287,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				.getAssessmentTestSessions(getCourseRepositoryEntry(), courseNode.getIdent(), getReferencedRepositoryEntry());
 		//sort by identity, then by creation date
 		Collections.sort(sessions, new AssessmentTestSessionComparator());
-		
+
 		Long currentIdentityKey = null;
 		for(AssessmentTestSession session:sessions) {
 			Long identityKey = session.getIdentity().getKey();
@@ -297,6 +301,16 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				currentIdentityKey = identityKey;
 			}
 		}
+
+		List<DisadvantageCompensation> compensations = disadvantageCompensationService.getDisadvantageCompensations(courseEntry, courseNode.getIdent());
+		for(DisadvantageCompensation compensation:compensations) {
+			Long identityKey = compensation.getIdentity().getKey();
+			Integer extraTimeInSeconds = compensation.getExtraTime() * 60;
+			ExtraTimeInfos infos = identityToExtraTime.computeIfAbsent(identityKey,
+					key -> new ExtraTimeInfos());
+			infos.setCompensationExtraTimeInSeconds(extraTimeInSeconds);
+		}
+
 		return identityToExtraTime;	
 	}
 

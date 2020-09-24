@@ -30,7 +30,12 @@ import java.util.Date;
 public class ExtraTimeInfos implements Comparable<ExtraTimeInfos> {
 
 	private final Integer extraTimeInSeconds;
+	private Integer compensationExtraTimeInSeconds;
 	private final Date start;
+	
+	public ExtraTimeInfos() {
+		this(null, null);
+	}
 	
 	public ExtraTimeInfos(Integer extraTimeInSeconds, Date start) {
 		this.extraTimeInSeconds = extraTimeInSeconds;
@@ -39,6 +44,14 @@ public class ExtraTimeInfos implements Comparable<ExtraTimeInfos> {
 
 	public Integer getExtraTimeInSeconds() {
 		return extraTimeInSeconds;
+	}
+	
+	public Integer getCompensationExtraTimeInSeconds() {
+		return compensationExtraTimeInSeconds;
+	}
+	
+	public void setCompensationExtraTimeInSeconds(Integer compensationExtraTimeInSeconds) {
+		this.compensationExtraTimeInSeconds = compensationExtraTimeInSeconds;
 	}
 
 	public Date getStart() {
