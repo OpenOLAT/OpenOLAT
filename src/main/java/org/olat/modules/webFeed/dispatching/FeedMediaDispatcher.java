@@ -20,6 +20,7 @@
 package org.olat.modules.webFeed.dispatching;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -411,6 +412,7 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 				hasAccess = reSecurity.canLaunch();
 			} else {
 				IdentityEnvironment ienv = new IdentityEnvironment(identity, roles);
+				ienv.setAttributes(new HashMap<>());
 				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment(), null, null, null, null,
 						reSecurity.isCourseCoach() || reSecurity.isGroupCoach(), reSecurity.isEntryAdmin(), reSecurity.isCourseParticipant() || reSecurity.isGroupParticipant(),
 						false);
@@ -422,6 +424,8 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 						.getNodeById(pathNodeId);
 				if (treeNode != null && treeNode.isAccessible()) {
 					hasAccess = true;
+				} else {
+					log.info("Course element not found or access denied. Path::{}", path);
 				}
 			}
 		}
