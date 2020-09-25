@@ -129,7 +129,7 @@ public class STCourseNodeRunController extends BasicController {
 				.withFilter(AccessibleFilter.create())
 				.build()
 				.getNodeById(stCourseNode.getIdent());
-		int chdCnt = courseTreeNode.getChildCount();
+		int chdCnt = courseTreeNode == null ? 0 : courseTreeNode.getChildCount();
 		for (int i = 0; i < chdCnt; i++) {
 			INode childNode = courseTreeNode.getChildAt(i);
 			if (childNode instanceof CourseTreeNode) {
@@ -141,7 +141,7 @@ public class STCourseNodeRunController extends BasicController {
 					Controller childPeekViewController = null;
 					boolean accessible = childCourseTreeNode.isAccessible();
 					if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
-						if (peekviewChildNodes.size() == 0) {
+						if (peekviewChildNodes.isEmpty()) {
 							// Special case: no child nodes configured. This is the case when
 							// the node has been configured before it had any children. We just
 							// use the first children as they appear in the list
