@@ -28,8 +28,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
-import javax.xml.XMLConstants;
-
 import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -50,6 +48,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.QTI12EditorController;
 import org.olat.ims.qti.QTI12PreviewController;
@@ -84,7 +83,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * 
@@ -140,8 +138,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public boolean isCompatible(String filename, File file) {
-		boolean ok = qtiModule.isCreateResourcesEnabled() && new ItemFileResourceValidator().validate(filename, file);
-		return ok;
+		return qtiModule.isCreateResourcesEnabled() && new ItemFileResourceValidator().validate(filename, file);
 	}
 	
 	@Override
@@ -174,8 +171,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 				InputStream is = leaf.getInputStream();
 				QTI12SAXHandler handler = new QTI12SAXHandler();
 				try {
-					XMLReader parser = XMLReaderFactory.createXMLReader();
-					parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+					XMLReader parser = XMLFactories.newSAXParser().getXMLReader();
 					parser.setContentHandler(handler);
 					parser.setEntityResolver(new IMSEntityResolver());
 					parser.setFeature("http://xml.org/sax/features/validation", false);
@@ -202,7 +198,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File testFile = frm.getFileResource(ores);
 		List<QuestionItem> importedItem = importItems(owner, defaultLocale, testFile.getName(), testFile);
-		if(importedItem != null && importedItem.size() > 0) {
+		if(importedItem != null && !importedItem.isEmpty()) {
 			dbInstance.getCurrentEntityManager().flush();
 		}
 		return importedItem;

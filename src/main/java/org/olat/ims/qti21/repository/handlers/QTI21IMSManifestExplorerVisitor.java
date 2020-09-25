@@ -27,12 +27,11 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.ims.qti21.model.xml.QTI21ExplorerHandler;
 import org.olat.ims.qti21.model.xml.QTI21Infos;
 
@@ -67,9 +66,7 @@ public class QTI21IMSManifestExplorerVisitor extends SimpleFileVisitor<Path> {
 	private QTI21ExplorerHandler scanFile(Path inputFile) {
 		QTI21ExplorerHandler infosHandler = new QTI21ExplorerHandler();
 		try(InputStream in = Files.newInputStream(inputFile)) {
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			SAXParser saxParser = factory.newSAXParser();
+			SAXParser saxParser = XMLFactories.newSAXParser();
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", infosHandler);
 			saxParser.parse(in, infosHandler);
 		} catch(Exception e1) {

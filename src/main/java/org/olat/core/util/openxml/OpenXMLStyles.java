@@ -26,6 +26,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.xml.XMLFactories;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -53,9 +54,8 @@ public class OpenXMLStyles {
 	
 	private final Document createDocument() {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory factory = XMLFactories.newDocumentBuilderFactory();
 	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			// Turn on validation, and turn off namespaces
 			factory.setValidating(true);
 			factory.setNamespaceAware(true);
 			DocumentBuilder builder = factory.newDocumentBuilder();

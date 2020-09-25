@@ -113,9 +113,10 @@ public class LinksPortlet extends AbstractPortlet {
 		fxConfXStreamFile = new File(fxConfFolder + "/olat_portals_xstream.xml");
 		if (!fxConfFile.exists() && !fxConfXStreamFile.exists()) {
 			try {
-				fxConfFile.createNewFile();
-				FileUtils.copyFileToFile(configurationFile, fxConfFile, false);
-				log.info("portal links portlet: copied initial config from " + CONFIG_FILE);
+				if(fxConfFile.createNewFile()) {
+					FileUtils.copyFileToFile(configurationFile, fxConfFile, false);
+					log.info("portal links portlet: copied initial config from " + CONFIG_FILE);
+				}
 			} catch (IOException e) {
 				new AssertException("could not copy an initial portal links config to olatdata", e);
 			}
@@ -125,9 +126,8 @@ public class LinksPortlet extends AbstractPortlet {
 		HashMap<String, PortletInstitution> portletMap = new HashMap<>();
 
 		if (!fxConfXStreamFile.exists()){
-			SAXReader reader = new SAXReader();
 			try {
-				// fxdiff: read from fx-config-file in olatdata
+				SAXReader reader = SAXReader.createDefault();;
 				Document doc = reader.read(fxConfFile);
 				Element rootElement = doc.getRootElement();
 				List<Element> lstInst = rootElement.elements(ELEM_INSTITUTION);

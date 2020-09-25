@@ -26,15 +26,14 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.olat.core.util.xml.XMLFactories;
 
 /**
  * 
@@ -81,9 +80,7 @@ public class QTI21ExplorerHandlerTest {
     	URL xmlUrl = QTI21ExplorerHandlerTest.class.getResource(xmlFilename);
 		File xmlFile = new File(xmlUrl.toURI());
 		try(InputStream in = Files.newInputStream(xmlFile.toPath())) {
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			SAXParser saxParser = factory.newSAXParser();
+			SAXParser saxParser = XMLFactories.newSAXParser();
 			QTI21ExplorerHandler myHandler = new QTI21ExplorerHandler();
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);

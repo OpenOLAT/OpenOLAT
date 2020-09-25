@@ -26,7 +26,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -39,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.restapi.system.MonitoringService.Statistics;
 import org.olat.restapi.system.vo.SessionsVO;
 import org.olat.search.SearchServiceStatus;
@@ -135,8 +135,7 @@ public class ProcSamplerJob extends QuartzJobBean {
 	private void writeDocument(File xmlFile, Document doc) {
 		// Use a Transformer for output
 		try(OutputStream out = new FileOutputStream(xmlFile)) {
-			TransformerFactory tFactory = TransformerFactory.newInstance();
-			tFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			TransformerFactory tFactory = XMLFactories.newTransformerFactory();
 			Transformer transformer = tFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.transform(new DOMSource(doc), new StreamResult(out));
@@ -147,8 +146,7 @@ public class ProcSamplerJob extends QuartzJobBean {
 	
 	private Document loadDocument(File xmlFile) {
 		try {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-	        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			DocumentBuilderFactory dbFactory = XMLFactories.newDocumentBuilderFactory();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = null;
 			if(xmlFile.exists()) {

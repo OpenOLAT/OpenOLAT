@@ -35,13 +35,13 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.search.service.SearchResourceContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * 
@@ -130,7 +130,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 	
 	private void parse(ZipInputStream zip, DefaultHandler handler) throws DocumentException {
 		try(InputStream in=new ShieldInputStream(zip)) {
-			XMLReader parser = XMLReaderFactory.createXMLReader();
+			XMLReader parser = XMLFactories.newSAXParser().getXMLReader();
 			parser.setContentHandler(handler);
 			parser.setEntityResolver(handler);
 			try {

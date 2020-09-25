@@ -40,7 +40,6 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -54,6 +53,7 @@ import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.xml.XMLFactories;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1050,8 +1050,7 @@ public class OpenXMLDocument {
 				String name = entry.getName();
 				if(name.endsWith("word/document.xml")) {
 					
-					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+					DocumentBuilderFactory factory = XMLFactories.newDocumentBuilderFactory();
 					factory.setValidating(false);
 					factory.setNamespaceAware(false);
 					DocumentBuilder builder = factory.newDocumentBuilder();

@@ -37,8 +37,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.zip.ZipOutputStream;
 
-import javax.xml.XMLConstants;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -55,6 +53,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIConstants;
@@ -91,7 +90,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -196,8 +194,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 				
 				QTI21SAXHandler handler = new QTI21SAXHandler();
 				try(InputStream is = leaf.getInputStream()) {
-					XMLReader parser = XMLReaderFactory.createXMLReader();
-					parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+					XMLReader parser = XMLFactories.newSAXParser().getXMLReader();
 					parser.setContentHandler(handler);
 					parser.setEntityResolver(new IMSEntityResolver());
 					parser.setFeature("http://xml.org/sax/features/validation", false);

@@ -22,10 +22,8 @@ package org.olat.core.util.openxml;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.util.zip.ZipOutputStream;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -47,10 +45,10 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.ShieldOutputStream;
+import org.olat.core.util.xml.XMLFactories;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -141,14 +139,12 @@ public class OpenXMLUtils {
 	
 	public static final Document createDocument() {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			DocumentBuilderFactory factory = XMLFactories.newDocumentBuilderFactory();
 			// Turn on validation, and turn on namespaces
 			factory.setValidating(true);
 			factory.setNamespaceAware(false);
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.newDocument();
-			return doc;
+			return builder.newDocument();
 		} catch (ParserConfigurationException e) {
 			log.error("", e);
 			return null;
@@ -163,30 +159,12 @@ public class OpenXMLUtils {
 	 */
 	public static final Document createDocument(InputStream in) {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			DocumentBuilderFactory factory = XMLFactories.newDocumentBuilderFactory();
 			// Turn on validation, and turn on namespaces
 			factory.setValidating(false);
 			factory.setNamespaceAware(false);
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(in);
-			return doc;
-		} catch (ParserConfigurationException | IOException | SAXException e) {
-			log.error("", e);
-			return null;
-		}
-	}
-	
-	public static final Document createDocument(String in) {
-		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			// Turn on validation, and turn on namespaces
-			factory.setValidating(false);
-			factory.setNamespaceAware(false);
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(new InputSource(new StringReader(in)));
-			return doc;
+			return builder.parse(in);
 		} catch (ParserConfigurationException | IOException | SAXException e) {
 			log.error("", e);
 			return null;
@@ -196,8 +174,7 @@ public class OpenXMLUtils {
 	public static final void writeTo(Document document, OutputStream out, boolean indent) {
 		try {
 			// Use a Transformer for output
-			TransformerFactory tFactory = TransformerFactory.newInstance();
-			tFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			TransformerFactory tFactory = XMLFactories.newTransformerFactory();
 			Transformer transformer = tFactory.newTransformer();
 			if(indent) {
 				transformer.setOutputProperty(OutputKeys.INDENT, "yes");

@@ -45,18 +45,17 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.webdav.WebDAVDispatcher;
 import org.olat.core.commons.services.webdav.WebDAVManager;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -65,6 +64,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.core.util.vfs.lock.VFSLockManagerImpl;
+import org.olat.core.util.xml.XMLFactories;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
@@ -255,10 +255,8 @@ public class WebDAVDispatcherImpl
     protected DocumentBuilder getDocumentBuilder(HttpServletRequest req)
         throws ServletException {
         DocumentBuilder documentBuilder = null;
-        DocumentBuilderFactory documentBuilderFactory = null;
         try {
-            documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        	DocumentBuilderFactory documentBuilderFactory = XMLFactories.newDocumentBuilderFactory();
             documentBuilderFactory.setNamespaceAware(true);
             documentBuilderFactory.setExpandEntityReferences(false);
             documentBuilder = documentBuilderFactory.newDocumentBuilder();

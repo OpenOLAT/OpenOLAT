@@ -36,7 +36,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.XMLConstants;
 import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.Data;
 import javax.xml.crypto.KeySelector;
@@ -72,7 +71,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -97,7 +95,7 @@ public class XMLDigitalSignatureUtil {
 	private static final Logger log = Tracing.createLoggerFor(XMLDigitalSignatureUtil.class);
 	
 	/**
-	 * Validate a XML file with a XML Digital Signature saved in an extenral file.
+	 * Validate a XML file with a XML Digital Signature saved in an external file.
 	 * 
 	 * 
 	 * @param xmlFile
@@ -128,13 +126,14 @@ public class XMLDigitalSignatureUtil {
 		if(!validFlag) {
             // log and throw if not valid
             boolean sv = signature.getSignatureValue().validate(validContext);
-            String msg = "signature validation status: " + sv;
+            StringBuilder msg = new StringBuilder();
+            msg.append("signature validation status: ").append(sv);
             
             int numOfReferences = signature.getSignedInfo().getReferences().size();
             for (int j=0; j<numOfReferences; j++) {
-            	Reference ref = (Reference)signature.getSignedInfo().getReferences().get(j);
+            	Reference ref = signature.getSignedInfo().getReferences().get(j);
                 boolean refValid = ref.validate(validContext);
-                msg += " ref["+j+"] validity status: " + refValid;
+                msg.append(" ref[").append(j).append("] validity status: ").append(refValid);
             }
             log.warn(msg);
 		}
@@ -176,7 +175,7 @@ public class XMLDigitalSignatureUtil {
             
             int numOfReferences = signature.getSignedInfo().getReferences().size();
             for (int j=0; j<numOfReferences; j++) {
-            	Reference ref = (Reference)signature.getSignedInfo().getReferences().get(j);
+            	Reference ref = signature.getSignedInfo().getReferences().get(j);
                 boolean refValid = ref.validate(validContext);
                 msg += " ref["+j+"] validity status: " + refValid;
             }
@@ -207,7 +206,7 @@ public class XMLDigitalSignatureUtil {
             
             int numOfReferences = signature.getSignedInfo().getReferences().size();
             for (int j=0; j<numOfReferences; j++) {
-            	Reference ref = (Reference)signature.getSignedInfo().getReferences().get(j);
+            	Reference ref =signature.getSignedInfo().getReferences().get(j);
                 boolean refValid = ref.validate(validContext);
                 msg += " ref["+j+"] validity status: " + refValid;
             }
@@ -219,13 +218,14 @@ public class XMLDigitalSignatureUtil {
 	private static Element getSignatureElement(Document doc) {
 		NodeList nl = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
         if (nl.getLength() == 0) {
-        	nl = doc.getElementsByTagNameNS("http://www.imsglobal.org/xsd/imsqti_result_v2p1", "Signature");
+        	nl = doc.getElementsByTagName("Signature");
         	if (nl.getLength() == 1) {
         		Element signatureEl = (Element)nl.item(0);
         		try {
-        			signatureEl.setAttribute("xmlns", XMLSignature.XMLNS);
 					Document signatureDoc = createDocument();
-	        		write(signatureEl, signatureDoc);
+					signatureDoc.appendChild(signatureDoc.importNode(signatureEl, true));
+					signatureDoc.renameNode(signatureDoc.getDocumentElement(),XMLSignature.XMLNS,
+							signatureDoc.getDocumentElement().getTagName());
 	        		return signatureDoc.getDocumentElement();
 				} catch (Exception e) {
 					log.error("", e);
@@ -394,8 +394,7 @@ public class XMLDigitalSignatureUtil {
 	private static void write(Node node, File outputFile)
 	throws IOException, TransformerException, TransformerFactoryConfigurationError {
         try (Writer ssw = new FileWriter(outputFile)) {
-			TransformerFactory tf = TransformerFactory.newInstance();
-			tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			TransformerFactory tf = XMLFactories.newTransformerFactory();
 			Transformer trans = tf.newTransformer();
 			trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			trans.transform(new DOMSource(node), new StreamResult(ssw));
@@ -404,31 +403,16 @@ public class XMLDigitalSignatureUtil {
 		}
 	}
 	
-	private static void write(Node node, Document target)
-	throws TransformerException, TransformerFactoryConfigurationError {
-        try {
-			TransformerFactory tf = TransformerFactory.newInstance();
-			tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			Transformer trans = tf.newTransformer();
-			trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-			trans.transform(new DOMSource(node), new DOMResult(target));
-		} catch (TransformerException | TransformerFactoryConfigurationError | IllegalArgumentException e) {
-			throw e;
-		}
-	}
-	
 	public static Document getDocument(File xmlFile)
 	throws ParserConfigurationException, SAXException, IOException {
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		DocumentBuilderFactory dbFactory = XMLFactories.newDocumentBuilderFactory();
 		dbFactory.setNamespaceAware(true);
 		return dbFactory.newDocumentBuilder().parse(xmlFile);
 	}
 	
 	public static Document createDocument()
 	throws ParserConfigurationException {
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		DocumentBuilderFactory dbFactory = XMLFactories.newDocumentBuilderFactory();
 		dbFactory.setNamespaceAware(true);
 		return dbFactory.newDocumentBuilder().newDocument();
 	}

@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import javax.xml.XMLConstants;
-
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
@@ -39,11 +37,11 @@ import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.search.service.SearchResourceContext;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * 
@@ -114,16 +112,9 @@ public class PowerPointOOXMLDocument extends FileDocument {
 	
 	private void parse(InputStream stream, DefaultHandler handler) throws DocumentException {
 		try {
-			XMLReader parser = XMLReaderFactory.createXMLReader();
+			XMLReader parser = XMLFactories.newSAXParser().getXMLReader();
 			parser.setContentHandler(handler);
 			parser.setEntityResolver(handler);
-			try {
-				parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-				parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-				parser.setFeature("http://xml.org/sax/features/validation", false);
-			} catch(Exception e) {
-				log.error("Cannot deactivate validation", e);
-			}
 			parser.parse(new InputSource(stream));
 		} catch (Exception e) {
 			throw new DocumentException("XML parser configuration error", e);

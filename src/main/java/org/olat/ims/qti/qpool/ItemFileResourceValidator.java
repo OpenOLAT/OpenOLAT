@@ -21,17 +21,13 @@ package org.olat.ims.qti.qpool;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentType;
@@ -40,6 +36,7 @@ import org.dom4j.io.SAXValidator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
@@ -60,41 +57,31 @@ public class ItemFileResourceValidator {
 
 	public boolean validate(String filename, File file) {
 		if(file == null || !file.exists()) return false;
-		
-		InputStream in = null;
-		try {
-			in = new FileInputStream(file);
+
+		try(InputStream in = new FileInputStream(file)) {
 			return validate(filename, in);
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
 			return false;
-		} finally {
-			IOUtils.closeQuietly(in);
 		}
 	}
 
 	public boolean validate(String filename, VFSLeaf file) {
 		if(file == null || !file.exists()) return false;
 		
-		InputStream in = null;
-		try {
-			in = file.getInputStream();
+		try(InputStream in = file.getInputStream()) {
 			return validate(filename, in);
 		} catch (Exception e) {
 			return false;
-		} finally {
-			IOUtils.closeQuietly(in);
 		}
 	}
 
-	public boolean validate(String filename, InputStream in) {
+	private boolean validate(String filename, InputStream in) {
 		boolean valid = false;
 
 		if(filename.toLowerCase().endsWith(".xml")) {
 			valid = validateXml(in);
-			IOUtils.closeQuietly(in);
 		} else if(filename.toLowerCase().endsWith(".zip")) {
-			ZipInputStream oZip = new ZipInputStream(in);
-			try {
+			try(ZipInputStream oZip = new ZipInputStream(in)) {
 				ZipEntry oEntr = oZip.getNextEntry();
 				while (oEntr != null) {
 					if (!oEntr.isDirectory()) {
@@ -108,9 +95,6 @@ public class ItemFileResourceValidator {
 			} catch(Exception e) {
 				log.error("", e);
 				valid = false;
-			} finally {
-				IOUtils.closeQuietly(oZip);
-				IOUtils.closeQuietly(in);
 			}
 		}
 		
@@ -132,7 +116,7 @@ public class ItemFileResourceValidator {
 	
 	private Document readDocument(InputStream in) {
 		try {
-			SAXReader reader = new SAXReader();
+			SAXReader reader = SAXReader.createDefault();
 			reader.setEntityResolver(new IMSEntityResolver());
 			reader.setValidation(false);
 			return reader.read(in, "");
@@ -143,15 +127,10 @@ public class ItemFileResourceValidator {
 	
 	private boolean validateDocument(Document in) {
 		try {
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			factory.setValidating(true);
-			factory.setNamespaceAware(true);
-			
 			SimpleErrorHandler errorHandler = new SimpleErrorHandler();
 			ItemContentHandler contentHandler = new ItemContentHandler();
 			
-			SAXParser parser = factory.newSAXParser();
+			SAXParser parser = XMLFactories.newSAXParser(true, true);
 			XMLReader reader = parser.getXMLReader();
 			reader.setEntityResolver(new IMSEntityResolver());
 			reader.setErrorHandler(errorHandler);

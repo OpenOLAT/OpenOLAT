@@ -33,15 +33,13 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
@@ -56,17 +54,15 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * @author Mike Stock Comment:
@@ -180,44 +176,15 @@ public class LocalizedXSLTransformer {
 			log.error("Could not convert xsl to string!", e);
 		}
 		String replacedOutput = evaluateValue(xslAsString, vcContext);
-		TransformerFactory tfactory = newTransformerFactory();
-		XMLReader reader;
 		try {
-			reader = XMLReaderFactory.createXMLReader();
-			reader.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			TransformerFactory tfactory = XMLFactories.newTransformerFactory();
+			XMLReader reader = XMLFactories.newSAXParser().getXMLReader();
 			reader.setEntityResolver(er);
 			Source xsltsource = new SAXSource(reader, new InputSource(new StringReader(replacedOutput)));
 			templates = tfactory.newTemplates(xsltsource);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			throw new OLATRuntimeException("Could not initialize transformer!", e);
-		} catch (TransformerConfigurationException e) {
-			throw new OLATRuntimeException("Could not initialize transformer (wrong config)!", e);
 		}
-	}
-	
-	/**
-	 * The method try to find the Xalan implementation of the JDK because the styelsheet
-	 * was with this one develop and not the Saxon XSLT 2.0 or 3.0 engine which lead to
-	 * some compatibility issue with special HTML entity (example: 129).
-	 * 
-	 * @return Try to get the embedded Xalan implementation which is a pure XSLT 1.0 engine.
-	 */
-	private TransformerFactory newTransformerFactory() {
-		TransformerFactory tfactory = null;
-		try {
-			tfactory = TransformerFactory.newInstance("com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl", null);
-			tfactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
-		} catch (TransformerFactoryConfigurationError | TransformerConfigurationException e) {
-			log.error("", e);
-			try {
-				tfactory = TransformerFactory.newInstance();
-				tfactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			} catch (TransformerConfigurationException | TransformerFactoryConfigurationError e1) {
-				log.error("", e);
-			}
-		}
-		return tfactory;
 	}
 
 	/**

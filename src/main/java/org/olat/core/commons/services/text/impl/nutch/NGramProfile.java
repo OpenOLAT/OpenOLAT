@@ -19,13 +19,11 @@ package org.olat.core.commons.services.text.impl.nutch;
 // JDK imports
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -34,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.commons.services.text.impl.nutch.NGramProfile;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
@@ -404,112 +401,10 @@ public class NGramProfile {
     for (int i=0; i<list.size(); i++) {
       NGramEntry e = list.get(i);
       String line = e.toString() + " " + e.getCount() + "\n";
-      os.write(line.getBytes("UTF-8"));
+      os.write(line.getBytes(StandardCharsets.UTF_8));
     }
     os.flush();
   }
-
-  /**
-   * main method used for testing only
-   * 
-   * @param args
-   */
-  public static void main(String args[]) {
-
-    String usage = "Usage: NGramProfile " +
-                   "[-create profilename filename encoding] " +
-                   "[-similarity file1 file2] "+
-                   "[-score profile-name filename encoding]";
-    int command = 0;
-
-    final int CREATE = 1;
-    final int SIMILARITY = 2;
-    final int SCORE = 3;
-
-    String profilename = "";
-    String filename = "";
-    String filename2 = "";
-    String encoding = "";
-    
-    if (args.length == 0) {
-      System.err.println(usage);
-      System.exit(-1);
-    }
-
-    for (int i = 0; i < args.length; i++) { // parse command line
-      if (args[i].equals("-create")) { // found -create option
-        command = CREATE;
-        profilename = args[++i];
-        filename = args[++i];
-        encoding = args[++i];
-      }
-
-      if (args[i].equals("-similarity")) { // found -similarity option
-        command = SIMILARITY;
-        filename = args[++i];
-        filename2 = args[++i];
-        encoding = args[++i];
-      }
-
-      if (args[i].equals("-score")) { // found -Score option
-        command = SCORE;
-        profilename = args[++i];
-        filename = args[++i];
-        encoding = args[++i];
-      }
-    }
-
-    try {
-
-      switch (command) {
-
-      case CREATE:
-
-        File f = new File(filename);
-        FileInputStream fis = new FileInputStream(f);
-        NGramProfile newProfile = NGramProfile.create(profilename, fis, encoding);
-        fis.close();
-        f = new File(profilename + "." + FILE_EXTENSION);
-        FileOutputStream fos = new FileOutputStream(f);
-        newProfile.save(fos);
-        //System.out.println("new profile " + profilename + "." + FILE_EXTENSION + " was created.");
-        break;
-
-      case SIMILARITY:
-
-        f = new File(filename);
-        fis = new FileInputStream(f);
-        newProfile = NGramProfile.create(filename, fis, encoding);
-        newProfile.normalize();
-
-        f = new File(filename2);
-        fis = new FileInputStream(f);
-        NGramProfile newProfile2 = NGramProfile.create(filename2, fis, encoding);
-        newProfile2.normalize();
-        //System.out.println("Similarity is " + newProfile.getSimilarity(newProfile2));
-        break;
-
-      case SCORE:
-        f = new File(filename);
-        fis = new FileInputStream(f);
-        newProfile = NGramProfile.create(filename, fis, encoding);
-
-        f = new File(profilename + "." + FILE_EXTENSION);
-        fis = new FileInputStream(f);
-        NGramProfile compare = new NGramProfile(profilename,
-                                                DEFAULT_MIN_NGRAM_LENGTH,
-                                                DEFAULT_MAX_NGRAM_LENGTH);
-        compare.load(fis);
-        //System.out.println("Score is " + compare.getSimilarity(newProfile));
-        break;
-
-      }
-
-    } catch (Exception e) {
-      log.error("", e);
-    }
-  }
-
   
   /**
    * Inner class that describes a NGram

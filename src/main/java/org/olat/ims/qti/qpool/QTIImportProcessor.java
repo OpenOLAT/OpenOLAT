@@ -44,7 +44,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 import org.dom4j.Node;
@@ -582,9 +581,9 @@ class QTIImportProcessor {
 	
 	private Document readSidecarMetadata(Path metadata) {
 		try(InputStream metadataIn = Files.newInputStream(metadata)) {
-			SAXReader reader = new SAXReader();
+			SAXReader reader = SAXReader.createDefault();
 	        return reader.read(metadataIn);
-		} catch(IOException | DocumentException e) {
+		} catch(Exception e) {
 			log.error("", e);
 			return null;
 		}

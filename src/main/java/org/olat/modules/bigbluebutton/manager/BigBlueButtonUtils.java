@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
@@ -40,6 +39,7 @@ import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
@@ -67,8 +67,7 @@ public class BigBlueButtonUtils {
 	
     protected static Document getDocumentFromEntity(String content) throws Exception {
     	try(InputStream in=new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))) {
-	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-	        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+	        DocumentBuilderFactory dbFactory = XMLFactories.newDocumentBuilderFactory();
 	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	        return dBuilder.parse(in);
     	} catch(Exception e) {
@@ -78,8 +77,7 @@ public class BigBlueButtonUtils {
 
     protected static Document getDocumentFromEntity(HttpEntity entity) throws Exception {
     	try(InputStream in=entity.getContent()) {
-	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-	        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+	        DocumentBuilderFactory dbFactory = XMLFactories.newDocumentBuilderFactory();
 	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	        Document doc = dBuilder.parse(in);
 	        print(doc);
@@ -214,8 +212,7 @@ public class BigBlueButtonUtils {
 	protected static void print(Document document) {
 		if(log.isDebugEnabled()) {
 			try(StringWriter writer = new StringWriter()) {
-		    	TransformerFactory factory = TransformerFactory.newInstance();
-				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		    	TransformerFactory factory = XMLFactories.newTransformerFactory();
 				Transformer transformer = factory.newTransformer();
 				Source source = new DOMSource(document);
 				transformer.transform(source, new StreamResult(writer));

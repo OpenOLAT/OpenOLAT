@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -43,25 +42,27 @@ public class OpenXMLDocumentTest {
 		document.appendHtmlText(html, false);
 		
 		OpenXMLUtils.writeTo(document.getDocument(), System.out, true);
+		Assert.assertNotNull(document.getDocument());
 	}
 
 	@Test
 	public void writeDoc() throws Exception {
 		File file = File.createTempFile("worddoc", "_min.xlsx");
-		FileOutputStream fileOut = new FileOutputStream(file);
-		ZipOutputStream out = new ZipOutputStream(fileOut);
-		
-		OpenXMLDocument document = new OpenXMLDocument();
-		String html = "<table style='height: 80px;' width='446'><tbody><tr><td>1-1</td><td colspan='2' rowspan='2'>1-21-32-32-2</td><td>1-4</td></tr><tr><td>2-1</td><td>2-4</td></tr><tr><td>3-1</td><td>3-2</td><td colspan='2'>3-33-4</td></tr></tbody></table>";
-		document.appendHtmlText(html, false);
-
-		OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
-		writer.createDocument(out, document);
-		
-		out.flush();
-		fileOut.flush();
-		IOUtils.closeQuietly(out);
-		IOUtils.closeQuietly(fileOut);
+		try(FileOutputStream fileOut = new FileOutputStream(file);
+			ZipOutputStream out = new ZipOutputStream(fileOut)) {
+			
+			OpenXMLDocument document = new OpenXMLDocument();
+			String html = "<table style='height: 80px;' width='446'><tbody><tr><td>1-1</td><td colspan='2' rowspan='2'>1-21-32-32-2</td><td>1-4</td></tr><tr><td>2-1</td><td>2-4</td></tr><tr><td>3-1</td><td>3-2</td><td colspan='2'>3-33-4</td></tr></tbody></table>";
+			document.appendHtmlText(html, false);
+	
+			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
+			writer.createDocument(out, document);
+			
+			out.flush();
+			fileOut.flush();
+		} catch(Exception e) {
+			throw e;
+		}
 		
 		Assert.assertTrue(file.exists());
 		Assert.assertTrue(file.length() > 4096);

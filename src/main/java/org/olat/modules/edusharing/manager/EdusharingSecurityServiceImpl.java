@@ -22,6 +22,7 @@ package org.olat.modules.edusharing.manager;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
@@ -29,6 +30,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.olat.modules.edusharing.EdusharingException;
@@ -51,16 +53,19 @@ public class EdusharingSecurityServiceImpl implements EdusharingSecurityService 
 	private static final String ALGORITHM_KEY = "RSA";
 	private static final String ALGORITHM_SIGNATURE = "SHA1withRSA";
 	// This algorithm depends in the crypto library used by edu-sharing.
-	// As of today edu-sharing uses SunJCE.
-	private static final String ALGORITHM_ENCRYPTION = "RSA/ECB/PKCS1Padding";
 	
 	@Autowired
 	private EdusharingModule edusharinModule;
 	
+	private static final Cipher newCipher()
+	throws NoSuchAlgorithmException, NoSuchPaddingException {
+		return Cipher.getInstance("RSA/ECB/PKCS1Padding");
+	}
+	
 	@Override
 	public EdusharingSignature createSignature() throws EdusharingException {
 		String soapAppId = edusharinModule.getAppId();
-		String timeStamp = new Long(System.currentTimeMillis()).toString();
+		String timeStamp = Long.toString(System.currentTimeMillis());
 		String signData = soapAppId + timeStamp;
 		
 		PrivateKey privateKey = edusharinModule.getSoapKeys().getPrivate();
@@ -98,7 +103,7 @@ public class EdusharingSecurityServiceImpl implements EdusharingSecurityService 
 	public String encrypt(PublicKey publicKey, String plain) throws EdusharingException {
 		try {
 			byte[] plainBytes = plain.getBytes();
-			Cipher cipher = Cipher.getInstance(ALGORITHM_ENCRYPTION);
+			Cipher cipher = newCipher();
 			cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 			byte[] encryptedBytes = cipher.doFinal(plainBytes);
 			return Base64.encodeBase64String(encryptedBytes);
@@ -111,7 +116,7 @@ public class EdusharingSecurityServiceImpl implements EdusharingSecurityService 
 	public String decrypt(PrivateKey privateKey, String encrypted) throws EdusharingException {
 		 try {
 			byte[] encryptedBytes = Base64.decodeBase64(encrypted.getBytes());
-			Cipher chiper = Cipher.getInstance(ALGORITHM_ENCRYPTION);
+			Cipher chiper = newCipher();
 			chiper.init(Cipher.DECRYPT_MODE, privateKey);
 			byte[] plainBytes = chiper.doFinal(encryptedBytes);
 			return new String(plainBytes, "UTF-8");

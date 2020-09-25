@@ -36,9 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -48,6 +46,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.qpool.QTIMetadataConverter;
 import org.olat.ims.qti21.QTI21Constants;
@@ -229,10 +228,7 @@ public class QTI21ImportProcessor {
 				Writer out = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8)) {
 			XMLOutputFactory xof = XMLOutputFactory.newInstance();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
-
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			SAXParser saxParser = factory.newSAXParser();
+			SAXParser saxParser = XMLFactories.newSAXParser();
 			OnyxToQtiWorksHandler myHandler = new OnyxToQtiWorksHandler(xtw, infos);
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);

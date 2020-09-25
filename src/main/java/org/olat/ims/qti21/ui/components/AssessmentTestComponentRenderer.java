@@ -22,21 +22,9 @@ package org.olat.ims.qti21.ui.components;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.contentAsString;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.testFeedbackVisible;
 
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.xml.XMLConstants;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.Component;
@@ -60,7 +48,6 @@ import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event;
-import org.w3c.dom.Element;
 
 import uk.ac.ed.ph.jqtiplus.node.ForeignElement;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
@@ -817,24 +804,6 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		
 		sb.append("</button>");
 		sb.append("</li>");
-	}
-	
-	public static void printDocument(Element doc, OutputStream out) {
-		try {
-			TransformerFactory tf = TransformerFactory.newInstance();
-			tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			Transformer transformer = tf.newTransformer();
-			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-			transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-
-			transformer.transform(new DOMSource(doc), 
-			     new StreamResult(new OutputStreamWriter(out, "UTF-8")));
-		} catch (IllegalArgumentException | UnsupportedEncodingException | TransformerFactoryConfigurationError | TransformerException e) {
-			log.error("", e);
-		}
 	}
 	
     private TestPlanNodeKey extractTargetItemKey(final CandidateEvent candidateEvent) {

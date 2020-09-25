@@ -21,6 +21,7 @@ package org.olat.ims.qti21;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.logging.log4j.Logger;
@@ -55,7 +56,10 @@ public final class XmlUtilities {
 	 */
     public static final XMLReader createNsAwareSaxReader() {
         try {
-            return parserFactory.newSAXParser().getXMLReader();
+            SAXParser parser = parserFactory.newSAXParser();
+            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
+            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, ""); // compliant
+            return parser.getXMLReader();
         } catch (final Exception e) {
             throw new RuntimeException("Could not create NS-aware SAXParser with validating=false. Check deployment/runtime ClassPath", e);
         }

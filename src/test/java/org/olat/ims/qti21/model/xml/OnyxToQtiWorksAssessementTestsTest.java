@@ -25,29 +25,28 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
@@ -95,13 +94,11 @@ public class OnyxToQtiWorksAssessementTestsTest {
 		
 		File outputFile = new File(tmpDir, "text.xml");
 		try(InputStream in = Files.newInputStream(xmlFile.toPath());
-				Writer out = Files.newBufferedWriter(outputFile.toPath(), Charset.forName("UTF-8"))) {
+				Writer out = Files.newBufferedWriter(outputFile.toPath(), StandardCharsets.UTF_8)) {
 			XMLOutputFactory xof = XMLOutputFactory.newInstance();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 	
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			SAXParser saxParser = factory.newSAXParser();
+			SAXParser saxParser = XMLFactories.newSAXParser();
 			DefaultHandler2 myHandler = new Onyx38ToQtiWorksHandler(xtw);
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);

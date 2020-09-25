@@ -23,12 +23,11 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.xml.XMLFactories;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -50,9 +49,7 @@ class XMLScanner extends DefaultHandler {
 	private static SAXParser saxParser;
 	static {
 		try {
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			saxParser = factory.newSAXParser();
+			saxParser = XMLFactories.newSAXParser();
 		} catch(Exception ex) {
 	  		log.error("", ex);
 		}

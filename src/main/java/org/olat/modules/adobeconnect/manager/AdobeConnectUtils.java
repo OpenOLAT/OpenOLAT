@@ -22,7 +22,6 @@ package org.olat.modules.adobeconnect.manager;
 import java.io.InputStream;
 import java.io.StringWriter;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
@@ -38,6 +37,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.modules.adobeconnect.model.AdobeConnectError;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrorCodes;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
@@ -128,8 +128,7 @@ public class AdobeConnectUtils {
 	
     protected static Document getDocumentFromEntity(HttpEntity entity) throws Exception {
     	try(InputStream in=entity.getContent()) {
-	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-	        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+	        DocumentBuilderFactory dbFactory = XMLFactories.newDocumentBuilderFactory();
 	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	        return dBuilder.parse(in);
     	} catch(Exception e) {
@@ -227,8 +226,7 @@ public class AdobeConnectUtils {
 	protected static void print(Document document) {
 		if(log.isDebugEnabled()) {
 		    try(StringWriter writer = new StringWriter()) {
-		    	TransformerFactory factory = TransformerFactory.newInstance();
-				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		    	TransformerFactory factory = XMLFactories.newTransformerFactory();
 				Transformer transformer = factory.newTransformer();
 				Source source = new DOMSource(document);
 				transformer.transform(source, new StreamResult(writer));

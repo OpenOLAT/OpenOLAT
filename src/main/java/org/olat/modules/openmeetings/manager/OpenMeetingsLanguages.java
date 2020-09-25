@@ -24,13 +24,12 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.xml.XMLFactories;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -55,9 +54,7 @@ public class OpenMeetingsLanguages extends DefaultHandler {
 	
 	public void read() {
 		try(InputStream in = OpenMeetingsLanguages.class.getResourceAsStream("languages.xml")) {
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			SAXParser saxParser = factory.newSAXParser();
+			SAXParser saxParser = XMLFactories.newSAXParser();
 			saxParser.parse(in, this);
 		} catch (Exception e) {
 			log.error("", e);
