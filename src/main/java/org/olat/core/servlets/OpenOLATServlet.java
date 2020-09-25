@@ -128,8 +128,7 @@ public class OpenOLATServlet extends HttpServlet {
 	}
 
 	@Override
-	protected void service(HttpServletRequest req, HttpServletResponse resp)
-	throws ServletException, IOException {
+	protected void service(HttpServletRequest req, HttpServletResponse resp) {
 
 		Tracing.setHttpRequest(req);
 		ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(req);
@@ -139,7 +138,7 @@ public class OpenOLATServlet extends HttpServlet {
 			sessionStatsManager.incrementConcurrentCounter();
 		}
 		
-		try{
+		try {
 			
 			final String method = req.getMethod();
 			if (method.equals(METHOD_PROPFIND)) {
@@ -160,6 +159,9 @@ public class OpenOLATServlet extends HttpServlet {
 	            super.service(req, resp);
 	        }
 			
+		} catch (ServletException | IOException e) {
+			log.error("", e);
+			DispatcherModule.sendServerError(resp);
 		} finally {
 			if(sessionStatsManager != null) {
 				sessionStatsManager.decrementConcurrentCounter();
@@ -176,13 +178,18 @@ public class OpenOLATServlet extends HttpServlet {
 	@Override
 	protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		String subContext = DispatcherModule.getFirstPath(req);
-		if("/".equals(subContext)) {
-			webDAVDispatcher.doRootOptions(req, resp);
-		} else if("/webdav".equals(subContext) || "/webdav/".equals(subContext)) {
-			webDAVDispatcher.doWebdavOptions(req, resp);
-		} else {
-			super.doOptions(req, resp);
+		try {
+			String subContext = DispatcherModule.getFirstPath(req);
+			if("/".equals(subContext)) {
+				webDAVDispatcher.doRootOptions(req, resp);
+			} else if("/webdav".equals(subContext) || "/webdav/".equals(subContext)) {
+				webDAVDispatcher.doWebdavOptions(req, resp);
+			} else {
+				super.doOptions(req, resp);
+			}
+		} catch (ServletException | IOException e) {
+			log.error("", e);
+			DispatcherModule.sendServerError(resp);
 		}
 	}
 
@@ -196,9 +203,13 @@ public class OpenOLATServlet extends HttpServlet {
 	 * @throws IOException
 	 */
 	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response) 
-	throws ServletException, IOException {
-		executeUserRequest(request, response);
+	public void doGet(HttpServletRequest request, HttpServletResponse response) {
+		try {
+			executeUserRequest(request, response);
+		} catch (ServletException | IOException e) {
+			log.error("", e);
+			DispatcherModule.sendServerError(response);
+		}
 	}
 
 	/**
@@ -211,33 +222,50 @@ public class OpenOLATServlet extends HttpServlet {
 	 * @throws IOException
 	 */
 	@Override
-	public void doPost(HttpServletRequest request, HttpServletResponse response)
-	throws ServletException, IOException {
-		executeUserRequest(request, response);
+	public void doPost(HttpServletRequest request, HttpServletResponse response) {
+		try {
+			executeUserRequest(request, response);
+		} catch (ServletException | IOException e) {
+			log.error("", e);
+			DispatcherModule.sendServerError(response);
+		}
 	}
 	
 	@Override
-	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
-	throws ServletException, IOException {
-		webDAVDispatcher.execute(req, resp);
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
+		try {
+			webDAVDispatcher.execute(req, resp);
+		} catch (ServletException | IOException e) {
+			log.error("", e);
+			DispatcherModule.sendServerError(resp);
+		}
 	}
 
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		webDAVDispatcher.execute(req, resp);
+		try {
+			webDAVDispatcher.execute(req, resp);
+		} catch (ServletException | IOException e) {
+			log.error("", e);
+			DispatcherModule.sendServerError(resp);
+		}
 	}
 
 	@Override
-	protected void doHead(HttpServletRequest req, HttpServletResponse resp)
-	throws ServletException, IOException {
-		String subContext = DispatcherModule.getFirstPath(req);
-		if("/".equals(subContext)) {
-			webDAVDispatcher.execute(req, resp);
-		} else if("/webdav".equals(subContext) || "/webdav/".equals(subContext)) {
-			webDAVDispatcher.execute(req, resp);
-		} else {
-			executeUserRequest(req, resp);
+	protected void doHead(HttpServletRequest req, HttpServletResponse resp) {
+		try {
+			String subContext = DispatcherModule.getFirstPath(req);
+			if("/".equals(subContext)) {
+				webDAVDispatcher.execute(req, resp);
+			} else if("/webdav".equals(subContext) || "/webdav/".equals(subContext)) {
+				webDAVDispatcher.execute(req, resp);
+			} else {
+				executeUserRequest(req, resp);
+			}
+		} catch (ServletException | IOException e) {
+			log.error("", e);
+			DispatcherModule.sendServerError(resp);
 		}
 	}
 
@@ -283,11 +311,11 @@ public class OpenOLATServlet extends HttpServlet {
 						response.sendRedirect(redirectUri);
 						ServletUtil.setCacheHeaders(response, ServletUtil.CACHE_ONE_DAY);
 					} else {
-						response.sendError(HttpServletResponse.SC_NOT_FOUND);
+						DispatcherModule.sendNotFound(response);
 						ServletUtil.setCacheHeaders(response, ServletUtil.CACHE_ONE_DAY);
 					}
 				} else {
-					response.sendError(HttpServletResponse.SC_NOT_FOUND);
+					DispatcherModule.sendNotFound(response);
 					ServletUtil.setCacheHeaders(response, ServletUtil.CACHE_ONE_DAY);
 				}
 			}
