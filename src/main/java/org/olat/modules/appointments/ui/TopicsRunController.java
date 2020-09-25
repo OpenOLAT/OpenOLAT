@@ -44,10 +44,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Appointment.Status;
 import org.olat.modules.appointments.AppointmentSearchParams;
@@ -59,6 +62,10 @@ import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.Topic.Type;
 import org.olat.modules.appointments.TopicRef;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonErrorHelper;
+import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +79,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TopicsRunController extends BasicController implements Activateable2 {
 
 	private static final String CMD_OPEN = "open";
+	private static final String CMD_JOIN = "join";
 	private static final String CMD_EMAIL = "email";
 
 	private final VelocityContainer mainVC;
@@ -92,10 +100,12 @@ public class TopicsRunController extends BasicController implements Activateable
 	private AppointmentsService appointmentsService;
 	@Autowired
 	private UserManager userManager;
+	
 
 	public TopicsRunController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
 		this.entry = entry;
 		this.subIdent = subIdent;
@@ -227,7 +237,12 @@ public class TopicsRunController extends BasicController implements Activateable
 				.findFirst();
 		if (firstAppointment.isPresent()) {
 			Appointment appointment = firstAppointment.get();
-			wrapAppointmentView(wrapper, appointment);
+			
+			ParticipationSearchParams allParticipationParams = new ParticipationSearchParams();
+			allParticipationParams.setAppointment(appointment);
+			List<Participation> appointmentParticipations = appointmentsService.getParticipations(allParticipationParams);
+			
+			wrapAppointmentView(wrapper, appointment, appointmentParticipations);
 		}
 	}
 
@@ -247,12 +262,12 @@ public class TopicsRunController extends BasicController implements Activateable
 						.findFirst().get(); // ... or the most recent one.
 			wrapper.setFuture(Boolean.valueOf(appointment.getStart().after(now)));
 			
-			wrapAppointmentView(wrapper, appointment);
-			
 			ParticipationSearchParams allParticipationParams = new ParticipationSearchParams();
 			allParticipationParams.setAppointment(appointment);
 			List<Participation> appointmentParticipations = appointmentsService.getParticipations(allParticipationParams);
-
+			
+			wrapAppointmentView(wrapper, appointment, appointmentParticipations);
+			
 			List<String> participants = appointmentParticipations.stream()
 					.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
 					.sorted(String.CASE_INSENSITIVE_ORDER)
@@ -261,7 +276,7 @@ public class TopicsRunController extends BasicController implements Activateable
 		}
 	}
 
-	private void wrapAppointmentView(TopicWrapper wrapper, Appointment appointment) {
+	private void wrapAppointmentView(TopicWrapper wrapper, Appointment appointment, List<Participation> appointmentParticipations) {
 		Locale locale = getLocale();
 		Date begin = appointment.getStart();
 		Date end = appointment.getEnd();
@@ -302,7 +317,7 @@ public class TopicsRunController extends BasicController implements Activateable
 		wrapper.setDate(date);
 		wrapper.setDate2(date2);
 		wrapper.setTime(time);
-		wrapper.setLocation(appointment.getLocation());
+		wrapper.setLocation(AppointmentsUIFactory.getDisplayLocation(getTranslator(), appointment));
 		wrapper.setDetails(appointment.getDetails());
 		
 		String dayName = "day_" + counter++;
@@ -312,8 +327,33 @@ public class TopicsRunController extends BasicController implements Activateable
 		wrapper.setStatus(appointment.getStatus());
 		wrapper.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 		wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
+		
+		if (appointmentsService.isBigBlueButtonEnabled()
+				&& secCallback.canJoinMeeting(appointment.getMeeting(), wrapper.getOrganizers(), appointmentParticipations)) {
+			wrapMeeting(wrapper, appointment);
+		}
 	}
 
+	private void wrapMeeting(TopicWrapper wrapper, Appointment appointment) {
+		BigBlueButtonMeeting meeting = appointment.getMeeting();
+		boolean disabled = isDisabled(meeting);
+		if (disabled) {
+			wrapper.setServerWarning(translate("error.serverDisabled"));
+		}
+		
+		Link joinButton = LinkFactory.createCustomLink("join" + counter++, CMD_JOIN, "meeting.join.button", Link.BUTTON_LARGE, mainVC, this);
+		joinButton.setTarget("_blank");
+		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
+		joinButton.setEnabled(!disabled);
+		joinButton.setPrimary(joinButton.isEnabled());
+		joinButton.setUserObject(appointment);
+		wrapper.setJoinLinkName(joinButton.getComponentName());
+	}
+	
+	private boolean isDisabled(BigBlueButtonMeeting meeting) {
+		return meeting != null && meeting.getServer() != null && !meeting.getServer().isEnabled();
+	}
+	
 	private void wrapOpenLink(TopicWrapper wrapper, TopicRef topic, String i18n) {
 		Link openLink = LinkFactory.createCustomLink("open" + counter++, CMD_OPEN, i18n, Link.LINK, mainVC, this);
 		openLink.setIconRightCSS("o_icon o_icon_start");
@@ -405,10 +445,13 @@ public class TopicsRunController extends BasicController implements Activateable
 			if (CMD_OPEN.equals(cmd)) {
 				Topic topic = (Topic)link.getUserObject();
 				doOpenTopic(ureq, topic);
-			} else if(CMD_EMAIL.equals(CMD_EMAIL)) {
+			} else if (CMD_EMAIL.equals(cmd)) {
 				TopicWrapper wrapper = (TopicWrapper)link.getUserObject();
 				doOrganizerEmail(ureq, wrapper.getTopic(), wrapper.getOrganizers());
-			} 
+			} if (CMD_JOIN.equals(cmd)) {
+				Appointment appointment = (Appointment)link.getUserObject();
+				doJoin(ureq, appointment);
+			}
 		}
 	}
 
@@ -419,7 +462,7 @@ public class TopicsRunController extends BasicController implements Activateable
 		listenTo(topicRunCtrl);
 		
 		String title = topic.getTitle();
-		String panelTitle = title.length() > 50? title.substring(0, 50) + "...": title;;
+		String panelTitle = title.length() > 50? title.substring(0, 50) + "...": title;
 		stackPanel.pushController(panelTitle, topicRunCtrl);
 	}
 
@@ -431,6 +474,39 @@ public class TopicsRunController extends BasicController implements Activateable
 				translate("email.title"));
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	private void doJoin(UserRequest ureq, Appointment appointment) {
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setAppointment(appointment);
+		params.setFetchTopic(true);
+		params.setFetchMeetings(true);
+		List<Appointment> appointments = appointmentsService.getAppointments(params);
+		Appointment reloadedAppointment = null;
+		if (!appointments.isEmpty()) {
+			reloadedAppointment = appointments.get(0);
+		}
+		
+		if (reloadedAppointment == null || reloadedAppointment.getMeeting() == null) {
+			showWarning("warning.no.meeting");
+			fireEvent(ureq, Event.BACK_EVENT);
+			return;
+		}
+		
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		String meetingUrl = appointmentsService.joinMeeting(reloadedAppointment, getIdentity(), errors);
+		redirectTo(ureq, meetingUrl, errors);
+	}
+	
+	private void redirectTo(UserRequest ureq, String meetingUrl, BigBlueButtonErrors errors) {
+		if(errors.hasErrors()) {
+			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));
+		} else if(StringHelper.containsNonWhitespace(meetingUrl)) {
+			MediaResource redirect = new RedirectMediaResource(meetingUrl);
+			ureq.getDispatchResult().setResultingMediaResource(redirect);
+		} else {
+			showWarning("warning.no.access");
+		}
 	}
 
 	@Override
@@ -459,6 +535,8 @@ public class TopicsRunController extends BasicController implements Activateable
 		private Long freeAppointments;
 		private Integer selectedAppointments;
 		private String openLinkName;
+		private String joinLinkName;
+		private String serverWarning;
 
 		public TopicWrapper(Topic topic) {
 			this.topic = topic;
@@ -618,6 +696,22 @@ public class TopicsRunController extends BasicController implements Activateable
 
 		public void setOpenLinkName(String openLinkName) {
 			this.openLinkName = openLinkName;
+		}
+
+		public String getJoinLinkName() {
+			return joinLinkName;
+		}
+
+		public void setJoinLinkName(String joinLinkName) {
+			this.joinLinkName = joinLinkName;
+		}
+
+		public String getServerWarning() {
+			return serverWarning;
+		}
+
+		public void setServerWarning(String serverWarning) {
+			this.serverWarning = serverWarning;
 		}
 		
 	}

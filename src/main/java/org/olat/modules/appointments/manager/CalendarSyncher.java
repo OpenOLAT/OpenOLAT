@@ -44,6 +44,7 @@ import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.appointments.ui.AppointmentsMainController;
+import org.olat.modules.appointments.ui.AppointmentsUIFactory;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -156,62 +157,72 @@ public class CalendarSyncher {
 				.forEach(event -> calendarManager.removeEventFrom(cal, event));
 	}
 	
-	private KalendarEvent createEvent(Appointment appointement, Identity identity) {
+	private KalendarEvent createEvent(Appointment appointment, Identity identity) {
 		String eventId = UUID.randomUUID().toString();
-		String subject = getSubject(appointement, identity);
-		KalendarEvent event = new KalendarEvent(eventId, null, subject, appointement.getStart(), appointement.getEnd());
-		event.setExternalId(generateExternalId(appointement));
-		event.setLocation(appointement.getLocation());
-		updateDates(appointement, event);
-		updateEventDescription(appointement, event);
-		addKalendarEventLinks(appointement.getTopic(), event);
+		Translator translator = createTranslator(identity);
+		String subject = getSubject(translator, appointment);
+		KalendarEvent event = new KalendarEvent(eventId, null, subject, appointment.getStart(), appointment.getEnd());
+		String externalId = generateExternalId(appointment);
+		event.setExternalId(externalId);
+		String location = AppointmentsUIFactory.getDisplayLocation(translator, appointment);
+		event.setLocation(location);
+		updateDates(appointment, event);
+		updateEventDescription(appointment, event);
+		addKalendarEventLinks(appointment.getTopic(), event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 		return event;
 	}
 	
-	private void updateEvent(Appointment appointement, KalendarEvent event, Identity identity) {
-		event.setSubject(getSubject(appointement, identity));
-		event.setLocation(appointement.getLocation());
-		updateDates(appointement, event);
-		updateEventDescription(appointement, event);
-		addKalendarEventLinks(appointement.getTopic(), event);
+	private void updateEvent(Appointment appointment, KalendarEvent event, Identity identity) {
+		Translator translator = createTranslator(identity);
+		String subject = getSubject(translator, appointment);
+		event.setSubject(subject);
+		String location = AppointmentsUIFactory.getDisplayLocation(translator, appointment);
+		event.setLocation(location);
+		updateDates(appointment, event);
+		updateEventDescription(appointment, event);
+		addKalendarEventLinks(appointment.getTopic(), event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 	}
 
-	private void updateDates(Appointment appointement, KalendarEvent event) {
-		if (DateUtils.isSameDate(appointement.getStart(), appointement.getEnd())) {
+	private void updateDates(Appointment appointment, KalendarEvent event) {
+		if (DateUtils.isSameDate(appointment.getStart(), appointment.getEnd())) {
 			event.setAllDayEvent(true);
-			event.setBegin(DateUtils.setTime(appointement.getStart(), 0, 0, 0));
-			event.setEnd(DateUtils.setTime(appointement.getEnd(), 23,59,59));
+			event.setBegin(DateUtils.setTime(appointment.getStart(), 0, 0, 0));
+			event.setEnd(DateUtils.setTime(appointment.getEnd(), 23,59,59));
 		} else {
 			event.setAllDayEvent(false);
-			event.setBegin(appointement.getStart());
-			event.setEnd(appointement.getEnd());
+			event.setBegin(appointment.getStart());
+			event.setEnd(appointment.getEnd());
 		}
 	}
 	
-	private String getSubject(Appointment appointment, Identity identity) {
+	private String getSubject(Translator translator, Appointment appointment) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(appointment.getTopic().getTitle());
 		if (Appointment.Status.planned == appointment.getStatus()) {
-			Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
-			Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 			sb.append(" (");
 			sb.append(translator.translate("unconfirmed"));
 			sb.append(")");
 		}
 		return sb.toString();
 	}
+
+	private Translator createTranslator(Identity identity) {
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
+		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
+		return translator;
+	}
 	
-	private void updateEventDescription(Appointment appointement, KalendarEvent event) {
+	private void updateEventDescription(Appointment appointment, KalendarEvent event) {
 		StringBuilder descr = new StringBuilder();
-		Topic topic = appointement.getTopic();
+		Topic topic = appointment.getTopic();
 		if (StringHelper.containsNonWhitespace(topic.getDescription())) {
 			descr.append(topic.getDescription());
 		}
-		if (StringHelper.containsNonWhitespace(appointement.getDetails())) {
+		if (StringHelper.containsNonWhitespace(appointment.getDetails())) {
 			if (descr.length() > 0) descr.append("\n");
-			descr.append(appointement.getDetails());
+			descr.append(appointment.getDetails());
 		}
 		event.setDescription(descr.toString());
 	}

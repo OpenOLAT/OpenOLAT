@@ -64,6 +64,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonAttendee;
 import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingDeletionHandler;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
@@ -133,6 +134,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private BigBlueButtonRecordingsHandler defaultRecordingsHandler;
 	@Autowired
 	private List<BigBlueButtonRecordingsHandler> recordingsHandlers;
+	@Autowired
+	private List<BigBlueButtonMeetingDeletionHandler> bigBlueButtonMeetingDeletionHandlers;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -448,6 +451,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
 		BigBlueButtonMeeting reloadedMeeting = bigBlueButtonMeetingDao.loadByKey(meeting.getKey());
 		if(reloadedMeeting != null) {
+			bigBlueButtonMeetingDeletionHandlers.forEach(h -> h.onBeforeDelete(reloadedMeeting));
 			removeCalendarEvent(reloadedMeeting);
 			deleteRecordings(meeting, errors);
 			bigBlueButtonAttendeeDao.deleteAttendee(reloadedMeeting);

@@ -19,7 +19,9 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
-import java.net.URI;
+import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.getSelectedTemplate;
+import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.isWebcamLayoutAvailable;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -210,7 +212,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 
 		KeyValues layoutKeyValues = new KeyValues();
 		layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
-		if(isWebcamLayoutAvailable()) {
+		if(isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates))) {
 			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
 		}
 		layoutEl = uifactory.addDropdownSingleselect("meeting.layout", "meeting.layout", formLayout,
@@ -245,7 +247,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
-		updateTemplateInformations();
+		BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, templates);
 		
 		if(mode == Mode.dates) {
 			Date startDate = meeting == null ? new Date() : meeting.getStartDate();
@@ -288,52 +290,6 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 	}
 	
-	private boolean isWebcamLayoutAvailable() {
-		if(!templateEl.isOneSelected()) {
-			return true;
-		}
-		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
-		return template != null && (template.getWebcamsOnlyForModerator() == null || !template.getWebcamsOnlyForModerator().booleanValue());
-	}
-	
-	private void updateTemplateInformations() {
-		templateEl.setExampleKey(null, null);
-		if(templateEl.isOneSelected()) {
-			BigBlueButtonMeetingTemplate template = getSelectedTemplate();
-			if(template != null && template.getMaxParticipants() != null) {
-				Integer maxConcurrentInt = template.getMaxConcurrentMeetings();
-				String maxConcurrent = (maxConcurrentInt == null ? " ∞" : maxConcurrentInt.toString());
-				String[] args = new String[] { template.getMaxParticipants().toString(), maxConcurrent};				
-				if(template.getWebcamsOnlyForModerator() != null && template.getWebcamsOnlyForModerator().booleanValue()) {
-					templateEl.setExampleKey("template.explain.max.participants.with.webcams.mod", args);
-				} else {
-					templateEl.setExampleKey("template.explain.max.participants", args);
-				}
-			}
-			externalLinkEl.setVisible(template != null && template.isExternalUsersAllowed());
-		} else {
-			externalLinkEl.setVisible(false);
-		}
-	}
-	
-	private void updateLayoutSelection() {
-		boolean webcamAvailable = isWebcamLayoutAvailable();
-		if(webcamAvailable && layoutEl.getKeys().length == 1) {
-			KeyValues layoutKeyValues = new KeyValues();
-			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
-			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
-			layoutEl.setKeysAndValues(layoutKeyValues.keys(), layoutKeyValues.values(), null);
-		} else if(!webcamAvailable && layoutEl.getKeys().length > 1) {
-			layoutEl.select(BigBlueButtonMeetingLayoutEnum.standard.name(), true);
-			
-			KeyValues layoutKeyValues = new KeyValues();
-			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
-			layoutEl.setKeysAndValues(layoutKeyValues.keys(), layoutKeyValues.values(), null);
-		}
-		
-		layoutEl.setVisible(layoutEl.getKeys().length > 1);
-	}
-	
 	private void doOpenCalendar(UserRequest ureq) {
 		removeAsListenerAndDispose(calCtr);
 		removeAsListenerAndDispose(cmc);
@@ -357,7 +313,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		allOk &= validateReadableIdentifier();
+		allOk &= BigBlueButtonUIHelper.validateReadableIdentifier(externalLinkEl, meeting);
 
 		if(mode == Mode.dates) {
 			startDateEl.clearError();
@@ -386,23 +342,24 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				}
 			}
 			
-			allOk &= validateTime(leadTimeEl, 15l);
-			allOk &= validateTime(followupTimeEl, 15l);
+			allOk &= BigBlueButtonUIHelper.validateTime(leadTimeEl, 15l);
+			allOk &= BigBlueButtonUIHelper.validateTime(followupTimeEl, 15l);
 		}
 		
 		templateEl.clearError();
 		if(!templateEl.isOneSelected()) {
-			endDateEl.setErrorKey("form.legende.mandatory", null);
+			templateEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		
 		// dates ok
 		if(allOk) {
+			BigBlueButtonMeetingTemplate template = BigBlueButtonUIHelper.getSelectedTemplate(templateEl, templates);
 			if(mode == Mode.permanent) {
-				allOk &= validatePermanentSlot();
+				allOk &= BigBlueButtonUIHelper.validatePermanentSlot(templateEl, meeting, template);
 			} else if(mode == Mode.dates) {
-				allOk &= validateDuration();
-				allOk &= validateSlot();
+				allOk &= BigBlueButtonUIHelper.validateDuration(startDateEl, leadTimeEl, endDateEl, followupTimeEl, template);
+				allOk &= BigBlueButtonUIHelper.validateSlot(startDateEl, leadTimeEl, endDateEl, followupTimeEl, meeting, template);
 			}
 		}
 		
@@ -424,127 +381,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		return allOk;
 	}
 	
-	private boolean validateReadableIdentifier() {
-		boolean allOk = true;
-		
-		externalLinkEl.clearError();
-		if(externalLinkEl.isVisible()) {
-			String identifier = externalLinkEl.getValue();
-			if (StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
-				if(identifier.length() > 64) {
-					externalLinkEl.setErrorKey("form.error.toolong", new String[] { "64" });
-					allOk &= false;
-				} else if(bigBlueButtonManager.isIdentifierInUse(identifier, meeting)) {
-					externalLinkEl.setErrorKey("error.identifier.in.use", null);
-					allOk &= false;
-				} else {
-					try {
-						URI uri = new URI(BigBlueButtonDispatcher.getMeetingUrl(identifier));
-						uri.normalize();
-					} catch(Exception e) {
-						externalLinkEl.setErrorKey("error.identifier.url.not.valid", new String[] { e.getMessage() });
-						allOk &= false;
-					}
-				}
-				externalLinkEl.setExampleKey("noTransOnlyParam", new String[] {BigBlueButtonDispatcher.getMeetingUrl(identifier)});			
-			} else {
-				externalLinkEl.setExampleKey(null, null);			
-			}
-		}
-
-		return allOk;
-	}
 	
-	private boolean validateTime(TextElement el, long maxValue) {
-		boolean allOk = true;
-		el.clearError();
-		if(StringHelper.containsNonWhitespace(el.getValue())) {
-			if(!StringHelper.isLong(el.getValue())) {
-				el.setErrorKey("form.error.nointeger", null);
-				allOk &= false;
-			} else if(Long.parseLong(el.getValue()) > maxValue) {
-				el.setErrorKey("error.too.long.time", new String[] { Long.toString(maxValue) });
-				allOk &= false;
-			}
-		}
-		return allOk;
-	}
-	
-	private boolean validateDuration() {
-		boolean allOk = true;
-		
-		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
-		Date start = startDateEl.getDate();
-		Date end = endDateEl.getDate();
-		if(template != null && template.getMaxDuration() != null && start != null && end != null) {
-			// all calculation in milli-seconds
-			long realStart = start.getTime() - (60 * 1000 * getLeadTime());
-			long realEnd = end.getTime() + (60 * 1000 * getFollowupTime());
-			long duration = realEnd - realStart;
-			long maxDuration  = (60 * 1000 * template.getMaxDuration());
-			if(duration > maxDuration) {
-				endDateEl.setErrorKey("error.duration", new String[] { template.getMaxDuration().toString() });
-				allOk &= false;
-			}
-		}
-		return allOk;
-	}
-	
-	private boolean validateSlot() {
-		boolean allOk = true;
-		
-		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
-		boolean slotFree = bigBlueButtonManager.isSlotAvailable(meeting, template,
-				startDateEl.getDate(), getLeadTime(), endDateEl.getDate(), getFollowupTime());
-		if(!slotFree) {
-			startDateEl.setErrorKey("server.overloaded", null);
-			allOk &= false;
-		}
-		
-		return allOk;
-	}
-	
-	private boolean validatePermanentSlot() {
-		boolean allOk = true;
-		
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.YEAR, 12);
-		Date endDate = cal.getTime();
-		
-		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
-		boolean slotFree = bigBlueButtonManager.isSlotAvailable(meeting, template,
-				new Date(), 0, endDate, 0);
-		if(!slotFree) {
-			templateEl.setErrorKey("server.overloaded", null);
-			allOk &= false;
-		}
-		
-		return allOk;
-	}
-	
-	private BigBlueButtonMeetingTemplate getSelectedTemplate() {
-		String selectedTemplateId = templateEl.getSelectedKey();
-		return templates.stream()
-					.filter(tpl -> selectedTemplateId.equals(tpl.getKey().toString()))
-					.findFirst()
-					.orElse(null);
-	}
-	
-	public long getLeadTime() {
-		long leadTime = 0;
-		if(leadTimeEl.isVisible() && StringHelper.isLong(leadTimeEl.getValue())) {
-			leadTime = Long.valueOf(leadTimeEl.getValue());
-		}
-		return leadTime;
-	}
-	
-	private long getFollowupTime() {
-		long followupTime = 0;
-		if(followupTimeEl.isVisible() && StringHelper.isLong(followupTimeEl.getValue())) {
-			followupTime = Long.valueOf(followupTimeEl.getValue());
-		}
-		return followupTime;
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -567,12 +404,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(templateEl == source) {
-			updateTemplateInformations();
-			updateLayoutSelection();
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, templates);
+			boolean webcamAvailable = isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates));
+			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
 		} else if (openCalLink == source) {
 			doOpenCalendar(ureq);
 		} else if (externalLinkEl == source) {
-			validateReadableIdentifier();
+			BigBlueButtonUIHelper.validateReadableIdentifier(externalLinkEl, meeting);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -590,7 +428,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		meeting.setDescription(descriptionEl.getValue());
 		meeting.setWelcome(welcomeEl.getValue());
 		meeting.setMainPresenter(mainPresenterEl.getValue());
-		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
+		BigBlueButtonMeetingTemplate template = getSelectedTemplate(templateEl, templates);
 		meeting.setTemplate(template);
 		
 		if(template != null && template.isExternalUsersAllowed()
@@ -611,9 +449,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			meeting.setStartDate(startDate);
 			Date endDate = endDateEl.getDate();
 			meeting.setEndDate(endDate);
-			long leadTime = getLeadTime();
+			long leadTime = BigBlueButtonUIHelper.getLongOrZero(leadTimeEl);
 			meeting.setLeadTime(leadTime);
-			long followupTime = getFollowupTime();
+			long followupTime = BigBlueButtonUIHelper.getLongOrZero(followupTimeEl);
 			meeting.setFollowupTime(followupTime);
 		}
 		

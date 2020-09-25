@@ -17,53 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.appointments;
+package org.olat.modules.appointments.ui;
 
-import java.util.Date;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
-import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.appointments.Appointment;
 
 /**
  * 
- * Initial date: 11 Apr 2020<br>
+ * Initial date: 24 Sep 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Appointment extends AppointmentRef, ModifiedInfo, CreateInfo {
+public class AppointmentsUIFactory {
 	
-	public enum Status {
-		planned,
-		confirmed
+	public static String getDisplayLocation(Translator translator, Appointment appointement) {
+		StringBuilder sb = new StringBuilder();
+		
+		boolean hasLocation = StringHelper.containsNonWhitespace(appointement.getLocation());
+		boolean hasMeeting = appointement.getMeeting() != null;
+		if (hasLocation) {
+			sb.append(appointement.getLocation());
+		}
+		if (hasLocation && hasMeeting) {
+			sb.append(" / ");
+		}
+		if (hasMeeting) {
+			sb.append(translator.translate("appointment.location.bbb"));
+		}
+		
+		return sb.length() > 0? sb.toString(): null;
 	}
-	
-	public Status getStatus();
-	
-	public Date getStatusModified();
-	
-	public Date getStart();
-	
-	public void setStart(Date start);
-	
-	public Date getEnd();
-	
-	public void setEnd(Date end);
-	
-	public String getLocation();
-	
-	public void setLocation(String location);
-	
-	public String getDetails();
-	
-	public void setDetails(String details);
-	
-	public Integer getMaxParticipations();
-	
-	public void setMaxParticipations(Integer maxParticipations);
-	
-	public Topic getTopic();
-	
-	public BigBlueButtonMeeting getMeeting();
 	
 }

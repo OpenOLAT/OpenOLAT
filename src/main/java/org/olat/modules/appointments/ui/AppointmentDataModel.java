@@ -21,7 +21,6 @@ package org.olat.modules.appointments.ui;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -32,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
 
 /**
@@ -47,17 +47,17 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 	public static final String FILTER_PARTICIPATED = "participated";
 	public static final String FILTER_FUTURE = "future";
 	
-	private final Locale locale;
+	private final Translator translator;
 	private List<AppointmentRow> backups;
 	
-	public AppointmentDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public AppointmentDataModel(FlexiTableColumnModel columnsModel, Translator translator) {
 		super(columnsModel);
-		this.locale = locale;
+		this.translator = translator;
 	}
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<AppointmentRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		List<AppointmentRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, translator.getLocale()).sort();
 		super.setObjects(rows);
 	}
 	
@@ -110,7 +110,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 			case status: return row.getAppointment().getStatus();
 			case start: return row.getAppointment().getStart();
 			case end: return row.getAppointment().getEnd();
-			case location: return row.getAppointment().getLocation();
+			case location: return AppointmentsUIFactory.getDisplayLocation(translator, row.getAppointment());
 			case details: return row.getAppointment().getDetails();
 			case maxParticipations: return row.getAppointment().getMaxParticipations();
 			case freeParticipations: return row.getFreeParticipations();
@@ -128,7 +128,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 
 	@Override
 	public DefaultFlexiTableDataModel<AppointmentRow> createCopyWithEmptyList() {
-		return new AppointmentDataModel(getTableColumnModel(), locale);
+		return new AppointmentDataModel(getTableColumnModel(), translator);
 	}
 	
 	public enum AppointmentCols implements FlexiSortableColumnDef {

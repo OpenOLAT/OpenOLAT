@@ -58,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BigBlueButtonConfigurationController extends FormBasicController {
 
-	private static final String[] FOR_KEYS = { "courses", "groups" };
+	private static final String[] FOR_KEYS = { "courses", "appointments", "groups" };
 	private static final String[] ENABLED_KEY = new String[]{ "on" };
 	
 	private MultipleSelectionElement moduleEnabled;
@@ -102,11 +102,13 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		moduleEnabled.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] forValues = new String[] {
-			translate("bigbluebutton.module.enabled.for.courses"), translate("bigbluebutton.module.enabled.for.groups")
+			translate("bigbluebutton.module.enabled.for.courses"), translate("bigbluebutton.module.enabled.for.appointments"),
+			translate("bigbluebutton.module.enabled.for.groups")
 		};
 		enabledForEl = uifactory.addCheckboxesVertical("bigbluebutton.module.enabled.for", formLayout, FOR_KEYS, forValues, 1);
 		enabledForEl.select(FOR_KEYS[0], bigBlueButtonModule.isCoursesEnabled());
-		enabledForEl.select(FOR_KEYS[1], bigBlueButtonModule.isGroupsEnabled());
+		enabledForEl.select(FOR_KEYS[1], bigBlueButtonModule.isAppointmentsEnabled());
+		enabledForEl.select(FOR_KEYS[2], bigBlueButtonModule.isGroupsEnabled());
 		
 		permanentForEl = uifactory.addCheckboxesHorizontal("enable.permanent.meeting", formLayout, ENABLED_KEY, enabledValues);
 		permanentForEl.select(ENABLED_KEY[0], bigBlueButtonModule.isPermanentMeetingEnabled());
@@ -235,7 +237,8 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		// update collaboration tools list
 		if(enabled) {
 			bigBlueButtonModule.setCoursesEnabled(enabledForEl.isSelected(0));
-			bigBlueButtonModule.setGroupsEnabled(enabledForEl.isSelected(1));
+			bigBlueButtonModule.setAppointmentsEnabled(enabledForEl.isSelected(1));
+			bigBlueButtonModule.setGroupsEnabled(enabledForEl.isSelected(2));
 			bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
 			bigBlueButtonModule.setRecordingHandlerId(recordingsHandlerEl.getSelectedKey());
 		}

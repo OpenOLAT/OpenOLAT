@@ -22,6 +22,7 @@ package org.olat.modules.appointments.ui;
 import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -50,8 +51,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.AppointmentSearchParams;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
@@ -62,6 +66,10 @@ import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.Topic.Type;
 import org.olat.modules.appointments.TopicRef;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonErrorHelper;
+import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TopicsRunCoachController extends BasicController {
 
 	private static final String CMD_OPEN = "open";
+	private static final String CMD_JOIN = "join";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_GROUPS = "group";
@@ -104,6 +113,7 @@ public class TopicsRunCoachController extends BasicController {
 	public TopicsRunCoachController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
 		this.entry = entry;
 		this.subIdent = subIdent;
@@ -187,13 +197,14 @@ public class TopicsRunCoachController extends BasicController {
 	}
 
 	private void wrapOrganizers(TopicWrapper wrapper, List<Organizer> organizers) {
+		wrapper.setOrganizers(organizers);
 		List<String> organizerNames = new ArrayList<>(organizers.size());
 		for (Organizer organizer : organizers) {
 			String name = userManager.getUserDisplayName(organizer.getIdentity().getKey());
 			organizerNames.add(name);
 		}
 		organizerNames.sort(String.CASE_INSENSITIVE_ORDER);
-		wrapper.setOrganizers(organizerNames);
+		wrapper.setOrganizerNames(organizerNames);
 	}
 
 	private void wrapParticpations(TopicWrapper wrapper, List<Participation> participations, List<Appointment> appointments,
@@ -229,7 +240,9 @@ public class TopicsRunCoachController extends BasicController {
 		if (nextAppointment.isPresent()) {
 			Appointment appointment = nextAppointment.get();
 			
-			forgeAppointmentView(wrapper, appointment);
+			List<Participation> appointmentParticipations = appointmentKeyToParticipations
+					.getOrDefault(appointment.getKey(), Collections.emptyList());
+			forgeAppointmentView(wrapper, appointment, appointmentParticipations);
 			wrapper.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 			wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 			
@@ -238,8 +251,7 @@ public class TopicsRunCoachController extends BasicController {
 				wrapper.setFuture(Boolean.TRUE);
 			}
 			
-			List<String> participants = appointmentKeyToParticipations
-					.getOrDefault(appointment.getKey(), Collections.emptyList()).stream()
+			List<String> participants = appointmentParticipations.stream()
 					.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
 					.sorted(String.CASE_INSENSITIVE_ORDER)
 					.collect(Collectors.toList());
@@ -295,7 +307,7 @@ public class TopicsRunCoachController extends BasicController {
 		wrapper.setMessage(message);
 	}
 	
-	private void forgeAppointmentView(TopicWrapper wrapper, Appointment appointment) {
+	private void forgeAppointmentView(TopicWrapper wrapper, Appointment appointment, List<Participation> participations) {
 		Locale locale = getLocale();
 		Date begin = appointment.getStart();
 		Date end = appointment.getEnd();
@@ -336,12 +348,37 @@ public class TopicsRunCoachController extends BasicController {
 		wrapper.setDate(date);
 		wrapper.setDate2(date2);
 		wrapper.setTime(time);
-		wrapper.setLocation(appointment.getLocation());
+		wrapper.setLocation(AppointmentsUIFactory.getDisplayLocation(getTranslator(), appointment));
 		wrapper.setDetails(appointment.getDetails());
 		
 		String dayName = "day_" + counter++;
 		DateComponentFactory.createDateComponentWithYear(dayName, appointment.getStart(), mainVC);
 		wrapper.setDayName(dayName);
+		
+		if (appointmentsService.isBigBlueButtonEnabled()
+				&& secCallback.canJoinMeeting(appointment.getMeeting(), wrapper.getOrganizers(), participations)) {
+			wrapMeeting(wrapper, appointment);
+		}
+	}
+	
+	private void wrapMeeting(TopicWrapper wrapper, Appointment appointment) {
+		BigBlueButtonMeeting meeting = appointment.getMeeting();
+		boolean disabled = isDisabled(meeting);
+		if (disabled) {
+			wrapper.setServerWarning(translate("error.serverDisabled"));
+		}
+		
+		Link joinButton = LinkFactory.createCustomLink("join" + counter++, CMD_JOIN, "meeting.join.button", Link.BUTTON_LARGE, mainVC, this);
+		joinButton.setTarget("_blank");
+		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
+		joinButton.setEnabled(!disabled);
+		joinButton.setPrimary(joinButton.isEnabled());
+		joinButton.setUserObject(appointment);
+		wrapper.setJoinLinkName(joinButton.getComponentName());
+	}
+	
+	private boolean isDisabled(BigBlueButtonMeeting meeting) {
+		return meeting != null && meeting.getServer() != null && !meeting.getServer().isEnabled();
 	}
 
 	private void wrapOpenLink(TopicWrapper wrapper) {
@@ -444,6 +481,9 @@ public class TopicsRunCoachController extends BasicController {
 			} else if (CMD_DELETE.equals(cmd)) {
 				TopicRef topic = (TopicRef)link.getUserObject();
 				doConfirmDeleteTopic(ureq, topic);
+			} else if (CMD_JOIN.equals(cmd)) {
+				Appointment appointment = (Appointment)link.getUserObject();
+				doJoin(ureq, appointment);
 			}
 		}
 	}
@@ -496,8 +536,41 @@ public class TopicsRunCoachController extends BasicController {
 		listenTo(topicRunCtrl);
 		
 		String title = topic.getTitle();
-		String panelTitle = title.length() > 50? title.substring(0, 50) + "...": title;;
+		String panelTitle = title.length() > 50? title.substring(0, 50) + "...": title;
 		stackPanel.pushController(panelTitle, topicRunCtrl);
+	}
+	
+	private void doJoin(UserRequest ureq, Appointment appointment) {
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setAppointment(appointment);
+		params.setFetchTopic(true);
+		params.setFetchMeetings(true);
+		List<Appointment> appointments = appointmentsService.getAppointments(params);
+		Appointment reloadedAppointment = null;
+		if (!appointments.isEmpty()) {
+			reloadedAppointment = appointments.get(0);
+		}
+		
+		if (reloadedAppointment == null || reloadedAppointment.getMeeting() == null) {
+			showWarning("warning.no.meeting");
+			fireEvent(ureq, Event.BACK_EVENT);
+			return;
+		}
+		
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		String meetingUrl = appointmentsService.joinMeeting(reloadedAppointment, getIdentity(), errors);
+		redirectTo(ureq, meetingUrl, errors);
+	}
+	
+	private void redirectTo(UserRequest ureq, String meetingUrl, BigBlueButtonErrors errors) {
+		if(errors.hasErrors()) {
+			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));
+		} else if(StringHelper.containsNonWhitespace(meetingUrl)) {
+			MediaResource redirect = new RedirectMediaResource(meetingUrl);
+			ureq.getDispatchResult().setResultingMediaResource(redirect);
+		} else {
+			showWarning("warning.no.access");
+		}
 	}
 
 	@Override
@@ -508,7 +581,8 @@ public class TopicsRunCoachController extends BasicController {
 	public static final class TopicWrapper {
 
 		private final Topic topic;
-		private List<String> organizers;
+		private Collection<Organizer> organizers;
+		private List<String> organizerNames;
 		private String message;
 		
 		//next appointment
@@ -525,6 +599,9 @@ public class TopicsRunCoachController extends BasicController {
 		
 		private String openLinkName;
 		private String toolsName;
+		
+		private String joinLinkName;
+		private String serverWarning;
 
 		public TopicWrapper(Topic topic) {
 			this.topic = topic;
@@ -542,12 +619,20 @@ public class TopicsRunCoachController extends BasicController {
 			return topic.getDescription();
 		}
 		
-		public List<String> getOrganizers() {
+		public Collection<Organizer> getOrganizers() {
 			return organizers;
 		}
-		
-		public void setOrganizers(List<String> organizers) {
+
+		public void setOrganizers(Collection<Organizer> organizers) {
 			this.organizers = organizers;
+		}
+
+		public List<String> getOrganizerNames() {
+			return organizerNames;
+		}
+
+		public void setOrganizerNames(List<String> organizerNames) {
+			this.organizerNames = organizerNames;
 		}
 
 		public String getMessage() {
@@ -652,6 +737,22 @@ public class TopicsRunCoachController extends BasicController {
 
 		public void setToolsName(String toolsName) {
 			this.toolsName = toolsName;
+		}
+
+		public String getJoinLinkName() {
+			return joinLinkName;
+		}
+
+		public void setJoinLinkName(String joinLinkName) {
+			this.joinLinkName = joinLinkName;
+		}
+
+		public String getServerWarning() {
+			return serverWarning;
+		}
+
+		public void setServerWarning(String serverWarning) {
+			this.serverWarning = serverWarning;
 		}
 		
 	}

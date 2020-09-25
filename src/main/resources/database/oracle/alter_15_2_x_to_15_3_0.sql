@@ -73,6 +73,7 @@ create index comp_log_entry_idx on o_as_compensation_log (fk_entry_id);
 create index comp_log_ident_idx on o_as_compensation_log (fk_identity_id);
 
 
-
-
-
+-- Appointments
+alter table o_ap_appointment add fk_meeting_id number(20);
+alter table o_ap_appointment add constraint ap_appointment_meeting_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
+create index idx_ap_appointment_meeting_idx on o_ap_appointment(fk_meeting_id);

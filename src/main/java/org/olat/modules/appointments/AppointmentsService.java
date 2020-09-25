@@ -29,6 +29,9 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -96,8 +99,6 @@ public interface AppointmentsService {
 
 	public void confirmAppointment(Appointment appointment);
 
-	public void confirmAppointments(RepositoryEntry entry, String subIdent);
-
 	public void unconfirmAppointment(Appointment appointment);
 
 	public void deleteAppointment(Appointment appointment);
@@ -144,6 +145,19 @@ public interface AppointmentsService {
 	public SubscriptionContext getSubscriptionContext(RepositoryEntry entry, String subIdent);
 	
 	public String createBussinesPath(Long entryKey, String subIdent);
+	
+	public boolean isBigBlueButtonEnabled();
+	
+	public List<BigBlueButtonMeetingTemplate> getBigBlueButtonTemplates(Topic topic, Identity identity, Roles roles,
+			Long selectedTemplateKey);
+	
+	public Appointment addMeeting(Appointment appointment, Identity identity);
+
+	public Appointment removeMeeting(Appointment appointment);
+
+	public String joinMeeting(Appointment appointment, Identity identity, BigBlueButtonErrors errors);
+
+	public String getMainPresenters(Topic topic);
 
 }
 

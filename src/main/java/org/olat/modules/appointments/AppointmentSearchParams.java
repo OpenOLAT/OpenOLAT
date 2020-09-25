@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.stream.Collectors;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -42,7 +43,10 @@ public class AppointmentSearchParams {
 	private Identity organizer;
 	private Date startAfter;
 	private Appointment.Status status;
+	private BigBlueButtonMeeting meeting;
+	private boolean hasMeeting;
 	private boolean fetchTopic;
+	private boolean fetchMeetings;
 
 	public Long getAppointmentKey() {
 		return appointmentKey;
@@ -106,12 +110,36 @@ public class AppointmentSearchParams {
 		this.status = status;
 	}
 
+	public BigBlueButtonMeeting getMeeting() {
+		return meeting;
+	}
+
+	public void setMeeting(BigBlueButtonMeeting meeting) {
+		this.meeting = meeting;
+	}
+
+	public boolean hasMeeting() {
+		return hasMeeting;
+	}
+
+	public void setHasMeeting(boolean hasMeeting) {
+		this.hasMeeting = hasMeeting;
+	}
+
 	public boolean isFetchTopic() {
 		return fetchTopic;
 	}
 
 	public void setFetchTopic(boolean fetchTopic) {
 		this.fetchTopic = fetchTopic;
+	}
+
+	public boolean isFetchMeetings() {
+		return fetchMeetings;
+	}
+
+	public void setFetchMeetings(boolean fetchMeetings) {
+		this.fetchMeetings = fetchMeetings;
 	}
 
 }

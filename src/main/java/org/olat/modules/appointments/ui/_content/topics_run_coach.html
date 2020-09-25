@@ -17,10 +17,10 @@
 					<div>
 						$topic.title
 						<span class='o_organizers'>
-							#if($r.isNotEmpty($topic.organizers))
+							#if($r.isNotEmpty($topic.organizerNames))
 								<span class="small">
 									$r.translate("organizer.with")
-									#foreach($organizer in $topic.organizers)
+									#foreach($organizer in $topic.organizerNames)
 										<span class="o_organizer">$organizer#if($foreach.index < $topic.organizers.size() - 1)$r.translate("organizer.separator")#end</span>
 									#end
 								</span>
@@ -93,6 +93,17 @@
 											</div>
 										#end
 									</div>
+								</div>
+							#end
+							#if($r.isNotNull($topic.getServerWarning()))
+								<div class="o_error">
+									$topic.getServerWarning()
+								</div>
+							#end
+							
+							#if($r.isNotNull($topic.getJoinLinkName()))
+								<div class="o_button_group">
+									$r.render($topic.getJoinLinkName())
 								</div>
 							#end
 						</div>

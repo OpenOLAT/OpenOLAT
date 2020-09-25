@@ -31,6 +31,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -38,6 +39,8 @@ import javax.persistence.TemporalType;
 import org.olat.core.id.Persistable;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Topic;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 
 /**
  * 
@@ -83,6 +86,9 @@ public class AppointmentImpl implements Persistable, Appointment {
 	@ManyToOne(targetEntity=TopicImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_topic_id", nullable=false, insertable=true, updatable=false)
 	private Topic topic;
+	@OneToOne(targetEntity=BigBlueButtonMeetingImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_meeting_id", nullable=true, insertable=true, updatable=true)
+	private BigBlueButtonMeeting meeting;
 
 	@Override
 	public Long getKey() {
@@ -187,6 +193,15 @@ public class AppointmentImpl implements Persistable, Appointment {
 
 	public void setTopic(Topic topic) {
 		this.topic = topic;
+	}
+
+	@Override
+	public BigBlueButtonMeeting getMeeting() {
+		return meeting;
+	}
+
+	public void setMeeting(BigBlueButtonMeeting meeting) {
+		this.meeting = meeting;
 	}
 
 	@Override

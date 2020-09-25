@@ -19,7 +19,6 @@
  */
 package org.olat.modules.appointments.manager;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
@@ -38,6 +37,8 @@ import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Appointment.Status;
 import org.olat.modules.appointments.AppointmentSearchParams;
 import org.olat.modules.appointments.Topic;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -59,6 +60,8 @@ public class AppointmentDAOTest extends OlatTestCase {
 	private OrganizerDAO organizerDao;
 	@Autowired
 	private ParticipationDAO participationDao;
+	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
 	
 	@Autowired
 	private AppointmentDAO sut;
@@ -143,6 +146,33 @@ public class AppointmentDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldSaveMeetingRef() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Topic topic = topicDao.createTopic(entry, JunitTestHelper.random());
+		Appointment appointment = sut.createAppointment(topic);
+		dbInstance.commitAndCloseSession();
+		
+		appointment = sut.loadByKey(appointment.getKey());
+		assertThat(appointment.getMeeting()).isNull();
+		
+		// Add meeting
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		BigBlueButtonMeeting meeting = bigBlueButtonManager.createAndPersistMeeting(random(), entry, null, null, identity);
+		appointment = sut.saveAppointment(appointment, meeting);
+		dbInstance.commitAndCloseSession();
+		
+		appointment = sut.loadByKey(appointment.getKey());
+		assertThat(appointment.getMeeting()).isEqualTo(meeting);
+		
+		// Remove meeting
+		appointment = sut.saveAppointment(appointment, null);
+		dbInstance.commitAndCloseSession();
+		
+		appointment = sut.loadByKey(appointment.getKey());
+		assertThat(appointment.getMeeting()).isNull();
+	}
+	
+	@Test
 	public void shouldUpdateStatus() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Topic topic = topicDao.createTopic(entry, JunitTestHelper.random());
@@ -167,24 +197,6 @@ public class AppointmentDAOTest extends OlatTestCase {
 		
 		Appointment reloadedAppointment = sut.loadByKey(appointment.getKey());
 		assertThat(reloadedAppointment).isNull();
-	}
-	
-	@Test
-	public void shouldDeleteByKeys() {
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		Topic topic = topicDao.createTopic(entry, random());
-		Appointment appointment1 = sut.createAppointment(topic);
-		Appointment appointment2 = sut.createAppointment(topic);
-		Appointment appointment3 = sut.createAppointment(topic);
-		dbInstance.commitAndCloseSession();
-		
-		sut.delete(asList(appointment1.getKey(), appointment2.getKey()));
-		dbInstance.commitAndCloseSession();
-		
-		AppointmentSearchParams searchParams = new AppointmentSearchParams();
-		searchParams.setTopic(topic);
-		List<Appointment> reloadedAppointments = sut.loadAppointments(searchParams);
-		assertThat(reloadedAppointments).containsExactly(appointment3);
 	}
 	
 	@Test
@@ -465,6 +477,55 @@ public class AppointmentDAOTest extends OlatTestCase {
 		assertThat(appointments)
 				.containsExactlyInAnyOrder(appointment1, appointment2)
 				.doesNotContain(appointmentPlanning);
+	}
+	
+	@Test
+	public void shouldLoadByMeeting() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Topic topic = topicDao.createTopic(entry, random());
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		BigBlueButtonMeeting meeting1 = bigBlueButtonManager.createAndPersistMeeting(random(), entry, null, null, identity);
+		BigBlueButtonMeeting meetingOther = bigBlueButtonManager.createAndPersistMeeting(random(), entry, null, null, identity);
+		
+		Appointment appointment = sut.createAppointment(topic);
+		sut.saveAppointment(appointment, meeting1);
+		Appointment appointmentOtherMeeting = sut.createAppointment(topic);
+		sut.saveAppointment(appointmentOtherMeeting, meetingOther);
+		Appointment appointmentNoMeeting = sut.createAppointment(topic);
+		dbInstance.commitAndCloseSession();
+		
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setMeeting(meeting1);
+		List<Appointment> appointments = sut.loadAppointments(params);
+		
+		assertThat(appointments)
+				.containsExactlyInAnyOrder(appointment)
+				.doesNotContain(appointmentOtherMeeting, appointmentNoMeeting);
+	}
+	
+	@Test
+	public void shouldLoadByHasMeeting() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Topic topic = topicDao.createTopic(entry, random());
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		BigBlueButtonMeeting meeting1 = bigBlueButtonManager.createAndPersistMeeting(random(), entry, null, null, identity);
+		BigBlueButtonMeeting meeting2 = bigBlueButtonManager.createAndPersistMeeting(random(), entry, null, null, identity);
+		
+		Appointment appointment1 = sut.createAppointment(topic);
+		sut.saveAppointment(appointment1, meeting1);
+		Appointment appointment2 = sut.createAppointment(topic);
+		sut.saveAppointment(appointment2, meeting2);
+		Appointment appointmentNoMeeting = sut.createAppointment(topic);
+		dbInstance.commitAndCloseSession();
+		
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setTopic(topic);
+		params.setHasMeeting(true);
+		List<Appointment> appointments = sut.loadAppointments(params);
+		
+		assertThat(appointments)
+				.containsExactlyInAnyOrder(appointment1, appointment2)
+				.doesNotContain(appointmentNoMeeting);
 	}
 
 }

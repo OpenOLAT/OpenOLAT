@@ -226,7 +226,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 			columnsModel.addFlexiColumnModel(confirmModel);
 		}
 		
-		dataModel = new AppointmentDataModel(columnsModel, getLocale());
+		dataModel = new AppointmentDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, getPersistedPreferencesId());
 		tableEl.setEmtpyTableMessageKey("table.empty.appointments");
@@ -345,7 +345,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		row.setDateShort1(dateShort1);
 		row.setDateShort2(dateShort2);
 		row.setTime(time);
-		row.setLocation(appointment.getLocation());
+		row.setLocation(AppointmentsUIFactory.getDisplayLocation(getTranslator(), appointment));
 		row.setDetails(appointment.getDetails());
 		forgeDayElement(row, appointment.getStart());
 	}

@@ -354,10 +354,12 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 		this.recordingsPublishing = recordingsPublishing;
 	}
 	
+	@Override
 	public BigBlueButtonRecordingsPublishingEnum getRecordingsPublishingEnum() {
 		return BigBlueButtonRecordingsPublishingEnum.secureValueOf(recordingsPublishing);
 	}
 
+	@Override
 	public void setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum recordingsPublishing) {
 		if(recordingsPublishing == null) {
 			this.recordingsPublishing = BigBlueButtonRecordingsPublishingEnum.auto.name();

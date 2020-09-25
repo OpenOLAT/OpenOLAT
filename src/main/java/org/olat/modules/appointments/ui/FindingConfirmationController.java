@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.modules.appointments.Appointment;
+import org.olat.modules.appointments.AppointmentSearchParams;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
@@ -133,7 +134,6 @@ public class FindingConfirmationController extends FormBasicController {
 				? appointmentsService.getRestrictionMembers(topic)
 				: repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 				
-		
 		ParticipationSearchParams params = new ParticipationSearchParams();
 		params.setAppointment(appointment);
 		params.setFetchIdentities(true);
@@ -170,6 +170,28 @@ public class FindingConfirmationController extends FormBasicController {
 		usersTableEl.setMultiSelectedIndex(selectedRows);
 	}
 	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		usersTableEl.clearError();
+		if (appointment.getMeeting() != null) {
+			AppointmentSearchParams params = new AppointmentSearchParams();
+			params.setAppointment(appointment);
+			params.setFetchMeetings(true);
+			List<Appointment> appointments = appointmentsService.getAppointments(params);
+			if (!appointments.isEmpty()) {
+				Integer maxMeetingParticipants = appointments.get(0).getMeeting().getTemplate().getMaxParticipants();
+				if (maxMeetingParticipants.intValue() < usersTableEl.getMultiSelectedIndex().size()) {
+					usersTableEl.setErrorKey("error.selected.identities.greater.room", new String[] {maxMeetingParticipants.toString()});
+					allOk &= false;
+				}
+			}
+		}
+		
+		return allOk;
+	}
+
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);

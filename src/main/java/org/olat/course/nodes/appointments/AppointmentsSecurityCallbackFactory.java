@@ -19,7 +19,8 @@
  */
 package org.olat.course.nodes.appointments;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Date;
 
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.AppointmentsCourseNode;
@@ -27,6 +28,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.Organizer;
+import org.olat.modules.appointments.Participation;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 
 /**
  * 
@@ -75,19 +78,19 @@ public class AppointmentsSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canEditTopic(List<Organizer> organizers) {
+		public boolean canEditTopic(Collection<Organizer> organizers) {
 			if (readOnly) return false;
 			
 			return admin || (coachCanEditTopic && isOrganizer(organizers));
 		}
 
 		@Override
-		public boolean canViewAppointment(List<Organizer> organizers) {
+		public boolean canViewAppointment(Collection<Organizer> organizers) {
 			return admin || (coach && isOrganizer(organizers));
 		}
 
 		@Override
-		public boolean canEditAppointment(List<Organizer> organizers) {
+		public boolean canEditAppointment(Collection<Organizer> organizers) {
 			return admin || (coachCanEditAppointment && isOrganizer(organizers));
 		}
 
@@ -97,10 +100,30 @@ public class AppointmentsSecurityCallbackFactory {
 			
 			return participant;
 		}
+
+		@Override
+		public boolean canJoinMeeting(BigBlueButtonMeeting meeting, Collection<Organizer> organizers, Collection<Participation> participations) {
+			if (readOnly || meeting == null) return false;
+			
+			boolean participation = isParticipation(participations);
+			boolean organizer = isOrganizer(organizers);
+			if (participation || organizer) {
+				Date now = new Date();
+				Date start = organizer ? meeting.getStartWithLeadTime() : meeting.getStartDate();
+				Date end = meeting.getEndWithFollowupTime();
+				return !((start != null && start.compareTo(now) >= 0) || (end != null && end.compareTo(now) <= 0));
+			}
+			return false;
+		}
 		
-		private boolean isOrganizer(List<Organizer> organizers) {
+		private boolean isOrganizer(Collection<Organizer> organizers) {
 			return organizers.stream()
 					.anyMatch(o -> o.getIdentity().getKey().equals(identity.getKey()));
+		}
+		
+		private boolean isParticipation(Collection<Participation> participations) {
+			return participations.stream()
+					.anyMatch(p -> p.getIdentity().getKey().equals(identity.getKey()));
 		}
 		
 	}

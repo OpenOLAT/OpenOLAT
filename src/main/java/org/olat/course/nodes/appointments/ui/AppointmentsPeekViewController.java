@@ -47,6 +47,7 @@ import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.ui.AppointmentsMainController;
+import org.olat.modules.appointments.ui.AppointmentsUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,7 +193,7 @@ public class AppointmentsPeekViewController extends BasicController {
 		wrapper.setDate(date);
 		wrapper.setDate2(date2);
 		wrapper.setTime(time);
-		wrapper.setLocation(appointment.getLocation());
+		wrapper.setLocation(AppointmentsUIFactory.getDisplayLocation(getTranslator(), appointment));
 		wrapper.setDetails(appointment.getDetails());
 		
 		DateComponentFactory.createDateComponentWithYear("day", appointment.getStart(), mainVC);

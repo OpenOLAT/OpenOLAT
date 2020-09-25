@@ -19,7 +19,9 @@
  */
 package org.olat.modules.appointments;
 
-import java.util.List;
+import java.util.Collection;
+
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 
 /**
  * 
@@ -33,12 +35,14 @@ public interface AppointmentsSecurityCallback {
 	
 	public boolean canCreateTopic();
 	
-	public boolean canEditTopic(List<Organizer> organizers);
+	public boolean canEditTopic(Collection<Organizer> organizers);
 	
-	public boolean canViewAppointment(List<Organizer> organizers);
+	public boolean canViewAppointment(Collection<Organizer> organizers);
 	
-	public boolean canEditAppointment(List<Organizer> organizers);
+	public boolean canEditAppointment(Collection<Organizer> organizers);
 	
 	public boolean canSelectAppointments();
+	
+	public boolean canJoinMeeting(BigBlueButtonMeeting meeting, Collection<Organizer> organizers, Collection<Participation> participations);
 
 }

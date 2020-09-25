@@ -46,6 +46,7 @@ import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.ui.AppointmentsMainController;
+import org.olat.modules.appointments.ui.AppointmentsUIFactory;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -300,8 +301,9 @@ public class AppointmentsMailing {
 			sb.append(translator.translate("mail.end", new String[] { dateFormat.format(appointment.getEnd()) }));
 			sb.append("<br>");
 		}
-		if (StringHelper.containsNonWhitespace(appointment.getLocation())) {
-			sb.append(translator.translate("mail.location", new String[] { appointment.getLocation() }));
+		String location = AppointmentsUIFactory.getDisplayLocation(translator, appointment);
+		if (StringHelper.containsNonWhitespace(location)) {
+			sb.append(translator.translate("mail.location", new String[] { location }));
 			sb.append("<br>");
 		}
 	}

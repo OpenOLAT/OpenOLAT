@@ -44,6 +44,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_ENABLED = "vc.bigbluebutton.enabled";
 	private static final String PROP_GROUP_ENABLED = "vc.bigbluebutton.groups";
 	private static final String PROP_COURSE_ENABLED = "vc.bigbluebutton.courses";
+	private static final String PROP_APPOINTMENTS_ENABLED = "vc.bigbluebutton.appointments";
 	private static final String PROP_SECRET = "vc.bigbluebutton.secret";
 	private static final String PROP_SHARED_SECRET = "vc.bigbluebutton.shared.secret";
 	private static final String PROP_PROTOCOL = "vc.bigbluebutton.protocol";
@@ -70,7 +71,9 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	@Value("${vc.bigbluebutton.groups:true}")
 	private String groupsEnabled;
 	@Value("${vc.bigbluebutton.courses:true}")
-	private String coursesEnabled;	
+	private String coursesEnabled;
+	@Value("${vc.bigbluebutton.appointments:true}")
+	private String appointmentsEnabled;
 	@Value("${vc.bigbluebutton.secret}")
 	private String secret;
 	@Value("${vc.bigbluebutton.shared.secret}")
@@ -119,6 +122,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		
 		groupsEnabled = getStringPropertyValue(PROP_GROUP_ENABLED, groupsEnabled);
 		coursesEnabled = getStringPropertyValue(PROP_COURSE_ENABLED, coursesEnabled);
+		appointmentsEnabled = getStringPropertyValue(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled);
 		
 		String bandwidthReqObj = getStringPropertyValue(PROP_USER_BANDWIDTH_REQUIREMENT, true);
 		if(StringHelper.containsNonWhitespace(bandwidthReqObj)) {
@@ -159,6 +163,15 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	public void setCoursesEnabled(boolean enabled) {
 		coursesEnabled = enabled ? "true" : "false";
 		setStringProperty(PROP_COURSE_ENABLED, coursesEnabled, true);
+	}
+	
+	public boolean isAppointmentsEnabled() {
+		return "true".equals(appointmentsEnabled);
+	}
+
+	public void setAppointmentsEnabled(boolean enabled) {
+		appointmentsEnabled = enabled ? "true" : "false";
+		setStringProperty(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled, true);
 	}
 	
 	public URI getBigBlueButtonURI() {

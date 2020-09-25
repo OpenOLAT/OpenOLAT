@@ -86,6 +86,18 @@
 						</div>
 					#end
 					
+					#if($r.isNotNull($topic.getServerWarning()))
+						<div class="o_error">
+							$topic.getServerWarning()
+						</div>
+					#end
+					
+					#if($r.isNotNull($topic.getJoinLinkName()))
+						<div class="o_button_group">
+							$r.render($topic.getJoinLinkName())
+						</div>
+					#end
+					
 					#if($r.isNotNull($topic.getOpenLinkName()))
 						<div class="o_button_group o_button_group_right">
 							$r.render($topic.getOpenLinkName())

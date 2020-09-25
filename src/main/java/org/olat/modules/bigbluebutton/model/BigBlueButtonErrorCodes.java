@@ -32,6 +32,7 @@ public enum BigBlueButtonErrorCodes {
 	serverNotAvailable,
 	serverDisabled,
 	opencastDisabled,
+	noAccess,
 	unkown
 	;
 
