@@ -164,6 +164,19 @@ public class DispatcherModule {
 			log.error("Send 404 failed: url=" + url, e);
 		}
 	}
+	
+	/**
+	 * Send a 404 without log.
+	 * 
+	 * @param response The HTTP response
+	 */
+	public static final void sendNotFound(HttpServletResponse response) {
+		try {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+		} catch (IOException e) {
+			//
+		}
+	}
 
 	/**
 	 * Sends a HTTP 403 response.
@@ -176,6 +189,19 @@ public class DispatcherModule {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 		} catch (IOException e) {
 			log.error("Send 403 failed: url=" + url, e);
+		}
+	}
+	
+	/**
+	 * Send a 403 error without log.
+	 * 
+	 * @param response The HTTP response
+	 */
+	public static final void sendForbidden(HttpServletResponse response) {
+		try {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN);
+		} catch (IOException e) {
+			//
 		}
 	}
 
@@ -204,6 +230,14 @@ public class DispatcherModule {
 			response.setStatus(HttpServletResponse.SC_NO_CONTENT);
 		} catch (Exception e) {
 			log.error("Send 204 failed: url=" + url, e);
+		}
+	}
+	
+	public static final void sendServerError(HttpServletResponse response) {
+		try {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		} catch (IOException e) {
+			//
 		}
 	}
 	
