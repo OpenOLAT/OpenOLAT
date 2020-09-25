@@ -172,6 +172,48 @@ public class VFSVersioningTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void addVersionsDeleteRename() throws IOException {
+		versionsModule.setMaxNumberOfVersions(3);
+		waitForCondition(new SetMaxNumberOfVersions(versionsModule, 3l), 2000);
+		
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-2");
+		
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test_" + UUID.randomUUID(), null);
+		String filename = "orig_" + UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		
+		//save a first version
+		for(int i=0; i<2; i++) {
+			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
+			vfsRepositoryService.addVersion(file, id2, "Version " + (1 +i), inv);
+			inv.close();
+		}
+
+		VFSItem retrievedFile = rootTest.resolve(filename);
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(retrievedFile);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(2, revisions.size());
+		
+		// delete the file
+		retrievedFile.delete();
+		
+		// new file
+		String newFilename = "new_" + UUID.randomUUID().toString() + ".txt";
+		VFSLeaf newFile = rootTest.createChildLeaf(newFilename);
+		int newByteCopied = copyTestTxt(newFile);
+		Assert.assertFalse(newByteCopied == 0);
+		
+		// rename new file to old name
+		newFile.rename(filename);
+		dbInstance.commit();
+		
+	}
+	
+	@Test
 	public void addVersions_overflow_lowLevel_deactivated() throws IOException {
 		versionsModule.setMaxNumberOfVersions(0);
 		waitForCondition(new SetMaxNumberOfVersions(versionsModule,  0l), 2000);

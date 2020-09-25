@@ -623,6 +623,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		VFSMetadata currentMetadata = metadataDao.getMetadata(metadata.getRelativePath(), newName, (item instanceof VFSContainer));
 		if(currentMetadata != null && !currentMetadata.equals(metadata)) {
 			metadata.copyValues(currentMetadata, false);
+			deleteThumbnailsOfMetadata(currentMetadata);
+			deleteRevisionsOfMetadata(currentMetadata);
 			metadataDao.removeMetadata(currentMetadata);
 		}
 		
