@@ -114,6 +114,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			sb.append("<div class='o_fileinput")
 			  .append(" o_sel_file_uploaded", fileElem.getUploadFile() != null)
 			  .append(" o_area panel-placeholder", fileElem.isArea())
+			  .append(" o_preview", !fileElem.isButtonsEnabled())
 			  .append("'");
 			if(fileElem.isArea()) {
 				sb.append(" ondragover=\"jQuery(this).addClass('o_dnd_over')\" ondragleave=\"jQuery(this).removeClass('o_dnd_over')\"");				

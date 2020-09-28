@@ -353,6 +353,13 @@ public class FileElementImpl extends FormItemImpl
 		}
 	}
 
+	/**
+	 * Render the file element in a preview style where the actual file upload
+	 * functionality is disabled but the element looks like an actual upload
+	 * element and not like the disabled element. 
+	 * 
+	 * @return
+	 */
 	public boolean isButtonsEnabled() {
 		return buttonsEnabled;
 	}
