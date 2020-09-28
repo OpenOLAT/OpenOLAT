@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.UserSession;
 
 /**
  * Description:<br>
@@ -55,7 +56,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
 	private SingleSelection horizontalRadioButtons;
 	private SingleSelection verticalRadioButtons;
-	private FileElement file;
+	private FileElement file, file2, file3, file4;
 	// Usually, the keys are i18n keys and the options correspond to their
 	// translated values. To avoid unnecessary translation these dummy values are
 	// defined right here.
@@ -106,7 +107,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		addTextFields(formLayout);
 
 		// More form items: Date, link and file selector
-		addDateLinkAndFileItems(formLayout);
+		addDateLinkAndFileItems(formLayout, ureq.getUserSession());
 
 		// Separator with line
 		uifactory.addSpacerElement("spacer", formLayout, false);
@@ -167,7 +168,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 	 * @param formItemsFactory
 	 * @param form
 	 */
-	private void addDateLinkAndFileItems(FormItemContainer form) {
+	private void addDateLinkAndFileItems(FormItemContainer form, UserSession usess) {
 		// Date picker
 		uifactory.addDateChooser("dateChooser", "guidemo.form.date", null, form);
 
@@ -178,6 +179,28 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		// File Chooser
 		// There is a multipart parameter problem with that element.
 		file = uifactory.addFileElement(getWindowControl(), "file", "advanced_form.file", form);
+		file.setArea(false);
+		file.setHelpText("Old-school styling");
+
+		file2 = uifactory.addFileElement(getWindowControl(), "file2", "advanced_form.file", form);
+		file2.setHelpText("Drag&Drop area styling");
+
+		
+		file3 = uifactory.addFileElement(getWindowControl(), "file3", "advanced_form.file", form);
+		file3.setArea(false); 
+		file3.addActionListener(FormEvent.ONCHANGE);
+		file3.setDeleteEnabled(true);
+		file3.setPreview(usess, true);
+		file3.setHelpText("Old-school styling with delete and file preview");
+
+		
+		file4 = uifactory.addFileElement(getWindowControl(), "file4", "advanced_form.file", form);
+		file4.addActionListener(FormEvent.ONCHANGE);
+		file4.setDeleteEnabled(true);
+		file4.setPreview(usess, true);
+		file4.setHelpText("Drag&Drop area styling with delete and file preview");
+
+	
 	}
 
 	/**
@@ -261,6 +284,9 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 			}
 		} else if (source == richTextElement) {
 			getWindowControl().setInfo("Wow, you just changed the html editor area. The new content is now: " + richTextElement.getValue());
+		} else if (source == file3) {
+			getWindowControl().setInfo("Crazy, you uploaded or deleted a file with the name \"" + file3.getUploadFileName());
+
 		}
 	}
 }

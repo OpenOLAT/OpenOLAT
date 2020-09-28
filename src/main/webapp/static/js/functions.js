@@ -856,11 +856,11 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 
 	fileInputElement.setCustomValidity('');
 
+	var fileSize = formInputFileSize(fileInputElement);
 	if (fileInputElement.hasAttribute('data-max-size')) {
 		// check if the file selected does satisfy the max-size constraint
 		var maxSize = fileInputElement.getAttribute('data-max-size');
 		if (maxSize) {
-			var fileSize = formInputFileSize(fileInputElement);
 			if (fileSize > maxSize) {
 				// show a validation error message, reset the fileInputElement and stop processing
 				// to prevent unneeded uploads of potentially really big files
@@ -895,18 +895,41 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 	if (slashPos != -1) {
 		fileName=fileName.substring(slashPos + 1); 
 	}
-	fakeInputElement.value=fileName;
-	// mark save button as dirty
-	if (saveButton) {
-		saveButton.className='o_button_dirty'
+	// add file name to fake input field
+	if (fakeInputElement) {		
+		fakeInputElement.value=fileName;
+	} else {
+		// in drop-down mode, add filename above input field
+		var fileSizeFormatted = fileSize;
+		if(fileSize < 250 * 1024) {
+			fileSizeFormatted = (fileSize / 1024).toFixed(1) + " KB";
+		} else if(fileSize < 250 * 1024 * 1024) {
+			fileSizeFormatted = (fileSize / 1024 / 1024).toFixed(1) + " MB";
+		} else {
+			fileSizeFormatted = (fileSize / 1024 / 1024 / 1024).toFixed(1) + " GB";
+		}
+		var inputWrapperEl = jQuery(fileInputElement).parent();
+		var fileHtml = "<div class='o_filemeta'><i class='o_icon o_icon-fw o_filetype_file'> </i> " + fileName + " <span class='text-muted o_filesize'>(" + fileSizeFormatted + ")</span></div>";
+		var existingFileEl = inputWrapperEl.parent().find('.o_file');
+		if (existingFileEl.length == 0) {
+			jQuery(fileHtml).insertBefore(inputWrapperEl);						
+		} else {
+			jQuery(existingFileEl[0]).replaceWith(fileHtml);			
+		}
+		
 	}
 	// set focus to next element if available
 	var elements = fileInputElement.form.elements;
+	var fileInputCheckElement = (fakeInputElement ? fakeInputElement : fileInputElement);
 	for (i=0; i < elements.length; i++) {
 		var elem = elements[i];
-		if (elem.name == fakeInputElement.name && i+1 < elements.length) {
+		if (elem.name == fileInputCheckElement.name && i+1 < elements.length) {
 			elements[i+1].focus();
 		}
+	}
+	// mark save button as dirty
+	if (saveButton) {
+		saveButton.className='o_button_dirty'
 	}
 }
 

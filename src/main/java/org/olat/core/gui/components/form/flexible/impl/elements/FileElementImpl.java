@@ -103,7 +103,7 @@ public class FileElementImpl extends FormItemImpl
 	private boolean checkForMaxFileSize = false;
 	private boolean checkForMimeTypes = false;
 	private boolean cropSelectionEnabled = false;
-	private boolean area = false;
+	private boolean area = true;
 	// error keys
 	private String i18nErrMandatory;
 	private String i18nErrMaxSize;

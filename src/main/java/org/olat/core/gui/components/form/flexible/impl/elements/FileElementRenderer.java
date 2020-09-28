@@ -33,6 +33,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 
@@ -70,6 +71,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 		String id = fileComp.getFormDispatchId();
 		// Calculate current file name: either from already uploaded file or
 		// from initial file or empty
+		boolean hasFile = true;
 		String fileName = fileElem.getUploadFileName();
 		if (fileName == null) {
 			// try fallback: default file
@@ -78,6 +80,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				fileName = initialFile.getName();
 			} else {
 				fileName = "";
+				hasFile = false;
 			}
 		}
 
@@ -90,9 +93,24 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				sb.append("</div>");
 			}
 			
-			boolean showDeleteButton = fileElem.isDeleteEnabled()
-					&& (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
-			
+
+			// Show available file and delete button
+			if (hasFile) {
+				sb.append("<div class='o_filemeta'>").append(CSSHelper.getIcon(CSSHelper.createFiletypeIconCssClassFor(fileName)));
+				sb.appendHtmlEscaped(fileName);
+				sb.append("<span class='o_filesize text-muted'>(").append(Formatter.formatBytes(fileElem.getUploadSize())).append(")</span>");
+				
+				boolean showDeleteButton = fileElem.isDeleteEnabled()
+						&& (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
+				if(showDeleteButton) {
+					sb.append("<a class='btn btn-xs btn-default o_filedelete' href=\"javascript:")
+					.append(FormJSHelper.getXHRFnCallFor(fileElem.getRootForm(), fileComp.getFormDispatchId(), 1, false, false, new NameValuePair("delete", "delete")))
+					.append(";\" onclick=\"\" ")
+					.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.delete")).append("\" ><i class='o_icon o_icon_delete_item'> </i> ").append(trans.translate("delete")).append("</a>");
+				}
+				sb.append("</div>");
+			}
+
 			sb.append("<div class='o_fileinput")
 			  .append(" o_sel_file_uploaded", fileElem.getUploadFile() != null)
 			  .append(" o_area panel-placeholder", fileElem.isArea())
@@ -102,16 +120,6 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			}
 			sb.append(">");
 			
-			if(fileElem.isArea()) {
-				sb.append("<div class='o_dnd'>");
-				sb.append("<div class='o_dnd_icon'>");
-				sb.append("<i class='o_icon o_icon o_icon_upload'></i>");
-				sb.append("</div>");
-				sb.append("<div class='o_dnd_info'>");
-				sb.append(trans.translate("file.element.dnd.info"));
-				sb.append("</div>");
-				sb.append("</div>");
-			}
 			// input.Browse is the real filebrowser, but set to be transparent. 
 			// the div.o_fakechooser is layered below the input.Browse and represents the visual GUI. 
 			// Since input.Browse is layered above div.o_fakechooser, all click events to go input.Browse
@@ -124,9 +132,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				 if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
 					 sb.append("\" data-max-size=\"").append(fileElem.getMaxUploadSizeKB() * 1024l);
 				 }
-				 sb.append("\" class='form-control o_realchooser ")
-				   .append(" o_chooser_with_delete", showDeleteButton)
-				   .append("' ");
+				 sb.append("\" class='form-control o_realchooser' ");
 				 // Add on* event handlers
 				 StringBuilder eventHandlers = FormJSHelper.getRawJSFor(fileElem.getRootForm(), id, fileElem.getAction());
 				 int onChangePos = eventHandlers.indexOf("onchange=");
@@ -145,18 +151,26 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				 // Add select text (hover)
 				 sb.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" />");
 			}
-			// Add the visible but fake input field and a styled faked file chooser button
-			sb.append("<div class='o_fakechooser input-group'>");
-			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").appendHtmlEscaped(fileName)
-			  .append("\" placeholder=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" />");  
-			sb.append("<span class='input-group-addon'><a href='javascript:;'><i class='o_icon o_icon_upload'> </i></a></span>");
-			if(showDeleteButton) {
-				sb.append("<a class='input-group-addon' href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(fileElem.getRootForm(), fileComp.getFormDispatchId(), 1, false, false, new NameValuePair("delete", "delete")))
-				  .append(";\" onclick=\"\" ")
-				  .append(" title=\"").appendHtmlEscaped(trans.translate("file.element.delete")).append("\" ><i class='o_icon o_icon_delete'> </i></a>");
+			
+			if(fileElem.isArea()) {
+				sb.append("<div class='o_dnd' aria-hidden='true'>");
+				sb.append("<div class='o_dnd_icon'><i class='o_icon o_icon o_icon_upload'></i></div>");
+				sb.append("<div class='o_dnd_info'>").append(trans.translate("file.element.dnd.info")).append("</div>");
+				sb.append("<div class='o_dnd_select'><button class='btn btn-xs btn-default'><span>");
+				sb.append(trans.translate("file.element.dnd.select")).append("</span></button></div>");
+				sb.append("</div>");
+				
+			} else {
+				// Add the visible but fake input field and a styled faked file chooser button
+				sb.append("<div class='o_fakechooser input-group' aria-hidden='true'>");
+				sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").appendHtmlEscaped(fileName)
+				  .append("\" placeholder=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" />");  
+				sb.append("<span class='input-group-addon'><a href='javascript:;'><i class='o_icon o_icon_upload'> </i></a></span>");
+				sb.append("</div>");				
 			}
-			sb.append("</div>");
+			
+			sb.append("</div>"); // End o_fileinput
+			
 			// Add example text and  max upload size
 			if(fileElem.getExampleText() != null) {
 				sb.append("<div class='help-block'>")
@@ -174,7 +188,6 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				.append(trans.translate("file.element.select.maxsize", new String[]{maxUpload}))
 				.append(")</div>");	
 			}
-			sb.append("</div>");
 			
 			// Add set dirty form on change
 			FormJSHelper.appendFlexiFormDirty(sb, fileElem.getRootForm(), fileComp.getFormDispatchId());

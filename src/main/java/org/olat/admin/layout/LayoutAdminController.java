@@ -120,6 +120,7 @@ public class LayoutAdminController extends FormBasicController {
 		themeSelection.addActionListener(FormEvent.ONCHANGE);
 		forceThemeReload = uifactory.addFormLink("forceThemeReload", "form.theme.forceReload", null, themeCont, Link.BUTTON_SMALL);
 		forceThemeReload.setExampleKey("form.theme.forceReload.help", null);
+		forceThemeReload.setIconLeftCSS("o_icon o_icon_refresh");
 
 		//logo
 		FormLayoutContainer logoCont = FormLayoutContainer.createDefaultFormLayout("logo", getTranslator());
