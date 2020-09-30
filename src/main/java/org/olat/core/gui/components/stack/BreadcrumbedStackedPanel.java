@@ -588,13 +588,15 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		if(stack.size() < 2) { 
 			// special case: root crumb
 			Link link = stack.get(0);
-			closeText = getTranslator().translate("doclose", new String[] { link.getCustomDisplayText() });
+			String unescapedText = StringHelper.unescapeHtml(link.getCustomDisplayText());
+			closeText = getTranslator().translate("doclose", new String[] { unescapedText });
 			showClose = isShowCloseLinkForRootCrumb();
 			backLink.setTitle(closeText);
 			backLink.setAriaLabel(closeText);
 		} else {
 			Link link = stack.get(stack.size()-1);
-			closeText = getTranslator().translate("doclose", new String[] { link.getCustomDisplayText() });
+			String unescapedText = StringHelper.unescapeHtml(link.getCustomDisplayText());
+			closeText = getTranslator().translate("doclose", new String[] { unescapedText });
 			showClose = isShowCloseLink();
 			backLink.setTitle(getTranslator().translate("back"));
 			backLink.setAriaLabel(getTranslator().translate("back"));
