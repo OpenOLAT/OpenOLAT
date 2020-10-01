@@ -1,0 +1,10 @@
+<div class="o_info">
+	$r.translate("finding.confirmation.info")
+</div>
+#if($meeting)
+	<div class="o_warning">
+		$r.translate("finding.confirmation.meeting")
+	</div>
+#end
+$r.render("users")
+$r.render("buttons")

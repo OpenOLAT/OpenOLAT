@@ -86,7 +86,7 @@ public class FindingConfirmationController extends FormBasicController {
 	private UserManager userManager;
 
 	public FindingConfirmationController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "finding_confirmation");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.appointment = appointment;
 		this.topic = appointment.getTopic();
@@ -102,6 +102,10 @@ public class FindingConfirmationController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormInfo("finding.confirmation.info");
+		
+		if (appointment.getMeeting() != null) {
+			flc.contextPut("meeting", Boolean.TRUE);
+		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		

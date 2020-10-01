@@ -429,6 +429,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			Appointment reloaded = appointments.get(0);
 			confirmReloadedAppointment(reloaded, false);
 		}
+		deleteFindingMeetings(appointment);
 	}
 
 	private void confirmReloadedAppointment(Appointment appointment, boolean sendEmail) {
@@ -438,6 +439,19 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			if (!sendEmail) {
 				appointmentsMailing.sendAppointmentConfirmed(appointment);
 			}
+		}
+	}
+
+	private void deleteFindingMeetings(Appointment appointment) {
+		Topic topic = appointment.getTopic();
+		if (Topic.Type.finding == topic.getType()) {
+			AppointmentSearchParams appointmentParams = new AppointmentSearchParams();
+			appointmentParams.setTopic(topic);
+			appointmentParams.setHasMeeting(true);
+			List<Appointment> otherAppointments = appointmentDao.loadAppointments(appointmentParams).stream()
+					.filter(a -> !a.equals(appointment))
+					.collect(Collectors.toList());
+			deleteMeetings(otherAppointments);
 		}
 	}
 
