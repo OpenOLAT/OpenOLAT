@@ -45,14 +45,15 @@ public abstract class CourseTreeModelBuilder {
 	public GenericTreeModel build() {
 		CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
 		int treeLevel = 0;
-		CourseTreeNode rootTreeNode = getCourseTreeNode(rootNode, treeLevel);
+		CourseTreeNode rootTreeNode = getCourseTreeNode(rootNode, null, treeLevel);
 		GenericTreeModel treeModel = new GenericTreeModel();
 		treeModel.setRootNode(rootTreeNode);
 		return treeModel;
 	}
 	
-	private CourseTreeNode getCourseTreeNode(CourseNode courseNode, int treeLevel) {
+	private CourseTreeNode getCourseTreeNode(CourseNode courseNode, CourseTreeNode parent, int treeLevel) {
 		CourseTreeNode treeNode = createCourseTreeNode(courseNode, treeLevel);
+		treeNode.setParent(parent);
 		if(visibilityFilter != null && !visibilityFilter.isVisible(treeNode)) {
 			treeNode.setVisible(false);
 		}
@@ -62,7 +63,7 @@ public abstract class CourseTreeModelBuilder {
 			int childCount = courseNode.getChildCount();
 			for (int i = 0; i < childCount; i++) {
 				CourseNode cn = (CourseNode) courseNode.getChildAt(i);
-				CourseTreeNode child = getCourseTreeNode(cn, childLevel);
+				CourseTreeNode child = getCourseTreeNode(cn, treeNode, childLevel);
 				if (child.isVisible()) {
 					// if the parent is not accessible the child is not accessible as well!
 					if (!treeNode.isAccessible()) {

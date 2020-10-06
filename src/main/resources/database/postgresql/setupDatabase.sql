@@ -3803,6 +3803,8 @@ create index idx_as_entry_to_refentry_idx on o_as_entry (fk_reference_entry);
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 create index idx_as_entry_start_idx on o_as_entry (a_date_start) where a_date_start is not null;
+create index idx_as_entry_root_id_idx on o_as_entry (id) where a_entry_root=true;
+create index idx_as_entry_root_fk_idx on o_as_entry (fk_entry, fk_identity) where a_entry_root=true;
 
 -- disadvantage compensation
 alter table o_as_compensation add constraint compensation_ident_idx foreign key (fk_identity) references o_bs_identity (id);

@@ -19,6 +19,7 @@
  */
 package org.olat.basesecurity;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -173,7 +174,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsRndUser("eq-1-");
 		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsRndUser("eq-2-");
 		
-		assertFalse("Wrong equals implementation, different types are recognized as equals ",ident1.equals(new Integer(1)));
+		assertFalse("Wrong equals implementation, different types are recognized as equals ",ident1.equals(Integer.valueOf(1)));
 		assertFalse("Wrong equals implementation, different users are recognized as equals ",ident1.equals(ident2));
 		assertFalse("Wrong equals implementation, null value is recognized as equals ",ident1.equals(null));
 		assertTrue("Wrong equals implementation, same users are NOT recognized as equals ",ident1.equals(ident1));
@@ -302,15 +303,10 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 
 		String login = id.getLogin().substring(0, 12);
 		List<IdentityShort> identities = securityManager.searchIdentityShort(login, 32000);
-		Assert.assertNotNull(identities);
-		
-		boolean found = false;
-		for(IdentityShort identity:identities) {
-			if(identity.getKey().equals(id.getKey())) {
-				found = true;
-			}
-		}
-		Assert.assertTrue(found);
+		assertThat(identities)
+			.isNotNull()
+			.extracting(identity -> identity.getKey())
+			.contains(id.getKey());
 	}
 	
 	@Test
@@ -321,15 +317,10 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 
 		String login = id.getLogin().substring(0, 12);
 		List<IdentityShort> identities = securityManager.searchIdentityShort(login + " hello world", 32000);
-		Assert.assertNotNull(identities);
-		
-		boolean found = false;
-		for(IdentityShort identity:identities) {
-			if(identity.getKey().equals(id.getKey())) {
-				found = true;
-			}
-		}
-		Assert.assertTrue(found);
+		assertThat(identities)
+			.isNotNull()
+			.extracting(identity -> identity.getKey())
+			.contains(id.getKey());
 	}
 	
 	/**
@@ -338,18 +329,45 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void searchIdentityShortLongAllParameters() {
-		//create a security group with 2 identities
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("short-2-search-");
+		dbInstance.commitAndCloseSession();
+
+		List<Organisation> organisations = organisationService.getOrganisations();
+
+		String login = id.getLogin().substring(0, 12);
+		List<IdentityShort> identities = securityManager.searchIdentityShort(login + " hello world",
+				organisations, GroupRoles.participant,  32000);
+		assertThat(identities)
+			.isNotNull();
+	}
+	
+	@Test
+	public void searchIdentityShortParameters() {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("short-2-search-");
 		dbInstance.commitAndCloseSession();
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 
 		String login = id.getLogin().substring(0, 12);
-		List<IdentityShort> identities = securityManager.searchIdentityShort(login + " hello world",
-				Collections.singletonList(defOrganisation), GroupRoles.participant,  32000);
-		Assert.assertNotNull(identities);
+		List<IdentityShort> identities = securityManager.searchIdentityShort(login + " and    () <!>",
+				Collections.singletonList(defOrganisation), null,  32000);
+		assertThat(identities)
+			.isNotNull()
+			.extracting(identity -> identity.getKey())
+			.contains(id.getKey());
 	}
 	
+	@Test
+	public void searchIdentityShortLongEmpty() {
+		List<IdentityShort> identities = securityManager.searchIdentityShort(null, null, null,  32000);
+		Assert.assertTrue(identities.isEmpty());
+
+		identities = securityManager.searchIdentityShort("", null, null,  32000);
+		Assert.assertTrue(identities.isEmpty());
+		
+		identities = securityManager.searchIdentityShort(" ", null, null,  32000);
+		Assert.assertTrue(identities.isEmpty());
+	}
 	
 	/**
 	 * Update roles

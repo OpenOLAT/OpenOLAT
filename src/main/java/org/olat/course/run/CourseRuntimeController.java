@@ -1138,15 +1138,16 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	protected void processPopEvent(UserRequest ureq, PopEvent pop) {
 		super.processPopEvent(ureq, pop);
 		
-		if(pop.getController() == membersCtrl) {
+		Controller popedController = pop.getController();
+		if(popedController != null && popedController == membersCtrl) {
 			// The user maybe has changed his own membership.
 			// Reload the security to ensure the right user switch roles etc.
 			reloadSecurity(ureq);
 		}
-		if(pop.getController() == assessmentToolCtr) {
+		if(popedController != null && popedController == assessmentToolCtr) {
 			setCourseClosedMessage();
 		}
-		if(pop.getController() != getRunMainController()) {
+		if(popedController != getRunMainController()) {
 			toolControllerDone(ureq);
 		}
 	}

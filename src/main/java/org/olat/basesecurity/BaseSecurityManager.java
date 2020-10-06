@@ -593,15 +593,24 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	@Override
 	public List<IdentityShort> searchIdentityShort(String search,
 			List<? extends OrganisationRef> searcheableOrgnisations, GroupRoles repositoryEntryRole, int maxResults) {
+		if(!StringHelper.containsNonWhitespace(search)) return new ArrayList<>();
+		
 		String[] searchArr = search.split(" ");
+		List<String> searchArrList = new ArrayList<>(searchArr.length);
+		for(int i=0; i<searchArr.length; i++) {
+			if(StringHelper.containsNonWhitespace(searchArr[i])) {
+				searchArrList.add(searchArr[i]);
+			}
+		}
+		
 		String[] attributes = new String[]{ "name", "nickName", "firstName", "lastName", "email" };
 		
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(512);
 		sb.append("select ident from bidentityshort as ident ")
 		  .append(" where ident.status<").append(Identity.STATUS_VISIBLE_LIMIT).append(" and (");
 
 		boolean start = true;
-		for(int i=0; i<searchArr.length; i++) {
+		for(int i=0; i<searchArrList.size(); i++) {
 			for(String attribute:attributes) {
 				if(start) {
 					start = false;
@@ -618,7 +627,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		}
 		sb.append(")");
 		if(searcheableOrgnisations != null && !searcheableOrgnisations.isEmpty()) {
-			sb.append(" and exists (select orgtomember.key from bgroupmember as orgtomember ")
+			sb.append(" and exists (select orgtomember.key from bgroupmember as orgtomember")
 			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
 			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey))");
 		}
@@ -631,8 +640,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		
 		TypedQuery<IdentityShort> searchQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), IdentityShort.class);
-		for(int i=searchArr.length; i-->0; ) {
-			searchQuery.setParameter("search" + i, PersistenceHelper.makeFuzzyQueryString(searchArr[i]));
+		for(int i=searchArrList.size(); i-->0; ) {
+			searchQuery.setParameter("search" + i, PersistenceHelper.makeFuzzyQueryString(searchArrList.get(i)));
 		}
 		
 		if(searcheableOrgnisations != null && !searcheableOrgnisations.isEmpty()) {
