@@ -272,6 +272,10 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -708));
 		id2 = securityManager.saveIdentityStatus(id2, Identity.STATUS_PENDING, null);
 
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-11");
+		identityDao.setIdentityLastLogin(id3, DateUtils.addDays(new Date(), -1708));
+		id3 = securityManager.saveIdentityStatus(id3, Identity.STATUS_PERMANENT, null);
+
 		dbInstance.commitAndCloseSession();
 		
 		Set<Identity> vetoed = new HashSet<>();
@@ -293,10 +297,16 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		Assert.assertEquals(Identity.STATUS_PENDING, informedId2.getStatus());
 		Assert.assertNotNull(((IdentityImpl)informedId2).getInactivationEmailDate());
 		
+		Identity permanentId3 = securityManager.loadIdentityByKey(id3.getKey());
+		Assert.assertNull(permanentId3.getInactivationDate());
+		Assert.assertEquals(Identity.STATUS_PERMANENT, permanentId3.getStatus());
+		Assert.assertNull(((IdentityImpl)permanentId3).getInactivationEmailDate());
+		
 		// check mails sent
 		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
 		Assert.assertTrue(hasTo(informedId1.getUser().getEmail(), messages));
 		Assert.assertTrue(hasTo(informedId2.getUser().getEmail(), messages));
+		Assert.assertFalse(hasTo(id3.getUser().getEmail(), messages));
 		getSmtpServer().reset();
 		
 		// Artificially mail in past

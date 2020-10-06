@@ -272,8 +272,10 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	}
 
 	public void loadModel(SearchIdentityParams params) {
-		if (params.getExactStatusList() != null && !params.getExactStatusList().isEmpty()) {
-			Collection<String> keys = params.getExactStatusList().stream().map(i -> Integer.toString(i)).collect(Collectors.toSet());
+		if (settings.isStatusFilter() && params.getExactStatusList() != null && !params.getExactStatusList().isEmpty()) {
+			Collection<String> keys = params.getExactStatusList().stream()
+					.map(i -> Integer.toString(i))
+					.collect(Collectors.toSet());
 			tableEl.setSelectedFilterKeys(keys);
 			params.setExactStatusList(null);
 		}
