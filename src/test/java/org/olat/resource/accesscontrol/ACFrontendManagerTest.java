@@ -227,9 +227,9 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	@Test
 	public void testFreeAccesToBusinessGroupWithWaitingList_full() {
 		//create a group with a free offer, fill 2 places on 2
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-2");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-3");
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), true, false, null);
 		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
@@ -342,6 +342,34 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		if(!enabled) {
 			acModule.setPaypalEnabled(false);
 		}
+	}
+	
+	/**
+	 * Check a special case which produced NPE
+	 */
+	@Test
+	public void testPaiedReservationAccessToBusinessGroupNoLimit() {
+		//enable paypal
+		boolean enabled = acModule.isPaypalEnabled();
+		if(!enabled) {
+			acModule.setPaypalEnabled(true);
+		}
+
+		//create a group with a free offer
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pay-21");
+
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Paypal group", "Asap", Integer.valueOf(0), null, true, false, null);
+		Offer offer = acService.createOffer(group.getResource(), "Paypal group (no limit)");
+		offer = acService.save(offer);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);
+		Assert.assertFalse(methods.isEmpty());
+		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
+		Assert.assertNotNull(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		//id try to reserve a place before the payment process, no problem, no limit
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess);
+		Assert.assertTrue(reserved);
 	}
 
 	@Test

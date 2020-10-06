@@ -447,8 +447,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		if("BusinessGroup".equals(resourceType)) {
 			boolean reserved = false;
 			final BusinessGroup group = businessGroupDao.loadForUpdate(resource.getResourceableId());
-			if(group.getMaxParticipants() == null && group.getMaxParticipants() <= 0) {
-				reserved =  true;//don't need reservation
+			if(group.getMaxParticipants() == null || group.getMaxParticipants().intValue() <= 0) {
+				reserved = true;//don't need reservation
 			} else {
 				BusinessGroup reloadedGroup = businessGroupService.loadBusinessGroup(resource);
 				ResourceReservation reservation = reservationDao.loadReservation(identity, resource);
@@ -475,7 +475,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		Date oneHourTimeout = cal.getTime();
 		List<ResourceReservation> oldReservations = reservationDao.loadExpiredReservation(oneHourTimeout);
 		for(ResourceReservation reservation:oldReservations) {
-			log.info(Tracing.M_AUDIT, "Remove reservation:" + reservation);
+			log.info(Tracing.M_AUDIT, "Remove reservation: {}", reservation);
 			reservationDao.deleteReservation(reservation);
 		}
 	}
