@@ -38,13 +38,14 @@ public class ConditionCourseTreeModelBuilder extends CourseTreeModelBuilder {
 	}
 
 	@Override
-	protected CourseTreeNode createCourseTreeNode(CourseNode courseNode, int treeLevel) {
+	protected CourseTreeNode createCourseTreeNode(CourseNode courseNode, CourseTreeNode parent, int treeLevel) {
 		NodeEvaluation nodeEval = new NodeEvaluation();
 		courseNode.calcAccessAndVisibility(userCourseEnv.getConditionInterpreter(), nodeEval);
 		
 		CourseTreeNode courseTreeNode = new CourseTreeNode(courseNode, treeLevel);
 		courseTreeNode.setNodeEvaluation(nodeEval);
-		courseTreeNode.setVisible(nodeEval.isVisible());
+		boolean parentAccessible = parent == null || parent.isAccessible();
+		courseTreeNode.setVisible(nodeEval.isVisible() && parentAccessible);
 		courseTreeNode.setAccessible(nodeEval.isAtLeastOneAccessible());
 		return courseTreeNode;
 	}

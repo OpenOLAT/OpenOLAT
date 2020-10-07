@@ -52,8 +52,7 @@ public abstract class CourseTreeModelBuilder {
 	}
 	
 	private CourseTreeNode getCourseTreeNode(CourseNode courseNode, CourseTreeNode parent, int treeLevel) {
-		CourseTreeNode treeNode = createCourseTreeNode(courseNode, treeLevel);
-		treeNode.setParent(parent);
+		CourseTreeNode treeNode = createCourseTreeNode(courseNode, parent, treeLevel);
 		if(visibilityFilter != null && !visibilityFilter.isVisible(treeNode)) {
 			treeNode.setVisible(false);
 		}
@@ -76,6 +75,6 @@ public abstract class CourseTreeModelBuilder {
 		return treeNode;
 	}
 
-	protected abstract CourseTreeNode createCourseTreeNode(CourseNode courseNode, int treeLevel);
+	protected abstract CourseTreeNode createCourseTreeNode(CourseNode courseNode, CourseTreeNode parent, int treeLevel);
 
 }

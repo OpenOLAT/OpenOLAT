@@ -98,9 +98,8 @@ import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.tools.CourseTool;
 import org.olat.course.run.tools.OpenCourseToolEvent;
-import org.olat.course.run.userview.AccessibleAndTopInaccessibleFilter;
+import org.olat.course.run.tools.CourseTool;
 import org.olat.course.run.userview.AssessmentModeTreeFilter;
 import org.olat.course.run.userview.InvisibleTreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -430,11 +429,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			hasNext = true;
 		} else {
 			List<TreeNode> flatTree = new ArrayList<>();
-			TreeNode rootNode = nodeAccessService.getCourseTreeModelBuilder(uce)
-					.withFilter(AccessibleAndTopInaccessibleFilter.create())
-					.build()
-					.getRootNode();
-			TreeHelper.makeTreeFlat(rootNode, flatTree);
+			TreeHelper.makeTreeFlat(luTree.getTreeModel().getRootNode(), flatTree);
 			int index = flatTree.indexOf(luTree.getSelectedNode());
 			hasPrevious = index > 0;
 			hasNext = index  >= 0 && index+1 < flatTree.size();
@@ -767,11 +762,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void doNext(UserRequest ureq) {
 		List<TreeNode> flatList = new ArrayList<>();
 		TreeNode currentNode = luTree.getSelectedNode();
-		TreeNode rootNode = nodeAccessService.getCourseTreeModelBuilder(uce)
-				.withFilter(AccessibleAndTopInaccessibleFilter.create())
-				.build()
-				.getRootNode();
-		TreeHelper.makeTreeFlat(rootNode, flatList);
+		TreeHelper.makeTreeFlat(luTree.getTreeModel().getRootNode(), flatList);
 		int index = flatList.indexOf(currentNode);
 		if(index >= 0 && index+1 <flatList.size()) {
 			TreeNode nextNode = flatList.get(index + 1);
@@ -783,11 +774,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void doPrevious(UserRequest ureq) {
 		List<TreeNode> flatList = new ArrayList<>();
 		TreeNode currentNode = luTree.getSelectedNode();
-		TreeNode rootNode = nodeAccessService.getCourseTreeModelBuilder(uce)
-				.withFilter(AccessibleAndTopInaccessibleFilter.create())
-				.build()
-				.getRootNode();
-		TreeHelper.makeTreeFlat(rootNode, flatList);
+		TreeHelper.makeTreeFlat(luTree.getTreeModel().getRootNode(), flatList);
 		int index = flatList.indexOf(currentNode);
 		if(index-1 >= 0 && index-1 < flatList.size()) {
 			TreeNode previousNode = flatList.get(index - 1);

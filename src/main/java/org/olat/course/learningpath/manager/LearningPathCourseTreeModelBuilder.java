@@ -52,7 +52,7 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 	}
 
 	@Override
-	protected CourseTreeNode createCourseTreeNode(CourseNode courseNode, int treeLevel) {
+	protected CourseTreeNode createCourseTreeNode(CourseNode courseNode, CourseTreeNode parent, int treeLevel) {
 		AssessmentEvaluation assessmentEvaluation = userCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		SequenceConfig sequenceConfig = learningPathService.getSequenceConfig(courseNode);
 		LearningPathTreeNode learningPathTreeNode = new LearningPathTreeNode(courseNode, treeLevel, sequenceConfig, assessmentEvaluation);
