@@ -767,8 +767,8 @@ public class CSVToAssessmentItemConverter {
 			parseAlternatives(correctBlank, score, textEntry);
 			if(parts.length > 2) {
 				String sizes = parts[2];
-				String[] sizeArr = sizes.split(",");
-				if(sizeArr.length >= 2) {
+				String[] sizeArr = sizes.split("[,]");
+				if(sizeArr.length >= 1) {
 					int size = Integer.parseInt(sizeArr[0]);
 					textEntry.setExpectedLength(size);
 				}	

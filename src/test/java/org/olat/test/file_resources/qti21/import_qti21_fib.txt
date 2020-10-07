@@ -1,0 +1,34 @@
+Type	FIB	
+Title	Englisch: Grundwortschatz: ban	
+Description	Eine lange Beschreibung	
+Keywords	Englisch Wortschatz	
+Coverage		
+Language	de	
+Subject	/Sprache/English/Wortschatz	
+License	CC by-nc-nd	
+Level	Primarschule	
+Typical learning time		
+Difficulty index	0.55	
+Standard deviation	0.6	
+Discrimination index	-0.33	
+Distractors	1	
+Editor	OpenOLAT	
+Feedback correct answer	Bravo! Die Antwort ich absolut korrekt weil ban wirklich verbannen heisst.	
+Feedback wrong answer	Leider falsch. Probieren Sie es noch einmal. Tip: das Englische Wort ist sehr \u00E4hnlich wie das deutsch Wort!	
+Editor Version	9.4.2	
+Points	1	
+Text	ban	
+1	verbannen;Verbot	21
+		
+		
+Type	FIB	
+Title	Kommaregel	
+Description		
+Points	3	
+Text	Es ist sch\u00F6n	
+1	,	2
+Text	dass das Wetter	
+1		3
+Text	heute	
+1		4,2
+Text	und auch morgen sch\u00F6n ist.	
