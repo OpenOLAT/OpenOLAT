@@ -1982,6 +1982,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				suspendTestButton = uifactory.addFormLink("suspendTest", "suspend.test", null, formLayout, Link.BUTTON);
 				suspendTestButton.setElementCssClass("o_sel_suspend_test");
 				suspendTestButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_suspend");
+				suspendTestButton.setForceOwnDirtyFormWarning(true);
 			}
 			
 			closeResultsButton = uifactory.addFormLink("closeResults", "assessment.test.close.results", null, formLayout, Link.BUTTON);
