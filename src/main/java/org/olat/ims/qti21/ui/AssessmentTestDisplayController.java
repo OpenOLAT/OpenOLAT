@@ -1263,6 +1263,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			return;//this is not the right node in the plan
 		}
 		
+		if(currentItemSession != null && currentItemSession.isSuspended()) {
+			TestPlanNode currentItemNode = testSessionState.getTestPlan().getNode(currentItemKey);
+			ItemSessionController itemSessionController = (ItemSessionController)testSessionController
+	        		.getItemProcessingContext(currentItemNode);
+			itemSessionController.unsuspendItemSession(ureq.getRequestTimestamp());
+		}
+		
 		final Map<Identifier,File> fileSubmissionMap = new HashMap<>();
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
 		
