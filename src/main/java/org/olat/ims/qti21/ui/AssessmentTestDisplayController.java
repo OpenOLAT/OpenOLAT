@@ -1281,6 +1281,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			return;//this is not the right node in the plan
 		}
 		
+		if(currentItemSession != null && currentItemSession.isSuspended()) {
+			TestPlanNode currentItemNode = testSessionState.getTestPlan().getNode(currentItemKey);
+			ItemSessionController itemSessionController = (ItemSessionController)testSessionController
+	        		.getItemProcessingContext(currentItemNode);
+			itemSessionController.unsuspendItemSession(ureq.getRequestTimestamp());
+		}
+		
 		final Map<Identifier,File> fileSubmissionMap = new HashMap<>();
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
 		
@@ -2000,6 +2007,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				suspendTestButton = uifactory.addFormLink("suspendTest", "suspend.test", null, formLayout, Link.BUTTON);
 				suspendTestButton.setElementCssClass("o_sel_suspend_test");
 				suspendTestButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_suspend");
+				suspendTestButton.setForceOwnDirtyFormWarning(true);
 			}
 			
 			closeResultsButton = uifactory.addFormLink("closeResults", "assessment.test.close.results", null, formLayout, Link.BUTTON);
