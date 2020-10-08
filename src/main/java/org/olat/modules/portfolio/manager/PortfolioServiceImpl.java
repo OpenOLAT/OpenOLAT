@@ -812,22 +812,39 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public void removeAccessRights(Binder binder, Identity identity) {
+	public void removeAccessRights(Binder binder, Identity identity, PortfolioRoles... roles) {
+		Set<PortfolioRoles> roleSet = new HashSet<>();
+		if(roles != null && roles.length > 0) {
+			for(PortfolioRoles role:roles) {
+				if(role != null) {
+					roleSet.add(role);
+				}
+			}
+		}
+		
+		if(roleSet.isEmpty()) {
+			log.warn("Want to remove rights without specifying the roles.");
+			return;
+		}
+
 		List<AccessRights> rights = getAccessRights(binder, identity);
 		for(AccessRights right:rights) {
-			Group baseGroup;
-			if(right.getType() == PortfolioElementType.binder) {
-				baseGroup = binderDao.loadByKey(right.getBinderKey()).getBaseGroup();
-			} else if(right.getType() == PortfolioElementType.section) {
-				baseGroup = binderDao.loadSectionByKey(right.getSectionKey()).getBaseGroup();
-			} else if(right.getType() == PortfolioElementType.page) {
-				baseGroup = pageDao.loadByKey(right.getPageKey()).getBaseGroup();
-			} else {
-				continue;
-			}
-			
-			if(groupDao.hasRole(baseGroup, identity, right.getRole().name())) {
-				groupDao.removeMembership(baseGroup, identity, right.getRole().name());
+			PortfolioRoles role = right.getRole();
+			if(roleSet.contains(role)) {
+				Group baseGroup;
+				if(right.getType() == PortfolioElementType.binder) {
+					baseGroup = binderDao.loadByKey(right.getBinderKey()).getBaseGroup();
+				} else if(right.getType() == PortfolioElementType.section) {
+					baseGroup = binderDao.loadSectionByKey(right.getSectionKey()).getBaseGroup();
+				} else if(right.getType() == PortfolioElementType.page) {
+					baseGroup = pageDao.loadByKey(right.getPageKey()).getBaseGroup();
+				} else {
+					continue;
+				}
+				
+				if(groupDao.hasRole(baseGroup, identity, right.getRole().name())) {
+					groupDao.removeMembership(baseGroup, identity, right.getRole().name());
+				}
 			}
 		}
 	}

@@ -409,7 +409,7 @@ public interface PortfolioService {
 	 * @param binder The binder to access
 	 * @param identity The identity with access rights
 	 */
-	public void removeAccessRights(Binder binder, Identity identity);
+	public void removeAccessRights(Binder binder, Identity identity, PortfolioRoles... roles);
 	
 	public List<Category> getCategories(PortfolioElement element);
 	

@@ -245,7 +245,7 @@ public class InvitationEditRightsController extends FormBasicController {
 		buttonsCont.setRootForm(mainForm);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		if(invitation.getKey() != null) {
-			removeLink = uifactory.addFormLink("remove", buttonsCont, Link.BUTTON);
+			removeLink = uifactory.addFormLink("remove.all.rights", buttonsCont, Link.BUTTON);
 		}
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
@@ -382,7 +382,8 @@ public class InvitationEditRightsController extends FormBasicController {
 	}
 	
 	private void doRemoveInvitation() {
-		portfolioService.removeAccessRights(binder, invitee);
+		portfolioService.removeAccessRights(binder, invitee,
+				PortfolioRoles.invitee, PortfolioRoles.readInvitee);
 		invitationDao.deleteInvitation(invitation);
 	}
 

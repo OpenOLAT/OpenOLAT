@@ -327,7 +327,8 @@ public class PublishController extends BasicController implements TooledControll
 				portfolioService.changeAccessRights(identities, changes);
 				reloadData();
 			} else if(AccessRightsEvent.REMOVE_ALL_RIGHTS.equals(event.getCommand())) {
-				portfolioService.removeAccessRights(binder, editAccessRightsCtrl.getMember());
+				portfolioService.removeAccessRights(binder, editAccessRightsCtrl.getMember(),
+						PortfolioRoles.coach, PortfolioRoles.reviewer, PortfolioRoles.invitee, PortfolioRoles.readInvitee);
 				reloadData();
 			}
 			cmc.deactivate();
