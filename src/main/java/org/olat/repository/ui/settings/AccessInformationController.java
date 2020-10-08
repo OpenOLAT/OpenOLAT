@@ -68,7 +68,7 @@ public class AccessInformationController extends FormBasicController {
 			layoutCont.contextPut("participantCondition", translate("access.info.conditions.participant"));
 			
 			// all users
-			boolean allUsersAccess = participantAccess && entry.isAllUsers();
+			boolean allUsersAccess = participantAccess && (entry.isBookable() || entry.isAllUsers());
 			layoutCont.contextPut("allUsersCatalog", getAccess(allUsersAccess));
 			if(allUsersAccess) {
 				layoutCont.contextPut("allUsersCondition", translate("access.info.conditions.participant"));
