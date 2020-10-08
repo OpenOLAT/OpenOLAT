@@ -93,6 +93,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
@@ -100,8 +101,8 @@ import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.tools.CourseTool;
 import org.olat.course.run.tools.OpenCourseToolEvent;
-import org.olat.course.run.userview.AccessibleAndTopInaccessibleFilter;
 import org.olat.course.run.userview.AssessmentModeTreeFilter;
+import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.InvisibleTreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibilityFilter;
@@ -429,13 +430,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			hasNext = true;
 		} else {
 			List<TreeNode> flatTree = new ArrayList<>();
-			TreeNode rootNode = nodeAccessService.getCourseTreeModelBuilder(uce)
-					.withFilter(AccessibleAndTopInaccessibleFilter.create())
-					.build()
-					.getRootNode();
-			TreeHelper.makeTreeFlat(rootNode, flatTree);
+			TreeHelper.makeTreeFlat(luTree.getTreeModel().getRootNode(), flatTree);
+			hasPrevious = getPreviousNonDelegatingNode(flatTree, luTree.getSelectedNode()) != null;;
 			int index = flatTree.indexOf(luTree.getSelectedNode());
-			hasPrevious = index > 0;
 			hasNext = index  >= 0 && index+1 < flatTree.size();
 		}
 		
@@ -766,11 +763,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void doNext(UserRequest ureq) {
 		List<TreeNode> flatList = new ArrayList<>();
 		TreeNode currentNode = luTree.getSelectedNode();
-		TreeNode rootNode = nodeAccessService.getCourseTreeModelBuilder(uce)
-				.withFilter(AccessibleAndTopInaccessibleFilter.create())
-				.build()
-				.getRootNode();
-		TreeHelper.makeTreeFlat(rootNode, flatList);
+		TreeHelper.makeTreeFlat(luTree.getTreeModel().getRootNode(), flatList);
 		int index = flatList.indexOf(currentNode);
 		if(index >= 0 && index+1 <flatList.size()) {
 			TreeNode nextNode = flatList.get(index + 1);
@@ -782,17 +775,37 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void doPrevious(UserRequest ureq) {
 		List<TreeNode> flatList = new ArrayList<>();
 		TreeNode currentNode = luTree.getSelectedNode();
-		TreeNode rootNode = nodeAccessService.getCourseTreeModelBuilder(uce)
-				.withFilter(AccessibleAndTopInaccessibleFilter.create())
-				.build()
-				.getRootNode();
-		TreeHelper.makeTreeFlat(rootNode, flatList);
-		int index = flatList.indexOf(currentNode);
-		if(index-1 >= 0 && index-1 < flatList.size()) {
-			TreeNode previousNode = flatList.get(index - 1);
-			TreeEvent tev = new TreeEvent(MenuTree.COMMAND_TREENODE_CLICKED, previousNode.getIdent());
+		TreeHelper.makeTreeFlat(luTree.getTreeModel().getRootNode(), flatList);
+		TreeNode previousNonDelegatingNode = getPreviousNonDelegatingNode(flatList, currentNode);
+		if (previousNonDelegatingNode != null) {
+			TreeEvent tev = new TreeEvent(MenuTree.COMMAND_TREENODE_CLICKED, previousNonDelegatingNode.getIdent());
 			doNodeClick(ureq, tev);
 		}
+	}
+	
+	private TreeNode getPreviousNonDelegatingNode(List<TreeNode> flatList, TreeNode treeNode) {
+		int index = flatList.indexOf(treeNode);
+		if (index-1 >= 0 && index-1 < flatList.size()) {
+			TreeNode previousNode = flatList.get(index - 1);
+			if (previousNode != null) {
+				if (isPreviuosDelegatingNode(previousNode, treeNode)) {
+					return getPreviousNonDelegatingNode(flatList, previousNode);
+				}
+				return previousNode;
+			}
+		}
+		return null;
+	}
+	
+	private boolean isPreviuosDelegatingNode(TreeNode previousNode, TreeNode currentNode) {
+		// Delegating wiki or content package
+		boolean previousCourseTreeNode = previousNode instanceof CourseTreeNode;
+		boolean currentNoCourseTreeNode = !(currentNode instanceof CourseTreeNode);
+		if (currentNoCourseTreeNode && previousCourseTreeNode) return true;
+		
+		// If it is delegating but not accessible it's ok, because the no access message is shown.
+		CourseNode previousCourseNode = previousCourseTreeNode? ((CourseTreeNode)previousNode).getCourseNode(): null;
+		return STCourseNode.isDelegatingSTCourseNode(previousCourseNode) && previousNode.isAccessible();
 	}
 	
 	private void doAssessmentConfirmation(boolean confirmed) {

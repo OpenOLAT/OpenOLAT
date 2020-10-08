@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -42,13 +43,15 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
-import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSContainerFilter;
 import org.olat.core.util.vfs.filters.VFSRevisionsAndThumbnailsFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
@@ -322,19 +325,19 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 	}
 	
 	private void exportCoursefolder(PersistingCourseImpl sourceCourse, ZipOutputStream zout) throws IOException {
-		File courseFolder = sourceCourse.getIsolatedCourseBaseFolder();
-		File[] hasChildren = courseFolder.listFiles(SystemFileFilter.DIRECTORY_FILES);
-		if(hasChildren != null && hasChildren.length > 0) {
+		VFSContainer courseFolder = sourceCourse.getIsolatedCourseBaseContainer();
+		List<VFSItem> hasChildren = courseFolder.getItems(new VFSContainerFilter());
+		if(hasChildren != null && !hasChildren.isEmpty()) {
 			zout.putNextEntry(new ZipEntry("oocoursefolder.zip"));
-			
 			// export course folder
 			try(OutputStream shieldedStream = new ShieldOutputStream(zout);
 					ZipOutputStream exportStream = new ZipOutputStream(shieldedStream)) {
-				ZipUtil.addPathToZip(courseFolder.toPath(), exportStream);	
+				for(VFSItem child:hasChildren) {
+					ZipUtil.addToZip(child, "", exportStream, new VFSSystemItemFilter(), true);
+				}
 			} catch(Exception e) {
 				log.error("", e);
 			}
-			
 			zout.closeEntry();
 		}			
 	}
