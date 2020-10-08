@@ -176,7 +176,7 @@ public class AccessRightsEditController extends FormBasicController {
 			buttonsCont.setRootForm(mainForm);
 			formLayout.add("buttons", buttonsCont);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-			removeLink = uifactory.addFormLink("remove", buttonsCont, Link.BUTTON);
+			removeLink = uifactory.addFormLink("remove.all.rights", buttonsCont, Link.BUTTON);
 			if(canEdit) {
 				uifactory.addFormSubmitButton("save", buttonsCont);
 			}

@@ -62,6 +62,7 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
@@ -380,7 +381,8 @@ public class SharedBindersController extends FormBasicController implements Acti
 	
 	private void doLeaveBinder(SharedItemRow row) {
 		Binder binder = portfolioService.getBinderByKey(row.getBinderKey());
-		portfolioService.removeAccessRights(binder, getIdentity());
+		portfolioService.removeAccessRights(binder, getIdentity(),
+				PortfolioRoles.coach, PortfolioRoles.reviewer, PortfolioRoles.readInvitee, PortfolioRoles.invitee);
 		loadModel(tableEl.getQuickSearchString());
 	}
 	
