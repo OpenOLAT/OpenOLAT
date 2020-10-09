@@ -870,7 +870,7 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
-	public List<CurriculumElementMembership> getMembershipInfos(List<CurriculumRef> curriculums, Collection<CurriculumElement> elements, Identity... identities) {
+	public List<CurriculumElementMembership> getMembershipInfos(List<? extends CurriculumRef> curriculums, Collection<CurriculumElement> elements, Identity... identities) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el.key, membership from curriculumelement el")
 		  .append(" inner join el.group baseGroup")

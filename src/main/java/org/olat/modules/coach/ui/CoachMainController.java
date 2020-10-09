@@ -19,17 +19,24 @@
  */
 package org.olat.modules.coach.ui;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.olat.admin.privacy.PrivacyAdminController;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.IdentityToIdentityRelation;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
@@ -42,11 +49,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
@@ -80,6 +89,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private final TooledStackedPanel content;
 
 	private final boolean userSearchAllowed;
+	private final boolean showLineManagerView;
 	private final GradingSecurity gradingSec;
 	private final CoachingSecurity coachingSec;
 
@@ -93,6 +103,8 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private LecturesCoachingController lecturesMasterCoachCtrl;
 
 	private Map<String, RelationRole> userRelationRolesMap;
+	private Map<String, Organisation> organisationMap;
+	private List<Organisation> organisations;
 
 	@Autowired
 	private GradingModule gradingModule;
@@ -102,15 +114,26 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private IdentityRelationshipService identityRelationsService;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
+	private OrganisationModule organisationModule;
 
 	public CoachMainController(UserRequest ureq, WindowControl control, CoachingSecurity coachingSec, GradingSecurity gradingSec) {
 		super(ureq, control);
+		setTranslator(Util.createPackageTranslator(PrivacyAdminController.class, getLocale(), getTranslator()));
+
 		this.gradingSec = gradingSec;
 		this.coachingSec = coachingSec;
 		this.userRelationRolesMap = listAvailableRoles(identityRelationsService.getRelationsAsSource(ureq.getIdentity()));
 
 		Roles roles = ureq.getUserSession().getRoles();
 		userSearchAllowed = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal();
+		showLineManagerView = organisationModule.isEnabled() && roles.isLineManager();
+		if (showLineManagerView) {
+			organisations = organisationService.getOrganisations(getIdentity(), OrganisationRoles.linemanager);
+			organisationMap = organisations.stream().collect(Collectors.toMap(org -> org.getKey().toString(), org -> org));
+		}
 
 		menu = new MenuTree(null, "coachMenu", this);
 		menu.setExpandSelectedNode(false);
@@ -141,15 +164,43 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				TreeNode selTreeNode = menu.getSelectedNode();
 
-				if (selTreeNode.getDelegate() != null) {
-					String cmd = (String) selTreeNode.getDelegate().getUserObject();
-					selectMenuItem(ureq,cmd);
-				} else if (selTreeNode.getUserObject() instanceof String) {
-					String cmd = (String)selTreeNode.getUserObject();
-					selectMenuItem(ureq, cmd);
+				selectMenuItem(ureq, selTreeNode);
+			}
+		} else if (source == content) {
+			if (event instanceof PopEvent) {
+				PopEvent popEvent = (PopEvent) event;
+
+				if (popEvent.getController() instanceof AbstactCoachListController) {
+					TreeNode selTreeNode = menu.getSelectedNode();
+					selectMenuItem(ureq, selTreeNode);
+					if (selTreeNode.getUserObject() instanceof Organisation) {
+						selectMenuItem(ureq, selTreeNode);
+					} else if (selTreeNode.getUserObject() instanceof RelationRole) {
+						selectMenuItem(ureq, selTreeNode);
+					}
 				}
 			}
 		}
+	}
+
+	private Activateable2 selectMenuItem(UserRequest ureq, TreeNode treeNode) {
+		if (treeNode.getDelegate() != null) {
+			return selectMenuItem(ureq, treeNode.getDelegate());
+		} else if (treeNode.getUserObject() instanceof String) {
+			String cmd = (String) treeNode.getUserObject();
+			return selectMenuItem(ureq, cmd);
+		} else if (treeNode.getUserObject() instanceof Long) {
+			Long cmd = (Long) treeNode.getUserObject();
+			return selectMenuItem(ureq, treeNode.toString());
+		} else if (treeNode.getUserObject() instanceof Organisation) {
+			Organisation organisation = (Organisation) treeNode.getUserObject();
+			return selectMenuItem(ureq, organisation);
+		} else if (treeNode.getUserObject() instanceof RelationRole) {
+			RelationRole relationRole = (RelationRole) treeNode.getUserObject();
+			return selectMenuItem(ureq, relationRole);
+		}
+
+		return null;
 	}
 
 	@Override
@@ -195,6 +246,9 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		}
 		if (coachingSec.isUserRelationSource()) {
 			return userRelationRolesMap.keySet().stream().findFirst().get();
+		}
+		if (organisationModule.isEnabled()) {
+			return organisationMap.keySet().stream().findFirst().get();
 		}
 		return "Members";
 	}
@@ -267,16 +321,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				listenTo(gradingCtrl);
 			}
 			selectedCtrl = gradingCtrl;
-		} else if(userRelationRolesMap.containsKey(cmd) && securityModule.isRelationRoleEnabled()) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(cmd, 0l);
-			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			UserRelationListController userRelationsListController = new UserRelationListController(ureq, bwControl, content, userRelationRolesMap.get(cmd));
-			listenTo(userRelationsListController);
-
-			selectedCtrl = userRelationsListController;
 		}
-
 		if(selectedCtrl != null) {
 			String title = "Root";
 			TreeNode selTreeNode = TreeHelper.findNodeByUserObject(cmd, menu.getTreeModel().getRootNode());
@@ -287,9 +332,70 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				}
 			}
 			content.rootController(title, selectedCtrl);
+			content.setInvisibleCrumb(1);
 			addToHistory(ureq, selectedCtrl);
 		}
 		return (Activateable2)selectedCtrl;
+	}
+
+	private Activateable2 selectMenuItem(UserRequest ureq, Organisation organisation) {
+		Controller selectedController = null;
+
+		if (organisationModule.isEnabled()) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Organisation", organisation.getKey());
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			AbstactCoachListController organisationListController = new OrganisationListController(ureq, bwControl, content, organisation, OrganisationRoles.linemanager);
+			listenTo(organisationListController);
+
+			String rootTitle = translate("admin.props.linemanagers");
+			String title = "Organisation";
+			TreeNode selTreeNode = TreeHelper.findNodeByUserObject(organisation, menu.getTreeModel().getRootNode());
+			if (selTreeNode != null) {
+				title = selTreeNode.getTitle();
+				if (!selTreeNode.getIdent().equals(menu.getSelectedNodeId())) {
+					menu.setSelectedNodeId(selTreeNode.getIdent());
+				}
+			}
+			content.rootController(rootTitle, null);
+			content.pushController(title, null, organisationListController);
+			content.setInvisibleCrumb(0);
+			addToHistory(ureq, organisationListController);
+
+			selectedController = organisationListController;
+		}
+
+		return (Activateable2) selectedController;
+	}
+
+	private Activateable2 selectMenuItem(UserRequest ureq, RelationRole relationRole) {
+		Controller selectedController = null;
+
+		if (securityModule.isRelationRoleEnabled()) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Relations", relationRole.getKey());
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			AbstactCoachListController userRelationsListController = new UserRelationListController(ureq, bwControl, content, relationRole);
+			listenTo(userRelationsListController);
+
+			String rootTitle = translate("relations.menu.title");
+			String title = "Relation";
+			TreeNode selTreeNode = TreeHelper.findNodeByUserObject(relationRole, menu.getTreeModel().getRootNode());
+			if (selTreeNode != null) {
+				title = selTreeNode.getTitle();
+				if (!selTreeNode.getIdent().equals(menu.getSelectedNodeId())) {
+					menu.setSelectedNodeId(selTreeNode.getIdent());
+				}
+			}
+			content.rootController(rootTitle, null);
+			content.pushController(title, null, userRelationsListController);
+			content.setInvisibleCrumb(0);
+			addToHistory(ureq, userRelationsListController);
+
+			selectedController = userRelationsListController;
+		}
+
+		return (Activateable2) selectedController;
 	}
 
 	private TreeModel buildTreeModel() {
@@ -334,16 +440,17 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			root.addChild(courses);
 		}
 
+		// Add user relations
 		// Add menu entry with sub entries
 		if (isUserRelationAvailable() == 2) {
 			GenericTreeNode relations = new GenericTreeNode();
-			relations.setUserObject("UserRelationsNode");
+			relations.setUserObject("Relations");
 			relations.setTitle(translate("relations.menu.title"));
 			relations.setAltText("relations.menu.title");
 
 			for (RelationRole relationRole : userRelationRolesMap.values()) {
 				GenericTreeNode relationRoleNode = new GenericTreeNode();
-				relationRoleNode.setUserObject(relationRole.getRole());
+				relationRoleNode.setUserObject(relationRole);
 				relationRoleNode.setTitle(RelationRolesAndRightsUIFactory.getTranslatedContraRole(relationRole, getLocale()));
 				relationRoleNode.setAltText(RelationRolesAndRightsUIFactory.getTranslatedContraDescription(relationRole, getLocale()));
 				relations.addChild(relationRoleNode);
@@ -356,11 +463,48 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		else if (isUserRelationAvailable() == 1) {
 			for (RelationRole relationRole : userRelationRolesMap.values()) {
 				GenericTreeNode relationRoleNode = new GenericTreeNode();
-				relationRoleNode.setUserObject(relationRole.getRole());
+				relationRoleNode.setUserObject(relationRole);
 				relationRoleNode.setTitle(RelationRolesAndRightsUIFactory.getTranslatedContraRole(relationRole, getLocale()));
 				relationRoleNode.setAltText(RelationRolesAndRightsUIFactory.getTranslatedContraDescription(relationRole, getLocale()));
 				root.addChild(relationRoleNode);
 			}
+		}
+
+		// Add line manager view
+		// Add menu entry with sub entries
+		if (isLineManagerViewAvailable() == 2) {
+			GenericTreeNode organisationsNode = new GenericTreeNode();
+			organisationsNode.setUserObject("Organisations");
+			organisationsNode.setTitle(translate("line.manager.title"));
+			organisationsNode.setAltText(translate("line.manager.title"));
+
+			List<Organisation> topLevelOrganisations = new ArrayList<>();
+
+			for (Organisation organisation : organisations) {
+				if (organisation.getParent() == null && !topLevelOrganisations.contains(organisation)) {
+					topLevelOrganisations.add(organisation);
+				} else if (!organisations.contains(organisation.getParent())){
+					topLevelOrganisations.add(organisation);
+				}
+			}
+
+			if (!topLevelOrganisations.isEmpty()) {
+				for (Organisation topLevelOrganisation : topLevelOrganisations) {
+					addOrganisationToTree(topLevelOrganisation, organisationsNode);
+				}
+
+				setFirstChildAsDelegate(organisationsNode);
+				root.addChild(organisationsNode);
+			}
+		}
+		// Add only one main entry
+		else if (isLineManagerViewAvailable() == 1) {
+			GenericTreeNode organisationsNode = new GenericTreeNode();
+			organisationsNode.setUserObject(organisations.get(0));
+			organisationsNode.setTitle(translate(organisations.get(0).getDisplayName()));
+			organisationsNode.setAltText(translate(organisations.get(0).getDisplayName()));
+
+			root.addChild(organisationsNode);
 		}
 
 		if(gradingModule.isEnabled() && (gradingSec.isGrader() || gradingSec.isGradedResourcesManager())) {
@@ -381,6 +525,21 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		return gtm;
 	}
 
+	private void addOrganisationToTree(Organisation organisation, GenericTreeNode parentNode) {
+		GenericTreeNode organisationNode = new GenericTreeNode();
+		organisationNode.setUserObject(organisation);
+		organisationNode.setTitle(organisation.getDisplayName());
+		organisationNode.setAltText(organisation.getDisplayName());
+
+		if (!organisation.getChildren().isEmpty()) {
+			for (Organisation child : organisation.getChildren()) {
+				addOrganisationToTree(child, organisationNode);
+			}
+		}
+
+		parentNode.addChild(organisationNode);
+	}
+
 	/**
 	 * Returns 0 if nothing is available
 	 * Returns 1 if exactly one role is available
@@ -396,6 +555,25 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				return 1;
 			}
 		}
+		return 0;
+	}
+
+	/**
+	 * Returns 0 if nothing is available
+	 * Returns 1 if exactly one organisation is available
+	 * Returns 2 if more than one organisation is available
+	 *
+	 * @return
+	 */
+	private int isLineManagerViewAvailable() {
+		if (showLineManagerView) {
+			if (organisations.size() > 1) {
+				return 2;
+			} else if (organisations.size() > 0) {
+				return 1;
+			}
+		}
+
 		return 0;
 	}
 

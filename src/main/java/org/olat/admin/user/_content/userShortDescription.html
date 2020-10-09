@@ -1,6 +1,6 @@
 <div class="o_userShortDescription" id="$r.getCId()">
 <table class="table table-bordered table-condensed table-striped">
-	#if($r.isNotNull($usernamePosition) && $usernamePosition == "top")
+	#if($r.isNotNull($identityKey) && $r.isNotNull($usernamePosition) && $usernamePosition == "top")
 		#if($r.isNotNull($username))
 		<tr class="o_prop o_username">
 			<th scope="row">$usernameLabel</th>
@@ -20,7 +20,7 @@
 		</tr>
 		#end
 	#end
-	#if($r.isNotNull($usernamePosition) && $usernamePosition == "bottom")
+	#if($r.isNotNull($identityKey) && $r.isNotNull($usernamePosition) && $usernamePosition == "bottom")
 		#if($r.isNotNull($username))
 		<tr class="o_prop o_username">
 			<th scope="row">$usernameLabel</th>

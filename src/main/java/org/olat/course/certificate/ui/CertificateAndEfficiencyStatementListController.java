@@ -49,6 +49,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.render.Renderer;
@@ -56,6 +57,8 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -87,14 +90,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CertificateAndEfficiencyStatementListController extends FormBasicController
-		implements BreadcrumbPanelAware, GenericEventListener {
+public class CertificateAndEfficiencyStatementListController extends FormBasicController implements BreadcrumbPanelAware, GenericEventListener, Activateable2 {
 	
 	private static final String CMD_SHOW = "cmd.show";
 	private static final String CMD_LAUNCH_COURSE = "cmd.launch.course";
 	private static final String CMD_DELETE = "cmd.delete";
 	private static final String CMD_MEDIA = "cmd.MEDIA";
-	
+
 	private FlexiTableElement tableEl;
 	private BreadcrumbPanel stackPanel;
 	private FormLink coachingToolButton;
@@ -128,27 +130,35 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		this(ureq, wControl, ureq.getUserSession().getIdentity(), false, true, true);
 	}
 	
-	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse) {
+	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse) {
 		super(ureq, wControl, "cert_statement_list");
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		this.canModify = canModify;
 		this.assessedIdentity = assessedIdentity;
 		this.linkToCoachingTool = linkToCoachingTool;
 		this.canLaunchCourse = canLaunchCourse;
+
+		// Show heading
+		flc.contextPut("showHeading", true);
 		
 		initForm(ureq);
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
+
+	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse, boolean showHeading) {
+		this(ureq, wControl, assessedIdentity, linkToCoachingTool, canModify, canLaunchCourse);
+
+		// Set visibility of heading
+		flc.contextPut("showHeading", showHeading);
+	}
 	
-	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, boolean useFieldSet) {
-		this(ureq, wControl, assessedIdentity, false, false, false);
+	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean withFieldSet) {
+		this(ureq, wControl, assessedIdentity, false, false, true);
 		
-		// Show different header in user relations
-		flc.contextPut("withFieldSet", useFieldSet);
+		// Show different header in user management
+		flc.contextPut("withFieldSet", withFieldSet);
 	}
 	
 	@Override
@@ -226,6 +236,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		loadModel();
 		tableEl = uifactory.addTableElement(getWindowControl(), "certificates", tableModel, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_sel_certificates_table");
+		tableEl.setEmtpyTableMessageKey("table.statements.empty");
 	}
 	
 	private void loadModel() {
@@ -404,6 +415,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		cmc = new CloseableModalController(getWindowControl(), null, collectorCtrl.getInitialComponent(), true, title, true);
 		cmc.addControllerListener(this);
 		cmc.activate();
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+
 	}
 
 	public class AsArtefactCellRenderer implements FlexiCellRenderer {

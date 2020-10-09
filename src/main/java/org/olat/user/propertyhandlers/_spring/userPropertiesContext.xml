@@ -1291,7 +1291,7 @@
 					</bean>
 				</entry>
 
-				<entry key="org.olat.modules.coach.ui.UserRelationOverviewController">
+				<entry key="org.olat.modules.coach.ui.UserOverviewController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Short description of a user" />
 						<property name="propertyHandlers">

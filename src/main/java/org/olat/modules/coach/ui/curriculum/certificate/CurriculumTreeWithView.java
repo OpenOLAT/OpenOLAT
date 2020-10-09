@@ -17,19 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.basesecurity;
+package org.olat.modules.coach.ui.curriculum.certificate;
 
-import org.olat.core.id.CreateInfo;
+import java.util.List;
+
+import org.olat.repository.RepositoryEntryMyView;
 
 /**
  * 
- * Initial date: 28 janv. 2019<br>
+ * Initial date: 8 Oct 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface RelationRight extends CreateInfo {
+public interface CurriculumTreeWithView {
 	
-	public Long getKey();
+	public boolean isCurriculumMember();
 	
-	public String getRight();
+	public CurriculumTreeWithView getParent();
+	
+	public List<RepositoryEntryMyView> getEntries();
+
+	public CurriculumKey getKey();
+	
+	public default boolean isParentOrSelf(CurriculumTreeWithView parent) {
+		boolean hasParent = false;
+		
+		if(getKey().equals(parent.getKey())) {
+			hasParent = true;
+		} else {
+			for(CurriculumTreeWithView parentRow = getParent(); parentRow != null; parentRow=parentRow.getParent()) {
+				if(parentRow.getKey().equals(parent.getKey())) {
+					hasParent = true;
+				}
+			}
+		}
+		return hasParent;
+	}
 }

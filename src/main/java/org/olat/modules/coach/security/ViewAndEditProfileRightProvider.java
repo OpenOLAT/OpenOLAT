@@ -21,7 +21,7 @@ package org.olat.modules.coach.security;
 
 import java.util.Locale;
 
-import org.olat.basesecurity.RelationRightProvider;
+import org.olat.basesecurity.RightProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.ui.CoachMainController;
@@ -32,23 +32,33 @@ import org.springframework.stereotype.Component;
  * @author aboeckle, alexander.boeckle@frentix.com
  */
 @Component
-public class ViewAndEditProfileRightProvider implements RelationRightProvider {
+public class ViewAndEditProfileRightProvider implements RightProvider {
 
 	public static final String RELATION_RIGHT = "viewAndEditProfile";
-	
-	@Override
-	public RelationRightProvider getParent() {
-		return null;
-	}
-
-	@Override
-	public int getPosition() {
-		return Order.ViewAndEditProfileRight.ordinal();
-	}
 
 	@Override
 	public String getRight() {
 		return RELATION_RIGHT;
+	}
+
+	@Override
+	public RightProvider getParent() {
+		return null;
+	}
+
+	@Override
+	public boolean isUserRelationsRight() {
+		return true;
+	}
+
+	@Override
+	public int getUserRelationsPosition() {
+		return UserRelationRightsOrder.ViewAndEditProfileRight.ordinal();
+	}
+
+	@Override
+	public int getOrganisationPosition() {
+		return OrganisationRightsOrder.ViewAndEditProfileRight.ordinal();
 	}
 
 	@Override

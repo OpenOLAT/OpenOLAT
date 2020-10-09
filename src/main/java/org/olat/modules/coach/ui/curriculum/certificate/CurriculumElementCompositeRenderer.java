@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.coach.ui.curriculum;
+package org.olat.modules.coach.ui.curriculum.certificate;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -42,7 +42,7 @@ public class CurriculumElementCompositeRenderer extends StaticFlexiCellRenderer 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		CurriculumElementWithViewsRow view = (CurriculumElementWithViewsRow)source.getFlexiTableElement().getTableDataModel().getObject(row);
+		CurriculumTreeWithViewsRow view = (CurriculumTreeWithViewsRow)source.getFlexiTableElement().getTableDataModel().getObject(row);
 		if(view.isCurriculumElementOnly()) {
 			getLabelDelegate().render(renderer, target, cellValue, row, source, ubu, translator);
 		} else {

@@ -24,7 +24,7 @@ import java.util.Locale;
 import org.apache.logging.log4j.Level;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.RelationRight;
-import org.olat.basesecurity.RelationRightProvider;
+import org.olat.basesecurity.RightProvider;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
@@ -46,7 +46,7 @@ public class RelationRolesAndRightsUIFactory {
 	
 	public static String getTranslatedRight(RelationRight right, Locale locale) {
 		IdentityRelationshipService relationshipService = CoreSpringFactory.getImpl(IdentityRelationshipService.class);
-		RelationRightProvider provider = relationshipService.getRelationRightProvider(right);
+		RightProvider provider = relationshipService.getRelationRightProvider(right);
 		return provider != null? provider.getTranslatedName(locale): "???";
 	}
 	

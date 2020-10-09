@@ -19,9 +19,12 @@
  */
 package org.olat.modules.quality;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 
-import org.olat.basesecurity.RelationRightProvider;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.RightProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.quality.ui.QualityMainController;
@@ -34,23 +37,38 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class QualityReportAccessRightProvider implements RelationRightProvider {
+public class QualityReportAccessRightProvider implements RightProvider {
 
 	public static final String RELATION_RIGHT = "selectableQualityReportAccess";
 
 	@Override
-	public RelationRightProvider getParent() {
+	public String getRight() {
+		return RELATION_RIGHT;
+	}
+
+	@Override
+	public RightProvider getParent() {
 		return null;
 	}
 
 	@Override
-	public int getPosition() {
-		return Order.QualityReportAccessRight.ordinal();
+	public boolean isUserRelationsRight() {
+		return true;
 	}
-	
+
 	@Override
-	public String getRight() {
-		return RELATION_RIGHT;
+	public int getUserRelationsPosition() {
+		return UserRelationRightsOrder.QualityReportAccessRight.ordinal();
+	}
+
+	@Override
+	public Collection<OrganisationRoles> getOrganisationRoles() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public int getOrganisationPosition() {
+		return -1;
 	}
 
 	@Override

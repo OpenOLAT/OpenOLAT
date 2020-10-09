@@ -17,16 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.coach.ui.curriculum;
+package org.olat.modules.coach.ui.curriculum.certificate;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -52,6 +53,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
@@ -77,15 +79,20 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
+import org.olat.course.assessment.model.UserEfficiencyStatementLight;
+import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
-import org.olat.modules.coach.UserRelationSecurityCallback;
-import org.olat.modules.coach.ui.curriculum.CurriculumElementWithViewsDataModel.ElementViewCols;
+import org.olat.modules.coach.RoleSecurityCallback;
+import org.olat.modules.coach.ui.curriculum.certificate.CurriculumElementWithViewsDataModel.ElementViewCols;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
-import org.olat.modules.curriculum.CurriculumElementWithView;
-import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
@@ -123,7 +130,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CurriculumElementListController extends FormBasicController implements FlexiTableCssDelegate, FlexiTableComponentDelegate, Activateable2 {
+public class CertificateAndEfficiencyStatementCurriculumListController extends FormBasicController implements FlexiTableCssDelegate, FlexiTableComponentDelegate, Activateable2 {
 
     private FlexiTableElement tableEl;
     private CurriculumElementWithViewsDataModel tableModel;
@@ -131,13 +138,12 @@ public class CurriculumElementListController extends FormBasicController impleme
 
     private int counter;
     private final boolean guestOnly;
-    private final List<CurriculumRef> curriculumRefList;
     private final List<Curriculum> curriculumList;
 
     private final MapperKey mapperThumbnailKey;
     private final Identity assessedIdentity;
     private final CurriculumSecurityCallback curriculumSecurityCallback;
-    private final UserRelationSecurityCallback userRelationSecurityCallback;
+    private final RoleSecurityCallback roleSecurityCallback;
 
     private RepositoryEntryDetailsController detailsCtrl;
     private CurriculumElementCalendarController calendarsCtrl;
@@ -160,14 +166,22 @@ public class CurriculumElementListController extends FormBasicController impleme
     private AssessmentService assessmentService;
     @Autowired
     private BaseSecurity securityManager;
+    @Autowired
+    private EfficiencyStatementManager esm;
+    @Autowired
+    private CertificatesManager certificatesManager;
 
-    public CurriculumElementListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-                                           Identity assessedIdentity, List<CurriculumRef> curriculumRefList, CurriculumSecurityCallback curriculumSecurityCallback, UserRelationSecurityCallback userRelationSecurityCallback) {
-        super(ureq, wControl, "curriculum_element_list", Util.createPackageTranslator(CurriculumListController.class, RepositoryService.class, ureq.getLocale()));
-        this.curriculumRefList = curriculumRefList;
+    public CertificateAndEfficiencyStatementCurriculumListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+                                                                     Identity assessedIdentity, CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback) {
+        super(ureq, wControl, "curriculum_element_list");
+        setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+        setTranslator(Util.createPackageTranslator(CertificateAndEfficiencyStatementListController.class, getLocale(), getTranslator()));
+        setTranslator(Util.createPackageTranslator(CurriculumListController.class, getLocale(), getTranslator()));
+        setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+
         this.stackPanel = stackPanel;
         this.curriculumSecurityCallback = curriculumSecurityCallback;
-        this.userRelationSecurityCallback = userRelationSecurityCallback;
+        this.roleSecurityCallback = roleSecurityCallback;
         this.assessedIdentity = assessedIdentity;
         this.curriculumList = curriculumService.getMyCurriculums(assessedIdentity);
         guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
@@ -185,18 +199,34 @@ public class CurriculumElementListController extends FormBasicController impleme
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
         FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.key));
+
         TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.displayName, treeNodeRenderer));
+
+        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
+
         DefaultFlexiColumnModel elementIdentifierCol = new DefaultFlexiColumnModel(ElementViewCols.identifier, "select");
         elementIdentifierCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new TextFlexiCellRenderer()));
         columnsModel.addFlexiColumnModel(elementIdentifierCol);
-        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
-        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
-        if (userRelationSecurityCallback.canViewCourseProgressAndStatus()) {
+
+        // Name column
+        // columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
+
+        if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
+            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.passed));
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
         }
-        if (userRelationSecurityCallback.canViewCalendar()) {
+        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.lastModification));
+        columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.lastUserModified));
+        if (roleSecurityCallback.canViewEfficiencyStatements()) {
+            BooleanCellRenderer efficiencyStatementRenderer = new BooleanCellRenderer(new StaticFlexiCellRenderer("openStatement", translate("table.header.show")), null);
+            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.efficiencyStatement, efficiencyStatementRenderer));
+            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.certificate));
+            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.recertification));
+        }
+        if (roleSecurityCallback.canViewCalendar()) {
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
         }
 
@@ -207,7 +237,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
         tableEl.setCssDelegate(this);
         tableEl.setFilters("activity", getFilters(), false);
-        tableEl.setSelectedFilterKey("active");
+        tableEl.setSelectedFilterKey(CurriculumElementWithViewsDataModel.FilterKeys.withStatementOnly.name());
 
         VelocityContainer row = createVelocityContainer("curriculum_element_row");
         row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
@@ -219,9 +249,10 @@ public class CurriculumElementListController extends FormBasicController impleme
 
     private List<FlexiTableFilter> getFilters() {
         List<FlexiTableFilter> filters = new ArrayList<>(5);
-        filters.add(new FlexiTableFilter(translate("filter.active"), "active"));
+        filters.add(new FlexiTableFilter(translate(CurriculumElementWithViewsDataModel.FilterKeys.activ.i18nHeaderKey()), CurriculumElementWithViewsDataModel.FilterKeys.activ.name()));
+        filters.add(new FlexiTableFilter(translate(CurriculumElementWithViewsDataModel.FilterKeys.withStatementOnly.i18nHeaderKey()), CurriculumElementWithViewsDataModel.FilterKeys.withStatementOnly.name()));
         filters.add(FlexiTableFilter.SPACER);
-        filters.add(new FlexiTableFilter(translate("show.all"), "all", true));
+        filters.add(new FlexiTableFilter(translate(CurriculumElementWithViewsDataModel.FilterKeys.showAll.i18nHeaderKey()), CurriculumElementWithViewsDataModel.FilterKeys.showAll.name(), true));
         return filters;
     }
 
@@ -238,7 +269,7 @@ public class CurriculumElementListController extends FormBasicController impleme
     @Override
     public String getRowCssClass(FlexiTableRendererType type, int pos) {
         StringBuilder sb = new StringBuilder(64);
-        CurriculumElementWithViewsRow rowWithView = tableModel.getObject(pos);
+        CurriculumTreeWithViewsRow rowWithView = tableModel.getObject(pos);
         if (type == FlexiTableRendererType.custom) {
             sb.append("o_table_row ");
 
@@ -258,7 +289,7 @@ public class CurriculumElementListController extends FormBasicController impleme
             sb.append(" o_curriculum");
         } else {
             int count = 0;
-            for (CurriculumElementWithViewsRow parent = rowWithView.getParent(); parent != null; parent = parent.getParent()) {
+            for (CurriculumTreeWithViewsRow parent = rowWithView.getParent(); parent != null; parent = parent.getParent()) {
                 count++;
             }
 
@@ -284,16 +315,83 @@ public class CurriculumElementListController extends FormBasicController impleme
     }
 
     private void loadModel(UserRequest ureq) {
+        // Load efficiency statements
+        Map<Long, CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement> resourceKeyToStatments = new HashMap<>();
+        List<CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement> statements = new ArrayList<>();
+        List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(assessedIdentity);
+
+        List<Long> courseEntryKeys = efficiencyStatementsList.stream()
+                .map(UserEfficiencyStatementLight::getCourseRepoKey)
+                .filter(key -> key != null)
+                .collect(Collectors.toList());
+        Map<Long, Double> courseEntryKeysToCompletion = assessmentService
+                .loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
+                .filter(ae -> ae.getCompletion() != null)
+                .collect(Collectors.toMap(
+                        ae -> ae.getRepositoryEntryKey(),
+                        ae -> ae.getCompletion()
+                ));
+
+        for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatementsList) {
+            CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement wrapper = new CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement();
+            wrapper.setDisplayName(efficiencyStatement.getShortTitle());
+            wrapper.setPassed(efficiencyStatement.getPassed());
+            wrapper.setScore(efficiencyStatement.getScore());
+            wrapper.setEfficiencyStatementKey(efficiencyStatement.getKey());
+            wrapper.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+            wrapper.setLastModified(efficiencyStatement.getLastModified());
+            wrapper.setLastUserModified(efficiencyStatement.getLastUserModified());
+            Double completion = courseEntryKeysToCompletion.get(efficiencyStatement.getCourseRepoKey());
+            wrapper.setCompletion(completion);
+            statements.add(wrapper);
+            resourceKeyToStatments.put(efficiencyStatement.getArchivedResourceKey(), wrapper);
+        }
+
+        List<CertificateLight> certificates = certificatesManager.getLastCertificates(assessedIdentity);
+        for(CertificateLight certificate:certificates) {
+            Long resourceKey = certificate.getOlatResourceKey();
+            CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement wrapper = resourceKeyToStatments.get(resourceKey);
+            if(wrapper == null) {
+                wrapper = new CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement();
+                wrapper.setDisplayName(certificate.getCourseTitle());
+                resourceKeyToStatments.put(resourceKey, wrapper);
+                statements.add(wrapper);
+            } else {
+                if(!StringHelper.containsNonWhitespace(wrapper.getDisplayName())) {
+                    wrapper.setDisplayName(certificate.getCourseTitle());
+                }
+                wrapper.setResourceKey(resourceKey);
+            }
+            if(resourceKey != null && wrapper.getResourceKey() == null) {
+                wrapper.setResourceKey(resourceKey);
+            }
+            wrapper.setCertificate(certificate);
+        }
+
+        for(CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement statment:statements) {
+            if(!StringHelper.containsNonWhitespace(statment.getDisplayName()) && statment.getResourceKey() != null) {
+                String displayName = repositoryManager.lookupDisplayNameByResourceKey(statment.getResourceKey());
+                statment.setDisplayName(displayName);
+            }
+        }
+
+        // Set of Olat resources with statements
+        Set<Long> statementEntries = statements.stream().map(CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement::getResourceKey).collect(Collectors.toSet());
+        // Set of entries, which will be added in the next step
+        Set<Long> alreadyAdded = new HashSet<>();
+
+        // Load Curricula
         Roles roles = ureq.getUserSession().getRoles();
-        List<CurriculumElementWithViewsRow> allRows = new ArrayList<>();
-        List<CurriculumElementRepositoryEntryViews> elementsWithViewsForAll = curriculumService.getCurriculumElements(assessedIdentity, roles, curriculumRefList);
+        List<CurriculumTreeWithViewsRow> allRows = new ArrayList<>();
+        List<CurriculumElementRepositoryEntryViews> elementsWithViewsForAll = curriculumService.getCurriculumElements(assessedIdentity, roles, curriculumList);
         Map<Curriculum, List<CurriculumElementRepositoryEntryViews>> elementsMap = elementsWithViewsForAll.stream().collect(Collectors.groupingBy(row -> row.getCurriculumElement().getCurriculum(), Collectors.toList()));
 
         for (Curriculum curriculum : curriculumList) {
-            CurriculumElementWithViewsRow curriculumRow = new CurriculumElementWithViewsRow(curriculum);
+            CurriculumTreeWithViewsRow curriculumRow = new CurriculumTreeWithViewsRow(curriculum);
             List<CurriculumElementRepositoryEntryViews> elementsWithViews = elementsMap.get(curriculum);
+
             if (elementsWithViews != null && !elementsWithViews.isEmpty()) {
-                List<CurriculumElementWithViewsRow> rows = new ArrayList<>();
+                List<CurriculumTreeWithViewsRow> rows = new ArrayList<>();
 
                 Set<Long> repoKeys = new HashSet<>();
                 List<OLATResource> resourcesWithAC = new ArrayList<>();
@@ -312,34 +410,48 @@ public class CurriculumElementListController extends FormBasicController impleme
                     CurriculumElement element = elementWithViews.getCurriculumElement();
                     CurriculumElementMembership elementMembership = elementWithViews.getCurriculumMembership();
 
-                    if (elementWithViews.getEntries() == null || elementWithViews.getEntries().isEmpty()) {
-                        CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(curriculum, element, elementMembership, 0);
+                    List<RepositoryEntryMyView> repositoryEntryMyViews = new ArrayList<>();
+                    if (elementWithViews.getEntries() != null && !elementWithViews.getEntries().isEmpty()) {
+                        for (RepositoryEntryMyView entry : elementWithViews.getEntries()) {
+                           // if (statementEntries.contains(entry.getOlatResource().getKey())) {
+                                repositoryEntryMyViews.add(entry);
+                           // }
+                        }
+                    }
+
+
+                    if (repositoryEntryMyViews == null || repositoryEntryMyViews.isEmpty()) {
+                        CurriculumTreeWithViewsRow row = new CurriculumTreeWithViewsRow(curriculum, element, elementMembership, 0);
                         forgeCalendarsLink(row);
                         rows.add(row);
-                    } else if (elementWithViews.getEntries().size() == 1) {
-                        CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(curriculum, element, elementMembership, elementWithViews.getEntries().get(0), true);
+                    } else if (repositoryEntryMyViews.size() == 1) {
+                        CurriculumTreeWithViewsRow row = new CurriculumTreeWithViewsRow(curriculum, element, elementMembership, elementWithViews.getEntries().get(0), true);
                         forge(row, repoKeys, resourcesWithOffer);
                         forgeCalendarsLink(row);
                         rows.add(row);
                     } else {
-                        CurriculumElementWithViewsRow elementRow = new CurriculumElementWithViewsRow(curriculum, element, elementMembership, elementWithViews.getEntries().size());
+                        CurriculumTreeWithViewsRow elementRow = new CurriculumTreeWithViewsRow(curriculum, element, elementMembership, elementWithViews.getEntries().size());
                         forgeCalendarsLink(elementRow);
                         rows.add(elementRow);
-                        for (RepositoryEntryMyView entry : elementWithViews.getEntries()) {
-                            CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(curriculum, element, elementMembership, entry, false);
+                        for (RepositoryEntryMyView entry : repositoryEntryMyViews) {
+                            CurriculumTreeWithViewsRow row = new CurriculumTreeWithViewsRow(curriculum, element, elementMembership, entry, false);
                             forge(row, repoKeys, resourcesWithOffer);
                             rows.add(row);
                         }
                     }
-
                 }
 
 
-                Map<Long, CurriculumElementWithViewsRow> keyToRow = rows.stream()
-                        .collect(Collectors.toMap(CurriculumElementWithViewsRow::getKey, row -> row, (row1, row2) -> row1));
+                Map<CurriculumKey, CurriculumTreeWithViewsRow> keyToRow = rows.stream()
+                        .collect(Collectors.toMap(CurriculumTreeWithViewsRow::getKey, row -> row, (row1, row2) -> row1));
                 rows.forEach(row -> {
                     row.setParent(keyToRow.get(row.getParentKey()));
                     if (row.getOlatResource() != null) {
+                        alreadyAdded.add(row.getOlatResource().getKey());
+                        if (statementEntries.contains(row.getOlatResource().getKey())){
+                            row.setHasStatement(true);
+                        }
+
                         VFSLeaf image = repositoryManager.getImage(row.getRepositoryEntryResourceable().getResourceableId(), row.getOlatResource());
                         if (image != null) {
                             row.setThumbnailRelPath(mapperThumbnailKey.getUrl() + "/" + image.getName());
@@ -347,13 +459,8 @@ public class CurriculumElementListController extends FormBasicController impleme
                     }
                 });
 
-                Collections.sort(rows, new CurriculumElementViewsRowComparator(getLocale()));
-
                 removeByPermissions(rows);
-
                 forgeCurriculumCompletions(rows);
-
-
                 addRoot(rows, curriculumRow);
 
                 allRows.add(curriculumRow);
@@ -361,55 +468,82 @@ public class CurriculumElementListController extends FormBasicController impleme
             }
         }
 
+
+
+        // Filter for entries which are already in a curriculum
         Roles assessedRoles = securityManager.getRoles(assessedIdentity);
         SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(assessedIdentity, assessedRoles);
         params.setMembershipMandatory(true);
         List<RepositoryEntryMyView> courses = repositoryService.searchMyView(params, 0, 0);
-        // Filter for entries which are already in a curriculum
+
+//        // Filter for entries which have a efficiency statement
+//        Set<Long> alreadyAdded = new HashSet<>();
+//        for (CurriculumTreeWithViewsRow row : allRows) {
+//            for (RepositoryEntryMyView entry : row.getEntries()) {
+//                alreadyAdded.add(entry.getOlatResource().getKey());
+//            }
+//        }
+
+        courses.removeIf(course -> alreadyAdded.contains(course.getOlatResource().getKey()));
+
+        // Filter for entries which are without curriculum
+        CurriculumTreeWithViewsRow foreignEntryParent = new CurriculumTreeWithViewsRow(translate("curriculum.foreign.entries"));
 
         if (!courses.isEmpty()) {
-            CurriculumElementWithViewsRow foreignEntryParent = new CurriculumElementWithViewsRow(translate("curriculum.foreign.entries"));
             allRows.add(foreignEntryParent);
 
-            List<RepositoryEntryMyView> foreignCourses = courses.stream()
-                    .filter(course -> allRows.stream()
-                            .noneMatch(row -> course.getKey().equals(row.getRepositoryEntryKey()))
-                    ).collect(Collectors.toList());
-
-            foreignCourses.forEach(course -> {
-                CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(course);
+            courses.forEach(course -> {
+                CurriculumTreeWithViewsRow row = new CurriculumTreeWithViewsRow(course);
                 forgeSelectLink(row);
                 forgeCompletion(row,row.getRepositoryEntryCompletion());
                 forgeDetails(row);
                 row.setParent(foreignEntryParent);
+                row.setHasStatement(true);
+                allRows.add(row);
+                alreadyAdded.add(course.getOlatResource().getKey());
+            });
+        }
+
+        // Add Statements which don't belong to any course
+        Set<Long> orphanCertificates = statementEntries.stream().filter(certificateResourceKey -> !alreadyAdded.contains(certificateResourceKey)).collect(Collectors.toSet());
+
+        if (!orphanCertificates.isEmpty()) {
+            if (!allRows.contains(foreignEntryParent)) {
+                allRows.add(foreignEntryParent);
+            }
+
+            orphanCertificates.forEach(orphan -> {
+                CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement statement = statements.stream().filter(certStatement -> certStatement.getResourceKey().equals(orphan)).findFirst().get();
+                CurriculumTreeWithViewsRow row = new CurriculumTreeWithViewsRow(statement);
+                row.setParent(foreignEntryParent);
+                row.setHasStatement(true);
                 allRows.add(row);
             });
         }
+
+
+        Collections.sort(allRows, new CurriculumElementViewsRowComparator(getLocale()));
 
 
         tableModel.setObjects(allRows);
         tableEl.reset(true, true, true);
     }
 
-    private void removeByPermissions(List<CurriculumElementWithViewsRow> rows) {
+    private void removeByPermissions(List<CurriculumTreeWithViewsRow> rows) {
         // propagate the member marker along the parent line
-        for (CurriculumElementWithViewsRow row : rows) {
+        for (CurriculumTreeWithViewsRow row : rows) {
             if (row.isCurriculumMember()) {
-                for (CurriculumElementWithViewsRow parentRow = row.getParent(); parentRow != null; parentRow = parentRow.getParent()) {
+                for (CurriculumTreeWithViewsRow parentRow = row.getParent(); parentRow != null; parentRow = parentRow.getParent()) {
                     parentRow.setCurriculumMember(true);
                 }
             }
         }
 
         // trim part of the tree without member flag
-        for (Iterator<CurriculumElementWithViewsRow> it = rows.iterator(); it.hasNext(); ) {
-            if (!it.next().isCurriculumMember()) {
-                it.remove();
-            }
-        }
+        rows.removeIf(curriculumTreeWithViewsRow -> !curriculumTreeWithViewsRow.isCurriculumMember());
     }
 
-    private void forge(CurriculumElementWithViewsRow row, Collection<Long> repoKeys, List<OLATResourceAccess> resourcesWithOffer) {
+    private void forge(CurriculumTreeWithViewsRow row, Collection<Long> repoKeys, List<OLATResourceAccess> resourcesWithOffer) {
         if (row.getRepositoryEntryKey() == null || guestOnly) return;// nothing for guests
 
         boolean isMember = repoKeys.contains(row.getRepositoryEntryKey());
@@ -466,7 +600,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         forgeCompletion(row, row.getRepositoryEntryCompletion());
     }
 
-    private void forgeDetails(CurriculumElementWithViewsRow row) {
+    private void forgeDetails(CurriculumTreeWithViewsRow row) {
         FormLink detailsLink = uifactory.addFormLink("details_" + (++counter), "details", "details", null, null, Link.LINK);
         detailsLink.setCustomEnabledLinkCSS("o_details");
         detailsLink.setUserObject(row);
@@ -481,7 +615,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         row.setDetailsLink(detailsLink, detailsUrl);
     }
 
-    private void forgeMarkLink(CurriculumElementWithViewsRow row) {
+    private void forgeMarkLink(CurriculumTreeWithViewsRow row) {
         if (!guestOnly) {
             FormLink markLink = uifactory.addFormLink("mark_" + (++counter), "mark", "", null, null, Link.NONTRANSLATED);
             markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
@@ -491,7 +625,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         }
     }
 
-    private void forgeSelectLink(CurriculumElementWithViewsRow row) {
+    private void forgeSelectLink(CurriculumTreeWithViewsRow row) {
         if (row.isCurriculumElementOnly()) return;
 
         String displayName = StringHelper.escapeHtml(row.getRepositoryEntryDisplayName());
@@ -509,7 +643,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         row.setSelectLink(selectLink);
     }
 
-    private void forgeCalendarsLink(CurriculumElementWithViewsRow row) {
+    private void forgeCalendarsLink(CurriculumTreeWithViewsRow row) {
         if (row.isCalendarsEnabled()) {
             FormLink calendarLink = uifactory.addFormLink("cals_" + (++counter), "calendars", "calendars", null, null, Link.LINK);
             calendarLink.setIconLeftCSS("o_icon o_icon-fw o_icon_timetable");
@@ -518,17 +652,17 @@ public class CurriculumElementListController extends FormBasicController impleme
         }
     }
 
-    private void forgeCurriculumCompletions(List<CurriculumElementWithViewsRow> rows) {
+    private void forgeCurriculumCompletions(List<CurriculumTreeWithViewsRow> rows) {
         Map<Long, Double> completions = loadCurriculumElementCompletions(rows);
 
-        for (CurriculumElementWithViewsRow row : rows) {
+        for (CurriculumTreeWithViewsRow row : rows) {
             if (row.getCompletionItem() == null) { // does not show completion of the child entry
                 forgeCompletion(row, completions.get(row.getKey()));
             }
         }
     }
 
-    private void forgeCompletion(CurriculumElementWithViewsRow row, Double completion) {
+    private void forgeCompletion(CurriculumTreeWithViewsRow row, Double completion) {
         if (completion != null) {
             ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey(), 100,
                     completion.floatValue(), Float.valueOf(1), null);
@@ -541,14 +675,21 @@ public class CurriculumElementListController extends FormBasicController impleme
         }
     }
 
-    private void addRoot(List<CurriculumElementWithViewsRow> rows, CurriculumElementWithViewsRow parent) {
-        rows.stream().filter(row -> row.getParent() == null).forEach(row -> row.setParent(parent));
+    private void addRoot(List<CurriculumTreeWithViewsRow> rows, CurriculumTreeWithViewsRow parent) {
+        rows.stream().filter(row -> row.getParent() == null).forEach(row -> {
+            row.setParent(parent);
+            if (row.hasStatement()) {
+                parent.setHasStatement(true);
+            }
+        });
     }
 
-    private Map<Long, Double> loadCurriculumElementCompletions(List<CurriculumElementWithViewsRow> rows) {
+    private Map<Long, Double> loadCurriculumElementCompletions(List<CurriculumTreeWithViewsRow> rows) {
         List<Long> curEleLearningProgressKeys = rows.stream()
-                .filter(CurriculumElementWithViewsRow::isLearningProgressEnabled)
-                .map(CurriculumElementWithViewsRow::getKey)
+                .filter(CurriculumTreeWithViewsRow::isLearningProgressEnabled)
+                .map(CurriculumTreeWithViewsRow::getKey)
+                .map(CurriculumKey::getCurriculumElement)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         List<AssessmentEntryCompletion> loadAvgCompletionsByCurriculumElements = assessmentService
                 .loadAvgCompletionsByCurriculumElements(assessedIdentity, curEleLearningProgressKeys);
@@ -579,8 +720,8 @@ public class CurriculumElementListController extends FormBasicController impleme
                 if (StringHelper.isLong(rowKeyStr)) {
                     try {
                         Long rowKey = Long.valueOf(rowKeyStr);
-                        List<CurriculumElementWithViewsRow> rows = tableModel.getObjects();
-                        for (CurriculumElementWithViewsRow row : rows) {
+                        List<CurriculumTreeWithViewsRow> rows = tableModel.getObjects();
+                        for (CurriculumTreeWithViewsRow row : rows) {
                             if (row != null && row.getRepositoryEntryKey() != null && row.getRepositoryEntryKey().equals(rowKey)) {
                                 if (row.isMember()) {
                                     doOpen(ureq, row, null);
@@ -603,33 +744,33 @@ public class CurriculumElementListController extends FormBasicController impleme
         if (source instanceof FormLink) {
             FormLink link = (FormLink) source;
             if ("start".equals(link.getCmd())) {
-                CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow) link.getUserObject();
+                CurriculumTreeWithViewsRow row = (CurriculumTreeWithViewsRow) link.getUserObject();
                 doOpen(ureq, row, null);
             } else if ("details".equals(link.getCmd())) {
-                CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow) link.getUserObject();
+                CurriculumTreeWithViewsRow row = (CurriculumTreeWithViewsRow) link.getUserObject();
                 doOpenDetails(ureq, row);
             } else if ("select".equals(link.getCmd())) {
-                CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow) link.getUserObject();
+                CurriculumTreeWithViewsRow row = (CurriculumTreeWithViewsRow) link.getUserObject();
                 if (row.isMember()) {
                     doOpen(ureq, row, null);
                 } else {
                     doOpenDetails(ureq, row);
                 }
             } else if ("mark".equals(link.getCmd())) {
-                CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow) link.getUserObject();
+                CurriculumTreeWithViewsRow row = (CurriculumTreeWithViewsRow) link.getUserObject();
                 boolean marked = doMark(ureq, row);
                 link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
                 link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
                 link.getComponent().setDirty(true);
                 row.setMarked(marked);
             } else if ("calendars".equals(link.getCmd())) {
-                CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow) link.getUserObject();
+                CurriculumTreeWithViewsRow row = (CurriculumTreeWithViewsRow) link.getUserObject();
                 doOpenCalendars(ureq, row);
             }
         } else if (source == tableEl) {
             if (event instanceof SelectionEvent) {
                 SelectionEvent se = (SelectionEvent) event;
-                CurriculumElementWithViewsRow row = tableModel.getObject(se.getIndex());
+                CurriculumTreeWithViewsRow row = tableModel.getObject(se.getIndex());
                 if (row.isMember()) {
                     doOpen(ureq, row, null);
                 } else {
@@ -645,7 +786,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         //
     }
 
-    private void doOpen(UserRequest ureq, CurriculumElementWithViewsRow row, String subPath) {
+    private void doOpen(UserRequest ureq, CurriculumTreeWithViewsRow row, String subPath) {
         try {
             String businessPath = "[RepositoryEntry:" + row.getRepositoryEntryKey() + "]";
             if (subPath != null) {
@@ -658,7 +799,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         }
     }
 
-    private void doOpenDetails(UserRequest ureq, CurriculumElementWithViewsRow row) {
+    private void doOpenDetails(UserRequest ureq, CurriculumTreeWithViewsRow row) {
         // to be more consistent: course members see info page within the course, non-course members see it outside the course
         if (row.isMember()) {
             doOpen(ureq, row, "[Infos:0]");
@@ -685,17 +826,17 @@ public class CurriculumElementListController extends FormBasicController impleme
         }
     }
 
-    private void doOpenCalendars(UserRequest ureq, CurriculumElementWithViewsRow row) {
+    private void doOpenCalendars(UserRequest ureq, CurriculumTreeWithViewsRow row) {
         removeAsListenerAndDispose(calendarsCtrl);
 
         OLATResourceable ores = OresHelper.createOLATResourceableInstance("Calendars", row.getCurriculumElementKey());
         WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
         CurriculumElement element = curriculumService
                 .getCurriculumElement(new CurriculumElementRefImpl(row.getCurriculumElementKey()));
-        List<CurriculumElementWithViewsRow> rows = tableModel.getObjects();
+        List<CurriculumTreeWithViewsRow> rows = tableModel.getObjects();
 
         Set<Long> entryKeys = new HashSet<>();
-        for (CurriculumElementWithView elementWithView : rows) {
+        for (CurriculumTreeWithView elementWithView : rows) {
             if (elementWithView.isCurriculumMember()
                     && !elementWithView.getEntries().isEmpty()
                     && elementWithView.isParentOrSelf(row)) {
@@ -714,7 +855,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         stackPanel.pushController(translate("calendars"), calendarsCtrl);
     }
 
-    private boolean doMark(UserRequest ureq, CurriculumElementWithViewsRow row) {
+    private boolean doMark(UserRequest ureq, CurriculumTreeWithViewsRow row) {
         OLATResourceable item = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getRepositoryEntryKey());
         RepositoryEntryRef ref = new RepositoryEntryRefImpl(row.getRepositoryEntryKey());
         if (markManager.isMarked(item, getIdentity(), null)) {
@@ -733,10 +874,10 @@ public class CurriculumElementListController extends FormBasicController impleme
         }
     }
 
-    private List<CurriculumElementWithViewsRow> sortCurriculumRows(List<CurriculumElementWithViewsRow> rows) {
-        List<CurriculumElementWithViewsRow> sortedRows = rows.stream().filter(row -> row.   getLevel() == 0).collect(Collectors.toList());
+    private List<CurriculumTreeWithViewsRow> sortCurriculumRows(List<CurriculumTreeWithViewsRow> rows) {
+        List<CurriculumTreeWithViewsRow> sortedRows = rows.stream().filter(row -> row.   getLevel() == 0).collect(Collectors.toList());
 
-        for (CurriculumElementWithViewsRow parent : sortedRows) {
+        for (CurriculumTreeWithViewsRow parent : sortedRows) {
             if (parent.hasChildren()) {
                 sortedRows.addAll(sortedRows.indexOf(parent) + 1, sortCurriculumRows(rows, parent));
             }
@@ -745,11 +886,11 @@ public class CurriculumElementListController extends FormBasicController impleme
         return sortedRows;
     }
 
-    private List<CurriculumElementWithViewsRow> sortCurriculumRows(List<CurriculumElementWithViewsRow> rows, CurriculumElementWithViewsRow parent) {
-        List<CurriculumElementWithViewsRow> filteredRows = rows.stream().filter(row -> row.getParent() != null && row.getParent().equals(parent)).collect(Collectors.toList());
-        List<CurriculumElementWithViewsRow> sortedRows = new ArrayList<>(filteredRows);
+    private List<CurriculumTreeWithViewsRow> sortCurriculumRows(List<CurriculumTreeWithViewsRow> rows, CurriculumTreeWithViewsRow parent) {
+        List<CurriculumTreeWithViewsRow> filteredRows = rows.stream().filter(row -> row.getParent() != null && row.getParent().equals(parent)).collect(Collectors.toList());
+        List<CurriculumTreeWithViewsRow> sortedRows = new ArrayList<>(filteredRows);
 
-        for (CurriculumElementWithViewsRow child : filteredRows) {
+        for (CurriculumTreeWithViewsRow child : filteredRows) {
             if (child.hasChildren()) {
                 sortedRows.addAll(filteredRows.indexOf(child) + 1, sortCurriculumRows(rows, parent));
             }

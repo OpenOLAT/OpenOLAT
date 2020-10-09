@@ -50,7 +50,9 @@ public interface IdentityRelationshipService {
 	
 	public List<RelationRight> getAvailableRights();
 	
-	public RelationRightProvider getRelationRightProvider(RelationRight right);
+	public RightProvider getRelationRightProvider(RelationRight right);
+
+	public List<RightProvider> getAvailableRightProviders();
 	
 	public boolean isInUse(RelationRole relationRole);
 	

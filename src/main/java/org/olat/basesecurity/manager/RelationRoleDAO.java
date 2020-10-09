@@ -47,7 +47,7 @@ public class RelationRoleDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public RelationRole createRelationRole(String role, String externalId, String externalRef, RelationRoleManagedFlag[] flags) {
+	public RelationRole createRelationRole(String role, String externalId, String externalRef, RelationRoleManagedFlag[] flags, boolean userToUserRoleOnly) {
 		RelationRoleImpl relationRole = new RelationRoleImpl();
 		relationRole.setCreationDate(new Date());
 		relationRole.setLastModified(relationRole.getCreationDate());

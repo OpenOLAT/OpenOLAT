@@ -172,7 +172,7 @@ public class CurriculumRepositoryEntryRelationDAO {
 	 * @param curriculum The curriculum
 	 * @return A map of curriculum element to their repository entries
 	 */
-	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(List<CurriculumRef> curriculums) {
+	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(List<? extends CurriculumRef> curriculums) {
 		if(curriculums == null || curriculums.isEmpty()) return Collections.emptyMap();
 		
 		QueryBuilder sb = new QueryBuilder(256);

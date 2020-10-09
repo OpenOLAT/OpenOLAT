@@ -62,7 +62,7 @@ import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.CoachingService;
-import org.olat.modules.coach.UserRelationSecurityCallback;
+import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.coach.model.IdentityResourceKey;
@@ -87,12 +87,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class UserRelationEnrollmentListController extends FormBasicController implements Activateable2, GenericEventListener {
+public class EnrollmentListController extends FormBasicController implements Activateable2, GenericEventListener {
 
 	private final TooledStackedPanel stackedPanel;
 	private final Identity student;
 	private final StudentStatEntry statEntry;
-	private final UserRelationSecurityCallback userRelationSecurityCallback;
+	private final RoleSecurityCallback roleSecurityCallback;
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
@@ -120,8 +120,8 @@ public class UserRelationEnrollmentListController extends FormBasicController im
 	@Autowired
 	private AssessmentService assessmentService;
 
-	public UserRelationEnrollmentListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
-												StudentStatEntry statEntry, Identity student, UserRelationSecurityCallback userRelationSecurityCallback) {
+	public EnrollmentListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
+									StudentStatEntry statEntry, Identity student, RoleSecurityCallback roleSecurityCallback) {
 		super(ureq, wControl, "user_relation_enrollments");
 		
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -131,7 +131,7 @@ public class UserRelationEnrollmentListController extends FormBasicController im
 		this.student = student;
 		this.statEntry = statEntry;
 		this.stackedPanel = stackedPanel;
-		this.userRelationSecurityCallback = userRelationSecurityCallback;
+		this.roleSecurityCallback = roleSecurityCallback;
 		
 		initForm(ureq);
 		loadModel();
@@ -144,32 +144,25 @@ public class UserRelationEnrollmentListController extends FormBasicController im
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-
-		int colIndex = UserListController.USER_PROPS_OFFSET;
-		for (int i = 0; i < userPropertyHandlers.size(); i++) {
-			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select",
-					true, userPropertyHandler.i18nColumnDescriptorLabelKey()));
-		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName, "select"));
-		if (userRelationSecurityCallback.canViewCourseProgressAndStatus()) {
+		if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
 		}
-		if (userRelationSecurityCallback.canViewEfficiencyStatements()) {
+		if (roleSecurityCallback.canViewEfficiencyStatements()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer()));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
 		}
-		if (userRelationSecurityCallback.canReceiveCertificatesMail()) {
+		if (roleSecurityCallback.canReceiveCertificatesMail()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer(getLocale())));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.recertification, new DateFlexiCellRenderer(getLocale())));
 		}
 
-		if (userRelationSecurityCallback.canViewEfficiencyStatements()) {
+		if (roleSecurityCallback.canViewEfficiencyStatements()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.numberAssessments, new ProgressOfCellRenderer()));
 		}
 		if(lectureModule.isEnabled()) {
-			if (userRelationSecurityCallback.canViewLecturesAndAbsences()) {
+			if (roleSecurityCallback.canViewLecturesAndAbsences()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.plannedLectures));
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.attendedLectures));
 				if (lectureModule.isAuthorizedAbsenceEnabled()) {

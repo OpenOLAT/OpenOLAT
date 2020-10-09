@@ -89,5 +89,4 @@ public class RelationRightDAO {
 
 		dbInstance.commitAndCloseSession();
 	}
-
 }

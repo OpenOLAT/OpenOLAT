@@ -14,6 +14,8 @@
 </fieldset>
 #else
 ## in users home
-<h2 ><i class="o_icon o_icon o_icon-fw o_icon_certificate"> </i>$r.translate("certificates.and.statements.title")</h2>
-$r.render("certificates")
+	#if($showHeading)
+	<h2 ><i class="o_icon o_icon o_icon-fw o_icon_certificate"> </i>$r.translate("certificates.and.statements.title")</h2>
+	#end
+	$r.render("certificates")
 #end

@@ -21,244 +21,62 @@ package org.olat.modules.coach.ui;
 
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.*;
-import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.coach.CoachingService;
-import org.olat.modules.coach.UserRelationSecurityCallback;
 import org.olat.modules.coach.model.StudentStatEntry;
-import org.olat.modules.coach.security.UserRelationSecurityCallbackFactory;
-import org.olat.modules.coach.ui.StudentsTableDataModel.Columns;
-import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.modules.coach.security.RoleSecurityCallbackFactory;
+import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 25 May 2020<br>
  * @author aboeckle, alexander.boeckle@frentix.com
  */
-public class UserRelationListController extends FormBasicController implements Activateable2 {
+public class UserRelationListController extends AbstactCoachListController implements Activateable2 {
 
-    private final boolean isAdministrativeUser;
-    private final List<UserPropertyHandler> userPropertyHandlers;
-
-    private final TooledStackedPanel stackPanel;
-    private final RelationRole relationRole;
-    private final UserRelationSecurityCallback securityCallback;
-
-    private boolean hasChanged;
-
-    private FlexiTableElement tableEl;
-    private StudentsTableDataModel model;
-
-    private UserRelationOverviewController userCtrl;
-
-    @Autowired
-    private UserManager userManager;
-    @Autowired
-    private BaseSecurity securityManager;
-    @Autowired
-    private BaseSecurityModule securityModule;
     @Autowired
     private CoachingService coachingService;
     @Autowired
     private IdentityRelationshipService identityRelationshipService;
 
+    private RelationRole relationRole;
+
     public UserRelationListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RelationRole relationRole) {
-        super(ureq, wControl, LAYOUT_BAREBONE);
+        super(ureq, wControl, stackPanel);
 
-        setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-        isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-        userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
-
-        this.stackPanel = stackPanel;
-        this.stackPanel.setInvisibleCrumb(0);
-        stackPanel.addListener(this);
         this.relationRole = identityRelationshipService.getRole(relationRole.getKey());
-        this.securityCallback = UserRelationSecurityCallbackFactory.create(this.relationRole.getRights());
+        this.securityCallback = RoleSecurityCallbackFactory.create(this.relationRole.getRights());
 
-        initForm(ureq);
+        super.initForm(ureq);
         loadModel();
     }
 
     @Override
-    protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-        //add the table
-        FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-
-        int colIndex = UserListController.USER_PROPS_OFFSET;
-        for (int i = 0; i < userPropertyHandlers.size(); i++) {
-            UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
-            boolean visible = userManager.isMandatoryUserProperty(UserListController.usageIdentifyer, userPropertyHandler);
-            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select",
-                    true, userPropertyHandler.i18nColumnDescriptorLabelKey()));
-        }
-
-        if (securityCallback.canViewCoursesAndCurriculum()) {
-            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countCourse));
-            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.initialLaunch, new LightIconRenderer()));
-        }
-
-        if (securityCallback.canViewCourseProgressAndStatus()) {
-            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
-            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countPassed, new ProgressOfCellRenderer()));
-        }
-
-        model = new StudentsTableDataModel(columnsModel);
-        tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
-        tableEl.setExportEnabled(true);
-        tableEl.setEmtpyTableMessageKey("error.no.found");
-        tableEl.setAndLoadPersistedPreferences(ureq, "UserRelationsListController");
-
-        UserSession usess = ureq.getUserSession();
-        boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(usess.getRoles());
-        if (autoCompleteAllowed) {
-            tableEl.setSearchEnabled(new StudentListProvider(model, userManager), usess);
-        }
-    }
-
-    @Override
-    protected void doDispose() {
-        stackPanel.removeListener(this);
-    }
-
-    @Override
-    protected void formOK(UserRequest ureq) {
-        //
-    }
-
-    @Override
-    protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-        if (tableEl == source) {
-            if (event instanceof SelectionEvent) {
-                SelectionEvent se = (SelectionEvent) event;
-                String cmd = se.getCommand();
-                StudentStatEntry selectedRow = model.getObject(se.getIndex());
-                if ("select".equals(cmd)) {
-                    selectStudent(ureq, selectedRow);
-                }
-            } else if (event instanceof FlexiTableSearchEvent) {
-                FlexiTableSearchEvent ftse = (FlexiTableSearchEvent) event;
-                String searchString = ftse.getSearch();
-                model.search(searchString);
-                tableEl.reset();
-                tableEl.reloadData();
-            }
-        }
-        super.formInnerEvent(ureq, source, event);
-    }
-
-    private void loadModel() {
+    protected void loadModel() {
         List<StudentStatEntry> students = coachingService.getUserStatistics(getIdentity(), relationRole, userPropertyHandlers, getLocale());
         model.setObjects(students);
         tableEl.reset();
         tableEl.reloadData();
     }
 
-    private void reloadModel() {
-        if (hasChanged) {
-            loadModel();
-            hasChanged = false;
-        }
-    }
-
-    @Override
-    protected void event(UserRequest ureq, Controller source, Event event) {
-        if (source == userCtrl) {
-            if (event == Event.CHANGED_EVENT) {
-                hasChanged = true;
-            } else if ("next.student".equals(event.getCommand())) {
-                nextStudent(ureq);
-            } else if ("previous.student".equals(event.getCommand())) {
-                previousStudent(ureq);
-            }
-        }
-        super.event(ureq, source, event);
-    }
-
-    @Override
-    public void event(UserRequest ureq, Component source, Event event) {
-        if (stackPanel == source) {
-            if (event instanceof PopEvent) {
-                PopEvent pe = (PopEvent) event;
-                if (pe.getController() == this.userCtrl && hasChanged) {
-                    reloadModel();
-                }
-            }
-        }
-        super.event(ureq, source, event);
-    }
-
-    @Override
-    public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-        if (entries == null || entries.isEmpty()) return;
-
-        ContextEntry ce = entries.get(0);
-        OLATResourceable ores = ce.getOLATResourceable();
-        if ("Identity".equals(ores.getResourceableTypeName())) {
-            Long identityKey = ores.getResourceableId();
-            for (StudentStatEntry entry : model.getObjects()) {
-                if (identityKey.equals(entry.getIdentityKey())) {
-                    Activateable2 selectedCtrl = selectStudent(ureq, entry);
-                    selectedCtrl.activate(ureq, entries.subList(1, entries.size()), ce.getTransientState());
-                    break;
-                }
-            }
-        }
-    }
-
-    protected void previousStudent(UserRequest ureq) {
-        StudentStatEntry currentEntry = userCtrl.getEntry();
-        int previousIndex = model.getObjects().indexOf(currentEntry) - 1;
-        if (previousIndex < 0 || previousIndex >= model.getRowCount()) {
-            previousIndex = model.getRowCount() - 1;
-        }
-        StudentStatEntry previousEntry = model.getObject(previousIndex);
-        selectStudent(ureq, previousEntry);
-    }
-
-    protected void nextStudent(UserRequest ureq) {
-        StudentStatEntry currentEntry = userCtrl.getEntry();
-        int nextIndex = model.getObjects().indexOf(currentEntry) + 1;
-        if (nextIndex < 0 || nextIndex >= model.getRowCount()) {
-            nextIndex = 0;
-        }
-        StudentStatEntry nextEntry = model.getObject(nextIndex);
-        selectStudent(ureq, nextEntry);
-    }
-
-    protected UserRelationOverviewController selectStudent(UserRequest ureq, StudentStatEntry studentStat) {
+    protected UserOverviewController selectStudent(UserRequest ureq, StudentStatEntry studentStat) {
         Identity student = securityManager.loadIdentityByKey(studentStat.getIdentityKey());
         OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, student.getKey());
         WindowControl bwControl = addToHistory(ureq, ores, null);
 
         int index = model.getObjects().indexOf(studentStat);
-        userCtrl = new UserRelationOverviewController(ureq, bwControl, stackPanel, studentStat, student, index, model.getRowCount(), relationRole, securityCallback);
+        String roleTranslation = RelationRolesAndRightsUIFactory.getTranslatedContraRole(relationRole, getLocale());
+        userCtrl = new UserOverviewController(ureq, bwControl, stackPanel, studentStat, student, index, model.getRowCount(), roleTranslation, securityCallback);
         listenTo(userCtrl);
 
-        stackPanel.popUpToRootController(ureq);
         String displayName = userManager.getUserDisplayName(student);
         stackPanel.pushController(displayName, userCtrl);
         return userCtrl;

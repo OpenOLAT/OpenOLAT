@@ -19,9 +19,12 @@
  */
 package org.olat.course.certificate;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 
-import org.olat.basesecurity.RelationRightProvider;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.RightProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.certificate.ui.CertificateController;
@@ -34,7 +37,7 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class CertificateEmailRightProvider implements RelationRightProvider {
+public class CertificateEmailRightProvider implements RightProvider {
 
 	public static final String RELATION_RIGHT = "certificateEmail";
 
@@ -44,13 +47,28 @@ public class CertificateEmailRightProvider implements RelationRightProvider {
 	}
 
 	@Override
-	public RelationRightProvider getParent() {
+	public RightProvider getParent() {
 		return null;
 	}
 
 	@Override
-	public int getPosition() {
-		return Order.CertificateEmailRight.ordinal();
+	public boolean isUserRelationsRight() {
+		return true;
+	}
+
+	@Override
+	public int getUserRelationsPosition() {
+		return UserRelationRightsOrder.CertificateEmailRight.ordinal();
+	}
+
+	@Override
+	public Collection<OrganisationRoles> getOrganisationRoles() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public int getOrganisationPosition() {
+		return -1;
 	}
 
 	@Override

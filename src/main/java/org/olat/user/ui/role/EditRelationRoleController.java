@@ -30,10 +30,10 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.RelationRight;
-import org.olat.basesecurity.RelationRightProvider;
 import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.RelationRoleManagedFlag;
 import org.olat.basesecurity.RelationRoleToRight;
+import org.olat.basesecurity.RightProvider;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -66,8 +66,7 @@ public class EditRelationRoleController extends FormBasicController {
 		"", "supervisor", "legalRepresentative", "tutor", "parent",
 		"teacher", "expert", "legalGardian", "employer", "sportsClub"
 	};
-	private static final String INTENDING = "\u00a0"; // &nbsp; non-breaking space
-	
+
 	private TextElement roleEl;
 	private SingleSelection predefinedLabelEl;
 	private MultipleSelectionElement rightsEl;
@@ -75,7 +74,7 @@ public class EditRelationRoleController extends FormBasicController {
 	private RelationRole relationRole;
 	String[] rightKeys;
 	String[] rightValues;
-	List<RelationRightProvider> rightProviders;
+	List<RightProvider> rightProviders;
 
 	@Autowired
 	private I18nModule i18nModule;
@@ -84,19 +83,15 @@ public class EditRelationRoleController extends FormBasicController {
 	@Autowired
 	private IdentityRelationshipService identityRelationsService;
 	@Autowired
-	private List<RelationRightProvider> relationRights;
+	private List<RightProvider> relationRights;
 
-	public EditRelationRoleController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl,null);
-	}
-	
 	public EditRelationRoleController(UserRequest ureq, WindowControl wControl, RelationRole relationRole) {
 		super(ureq, wControl, Util.createPackageTranslator(UserModule.class, ureq.getLocale()));
 		this.relationRole = relationRole;
 		this.rightKeys = new String[relationRights.size()];
 		this.rightValues = new String[relationRights.size()];
 		this.rightProviders = new ArrayList<>(relationRights.size());
-		this.relationRights.sort(Comparator.comparing(RelationRightProvider::getPosition));
+		this.relationRights.sort(Comparator.comparing(RightProvider::getUserRelationsPosition));
 
 		initForm(ureq);
 	}
@@ -233,7 +228,7 @@ public class EditRelationRoleController extends FormBasicController {
 
 	private void checkDependentRights() {
 		for(int i=0; i < relationRights.size(); i++) {
-			RelationRightProvider rightProvider = rightProviders.get(i);
+			RightProvider rightProvider = rightProviders.get(i);
 
 			if (rightProvider.getParent() != null) {
 				int parentIndex = rightProviders.indexOf(rightProvider.getParent());

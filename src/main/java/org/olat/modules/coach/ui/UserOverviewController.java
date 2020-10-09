@@ -26,7 +26,6 @@ import org.olat.admin.user.UserChangePasswordController;
 import org.olat.admin.user.UserShortDescription;
 import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.RelationRole;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.ui.CalendarController;
@@ -63,9 +62,10 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.modules.co.ContactFormController;
-import org.olat.modules.coach.UserRelationSecurityCallback;
+import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.StudentStatEntry;
-import org.olat.modules.coach.ui.curriculum.CourseListWrapperController;
+import org.olat.modules.coach.ui.curriculum.certificate.CertificateAndEfficiencyStatementWrapperController;
+import org.olat.modules.coach.ui.curriculum.course.CourseListWrapperController;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
@@ -79,7 +79,6 @@ import org.olat.user.HomePageConfigManager;
 import org.olat.user.HomePageDisplayController;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
-import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -89,9 +88,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class UserRelationOverviewController extends BasicController implements Activateable2, GenericEventListener, TooledController {
+public class UserOverviewController extends BasicController implements Activateable2, GenericEventListener, TooledController {
 
-	public static final String usageIdentifier = UserRelationOverviewController.class.getCanonicalName();
+	public static final String usageIdentifier = UserOverviewController.class.getCanonicalName();
 
 	private static final String CMD_CALENDAR = "Calendar";
 	private static final String CMD_BOOKINGS = "Bookings";
@@ -130,6 +129,7 @@ public class UserRelationOverviewController extends BasicController implements A
 	private CertificateAndEfficiencyStatementListController efficiencyStatementListController;
 	private WeeklyCalendarController calendarController;
 	private CourseListWrapperController courseListWrapperController;
+	private CertificateAndEfficiencyStatementWrapperController certificateAndEfficiencyStatementWrapperController;
 
 	private TabbedPane functionsTabbedPane;
 
@@ -137,9 +137,9 @@ public class UserRelationOverviewController extends BasicController implements A
 	private final int numOfStudents;
 	private final Identity mentee;
 	private final StudentStatEntry statEntry;
-	private final RelationRole relationRole;
+	private final String role;
 
-	private final UserRelationSecurityCallback userRelationSecurityCallback;
+	private final RoleSecurityCallback roleSecurityCallback;
 
 	@Autowired
 	private UserManager userManager;
@@ -154,8 +154,8 @@ public class UserRelationOverviewController extends BasicController implements A
 	@Autowired
 	private CurriculumService curriculumService;
 
-	public UserRelationOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-										  StudentStatEntry statEntry, Identity mentee, int index, int numOfStudents, RelationRole relationRole, UserRelationSecurityCallback userRelationSecurityCallback) {
+	public UserOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+								  StudentStatEntry statEntry, Identity mentee, int index, int numOfStudents, String role, RoleSecurityCallback roleSecurityCallback) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 
@@ -164,8 +164,8 @@ public class UserRelationOverviewController extends BasicController implements A
 		this.statEntry = statEntry;
 		this.stackPanel = stackPanel;
 		this.numOfStudents = numOfStudents;
-		this.userRelationSecurityCallback = userRelationSecurityCallback;
-		this.relationRole = relationRole;
+		this.roleSecurityCallback = roleSecurityCallback;
+		this.role = role;
 
 		mainVC = createVelocityContainer("user_relation_overview");
 
@@ -177,7 +177,7 @@ public class UserRelationOverviewController extends BasicController implements A
 
 	@Override
 	public void initTools() {
-		if (userRelationSecurityCallback.canContact()) {
+		if (roleSecurityCallback.canContact()) {
 			contactLink = LinkFactory.createToolLink("contact.link", translate("contact.link"), this);
 			contactLink.setIconLeftCSS("o_icon o_icon_mail");
 			stackPanel.addTool(contactLink, Align.left, true);
@@ -187,7 +187,7 @@ public class UserRelationOverviewController extends BasicController implements A
 		homeLink.setIconLeftCSS("o_icon o_icon_home");
 		stackPanel.addTool(homeLink, Align.left, true);
 
-		if (userRelationSecurityCallback.canResetPassword()) {
+		if (roleSecurityCallback.canResetPassword()) {
 			Roles roles = securityManager.getRoles(mentee);
 			if (!(roles.isAuthor() || roles.isManager() || roles.isAdministrator() || roles.isSystemAdmin() || roles.isPrincipal())) {
 				resetLink = LinkFactory.createToolLink("reset.link", translate("reset.link"), this);
@@ -219,7 +219,7 @@ public class UserRelationOverviewController extends BasicController implements A
 	private void initUserDetails(UserRequest ureq, Identity identity) {
 		// Add user's name and relation
 		StringBuilder relationAndName = new StringBuilder(256);
-		relationAndName.append(RelationRolesAndRightsUIFactory.getTranslatedContraRole(relationRole, getLocale())).append(" ");
+		relationAndName.append(role != null ? role + " " : "");
 		relationAndName.append(mentee.getUser().getFirstName()).append(" ");
 		relationAndName.append(mentee.getUser().getLastName());
 		mainVC.contextPut("relationAndName", relationAndName);
@@ -237,7 +237,7 @@ public class UserRelationOverviewController extends BasicController implements A
 		userDetails.put("portrait", displayPortraitController.getInitialComponent());
 
 		removeAsListenerAndDispose(userShortDescriptionController);
-		userShortDescriptionController = new UserShortDescription(ureq, getWindowControl(), identity, userRelationSecurityCallback.isAdministrativeUser());
+		userShortDescriptionController = new UserShortDescription(ureq, getWindowControl(), identity, roleSecurityCallback.isAdministrativeUser());
 		userDetails.put("userShortDescription", userShortDescriptionController.getInitialComponent());
 	}
 	
@@ -247,19 +247,19 @@ public class UserRelationOverviewController extends BasicController implements A
 		functionsTabbedPane = new TabbedPane("functionsTabbedPane", ureq.getLocale());
 		functionsTabbedPane.addListener(this);
 
-		if (userRelationSecurityCallback.canViewCoursesAndCurriculum()) {
+		if (roleSecurityCallback.canViewCoursesAndCurriculum()) {
 			List<CurriculumRef> curriculumRefs = curriculumService.getMyActiveCurriculumRefs(mentee);
 			CurriculumSecurityCallback curriculumSecurityCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
 
 			courseTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("enrollments"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_ENROLLMENTS), null);
-				courseListWrapperController = new CourseListWrapperController(uureq, bwControl, stackPanel, mentee, curriculumSecurityCallback, userRelationSecurityCallback, curriculumRefs, statEntry);
+				courseListWrapperController = new CourseListWrapperController(uureq, bwControl, stackPanel, mentee, curriculumSecurityCallback, roleSecurityCallback, curriculumRefs, statEntry);
 				listenTo(courseListWrapperController);
 				return courseListWrapperController;
 			});
 		}
 
-		if (userRelationSecurityCallback.canViewResourcesAndBookings()) {
+		if (roleSecurityCallback.canViewResourcesAndBookings()) {
 			orderTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("bookings"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_BOOKINGS), null);
 				userOrderController = new UserOrderController(uureq, bwControl, mentee);
@@ -268,7 +268,7 @@ public class UserRelationOverviewController extends BasicController implements A
 			});
 		}
 
-		if (lectureModule.isEnabled() && userRelationSecurityCallback.canViewLecturesAndAbsences()) {
+		if (lectureModule.isEnabled() && roleSecurityCallback.canViewLecturesAndAbsences()) {
 			lecturesTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("lectures"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_LECTURES), null);
 				lecturesController = new ParticipantLecturesOverviewController(uureq, bwControl, mentee, null, true, true, true, true, false, true);
@@ -278,17 +278,19 @@ public class UserRelationOverviewController extends BasicController implements A
 			});
 		}
 
-		if (userRelationSecurityCallback.canViewEfficiencyStatements()) {
+		if (roleSecurityCallback.canViewEfficiencyStatements()) {
+			List<CurriculumRef> curriculumRefs = curriculumService.getMyActiveCurriculumRefs(mentee);
+			CurriculumSecurityCallback curriculumSecurityCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
+
 			certificatesTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("statements"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_STATEMENTS), null);
-				efficiencyStatementListController = new CertificateAndEfficiencyStatementListController(ureq, bwControl, mentee, true);
-				efficiencyStatementListController.setBreadcrumbPanel(stackPanel);
-				listenTo(efficiencyStatementListController);
-				return efficiencyStatementListController;
+				certificateAndEfficiencyStatementWrapperController = new CertificateAndEfficiencyStatementWrapperController(uureq, bwControl, stackPanel, mentee, curriculumSecurityCallback, roleSecurityCallback, curriculumRefs, statEntry);
+				listenTo(certificateAndEfficiencyStatementWrapperController);
+				return certificateAndEfficiencyStatementWrapperController;
 			});
 		}
 
-		if (userRelationSecurityCallback.canViewGroupMemberships()) {
+		if (roleSecurityCallback.canViewGroupMemberships()) {
 			groupTabIndex = functionsTabbedPane.addTab(ureq, translate("groups.menu.title"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_GROUPS), null);
 				groupOverviewController = new GroupOverviewController(ureq, bwControl, mentee, false, false);
@@ -297,14 +299,14 @@ public class UserRelationOverviewController extends BasicController implements A
 			});
 		}
 
-		if (userRelationSecurityCallback.canViewCalendar()) {
+		if (roleSecurityCallback.canViewCalendar()) {
 			calendarTabIndex = functionsTabbedPane.addTab(ureq, translate("calendar"), uureq -> doOpenCalendar(uureq).getInitialComponent());
 		}
 
-		if (userRelationSecurityCallback.canViewAndEditProfile()) {
+		if (roleSecurityCallback.canViewAndEditProfile()) {
 			profileTabIndex = functionsTabbedPane.addTab(ureq, translate("profile"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_PROFILE), null);
-				profileAndHomePageEditController =  new ProfileAndHomePageEditController(ureq, bwControl, mentee, userRelationSecurityCallback.isAdministrativeUser());
+				profileAndHomePageEditController =  new ProfileAndHomePageEditController(ureq, bwControl, mentee, roleSecurityCallback.isAdministrativeUser());
 				listenTo(profileAndHomePageEditController);
 				return profileAndHomePageEditController.getInitialComponent();
 			});
@@ -398,6 +400,9 @@ public class UserRelationOverviewController extends BasicController implements A
 			}
 		} else if(CMD_STATEMENTS.equalsIgnoreCase(type) && certificatesTabIndex >= 0) {
 			functionsTabbedPane.setSelectedPane(ureq, certificatesTabIndex);
+			if (certificateAndEfficiencyStatementWrapperController != null) {
+				certificateAndEfficiencyStatementWrapperController.activate(ureq, entries.subList(1, entries.size()), null);
+			}
 		} else if(CMD_GROUPS.equalsIgnoreCase(type) && groupTabIndex >= 0) {
 			functionsTabbedPane.setSelectedPane(ureq, groupTabIndex);
 		} else if(CMD_PROFILE.equalsIgnoreCase(type) && profileTabIndex >= 0) {
@@ -432,12 +437,14 @@ public class UserRelationOverviewController extends BasicController implements A
 	}
 
 	private void openHome(UserRequest ureq) {
-		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(mentee);
-		removeAsListenerAndDispose(homePageDisplayController);
-		homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), mentee, homePageConfig);
-		listenTo(homePageDisplayController);
+		if (stackPanel.getLastController() != homePageDisplayController) {
+			HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(mentee);
+			removeAsListenerAndDispose(homePageDisplayController);
+			homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), mentee, homePageConfig);
+			listenTo(homePageDisplayController);
 
-		stackPanel.pushController("Visiting card", homePageDisplayController);
+			stackPanel.pushController("Visiting card", homePageDisplayController);
+		}
 	}
 
 	private WeeklyCalendarController doOpenCalendar(UserRequest ureq) {

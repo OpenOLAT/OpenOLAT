@@ -20,7 +20,10 @@
 package org.olat.basesecurity.manager;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -29,7 +32,7 @@ import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.IdentityToIdentityRelation;
 import org.olat.basesecurity.IdentityToIdentityRelationManagedFlag;
 import org.olat.basesecurity.RelationRight;
-import org.olat.basesecurity.RelationRightProvider;
+import org.olat.basesecurity.RightProvider;
 import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.RelationRoleManagedFlag;
 import org.olat.basesecurity.RelationSearchParams;
@@ -54,11 +57,11 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	private IdentityToIdentityRelationDAO identityRelationshipDao;
 	
 	@Autowired
-	private List<RelationRightProvider> relationRightProviders;
+	private List<RightProvider> allRights;
 	
 	@PostConstruct
 	void ensureRightsExists() {
-		for (RelationRightProvider relationRightProvider : relationRightProviders) {
+		for (RightProvider relationRightProvider : allRights) {
 			relationRightDao.ensureRightExists(relationRightProvider.getRight());
 		}
 	}
@@ -70,7 +73,7 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	
 	@Override
 	public RelationRole createRole(String role, List<RelationRight> rights) {
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
 		if(rights != null && !rights.isEmpty()) {
 			relationRoleDao.setRights(relationRole, rights);
 		}
@@ -80,7 +83,7 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	@Override
 	public RelationRole createRole(String role, String externalId, String externalRef,
 			RelationRoleManagedFlag[] managedFlags, List<RelationRight> rights) {
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, externalId, externalRef, managedFlags);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, externalId, externalRef, managedFlags, true);
 		if(rights != null && !rights.isEmpty()) {
 			relationRoleDao.setRights(relationRole, rights);
 		}
@@ -112,17 +115,28 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 
 	@Override
 	public List<RelationRight> getAvailableRights() {
-		return relationRightDao.loadRelationRights();
+		List<RelationRight> relationRights = relationRightDao.loadRelationRights();
+		List<String> relationRightStrings = allRights.stream().filter(RightProvider::isUserRelationsRight).map(RightProvider::getRight).collect(Collectors.toList());
+
+		return relationRights.stream().filter(right -> relationRightStrings.contains(right.getRight())).collect(Collectors.toList());
 	}
 
 	@Override
-	public RelationRightProvider getRelationRightProvider(RelationRight right) {
-		for (RelationRightProvider provider : relationRightProviders) {
+	public RightProvider getRelationRightProvider(RelationRight right) {
+		for (RightProvider provider : allRights) {
 			if (provider.getRight().equals(right.getRight())) {
 				return provider;
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public List<RightProvider> getAvailableRightProviders() {
+		return getAvailableRights().stream().map(this::getRelationRightProvider)
+				.filter(Objects::nonNull)
+				.sorted(Comparator.comparing(RightProvider::getUserRelationsPosition))
+				.collect(Collectors.toList());
 	}
 
 	@Override

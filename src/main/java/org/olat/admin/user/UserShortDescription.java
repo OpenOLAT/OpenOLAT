@@ -38,7 +38,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
-import org.olat.modules.coach.ui.UserRelationOverviewController;
+import org.olat.modules.coach.ui.UserOverviewController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +79,7 @@ public class UserShortDescription extends BasicController {
 	public UserShortDescription(UserRequest ureq, WindowControl wControl, Identity identity, boolean isAdministrativeUser) {
 		super(ureq, wControl);
 
-		initProperties(UserRelationOverviewController.usageIdentifier, identity, isAdministrativeUser, true, null);
+		initProperties(UserOverviewController.usageIdentifier, identity, isAdministrativeUser, true, null);
 	}
 
 	private void initProperties(String identifier, Identity identity, boolean isAdministrativeUser, boolean usernameOnTop, Rows additionalRows) {

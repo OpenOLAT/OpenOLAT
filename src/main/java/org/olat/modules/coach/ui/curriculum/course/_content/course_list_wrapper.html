@@ -1,0 +1,12 @@
+#if($r.available("on"))
+<span>
+	$r.translate("curriculum.toggle.description")
+	#if($showCurriculum)
+		$r.render("on")
+	#else
+		$r.render("off")
+	#end
+</span>
+#end
+
+$r.render("content")

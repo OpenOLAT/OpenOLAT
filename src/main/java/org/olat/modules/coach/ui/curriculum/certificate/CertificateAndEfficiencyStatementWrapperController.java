@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.coach.ui.curriculum;
+package org.olat.modules.coach.ui.curriculum.certificate;
 
 import java.util.List;
 
@@ -36,15 +36,15 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.coach.UserRelationSecurityCallback;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
+import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.StudentStatEntry;
-import org.olat.modules.coach.ui.UserRelationEnrollmentListController;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class CourseListWrapperController extends BasicController implements Activateable2, GenericEventListener {
+public class CertificateAndEfficiencyStatementWrapperController extends BasicController implements Activateable2, GenericEventListener {
 
     private static final String WITH_CURRICULUM = "Curriculum";
     private static final String WITHOUT_CURRICULM = "List";
@@ -53,11 +53,11 @@ public class CourseListWrapperController extends BasicController implements Acti
     private final Identity mentee;
     private final StudentStatEntry statEntry;
     private final CurriculumSecurityCallback curriculumSecurityCallback;
-    private final UserRelationSecurityCallback userRelationSecurityCallback;
+    private final RoleSecurityCallback roleSecurityCallback;
     private final List<CurriculumRef> curriculumRefs;
 
-    private CurriculumElementListController curriculumListController;
-    private UserRelationEnrollmentListController userRelationEnrollmentListController;
+    private CertificateAndEfficiencyStatementCurriculumListController certificateCurriculumListController;
+    private CertificateAndEfficiencyStatementListController certificateListController;
 
     private Link curriculumShow;
     private Link curriculumHide;
@@ -69,18 +69,18 @@ public class CourseListWrapperController extends BasicController implements Acti
     @Autowired
     CurriculumModule curriculumModule;
 
-    public CourseListWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity mentee, CurriculumSecurityCallback curriculumSecurityCallback, UserRelationSecurityCallback userRelationSecurityCallback, List<CurriculumRef> curriculumRefs, StudentStatEntry statEntry) {
+    public CertificateAndEfficiencyStatementWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity mentee, CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback, List<CurriculumRef> curriculumRefs, StudentStatEntry statEntry) {
         super(ureq, wControl);
 
         this.stackPanel = stackPanel;
         this.mentee = mentee;
         this.curriculumSecurityCallback = curriculumSecurityCallback;
-        this.userRelationSecurityCallback = userRelationSecurityCallback;
+        this.roleSecurityCallback = roleSecurityCallback;
         this.curriculumRefs = curriculumRefs;
         this.statEntry = statEntry;
 
-        content = createVelocityContainer("course_list_wrapper");
-        showCurriculum = curriculumModule.isEnabled() && userRelationSecurityCallback.canViewCoursesAndCurriculum();
+        content = createVelocityContainer("certificate_list_wrapper");
+        showCurriculum = curriculumModule.isEnabled() && roleSecurityCallback.canViewCoursesAndCurriculum();
 
         if (showCurriculum) {
             curriculumShow = LinkFactory.createLink("off", content, this);
@@ -142,30 +142,31 @@ public class CourseListWrapperController extends BasicController implements Acti
     public Activateable2 showCurriculumStructure(UserRequest ureq) {
         showCurriculum = true;
 
-        if (curriculumListController == null) {
+        if (certificateCurriculumListController == null) {
             WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(WITH_CURRICULUM), null);
-            curriculumListController = new CurriculumElementListController(ureq, bwControl, stackPanel, mentee, curriculumRefs, curriculumSecurityCallback, userRelationSecurityCallback);
-            listenTo(curriculumListController);
+            certificateCurriculumListController = new CertificateAndEfficiencyStatementCurriculumListController(ureq, bwControl, stackPanel, mentee, curriculumSecurityCallback, roleSecurityCallback);
+            listenTo(certificateCurriculumListController);
         }
 
         content.contextPut("showCurriculum", showCurriculum);
-        content.put("content", curriculumListController.getInitialComponent());
-    	addToHistory(ureq, curriculumListController);
-        return curriculumListController;
+        content.put("content", certificateCurriculumListController.getInitialComponent());
+    	addToHistory(ureq, certificateCurriculumListController);
+        return certificateCurriculumListController;
     }
 
     public Activateable2 hideCurriculumStructure(UserRequest ureq) {
         showCurriculum = false;
 
-        if (userRelationEnrollmentListController == null) {
+        if (certificateListController == null) {
             WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(WITHOUT_CURRICULM), null);
-            userRelationEnrollmentListController = new UserRelationEnrollmentListController(ureq, bwControl, stackPanel, statEntry, mentee, userRelationSecurityCallback);
-            listenTo(userRelationEnrollmentListController);
+            certificateListController = new CertificateAndEfficiencyStatementListController(ureq, bwControl, mentee, false, false, false, false);
+            certificateListController.setBreadcrumbPanel(stackPanel);
+            listenTo(certificateListController);
         }
 
         content.contextPut("showCurriculum", showCurriculum);
-        content.put("content", userRelationEnrollmentListController.getInitialComponent());
-    	addToHistory(ureq, userRelationEnrollmentListController);
-        return userRelationEnrollmentListController;
+        content.put("content", certificateListController.getInitialComponent());
+    	addToHistory(ureq, certificateListController);
+        return certificateListController;
     }
 }
