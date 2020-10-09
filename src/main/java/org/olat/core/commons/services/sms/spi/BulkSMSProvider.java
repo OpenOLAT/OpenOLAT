@@ -129,7 +129,7 @@ public class BulkSMSProvider extends AbstractSpringModule implements MessagesSPI
 	throws SimpleMessageException {
 		HttpPost send = new HttpPost(url + "?deduplication-id=" + messageId);
 		String token = StringHelper.encodeBase64(tokenId + ":" + tokenSecret);
-		send.setHeader(new BasicHeader("Authorization", "Basic " + token));
+		send.setHeader(new BasicHeader("Authorization", "Basic " + token));//NOSONAR no other choice
 		send.setHeader(new BasicHeader("Content-Type", "application/json"));
 		
 		String phone = recipient.replace("+", "").replace(" ", "");
@@ -144,7 +144,7 @@ public class BulkSMSProvider extends AbstractSpringModule implements MessagesSPI
 			if(returnCode == 200 || returnCode == 201) {
 				return true;
 			}
-			log.error("WebSMS return an error code " + returnCode + ": " + responseString);
+			log.error("WebSMS return an error code {}: {}", returnCode, responseString);
 			return false;
 		} catch(Exception e) {
 			log.error("", e);

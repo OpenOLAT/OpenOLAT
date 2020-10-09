@@ -538,7 +538,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			post.addHeader("Accept", "application/json");
 			
 			String authVal = goToMeetingModule.getTrainingConsumerKey() + ":" + goToMeetingModule.getTrainingConsumerSecret();
-        	post.addHeader("Authorization", "Basic " + StringHelper.encodeBase64(authVal));
+        	post.addHeader("Authorization", "Basic " + StringHelper.encodeBase64(authVal)); //NOSONAR no other choice
 			post.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
 			List<NameValuePair> urlParameters = new ArrayList<>(4);
@@ -580,7 +580,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			post.addHeader("Accept", "application/json");
 			
 			String authVal = goToMeetingModule.getTrainingConsumerKey() + ":" + goToMeetingModule.getTrainingConsumerSecret();
-        	post.addHeader("Authorization", "Basic " + StringHelper.encodeBase64(authVal));
+        	post.addHeader("Authorization", "Basic " + StringHelper.encodeBase64(authVal)); //NOSONAR no other choice
 			post.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
 			List<NameValuePair> urlParameters = new ArrayList<>(4);

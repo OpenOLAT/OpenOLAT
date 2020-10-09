@@ -59,7 +59,7 @@ public class EdusharingSecurityServiceImpl implements EdusharingSecurityService 
 	
 	private static final Cipher newCipher()
 	throws NoSuchAlgorithmException, NoSuchPaddingException {
-		return Cipher.getInstance("RSA/ECB/PKCS1Padding");
+		return Cipher.getInstance("RSA/ECB/PKCS1Padding");//NOSONAR The configuration of the cipher is given by EduSharing
 	}
 	
 	@Override
