@@ -124,18 +124,20 @@ public class QTI21ConfigurationCEPage {
 	}
 	
 	private QTI21ConfigurationCEPage setTime(String fieldClass, int hour, int minutes) {
-		By untilAltBy = By.cssSelector("div." + fieldClass + " div.o_date_picker span.input-group-addon i");
-		browser.findElement(untilAltBy).click();
-		
-		By todayBy = By.xpath("//div[@id='ui-datepicker-div']//td[contains(@class,'ui-datepicker-today')]/a");
 		try {
+			By untilAltBy = By.cssSelector("div." + fieldClass + " div.o_date_picker span.input-group-addon i");
+			OOGraphene.waitElement(untilAltBy, browser);
+			browser.findElement(untilAltBy).click();
+			
+			By todayBy = By.xpath("//div[@id='ui-datepicker-div']//td[contains(@class,'ui-datepicker-today')]/a");
 			OOGraphene.waitElement(todayBy, browser);
+			
+			browser.findElement(todayBy).click();
+			OOGraphene.waitElementDisappears(todayBy, 5, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Datetest", browser);
 			throw e;
 		}
-		browser.findElement(todayBy).click();
-		OOGraphene.waitElementDisappears(todayBy, 5, browser);
 		
 		By hourBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dch_o_')]");
 		WebElement hourEl = browser.findElement(hourBy);
