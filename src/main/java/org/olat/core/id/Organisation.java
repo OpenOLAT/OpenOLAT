@@ -78,4 +78,6 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 	
 	public Group getGroup();
 
+	public List<Organisation> getChildren();
+
 }

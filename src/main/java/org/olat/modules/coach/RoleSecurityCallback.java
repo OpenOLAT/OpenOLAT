@@ -23,7 +23,7 @@ package org.olat.modules.coach;
  * Initial date: 17 Jun 2020<br>
  * @author aboeckle, alexander.boeckle@frentix.com
  */
-public interface UserRelationSecurityCallback {
+public interface RoleSecurityCallback {
 	
 	/**
 	 * Is this role allowed to reset passwords?

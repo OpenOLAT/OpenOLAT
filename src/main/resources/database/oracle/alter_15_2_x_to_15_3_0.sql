@@ -77,3 +77,17 @@ create index comp_log_ident_idx on o_as_compensation_log (fk_identity_id);
 alter table o_ap_appointment add fk_meeting_id number(20);
 alter table o_ap_appointment add constraint ap_appointment_meeting_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
 create index idx_ap_appointment_meeting_idx on o_ap_appointment(fk_meeting_id);
+
+-- Organiation role rights
+create table o_org_role_to_right (
+	id number(20) generated always as identity,
+	creationdate timestamp not null,
+	o_role varchar(255) not null,
+	o_right varchar(255) not null,
+	fk_organisation number(20) not null,
+	primary key (id)
+);
+
+alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right(fk_organisation);
+

@@ -19,6 +19,8 @@
  */
 package org.olat.user.ui.organisation;
 
+import org.olat.admin.privacy.PrivacyAdminController;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -32,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 
 /**
@@ -45,21 +48,24 @@ public class OrganisationOverviewController extends BasicController {
 	private final Link metadataLink;
 	private final Link resourcesLink;
 	private final Link userManagementLink;
+	private final Link roleConfigLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	
 	private EditOrganisationController metadataCtrl;
 	private OrganisationResourceListController resourcesCtrl;
 	private OrganisationUserManagementController userMgmtCtrl;
+	private OrganisationRoleEditController roleConfigCtrl;
 	
-	private Organisation organisation;
-	
+	private final Organisation organisation;
+
 	public OrganisationOverviewController(UserRequest ureq, WindowControl wControl, Organisation organisation) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(PrivacyAdminController.class, getLocale(), getTranslator()));
+
 		this.organisation = organisation;
-		
+
 		mainVC = createVelocityContainer("organisation_overview");
-		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
 		metadataLink = LinkFactory.createLink("organisation.metadata", mainVC, this);
@@ -68,7 +74,10 @@ public class OrganisationOverviewController extends BasicController {
 		segmentView.addSegment(userManagementLink, false);
 		resourcesLink = LinkFactory.createLink("organisation.resources", mainVC, this);
 		segmentView.addSegment(resourcesLink, false);
-
+		roleConfigLink = LinkFactory.createLink("admin.props.linemanagers", mainVC, this);
+		if (organisation.isDefault() || organisation.getParent() == null) {
+			segmentView.addSegment(roleConfigLink, false);
+		}
 		putInitialPanel(mainVC);
 		doOpenMetadadata(ureq);
 	}
@@ -100,6 +109,8 @@ public class OrganisationOverviewController extends BasicController {
 					doOpenUsermanagement(ureq);
 				} else if(clickedLink == resourcesLink) {
 					doOpenResources(ureq);
+				} else if (clickedLink == roleConfigLink) {
+					doOpenRoleConfig(ureq);
 				}
 			}
 		}
@@ -142,5 +153,16 @@ public class OrganisationOverviewController extends BasicController {
 		addToHistory(ureq, resourcesCtrl);
 		mainVC.put("segmentCmp", resourcesCtrl.getInitialComponent());
 		
+	}
+
+	private void doOpenRoleConfig(UserRequest ureq) {
+		if (roleConfigCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("RoleConfig"), null);
+			roleConfigCtrl = new OrganisationRoleEditController(ureq, bwControl, organisation, OrganisationRoles.linemanager);
+			listenTo(roleConfigCtrl);
+		}
+
+		addToHistory(ureq, roleConfigCtrl);
+		mainVC.put("segmentCmp", roleConfigCtrl.getInitialComponent());
 	}
 }

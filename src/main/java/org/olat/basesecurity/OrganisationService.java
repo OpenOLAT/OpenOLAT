@@ -19,6 +19,7 @@
  */
 package org.olat.basesecurity;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.basesecurity.model.OrganisationMember;
@@ -293,5 +294,27 @@ public interface OrganisationService {
 	 * @return The number of user with a role in the organization
 	 */
 	public List<OrganisationMembershipStats> getOrganisationStatistics(OrganisationRef organisation, List<IdentityRef> identities);
+
+	/**
+	 * @param organisation The organisation
+	 * @param role Organisation role
+	 * @return A list of rights for the role of a given organisation
+	 */
+	public List<RightProvider> getGrantedOrganisationRights(Organisation organisation, OrganisationRoles role);
+
+	/**
+	 * @param roles Given organisation role
+	 * @return A list of all rights selectable for organisation rights
+	 */
+	public List<RightProvider> getAllOrganisationRights(OrganisationRoles roles);
+
+	/**
+	 * Save the given rights for a specific role in an organisation
+	 *
+	 * @param organisation
+	 * @param role
+	 * @param rights
+	 */
+	public void setGrantedOrganisationRights(Organisation organisation, OrganisationRoles role, Collection<String> rights);
 
 }

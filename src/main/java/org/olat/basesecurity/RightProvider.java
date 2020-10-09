@@ -19,6 +19,8 @@
  */
 package org.olat.basesecurity;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 
 /**
@@ -27,17 +29,25 @@ import java.util.Locale;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface RelationRightProvider {
+public interface RightProvider {
 
-	public int getPosition();
+	Collection<OrganisationRoles> defaultRoles = Collections.singletonList(OrganisationRoles.linemanager);
 
-	public RelationRightProvider getParent();
+	String getRight();
+	RightProvider getParent();
 
-	public String getRight();
+	boolean isUserRelationsRight();
+	int getUserRelationsPosition();
 
-	public String getTranslatedName(Locale locale);
+	default Collection<OrganisationRoles> getOrganisationRoles() {
+		return defaultRoles;
+	};
 
-	public enum Order {
+	int getOrganisationPosition();
+
+	String getTranslatedName(Locale locale);
+
+	enum UserRelationRightsOrder {
 		CourseAndCurriculumRight,
 		CourseProgressAndStatusRight,
 		LecturesAndAbsencesRight,
@@ -50,6 +60,20 @@ public interface RelationRightProvider {
 		ContactFormRight,
 		QualityReportAccessRight,
 		CertificateEmailRight,
-		AdministrativePropertiesRight;
+		AdministrativePropertiesRight
+	}
+
+	enum OrganisationRightsOrder {
+		CourseAndCurriculumRight,
+		CourseProgressAndStatusRight,
+		LecturesAndAbsencesRight,
+		ViewEfficiencyStatementRight,
+		ViewCourseCalendarRight,
+		ResourceAndBookinsRight,
+		ViewGroupMemebershipsRight,
+		ViewAndEditProfileRight,
+		ResetPasswordRight,
+		ContactFormRight,
+		AdministrativePropertiesRight
 	}
 }

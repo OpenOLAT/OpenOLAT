@@ -30,12 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoleRight;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
@@ -44,6 +44,7 @@ import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
+import org.olat.basesecurity.model.OrganisationRoleRightImpl;
 import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -69,7 +70,7 @@ public class OrganisationDAO {
 	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
-	
+
 	public Organisation create(String displayName, String identifier, String description,
 			Organisation parentOrganisation, OrganisationType type) {
 		OrganisationImpl organisation = new OrganisationImpl();
@@ -149,6 +150,7 @@ public class OrganisationDAO {
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" left join fetch org.type orgType")
 		  .append(" left join fetch org.parent parentOrg")
+
 		  .append(" where org.key=:key");
 		
 		List<Organisation> organisations = dbInstance.getCurrentEntityManager()
@@ -529,5 +531,43 @@ public class OrganisationDAO {
 			OrganisationRoles role = (OrganisationRoles.isValue(roleStr) ? OrganisationRoles.valueOf(roleStr) : null);
 			return new OrganisationMembershipStats(role, numOfMembers);
 		}).collect(Collectors.toList());
+	}
+
+	public List<String> getGrantedOrganisationRights(Organisation organisation, OrganisationRoles role) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select roleRight.right from organisationroleright as roleRight")
+				.append(" inner join roleRight.organisation org")
+				.append(" where org.key=:organisationKey and roleRight.role=:organisationRole");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("organisationKey", organisation.getKey())
+				.setParameter("organisationRole", role)
+				.getResultList();
+	}
+
+	public void deleteGrantedOrganisationRights(Organisation organisation, OrganisationRoles role, Collection<String> deleteRights) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from organisationroleright as orgRight")
+			.append(" where orgRight.organisation.key=:orgKey")
+			.append(" and orgRight.right in (:deleteRights)")
+			.append(" and orgRight.role=:orgRole");
+
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("orgKey", organisation.getKey())
+				.setParameter("deleteRights", deleteRights)
+				.setParameter("orgRole", role)
+				.executeUpdate();
+	}
+
+	public OrganisationRoleRight createOrganisationRoleRight(Organisation organisation, OrganisationRoles role, String right) {
+		OrganisationRoleRight newRight = new OrganisationRoleRightImpl();
+		newRight.setOrganisation(organisation);
+		newRight.setRole(role);
+		newRight.setRight(right);
+
+		dbInstance.getCurrentEntityManager().persist(newRight);
+		return newRight;
 	}
 }
