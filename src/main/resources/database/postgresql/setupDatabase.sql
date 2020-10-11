@@ -4341,4 +4341,17 @@ create index idx_ap_part_appointment_idx on o_ap_participation(fk_appointment_id
 alter table o_ap_participation add constraint ap_part_identity_idx foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_ap_part_identitiy_idx on o_ap_participation(fk_identity_id);
 
+-- Organiation role rights
+create table o_org_role_to_right (
+	id bigserial,
+	creationdate timestamp not null,
+	o_role varchar(255) not null,
+	o_right varchar(255) not null,
+	fk_organisation int8 not null,
+	primary key (id)
+);
+
+alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right (fk_organisation);
+
 insert into hibernate_unique_key values ( 0 );

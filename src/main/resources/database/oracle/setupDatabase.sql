@@ -4448,5 +4448,19 @@ create index idx_ap_part_identitiy_idx on o_ap_participation(fk_identity_id);
 insert into o_stat_lastupdated (until_datetime, from_datetime, lastupdated) values (to_date('1999-01-01', 'YYYY-mm-dd'), to_date('1999-01-01', 'YYYY-mm-dd'), to_date('1999-01-01', 'YYYY-mm-dd'));
 insert into hibernate_unique_key values ( 0 );
 
+-- Organiation role rights
+create table o_org_role_to_right (
+	id number(20) generated always as identity,
+	creationdate timestamp not null,
+	o_role varchar(255) not null,
+	o_right varchar(255) not null,
+	fk_organisation number(20) not null,
+	primary key (id)
+);
+
+alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right(fk_organisation);
+
+
 commit
 /

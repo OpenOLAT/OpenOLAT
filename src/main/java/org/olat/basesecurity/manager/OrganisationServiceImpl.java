@@ -84,6 +84,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Autowired
 	private OrganisationTypeToTypeDAO organisationTypeToTypeDao;
 	@Autowired
+	private OrganisationRoleRightDAO organisationRoleRightDAO;
+	@Autowired
 	private List<RightProvider> allRights;
 
 	@Override
@@ -592,7 +594,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 
 	@Override
 	public List<RightProvider> getGrantedOrganisationRights(Organisation organisation, OrganisationRoles role) {
-		List<String> organisationRights = organisationDao.getGrantedOrganisationRights(organisation.getRoot() != null ? organisation.getRoot() : organisation, role);
+		List<String> organisationRights = organisationRoleRightDAO.getGrantedOrganisationRights(organisation.getRoot() != null ? organisation.getRoot() : organisation, role);
 
 		return allRights.stream().filter(right -> organisationRights.contains(right.getRight())).collect(Collectors.toList());
 	}
@@ -600,16 +602,16 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Override
 	public void setGrantedOrganisationRights(Organisation organisation, OrganisationRoles role, Collection<String> rights) {
 		// Get all rights
-		List<String> grantedRights = organisationDao.getGrantedOrganisationRights(organisation, role);
+		List<String> grantedRights = organisationRoleRightDAO.getGrantedOrganisationRights(organisation, role);
 		List<String> deleteRights = grantedRights.stream().filter(grantedRight -> !rights.contains(grantedRight)).collect(Collectors.toList());
 		List<String> addRights = rights.stream().filter(addRight -> !grantedRights.contains(addRight)).collect(Collectors.toList());
 
 		// Remove rights, which are not granted anymore
-		organisationDao.deleteGrantedOrganisationRights(organisation, role, deleteRights);
+		organisationRoleRightDAO.deleteGrantedOrganisationRights(organisation, role, deleteRights);
 
 		// Add rights, which are not granted yet
 		for (String right : addRights) {
-			organisationDao.createOrganisationRoleRight(organisation, role, right);
+			organisationRoleRightDAO.createOrganisationRoleRight(organisation, role, right);
 		}
 	}
 }
