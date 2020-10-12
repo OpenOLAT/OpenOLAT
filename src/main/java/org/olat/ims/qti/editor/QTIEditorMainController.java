@@ -1236,7 +1236,9 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		// enter save/discard dialog if not already in it
 		if(exportLatch != null) {
 			try {
-				exportLatch.await(30, TimeUnit.SECONDS);
+				if(!exportLatch.await(30, TimeUnit.SECONDS)) {
+					logWarn("Cannot close editor in 30s.", null);
+				}
 			} catch (InterruptedException e) {
 				logError("", e);
 			}

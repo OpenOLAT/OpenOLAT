@@ -68,7 +68,8 @@ public class PdfExternalExtractor implements PdfExtractor {
 		
 		List<String> cmds = new ArrayList<>();
 		cmds.add(searchModule.getPdfExternalIndexerCmd());
-		cmds.add(((LocalFileImpl)document).getBasefile().getAbsolutePath());
+		String path = ((LocalFileImpl)document).getBasefile().getAbsolutePath();
+		cmds.add(path);
 		cmds.add(bufferFile.getAbsolutePath());
 
 		CountDownLatch doneSignal = new CountDownLatch(1);
@@ -77,7 +78,9 @@ public class PdfExternalExtractor implements PdfExtractor {
 		worker.start();
 
 		try {
-			doneSignal.await(3000, TimeUnit.MILLISECONDS);
+			if(!doneSignal.await(3000, TimeUnit.MILLISECONDS)) {
+				log.warn("Cannot extract text from PDF in 3s: {}", path);
+			}
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}

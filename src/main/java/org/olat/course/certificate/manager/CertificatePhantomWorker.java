@@ -129,7 +129,9 @@ public class CertificatePhantomWorker {
 		worker.start();
 
 		try {
-			doneSignal.await(30000, TimeUnit.MILLISECONDS);
+			if(!doneSignal.await(30000, TimeUnit.MILLISECONDS)) {
+				log.warn("Cannot output certificates in 30s: {}", certificateFile);
+			}
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}
@@ -301,12 +303,14 @@ public class CertificatePhantomWorker {
 		worker.start();
 
 		try {
-			doneSignal.await(10000, TimeUnit.MILLISECONDS);
+			if(!doneSignal.await(10000, TimeUnit.MILLISECONDS)) {
+				log.warn("Cannot check PhantomJS availability in 30s.");
+			}
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}
 		
-		log.info("PhantomJS help is available if exit value = 0: " + worker.getExitValue());
+		log.info("PhantomJS help is available if exit value = 0: {}", worker.getExitValue());
 		return worker.getExitValue() == 0;
 	}
 	

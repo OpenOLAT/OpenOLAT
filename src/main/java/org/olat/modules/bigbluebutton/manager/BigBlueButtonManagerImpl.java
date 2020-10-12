@@ -509,7 +509,9 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		}
 		
 		try {
-			serverLatch.await(15, TimeUnit.SECONDS);
+			if(!serverLatch.await(15, TimeUnit.SECONDS)) {
+				log.warn("Request to get infos from BigBlueButton server take more than 15 seconds.");
+			}
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}

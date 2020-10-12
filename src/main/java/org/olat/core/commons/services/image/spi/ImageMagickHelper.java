@@ -116,7 +116,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	private final FinalSize generateThumbnail(File file, File thumbnailFile, boolean firstOnly,
 			int maxWidth, int maxHeight, boolean fill) {
 		if(file == null || thumbnailFile == null) {
-			log.error("Input file or output file for thumbnailing?" + file + " -> " + thumbnailFile);
+			log.error("Input file or output file for thumbnailing? {} -> {}", file, thumbnailFile);
 			return null;
 		}
 		
@@ -152,7 +152,9 @@ public class ImageMagickHelper extends AbstractImageHelper {
 		worker.start();
 
 		try {
-			doneSignal.await(3000, TimeUnit.MILLISECONDS);
+			if(!doneSignal.await(3000, TimeUnit.MILLISECONDS)) {
+				log.warn("Cannot generate a thumbnail in 3s: {}", file);
+			}
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}
@@ -164,7 +166,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	
 	private final FinalSize cropImageWithImageMagick(File file, File cropedFile, Crop cropSelection) {
 		if(file == null || cropedFile == null) {
-			log.error("Input file or output file for thumbnailing?" + file + " -> " + cropedFile);
+			log.error("Input file or output file for thumbnailing? {} -> {}", file, cropedFile);
 			return null;
 		}
 		
@@ -193,7 +195,9 @@ public class ImageMagickHelper extends AbstractImageHelper {
 		worker.start();
 
 		try {
-			doneSignal.await(3000, TimeUnit.MILLISECONDS);
+			if(!doneSignal.await(3000, TimeUnit.MILLISECONDS)) {
+				log.warn("Image cannot be cropped in 3s: {}", file);
+			}
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}
@@ -234,8 +238,8 @@ public class ImageMagickHelper extends AbstractImageHelper {
 		}
 
 		if (log.isDebugEnabled()) {
-			log.debug("Error: " + errors.toString());
-			log.debug("Output: " + output.toString());
+			log.debug("Error: {}", errors.toString());
+			log.debug("Output: {}", output.toString());
 		}
 
 		try {
@@ -251,7 +255,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 			//
 		}
 		if(rv == null) {
-			log.warn("Could not generate thumbnail: "+thumbnailFile);
+			log.warn("Could not generate thumbnail: {}", thumbnailFile);
 		}
 		return rv;
 	}
@@ -293,7 +297,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 				}
 			}
 		} catch (NumberFormatException e) {
-			log.error("Error parsing output: " + output);
+			log.error("Error parsing output: {}", output);
 		}
 		return null;
 	}
@@ -310,7 +314,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 				} catch (NumberFormatException e) {
 					//not a number, it's possible
 					if(log.isDebugEnabled()) {
-						log.debug("Not a size: " + chuck);
+						log.debug("Not a size: {}", chuck);
 					}
 				}
 			}
