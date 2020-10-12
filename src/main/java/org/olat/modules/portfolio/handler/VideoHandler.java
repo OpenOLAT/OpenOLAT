@@ -21,7 +21,6 @@ package org.olat.modules.portfolio.handler;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -69,10 +68,7 @@ import org.springframework.stereotype.Service;
 public class VideoHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
 	
 	public static final String VIDEO_TYPE = "video";
-	public static final Set<String> mimeTypes = new HashSet<>();
-	static {
-		mimeTypes.add("video/mp4");
-	}
+	public static final Set<String> mimeTypes = Set.of("video/mp4");
 
 	@Autowired
 	private MediaDAO mediaDao;

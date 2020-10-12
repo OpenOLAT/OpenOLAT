@@ -21,7 +21,6 @@ package org.olat.modules.portfolio.handler;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -79,20 +78,14 @@ import org.springframework.stereotype.Service;
 public class ImageHandler extends AbstractMediaHandler implements PageElementStore<ImageElement>, InteractiveAddPageElementHandler {
 	
 	public static final String IMAGE_TYPE = "image";
-	public static final Set<String> mimeTypes = new HashSet<>();
-	static {
-		mimeTypes.add("image/gif");
-		mimeTypes.add("image/jpg");
-		mimeTypes.add("image/jpeg");
-		mimeTypes.add("image/png");
-	}
+	public static final Set<String> mimeTypes = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 
 	@Autowired
 	private MediaDAO mediaDao;
 	@Autowired
 	private PortfolioFileStorage fileStorage;
 	@Autowired
-	private VFSRepositoryService VFSRepositoryService;
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public ImageHandler() {
 		super(IMAGE_TYPE);
@@ -131,7 +124,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 			VFSContainer storageContainer = fileStorage.getMediaContainer(media);
 			VFSItem item = storageContainer.resolve(media.getRootFilename());
 			if(item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
-				thumbnail = VFSRepositoryService.getThumbnail((VFSLeaf)item, size.getHeight(), size.getWidth(), true);
+				thumbnail = vfsRepositoryService.getThumbnail((VFSLeaf)item, size.getHeight(), size.getWidth(), true);
 			}
 		}
 		

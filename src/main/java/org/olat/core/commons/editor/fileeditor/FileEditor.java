@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.editor.fileeditor;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -50,8 +49,8 @@ import org.springframework.stereotype.Service;
 public class FileEditor implements DocEditor {
 	
 	public static final String TYPE = "OpenOLAT";
-	public static final List<String> HTML_EDITOR_SUFFIX = Arrays.asList("html", "htm");
-	private static final List<String> TEXT_EDITOR_SUFFIX = Arrays.asList("txt", "css", "csv", "xml");
+	public static final List<String> HTML_EDITOR_SUFFIX = List.of("html", "htm");
+	private static final List<String> TEXT_EDITOR_SUFFIX = List.of("txt", "css", "csv", "xml");
 	
 	@Autowired
 	private VFSLockManager lockManager;
@@ -105,7 +104,7 @@ public class FileEditor implements DocEditor {
 	@Override
 	public boolean isSupportingFormat(String suffix, Mode mode, boolean metaAvailable) {
 		// Both the HTML editor and the text editor supports view and edit
-		return HTML_EDITOR_SUFFIX.contains(suffix) || TEXT_EDITOR_SUFFIX.contains(suffix)? true: false;
+		return HTML_EDITOR_SUFFIX.contains(suffix) || TEXT_EDITOR_SUFFIX.contains(suffix);
 	}
 
 	@Override

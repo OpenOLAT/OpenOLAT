@@ -19,6 +19,8 @@
  */
 package org.olat.modules.vitero;
 
+import java.util.List;
+
 /**
  * 
  * Description:<br>
@@ -31,7 +33,7 @@ package org.olat.modules.vitero;
  */
 public class ViteroTimezoneIDs {
 
-	public static final String[] TIMEZONE_IDS = {
+	public static final List<String> TIMEZONE_IDS = List.of(
 		"Pacific/Apia",
 		"Pacific/Fakaofo",
 		"America/Adak",
@@ -122,5 +124,5 @@ public class ViteroTimezoneIDs {
 		"Pacific/Chatham",
 		"Pacific/Enderbury",
 		"Pacific/Kiritimati"
-	};
+	);
 }

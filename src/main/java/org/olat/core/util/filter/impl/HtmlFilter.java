@@ -21,8 +21,6 @@ package org.olat.core.util.filter.impl;
 
 import java.io.InputStream;
 import java.io.StringReader;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -49,12 +47,10 @@ import nu.validator.htmlparser.sax.HtmlParser;
 public class HtmlFilter implements Filter {
 	private static final Logger log = Tracing.createLoggerFor(HtmlFilter.class);
 	
-	public static final Set<String> blockTags = new HashSet<>();
-	public static final Set<String> toBeSkippedTags = new HashSet<>();
-	static {
-		blockTags.addAll(Arrays.asList("address","blockquote","br","dir","div","dl","fieldset","form","h1","h2","h3","h4","h5","h6","hr","noframes","noscript","ol","p","pre","table","ul","li"));
-		toBeSkippedTags.addAll(Arrays.asList("script","style"));
-	}
+	public static final Set<String> blockTags = Set
+			.of("address","blockquote","br","dir","div","dl","fieldset","form","h1","h2","h3","h4","h5","h6","hr","noframes","noscript","ol","p","pre","table","ul","li");
+	public static final Set<String> toBeSkippedTags = Set
+			.of("script","style");
 
 	@Override
 	public String filter(String original) {

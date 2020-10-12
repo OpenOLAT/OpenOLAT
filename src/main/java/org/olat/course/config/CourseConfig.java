@@ -137,7 +137,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current key set
 	 */
-	public static final transient String[] KEYS = { KEY_CHAT_ENABLED, KEY_CSS_FILEREF, KEY_SHAREDFOLDER_SOFTKEY };
+	private static final transient String[] KEYS = { KEY_CHAT_ENABLED, KEY_CSS_FILEREF, KEY_SHAREDFOLDER_SOFTKEY };
 	/**
 	 * config file version from file
 	 */
@@ -370,25 +370,33 @@ public class CourseConfig implements Serializable, Cloneable {
 			if (version == 19) {
 				if (!configuration.containsKey(DISCLAIMER_1_ENABLED)) {
 					configuration.put(DISCLAIMER_1_ENABLED, Boolean.FALSE);
-				} if (!configuration.containsKey(DISCLAIMER_1_TITLE)) {
+				}
+				if (!configuration.containsKey(DISCLAIMER_1_TITLE)) {
 					configuration.put(DISCLAIMER_1_TITLE, "");
-				} if (!configuration.containsKey(DISCLAIMER_1_TERMS)) {
+				}
+				if (!configuration.containsKey(DISCLAIMER_1_TERMS)) {
 					configuration.put(DISCLAIMER_1_TERMS, "");
-				} if (!configuration.containsKey(DISCLAIMER_1_LABEL_1)) {
+				}
+				if (!configuration.containsKey(DISCLAIMER_1_LABEL_1)) {
 					configuration.put(DISCLAIMER_1_LABEL_1, "");
-				} if (!configuration.containsKey(DISCLAIMER_1_LABEL_2)) {
+				}
+				if (!configuration.containsKey(DISCLAIMER_1_LABEL_2)) {
 					configuration.put(DISCLAIMER_1_LABEL_2, "");
 				} 
 				
 				if (!configuration.containsKey(DISCLAIMER_2_ENABLED)) {
 					configuration.put(DISCLAIMER_2_ENABLED, Boolean.FALSE);
-				} if (!configuration.containsKey(DISCLAIMER_2_TITLE)) {
+				}
+				if (!configuration.containsKey(DISCLAIMER_2_TITLE)) {
 					configuration.put(DISCLAIMER_2_TITLE, "");
-				} if (!configuration.containsKey(DISCLAIMER_2_TERMS)) {
+				}
+				if (!configuration.containsKey(DISCLAIMER_2_TERMS)) {
 					configuration.put(DISCLAIMER_2_TERMS, "");
-				} if (!configuration.containsKey(DISCLAIMER_2_LABEL_1)) {
+				}
+				if (!configuration.containsKey(DISCLAIMER_2_LABEL_1)) {
 					configuration.put(DISCLAIMER_2_LABEL_1, "");
-				} if (!configuration.containsKey(DISCLAIMER_2_LABEL_2)) {
+				}
+				if (!configuration.containsKey(DISCLAIMER_2_LABEL_2)) {
 					configuration.put(DISCLAIMER_2_LABEL_2, "");
 				} 
 			}

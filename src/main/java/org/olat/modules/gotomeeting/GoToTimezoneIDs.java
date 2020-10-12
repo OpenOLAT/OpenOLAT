@@ -19,10 +19,11 @@
  */
 package org.olat.modules.gotomeeting;
 
+import java.util.List;
 
 public class GoToTimezoneIDs {
 
-	public static final String[] TIMEZONE_IDS = {
+	public static final List<String> TIMEZONE_IDS = List.of(
 			"Pacific/Tongatapu",
 			"Pacific/Fiji",
 			"Pacific/Auckland",
@@ -93,6 +94,5 @@ public class GoToTimezoneIDs {
 			"America/Los_Angeles",
 			"America/Anchorage",
 			"Pacific/Honolulu",
-			"MIT"
-	};
+			"MIT");
 }

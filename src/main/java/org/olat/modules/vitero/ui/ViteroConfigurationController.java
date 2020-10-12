@@ -21,7 +21,9 @@ package org.olat.modules.vitero.ui;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.olat.core.gui.UserRequest;
@@ -98,11 +100,10 @@ public class ViteroConfigurationController extends FormBasicController {
 			//spacer
 			uifactory.addSpacerElement("Spacer", moduleFlc, false);
 			
-			String[] timeZoneKeys = ViteroTimezoneIDs.TIMEZONE_IDS;
-			timeZoneKeys = timeZoneKeys.clone();
-			Arrays.sort(timeZoneKeys, null);
+			List<String> timeZoneKeys = new ArrayList<>(ViteroTimezoneIDs.TIMEZONE_IDS);
+			Collections.sort(timeZoneKeys, null);
 
-			String[] timeZoneValues = new String[timeZoneKeys.length];
+			String[] timeZoneValues = new String[timeZoneKeys.size()];
 			int i=0;
 			for(String timeZoneKey:timeZoneKeys) {
 				TimeZone timezone = TimeZone.getTimeZone(timeZoneKey);
@@ -114,7 +115,8 @@ public class ViteroConfigurationController extends FormBasicController {
 				}
 			}
 
-			timeZoneEl = uifactory.addDropdownSingleselect("option.olatTimeZone", moduleFlc, timeZoneKeys, timeZoneValues, null);
+			timeZoneEl = uifactory.addDropdownSingleselect("option.olatTimeZone", moduleFlc,
+					timeZoneKeys.toArray(new String[timeZoneKeys.size()]), timeZoneValues, null);
 			timeZoneEl.select(viteroModule.getTimeZoneId(), true);
 			
 			inspireEnabled = uifactory.addCheckboxesHorizontal("option.inspire", moduleFlc, enabledKeys, enabledValues);

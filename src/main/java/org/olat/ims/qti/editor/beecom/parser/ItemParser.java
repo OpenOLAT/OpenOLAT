@@ -54,15 +54,12 @@ public class ItemParser implements IParser {
 	public static final String ITEM_PREFIX_ESSAY = "QTIEDIT:ESSAY:";
 	public static final String ITEM_PREFIX_KPRIM = "QTIEDIT:KPRIM:";
 	
-	public static final String[] OO_ITEM_PREFIX = { ITEM_PREFIX_SCQ, ITEM_PREFIX_MCQ, ITEM_PREFIX_FIB, ITEM_PREFIX_ESSAY, ITEM_PREFIX_KPRIM };
+	public static final List<String> OO_ITEM_PREFIX = List.of(ITEM_PREFIX_SCQ, ITEM_PREFIX_MCQ, ITEM_PREFIX_FIB, ITEM_PREFIX_ESSAY, ITEM_PREFIX_KPRIM);
 	
 	private ParserManager parserManager = new ParserManager();
 
-	/**
-	 * @see org.olat.ims.qti.editor.beecom.parser.IParser#parse(org.dom4j.Element)
-	 */
+	@Override
 	public Object parse(Element element) {
-		//assert element.getName().equalsIgnoreCase("item");
 		Item item = new Item();
 		Attribute tmp = element.attribute("ident");
 		if (tmp != null)

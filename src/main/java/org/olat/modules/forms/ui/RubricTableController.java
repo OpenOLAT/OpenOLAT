@@ -39,7 +39,6 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.RubricStatistic;
-import org.olat.modules.forms.RubricsComparison.Attribute;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -57,13 +56,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class RubricTableController extends FormBasicController {
-	
-	public static final Attribute[] ATTRIBUTES_COLUMN_ALLIGNMENT = {
-			Attribute.steps,
-			Attribute.noResponseEnabled,
-			Attribute.slidersLabel,
-			Attribute.slidersWeighted
-	};
 	
 	private final Rubric rubric;
 	private final SessionFilter filter;

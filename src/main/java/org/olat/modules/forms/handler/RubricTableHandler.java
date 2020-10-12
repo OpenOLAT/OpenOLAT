@@ -40,9 +40,16 @@ import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 public class RubricTableHandler implements EvaluationFormReportHandler {
 
 	public static final String TYPE = "rubrictablehandler";
-	;
+	
+	private static final Attribute[] ATTRIBUTES_COLUMN_ALLIGNMENT = {
+			Attribute.steps,
+			Attribute.noResponseEnabled,
+			Attribute.slidersLabel,
+			Attribute.slidersWeighted
+	};
+	
 	public static Attribute[] getAttributesColumnAlignemt() {
-		return RubricTableController.ATTRIBUTES_COLUMN_ALLIGNMENT;
+		return ATTRIBUTES_COLUMN_ALLIGNMENT;
 	}
 
 	@Override

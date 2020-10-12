@@ -66,8 +66,6 @@ public class TUConfigForm extends FormBasicController {
 	public static final String CONFIGKEY_HOST = "host";
 	/** config option: protocol */
 	public static final String CONFIGKEY_PROTO = "proto";
-	/** supported protocols */
-	public static final String[] PROTOCOLS = new String[] {"http", "https"};
 	
 	 /** Configuration key: use tunnel for iframe or display directly ("<iframe src='www.ethz.ch'></iframe>"). Values: true, false **/
   public static final String CONFIG_TUNNEL = "useframetunnel"; // don't change value, used in config
@@ -235,7 +233,7 @@ public class TUConfigForm extends FormBasicController {
 		config.set(CONFIGKEY_QUERY, url.getQuery());
 		config.set(CONFIGKEY_REF, url.getRef());
 		int portHere = url.getPort();
-		config.set(CONFIGKEY_PORT, new Integer(portHere != -1 ? portHere : url.getDefaultPort()));
+		config.set(CONFIGKEY_PORT, Integer.valueOf(portHere != -1 ? portHere : url.getDefaultPort()));
 		config.set(CONFIGKEY_USER, getFormUser());
 		config.set(CONFIGKEY_PASS, getFormPass());
 		

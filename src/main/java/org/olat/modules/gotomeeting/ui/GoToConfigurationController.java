@@ -19,7 +19,7 @@
  */
 package org.olat.modules.gotomeeting.ui;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -92,8 +92,7 @@ public class GoToConfigurationController extends FormBasicController {
 	}
 	
 	private String[] orderedTimezoneIds() {
-		String[] timezoneIds = GoToTimezoneIDs.TIMEZONE_IDS;
-		List<String> timezoneIdList = Arrays.asList(timezoneIds);
+		List<String> timezoneIdList = new ArrayList<>(GoToTimezoneIDs.TIMEZONE_IDS);
 		Collections.sort(timezoneIdList);
 		return timezoneIdList.toArray(new String[timezoneIdList.size()]);
 	}
