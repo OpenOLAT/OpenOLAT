@@ -21,9 +21,11 @@ package org.olat.modules.lecture.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -42,6 +44,7 @@ public class EditAbsenceCategoryController extends FormBasicController {
 
 	private TextElement titleEl;
 	private TextElement descriptionEl;
+	private SingleSelection enableEl;
 	
 	private AbsenceCategory category;
 	
@@ -66,6 +69,17 @@ public class EditAbsenceCategoryController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "absence.category.title", 128, title, formLayout);
 		titleEl.setMandatory(true);
 		
+		KeyValues activeKeyValues = new KeyValues();
+		activeKeyValues.add(KeyValues.entry("true", translate("absence.category.enabled")));
+		activeKeyValues.add(KeyValues.entry("false", translate("absence.category.disabled")));
+		enableEl = uifactory.addRadiosHorizontal("absence.category.activated", "absence.category.activated", formLayout,
+				activeKeyValues.keys(), activeKeyValues.values());
+		if(category != null) {
+			enableEl.select(Boolean.toString(category.isEnabled()), true);
+		} else {
+			enableEl.select("true", true);
+		}
+		
 		String description = category == null ? "" : category.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("absence.category.description", 4, 72, description, formLayout);
 		descriptionEl.setMandatory(true);
@@ -85,6 +99,12 @@ public class EditAbsenceCategoryController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		enableEl.clearError();
+		if(!enableEl.isOneSelected()) {
+			enableEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
 			titleEl.setErrorKey("form.legende.mandatory", null);
@@ -102,9 +122,11 @@ public class EditAbsenceCategoryController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		boolean enabled = "true".equals(enableEl.getSelectedKey());
 		if(category == null) {
-			category = lectureService.createAbsenceCategory(titleEl.getValue(), descriptionEl.getValue());
+			category = lectureService.createAbsenceCategory(titleEl.getValue(), descriptionEl.getValue(), enabled);
 		} else {
+			category.setEnabled(enabled);
 			category.setTitle(titleEl.getValue());
 			category.setDescription(descriptionEl.getValue());
 			category = lectureService.updateAbsenceCategory(category);

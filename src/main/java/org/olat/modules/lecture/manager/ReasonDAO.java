@@ -40,10 +40,11 @@ public class ReasonDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public Reason createReason(String title, String description) {
+	public Reason createReason(String title, String description, boolean enabled) {
 		ReasonImpl reason = new ReasonImpl();
 		reason.setCreationDate(new Date());
 		reason.setLastModified(reason.getCreationDate());
+		reason.setEnabled(enabled);
 		reason.setTitle(title);
 		reason.setDescription(description);
 		dbInstance.getCurrentEntityManager().persist(reason);
@@ -81,7 +82,7 @@ public class ReasonDAO {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return keys != null && keys.size() > 0 && keys.get(0) != null && keys.get(0).longValue() > 0;
+		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0;
 	}
 	
 	public boolean delete(Reason reason) {

@@ -91,3 +91,11 @@ create table o_org_role_to_right (
 
 alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right (fk_organisation);
+
+
+-- Lectures
+alter table o_lecture_reason add column l_enabled bool default true not null;
+
+-- Absences
+alter table o_lecture_absence_category add column l_enabled bool default true not null;
+

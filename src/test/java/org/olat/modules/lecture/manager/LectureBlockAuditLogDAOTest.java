@@ -154,7 +154,7 @@ public class LectureBlockAuditLogDAOTest extends OlatTestCase {
 	public void xmlAuditLog_absenceNotice() {
 		String title = UUID.randomUUID().toString();
 		String description = "Long absence";
-		AbsenceCategory absenceCategory = absenceCategoryDao.createAbsenceCategory(title, description);
+		AbsenceCategory absenceCategory = absenceCategoryDao.createAbsenceCategory(title, description, true);
 		dbInstance.commitAndCloseSession();
 		
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");

@@ -98,6 +98,7 @@ public class AbsenceCategoryAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CategoryCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CategoryCols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CategoryCols.description));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CategoryCols.enabled));
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
 				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
 		editColumn.setExportable(false);
@@ -114,7 +115,7 @@ public class AbsenceCategoryAdminController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<AbsenceCategory> categories = lectureService.getAllAbsencesCategories();
+		List<AbsenceCategory> categories = lectureService.getAbsencesCategories(null);
 		List<AbsenceCategoryRow> rows = new ArrayList<>(categories.size());
 		for(AbsenceCategory category:categories) {
 			String linkName = "tools-" + counter++;
@@ -232,7 +233,7 @@ public class AbsenceCategoryAdminController extends FormBasicController {
 	
 	private void doCopy(AbsenceCategory category) {
 		String copiedTitle = translate("absence.category.copy", new String[] { category.getTitle() });
-		lectureService.createAbsenceCategory(copiedTitle, category.getDescription());
+		lectureService.createAbsenceCategory(copiedTitle, category.getDescription(), true);
 		loadModel();
 		showInfo("absence.category.copied");
 	}

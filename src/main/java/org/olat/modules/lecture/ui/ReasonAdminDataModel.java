@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 public class ReasonAdminDataModel extends DefaultFlexiTableDataModel<ReasonRow>
 implements SortableFlexiTableDataModel<ReasonRow> {
 	
+	private static final ReasonCols[] COLS = ReasonCols.values();
 	private final Locale locale;
 	
 	public ReasonAdminDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
@@ -59,10 +60,11 @@ implements SortableFlexiTableDataModel<ReasonRow> {
 
 	@Override
 	public Object getValueAt(ReasonRow row, int col) {
-		switch(ReasonCols.values()[col]) {
+		switch(COLS[col]) {
 			case id: return row.getReason().getKey();
 			case title: return row.getReason().getTitle();
 			case description: return row.getReason().getDescription();
+			case enabled: return Boolean.valueOf(row.getReason().isEnabled());
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
@@ -77,6 +79,7 @@ implements SortableFlexiTableDataModel<ReasonRow> {
 		id("reason.id"),
 		title("reason.title"),
 		description("reason.description"),
+		enabled("table.header.enabled"),
 		tools("table.header.actions");
 		
 		private final String i18nKey;

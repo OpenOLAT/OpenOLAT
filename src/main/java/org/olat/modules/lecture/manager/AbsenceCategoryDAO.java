@@ -22,6 +22,8 @@ package org.olat.modules.lecture.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.model.AbsenceCategoryImpl;
@@ -41,10 +43,11 @@ public class AbsenceCategoryDAO {
 	private DB dbInstance;
 	
 	
-	public AbsenceCategory createAbsenceCategory(String title, String description) {
+	public AbsenceCategory createAbsenceCategory(String title, String description, boolean enabled) {
 		AbsenceCategoryImpl category = new AbsenceCategoryImpl();
 		category.setCreationDate(new Date());
 		category.setLastModified(category.getCreationDate());
+		category.setEnabled(enabled);
 		category.setTitle(title);
 		category.setDescription(description);
 		dbInstance.getCurrentEntityManager().persist(category);
@@ -56,10 +59,18 @@ public class AbsenceCategoryDAO {
 		return dbInstance.getCurrentEntityManager().merge(category);
 	}
 	
-	public List<AbsenceCategory> getAllAbsencesCategories() {
-		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadAllAbsencesCategories", AbsenceCategory.class)
-				.getResultList();
+	public List<AbsenceCategory> getAbsencesCategories(Boolean enabled) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select cat from absencecategory as cat");
+		if(enabled != null) {
+			sb.append(" where cat.enabled=:enabled");
+		}
+		TypedQuery<AbsenceCategory> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AbsenceCategory.class);
+		if(enabled != null) {
+			query.setParameter("enabled", enabled);
+		}
+		return query.getResultList();
 	}
 	
 	public AbsenceCategory getAbsenceCategory(Long key) {

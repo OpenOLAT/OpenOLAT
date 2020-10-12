@@ -2582,6 +2582,7 @@ create table o_lecture_reason (
   id bigserial not null,
   creationdate timestamp not null,
   lastmodified timestamp not null,
+  l_enabled bool default true not null,
   l_title varchar(255),
   l_descr varchar(2000),
   primary key (id)
@@ -2591,6 +2592,7 @@ create table o_lecture_absence_category (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   l_enabled bool default true not null,
    l_title varchar(255),
    l_descr text,
    primary key (id)

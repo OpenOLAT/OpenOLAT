@@ -281,7 +281,7 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-3b");
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-3c");
 		AbsenceCategory absenceCategory = absenceCategoryDao
-				.createAbsenceCategory(UUID.randomUUID().toString(), "Test category");
+				.createAbsenceCategory(UUID.randomUUID().toString(), "Test category", true);
 		
 		Date start = CalendarUtils.startOfDay(new Date());
 		Date end = CalendarUtils.endOfDay(new Date());

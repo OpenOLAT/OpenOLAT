@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -46,13 +48,14 @@ public class AbsenceCategoryDAOTest extends OlatTestCase {
 	public void createAbsenceCategory() {
 		String title = UUID.randomUUID().toString();
 		String description = "Long absence";
-		AbsenceCategory absenceCategory = absenceCategoryDao.createAbsenceCategory(title, description);
+		AbsenceCategory absenceCategory = absenceCategoryDao.createAbsenceCategory(title, description, true);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(absenceCategory);
 		Assert.assertNotNull(absenceCategory.getKey());
 		Assert.assertNotNull(absenceCategory.getCreationDate());
 		Assert.assertNotNull(absenceCategory.getLastModified());
+		Assert.assertTrue(absenceCategory.isEnabled());
 		Assert.assertEquals(title, absenceCategory.getTitle());
 		Assert.assertEquals(description, absenceCategory.getDescription());
 	}
@@ -61,11 +64,12 @@ public class AbsenceCategoryDAOTest extends OlatTestCase {
 	public void updateAbsenceCategory() {
 		String title = UUID.randomUUID().toString();
 		String description = "Long absence";
-		AbsenceCategory absenceCategory = absenceCategoryDao.createAbsenceCategory(title, description);
+		AbsenceCategory absenceCategory = absenceCategoryDao.createAbsenceCategory(title, description, true);
 		dbInstance.commitAndCloseSession();
 		
 		String updatedTitle = UUID.randomUUID().toString();
 		String updatedDescription = "A very long absence";
+		absenceCategory.setEnabled(false);
 		absenceCategory.setTitle(updatedTitle);
 		absenceCategory.setDescription(updatedDescription);
 		AbsenceCategory updatedAbsenceCategory = absenceCategoryDao.updateAbsenceCategory(absenceCategory);
@@ -76,6 +80,7 @@ public class AbsenceCategoryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(reloadedAbsenceCategory.getKey());
 		Assert.assertNotNull(reloadedAbsenceCategory.getCreationDate());
 		Assert.assertNotNull(reloadedAbsenceCategory.getLastModified());
+		Assert.assertFalse(reloadedAbsenceCategory.isEnabled());
 		Assert.assertEquals(updatedAbsenceCategory, reloadedAbsenceCategory);
 		Assert.assertEquals(absenceCategory, reloadedAbsenceCategory);
 		Assert.assertEquals(updatedTitle, reloadedAbsenceCategory.getTitle());
@@ -85,10 +90,10 @@ public class AbsenceCategoryDAOTest extends OlatTestCase {
 	@Test
 	public void getAllAbsencesCategories() {
 		AbsenceCategory absenceCategory = absenceCategoryDao
-				.createAbsenceCategory(UUID.randomUUID().toString(), "Random category");
+				.createAbsenceCategory(UUID.randomUUID().toString(), "Random category", true);
 		dbInstance.commitAndCloseSession();
 		
-		List<AbsenceCategory> categories = absenceCategoryDao.getAllAbsencesCategories();
+		List<AbsenceCategory> categories = absenceCategoryDao.getAbsencesCategories(null);
 		
 		Assert.assertNotNull(categories);
 		Assert.assertFalse(categories.isEmpty());
@@ -96,9 +101,39 @@ public class AbsenceCategoryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getDisabledAbsencesCategories() {
+		AbsenceCategory disabledAbsenceCategory = absenceCategoryDao
+				.createAbsenceCategory(UUID.randomUUID().toString(), "Random disabled category", false);
+		AbsenceCategory enabledAbsenceCategory = absenceCategoryDao
+				.createAbsenceCategory(UUID.randomUUID().toString(), "Random enabled category", true);
+		dbInstance.commitAndCloseSession();
+		
+		List<AbsenceCategory> categories = absenceCategoryDao.getAbsencesCategories(Boolean.FALSE);
+		assertThat(categories)
+			.isNotNull()
+			.contains(disabledAbsenceCategory)
+			.doesNotContain(enabledAbsenceCategory);
+	}
+	
+	@Test
+	public void getEnabledAbsencesCategories() {
+		AbsenceCategory disabledAbsenceCategory = absenceCategoryDao
+				.createAbsenceCategory(UUID.randomUUID().toString(), "Random disabled category", false);
+		AbsenceCategory enabledAbsenceCategory = absenceCategoryDao
+				.createAbsenceCategory(UUID.randomUUID().toString(), "Random enabled category", true);
+		dbInstance.commitAndCloseSession();
+		
+		List<AbsenceCategory> categories = absenceCategoryDao.getAbsencesCategories(Boolean.TRUE);
+		assertThat(categories)
+			.isNotNull()
+			.contains(enabledAbsenceCategory )
+			.doesNotContain(disabledAbsenceCategory);
+	}
+	
+	@Test
 	public void isAbsenceCategoryInUse() {
 		AbsenceCategory absenceCategory = absenceCategoryDao
-				.createAbsenceCategory(UUID.randomUUID().toString(), "Random category");
+				.createAbsenceCategory(UUID.randomUUID().toString(), "Random category", true);
 		dbInstance.commitAndCloseSession();
 		
 		boolean inUse = absenceCategoryDao.isAbsenceCategoryInUse(absenceCategory);

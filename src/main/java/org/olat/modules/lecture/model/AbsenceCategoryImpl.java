@@ -59,7 +59,9 @@ public class AbsenceCategoryImpl implements AbsenceCategory, Persistable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
-
+	
+	@Column(name="l_enabled", nullable=false, insertable=true, updatable=true)
+	private boolean enabled;
 	@Column(name="l_title", nullable=true, insertable=true, updatable=true)
 	private String title;
 	@Column(name="l_descr", nullable=true, insertable=true, updatable=true)
@@ -91,6 +93,16 @@ public class AbsenceCategoryImpl implements AbsenceCategory, Persistable {
 	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 
 	@Override

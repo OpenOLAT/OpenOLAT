@@ -57,6 +57,8 @@ public class ReasonImpl implements Persistable, Reason {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 
+	@Column(name="l_enabled", nullable=false, insertable=true, updatable=true)
+	private boolean enabled;
 	@Column(name="l_title", nullable=true, insertable=true, updatable=true)
 	private String title;
 	@Column(name="l_descr", nullable=true, insertable=true, updatable=true)
@@ -84,6 +86,16 @@ public class ReasonImpl implements Persistable, Reason {
 	@Override
 	public void setLastModified(Date date) {
 		lastModified = date;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 
 	@Override

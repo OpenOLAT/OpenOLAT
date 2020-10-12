@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Date;
 import java.util.List;
 
@@ -51,7 +53,7 @@ public class ReasonDAOTest extends OlatTestCase {
 	public void createReason() {
 		String title = "1. reason";
 		String description = "Because";
-		Reason reason = reasonDao.createReason(title, description);
+		Reason reason = reasonDao.createReason(title, description, true);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(reason);
@@ -64,7 +66,7 @@ public class ReasonDAOTest extends OlatTestCase {
 	public void getReasons() {
 		String title = "2. reason";
 		String description = "Find a list";
-		Reason reason = reasonDao.createReason(title, description);
+		Reason reason = reasonDao.createReason(title, description, true);
 		dbInstance.commitAndCloseSession();
 		
 		List<Reason> reasons = reasonDao.getReasons();
@@ -74,11 +76,23 @@ public class ReasonDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getDisabledReasons() {
+		Reason enabledReason = reasonDao.createReason("Enabled reason 1.", "Very good reason", true);
+		Reason disabledReason = reasonDao.createReason("Disabled reason 2.0", "To remove", false);
+		dbInstance.commitAndCloseSession();
+		
+		List<Reason> reasons = reasonDao.getReasons();
+		assertThat(reasons)
+			.isNotNull()
+			.contains(enabledReason, disabledReason);
+	}
+	
+	@Test
 	public void isReasonInUse() {
 		// create a reason
 		String title = "3. reason";
 		String description = "Use it";
-		Reason reason = reasonDao.createReason(title, description);
+		Reason reason = reasonDao.createReason(title, description, true);
 		dbInstance.commitAndCloseSession();
 		
 		// add to a lecture block
@@ -101,7 +115,7 @@ public class ReasonDAOTest extends OlatTestCase {
 		// create a reason
 		String title = "4. reason";
 		String description = "Nobody use me";
-		Reason reason = reasonDao.createReason(title, description);
+		Reason reason = reasonDao.createReason(title, description, true);
 		dbInstance.commitAndCloseSession();
 
 		// check
@@ -114,7 +128,7 @@ public class ReasonDAOTest extends OlatTestCase {
 		//create a reason
 		String title = "Forgotten reason";
 		String description = "Find a list";
-		Reason reason = reasonDao.createReason(title, description);
+		Reason reason = reasonDao.createReason(title, description, true);
 		dbInstance.commitAndCloseSession();
 		//check it exists
 		List<Reason> reasons = reasonDao.getReasons();

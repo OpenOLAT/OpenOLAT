@@ -21,9 +21,11 @@ package org.olat.modules.lecture.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -42,6 +44,7 @@ public class EditReasonController extends FormBasicController {
 
 	private TextElement titleEl;
 	private TextElement descriptionEl;
+	private SingleSelection enableEl;
 	
 	private Reason reason;
 	
@@ -66,6 +69,17 @@ public class EditReasonController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "reason.title", 128, title, formLayout);
 		titleEl.setMandatory(true);
 		
+		KeyValues activeKeyValues = new KeyValues();
+		activeKeyValues.add(KeyValues.entry("true", translate("reason.enabled")));
+		activeKeyValues.add(KeyValues.entry("false", translate("reason.disabled")));
+		enableEl = uifactory.addRadiosHorizontal("reason.activated", "reason.activated", formLayout,
+				activeKeyValues.keys(), activeKeyValues.values());
+		if(reason != null) {
+			enableEl.select(Boolean.toString(reason.isEnabled()), true);
+		} else {
+			enableEl.select("true", true);
+		}
+		
 		String description = reason == null ? "" : reason.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("reason.description", 4, 72, description, formLayout);
 		descriptionEl.setMandatory(true);
@@ -83,7 +97,13 @@ public class EditReasonController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		enableEl.clearError();
+		if(!enableEl.isEnabled()) {
+			enableEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
@@ -97,14 +117,16 @@ public class EditReasonController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		boolean enabled = "true".equals(enableEl.getSelectedKey());
 		if(reason == null) {
-			reason = lectureService.createReason(titleEl.getValue(), descriptionEl.getValue());
+			reason = lectureService.createReason(titleEl.getValue(), descriptionEl.getValue(), enabled);
 		} else {
+			reason.setEnabled(enabled);
 			reason.setTitle(titleEl.getValue());
 			reason.setDescription(descriptionEl.getValue());
 			reason = lectureService.updateReason(reason);

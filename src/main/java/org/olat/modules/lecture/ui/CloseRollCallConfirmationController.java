@@ -19,7 +19,6 @@
  */
 package org.olat.modules.lecture.ui;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -35,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -63,7 +63,8 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 	private TextElement blockCommentEl;
 	private SingleSelection effectiveLecturesEl;
 	private SingleSelection effectiveEndReasonEl;
-	private TextElement effectiveEndHourEl, effectiveEndMinuteEl;
+	private TextElement effectiveEndHourEl;
+	private TextElement effectiveEndMinuteEl;
 	
 	private LectureBlock lectureBlock;
 	private final RollCallSecurityCallback secCallback;
@@ -140,27 +141,27 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		effectiveEndMinuteEl.setValue(minuteStr);
 
 		List<Reason> allReasons = lectureService.getAllReasons();
-		if(allReasons.size() > 0) {
+		if(!allReasons.isEmpty()) {
 			if(allReasons.size() > 2) {
 				Collections.sort(allReasons, new ReasonComparator());
 			}
 			
 			int numOfReasons = allReasons.size();
-			List<String> reasonKeys = new ArrayList<>(numOfReasons + 1);
-			List<String> reasonValues = new ArrayList<>(numOfReasons + 1);
-			reasonKeys.add("-");
-			reasonValues.add("");
+			KeyValues reasonKeyValues = new KeyValues();
+			reasonKeyValues.add(KeyValues.entry("-", "-"));
 			for(int i=numOfReasons; i-->0; ) {
 				Reason reason = allReasons.get(i);
-				reasonKeys.add(reason.getKey().toString());
-				reasonValues.add(reason.getTitle());
+				if(reason.isEnabled() || reason.equals(lectureBlock.getReasonEffectiveEnd())) {
+					reasonKeyValues.add(KeyValues.entry(reason.getKey().toString(), reason.getTitle()));
+				}
 			}
 			effectiveEndReasonEl = uifactory.addDropdownSingleselect("effective.reason", "lecture.block.effective.reason", formLayout,
-					reasonKeys.toArray(new String[reasonKeys.size()]), reasonValues.toArray(new String[reasonValues.size()]), null);
+					reasonKeyValues.keys(), reasonKeyValues.values(), null);
 			effectiveEndReasonEl.setEnabled(secCallback.canEdit());
+			effectiveEndReasonEl.setVisible(reasonKeyValues.size() > 1);
 			if(lectureBlock.getReasonEffectiveEnd() != null) {
 				String selectedReasonKey = lectureBlock.getReasonEffectiveEnd().getKey().toString();
-				for(String reasonKey:reasonKeys) {
+				for(String reasonKey:reasonKeyValues.keys()) {
 					if(reasonKey.equals(selectedReasonKey)) {
 						effectiveEndReasonEl.select(reasonKey, true);
 						break;
@@ -210,7 +211,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		effectiveEndHourEl.clearError();
 		//need to be the first validation
@@ -225,7 +226,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		
 		if(effectiveEndReasonEl != null) {
 			effectiveEndReasonEl.clearError();
-			if(!effectiveEndReasonEl.isOneSelected() || effectiveEndReasonEl.isSelected(0)) {
+			if(effectiveEndReasonEl.isVisible() && !effectiveEndReasonEl.isOneSelected() || effectiveEndReasonEl.isSelected(0)) {
 				effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
 				allOk &= false;
 			}
@@ -239,7 +240,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 			}
 		}
 	
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateInt(TextElement element, int max) {
@@ -312,10 +313,11 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 			lectureBlock.setReasonEffectiveEnd(null);
 		} else {
 			lectureBlock.setEffectiveEndDate(effectiveEndDate);
-			if(effectiveEndReasonEl == null || "-".equals(effectiveEndReasonEl.getSelectedKey())) {
+			if(effectiveEndReasonEl == null || !effectiveEndReasonEl.isVisible()
+					|| "-".equals(effectiveEndReasonEl.getSelectedKey())) {
 				lectureBlock.setReasonEffectiveEnd(null);
 			} else {
-				Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());
+				Long reasonKey = Long.valueOf(effectiveEndReasonEl.getSelectedKey());
 				Reason selectedReason = lectureService.getReason(reasonKey);
 				lectureBlock.setReasonEffectiveEnd(selectedReason);
 			}

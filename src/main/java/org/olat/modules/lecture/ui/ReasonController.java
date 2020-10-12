@@ -57,7 +57,7 @@ public class ReasonController extends FormBasicController {
 		super(ureq, wControl, "reason");
 		this.row = row;
 		this.editable = editable;
-		absenceCategories = lectureService.getAllAbsencesCategories();
+		absenceCategories = lectureService.getAbsencesCategories(null);
 		initForm(ureq);
 	}
 	
@@ -68,16 +68,17 @@ public class ReasonController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
+		AbsenceCategory currentCategory = row.getRollCall() == null ? null : row.getRollCall().getAbsenceCategory();
 		KeyValues absenceKeyValues = new KeyValues();
 		for(AbsenceCategory absenceCategory: absenceCategories) {
-			absenceKeyValues.add(KeyValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
+			if(absenceCategory.isEnabled() || absenceCategory.equals(currentCategory)) {
+				absenceKeyValues.add(KeyValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
+			}
 		}
-
 		absenceCategoriesEl = uifactory.addDropdownSingleselect("absence.category", null, formLayout, absenceKeyValues.keys(), absenceKeyValues.values());
 		absenceCategoriesEl.setDomReplacementWrapperRequired(false);
-		absenceCategoriesEl.setVisible(!absenceCategories.isEmpty());
+		absenceCategoriesEl.setVisible(!absenceKeyValues.isEmpty());
 		absenceCategoriesEl.setMandatory(true);
-		AbsenceCategory currentCategory = row.getRollCall() == null ? null : row.getRollCall().getAbsenceCategory();
 		if(currentCategory != null) {
 			for(AbsenceCategory absenceCategory: absenceCategories) {
 				if(absenceCategory.equals(currentCategory)) {

@@ -111,7 +111,7 @@ public class EditReasonController extends FormBasicController {
 		this.noticeWrapper = noticeWrapper;
 		this.noticedIdentity = noticeWrapper.getIdentity();
 		documentContainer = lectureService.getAbsenceNoticeAttachmentsContainer(noticeWrapper.getAbsenceNotice());
-		absenceCategories = lectureService.getAllAbsencesCategories();
+		absenceCategories = lectureService.getAbsencesCategories(null);
 		initForm(ureq);
 		updateAttachments(ureq);
 	}
@@ -143,17 +143,19 @@ public class EditReasonController extends FormBasicController {
 		if(noticeWrapper.getAuthorized() != null && noticeWrapper.getAuthorized().booleanValue()) {
 			authorizedEl.select(authorizedKeys[0], true);
 		}
-		
+
+		AbsenceCategory currentCategory = noticeWrapper.getAbsenceCategory();
 		KeyValues absenceKeyValues = new KeyValues();
 		for(AbsenceCategory absenceCategory: absenceCategories) {
-			absenceKeyValues.add(KeyValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
+			if(absenceCategory.isEnabled() || absenceCategory.equals(currentCategory)) {
+				absenceKeyValues.add(KeyValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
+			}
 		}
-
-		absenceCategoriesEl = uifactory.addDropdownSingleselect("absence.category", "noticed.category", formLayout, absenceKeyValues.keys(), absenceKeyValues.values());
+		absenceCategoriesEl = uifactory.addDropdownSingleselect("absence.category", "noticed.category", formLayout,
+				absenceKeyValues.keys(), absenceKeyValues.values());
 		absenceCategoriesEl.setDomReplacementWrapperRequired(false);
-		absenceCategoriesEl.setVisible(!absenceCategories.isEmpty());
+		absenceCategoriesEl.setVisible(!absenceKeyValues.isEmpty());
 		absenceCategoriesEl.setMandatory(true);
-		AbsenceCategory currentCategory = noticeWrapper.getAbsenceCategory();
 		if(currentCategory != null) {
 			for(AbsenceCategory absenceCategory: absenceCategories) {
 				if(absenceCategory.equals(currentCategory)) {

@@ -97,6 +97,7 @@ public class ReasonAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReasonCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReasonCols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReasonCols.description));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReasonCols.enabled));
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
 				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
 		editColumn.setExportable(false);
@@ -231,7 +232,7 @@ public class ReasonAdminController extends FormBasicController {
 	
 	private void doCopy(Reason reason) {
 		String copiedTitle = translate("reason.copy", new String[] { reason.getTitle() });
-		lectureService.createReason(copiedTitle, reason.getDescription());
+		lectureService.createReason(copiedTitle, reason.getDescription(), true);
 		loadModel();
 		showInfo("reason.copied");
 	}

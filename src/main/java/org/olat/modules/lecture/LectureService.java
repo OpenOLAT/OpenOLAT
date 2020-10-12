@@ -230,8 +230,9 @@ public interface LectureService {
 	public int delete(RepositoryEntry entry);
 	
 	/**
-	 * Returns all configured reasons.
+	 * Returns active/inactive or all configured reasons.
 	 * 
+	 * @param enabled true for enabled, false disabled and null for all
 	 * @return A list of reasons
 	 */
 	public List<Reason> getAllReasons();
@@ -250,7 +251,7 @@ public interface LectureService {
 	 * @param description
 	 * @return
 	 */
-	public Reason createReason(String title, String description);
+	public Reason createReason(String title, String description, boolean enabled);
 	
 	/**
 	 * Updates the reason and return the freshest.
@@ -264,8 +265,13 @@ public interface LectureService {
 	
 	public boolean deleteReason(Reason reason);
 	
-	
-	public List<AbsenceCategory> getAllAbsencesCategories();
+	/**
+	 * Returns active/inactive or all configured absences categories.
+	 * 
+	 * @param enabled true for enabled, false disabled and null for all
+	 * @return A list of absences categories
+	 */
+	public List<AbsenceCategory> getAbsencesCategories(Boolean enabled);
 	
 	/**
 	 * Load a category by its primary key.
@@ -282,7 +288,7 @@ public interface LectureService {
 	 * @param description The description
 	 * @return
 	 */
-	public AbsenceCategory createAbsenceCategory(String title, String description);
+	public AbsenceCategory createAbsenceCategory(String title, String description, boolean enabled);
 	
 	/**
 	 * Updates the category and return the freshest.

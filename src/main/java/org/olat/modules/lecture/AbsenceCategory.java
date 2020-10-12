@@ -32,6 +32,10 @@ public interface AbsenceCategory extends ModifiedInfo, CreateInfo {
 	
 	public Long getKey();
 	
+	public boolean isEnabled();
+	
+	public void setEnabled(boolean enabled);
+	
 	public String getTitle();
 	
 	public void setTitle(String title);

@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 public class AbsenceCategoryAdminDataModel extends DefaultFlexiTableDataModel<AbsenceCategoryRow>
 implements SortableFlexiTableDataModel<AbsenceCategoryRow> {
 	
+	private static CategoryCols[] COLS = CategoryCols.values();
 	private final Locale locale;
 	
 	public AbsenceCategoryAdminDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
@@ -59,10 +60,11 @@ implements SortableFlexiTableDataModel<AbsenceCategoryRow> {
 
 	@Override
 	public Object getValueAt(AbsenceCategoryRow row, int col) {
-		switch(CategoryCols.values()[col]) {
+		switch(COLS[col]) {
 			case id: return row.getCategory().getKey();
 			case title: return row.getCategory().getTitle();
 			case description: return row.getCategory().getDescription();
+			case enabled: return Boolean.valueOf(row.getCategory().isEnabled());
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
@@ -77,6 +79,7 @@ implements SortableFlexiTableDataModel<AbsenceCategoryRow> {
 		id("reason.id"),
 		title("reason.title"),
 		description("reason.description"),
+		enabled("table.header.enabled"),
 		tools("table.header.actions");
 		
 		private final String i18nKey;

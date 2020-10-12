@@ -531,8 +531,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public Reason createReason(String title, String description) {
-		return reasonDao.createReason(title, description);
+	public Reason createReason(String title, String description, boolean enabled) {
+		return reasonDao.createReason(title, description, enabled);
 	}
 
 	@Override
@@ -541,8 +541,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public List<AbsenceCategory> getAllAbsencesCategories() {
-		return absenceCategoryDao.getAllAbsencesCategories();
+	public List<AbsenceCategory> getAbsencesCategories(Boolean enabled) {
+		return absenceCategoryDao.getAbsencesCategories(enabled);
 	}
 
 	@Override
@@ -551,8 +551,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public AbsenceCategory createAbsenceCategory(String title, String description) {
-		return absenceCategoryDao.createAbsenceCategory(title, description);
+	public AbsenceCategory createAbsenceCategory(String title, String description, boolean enabled) {
+		return absenceCategoryDao.createAbsenceCategory(title, description, enabled);
 	}
 
 	@Override

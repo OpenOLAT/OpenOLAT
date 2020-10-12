@@ -2640,6 +2640,7 @@ create table o_lecture_reason (
   id number(20) generated always as identity,
   creationdate date not null,
   lastmodified date not null,
+  l_enabled number default 1 not null,
   l_title varchar2(255 char),
   l_descr varchar2(2000 char),
   primary key (id)
@@ -2649,6 +2650,7 @@ create table o_lecture_absence_category (
    id number(20) generated always as identity,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   l_enabled number default 1 not null,
    l_title varchar(255),
    l_descr CLOB,
    primary key (id)

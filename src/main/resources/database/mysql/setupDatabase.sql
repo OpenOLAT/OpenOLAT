@@ -2560,6 +2560,7 @@ create table o_lecture_reason (
   id bigint not null auto_increment,
   creationdate datetime not null,
   lastmodified datetime not null,
+  l_enabled bool default true not null,
   l_title varchar(255),
   l_descr varchar(2000),
   primary key (id)
@@ -2569,6 +2570,7 @@ create table o_lecture_absence_category (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
+   l_enabled bool default true not null,
    l_title varchar(255),
    l_descr mediumtext,
    primary key (id)

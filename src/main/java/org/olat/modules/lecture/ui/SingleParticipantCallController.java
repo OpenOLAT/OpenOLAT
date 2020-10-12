@@ -83,7 +83,7 @@ public class SingleParticipantCallController extends FormBasicController {
 		super(ureq, wControl, "call_wizard");
 		this.calledIdentity = calledIdentity;
 		this.lectureBlock = lectureBlock;
-		absenceCategories = lectureService.getAllAbsencesCategories();
+		absenceCategories = lectureService.getAbsencesCategories(null);
 
 		autorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
@@ -127,18 +127,19 @@ public class SingleParticipantCallController extends FormBasicController {
 			if(rollCall.getAbsenceAuthorized() != null && rollCall.getAbsenceAuthorized().booleanValue()) {
 				authorizedAbsencedEl.select(onKeys[0], true);
 			}
-			
+
+			AbsenceCategory currentCategory = rollCall.getAbsenceCategory();
 			KeyValues absenceKeyValues = new KeyValues();
 			absenceKeyValues.add(KeyValues.entry("", ""));
 			for(AbsenceCategory absenceCategory: absenceCategories) {
-				absenceKeyValues.add(KeyValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
+				if(absenceCategory.isEnabled() || absenceCategory.equals(currentCategory)) {
+					absenceKeyValues.add(KeyValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
+				}
 			}
-
 			absenceCategoriesEl = uifactory.addDropdownSingleselect("absence.category", "absence.category", formLayout, absenceKeyValues.keys(), absenceKeyValues.values());
 			absenceCategoriesEl.setDomReplacementWrapperRequired(false);
-			absenceCategoriesEl.setVisible(!absenceCategories.isEmpty());
+			absenceCategoriesEl.setVisible(absenceKeyValues.size() > 1);
 			absenceCategoriesEl.setMandatory(true);
-			AbsenceCategory currentCategory = rollCall.getAbsenceCategory();
 			if(currentCategory != null) {
 				for(AbsenceCategory absenceCategory: absenceCategories) {
 					if(absenceCategory.equals(currentCategory)) {
