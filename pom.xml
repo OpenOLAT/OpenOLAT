@@ -69,10 +69,10 @@
 		<apache.poi>4.1.2</apache.poi>
 		<apache.log4j>2.13.3</apache.log4j>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
-		<io.undertow>2.2.0.Final</io.undertow>
+		<io.undertow>2.2.2.Final</io.undertow>
 		<jackson.version>2.11.3</jackson.version>
 		<org.mysql.version>8.0.21</org.mysql.version>
-		<org.postgresql.version>42.2.16</org.postgresql.version>
+		<org.postgresql.version>42.2.17</org.postgresql.version>
 		<org.infinispan.version>11.0.4.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
@@ -425,7 +425,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.35.0</version>
+				    <version>3.35.1</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1990,7 +1990,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.12</version>
+			<version>4.5.13</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2001,7 +2001,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>4.5.12</version>
+			<version>4.5.13</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
@@ -2269,7 +2269,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.13</version>
+			<version>4.13.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
