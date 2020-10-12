@@ -744,6 +744,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		// This doesn't work if the login attribute is not the same as the user identifier.
 		String ldapUserIDAttribute = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
 		Authentication authentication = authenticationDao.getAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		if(authentication == null) {
+			return; // not an LDAP user, nothing to do
+		}
 		String filter = ldapDao.buildSearchUserFilter(ldapUserIDAttribute, authentication.getAuthusername());
 
 		boolean withCoacheOfGroups = StringHelper.containsNonWhitespace(syncConfiguration.getCoachedGroupAttribute());
