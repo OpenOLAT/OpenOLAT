@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.UserSession;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.login.SupportsAfterLoginInterceptor;
@@ -52,7 +53,11 @@ public class LDAPGroupsLoginInterceptor extends FormBasicController implements S
 	public boolean isUserInteractionRequired(UserRequest ureq) {
 		if(ldapModule.isLDAPEnabled()) {
 			try {
-				ldapManager.syncUserGroups(getIdentity());
+				UserSession usess = ureq.getUserSession();
+				if(usess.isAuthenticated()
+						&& LDAPAuthenticationController.PROVIDER_LDAP.equals(usess.getSessionInfo().getAuthProvider())) {
+					ldapManager.syncUserGroups(getIdentity());
+				}
 			} catch (Exception e) {
 				logError("Cannot sync LDAP groups", e);
 			}
