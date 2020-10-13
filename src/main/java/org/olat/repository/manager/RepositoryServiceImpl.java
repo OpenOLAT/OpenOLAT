@@ -308,6 +308,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		
 		//copy the license
 		licenseService.copy(sourceResource, copyResource);
+		dbInstance.commit();
 
 		//copy the image
 		RepositoryManager.getInstance().copyImage(sourceEntry, copyEntry);
@@ -321,7 +322,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 				LoggingResourceable.wrap(copyEntry, OlatResourceableType.genRepoEntry));
-
 
 		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, copyEntry.getKey());
 		return copyEntry;

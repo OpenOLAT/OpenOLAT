@@ -27,6 +27,7 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -83,6 +84,8 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private Object userObject;
 	private LicenseType licenseType;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -270,6 +273,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		}
 		
 		afterEntryCreated();
+		dbInstance.commit();
 
 		repositoryManager.triggerIndexer(addedEntry);
 

@@ -138,8 +138,8 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 				while(isClusterInfoEventThreadRunning) {
 					try {
 						ClusterInfoEvent cie = new ClusterInfoEvent(clusterConfig, createBusListenerInfo());
-						fireEventToListenersOf(cie, CLUSTER_CHANNEL);
-						if (log.isDebugEnabled()) log.debug("sent via jms clusterInfoEvent with timestamp:"+cie.getCreated()+" from node:"+nodeId);
+						fireEventToListenersOf(cie, CLUSTER_CHANNEL, false);
+						if (log.isDebugEnabled()) log.debug("sent via jms clusterInfoEvent with timestamp:{} from node: {}", cie.getCreated(),nodeId);
 					} catch (Exception e) {
 						// log error, but do not throw exception, but retry.
 						try {
@@ -218,6 +218,10 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	 */
 	@Override
 	public void fireEventToListenersOf(final MultiUserEvent event, final OLATResourceable ores) {
+		fireEventToListenersOf(event, ores, true);
+	}
+	
+	private void fireEventToListenersOf(final MultiUserEvent event, final OLATResourceable ores, boolean strict) {
 		// send the event wrapped over jms to all nodes 
 		// (the receiver will detect whether messages are from itself and thus can be ignored, since they were already sent directly.
 		final long msgId = ++latestSentMsgId;
@@ -229,7 +233,11 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 				try {
 					ObjectMessage message = sessionProducer.createObjectMessage();
 					message.setObject(new JMSWrapper(nodeId, msgId, ores, event));
-					producer.send(message, DeliveryMode.NON_PERSISTENT, 3, 5000);
+					if(strict) {
+						producer.send(message);
+					} else {
+						producer.send(message, DeliveryMode.NON_PERSISTENT, 3, 5000);
+					}
 				} catch (Exception e) {
 					log.error("Cannot send JMS message", e);
 					// cluster:::: what shall we do here: the JMS bus is broken! and we thus cannot know if other nodes are alive.
