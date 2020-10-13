@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -70,8 +71,8 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	private ClusterConfig clusterConfig;
 
 	// settings
-	private long sendInterval = 1000; // 1000 miliseconds between each "ping/alive/info" message, can be set using spring
-	private long jmsMsgDelayLimit = 5000;  // max duration of ClusterInfoEvent send-receive time in ms
+	private long sendInterval = 5000; // 1000 miliseconds between each "ping/alive/info" message, can be set using spring
+	private long jmsMsgDelayLimit = 10000;  // max duration of ClusterInfoEvent send-receive time in ms
 	
 	// counters
 	private long latestSentMsgId = -1;
@@ -228,7 +229,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 				try {
 					ObjectMessage message = sessionProducer.createObjectMessage();
 					message.setObject(new JMSWrapper(nodeId, msgId, ores, event));
-					producer.send(message);
+					producer.send(message, DeliveryMode.NON_PERSISTENT, 3, 5000);
 				} catch (Exception e) {
 					log.error("Cannot send JMS message", e);
 					// cluster:::: what shall we do here: the JMS bus is broken! and we thus cannot know if other nodes are alive.

@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -37,6 +38,7 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -54,7 +56,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.ConfigOnOff;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.search.SearchModule;
@@ -166,7 +167,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 	public void initQueue() throws JMSException {
 		connection = (QueueConnection)connectionFactory.createConnection();
 		connection.start();
-		log.info("springInit: JMS connection started with connectionFactory=" + connectionFactory);
+		log.info("springInit: JMS connection started with connectionFactory={}", connectionFactory);
 
 		if(indexingNode) {
 			//listen to the queue only if indexing node
@@ -262,34 +263,24 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 
 	@Override
 	public void indexDocument(String type, Long key) {
-		QueueSender sender;
-		QueueSession session;
-		try {
-			JmsIndexWork workUnit = new JmsIndexWork(JmsIndexWork.INDEX, type, key);
-			session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE );
-			ObjectMessage message = session.createObjectMessage();
-			message.setObject(workUnit);
-
-			sender = session.createSender(getJmsQueue());
-			sender.send( message );
-			session.close();
-		} catch (JMSException e) {
-			log.error("", e );
-		}
+		sendMessage(new JmsIndexWork(JmsIndexWork.INDEX, type, key));
 	}
 
 	@Override
 	public void indexDocument(String type, List<Long> keyList) {
+		sendMessage(new JmsIndexWork(JmsIndexWork.INDEX, type, keyList));
+	}
+	
+	private void sendMessage(JmsIndexWork workUnit) {
 		QueueSender sender;
 		QueueSession session;
 		try {
-			JmsIndexWork workUnit = new JmsIndexWork(JmsIndexWork.INDEX, type, keyList);
-			session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE );
+			session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 			ObjectMessage message = session.createObjectMessage();
 			message.setObject(workUnit);
-
+			
 			sender = session.createSender(getJmsQueue());
-			sender.send( message );
+			sender.send(message, DeliveryMode.NON_PERSISTENT, 3, 120000);
 			session.close();
 		} catch (JMSException e) {
 			log.error("", e );
