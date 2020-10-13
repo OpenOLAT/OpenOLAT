@@ -139,7 +139,6 @@ import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
-import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
@@ -624,8 +623,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private boolean isLectureEnabled() {
-		RepositoryEntryLectureConfiguration lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(getRepositoryEntry());
-		return lectureConfig != null && lectureConfig.isLectureEnabled();
+		return lectureService.isRepositoryEntryLectureEnabled(getRepositoryEntry());
 	}
 	
 	private void initToolsMenuStatistics(Dropdown tools, ICourse course, final UserCourseEnvironmentImpl uce) {

@@ -53,9 +53,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
-import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
-import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.ui.ParticipantLectureBlocksController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -91,9 +89,6 @@ public class UserDetailsController extends BasicController implements Activateab
 	
 	private final Identity assessedIdentity;
 	
-
-	@Autowired
-	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
@@ -134,12 +129,9 @@ public class UserDetailsController extends BasicController implements Activateab
 				assessmentLink = LinkFactory.createLink("details.assessment", mainVC, this);
 				segmentView.addSegment(assessmentLink, selectSegment == Segment.assessment);
 				
-				if(lectureModule.isEnabled()) {
-					RepositoryEntryLectureConfiguration lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
-					if(lectureConfig != null && lectureConfig.isLectureEnabled()) {
-						lecturesLink = LinkFactory.createLink("details.lectures", mainVC, this);
-						segmentView.addSegment(lecturesLink, selectSegment == Segment.lectures);
-					}
+				if(lectureService.isRepositoryEntryLectureEnabled(entry)) {
+					lecturesLink = LinkFactory.createLink("details.lectures", mainVC, this);
+					segmentView.addSegment(lecturesLink, selectSegment == Segment.lectures);
 				}
 				
 				if(selectSegment == Segment.assessment) {
