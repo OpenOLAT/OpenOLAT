@@ -62,7 +62,7 @@ public interface LectureService {
 	
 	
 	/**
-	 * Get (or create) the configuration object for the specified repossitory
+	 * Get (or create) the configuration object for the specified repository
 	 * entry.
 	 * 
 	 * @param entry
@@ -72,9 +72,8 @@ public interface LectureService {
 	
 	/**
 	 * 
-	 * 
-	 * @param entry
-	 * @return
+	 * @param entry The course
+	 * @return true if the module is enabled and the course has the lectures enabled
 	 */
 	public boolean isRepositoryEntryLectureEnabled(RepositoryEntryRef entry);
 	
