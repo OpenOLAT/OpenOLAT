@@ -86,7 +86,7 @@ public class WebDAVAdminController extends FormBasicController {
 		enableDigestEl = uifactory.addCheckboxesHorizontal("webdavDigest", "webdav.digest", formLayout, onKeys, values);
 		enableDigestEl.select("xx", webDAVModule.isDigestAuthenticationEnabled());
 
-		String excludedUserAgents = webDAVModule.getUserAgentBlackList();
+		String excludedUserAgents = webDAVModule.getUserAgentExclusionList();
 		excludeClientsEl = uifactory.addCheckboxesHorizontal("webdavExclusion", "webdav.client.exclusion", formLayout, onKeys, values);
 		excludeClientsEl.select("xx", StringHelper.containsNonWhitespace(excludedUserAgents));
 		excludeClientsEl.addActionListener(FormEvent.ONCHANGE);
@@ -166,9 +166,9 @@ public class WebDAVAdminController extends FormBasicController {
 		webDAVModule.setPrependCourseReferenceToTitle(prependReferenceEl.isAtLeastSelected(1));
 		webDAVModule.setManagedFoldersEnabled(enableManagedFoldersEl.isAtLeastSelected(1));
 		if(excludeClientsEl.isAtLeastSelected(1)) {
-			webDAVModule.setUserAgentBlackList(excludeUserAgentsClientsEl.getValue());
+			webDAVModule.setUserAgentExclusionList(excludeUserAgentsClientsEl.getValue());
 		} else {
-			webDAVModule.setUserAgentBlackList(null);
+			webDAVModule.setUserAgentExclusionList(null);
 		}
 	}
 }

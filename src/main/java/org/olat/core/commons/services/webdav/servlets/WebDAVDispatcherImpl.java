@@ -289,7 +289,7 @@ public class WebDAVDispatcherImpl
 		if(!StringHelper.containsNonWhitespace(userAgent)) {
 			userAgent = "";
 		}
-		String[] blackList = webDAVModule.getUserAgentBlackListArray();
+		String[] blackList = webDAVModule.getUserAgentExclusionListArray();
 		for(String blackListedAgent:blackList) {
 			if((blackListedAgent.length() < 2 && userAgent.equalsIgnoreCase(blackListedAgent))
 					|| (blackListedAgent.length() >= 2 && userAgent.contains(blackListedAgent))) {
