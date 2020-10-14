@@ -138,6 +138,8 @@ public class UserImpl implements User {
 	private String skype;
 	@Column(name="u_xing", nullable=true, insertable=true, updatable=true)
 	private String xing;
+	@Column(name="u_linkedin", nullable=true, insertable=true, updatable=true)
+	private String linkedin;
 	@Column(name="u_icq", nullable=true, insertable=true, updatable=true)
 	private String icq;
 	
@@ -399,6 +401,7 @@ public class UserImpl implements User {
 			case "telOffice": return telOffice;
 			case "skype": return skype;
 			case "xing": return xing;
+			case "linkedin": return linkedin;
 			case "icq": return icq;
 			case "homepage": return homepage;
 			case "street": return street;
@@ -475,6 +478,7 @@ public class UserImpl implements User {
 			case "telOffice": telOffice = value; break;
 			case "skype": skype = value; break;
 			case "xing": xing = value; break;
+			case "linkedin": linkedin = value; break;
 			case "icq": icq = value; break;
 			case "homepage": homepage = value; break;
 			case "street": street = value; break;

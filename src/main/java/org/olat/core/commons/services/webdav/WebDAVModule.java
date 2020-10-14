@@ -50,6 +50,7 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String PREPEND_COURSE_REFERENCE_TO_TITLE = "webdav.prepend.course.reference.to.title";
 	private static final String CURRICULUM_ELEMENTS_FOLDERS_ENABLED = "webdav.curriculumelements.folders.enabled";
 	private static final String MANAGED_FOLDERS_ENABLED = "webdav.managed.folders.enabled";
+	private static final String USER_AGENT_EXCLUSION_LIST = "webdav.user.agent.exclusion.list";
 	
 	@Autowired
 	private List<WebDAVProvider> webdavProviders;
@@ -69,9 +70,9 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	@Value("${webdav.prepend.course.reference.to.title:false}")
 	private boolean prependCourseReferenceToTitle;
 	@Value("${webdav.basic.authentication.black.list}")
-	private String basicAuthenticationBlackList;
+	private String basicAuthenticationExclusionList;
 	@Value("${webdav.user.agent.black.list}")
-	private String userAgentBlackList;
+	private String userAgentExclusionList;
 	
 	@Value("${webdav.learners.bookmarks.enabled:true}")
 	private boolean enableLearnersBookmarksCourse;
@@ -130,6 +131,11 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 		String prependCourseReferenceToTitleObj = getStringPropertyValue(PREPEND_COURSE_REFERENCE_TO_TITLE, true);
 		if(StringHelper.containsNonWhitespace(prependCourseReferenceToTitleObj)) {
 			prependCourseReferenceToTitle = "true".equals(prependCourseReferenceToTitleObj);
+		}
+		
+		userAgentExclusionList = getStringPropertyValue(USER_AGENT_EXCLUSION_LIST, userAgentExclusionList);
+		if("oo_empty_oo".equals(userAgentExclusionList)) {
+			userAgentExclusionList = null;
 		}
 	}
 	
@@ -224,30 +230,35 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(PREPEND_COURSE_REFERENCE_TO_TITLE, enabled ? "true" : "false", true);
 	}
 
-	public String[] getBasicAuthenticationBlackList() {
-		if(StringHelper.containsNonWhitespace(basicAuthenticationBlackList)) {
-			return basicAuthenticationBlackList.split("[,]");
+	public String[] getBasicAuthenticationExclusionList() {
+		if(StringHelper.containsNonWhitespace(basicAuthenticationExclusionList)) {
+			return basicAuthenticationExclusionList.split("[,]");
 		}
 		return new String[0];
 	}
 
-	public void setBasicAuthenticationBlackList(String basicAuthenticationBlackList) {
-		this.basicAuthenticationBlackList = basicAuthenticationBlackList;
+	public void setBasicAuthenticationExclusionList(String userAgents) {
+		this.basicAuthenticationExclusionList = userAgents;
 	}
 
-	public String[] getUserAgentBlackListArray() {
-		if(StringHelper.containsNonWhitespace(userAgentBlackList)) {
-			return userAgentBlackList.split("[,]");
+	public String[] getUserAgentExclusionListArray() {
+		if(StringHelper.containsNonWhitespace(userAgentExclusionList)) {
+			return userAgentExclusionList.split("[,]");
 		}
 		return new String[0];
 	}
 
-	public String getUserAgentBlackList() {
-		return userAgentBlackList;
+	public String getUserAgentExclusionList() {
+		return userAgentExclusionList;
 	}
 
-	public void setUserAgentBlackList(String userAgentBlackList) {
-		this.userAgentBlackList = userAgentBlackList;
+	public void setUserAgentExclusionList(String userAgents) {
+		this.userAgentExclusionList = userAgents;
+		if(StringHelper.containsNonWhitespace(userAgents)) {
+			setStringProperty(USER_AGENT_EXCLUSION_LIST, userAgents, true);
+		} else {
+			setStringProperty(USER_AGENT_EXCLUSION_LIST, "oo_empty_oo", true);
+		}
 	}
 
 	/**

@@ -31,6 +31,7 @@ import org.olat.core.util.vfs.VFSItem;
 
 public class VFSContainerFilter implements VFSItemFilter {
 
+	@Override
 	public boolean accept(VFSItem vfsItem) {
 		return (vfsItem instanceof VFSContainer);
 	}

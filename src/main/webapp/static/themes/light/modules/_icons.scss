@@ -374,6 +374,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_width_collapse:before { content: $fa-var-compress; } 
 .o_icon_wizard:before { content: $fa-var-magic; }
 .o_icon_xing:before { content: $fa-var-xing; color: #cfdc00;}
+.o_icon_linkedin:before { content: $fa-var-linkedin-square; color: #0e76a8;}
 
 /* repository type icons */
 .o_BinderTemplate_icon:before { content: $fa-var-briefcase; }

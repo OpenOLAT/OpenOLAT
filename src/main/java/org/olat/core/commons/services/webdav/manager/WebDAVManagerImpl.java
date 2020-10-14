@@ -278,9 +278,9 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	private boolean proposeBasicAuthentication(HttpServletRequest request) {
 		String userAgent = ServletUtil.getUserAgent(request);
 		if(StringHelper.containsNonWhitespace(userAgent)) {
-			String[] blackList = webdavModule.getBasicAuthenticationBlackList();
-			for(String blackListedAgent:blackList) {
-				if(userAgent.contains(blackListedAgent) && webdavModule.isDigestAuthenticationEnabled()) {
+			String[] exclusionList = webdavModule.getBasicAuthenticationExclusionList();
+			for(String exclusion:exclusionList) {
+				if(userAgent.contains(exclusion) && webdavModule.isDigestAuthenticationEnabled()) {
 					return false;
 				}
 			}

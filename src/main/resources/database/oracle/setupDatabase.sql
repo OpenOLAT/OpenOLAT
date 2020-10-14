@@ -349,6 +349,7 @@ CREATE TABLE o_user (
    u_skype varchar2(255 char),
    u_msn varchar2(255 char),
    u_xing varchar2(255 char),
+   u_linkedin varchar2(255 char),
    u_icq varchar2(255 char),
    u_homepage varchar2(255 char),
    u_street varchar2(255 char),
