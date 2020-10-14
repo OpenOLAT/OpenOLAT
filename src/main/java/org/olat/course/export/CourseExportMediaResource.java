@@ -49,7 +49,6 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.VFSContainerFilter;
 import org.olat.core.util.vfs.filters.VFSRevisionsAndThumbnailsFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseFactory;
@@ -326,7 +325,7 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 	
 	private void exportCoursefolder(PersistingCourseImpl sourceCourse, ZipOutputStream zout) throws IOException {
 		VFSContainer courseFolder = sourceCourse.getIsolatedCourseBaseContainer();
-		List<VFSItem> hasChildren = courseFolder.getItems(new VFSContainerFilter());
+		List<VFSItem> hasChildren = courseFolder.getItems(new VFSSystemItemFilter());
 		if(hasChildren != null && !hasChildren.isEmpty()) {
 			zout.putNextEntry(new ZipEntry("oocoursefolder.zip"));
 			// export course folder
