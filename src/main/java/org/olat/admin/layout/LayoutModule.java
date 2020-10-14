@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -159,16 +160,16 @@ public class LayoutModule extends AbstractSpringModule  {
 	public void removeLogo() {
 		File logo = getLogo();
 		if(logo != null && logo.exists()) {
-			logo.delete();
+			FileUtils.deleteFile(logo);
 		}
 		File dir = getLogoDirectory();
 		File logo1x = new File(dir, "oo-logo@1x.png");
 		if(logo1x.exists()) {
-			logo1x.delete();
+			FileUtils.deleteFile(logo1x);
 		}
 		File logo2x = new File(dir, "oo-logo@2x.png");
 		if(logo2x.exists()) {
-			logo2x.delete();
+			FileUtils.deleteFile(logo2x);
 		}
 		setLogoFilename("");
 	}

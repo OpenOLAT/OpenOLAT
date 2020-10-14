@@ -179,7 +179,7 @@ public class EditTaskController extends FormBasicController {
 				if(usage == 1) {
 					File currentFile = new File(taskContainer, task.getFilename());
 					if(currentFile.exists()) {
-						currentFile.delete();
+						FileUtils.deleteFile(currentFile);
 					}
 				}
 			}

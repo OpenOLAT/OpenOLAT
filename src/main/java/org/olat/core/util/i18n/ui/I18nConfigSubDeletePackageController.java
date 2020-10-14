@@ -25,6 +25,8 @@
 package org.olat.core.util.i18n.ui;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collection;
 
 import org.olat.core.gui.UserRequest;
@@ -97,13 +99,10 @@ class I18nConfigSubDeletePackageController extends FormBasicController {
 		submitButton.setEnabled(false); // enable as soon as something is checked
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Collection<String> toDelete = deleteLangPackSelection.getSelectedKeys();
-		if (toDelete.size() == 0) {
+		if (toDelete.isEmpty()) {
 			// should not happen since button disabled
 			return;
 		}
@@ -111,26 +110,12 @@ class I18nConfigSubDeletePackageController extends FormBasicController {
 				"configuration.management.package.delete.confirm", toDelete.toString()), dialogCtr);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == dialogCtr) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
-				// Yes case, delete now
-				for (String deleteLangPack : deleteLangPackSelection.getSelectedKeys()) {
-					File file = new File(i18nModule.getLangPacksDirectory(), deleteLangPack);
-					if (file.exists()) file.delete();
-					logAudit("Deleted language pack::" + deleteLangPack);
-				}
-				// Reset i18n system
-				i18nModule.reInitializeAndFlushCache();
-				// wow, everything worked fine
-				showInfo("configuration.management.package.delete.success", deleteLangPackSelection.getSelectedKeys().toString());
+				doDelete();
 				fireEvent(ureq, Event.DONE_EVENT);
-			} else {
-				// No case, do nothing.
 			}
 		}
 	}
@@ -143,20 +128,32 @@ class I18nConfigSubDeletePackageController extends FormBasicController {
 			showInfo("configuration.management.package.delete.cancel");
 
 		} else if (source == deleteLangPackSelection) {
-			if (deleteLangPackSelection.getSelectedKeys().size() == 0) {
+			if (deleteLangPackSelection.getSelectedKeys().isEmpty()) {
 				submitButton.setEnabled(false);
 			} else {
 				submitButton.setEnabled(true);
 			}
 		}
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-	// nothing to dispose
+	
+	private void doDelete() {
+		try {
+			for (String deleteLangPack : deleteLangPackSelection.getSelectedKeys()) {
+				File file = new File(i18nModule.getLangPacksDirectory(), deleteLangPack);
+				Files.deleteIfExists(file.toPath());
+				logAudit("Deleted language pack::" + deleteLangPack);
+			}
+			// Reset i18n system
+			i18nModule.reInitializeAndFlushCache();
+			// wow, everything worked fine
+			showInfo("configuration.management.package.delete.success", deleteLangPackSelection.getSelectedKeys().toString());
+		} catch (IOException e) {
+			logError("", e);
+		}
 	}
 
+	@Override
+	protected void doDispose() {
+		// nothing to dispose
+	}
 }

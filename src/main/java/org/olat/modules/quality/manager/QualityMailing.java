@@ -471,7 +471,7 @@ class QualityMailing {
 			if (reportPdf.length() > 0) {
 				return reportPdf;
 			}
-			reportPdf.delete();
+			FileUtils.deleteFile(reportPdf);
 		}
 		return null;
 	}

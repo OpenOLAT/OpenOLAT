@@ -28,6 +28,8 @@ package org.olat.core.gui.media;
 
 import java.io.File;
 
+import org.olat.core.util.FileUtils;
+
 /**
  * This media resource deletes the file as soon as it is delivered to the
  * client. The file is delivered as attachment.
@@ -51,11 +53,8 @@ public class CleanupAfterDeliveryFileMediaResource extends FileMediaResource {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#release()
-	 */
 	@Override
 	public void release() {
-		file.delete();
+		FileUtils.deleteFile(file);
 	}
 }

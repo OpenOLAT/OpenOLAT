@@ -42,6 +42,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -302,23 +303,23 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 	public void lockFolderAndPreventDoubleIndexing() {
 		File lockFile = new File(getSharedFolder().getBasefile(), NO_FOLDER_INDEXING_LOCKFILE);
 		try {
-			lockFile.createNewFile();
+			if(!lockFile.createNewFile()) {
+				log.error("Cannot create lock file: {}", lockFile);
+			}
 		} catch (IOException e) {
 			log.error("could not create lock-file in shared folder for library.", e);
 		}
 	}
 
 	/**
-	 * Remove old lockfile before changing linked resource folder
+	 * Remove old lock file before changing linked resource folder
 	 */
 	@Override
 	public void removeExistingLockFile(){
 		LocalFolderImpl folder = getSharedFolder();
 		if(folder != null && folder.exists()) {
 			File lockFile = new File(folder.getBasefile(), NO_FOLDER_INDEXING_LOCKFILE);
-			if (lockFile.exists()) {
-				lockFile.delete();
-			}
+			FileUtils.deleteFile(lockFile);
 		}
 	}
 	

@@ -63,6 +63,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
@@ -422,7 +423,9 @@ public class Form {
 	private void doClearRequestParameterAndMultipartData() {
 		for (Entry<String, File> entry : requestMultipartFiles.entrySet()) {
 			File tmpFile = entry.getValue();
-			if (tmpFile.exists()) tmpFile.delete();
+			if (tmpFile.exists()) {
+				FileUtils.deleteFile(tmpFile);
+			}
 		}
 		requestMultipartFiles.clear();
 		requestMultipartFileNames.clear();

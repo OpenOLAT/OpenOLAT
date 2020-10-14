@@ -185,6 +185,7 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 	 * Return the media base URL for delivering media of this package.
 	 * @return Complete media base URL.
 	 */
+	@Override
 	public String getMediaBaseURL() {
 		return WebappHelper.getServletContextPath() + "/secstatic/qtieditor/" + packageSubDir;
 	}
@@ -204,8 +205,7 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 			localDir.setLocalSecurityCallback(secCallback);
 		}
 		String dirName = translator.translate("qti.basedir.displayname");
-		NamedContainerImpl namedBaseDir = new NamedContainerImpl(dirName, localDir);
-		return namedBaseDir;
+		return new NamedContainerImpl(dirName, localDir);
 	}
 	
 	/**
@@ -266,14 +266,16 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 		// move file from temp to repository root and rename
 		File fRepositoryZip = frm.getFileResource(fileResource);
 		if (!FileUtils.moveFileToDir(tmpZipFile, frm.getFileResourceRoot(fileResource))) {
-			tmpZipFile.delete();
+			FileUtils.deleteFile(tmpZipFile);
 			return false;
 		}
-		fRepositoryZip.delete();
-		new File(frm.getFileResourceRoot(fileResource), tmpZipFile.getName()).renameTo(fRepositoryZip);
+		FileUtils.deleteFile(fRepositoryZip);
+		if(!new File(frm.getFileResourceRoot(fileResource), tmpZipFile.getName()).renameTo(fRepositoryZip)) {
+			log.error("Cannot rename: {}", fRepositoryZip);
+		}
 		// delete old unzip content. If the repository entry gets called in the meantime,
 		// the package will get unzipped again.
-		tmpZipFile.delete();
+		FileUtils.deleteFile(tmpZipFile);
 		frm.deleteUnzipContent(fileResource);
 		// to be prepared for the next start, unzip right now.
 		return (frm.unzipFileResource(fileResource) != null);

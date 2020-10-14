@@ -174,7 +174,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 		//node log
 		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
-		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "ATTEMPTS set to: " + String.valueOf(attempts), by);
+		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "ATTEMPTS set to: " + attempts, by);
 
 		// notify about changes
 		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED, assessedIdentity);
@@ -253,7 +253,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public void removeIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, File document) {
 		if(document != null && document.exists()) {
-			document.delete();
+			FileUtils.deleteFile(document);
 			
 			//update counter
 			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());

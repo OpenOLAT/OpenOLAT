@@ -28,6 +28,7 @@ import java.io.File;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 
@@ -69,18 +70,14 @@ public class NamedFileMediaResource extends FileMediaResource {
 		this.deleteAfterDelivery = deleteAfterDelivery;
 	}
 	
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getContentType()
-	 */
+	@Override
 	public String getContentType() {
 		String mimeType = WebappHelper.getMimeType(fileName);
 		if (mimeType == null) mimeType = "application/octet-stream";
 		return mimeType;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
-	 */
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		// encode filename in ISO8859-1; does not really help but prevents from filename not being displayed at all
 		// if it contains non-US-ASCII characters which are not allowed in header fields.
@@ -88,14 +85,10 @@ public class NamedFileMediaResource extends FileMediaResource {
 		hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(fileDescription));
 	}
 
-
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#release()
-	 */
+	@Override
 	public void release() {
 		if (deleteAfterDelivery && file.exists()) {
-			file.delete();
+			FileUtils.deleteFile(file);
 		}
 	}
-
 }

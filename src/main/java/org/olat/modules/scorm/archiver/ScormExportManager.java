@@ -135,7 +135,7 @@ public class ScormExportManager {
 					document.loadDocument(((LocalFileImpl)file).getBasefile());
 				}
 				else {
-					logger.warn("Cannot use this type of VSFItem to load a SCO Datamodel: " + file.getClass().getName());
+					logger.warn("Cannot use this type of VSFItem to load a SCO Datamodel: {}", file.getClass().getName());
 					continue;
 				}
 

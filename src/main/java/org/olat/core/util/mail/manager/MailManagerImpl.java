@@ -615,13 +615,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	public void deleteCustomMailTemplate() {
 		File baseFolder = new File(WebappHelper.getUserDataRoot(), MAIL_TEMPLATE_FOLDER);
 		File customTemplate = new File(baseFolder, "mail_template.html");
-		if (customTemplate.exists()) {
-			try {
-				customTemplate.delete();
-			} catch (Exception e) {
-				log.error("", e);
-			}
-		}
+		org.olat.core.util.FileUtils.deleteFile(customTemplate);
 	}
 
 	@Override

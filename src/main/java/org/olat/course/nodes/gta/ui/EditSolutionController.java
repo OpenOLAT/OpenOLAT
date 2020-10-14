@@ -156,7 +156,7 @@ public class EditSolutionController extends FormBasicController {
 			if(replaceFile && StringHelper.containsNonWhitespace(solution.getFilename())) {
 				File currentFile = new File(solutionDir, solution.getFilename());
 				if(currentFile.exists()) {
-					currentFile.delete();
+					FileUtils.deleteFile(currentFile);
 				}
 			}
 

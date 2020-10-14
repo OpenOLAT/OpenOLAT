@@ -59,6 +59,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -398,9 +399,7 @@ class SubmitDocumentsController extends FormBasicController {
 
 	private void doDelete(UserRequest ureq, SubmittedSolution solution) {
 		File document = solution.getFile();
-		if(document.exists()) {
-			document.delete();
-		}
+		FileUtils.deleteFile(document);
 		updateModel(ureq);
 		updateWarnings();
 	}
@@ -433,9 +432,7 @@ class SubmitDocumentsController extends FormBasicController {
 	
 	private void doReplace(UserRequest ureq, SubmittedSolution solution, File file, String filename) {
 		File document = solution.getFile();
-		if(document.exists()) {
-			document.delete();
-		}
+		FileUtils.deleteFile(document);
 		doUpload(ureq, file, filename);
 	}
 	

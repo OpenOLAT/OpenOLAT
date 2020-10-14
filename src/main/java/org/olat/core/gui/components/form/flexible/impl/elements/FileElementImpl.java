@@ -148,7 +148,7 @@ public class FileElementImpl extends FormItemImpl
 		if (keys.size() > 0 && keys.contains(component.getFormDispatchId())) {
 			// Remove old files first
 			if (tempUploadFile != null && tempUploadFile.exists()) {
-				tempUploadFile.delete();
+				FileUtils.deleteFile(tempUploadFile);
 			}
 			// Move file from a temporary request scope location to a location
 			// with a
@@ -238,7 +238,7 @@ public class FileElementImpl extends FormItemImpl
 	@Override
 	public void reset() {
 		if (tempUploadFile != null && tempUploadFile.exists()) {
-			tempUploadFile.delete();
+			FileUtils.deleteFile(tempUploadFile);
 		}
 		tempUploadFile = null;
 		if (previewEl != null) {
@@ -247,7 +247,7 @@ public class FileElementImpl extends FormItemImpl
 				previewEl.setMedia(media);
 				previewEl.setMaxWithAndHeightToFitWithin(300, 200);
 				previewEl.setVisible(true);
-			} else if (previewEl != null) {
+			} else {
 				previewEl.setVisible(false);
 			}
 		}
@@ -573,13 +573,12 @@ public class FileElementImpl extends FormItemImpl
 				try {
 					success = VFSManager.copyContent(tempUploadFile, leaf);
 				} catch (Exception e) {
-					log.error("Error while copying content from temp file::"
-							+ (tempUploadFile == null ? "NULL" : tempUploadFile.getAbsolutePath()), e);
+					log.error("Error while copying content from temp file: {}", tempUploadFile, e);
 				}
 				if (success) {
 					// Delete original temp file after copy to simulate move
 					// behavior
-					tempUploadFile.delete();
+					FileUtils.deleteFile(tempUploadFile);
 					targetLeaf = leaf;
 				}
 			}
@@ -605,7 +604,7 @@ public class FileElementImpl extends FormItemImpl
 	@Override
 	public void dispose() {
 		if (tempUploadFile != null && tempUploadFile.exists()) {
-			tempUploadFile.delete();
+			FileUtils.deleteFile(tempUploadFile);
 		}
 	}
 

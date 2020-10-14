@@ -31,6 +31,7 @@ package org.olat.core.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -452,10 +453,16 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		File writeFile = new File(tmpDir, "UTF-8 test läsÖiç-首页f新");
 		if (writeFile.exists()) {
 			// remove exising files first
-			writeFile.delete();
+			try {
+				Files.deleteIfExists(writeFile.toPath());
+			} catch (IOException e) {
+				log.warn("Cannot delete test file for UTF-8 file system.", e);
+			}
 		}
 		try {
-			writeFile.createNewFile();
+			if(!writeFile.createNewFile()) {
+				log.warn("No UTF-8 capable filesystem found! Error while writing testfile to filesystem");
+			}
 		} catch (IOException e) {
 			log.warn("No UTF-8 capable filesystem found! Error while writing testfile to filesystem", e);
 		}
@@ -483,7 +490,11 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 					+ System.getProperty("file.encoding") + " (the one configured)");
 		}
 		// try to delete file anyway
-		writeFile.delete();
+		try {
+			Files.deleteIfExists(writeFile.toPath());
+		} catch (IOException e) {
+			log.warn("Cannot delete test file for UTF-8 file system.", e);
+		}
 		
 		if (!foundUtf8File && WebappHelper.enforceUtf8Filesystem) {
 			throw new BeanInitializationException(

@@ -287,9 +287,9 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		if(directory != null) {
 			for(File currentImage:directory.listFiles()) {
 				if(currentImage.equals(file)) {
-					continue;
+					// do nothing
 				} else if(currentImage.getName().startsWith(prefix)) {
-					currentImage.delete();
+					FileUtils.deleteFile(currentImage);
 				}
 			}
 		}
@@ -339,7 +339,7 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 			for(File file:directory.listFiles()) {
 				String filename = file.getName();
 				if(filename.startsWith(prefix)) {
-					file.delete();
+					FileUtils.deleteFile(file);
 				}
 			}
 		}

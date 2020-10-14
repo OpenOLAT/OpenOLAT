@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 
 /**
@@ -78,9 +79,9 @@ public class GuiDemoFlexiForm extends FormBasicController {
 
 	@Override
 	protected void doDispose() {
-		// cleanup tempt files
-		if (tmpFile != null && tmpFile.exists()) {
-			tmpFile.delete();
+		// cleanup temp files
+		if (tmpFile != null) {
+			FileUtils.deleteFile(tmpFile);
 		}
 	}
 
@@ -99,7 +100,7 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		personData.setReadOnly(true);
 
 		// get file and store it in temporary location
-		tmpFile = new File(WebappHelper.getTmpDir() + "/" + fileElement.getUploadFileName());
+		tmpFile = new File(WebappHelper.getTmpDir(), fileElement.getUploadFileName());
 		fileElement.moveUploadFileTo(tmpFile);
 		personData.setFile(tmpFile);
 		

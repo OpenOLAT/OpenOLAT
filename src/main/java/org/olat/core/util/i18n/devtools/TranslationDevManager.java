@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -687,7 +688,7 @@ public class TranslationDevManager {
 			}			
 		}
 		
-		log.info("found " + doupList.size() + " douplicated keys");		
+		log.info("found {} duplicated keys", doupList.size());		
 		return doupList;
 	}
 	
@@ -714,18 +715,22 @@ public class TranslationDevManager {
 			}			
 		}
 		
-		log.info("found " + doupList.size() + " douplicated values in keys");		
+		log.info("found {} douplicated values in keys", doupList.size());
 		return doupList;
 	}
 	
 	public void deletePackage(String bundleName) {
-		File path = getBundlePath(bundleName);
-		if (path.exists()) {
-			File[] files = path.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				files[i].delete();
+		try {
+			File path = getBundlePath(bundleName);
+			if (path != null && path.exists()) {
+				File[] files = path.listFiles();
+				for (int i = 0; i < files.length; i++) {
+					Files.deleteIfExists(files[i].toPath());
+				}
+				Files.delete(path.toPath());
 			}
-			path.delete();
+		} catch (IOException e) {
+			log.error("Cannot delete bundle: {}", bundleName);
 		}
 	}
 
@@ -752,8 +757,12 @@ public class TranslationDevManager {
 
 	private void copyFile(File source, File dest) throws IOException {
 		if (!dest.exists()) {
-			if (!dest.getParentFile().exists()) dest.getParentFile().mkdirs();
-			dest.createNewFile();
+			if (!dest.getParentFile().exists()) {
+				dest.getParentFile().mkdirs();
+			}
+			if(!dest.createNewFile()) {
+				log.error("File cannot be created at: {}", dest);
+			}
 		}
 		
 		try(InputStream in = new FileInputStream(source);

@@ -45,6 +45,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XMLFactories;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -149,13 +150,10 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 				fileInfos.setVersion(infos.getVersion());
 			}
 			if(onyx38Family(fileInfos)) {
-				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), xtw -> {
-					return new Onyx38ToQtiWorksHandler(xtw);
-				});
+				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), Onyx38ToQtiWorksHandler::new);
 			} else if(onyxWebFamily(fileInfos)) {
-				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), xtw -> {
-					return new OnyxToQtiWorksHandler(xtw, infos);
-				});
+				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), xtw ->
+					 new OnyxToQtiWorksHandler(xtw, infos));
 				
 				if(validated && fileInfos.getType() == InputType.assessmentItem) {
 					//check templateVariables
@@ -218,9 +216,7 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 			log.error("", e1);
 			return false;
 		} finally {
-			if(tmpFile.exists()) {
-				tmpFile.delete();
-			}
+			FileUtils.deleteFile(tmpFile);
 		}
 	}
 	

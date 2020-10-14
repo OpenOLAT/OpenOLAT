@@ -31,6 +31,7 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
@@ -86,7 +87,7 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 			} catch (Exception e) {
 				log.error("Error while loading homepage config from path::" + configFile.getAbsolutePath() + ", fallback to default configuration",
 						e);
-				if (configFile.exists()) configFile.delete();
+				FileUtils.deleteFile(configFile);
 				retVal = loadAndSaveDefaults(identity);
 				// show message to user
 			}

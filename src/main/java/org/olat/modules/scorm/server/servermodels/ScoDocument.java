@@ -71,7 +71,7 @@ public class ScoDocument extends XMLDocument {
 	 * split intot part_a and part_b so we can insert 'n' number of <objective>
 	 * nodes if the sco creates them during a session
 	 */
-	public static String[] _cmivalues_a = { "cmi.core.student_id", "cmi.core.student_name", "cmi.core.lesson_location", "cmi.core.credit",
+	private static String[] _cmivalues_a = { "cmi.core.student_id", "cmi.core.student_name", "cmi.core.lesson_location", "cmi.core.credit",
 			"cmi.core.lesson_status", "cmi.core.entry", "cmi.core.score.raw", "cmi.core.score.max", "cmi.core.score.min", "cmi.core.total_time",
 			"cmi.core.lesson_mode", "cmi.core.exit", "cmi.core.session_time", "cmi.suspend_data", "cmi.launch_data", "cmi.comments",
 			"cmi.comments_from_lms", };
@@ -79,7 +79,7 @@ public class ScoDocument extends XMLDocument {
 	/**
 	 * <objective> nodes go between part_a and part_b
 	 */
-	public static String[] _cmivalues_b = { "cmi.student_data.mastery_score", "cmi.student_data.max_time_allowed",
+	private static String[] _cmivalues_b = { "cmi.student_data.mastery_score", "cmi.student_data.max_time_allowed",
 			"cmi.student_data.time_limit_action", "cmi.student_preference.audio", "cmi.student_preference.language",
 			"cmi.student_preference.speed", "cmi.student_preference.text", };
 

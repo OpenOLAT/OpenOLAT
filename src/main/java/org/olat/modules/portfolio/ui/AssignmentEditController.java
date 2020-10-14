@@ -549,7 +549,7 @@ public class AssignmentEditController extends FormBasicController {
 
 		if (fileExists) {
 			documentUploadEl.setErrorKey("attachments.error.file.exists", null);
-			documentUploadEl.getUploadFile().delete();
+			FileUtils.deleteFile(documentUploadEl.getUploadFile());
 			documentUploadEl.showError(true);
 		} else {
 			// files got stored in an extra tempFolder, to use the same

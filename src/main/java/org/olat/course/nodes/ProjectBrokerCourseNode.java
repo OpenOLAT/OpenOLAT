@@ -118,48 +118,48 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = -8177448874150049173L;
 	private static final Logger log = Tracing.createLoggerFor(ProjectBrokerCourseNode.class);
 
-	private transient static final String PACKAGE_PROJECTBROKER = Util.getPackageName(ProjectListController.class);
-	private transient static final String PACKAGE = Util.getPackageName(ProjectBrokerCourseNode.class);
+	private static final transient String PACKAGE_PROJECTBROKER = Util.getPackageName(ProjectListController.class);
+	private static final transient String PACKAGE = Util.getPackageName(ProjectBrokerCourseNode.class);
 
-	public transient static final String TYPE = "projectbroker";
+	public static final transient String TYPE = "projectbroker";
 
 	// NLS support:
 
-	private transient static final String NLS_GUESTNOACCESS_TITLE = "guestnoaccess.title";
-	private transient static final String NLS_GUESTNOACCESS_MESSAGE = "guestnoaccess.message";
-	private transient static final String NLS_ERROR_MISSINGSCORECONFIG_SHORT = "error.missingscoreconfig.short";
-	private transient static final String NLS_WARN_NODEDELETE = "warn.nodedelete";
+	private static final transient String NLS_GUESTNOACCESS_TITLE = "guestnoaccess.title";
+	private static final transient String NLS_GUESTNOACCESS_MESSAGE = "guestnoaccess.message";
+	private static final transient String NLS_ERROR_MISSINGSCORECONFIG_SHORT = "error.missingscoreconfig.short";
+	private static final transient String NLS_WARN_NODEDELETE = "warn.nodedelete";
 
 	// MUST BE NON TRANSIENT
 	private static final int CURRENT_CONFIG_VERSION = 3;
 
 	/** CONF_DROPBOX_ENABLED configuration parameter key. */
-	public transient static final String CONF_DROPBOX_ENABLED = "dropbox_enabled";
+	public static final transient String CONF_DROPBOX_ENABLED = "dropbox_enabled";
 	/** CONF_DROPBOX_ENABLEMAIL configuration parameter key. */
-	public transient static final String CONF_DROPBOX_ENABLEMAIL = "dropbox_enablemail";
+	public static final transient String CONF_DROPBOX_ENABLEMAIL = "dropbox_enablemail";
 	/** CONF_DROPBOX_CONFIRMATION configuration parameter key. */
-	public transient static final String CONF_DROPBOX_CONFIRMATION = "dropbox_confirmation";
+	public static final transient String CONF_DROPBOX_CONFIRMATION = "dropbox_confirmation";
 
 	/** CONF_SCORING_ENABLED configuration parameter key. */
-	public transient static final String CONF_SCORING_ENABLED = "scoring_enabled";
+	public static final transient String CONF_SCORING_ENABLED = "scoring_enabled";
 
 	/** ACCESS_SCORING configuration parameter key. */
-	public transient static final String ACCESS_SCORING = "scoring";
+	public static final transient String ACCESS_SCORING = "scoring";
 	/** ACCESS_DROPBOX configuration parameter key. */
-	public transient static final String ACCESS_DROPBOX = "dropbox";
-	public transient static final String ACCESS_RETURNBOX = "returnbox";
-	public transient static final String ACCESS_PROJECTBROKER = "projectbroker";
+	public static final transient String ACCESS_DROPBOX = "dropbox";
+	public static final transient String ACCESS_RETURNBOX = "returnbox";
+	public static final transient String ACCESS_PROJECTBROKER = "projectbroker";
 
 	/** CONF_TASK_PREVIEW configuration parameter key used for task-form. */
-	public transient static final String CONF_TASK_PREVIEW = "task_preview";
+	public static final transient String CONF_TASK_PREVIEW = "task_preview";
 
-	public transient static final String CONF_RETURNBOX_ENABLED = "returnbox_enabled";
+	public static final transient String CONF_RETURNBOX_ENABLED = "returnbox_enabled";
 
-	public transient static final String CONF_ACCOUNTMANAGER_GROUP_KEY = "config_accountmanager_group_id";
+	public static final transient String CONF_ACCOUNTMANAGER_GROUP_KEY = "config_accountmanager_group_id";
 
-	public transient static final String CONF_PROJECTBROKER_KEY = "conf_projectbroker_id";
+	public static final transient String CONF_PROJECTBROKER_KEY = "conf_projectbroker_id";
 
-	public transient static final String CONF_NODE_SHORT_TITLE_KEY = "conf_node_short_title";
+	public static final transient String CONF_NODE_SHORT_TITLE_KEY = "conf_node_short_title";
 
 	// MUST BE NON TRANSIENT
 	private Condition conditionDrop, conditionScoring, conditionReturnbox;
@@ -582,7 +582,9 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 						Base64.encodeBase64String(project.getAttachmentFileName().getBytes()));
 				try {
 					attachmentFolder.mkdirs();
-					attachment.createNewFile();
+					if(!attachment.createNewFile()) {
+						log.error("Cannot create attachment file: {}", attachment);
+					}
 					FileOutputStream attachmentOutputStream = new FileOutputStream(attachment);
 					InputStream leafInputStream = itemLeaf.getInputStream();
 					FileUtils.copy(leafInputStream, attachmentOutputStream);

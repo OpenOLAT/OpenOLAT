@@ -419,7 +419,7 @@ public class ContactForm extends FormBasicController {
 			File uploadedFile = (File)source.getUserObject();
 			if(uploadedFile != null && uploadedFile.exists()) {
 				attachmentSize -= uploadedFile.length();
-				uploadedFile.delete();
+				FileUtils.deleteFile(uploadedFile);
 			}
 			attachmentLinks.remove(source);
 			uploadCont.remove(source);

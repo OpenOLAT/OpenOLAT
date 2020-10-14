@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
@@ -1056,7 +1057,11 @@ public class I18nManager {
 			return;// nothing to do
 		}
 		File f = getPropertiesFile(locale, bundleName, baseDir);
-		if (f.exists()) f.delete();
+		try {
+			Files.deleteIfExists(f.toPath());
+		} catch (IOException e) {
+			log.error("Cannot delete: {}", f);
+		}
 		// 3) Check if for this bundle any other language file exists, if
 		// not remove
 		// the bundle from the list of translatable bundles
@@ -1705,9 +1710,7 @@ public class I18nManager {
 		if (!i18nModule.isTransToolEnabled()) {
 			throw new AssertException("Programming error - can only copy i18n files from a language pack to the source when in translation mode");
 		}
-		JarFile jar = null;
-		try {
-			jar = new JarFile(jarFile);
+		try(JarFile jar = new JarFile(jarFile)) {
 			Enumeration<JarEntry> jarEntries = jar.entries();
 			while (jarEntries.hasMoreElements()) {
 				JarEntry jarEntry = jarEntries.nextElement();
@@ -1729,11 +1732,11 @@ public class I18nManager {
 						Properties props = new Properties();
 						props.load(new FileInputStream(targetFile));
 						if (props.size() == 0) {
-							targetFile.delete();
+							Files.deleteIfExists(targetFile.toPath());
 							// Delete empty parent dirs recursively
 							File parent = targetFile.getParentFile();
 							while (parent != null && parent.list() != null && parent.list().length == 0) {
-								parent.delete();
+								Files.deleteIfExists(parent.toPath());
 								parent = parent.getParentFile();
 							}
 						}
@@ -1744,8 +1747,6 @@ public class I18nManager {
 			}
 		} catch (IOException e) {
 			throw new OLATRuntimeException("Error when copying up i18n files from a jar::" + jarFile.getAbsolutePath(), e);
-		} finally {
-			IOUtils.closeQuietly(jar);
 		}
 	}
 

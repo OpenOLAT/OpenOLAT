@@ -349,9 +349,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 		File reFolder = frm.getFileResourceRoot(resource);
 		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
 		if(options == null) {
-			if(configXml.exists()) {
-				configXml.delete();
-			}
+			FileUtils.deleteFile(configXml);
 		} else {
 			try (OutputStream out = new FileOutputStream(configXml)) {
 				configXstream.toXML(options, out);
@@ -1090,9 +1088,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 		if(StringHelper.containsNonWhitespace(imagePath)) {
 			File bcroot = portfolioFileStorage.getRootDirectory();
 			File file = new File(bcroot, imagePath);
-			if(file.exists()) {
-				file.delete();
-			}
+			FileUtils.deleteFile(file);
 		}
 	}
 

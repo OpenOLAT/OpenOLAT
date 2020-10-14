@@ -35,6 +35,7 @@ import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
@@ -89,7 +90,7 @@ public class PdfDocument extends FileDocument {
 		String hashCodeAsString = Integer.toString(hashCode);
 		String splitDirName = hashCodeAsString.substring(hashCodeAsString.length()-2);
 		String pdfTextTmpFilePath = splitDirName + File.separator + hashCodeAsString + leafResourceContext.getFilePath();
-		if (log.isDebugEnabled()) log.debug("PdfTextTmpFilePath=" + pdfTextTmpFilePath);
+		if (log.isDebugEnabled()) log.debug("PdfTextTmpFilePath={}", pdfTextTmpFilePath);
 		return pdfTextTmpFilePath;
 	}
 
@@ -144,6 +145,7 @@ public class PdfDocument extends FileDocument {
 	
 			return new FileContent(title, sb.toString());
 		} catch(IOException e) {
+			log.error("", e);
 			throw e;
 		}
 	}
@@ -161,7 +163,7 @@ public class PdfDocument extends FileDocument {
 		}	
 		if (leaf.getLastModified() > pdfTextFile.lastModified() ) {
 			// pdf file is newer => delete it
-			pdfTextFile.delete();
+			FileUtils.deleteFile(pdfTextFile);
 			return true;
 		}
 		return false;

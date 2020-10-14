@@ -127,15 +127,15 @@ public class IframePortletRunController extends BasicController {
 		File editFile = new File(editFilePath);
 		File parent = editFile.getParentFile();
 		if(parent == null){
-			log.warn("initEditButton: no parent folder for "+editFilePath);
+			log.warn("initEditButton: no parent folder for {}", editFilePath);
 			return false;
 		}
 		if (!editFile.getParentFile().exists()) {
-			log.warn("editFilePath is wrong, not even parent dir exists::" + editFile.getParentFile().getAbsolutePath()); 
+			log.warn("editFilePath is wrong, not even parent dir exists: {}", editFile.getParentFile().getAbsolutePath()); 
 			return false;
 		}
 		if ( ! editFile.canWrite()) {
-			log.warn("Can not write to file::" + editFile.getAbsolutePath()); 
+			log.warn("Can not write to file: {}", editFile); 
 			return false;
 		}
 		
@@ -145,11 +145,13 @@ public class IframePortletRunController extends BasicController {
 		 */
 		
 		
-		if (! editFile.exists()) {
+		if (!editFile.exists()) {
 			try {
-				editFile.createNewFile();
+				if(!editFile.createNewFile()) {
+					log.warn("Cannot create file: {}", editFile);
+				}
 			} catch (IOException e) {
-				log.error("Cannot create file::" + editFile.getAbsolutePath()); 
+				log.error("Cannot create file: {}", editFile); 
 				return false;
 			}
 		}

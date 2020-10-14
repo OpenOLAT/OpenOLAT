@@ -114,9 +114,7 @@ public class CPManagerImpl implements CPManager {
 		File reFolder = frm.getFileResourceRoot(ores);
 		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
 		if(config == null) {
-			if(configXml.exists()) {
-				configXml.delete();
-			}
+			FileUtils.deleteFile(configXml);
 		} else {
 			try(OutputStream out = new FileOutputStream(configXml)) {
 				configXstream.toXML(config, out);

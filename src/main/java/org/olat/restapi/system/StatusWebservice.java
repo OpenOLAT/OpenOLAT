@@ -22,6 +22,7 @@ package org.olat.restapi.system;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Set;
 
@@ -94,7 +95,7 @@ public class StatusWebservice {
 			WorkThreadInformations.unset();
 			stats.setWriteFileInMilliseconds(CodeHelper.nanoToMilliTime(startFile));
 			stats.setWriteFile(infoFile.exists());
-			infoFile.delete();
+			Files.deleteIfExists(infoFile.toPath());
 		} catch (Exception e) {
 			stats.setWriteFile(false);
 			stats.setWriteFileInMilliseconds(-1l);
@@ -107,12 +108,12 @@ public class StatusWebservice {
 			
 			PropertyManager propertyManager = CoreSpringFactory.getImpl(PropertyManager.class);
 			List<Property> props = propertyManager.findProperties((Identity)null, (BusinessGroup)null, PING_RESOURCE, PING_REF, PING_REF);
-			if(props != null && props.size() > 0) {
+			if(props != null && !props.isEmpty()) {
 				for(Property prop:props) {
 					propertyManager.deleteProperty(prop);
 				}
-				DBFactory.getInstance().commit();
 			}
+			DBFactory.getInstance().commit();
 			
 			long startDB = System.nanoTime();
 			Property prop = propertyManager.createPropertyInstance(null, null, PING_RESOURCE, PING_REF, PING_REF, 0f, 0l, "-", "-");

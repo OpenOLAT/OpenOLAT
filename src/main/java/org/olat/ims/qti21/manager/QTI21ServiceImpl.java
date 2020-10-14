@@ -316,9 +316,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		File reFolder = frm.getFileResourceRoot(testEntry.getOlatResource());
 		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
 		if(options == null) {
-			if(configXml.exists()) {
-				configXml.delete();
-			}
+			FileUtils.deleteFile(configXml);
 		} else {
 			try (OutputStream out = new FileOutputStream(configXml)) {
 				configXstream.toXML(options, out);
@@ -1156,11 +1154,9 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
         final File resultFile = getAssessmentResultFile(candidateSession);
 
 		testSessionDao.deleteTestSession(candidateSession);
-		if(sessionState != null && sessionState.exists()) {
-			sessionState.delete();
-		}
-		if(resultFile != null && resultFile.exists()) {
-			resultFile.delete();
+		FileUtils.deleteFile(sessionState);
+		if(resultFile != null) {
+			FileUtils.deleteFile(resultFile);
 		}
 	}
 	

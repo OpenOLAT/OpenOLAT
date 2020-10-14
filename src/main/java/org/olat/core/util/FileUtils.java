@@ -558,7 +558,7 @@ public class FileUtils {
 			}
 			deleted = Files.deleteIfExists(file.toPath());
 		} catch (IOException e) {
-			log.error("", e);
+			log.error("Cannot delete file: {}", file, e);
 			deleted = false;
 		}
 		return deleted;

@@ -21,6 +21,7 @@ package org.olat.restapi.support;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -131,7 +132,11 @@ public class MultipartReader {
 
 	public void close() {
 		if (file != null) {
-			file.delete();
+			try {
+				Files.deleteIfExists(file.toPath());
+			} catch (IOException e) {
+				log.error("", e);
+			}
 		}
 		fields.clear();
 	}

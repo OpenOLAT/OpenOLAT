@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +43,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -144,7 +145,7 @@ public class CertificatePhantomWorker {
 		VelocityContext context = getContext();
 		boolean result = false;
 		File htmlCertificate = new File(templateFile.getParent(), "c" + UUID.randomUUID() + ".html");
-		try(Reader in = Files.newBufferedReader(templateFile.toPath(), Charset.forName("UTF-8"));
+		try(Reader in = Files.newBufferedReader(templateFile.toPath(), StandardCharsets.UTF_8);
 			Writer output = new FileWriter(htmlCertificate)) {
 			result = certificatesManager.getVelocityEngine().evaluate(context, output, "mailTemplate", in);
 			output.flush();
@@ -371,7 +372,7 @@ public class CertificatePhantomWorker {
 				destroyProcess();
 			} finally {
 				if(htmlCertificateFile != null) {
-					htmlCertificateFile.delete();
+					FileUtils.deleteFile(htmlCertificateFile);
 				}
 			}
 		}
@@ -406,14 +407,14 @@ public class CertificatePhantomWorker {
 			}
 			
 			if(log.isDebugEnabled()) {
-				log.debug("Error: " + errors.toString());
-				log.debug("Output: " + output.toString());
+				log.debug("Error: {}", errors.toString());
+				log.debug("Output: {}", output.toString());
 			}
 
 			try {
 				exitValue = proc.waitFor();
 				if (exitValue != 0) {
-					log.warn("Problem with PhantomJS? " + exitValue);
+					log.warn("Problem with PhantomJS? {}", exitValue);
 				}
 			} catch (InterruptedException e) {
 				log.warn("Takes too long");

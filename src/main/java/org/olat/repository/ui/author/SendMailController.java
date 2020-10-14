@@ -78,7 +78,8 @@ public class SendMailController extends FormBasicController {
 	private RichTextElement bodyEl;
 	private FileElement attachmentEl;
 	private TextElement subjectEl;
-	private MultipleSelectionElement contactEl, copyFromEl;
+	private MultipleSelectionElement contactEl;
+	private MultipleSelectionElement copyFromEl;
 	private FormLayoutContainer uploadCont;
 	
 	private int counter = 0;
@@ -155,7 +156,7 @@ public class SendMailController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		subjectEl.clearError();
 		if(!StringHelper.containsNonWhitespace(subjectEl.getValue())) {
@@ -175,7 +176,7 @@ public class SendMailController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private File[] getAttachments() {
@@ -190,7 +191,8 @@ public class SendMailController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == attachmentEl) {
 			doUploadAttachement();
-		} if(source instanceof FormLink) {
+		}
+		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("delete".equals(cmd)) {
@@ -203,9 +205,9 @@ public class SendMailController extends FormBasicController {
 	
 	private void doDeleteAttachment(Attachment attachment) {
 		attachmentSize -= attachment.getFile().length();
-		attachment.getFile().delete();
+		FileUtils.deleteFile(attachment.getFile());
 		attachments.remove(attachment);
-		uploadCont.setVisible(attachments.size() > 0);
+		uploadCont.setVisible(!attachments.isEmpty());
 		uploadCont.setDirty(true);
 	}
 	

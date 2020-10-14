@@ -450,9 +450,9 @@ public class MembersMailController extends FormBasicController {
 	
 	private void doDeleteAttachment(Attachment attachment) {
 		attachmentSize -= attachment.getFile().length();
-		attachment.getFile().delete();
+		FileUtils.deleteFile(attachment.getFile());
 		attachments.remove(attachment);
-		uploadCont.setVisible(attachments.size() > 0);
+		uploadCont.setVisible(!attachments.isEmpty());
 		uploadCont.setDirty(true);
 	}
 	

@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.springframework.stereotype.Service;
@@ -87,9 +88,7 @@ public class ScormMainManager {
 		File reFolder = frm.getFileResourceRoot(ores);
 		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
 		if(config == null) {
-			if(configXml.exists()) {
-				configXml.delete();
-			}
+			FileUtils.deleteFile(configXml);
 		} else {
 			try(OutputStream out = new FileOutputStream(configXml)) {
 				configXstream.toXML(config, out);

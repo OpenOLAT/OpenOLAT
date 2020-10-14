@@ -60,6 +60,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -630,7 +631,7 @@ public class MessageEditController extends FormBasicController {
 
 					if (fileExists) {
 						fileUpload.setErrorKey("attachments.error.file.exists", null);
-						fileUpload.getUploadFile().delete();
+						FileUtils.deleteFile(fileUpload.getUploadFile());
 						fileUpload.showError(true);
 					} else {
 						// files got stored in an extra tempFolder, to use the same
@@ -644,7 +645,7 @@ public class MessageEditController extends FormBasicController {
 					}
 				} else {
 					fileUpload.setErrorKey("attachments.too.big", new String[] { Long.toString((fileUpload.getMaxUploadSizeKB() / 1024)) });
-					fileUpload.getUploadFile().delete();
+					FileUtils.deleteFile(fileUpload.getUploadFile());
 					fileUpload.showError(true);
 				}
 			}
