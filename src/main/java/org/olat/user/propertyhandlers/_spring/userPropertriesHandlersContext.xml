@@ -82,6 +82,11 @@
         <property name="group" value="contact" />
     </bean>
     
+    <bean id="userPropertyLinkedin" class="org.olat.user.propertyhandlers.LinkedinPropertyHandler">
+        <property name="name" value="linkedin" />
+        <property name="group" value="contact" />
+    </bean>
+    
     <bean id="userPropertyICQ" class="org.olat.user.propertyhandlers.ICQPropertyHandler">
         <property name="name" value="icq" />
         <property name="group" value="contact" />

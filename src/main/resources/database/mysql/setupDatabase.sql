@@ -314,6 +314,7 @@ create table if not exists o_user (
    u_skype varchar(255),
    u_msn varchar(255),
    u_xing varchar(255),
+   u_linkedin text(255),
    u_icq varchar(255),
    u_homepage varchar(255),
    u_street varchar(255),
