@@ -25,7 +25,10 @@
 
 package org.olat.shibboleth;
 
+import java.util.List;
+
 import org.olat.admin.user.imp.TransientIdentity;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -33,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.login.validation.SyntaxValidator;
@@ -58,6 +62,8 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 	private final SyntaxValidator usernameSyntaxValidator;
 
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private UsernameValidationRulesFactory usernameRulesFactory;
 
 	public ShibbolethRegistrationForm(UserRequest ureq, WindowControl wControl, String proposedUsername) {
@@ -71,23 +77,33 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		// validate if username does match the syntactical login requirements
+		boolean allOk = super.validateFormLogic(ureq);
+		
 		usernameEl.clearError();
 		String username = usernameEl.getValue();
-		if (!StringHelper.containsNonWhitespace(username)) {
+		if (StringHelper.containsNonWhitespace(username)) {
+			TransientIdentity newIdentity = new TransientIdentity();
+			newIdentity.setName(username);
+			ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
+			if (!validationResult.isValid()) {
+				String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
+				usernameEl.setErrorKey("error.username.invalid", new String[] { descriptions });
+				allOk &= false;
+			} else if(!isNickNameUnique(username)) {
+				usernameEl.setErrorKey("sm.error.username_in_use", null);
+				allOk &= false;
+			}
+		} else {
 			usernameEl.setErrorKey("form.legende.mandatory", null);
 			return false;
 		} 
 		
-		TransientIdentity newIdentity = new TransientIdentity();
-		newIdentity.setName(username);
-		ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
-		if (!validationResult.isValid()) {
-			String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
-			usernameEl.setErrorKey("error.username.invalid", new String[] { descriptions });
-			return false;
-		}
-		
-		return true;
+		return allOk;
+	}
+	
+	private boolean isNickNameUnique(String val) {
+		List<Identity> identities = securityManager.findIdentitiesByNickName(val);
+		return identities.isEmpty();
 	}
 
 	/**

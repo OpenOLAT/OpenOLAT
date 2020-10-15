@@ -3424,6 +3424,8 @@ create index xx_idx_institutionalemail_low_text on o_user(lower(u_institutionale
 create index xx_idx_username_low_text on o_bs_identity(lower(name) text_pattern_ops);
 create index xx_idx_nickname_low_text on o_user(lower(u_nickname) text_pattern_ops);
 
+alter table o_user add constraint iuni_user_nickname_idx unique (u_nickname);
+
 create index propvalue_idx on o_userproperty (propvalue);
 
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);

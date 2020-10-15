@@ -94,7 +94,7 @@ public class ShibbolethRegistrationUserPropertiesFrom extends FormBasicControlle
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		// validate each user field
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -104,7 +104,7 @@ public class ShibbolethRegistrationUserPropertiesFrom extends FormBasicControlle
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

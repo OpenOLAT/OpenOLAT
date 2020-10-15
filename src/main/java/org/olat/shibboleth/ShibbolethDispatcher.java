@@ -26,7 +26,8 @@
 package org.olat.shibboleth;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -194,25 +195,23 @@ public class ShibbolethDispatcher implements Dispatcher{
 	private Map<String, String> getShibbolethAttributesFromRequest(HttpServletRequest req) {
 		Map<String, String> attributesMap = new HashMap<>();
 		Enumeration<String> headerEnum = req.getHeaderNames();
+		Collection<String> attributeNames = shibbolethModule.getShibbolethAttributeNames();
 		while(headerEnum.hasMoreElements()) {
 			String attributeName = headerEnum.nextElement();
 			String attributeValue = req.getHeader(attributeName);
 
 			try {
-				attributeValue = new String(attributeValue.getBytes("ISO-8859-1"), "UTF-8");
-				if (shibbolethModule.getShibbolethAttributeNames().contains(attributeName)) {
+				attributeValue = new String(attributeValue.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+				if (attributeNames.contains(attributeName)) {
 					attributesMap.put(attributeName, attributeValue);
 				}
-			} catch (UnsupportedEncodingException e) {
+			} catch (Exception e) {
 				//bad luck
 				throw new AssertException("ISO-8859-1, or UTF-8 Encoding not supported",e);
 			}
 		}
 
-		if(log.isDebugEnabled()){
-			log.debug("Shib attribute Map: \n\n"+attributesMap.toString()+"\n\n");
-		}
-
+		log.debug("Shib attribute Map:  \n\n{}\n\n", attributesMap);
 		return attributesMap;
 	}
 	
@@ -287,7 +286,6 @@ public class ShibbolethDispatcher implements Dispatcher{
 				default: userMsg = transl.translate("error.shibboleth.generic"); break;
 			}
 			showMessage(ureq,"org.opensaml.SAMLException: " + e.getMessage(), e, userMsg, ((ShibbolethException)e).getContactPersonEmail());
-			return;
 		} else {
 		  try {
 			  ChiefController msgcc = MsgFactory.createMessageChiefController(ureq,
