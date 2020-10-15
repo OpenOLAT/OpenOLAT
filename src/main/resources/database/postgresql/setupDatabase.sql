@@ -3194,6 +3194,53 @@ create table o_ap_participation (
    primary key (id)
 );
 
+-- Organiation role rights
+create table o_org_role_to_right (
+	id bigserial,
+	creationdate timestamp not null,
+	o_role varchar(255) not null,
+	o_right varchar(255) not null,
+	fk_organisation int8 not null,
+	primary key (id)
+);
+
+-- Contact tracing
+create table o_contact_tracing_location (
+	id bigserial,
+	creationdate timestamp not null,
+	lastmodified timestamp not null,
+	l_reference varchar(255) not null,
+	l_titel varchar(255) not null,
+	l_room varchar(255) not null,
+	l_building varchar(255) not null,
+	l_qr_id varchar(255) not null,
+	l_guests boolean not null,
+	primary key (id)
+);
+
+create table o_contact_tracing_entry (
+	id bigserial,
+	creationdate timestamp not null,
+	l_deletion_date timestamp not null,
+	l_start_date timestamp not null,
+	l_end_date timestamp,
+	l_nick_name varchar(255),
+	l_fist_name varchar(255),
+	l_last_name varchar(255),
+	l_street varchar(255),
+	l_extra_line varchar(255),
+	l_zip_code varchar(255),
+	l_city varchar(255),
+	l_email varchar(255),
+	l_institutional_email varchar(255),
+	l_generic_email varchar(255),
+	l_private_phone varchar(255),
+	l_mobile_phone varchar(255),
+	l_office_phone varchar(255),
+	fk_location int8 not null,
+	primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -4347,15 +4394,6 @@ alter table o_ap_participation add constraint ap_part_identity_idx foreign key (
 create index idx_ap_part_identitiy_idx on o_ap_participation(fk_identity_id);
 
 -- Organiation role rights
-create table o_org_role_to_right (
-	id bigserial,
-	creationdate timestamp not null,
-	o_role varchar(255) not null,
-	o_right varchar(255) not null,
-	fk_organisation int8 not null,
-	primary key (id)
-);
-
 alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right (fk_organisation);
 

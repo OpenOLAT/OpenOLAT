@@ -3252,6 +3252,52 @@ create table o_ap_participation (
    primary key (id)
 );
 
+-- Organiation role rights
+create table o_org_role_to_right (
+	id number(20) generated always as identity,
+	creationdate date not null,
+	o_role varchar(255) not null,
+	o_right varchar(255) not null,
+	fk_organisation number(20) not null,
+	primary key (id)
+);
+
+-- Contact tracing
+create table o_contact_tracing_location (
+    id number(20) generated  always as identity ,
+    creationdate date not null,
+    lastmodified date not null,
+    l_reference varchar2(255) not null,
+    l_titel varchar2(255) not null,
+    l_room varchar2(255) not null,
+    l_building varchar2(255) not null,
+    l_qr_id varchar2(255) not null,
+    l_guests boolean not null,
+    primary key (id)
+);
+
+create table o_contact_tracing_entry (
+    id bigserial,
+     creationdate date not null,
+     l_deletion_date date not null,
+     l_start_date date not null,
+     l_end_date date,
+     l_nick_name varchar2(255),
+     l_fist_name varchar2(255),
+     l_last_name varchar2(255),
+     l_street varchar2(255),
+     l_extra_line varchar2(255),
+     l_zip_code varchar2(255),
+     l_city varchar2(255),
+     l_email varchar2(255),
+     l_institutional_email varchar2(255),
+     l_generic_email varchar2(255),
+     l_private_phone varchar2(255),
+     l_mobile_phone varchar2(255),
+     l_office_phone varchar2(255),
+     fk_location number(20) not null,
+     primary key (id)
+);
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -4452,15 +4498,6 @@ insert into o_stat_lastupdated (until_datetime, from_datetime, lastupdated) valu
 insert into hibernate_unique_key values ( 0 );
 
 -- Organiation role rights
-create table o_org_role_to_right (
-	id number(20) generated always as identity,
-	creationdate timestamp not null,
-	o_role varchar(255) not null,
-	o_right varchar(255) not null,
-	fk_organisation number(20) not null,
-	primary key (id)
-);
-
 alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right(fk_organisation);
 

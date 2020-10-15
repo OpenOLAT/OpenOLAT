@@ -307,9 +307,10 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	
 	private void doTranslate(UserRequest ureq, TranslationBundle bundle) {
 		if(guardModalController(translatorCtrl)) return;
-		
+
+		SingleKeyTranslatorController.InputType inputType = bundle.isTextArea() ? SingleKeyTranslatorController.InputType.TEXT_AREA : SingleKeyTranslatorController.InputType.TEXT_ELEMENT;
 		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), bundle.getI18nKey(),
-				UserAdminLifecycleConfigurationController.class, bundle.isTextArea());
+				UserAdminLifecycleConfigurationController.class, inputType);
 		translatorCtrl.setUserObject(bundle);
 		listenTo(translatorCtrl);
 

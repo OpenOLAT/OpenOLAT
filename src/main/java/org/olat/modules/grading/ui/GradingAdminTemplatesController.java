@@ -132,9 +132,10 @@ public class GradingAdminTemplatesController extends FormBasicController {
 	
 	private void doTranslate(UserRequest ureq, TranslationBundle bundle) {
 		if(guardModalController(translatorCtrl)) return;
-		
+
+		SingleKeyTranslatorController.InputType inputType = bundle.isMultiLines() ? SingleKeyTranslatorController.InputType.TEXT_AREA : SingleKeyTranslatorController.InputType.TEXT_ELEMENT;
 		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), bundle.getI18nKey(),
-				GradingAdminTemplatesController.class, bundle.isMultiLines());
+				GradingAdminTemplatesController.class, inputType);
 		translatorCtrl.setUserObject(bundle);
 		listenTo(translatorCtrl);
 

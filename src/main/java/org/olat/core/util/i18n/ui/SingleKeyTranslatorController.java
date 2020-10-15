@@ -62,7 +62,7 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	private static final String LBL_NAME_PREFIX = "lbl.";
 	private Map<String, TextElement> textElements;
 	private Object uobject;
-	private boolean textArea;
+	private InputType inputType;
 
 	@Autowired
 	private I18nManager i18nMng;
@@ -77,7 +77,7 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	 * @param translatorBaseClass The package to translate
 	 */
 	public SingleKeyTranslatorController(UserRequest ureq, WindowControl wControl, String keyToTranslate, Class<?> translatorBaseClass) {
-		this(ureq, wControl, new String[]{keyToTranslate}, translatorBaseClass, false);
+		this(ureq, wControl, new String[]{keyToTranslate}, translatorBaseClass, InputType.TEXT_ELEMENT);
 	}
 	
 	/**
@@ -86,10 +86,10 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	 * @param wControl The window control
 	 * @param keyToTranslate The key to translate
 	 * @param translatorBaseClass The package to translate
-	 * @param textArea true if the edit field is a text area, false for a simple text field
+	 * @param inputType Type of input, textElement, textArea or richTextElement
 	 */
-	public SingleKeyTranslatorController(UserRequest ureq, WindowControl wControl, String keyToTranslate, Class<?> translatorBaseClass, boolean textArea) {
-		this(ureq, wControl, new String[]{keyToTranslate}, translatorBaseClass, textArea);
+	public SingleKeyTranslatorController(UserRequest ureq, WindowControl wControl, String keyToTranslate, Class<?> translatorBaseClass, InputType inputType) {
+		this(ureq, wControl, new String[]{keyToTranslate}, translatorBaseClass, inputType);
 	}
 
 	/**
@@ -109,12 +109,12 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	 * @param keysToTranslate array of keys to translate (each key will have the
 	 *          same value, translation is only done once (for each language) !)
 	 * @param translatorBaseClass The package to translate
-	 * @param textArea true if the edit field is a text area, false for a simple text field
+	 * @param inputType Type of input, textElement, textArea or richTextElement
 	 */
 	public SingleKeyTranslatorController(UserRequest ureq, WindowControl wControl, String[] keysToTranslate,
-			Class<?> translatorBaseClass, boolean textArea) {
+			Class<?> translatorBaseClass, InputType inputType) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
-		this.textArea = textArea;
+		this.inputType = inputType;
 		i18nItemKeys = keysToTranslate;
 		this.translatorBaseClass = translatorBaseClass;
 		initForm(ureq);
@@ -151,12 +151,18 @@ public class SingleKeyTranslatorController extends FormBasicController {
 				value = i18nRowBundle.getKeyTranslator().translate(i18nItemKeys[0]);
 			}
 			String textId = TXT_NAME_PREFIX + i18nRowBundle.getLanguageKey();
-			TextElement te;
-			if(textArea) {
-				te = uifactory.addTextAreaElement(textId, null, -1, 8, 60, false, false, value, formLayout);
-			} else {
-				te = uifactory.addTextElement(textId, textId, null, 255, value, formLayout);
-				te.setDisplaySize(60);
+			TextElement te = null;
+			switch (inputType) {
+				case TEXT_ELEMENT:
+					te = uifactory.addTextElement(textId, textId, null, 255, value, formLayout);
+					te.setDisplaySize(60);
+					break;
+				case TEXT_AREA:
+					te = uifactory.addTextAreaElement(textId, null, -1, 8, 60, false, false, value, formLayout);
+					break;
+				case RICH_TEXT_ELEMENT:
+					te = uifactory.addRichTextElementForStringDataMinimalistic(textId, null, value, -1, -1, formLayout, getWindowControl()); //, null, formLayout, ureq.getUserSession(), getWindowControl());
+					break;
 			}
 			te.setMandatory(true);
 			textElements.put(i18nRowBundle.getLanguageKey(), te);
@@ -253,5 +259,11 @@ public class SingleKeyTranslatorController extends FormBasicController {
 		public Translator getKeyTranslator() {
 			return keyTranslator;
 		}
+	}
+
+	public enum InputType {
+		TEXT_ELEMENT,
+		TEXT_AREA,
+		RICH_TEXT_ELEMENT
 	}
 }

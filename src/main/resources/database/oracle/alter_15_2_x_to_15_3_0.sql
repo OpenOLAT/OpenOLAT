@@ -98,4 +98,39 @@ alter table o_lecture_reason add l_enabled number default 1 not null;
 -- Absences
 alter table o_lecture_absence_category add l_enabled number default 1 not null;
 
+-- Contact tracing
+create table o_contact_tracing_location (
+    id number(20) generated  always as identity ,
+    creationdate date not null,
+    lastmodified date not null,
+    l_reference varchar2(255) not null,
+    l_titel varchar2(255) not null,
+    l_room varchar2(255) not null,
+    l_building varchar2(255) not null,
+    l_qr_id varchar2(255) not null,
+    l_guests boolean not null,
+    primary key (id)
+);
 
+create table o_contact_tracing_entry (
+    id bigserial,
+    creationdate date not null,
+    l_deletion_date date not null,
+    l_start_date date not null,
+    l_end_date date,
+    l_nick_name varchar2(255),
+    l_fist_name varchar2(255),
+    l_last_name varchar2(255),
+    l_street varchar2(255),
+    l_extra_line varchar2(255),
+    l_zip_code varchar2(255),
+    l_city varchar2(255),
+    l_email varchar2(255),
+    l_institutional_email varchar2(255),
+    l_generic_email varchar2(255),
+    l_private_phone varchar2(255),
+    l_mobile_phone varchar2(255),
+    l_office_phone varchar2(255),
+    fk_location number(20) not null,
+    primary key (id)
+);

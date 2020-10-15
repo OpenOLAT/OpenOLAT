@@ -96,6 +96,8 @@
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementLight</class>
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementStandalone</class>
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementForCoaching</class>
+		<class>org.olat.modules.contacttracing.model.ContactTracingLocationImpl</class>
+		<class>org.olat.modules.contacttracing.model.ContactTracingEntryImpl</class>
 		<class>org.olat.modules.dcompensation.model.DisadvantageCompensationImpl</class>
 		<class>org.olat.modules.dcompensation.model.DisadvantageCompensationAuditLogImpl</class>
 		<class>org.olat.course.disclaimer.model.CourseDisclaimerConsentImpl</class>
