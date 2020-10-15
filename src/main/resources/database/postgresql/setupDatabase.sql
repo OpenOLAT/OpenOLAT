@@ -593,51 +593,51 @@ create table o_lifecycle (
 );
 
 create table oc_lock (
-	lock_id int8 not null,
-	version int4 not null,
-	creationdate timestamp,
-	identity_fk int8 not null,
-	asset varchar(120) not null unique,
-	windowid varchar(32) default null,
-	primary key (lock_id)
+    lock_id int8 not null,
+    version int4 not null,
+    creationdate timestamp,
+    identity_fk int8 not null,
+    asset varchar(120) not null unique,
+    windowid varchar(32) default null,
+    primary key (lock_id)
 );
 alter table oc_lock add constraint FK9E30F4B66115906D foreign key (identity_fk) references o_bs_identity;
 
 create table o_readmessage (
-	id int8 not null,
-	version int4 not null,
+    id int8 not null,
+    version int4 not null,
     creationdate timestamp,
-	identity_id int8 not null,
-	forum_id int8 not null,
-	message_id int8 not null,
-	primary key (id)
+    identity_id int8 not null,
+    forum_id int8 not null,
+    message_id int8 not null,
+    primary key (id)
 );
 
 create table o_loggingtable (
-	log_id int8 not null,
-	creationdate timestamp,
-	sourceclass varchar(255),
-	sessionid varchar(255) not null,
-	user_id int8,
-	actioncrudtype varchar(1) not null,
-	actionverb varchar(16) not null,
-	actionobject varchar(32) not null,
-	simpleduration int8 not null,
-	resourceadminaction bool not null,
-	businesspath varchar(2048),
-	greatgrandparentrestype varchar(32),
-	greatgrandparentresid varchar(64),
-	greatgrandparentresname varchar(255),
-	grandparentrestype varchar(32),
-	grandparentresid varchar(64),
-	grandparentresname varchar(255),
-	parentrestype varchar(32),
-	parentresid varchar(64),
-	parentresname varchar(255),
-	targetrestype varchar(32),
-	targetresid varchar(64),
-	targetresname varchar(255),
-	primary key (log_id)
+    log_id int8 not null,
+    creationdate timestamp,
+    sourceclass varchar(255),
+    sessionid varchar(255) not null,
+    user_id int8,
+    actioncrudtype varchar(1) not null,
+    actionverb varchar(16) not null,
+    actionobject varchar(32) not null,
+    simpleduration int8 not null,
+    resourceadminaction bool not null,
+    businesspath varchar(2048),
+    greatgrandparentrestype varchar(32),
+    greatgrandparentresid varchar(64),
+    greatgrandparentresname varchar(255),
+    grandparentrestype varchar(32),
+    grandparentresid varchar(64),
+    grandparentresname varchar(255),
+    parentrestype varchar(32),
+    parentresid varchar(64),
+    parentresname varchar(255),
+    targetrestype varchar(32),
+    targetresid varchar(64),
+    targetresname varchar(255),
+    primary key (log_id)
 );
 
 create table o_checklist (
@@ -701,28 +701,28 @@ create table o_projectbroker_customfields (
 );
 
 create table o_usercomment (
-	comment_id int8 not null,
-	version int4 not null,
-	creationdate timestamp,
-	resname varchar(50) not null,
-	resid int8 not null,
-	ressubpath varchar(2048),
-	creator_id int8 not null,
-	commenttext text,
-	parent_key int8,
-	primary key (comment_id)
+    comment_id int8 not null,
+    version int4 not null,
+    creationdate timestamp,
+    resname varchar(50) not null,
+    resid int8 not null,
+    ressubpath varchar(2048),
+    creator_id int8 not null,
+    commenttext text,
+    parent_key int8,
+    primary key (comment_id)
 );
 create table o_userrating (
-	rating_id int8 not null,
-	version int4 not null,
-	creationdate timestamp,
-	lastmodified timestamp,
-	resname varchar(50) not null,
-	resid int8 not null,
-	ressubpath varchar(2048),
-	creator_id int8 not null,
-	rating int4 not null,
-	primary key (rating_id)
+    rating_id int8 not null,
+    version int4 not null,
+    creationdate timestamp,
+    lastmodified timestamp,
+    resname varchar(50) not null,
+    resid int8 not null,
+    ressubpath varchar(2048),
+    creator_id int8 not null,
+    rating int4 not null,
+    primary key (rating_id)
 );
 create table o_info_message (
   info_id int8  NOT NULL,
@@ -788,8 +788,8 @@ create table o_mail (
   mail_id int8 not null,
   meta_mail_id varchar(64),
   creationdate timestamp,
-	lastmodified timestamp,
-	resname varchar(50),
+    lastmodified timestamp,
+    resname varchar(50),
   resid int8,
   ressubpath varchar(2048),
   businesspath varchar(2048),
@@ -857,28 +857,28 @@ create table o_ac_offer (
 );
 
 create table o_ac_method (
-	method_id int8 NOT NULL,
-	access_method varchar(32),
+    method_id int8 NOT NULL,
+    access_method varchar(32),
   version int4 not null,
   creationdate timestamp,
-	lastmodified timestamp,
-	is_valid boolean default true,
-	is_enabled boolean default true,
-	validfrom timestamp,
-	validto timestamp,
-	primary key (method_id)
+    lastmodified timestamp,
+    is_valid boolean default true,
+    is_enabled boolean default true,
+    validfrom timestamp,
+    validto timestamp,
+    primary key (method_id)
 );
 
 create table o_ac_offer_access (
-	offer_method_id int8 NOT NULL,
+    offer_method_id int8 NOT NULL,
   version int4 not null,
   creationdate timestamp,
-	is_valid boolean default true,
-	validfrom timestamp,
-	validto timestamp,
+    is_valid boolean default true,
+    validfrom timestamp,
+    validto timestamp,
   fk_offer_id int8,
   fk_method_id int8,
-	primary key (offer_method_id)
+    primary key (offer_method_id)
 );
 
 create table o_ac_auto_advance_order (
@@ -896,60 +896,60 @@ create table o_ac_auto_advance_order (
 
 -- access cart
 create table o_ac_order (
-	order_id int8 NOT NULL,
+    order_id int8 NOT NULL,
   version int4 not null,
   creationdate timestamp,
-	lastmodified timestamp,
-	is_valid boolean default true,
-	total_lines_amount DECIMAL,
-	total_lines_currency_code VARCHAR(3),
-	total_amount DECIMAL,
-	total_currency_code VARCHAR(3),
-	discount_amount DECIMAL,
-	discount_currency_code VARCHAR(3),
-	order_status VARCHAR(32) default 'NEW',
+    lastmodified timestamp,
+    is_valid boolean default true,
+    total_lines_amount DECIMAL,
+    total_lines_currency_code VARCHAR(3),
+    total_amount DECIMAL,
+    total_currency_code VARCHAR(3),
+    discount_amount DECIMAL,
+    discount_currency_code VARCHAR(3),
+    order_status VARCHAR(32) default 'NEW',
   fk_delivery_id int8,
-	primary key (order_id)
+    primary key (order_id)
 );
 
 create table o_ac_order_part (
-	order_part_id int8 NOT NULL,
+    order_part_id int8 NOT NULL,
   version int4 not null,
   pos int4,
   creationdate timestamp,
   total_lines_amount DECIMAL,
-	total_lines_currency_code VARCHAR(3),
-	total_amount DECIMAL,
-	total_currency_code VARCHAR(3),
+    total_lines_currency_code VARCHAR(3),
+    total_amount DECIMAL,
+    total_currency_code VARCHAR(3),
   fk_order_id int8,
-	primary key (order_part_id)
+    primary key (order_part_id)
 );
 
 create table o_ac_order_line (
-	order_item_id int8 NOT NULL,
+    order_item_id int8 NOT NULL,
   version int4 not null,
   pos int4,
   creationdate timestamp,
   unit_price_amount DECIMAL,
-	unit_price_currency_code VARCHAR(3),
-	total_amount DECIMAL,
-	total_currency_code VARCHAR(3),
+    unit_price_currency_code VARCHAR(3),
+    total_amount DECIMAL,
+    total_currency_code VARCHAR(3),
   fk_order_part_id int8,
   fk_offer_id int8,
-	primary key (order_item_id)
+    primary key (order_item_id)
 );
 
 create table o_ac_transaction (
-	transaction_id int8 NOT NULL,
+    transaction_id int8 NOT NULL,
   version int4 not null,
   creationdate timestamp,
   trx_status VARCHAR(32) default 'NEW',
-	amount_amount DECIMAL,
-	amount_currency_code VARCHAR(3),
+    amount_amount DECIMAL,
+    amount_currency_code VARCHAR(3),
   fk_order_part_id int8,
   fk_order_id int8,
   fk_method_id int8,
-	primary key (transaction_id)
+    primary key (transaction_id)
 );
 
 create table o_ac_reservation (
@@ -1023,7 +1023,7 @@ create table o_ac_checkout_transaction (
 
 create table o_stat_lastupdated (
 
-	lastupdated timestamp not null
+    lastupdated timestamp not null
 
 );
 -- important: initialize with old date!
@@ -1033,12 +1033,12 @@ insert into o_stat_lastupdated values(date('1999-01-01'));
 --insert into o_stat_dayofweek (businesspath,resid,day,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,dayofweek(creationdate) day,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,day;
 create table o_stat_dayofweek (
 
-	id bigserial,
-	businesspath varchar(2048) not null,
-	resid int8 not null,
-	day int4 not null,
-	value int4 not null,
-	primary key (id)
+    id bigserial,
+    businesspath varchar(2048) not null,
+    resid int8 not null,
+    day int4 not null,
+    value int4 not null,
+    primary key (id)
 
 );
 create index statdow_resid_idx on o_stat_dayofweek (resid);
@@ -1047,12 +1047,12 @@ create index statdow_resid_idx on o_stat_dayofweek (resid);
 --insert into o_stat_hourofday (businesspath,resid,hour,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,hour(creationdate) hour,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,hour;
 create table o_stat_hourofday (
 
-	id bigserial,
-	businesspath varchar(2048) not null,
-	resid int8 not null,
-	hour int4 not null,
-	value int4 not null,
-	primary key (id)
+    id bigserial,
+    businesspath varchar(2048) not null,
+    resid int8 not null,
+    hour int4 not null,
+    value int4 not null,
+    primary key (id)
 
 );
 create index stathod_resid_idx on o_stat_hourofday (resid);
@@ -1061,12 +1061,12 @@ create index stathod_resid_idx on o_stat_hourofday (resid);
 --insert into o_stat_weekly (businesspath,resid,week,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,concat(year(creationdate),'-',week(creationdate)) week,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,week;
 create table o_stat_weekly (
 
-	id bigserial,
-	businesspath varchar(2048) not null,
-	resid int8 not null,
-	week varchar(7) not null,
-	value int4 not null,
-	primary key (id)
+    id bigserial,
+    businesspath varchar(2048) not null,
+    resid int8 not null,
+    week varchar(7) not null,
+    value int4 not null,
+    primary key (id)
 
 );
 create index statwee_resid_idx on o_stat_weekly (resid);
@@ -1075,12 +1075,12 @@ create index statwee_resid_idx on o_stat_weekly (resid);
 --insert into o_stat_daily (businesspath,resid,day,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,date(creationdate) day,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,day;
 create table o_stat_daily (
 
-	id bigserial,
-	businesspath varchar(2048) not null,
-	resid int8 not null,
-	day timestamp not null,
-	value int4 not null,
-	primary key (id)
+    id bigserial,
+    businesspath varchar(2048) not null,
+    resid int8 not null,
+    day timestamp not null,
+    value int4 not null,
+    primary key (id)
 
 );
 create index statday_resid_idx on o_stat_daily (resid);
@@ -1089,12 +1089,12 @@ create index statday_resid_idx on o_stat_daily (resid);
 --insert into o_stat_studylevel (businesspath,resid,studylevel,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,userproperty3 studylevel,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,studylevel;
 create table o_stat_studylevel (
 
-	id bigserial,
-	businesspath varchar(2048) not null,
-	resid int8 not null,
-	studylevel varchar(255) not null,
-	value int4 not null,
-	primary key (id)
+    id bigserial,
+    businesspath varchar(2048) not null,
+    resid int8 not null,
+    studylevel varchar(255) not null,
+    value int4 not null,
+    primary key (id)
 
 );
 create index statstl_resid_idx on o_stat_studylevel (resid);
@@ -1103,12 +1103,12 @@ create index statstl_resid_idx on o_stat_studylevel (resid);
 --insert into o_stat_studybranch3 (businesspath,resid,studybranch3,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,userproperty10 studybranch3,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,studybranch3;
 create table o_stat_studybranch3 (
 
-	id bigserial,
-	businesspath varchar(2048) not null,
-	resid int8 not null,
-	studybranch3 varchar(255),
-	value int4 not null,
-	primary key (id)
+    id bigserial,
+    businesspath varchar(2048) not null,
+    resid int8 not null,
+    studybranch3 varchar(255),
+    value int4 not null,
+    primary key (id)
 
 );
 create index statstb_resid_idx on o_stat_studybranch3 (resid);
@@ -3125,14 +3125,14 @@ create table o_grad_configuration (
 
 -- course disclaimer
 create table o_course_disclaimer_consent(
-	id bigserial,
-	disc_1_accepted boolean not null,
-	disc_2_accepted boolean not null, 
-	creationdate timestamp not null, 
-	lastmodified timestamp not null, 
-	fk_repository_entry int8 not null, 
-	fk_identity int8 not null,
-	primary key (id)
+    id bigserial,
+    disc_1_accepted boolean not null,
+    disc_2_accepted boolean not null,
+    creationdate timestamp not null,
+    lastmodified timestamp not null,
+    fk_repository_entry int8 not null,
+    fk_identity int8 not null,
+    primary key (id)
 );
 
 -- Appointments
@@ -3196,49 +3196,49 @@ create table o_ap_participation (
 
 -- Organiation role rights
 create table o_org_role_to_right (
-	id bigserial,
-	creationdate timestamp not null,
-	o_role varchar(255) not null,
-	o_right varchar(255) not null,
-	fk_organisation int8 not null,
-	primary key (id)
+    id bigserial,
+    creationdate timestamp not null,
+    o_role varchar(255) not null,
+    o_right varchar(255) not null,
+    fk_organisation int8 not null,
+    primary key (id)
 );
 
 -- Contact tracing
 create table o_contact_tracing_location (
-	id bigserial,
-	creationdate timestamp not null,
-	lastmodified timestamp not null,
-	l_reference varchar(255) not null,
-	l_titel varchar(255) not null,
-	l_room varchar(255) not null,
-	l_building varchar(255) not null,
-	l_qr_id varchar(255) not null,
-	l_guests boolean not null,
-	primary key (id)
+    id bigserial,
+    creationdate timestamp not null,
+    lastmodified timestamp not null,
+    l_reference varchar(255) not null,
+    l_titel varchar(255) not null,
+    l_room varchar(255) not null,
+    l_building varchar(255) not null,
+    l_qr_id varchar(255) not null,
+    l_guests boolean not null,
+    primary key (id)
 );
 
 create table o_contact_tracing_entry (
-	id bigserial,
-	creationdate timestamp not null,
-	l_deletion_date timestamp not null,
-	l_start_date timestamp not null,
-	l_end_date timestamp,
-	l_nick_name varchar(255),
-	l_fist_name varchar(255),
-	l_last_name varchar(255),
-	l_street varchar(255),
-	l_extra_line varchar(255),
-	l_zip_code varchar(255),
-	l_city varchar(255),
-	l_email varchar(255),
-	l_institutional_email varchar(255),
-	l_generic_email varchar(255),
-	l_private_phone varchar(255),
-	l_mobile_phone varchar(255),
-	l_office_phone varchar(255),
-	fk_location int8 not null,
-	primary key (id)
+    id bigserial,
+    creationdate timestamp not null,
+    l_deletion_date timestamp not null,
+    l_start_date timestamp not null,
+    l_end_date timestamp,
+    l_nick_name varchar(255),
+    l_fist_name varchar(255),
+    l_last_name varchar(255),
+    l_street varchar(255),
+    l_extra_line varchar(255),
+    l_zip_code varchar(255),
+    l_city varchar(255),
+    l_email varchar(255),
+    l_institutional_email varchar(255),
+    l_generic_email varchar(255),
+    l_private_phone varchar(255),
+    l_mobile_phone varchar(255),
+    l_office_phone varchar(255),
+    fk_location int8 not null,
+    primary key (id)
 );
 
 -- user view
@@ -3260,13 +3260,13 @@ create view o_bs_identity_short_v as (
 
 
 create view o_gp_business_to_repository_v as (
-	select
-		grp.group_id as grp_id,
-		repoentry.repositoryentry_id as re_id,
-		repoentry.displayname as re_displayname
-	from o_gp_business as grp
-	inner join o_re_to_group as relation on (relation.fk_group_id = grp.fk_group_id)
-	inner join o_repositoryentry as repoentry on (repoentry.repositoryentry_id = relation.fk_entry_id)
+    select
+        grp.group_id as grp_id,
+        repoentry.repositoryentry_id as re_id,
+        repoentry.displayname as re_displayname
+    from o_gp_business as grp
+    inner join o_re_to_group as relation on (relation.fk_group_id = grp.fk_group_id)
+    inner join o_repositoryentry as repoentry on (repoentry.repositoryentry_id = relation.fk_entry_id)
 );
 
 create view o_bs_gp_membership_v as (

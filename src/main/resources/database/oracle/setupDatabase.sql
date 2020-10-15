@@ -3183,14 +3183,14 @@ create table o_grad_configuration (
 
 -- course disclaimer
 create table o_course_disclaimer_consent(
-	id number(20) generated always as identity,
-	disc_1_accepted boolean not null,
-	disc_2_accepted boolean not null, 
-	creationdate timestamp not null, 
-	lastmodified timestamp not null, 
-	fk_repository_entry number(20) not null, 
-	fk_identity number(20) not null,
-	primary key (id)
+    id number(20) generated always as identity,
+    disc_1_accepted boolean not null,
+    disc_2_accepted boolean not null,
+    creationdate timestamp not null,
+    lastmodified timestamp not null,
+    fk_repository_entry number(20) not null,
+    fk_identity number(20) not null,
+    primary key (id)
 );
 
 -- Appointments
@@ -3254,12 +3254,12 @@ create table o_ap_participation (
 
 -- Organiation role rights
 create table o_org_role_to_right (
-	id number(20) generated always as identity,
-	creationdate date not null,
-	o_role varchar(255) not null,
-	o_right varchar(255) not null,
-	fk_organisation number(20) not null,
-	primary key (id)
+    id number(20) generated always as identity,
+    creationdate date not null,
+    o_role varchar(255) not null,
+    o_right varchar(255) not null,
+    fk_organisation number(20) not null,
+    primary key (id)
 );
 
 -- Contact tracing
@@ -3317,13 +3317,13 @@ create view o_bs_identity_short_v as (
 );
 
 create view o_gp_business_to_repository_v as (
-	select
-		grp.group_id as grp_id,
-		repoentry.repositoryentry_id as re_id,
-		repoentry.displayname as re_displayname
-	from o_gp_business grp
-	inner join o_re_to_group relation on (relation.fk_group_id = grp.fk_group_id)
-	inner join o_repositoryentry repoentry on (repoentry.repositoryentry_id = relation.fk_entry_id)
+    select
+        grp.group_id as grp_id,
+        repoentry.repositoryentry_id as re_id,
+        repoentry.displayname as re_displayname
+    from o_gp_business grp
+    inner join o_re_to_group relation on (relation.fk_group_id = grp.fk_group_id)
+    inner join o_repositoryentry repoentry on (repoentry.repositoryentry_id = relation.fk_entry_id)
 );
 
 create view o_bs_gp_membership_v as (

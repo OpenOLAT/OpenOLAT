@@ -575,7 +575,7 @@ create table if not exists o_bs_membership (
 
 create table if not exists o_plock (
     plock_id bigint not null,
-	version mediumint unsigned not null,
+    version mediumint unsigned not null,
     creationdate datetime,
     asset varchar(255) not null unique,
     primary key (plock_id)
@@ -598,50 +598,50 @@ create table if not exists o_lifecycle (
 );
 
 create table if not exists oc_lock (
-	lock_id bigint not null,
-	version mediumint unsigned not null,
-	creationdate datetime,
-	identity_fk bigint not null,
-	asset varchar(120) not null unique,
-	windowid varchar(32) default null,
-	primary key (lock_id)
+    lock_id bigint not null,
+    version mediumint unsigned not null,
+    creationdate datetime,
+    identity_fk bigint not null,
+    asset varchar(120) not null unique,
+    windowid varchar(32) default null,
+    primary key (lock_id)
 );
 
 create table if not exists o_readmessage (
-	id bigint not null,
-	version mediumint unsigned not null,
+    id bigint not null,
+    version mediumint unsigned not null,
     creationdate datetime,
-	identity_id bigint not null,
-	forum_id bigint not null,
-	message_id bigint not null,
-	primary key (id)
+    identity_id bigint not null,
+    forum_id bigint not null,
+    message_id bigint not null,
+    primary key (id)
 );
 
 create table if not exists o_loggingtable (
-	log_id bigint not null,
-	creationdate datetime,
-	sourceclass varchar(255),
-	sessionid varchar(255) not null,
-	user_id bigint,
-	actioncrudtype varchar(1) not null,
-	actionverb varchar(16) not null,
-	actionobject varchar(32) not null,
-	simpleduration bigint not null,
-	resourceadminaction boolean not null,
-	businesspath varchar(2048),
-	greatgrandparentrestype varchar(32),
-	greatgrandparentresid varchar(64),
-	greatgrandparentresname varchar(255),
-	grandparentrestype varchar(32),
-	grandparentresid varchar(64),
-	grandparentresname varchar(255),
-	parentrestype varchar(32),
-	parentresid varchar(64),
-	parentresname varchar(255),
-	targetrestype varchar(32),
-	targetresid varchar(64),
-	targetresname varchar(255),
-	primary key (log_id)
+    log_id bigint not null,
+    creationdate datetime,
+    sourceclass varchar(255),
+    sessionid varchar(255) not null,
+    user_id bigint,
+    actioncrudtype varchar(1) not null,
+    actionverb varchar(16) not null,
+    actionobject varchar(32) not null,
+    simpleduration bigint not null,
+    resourceadminaction boolean not null,
+    businesspath varchar(2048),
+    greatgrandparentrestype varchar(32),
+    greatgrandparentresid varchar(64),
+    greatgrandparentresname varchar(255),
+    grandparentrestype varchar(32),
+    grandparentresid varchar(64),
+    grandparentresname varchar(255),
+    parentrestype varchar(32),
+    parentresid varchar(64),
+    parentresname varchar(255),
+    targetrestype varchar(32),
+    targetresid varchar(64),
+    targetresname varchar(255),
+    primary key (log_id)
 );
 
 create table if not exists o_checklist (
@@ -705,28 +705,28 @@ create table if not exists o_projectbroker_customfields (
 );
 
 create table if not exists o_usercomment (
-	comment_id bigint not null,
-	version mediumint unsigned not null,
-	creationdate datetime,
-	resname varchar(50) not null,
-	resid bigint not null,
-	ressubpath varchar(2048),
-  	creator_id bigint not null,
-	commenttext longtext,
-	parent_key bigint,
-	primary key (comment_id)
+    comment_id bigint not null,
+    version mediumint unsigned not null,
+    creationdate datetime,
+    resname varchar(50) not null,
+    resid bigint not null,
+    ressubpath varchar(2048),
+    creator_id bigint not null,
+    commenttext longtext,
+    parent_key bigint,
+    primary key (comment_id)
 );
 create table if not exists o_userrating (
-	rating_id bigint not null,
-	version mediumint unsigned not null,
-	creationdate datetime,
-	lastmodified datetime,
-	resname varchar(50) not null,
-	resid bigint not null,
-	ressubpath varchar(2048),
+    rating_id bigint not null,
+    version mediumint unsigned not null,
+    creationdate datetime,
+    lastmodified datetime,
+    resname varchar(50) not null,
+    resid bigint not null,
+    ressubpath varchar(2048),
     creator_id bigint not null,
-	rating integer not null,
-	primary key (rating_id)
+    rating integer not null,
+    primary key (rating_id)
 );
 
 create table o_co_db_entry (
@@ -747,7 +747,7 @@ create table o_co_db_entry (
 
 create table if not exists o_stat_lastupdated (
 
-	lastupdated datetime not null
+    lastupdated datetime not null
 
 );
 -- important: initialize with old date!
@@ -757,12 +757,12 @@ insert into o_stat_lastupdated values(date('1999-01-01'));
 -- insert into o_stat_dayofweek (businesspath,resid,day,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,dayofweek(creationdate) day,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,day;
 create table if not exists o_stat_dayofweek (
 
-	id bigint unsigned not null auto_increment,
-	businesspath varchar(2048) not null,
-	resid bigint not null,
-	day int not null,
-	value int not null,
-	primary key (id)
+    id bigint unsigned not null auto_increment,
+    businesspath varchar(2048) not null,
+    resid bigint not null,
+    day int not null,
+    value int not null,
+    primary key (id)
 
 );
 create index statdow_resid_idx on o_stat_dayofweek (resid);
@@ -771,12 +771,12 @@ create index statdow_resid_idx on o_stat_dayofweek (resid);
 -- insert into o_stat_hourofday (businesspath,resid,hour,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,hour(creationdate) hour,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,hour;
 create table if not exists o_stat_hourofday (
 
-	id bigint unsigned not null auto_increment,
-	businesspath varchar(2048) not null,
-	resid bigint not null,
-	hour int not null,
-	value int not null,
-	primary key (id)
+    id bigint unsigned not null auto_increment,
+    businesspath varchar(2048) not null,
+    resid bigint not null,
+    hour int not null,
+    value int not null,
+    primary key (id)
 
 );
 create index stathod_resid_idx on o_stat_hourofday (resid);
@@ -785,12 +785,12 @@ create index stathod_resid_idx on o_stat_hourofday (resid);
 -- insert into o_stat_weekly (businesspath,resid,week,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,concat(year(creationdate),'-',week(creationdate)) week,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,week;
 create table if not exists o_stat_weekly (
 
-	id bigint unsigned not null auto_increment,
-	businesspath varchar(2048) not null,
-	resid bigint not null,
-	week varchar(7) not null,
-	value int not null,
-	primary key (id)
+    id bigint unsigned not null auto_increment,
+    businesspath varchar(2048) not null,
+    resid bigint not null,
+    week varchar(7) not null,
+    value int not null,
+    primary key (id)
 
 );
 create index statwee_resid_idx on o_stat_weekly (resid);
@@ -799,12 +799,12 @@ create index statwee_resid_idx on o_stat_weekly (resid);
 -- insert into o_stat_daily (businesspath,resid,day,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,date(creationdate) day,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,day;
 create table if not exists o_stat_daily (
 
-	id bigint unsigned not null auto_increment,
-	businesspath varchar(2048) not null,
-	resid bigint not null,
-	day datetime not null,
-	value int not null,
-	primary key (id)
+    id bigint unsigned not null auto_increment,
+    businesspath varchar(2048) not null,
+    resid bigint not null,
+    day datetime not null,
+    value int not null,
+    primary key (id)
 
 );
 create index statday_resid_idx on o_stat_daily (resid);
@@ -871,8 +871,8 @@ create table if not exists o_mail (
   mail_id bigint NOT NULL,
   meta_mail_id varchar(64),
   creationdate datetime,
-	lastmodified datetime,
-	resname varchar(50),
+    lastmodified datetime,
+    resname varchar(50),
   resid bigint,
   ressubpath varchar(2048),
   businesspath varchar(2048),
@@ -940,28 +940,28 @@ create table  if not exists o_ac_offer (
 );
 
 create table if not exists o_ac_method (
-	method_id bigint NOT NULL,
-	access_method varchar(32),
+    method_id bigint NOT NULL,
+    access_method varchar(32),
   version mediumint unsigned not null,
   creationdate datetime,
-	lastmodified datetime,
-	is_valid bit default 1,
-	is_enabled bit default 1,
-	validfrom datetime,
-	validto datetime,
-	primary key (method_id)
+    lastmodified datetime,
+    is_valid bit default 1,
+    is_enabled bit default 1,
+    validfrom datetime,
+    validto datetime,
+    primary key (method_id)
 );
 
 create table if not exists o_ac_offer_access (
-	offer_method_id bigint NOT NULL,
+    offer_method_id bigint NOT NULL,
   version mediumint unsigned not null,
   creationdate datetime,
-	is_valid bit default 1,
-	validfrom datetime,
-	validto datetime,
+    is_valid bit default 1,
+    validfrom datetime,
+    validto datetime,
   fk_offer_id bigint,
   fk_method_id bigint,
-	primary key (offer_method_id)
+    primary key (offer_method_id)
 );
 
 create table o_ac_auto_advance_order (
@@ -979,24 +979,24 @@ create table o_ac_auto_advance_order (
 
 -- access cart
 create table if not exists o_ac_order (
-	order_id bigint NOT NULL,
+    order_id bigint NOT NULL,
   version mediumint unsigned not null,
   creationdate datetime,
-	lastmodified datetime,
-	is_valid bit default 1,
-	total_lines_amount DECIMAL(12,4),
-	total_lines_currency_code VARCHAR(3),
-	total_amount DECIMAL(12,4),
-	total_currency_code VARCHAR(3),
-	discount_amount DECIMAL(12,4),
-	discount_currency_code VARCHAR(3),
-	order_status VARCHAR(32) default 'NEW',
+    lastmodified datetime,
+    is_valid bit default 1,
+    total_lines_amount DECIMAL(12,4),
+    total_lines_currency_code VARCHAR(3),
+    total_amount DECIMAL(12,4),
+    total_currency_code VARCHAR(3),
+    discount_amount DECIMAL(12,4),
+    discount_currency_code VARCHAR(3),
+    order_status VARCHAR(32) default 'NEW',
   fk_delivery_id bigint,
-	primary key (order_id)
+    primary key (order_id)
 );
 
 create table if not exists o_ac_order_part (
-	order_part_id bigint NOT NULL,
+    order_part_id bigint NOT NULL,
   version mediumint unsigned not null,
   pos mediumint unsigned,
   creationdate datetime,
@@ -1005,25 +1005,25 @@ create table if not exists o_ac_order_part (
   total_amount DECIMAL(12,4),
   total_currency_code VARCHAR(3),
   fk_order_id bigint,
-	primary key (order_part_id)
+    primary key (order_part_id)
 );
 
 create table if not exists o_ac_order_line (
-	order_item_id bigint NOT NULL,
+    order_item_id bigint NOT NULL,
   version mediumint unsigned not null,
   pos mediumint unsigned,
   creationdate datetime,
-	unit_price_amount DECIMAL(12,4),
-	unit_price_currency_code VARCHAR(3),
-	total_amount DECIMAL(12,4),
-	total_currency_code VARCHAR(3),
+    unit_price_amount DECIMAL(12,4),
+    unit_price_currency_code VARCHAR(3),
+    total_amount DECIMAL(12,4),
+    total_currency_code VARCHAR(3),
   fk_order_part_id bigint,
   fk_offer_id bigint,
-	primary key (order_item_id)
+    primary key (order_item_id)
 );
 
 create table if not exists o_ac_transaction (
-	transaction_id bigint NOT NULL,
+    transaction_id bigint NOT NULL,
   version mediumint unsigned not null,
   creationdate datetime,
   trx_status VARCHAR(32) default 'NEW',
@@ -1032,7 +1032,7 @@ create table if not exists o_ac_transaction (
   fk_order_part_id bigint,
   fk_order_id bigint,
   fk_method_id bigint,
-	primary key (transaction_id)
+    primary key (transaction_id)
 );
 
 create table  if not exists o_ac_reservation (
@@ -3103,14 +3103,14 @@ create table o_grad_configuration (
 
 -- course disclaimer
 create table o_course_disclaimer_consent(
-	id bigint not null auto_increment,
-	disc_1_accepted boolean not null,
-	disc_2_accepted boolean not null, 
-	creationdate datetime not null, 
-	lastmodified datetime not null, 
-	fk_repository_entry bigint not null, 
-	fk_identity bigint not null,
-	primary key (id)
+    id bigint not null auto_increment,
+    disc_1_accepted boolean not null,
+    disc_2_accepted boolean not null,
+    creationdate datetime not null,
+    lastmodified datetime not null,
+    fk_repository_entry bigint not null,
+    fk_identity bigint not null,
+    primary key (id)
 );
 
 -- Appointments
@@ -3174,49 +3174,49 @@ create table o_ap_participation (
 
 -- Organiation role rights
 create table o_org_role_to_right (
-	id bigint not null auto_increment,
-	creationdate datetime not null,
-	o_role varchar(255) not null,
-	o_right varchar(255) not null,
-	fk_organisation bigint not null,
-	primary key (id)
+    id bigint not null auto_increment,
+    creationdate datetime not null,
+    o_role varchar(255) not null,
+    o_right varchar(255) not null,
+    fk_organisation bigint not null,
+    primary key (id)
 );
 
 -- Contact tracing
 create table o_contact_tracing_location (
-	id bigserial,
-	creationdate timestamp not null,
-	lastmodified timestamp not null,
-	l_reference varchar(255) not null,
-	l_titel varchar(255) not null,
-	l_room varchar(255) not null,
-	l_building varchar(255) not null,
-	l_qr_id varchar(255) not null,
-	l_guests boolean not null,
-	primary key (id)
+    id bigint not null auto_increment,
+    creationdate datetime not null,
+    lastmodified datetime not null,
+    l_reference varchar(255) not null,
+    l_titel varchar(255) not null,
+    l_room varchar(255) not null,
+    l_building varchar(255) not null,
+    l_qr_id varchar(255) not null,
+    l_guests boolean not null,
+    primary key (id)
 );
 
 create table o_contact_tracing_entry (
-	id bigserial,
-	creationdate timestamp not null,
-	l_deletion_date timestamp not null,
-	l_start_date timestamp not null,
-	l_end_date timestamp,
-	l_nick_name varchar(255),
-	l_fist_name varchar(255),
-	l_last_name varchar(255),
-	l_street varchar(255),
-	l_extra_line varchar(255),
-	l_zip_code varchar(255),
-	l_city varchar(255),
-	l_email varchar(255),
-	l_institutional_email varchar(255),
-	l_generic_email varchar(255),
-	l_private_phone varchar(255),
-	l_mobile_phone varchar(255),
-	l_office_phone varchar(255),
-	fk_location int8 not null,
-	primary key (id)
+    id bigint not null auto_increment,
+    creationdate datetime not null,
+    l_deletion_date datetime not null,
+    l_start_date datetime not null,
+    l_end_date datetime,
+    l_nick_name varchar(255),
+    l_fist_name varchar(255),
+    l_last_name varchar(255),
+    l_street varchar(255),
+    l_extra_line varchar(255),
+    l_zip_code varchar(255),
+    l_city varchar(255),
+    l_email varchar(255),
+    l_institutional_email varchar(255),
+    l_generic_email varchar(255),
+    l_private_phone varchar(255),
+    l_mobile_phone varchar(255),
+    l_office_phone varchar(255),
+    fk_location bigint not null,
+    primary key (id)
 );
 
 -- user view
@@ -3237,13 +3237,13 @@ create view o_bs_identity_short_v as (
 );
 
 create view o_gp_business_to_repository_v as (
-	select
-		grp.group_id as grp_id,
-		repoentry.repositoryentry_id as re_id,
-		repoentry.displayname as re_displayname
-	from o_gp_business as grp
-	inner join o_re_to_group as relation on (relation.fk_group_id = grp.fk_group_id)
-	inner join o_repositoryentry as repoentry on (repoentry.repositoryentry_id = relation.fk_entry_id)
+    select
+        grp.group_id as grp_id,
+        repoentry.repositoryentry_id as re_id,
+        repoentry.displayname as re_displayname
+    from o_gp_business as grp
+    inner join o_re_to_group as relation on (relation.fk_group_id = grp.fk_group_id)
+    inner join o_repositoryentry as repoentry on (repoentry.repositoryentry_id = relation.fk_entry_id)
 );
 
 create view o_bs_gp_membership_v as (

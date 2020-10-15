@@ -81,12 +81,12 @@ alter table o_ap_appointment add constraint ap_appointment_meeting_idx foreign k
 
 -- Organiation role rights
 create table o_org_role_to_right (
-	id bigint not null auto_increment,
-	creationdate datetime not null,
-	o_role varchar(255) not null,
-	o_right varchar(255) not null,
-	fk_organisation bigint not null,
-	primary key (id)
+    id bigint not null auto_increment,
+    creationdate datetime not null,
+    o_role varchar(255) not null,
+    o_right varchar(255) not null,
+    fk_organisation bigint not null,
+    primary key (id)
 );
 
 alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
