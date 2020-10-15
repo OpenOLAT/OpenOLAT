@@ -81,12 +81,12 @@ alter table o_ap_appointment add constraint ap_appointment_meeting_idx foreign k
 
 -- Organiation role rights
 create table o_org_role_to_right (
-    id bigint not null auto_increment,
-    creationdate datetime not null,
-    o_role varchar(255) not null,
-    o_right varchar(255) not null,
-    fk_organisation bigint not null,
-    primary key (id)
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   o_role varchar(255) not null,
+   o_right varchar(255) not null,
+   fk_organisation bigint not null,
+   primary key (id)
 );
 
 alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
@@ -101,37 +101,37 @@ alter table o_lecture_absence_category add column l_enabled bool default true no
 
 -- Contact tracing
 create table o_contact_tracing_location (
-    id bigserial,
-    creationdate timestamp not null,
-    lastmodified timestamp not null,
-    l_reference varchar(255) not null,
-    l_titel varchar(255) not null,
-    l_room varchar(255) not null,
-    l_building varchar(255) not null,
-    l_qr_id varchar(255) not null,
-    l_guests boolean not null,
-    primary key (id)
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   l_reference varchar(255) not null,
+   l_titel varchar(255) not null,
+   l_room varchar(255) not null,
+   l_building varchar(255) not null,
+   l_qr_id varchar(255) not null,
+   l_guests boolean not null,
+   primary key (id)
 );
 
 create table o_contact_tracing_entry (
-    id bigserial,
-     creationdate timestamp not null,
-     l_deletion_date timestamp not null,
-     l_start_date timestamp not null,
-     l_end_date timestamp,
-     l_nick_name varchar(255),
-     l_fist_name varchar(255),
-     l_last_name varchar(255),
-     l_street varchar(255),
-     l_extra_line varchar(255),
-     l_zip_code varchar(255),
-     l_city varchar(255),
-     l_email varchar(255),
-     l_institutional_email varchar(255),
-     l_generic_email varchar(255),
-     l_private_phone varchar(255),
-     l_mobile_phone varchar(255),
-     l_office_phone varchar(255),
-     fk_location int8 not null,
-     primary key (id)
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   l_deletion_date datetime not null,
+   l_start_date datetime not null,
+   l_end_date datetime,
+   l_nick_name varchar(255),
+   l_fist_name varchar(255),
+   l_last_name varchar(255),
+   l_street varchar(255),
+   l_extra_line varchar(255),
+   l_zip_code varchar(255),
+   l_city varchar(255),
+   l_email varchar(255),
+   l_institutional_email varchar(255),
+   l_generic_email varchar(255),
+   l_private_phone varchar(255),
+   l_mobile_phone varchar(255),
+   l_office_phone varchar(255),
+   fk_location int8 not null,
+   primary key (id)
 );

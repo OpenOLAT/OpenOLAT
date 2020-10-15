@@ -88,8 +88,8 @@ create table o_org_role_to_right (
    primary key (id)
 );
 
-alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
-create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right(fk_organisation);
+alter table o_org_role_to_right add constraint org_role_to_right_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_org_role_to_r_to_org_idx on o_org_role_to_right(fk_organisation);
 
 
 -- Lectures
@@ -100,7 +100,7 @@ alter table o_lecture_absence_category add l_enabled number default 1 not null;
 
 -- Contact tracing
 create table o_contact_tracing_location (
-    id number(20) generated  always as identity ,
+    id number(20) generated  always as identity,
     creationdate date not null,
     lastmodified date not null,
     l_reference varchar2(255) not null,
@@ -108,12 +108,12 @@ create table o_contact_tracing_location (
     l_room varchar2(255) not null,
     l_building varchar2(255) not null,
     l_qr_id varchar2(255) not null,
-    l_guests boolean not null,
+    l_guests number not null,
     primary key (id)
 );
 
 create table o_contact_tracing_entry (
-    id bigserial,
+    id number(20) generated  always as identity,
     creationdate date not null,
     l_deletion_date date not null,
     l_start_date date not null,
