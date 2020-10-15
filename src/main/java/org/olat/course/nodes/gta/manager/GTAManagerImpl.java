@@ -230,8 +230,8 @@ public class GTAManagerImpl implements GTAManager {
 			if(deleteFile) {
 				VFSContainer tasksContainer = getTasksContainer(courseEnv, cNode);
 				VFSItem item = tasksContainer.resolve(removedTask.getFilename());
-				deleteEdusharingUsages(courseEnv, item);
 				if(item != null) {
+					deleteEdusharingUsages(courseEnv, item);
 					item.delete();
 				}
 			}

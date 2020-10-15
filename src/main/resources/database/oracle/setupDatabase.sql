@@ -3579,7 +3579,7 @@ create index idx_user_instid_idx on o_user (u_institutionaluseridentifier);
 create index idx_user_instemail_idx on o_user (u_institutionalemail);
 create index idx_user_creationdate_idx on o_user (creationdate);
 
-create index propvalue_idx on o_userproperty (propvalue);
+alter table o_user add constraint iuni_user_nickname_idx unique (u_nickname);
 
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 create index idx_user_to_ident_idx on o_user (fk_identity);
