@@ -22,7 +22,9 @@ package org.olat.course.nodes.info;
 
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -92,6 +94,10 @@ public class InfoConfigController extends FormBasicController {
 		this.config = courseNode.getModuleConfiguration();
 		autoSubscribeValues[0] = translate("pane.tab.infos_config.auto_subscribe.on");
 		initForm(ureq);
+	}
+	
+	public static List<String> getAllowedValues() {
+		return Arrays.asList(maxDurationValues);
 	}
 	
 	@Override

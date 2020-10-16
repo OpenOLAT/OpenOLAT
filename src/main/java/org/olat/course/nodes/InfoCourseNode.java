@@ -46,6 +46,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodes.info.InfoConfigController;
 import org.olat.course.nodes.info.InfoCourseNodeConfiguration;
 import org.olat.course.nodes.info.InfoCourseNodeEditController;
 import org.olat.course.nodes.info.InfoPeekViewController;
@@ -76,7 +77,7 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 	public static final String ADMIN_CONDITION_ID = "admininfos";
 	
 	// Configs
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 	public static final String CONFIG_KEY_ADMIN_BY_COACH = "admin.by.coach";
 	public static final String CONFIG_KEY_EDIT_BY_COACH = "edit.by.coach";
 	public static final String CONFIG_KEY_EDIT_BY_PARTICIPANT = "edit.by.participant";
@@ -109,7 +110,25 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_PARTICIPANT, false);
 			removeDefaultPreconditions();
 		}
+		if(version < 3) {
+			if(!config.has(InfoCourseNodeConfiguration.CONFIG_DURATION) && config.has(InfoCourseNodeConfiguration.CONFIG_DURATION_DEPRECATED)) {
+				String validDuration = getValueAllowed(config.get("duration"));
+				config.set(InfoCourseNodeConfiguration.CONFIG_DURATION, validDuration);
+			}
+		}
 		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+	
+	private String getValueAllowed(Object value) {
+		if(value instanceof Number) {
+			value = value.toString();
+		}
+		for(String allowedValue:InfoConfigController.getAllowedValues()) {
+			if(allowedValue.equals(value)) {
+				return allowedValue;
+			}
+		}
+		return "90";
 	}
 	
 	private void removeDefaultPreconditions() {

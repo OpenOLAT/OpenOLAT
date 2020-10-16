@@ -66,11 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class InfoRunController extends BasicController {
 	
-	private VelocityContainer runVc;
-	private InfoDisplayController infoDisplayController;
 	private ContextualSubscriptionController subscriptionController;
-	
-	private String businessPath;
 	
 	@Autowired
 	private InfoSubscriptionManager subscriptionManager;
@@ -144,7 +140,7 @@ public class InfoRunController extends BasicController {
 			String resSubPath, InfoSecurityCallback secCallback, boolean autoSubscribe, int maxResults, int duration) {
 		Long resId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable infoResourceable = new InfoOLATResourceable(resId);
-		businessPath = normalizeBusinessPath(getWindowControl().getBusinessControl().getAsString());
+		String businessPath = normalizeBusinessPath(getWindowControl().getBusinessControl().getAsString());
 		ICourse course = CourseFactory.loadCourse(resId);
 		
 		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
@@ -160,7 +156,7 @@ public class InfoRunController extends BasicController {
 			listenTo(subscriptionController);
 		}	
 		
-		infoDisplayController = new InfoDisplayController(ureq, getWindowControl(), maxResults, duration, secCallback, infoResourceable, resSubPath, businessPath);
+		InfoDisplayController infoDisplayController = new InfoDisplayController(ureq, getWindowControl(), maxResults, duration, secCallback, infoResourceable, resSubPath, businessPath);
 		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, getLocale()));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.owner, translate("wizard.step1.send_option.owner")));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.coach, translate("wizard.step1.send_option.coach")));
@@ -170,7 +166,7 @@ public class InfoRunController extends BasicController {
 		infoDisplayController.setSendMailFormatter(mailFormatter);
 		listenTo(infoDisplayController);
 
-		runVc = createVelocityContainer("run");
+		VelocityContainer runVc = createVelocityContainer("run");
 		if(subscriptionController != null) {
 			runVc.put("infoSubscription", subscriptionController.getInitialComponent());
 		}
