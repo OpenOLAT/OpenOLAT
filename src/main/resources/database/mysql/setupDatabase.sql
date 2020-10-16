@@ -3548,6 +3548,7 @@ alter table o_lic_license ENGINE = InnoDB;
 alter table o_org_organisation_type ENGINE = InnoDB;
 alter table o_org_organisation ENGINE = InnoDB;
 alter table o_org_type_to_type ENGINE = InnoDB;
+alter table o_org_role_to_right ENGINE = InnoDB;
 alter table o_re_to_organisation ENGINE = InnoDB;
 alter table o_cur_element_type ENGINE = InnoDB;
 alter table o_cur_curriculum ENGINE = InnoDB;
@@ -3566,6 +3567,8 @@ alter table o_ap_organizer ENGINE = InnoDB;
 alter table o_ap_topic_to_group ENGINE = InnoDB;
 alter table o_ap_appointment ENGINE = InnoDB;
 alter table o_ap_participation ENGINE = InnoDB;
+alter table o_contact_tracing_location ENGINE = InnoDB;
+alter table o_contact_tracing_entry ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);

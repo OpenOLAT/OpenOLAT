@@ -89,6 +89,7 @@ create table o_org_role_to_right (
    fk_organisation bigint not null,
    primary key (id)
 );
+alter table o_org_role_to_right ENGINE = InnoDB;
 
 alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right (fk_organisation);
@@ -113,6 +114,7 @@ create table o_contact_tracing_location (
    l_guests boolean not null,
    primary key (id)
 );
+alter table o_contact_tracing_location ENGINE = InnoDB;
 
 create table o_contact_tracing_entry (
    id bigint not null auto_increment,
@@ -136,3 +138,4 @@ create table o_contact_tracing_entry (
    fk_location int8 not null,
    primary key (id)
 );
+alter table o_contact_tracing_entry ENGINE = InnoDB;
