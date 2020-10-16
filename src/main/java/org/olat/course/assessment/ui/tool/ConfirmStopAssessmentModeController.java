@@ -19,16 +19,19 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -36,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,9 +52,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ConfirmStopAssessmentModeController extends FormBasicController {
 	
 	private final AssessmentMode mode;
+	
+	private MultipleSelectionElement withDisadvantagesEl;
+	private MultipleSelectionElement pullRunningSessionsEl;
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private QTI21Service qti21Service;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
 	@Autowired
@@ -66,11 +75,49 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		List<String> nodeList = mode.getElementAsList();
+		Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
+		boolean extensionTime = assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode);
+		
+		boolean runningSessions;
+		if(extensionTime) {
+			Set<Long> disadvantegCompensationAssessedIdentityKeys = getIdentitiesWithDisadvantageCompensations(assessedIdentityKeys, nodeList);
+			runningSessions = hasAssessmentTestSessionsRunning(disadvantegCompensationAssessedIdentityKeys, nodeList);
+			initFormExtensionTime(formLayout);
+		} else {
+			runningSessions = hasAssessmentTestSessionsRunning(assessedIdentityKeys, nodeList);
+			initForm(formLayout, nodeList, assessedIdentityKeys);
+		}
+		
+		if(runningSessions && false) {//TODO assessment mode
+			KeyValues keyValues = new KeyValues();
+			keyValues.add(KeyValues.entry("with", translate("confirm.stop.pull.running.sessions")));
+			pullRunningSessionsEl = uifactory.addCheckboxesHorizontal("runningSessions", "confirm.stop.pull.running.sessions", formLayout,
+					keyValues.keys(), keyValues.values());
+			pullRunningSessionsEl.select(keyValues.keys()[0], true);
+		}
+
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("stop", formLayout);
+	}
+	
+	private void initFormExtensionTime(FormItemContainer formLayout) {
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			String name = StringHelper.escapeHtml(mode.getName());
+			layoutCont.contextPut("msg", translate("confirm.stop.final.text.details", new String[] { name }));
+		}
+	}
+	
+	private void initForm(FormItemContainer formLayout, List<String> nodeList, Set<Long> assessedIdentityKeys) {
+		Set<Long> disadvantegCompensationAssessedIdentityKeys = getIdentitiesWithDisadvantageCompensations(assessedIdentityKeys, nodeList);
+		int numOfDisadvantagedUsers = disadvantegCompensationAssessedIdentityKeys.size();
+
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			String name = StringHelper.escapeHtml(mode.getName());
 			layoutCont.contextPut("msg", translate("confirm.stop.text.details", new String[] { name }));
-			int numOfDisadvantagedUsers = hasDisadvantageCompensations();
+
 			if(numOfDisadvantagedUsers == 1) {
 				layoutCont.contextPut("compensationMsg", translate("confirm.stop.text.compensations"));
 			} else if(numOfDisadvantagedUsers > 1) {
@@ -78,9 +125,13 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 						new String[] { Integer.toString(numOfDisadvantagedUsers) }));
 			}
 		}
-
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("stop", formLayout);
+		
+		if(numOfDisadvantagedUsers > 0) {
+			KeyValues keyValues = new KeyValues();
+			keyValues.add(KeyValues.entry("with", translate("confirm.stop.with.disadvantages")));
+			withDisadvantagesEl = uifactory.addCheckboxesHorizontal("disadvantages", "confirm.stop.with.disadvantages", formLayout,
+					keyValues.keys(), keyValues.values());
+		}
 	}
 	
 	@Override
@@ -88,26 +139,28 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 		//
 	}
 	
-	private int hasDisadvantageCompensations() {
-		String nodes = mode.getElementList();
-		List<String> nodeList = StringHelper.containsNonWhitespace(nodes) ? Arrays.asList(nodes.split("[,]")) : null;
-		List<IdentityRef> disadvantagedIdentities = disadvantageCompensationService
+	private Set<Long> getIdentitiesWithDisadvantageCompensations(final Set<Long> assessedIdentityKeys, final List<String> nodeList) {
+		final List<IdentityRef> disadvantagedIdentities = disadvantageCompensationService
 				.getActiveDisadvantagedUsers(mode.getRepositoryEntry(), nodeList);
-		Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
-		
-		int count = 0;
-		for(IdentityRef disadvantagedIdentity:disadvantagedIdentities) {
-			if(assessedIdentityKeys.contains(disadvantagedIdentity.getKey())) {
-				count++;
-			}
-		}
-		return count;
+		return disadvantagedIdentities.stream()
+			.filter(ref -> assessedIdentityKeys.contains(ref.getKey()))
+			.map(IdentityRef::getKey)
+			.collect(Collectors.toSet());
+	}
+	
+	private boolean hasAssessmentTestSessionsRunning(Set<Long> assessedIdentityKeys, List<String> nodeList) {
+		List<IdentityRef> identities = assessedIdentityKeys.stream()
+				.map(IdentityRefImpl::new)
+				.collect(Collectors.toList());
+		return qti21Service.isRunningAssessmentTestSession(mode.getRepositoryEntry(), nodeList, identities);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		AssessmentMode reloadedMode = assessmentModeManager.getAssessmentModeById(mode.getKey());
-		assessmentModeCoordinationService.stopAssessment(reloadedMode);
+		boolean pullTests = pullRunningSessionsEl != null && pullRunningSessionsEl.isAtLeastSelected(1);
+		boolean withDisadvantaged = withDisadvantagesEl == null || withDisadvantagesEl.isAtLeastSelected(1);
+		assessmentModeCoordinationService.stopAssessment(reloadedMode, pullTests, withDisadvantaged);
 		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
