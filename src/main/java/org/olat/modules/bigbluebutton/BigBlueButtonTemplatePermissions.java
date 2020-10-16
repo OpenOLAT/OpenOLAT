@@ -20,11 +20,10 @@
 package org.olat.modules.bigbluebutton;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.util.StringHelper;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 

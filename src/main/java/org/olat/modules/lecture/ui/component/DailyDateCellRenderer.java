@@ -80,7 +80,7 @@ public class DailyDateCellRenderer implements FlexiCellRenderer {
 		}
 	}
 	
-	private boolean isRenderLectureBlock(AbsenceNotice notice, List<LectureBlock> lectures) {
+	protected static boolean isRenderLectureBlock(AbsenceNotice notice, List<LectureBlock> lectures) {
 		return notice.getNoticeTarget() == AbsenceNoticeTarget.lectureblocks
 				&& (lectures != null && !lectures.isEmpty());
 	}
