@@ -54,6 +54,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
@@ -107,6 +108,7 @@ import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
+import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
@@ -270,6 +272,26 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			}
 		}
 		return timeLimit;
+	}
+
+	public DigitalSignatureOptions getSignatureOptions(AssessmentTestSession session, Locale locale) {
+		RepositoryEntry testEntry = session.getTestEntry();
+		RepositoryEntry courseEntry = session.getRepositoryEntry();
+		QTI21DeliveryOptions deliveryOptions = CoreSpringFactory.getImpl(QTI21Service.class)
+				.getDeliveryOptions(testEntry);
+		
+		ModuleConfiguration config = getModuleConfiguration();
+		boolean digitalSignature = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE,
+			deliveryOptions.isDigitalSignature());
+		boolean sendMail = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL,
+			deliveryOptions.isDigitalSignatureMail());
+
+		DigitalSignatureOptions options = new DigitalSignatureOptions(digitalSignature, sendMail, courseEntry, testEntry);
+		if(digitalSignature) {
+			CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
+			QTI21AssessmentRunController.decorateCourseConfirmation(session, options, courseEnv, this, testEntry, null, locale);
+		}
+		return options;
 	}
 	
 	public boolean isScoreVisibleAfterCorrection() {

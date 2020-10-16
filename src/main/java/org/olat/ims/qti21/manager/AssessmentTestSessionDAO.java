@@ -514,6 +514,37 @@ public class AssessmentTestSessionDAO {
 		return query.getResultList();
 	}
 	
+	public List<AssessmentTestSession> getRunningTestSessions(RepositoryEntryRef entry, List<String> courseSubIdents, List<? extends IdentityRef> identities) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from qtiassessmenttestsession session")
+		  .append(" left join session.testEntry testEntry")
+		  .append(" left join testEntry.olatResource testResource")
+		  .append(" inner join fetch session.identity assessedIdentity")
+		  .append(" inner join fetch assessedIdentity.user assessedUser")
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey")
+		  .append(" and session.finishTime is null and session.terminationTime is null")
+		  .append(" and session.exploded=false and session.cancelled=false")
+		  .append(" and session.identity.key in (:identityKeys)");
+		if(courseSubIdents != null && !courseSubIdents.isEmpty()) {
+			sb.append(" and session.subIdent in (:subIdents)");
+		}
+		
+		List<Long> identityKeys = identities.stream()
+				.map(IdentityRef::getKey)
+				.collect(Collectors.toList());
+		
+		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("identityKeys", identityKeys);		
+		if(courseSubIdents != null && !courseSubIdents.isEmpty()) {
+			query.setParameter("subIdents", courseSubIdents);
+		}
+		return query.getResultList();
+	}
+	
 	/**
 	 * 
 	 * @param entry The repository entry (typically the course, or the test if not in a course) (mandatory)

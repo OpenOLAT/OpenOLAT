@@ -89,7 +89,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 			initForm(formLayout, nodeList, assessedIdentityKeys);
 		}
 		
-		if(runningSessions && false) {//TODO assessment mode
+		if(runningSessions) {
 			KeyValues keyValues = new KeyValues();
 			keyValues.add(KeyValues.entry("with", translate("confirm.stop.pull.running.sessions")));
 			pullRunningSessionsEl = uifactory.addCheckboxesHorizontal("runningSessions", "confirm.stop.pull.running.sessions", formLayout,
@@ -160,7 +160,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 		AssessmentMode reloadedMode = assessmentModeManager.getAssessmentModeById(mode.getKey());
 		boolean pullTests = pullRunningSessionsEl != null && pullRunningSessionsEl.isAtLeastSelected(1);
 		boolean withDisadvantaged = withDisadvantagesEl == null || withDisadvantagesEl.isAtLeastSelected(1);
-		assessmentModeCoordinationService.stopAssessment(reloadedMode, pullTests, withDisadvantaged);
+		assessmentModeCoordinationService.stopAssessment(reloadedMode, pullTests, withDisadvantaged, getIdentity());
 		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

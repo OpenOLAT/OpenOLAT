@@ -351,9 +351,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			assessmentTestsCache.replace(resourceFile, resolvedAssessmentTest);
 			return resolvedAssessmentTest;
 		}
-		return assessmentTestsCache.computeIfAbsent(resourceFile, file -> {
-	        return internalLoadAndResolveAssessmentTest(resourceDirectory, assessmentObjectSystemId);
-		});
+		return assessmentTestsCache.computeIfAbsent(resourceFile, file ->
+	        internalLoadAndResolveAssessmentTest(resourceDirectory, assessmentObjectSystemId));
 	}
 	
 	private ResolvedAssessmentTest internalLoadAndResolveAssessmentTest(File resourceDirectory, URI assessmentObjectSystemId) {
@@ -368,9 +367,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	@Override
 	public ResolvedAssessmentItem loadAndResolveAssessmentItem(URI assessmentObjectSystemId, File resourceDirectory) {
 		File resourceFile = new File(assessmentObjectSystemId);
-		return assessmentItemsCache.computeIfAbsent(resourceFile, (file) -> {
-	       	return loadAndResolveAssessmentItemForCopy(assessmentObjectSystemId, resourceDirectory);
-		});
+		return assessmentItemsCache.computeIfAbsent(resourceFile, file -> 
+	       	loadAndResolveAssessmentItemForCopy(assessmentObjectSystemId, resourceDirectory));
 	}
 	
 	@Override
@@ -667,7 +665,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
-	public List<AssessmentTestSession> getRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry) {
+	public List<AssessmentTestSession> getRunningAssessmentTestSession(RepositoryEntryRef entry, String subIdent, RepositoryEntry testEntry) {
 		return testSessionDao.getRunningTestSessions(entry, subIdent, testEntry);
 	}
 
@@ -909,7 +907,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 				return new DigitalSignatureValidation(DigitalSignatureValidation.Message.sessionNotFound, false);
 			}
 			String testSessionKey = uri.substring(start + 1, end);
-			AssessmentTestSession testSession = getAssessmentTestSession(new Long(testSessionKey));
+			AssessmentTestSession testSession = getAssessmentTestSession(Long.valueOf(testSessionKey));
 			if(testSession == null) {
 				return new DigitalSignatureValidation(DigitalSignatureValidation.Message.sessionNotFound, false);
 			}
@@ -1245,7 +1243,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		try {
 			Value computedValue = outcomeVariable.getComputedValue();
 			if (QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(identifier)) {
-				log.info(Tracing.M_AUDIT, candidateSession.getKey() + " :: " + outcomeVariable.getIdentifier() + " - " + stringifyQtiValue(computedValue));
+				log.info(Tracing.M_AUDIT, "{} :: {} - {}", candidateSession.getKey(), outcomeVariable.getIdentifier(), stringifyQtiValue(computedValue));
 			} else if (QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
 				if (computedValue instanceof NumberValue) {
 					double score = ((NumberValue) computedValue).doubleValue();

@@ -314,7 +314,7 @@ public interface QTI21Service {
 	 */
 	public AssessmentTestSession reopenAssessmentTestSession(AssessmentTestSession session, Identity actor);
 	
-	public List<AssessmentTestSession> getRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
+	public List<AssessmentTestSession> getRunningAssessmentTestSession(RepositoryEntryRef entry, String subIdent, RepositoryEntry testEntry);
 	
 	public TestSessionState loadTestSessionState(AssessmentTestSession session);
 	

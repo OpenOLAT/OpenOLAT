@@ -32,7 +32,9 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.control.Event;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -51,6 +53,8 @@ import org.olat.course.assessment.model.AssessmentModeStatistics;
 import org.olat.course.assessment.model.CoordinatedAssessmentMode;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.dcompensation.manager.DisadvantageCompensationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -74,6 +78,8 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private TaskExecutorManager taskExecutor;
+	@Autowired
 	private AssessmentModule assessmentModule;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
@@ -83,6 +89,8 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	private UserSessionManager userSessionManager;
 	@Autowired
 	private AssessmentModeManagerImpl assessmentModeManager;
+	@Autowired
+	private AssessmentTestSessionDAO assessmentTestSessionDao;
 	@Autowired
 	private DisadvantageCompensationDAO disadvantageCompensationDao;
 	
@@ -460,7 +468,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	}
 
 	@Override
-	public AssessmentMode stopAssessment(AssessmentMode mode, boolean pullTestSessions, boolean withDisadvantaged) {
+	public AssessmentMode stopAssessment(AssessmentMode mode, boolean pullTestSessions, boolean withDisadvantaged, Identity doer) {
 		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
 		
 		EndStatus endStatus;
@@ -482,14 +490,31 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 				}
 			}
 			
-			if(assessedIdentityKeys.contains(252744713l)) {
-				System.out.println();
-			}
-			
 			endStatus = partial ? EndStatus.withoutDisadvantage : EndStatus.all;
 		}
 		
+		if(pullTestSessions) {
+			pullSessions(mode, assessedIdentityKeys, doer);
+		}
+		
 		return stopAssessment(mode, assessedIdentityKeys, endStatus);
+	}
+	
+	private void pullSessions(AssessmentMode mode, Set<Long> assessedIdentityKeys, Identity doer) {
+		List<IdentityRef> identityRefs = assessedIdentityKeys.stream()
+				.map(IdentityRefImpl::new)
+				.collect(Collectors.toList());
+		List<AssessmentTestSession> testSessions = assessmentTestSessionDao
+				.getRunningTestSessions(mode.getRepositoryEntry(), mode.getElementAsList(), identityRefs);
+		if(!testSessions.isEmpty()) {
+			List<Long> testSessionKeys = testSessions.stream()
+					.map(AssessmentTestSession::getKey)
+					.collect(Collectors.toList());
+			
+			Long doerKey = doer == null ? null : doer.getKey();
+			PullTestSessionsTask task = new PullTestSessionsTask(mode.getRepositoryEntry().getKey(), testSessionKeys, doerKey);
+			taskExecutor.schedule(task, 30000);
+		}
 	}
 	
 	private AssessmentMode stopAssessment(AssessmentMode mode, Set<Long> assessedIdentityKeys, EndStatus endStatus) {
