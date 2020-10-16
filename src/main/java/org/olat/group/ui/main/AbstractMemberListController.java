@@ -669,7 +669,12 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 		
 		ContactMessage contactMessage = new ContactMessage(getIdentity());
-		String name = repoEntry != null ? repoEntry.getDisplayname() : businessGroup.getName();
+		String name;
+		if(identities.size() == 1) {
+			name = userManager.getUserDisplayName(identities.get(0));
+		} else {
+			name = repoEntry != null ? repoEntry.getDisplayname() : businessGroup.getName();
+		}
 		ContactList contactList = new ContactList(name);
 		contactList.addAllIdentites(identities);
 		contactMessage.addEmailTo(contactList);
