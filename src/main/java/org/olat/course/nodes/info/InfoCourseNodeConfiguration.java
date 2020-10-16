@@ -42,7 +42,8 @@ import org.olat.course.nodes.InfoCourseNode;
  */
 public class InfoCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
-	public static final String CONFIG_DURATION = "duration";
+	public static final String CONFIG_DURATION_DEPRECATED = "duration";
+	public static final String CONFIG_DURATION = "infos.duration";
 	public static final String CONFIG_LENGTH = "length";
 	public static final String CONFIG_AUTOSUBSCRIBE = "autosubscribe";
 	
