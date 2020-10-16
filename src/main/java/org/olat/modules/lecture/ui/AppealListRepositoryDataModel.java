@@ -44,6 +44,8 @@ import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 public class AppealListRepositoryDataModel extends DefaultFlexiTableDataModel<AppealRollCallRow>
 implements SortableFlexiTableDataModel<AppealRollCallRow>, FilterableFlexiTableModel {
 	
+	private static final AppealCols[] COLS = AppealCols.values();
+	
 	private final Locale locale;
 	private final boolean authorizedAbsenceEnabled;
 	private final boolean absenceDefaultAuthorized;
@@ -61,7 +63,8 @@ implements SortableFlexiTableDataModel<AppealRollCallRow>, FilterableFlexiTableM
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<AppealRollCallRow> rows = new AppealListRepositorySortDelegate(orderBy, this, locale).sort();
+			List<AppealRollCallRow> rows = new AppealListRepositorySortDelegate(orderBy, this,
+					authorizedAbsenceEnabled, absenceDefaultAuthorized, locale).sort();
 			super.setObjects(rows);
 		}
 	}
@@ -100,7 +103,7 @@ implements SortableFlexiTableDataModel<AppealRollCallRow>, FilterableFlexiTableM
 	@Override
 	public Object getValueAt(AppealRollCallRow row, int col) {
 		if(col < AppealListRepositoryController.USER_PROPS_OFFSET) {
-			switch(AppealCols.values()[col]) {
+			switch(COLS[col]) {
 				case lectureBlockDate: return row.getRollCall().getLectureBlock().getStartDate();
 				case lectureBlockName: return row.getRollCall().getLectureBlock().getTitle();
 				case coach: return row.getCoach();

@@ -2356,7 +2356,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 						deliveryOptions.getAssessmentResultsOptions(), false, true, true);
 				listenTo(resultCtrl);
 				flc.add("qtiResults", resultCtrl.getInitialFormItem());
-				if(cSession.isAuthorMode()) {
+				if(cSession.isAuthorMode() && cSession.getTestEntry().equals(cSession.getRepositoryEntry())) {
 					restartTest.setVisible(true);
 				}
 				resultsVisible = true;

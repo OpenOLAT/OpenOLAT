@@ -140,7 +140,16 @@ public class MetadataBulkChangeController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("bulk.change.description");
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			if(items.size() == 1) {
+				layoutCont.contextPut("infosMsg", translate("bulk.change.description.singular"));
+			} else {
+				layoutCont.contextPut("infosMsg", translate("bulk.change.description.plural",
+						new String[] { Integer.toString(items.size()) }));
+			}
+			layoutCont.contextPut("infosCss", items.size() > 20 ? "o_warning" :"o_info");
+		}
 		
 		initGeneralForm(formLayout);
 		initQuestionForm(formLayout);

@@ -25,12 +25,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonDispatcher;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
@@ -46,7 +46,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
  */
 public class BigBlueButtonUIHelper {
 	
-	public static void updateTemplateInformations(SingleSelection templateEl, FormItem externalLinkEl, List<BigBlueButtonMeetingTemplate> templates) {
+	public static void updateTemplateInformations(SingleSelection templateEl, TextElement externalLinkEl, List<BigBlueButtonMeetingTemplate> templates) {
 		templateEl.setExampleKey(null, null);
 		if(templateEl.isOneSelected()) {
 			BigBlueButtonMeetingTemplate template = getSelectedTemplate(templateEl, templates);
@@ -60,7 +60,11 @@ public class BigBlueButtonUIHelper {
 					templateEl.setExampleKey("template.explain.max.participants", args);
 				}
 			}
-			externalLinkEl.setVisible(template != null && template.isExternalUsersAllowed());
+			boolean visible = template != null && template.isExternalUsersAllowed();
+			externalLinkEl.setVisible(visible);
+			if(visible && !StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
+				externalLinkEl.setValue(Long.toString(CodeHelper.getForeverUniqueID()));
+			}
 		} else {
 			externalLinkEl.setVisible(false);
 		}

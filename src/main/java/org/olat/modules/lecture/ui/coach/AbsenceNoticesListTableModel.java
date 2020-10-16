@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
@@ -45,6 +44,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class AbsenceNoticesListTableModel extends DefaultFlexiTableDataModel<AbsenceNoticeRow>
 implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
 	
+	private static final NoticeCols[] COLS = NoticeCols.values();
+	
 	private final Locale locale;
 	private final UserManager userManager;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -60,7 +61,7 @@ implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<AbsenceNoticeRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<AbsenceNoticeRow> rows = new AbsenceNoticesListTableModelSortDelegate(orderBy, this, locale).sort();
 			super.setObjects(rows);
 		}
 	}
@@ -74,7 +75,7 @@ implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
 	@Override
 	public Object getValueAt(AbsenceNoticeRow row, int col) {
 		if(col < AbsenceNoticesListController.USER_PROPS_OFFSET) {
-			switch(NoticeCols.values()[col]) {
+			switch(COLS[col]) {
 				case id: return row.getKey();
 				case date: return row;
 				case start: return row.getStartDate();
@@ -164,7 +165,7 @@ implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != details && this != tools;
 		}
 
 		@Override
