@@ -82,6 +82,11 @@ public class DisadvantageCompensationServiceImpl implements DisadvantageCompensa
 	}
 
 	@Override
+	public boolean isActiveDisadvantageCompensation(IdentityRef identity, RepositoryEntryRef entry, List<String> subIdents) {
+		return disadvantageCompensationDao.isActiveDisadvantagedUser(identity, entry, subIdents);
+	}
+
+	@Override
 	public List<IdentityRef> getActiveDisadvantagedUsers(RepositoryEntryRef entry, List<String> subIdents) {
 		return disadvantageCompensationDao.getActiveDisadvantagedUsers(entry, subIdents);
 	}

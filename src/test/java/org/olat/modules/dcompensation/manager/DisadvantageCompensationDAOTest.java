@@ -153,11 +153,33 @@ public class DisadvantageCompensationDAOTest extends OlatTestCase {
 		List<String> subIdents = List.of(subIdent1,  subIdent2);
 		List<IdentityRef> disadvantegdIdentities = disadvantageCompensationDao
 				.getActiveDisadvantagedUsers(entry, subIdents);
-		Assert.assertNotNull(disadvantegdIdentities);
-		Assert.assertEquals(2, disadvantegdIdentities.size());
 		assertThat(disadvantegdIdentities)
+			.isNotNull()
+			.hasSize(2)
 			.extracting(IdentityRef::getKey)
 			.containsExactlyInAnyOrder(identity1.getKey(), identity2.getKey());
+	}
+	
+	@Test
+	public void isActiveDisadvantagedUser() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("dcompensation-16");
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("dcompensation-18");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		Date approval = DateUtils.addDays(new Date(), -21);
+		
+		DisadvantageCompensation compensation = disadvantageCompensationDao
+				.createDisadvantageCompensation(identity, 15, "Not responsible", approval, creator, entry, subIdent, "Element-1");
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(compensation);
+		
+		boolean disadvantegdCompensations = disadvantageCompensationDao
+				.isActiveDisadvantagedUser(identity, entry, List.of(subIdent));
+		Assert.assertTrue(disadvantegdCompensations);
+		
+		boolean creatorCompensations = disadvantageCompensationDao
+				.isActiveDisadvantagedUser(creator, entry, List.of(subIdent));
+		Assert.assertFalse(creatorCompensations);
 	}
 	
 	@Test

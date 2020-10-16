@@ -200,8 +200,6 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		boolean endSoon = (endInMillseconds < (5l * 60l * 1000l))
 				&& (mode.getStatus() == Status.assessment || mode.getStatus() == Status.followup);
 		
-		
-		
 		AssessmentModeOverviewRow row = new AssessmentModeOverviewRow(mode, isToday, endSoon, endInMillseconds);
 		
 		LectureBlock block = mode.getLectureBlock();
@@ -223,6 +221,9 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 				FormLink endButton = uifactory.addFormLink(id, "end", "end", null, flc, Link.BUTTON_SMALL);
 				endButton.setDomReplacementWrapperRequired(false);
 				endButton.setIconLeftCSS("o_icon o_icon-fw o_as_mode_stop");
+				if(assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode)) {
+					endButton.setIconRightCSS("o_icon o_icon-fw o_icon_disadvantage_compensation");
+				}
 				endButton.setUserObject(row);
 				flc.add(id, endButton);
 				forgeStatistics(mode, row);

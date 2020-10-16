@@ -21,6 +21,7 @@ package org.olat.course.assessment.model;
 
 import java.util.List;
 
+import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 
 /**
@@ -32,11 +33,13 @@ import org.olat.course.assessment.AssessmentMode.Status;
 public class EnhancedStatus {
 	
 	private final Status status;
+	private final EndStatus endStatus;
 	private final List<String> warnings;
 	
-	public EnhancedStatus(Status status, List<String> warnings) {
+	public EnhancedStatus(Status status, EndStatus endStatus, List<String> warnings) {
 		this.status = status;
 		this.warnings = warnings;
+		this.endStatus = endStatus;
 	}
 
 	public List<String> getWarnings() {
@@ -46,5 +49,8 @@ public class EnhancedStatus {
 	public Status getStatus() {
 		return status;
 	}
-
+	
+	public EndStatus getEndStatus() {
+		return endStatus;
+	}
 }

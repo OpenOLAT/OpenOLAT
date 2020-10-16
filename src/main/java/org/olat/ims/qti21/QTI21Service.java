@@ -286,6 +286,8 @@ public interface QTI21Service {
 
 	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, List<? extends IdentityRef> identities);
 	
+	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, List<String> subIdents, List<? extends IdentityRef> identities);
+	
 	/**
 	 * Add some extra time to an assessment test session.
 	 * 

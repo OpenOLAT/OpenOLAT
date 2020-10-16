@@ -451,6 +451,29 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasRunningTestSessions_subIdentList() {
+		// prepare a test and a user
+		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-30");
+		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-31");
+		String subIdent = "OO-1234";
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, subIdent, Boolean.FALSE, testEntry);
+		dbInstance.commit();
+		
+		//create an assessment test session
+		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
+		Assert.assertNotNull(testSession);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean hasRunningTestSessions = testSessionDao.hasRunningTestSessions(testEntry, List.of(subIdent), List.of(assessedIdentity));
+		Assert.assertTrue(hasRunningTestSessions);
+		
+		boolean hasNotRunningTestSessions = testSessionDao.hasRunningTestSessions(testEntry, List.of(subIdent), List.of(otherIdentity));
+		Assert.assertFalse(hasNotRunningTestSessions);
+	}
+	
+	@Test
 	public void getAllUserTestSessions() {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();

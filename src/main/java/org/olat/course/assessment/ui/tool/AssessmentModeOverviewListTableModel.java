@@ -42,7 +42,8 @@ public class AssessmentModeOverviewListTableModel extends DefaultFlexiTableDataM
 	public Object getValueAt(int row, int col) {
 		AssessmentModeOverviewRow mode = getObject(row);
 		switch(ModeCols.values()[col]) {
-			case status: return new EnhancedStatus(mode.getAssessmentMode().getStatus(), Collections.emptyList());
+			case status: return new EnhancedStatus(mode.getAssessmentMode().getStatus(),
+					mode.getAssessmentMode().getEndStatus(), Collections.emptyList());
 			case name: return mode.getAssessmentMode().getName();
 			case begin: return mode.getAssessmentMode().getBegin();
 			case end: return mode.getAssessmentMode().getEnd();

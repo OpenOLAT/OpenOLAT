@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
@@ -40,6 +41,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
@@ -49,6 +51,7 @@ import org.olat.course.assessment.model.AssessmentModeStatistics;
 import org.olat.course.assessment.model.CoordinatedAssessmentMode;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.modules.dcompensation.manager.DisadvantageCompensationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.manager.RepositoryEntryDAO;
@@ -80,6 +83,8 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	private UserSessionManager userSessionManager;
 	@Autowired
 	private AssessmentModeManagerImpl assessmentModeManager;
+	@Autowired
+	private DisadvantageCompensationDAO disadvantageCompensationDao;
 	
 	private Map<Long,CoordinatedAssessmentMode> coordinatedModes = new ConcurrentHashMap<>();
 	private CacheWrapper<Long,AssessmentModeStatistics> coordinatedModeStatistics;
@@ -275,17 +280,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 						assessmentModeManager.getAssessedIdentityKeys(mode));
 			}
 		} else if(mode.isManualBeginEnd() && !forceStatus) {
-			//what to do in manual mode
-			if(mode.getStatus() == Status.followup) {
-				if(mode.getEndWithFollowupTime().compareTo(now) < 0) {
-					mode = ensureStatusOfMode(mode, Status.end);
-					sendEvent(AssessmentModeNotificationEvent.END, mode,
-							assessmentModeManager.getAssessedIdentityKeys(mode));
-				}
-			} else if(mode.getStatus() == Status.assessment) {
-				sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
-						assessmentModeManager.getAssessedIdentityKeys(mode));
-			}
+			sendEventForManualMode(mode, now);
 		} else {
 			if(mode.getBegin().compareTo(now) <= 0 && mode.getEnd().compareTo(now) > 0) {
 				mode = ensureStatusOfMode(mode, Status.assessment);
@@ -307,12 +302,12 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 					sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, mode,
 							assessmentModeManager.getAssessedIdentityKeys(mode));
 				} else {
-					mode = ensureStatusOfMode(mode, Status.end);
+					mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.all);
 					sendEvent(AssessmentModeNotificationEvent.END, mode,
 							assessmentModeManager.getAssessedIdentityKeys(mode));
 				}
 			} else if(mode.getEndWithFollowupTime().compareTo(now) <= 0) {
-				mode = ensureStatusOfMode(mode, Status.end);
+				mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.all);
 				sendEvent(AssessmentModeNotificationEvent.END, mode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
 			}
@@ -321,10 +316,60 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		return mode;
 	}
 	
+	private void sendEventForManualMode(AssessmentMode mode, Date now) {
+		//what to do in manual mode
+		if(mode.getStatus() == Status.assessment) {
+			sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
+					assessmentModeManager.getAssessedIdentityKeys(mode));
+		} else if(mode.getStatus() == Status.followup) {
+			// remind user with compensation for disadvantage
+			if(mode.getEndStatus() == EndStatus.withoutDisadvantage) {
+				Set<Long> keys = getAssessedIdentitiesWithDisadvantageCompensations(mode);
+				sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode, keys);
+			}
+			
+			// follow-up is ended
+			if(mode.getEndWithFollowupTime().compareTo(now) < 0) {
+				Set<Long> keys = getAssessedIdentitiesWithDisadvantageCompensations(mode);
+				if(keys.isEmpty() || mode.getEndStatus() == EndStatus.all) {
+					mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.all);
+					sendEvent(AssessmentModeNotificationEvent.END, mode,
+						assessmentModeManager.getAssessedIdentityKeys(mode));
+				} else {
+					mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.withoutDisadvantage);
+					Set<Long> identitiesToNotify = assessmentModeManager.getAssessedIdentityKeys(mode);
+					identitiesToNotify.removeAll(keys);
+					sendEvent(AssessmentModeNotificationEvent.END, mode, identitiesToNotify);
+				}
+			}
+		} else if(mode.getStatus() == Status.end && mode.getEndStatus() == EndStatus.withoutDisadvantage) {
+			Set<Long> keys = getAssessedIdentitiesWithDisadvantageCompensations(mode);
+			sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode, keys);
+		}
+	}
+	
 	private AssessmentMode ensureStatusOfMode(AssessmentMode mode, Status status) {
 		Status currentStatus = mode.getStatus();
 		if(currentStatus == null || currentStatus != status) {
 			mode.setStatus(status);
+			if(status == Status.assessment && mode.isManualBeginEnd()) {
+				syncBeginEndDate(mode);
+			}
+			mode = dbInstance.getCurrentEntityManager().merge(mode);
+			if(status == Status.leadtime || status == Status.assessment) {
+				warmUpAssessment(mode);
+			}
+			dbInstance.commit();
+		}
+		return mode;
+	}
+	
+	private AssessmentMode ensureBothStatusOfMode(AssessmentMode mode, Status status, EndStatus endStatus) {
+		Status currentStatus = mode.getStatus();
+		EndStatus currentEndStatus = mode.getEndStatus();
+		if(currentStatus == null || currentStatus != status || currentEndStatus != endStatus) {
+			mode.setStatus(status);
+			mode.setEndStatus(endStatus);
 			if(status == Status.assessment && mode.isManualBeginEnd()) {
 				syncBeginEndDate(mode);
 			}
@@ -388,12 +433,21 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	public boolean canStop(AssessmentMode assessmentMode) {
 		boolean canStop;
 		Status status = assessmentMode.getStatus();
-		if(status == Status.leadtime || status == Status.assessment) {
+		EndStatus endStatus = assessmentMode.getEndStatus();
+		if(status == Status.leadtime || status == Status.assessment
+				|| (endStatus == EndStatus.withoutDisadvantage && (status == Status.followup || status == Status.end))) {
 			canStop = true;
 		} else {
 			canStop = false;
 		}
 		return canStop;
+	}
+
+	@Override
+	public boolean isDisadvantageCompensationExtensionTime(AssessmentMode assessmentMode) {
+		Status status = assessmentMode.getStatus();
+		EndStatus endStatus = assessmentMode.getEndStatus();
+		return endStatus == EndStatus.withoutDisadvantage && (status == Status.followup || status == Status.end);
 	}
 
 	@Override
@@ -406,32 +460,75 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	}
 
 	@Override
-	public AssessmentMode stopAssessment(AssessmentMode mode) {
+	public AssessmentMode stopAssessment(AssessmentMode mode, boolean pullTestSessions, boolean withDisadvantaged) {
 		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
-		Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
-		if(mode.getFollowupTime() > 0) {
-			Date now = new Date();
-			Date followupTime = assessmentModeManager.evaluateFollowupTime(now, mode.getFollowupTime());
-			((AssessmentModeImpl)mode).setEnd(now);
-			((AssessmentModeImpl)mode).setEndWithFollowupTime(followupTime);
-			mode.setStatus(Status.followup);
-			mode = dbInstance.getCurrentEntityManager().merge(mode);
-			dbInstance.commit();
-			sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, mode, assessedIdentityKeys);
+		
+		EndStatus endStatus;
+		Set<Long> assessedIdentityKeys;
+		if(isDisadvantageCompensationExtensionTime(mode)) {
+			endStatus = withDisadvantaged ?  EndStatus.all : EndStatus.withoutDisadvantage;
+			assessedIdentityKeys = getAssessedIdentitiesWithDisadvantageCompensations(mode);
 		} else {
-			mode = ensureStatusOfMode(mode, Status.end);
-			sendEvent(AssessmentModeNotificationEvent.END, mode, assessedIdentityKeys);
+			assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
+		
+			boolean partial = false;
+			if(!withDisadvantaged) {
+				List<IdentityRef> disadvantagedIdentities = disadvantageCompensationDao
+						.getActiveDisadvantagedUsers(mode.getRepositoryEntry(), mode.getElementAsList());
+				for(IdentityRef disadvantagedIdentity:disadvantagedIdentities) {
+					if(assessedIdentityKeys.remove(disadvantagedIdentity.getKey())) {
+						partial |= true;
+					}
+				}
+			}
+			
+			if(assessedIdentityKeys.contains(252744713l)) {
+				System.out.println();
+			}
+			
+			endStatus = partial ? EndStatus.withoutDisadvantage : EndStatus.all;
 		}
+		
+		return stopAssessment(mode, assessedIdentityKeys, endStatus);
+	}
+	
+	private AssessmentMode stopAssessment(AssessmentMode mode, Set<Long> assessedIdentityKeys, EndStatus endStatus) {
+		String cmd;
+		if(mode.getFollowupTime() > 0) {
+			if(mode.getStatus() != Status.followup || mode.getStatus() != Status.end) {
+				Date now = new Date();
+				Date followupTime = assessmentModeManager.evaluateFollowupTime(now, mode.getFollowupTime());
+				((AssessmentModeImpl)mode).setEnd(now);
+				((AssessmentModeImpl)mode).setEndWithFollowupTime(followupTime);
+				mode.setStatus(Status.followup);
+			}
+			mode.setEndStatus(endStatus);
+			mode = dbInstance.getCurrentEntityManager().merge(mode);
+			cmd = AssessmentModeNotificationEvent.STOP_ASSESSMENT;
+		} else {
+			mode = ensureBothStatusOfMode(mode, Status.end, endStatus);
+			cmd = AssessmentModeNotificationEvent.END;
+		}
+		dbInstance.commit();
+		sendEvent(cmd, mode, assessedIdentityKeys);
 		return mode;
 	}
 	
+	/**
+	 * This force the end of an assessment for all users.
+	 * 
+	 * @param mode The assessment to end
+	 * @return The merged assessment mode
+	 */
 	private AssessmentMode endAssessment(AssessmentMode mode) {
 		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
 		Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
-		mode = ensureStatusOfMode(mode, Status.end);
+		mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.all);
 		Date now = new Date();
 		((AssessmentModeImpl)mode).setEnd(now);
 		((AssessmentModeImpl)mode).setEndWithFollowupTime(now);
+		mode = dbInstance.getCurrentEntityManager().merge(mode);
+		dbInstance.commit();
 		sendEvent(AssessmentModeNotificationEvent.END, mode, assessedIdentityKeys);
 		return mode;
 	}
@@ -439,6 +536,14 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	private void warmUpAssessment(AssessmentMode mode) {
 		RepositoryEntry entry = repositoryEntryDao.loadByKey(mode.getRepositoryEntry().getKey());
 		CourseFactory.loadCourse(entry);
+	}
+	
+	private Set<Long> getAssessedIdentitiesWithDisadvantageCompensations(AssessmentMode assessmentMode) {
+		List<IdentityRef> identities = disadvantageCompensationDao
+				.getActiveDisadvantagedUsers(assessmentMode.getRepositoryEntry(), assessmentMode.getElementAsList());
+		return identities.stream()
+				.map(IdentityRef::getKey)
+				.collect(Collectors.toSet());
 	}
 
 	@Override

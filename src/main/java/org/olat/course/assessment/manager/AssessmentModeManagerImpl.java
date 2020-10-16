@@ -63,6 +63,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
+import org.olat.modules.dcompensation.manager.DisadvantageCompensationDAO;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.manager.LectureBlockToGroupDAO;
 import org.olat.repository.RepositoryEntry;
@@ -99,6 +100,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private LectureBlockToGroupDAO lectureBlockToGroupDao;
+	@Autowired
+	private DisadvantageCompensationDAO disadvantageCompensationDao;
 	@Autowired
 	private AssessmentModeCoordinationServiceImpl assessmentModeCoordinationService;
 
@@ -362,9 +365,25 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		List<AssessmentMode> myModes = null;
 		if(!currentModes.isEmpty()) {
 			//check permissions, groups, areas, course
-			myModes = assessmentModeDao.loadAssessmentModeFor(identity, currentModes);
+			List<AssessmentMode> allMyModes = assessmentModeDao.loadAssessmentModeFor(identity, currentModes);
+
+			myModes = new ArrayList<>(allMyModes.size());
+			for(AssessmentMode mode:allMyModes) {
+				if(assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode)) {
+					if(isDisadvantagedUser(mode, identity)) {
+						myModes.add(mode);
+					}
+				} else {
+					myModes.add(mode);
+				}
+			}
 		}
 		return myModes == null ? Collections.<AssessmentMode>emptyList() : myModes;
+	}
+	
+	private boolean isDisadvantagedUser(AssessmentMode mode, IdentityRef identity) {
+		return disadvantageCompensationDao
+				.isActiveDisadvantagedUser(identity, mode.getRepositoryEntry(), mode.getElementAsList());
 	}
 
 	@Override

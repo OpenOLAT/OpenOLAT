@@ -3,6 +3,14 @@
 	<p>$compensationMsg</p>
 #end
 </div>
+<div>
+#if($r.available("disadvantages"))
+	$r.render("disadvantages")
+#end
+#if($r.available("runningSessions"))
+	$r.render("runningSessions")
+#end
+</div>
 <div class="o_button_group">
 	$r.render("cancel")
 	$r.render("stop")

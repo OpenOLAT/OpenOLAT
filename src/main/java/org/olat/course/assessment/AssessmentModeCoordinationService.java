@@ -50,6 +50,8 @@ public interface AssessmentModeCoordinationService {
 	 */
 	public boolean canStop(AssessmentMode assessmentMode);
 	
+	public boolean isDisadvantageCompensationExtensionTime(AssessmentMode assessmentMode);
+	
 	
 	public void processRepositoryEntryChangedStatus(RepositoryEntry entry);
 	
@@ -57,9 +59,7 @@ public interface AssessmentModeCoordinationService {
 	
 	public AssessmentMode startAssessment(AssessmentMode assessmentMode);
 	
-	public AssessmentMode stopAssessment(AssessmentMode assessmentMode);
-	
-	
+	public AssessmentMode stopAssessment(AssessmentMode assessmentMode, boolean pullTestSessions, boolean withDisadvantaged);
 	
 	public AssessmentModeStatistics getStatistics(AssessmentMode assessmentMode);
 	

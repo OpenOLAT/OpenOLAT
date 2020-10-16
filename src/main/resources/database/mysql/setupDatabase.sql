@@ -1387,6 +1387,7 @@ create table o_as_mode_course (
    a_name varchar(255),
    a_description longtext,
    a_status varchar(16),
+   a_end_status varchar(32),
    a_manual_beginend bit not null default 0,
    a_begin datetime not null,
    a_leadtime bigint not null default 0,
@@ -4290,9 +4291,10 @@ alter table o_ap_appointment add constraint ap_appointment_meeting_idx foreign k
 alter table o_ap_participation add constraint ap_part_appointment_idx foreign key (fk_appointment_id) references o_ap_appointment (id);
 alter table o_ap_participation add constraint ap_part_identity_idx foreign key (fk_identity_id) references o_bs_identity (id);
 
-insert into hibernate_unique_key values ( 0 );
-SET FOREIGN_KEY_CHECKS = 1;
-
 -- Organiation role rights
 alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right (fk_organisation);
+
+insert into hibernate_unique_key values ( 0 );
+SET FOREIGN_KEY_CHECKS = 1;
+

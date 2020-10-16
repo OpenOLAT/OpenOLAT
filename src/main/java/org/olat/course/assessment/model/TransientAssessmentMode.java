@@ -27,6 +27,7 @@ import java.util.List;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 
 /**
@@ -52,10 +53,12 @@ public class TransientAssessmentMode implements Serializable {
 	private int leadTime;
 	private int followupTime;
 	private String startElementKey;
+	private List<String> elementList;
 	
-	private boolean manual;
+	private final boolean manual;
 	
-	private Status status;
+	private final Status status;
+	private final EndStatus endStatus;
 	
 	private String ipList;
 	private String safeExamBrowserKey;
@@ -77,10 +80,12 @@ public class TransientAssessmentMode implements Serializable {
 		leadTime = mode.getLeadTime();
 		followupTime = mode.getFollowupTime();
 		startElementKey = mode.getStartElement();
+		elementList = mode.getElementAsList();
 		
 		manual = mode.isManualBeginEnd();
 		
 		status = mode.getStatus();
+		endStatus = mode.getEndStatus();
 
 		if(mode.isRestrictAccessIps()) {
 			ipList = mode.getIpList();
@@ -139,6 +144,10 @@ public class TransientAssessmentMode implements Serializable {
 	public Status getStatus() {
 		return status;
 	}
+	
+	public EndStatus getEndStatus() {
+		return endStatus;
+	}
 
 	public Date getBegin() {
 		return begin;
@@ -178,6 +187,10 @@ public class TransientAssessmentMode implements Serializable {
 
 	public String getStartElementKey() {
 		return startElementKey;
+	}
+	
+	public List<String> getElementList() {
+		return elementList;
 	}
 	
 	public String getIpList() {

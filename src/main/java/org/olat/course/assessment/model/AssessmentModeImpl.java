@@ -19,8 +19,10 @@
  */
 package org.olat.course.assessment.model;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -36,6 +38,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -90,6 +93,8 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 
 	@Column(name="a_status", nullable=true, insertable=true, updatable=true)
 	private String statusString;
+	@Column(name="a_end_status", nullable=true, insertable=true, updatable=true)
+	private String endStatusString;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="a_begin", nullable=false, insertable=true, updatable=true)
@@ -207,16 +212,46 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 
 	@Override
 	public Status getStatus() {
-		return StringHelper.containsNonWhitespace(statusString) ? Status.valueOf(statusString) : Status.none;
+		return StringHelper.containsNonWhitespace(getStatusString()) ? Status.valueOf(getStatusString()) : Status.none;
 	}
 
 	@Override
 	public void setStatus(Status status) {
 		if(status == null) {
-			statusString = Status.none.name();
+			setStatusString(Status.none.name());
 		} else {
-			statusString = status.name();
+			setStatusString(status.name());
 		}
+	}
+
+	public String getStatusString() {
+		return statusString;
+	}
+
+	public void setStatusString(String statusString) {
+		this.statusString = statusString;
+	}
+
+	@Override
+	public EndStatus getEndStatus() {
+		return StringHelper.containsNonWhitespace(getEndStatusString()) ? EndStatus.valueOf(getEndStatusString()) : null;
+	}
+
+	@Override
+	public void setEndStatus(EndStatus status) {
+		if(status == null) {
+			setEndStatusString(null);
+		} else {
+			setEndStatusString(status.name());	
+		}
+	}
+
+	public String getEndStatusString() {
+		return endStatusString;
+	}
+
+	public void setEndStatusString(String endStatusString) {
+		this.endStatusString = endStatusString;
 	}
 
 	@Override
@@ -356,6 +391,13 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	@Override
 	public void setElementList(String elementList) {
 		this.elementList = elementList;
+	}
+	
+	@Override
+	@Transient
+	public List<String> getElementAsList() {
+		String nodes = getElementList();
+		return StringHelper.containsNonWhitespace(nodes) ? Arrays.asList(nodes.split("[,]")) : null;
 	}
 
 	@Override

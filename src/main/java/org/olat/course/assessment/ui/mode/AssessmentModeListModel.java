@@ -35,7 +35,6 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
-import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.model.EnhancedStatus;
 import org.olat.course.assessment.model.TransientAssessmentMode;
@@ -50,6 +49,7 @@ import org.olat.course.nodes.CourseNode;
 public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> implements SortableFlexiTableDataModel<AssessmentMode> {
 	
 	private static final Logger log = Tracing.createLoggerFor(AssessmentModeListModel.class);
+	private static final Cols[] COLS = Cols.values();
 	
 	private final Translator translator;
 	private final AssessmentModeCoordinationService coordinationService;
@@ -74,42 +74,8 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		
 	@Override
 	public Object getValueAt(AssessmentMode mode, int col) {
-		switch(Cols.values()[col]) {
-			case status: {
-				List<String> warnings = null;
-				Status status = mode.getStatus();
-				try {
-					if(StringHelper.containsNonWhitespace(mode.getStartElement())) {
-						ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry());
-						CourseNode node = course.getRunStructure().getNode(mode.getStartElement());
-						if(node == null) {
-							warnings = new ArrayList<>(2);
-							warnings.add(translator.translate("warning.missing.start.element"));
-						}
-					}
-					if(StringHelper.containsNonWhitespace(mode.getElementList())) {
-						ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry());
-						String elements = mode.getElementList();
-						for(String element:elements.split(",")) {
-							CourseNode node = course.getRunStructure().getNode(element);
-							if(node == null) {
-								if(warnings == null) {
-									warnings = new ArrayList<>(2);
-								}
-								warnings.add(translator.translate("warning.missing.element"));
-								break;
-							}
-						}
-					}
-				} catch (CorruptedCourseException e) {
-					log.error("", e);
-					if(warnings == null) {
-						warnings = new ArrayList<>(2);
-					}
-					warnings.add(translator.translate("cif.error.corrupted"));
-				}
-				return new EnhancedStatus(status, warnings);
-			}
+		switch(COLS[col]) {
+			case status: return getStatus(mode);
 			case course: return mode.getRepositoryEntry().getDisplayname();
 			case externalId: return mode.getRepositoryEntry().getExternalId();
 			case externalRef: return mode.getRepositoryEntry().getExternalRef();
@@ -119,22 +85,61 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 			case leadTime: return mode.getLeadTime();
 			case followupTime: return mode.getFollowupTime();
 			case target: return mode.getTargetAudience();
-			case start: {
-				boolean canStart = mode.isManualBeginEnd();
-				if(canStart) {
-					canStart = coordinationService.canStart(mode);
-				}
-				return canStart;
-			}
-			case stop: {
-				boolean canStop = mode.isManualBeginEnd();
-				if(canStop) {
-					canStop = coordinationService.canStop(mode);
-				}
-				return canStop;
-			}
+			case start: return canStart(mode);
+			case stop: return canStop(mode);
+			default: return "ERROR";
 		}
-		return null;
+	}
+	
+	private boolean canStart(AssessmentMode mode) {
+		boolean canStart = mode.isManualBeginEnd();
+		if(canStart) {
+			canStart = coordinationService.canStart(mode);
+		}
+		return canStart;
+	}
+	
+	private boolean canStop(AssessmentMode mode) {
+		boolean canStop = mode.isManualBeginEnd();
+		if(canStop) {
+			canStop = coordinationService.canStop(mode);
+		}
+		return canStop;
+	}
+	
+	private EnhancedStatus getStatus(AssessmentMode mode) {
+		List<String> warnings = null;
+		try {
+			if(StringHelper.containsNonWhitespace(mode.getStartElement())) {
+				ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry());
+				CourseNode node = course.getRunStructure().getNode(mode.getStartElement());
+				if(node == null) {
+					warnings = new ArrayList<>(2);
+					warnings.add(translator.translate("warning.missing.start.element"));
+				}
+			}
+			if(StringHelper.containsNonWhitespace(mode.getElementList())) {
+				ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry());
+				String elements = mode.getElementList();
+				for(String element:elements.split(",")) {
+					CourseNode node = course.getRunStructure().getNode(element);
+					if(node == null) {
+						if(warnings == null) {
+							warnings = new ArrayList<>(2);
+						}
+						warnings.add(translator.translate("warning.missing.element"));
+						break;
+					}
+				}
+			}
+		} catch (CorruptedCourseException e) {
+			log.error("", e);
+			if(warnings == null) {
+				warnings = new ArrayList<>(2);
+			}
+			warnings.add(translator.translate("cif.error.corrupted"));
+		}
+		return new EnhancedStatus(mode.getStatus(), mode.getEndStatus(), warnings);
 	}
 	
 	@Override

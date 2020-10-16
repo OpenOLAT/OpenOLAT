@@ -1409,6 +1409,7 @@ create table o_as_mode_course (
    a_name varchar(255),
    a_description text,
    a_status varchar(16),
+   a_end_status varchar(32),
    a_manual_beginend bool not null default false,
    a_begin timestamp not null,
    a_leadtime int8 not null default 0,

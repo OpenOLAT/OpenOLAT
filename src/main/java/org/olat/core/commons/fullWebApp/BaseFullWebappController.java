@@ -108,6 +108,7 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
@@ -115,7 +116,9 @@ import org.olat.course.assessment.ui.mode.AssessmentModeGuardController;
 import org.olat.course.assessment.ui.mode.ChooseAssessmentModeEvent;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
+import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.edusharing.EdusharingModule;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1399,7 +1402,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		if(getIdentity() == null || !event.isModeOf(lockMode, getIdentity())) {
 			return;
 		}
-		
+
 		String cmd = event.getCommand();
 		switch(cmd) {
 			case AssessmentModeNotificationEvent.STOP_WARNING:
@@ -1416,15 +1419,19 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				}
 				break;
 			case AssessmentModeNotificationEvent.START_ASSESSMENT:
-				asyncLockResource(event.getAssessementMode());
+				if(event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
+					asyncLockResource(event.getAssessementMode());
+				}
 				break;
 			case AssessmentModeNotificationEvent.STOP_ASSESSMENT:
-				if(asyncLockResource(event.getAssessementMode())) {
+				if(event.getAssessedIdentityKeys().contains(getIdentity().getKey())
+						&& asyncLockResource(event.getAssessementMode())) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
 				break;
 			case AssessmentModeNotificationEvent.END:
-				if(asyncUnlockResource(event.getAssessementMode())) {
+				if(event.getAssessedIdentityKeys().contains(getIdentity().getKey())
+						&& asyncUnlockResource(event.getAssessementMode())) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
 				break;	
@@ -1434,7 +1441,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	@Override
 	public boolean hasStaticSite(Class<? extends SiteInstance> type) {
 		boolean hasSite = false;
-		if(sites != null && sites.size() > 0) {
+		if(sites != null && !sites.isEmpty()) {
 			for(SiteInstance site:sites) {
 				if(site.getClass().equals(type)) {
 					hasSite = true;
@@ -1523,8 +1530,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			lock = true;
 			lockMode = mode;
 			lockStatus = LockStatus.need;
-		} else if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
-			if(mode.getStatus() == Status.leadtime || mode.getStatus() == Status.followup) {
+		} else if(lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
+			if(mode.getStatus() == Status.leadtime
+					|| (mode.getStatus() == Status.followup && mode.getEndStatus() == EndStatus.all)
+					|| (mode.getStatus() == Status.followup && mode.getEndStatus() == EndStatus.withoutDisadvantage && !hasDisadvantageCompensation(mode))) {
 				if(assessmentGuardCtrl == null) {
 					lockStatus = LockStatus.need;
 				}
@@ -1535,6 +1544,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			lock = false;
 		}
 		return lock;
+	}
+	
+	private boolean hasDisadvantageCompensation(TransientAssessmentMode mode) {
+		return CoreSpringFactory.getImpl(DisadvantageCompensationService.class)
+			.isActiveDisadvantageCompensation(getIdentity(), new RepositoryEntryRefImpl(mode.getRepositoryEntryKey()), mode.getElementList());
 	}
 	
 	private boolean asyncUnlockResource(TransientAssessmentMode mode) {

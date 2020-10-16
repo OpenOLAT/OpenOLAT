@@ -51,6 +51,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -104,11 +105,13 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
+	private NodeAccessService nodeAccessService;
+	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
 	@Autowired
-	private NodeAccessService nodeAccessService;
+	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachUserEnv, AssessmentToolSecurityCallback assessmentCallback) {
@@ -141,6 +144,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 					String label = translate("assessment.tool.stop", new String[] { StringHelper.escapeHtml(modeName) });
 					stopAssessmentMode = LinkFactory.createCustomLink("assessment.stop", "stop", label, Link.BUTTON_SMALL | Link.NONTRANSLATED, warn, this);
 					stopAssessmentMode.setIconLeftCSS("o_icon o_icon-fw o_as_mode_stop");
+					if(assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode)) {
+						stopAssessmentMode.setIconRightCSS("o_icon o_icon-fw o_icon_disadvantage_compensation");
+					}
 					stopAssessmentMode.setUserObject(mode);
 				}
 			} else {
@@ -193,12 +199,11 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	
 	private boolean canStopAssessmentMode(AssessmentMode mode) {
 		if(assessmentCallback.canStartStopAllAssessments()) {
-			return mode.getStatus() == AssessmentMode.Status.assessment || mode.getStatus() == AssessmentMode.Status.leadtime;
+			return assessmentModeCoordinationService.canStop(mode);
 		} else if(mode.getLectureBlock() != null) {
 			List<Identity> teachers = lectureService.getTeachers(mode.getLectureBlock());
 			return teachers.contains(getIdentity())
-					&& (mode.getStatus() == AssessmentMode.Status.assessment
-						|| mode.getStatus() == AssessmentMode.Status.leadtime);
+					&& assessmentModeCoordinationService.canStop(mode);
 		}
 		return false;
 	}

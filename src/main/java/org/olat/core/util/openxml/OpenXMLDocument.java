@@ -78,7 +78,7 @@ public class OpenXMLDocument {
 	
 	private static final Logger log = Tracing.createLoggerFor(OpenXMLDocument.class);
 	
-	private final int DPI = 72;
+	private static final int DPI = 72;
 	
 	private final Document document;
 	private final Element rootElement;

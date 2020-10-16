@@ -20,6 +20,7 @@
 package org.olat.course.assessment;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.id.CreateInfo;
@@ -52,6 +53,10 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	public Status getStatus();
 
 	public void setStatus(Status status);
+	
+	public EndStatus getEndStatus();
+	
+	public void setEndStatus(EndStatus status);
 	
 	public boolean isManualBeginEnd();
 	
@@ -96,6 +101,12 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	public String getElementList();
 
 	public void setElementList(String elementList);
+	
+	/**
+	 * 
+	 * @return A list of course elements identifiers or null if not defined
+	 */
+	public List<String> getElementAsList();
 	
 	public String getStartElement();
 
@@ -149,5 +160,10 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 		public String cssClass() {
 			return cssClass;
 		}
+	}
+	
+	public enum EndStatus {
+		all,
+		withoutDisadvantage
 	}
 }

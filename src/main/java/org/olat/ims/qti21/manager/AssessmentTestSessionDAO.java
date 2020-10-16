@@ -556,6 +556,44 @@ public class AssessmentTestSessionDAO {
 		return found != null && !found.isEmpty() && found.get(0) != null && found.get(0) >= 0;
 	}
 	
+	/**
+	 * 
+	 * @param entry The repository entry (typically the course, or the test if not in a course) (mandatory)
+	 * @param courseSubIdent An optional sub-identifier
+	 * @param testEntry The test repository entry
+	 * @param identities The list of assessed identities
+	 * @return true if at least one of the identities has a running test session
+	 */
+	public boolean hasRunningTestSessions(RepositoryEntryRef entry, List<String> courseSubIdents, List<? extends IdentityRef> identities) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session.key from qtiassessmenttestsession session")
+		  .append(" left join session.testEntry testEntry")
+		  .append(" left join testEntry.olatResource testResource")
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey")
+		  .append(" and session.finishTime is null and session.terminationTime is null")
+		  .append(" and session.exploded=false and session.cancelled=false")
+		  .append(" and session.identity.key in (:identityKeys)");
+		if(courseSubIdents != null && !courseSubIdents.isEmpty()) {
+			sb.append(" and session.subIdent in (:subIdents)");
+		}
+		
+		List<Long> identityKeys = identities.stream()
+				.map(IdentityRef::getKey)
+				.collect(Collectors.toList());
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("identityKeys", identityKeys);		
+		if(courseSubIdents != null && !courseSubIdents.isEmpty()) {
+			query.setParameter("subIdents", courseSubIdents);
+		}
+		List<Long> found = query.getResultList();
+		return found != null && !found.isEmpty() && found.get(0) != null && found.get(0) >= 0;
+	}
+	
 	public int deleteTestSession(AssessmentTestSession testSession) {
 		StringBuilder responseSb  = new StringBuilder();
 		responseSb.append("delete from qtiassessmentresponse response where response.assessmentTestSession.key=:sessionKey");

@@ -30,6 +30,7 @@ create unique index idx_de_userinfo_ident_idx on o_de_user_info(fk_identity);
 -- Assessment
 alter table o_as_entry add column a_current_run_start datetime;
 
+alter table o_as_mode_course add column a_end_status varchar(32);
 
 -- Disadvantage compensation
 alter table o_qti_assessmenttest_session add column q_compensation_extra_time bigint;

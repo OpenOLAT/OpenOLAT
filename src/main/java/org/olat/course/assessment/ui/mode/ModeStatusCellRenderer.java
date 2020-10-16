@@ -27,6 +27,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.model.EnhancedStatus;
 
@@ -50,11 +51,11 @@ public class ModeStatusCellRenderer implements FlexiCellRenderer {
 
 		if(cellValue instanceof Status) {
 			Status status = (Status)cellValue;
-			render(status, sb);
+			render(status, null, sb);
 		} else if(cellValue instanceof EnhancedStatus) {
 			EnhancedStatus enStatus = (EnhancedStatus)cellValue;
 			renderWarning(enStatus.getWarnings(), sb);
-			render(enStatus.getStatus(), sb);
+			render(enStatus.getStatus(), enStatus.getEndStatus(), sb);
 		}
 	}
 	
@@ -68,8 +69,10 @@ public class ModeStatusCellRenderer implements FlexiCellRenderer {
 		}
 	}
 
-	private void render(Status status, StringOutput sb) {
+	private void render(Status status, EndStatus endStatus, StringOutput sb) {
 		String title = helper.getStatusLabel(status);
-		sb.append("<span title='").append(title).append("'><i class='o_icon ").append(status.cssClass()).append("'> </i></span>");
+		sb.append("<span title='").append(title).append("'><i class='o_icon ").append(status.cssClass()).append("'> </i>")
+		  .append(" <i class='o_icon o_icon_disadvantage_compensation'> </i>", EndStatus.withoutDisadvantage == endStatus)
+		  .append("</span>");
 	}
 }

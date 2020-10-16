@@ -35,8 +35,10 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
@@ -181,12 +183,12 @@ public class AssessmentModeDAO {
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(Calendar.SECOND, 0);
 		
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select mode from courseassessmentmode mode where ")
 		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now")
 		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
-		  .append(" or mode.statusString in ('").append(Status.leadtime.name()).append("','")
-		  .append(Status.assessment.name()).append("','").append(Status.followup.name()).append("')");
+		  .append(" or mode.statusString ").in(Status.leadtime, Status.assessment, Status.followup)
+		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutDisadvantage).append(")");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentMode.class)
@@ -200,13 +202,13 @@ public class AssessmentModeDAO {
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(Calendar.SECOND, 0);
 		
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(mode) from courseassessmentmode mode where ")
 		  .append(" mode.repositoryEntry.key=:repoKey and (")
 		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now ")
 		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
-		  .append(" or mode.statusString in ('").append(Status.leadtime.name()).append("','")
-		  .append(Status.assessment.name()).append("','").append(Status.followup.name()).append("'))");
+		  .append(" or mode.statusString ").in(Status.leadtime, Status.assessment, Status.followup)
+		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutDisadvantage).append("))");
 
 		List<Number> count = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
@@ -222,14 +224,14 @@ public class AssessmentModeDAO {
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(Calendar.SECOND, 0);
 		
-		StringBuilder sb = new StringBuilder(512);
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select mode from courseassessmentmode mode")
 		  .append(" left join fetch mode.lectureBlock block")
 		  .append(" where mode.repositoryEntry.key=:repoKey and (")
 		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now")
 		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
-		  .append(" or mode.statusString in ('").append(Status.leadtime.name()).append("','")
-		  .append(Status.assessment.name()).append("','").append(Status.followup.name()).append("'))");
+		  .append(" or mode.statusString ").in(Status.leadtime, Status.assessment, Status.followup)
+		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutDisadvantage).append("))");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentMode.class)
@@ -285,12 +287,13 @@ public class AssessmentModeDAO {
 	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node) {
 		if(entry == null || node == null) return false;
 		
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(mode) from courseassessmentmode mode where ")
 		  .append(" mode.repositoryEntry.key=:repoKey ")
 		  .append(" and (mode.startElement=:startIdent or mode.elementList like :nodeIdent)")
 		  .append(" and (mode.beginWithLeadTime>=:now")
-		  .append(" or mode.statusString in ('").append(Status.none.name()).append("','").append(Status.leadtime.name()).append("','").append(Status.assessment.name()).append("','").append(Status.followup.name()).append("'))");
+		  .append(" or mode.statusString ").in(Status.none, Status.leadtime, Status.assessment, Status.followup)
+		  .append(" or mod.endStatusString ").in(EndStatus.withoutDisadvantage).append(")");
 
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.MILLISECOND, 0);

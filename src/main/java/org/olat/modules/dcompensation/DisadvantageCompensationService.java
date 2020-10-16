@@ -57,6 +57,8 @@ public interface DisadvantageCompensationService {
 	 */
 	public DisadvantageCompensation getActiveDisadvantageCompensation(IdentityRef identity, RepositoryEntryRef entry, String subIdent);
 	
+	public boolean isActiveDisadvantageCompensation(IdentityRef identity, RepositoryEntryRef entry, List<String> subIdents);
+	
 	/**
 	 * @param entry The course
 	 * @param subIdents A list of course elements (optional, null means all)
