@@ -310,7 +310,11 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 					templateEl.setExampleKey("template.explain.max.participants", args);
 				}
 			}
-			externalLinkEl.setVisible(template != null && template.isExternalUsersAllowed());
+			boolean visible = template != null && template.isExternalUsersAllowed();
+			externalLinkEl.setVisible(visible);
+			if(visible && !StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
+				externalLinkEl.setValue(Long.toString(CodeHelper.getForeverUniqueID()));
+			}
 		} else {
 			externalLinkEl.setVisible(false);
 		}
