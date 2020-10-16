@@ -57,6 +57,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.ui.UserListController;
 import org.olat.modules.lecture.AbsenceNotice;
@@ -77,6 +78,7 @@ import org.olat.modules.lecture.ui.component.DailyDateCellRenderer;
 import org.olat.modules.lecture.ui.component.StartEndDateCellRenderer;
 import org.olat.modules.lecture.ui.event.OpenRepositoryEntryEvent;
 import org.olat.modules.lecture.ui.event.SelectLectureIdentityEvent;
+import org.olat.modules.lecture.ui.filter.AbsenceNoticeFilter;
 import org.olat.modules.lecture.ui.profile.IdentityProfileController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -284,6 +286,14 @@ public class AbsenceNoticesListController extends FormBasicController {
 				row.addEntries(entrySet);
 				forgeEntryLink(row, blockList);
 			}
+		}
+		
+		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			final AbsenceNoticeFilter filter = new AbsenceNoticeFilter(searchParams.getSearchString(),
+					userPropertyHandlers, getLocale());
+			rows = rows.stream()
+					.filter(filter)
+					.collect(Collectors.toList());
 		}
 		
 		tableModel.setObjects(rows);

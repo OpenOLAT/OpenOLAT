@@ -412,21 +412,6 @@ public class LectureBlockRollCallDAO {
 				  .append(" and block.rollCallStatusString!='").append(LectureRollCallStatus.autoclosed.name()).append("')");
 			}
 		}
-
-		String fuzzyRef = null;
-		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
-			fuzzyRef = PersistenceHelper.makeFuzzyQueryString(searchParams.getSearchString());
-			sb.and().append("(")
-			  .likeFuzzy("block.title", "fuzzyRef", dbInstance.getDbVendor())
-			  .append(" or ")
-			  .likeFuzzy("block.externalId", "fuzzyRef", dbInstance.getDbVendor())
-			  .append(" or ")
-			  .likeFuzzy("user.firstName", "fuzzyRef", dbInstance.getDbVendor())
-			  .append(" or ")
-			  .likeFuzzy("user.lastName", "fuzzyRef", dbInstance.getDbVendor())
-			  .append(")");
-			//TODO curriculum, course, reasons...
-		}
 		
 		if(searchParams.getStartDate() != null && searchParams.getEndDate() != null) {
 			sb.and().append(" (block.startDate>=:startDate and block.endDate<=:endDate)");
@@ -465,9 +450,6 @@ public class LectureBlockRollCallDAO {
 		}
 		if(searchParams.getEndDate() != null) {
 			query.setParameter("endDate", searchParams.getEndDate(), TemporalType.TIMESTAMP);
-		}
-		if(fuzzyRef != null) {
-			query.setParameter("fuzzyRef", fuzzyRef);
 		}
 		if(searchParams.getEntry() != null) {
 			query.setParameter("entryKey", searchParams.getEntry().getKey());
