@@ -165,7 +165,7 @@ public abstract class UpgradeManager implements Initializable, GenericEventListe
 				upgradesHistories = new HashMap<>();
 			}
 			needsUpgrade = false; //looks like a new install, no upgrade necessary
-			log.info("This looks like a new install or droped data, will not do any upgrades.");
+			log.info("This looks like a new install or dropped data, will not do any upgrades.");
 			createUpgradeData();
 		}
 	}
