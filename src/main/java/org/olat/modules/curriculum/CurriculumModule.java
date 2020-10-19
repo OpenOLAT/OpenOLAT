@@ -39,12 +39,15 @@ import org.springframework.stereotype.Service;
 public class CurriculumModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String CURRICULUM_ENABLED = "curriculum.enabled";
+	private static final String MANAGED_CURRICULUM_ENABLED = "curriculum.managed";
 	private static final String CURRICULUM_IN_MY_COURSES_ENABLED = "curriculum.in.my.courses.enabled";
 	
 	@Value("${curriculum.enabled:true}")
 	private boolean enabled;
 	@Value("${curriculum.in.my.courses.enabled:true}")
 	private boolean curriculumInMyCourses;
+	@Value("${curriculum.managed:true}")
+	private boolean managedCurriculums;
 	
 	@Autowired
 	private CurriculumModule(CoordinatorManager coordinateManager) {
@@ -87,7 +90,12 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	}
 	
 	public boolean isCurriculumManaged() {
-		return true;
+		return managedCurriculums;
+	}
+	
+	public void setCurriculumManaged(boolean enabled) {
+		managedCurriculums = enabled;
+		setStringProperty(MANAGED_CURRICULUM_ENABLED, Boolean.toString(enabled), true);
 	}
 
 	public boolean isCurriculumInMyCourses() {

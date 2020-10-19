@@ -33,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.WebappHelper;
 import org.olat.group.BusinessGroupModule;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryModule;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -58,6 +59,7 @@ public class RestapiAdminController extends FormBasicController {
 	private MultipleSelectionElement managedCalendarEl;
 	private MultipleSelectionElement managedRelationRole;
 	private MultipleSelectionElement managedUserPortraitEl;
+	private MultipleSelectionElement managedCurriculumEl;
 	private FormLayoutContainer docLinkFlc;
 	
 	private static final String[] keys = {"on"};
@@ -72,6 +74,8 @@ public class RestapiAdminController extends FormBasicController {
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	@Autowired
 	private UserModule userModule;
 
@@ -121,6 +125,10 @@ public class RestapiAdminController extends FormBasicController {
 			managedRepoEl.addActionListener(FormEvent.ONCHANGE);
 			managedRepoEl.select(keys[0], repositoryModule.isManagedRepositoryEntries());
 			
+			managedCurriculumEl = uifactory.addCheckboxesHorizontal("managed.curriculum", managedFlc, keys, valueOn);
+			managedCurriculumEl.addActionListener(FormEvent.ONCHANGE);
+			managedCurriculumEl.select(keys[0], curriculumModule.isCurriculumManaged());
+			
 			managedCalendarEl = uifactory.addCheckboxesHorizontal("managed.cal", managedFlc, keys, valueOn);
 			managedCalendarEl.addActionListener(FormEvent.ONCHANGE);
 			managedCalendarEl.select(keys[0], calendarModule.isManagedCalendars());
@@ -167,6 +175,9 @@ public class RestapiAdminController extends FormBasicController {
 		} else if (source == managedUserPortraitEl) {
 			boolean enable = managedUserPortraitEl.isAtLeastSelected(1);
 			userModule.setPortraitManaged(enable);
+		} else if(source == managedCurriculumEl) {
+			boolean enable = managedCurriculumEl.isAtLeastSelected(1);
+			curriculumModule.setCurriculumManaged(enable);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
