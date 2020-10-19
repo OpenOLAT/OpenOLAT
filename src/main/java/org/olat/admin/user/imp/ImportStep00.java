@@ -297,17 +297,22 @@ class ImportStep00 extends BasicStep {
 		}
 		
 		private Identity findByLogin(String login, String pwd) {
-			Authentication authentication;
+			Identity identity;
 			if(pwd != null && pwd.startsWith(UserImportController.LDAP_MARKER) && ldapModule.isLDAPEnabled()) {
 				String ldapLogin = pwd.substring(UserImportController.LDAP_MARKER.length());
-				authentication = securityManager.findAuthenticationByAuthusername(ldapLogin, LDAPAuthenticationController.PROVIDER_LDAP);
+				Authentication authentication = securityManager.findAuthenticationByAuthusername(ldapLogin, LDAPAuthenticationController.PROVIDER_LDAP);
+				identity = authentication == null ? null : authentication.getIdentity();
 			} else if(pwd != null && pwd.startsWith(UserImportController.SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
 				String shibbolethLogin = pwd.substring(UserImportController.SHIBBOLETH_MARKER.length());
-				authentication = securityManager.findAuthenticationByAuthusername(shibbolethLogin, ShibbolethDispatcher.PROVIDER_SHIB);
+				Authentication authentication = securityManager.findAuthenticationByAuthusername(shibbolethLogin, ShibbolethDispatcher.PROVIDER_SHIB);
+				identity = authentication == null ? null : authentication.getIdentity();
+			} else if(StringHelper.containsNonWhitespace(pwd)) {
+				Authentication authentication = securityManager.findAuthenticationByAuthusername(login, "OLAT");
+				identity = authentication == null ? null : authentication.getIdentity();
 			} else {
-				authentication = securityManager.findAuthenticationByAuthusername(login, "OLAT");
+				identity = securityManager.findIdentityByNickName(login);
 			}
-			return authentication == null ? null : authentication.getIdentity();
+			return identity;
 		}
 		
 		private boolean updateUserProperties(Identity ud, User originalUser, String[] parts, int i, int columnId,

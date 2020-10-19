@@ -19,8 +19,6 @@
  */
 package org.olat.login.validation;
 
-import java.util.List;
-
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
@@ -48,8 +46,8 @@ class UsernameInUseRule extends DescriptionRule {
 		if(byName != null && !byName.equals(identity)) {
 			return false;
 		}
-		List<Identity> byNicknames = securityManager.findIdentitiesByNickName(value);
-		return byNicknames.isEmpty() || (byNicknames.size() == 1 && byNicknames.get(0).equals(identity));
+		Identity byNickname = securityManager.findIdentityByNickName(value);
+		return byNickname == null || byNickname.equals(identity);
 	}
 
 	@Override

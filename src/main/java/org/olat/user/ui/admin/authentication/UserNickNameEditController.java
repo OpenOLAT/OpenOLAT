@@ -111,11 +111,10 @@ public class UserNickNameEditController extends FormBasicController {
 			nickNameEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		} else if(!isNickNameUnique(nickNameEl.getValue())) {
-			List<Identity> identities = securityManager.findIdentitiesByNickName(nickNameEl.getValue());
-			identities.remove(changeableIdentity);
+			Identity identity = securityManager.findIdentityByNickName(nickNameEl.getValue());
 			String val = nickNameEl.getValue();
-			if(!identities.isEmpty()) {
-				val = userManager.getUserDisplayName(identities.get(0));
+			if(identity != null) {
+				val = userManager.getUserDisplayName(identity);
 			}
 			nickNameEl.setErrorKey("general.error.unique", new String[] { val } );
 			allOk &= false;
@@ -136,9 +135,8 @@ public class UserNickNameEditController extends FormBasicController {
 	}
 	
 	private boolean isNickNameUnique(String val) {
-		List<Identity> identities = securityManager.findIdentitiesByNickName(val);
-		return identities.isEmpty()
-				|| (identities.size() == 1 && identities.get(0).equals(changeableIdentity));
+		Identity identity = securityManager.findIdentityByNickName(val);
+		return identity == null || identity.equals(changeableIdentity);
 	}
 
 	@Override
