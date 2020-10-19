@@ -513,7 +513,9 @@ public class RepositoryEntryRelationDAO {
 				.createQuery(sb.toString(), resultClass)
 				.setParameter("repoKeys", repoKeys)
 				.setParameter("roles", roleList)
-				.getResultList();
+				.getResultList().stream()
+				.distinct()
+				.collect(Collectors.toList());
 	}
 	
 
