@@ -25,8 +25,6 @@
 
 package org.olat.shibboleth;
 
-import java.util.List;
-
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
@@ -102,8 +100,8 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 	}
 	
 	private boolean isNickNameUnique(String val) {
-		List<Identity> identities = securityManager.findIdentitiesByNickName(val);
-		return identities.isEmpty();
+		Identity identity= securityManager.findIdentityByNickName(val);
+		return identity != null;
 	}
 
 	/**

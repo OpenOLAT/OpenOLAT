@@ -438,11 +438,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			return null;
 		}
 		return identities != null && identities.size() == 1 ? identities.get(0) : null;
-	}	
-
-	@Override
-	public List<Identity> findIdentitiesByNickName(String name) {
-		return identityDao.findIdentitiesByNickName(name);
 	}
 
 	@Override
