@@ -272,15 +272,17 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		if (lastUsageEl != null && lastUsageEl.isVisible()) {
 			String lastUsage = lastUsageEl.getValue();
 			if (StringHelper.containsNonWhitespace(lastUsage)) {
+				int min = 1;
+				int max = 10000;
 				try {
 					int lastUsageInt = Integer.parseInt(lastUsage);
-					if (lastUsageInt < 1) {
+					if (lastUsageInt < min || lastUsageInt > max) {
 						allOk &= false;
-						lastUsageEl.setErrorKey("error.int.positive", null);
+						lastUsageEl.setErrorKey("error.last.usage", new String [] {String.valueOf(min), String.valueOf(max)});
 					}
 				} catch(Exception e) {
 					allOk &= false;
-					lastUsageEl.setErrorKey("error.int.positive", null);
+					lastUsageEl.setErrorKey("error.last.usage", new String [] {String.valueOf(min), String.valueOf(max)});
 				}
 			}
 		}
