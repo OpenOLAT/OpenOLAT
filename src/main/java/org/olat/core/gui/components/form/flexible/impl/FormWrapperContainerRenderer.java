@@ -96,6 +96,7 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 			} else {
 				sb.append(" onsubmit=\"if(o_info.linkbusy) return false; else o_beforeserver(); return true;\" ");
 			}
+			sb.append(" onkeydown=\"o_submitByEnter(event)\" ");
 			sb.append(">");
 			// hidden input field for dispatch uri
 			sb.append("<input type=\"hidden\" id=\"")

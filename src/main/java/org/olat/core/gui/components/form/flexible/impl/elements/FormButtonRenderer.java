@@ -82,6 +82,9 @@ class FormButtonRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(fs.getElementCssClass())) {
 			sb.append(" ").append(fs.getElementCssClass());
 		}
+		if(fs.isNewWindowAfterDispatchUrl()) {
+			sb.append(" o_new_window");
+		}
 		
 		sb.append("\"><span>").append(fs.getTranslated()).append("</span>");
 		

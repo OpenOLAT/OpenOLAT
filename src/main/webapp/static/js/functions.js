@@ -1422,6 +1422,12 @@ function o_TableMultiActionEvent(formNam, action){
 }
 
 function o_XHRSubmit(formNam) {
+	if(o_info.submit="submit" && jQuery('#' + formNam + " button.btn.o_new_window").length >= 1) {
+		o_info.newWindow = window.open("","_blank");
+		o_info.newWindow.blur();
+	}
+	
+	o_info.submit=null;
 	var newWindow = o_info.newWindow;
 	o_info.newWindow = null;
 	if(o_info.linkbusy) {
@@ -1981,6 +1987,14 @@ function addFormDirtyExclusion(elementId) {
     }
 	
 	o2cExclusions.push(elementId);
+}
+
+function o_submitByEnter(event) {
+	if(event.which == 13) {
+		o_info.submit="submit"
+	} else {
+		o_info.submit=null;
+	}
 }
 
 function o_ffRegisterSubmit(formId, submElmId){
