@@ -714,6 +714,10 @@ tr.choiceinteraction {
 	}
 }
 
+.choiceInteraction input + i  {
+	display: none;
+}
+
 .choiceInteraction div.o_qti_item_choice_option_flow  {
 	display: inline-block;
 	padding: .5em;
@@ -1536,6 +1540,7 @@ div.o_qti_statistics {
 	
 	.choiceinteraction input + i,
 	.matchInteraction input + i  {
+		display: inline;
 		font-family: FontAwesome;
 		font-style: normal;
 		font-weight: normal;
