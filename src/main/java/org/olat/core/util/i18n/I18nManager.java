@@ -1219,6 +1219,55 @@ public class I18nManager {
 		Locale loc = i18nModule.getAllLocales().get(localeKey);
 		return loc;
 	}
+	
+	/**
+	 * Most of the locales doesn't have a country specified. This method
+	 * returns a locale with a country. The country is choosed
+	 * arbitrarily. English use US (for compatibility reason). For Japan,
+	 * the locale changed the language and the country as jp doesn't exists.
+	 * 
+	 * @param locale The locale
+	 * @return A locale with a country
+	 */
+	public Locale getRegionalizedLocale(Locale locale) {
+		if(StringHelper.containsNonWhitespace(locale.getCountry())) {
+			return locale;
+		}
+		
+		String lang = locale.getLanguage();
+		String country = null;
+		switch(lang) {
+			case "de": country = "DE"; break;
+			case "fr": country = "FR"; break;
+			case "en": country = "GB"; break;
+			case "ar": country = "EG"; break;
+			case "el": country = "GR"; break;
+			case "cs": country = "CZ"; break;
+			case "fa": country = "AF"; break;
+			case "sq": country = "AL"; break;
+			case "da": country = "DK"; break;
+			case "jp": lang = "ja"; country = "JP"; break;
+			default: country = lang.toUpperCase(); break;
+		}
+		
+		boolean found = false;
+		for(Locale alocale:Locale.getAvailableLocales()) {
+			if(alocale.getLanguage().equals(lang) && country.equals(alocale.getCountry())) {
+				found = true;
+			}
+		}
+		
+		if(!found) {
+			System.out.println("Not found:" +  lang + " " + country);
+			for(Locale alocale:Locale.getAvailableLocales()) {
+				if(alocale.getLanguage().equals(lang)) {
+					System.out.println("Alt:" +  alocale.getLanguage() + " " + alocale.getCountry() + " " + alocale.getDisplayCountry());
+				}
+			}
+		}
+
+		return country == null ? locale: new Locale(lang, country);
+	}
 
 	/**
 	 * Translate the given language key to the language itself. This is used in

@@ -35,6 +35,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -42,6 +43,7 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.gui.render.StringOutput;
@@ -147,7 +149,19 @@ public class I18nTest extends OlatTestCase {
 		
 	}
 	
-	@Test public void testRemoveDeletedKeysTest() {
+	@Test
+	public void getRegionalizedLocale() {
+		Map<String,Locale> allLocales = i18nModule.getAllLocales();
+		for(Locale locale:allLocales.values()) {
+			Locale regionalizedLocale = i18nMgr.getRegionalizedLocale(locale);
+			Assert.assertNotNull(regionalizedLocale);
+			Assert.assertNotNull(regionalizedLocale.getCountry());
+			Assert.assertNotNull(regionalizedLocale.getLanguage());
+		}
+	}
+	
+	@Test
+	public void testRemoveDeletedKeysTest() {
 		// set languages that is used as reference: all keys there are the keys should not to be deleted
 		String[] referenceLanguages = new String[]{"de", "en"};
 		// set the languages that should be cleaned up
