@@ -20,7 +20,6 @@
 package org.olat.modules.contacttracing.ui;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.olat.core.gui.UserRequest;
@@ -33,6 +32,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.modules.contacttracing.ContactTracingSearchParams;
 
 /**
  * Initial date: 15.10.20<br>
@@ -68,21 +68,18 @@ public class ContactTracingReportGeneratorStep1Controller extends StepFormBasicC
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
 
-        // Get start date
-        Date startDate = calendar.getTime();
+        startDateEl = uifactory.addDateChooser("contact.tracing.report.generator.search.date.start", calendar.getTime(), formLayout);
+        startDateEl.setMandatory(true);
+        startDateEl.setNotEmptyCheck("contact.tracing.required");
+        startDateEl.setDateChooserTimeEnabled(true);
 
-        // Get end date
+        // Set end date
         calendar.set(Calendar.HOUR_OF_DAY, 23);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
         calendar.set(Calendar.MILLISECOND, 0);
 
-        startDateEl = uifactory.addDateChooser("contact.tracing.report.generator.search.date.start", startDate, formLayout);
-        startDateEl.setMandatory(true);
-        startDateEl.setNotEmptyCheck("contact.tracing.required");
-        startDateEl.setDateChooserTimeEnabled(true);
-
-        endDateEl = uifactory.addDateChooser("contact.tracing.report.generator.search.date.end", null, formLayout);
+        endDateEl = uifactory.addDateChooser("contact.tracing.report.generator.search.date.end", calendar.getTime(), formLayout);
         endDateEl.setDateChooserTimeEnabled(true);
         endDateEl.setDefaultTimeAtEndOfDay(true);
     }
@@ -100,9 +97,13 @@ public class ContactTracingReportGeneratorStep1Controller extends StepFormBasicC
 
     @Override
     protected void formOK(UserRequest ureq) {
-        contextWrapper.setLocationSearch(locationSearchEl.getValue());
-        contextWrapper.setStartDate(startDateEl.getDate());
-        contextWrapper.setEndDate(endDateEl.getDate());
+        ContactTracingSearchParams searchParams = new ContactTracingSearchParams();
+
+        searchParams.setFullTextSearch(locationSearchEl.getValue());
+        searchParams.setStartDate(startDateEl.getDate());
+        searchParams.setEndDate(endDateEl.getDate());
+
+        contextWrapper.setSearchParams(searchParams);
 
         fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
     }

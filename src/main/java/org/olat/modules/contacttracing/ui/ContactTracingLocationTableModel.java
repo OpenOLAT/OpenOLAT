@@ -44,19 +44,15 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
 
     private static final Logger log = Tracing.createLoggerFor(ContactTracingLocationTableModel.class);
 
-    private List<ContactTracingLocation> backup;
+    private Map<ContactTracingLocation, Long> locationRegistrationMap;
     private Map<ContactTracingLocation, FormLink> toolLinks;
+    private List<ContactTracingLocation> backup;
 
-    private ContactTracingManager contactTracingManager;
-
-    public ContactTracingLocationTableModel(FlexiTableColumnModel columnModel, List<ContactTracingLocation> locations, ContactTracingManager contactTracingManager) {
+    public ContactTracingLocationTableModel(FlexiTableColumnModel columnModel, Map<ContactTracingLocation, Long> locationRegistrationMap) {
         super(columnModel);
 
-        // Set contact tracing manager, @Autowired is not working here
-        this.contactTracingManager = contactTracingManager;
-
         // Set objects
-        setObjects(locations);
+        setObjects(locationRegistrationMap);
     }
 
     @Override
@@ -97,6 +93,17 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
         }
     }
 
+    public void setObjects(Map<ContactTracingLocation, Long> locationRegistrationMap) {
+        // Extract locations out of map
+        this.backup = new ArrayList<>(locationRegistrationMap.keySet());
+
+        // Save locationRegistrationMap
+        this.locationRegistrationMap = locationRegistrationMap;
+
+        // Call setObjects
+        setObjects(backup);
+    }
+
     @Override
     public void setObjects(List<ContactTracingLocation> objects) {
         // Set objects
@@ -110,8 +117,6 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
 
             toolLinks.put(location, toolsLink);
         }
-        // Back up objects (used to filter)
-        backup = objects;
     }
 
     @Override
@@ -127,10 +132,12 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
                 return row.getBuilding();
             case qrId:
                 return row.getQrId();
+            case qrText:
+                return row.getQrText();
             case guest:
                 return row.isAccessibleByGuests();
             case registrations:
-                return contactTracingManager.getRegistrations(row);
+                return locationRegistrationMap.get(row);
             case settings:
                 return toolLinks.get(row);
             default:
@@ -155,6 +162,7 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
         room("contact.tracing.cols.room"),
         building("contact.tracing.cols.building"),
         qrId("contact.tracing.cols.qr.id"),
+        qrText("contact.tracing.cols.qr.text"),
         guest("contact.tracing.cols.guest"),
         registrations("contact.tracing.cols.registrations"),
         settings("contact.tracing.cols.settings", "o_icon o_icon-lg o_icon_actions");

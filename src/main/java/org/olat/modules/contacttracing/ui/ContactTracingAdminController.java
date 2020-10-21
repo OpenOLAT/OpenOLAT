@@ -38,6 +38,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ContactTracingModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,8 +74,8 @@ public class ContactTracingAdminController extends BasicController implements Ac
         segments = SegmentViewFactory.createSegmentView("segments", mainVC, this);
         segments.setDontShowSingleSegment(true);
         segments.addSegment(configurationLink, true);
-        initSegments();
 
+        initSegments();
         putInitialPanel(mainVC);
         openConfiguration(ureq);
     }

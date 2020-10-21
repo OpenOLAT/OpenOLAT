@@ -109,7 +109,9 @@ create table o_contact_tracing_location (
     l_room varchar2(255) not null,
     l_building varchar2(255) not null,
     l_qr_id varchar2(255) not null,
+    l_qr_text varchar2(4000),
     l_guests number not null,
+    unique(l_qr_id),
     primary key (id)
 );
 
@@ -120,7 +122,7 @@ create table o_contact_tracing_entry (
     l_start_date date not null,
     l_end_date date,
     l_nick_name varchar2(255),
-    l_fist_name varchar2(255),
+    l_first_name varchar2(255),
     l_last_name varchar2(255),
     l_street varchar2(255),
     l_extra_line varchar2(255),

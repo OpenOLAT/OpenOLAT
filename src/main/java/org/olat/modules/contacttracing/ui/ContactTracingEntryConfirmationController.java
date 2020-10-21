@@ -19,38 +19,35 @@
  */
 package org.olat.modules.contacttracing.ui;
 
-import java.util.Date;
-import java.util.List;
-
-import org.olat.modules.contacttracing.ContactTracingEntry;
-import org.olat.modules.contacttracing.ContactTracingLocation;
-import org.olat.modules.contacttracing.ContactTracingSearchParams;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 
 /**
- * Initial date: 15.10.20<br>
+ * Initial date: 21.10.20<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ContactTracingReportGeneratorContextWrapper {
+public class ContactTracingEntryConfirmationController extends BasicController {
 
-    private ContactTracingSearchParams searchParams;
+    public ContactTracingEntryConfirmationController(UserRequest ureq, WindowControl wControl) {
+        super(ureq, wControl);
 
-    private List<ContactTracingLocation> locations;
+        VelocityContainer mainVC = createVelocityContainer("contact_tracing_entry_confirmation");
 
-    public ContactTracingSearchParams getSearchParams() {
-        return searchParams;
+        putInitialPanel(mainVC);
     }
 
-    public void setSearchParams(ContactTracingSearchParams searchParams) {
-        this.searchParams = searchParams;
+    @Override
+    protected void event(UserRequest ureq, Component source, Event event) {
+
     }
 
-    public List<ContactTracingLocation> getLocations() {
-        return locations;
-    }
+    @Override
+    protected void doDispose() {
 
-    public void setLocations(List<ContactTracingLocation> locations) {
-        this.locations = locations;
     }
-
 }

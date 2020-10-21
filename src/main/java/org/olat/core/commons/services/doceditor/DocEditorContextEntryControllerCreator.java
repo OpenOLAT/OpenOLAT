@@ -41,7 +41,7 @@ import org.olat.core.util.UserSession;
  *
  */
 public class DocEditorContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
-
+// TODO Dispatcher
 	private static final Logger log = Tracing.createLoggerFor(DocEditorContextEntryControllerCreator.class);
 	
 	private final DocEditorService docEditorService;

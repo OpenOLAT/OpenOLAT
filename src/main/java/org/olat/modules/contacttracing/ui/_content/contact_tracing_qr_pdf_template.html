@@ -1,0 +1,95 @@
+<style>
+    .pdf_wrapper {
+        text-align: center !important;
+        font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif !important;
+    }
+
+    .center {
+        margin-right: auto;
+        margin-left: auto;
+        width: 30em;
+    }
+
+    .section {
+        text-align: center !important;
+    }
+
+    .reference {
+        font-weight: bold;
+    }
+
+    .spacer {
+        margin: 2em 0;
+    }
+
+    div.center img {
+        width: 100%;
+        margin: 1em 0;
+    }
+
+    p {
+        text-align: center !important;
+        margin: 1em 0;
+        font-size: 1.5em;
+    }
+</style>
+
+#foreach($location in $locationList)
+    <div class="o_print_break_after pdf_wrapper">
+        #if($r.isNotNull("generalInstructions"))
+        <p>
+            $generalInstructions
+        </p>
+        #end
+
+        #if($r.isNotNull($location.getQrText()))
+        <div class="spacer"></div>
+        <p>
+            $location.getQrText()
+        </p>
+        #end
+
+        #if($r.isNotNull($location.getQrId()))
+        <div class="spacer"></div>
+        <div id="o_qrcode_$location.getQrId()" class="center"></div>
+        <script>
+            jQuery(function() {
+                o_QRCode('o_qrcode_$location.getQrId()', '$locationUrlMap.get($location)');
+            });
+        </script>
+        <p>
+            <a id="o_qrcode_$location.getQrId()_link" href="$locationUrlMap.get($location)">$locationUrlMap.get($location)</a>
+        </p>
+        <div class="spacer"></div>
+        #end
+
+        #if($r.isNotNull($location.getReference()))
+        <p class="reference">
+            $location.getReference()
+        </p>
+        #end
+
+        #if($r.isNotNull($location.getTitle()))
+        <p>
+            $location.getTitle()
+        </p>
+        #end
+
+        #if($r.isNotNull($location.getRoom()) || $r.isNotNull($location.getBuilding()))
+        <p>
+            #if($r.isNotNull($location.getRoom()))
+            $location.getRoom()
+            #end
+
+            #if($r.isNotNull($location.getRoom()) && $r.isNotNull($location.getBuilding()))
+            -
+            #end
+
+            #if($r.isNotNull($location.getBuilding()))
+            $location.getBuilding()
+            #end
+        </p>
+        #end
+    </div>
+#end
+

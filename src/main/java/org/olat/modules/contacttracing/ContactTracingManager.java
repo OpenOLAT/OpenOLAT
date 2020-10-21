@@ -19,7 +19,9 @@
  */
 package org.olat.modules.contacttracing;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Initial date: 13.10.20<br>
@@ -38,7 +40,7 @@ public interface ContactTracingManager {
      * @param qrId QR ID of the location - must be unique
      * @return A persisted contact tracing location
      */
-    public ContactTracingLocation createLocation(String reference, String title, String room , String building, String qrId, boolean guestsAllowed);
+    public ContactTracingLocation createLocation(String reference, String title, String room , String building, String qrId, String qrText, boolean guestsAllowed);
 
     /**
      * Save changes done to an existing location
@@ -49,11 +51,48 @@ public interface ContactTracingManager {
     public ContactTracingLocation updateLocation(ContactTracingLocation location);
 
     /**
+     * Get a contact tracing location by key
+     *
+     * @param locationKey Location key
+     * @return Contact tracing location
+     */
+    public ContactTracingLocation getLocation(Long locationKey);
+
+    /**
      * Get all contact tracing locations
      *
      * @return A list with all contact tracing locations
      */
-    public List<ContactTracingLocation> getLocations();
+    public List<ContactTracingLocation> getLocation();
+
+    /**
+     * Get a specific location by its unique identifier
+     *
+     * @param identifier Unique QR ID
+     * @return Contact tracing location
+     */
+    public ContactTracingLocation getLocation(String identifier);
+
+    /**
+     * Get a list of locations which fit the provided search parameters
+     * @param searchParams ContactTracingSearchParams
+     * @return List of contact tracing locations
+     */
+    public List<ContactTracingLocation> getLocation(ContactTracingSearchParams searchParams);
+
+    /**
+     * Get a list of locations which fit the provided search parameters
+     * @param searchParams ContactTracingSearchParams
+     * @return List of contact tracing locations
+     */
+    public Map<ContactTracingLocation, Long> getLocationsWithRegistrations(ContactTracingSearchParams searchParams);
+
+    /**
+     * Get all contact tracing locations and their registrations count
+     *
+     * @return A map with all contact tracing locations and their registrations
+     */
+    public Map<ContactTracingLocation, Long> getLocationsWithRegistrations();
 
     /**
      * Delete the given locations
@@ -71,10 +110,36 @@ public interface ContactTracingManager {
     public boolean qrIdExists(String qrId);
 
     /**
-     * Count the registrations for the given location
+     * Creates a new empty entry
+     * Details must be applied manually and then updated
      *
-     * @param location Given location
+     * @param location Contact tracing location must be provided to make sure it isn't empty
+     * @param deletionDate Deletion date must be provided to make sure it isn´t empty
+     * @return Empty contact tracing entry
+     */
+    public ContactTracingEntry createEntry(ContactTracingLocation location, Date startDate, Date deletionDate);
+
+    /**
+     * Update a given contact tracing entry
+     *
+     * @param entry Contact tracing entry
+     * @return Update contact tracing entry
+     */
+    public ContactTracingEntry updateEntry(ContactTracingEntry entry);
+
+    /**
+     * Count the registrations for the given parameters
+     *
+     * @param searchParams Given searchParams
      * @return Count of registrations
      */
-    public long getRegistrations(ContactTracingLocation location);
+    public long getRegistrationsCount(ContactTracingSearchParams searchParams);
+
+    /**
+     * Get the registrations matching given parameters
+     *
+     * @param searchParams Search parameters
+     * @return List of ContactTracingEntry
+     */
+    public List<ContactTracingEntry> getRegistrations(ContactTracingSearchParams searchParams);
 }

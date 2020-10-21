@@ -19,8 +19,16 @@
  */
 package org.olat.modules.contacttracing.manager;
 
+import java.util.Date;
+import java.util.List;
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.modules.contacttracing.ContactTracingEntry;
 import org.olat.modules.contacttracing.ContactTracingLocation;
+import org.olat.modules.contacttracing.ContactTracingSearchParams;
+import org.olat.modules.contacttracing.model.ContactTracingEntryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,15 +43,87 @@ public class ContactTracingEntryDAO {
     @Autowired
     private DB dbInstance;
 
-    public long getRegistrations(ContactTracingLocation location) {
+    public ContactTracingEntry createEntry(ContactTracingLocation location, Date startDate, Date deletionDate) {
+        ContactTracingEntryImpl entry = new ContactTracingEntryImpl();
+
+        entry.setCreationDate(new Date());
+        entry.setStartDate(startDate);
+        entry.setDeletionDate(deletionDate);
+        entry.setLocation(location);
+
+        dbInstance.getCurrentEntityManager().persist(entry);
+        return entry;
+    }
+
+    public ContactTracingEntry updateEntry(ContactTracingEntry entry) {
+        return dbInstance.getCurrentEntityManager().merge(entry);
+    }
+
+    public void deleteEntries(List<ContactTracingLocation> locations) {
         String query = new StringBuilder()
-                .append("select count(entry) from contactTracingEntry entry ")
-                .append("where entry.location=:locationToCheck")
+                .append("delete from contactTracingEntry as entry ")
+                .append("where entry.location in (:locationList)")
                 .toString();
 
-        return dbInstance.getCurrentEntityManager()
-                .createQuery(query, Long.class)
-                .setParameter("locationToCheck", location)
-                .getSingleResult();
+        dbInstance.getCurrentEntityManager()
+                .createQuery(query)
+                .setParameter("locationList", locations)
+                .executeUpdate();
+    }
+
+    public long getRegistrationsCount(ContactTracingSearchParams searchParams) {
+        QueryBuilder queryBuilder = new QueryBuilder();
+
+        queryBuilder.append("select count(entry) from contactTracingEntry entry");
+        if (searchParams.getLocation() != null) {
+            queryBuilder.where().append("entry.location=:locationToCheck");
+        }
+        if (searchParams.getStartDate() != null) {
+            queryBuilder.where().append("entry.startDate >= :start");
+        }
+        if (searchParams.getEndDate() != null) {
+            queryBuilder.where().append("entry.endDate <= :end");
+        }
+
+        TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+                .createQuery(queryBuilder.toString(), Long.class);
+        if (searchParams.getLocation() != null) {
+            query.setParameter("locationToCheck", searchParams.getLocation());
+        }
+        if (searchParams.getStartDate() != null) {
+            query.setParameter("start", searchParams.getStartDate());
+        }
+        if (searchParams.getEndDate() != null) {
+            query.setParameter("end", searchParams.getEndDate());
+        }
+        return query.getSingleResult();
+    }
+
+    public List<ContactTracingEntry> getRegistrations(ContactTracingSearchParams searchParams) {
+        QueryBuilder queryBuilder = new QueryBuilder();
+
+        queryBuilder.append("select entry from contactTracingEntry entry");
+        if (searchParams.getLocation() != null) {
+            queryBuilder.where().append("entry.location=:locationToCheck");
+        }
+        if (searchParams.getStartDate() != null) {
+            queryBuilder.where().append("entry.startDate >= :start");
+        }
+        if (searchParams.getEndDate() != null) {
+            queryBuilder.where().append("entry.endDate <= :end");
+        }
+
+        TypedQuery<ContactTracingEntry> query = dbInstance.getCurrentEntityManager()
+                .createQuery(queryBuilder.toString(), ContactTracingEntry.class);
+        if (searchParams.getLocation() != null) {
+            query.setParameter("locationToCheck", searchParams.getLocation());
+        }
+        if (searchParams.getStartDate() != null) {
+            query.setParameter("start", searchParams.getStartDate());
+        }
+        if (searchParams.getEndDate() != null) {
+            query.setParameter("end", searchParams.getEndDate());
+        }
+        return query.getResultList();
     }
 }

@@ -132,6 +132,13 @@ public class DateUtils {
 		c.add(Calendar.DATE, days);
 		return c.getTime();
 	}
+
+	public static Date addMinutes(Date date, int minutes) {
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.MINUTE, minutes);
+		return c.getTime();
+	}
 	
 	public static Date getLater(Date date1, Date date2) {
 		if (date1 == null) return date2;

@@ -22,9 +22,15 @@ package org.olat.modules.contacttracing.manager;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Persistable;
 import org.olat.modules.contacttracing.ContactTracingLocation;
+import org.olat.modules.contacttracing.ContactTracingSearchParams;
 import org.olat.modules.contacttracing.model.ContactTracingLocationImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,7 +45,7 @@ public class ContactTracingLocationDAO {
     @Autowired
     private DB dbInstance;
 
-    public ContactTracingLocation createAndPersistLocation(String reference, String title, String room, String building, String qrId, boolean guestsAllowed) {
+    public ContactTracingLocation createAndPersistLocation(String reference, String title, String room, String building, String qrId, String qrText, boolean guestsAllowed) {
         ContactTracingLocationImpl contactTracingLocation = new ContactTracingLocationImpl();
         contactTracingLocation.setCreationDate(new Date());
         contactTracingLocation.setLastModified(contactTracingLocation.getCreationDate());
@@ -48,6 +54,7 @@ public class ContactTracingLocationDAO {
         contactTracingLocation.setRoom(room);
         contactTracingLocation.setBuildiung(building);
         contactTracingLocation.setQrId(qrId);
+        contactTracingLocation.setQrText(qrText);
         contactTracingLocation.setAccessibleByGuests(guestsAllowed);
 
         dbInstance.getCurrentEntityManager().persist(contactTracingLocation);
@@ -82,6 +89,78 @@ public class ContactTracingLocationDAO {
         return dbInstance.getCurrentEntityManager()
                 .createQuery(query, ContactTracingLocation.class)
                 .getResultList();
+    }
+
+    public ContactTracingLocation getLocation(Long locationKey) {
+        String query = new StringBuilder()
+                .append("select location from contactTracingLocation as location ")
+                .append("where location.key=:locationKey")
+                .toString();
+
+        List<ContactTracingLocation> locations = dbInstance.getCurrentEntityManager()
+                .createQuery(query, ContactTracingLocation.class)
+                .setParameter("locationKey", locationKey)
+                .getResultList();
+
+        return locations == null || locations.isEmpty() ? null : locations.get(0);
+    }
+
+    public ContactTracingLocation getLocation(String identifier) {
+        String query = new StringBuilder()
+                .append("select location from contactTracingLocation as location ")
+                .append("where location.qrId=:identifier")
+                .toString();
+
+        List<ContactTracingLocation> locations = dbInstance.getCurrentEntityManager()
+                .createQuery(query, ContactTracingLocation.class)
+                .setParameter("identifier", identifier)
+                .getResultList();
+
+        return locations == null || locations.isEmpty() ? null : locations.get(0);
+    }
+
+    public List<ContactTracingLocation> getLocations(ContactTracingSearchParams searchParams) {
+        if (searchParams.isEmpty()) {
+            return getAllLocations();
+        }
+
+        QueryBuilder queryBuilder = new QueryBuilder();
+
+        queryBuilder.append("select distinct location from contactTracingLocation as location ")
+             .append("inner join contactTracingEntry as entry on (location.key = entry.location.key)");
+
+        if (searchParams.getFullTextSearch() != null) {
+            queryBuilder.where()
+                 .append("(")
+                 .append("lower(location.reference) like :search or ")
+                 .append("lower(location.title) like :search or ")
+                 .append("lower(location.room) like :search or ")
+                 .append("lower(location.building) like :search")
+                 .append(")");
+        }
+        if (searchParams.getStartDate() != null) {
+            queryBuilder.where().append("entry.startDate >= :start");
+        }
+        if (searchParams.getEndDate() != null) {
+            queryBuilder.where().append("entry.endDate <= :end");
+        }
+
+        TypedQuery<ContactTracingLocation> query = dbInstance.getCurrentEntityManager().createQuery(queryBuilder.toString(), ContactTracingLocation.class);
+
+        if (searchParams.getFullTextSearch() != null) {
+            query.setParameter("search", PersistenceHelper.makeFuzzyQueryString(searchParams.getFullTextSearch()));
+        }
+        if (searchParams.getStartDate() != null) {
+            query.setParameter("start", searchParams.getStartDate(), TemporalType.DATE);
+        }
+        if (searchParams.getEndDate() != null) {
+            query.setParameter("end", searchParams.getEndDate(), TemporalType.DATE);
+        }
+
+        List<ContactTracingLocation> resultList = query.getResultList();
+        System.out.println(PersistenceHelper.makeFuzzyQueryString(searchParams.getFullTextSearch()));
+
+        return resultList;
     }
 
     public boolean qrIdExists(String qrId) {

@@ -19,38 +19,29 @@
  */
 package org.olat.modules.contacttracing.ui;
 
-import java.util.Date;
 import java.util.List;
 
-import org.olat.modules.contacttracing.ContactTracingEntry;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.modules.contacttracing.ContactTracingLocation;
-import org.olat.modules.contacttracing.ContactTracingSearchParams;
 
 /**
- * Initial date: 15.10.20<br>
+ * Initial date: 19.10.20<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ContactTracingReportGeneratorContextWrapper {
-
-    private ContactTracingSearchParams searchParams;
+public class ContactTracingPDFControllerCreator implements ControllerCreator {
 
     private List<ContactTracingLocation> locations;
 
-    public ContactTracingSearchParams getSearchParams() {
-        return searchParams;
-    }
-
-    public void setSearchParams(ContactTracingSearchParams searchParams) {
-        this.searchParams = searchParams;
-    }
-
-    public List<ContactTracingLocation> getLocations() {
-        return locations;
-    }
-
-    public void setLocations(List<ContactTracingLocation> locations) {
+    public ContactTracingPDFControllerCreator(List<ContactTracingLocation> locations) {
         this.locations = locations;
     }
 
+    @Override
+    public Controller createController(UserRequest lureq, WindowControl lwControl) {
+        return new ContactTracingPDFController(lureq, lwControl, locations);
+    }
 }

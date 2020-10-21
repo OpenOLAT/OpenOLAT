@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,6 +44,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.course.editor.overview.YesNoCellRenderer;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
@@ -79,6 +81,8 @@ public class ContactTracingLocationListController extends FormBasicController {
 
     @Autowired
     private ContactTracingManager contactTracingManager;
+    @Autowired
+    private PdfService pdfService;
 
     public ContactTracingLocationListController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl, "contact_tracing_locations");
@@ -96,10 +100,14 @@ public class ContactTracingLocationListController extends FormBasicController {
         DefaultFlexiColumnModel qrIdColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.qrId);
         DefaultFlexiColumnModel registrationsColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.registrations);
 
+        // QR text column
+        DefaultFlexiColumnModel qrTextColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.qrText);
+        qrTextColumn.setDefaultVisible(false);
+
         // Guest column
         DefaultFlexiColumnModel guestColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.guest);
         guestColumn.setCellRenderer(new YesNoCellRenderer(getTranslator()));
-        // Actinos column
+        // Actions column
         DefaultFlexiColumnModel actionsColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.settings);
         actionsColumn.setIconHeader(ContactTracingLocationCols.settings.iconHeader());
 
@@ -110,12 +118,13 @@ public class ContactTracingLocationListController extends FormBasicController {
         columnModel.addFlexiColumnModel(roomColumn);
         columnModel.addFlexiColumnModel(buildingColumn);
         columnModel.addFlexiColumnModel(qrIdColumn);
+        columnModel.addFlexiColumnModel(qrTextColumn);
         columnModel.addFlexiColumnModel(guestColumn);
         columnModel.addFlexiColumnModel(registrationsColumn);
         columnModel.addFlexiColumnModel(actionsColumn);
 
         // Table model
-        tableModel = new ContactTracingLocationTableModel(columnModel, contactTracingManager.getLocations(), contactTracingManager);
+        tableModel = new ContactTracingLocationTableModel(columnModel, contactTracingManager.getLocationsWithRegistrations());
 
         // Table element
         tableEl = uifactory.addTableElement(getWindowControl(), "locationsTable", tableModel, getTranslator(), formLayout);
@@ -125,6 +134,7 @@ public class ContactTracingLocationListController extends FormBasicController {
         tableEl.setMultiSelect(true);
         tableEl.setSelectAllEnable(true);
         tableEl.setShowAllRowsEnabled(true);
+        tableEl.setEmtpyTableMessageKey("contact.tracing.location.table.empty");
 
         // Create link to add a new location
         addLocationLink = uifactory.addFormLink("createNewLocation", "contact.tracing.location.add", null, formLayout, Link.BUTTON);
@@ -142,7 +152,7 @@ public class ContactTracingLocationListController extends FormBasicController {
     }
 
     private void reloadData() {
-        tableModel.setObjects(contactTracingManager.getLocations());
+        tableModel.setObjects(contactTracingManager.getLocationsWithRegistrations());
         tableEl.reset();
     }
 
@@ -155,20 +165,34 @@ public class ContactTracingLocationListController extends FormBasicController {
             listenTo(cmc);
             cmc.activate();
         } else if (source == generateQrCodeSelectedLocationsLink) {
-            // TODO Batch QR
+            // Collect selected locations
+            List<ContactTracingLocation> generatePDFLocations = new ArrayList<>();
+            tableEl.getMultiSelectedIndex().forEach(index -> generatePDFLocations.add(tableModel.getObject(index)));
+
+            // Generate QR code PDF
+            if (generatePDFLocations.size() > 0) {
+                generateQrCodePDF(ureq, generatePDFLocations);
+            }
         } else if (source == deleteSelectedLocationsLink) {
             // Get selected locations
             List<ContactTracingLocation> deleteList = new ArrayList<>();
             tableEl.getMultiSelectedIndex().forEach(i -> deleteList.add(tableModel.getObject(i)));
 
             // Set up the cmc
-            deleteConfirmController = new ContactTracingLocationDeleteConfirmController(ureq, getWindowControl(), deleteList);
-            cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmController.getInitialComponent(), true, translate("contact.tracing.location.delete.title"), true, true);
-            listenTo(deleteConfirmController);
-            listenTo(cmc);
-            cmc.activate();
+            if (deleteList.size() > 0) {
+                deleteConfirmController = new ContactTracingLocationDeleteConfirmController(ureq, getWindowControl(), deleteList);
+                cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmController.getInitialComponent(), true, translate("contact.tracing.location.delete.title"), true, true);
+                listenTo(deleteConfirmController);
+                listenTo(cmc);
+                cmc.activate();
+            }
         } else if (source == generateQrCodeCalloutLink) {
-            // TODO QR
+            // First close the callout
+            cleanUp();
+
+            // Extract the location from the clicked link
+            ContactTracingLocation location = (ContactTracingLocation) editLocationCalloutLink.getUserObject();
+            generateQrCodePDF(ureq, Collections.singletonList(location));
         } else if (source == editLocationCalloutLink) {
             // First close the callout
             cleanUp();
@@ -262,6 +286,11 @@ public class ContactTracingLocationListController extends FormBasicController {
         calloutWindowController = new CloseableCalloutWindowController(ureq, getWindowControl(), locationToolsContainer, link.getFormDispatchId(), "", true, "", settings);
         listenTo(calloutWindowController);
         calloutWindowController.activate();
+    }
+
+    private void generateQrCodePDF(UserRequest ureq, List<ContactTracingLocation> locations) {
+        MediaResource pdf = pdfService.convert("Contact Tracing Locations.pdf", getIdentity(), new ContactTracingPDFControllerCreator(locations), getWindowControl());
+        ureq.getDispatchResult().setResultingMediaResource(pdf);
     }
 
     private void cleanUp() {

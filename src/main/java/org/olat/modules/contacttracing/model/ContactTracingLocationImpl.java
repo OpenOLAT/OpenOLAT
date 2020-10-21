@@ -55,13 +55,15 @@ public class ContactTracingLocationImpl implements ContactTracingLocation {
     @Column(name = "l_reference", nullable = false, unique = false, insertable = true, updatable = true)
     private String reference;
     @Column(name = "l_titel", nullable = false, unique = false, insertable = true, updatable = true)
-    private String titel;
+    private String title;
     @Column(name = "l_room", nullable = false, unique = false, insertable = true, updatable = true)
     private String room;
     @Column(name = "l_building", nullable = false, unique = false, insertable = true, updatable = true)
     private String building;
     @Column(name = "l_qr_id", nullable = false, unique = true, insertable = true, updatable = true)
     private String qrId;
+    @Column(name = "l_qr_text", nullable = true, unique = false, insertable = true, updatable = true)
+    private String qrText;
     @Column(name = "l_guests", nullable = false, unique = false, insertable = true, updatable = true)
     private boolean accessibleByGuest;
 
@@ -102,12 +104,12 @@ public class ContactTracingLocationImpl implements ContactTracingLocation {
 
     @Override
     public String getTitle() {
-        return titel;
+        return title;
     }
 
     @Override
     public void setTitle(String title) {
-        this.titel = title;
+        this.title = title;
     }
 
     @Override
@@ -138,6 +140,16 @@ public class ContactTracingLocationImpl implements ContactTracingLocation {
     @Override
     public void setQrId(String qrId) {
         this.qrId = qrId;
+    }
+
+    @Override
+    public String getQrText() {
+        return qrText;
+    }
+
+    @Override
+    public void setQrText(String qrText) {
+        this.qrText = qrText;
     }
 
     @Override

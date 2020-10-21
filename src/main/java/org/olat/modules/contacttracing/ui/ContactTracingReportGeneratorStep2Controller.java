@@ -19,6 +19,9 @@
  */
 package org.olat.modules.contacttracing.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -31,6 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ui.ContactTracingLocationTableModel.ContactTracingLocationCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +60,7 @@ public class ContactTracingReportGeneratorStep2Controller extends StepFormBasicC
         contextWrapper = (ContactTracingReportGeneratorContextWrapper) getFromRunContext("data");
 
         initForm(ureq);
+
     }
 
     @Override
@@ -76,8 +81,7 @@ public class ContactTracingReportGeneratorStep2Controller extends StepFormBasicC
         columnModel.addFlexiColumnModel(registrationsColumn);
 
         // Table model
-        tableModel = new ContactTracingLocationTableModel(columnModel, contactTracingManager.getLocations(), contactTracingManager);
-        tableModel.filter(contextWrapper.getLocationSearch(), null);
+        tableModel = new ContactTracingLocationTableModel(columnModel, contactTracingManager.getLocationsWithRegistrations(contextWrapper.getSearchParams()));
 
         // Table element
         tableEl = uifactory.addTableElement(getWindowControl(), "locationsTable", tableModel, getTranslator(), formLayout);
@@ -86,18 +90,31 @@ public class ContactTracingReportGeneratorStep2Controller extends StepFormBasicC
         tableEl.setSelectAllEnable(true);
         tableEl.setShowAllRowsEnabled(true);
         tableEl.setCustomizeColumns(false);
+        tableEl.setEmtpyTableMessageKey("contact.tracing.location.table.empty");
     }
 
     @Override
     protected boolean validateFormLogic(UserRequest ureq) {
-        boolean allOk =  super.validateFormLogic(ureq);
+        boolean allOk = super.validateFormLogic(ureq);
 
+        if (tableModel.getObjects().size() > 0 && tableEl.getMultiSelectedIndex().size() == 0) {
+            allOk = false;
+            showWarning("contact.tracing.report.empty.table");
+        }
 
         return allOk;
     }
 
     @Override
     protected void formOK(UserRequest ureq) {
+        // Get selected locations
+        List<ContactTracingLocation> locations = new ArrayList<>();
+        tableEl.getMultiSelectedIndex().forEach(index -> locations.add(tableModel.getObject(index)));
+
+        // Save them in context wrapper
+        contextWrapper.setLocations(locations);
+
+        // Fire event
         fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
     }
 

@@ -50,4 +50,52 @@ public interface ContactTracingEntry extends Persistable, CreateInfo {
     public String getNickName();
 
     public void setNickName(String nickName);
+
+    public String getFirstName();
+
+    public void setFirstName(String firstName);
+
+    public String getLastName();
+
+    public void setLastName(String lastName);
+
+    public String getStreet();
+
+    public void setStreet(String street);
+
+    public String getExtraAddressLine();
+
+    public void setExtraAddressLine(String extraAddressLine);
+
+    public String getZipCode();
+
+    public void setZipCode(String zipCode);
+
+    public String getCity();
+
+    public void setCity(String city);
+
+    public String getEmail();
+
+    public void setEmail(String email);
+
+    public String getInstitutionalEmail();
+
+    public void setInstitutionalEmail(String institutionalEmail);
+
+    public String getGenericEmail();
+
+    public void setGenericEmail(String genericEmail);
+
+    public String getPrivatePhone();
+
+    public void setPrivatePhone(String privatePhone);
+
+    public String getMobilePhone();
+
+    public void setMobilePhone(String mobilePhone);
+
+    public String getOfficePhone();
+
+    public void setOfficePhone(String officePhone);
 }

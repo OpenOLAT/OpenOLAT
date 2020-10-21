@@ -296,7 +296,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		}
 		return url;
 	}
-	
+	// TODO DIspatcher
 	private String createDocumentUrl(Access access) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(Settings.getServerContextPathURI());

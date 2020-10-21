@@ -33,6 +33,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
+import org.olat.modules.contacttracing.ContactTracingEntry;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 
 /**
@@ -42,7 +43,7 @@ import org.olat.modules.contacttracing.ContactTracingLocation;
  */
 @Entity(name = "contactTracingEntry")
 @Table(name = "o_contact_tracing_entry")
-public class ContactTracingEntryImpl  {
+public class ContactTracingEntryImpl implements ContactTracingEntry {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,45 +64,228 @@ public class ContactTracingEntryImpl  {
     @Column(name="l_start_date", nullable=false, insertable=true, updatable=false)
     private Date startDate;
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name="l_end_date", nullable=true, insertable=true, updatable=false)
+    @Column(name="l_end_date", nullable=true, insertable=true, updatable=true)
     private Date endDate;
-    @Column(name = "l_nick_name", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_nick_name", nullable = true, insertable = true, updatable = true)
     private String nickName;
-    @Column(name = "l_first_name", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_first_name", nullable = true, insertable = true, updatable = true)
     private String firstName;
-    @Column(name = "l_last_name", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_last_name", nullable = true, insertable = true, updatable = true)
     private String lastName;
-    @Column(name = "l_street", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_street", nullable = true, insertable = true, updatable = true)
     private String street;
-    @Column(name = "l_extra_line", nullable = true, insertable = true, updatable = false)
-    private String extraLine;
-    @Column(name = "l_zip_code", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_extra_line", nullable = true, insertable = true, updatable = true)
+    private String extraAddressLine;
+    @Column(name = "l_zip_code", nullable = true, insertable = true, updatable = true)
     private String zipCode;
-    @Column(name = "l_city", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_city", nullable = true, insertable = true, updatable = true)
     private String city;
-    @Column(name = "l_email", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_email", nullable = true, insertable = true, updatable = true)
     private String email;
-    @Column(name = "l_institutional_email", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_institutional_email", nullable = true, insertable = true, updatable = true)
     private String institutionalEmail;
-    @Column(name = "l_generic_email", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_generic_email", nullable = true, insertable = true, updatable = true)
     private String genericEmail;
-    @Column(name = "l_private_phone", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_private_phone", nullable = true, insertable = true, updatable = true)
     private String privatePhone;
-    @Column(name = "l_mobile_phone", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_mobile_phone", nullable = true, insertable = true, updatable = true)
     private String mobilePhone;
-    @Column(name = "l_office_phone", nullable = true, insertable = true, updatable = false)
+    @Column(name = "l_office_phone", nullable = true, insertable = true, updatable = true)
     private String officePhone;
 
-
+    @Override
     public Long getKey() {
         return key;
     }
 
+    public void setKey(Long key) {
+        this.key = key;
+    }
+
+    @Override
     public Date getCreationDate() {
-        return null;
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    @Override
+    public ContactTracingLocation getLocation() {
+        return location;
+    }
+
+    @Override
+    public void setLocation(ContactTracingLocation location) {
+        this.location = location;
+    }
+
+    @Override
+    public Date getDeletionDate() {
+        return deletionDate;
+    }
+
+    @Override
+    public void setDeletionDate(Date deletionDate) {
+        this.deletionDate = deletionDate;
+    }
+
+    @Override
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    @Override
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    @Override
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    @Override
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    @Override
+    public String getNickName() {
+        return nickName;
+    }
+
+    @Override
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
+
+    @Override
+    public String getFirstName() {
+        return firstName;
+    }
+
+    @Override
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    @Override
+    public String getLastName() {
+        return lastName;
+    }
+
+    @Override
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    @Override
+    public String getStreet() {
+        return street;
+    }
+
+    @Override
+    public void setStreet(String street) {
+        this.street = street;
+    }
+
+    @Override
+    public String getExtraAddressLine() {
+        return extraAddressLine;
+    }
+
+    @Override
+    public void setExtraAddressLine(String extraAddressLine) {
+        this.extraAddressLine = extraAddressLine;
+    }
+
+    @Override
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    @Override
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+    }
+
+    @Override
+    public String getCity() {
+        return city;
+    }
+
+    @Override
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public String getGenericEmail() {
+        return genericEmail;
+    }
+
+    @Override
+    public void setGenericEmail(String genericEmail) {
+        this.genericEmail = genericEmail;
+    }
+
+    @Override
+    public String getInstitutionalEmail() {
+        return institutionalEmail;
+    }
+
+    @Override
+    public void setInstitutionalEmail(String institutionalEmail) {
+        this.institutionalEmail = institutionalEmail;
+    }
+
+    @Override
+    public String getPrivatePhone() {
+        return privatePhone;
+    }
+
+    @Override
+    public void setPrivatePhone(String privatePhone) {
+        this.privatePhone = privatePhone;
+    }
+
+    @Override
+    public String getMobilePhone() {
+        return mobilePhone;
+    }
+
+    @Override
+    public void setMobilePhone(String mobilePhone) {
+        this.mobilePhone = mobilePhone;
+    }
+
+    @Override
+    public String getOfficePhone() {
+        return officePhone;
+    }
+
+    @Override
+    public void setOfficePhone(String officePhone) {
+        this.officePhone = officePhone;
     }
 
     public boolean equalsByPersistableKey(Persistable persistable) {
+        if (persistable instanceof ContactTracingEntry) {
+            return getKey().equals(persistable.getKey());
+        }
+
         return false;
     }
 }

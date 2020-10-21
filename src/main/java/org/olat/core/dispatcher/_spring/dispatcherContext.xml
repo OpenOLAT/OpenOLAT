@@ -67,6 +67,9 @@
 				<entry key="/bigbluebutton/">
 					<ref bean="bigbluebuttonguestjoinbean" />
 				</entry>
+				<entry key="/trace/">
+					<ref bean="contacttracingbean" />
+				</entry>
 				<entry key="/podcast/">
 					<ref bean="podcastMediaBean" />
 				</entry>
@@ -272,9 +275,12 @@
 
 	<bean id="edusharingwebbean"
 		class="org.olat.modules.edusharing.EdusharingDispatcher" />
-		
+
 	<bean id="bigbluebuttonguestjoinbean"
 		class="org.olat.modules.bigbluebutton.BigBlueButtonDispatcher" />
+
+	<bean id="contacttracingbean"
+		  class="org.olat.modules.contacttracing.ContactTracingDispatcher" />
 		
 	<!-- podcast media dispatcher -->
 	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher">

@@ -81,6 +81,18 @@ public interface ContactTracingLocation extends Persistable, CreateInfo, Modifie
     public String getQrId();
 
     /**
+     * Get the text, which is displayed below the QR code
+     * @return Displayed text
+     */
+    public String getQrText();
+
+    /**
+     * Set the text, which should be displayed below a QR Code
+     * @param qrText Text, which should be displayed
+     */
+    public void setQrText(String qrText);
+
+    /**
      * Set the qrId of this location
      * @param qrId Must be unique
      */

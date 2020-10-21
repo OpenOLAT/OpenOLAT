@@ -74,6 +74,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
 
     private MultipleSelectionElement enabledEl;
     private TextElement retentionPeriodEl;
+    private TextElement defaultDurationEl;
 
     private StaticTextElement startTimeEl;
     private SingleSelection endTimeEl;
@@ -138,7 +139,8 @@ public class ContactTracingConfigurationController extends FormBasicController {
         };
 
         initForm(ureq);
-        initRetentionPeriod(retentionPeriodEl);
+        initNumericTextElement(retentionPeriodEl, "days");
+        initNumericTextElement(defaultDurationEl, "minutes");
         initVelocityContainers();
 
         loadData();
@@ -160,6 +162,9 @@ public class ContactTracingConfigurationController extends FormBasicController {
         // Retention period
         retentionPeriodEl = uifactory.addTextElement("contact.tracing.retention.period", 3, null, generalConfig);
         retentionPeriodEl.setMandatory(true);
+        // Default stay duration
+        defaultDurationEl = uifactory.addTextElement("contact.tracing.duration.default", 3, null, generalConfig);
+        defaultDurationEl.setMandatory(true);
 
         // Questionnaire config
         questionnaireConfig = FormLayoutContainer.createDefaultFormLayout("questionnaireConfig", getTranslator());
@@ -168,7 +173,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
         formLayout.add("questionnaireConfig", questionnaireConfig);
 
         // Start tim
-        startTimeEl = uifactory.addStaticTextElement("contact.tracing.start.time", translate(contactTracingModule.getAttendanceStartTime()), questionnaireConfig);
+        startTimeEl = uifactory.addStaticTextElement("contact.tracing.start.time", translate(contactTracingModule.getAttendanceStartTimeState()), questionnaireConfig);
         // End time
         endTimeEl = uifactory.addDropdownSingleselect("contact.tracing.end.time", questionnaireConfig, STATE_KEYS, STATE_VALUES);
         // Nick name
@@ -345,22 +350,59 @@ public class ContactTracingConfigurationController extends FormBasicController {
 
     @Override
     protected void formOK(UserRequest ureq) {
-        contactTracingModule.setRetentionPeriod(Integer.parseInt(retentionPeriodEl.getValue()));
+        // Check if values are different than those already saved to prevent spammed log files
+        if (contactTracingModule.getRetentionPeriod() != Integer.parseInt(retentionPeriodEl.getValue())) {
+            contactTracingModule.setRetentionPeriod(Integer.parseInt(retentionPeriodEl.getValue()));
+        }
 
-        contactTracingModule.setAttendanceEndTime(getState(endTimeEl));
-        contactTracingModule.setNickName(getState(nickNameEl));
-        contactTracingModule.setFirstName(getState(firstNameEl));
-        contactTracingModule.setLastName(getState(lastNameEl));
-        contactTracingModule.setStreet(getState(streetEL));
-        contactTracingModule.setExtraAddressLine(getState(extraAddressLineEl));
-        contactTracingModule.setCity(getState(cityEl));
-        contactTracingModule.setZipCode(getState(zipCodeEl));
-        contactTracingModule.setEmail(getState(emailEl));
-        contactTracingModule.setInstitutionalEMail(getState(institutionalEmailEl));
-        contactTracingModule.setGenericEmail(getState(genericEmailEl));
-        contactTracingModule.setPrivatePhone(getState(privatePhoneEl));
-        contactTracingModule.setMobilePhone(getState(mobilePhoneEl));
-        contactTracingModule.setOfficePhone(getState(officePhoneEl));
+        if (contactTracingModule.getDefaultDuration() != Integer.parseInt(defaultDurationEl.getValue())) {
+            contactTracingModule.setDefaultDuration(Integer.parseInt(defaultDurationEl.getValue()));
+        }
+
+        if (contactTracingModule.getAttendanceEndTimeState() != getState(endTimeEl)) {
+            contactTracingModule.setAttendanceEndTimeState(getState(endTimeEl));
+        }
+        if (contactTracingModule.getNickNameState() != getState(nickNameEl)) {
+            contactTracingModule.setNickNameState(getState(nickNameEl));
+        }
+        if (contactTracingModule.getFirstNameState() != getState(firstNameEl)) {
+            contactTracingModule.setFirstNameState(getState(firstNameEl));
+        }
+        if (contactTracingModule.getLastNameState() != getState(lastNameEl)) {
+            contactTracingModule.setLastNameState(getState(lastNameEl));
+        }
+        if (contactTracingModule.getStreetState() != getState(streetEL)) {
+            contactTracingModule.setStreetState(getState(streetEL));
+        }
+        if (contactTracingModule.getExtraAddressLineState() != getState(extraAddressLineEl)) {
+            contactTracingModule.setExtraAddressLineState(getState(extraAddressLineEl));
+        }
+        if (contactTracingModule.getCityState() != getState(cityEl)) {
+            contactTracingModule.setCityState(getState(cityEl));
+        }
+        if (contactTracingModule.getZipCodeState() != getState(zipCodeEl)) {
+            contactTracingModule.setZipCodeState(getState(zipCodeEl));
+        }
+        if (contactTracingModule.getEmailState() != getState(emailEl)) {
+            contactTracingModule.setEmailState(getState(emailEl));
+        }
+        if (contactTracingModule.getInstitutionalEMailState() != getState(institutionalEmailEl)) {
+            contactTracingModule.setInstitutionalEMailState(getState(institutionalEmailEl));
+        }
+        if (contactTracingModule.getGenericEmailState() != getState(genericEmailEl)) {
+            contactTracingModule.setGenericEmailState(getState(genericEmailEl));
+        }
+        if (contactTracingModule.getPrivatePhoneState() != getState(privatePhoneEl)) {
+            contactTracingModule.setPrivatePhoneState(getState(privatePhoneEl));
+        }
+        if (contactTracingModule.getMobilePhoneState() != getState(mobilePhoneEl)) {
+            contactTracingModule.setMobilePhoneState(getState(mobilePhoneEl));
+        }
+        if (contactTracingModule.getOfficePhoneState() != getState(officePhoneEl)) {
+            contactTracingModule.setOfficePhoneState(getState(officePhoneEl));
+        }
+
+        loadData();
     }
 
     @Override
@@ -391,41 +433,44 @@ public class ContactTracingConfigurationController extends FormBasicController {
     private void loadData() {
         enabledEl.select(ENABLED_KEYS[0], contactTracingModule.isEnabled());
         retentionPeriodEl.setValue(String.valueOf(contactTracingModule.getRetentionPeriod()));
+        defaultDurationEl.setValue(String.valueOf(contactTracingModule.getDefaultDuration()));
 
-        endTimeEl.select(contactTracingModule.getAttendanceEndTime().name(), true);
-        nickNameEl.select(contactTracingModule.getNickName().name(), true);
-        firstNameEl.select(contactTracingModule.getFirstName().name(), true);
-        lastNameEl.select(contactTracingModule.getLastName().name(), true);
-        streetEL.select(contactTracingModule.getStreet().name(), true);
-        extraAddressLineEl.select(contactTracingModule.getExtraAddressLine().name(), true);
-        cityEl.select(contactTracingModule.getCity().name(), true);
-        zipCodeEl.select(contactTracingModule.getZipCode().name(), true);
-        emailEl.select(contactTracingModule.getEmail().name(), true);
-        institutionalEmailEl.select(contactTracingModule.getInstitutionalEMail().name(), true);
-        genericEmailEl.select(contactTracingModule.getGenericEmail().name(), true);
-        privatePhoneEl.select(contactTracingModule.getPrivatePhone().name(), true);
-        mobilePhoneEl.select(contactTracingModule.getMobilePhone().name(), true);
-        officePhoneEl.select(contactTracingModule.getOfficePhone().name(), true);
+        endTimeEl.select(contactTracingModule.getAttendanceEndTimeState().name(), true);
+        nickNameEl.select(contactTracingModule.getNickNameState().name(), true);
+        firstNameEl.select(contactTracingModule.getFirstNameState().name(), true);
+        lastNameEl.select(contactTracingModule.getLastNameState().name(), true);
+        streetEL.select(contactTracingModule.getStreetState().name(), true);
+        extraAddressLineEl.select(contactTracingModule.getExtraAddressLineState().name(), true);
+        cityEl.select(contactTracingModule.getCityState().name(), true);
+        zipCodeEl.select(contactTracingModule.getZipCodeState().name(), true);
+        emailEl.select(contactTracingModule.getEmailState().name(), true);
+        institutionalEmailEl.select(contactTracingModule.getInstitutionalEMailState().name(), true);
+        genericEmailEl.select(contactTracingModule.getGenericEmailState().name(), true);
+        privatePhoneEl.select(contactTracingModule.getPrivatePhoneState().name(), true);
+        mobilePhoneEl.select(contactTracingModule.getMobilePhoneState().name(), true);
+        officePhoneEl.select(contactTracingModule.getOfficePhoneState().name(), true);
 
         registrationIntroEl.setValue(StringHelper.xssScan(translate(CONTACT_TRACING_REGISTRATION_INTRO_KEY, new String[]{String.valueOf(contactTracingModule.getRetentionPeriod())})));
         registrationConfirmationMailEl.setValue(StringHelper.xssScan(translate(CONTACT_TRACING_CONFIRMATION_MAIL_KEY, new String[]{String.valueOf(contactTracingModule.getRetentionPeriod())})));
         qrCodeInstructionsEl.setValue(StringHelper.xssScan(contactTracingModule.getQrCodeInstructions()));
     }
 
-    private void initRetentionPeriod(TextElement textEl) {
+    private void initNumericTextElement(TextElement textEl, String unit) {
         textEl.setDisplaySize(1);
         textEl.setMaxLength(3);
         textEl.setElementCssClass("form-inline");
-        textEl.setTextAddOn("days");
+        textEl.setTextAddOn(unit);
     }
 
     private void initVelocityContainers() {
         if (contactTracingModule.isEnabled()) {
             retentionPeriodEl.setVisible(true);
+            defaultDurationEl.setVisible(true);
             questionnaireConfig.setVisible(true);
             messagesConfig.setVisible(true);
         } else {
             retentionPeriodEl.setVisible(false);
+            defaultDurationEl.setVisible(false);
             questionnaireConfig.setVisible(false);
             messagesConfig.setVisible(false);
         }
