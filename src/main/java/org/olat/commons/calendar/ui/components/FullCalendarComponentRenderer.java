@@ -25,6 +25,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
@@ -36,6 +37,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nManager;
 
 /**
  * 
@@ -66,7 +68,9 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		String configId = "fc_x".concat(fcC.getDispatchID());
 		String aggregatedId = "fc_g".concat(fcC.getDispatchID());
 		
-		Calendar cal = Calendar.getInstance(fcC.getTranslator().getLocale());
+		Locale regionalizedLocale = fcC.getTranslator().getLocale();
+		regionalizedLocale = I18nManager.getInstance().getRegionalizedLocale(regionalizedLocale);
+		Calendar cal = Calendar.getInstance(regionalizedLocale);
 		int firstDay = cal.getFirstDayOfWeek() - 1;
 		cal = Calendar.getInstance();
 		cal.setTime(fcC.getCurrentDate());
