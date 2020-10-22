@@ -1845,6 +1845,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		testSessionController.visitTestPlan(testPlanInfos);
 		candidateSession.setNumOfQuestions(testPlanInfos.getNumOfItems());
 		candidateSession.setNumOfAnsweredQuestions(testPlanInfos.getNumOfAnsweredItems());
+		candidateSession.setMaxScore(BigDecimal.valueOf(testPlanInfos.getMaxScore()));
 		
 		synchronized(this) {
 			candidateSession = qtiService.recordTestAssessmentResult(candidateSession, testSessionState, assessmentResult, candidateAuditLogger);

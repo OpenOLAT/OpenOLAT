@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.iq;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -27,19 +28,21 @@ import java.util.Date;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ExtraTimeInfos implements Comparable<ExtraTimeInfos> {
+public class ExtraInfos implements Comparable<ExtraInfos> {
 
 	private final Integer extraTimeInSeconds;
 	private Integer compensationExtraTimeInSeconds;
 	private final Date start;
+	private final BigDecimal maxScore;
 	
-	public ExtraTimeInfos() {
-		this(null, null);
+	public ExtraInfos() {
+		this(null, null, null);
 	}
 	
-	public ExtraTimeInfos(Integer extraTimeInSeconds, Date start) {
+	public ExtraInfos(Integer extraTimeInSeconds, Date start, BigDecimal maxScore) {
 		this.extraTimeInSeconds = extraTimeInSeconds;
 		this.start = start;
+		this.maxScore = maxScore;
 	}
 
 	public Integer getExtraTimeInSeconds() {
@@ -57,9 +60,13 @@ public class ExtraTimeInfos implements Comparable<ExtraTimeInfos> {
 	public Date getStart() {
 		return start;
 	}
+	
+	public BigDecimal getMaxScore() {
+		return maxScore;
+	}
 
 	@Override
-	public int compareTo(ExtraTimeInfos o) {
+	public int compareTo(ExtraInfos o) {
 		if(o == null) return -1;
 		if(extraTimeInSeconds == null && o.extraTimeInSeconds == null) return 0;
 		if(extraTimeInSeconds != null && o.extraTimeInSeconds == null) return -1;

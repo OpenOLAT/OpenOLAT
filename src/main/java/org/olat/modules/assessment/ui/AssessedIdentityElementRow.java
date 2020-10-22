@@ -44,6 +44,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private Integer attempts;
 	private Boolean userVisibility;
 	private BigDecimal score;
+	private BigDecimal maxScore;
 	private Boolean passed;
 	private Boolean passedOverriden;
 	private Date lastModified;
@@ -101,6 +102,14 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public BigDecimal getScore() {
 		return score;
+	}
+
+	public BigDecimal getMaxScore() {
+		return maxScore;
+	}
+
+	public void setMaxScore(BigDecimal maxScore) {
+		this.maxScore = maxScore;
 	}
 
 	public Boolean getPassed() {

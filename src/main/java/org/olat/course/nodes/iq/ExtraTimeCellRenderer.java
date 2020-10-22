@@ -54,8 +54,8 @@ public class ExtraTimeCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof ExtraTimeInfos) {
-			ExtraTimeInfos infos = (ExtraTimeInfos)cellValue;
+		if(cellValue instanceof ExtraInfos) {
+			ExtraInfos infos = (ExtraInfos)cellValue;
 			Integer extraTimeInSeconds = infos.getExtraTimeInSeconds();
 			Integer compensationExtraTimeInSeconds = infos.getCompensationExtraTimeInSeconds();
 			

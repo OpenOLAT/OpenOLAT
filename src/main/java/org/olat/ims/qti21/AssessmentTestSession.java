@@ -60,6 +60,10 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	
 	public void setManualScore(BigDecimal manualScore);
 	
+	public BigDecimal getMaxScore();
+	
+	public void setMaxScore(BigDecimal maxScore);
+	
 	public Integer getNumOfQuestions();
 
 	public void setNumOfQuestions(Integer numOfQuestions);

@@ -29,6 +29,8 @@ alter table o_as_entry add a_current_run_start timestamp;
 
 alter table o_as_mode_course add a_end_status varchar(32);
 
+alter table o_qti_assessmenttest_session add q_max_score decimal;
+
 -- Disadvantage compensation
 alter table o_qti_assessmenttest_session add q_compensation_extra_time number(20);
 

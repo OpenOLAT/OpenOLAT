@@ -141,6 +141,8 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
     private BigDecimal score; 
     @Column(name="q_manual_score", nullable=true, insertable=true, updatable=true)
     private BigDecimal manualScore;
+    @Column(name="q_max_score", nullable=true, insertable=true, updatable=true)
+    private BigDecimal maxScore; 
 
     @Column(name="q_num_questions", nullable=true, insertable=true, updatable=true)
     private Integer numOfQuestions;
@@ -358,6 +360,16 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 	@Override
 	public void setManualScore(BigDecimal manualScore) {
 		this.manualScore = manualScore;
+	}
+
+	@Override
+	public BigDecimal getMaxScore() {
+		return maxScore;
+	}
+
+	@Override
+	public void setMaxScore(BigDecimal maxScore) {
+		this.maxScore = maxScore;
 	}
 
 	@Override

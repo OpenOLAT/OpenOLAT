@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -81,7 +82,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 			}
 		}
 	}
-	
+
 	public void setCertificateMap(ConcurrentMap<Long, CertificateLight> certificateMap) {
 		this.certificateMap = certificateMap;
 	}
@@ -105,7 +106,8 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				}
 			} else if(AssessmentEntryStatus.isValueOf(key)) {
 				for(AssessedIdentityElementRow row:backups) {
-					if(row.getAssessmentStatus() != null && key.equals(row.getAssessmentStatus().name())) {
+					if(row.getAssessmentStatus() != null
+							&& key != null && key.equals(row.getAssessmentStatus().name())) {
 						filteredRows.add(row);
 					}
 				}
@@ -149,7 +151,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case userVisibility: return row.getUserVisibility();
 				case score: return row.getScore();
 				case min: return minScore;
-				case max: return maxScore;
+				case max: return getMaxScore(row);
 				case cut: return cutValue;
 				case status: return "";
 				case passedOverriden: return row.getPassedOverriden();
@@ -180,6 +182,14 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		}
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
+	}
+	
+	private Float getMaxScore(AssessedIdentityElementRow row) {
+		if(row == null || row.getMaxScore() == null) {
+			return maxScore;
+		}
+		BigDecimal ms = row.getMaxScore();
+		return Float.valueOf(ms.floatValue());
 	}
 
 	@Override

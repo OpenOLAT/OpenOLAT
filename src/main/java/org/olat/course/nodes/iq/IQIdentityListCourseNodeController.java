@@ -262,11 +262,17 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	protected void loadModel(UserRequest ureq) {
 		super.loadModel(ureq);
 		
-		if(((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(getReferencedRepositoryEntry())) {
-			Map<Long,ExtraTimeInfos> extraTimeInfos = getExtraTimes();
-			List<AssessedIdentityElementRow> rows = usersTableModel.getObjects();
-			for(AssessedIdentityElementRow row:rows) {
-				row.setDetails(extraTimeInfos.get(row.getIdentityKey()));
+		RepositoryEntry testEntry = getReferencedRepositoryEntry();
+		boolean timeLimit = ((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(testEntry);
+		Map<Long,ExtraInfos> extraInfos = getExtraInfos();
+		List<AssessedIdentityElementRow> rows = usersTableModel.getObjects();
+		for(AssessedIdentityElementRow row:rows) {
+			ExtraInfos infos = extraInfos.get(row.getIdentityKey());
+			if(infos != null) {
+				if(timeLimit) {
+					row.setDetails(infos);
+				}
+				row.setMaxScore(infos.getMaxScore());
 			}
 		}
 		
@@ -281,8 +287,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	/**
 	 * @return A map identity key to extra time
 	 */
-	private Map<Long,ExtraTimeInfos> getExtraTimes() {
-		Map<Long,ExtraTimeInfos> identityToExtraTime = new HashMap<>();
+	private Map<Long,ExtraInfos> getExtraInfos() {
+		Map<Long,ExtraInfos> identityToExtraTime = new HashMap<>();
 		List<AssessmentTestSession> sessions = qtiService
 				.getAssessmentTestSessions(getCourseRepositoryEntry(), courseNode.getIdent(), getReferencedRepositoryEntry());
 		//sort by identity, then by creation date
@@ -292,12 +298,14 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		for(AssessmentTestSession session:sessions) {
 			Long identityKey = session.getIdentity().getKey();
 			if(currentIdentityKey == null || !currentIdentityKey.equals(identityKey)) {
+				Date start = null;
+				Integer extraTimeInSeconds = null;
 				if(session.getFinishTime() == null && session.getExtraTime() != null) {
-					Integer extraTimeInSeconds = session.getExtraTime();
-					Date start = session.getCreationDate();
-					ExtraTimeInfos infos = new ExtraTimeInfos(extraTimeInSeconds, start);
-					identityToExtraTime.put(identityKey, infos);
+					extraTimeInSeconds = session.getExtraTime();
+					start = session.getCreationDate();
 				}
+				ExtraInfos infos = new ExtraInfos(extraTimeInSeconds, start, session.getMaxScore());
+				identityToExtraTime.put(identityKey, infos);
 				currentIdentityKey = identityKey;
 			}
 		}
@@ -306,8 +314,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		for(DisadvantageCompensation compensation:compensations) {
 			Long identityKey = compensation.getIdentity().getKey();
 			Integer extraTimeInSeconds = compensation.getExtraTime() * 60;
-			ExtraTimeInfos infos = identityToExtraTime.computeIfAbsent(identityKey,
-					key -> new ExtraTimeInfos());
+			ExtraInfos infos = identityToExtraTime.computeIfAbsent(identityKey,
+					key -> new ExtraInfos());
 			infos.setCompensationExtraTimeInSeconds(extraTimeInSeconds);
 		}
 

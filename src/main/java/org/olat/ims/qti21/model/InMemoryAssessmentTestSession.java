@@ -48,6 +48,7 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
     private Boolean passed;
     private BigDecimal score;
     private BigDecimal manualScore;
+    private BigDecimal maxScore;
 	
 	private Integer numOfQuestions;
 	private Integer numOfAnsweredQuestions;
@@ -179,6 +180,16 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 	@Override
 	public void setManualScore(BigDecimal manualScore) {
 		this.manualScore = manualScore;
+	}
+
+	@Override
+	public BigDecimal getMaxScore() {
+		return maxScore;
+	}
+
+	@Override
+	public void setMaxScore(BigDecimal maxScore) {
+		this.maxScore = maxScore;
 	}
 
 	@Override

@@ -110,6 +110,7 @@ import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
@@ -249,6 +250,15 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		return timeLimit;
 	}
 	
+	public Double getQTI21EvaluatedMaxScore(RepositoryEntry testEntry) {
+		Double estimatedMaxScore = null;
+		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
+			ResolvedAssessmentTest resolvedAssessmentTest = loadResolvedAssessmentTest(testEntry);
+			estimatedMaxScore = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
+		}
+		return estimatedMaxScore;
+	}
+	
 	/**
 	 * If the course element override the test configuration, the value is from
 	 * the course element's configuration. Else, the value is from the assessment
@@ -304,13 +314,19 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	public AssessmentTest loadAssessmentTest(RepositoryEntry testEntry) {
 		if(testEntry == null) return null;
 		
-		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
-				.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+		ResolvedAssessmentTest resolvedAssessmentTest = loadResolvedAssessmentTest(testEntry);
 		if(resolvedAssessmentTest != null) {
 			return resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 		}
 		return null;
+	}
+	
+	public ResolvedAssessmentTest loadResolvedAssessmentTest(RepositoryEntry testEntry) {
+		if(testEntry == null) return null;
+		
+		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+		return CoreSpringFactory.getImpl(QTI21Service.class)
+				.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 	}
 
 	@Override

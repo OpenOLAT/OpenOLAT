@@ -1649,6 +1649,7 @@ create table o_qti_assessmenttest_session (
    q_duration bigint,
    q_score float(65,30) default null,
    q_manual_score float(65,30) default null,
+   q_max_score float(65,30) default null,
    q_passed bit default null,
    q_num_questions bigint,
    q_num_answered_questions bigint,

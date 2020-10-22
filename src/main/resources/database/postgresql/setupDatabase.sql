@@ -1672,6 +1672,7 @@ create table o_qti_assessmenttest_session (
    q_duration int8,
    q_score decimal default null,
    q_manual_score decimal default null,
+   q_max_score decimal default null,
    q_passed bool default null,
    q_num_questions int8,
    q_num_answered_questions int8,

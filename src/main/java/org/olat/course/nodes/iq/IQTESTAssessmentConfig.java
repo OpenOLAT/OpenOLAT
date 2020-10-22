@@ -26,11 +26,13 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -81,12 +83,18 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
 			if (testEntry != null) {
 				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
-					if(assessmentTest != null) {
-						Double max = QtiNodesExtractor.extractMaxScore(assessmentTest);
+					ResolvedAssessmentTest resolvedAssessmentTest = courseNode.loadResolvedAssessmentTest(testEntry);
+					if(resolvedAssessmentTest != null) {
+						Double max = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
+						if(max == null) {
+							AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractAssumingSuccessful();
+							if(assessmentTest != null) {
+								max = QtiNodesExtractor.extractMaxScore(assessmentTest);
+							}
+						}
 						if(max != null) {
 							maxScore = Float.valueOf(max.floatValue());
-						}
+						}		
 					}
 				} else {
 					maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);

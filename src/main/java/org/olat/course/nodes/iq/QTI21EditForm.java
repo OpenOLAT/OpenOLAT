@@ -49,6 +49,7 @@ import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
+import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -531,7 +532,10 @@ public class QTI21EditForm extends FormBasicController {
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 		if(assessmentTest != null) {
 			AssessmentTestBuilder testBuilder = new AssessmentTestBuilder(assessmentTest);
-			maxValue = testBuilder.getMaxScore();
+			maxValue = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
+			if(maxValue == null) {
+				maxValue = testBuilder.getMaxScore();
+			}
 			cutValue = testBuilder.getCutValue();
 			if(maxValue != null && "OpenOLAT".equals(assessmentTest.getToolName())) {
 				minValue = 0d;
