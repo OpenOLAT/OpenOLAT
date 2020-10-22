@@ -306,12 +306,10 @@ $r.renderForce("development")
 	<div id="o_go_full_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-default btn-xs o_noprint"><i class="o_icon o_icon_width_expand o_icon-fw"> </i></div>
 </div>
 <div><script>
-/* <![CDATA[ */ 
-	jQuery(document).ready(function() {
-		jQuery("#o_go_standard_width").click(function() { OPOL.setContainerFullWidth(0); $r.openNoResponseJavaScriptCommand("width.standard")); });
-		jQuery("#o_go_full_width").click(function() { OPOL.setContainerFullWidth(1); $r.openNoResponseJavaScriptCommand("width.full")); });
-	});
-/* ]]> */
+jQuery(document).ready(function() {
+	jQuery("#o_go_standard_width").click(function() { OPOL.setContainerFullWidth(0); $r.openNoResponseJavaScriptCommand("width.standard")); });
+	jQuery("#o_go_full_width").click(function() { OPOL.setContainerFullWidth(1); $r.openNoResponseJavaScriptCommand("width.full")); });
+});
 </script></div>
 #end
 ## ---- END #o_navbar ---
