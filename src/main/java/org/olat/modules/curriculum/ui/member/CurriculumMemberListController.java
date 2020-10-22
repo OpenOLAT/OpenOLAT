@@ -21,9 +21,7 @@ package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -75,6 +73,7 @@ import org.olat.group.ui.main.EditMembershipController;
 import org.olat.group.ui.main.EditSingleMembershipController;
 import org.olat.group.ui.main.MemberLeaveConfirmationController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
+import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.StudentStatEntry;
@@ -88,7 +87,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
-import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.CurriculumMemberStats;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
@@ -233,7 +232,8 @@ public class CurriculumMemberListController extends FormBasicController implemen
 			columnsModel.addFlexiColumnModel(col);
 			colPos++;
 		}
-
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.progression, new LearningProgressCompletionCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.firstTime));
 		if(restrictToRoles == null || restrictToRoles.size() != 1) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role, new CurriculumMembershipCellRenderer(getTranslator())));
@@ -265,21 +265,19 @@ public class CurriculumMemberListController extends FormBasicController implemen
 			params.setRoles(restrictToRoles);
 		}
 		
-		List<CurriculumMember> members = curriculumService.getMembers(curriculumElement, params);
-		
-		Map<Long,CurriculumMemberRow> rowMap = new HashMap<>();
-		for(CurriculumMember member:members) {
-			CurriculumMemberRow row = rowMap.computeIfAbsent(member.getIdentity().getKey(), key -> forgeRow(member));
-			row.getMembership().setCurriculumElementRole(member.getRole());
+		List<CurriculumMemberStats> members = curriculumService.getMembersWithStats(curriculumElement, params);
+		List<CurriculumMemberRow> rows = new ArrayList<>();
+		for(CurriculumMemberStats member:members) {
+			rows.add(forgeRow(member));
 		}
-		List<CurriculumMemberRow> rows = new ArrayList<>(rowMap.values());
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
-	private CurriculumMemberRow forgeRow(CurriculumMember member) {
+	private CurriculumMemberRow forgeRow(CurriculumMemberStats member) {
 		CourseMembership membership = new CourseMembership();
-		CurriculumMemberRow row = new CurriculumMemberRow(member.getIdentity(), membership, member.getCreationDate());
+		CurriculumMemberRow row = new CurriculumMemberRow(member.getIdentity(), membership,
+				member.getFirstTime(), member.getAverageCompletion());
 		
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");

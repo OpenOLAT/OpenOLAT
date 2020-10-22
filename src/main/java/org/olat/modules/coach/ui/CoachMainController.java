@@ -190,7 +190,6 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			String cmd = (String) treeNode.getUserObject();
 			return selectMenuItem(ureq, cmd);
 		} else if (treeNode.getUserObject() instanceof Long) {
-			Long cmd = (Long) treeNode.getUserObject();
 			return selectMenuItem(ureq, treeNode.toString());
 		} else if (treeNode.getUserObject() instanceof Organisation) {
 			Organisation organisation = (Organisation) treeNode.getUserObject();

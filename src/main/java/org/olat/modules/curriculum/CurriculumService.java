@@ -38,6 +38,7 @@ import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.CurriculumMemberStats;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -361,6 +362,8 @@ public interface CurriculumService {
 	 * @return The list of memberships
 	 */
 	public List<CurriculumMember> getMembers(CurriculumElement element, SearchMemberParameters params);
+	
+	public List<CurriculumMemberStats> getMembersWithStats(CurriculumElement element, SearchMemberParameters params);
 	
 	/**
 	 * The list of members of the specified curriculum element with the specified role.

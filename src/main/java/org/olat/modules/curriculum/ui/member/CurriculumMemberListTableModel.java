@@ -68,6 +68,7 @@ public class CurriculumMemberListTableModel extends DefaultFlexiTableDataModel<C
 		if(col < CurriculumMemberListController.USER_PROPS_OFFSET) {
 			switch(COLS[col]) {
 				case id: return row.getIdentity().getKey();
+				case progression: return row.getAverageCompletion();
 				case firstTime: return row.getFirstTime();
 				case role: return row.getMembership();
 				case tools: return row.getToolsLink();
@@ -97,6 +98,7 @@ public class CurriculumMemberListTableModel extends DefaultFlexiTableDataModel<C
 	
 	public enum MemberCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
+		progression("table.header.progress"),
 		firstTime("table.header.firstTime"),
 		role("table.header.role"),
 		tools("table.header.tools");

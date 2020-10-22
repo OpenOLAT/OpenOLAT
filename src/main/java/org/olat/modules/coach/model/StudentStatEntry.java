@@ -35,7 +35,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *  
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class StudentStatEntry extends UserPropertiesRow {
+public class StudentStatEntry extends UserPropertiesRow implements CompletionStats {
 	
 	private int countRepo = 0;
 	private int countPassed = 0;
@@ -111,10 +111,12 @@ public class StudentStatEntry extends UserPropertiesRow {
 		this.initialLaunch = initialLaunch;
 	}
 
+	@Override
 	public Double getAverageCompletion() {
 		return averageCompletion;
 	}
 
+	@Override
 	public void setAverageCompletion(Double averageCompletion) {
 		this.averageCompletion = averageCompletion;
 	}

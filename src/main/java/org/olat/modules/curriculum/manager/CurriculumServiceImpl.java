@@ -52,6 +52,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.coach.manager.CoachingDAO;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
@@ -84,6 +85,7 @@ import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.CurriculumMemberStats;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
@@ -117,6 +119,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
+	@Autowired
+	private CoachingDAO coachingDao;
 	@Autowired
 	private CurriculumDAO curriculumDao;
 	@Autowired
@@ -571,6 +575,30 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		return memberQueries.getMembers(element, params);
 	}
 	
+	@Override
+	public List<CurriculumMemberStats> getMembersWithStats(CurriculumElement element, SearchMemberParameters params) {
+		List<CurriculumMember> members = memberQueries.getMembers(element, params);
+		
+		Map<Identity, CurriculumMemberStats> rowMap = new HashMap<>();
+		Map<Long, CurriculumMemberStats> rowLongMap = new HashMap<>();
+		for(CurriculumMember member:members) {
+			CurriculumMemberStats row = rowMap.computeIfAbsent(member.getIdentity(), CurriculumMemberStats::new);
+			row.getMembership().setCurriculumElementRole(member.getRole());
+			row.addFirstTime(member.getCreationDate());
+			if(row.getMembership().isParticipant()) {
+				rowLongMap.put(member.getIdentity().getKey(), row);
+			}
+		}
+		
+		if(!rowLongMap.isEmpty()) {
+			List<CurriculumElement> descendants = curriculumElementDao.getDescendants(element);
+			descendants.add(element);
+			coachingDao.getStudentsCompletionStatement(descendants, rowLongMap);
+		}
+		
+		return new ArrayList<>(rowMap.values());
+	}
+
 	@Override
 	public List<Identity> getMembersIdentity(CurriculumElementRef element, CurriculumRoles role) {
 		return curriculumElementDao.getMembersIdentity(element, role.name());

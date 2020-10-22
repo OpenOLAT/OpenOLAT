@@ -390,6 +390,12 @@ public class PersistenceHelper {
 		return obj == null ? null : ((Number)obj).longValue();
 	}
 	
+	public static Double extractDouble(Object[] results, int pos) {
+		if(results == null || pos >= results.length) return null;
+		Object obj = results[pos];
+		return obj == null ? null : ((Number)obj).doubleValue();
+	}
+	
 	public static long extractPrimitiveLong(Object[] results, int pos) {
 		if(results == null || pos >= results.length) return 0l;
 		Object obj = results[pos];

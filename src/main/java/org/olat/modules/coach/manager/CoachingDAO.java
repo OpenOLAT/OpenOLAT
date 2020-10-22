@@ -47,11 +47,14 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.modules.coach.model.CompletionStats;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -942,6 +945,44 @@ public class CoachingDAO {
 			if(entry != null) {
 				Double completion = rawStat[1] != null? ((Number)rawStat[1]).doubleValue(): null;
 				entry.setAverageCompletion(completion);
+			}
+		}
+		return !rawList.isEmpty();
+	}
+	
+	public boolean getStudentsCompletionStatement(List<? extends CurriculumElementRef> elements, Map<Long, ? extends CompletionStats> statistics) {
+		if(elements == null || elements.isEmpty() || statistics == null || statistics.isEmpty()) return false;
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae.identity.key, avg(ae.completion)")
+		  .append(" from assessmententry as ae")
+		  .append(" where ae.key in (select distinct asge.key")
+		  .append(" from curriculumelement el")
+		  .append(" inner join el.group bGroup")
+		  .append(" inner join bGroup.members as membership")
+		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
+		  .append(" inner join assessmententry as asge on (asge.repositoryEntry.key=rel.entry.key and asge.identity.key=membership.identity.key)")
+		  .append(" where membership.role ").in(CurriculumRoles.participant).append(" and el.key in (:elementKeys)")
+		  .append(" and asge.entryRoot=true and asge.completion is not null")
+		  .append(")")
+		  .append(" group by ae.identity.key");
+		
+		List<Long> elementKeys = elements.stream()
+				.map(CurriculumElementRef::getKey)
+				.collect(Collectors.toList());
+		
+		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("elementKeys", elementKeys)
+				.getResultList();
+
+		for(Object[] rawStat:rawList) {
+			Long identityKey = ((Number)rawStat[0]).longValue();
+			Double completion = PersistenceHelper.extractDouble(rawStat, 1);
+			
+			CompletionStats stats = statistics.get(identityKey);
+			if(stats != null) {
+				stats.setAverageCompletion(completion);
 			}
 		}
 		return !rawList.isEmpty();

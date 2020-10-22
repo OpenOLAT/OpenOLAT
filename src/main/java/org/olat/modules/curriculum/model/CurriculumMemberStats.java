@@ -17,43 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui.member;
+package org.olat.modules.curriculum.model;
 
 import java.util.Date;
 
-import org.olat.basesecurity.IdentityRef;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.group.ui.main.CourseMembership;
 import org.olat.modules.coach.model.CompletionStats;
 
 /**
  * 
- * Initial date: 19 oct. 2020<br>
+ * Initial date: 22 oct. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumMemberRow implements IdentityRef, CompletionStats {
+public class CurriculumMemberStats implements CompletionStats {
+	
 
 	private Date firstTime;
 	private Double averageCompletion;
 	private final Identity identity;
-	private final CourseMembership membership;
+	private final CourseMembership membership = new CourseMembership();
 	
-	private FormLink toolsLink;
-	
-	public CurriculumMemberRow(Identity identity, CourseMembership membership, Date firstTime, Double averageCompletion) {
+	public CurriculumMemberStats(Identity identity) {
 		this.identity = identity;
-		this.membership = membership;
-		this.firstTime = firstTime;
-		this.averageCompletion = averageCompletion;
 	}
-	
-	@Override
-	public Long getKey() {
-		return identity == null ? null : identity.getKey();
-	}
-	
+
 	public Identity getIdentity() {
 		return identity;
 	}
@@ -66,8 +55,12 @@ public class CurriculumMemberRow implements IdentityRef, CompletionStats {
 		return firstTime;
 	}
 
-	public void setFirstTime(Date firstTime) {
-		this.firstTime = firstTime;
+	public void addFirstTime(Date time) {
+		if(time == null) return;
+		
+		if(firstTime == null || firstTime.after(time)) {
+			firstTime = time;
+		}
 	}
 
 	@Override
@@ -78,30 +71,5 @@ public class CurriculumMemberRow implements IdentityRef, CompletionStats {
 	@Override
 	public void setAverageCompletion(Double averageCompletion) {
 		this.averageCompletion = averageCompletion;
-	}
-
-	public FormLink getToolsLink() {
-		return toolsLink;
-	}
-
-	public void setToolsLink(FormLink toolsLink) {
-		this.toolsLink = toolsLink;
-	}
-
-	@Override
-	public int hashCode() {
-		return identity == null ? 2365912 : identity.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if(this == obj) {
-			return true;
-		}
-		if(obj instanceof CurriculumMemberRow) {
-			CurriculumMemberRow row = (CurriculumMemberRow)obj;
-			return identity != null && identity.equals(row.getIdentity());
-		}
-		return false;
 	}
 }
