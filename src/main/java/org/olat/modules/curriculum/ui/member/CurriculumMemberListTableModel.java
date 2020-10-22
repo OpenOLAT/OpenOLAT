@@ -39,6 +39,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class CurriculumMemberListTableModel extends DefaultFlexiTableDataModel<CurriculumMemberRow> implements SortableFlexiTableDataModel<CurriculumMemberRow> {
 	
 	private static final MemberCols[] COLS = MemberCols.values();
+	private static final Double ZERO = Double.valueOf(0.0d);
 	
 	private final Locale locale;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -78,6 +79,16 @@ public class CurriculumMemberListTableModel extends DefaultFlexiTableDataModel<C
 		
 		int propPos = col - CurriculumMemberListController.USER_PROPS_OFFSET;
 		return userPropertyHandlers.get(propPos).getUserProperty(row.getIdentity().getUser(), locale);
+	}
+	
+	public Double getAvergaeCompletion(CurriculumMemberRow row) {
+		if(!row.getMembership().isParticipant()) return null;
+		
+		Double completion = row.getAverageCompletion();
+		if(completion == null) {
+			completion = ZERO;
+		}
+		return completion;
 	}
 	
 	public int indexOf(Long identityKey) {

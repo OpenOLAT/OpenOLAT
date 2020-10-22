@@ -68,7 +68,6 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.MemberListController;
-import org.olat.group.ui.main.CourseMembership;
 import org.olat.group.ui.main.EditMembershipController;
 import org.olat.group.ui.main.EditSingleMembershipController;
 import org.olat.group.ui.main.MemberLeaveConfirmationController;
@@ -235,9 +234,8 @@ public class CurriculumMemberListController extends FormBasicController implemen
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.progression, new LearningProgressCompletionCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.firstTime));
-		if(restrictToRoles == null || restrictToRoles.size() != 1) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role, new CurriculumMembershipCellRenderer(getTranslator())));
-		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role, new CurriculumMembershipCellRenderer(getTranslator())));
+		
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(MemberCols.tools);
 		toolsCol.setSortable(false);
 		toolsCol.setExportable(false);
@@ -275,8 +273,7 @@ public class CurriculumMemberListController extends FormBasicController implemen
 	}
 	
 	private CurriculumMemberRow forgeRow(CurriculumMemberStats member) {
-		CourseMembership membership = new CourseMembership();
-		CurriculumMemberRow row = new CurriculumMemberRow(member.getIdentity(), membership,
+		CurriculumMemberRow row = new CurriculumMemberRow(member.getIdentity(), member.getMembership(),
 				member.getFirstTime(), member.getAverageCompletion());
 		
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
