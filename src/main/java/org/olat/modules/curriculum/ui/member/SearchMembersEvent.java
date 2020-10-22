@@ -17,33 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
+package org.olat.modules.curriculum.ui.member;
+
+import org.olat.core.gui.control.Event;
+import org.olat.modules.curriculum.model.SearchMemberParameters;
 
 /**
  * 
- * Initial date: 8 juin 2018<br>
+ * Initial date: 21 oct. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumElementMembership {
+public class SearchMembersEvent extends Event {
 	
-	public Long getIdentityKey();
-	
-	public Long getCurriculumElementKey();
+	private static final long serialVersionUID = 8252946730247515001L;
 
-	public boolean isRepositoryEntryOwner();
-
-	public boolean isCoach();
+	public static final String SEARCH_EVENT = "search-event";
 	
-	public boolean isParticipant();
+	private final SearchMemberParameters searchParameters;
 	
-	public boolean isCurriculumElementOwner();
+	public SearchMembersEvent(SearchMemberParameters searchParameters) {
+		super(SEARCH_EVENT);
+		this.searchParameters = searchParameters;
+	}
 	
-	public boolean isMasterCoach();
-	
-	/**
-	 * @return true if the identity has at least one role on the curriculum element
-	 */
-	public boolean hasMembership();
-
+	public SearchMemberParameters getSearchParameters() {
+		return searchParameters;
+	}
 }

@@ -82,6 +82,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
@@ -117,6 +118,7 @@ public class EditMembershipController extends FormBasicController {
 	
 	private boolean withButtons;
 	private final boolean overrideManaged;
+	private final boolean extendedCurriculumRoles;
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry repoEntry;
 	private final Curriculum curriculum;
@@ -143,6 +145,7 @@ public class EditMembershipController extends FormBasicController {
 		rootCurriculumElement = null;
 		this.withButtons = true;
 		this.overrideManaged = overrideManaged;
+		extendedCurriculumRoles = false;
 		
 		memberships = repositoryManager.getRepositoryEntryMembership(repoEntry, member);
 		initForm(ureq);
@@ -180,8 +183,51 @@ public class EditMembershipController extends FormBasicController {
 		rootCurriculumElement = null;
 		this.withButtons = true;
 		this.overrideManaged = overrideManaged;
+		extendedCurriculumRoles = false;
 		
 		memberships = Collections.emptyList();
+
+		initForm(ureq);
+		loadModel(ureq, member);
+	}
+	
+	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
+			Curriculum curriculum, CurriculumElement curriculumElement, boolean overrideManaged) {
+		super(ureq, wControl, "edit_member");
+		
+		member = null;
+		this.members = (members == null ? null : new ArrayList<>(members));
+		repoEntry = null;
+		businessGroup = null;
+		this.curriculum = curriculum;
+		this.rootCurriculumElement = curriculumElement;
+		this.withButtons = false;
+		this.overrideManaged = overrideManaged;
+		extendedCurriculumRoles = true;
+		
+		memberships = Collections.emptyList();
+
+		initForm(ureq);
+		loadModel(ureq, member);
+	}
+	
+	public EditMembershipController(UserRequest ureq, WindowControl wControl, Identity member,
+			Curriculum curriculum, CurriculumElement curriculumElement, boolean overrideManaged) {
+		super(ureq, wControl, "edit_member");
+		
+		this.member = member;
+		this.members = null;
+		repoEntry = null;
+		businessGroup = null;
+		this.curriculum = curriculum;
+		this.rootCurriculumElement = curriculumElement;
+		this.withButtons = true;
+		this.overrideManaged = overrideManaged;
+		extendedCurriculumRoles = true;
+		
+		memberships = Collections.emptyList();
+		curriculumElementMemberships =  curriculumService
+				.getCurriculumElementMemberships(Collections.singletonList(curriculumElement), member);
 
 		initForm(ureq);
 		loadModel(ureq, member);
@@ -199,6 +245,7 @@ public class EditMembershipController extends FormBasicController {
 		rootCurriculumElement = membersContext.getRootCurriculumElement();
 		this.withButtons = false;
 		overrideManaged = membersContext.isOverrideManaged();
+		extendedCurriculumRoles = membersContext.isExtendedCurriculumRoles();
 		
 		memberships = Collections.emptyList();
 
@@ -276,9 +323,13 @@ public class EditMembershipController extends FormBasicController {
 			}
 			MemberCurriculumOption option = new MemberCurriculumOption(element);
 			RepoPermission rePermission = PermissionHelper.getPermission(element, memberToLoad, curriculumElementMemberships);
-			option.setOwner(createSelection(rePermission.isOwner(), !managed, GroupRoles.owner.name()));
-			option.setCoach(createSelection(rePermission.isTutor(), !managed, GroupRoles.coach.name()));
-			option.setParticipant(createSelection(rePermission.isParticipant() || defaultMembership, !managed, GroupRoles.participant.name()));
+			option.setOwner(createSelection(rePermission.isOwner(), !managed, CurriculumRoles.owner.name()));
+			option.setCoach(createSelection(rePermission.isTutor(), !managed, CurriculumRoles.coach.name()));
+			option.setParticipant(createSelection(rePermission.isParticipant() || defaultMembership, !managed, CurriculumRoles.participant.name()));
+			if(extendedCurriculumRoles) {
+				option.setMasterCoach(createSelection(rePermission.isMasterCoach(), !managed, CurriculumRoles.mastercoach.name()));
+				option.setElementOwner(createSelection(rePermission.isCurriculumElementOwner(), !managed, CurriculumRoles.curriculumelementowner.name()));
+			}
 			curriculumOptions.add(option);
 		}
 		
@@ -436,6 +487,10 @@ public class EditMembershipController extends FormBasicController {
 		}
 
 		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.curriculumElementIdentifier));
+		if(extendedCurriculumRoles) {
+			curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.elementOwner));
+			curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.masterCoach));
+		}
 		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.owner));
 		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.coach));
 		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.participant));
@@ -512,19 +567,19 @@ public class EditMembershipController extends FormBasicController {
 				}
 			}
 		} else if(selectAllCurriculumOwnersButton == source) {
-			toogleCurriculumMembership(selectAllCurriculumOwnersButton, GroupRoles.owner,
+			toogleCurriculumMembership(selectAllCurriculumOwnersButton, CurriculumRoles.owner,
 					"select.all.curriculum.owners", "deselect.all.curriculum.owners");
 		} else if(selectAllCurriculumCoachesButton == source) {
-			toogleCurriculumMembership(selectAllCurriculumCoachesButton, GroupRoles.coach,
+			toogleCurriculumMembership(selectAllCurriculumCoachesButton, CurriculumRoles.coach,
 					"select.all.curriculum.coaches", "deselect.all.curriculum.coaches");
 		} else if(selectAllCurriculumParticipantsButton == source) {
-			toogleCurriculumMembership(selectAllCurriculumParticipantsButton, GroupRoles.participant,
+			toogleCurriculumMembership(selectAllCurriculumParticipantsButton, CurriculumRoles.participant,
 					"select.all.curriculum.participants", "deselect.all.curriculum.participants");
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void toogleCurriculumMembership(FormLink link, GroupRoles role, String selectI18nKey, String deselectI18nKey) {
+	private void toogleCurriculumMembership(FormLink link, CurriculumRoles role, String selectI18nKey, String deselectI18nKey) {
 		Boolean enabled = (Boolean)link.getUserObject();
 		
 		List<MemberCurriculumOption> memberOptions = curriculumTableDataModel.getObjects();
@@ -592,7 +647,18 @@ public class EditMembershipController extends FormBasicController {
 			change.setCoach(rePermission.isTutor() == cCoach ? null : Boolean.valueOf(cCoach));
 			boolean cParticipant = option.getParticipant().isAtLeastSelected(1);
 			change.setParticipant(rePermission.isParticipant() == cParticipant ? null : Boolean.valueOf(cParticipant));
-			if(change.getCurriculumElementOwner() != null || change.getRepositoryEntryOwner() != null || change.getCoach() != null || change.getParticipant() != null) {
+			if(option.getMasterCoach() != null) {
+				boolean cMasterCoach = option.getMasterCoach().isAtLeastSelected(1);
+				change.setMasterCoach(rePermission.isMasterCoach() == cMasterCoach ? null : Boolean.valueOf(cMasterCoach));
+			}
+			if(option.getElementOwner() != null) {
+				boolean cElementOwner = option.getElementOwner().isAtLeastSelected(1);
+				change.setCurriculumElementOwner(rePermission.isCurriculumElementOwner() == cElementOwner ? null : Boolean.valueOf(cElementOwner));
+			}
+			
+			if(change.getCurriculumElementOwner() != null || change.getRepositoryEntryOwner() != null
+					|| change.getCoach() != null || change.getParticipant() != null
+					|| change.getCurriculumElementOwner() != null || change.getMasterCoach() != null) {
 				changes.add(change);
 			}
 		}
@@ -606,6 +672,8 @@ public class EditMembershipController extends FormBasicController {
 		private MultipleSelectionElement owner;
 		private MultipleSelectionElement coach;
 		private MultipleSelectionElement participant;
+		private MultipleSelectionElement masterCoach;
+		private MultipleSelectionElement elementOwner;
 		
 		public MemberCurriculumOption(CurriculumElement curriculumElement) {
 			this.curriculumElement = curriculumElement;
@@ -639,7 +707,23 @@ public class EditMembershipController extends FormBasicController {
 			this.participant = participant;
 		}
 		
-		public MultipleSelectionElement getSelection(GroupRoles role) {
+		public MultipleSelectionElement getMasterCoach() {
+			return masterCoach;
+		}
+
+		public void setMasterCoach(MultipleSelectionElement masterCoach) {
+			this.masterCoach = masterCoach;
+		}
+
+		public MultipleSelectionElement getElementOwner() {
+			return elementOwner;
+		}
+
+		public void setElementOwner(MultipleSelectionElement elementOwner) {
+			this.elementOwner = elementOwner;
+		}
+
+		public MultipleSelectionElement getSelection(CurriculumRoles role) {
 			switch(role) {
 				case owner: return owner;
 				case coach: return coach;
@@ -729,6 +813,8 @@ public class EditMembershipController extends FormBasicController {
 				case owner: return option.getOwner();
 				case coach: return option.getCoach();
 				case participant: return option.getParticipant();
+				case masterCoach: return option.getMasterCoach();
+				case elementOwner: return option.getElementOwner();
 				default: return "ERROR";
 			}
 		}
@@ -804,6 +890,8 @@ public class EditMembershipController extends FormBasicController {
 		curriculum("table.header.curriculum"),
 		curriculumElement("table.header.curriculum.element"),
 		curriculumElementIdentifier("table.header.identifier"),
+		masterCoach("table.header.mastercoachs"),
+		elementOwner("table.header.elementowners"),
 		owner("table.header.owners"),
 		coach("table.header.tutors"),
 		participant("table.header.participants");

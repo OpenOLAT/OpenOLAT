@@ -65,6 +65,12 @@ public class PermissionHelper {
 				if(membership.isParticipant() && element.getKey().equals(membership.getCurriculumElementKey())) {
 					p.setParticipant(true);
 				}
+				if(membership.isMasterCoach() && element.getKey().equals(membership.getCurriculumElementKey())) {
+					p.setMasterCoach(true);
+				}
+				if(membership.isCurriculumElementOwner() && element.getKey().equals(membership.getCurriculumElementKey())) {
+					p.setCurriculumElementOwner(true);
+				}
 			}
 		}
 		return p;
@@ -91,9 +97,11 @@ public class PermissionHelper {
 	}
 	
 	public static class RepoPermission {
-		boolean owner = false;
-		boolean tutor = false;
-		boolean participant = false;
+		private boolean owner = false;
+		private boolean tutor = false;
+		private boolean participant = false;
+		private boolean masterCoach = false;
+		private boolean curriculumElementOwner = false;
 
 		public boolean isOwner() {
 			return owner;
@@ -115,8 +123,21 @@ public class PermissionHelper {
 		public void setParticipant(boolean participant) {
 			this.participant = participant;
 		}
+		
+		public boolean isMasterCoach() {
+			return masterCoach;
+		}
+		public void setMasterCoach(boolean masterCoach) {
+			this.masterCoach = masterCoach;
+		}
+		
+		public boolean isCurriculumElementOwner() {
+			return curriculumElementOwner;
+		}
+		public void setCurriculumElementOwner(boolean curriculumElementOwner) {
+			this.curriculumElementOwner = curriculumElementOwner;
+		}
 	}
-	
 	
 	public static class BGPermission {
 		boolean tutor = false;

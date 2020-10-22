@@ -19,7 +19,10 @@
  */
 package org.olat.modules.curriculum.model;
 
+import java.util.Date;
+
 import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 
 /**
@@ -28,16 +31,18 @@ import org.olat.core.id.Identity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumMember {
+public class CurriculumMember implements CreateInfo {
 	
 	private final Identity identity;
 	private final String role;
 	private final GroupMembershipInheritance inheritanceMode;
+	private final Date creationDate;
 	
-	public CurriculumMember(Identity identity, String role, GroupMembershipInheritance inheritanceMode) {
+	public CurriculumMember(Identity identity, String role, GroupMembershipInheritance inheritanceMode, Date creationDate) {
 		this.identity = identity;
 		this.role = role;
 		this.inheritanceMode = inheritanceMode;
+		this.creationDate = creationDate;
 	}
 
 	public Identity getIdentity() {
@@ -50,5 +55,10 @@ public class CurriculumMember {
 
 	public GroupMembershipInheritance getInheritanceMode() {
 		return inheritanceMode;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
 	}
 }

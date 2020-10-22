@@ -303,8 +303,10 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	 * @param sortCriteria
 	 * @return a Comparator for the input sortingCriteria
 	 */
+	@Override
   protected Comparator<BusinessGroupEntry> getComparator(final SortingCriteria sortCriteria) {
-		return new Comparator<BusinessGroupEntry>(){			
+		return new Comparator<>(){
+			@Override
 			public int compare(final BusinessGroupEntry group1, final BusinessGroupEntry group2) {
 				int comparisonResult = 0;
 			  if(sortCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	

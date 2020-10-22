@@ -43,7 +43,11 @@ public class RoleSecurityCallbackFactory {
 	 * @return Securitycallback for given relation rights
 	 */
 	public static RoleSecurityCallback create(Set<RelationRoleToRight> relationRights) {
-		return new RoleSecurityCallbackImpl(relationRights);
+		List<String> roleRights = new ArrayList<>(relationRights.size());
+		for (RelationRoleToRight right : relationRights) {
+			roleRights.add(right.getRelationRight().getRight());
+		}
+		return new RoleSecurityCallbackImpl(roleRights);
 	}
 
 	/**
@@ -53,27 +57,29 @@ public class RoleSecurityCallbackFactory {
 	 * @return Securitycallback for given right providers
 	 */
 	public static RoleSecurityCallback create(List<RightProvider> rightProviders) {
+		List<String> roleRights = new ArrayList<>(rightProviders.size());
+		for (RightProvider rightProvider : rightProviders) {
+			roleRights.add(rightProvider.getRight());
+		}
+		return new RoleSecurityCallbackImpl(roleRights);
+	}
+	
+	/**
+	 * Creates a security callback for given right providers
+	 * 
+	 * @param rightProviders An array of rights as strings
+	 * @return A security callback
+	 */
+	public static RoleSecurityCallback createFromStringsList(List<String> rightProviders) {
 		return new RoleSecurityCallbackImpl(rightProviders);
 	}
 
 	private static class RoleSecurityCallbackImpl implements RoleSecurityCallback {
 
 		private final List<String> roleRights;
-
-		public RoleSecurityCallbackImpl(Set<RelationRoleToRight> relationRights) {
-			roleRights = new ArrayList<>();
-
-			for (RelationRoleToRight right : relationRights) {
-				roleRights.add(right.getRelationRight().getRight());
-			}
-		}
-
-		public RoleSecurityCallbackImpl(List<RightProvider> rightProviders) {
-			roleRights = new ArrayList<>();
-
-			for (RightProvider rightProvider : rightProviders) {
-				roleRights.add(rightProvider.getRight());
-			}
+		
+		public RoleSecurityCallbackImpl(List<String> roleRights) {
+			this.roleRights = roleRights;
 		}
 
 		@Override

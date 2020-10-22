@@ -36,7 +36,7 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 	private boolean repositoryEntryOwner;
 	private boolean coach;
 	private boolean participant;
-	
+	private boolean masterCoach;
 
 	public CurriculumElementMembershipImpl(Long identityKey, Long curriculumElementKey) {
 		this.identityKey = identityKey;
@@ -92,6 +92,15 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 
 	public void setCurriculumElementOwner(boolean curriculumElementOwner) {
 		this.curriculumElementOwner = curriculumElementOwner;
+	}
+
+	@Override
+	public boolean isMasterCoach() {
+		return masterCoach;
+	}
+	
+	public void setMasterCoach(boolean masterCoach) {
+		this.masterCoach = masterCoach;
 	}
 
 	@Override

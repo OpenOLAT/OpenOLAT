@@ -930,7 +930,9 @@ public class CurriculumElementDAO {
 				membership.setCoach(true);
 			} else if(CurriculumRoles.participant.name().equals(role)) {
 				membership.setParticipant(true);
-			}	
+			}else if(CurriculumRoles.mastercoach.name().equals(role)) {
+				membership.setMasterCoach(true);
+			}
 		}
 		return new ArrayList<>(memberships.values());
 	}

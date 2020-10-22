@@ -66,6 +66,12 @@ public class CurriculumMailing {
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 	
+	public static MailTemplate getRemoveMailTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.removed.subject";
+		String bodyKey = "notification.mail.removed.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
 	private static MailTemplate createMailTemplate(Curriculum curriculum, CurriculumElement curriculumElement,
 			Identity actor, String subjectKey, String bodyKey) {
 		// build learning resources as list of url as string

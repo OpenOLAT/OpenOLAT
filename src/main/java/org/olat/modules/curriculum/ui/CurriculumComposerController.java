@@ -74,9 +74,9 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.member.wizard.ImportMembersContext;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
+import org.olat.course.member.wizard.ImportMembersContext;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -92,6 +92,7 @@ import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.copy.CopySettingsController;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
 import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesController;
+import org.olat.modules.curriculum.ui.member.CurriculumMembersManagementController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,11 +106,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CurriculumComposerController extends FormBasicController implements Activateable2, FlexiTableCssDelegate, TooledController {
 	
 	private Link newElementButton;
+	private Link manageFocusedMembersLink;
 	private FlexiTableElement tableEl;
 	private CurriculumComposerTableModel tableModel;
 	private TooledStackedPanel toolbarPanel;
-	private FormLink addMemberLink;
-	private FormLink importMemberLink;
 	private FormLink overrideLink;
 	private FormLink unOverrideLink;
 	
@@ -125,6 +125,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
 	private CurriculumElementCalendarController calendarsCtrl;
 	private CurriculumElementLecturesController lecturesCtrl;
+	private CurriculumMembersManagementController membersMgmtCtrl;
 	private CurriculumElementLearningPathController learningPathController;
 	
 	private int counter;
@@ -161,7 +162,14 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(secCallback.canNewCurriculumElement()) {
 			newElementButton = LinkFactory.createToolLink("add.curriculum.element", translate("add.curriculum.element"), this, "o_icon_add");
 			newElementButton.setElementCssClass("o_sel_add_curriculum_element");
-			toolbarPanel.addTool(newElementButton, Align.left);
+			toolbarPanel.addTool(newElementButton, Align.left);	
+		}
+		
+		if(secCallback.canManagerCurriculumElementsUsers()) {
+			manageFocusedMembersLink = LinkFactory.createToolLink("manage.members.top", translate("manage.members"), this, "o_icon_group");
+			manageFocusedMembersLink.setElementCssClass("o_sel_curriculum_element_manage_members");
+			manageFocusedMembersLink.setVisible(false);
+			toolbarPanel.addTool(manageFocusedMembersLink, Align.left);
 		}
 	}
 
@@ -176,14 +184,6 @@ public class CurriculumComposerController extends FormBasicController implements
 				unOverrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
 				unOverrideLink.setVisible(false);
 			}
-
-			addMemberLink = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
-			addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
-			addMemberLink.setVisible(!managed);
-
-			importMemberLink = uifactory.addFormLink("import.member", formLayout, Link.BUTTON);
-			importMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
-			importMemberLink.setVisible(!managed);
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -354,12 +354,26 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("CurriculumElement".equals(type)) {
+		List<ContextEntry> subEntries = entries.subList(1, entries.size());
+		if("CurriculumElement".equalsIgnoreCase(type)) {
 			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
 			CurriculumElementRow row = tableModel.getCurriculumElementRowByKey(elementKey);
 			if(row != null) {
-				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				doEditCurriculumElement(ureq, row, subEntries);
+			}
+		} else if("Members".equalsIgnoreCase(type)) {
+			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
+			CurriculumMembersManagementController mgmtCtrl = null;
+			if(elementKey.intValue() == 0) {
+				mgmtCtrl = doManageMembers(ureq);
+			} else {
+				CurriculumElementRow row = tableModel.getCurriculumElementRowByKey(elementKey);
+				if(row != null) {
+					mgmtCtrl = doManageMembers(ureq, row);
+				}
+			}
+			if(mgmtCtrl != null) {
+				mgmtCtrl.activate(ureq, subEntries, state);
 			}
 		}
 	}
@@ -421,6 +435,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(newElementButton == source) {
 			doNewCurriculumElement(ureq);
+		} else if(manageFocusedMembersLink == source) {
+			doManageMembers(ureq);
 		} else if(toolbarPanel == source) {
 			if(!toolbarPanel.isToolbarEnabled()) {
 				toolbarPanel.setToolbarEnabled(true);
@@ -431,11 +447,7 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addMemberLink == source) {
-			doChooseMembers(ureq);
-		} else if(importMemberLink == source) {
-			doImportMembers(ureq);
-		} else if (source == overrideLink) {
+		if (source == overrideLink) {
 			doOverrideManagedResource();
 		} else if (source == unOverrideLink) {
 			doUnOverrideManagedResource();
@@ -454,6 +466,8 @@ public class CurriculumComposerController extends FormBasicController implements
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				tableEl.reset(false, true, true);// only reload
+			} else {
+				doFocus();
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -473,6 +487,15 @@ public class CurriculumComposerController extends FormBasicController implements
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	private void doFocus() {
+		CurriculumElementRow focusedRow = tableModel.getFocusedCurriculumElementRow();
+		boolean visible = focusedRow != null;
+		if(manageFocusedMembersLink.isVisible() != visible) {
+			manageFocusedMembersLink.setVisible(visible);
+			toolbarPanel.getToolBar().setDirty(true);
+		}
+	}
+	
 	private void doOverrideManagedResource() {
 		overrideManagedResource(true);
 	}
@@ -486,9 +509,6 @@ public class CurriculumComposerController extends FormBasicController implements
 
 		overrideLink.setVisible(!overrideManaged);
 		unOverrideLink.setVisible(overrideManaged);
-		
-		addMemberLink.setVisible(overrideManaged);
-		importMemberLink.setVisible(overrideManaged);
 	}
 	
 	private void doNewCurriculumElement(UserRequest ureq) {
@@ -566,16 +586,11 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 	}
 	
-	private void doChooseMembers(UserRequest ureq) {
-		CurriculumElementRow focusedRow = tableModel.getFocusedCurriculumElementRow();
-		doChooseMembers(ureq, focusedRow);
-	}
-	
 	private void doChooseMembers(UserRequest ureq, CurriculumElementRow focusedRow) {
 		removeAsListenerAndDispose(importMembersWizard);
 
 		CurriculumElement focusedElement = focusedRow == null ? null : focusedRow.getCurriculumElement();
-		ImportMembersContext membersContext= ImportMembersContext.valueOf(curriculum, focusedElement, overrideManaged);
+		ImportMembersContext membersContext= ImportMembersContext.valueOf(curriculum, focusedElement, overrideManaged, true);
 		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
@@ -588,16 +603,11 @@ public class CurriculumComposerController extends FormBasicController implements
 		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
 	}
 	
-	private void doImportMembers(UserRequest ureq) {
-		CurriculumElementRow focusedRow = tableModel.getFocusedCurriculumElementRow();
-		doImportMembers(ureq, focusedRow);
-	}
-	
 	private void doImportMembers(UserRequest ureq, CurriculumElementRow focusedRow) {
 		removeAsListenerAndDispose(importMembersWizard);
 		
 		CurriculumElement focusedElement = focusedRow == null ? null : focusedRow.getCurriculumElement();
-		ImportMembersContext membersContext= ImportMembersContext.valueOf(curriculum, focusedElement, overrideManaged);
+		ImportMembersContext membersContext= ImportMembersContext.valueOf(curriculum, focusedElement, overrideManaged, true);
 		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
@@ -624,6 +634,28 @@ public class CurriculumComposerController extends FormBasicController implements
 		List<CurriculumElementMembershipChange> curriculumChanges = changes.generateCurriculumElementMembershipChange(members);
 		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges, mailing);
 		MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), false, getLocale());
+	}
+
+	private CurriculumMembersManagementController doManageMembers(UserRequest ureq) {
+		CurriculumElementRow focusedRow = tableModel.getFocusedCurriculumElementRow();
+		if(focusedRow != null) {
+			return doManageMembers(ureq, focusedRow);
+		}
+		return null;
+	}
+	
+	private CurriculumMembersManagementController doManageMembers(UserRequest ureq, CurriculumElementRow focusedRow) {
+		CurriculumElement curriculumElement = focusedRow.getCurriculumElement();
+		Long focus = focusedRow.getKey();
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Members", focus);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		membersMgmtCtrl = new CurriculumMembersManagementController(ureq, bwControl, toolbarPanel,
+				curriculum, curriculumElement, secCallback);
+		listenTo(membersMgmtCtrl);
+
+		String displayName = focusedRow.getDisplayName();
+		toolbarPanel.pushController(displayName, membersMgmtCtrl);
+		return membersMgmtCtrl;
 	}
 	
 	private void doOpenTools(UserRequest ureq, CurriculumElementRow row, FormLink link) {
@@ -735,6 +767,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		private Link deleteLink;
 		private Link addMemberLink;
 		private Link importMemberLink;
+		private Link manageMembersLink;
 		
 		private CurriculumElementRow row;
 		
@@ -761,6 +794,8 @@ public class CurriculumComposerController extends FormBasicController implements
 				if(!links.isEmpty()) {
 					links.add("-");
 				}
+				
+				manageMembersLink = addLink("manage.members", "o_icon_group", links);
 				addMemberLink = addLink("add.member", "o_icon_add_member", links);
 				importMemberLink = addLink("import.member", "o_icon_import", links);
 			}
@@ -811,6 +846,9 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if(importMemberLink == source) {
 				close();
 				doImportMembers(ureq, row);
+			} else if(manageMembersLink == source) {
+				close();
+				doManageMembers(ureq, row);
 			}
 		}
 		

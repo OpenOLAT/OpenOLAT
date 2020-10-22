@@ -28,6 +28,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -41,12 +43,16 @@ public class EditSingleMembershipController extends BasicController {
 	private final MemberInfoController infoCtrl;
 	private final EditMembershipController membershipCtrl;
 	
+	private final Identity member;
 	private final RepositoryEntry repoEntry;
+	private final CurriculumElement curriculumElement;
 
 	public EditSingleMembershipController(UserRequest ureq, WindowControl wControl,  Identity identity,
 			RepositoryEntry repoEntry, BusinessGroup group, boolean withUserLinks, boolean overrideManaged) {
 		super(ureq, wControl);
+		this.member = identity;
 		this.repoEntry = repoEntry;
+		this.curriculumElement = null;
 		
 		VelocityContainer mainVC = createVelocityContainer("edit_single_member");
 		infoCtrl = new MemberInfoController(ureq, wControl, identity, repoEntry, withUserLinks);
@@ -60,8 +66,35 @@ public class EditSingleMembershipController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
+	public EditSingleMembershipController(UserRequest ureq, WindowControl wControl,  Identity identity,
+			Curriculum curriculum, CurriculumElement curriculumElement, boolean withUserLinks, boolean overrideManaged) {
+		super(ureq, wControl);
+		this.repoEntry = null;
+		this.member = identity;
+		this.curriculumElement = curriculumElement;
+		
+		VelocityContainer mainVC = createVelocityContainer("edit_single_member");
+		infoCtrl = new MemberInfoController(ureq, wControl, identity, repoEntry, withUserLinks);
+		listenTo(infoCtrl);
+		mainVC.put("infos", infoCtrl.getInitialComponent());
+		
+		membershipCtrl = new EditMembershipController(ureq, wControl, identity, curriculum, curriculumElement, overrideManaged);
+		listenTo(membershipCtrl);
+		mainVC.put("edit", membershipCtrl.getInitialComponent());
+		
+		putInitialPanel(mainVC);
+	}
+	
+	public Identity getMember() {
+		return member;
+	}
+	
 	public RepositoryEntry getRepositoryEntry() {
 		return repoEntry;
+	}
+	
+	public CurriculumElement getCurriculumElement() {
+		return curriculumElement;
 	}
 	
 	@Override

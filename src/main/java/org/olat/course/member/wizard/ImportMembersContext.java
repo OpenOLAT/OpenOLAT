@@ -34,29 +34,34 @@ public class ImportMembersContext {
 	
 	private final BusinessGroup group;
 	private final Curriculum curriculum;
-	private final boolean overrideManaged;
 	private final RepositoryEntry repoEntry;
 	private final CurriculumElement rootCurriculumElement;
 	
+	private final boolean overrideManaged;
+	private final boolean extendedCurriculumRoles;
+	
 	private ImportMembersContext(RepositoryEntry repoEntry, BusinessGroup group, Curriculum curriculum,
-			CurriculumElement rootCurriculumElement, boolean overrideManaged) {
+			CurriculumElement rootCurriculumElement, boolean overrideManaged, boolean extendedCurriculumRoles) {
 		this.repoEntry = repoEntry;
 		this.group = group;
 		this.curriculum = curriculum;
-		this.overrideManaged = overrideManaged;
 		this.rootCurriculumElement = rootCurriculumElement;
+		this.overrideManaged = overrideManaged;
+		this.extendedCurriculumRoles = extendedCurriculumRoles;
 	}
 	
 	public static ImportMembersContext valueOf(BusinessGroup businessGroup) {
-		return new ImportMembersContext(null, businessGroup, null, null, false);
+		return new ImportMembersContext(null, businessGroup, null, null, false, false);
 	}
 	
 	public static ImportMembersContext valueOf(RepositoryEntry repoEntry, boolean overrideManaged) {
-		return new ImportMembersContext(repoEntry, null, null, null, overrideManaged);
+		return new ImportMembersContext(repoEntry, null, null, null, overrideManaged, false);
 	}
 	
-	public static ImportMembersContext valueOf(Curriculum curriculum, CurriculumElement rootCurriculumElement, boolean overrideManaged) {
-		return new ImportMembersContext(null, null, curriculum, rootCurriculumElement, overrideManaged);
+	public static ImportMembersContext valueOf(Curriculum curriculum, CurriculumElement rootCurriculumElement,
+			boolean overrideManaged, boolean extendedCurriculumRoles) {
+		return new ImportMembersContext(null, null, curriculum, rootCurriculumElement,
+				overrideManaged, extendedCurriculumRoles);
 	}
 
 	public BusinessGroup getGroup() {
@@ -71,11 +76,15 @@ public class ImportMembersContext {
 		return rootCurriculumElement;
 	}
 
+	public RepositoryEntry getRepoEntry() {
+		return repoEntry;
+	}
+
 	public boolean isOverrideManaged() {
 		return overrideManaged;
 	}
-
-	public RepositoryEntry getRepoEntry() {
-		return repoEntry;
+	
+	public boolean isExtendedCurriculumRoles() {
+		return extendedCurriculumRoles;
 	}
 }

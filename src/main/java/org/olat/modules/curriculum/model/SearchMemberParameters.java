@@ -20,7 +20,9 @@
 package org.olat.modules.curriculum.model;
 
 import java.util.List;
+import java.util.Map;
 
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -31,9 +33,20 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class SearchMemberParameters {
 	
+	private String login;
 	private String searchString;
+	private List<CurriculumRoles> roles;
 	private List<UserPropertyHandler> userProperties;
+	private Map<String, String> userPropertiesSearch;
 	
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
 	public String getSearchString() {
 		return searchString;
 	}
@@ -49,6 +62,21 @@ public class SearchMemberParameters {
 	public void setUserProperties(List<UserPropertyHandler> userProperties) {
 		this.userProperties = userProperties;
 	}
-	
+
+	public List<CurriculumRoles> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<CurriculumRoles> roles) {
+		this.roles = roles;
+	}
+
+	public Map<String, String> getUserPropertiesSearch() {
+		return userPropertiesSearch;
+	}
+
+	public void setUserPropertiesSearch(Map<String, String> userPropertiesSearch) {
+		this.userPropertiesSearch = userPropertiesSearch;
+	}
 	
 }

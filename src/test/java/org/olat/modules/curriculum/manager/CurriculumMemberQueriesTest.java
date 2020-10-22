@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 
 import org.junit.Assert;
@@ -90,5 +92,70 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		Assert.assertEquals(supervisor, member.getIdentity());
 		Assert.assertEquals(CurriculumRoles.curriculumelementowner.name(), member.getRole());
 	}
+	
+	@Test
+	public void getCurriculumElementMembersByLogin() {
+		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-5");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-5", "Curriculum for element", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "5. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach);
+		dbInstance.commitAndCloseSession();
+		
+		SearchMemberParameters params = new SearchMemberParameters();
+		params.setLogin("cur-supervisor-5");
+		List<CurriculumMember> members = memberQueries.getMembers(element, params);
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+		CurriculumMember member = members.get(0);
+		Assert.assertEquals(masterCoach, member.getIdentity());
+		Assert.assertEquals(CurriculumRoles.mastercoach.name(), member.getRole());
+		
+		// negative test
+		SearchMemberParameters negativeParams = new SearchMemberParameters();
+		negativeParams.setLogin("cur-five");
+		List<CurriculumMember> notFoundMembers = memberQueries.getMembers(element, negativeParams);
+		Assert.assertNotNull(notFoundMembers);
+		Assert.assertTrue(notFoundMembers.isEmpty());
+	}
 
+	@Test
+	public void getCurriculumElementMembersByRoles() {
+		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-mastercoach-7");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-owner-8");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-9");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-6", "Curriculum for element", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-6", "6. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach);
+		curriculumService.addMember(element, owner, CurriculumRoles.owner);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+		
+		// 1 role
+		SearchMemberParameters ownerParams = new SearchMemberParameters();
+		ownerParams.setRoles(List.of(CurriculumRoles.owner));
+		List<CurriculumMember> owners = memberQueries.getMembers(element, ownerParams);
+		assertThat(owners)
+			.hasSize(1)
+			.extracting(CurriculumMember::getIdentity)
+			.containsExactly(owner);
+		
+		// 2 roles
+		SearchMemberParameters twoParams = new SearchMemberParameters();
+		twoParams.setRoles(List.of(CurriculumRoles.mastercoach, CurriculumRoles.participant));
+		List<CurriculumMember> towRolesMembers = memberQueries.getMembers(element, twoParams);
+		assertThat(towRolesMembers)
+			.hasSize(2)
+			.extracting(CurriculumMember::getIdentity)
+			.containsExactlyInAnyOrder(masterCoach, participant);
+		
+		// negative
+		SearchMemberParameters noParams = new SearchMemberParameters();
+		noParams.setRoles(List.of(CurriculumRoles.curriculumelementowner));
+		List<CurriculumMember> noMembers = memberQueries.getMembers(element, noParams);
+		Assert.assertTrue(noMembers.isEmpty());
+	}
 }

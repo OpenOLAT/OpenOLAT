@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.member;
+package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,13 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -39,12 +37,15 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.group.ui.main.SearchMembersParams;
-import org.olat.group.ui.main.SearchMembersParams.Origin;
+import org.olat.course.member.MemberSearchForm;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -52,17 +53,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
+ * Initial date: 21 oct. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class MemberSearchForm extends FormBasicController implements ExtendedFlexiTableSearchController {
+public class CurriculumMemberSearchForm extends FormBasicController implements ExtendedFlexiTableSearchController {
 	
-	public static final String PROPS_IDENTIFIER = MemberSearchForm.class.getCanonicalName();
-	
-	private String[] roleKeys = { GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name() };
-	private String[] originKeys = new String[]{ Origin.all.name(), Origin.repositoryEntry.name(), Origin.businessGroup.name(), Origin.curriculum.name() };
+	public static final String PROPS_IDENTIFIER = MemberSearchForm.PROPS_IDENTIFIER;
 	
 	private TextElement login;
-	private SingleSelection originEl;
 	private MultipleSelectionElement rolesEl;
 	private FormLink searchButton;
 	
@@ -74,9 +73,10 @@ public class MemberSearchForm extends FormBasicController implements ExtendedFle
 	@Autowired
 	private UserManager userManager;
 
-	public MemberSearchForm(UserRequest ureq, WindowControl wControl, Form rootForm) {
+	public CurriculumMemberSearchForm(UserRequest ureq, WindowControl wControl, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "search_form", rootForm);
-		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale(), getTranslator()));
+		setTranslator(userManager.getPropertyHandlerTranslator(Util
+				.createPackageTranslator(CurriculumComposerController.class, getLocale(), getTranslator())));
 		initForm(ureq);
 	}
 
@@ -105,7 +105,7 @@ public class MemberSearchForm extends FormBasicController implements ExtendedFle
 			if(fi instanceof TextElement) {
 				((TextElement)fi).setDisplaySize(28);
 			}
-			
+			fi.setMandatory(false);
 			propFormItems.put(userPropertyHandler.getName(), fi);
 		}
 
@@ -115,21 +115,17 @@ public class MemberSearchForm extends FormBasicController implements ExtendedFle
 		formLayout.add(rightContainer);
 		
 		//roles
-		String[] roleValues = new String[roleKeys.length];
-		for(int i=roleKeys.length; i-->0; ) {
-			roleValues[i] = translate("search." + roleKeys[i]);
-		}
-		rolesEl = uifactory.addCheckboxesHorizontal("roles", "search.roles", rightContainer, roleKeys, roleValues);
-		for(String roleKey: roleKeys) {
+		KeyValues rolesKeyValues = new KeyValues();
+		rolesKeyValues.add(KeyValues.entry(CurriculumRoles.participant.name(), translate("role.participant")));
+		rolesKeyValues.add(KeyValues.entry(CurriculumRoles.coach.name(), translate("role.coach")));
+		rolesKeyValues.add(KeyValues.entry(CurriculumRoles.mastercoach.name(), translate("role.mastercoach")));
+		rolesKeyValues.add(KeyValues.entry(CurriculumRoles.owner.name(), translate("role.owner")));
+		rolesKeyValues.add(KeyValues.entry(CurriculumRoles.curriculumowner.name(), translate("role.curriculumelementowner")));
+		
+		rolesEl = uifactory.addCheckboxesHorizontal("roles", "search.roles", rightContainer, rolesKeyValues.keys(), rolesKeyValues.values());
+		for(String roleKey: rolesKeyValues.keys()) {
 			rolesEl.select(roleKey, true);
 		}
-
-		String[] openValues = new String[originKeys.length];
-		for(int i=originKeys.length; i-->0; ) {
-			openValues[i] = translate("search." + originKeys[i]);
-		}
-		originEl = uifactory.addRadiosVertical("openBg", "search.origin", rightContainer, originKeys, openValues);
-		originEl.select("all", true);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createDefaultFormLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
@@ -161,34 +157,25 @@ public class MemberSearchForm extends FormBasicController implements ExtendedFle
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enabled) {
-			if (source == searchButton) {
-				fireSearchEvent(ureq);
-			}
+		if(enabled && source == searchButton) {
+			fireSearchEvent(ureq);
 		}
 	}
 
 	private void fireSearchEvent(UserRequest ureq) {
-		SearchMembersParams params = new SearchMembersParams();
+		SearchMemberParameters params = new SearchMemberParameters();
 		//roles
 		List<String> selectedKeys = new ArrayList<>(rolesEl.getSelectedKeys());
-		GroupRoles[] roles = new GroupRoles[selectedKeys.size()];
+		List<CurriculumRoles> roles = new ArrayList<>(selectedKeys.size());
 		for(int i=0; i<selectedKeys.size(); i++) {
-			roles[i] = GroupRoles.valueOf(selectedKeys.get(i));
+			roles.add(CurriculumRoles.valueOf(selectedKeys.get(i)));
 		}
-		
 		params.setRoles(roles);
 
-		//origin
-		if(!originEl.isOneSelected()) {
-			params.setOrigin(Origin.all);
-		} else {
-			params.setOrigin(Origin.valueOf(originEl.getSelectedKey()));
-		}
 		
 		String loginVal = login.getValue();
 		if(StringHelper.containsNonWhitespace(loginVal)) {
-			params.setLogin(loginVal);
+			params.setSearchString(loginVal);
 		}
 		
 		//user properties
@@ -205,6 +192,6 @@ public class MemberSearchForm extends FormBasicController implements ExtendedFle
 			params.setUserPropertiesSearch(userPropertiesSearch);
 		}
 
-		fireEvent(ureq, params);
+		fireEvent(ureq, new SearchMembersEvent(params));
 	}
 }

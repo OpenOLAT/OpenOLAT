@@ -1,0 +1,21 @@
+<div class="o_header_with_buttons">
+	<h3><i class="o_icon o_icon_group"> </i> $title</h3>
+	#if($r.available("add.member") || $r.available("import.member"))
+	<div class="o_button_group"><div class="btn-group">
+		#if($r.available("add.member"))
+			$r.render("add.member")
+		#end
+		#if($r.available("import.member"))
+			$r.render("import.member")
+		#end
+	</div></div>
+	#end
+</div>
+
+<div class="clearfix">
+	$r.render("segments")<br>
+	
+	#if($r.available("membersCmp"))
+		$r.render("membersCmp")
+	#end
+</div>

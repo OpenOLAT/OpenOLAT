@@ -41,6 +41,7 @@ public class CurriculumElementMembershipChange extends Event {
 	private Boolean repositoryEntryOwner;
 	private Boolean coach;
 	private Boolean participant;
+	private Boolean masterCoach;
 	
 	public CurriculumElementMembershipChange(Identity member, CurriculumElement element) {
 		this(member, element.getKey());
@@ -53,6 +54,7 @@ public class CurriculumElementMembershipChange extends Event {
 		repositoryEntryOwner = origin.repositoryEntryOwner;
 		participant = origin.participant;
 		coach = origin.coach;
+		masterCoach = origin.masterCoach;
 	}
 	
 	public CurriculumElementMembershipChange(Identity member, Long groupKey) {
@@ -105,9 +107,18 @@ public class CurriculumElementMembershipChange extends Event {
 		this.coach = coach;
 	}
 	
+	public Boolean getMasterCoach() {
+		return masterCoach;
+	}
+
+	public void setMasterCoach(Boolean masterCoach) {
+		this.masterCoach = masterCoach;
+	}
+
 	public boolean addRole() {
 		return (getParticipant() != null && getParticipant().booleanValue())
 				|| (getCoach() != null && getCoach().booleanValue())
+				|| (getMasterCoach() != null && getMasterCoach().booleanValue())
 				|| (getCurriculumElementOwner() != null && getCurriculumElementOwner().booleanValue())
 				|| (getRepositoryEntryOwner() != null || this.getRepositoryEntryOwner().booleanValue());
 	}

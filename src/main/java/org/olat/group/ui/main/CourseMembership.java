@@ -20,6 +20,7 @@
 package org.olat.group.ui.main;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
  * 
@@ -38,6 +39,7 @@ public class CourseMembership {
 	private boolean curriculumElementCoach;
 	private boolean curriculumElementParticipant;
 	private boolean curriculumElementOwner;
+	private boolean curriculumElementMasterCoach;
 	
 	private boolean pending;
 	private boolean managedMembersRepo;
@@ -170,6 +172,14 @@ public class CourseMembership {
 		this.curriculumElementCoach = curriculumElementCoach;
 	}
 
+	public boolean isCurriculumElementMasterCoach() {
+		return curriculumElementMasterCoach;
+	}
+
+	public void setCurriculumElementMasterCoach(boolean curriculumElementMasterCoach) {
+		this.curriculumElementMasterCoach = curriculumElementMasterCoach;
+	}
+
 	public boolean isCurriculumElementParticipant() {
 		return curriculumElementParticipant;
 	}
@@ -179,13 +189,16 @@ public class CourseMembership {
 	}
 	
 	public void setCurriculumElementRole(String role) {
-		if(GroupRoles.participant.name().equals(role)) {
+		if(CurriculumRoles.participant.name().equals(role)) {
 			setCurriculumElementParticipant(true);
-		} else if(GroupRoles.coach.name().equals(role)) {
+		} else if(CurriculumRoles.coach.name().equals(role)) {
 			setCurriculumElementCoach(true);
-		} else if(GroupRoles.owner.name().equals(role)) {
+		} else if(CurriculumRoles.owner.name().equals(role)) {
+			setRepositoryEntryOwner(true);
+		} else if(CurriculumRoles.curriculumelementowner.name().equals(role)) {
 			setCurriculumElementOwner(true);
+		} else if(CurriculumRoles.mastercoach.name().equals(role)) {
+			setCurriculumElementMasterCoach(true);
 		}
 	}
-
 }

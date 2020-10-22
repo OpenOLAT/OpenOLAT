@@ -645,6 +645,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			}
 		}
 		
+		if(changes.getMasterCoach() != null) {
+			if(changes.getMasterCoach().booleanValue()) {
+				addMember(element, changes.getMember(), CurriculumRoles.mastercoach);
+			} else {
+				removeMember(element, changes.getMember(), CurriculumRoles.mastercoach);
+			}
+		}
+		
 		if(changes.getRepositoryEntryOwner() != null) {
 			if(changes.getRepositoryEntryOwner().booleanValue()) {
 				addMember(element, changes.getMember(), CurriculumRoles.owner);
