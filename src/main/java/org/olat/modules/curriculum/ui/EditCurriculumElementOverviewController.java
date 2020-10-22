@@ -48,7 +48,6 @@ public class EditCurriculumElementOverviewController extends BasicController imp
 	
 	private EditCurriculumElementController metadataCtrl;
 	private CurriculumElementResourceListController resourcesCtrl;
-	private CurriculumElementUserManagementController userManagementCtrl;
 	
 	private CurriculumElement element;
 	private final CurriculumSecurityCallback secCallback;
@@ -80,12 +79,6 @@ public class EditCurriculumElementOverviewController extends BasicController imp
 			resourcesCtrl = new CurriculumElementResourceListController(uureq, getWindowControl(), element, secCallback);
 			listenTo(resourcesCtrl);
 			return resourcesCtrl.getInitialComponent();
-		});
-		
-		tabPane.addTab(ureq, translate("tab.user.management"), uureq -> {
-			userManagementCtrl = new CurriculumElementUserManagementController(uureq, getWindowControl(), element, secCallback);
-			listenTo(userManagementCtrl);
-			return userManagementCtrl.getInitialComponent();
 		});
 	}
 

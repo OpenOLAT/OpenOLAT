@@ -43,6 +43,10 @@ a.o_chelp {
 	color: $o-chelp-tooltip-color;
 }
 
+#o_container_page_width_toggler {
+	z-index: 7;
+}
+
 /* drawing */
 .o_draw_circle {
 	border: $o-drawing-border-width solid $o-drawing-border-color;

@@ -53,7 +53,7 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	private boolean curriculumInMyCourses;
 	@Value("${curriculum.managed:true}")
 	private boolean managedCurriculums;
-	@Value("${curriculum.user.overview.rights}")
+	@Value("${curriculum.user.overview.rights:showCoursesAndCurriculum}")
 	private String userOverviewRights;
 	
 	@Autowired
