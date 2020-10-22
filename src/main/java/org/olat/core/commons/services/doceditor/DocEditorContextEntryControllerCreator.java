@@ -41,7 +41,7 @@ import org.olat.core.util.UserSession;
  *
  */
 public class DocEditorContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
-// TODO Dispatcher
+	
 	private static final Logger log = Tracing.createLoggerFor(DocEditorContextEntryControllerCreator.class);
 	
 	private final DocEditorService docEditorService;
@@ -82,7 +82,7 @@ public class DocEditorContextEntryControllerCreator extends DefaultContextEntryC
 
 		Access access = docEditorService.getAccess(() -> accessKey);
 		if (access == null) {
-			log.debug("Access sot found. Key {}", accessKey);
+			log.debug("Access not found. Key {}", accessKey);
 			return null;
 		}
 		
@@ -98,7 +98,7 @@ public class DocEditorContextEntryControllerCreator extends DefaultContextEntryC
 			
 		DocEditorConfigs configs = getConfigs(ureq, access);
 		if (configs == null) {
-			log.debug("No configs is sesssion. Key {}", identity, accessKey);
+			log.debug("No configs in session. Key {}", identity, accessKey);
 			return null;
 		}
 		
