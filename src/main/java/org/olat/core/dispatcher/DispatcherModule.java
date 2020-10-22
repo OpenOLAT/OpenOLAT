@@ -49,7 +49,7 @@ public class DispatcherModule {
 	private static final Logger log = Tracing.createLoggerFor(DispatcherModule.class);
 	
 	/** Identifies requests for the DMZ  */
-	private static String PATH_DEFAULT = "/dmz/";
+	public static String PATH_DEFAULT = "/dmz/";
 	/** Identifies requests for the mapper registry */
 	public static final String PATH_MAPPED = "/m/";
 	/** Identifies requests for the global mapper registry */

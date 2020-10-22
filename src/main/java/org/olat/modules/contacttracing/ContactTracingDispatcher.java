@@ -42,8 +42,10 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
+import org.olat.modules.contacttracing.manager.ContactTracingManagerImpl;
 
 /**
  * Initial date: 20.10.20<br>
@@ -98,12 +100,19 @@ public class ContactTracingDispatcher implements Dispatcher {
 		if (location == null) {
 			// Go to default screen
 			DispatcherModule.redirectToDefaultDispatcher(response);
-			// Cancel the current method
-			return;
+		} else if(ureq.getUserSession().isAuthenticated()) {
+			// already authenticated
+			String redirectURL = new StringBuilder()
+					.append(Settings.getServerContextPathURI())
+					.append("/auth/")
+					.append(ContactTracingManagerImpl.CONTACT_TRACING_CONTEXT_KEY).append("/")
+					.append(location.getKey())
+					.toString();
+			DispatcherModule.redirectTo(response, redirectURL);
+		} else {
+			// Dispatch with location
+			launch(ureq, location, uriPrefix);
 		}
-
-		// Dispatch with location
-		launch(ureq, location, uriPrefix);
 	}
 
 	private void dispatch(UserRequest ureq) {
@@ -121,7 +130,7 @@ public class ContactTracingDispatcher implements Dispatcher {
 
 	private void launch(UserRequest ureq, ContactTracingLocation location, String uriPrefix) {
 		UserSession usess = ureq.getUserSession();
-
+		usess.putEntryInNonClearedStore(UserSessionManager.EXTENDED_DMZ_TIMEOUT, Boolean.TRUE);
 		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 		I18nManager.updateLocaleInfoToThread(usess);
 

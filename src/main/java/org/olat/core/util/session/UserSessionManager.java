@@ -84,6 +84,8 @@ public class UserSessionManager implements GenericEventListener {
 	
 	public static final OLATResourceable ORES_USERSESSION = OresHelper.createOLATResourceableType(UserSession.class);
 	public static final String STORE_KEY_KILLED_EXISTING_SESSION = "killedExistingSession";
+	
+	public static final String EXTENDED_DMZ_TIMEOUT = "extended-session-timeout--oo";
 
 	//clusterNOK cache ??
 	private static final Set<UserSession> authUserSessions = ConcurrentHashMap.newKeySet();
@@ -178,6 +180,8 @@ public class UserSessionManager implements GenericEventListener {
 			} else {
 				interval = sessionModule.getSessionTimeoutAuthenticated();
 			}
+		} else if(us.getEntry(EXTENDED_DMZ_TIMEOUT) instanceof Boolean) {
+			interval = 3 * sessionModule.getSessionTimeout();
 		} else {
 			interval = sessionModule.getSessionTimeout();
 		}

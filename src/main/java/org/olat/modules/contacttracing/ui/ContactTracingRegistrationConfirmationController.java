@@ -29,7 +29,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.contacttracing.ContactTracingLocation;
 
 /**
  * Initial date: 21.10.20<br>
@@ -38,9 +37,9 @@ import org.olat.modules.contacttracing.ContactTracingLocation;
  */
 public class ContactTracingRegistrationConfirmationController extends FormBasicController {
 
-    public FormLink closeLink;
+    private FormLink closeLink;
 
-    public ContactTracingRegistrationConfirmationController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location) {
+    public ContactTracingRegistrationConfirmationController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl, "contact_tracing_registration_confirmation");
 
         initForm(ureq);

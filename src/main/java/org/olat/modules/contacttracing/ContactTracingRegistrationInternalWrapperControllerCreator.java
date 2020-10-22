@@ -42,8 +42,13 @@ public class ContactTracingRegistrationInternalWrapperControllerCreator extends 
     public ContactTracingRegistrationInternalWrapperControllerCreator(ContactTracingManager contactTracingManager) {
         this.contactTracingManager = contactTracingManager;
     }
-
+    
     @Override
+	public boolean isResumable() {
+		return false;
+	}
+
+	@Override
     public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
         ContextEntry contextEntry = ces.get(0);
         OLATResourceable olatResourceable = contextEntry.getOLATResourceable();

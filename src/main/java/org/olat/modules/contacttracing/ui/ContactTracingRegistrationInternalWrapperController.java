@@ -19,9 +19,13 @@
  */
 package org.olat.modules.contacttracing.ui;
 
-import org.olat.admin.landingpages.ui.LandingPages;
-import org.olat.core.dispatcher.DispatcherModule;
+import java.util.List;
+import java.util.function.Predicate;
+
+import org.olat.NewControllerFactory;
+import org.olat.admin.landingpages.model.Rules;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -31,6 +35,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.HistoryPoint;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 
 /**
@@ -71,27 +80,56 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 			if (event == Event.DONE_EVENT) {
 				openConfirmation(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
-				String redirectURL = new StringBuilder()
-						.append(Settings.getServerContextPathURI())
-						.append(DispatcherModule.PATH_AUTHENTICATED)
-						.append(LandingPages.myCourses.businessPath())
-						.toString();
-
-				MediaResource redirect = new RedirectMediaResource(redirectURL);
-				ureq.getDispatchResult().setResultingMediaResource(redirect);
+				doRedirect(ureq);
 			}
 		} else if (source == confirmationController) {
 			if (event == Event.CLOSE_EVENT) {
-				String redirectURL = new StringBuilder()
-						.append(Settings.getServerContextPathURI())
-						.append(DispatcherModule.PATH_AUTHENTICATED)
-						.append(LandingPages.myCourses.businessPath())
-						.toString();
-
-				MediaResource redirect = new RedirectMediaResource(redirectURL);
-				ureq.getDispatchResult().setResultingMediaResource(redirect);
+				doRedirect(ureq);
 			}
 		}
+	}
+	
+	private void doRedirect(UserRequest ureq) {
+		String businessPath = getLandingPage(ureq);
+		String redirectURL = new StringBuilder()
+				.append(Settings.getServerContextPathURI())
+				.append("/auth/")
+				.append(businessPath)
+				.toString();
+		MediaResource redirect = new RedirectMediaResource(redirectURL);
+		ureq.getDispatchResult().setResultingMediaResource(redirect);
+	}
+	
+	private String getLandingPage(UserRequest ureq) {
+		Predicate<HistoryPoint> filter =  point -> {
+			List<ContextEntry> entries = point.getEntries();
+			if(entries == null || entries.isEmpty()) {
+				return false;
+			}
+			String resType = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			return NewControllerFactory.getInstance().canResume(resType) && !"ContactTracing".equals(resType);
+		};
+		HistoryPoint point = ureq.getUserSession().getLastHistoryPoint(filter);
+		
+		String businessPath = null;
+		if(point != null && StringHelper.containsNonWhitespace(point.getBusinessPath())) {
+			String path = point.getBusinessPath();
+			List<ContextEntry> ceList = BusinessControlFactory.getInstance().createCEListFromString(path);
+			businessPath = BusinessControlFactory.getInstance().getBusinessPathAsURIFromCEList(ceList);
+		}
+		
+		if(!StringHelper.containsNonWhitespace(businessPath)) {
+			Preferences prefs =  ureq.getUserSession().getGuiPreferences();
+			String landingPage = (String)prefs.get(WindowManager.class, "landing-page");
+			if(StringHelper.containsNonWhitespace(landingPage)) {
+				businessPath = Rules.cleanUpLandingPath(landingPage);
+			}
+		}
+		
+		if(!StringHelper.containsNonWhitespace(businessPath)) {
+			businessPath = "RepositoryEntry/0";
+		}
+		return businessPath;
 	}
 
 	private void openForm(UserRequest ureq) {
@@ -106,7 +144,7 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 
 	private void openConfirmation(UserRequest ureq) {
 		if (confirmationController == null) {
-			confirmationController = new ContactTracingRegistrationConfirmationController(ureq, getWindowControl(), location);
+			confirmationController = new ContactTracingRegistrationConfirmationController(ureq, getWindowControl());
 			listenTo(confirmationController);
 		}
 

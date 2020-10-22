@@ -19,7 +19,6 @@
  */
 package org.olat.modules.contacttracing.ui;
 
-import org.olat.admin.landingpages.ui.LandingPages;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -73,7 +72,7 @@ public class ContactTracingRegistrationExternalWrapperController extends BasicCo
 			if (event == REGISTER_WITH_ACCOUNT_EVENT) {
 				String redirectURL = new StringBuilder()
 						.append(Settings.getServerContextPathURI())
-						.append(DispatcherModule.PATH_AUTHENTICATED)
+						.append("/auth/")
 						.append(ContactTracingManagerImpl.CONTACT_TRACING_CONTEXT_KEY)
 						.append("/")
 						.append(location.getKey())
@@ -84,40 +83,28 @@ public class ContactTracingRegistrationExternalWrapperController extends BasicCo
 			} else if (event == REGISTER_ANONYMOUS_EVENT) {
 				openForm(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
-				String redirectURL = new StringBuilder()
-						.append(Settings.getServerContextPathURI())
-						.append(DispatcherModule.PATH_AUTHENTICATED)
-						.append(LandingPages.myCourses.businessPath())
-						.toString();
-
-				MediaResource redirect = new RedirectMediaResource(redirectURL);
-				ureq.getDispatchResult().setResultingMediaResource(redirect);
+				doRedirectDefault(ureq);
 			}
 		} else if (source == formController) {
 			if (event == Event.DONE_EVENT) {
 				openConfirmation(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
-				String redirectURL = new StringBuilder()
-						.append(Settings.getServerContextPathURI())
-						.append(DispatcherModule.PATH_AUTHENTICATED)
-						.append(LandingPages.myCourses.businessPath())
-						.toString();
-
-				MediaResource redirect = new RedirectMediaResource(redirectURL);
-				ureq.getDispatchResult().setResultingMediaResource(redirect);
+				doRedirectDefault(ureq);
 			}
 		} else if (source == confirmationController) {
 			if (event == Event.CLOSE_EVENT) {
-				String redirectURL = new StringBuilder()
-						.append(Settings.getServerContextPathURI())
-						.append(DispatcherModule.PATH_AUTHENTICATED)
-						.append(LandingPages.myCourses.businessPath())
-						.toString();
-
-				MediaResource redirect = new RedirectMediaResource(redirectURL);
-				ureq.getDispatchResult().setResultingMediaResource(redirect);
+				doRedirectDefault(ureq);
 			}
 		}
+	}
+	
+	private void doRedirectDefault(UserRequest ureq) {
+		String redirectURL = new StringBuilder()
+				.append(Settings.getServerContextPathURI())
+				.append(DispatcherModule.PATH_DEFAULT)
+				.toString();
+		MediaResource redirect = new RedirectMediaResource(redirectURL);
+		ureq.getDispatchResult().setResultingMediaResource(redirect);
 	}
 
 	private void openSelection(UserRequest ureq) {
@@ -142,7 +129,7 @@ public class ContactTracingRegistrationExternalWrapperController extends BasicCo
 
 	private void openConfirmation(UserRequest ureq) {
 		if (confirmationController == null) {
-			confirmationController = new ContactTracingRegistrationConfirmationController(ureq, getWindowControl(), location);
+			confirmationController = new ContactTracingRegistrationConfirmationController(ureq, getWindowControl());
 			listenTo(confirmationController);
 		}
 
