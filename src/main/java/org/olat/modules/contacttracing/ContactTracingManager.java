@@ -40,7 +40,7 @@ public interface ContactTracingManager {
      * @param qrId QR ID of the location - must be unique
      * @return A persisted contact tracing location
      */
-    public ContactTracingLocation createLocation(String reference, String title, String room , String building, String qrId, String qrText, boolean guestsAllowed);
+    public ContactTracingLocation createLocation(String reference, String title, String building, String room , String sector, String table, String qrId, String qrText, boolean guestsAllowed);
 
     /**
      * Save changes done to an existing location
@@ -63,7 +63,7 @@ public interface ContactTracingManager {
      *
      * @return A list with all contact tracing locations
      */
-    public List<ContactTracingLocation> getLocation();
+    public List<ContactTracingLocation> getLocations();
 
     /**
      * Get a specific location by its unique identifier
@@ -78,7 +78,7 @@ public interface ContactTracingManager {
      * @param searchParams ContactTracingSearchParams
      * @return List of contact tracing locations
      */
-    public List<ContactTracingLocation> getLocation(ContactTracingSearchParams searchParams);
+    public List<ContactTracingLocation> getLocations(ContactTracingSearchParams searchParams);
 
     /**
      * Get a list of locations which fit the provided search parameters
@@ -110,22 +110,22 @@ public interface ContactTracingManager {
     public boolean qrIdExists(String qrId);
 
     /**
-     * Creates a new empty entry
-     * Details must be applied manually and then updated
+     * Creates a new non-persisted empty registration
+     * Details must be applied manually and then persisted
      *
      * @param location Contact tracing location must be provided to make sure it isn't empty
      * @param deletionDate Deletion date must be provided to make sure it isn´t empty
-     * @return Empty contact tracing entry
+     * @return Empty contact tracing registration
      */
-    public ContactTracingEntry createEntry(ContactTracingLocation location, Date startDate, Date deletionDate);
+    public ContactTracingRegistration createRegistration(ContactTracingLocation location, Date startDate, Date deletionDate);
 
     /**
-     * Update a given contact tracing entry
+     * Persist a given contact tracing registration
      *
-     * @param entry Contact tracing entry
-     * @return Update contact tracing entry
+     * @param registration Contact tracing registration
+     * @return Update contact tracing registration
      */
-    public ContactTracingEntry updateEntry(ContactTracingEntry entry);
+    public ContactTracingRegistration persistRegistration(ContactTracingRegistration registration);
 
     /**
      * Count the registrations for the given parameters
@@ -139,7 +139,31 @@ public interface ContactTracingManager {
      * Get the registrations matching given parameters
      *
      * @param searchParams Search parameters
-     * @return List of ContactTracingEntry
+     * @return List of ContactTracingRegistration
      */
-    public List<ContactTracingEntry> getRegistrations(ContactTracingSearchParams searchParams);
+    public List<ContactTracingRegistration> getRegistrations(ContactTracingSearchParams searchParams);
+
+    /**
+     * Used as a cronjob
+     * Deletes all entries whose retention period has expired
+     *
+     * @return Count of deleted entries
+     */
+    public int pruneRegistrations();
+
+    /**
+     * Used to manually prune entries
+     * Deletes all entries which are older than the given retention period
+     *
+     * @param retentionPeriod Given retention period
+     * @return Count of deleted entries
+     */
+    public int pruneRegistrations(int retentionPeriod);
+
+    /**
+     * Used to determine whether any registration is available
+     *
+     * @return Boolean
+     */
+    public boolean anyRegistrationsAvailable();
 }

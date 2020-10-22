@@ -20,6 +20,7 @@
 package org.olat.modules.contacttracing.model;
 
 import java.util.Date;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -33,17 +34,19 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
-import org.olat.modules.contacttracing.ContactTracingEntry;
 import org.olat.modules.contacttracing.ContactTracingLocation;
+import org.olat.modules.contacttracing.ContactTracingRegistration;
 
 /**
  * Initial date: 13.10.20<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-@Entity(name = "contactTracingEntry")
-@Table(name = "o_contact_tracing_entry")
-public class ContactTracingEntryImpl implements ContactTracingEntry {
+@Entity(name = "contactTracingRegistration")
+@Table(name = "o_ct_registration")
+public class ContactTracingRegistrationImpl implements ContactTracingRegistration {
+
+    private static final long serialVersionUID = 5722478172355407350L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -281,11 +284,26 @@ public class ContactTracingEntryImpl implements ContactTracingEntry {
         this.officePhone = officePhone;
     }
 
+    @Override
     public boolean equalsByPersistableKey(Persistable persistable) {
-        if (persistable instanceof ContactTracingEntry) {
-            return getKey().equals(persistable.getKey());
+        return equals(persistable);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) {
+            return true;
+        }
+
+        if (object instanceof ContactTracingRegistration) {
+            return getKey() != null && getKey().equals(((ContactTracingRegistration)object).getKey());
         }
 
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key);
     }
 }

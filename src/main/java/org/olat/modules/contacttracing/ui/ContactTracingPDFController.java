@@ -19,7 +19,6 @@
  */
 package org.olat.modules.contacttracing.ui;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +47,7 @@ public class ContactTracingPDFController extends BasicController {
     public ContactTracingPDFController(UserRequest ureq, WindowControl wControl, List<ContactTracingLocation> locations) {
         super(ureq, wControl);
 
-        VelocityContainer qrContainer = createVelocityContainer("contact_tracing_qr_pdf_template");
+        VelocityContainer qrContainer = createVelocityContainer("contact_tracing_export_pdf_template");
         Map<ContactTracingLocation, String> locationUrlMap = new HashMap<>();
 
         for (ContactTracingLocation location : locations) {

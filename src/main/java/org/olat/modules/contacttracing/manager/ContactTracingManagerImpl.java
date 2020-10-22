@@ -25,12 +25,16 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.contacttracing.ContactTracingContextEntryControllerCreator;
-import org.olat.modules.contacttracing.ContactTracingEntry;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
+import org.olat.modules.contacttracing.ContactTracingModule;
+import org.olat.modules.contacttracing.ContactTracingRegistration;
+import org.olat.modules.contacttracing.ContactTracingRegistrationInternalWrapperControllerCreator;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,25 +48,28 @@ import org.springframework.stereotype.Service;
 public class ContactTracingManagerImpl implements ContactTracingManager {
 
     public static final String CONTACT_TRACING_CONTEXT_KEY = "ContactTracing";
+    private static final Logger log = Tracing.createLoggerFor(ContactTracingManager.class);
 
     @Autowired
     private ContactTracingLocationDAO contactTracingLocationDAO;
     @Autowired
-    private ContactTracingEntryDAO contactTracingEntryDAO;
+    private ContactTracingRegistrationDAO contactTracingRegistrationDAO;
+    @Autowired
+    private ContactTracingModule contactTracingModule;
 
     @PostConstruct
     private void init() {
-        NewControllerFactory.getInstance().addContextEntryControllerCreator(CONTACT_TRACING_CONTEXT_KEY, new ContactTracingContextEntryControllerCreator(this));
+        NewControllerFactory.getInstance().addContextEntryControllerCreator(CONTACT_TRACING_CONTEXT_KEY, new ContactTracingRegistrationInternalWrapperControllerCreator(this));
     }
 
      // Contact tracing locations
 
     @Override
-    public ContactTracingLocation createLocation(String reference, String title, String room, String building, String qrId, String qrText, boolean guestsAllowed) {
+    public ContactTracingLocation createLocation(String reference, String title, String building, String room, String sector, String table, String qrId, String qrText, boolean guestsAllowed) {
         if (qrIdExists(qrId)) {
             return null;
         } else {
-            return contactTracingLocationDAO.createAndPersistLocation(reference, title, room, building, qrId, qrText, guestsAllowed);
+            return contactTracingLocationDAO.createAndPersistLocation(reference, title, building, room, sector, table, qrId, qrText, guestsAllowed);
         }
     }
 
@@ -73,7 +80,7 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
 
     @Override
     public void deleteLocations(List<ContactTracingLocation> locations) {
-        contactTracingEntryDAO.deleteEntries(locations);
+        contactTracingRegistrationDAO.deleteEntries(locations);
         contactTracingLocationDAO.deleteLocations(locations);
     }
 
@@ -92,12 +99,12 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
     }
 
     @Override
-    public List<ContactTracingLocation> getLocation() {
+    public List<ContactTracingLocation> getLocations() {
         return contactTracingLocationDAO.getAllLocations();
     }
 
     @Override
-    public List<ContactTracingLocation> getLocation(ContactTracingSearchParams searchParams) {
+    public List<ContactTracingLocation> getLocations(ContactTracingSearchParams searchParams) {
         return contactTracingLocationDAO.getLocations(searchParams);
     }
 
@@ -106,9 +113,9 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
         Map<ContactTracingLocation, Long> locationRegistrationMap = new HashMap<>();
         ContactTracingSearchParams searchParams = new ContactTracingSearchParams();
 
-        for (ContactTracingLocation location : getLocation()) {
+        for (ContactTracingLocation location : getLocations()) {
             searchParams.setLocation(location);
-            locationRegistrationMap.put(location, contactTracingEntryDAO.getRegistrationsCount(searchParams));
+            locationRegistrationMap.put(location, contactTracingRegistrationDAO.getRegistrationsCount(searchParams));
         }
 
         return locationRegistrationMap;
@@ -118,9 +125,9 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
     public Map<ContactTracingLocation, Long> getLocationsWithRegistrations(ContactTracingSearchParams searchParams) {
         Map<ContactTracingLocation, Long> locationRegistrationMap = new HashMap<>();
 
-        for (ContactTracingLocation location : getLocation(searchParams)) {
+        for (ContactTracingLocation location : getLocations(searchParams)) {
             searchParams.setLocation(location);
-            locationRegistrationMap.put(location, contactTracingEntryDAO.getRegistrationsCount(searchParams));
+            locationRegistrationMap.put(location, contactTracingRegistrationDAO.getRegistrationsCount(searchParams));
         }
 
         return locationRegistrationMap;
@@ -133,24 +140,54 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
 
     @Override
     public long getRegistrationsCount(ContactTracingSearchParams searchParams) {
-        return contactTracingEntryDAO.getRegistrationsCount(searchParams);
+        return contactTracingRegistrationDAO.getRegistrationsCount(searchParams);
     }
 
 
     // Contact tracing entries
 
     @Override
-    public ContactTracingEntry createEntry(ContactTracingLocation location, Date startDate, Date deletionDate) {
-        return contactTracingEntryDAO.createEntry(location, startDate, deletionDate);
+    public ContactTracingRegistration createRegistration(ContactTracingLocation location, Date startDate, Date deletionDate) {
+        return contactTracingRegistrationDAO.create(location, startDate, deletionDate);
     }
 
     @Override
-    public ContactTracingEntry updateEntry(ContactTracingEntry entry) {
-        return contactTracingEntryDAO.updateEntry(entry);
+    public ContactTracingRegistration persistRegistration(ContactTracingRegistration entry) {
+        return contactTracingRegistrationDAO.persist(entry);
     }
 
     @Override
-    public List<ContactTracingEntry> getRegistrations(ContactTracingSearchParams searchParams) {
-        return contactTracingEntryDAO.getRegistrations(searchParams);
+    public int pruneRegistrations() {
+        int pruneCount = pruneRegistrations(contactTracingModule.getRetentionPeriod());
+        logPrunedEntries(pruneCount);
+
+        return pruneCount;
+    }
+
+    @Override
+    public int pruneRegistrations(int retentionPeriod) {
+        // Set the border to delete the day after the retention period to 00:00
+        // Delete everything which is older than the border
+        Date deletionDate = DateUtils.addDays(new Date(), retentionPeriod + 1);
+        deletionDate = DateUtils.setTime(deletionDate, 0, 0, 0);
+
+        int pruneCount = contactTracingRegistrationDAO.pruneEntries(deletionDate);
+        logPrunedEntries(pruneCount);
+
+        return pruneCount;
+    }
+
+    private void logPrunedEntries(int count) {
+        log.info("Contact tracing entries pruned - " + count + " entr" + (count == 1 ? "y was" : "ies were") + " deleted");
+    }
+
+    @Override
+    public List<ContactTracingRegistration> getRegistrations(ContactTracingSearchParams searchParams) {
+        return contactTracingRegistrationDAO.getRegistrations(searchParams);
+    }
+
+    @Override
+    public boolean anyRegistrationsAvailable() {
+        return contactTracingRegistrationDAO.anyRegistrationAvailable();
     }
 }

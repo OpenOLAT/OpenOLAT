@@ -103,41 +103,47 @@ alter table o_lecture_reason add column l_enabled bool default true not null;
 alter table o_lecture_absence_category add column l_enabled bool default true not null;
 
 -- Contact tracing
-create table o_contact_tracing_location (
-    id bigserial,
-    creationdate timestamp not null,
-    lastmodified timestamp not null,
-    l_reference varchar(255) not null,
-    l_titel varchar(255) not null,
-    l_room varchar(255) not null,
-    l_building varchar(255) not null,
-    l_qr_id varchar(255) not null,
-    l_qr_text varchar(4000),
-    l_guests boolean not null,
-    unique(l_qr_id),
-    primary key (id)
+create table o_ct_location (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   l_reference varchar(255),
+   l_titel varchar(255),
+   l_room varchar(255),
+   l_building varchar(255),
+   l_sector varchar(255),
+   l_table varchar(255),
+   l_qr_id varchar(255) not null,
+   l_qr_text varchar(4000),
+   l_guests boolean default true not null,
+   l_printed boolean default false not null,
+   unique(l_qr_id),
+   primary key (id)
 );
 
-create table o_contact_tracing_entry (
-    id bigserial,
-    creationdate timestamp not null,
-    l_deletion_date timestamp not null,
-    l_start_date timestamp not null,
-    l_end_date timestamp,
-    l_nick_name varchar(255),
-    l_first_name varchar(255),
-    l_last_name varchar(255),
-    l_street varchar(255),
-    l_extra_line varchar(255),
-    l_zip_code varchar(255),
-    l_city varchar(255),
-    l_email varchar(255),
-    l_institutional_email varchar(255),
-    l_generic_email varchar(255),
-    l_private_phone varchar(255),
-    l_mobile_phone varchar(255),
-    l_office_phone varchar(255),
-    fk_location int8 not null,
-    primary key (id)
+create table o_ct_registration (
+   id bigserial,
+   creationdate timestamp not null,
+   l_deletion_date timestamp not null,
+   l_start_date timestamp not null,
+   l_end_date timestamp,
+   l_nick_name varchar(255),
+   l_first_name varchar(255),
+   l_last_name varchar(255),
+   l_street varchar(255),
+   l_extra_line varchar(255),
+   l_zip_code varchar(255),
+   l_city varchar(255),
+   l_email varchar(255),
+   l_institutional_email varchar(255),
+   l_generic_email varchar(255),
+   l_private_phone varchar(255),
+   l_mobile_phone varchar(255),
+   l_office_phone varchar(255),
+   fk_location int8 not null,
+   primary key (id)
 );
 
+-- Contact tracing
+alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
+create index idx_reg_to_loc_idx on o_ct_registration (fk_location);

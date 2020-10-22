@@ -29,7 +29,7 @@ import org.olat.core.id.Persistable;
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public interface ContactTracingEntry extends Persistable, CreateInfo {
+public interface ContactTracingRegistration extends Persistable, CreateInfo {
 
     public Date getDeletionDate();
 

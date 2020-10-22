@@ -17,37 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.contacttracing.ui;
+package org.olat.modules.contacttracing;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.modules.contacttracing.ui.ContactTracingRegistrationExternalWrapperController;
 
 /**
- * Initial date: 21.10.20<br>
+ * Initial date: 20.10.20<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ContactTracingEntryConfirmationController extends BasicController {
+public class ContactTracingRegistrationExternalWrapperControllerCreator implements ControllerCreator {
 
-    public ContactTracingEntryConfirmationController(UserRequest ureq, WindowControl wControl) {
-        super(ureq, wControl);
+    private final ContactTracingLocation location;
 
-        VelocityContainer mainVC = createVelocityContainer("contact_tracing_entry_confirmation");
-
-        putInitialPanel(mainVC);
+    public ContactTracingRegistrationExternalWrapperControllerCreator(ContactTracingLocation location) {
+        this.location = location;
     }
 
     @Override
-    protected void event(UserRequest ureq, Component source, Event event) {
-
-    }
-
-    @Override
-    protected void doDispose() {
-
+    public Controller createController(UserRequest lureq, WindowControl lwControl) {
+        return new ContactTracingRegistrationExternalWrapperController(lureq, lwControl, location);
     }
 }

@@ -21,8 +21,6 @@ package org.olat.modules.contacttracing;
 
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -30,21 +28,18 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
-import org.olat.core.logging.Tracing;
-import org.olat.modules.contacttracing.ui.ContactTracingEntryController;
+import org.olat.modules.contacttracing.ui.ContactTracingRegistrationInternalWrapperController;
 
 /**
  * Initial date: 19.10.20<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ContactTracingContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
-
-    private static final Logger log = Tracing.createLoggerFor(ContextEntryControllerCreator.class);
+public class ContactTracingRegistrationInternalWrapperControllerCreator extends DefaultContextEntryControllerCreator {
 
     private final ContactTracingManager contactTracingManager;
 
-    public ContactTracingContextEntryControllerCreator(ContactTracingManager contactTracingManager) {
+    public ContactTracingRegistrationInternalWrapperControllerCreator(ContactTracingManager contactTracingManager) {
         this.contactTracingManager = contactTracingManager;
     }
 
@@ -55,15 +50,21 @@ public class ContactTracingContextEntryControllerCreator extends DefaultContextE
         Long locationKey = olatResourceable.getResourceableId();
 
         ContactTracingLocation location = contactTracingManager.getLocation(locationKey);
-        if (location == null) {
-            DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
-        }
+        return new ContactTracingRegistrationInternalWrapperController(ureq, wControl, location);
+    }
 
-        return new ContactTracingEntryController(ureq, wControl, location);
+    @Override
+    public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+        OLATResourceable olatResourceable = ce.getOLATResourceable();
+        Long locationKey = olatResourceable.getResourceableId();
+
+        ContactTracingLocation location = contactTracingManager.getLocation(locationKey);
+
+        return location != null;
     }
 
     @Override
     public ContextEntryControllerCreator clone() {
-        return new ContactTracingContextEntryControllerCreator(contactTracingManager);
+        return new ContactTracingRegistrationInternalWrapperControllerCreator(contactTracingManager);
     }
 }

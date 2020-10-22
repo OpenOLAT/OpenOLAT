@@ -19,7 +19,6 @@
  */
 package org.olat.modules.contacttracing;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -99,6 +98,8 @@ public class ContactTracingModule extends AbstractSpringModule implements Config
 
     @Value("${contact.tracing.qr.instructions}")
     private String qrCodeInstructions;
+    @Value("${contact.tracing.qr.instructions}")
+    private String qrCodeInstructionsBackup;
 
     @Autowired
     public ContactTracingModule(CoordinatorManager coordinatorManager) {
@@ -320,7 +321,11 @@ public class ContactTracingModule extends AbstractSpringModule implements Config
     }
 
     public void setQrCodeInstructions(String qrCodeInstructions) {
-        this.qrCodeInstructions = qrCodeInstructions;
+        if (qrCodeInstructions == null) {
+            this.qrCodeInstructions = qrCodeInstructionsBackup;
+        } else {
+            this.qrCodeInstructions = qrCodeInstructions;
+        }
         setStringProperty(PROP_QR_INSTRUCTIONS, qrCodeInstructions, true);
     }
 

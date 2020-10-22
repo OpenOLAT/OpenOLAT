@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,17 +32,19 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.contacttracing.ContactTracingEntry;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ContactTracingModule;
 import org.olat.modules.contacttracing.ContactTracingModule.AttributeState;
+import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.user.ProfileFormController;
 import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -54,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ContactTracingEntryController extends FormBasicController {
+public class ContactTracingRegistrationFormController extends FormBasicController {
 
     private static final String usageIdentifier = ProfileFormController.class.getCanonicalName();
     private static final String[] ON_KEYS = new String[] {"on"};
@@ -85,8 +86,6 @@ public class ContactTracingEntryController extends FormBasicController {
 
     private Map<UserPropertyHandler, FormItem> userPropertyHandlerFormItemMap;
 
-    private ContactTracingEntryConfirmationController confirmationController;
-
     @Autowired
     private ContactTracingManager contactTracingManager;
     @Autowired
@@ -94,8 +93,8 @@ public class ContactTracingEntryController extends FormBasicController {
     @Autowired
     private UserPropertiesConfig userPropertiesConfig;
 
-    public ContactTracingEntryController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location) {
-        super(ureq, wControl, "contact_tracing_entry");
+    public ContactTracingRegistrationFormController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location) {
+        super(ureq, wControl, LAYOUT_VERTICAL);
         setTranslator(userPropertiesConfig.getTranslator(getTranslator()));
         setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 
@@ -108,10 +107,6 @@ public class ContactTracingEntryController extends FormBasicController {
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-        // FormLayOutCoontainers
-        FormLayoutContainer form = FormLayoutContainer.createBareBoneFormLayout("form", getTranslator());
-        form.setRootForm(mainForm);
-
         // List containing all form items
         userPropertyHandlerFormItemMap = new HashMap<>();
 
@@ -120,7 +115,7 @@ public class ContactTracingEntryController extends FormBasicController {
         timeRecording.setRootForm(mainForm);
         timeRecording.setFormTitle(translate("contact.tracing"));
         timeRecording.setFormDescription(translate("contact.tracing.registration.intro", new String[]{String.valueOf(contactTracingModule.getRetentionPeriod())}));
-        form.add(timeRecording);
+        formLayout.add(timeRecording);
 
         // Start and end time
         startTimeEl = uifactory.addDateChooser("contact.tracing.start.time", null, timeRecording);
@@ -135,7 +130,7 @@ public class ContactTracingEntryController extends FormBasicController {
         FormLayoutContainer userIdentification = FormLayoutContainer.createDefaultFormLayout("userIdentification", getTranslator());
         userIdentification.setRootForm(mainForm);
         userIdentification.setFormTitle(translate("contact.tracing.registration.user.identification"));
-        form.add(userIdentification);
+        formLayout.add(userIdentification);
 
         UserPropertyHandler nickNameHandler = userPropertiesConfig.getPropertyHandler(UserConstants.NICKNAME);
         nickNameEl = nickNameHandler.addFormItem(getLocale(), user, usageIdentifier, false, userIdentification);
@@ -176,7 +171,7 @@ public class ContactTracingEntryController extends FormBasicController {
         FormLayoutContainer contactInformation = FormLayoutContainer.createDefaultFormLayout("contactInformation", getTranslator());
         contactInformation.setRootForm(mainForm);
         contactInformation.setFormTitle(translate("contact.tracing.registration.contact.information"));
-        form.add(contactInformation);
+        formLayout.add(contactInformation);
 
         UserPropertyHandler emailHandler = userPropertiesConfig.getPropertyHandler(UserConstants.EMAIL);
         emailEl = emailHandler.addFormItem(getLocale(), user, usageIdentifier, false, contactInformation);
@@ -217,8 +212,6 @@ public class ContactTracingEntryController extends FormBasicController {
 
         uifactory.addFormCancelButton("contact.tracing.registration.cancel", buttonLayout, ureq, getWindowControl());
         uifactory.addFormSubmitButton("contact.tracing.registration.submit", buttonLayout);
-
-        ((FormLayoutContainer) formLayout).put("form", form.getFormItemComponent());
     }
 
     private void loadData() {
@@ -265,6 +258,13 @@ public class ContactTracingEntryController extends FormBasicController {
         // Disable email element for authenticated users
         if (formItem == emailEl && user != null) {
             formItem.setEnabled(false);
+        }
+
+        // Enable all elements which are empty
+        if (formItem instanceof TextElement) {
+            if (!StringHelper.containsNonWhitespace(((TextElement) formItem).getValue())) {
+                formItem.setEnabled(true);
+            }
         }
 
         // Enable all fields for unregistered users
@@ -321,7 +321,7 @@ public class ContactTracingEntryController extends FormBasicController {
 
         // Create new entry
         Date deletionDate = DateUtils.addDays(new Date(), contactTracingModule.getRetentionPeriod());
-        ContactTracingEntry entry = contactTracingManager.createEntry(location, startTimeEl.getDate(), deletionDate);
+        ContactTracingRegistration entry = contactTracingManager.createRegistration(location, startTimeEl.getDate(), deletionDate);
 
         // Set information
         entry.setEndDate(endTimeEl.getDate());
@@ -340,20 +340,17 @@ public class ContactTracingEntryController extends FormBasicController {
         entry.setOfficePhone(getValue(officePhoneEl));
 
         // Update entry
-        contactTracingManager.updateEntry(entry);
+        contactTracingManager.persistRegistration(entry);
 
         // Send mail
         // TODO Send mail
 
-        // TODO Redirect to Home / Login
-        confirmationController = new ContactTracingEntryConfirmationController(ureq, getWindowControl());
-        listenTo(confirmationController);
-        flc.put("confirmation", confirmationController.getInitialComponent());
+        fireEvent(ureq, Event.DONE_EVENT);
     }
 
     @Override
     protected void formCancelled(UserRequest ureq) {
-        DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+        fireEvent(ureq, Event.CANCELLED_EVENT);
     }
 
     private String getValue(FormItem formItem) {

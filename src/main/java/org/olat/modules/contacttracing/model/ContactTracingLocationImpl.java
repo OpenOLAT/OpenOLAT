@@ -20,6 +20,7 @@
 package org.olat.modules.contacttracing.model;
 
 import java.util.Date;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -38,8 +39,10 @@ import org.olat.modules.contacttracing.ContactTracingLocation;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
 @Entity(name = "contactTracingLocation")
-@Table(name = "o_contact_tracing_location")
+@Table(name = "o_ct_location")
 public class ContactTracingLocationImpl implements ContactTracingLocation {
+
+    private static final long serialVersionUID = -5722474172355407350L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,20 +55,26 @@ public class ContactTracingLocationImpl implements ContactTracingLocation {
     @Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
     private Date lastModified;
 
-    @Column(name = "l_reference", nullable = false, unique = false, insertable = true, updatable = true)
+    @Column(name = "l_reference", nullable = true, unique = false, insertable = true, updatable = true)
     private String reference;
-    @Column(name = "l_titel", nullable = false, unique = false, insertable = true, updatable = true)
+    @Column(name = "l_titel", nullable = true, unique = false, insertable = true, updatable = true)
     private String title;
-    @Column(name = "l_room", nullable = false, unique = false, insertable = true, updatable = true)
-    private String room;
-    @Column(name = "l_building", nullable = false, unique = false, insertable = true, updatable = true)
+    @Column(name = "l_building", nullable = true, unique = false, insertable = true, updatable = true)
     private String building;
+    @Column(name = "l_room", nullable = true, unique = false, insertable = true, updatable = true)
+    private String room;
+    @Column(name = "l_sector", nullable = true, unique = false, insertable = true, updatable = true)
+    private String sector;
+    @Column(name = "l_table", nullable = true, unique = false, insertable = true, updatable = true)
+    private String table;
     @Column(name = "l_qr_id", nullable = false, unique = true, insertable = true, updatable = true)
     private String qrId;
     @Column(name = "l_qr_text", nullable = true, unique = false, insertable = true, updatable = true)
     private String qrText;
     @Column(name = "l_guests", nullable = false, unique = false, insertable = true, updatable = true)
     private boolean accessibleByGuest;
+    @Column(name = "l_printed", nullable = false, unique = false, insertable = true, updatable = true)
+    private boolean alreadyPrinted;
 
 
     @Override
@@ -113,6 +122,16 @@ public class ContactTracingLocationImpl implements ContactTracingLocation {
     }
 
     @Override
+    public String getBuilding() {
+        return building;
+    }
+
+    @Override
+    public void setBuilding(String buildiung) {
+        this.building = buildiung;
+    }
+
+    @Override
     public String getRoom() {
         return room;
     }
@@ -123,13 +142,23 @@ public class ContactTracingLocationImpl implements ContactTracingLocation {
     }
 
     @Override
-    public String getBuilding() {
-        return building;
+    public String getSector() {
+        return sector;
     }
 
     @Override
-    public void setBuildiung(String buildiung) {
-        this.building = buildiung;
+    public void setSector(String sector) {
+        this.sector = sector;
+    }
+
+    @Override
+    public String getTable() {
+        return table;
+    }
+
+    @Override
+    public void setTable(String table) {
+        this.table = table;
     }
 
     @Override
@@ -163,7 +192,35 @@ public class ContactTracingLocationImpl implements ContactTracingLocation {
     }
 
     @Override
+    public boolean isAlreadyPrinted() {
+        return alreadyPrinted;
+    }
+
+    @Override
+    public void setAlreadyPrinted(boolean alreadyPrinted) {
+        this.alreadyPrinted = alreadyPrinted;
+    }
+
+    @Override
     public boolean equalsByPersistableKey(Persistable persistable) {
-        return key.equals(persistable.getKey());
+        return equals(persistable);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) {
+            return true;
+        }
+
+        if (object instanceof ContactTracingLocation) {
+            return getKey() != null && getKey().equals(((ContactTracingLocation)object).getKey());
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key);
     }
 }

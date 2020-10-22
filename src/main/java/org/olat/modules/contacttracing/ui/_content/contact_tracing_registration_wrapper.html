@@ -1,0 +1,8 @@
+#if($r.available("confirmation"))
+    $r.render("confirmation")
+#elseif($r.available("form"))
+    $r.render("form")
+#elseif($r.available("selection"))
+    $r.render("selection")
+#end
+

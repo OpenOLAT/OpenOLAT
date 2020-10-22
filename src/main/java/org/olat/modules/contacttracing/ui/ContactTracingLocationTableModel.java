@@ -19,18 +19,28 @@
  */
 package org.olat.modules.contacttracing.ui;
 
-import java.util.*;
-import java.util.stream.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.*;
-import org.olat.core.commons.persistence.*;
-import org.olat.core.gui.components.form.flexible.elements.*;
-import org.olat.core.gui.components.form.flexible.impl.elements.*;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.*;
-import org.olat.core.gui.components.link.*;
-import org.olat.core.logging.*;
-import org.olat.core.util.*;
-import org.olat.modules.contacttracing.*;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.contacttracing.ContactTracingLocation;
 
 /**
  * Initial date: 12.10.20<br>
@@ -41,15 +51,19 @@ public class ContactTracingLocationTableModel extends DefaultFlexiTableDataModel
 implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiTableModel {
 
     public static final String ACTIONS_CMD = "actions_cmd";
-
     private static final Logger log = Tracing.createLoggerFor(ContactTracingLocationTableModel.class);
+
+    private final Locale locale;
 
     private Map<ContactTracingLocation, Long> locationRegistrationMap;
     private Map<ContactTracingLocation, FormLink> toolLinks;
     private List<ContactTracingLocation> backup;
 
-    public ContactTracingLocationTableModel(FlexiTableColumnModel columnModel, Map<ContactTracingLocation, Long> locationRegistrationMap) {
+    public ContactTracingLocationTableModel(FlexiTableColumnModel columnModel, Map<ContactTracingLocation, Long> locationRegistrationMap, Locale locale) {
         super(columnModel);
+
+        // Save locale for sorting
+        this.locale = locale;
 
         // Set objects
         setObjects(locationRegistrationMap);
@@ -57,7 +71,10 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
 
     @Override
     public void sort(SortKey sortKey) {
-
+        if(sortKey != null) {
+            List<ContactTracingLocation> views = new SortableFlexiTableModelDelegate<>(sortKey, this, locale).sort();
+            super.setObjects(views);
+        }
     }
 
     @Override
@@ -126,10 +143,14 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
                 return row.getReference();
             case title:
                 return row.getTitle();
-            case room:
-                return row.getRoom();
             case building:
                 return row.getBuilding();
+            case room:
+                return row.getRoom();
+            case sector:
+                return row.getSector();
+            case table:
+                return row.getTable();
             case qrId:
                 return row.getQrId();
             case qrText:
@@ -159,8 +180,10 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
     public enum ContactTracingLocationCols implements FlexiSortableColumnDef {
         reference("contact.tracing.cols.reference"),
         title("contact.tracing.cols.title"),
-        room("contact.tracing.cols.room"),
         building("contact.tracing.cols.building"),
+        room("contact.tracing.cols.room"),
+        sector("contact.tracing.cols.sector"),
+        table("contact.tracing.cols.table"),
         qrId("contact.tracing.cols.qr.id"),
         qrText("contact.tracing.cols.qr.text"),
         guest("contact.tracing.cols.guest"),

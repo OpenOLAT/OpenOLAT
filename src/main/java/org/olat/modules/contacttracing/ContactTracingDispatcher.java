@@ -37,7 +37,6 @@ import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
@@ -45,20 +44,18 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
-import org.olat.modules.contacttracing.manager.ContactTracingManagerImpl;
-import org.olat.modules.contacttracing.ui.ContactTracingEntryLoginControllerCreator;
 
 /**
- * Initial date: 16.10.20<br>
+ * Initial date: 20.10.20<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
 public class ContactTracingDispatcher implements Dispatcher {
 
 	private static final Logger log = Tracing.createLoggerFor(ContactTracingDispatcher.class);
-	
+
 	private static final String CONTACT_TRACING_PATH = "trace";
-	
+
 	public static String getMeetingUrl(String identifier) {
 		return new StringBuilder()
 				.append(Settings.getServerContextPathURI())
@@ -68,106 +65,91 @@ public class ContactTracingDispatcher implements Dispatcher {
 				.append(identifier)
 				.toString();
 	}
-	
+
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		UserRequest ureq = null;
+		UserRequest ureq;
 		final String pathInfo = request.getPathInfo();
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
-		try{
+
+		try {
 			ureq = new UserRequestImpl(uriPrefix, request, response);
-		} catch(NumberFormatException nfe) {
+		} catch (NumberFormatException nfe) {
 			log.debug("Bad Request {}", pathInfo);
 			DispatcherModule.sendBadRequest(pathInfo, response);
 			return;
 		}
 
-		ContactTracingLocation location = getLocation(request);
-
-		if (location == null) {
-			DispatcherModule.redirectToDefaultDispatcher(response);
-		} else {
-			String redirectURL = new StringBuilder()
-					.append(Settings.getServerContextPathURI())
-					.append("/auth/")
-					.append(ContactTracingManagerImpl.CONTACT_TRACING_CONTEXT_KEY)
-					.append("/")
-					.append(location.getKey())
-					.toString();
-
-			DispatcherModule.redirectTo(response, redirectURL);
+		if(pathInfo.contains("close-window")) {
+			DispatcherModule.setNotContent(request.getPathInfo(), response);
+			return;
 		}
 
-		// dispatch(ureq, location, uriPrefix);
+		// Controller has been created already
+		if (ureq.isValidDispatchURI()) {
+			dispatch(ureq);
+			return;
+		}
 
+		// Get location from URL
+		ContactTracingLocation location = getLocation(request);
 
-//		if(pathInfo != null && pathInfo.contains("close-window")) {
-//			DispatcherModule.setNotContent(pathInfo, response);
-//		} else if(ureq.isValidDispatchURI()) {
-//			Windows ws = Windows.getWindows(ureq);
-//			Window window = ws.getWindow(ureq);
-//			if (window == null) {
-//				DispatcherModule.sendNotFound(request.getRequestURI(), response);
-//			} else {
-//				window.dispatchRequest(ureq);
-//			}
-//		} else {
-//			ContactTracingLocation location = getLocation(request);
-//			if (location == null) {
-//				// Redirect not working
-//				DispatcherModule.redirectToDefaultDispatcher(response);
-//			} else {
-//				String redirectURL = new StringBuilder()
-//						.append(Settings.getServerContextPathURI())
-//						.append("/auth/")
-//						.append(ContactTracingManagerImpl.CONTACT_TRACING_CONTEXT_KEY)
-//						.append("/")
-//						.append(location.getKey())
-//						.toString();
-//
-//				DispatcherModule.redirectTo(response, redirectURL);
-//			}
-//			// Todo Dispatch
-//			dispatch(ureq, location, uriPrefix);
-//		}
+		// Check if location is existing
+		if (location == null) {
+			// Go to default screen
+			DispatcherModule.redirectToDefaultDispatcher(response);
+			// Cancel the current method
+			return;
+		}
+
+		// Dispatch with location
+		launch(ureq, location, uriPrefix);
 	}
-	
-	private void dispatch(UserRequest ureq, ContactTracingLocation location, String uriPrefix) {
+
+	private void dispatch(UserRequest ureq) {
+		UserSession usess = ureq.getUserSession();
+		Windows windows = Windows.getWindows(usess);
+
+		ChiefController chiefController = windows.getChiefController(ureq);
+		try {
+			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
+			w.dispatchRequest(ureq, false); // renderOnly
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+
+	private void launch(UserRequest ureq, ContactTracingLocation location, String uriPrefix) {
 		UserSession usess = ureq.getUserSession();
 
 		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 		I18nManager.updateLocaleInfoToThread(usess);
 
-		DmzBFWCParts bfwcParts = new DmzBFWCParts();
-		bfwcParts.showTopNav(false);
-		ControllerCreator controllerCreator = new ContactTracingEntryLoginControllerCreator(location);
-		bfwcParts.setContentControllerCreator(controllerCreator);
-
 		Windows windows = Windows.getWindows(usess);
 		boolean windowHere = windows.isExisting(uriPrefix, ureq.getWindowID());
-		if (!windowHere) {
+		if (windowHere) {
+			dispatch(ureq);
+		} else {
 			synchronized (windows) {
+				DmzBFWCParts bfwcParts = new DmzBFWCParts();
+				bfwcParts.showTopNav(false);
+				ControllerCreator controllerCreator = new ContactTracingRegistrationExternalWrapperControllerCreator(location);
+				bfwcParts.setContentControllerCreator(controllerCreator);
+
 				ChiefController cc = new BaseFullWebappController(ureq, bfwcParts);
 				Window window = cc.getWindow();
 				window.setUriPrefix(uriPrefix);
 				ureq.overrideWindowComponentID(window.getDispatchID());
 				windows.registerWindow(cc);
+
+				NewControllerFactory.getInstance().launch(ureq, cc.getWindowControl());
+				Window w = cc.getWindow().getWindowBackOffice().getWindow();
+				w.dispatchRequest(ureq, true); // renderOnly
+				cc.resetReload();
 			}
 		}
-
-		windows.getWindowManager().setAjaxWanted(ureq);
-		ChiefController chiefController = windows.getChiefController(ureq);
-		try {
-			WindowControl wControl = chiefController.getWindowControl();
-			NewControllerFactory.getInstance().launch(ureq, wControl);
-			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
-			w.dispatchRequest(ureq, true); // renderOnly
-			chiefController.resetReload();
-		} catch (Exception e) {
-			log.error("", e);
-		}
 	}
-	
+
 	private ContactTracingLocation getLocation(HttpServletRequest request) {
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 		final String origUri = request.getRequestURI();

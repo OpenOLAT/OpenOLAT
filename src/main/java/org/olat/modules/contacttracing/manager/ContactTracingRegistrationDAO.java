@@ -25,10 +25,11 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.modules.contacttracing.ContactTracingEntry;
 import org.olat.modules.contacttracing.ContactTracingLocation;
+import org.olat.modules.contacttracing.ContactTracingModule;
+import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
-import org.olat.modules.contacttracing.model.ContactTracingEntryImpl;
+import org.olat.modules.contacttracing.model.ContactTracingRegistrationImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,30 +39,33 @@ import org.springframework.stereotype.Service;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
 @Service
-public class ContactTracingEntryDAO {
+public class ContactTracingRegistrationDAO {
 
     @Autowired
     private DB dbInstance;
+    @Autowired
+    private ContactTracingModule contactTracingModule;
 
-    public ContactTracingEntry createEntry(ContactTracingLocation location, Date startDate, Date deletionDate) {
-        ContactTracingEntryImpl entry = new ContactTracingEntryImpl();
+    public ContactTracingRegistration create(ContactTracingLocation location, Date startDate, Date deletionDate) {
+        ContactTracingRegistrationImpl entry = new ContactTracingRegistrationImpl();
 
         entry.setCreationDate(new Date());
         entry.setStartDate(startDate);
         entry.setDeletionDate(deletionDate);
         entry.setLocation(location);
 
-        dbInstance.getCurrentEntityManager().persist(entry);
         return entry;
     }
 
-    public ContactTracingEntry updateEntry(ContactTracingEntry entry) {
-        return dbInstance.getCurrentEntityManager().merge(entry);
+    public ContactTracingRegistration persist(ContactTracingRegistration entry) {
+        dbInstance.getCurrentEntityManager().persist(entry);
+
+        return entry;
     }
 
     public void deleteEntries(List<ContactTracingLocation> locations) {
         String query = new StringBuilder()
-                .append("delete from contactTracingEntry as entry ")
+                .append("delete from contactTracingRegistration as entry ")
                 .append("where entry.location in (:locationList)")
                 .toString();
 
@@ -71,10 +75,22 @@ public class ContactTracingEntryDAO {
                 .executeUpdate();
     }
 
+    public int pruneEntries(Date deletionDate) {
+        String query = new StringBuilder()
+                .append("delete from contactTracingRegistration as entry ")
+                .append("where entry.deletionDate < :deletionDate")
+                .toString();
+
+        return dbInstance.getCurrentEntityManager()
+                .createQuery(query)
+                .setParameter("deletionDate", deletionDate)
+                .executeUpdate();
+    }
+
     public long getRegistrationsCount(ContactTracingSearchParams searchParams) {
         QueryBuilder queryBuilder = new QueryBuilder();
 
-        queryBuilder.append("select count(entry) from contactTracingEntry entry");
+        queryBuilder.append("select count(entry) from contactTracingRegistration entry");
         if (searchParams.getLocation() != null) {
             queryBuilder.where().append("entry.location=:locationToCheck");
         }
@@ -99,10 +115,10 @@ public class ContactTracingEntryDAO {
         return query.getSingleResult();
     }
 
-    public List<ContactTracingEntry> getRegistrations(ContactTracingSearchParams searchParams) {
+    public List<ContactTracingRegistration> getRegistrations(ContactTracingSearchParams searchParams) {
         QueryBuilder queryBuilder = new QueryBuilder();
 
-        queryBuilder.append("select entry from contactTracingEntry entry");
+        queryBuilder.append("select entry from contactTracingRegistration entry");
         if (searchParams.getLocation() != null) {
             queryBuilder.where().append("entry.location=:locationToCheck");
         }
@@ -113,8 +129,8 @@ public class ContactTracingEntryDAO {
             queryBuilder.where().append("entry.endDate <= :end");
         }
 
-        TypedQuery<ContactTracingEntry> query = dbInstance.getCurrentEntityManager()
-                .createQuery(queryBuilder.toString(), ContactTracingEntry.class);
+        TypedQuery<ContactTracingRegistration> query = dbInstance.getCurrentEntityManager()
+                .createQuery(queryBuilder.toString(), ContactTracingRegistration.class);
         if (searchParams.getLocation() != null) {
             query.setParameter("locationToCheck", searchParams.getLocation());
         }
@@ -125,5 +141,17 @@ public class ContactTracingEntryDAO {
             query.setParameter("end", searchParams.getEndDate());
         }
         return query.getResultList();
+    }
+
+    public boolean anyRegistrationAvailable() {
+        String query = new StringBuilder()
+                .append("select count(entry) contactTracingRegistration entry")
+                .toString();
+
+        Long count = dbInstance.getCurrentEntityManager()
+                .createQuery(query, Long.class)
+                .getSingleResult();
+
+        return count != null && count > 0;
     }
 }

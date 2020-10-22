@@ -81,7 +81,7 @@ public class ContactTracingReportGeneratorStep2Controller extends StepFormBasicC
         columnModel.addFlexiColumnModel(registrationsColumn);
 
         // Table model
-        tableModel = new ContactTracingLocationTableModel(columnModel, contactTracingManager.getLocationsWithRegistrations(contextWrapper.getSearchParams()));
+        tableModel = new ContactTracingLocationTableModel(columnModel, contactTracingManager.getLocationsWithRegistrations(contextWrapper.getSearchParams()), getLocale());
 
         // Table element
         tableEl = uifactory.addTableElement(getWindowControl(), "locationsTable", tableModel, getTranslator(), formLayout);
@@ -91,13 +91,14 @@ public class ContactTracingReportGeneratorStep2Controller extends StepFormBasicC
         tableEl.setShowAllRowsEnabled(true);
         tableEl.setCustomizeColumns(false);
         tableEl.setEmtpyTableMessageKey("contact.tracing.location.table.empty");
+        tableEl.setAndLoadPersistedPreferences(ureq, ContactTracingReportGeneratorStep2Controller.class.getCanonicalName());
     }
 
     @Override
     protected boolean validateFormLogic(UserRequest ureq) {
         boolean allOk = super.validateFormLogic(ureq);
 
-        if (tableModel.getObjects().size() > 0 && tableEl.getMultiSelectedIndex().size() == 0) {
+        if (tableModel.getObjects() != null && tableModel.getObjects().size() > 0 && tableEl.getMultiSelectedIndex().size() == 0) {
             allOk = false;
             showWarning("contact.tracing.report.empty.table");
         }

@@ -19,10 +19,8 @@
  */
 package org.olat.modules.contacttracing.ui;
 
-import java.util.Date;
 import java.util.List;
 
-import org.olat.modules.contacttracing.ContactTracingEntry;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
 

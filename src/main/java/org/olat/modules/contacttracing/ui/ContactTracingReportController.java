@@ -48,9 +48,9 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
-import org.olat.modules.contacttracing.ContactTracingEntry;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
+import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
 import org.olat.user.UserPropertiesConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -200,7 +200,7 @@ public class ContactTracingReportController extends FormBasicController {
         @Override
         public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
             ContactTracingReportGeneratorContextWrapper contextWrapper = (ContactTracingReportGeneratorContextWrapper) runContext.get("data");
-            Map<ContactTracingLocation, List<ContactTracingEntry>> locationEntryMap = contextWrapper.getLocations()
+            Map<ContactTracingLocation, List<ContactTracingRegistration>> locationEntryMap = contextWrapper.getLocations()
                     .stream().collect(Collectors.toMap(location -> location, location -> new ArrayList<>()));
 
             // If no locations provided, don't go on
@@ -277,8 +277,8 @@ public class ContactTracingReportController extends FormBasicController {
         return columns;
     }
 
-    protected void createData(List<String> columns, List<ContactTracingEntry> entries, OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
-        for (ContactTracingEntry entry : entries) {
+    protected void createData(List<String> columns, List<ContactTracingRegistration> entries, OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
+        for (ContactTracingRegistration entry : entries) {
             // Create new row
             Row dataRow = sheet.newRow();
 
@@ -294,7 +294,7 @@ public class ContactTracingReportController extends FormBasicController {
         }
     }
 
-    protected Object getData(String column, ContactTracingEntry entry) {
+    protected Object getData(String column, ContactTracingRegistration entry) {
         switch (column) {
             case "startTime":
                 return entry.getStartDate();

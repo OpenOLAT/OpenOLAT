@@ -85,7 +85,7 @@ public class ContactTracingLocationListController extends FormBasicController {
     private PdfService pdfService;
 
     public ContactTracingLocationListController(UserRequest ureq, WindowControl wControl) {
-        super(ureq, wControl, "contact_tracing_locations");
+        super(ureq, wControl, "contact_tracing_location_list");
 
         initForm(ureq);
     }
@@ -124,7 +124,7 @@ public class ContactTracingLocationListController extends FormBasicController {
         columnModel.addFlexiColumnModel(actionsColumn);
 
         // Table model
-        tableModel = new ContactTracingLocationTableModel(columnModel, contactTracingManager.getLocationsWithRegistrations());
+        tableModel = new ContactTracingLocationTableModel(columnModel, contactTracingManager.getLocationsWithRegistrations(), getLocale());
 
         // Table element
         tableEl = uifactory.addTableElement(getWindowControl(), "locationsTable", tableModel, getTranslator(), formLayout);
@@ -135,6 +135,7 @@ public class ContactTracingLocationListController extends FormBasicController {
         tableEl.setSelectAllEnable(true);
         tableEl.setShowAllRowsEnabled(true);
         tableEl.setEmtpyTableMessageKey("contact.tracing.location.table.empty");
+        tableEl.setAndLoadPersistedPreferences(ureq, ContactTracingLocationListController.class.getCanonicalName());
 
         // Create link to add a new location
         addLocationLink = uifactory.addFormLink("createNewLocation", "contact.tracing.location.add", null, formLayout, Link.BUTTON);
@@ -170,9 +171,7 @@ public class ContactTracingLocationListController extends FormBasicController {
             tableEl.getMultiSelectedIndex().forEach(index -> generatePDFLocations.add(tableModel.getObject(index)));
 
             // Generate QR code PDF
-            if (generatePDFLocations.size() > 0) {
-                generateQrCodePDF(ureq, generatePDFLocations);
-            }
+            generateQrCodePDF(ureq, generatePDFLocations);
         } else if (source == deleteSelectedLocationsLink) {
             // Get selected locations
             List<ContactTracingLocation> deleteList = new ArrayList<>();
@@ -289,6 +288,10 @@ public class ContactTracingLocationListController extends FormBasicController {
     }
 
     private void generateQrCodePDF(UserRequest ureq, List<ContactTracingLocation> locations) {
+        if (locations == null || locations.isEmpty()) {
+            showWarning("contact.tracing.location.qr.selection.empty.warning");
+            return;
+        }
         MediaResource pdf = pdfService.convert("Contact Tracing Locations.pdf", getIdentity(), new ContactTracingPDFControllerCreator(locations), getWindowControl());
         ureq.getDispatchResult().setResultingMediaResource(pdf);
     }

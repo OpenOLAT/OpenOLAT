@@ -53,6 +53,17 @@ public interface ContactTracingLocation extends Persistable, CreateInfo, Modifie
     public void setTitle(String title);
 
     /**
+     * @return Building of location
+     */
+    public String getBuilding();
+
+    /**
+     * Set the building of this location
+     * @param buildiung
+     */
+    public void setBuilding(String buildiung);
+
+    /**
      * @return Room of location
      */
     public String getRoom();
@@ -64,15 +75,28 @@ public interface ContactTracingLocation extends Persistable, CreateInfo, Modifie
     public void setRoom(String room);
 
     /**
-     * @return Building of location
+     * Used to divide a room in sectors
+     * @return Sector
      */
-    public String getBuilding();
+    public String getSector();
 
     /**
-     * Set the building of this location
-     * @param buildiung
+     * Set sector of a location
+     * @param sector
      */
-    public void setBuildiung(String buildiung);
+    public void setSector(String sector);
+
+    /**
+     * Used to divide sectors in tables
+     * @return Table
+     */
+    public String getTable();
+
+    /**
+     * Set table of a location
+     * @param table
+     */
+    public void setTable(String table);
 
     /**
      * Used as a part of the URL
@@ -108,4 +132,17 @@ public interface ContactTracingLocation extends Persistable, CreateInfo, Modifie
      * @param accessibleByGuests
      */
     public void setAccessibleByGuests(boolean accessibleByGuests);
+
+    /**
+     * Get whether this location has already been printed
+     * Used to warn the user making changes to the URL of a location which is already printed
+     * @return Already printed
+     */
+    public boolean isAlreadyPrinted();
+
+    /**
+     * Set whether this location has already been printed
+     * @param alreadyPrinted
+     */
+    public void setAlreadyPrinted(boolean alreadyPrinted);
 }

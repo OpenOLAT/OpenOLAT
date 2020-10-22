@@ -20,6 +20,7 @@
 package org.olat.modules.contacttracing.ui;
 
 import java.util.Collections;
+import java.util.Random;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -36,9 +37,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.TranslatorHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.contacttracing.ContactTracingDispatcher;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
+import org.olat.modules.contacttracing.model.ContactTracingLocationImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -51,7 +54,6 @@ public class ContactTracingLocationEditController extends FormBasicController {
 
     private static final String[] ON_KEYS = new String[]{"on"};
     private static final String[] GUEST_VALUES = new String[]{"contact.tracing.location.allowed"};
-    private static final String[] QR_ID_VALUES = new String[]{"contact.tracing.location.custom.qr.id"};
     private static final String[] QR_TEXT_VALUES = new String[]{"contact.tracing.location.custom.qr.text"};
 
     private ContactTracingLocation location;
@@ -59,14 +61,17 @@ public class ContactTracingLocationEditController extends FormBasicController {
 
     private TextElement referenceEl;
     private TextElement titleEl;
-    private TextElement roomEl;
     private TextElement buildingEl;
+    private TextElement roomEl;
+    private TextElement sectorEl;
+    private TextElement tableEl;
     private TextElement qrIdEl;
     private RichTextElement qrTextEl;
-    private MultipleSelectionElement customQrIdEl;
     private MultipleSelectionElement customQrTextEl;
     private MultipleSelectionElement guestsAllowedEl;
     private FormLink generatePdfPreviewLink;
+    private FormLink generateNumericIdentifierLink;
+    private FormLink generateHumanReadableIdentifierLink;
 
     private ContactTracingPDFController pdfController;
 
@@ -91,30 +96,25 @@ public class ContactTracingLocationEditController extends FormBasicController {
         formLayout.add(editForm);
 
         // Add input fields
-        // TODO Better solution for the ONCHANGE event?
         referenceEl = uifactory.addTextElement("contact.tracing.cols.reference", 255, null, editForm);
-        referenceEl.setNotEmptyCheck("contact.tracing.required");
-        referenceEl.addActionListener(FormEvent.ONCHANGE);
-        referenceEl.setMandatory(true);
         titleEl = uifactory.addTextElement("contact.tracing.cols.title", 255, null, editForm);
-        titleEl.setNotEmptyCheck("contact.tracing.required");
-        titleEl.addActionListener(FormEvent.ONCHANGE);
-        titleEl.setMandatory(true);
-        roomEl = uifactory.addTextElement("contact.tracing.cols.room", 255, null, editForm);
-        roomEl.setNotEmptyCheck("contact.tracing.required");
-        roomEl.addActionListener(FormEvent.ONCHANGE);
-        roomEl.setMandatory(true);
         buildingEl = uifactory.addTextElement("contact.tracing.cols.building", 255, null, editForm);
-        buildingEl.setNotEmptyCheck("contact.tracing.required");
-        buildingEl.addActionListener(FormEvent.ONCHANGE);
-        buildingEl.setMandatory(true);
-        customQrIdEl = uifactory.addCheckboxesHorizontal("contact.tracing.cols.qr.id", editForm, ON_KEYS, TranslatorHelper.translateAll(getTranslator(), QR_ID_VALUES));
-        customQrIdEl.addActionListener(FormEvent.ONCHANGE);
-        qrIdEl = uifactory.addTextElement("qr.id.element", null, 255, null, editForm);
+        roomEl = uifactory.addTextElement("contact.tracing.cols.room", 255, null, editForm);
+        sectorEl = uifactory.addTextElement("contact.tracing.cols.sector", 255, null, editForm);
+        tableEl = uifactory.addTextElement("contact.tracing.cols.table", 255, null, editForm);
+
+        qrIdEl = uifactory.addTextElement("contact.tracing.cols.qr.id", 255, null, editForm);
         qrIdEl.setNotEmptyCheck("contact.tracing.required");
         qrIdEl.setExampleKey("noTransOnlyParam", new String[]{""});
         qrIdEl.addActionListener(FormEvent.ONCHANGE);
         qrIdEl.setMandatory(true);
+        FormLayoutContainer qrCodeButtons = FormLayoutContainer.createButtonLayout("qrCodeButtons", getTranslator());
+        qrCodeButtons.setRootForm(mainForm);
+        editForm.add(qrCodeButtons);
+        generateNumericIdentifierLink = uifactory.addFormLink("contact.tracing.location.edit.generate.numeric.identifier", qrCodeButtons, Link.BUTTON);
+        generateHumanReadableIdentifierLink = uifactory.addFormLink("contact.tracing.location.edit.generate.human.readable.identifier", qrCodeButtons, Link.BUTTON);
+
+
         customQrTextEl = uifactory.addCheckboxesHorizontal("contact.tracing.cols.qr.text", editForm, ON_KEYS, TranslatorHelper.translateAll(getTranslator(), QR_TEXT_VALUES));
         customQrTextEl.addActionListener(FormEvent.ONCHANGE);
         qrTextEl = uifactory.addRichTextElementForStringDataCompact("qr.text.element", null, null, -1, -1, null, editForm, ureq.getUserSession(), getWindowControl());
@@ -136,103 +136,145 @@ public class ContactTracingLocationEditController extends FormBasicController {
         if (location != null) {
             referenceEl.setValue(location.getReference());
             titleEl.setValue(location.getTitle());
-            roomEl.setValue(location.getRoom());
             buildingEl.setValue(location.getBuilding());
+            roomEl.setValue(location.getRoom());
+            sectorEl.setValue(location.getSector());
+            tableEl.setValue(location.getTable());
             guestsAllowedEl.select(ON_KEYS[0], location.isAccessibleByGuests());
             qrIdEl.setValue(location.getQrId());
             qrTextEl.setValue(location.getQrText());
 
-            // Check whether QR ID is custom
-            if (location.getQrId().equals(generateQrId())) {
-                qrIdEl.setVisible(false);
-                customQrIdEl.select(ON_KEYS[0], false);
-            } else{
-                qrIdEl.setVisible(true);
-                customQrIdEl.select(ON_KEYS[0], true);
-            }
-
             // Check whether custom Qr text exists
-            if (location.getQrText() != null) {
+            if (StringHelper.containsNonWhitespace(location.getQrText())) {
                 qrTextEl.setVisible(true);
                 customQrTextEl.select(ON_KEYS[0], true);
             } else {
+                qrTextEl.setVisible(false);
                 customQrTextEl.select(ON_KEYS[0], false);
             }
 
         } else {
-            qrIdEl.setVisible(false);
             qrTextEl.setVisible(false);
+            generateNumericQrID();
         }
     }
 
     @Override
     protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-        if (source == customQrIdEl) {
-            if (customQrIdEl.isSelected(0)) {
-                qrIdEl.setVisible(true);
-            } else {
-                qrIdEl.setVisible(false);
-                generateQrId();
-                updatePdfPreview(ureq);
-            }
-        } else if (source == qrIdEl) {
-            qrIdExists(qrIdEl.getValue());
+        if (source == generateNumericIdentifierLink) {
+            generateNumericQrID();
             updatePdfPreview(ureq);
-        } else if (source == customQrTextEl) {
-            qrTextEl.setVisible(customQrTextEl.isSelected(0));
-            updatePdfPreview(ureq);
-        } else if (source == qrTextEl) {
+        } else if (source == generateHumanReadableIdentifierLink) {
+            generateHumanReadableID();
             updatePdfPreview(ureq);
         } else if (source == generatePdfPreviewLink) {
             generatePdfPreview(ureq);
-        } else if (!customQrIdEl.isSelected(0)) {
-            // Generate QR ID automatically
-            generateQrId();
-            updatePdfPreview(ureq);
         }
     }
 
     private void generatePdfPreview(UserRequest ureq) {
         if (validateFormLogic(ureq)) {
-            location = saveLocation();
-            pdfController = new ContactTracingPDFController(ureq, getWindowControl(), Collections.singletonList(location));
+            ContactTracingLocation previewlocation = generatePdfPreviewLocation();
+            pdfController = new ContactTracingPDFController(ureq, getWindowControl(), Collections.singletonList(previewlocation));
             flc.put("pdfPreview", pdfController.getInitialComponent());
             generatePdfPreviewLink.setI18nKey("contact.tracing.location.pdf.preview.update");
         }
     }
 
     private void updatePdfPreview(UserRequest ureq) {
-        if (location != null && pdfController != null) {
+        if (pdfController != null) {
             generatePdfPreview(ureq);
         }
     }
 
-    private String generateQrId() {
-        String qrId = new StringBuilder()
-                .append(buildingEl.getValue())
-                .append("-")
-                .append(roomEl.getValue())
-                .toString()
-                .replaceAll("\\s+","");
+    private ContactTracingLocation generatePdfPreviewLocation() {
+        // This location is never persisted
+        ContactTracingLocation previewLocation = new ContactTracingLocationImpl();
 
-        return qrIdExists(qrId) ? "error" : qrId;
+        previewLocation.setReference(referenceEl.getValue());
+        previewLocation.setTitle(titleEl.getValue());
+        previewLocation.setBuilding(buildingEl.getValue());
+        previewLocation.setRoom(roomEl.getValue());
+        previewLocation.setSector(sectorEl.getValue());
+        previewLocation.setTable(tableEl.getValue());
+        previewLocation.setQrId(qrIdEl.getValue());
+        previewLocation.setQrText(StringHelper.containsNonWhitespace(qrTextEl.getValue()) ? qrTextEl.getValue() : null);
+        previewLocation.setAccessibleByGuests(guestsAllowedEl.isSelected(0));
+
+        return previewLocation;
     }
 
-    private boolean qrIdExists(String qrId) {
-        qrIdEl.setValue(qrId);
-        qrIdEl.setExampleKey("noTransOnlyParam", new String[]{ContactTracingDispatcher.getMeetingUrl(qrId)});
+    private void generateNumericQrID() {
+        Random generator = new Random();
+        String qrId;
 
-        if(contactTracingManager.qrIdExists(qrId)) {
-            // Check whether it is the QR ID of the current location
-            if (!(location != null && location.getQrId().equals(qrId))) {
-                customQrIdEl.select(ON_KEYS[0], true);
-                qrIdEl.setVisible(true);
-                qrIdEl.setErrorKey("contact.tracing.location.qr.id.exists", null);
+        do {
+            qrId = String.valueOf(generator.nextInt(80000) + 10000);
+        } while (qrIdExists(qrId, true));
+    }
 
-                return true;
+    private void generateHumanReadableID() {
+        // Try with reference
+        if (qrIdExists(referenceEl.getValue(), true)) {
+            StringBuilder qrIdBuilder = new StringBuilder();
+
+            // Try with building-room-sector-table
+            qrIdBuilder.append(transformStringToIdentifier(buildingEl.getValue()))
+                    .append(buildingEl.getValue().length() > 0 ? "-" : "")
+                    .append(transformStringToIdentifier(roomEl.getValue()))
+                    .append(roomEl.getValue().length() > 0 ? "-" : "")
+                    .append(transformStringToIdentifier(sectorEl.getValue()))
+                    .append(sectorEl.getValue().length() > 0 ? "-" : "")
+                    .append(transformStringToIdentifier(tableEl.getValue()));
+
+            // Replace last _ if existing
+            String qrId = qrIdBuilder.toString();
+            if (qrId.endsWith("-")) {
+                qrId = qrId.substring(0, qrId.length() - 1);
+            }
+
+            if (qrIdExists(qrId, true)) {
+                // Try with table
+                if (qrIdExists(transformStringToIdentifier(titleEl.getValue()), true)) {
+                    showWarning("contact.tracing.location.edit.generate.human.readable.error");
+                }
             }
         }
-        qrIdEl.clearError();
+    }
+
+    private String transformStringToIdentifier(String identifier) {
+        if (!StringHelper.containsNonWhitespace(identifier)) {
+            return "";
+        }
+
+        identifier = StringHelper.transformDisplayNameToFileSystemName(identifier);
+        if (identifier.equals("_")) {
+            return "";
+        }
+
+        return identifier;
+    }
+
+    private boolean qrIdExists(String qrId, boolean checkGeneratedId) {
+        // Return true if an empty qrId was provided
+        if (!StringHelper.containsNonWhitespace(qrId) && checkGeneratedId) {
+            return true;
+        }
+        // Check if qrIdEl is empty
+        if (validateFormItem(qrIdEl) || checkGeneratedId) {
+            if (contactTracingManager.qrIdExists(qrId)) {
+                // Check whether it is the QR ID of the current location
+                if (!(location != null && location.getQrId().equals(qrId))) {
+                    qrIdEl.setErrorKey("contact.tracing.location.qr.id.exists", null);
+                    return true;
+                }
+            }
+            // If qrId is not used yet
+            qrIdEl.setValue(qrId);
+            qrIdEl.setExampleKey("noTransOnlyParam", new String[]{ContactTracingDispatcher.getMeetingUrl(qrId)});
+        }
+
+        validateFormItem(qrIdEl);
         return false;
     }
 
@@ -247,7 +289,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
         allOk &= validateFormItem(qrIdEl);
         allOk &= validateFormItem(qrTextEl);
 
-        allOk &= !qrIdExists(qrIdEl.getValue());
+        allOk &= !qrIdExists(qrIdEl.getValue(), false);
 
         return allOk;
     }
@@ -265,18 +307,22 @@ public class ContactTracingLocationEditController extends FormBasicController {
             return contactTracingManager.createLocation(
                     referenceEl.getValue(),
                     titleEl.getValue(),
-                    roomEl.getValue(),
                     buildingEl.getValue(),
+                    roomEl.getValue(),
+                    sectorEl.getValue(),
+                    tableEl.getValue(),
                     qrIdEl.getValue(),
-                    qrTextEl.getValue(),
+                    StringHelper.containsNonWhitespace(qrTextEl.getValue()) ? qrTextEl.getValue() : null,
                     guestsAllowedEl.isSelected(0));
         } else {
             location.setReference(referenceEl.getValue());
             location.setTitle(titleEl.getValue());
+            location.setBuilding(buildingEl.getValue());
             location.setRoom(roomEl.getValue());
-            location.setBuildiung(buildingEl.getValue());
+            location.setSector(sectorEl.getValue());
+            location.setTable(tableEl.getValue());
             location.setQrId(qrIdEl.getValue());
-            location.setQrText(qrTextEl.getValue());
+            location.setQrText(StringHelper.containsNonWhitespace(qrTextEl.getValue()) ? qrTextEl.getValue() : null);
             location.setAccessibleByGuests(guestsAllowedEl.isSelected(0));
 
             return contactTracingManager.updateLocation(location);

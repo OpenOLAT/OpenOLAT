@@ -3176,51 +3176,54 @@ create table o_ap_participation (
 
 -- Organiation role rights
 create table o_org_role_to_right (
-    id bigint not null auto_increment,
-    creationdate datetime not null,
-    o_role varchar(255) not null,
-    o_right varchar(255) not null,
-    fk_organisation bigint not null,
-    primary key (id)
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   o_role varchar(255) not null,
+   o_right varchar(255) not null,
+   fk_organisation bigint not null,
+   primary key (id)
 );
 
 -- Contact tracing
-create table o_contact_tracing_location (
-    id bigint not null auto_increment,
-    creationdate datetime not null,
-    lastmodified datetime not null,
-    l_reference varchar(255) not null,
-    l_titel varchar(255) not null,
-    l_room varchar(255) not null,
-    l_building varchar(255) not null,
-    l_qr_id varchar(255) not null,
-    l_qr_text varchar(4000),
-    l_guests boolean not null,
-    unique(l_qr_id),
-    primary key (id)
+create table o_ct_location (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   l_reference varchar(255),
+   l_titel varchar(255),
+   l_room varchar(255),
+   l_sector varchar(255),
+   l_table varchar(255),
+   l_building varchar(255),
+   l_qr_id varchar(255) not null,
+   l_qr_text varchar(4000),
+   l_guests boolean default true not null,
+   l_printed boolean default false not null,
+   unique(l_qr_id),
+   primary key (id)
 );
 
-create table o_contact_tracing_entry (
-    id bigint not null auto_increment,
-    creationdate datetime not null,
-    l_deletion_date datetime not null,
-    l_start_date datetime not null,
-    l_end_date datetime,
-    l_nick_name varchar(255),
-    l_first_name varchar(255),
-    l_last_name varchar(255),
-    l_street varchar(255),
-    l_extra_line varchar(255),
-    l_zip_code varchar(255),
-    l_city varchar(255),
-    l_email varchar(255),
-    l_institutional_email varchar(255),
-    l_generic_email varchar(255),
-    l_private_phone varchar(255),
-    l_mobile_phone varchar(255),
-    l_office_phone varchar(255),
-    fk_location bigint not null,
-    primary key (id)
+create table o_ct_registration (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   l_deletion_date datetime not null,
+   l_start_date datetime not null,
+   l_end_date datetime,
+   l_nick_name varchar(255),
+   l_first_name varchar(255),
+   l_last_name varchar(255),
+   l_street varchar(255),
+   l_extra_line varchar(255),
+   l_zip_code varchar(255),
+   l_city varchar(255),
+   l_email varchar(255),
+   l_institutional_email varchar(255),
+   l_generic_email varchar(255),
+   l_private_phone varchar(255),
+   l_mobile_phone varchar(255),
+   l_office_phone varchar(255),
+   fk_location bigint not null,
+   primary key (id)
 );
 
 -- user view
@@ -3570,8 +3573,8 @@ alter table o_ap_organizer ENGINE = InnoDB;
 alter table o_ap_topic_to_group ENGINE = InnoDB;
 alter table o_ap_appointment ENGINE = InnoDB;
 alter table o_ap_participation ENGINE = InnoDB;
-alter table o_contact_tracing_location ENGINE = InnoDB;
-alter table o_contact_tracing_entry ENGINE = InnoDB;
+alter table o_ct_location ENGINE = InnoDB;
+alter table o_ct_registration ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -4300,6 +4303,10 @@ alter table o_ap_participation add constraint ap_part_identity_idx foreign key (
 -- Organiation role rights
 alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right (fk_organisation);
+
+-- Contact tracing
+alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
+create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
 
 insert into hibernate_unique_key values ( 0 );
 SET FOREIGN_KEY_CHECKS = 1;

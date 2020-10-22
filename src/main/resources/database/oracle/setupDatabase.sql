@@ -3256,51 +3256,54 @@ create table o_ap_participation (
 
 -- Organiation role rights
 create table o_org_role_to_right (
-    id number(20) generated always as identity,
-    creationdate date not null,
-    o_role varchar(255) not null,
-    o_right varchar(255) not null,
-    fk_organisation number(20) not null,
-    primary key (id)
+   id number(20) generated always as identity,
+   creationdate date not null,
+   o_role varchar(255) not null,
+   o_right varchar(255) not null,
+   fk_organisation number(20) not null,
+   primary key (id)
 );
 
 -- Contact tracing
-create table o_contact_tracing_location (
-    id number(20) generated  always as identity,
-    creationdate date not null,
-    lastmodified date not null,
-    l_reference varchar2(255) not null,
-    l_titel varchar2(255) not null,
-    l_room varchar2(255) not null,
-    l_building varchar2(255) not null,
-    l_qr_id varchar2(255) not null,
-    l_qr_text varchar2(4000),
-    l_guests number not null,
-    unique(l_qr_id),
-    primary key (id)
+create table o_ct_location (
+   id number(20) generated  always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   l_reference varchar2(255),
+   l_titel varchar2(255),
+   l_room varchar2(255),
+   l_building varchar2(255),
+   l_sector varchar2(255),
+   l_table varchar2(255),
+   l_qr_id varchar2(255) not null,
+   l_qr_text varchar2(4000),
+   l_guests number default 1 not null,
+   l_printed number default 0 not null,
+   unique(l_qr_id),
+   primary key (id)
 );
 
-create table o_contact_tracing_entry (
-    id number(20) generated  always as identity,
-    creationdate date not null,
-    l_deletion_date date not null,
-    l_start_date date not null,
-    l_end_date date,
-    l_nick_name varchar2(255),
-    l_first_name varchar2(255),
-    l_last_name varchar2(255),
-    l_street varchar2(255),
-    l_extra_line varchar2(255),
-    l_zip_code varchar2(255),
-    l_city varchar2(255),
-    l_email varchar2(255),
-    l_institutional_email varchar2(255),
-    l_generic_email varchar2(255),
-    l_private_phone varchar2(255),
-    l_mobile_phone varchar2(255),
-    l_office_phone varchar2(255),
-    fk_location number(20) not null,
-    primary key (id)
+create table o_ct_registration (
+   id number(20) generated  always as identity,
+   creationdate date not null,
+   l_deletion_date date not null,
+   l_start_date date not null,
+   l_end_date date,
+   l_nick_name varchar2(255),
+   l_first_name varchar2(255),
+   l_last_name varchar2(255),
+   l_street varchar2(255),
+   l_extra_line varchar2(255),
+   l_zip_code varchar2(255),
+   l_city varchar2(255),
+   l_email varchar2(255),
+   l_institutional_email varchar2(255),
+   l_generic_email varchar2(255),
+   l_private_phone varchar2(255),
+   l_mobile_phone varchar2(255),
+   l_office_phone varchar2(255),
+   fk_location number(20) not null,
+   primary key (id)
 );
 
 
@@ -4505,6 +4508,10 @@ insert into hibernate_unique_key values ( 0 );
 -- Organiation role rights
 alter table o_org_role_to_right add constraint org_role_to_right_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_org_role_to_r_to_org_idx on o_org_role_to_right(fk_organisation);
+
+-- Contact tracing
+alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
+create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
 
 
 commit

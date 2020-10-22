@@ -104,23 +104,26 @@ alter table o_lecture_reason add column l_enabled bool default true not null;
 alter table o_lecture_absence_category add column l_enabled bool default true not null;
 
 -- Contact tracing
-create table o_contact_tracing_location (
+create table o_ct_location (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
-   l_reference varchar(255) not null,
-   l_titel varchar(255) not null,
-   l_room varchar(255) not null,
-   l_building varchar(255) not null,
+   l_reference varchar(255),
+   l_titel varchar(255),
+   l_building varchar(255),
+   l_room varchar(255),
+   l_sector varchar(255),
+   l_table varchar(255),
    l_qr_id varchar(255) not null,
    l_qr_text varchar(4000),
-   l_guests boolean not null,
+   l_guests boolean default true not null,
+   l_printed boolean default false not null,
    unique(l_qr_id),
    primary key (id)
 );
-alter table o_contact_tracing_location ENGINE = InnoDB;
+alter table o_ct_location ENGINE = InnoDB;
 
-create table o_contact_tracing_entry (
+create table o_ct_registration (
    id bigint not null auto_increment,
    creationdate datetime not null,
    l_deletion_date datetime not null,
@@ -139,7 +142,10 @@ create table o_contact_tracing_entry (
    l_private_phone varchar(255),
    l_mobile_phone varchar(255),
    l_office_phone varchar(255),
-   fk_location int8 not null,
+   fk_location bigint not null,
    primary key (id)
 );
-alter table o_contact_tracing_entry ENGINE = InnoDB;
+alter table o_ct_registration ENGINE = InnoDB;
+
+alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
+create index idx_reg_to_loc_idx on o_ct_registration (fk_location);

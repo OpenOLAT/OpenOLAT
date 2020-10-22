@@ -48,6 +48,7 @@ import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
+import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ContactTracingModule;
 import org.olat.modules.contacttracing.ContactTracingModule.AttributeState;
 import org.olat.user.UserPropertiesConfig;
@@ -75,8 +76,8 @@ public class ContactTracingConfigurationController extends FormBasicController {
     private MultipleSelectionElement enabledEl;
     private TextElement retentionPeriodEl;
     private TextElement defaultDurationEl;
+    private FormLink triggerCleanUpLink;
 
-    private StaticTextElement startTimeEl;
     private SingleSelection endTimeEl;
     private SingleSelection nickNameEl;
     private SingleSelection firstNameEl;
@@ -113,6 +114,8 @@ public class ContactTracingConfigurationController extends FormBasicController {
 
     @Autowired
     private ContactTracingModule contactTracingModule;
+    @Autowired
+    private ContactTracingManager contactTracingManager;
     @Autowired
     private UserPropertiesConfig userPropertiesConfig;
     @Autowired
@@ -162,6 +165,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
         // Retention period
         retentionPeriodEl = uifactory.addTextElement("contact.tracing.retention.period", 3, null, generalConfig);
         retentionPeriodEl.setMandatory(true);
+        triggerCleanUpLink = uifactory.addFormLink("contact.tracing.trigger.cleanup", "contact.tracing.trigger.cleanup", null, generalConfig, Link.BUTTON);
         // Default stay duration
         defaultDurationEl = uifactory.addTextElement("contact.tracing.duration.default", 3, null, generalConfig);
         defaultDurationEl.setMandatory(true);
@@ -172,8 +176,8 @@ public class ContactTracingConfigurationController extends FormBasicController {
         questionnaireConfig.setFormTitle(translate("contact.tracing.questionnaire.title"));
         formLayout.add("questionnaireConfig", questionnaireConfig);
 
-        // Start tim
-        startTimeEl = uifactory.addStaticTextElement("contact.tracing.start.time", translate(contactTracingModule.getAttendanceStartTimeState()), questionnaireConfig);
+        // Start time
+        uifactory.addStaticTextElement("contact.tracing.start.time", translate(contactTracingModule.getAttendanceStartTimeState()), questionnaireConfig);
         // End time
         endTimeEl = uifactory.addDropdownSingleselect("contact.tracing.end.time", questionnaireConfig, STATE_KEYS, STATE_VALUES);
         // Nick name
@@ -293,6 +297,10 @@ public class ContactTracingConfigurationController extends FormBasicController {
             listenTo(confirmResetQRCodeInstructionsController);
             listenTo(cmc);
             cmc.activate();
+        } else if (source == triggerCleanUpLink) {
+            if (validatePeriod(retentionPeriodEl, 0, 365, translate("days"))) {
+                contactTracingManager.pruneRegistrations(Integer.parseInt(retentionPeriodEl.getValue()));
+            }
         }
 
         super.formInnerEvent(ureq, source, event);
@@ -329,7 +337,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
             cleanUp();
         } else if (source == confirmResetQRCodeInstructionsController) {
             if (event == FormEvent.DONE_EVENT) {
-                // TODO Reset QR CODE
+                contactTracingModule.setQrCodeInstructions(null);
                 loadData();
             }
 
@@ -343,7 +351,8 @@ public class ContactTracingConfigurationController extends FormBasicController {
     protected boolean validateFormLogic(UserRequest ureq) {
         boolean allOk = super.validateFormLogic(ureq);;
 
-        allOk &= validateRetentionPeriod(retentionPeriodEl, 1, 365);
+        allOk &= validatePeriod(retentionPeriodEl, 1, 365, translate("days"));
+        allOk &= validatePeriod(defaultDurationEl, 1, 300, translate("minutes"));
 
         return allOk;
     }
@@ -465,11 +474,13 @@ public class ContactTracingConfigurationController extends FormBasicController {
     private void initVelocityContainers() {
         if (contactTracingModule.isEnabled()) {
             retentionPeriodEl.setVisible(true);
+            triggerCleanUpLink.setVisible(true);
             defaultDurationEl.setVisible(true);
             questionnaireConfig.setVisible(true);
             messagesConfig.setVisible(true);
         } else {
             retentionPeriodEl.setVisible(false);
+            triggerCleanUpLink.setVisible(false);
             defaultDurationEl.setVisible(false);
             questionnaireConfig.setVisible(false);
             messagesConfig.setVisible(false);
@@ -488,7 +499,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
         }
     }
 
-    private boolean validateRetentionPeriod(TextElement el, int lowest, int highest) {
+    private boolean validatePeriod(TextElement el, int lowest, int highest, String unit) {
         el.clearError();
         boolean allOk = validateFormItem(el);
         if(el.isEnabled() && el.isVisible()) {
@@ -497,11 +508,11 @@ public class ContactTracingConfigurationController extends FormBasicController {
                 try {
                     int number = Integer.parseInt(val);
                     if (number < lowest || number > highest) {
-                        el.setErrorKey("contact.tracing.form.error.wrong.retention.period", new String[]{String.valueOf(lowest), String.valueOf(highest)});
+                        el.setErrorKey("contact.tracing.form.error.wrong.period", new String[]{String.valueOf(lowest), String.valueOf(highest), unit});
                         allOk = false;
                     }
                 } catch (NumberFormatException e) {
-                    el.setErrorKey("contact.tracing.form.error.wrong.retention.period", null);
+                    el.setErrorKey("contact.tracing.form.error.wrong.period", new String[]{String.valueOf(lowest), String.valueOf(highest), unit});
                     allOk = false;
                 }
             } else if (el.isMandatory()) {

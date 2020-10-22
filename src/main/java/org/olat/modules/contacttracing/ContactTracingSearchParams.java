@@ -31,6 +31,12 @@ public class ContactTracingSearchParams {
     private ContactTracingLocation location;
 
     private String fullTextSearch;
+    private String reference;
+    private String title;
+    private String building;
+    private String room;
+    private String sector;
+    private String table;
     private Date startDate;
     private Date endDate;
 
@@ -48,6 +54,54 @@ public class ContactTracingSearchParams {
 
     public void setFullTextSearch(String fullTextSearch) {
         this.fullTextSearch =fullTextSearch;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getBuilding() {
+        return building;
+    }
+
+    public void setBuilding(String building) {
+        this.building = building;
+    }
+
+    public String getRoom() {
+        return room;
+    }
+
+    public void setRoom(String room) {
+        this.room = room;
+    }
+
+    public String getSector() {
+        return sector;
+    }
+
+    public void setSector(String sector) {
+        this.sector = sector;
+    }
+
+    public String getTable() {
+        return table;
+    }
+
+    public void setTable(String table) {
+        this.table = table;
     }
 
     public Date getStartDate() {
@@ -71,6 +125,15 @@ public class ContactTracingSearchParams {
      * @return Boolean
      */
     public boolean isEmpty() {
-        return location == null && fullTextSearch == null && startDate == null && endDate == null;
+        return location == null &&
+                fullTextSearch == null &&
+                startDate == null &&
+                endDate == null &&
+                reference == null &&
+                title == null &&
+                building == null &&
+                room == null &&
+                sector == null &&
+                table == null;
     }
 }

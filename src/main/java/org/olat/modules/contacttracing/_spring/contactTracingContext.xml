@@ -3,7 +3,8 @@
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans
   http://www.springframework.org/schema/beans/spring-beans.xsd">
-  
+
+	<!-- Admin menu entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7210" />
 		<property name="actionController">	
@@ -21,6 +22,38 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
+	</bean>
+
+	<!-- Contact tracing job -->
+	<bean id="contactTracingTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="contactTracingJob.${cluster.singleton.services}" />
+		<!-- adjust cron style syntax for your notification needs
+         "0 10 0 * *"  e.g. 10 minutes after midnight
+
+         A "Cron-Expression" is a string comprised of 6 or 7 fields separated by white space. The 6 mandatory and 1 optional fields are as follows:
+          Field Name 	  	Allowed Values 	  	Allowed Special Characters
+          Seconds 	  	0-59 	  			, - * /
+          Minutes 	  	0-59 	  			, - * /
+          Hours 	  		0-23 	  			, - * /
+          Day-of-month 	1-31 	  			, - * ? / L W C
+          Month 	  		1-12 or JAN-DEC 	, - * /
+          Day-of-Week 	1-7 or SUN-SAT 	  	, - * ? / L C #
+          Year (Optional)	empty, 1970-2099 	, - * /
+         -->
+		<!--
+     <property name="cronExpression" value="15 34 */1 * * ?" />
+     -->
+		<property name="cronExpression" value="0 0 4 * * ?" />
+		<property name="startDelay" value="40000" />
+	</bean>
+
+	<bean id="contactTracingJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.modules.contacttracing.manager.ContactTracingJob" />
+	</bean>
+
+	<!-- dummy bean -->
+	<bean id="contactTracingJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 	
 </beans>

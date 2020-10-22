@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -32,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
 
 /**
@@ -41,9 +43,17 @@ import org.olat.modules.contacttracing.ContactTracingSearchParams;
  */
 public class ContactTracingReportGeneratorStep1Controller extends StepFormBasicController {
 
-    private TextElement locationSearchEl;
+    private TextElement locationFullTextSearchEl;
+    private TextElement referenceEl;
+    private TextElement titleEl;
+    private TextElement buildingEl;
+    private TextElement roomEl;
+    private TextElement sectorEl;
+    private TextElement tableEl;
     private DateChooser startDateEl;
     private DateChooser endDateEl;
+
+    ContactTracingSearchParams searchParams;
 
     private final ContactTracingReportGeneratorContextWrapper contextWrapper;
 
@@ -51,15 +61,20 @@ public class ContactTracingReportGeneratorStep1Controller extends StepFormBasicC
         super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 
         contextWrapper = (ContactTracingReportGeneratorContextWrapper) getFromRunContext("data");
+        searchParams = new ContactTracingSearchParams();
 
         initForm(ureq);
     }
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-        locationSearchEl = uifactory.addTextElement("contact.tracing.report.generator.search.location", -1, null, formLayout);
-        locationSearchEl.setMandatory(true);
-        locationSearchEl.setNotEmptyCheck("contact.tracing.required");
+        locationFullTextSearchEl = uifactory.addTextElement("contact.tracing.report.generator.search.location", -1, null, formLayout);
+        referenceEl = uifactory.addTextElement("contact.tracing.cols.reference", -1, null, formLayout);
+        titleEl = uifactory.addTextElement("contact.tracing.cols.title", -1, null, formLayout);
+        buildingEl = uifactory.addTextElement("contact.tracing.cols.building", -1, null, formLayout);
+        roomEl = uifactory.addTextElement("contact.tracing.cols.room", -1, null, formLayout);
+        sectorEl = uifactory.addTextElement("contact.tracing.cols.sector", -1, null, formLayout);
+        tableEl = uifactory.addTextElement("contact.tracing.cols.table", -1, null, formLayout);
 
         // Calendar to generate dates
         Calendar calendar = new GregorianCalendar();
@@ -88,21 +103,60 @@ public class ContactTracingReportGeneratorStep1Controller extends StepFormBasicC
     protected boolean validateFormLogic(UserRequest ureq) {
         boolean allOk =  super.validateFormLogic(ureq);
 
-        allOk &= validateFormItem(locationSearchEl);
+        allOk &= validateFormItem(locationFullTextSearchEl);
+        allOk &= validateFormItem(referenceEl);
+        allOk &= validateFormItem(titleEl);
+        allOk &= validateFormItem(buildingEl);
+        allOk &= validateFormItem(roomEl);
+        allOk &= validateFormItem(sectorEl);
+        allOk &= validateFormItem(tableEl);
         allOk &= validateFormItem(startDateEl);
         allOk &= validateFormItem(endDateEl);
+
+        allOk &= containsFormAnyData();
+
+        searchParams.setFullTextSearch(getValue(locationFullTextSearchEl));
+        searchParams.setReference(getValue(referenceEl));
+        searchParams.setTitle(getValue(titleEl));
+        searchParams.setBuilding(getValue(buildingEl));
+        searchParams.setRoom(getValue(roomEl));
+        searchParams.setSector(getValue(sectorEl));
+        searchParams.setTable(getValue(tableEl));
+        searchParams.setStartDate(startDateEl.getDate());
+        searchParams.setEndDate(endDateEl.getDate());
 
         return allOk;
     }
 
+    private boolean containsFormAnyData() {
+        boolean containsData =
+                getValue(locationFullTextSearchEl) != null ||
+                getValue(referenceEl) != null ||
+                getValue(titleEl) != null ||
+                getValue(buildingEl) != null ||
+                getValue(roomEl) != null ||
+                getValue(sectorEl) != null ||
+                getValue(tableEl) != null;
+
+        if (!containsData) {
+            showWarning("contact.tracing.report.generator.empty.form.warning");
+        }
+
+        return containsData;
+    }
+
+    private String getValue(FormItem formItem) {
+        if (formItem instanceof TextElement) {
+            if (StringHelper.containsNonWhitespace(((TextElement) formItem).getValue())) {
+                return ((TextElement) formItem).getValue();
+            }
+        }
+
+        return null;
+    }
+
     @Override
     protected void formOK(UserRequest ureq) {
-        ContactTracingSearchParams searchParams = new ContactTracingSearchParams();
-
-        searchParams.setFullTextSearch(locationSearchEl.getValue());
-        searchParams.setStartDate(startDateEl.getDate());
-        searchParams.setEndDate(endDateEl.getDate());
-
         contextWrapper.setSearchParams(searchParams);
 
         fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
@@ -110,6 +164,6 @@ public class ContactTracingReportGeneratorStep1Controller extends StepFormBasicC
 
     @Override
     protected void doDispose() {
-
+        // Nothing to dispose here
     }
 }

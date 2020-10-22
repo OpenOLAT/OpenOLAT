@@ -3207,22 +3207,25 @@ create table o_org_role_to_right (
 );
 
 -- Contact tracing
-create table o_contact_tracing_location (
+create table o_ct_location (
     id bigserial,
     creationdate timestamp not null,
     lastmodified timestamp not null,
-    l_reference varchar(255) not null,
-    l_titel varchar(255) not null,
-    l_room varchar(255) not null,
-    l_building varchar(255) not null,
+    l_reference varchar(255),
+    l_titel varchar(255),
+    l_room varchar(255),
+    l_building varchar(255),
+    l_sector varchar(255),
+    l_table varchar(255),
     l_qr_id varchar(255) not null,
     l_qr_text varchar(4000),
-    l_guests boolean not null,
+    l_guests boolean default true not null,
+    l_printed boolean default false not null,
     unique(l_qr_id),
     primary key (id)
 );
 
-create table o_contact_tracing_entry (
+create table o_ct_registration (
     id bigserial,
     creationdate timestamp not null,
     l_deletion_date timestamp not null,
@@ -4400,5 +4403,9 @@ create index idx_ap_part_identitiy_idx on o_ap_participation(fk_identity_id);
 -- Organiation role rights
 alter table o_org_role_to_right add constraint org_role_to_right_to_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right (fk_organisation);
+
+-- Contact tracing
+alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
+create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
 
 insert into hibernate_unique_key values ( 0 );

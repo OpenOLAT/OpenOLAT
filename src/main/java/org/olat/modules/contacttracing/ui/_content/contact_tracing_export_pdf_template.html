@@ -36,20 +36,20 @@
 
 #foreach($location in $locationList)
     <div class="o_print_break_after pdf_wrapper">
-        #if($r.isNotNull("generalInstructions"))
+        #if($r.isNotEmpty("generalInstructions"))
         <p>
             $generalInstructions
         </p>
         #end
 
-        #if($r.isNotNull($location.getQrText()))
+        #if($r.isNotEmpty($location.getQrText()))
         <div class="spacer"></div>
         <p>
             $location.getQrText()
         </p>
         #end
 
-        #if($r.isNotNull($location.getQrId()))
+        #if($r.isNotEmpty($location.getQrId()))
         <div class="spacer"></div>
         <div id="o_qrcode_$location.getQrId()" class="center"></div>
         <script>
@@ -58,35 +58,51 @@
             });
         </script>
         <p>
-            <a id="o_qrcode_$location.getQrId()_link" href="$locationUrlMap.get($location)">$locationUrlMap.get($location)</a>
+            <a id="o_qrcode_$location.getQrId()_link" target="_blank" href="$locationUrlMap.get($location)">$locationUrlMap.get($location)</a>
         </p>
         <div class="spacer"></div>
         #end
 
-        #if($r.isNotNull($location.getReference()))
+        #if($r.isNotEmpty($location.getReference()))
         <p class="reference">
             $location.getReference()
         </p>
         #end
 
-        #if($r.isNotNull($location.getTitle()))
+        #if($r.isNotEmpty($location.getTitle()))
         <p>
             $location.getTitle()
         </p>
         #end
 
-        #if($r.isNotNull($location.getRoom()) || $r.isNotNull($location.getBuilding()))
+        #if($r.isNotEmpty($location.getRoom()) || $r.isNotEmpty($location.getBuilding()))
         <p>
-            #if($r.isNotNull($location.getRoom()))
-            $location.getRoom()
+            #if($r.isNotEmpty($location.getBuilding()))
+            $location.getBuilding()
             #end
 
-            #if($r.isNotNull($location.getRoom()) && $r.isNotNull($location.getBuilding()))
+            #if($r.isNotEmpty($location.getBuilding()) && $r.isNotEmpty($location.getRoom()))
             -
             #end
 
-            #if($r.isNotNull($location.getBuilding()))
-            $location.getBuilding()
+            #if($r.isNotEmpty($location.getRoom()))
+            $location.getRoom()
+            #end
+        </p>
+        #end
+
+        #if($r.isNotEmpty($location.getSector()) || $r.isNotEmpty($location.getTable()))
+        <p>
+            #if($r.isNotEmpty($location.getSector()))
+            $location.getSector()
+            #end
+
+            #if($r.isNotEmpty($location.getSector()) && $r.isNotEmpty($location.getTable()))
+            -
+            #end
+
+            #if($r.isNotEmpty($location.getTable()))
+            $location.getTable()
             #end
         </p>
         #end
