@@ -174,6 +174,8 @@ public class DocumentConfigController extends BasicController {
 			} else if (DocumentDisplayController.EVENT_COPY_TO_COURSE == event) {
 				doAskCopyToCourse(ureq, documentSource.getEntry());
 			}
+		} else if (source == documentRightsCtrl) {
+			fireEvent(ureq, event);
 		} else if (source == selectionCtrl) {
 			if (DocumentSelectionController.EVENT_SELECT_COURSE == event) {
 				deactivateCmc();
@@ -382,7 +384,7 @@ public class DocumentConfigController extends BasicController {
 	}
 	
 	private Function<VFSLeaf, DocEditorConfigs> getConfigProvider() {
-		return (vfsLeaf) -> {
+		return vfsLeaf -> {
 			return DocEditorConfigs.builder().withMode(DocEditor.Mode.EDIT).build(vfsLeaf);
 		};
 	}
