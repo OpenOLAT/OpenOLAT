@@ -22,6 +22,7 @@ package org.olat.modules.contacttracing.ui;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.mail.Address;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -424,7 +425,8 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         ContactTracingRegistration registration = contactTracingManager.createRegistration(location, startDateEl.getDate(), deletionDate);
 
         // Set information
-        registration.setEndDate(endDateEl.getDate());
+        Date date = endDateEl.getDate() != null? endDateEl.getDate(): DateUtils.setTime(startDateEl.getDate(), 23, 59, 59);
+		registration.setEndDate(date);
         registration.setNickName(getValue(nickNameEl));
         registration.setFirstName(getValue(firstNameEl));
         registration.setLastName(getValue(lastNameEl));

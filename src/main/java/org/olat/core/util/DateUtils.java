@@ -106,7 +106,7 @@ public class DateUtils {
 	public static Date setTime(Date date, int hour, int minutes, int seconds) {
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(date);
-		calendar.set(Calendar.HOUR, hour);
+		calendar.set(Calendar.HOUR_OF_DAY, hour);
 		calendar.set(Calendar.MINUTE, minutes);
 		calendar.set(Calendar.SECOND, seconds);
 		return calendar.getTime();

@@ -350,7 +350,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
 
     @Override
     protected boolean validateFormLogic(UserRequest ureq) {
-        boolean allOk = super.validateFormLogic(ureq);;
+        boolean allOk = super.validateFormLogic(ureq);
 
         allOk &= validatePeriod(retentionPeriodEl, 1, 365, translate("days"));
         allOk &= validatePeriod(defaultDurationEl, 1, 300, translate("minutes"));

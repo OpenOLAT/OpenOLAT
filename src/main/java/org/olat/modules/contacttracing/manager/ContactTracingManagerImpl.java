@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
@@ -32,7 +33,6 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
-import org.olat.modules.contacttracing.ContactTracingModule;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.ContactTracingRegistrationInternalWrapperControllerCreator;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
@@ -55,8 +55,6 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
     private ContactTracingLocationDAO contactTracingLocationDAO;
     @Autowired
     private ContactTracingRegistrationDAO contactTracingRegistrationDAO;
-    @Autowired
-    private ContactTracingModule contactTracingModule;
 
     @PostConstruct
     private void init() {
@@ -159,27 +157,14 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
 
     @Override
     public int pruneRegistrations() {
-        int pruneCount = pruneRegistrations(contactTracingModule.getRetentionPeriod());
-        logPrunedEntries(pruneCount);
-
-        return pruneCount;
-    }
-
-    @Override
-    public int pruneRegistrations(int retentionPeriod) {
         // Set the border to delete the day after the retention period to 00:00
         // Delete everything which is older than the border
-        Date deletionDate = DateUtils.addDays(new Date(), retentionPeriod + 1);
-        deletionDate = DateUtils.setTime(deletionDate, 0, 0, 0);
+        Date deletionDate = DateUtils.setTime(new Date(), 0, 0, 0);
 
         int pruneCount = contactTracingRegistrationDAO.pruneEntries(deletionDate);
-        logPrunedEntries(pruneCount);
+        log.info("{} contact tracing registrations pruned.", pruneCount);
 
         return pruneCount;
-    }
-
-    private void logPrunedEntries(int count) {
-        log.info("Contact tracing entries pruned - " + count + " entr" + (count == 1 ? "y was" : "ies were") + " deleted");
     }
 
     @Override
