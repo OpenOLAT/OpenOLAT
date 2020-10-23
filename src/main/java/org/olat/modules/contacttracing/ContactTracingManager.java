@@ -144,21 +144,11 @@ public interface ContactTracingManager {
     public List<ContactTracingRegistration> getRegistrations(ContactTracingSearchParams searchParams);
 
     /**
-     * Used as a cronjob
      * Deletes all entries whose retention period has expired
      *
      * @return Count of deleted entries
      */
     public int pruneRegistrations();
-
-    /**
-     * Used to manually prune entries
-     * Deletes all entries which are older than the given retention period
-     *
-     * @param retentionPeriod Given retention period
-     * @return Count of deleted entries
-     */
-    public int pruneRegistrations(int retentionPeriod);
 
     /**
      * Used to determine whether any registration is available
