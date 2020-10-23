@@ -5,99 +5,117 @@
         padding: 1em 1em 1em 1em;
         border-radius: 4px;
         border: solid transparent;
-        background-color: #5cd65c;
+        background-color: limegreen;
+        text-align: center !important;
+        font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif !important;
+        color: white;
+        font-size: 1.5em;
     }
     .o_contact_tracing_confirmation_wrapper .o_center {
-        width: 50vw;
+        width: 6em;
         margin: 0 auto;
     }
 </style>
 
 <div class="o_contact_tracing_confirmation_wrapper">
 
+    <p>
     #if($r.isNotEmpty($confirmationIcon))
-    <div class="o_center">
+    <div class="">
         $confirmationIcon
     </div>
     #end
+    </p>
 
+    <p>
     #if($r.isNotEmpty($name))
-    <div class="o_center">
+    <div class="">
         $name
     </div>
     #end
 
     #if($r.isNotEmpty($nickname))
-    <div class="o_center">
+    <div class="">
         $nickName
     </div>
     #end
+    </p>
 
+    <p>
     #if($r.isNotEmpty($registrationSuccessful))
-    <div class="o_center">
+    <div class="">
         $registrationSuccessful
     </div>
     #end
+    </p>
 
+    <p>
     #if($r.isNotEmpty($reference))
-    <div class="o_center">
+    <div class="">
         $reference
     </div>
     #end
 
     #if($r.isNotEmpty($title))
-    <div class="o_center">
+    <div class="">
         $title
     </div>
     #end
 
     #if($r.isNotEmpty($building))
-    <div class="o_center">
+    <div class="">
         $building
     </div>
     #end
 
     #if($r.isNotEmpty($room))
-    <div class="o_center">
+    <div class="">
         $room
     </div>
     #end
 
     #if($r.isNotEmpty($sector))
-    <div class="o_center">
+    <div class="">
         $sector
     </div>
     #end
 
     #if($r.isNotEmpty($table))
-    <div class="o_center">
+    <div class="">
         $table
     </div>
     #end
+    </p>
 
+    <p>
     #if($r.isTrue($sameDay))
-    <div class="o_center">
+    <div class="">
         $startDate
     </div>
-    <div class="o_center">
+    <div class="">
         $startTime - $endTime
     </div>
     #else
-    <div class="o_center">
+    <div class="">
         $startDate $startTime
     </div>
-    <div class="o_center">
+    <div class="">
         $endDate $endTime
     </div>
     #end
+    </p>
 
+    <p>
     #if($r.isNotEmpty($registrationMessage))
-    <div class="o_center">
+    <div class="">
         $registrationMessage
     </div>
     #end
+    </p>
 
+    <p>
     <div class="o_center">
         $r.render("closeButton")
     </div>
+    </p>
 </div>
