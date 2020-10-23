@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -152,7 +153,25 @@ public interface BigBlueButtonManager {
 	
 	public boolean isMeetingRunning(BigBlueButtonMeeting meeting);
 	
+	/**
+	 * Synchronizes the recordings of the storage in to the database
+	 *
+	 * @param endFrom filter the meeting by the end of the meeting 
+	 * @param endTo filter the meeting by the end of the meeting 
+	 * @param syncPermanent sync permanent meetings
+	 */
+	public void syncReferences(Date endFrom, Date endTo, boolean syncPermanent);
+	
 	public List<BigBlueButtonRecordingWithReference> getRecordingAndReferences(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
+
+	/**
+	 * Get the recordings of the meetings from the database. The recordings are not
+	 * synchronized between the recording storage and the database in advance.
+	 *
+	 * @param meetings
+	 * @return
+	 */
+	public List<BigBlueButtonRecordingReference> getRecordingReferences(Collection<BigBlueButtonMeeting> meetings);
 	
 	public BigBlueButtonRecordingReference updateRecordingReference(BigBlueButtonRecordingReference reference);
 	
@@ -175,6 +194,7 @@ public interface BigBlueButtonManager {
 	public Document sendRequest(BigBlueButtonUriBuilder builder, BigBlueButtonErrors errors);
 	
 	public boolean checkConnection(String url, String sharedSecret, BigBlueButtonErrors errors);
+
 	
 	
 

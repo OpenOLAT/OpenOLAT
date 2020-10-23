@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -221,6 +222,48 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, meetings.size());
 		Assert.assertTrue(meetings.contains(meetingGuest));
 		Assert.assertFalse(meetings.contains(meetingMember));
+	}
+	
+	@Test
+	public void getMeetingsByEnd() {
+		Date now = new Date();
+		String name = "BigBlueButton - 7a";
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB server", "bbb-server", -1, -1, false, false, false, false, false);
+		BigBlueButtonMeeting meetingPast = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group, null);
+		meetingPast.setEndDate(DateUtils.addHours(now, -2));
+		meetingPast = bigBlueButtonMeetingDao.updateMeeting(meetingPast);
+		BigBlueButtonMeeting meetingNow = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group, null);
+		meetingNow.setEndDate(now);
+		meetingNow = bigBlueButtonMeetingDao.updateMeeting(meetingNow);
+		BigBlueButtonMeeting meetingFuture = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group, null);
+		meetingFuture.setEndDate(DateUtils.addHours(now, 2));
+		meetingFuture = bigBlueButtonMeetingDao.updateMeeting(meetingFuture);
+		dbInstance.commit();
+		
+		Date endFrom = DateUtils.addHours(now, -1);
+		Date endTo = DateUtils.addHours(now, 1);
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.loadMeetingsByEnd(endFrom, endTo);
+		Assert.assertNotNull(meetings);
+		Assert.assertTrue(meetings.contains(meetingNow));
+		Assert.assertFalse(meetings.contains(meetingFuture));
+	}
+	
+	@Test
+	public void getPermanentMeetings() {
+		String name = "BigBlueButton - 7b";
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB server", "bbb-server", -1, -1, false, false, false, false, false);
+		BigBlueButtonMeeting permanantMeeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group, null);
+		permanantMeeting.setPermanent(true);
+		permanantMeeting = bigBlueButtonMeetingDao.updateMeeting(permanantMeeting);
+		BigBlueButtonMeeting unpermanantMeeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group, null);
+		unpermanantMeeting.setPermanent(false);
+		unpermanantMeeting = bigBlueButtonMeetingDao.updateMeeting(unpermanantMeeting);
+		dbInstance.commit();
+		
+		List<BigBlueButtonMeeting> permanatMeetings = bigBlueButtonMeetingDao.loadPermanentMeetings();
+		Assert.assertNotNull(permanatMeetings);
+		Assert.assertTrue(permanatMeetings.contains(permanantMeeting));
+		Assert.assertFalse(permanatMeetings.contains(unpermanantMeeting));
 	}
 	
 	@Test

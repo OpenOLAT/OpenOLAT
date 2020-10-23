@@ -22,6 +22,7 @@ package org.olat.modules.bigbluebutton.manager;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -755,6 +756,27 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 
 	@Override
+	public void syncReferences(Date endFrom, Date endTo, boolean syncPermanent) {
+		Set<BigBlueButtonMeeting> meetings = new HashSet<>();
+		if (endFrom != null && endTo != null) {
+			List<BigBlueButtonMeeting> finiteMeetings = bigBlueButtonMeetingDao.loadMeetingsByEnd(endFrom, endTo);
+			meetings.addAll(finiteMeetings);
+		}
+		if (syncPermanent) {
+			List<BigBlueButtonMeeting> permanantMeetings = bigBlueButtonMeetingDao.loadPermanentMeetings();
+			meetings.addAll(permanantMeetings);
+		}
+		
+		BigBlueButtonErrors error = new BigBlueButtonErrors();
+		for (BigBlueButtonMeeting meeting : meetings) {
+			getRecordingAndReferences(meeting, error);
+			if (log.isDebugEnabled()) {
+				log.debug(error.hasErrors()? error.getErrorMessages(): "Reference sync successfull");
+			}
+		}
+	}
+
+	@Override
 	public String join(BigBlueButtonMeeting meeting, Identity identity, String pseudo, BigBlueButtonAttendeeRoles role, Boolean isRunning, BigBlueButtonErrors errors) {
 		String joinUrl = null;
 		boolean moderator = role == BigBlueButtonAttendeeRoles.moderator;
@@ -969,6 +991,11 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			log.error("", e);
 			return null;
 		}
+	}
+	
+	@Override
+	public List<BigBlueButtonRecordingReference> getRecordingReferences(Collection<BigBlueButtonMeeting> meetings) {
+		return bigBlueButtonRecordingReferenceDao.getRecordingReferences(meetings);
 	}
 	
 	@Override

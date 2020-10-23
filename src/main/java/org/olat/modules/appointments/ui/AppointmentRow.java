@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Participation;
+import org.olat.modules.appointments.ui.AppointmentListController.FormItemList;
 import org.olat.modules.appointments.ui.ParticipationsRenderer.ParticipantsWrapper;
 
 /**
@@ -57,6 +58,7 @@ public class AppointmentRow {
 	private FormLink confirmLink;
 	private FormLink deleteLink;
 	private FormLink editLink;
+	private FormItemList recordingLinks;
 	
 	public AppointmentRow(Appointment appointment) {
 		this.appointment = appointment;
@@ -268,6 +270,14 @@ public class AppointmentRow {
 
 	public void setEditLink(FormLink editLink) {
 		this.editLink = editLink;
+	}
+
+	public FormItemList getRecordingLinks() {
+		return recordingLinks;
+	}
+
+	public void setRecordingLinks(FormItemList recordingLinks) {
+		this.recordingLinks = recordingLinks;
 	}
 
 }

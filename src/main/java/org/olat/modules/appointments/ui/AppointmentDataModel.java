@@ -116,6 +116,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 			case freeParticipations: return row.getFreeParticipations();
 			case numberOfParticipations: return row.getNumberOfParticipations();
 			case participants: return row.getParticipantsWrapper();
+			case recordings: return row.getRecordingLinks();
 			case select: return row.getSelectLink();
 			case addUser: return row.getAddUserLink();
 			case removeUser: return row.getRemoveLink();
@@ -142,6 +143,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 		numberOfParticipations("appointment.number.of.participations"),
 		freeParticipations("appointment.free.participations"),
 		participants("participants"),
+		recordings("recordings"),
 		select("select"),
 		addUser("add.user"),
 		removeUser("remove.user"),

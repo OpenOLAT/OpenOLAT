@@ -115,6 +115,11 @@ public class AppointmentsSecurityCallbackFactory {
 			}
 			return false;
 		}
+
+		@Override
+		public boolean canWatchRecording(Collection<Organizer> organizers, Collection<Participation> participations) {
+			return isOrganizer(organizers) || isParticipation(participations);
+		}
 		
 		private boolean isOrganizer(Collection<Organizer> organizers) {
 			return organizers.stream()

@@ -51,6 +51,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.util.DateUtils;
@@ -67,6 +68,7 @@ import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.Topic.Type;
 import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonErrorHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
@@ -87,6 +89,7 @@ public class TopicsRunCoachController extends BasicController {
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_GROUPS = "group";
+	private static final String CMD_RECORDING = "recording";
 
 	private final VelocityContainer mainVC;
 	private Link createButton;
@@ -355,9 +358,16 @@ public class TopicsRunCoachController extends BasicController {
 		DateComponentFactory.createDateComponentWithYear(dayName, appointment.getStart(), mainVC);
 		wrapper.setDayName(dayName);
 		
-		if (appointmentsService.isBigBlueButtonEnabled()
-				&& secCallback.canJoinMeeting(appointment.getMeeting(), wrapper.getOrganizers(), participations)) {
-			wrapMeeting(wrapper, appointment);
+		if (appointmentsService.isBigBlueButtonEnabled()) {
+			if (secCallback.canJoinMeeting(appointment.getMeeting(), wrapper.getOrganizers(), participations)) {
+				wrapMeeting(wrapper, appointment);
+			}
+			if (secCallback.canWatchRecording(wrapper.getOrganizers(), participations)) {
+				List<BigBlueButtonRecordingReference> recordingReferences = appointmentsService
+						.getRecordingReferences(Collections.singletonList(appointment))
+						.getOrDefault(appointment.getKey(), Collections.emptyList());
+				wrapRecordings(wrapper, recordingReferences);
+			}
 		}
 	}
 	
@@ -375,6 +385,26 @@ public class TopicsRunCoachController extends BasicController {
 		joinButton.setPrimary(joinButton.isEnabled());
 		joinButton.setUserObject(appointment);
 		wrapper.setJoinLinkName(joinButton.getComponentName());
+	}
+	
+	private void wrapRecordings(TopicWrapper wrapper, List<BigBlueButtonRecordingReference> recordingReferences) {
+		recordingReferences.sort((r1, r2) -> r1.getStartDate().compareTo(r2.getStartDate()));
+		List<String> recordingLinkNames = new ArrayList<>(recordingReferences.size());
+		for (int i = 0; i < recordingReferences.size(); i++) {
+			BigBlueButtonRecordingReference recording = recordingReferences.get(i);
+			Link link = LinkFactory.createCustomLink("rec_" + counter++, CMD_RECORDING, null, Link.NONTRANSLATED, mainVC, this);
+			String name = translate("recording");
+			if (recordingReferences.size() > 1) {
+				name = name + " " + (i+1);
+			}
+			name = name + "  ";
+			link.setCustomDisplayText(name);
+			link.setIconLeftCSS("o_icon o_icon_lg o_vc_icon");
+			link.setNewWindow(true, true);
+			link.setUserObject(recording);
+			recordingLinkNames.add(link.getComponentName());
+		}
+		wrapper.setRecordingLinkNames(recordingLinkNames);
 	}
 	
 	private boolean isDisabled(BigBlueButtonMeeting meeting) {
@@ -484,6 +514,9 @@ public class TopicsRunCoachController extends BasicController {
 			} else if (CMD_JOIN.equals(cmd)) {
 				Appointment appointment = (Appointment)link.getUserObject();
 				doJoin(ureq, appointment);
+			} else if (CMD_RECORDING.equals(cmd)) {
+				BigBlueButtonRecordingReference recordingReference = (BigBlueButtonRecordingReference)link.getUserObject();
+				doOpenRecording(ureq, recordingReference);
 			}
 		}
 	}
@@ -573,6 +606,16 @@ public class TopicsRunCoachController extends BasicController {
 		}
 	}
 
+	private void doOpenRecording(UserRequest ureq, BigBlueButtonRecordingReference recordingReference) {
+		String url = appointmentsService.getRecordingUrl(ureq.getUserSession(), recordingReference);
+		if(StringHelper.containsNonWhitespace(url)) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		} else {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			showWarning("warning.recording.not.found");
+		}
+	}
+
 	@Override
 	protected void doDispose() {
 		//
@@ -602,6 +645,7 @@ public class TopicsRunCoachController extends BasicController {
 		
 		private String joinLinkName;
 		private String serverWarning;
+		private List<String> recordingLinkNames;
 
 		public TopicWrapper(Topic topic) {
 			this.topic = topic;
@@ -753,6 +797,14 @@ public class TopicsRunCoachController extends BasicController {
 
 		public void setServerWarning(String serverWarning) {
 			this.serverWarning = serverWarning;
+		}
+
+		public List<String> getRecordingLinkNames() {
+			return recordingLinkNames;
+		}
+
+		public void setRecordingLinkNames(List<String> recordingLinkNames) {
+			this.recordingLinkNames = recordingLinkNames;
 		}
 		
 	}

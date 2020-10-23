@@ -50,6 +50,13 @@
 						$row.getDetails()
 					</div>
 				#end
+				#if($r.isNotNull($row.getRecordingLinks()))
+					<div>
+						#foreach($recordingLink in $row.getRecordingLinks().getFormItems())
+							$r.render($recordingLink.getName())
+						#end
+					</div>
+				#end
 				#if($row.getNumberOfParticipations() && $row.getNumberOfParticipations() != "")
 					<div  class="o_no_participants">
 						<i class="o_icon o_icon-fw o_icon_user">&nbsp;</i>

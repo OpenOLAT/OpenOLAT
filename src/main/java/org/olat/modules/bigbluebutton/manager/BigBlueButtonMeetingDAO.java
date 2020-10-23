@@ -151,6 +151,28 @@ public class BigBlueButtonMeetingDAO {
 				.getResultList();
 	}
 	
+	public List<BigBlueButtonMeeting> loadMeetingsByEnd(Date endFrom, Date endTo) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting from bigbluebuttonmeeting as meeting")
+		  .append(" where meeting.endDate>:from and meeting.endDate<:to");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BigBlueButtonMeeting.class)
+				.setParameter("from", endFrom, TemporalType.TIMESTAMP)
+				.setParameter("to", endTo, TemporalType.TIMESTAMP)
+				.getResultList();
+	}
+	
+	public List<BigBlueButtonMeeting> loadPermanentMeetings() {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting from bigbluebuttonmeeting as meeting")
+		  .append(" where meeting.permanent=true");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BigBlueButtonMeeting.class)
+				.getResultList();
+	}
+	
 	public BigBlueButtonMeeting loadForUpdate(BigBlueButtonMeeting meeting) {
 		//first remove it from caches
 		dbInstance.getCurrentEntityManager().detach(meeting);

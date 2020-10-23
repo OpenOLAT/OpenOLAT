@@ -44,5 +44,7 @@ public interface AppointmentsSecurityCallback {
 	public boolean canSelectAppointments();
 	
 	public boolean canJoinMeeting(BigBlueButtonMeeting meeting, Collection<Organizer> organizers, Collection<Participation> participations);
+	
+	public boolean canWatchRecording(Collection<Organizer> organizers, Collection<Participation> participations);
 
 }

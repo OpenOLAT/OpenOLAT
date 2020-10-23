@@ -19,8 +19,10 @@
  */
 package org.olat.modules.bigbluebutton.manager;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -72,6 +74,18 @@ public class BigBlueButtonRecordingReferenceDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BigBlueButtonRecordingReference.class)
 				.setParameter("meetingKey", meeting.getKey())
+				.getResultList();
+	}
+	
+	public List<BigBlueButtonRecordingReference> getRecordingReferences(Collection<BigBlueButtonMeeting> meetings) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select record from bigbluebuttonrecording as record")
+		  .append(" where record.meeting.key in (:meetingKeys)");
+		
+		List<Long> meetingKeys = meetings.stream().map(BigBlueButtonMeeting::getKey).collect(Collectors.toList());
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BigBlueButtonRecordingReference.class)
+				.setParameter("meetingKeys", meetingKeys)
 				.getResultList();
 	}
 	

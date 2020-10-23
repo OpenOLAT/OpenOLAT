@@ -30,7 +30,9 @@ import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.UserSession;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -158,6 +160,12 @@ public interface AppointmentsService {
 	public String joinMeeting(Appointment appointment, Identity identity, BigBlueButtonErrors errors);
 
 	public String getMainPresenters(Topic topic);
+
+	public void syncRecorings(Topic topic);
+
+	public Map<Long, List<BigBlueButtonRecordingReference>> getRecordingReferences(List<Appointment> appointments);
+
+	public String getRecordingUrl(UserSession userSession, BigBlueButtonRecordingReference recordingReference);
 
 }
 

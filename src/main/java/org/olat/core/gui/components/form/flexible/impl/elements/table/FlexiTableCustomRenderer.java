@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.impl.FormDecorator;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -132,12 +133,12 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 			Object cellValue = columnIndex >= 0 ? dataModel.getValueAt(row, columnIndex) : null;
 			if (cellValue instanceof FormItem) {
 				FormItem formItem = (FormItem)cellValue;
-				formItem.setTranslator(translator);
-				if(ftE.getRootForm() != formItem.getRootForm()) {
-					formItem.setRootForm(ftE.getRootForm());
+				addFormItem(formItem, ftE, container, translator);
+			} else if (cellValue instanceof FormItemCollection) {
+				FormItemCollection collection = (FormItemCollection)cellValue;
+				for (FormItem formItem : collection.getFormItems()) {
+					addFormItem(formItem, ftE, container, translator);
 				}
-				ftE.addFormItem(formItem);
-				container.put(formItem.getComponent().getComponentName(), formItem.getComponent());
 			}
 		}
 		
@@ -169,6 +170,16 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 		container.setDirty(false);
 
 		sb.append("</div>");
+	}
+
+	private void addFormItem(FormItem formItem, FlexiTableElementImpl ftE, VelocityContainer container,
+			Translator translator) {
+		formItem.setTranslator(translator);
+		if(ftE.getRootForm() != formItem.getRootForm()) {
+			formItem.setRootForm(ftE.getRootForm());
+		}
+		ftE.addFormItem(formItem);
+		container.put(formItem.getComponent().getComponentName(), formItem.getComponent());
 	}
 
 	@Override

@@ -58,7 +58,6 @@ import org.olat.modules.bigbluebutton.BigBlueButtonDispatcher;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
-import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingsCalendarController;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
@@ -88,7 +87,6 @@ public class AppointmentEditController extends FormBasicController {
 	private TextElement followupTimeEl;
 	private TextElement welcomeEl;
 	private SingleSelection templateEl;
-	private SingleSelection publishingEl;
 	private SingleSelection layoutEl;
 	
 	private BigBlueButtonMeetingsCalendarController calCtr;
@@ -200,14 +198,6 @@ public class AppointmentEditController extends FormBasicController {
 				}
 			}
 		
-			KeyValues publishKeyValues = new KeyValues();
-			publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.auto.name(), translate("meeting.publishing.auto")));
-			publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.manual.name(), translate("meeting.publishing.manual")));
-			publishingEl = uifactory.addRadiosVertical("meeting.publishing", formLayout, publishKeyValues.keys(), publishKeyValues.values());
-			BigBlueButtonRecordingsPublishingEnum publish = meeting == null ? BigBlueButtonRecordingsPublishingEnum.auto :  meeting.getRecordingsPublishingEnum();
-			publishingEl.select(publish.name(), true);
-			publishingEl.setEnabled(bbbEditable);
-			
 			KeyValues layoutKeyValues = new KeyValues();
 			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
 			if(isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates))) {
@@ -271,7 +261,6 @@ public class AppointmentEditController extends FormBasicController {
 			followupTimeEl.setVisible(bbbRoom);
 			welcomeEl.setVisible(bbbRoom);
 			templateEl.setVisible(bbbRoom);
-			publishingEl.setVisible(bbbRoom);
 			layoutEl.setVisible(bbbRoom);
 		}
 	}
@@ -396,12 +385,6 @@ public class AppointmentEditController extends FormBasicController {
 				allOk &= BigBlueButtonUIHelper.validateDuration(startEl, leadTimeEl, endEl, followupTimeEl, template);
 				allOk &= BigBlueButtonUIHelper.validateSlot(startEl, leadTimeEl, endEl, followupTimeEl, meeting, template);
 			}
-			
-			publishingEl.clearError();
-			if(!publishingEl.isOneSelected()) {
-				publishingEl.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			}
 		}
 		
 		return allOk;
@@ -483,8 +466,6 @@ public class AppointmentEditController extends FormBasicController {
 			} else {
 				meeting.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
 			}
-			
-			meeting.setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum.valueOf(publishingEl.getSelectedKey()));
 		} else {
 			appointment = appointmentsService.removeMeeting(appointment);
 		}

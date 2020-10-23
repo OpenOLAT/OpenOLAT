@@ -38,6 +38,7 @@ import org.olat.core.gui.components.date.DateElement;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -60,9 +61,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Appointment.Status;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
@@ -72,6 +75,8 @@ import org.olat.modules.appointments.ParticipationResult;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.Topic.Type;
 import org.olat.modules.appointments.ui.AppointmentDataModel.AppointmentCols;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
+import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -89,10 +94,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private static final String CMD_CONFIRM = "confirm";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_EDIT = "edit";
+	private static final String CMD_RECORDING = "recording";
 	
 	private FormLink backLink;
 	private FormLink addSingleAppointmentLink;
 	private FormLink addRecurringAppointmentLink;
+	private FormLink syncRecordingsLink;
 	private FlexiTableElement tableEl;
 	private AppointmentDataModel dataModel;
 	
@@ -108,6 +115,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 
 	protected Topic topic;
 	protected final AppointmentsSecurityCallback secCallback;
+	protected final List<Organizer> organizers;
 	
 	@Autowired
 	protected AppointmentsService appointmentsService;
@@ -117,8 +125,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 	protected AppointmentListController(UserRequest ureq, WindowControl wControl, Topic topic,
 			AppointmentsSecurityCallback secCallback) {
 		super(ureq, wControl, "appointments_list");
+		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		this.topic = topic;
 		this.secCallback = secCallback;
+		this.organizers = appointmentsService.getOrganizers(topic);
 
 		initForm(ureq);
 		updateModel();
@@ -130,7 +140,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	
 	protected abstract List<String> getFilters();
 	
-	protected abstract List<String>  getDefaultFilters();
+	protected abstract List<String> getDefaultFilters();
 	
 	protected abstract String getPersistedPreferencesId();
 	
@@ -165,8 +175,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 			formLayout.add("topButtons", topButtons);
 			topButtons.setElementCssClass("o_button_group o_button_group_right");
 			
-			List<Organizer> organizers = appointmentsService.getOrganizers(topic);
 			if (secCallback.canEditAppointment(organizers)) {
+				syncRecordingsLink = uifactory.addFormLink("sync.recordings", topButtons, Link.BUTTON);
+				syncRecordingsLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
+				
 				DropdownItem addAppointmentDropdown = uifactory.addDropdownMenu("add.appointment", "add.appointment", topButtons, getTranslator());
 				addAppointmentDropdown.setOrientation(DropdownOrientation.right);
 				
@@ -203,6 +215,11 @@ public abstract class AppointmentListController extends FormBasicController impl
 		participantsModel.setCellRenderer(new ParticipationsRenderer());
 		participantsModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(participantsModel);
+		if (appointmentsService.isBigBlueButtonEnabled()) {
+			DefaultFlexiColumnModel recordingsModel = new DefaultFlexiColumnModel(AppointmentCols.recordings);
+			recordingsModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(recordingsModel);
+		}
 		if (canSelect()) {
 			DefaultFlexiColumnModel selectModel = new DefaultFlexiColumnModel(AppointmentCols.select);
 			selectModel.setExportable(false);
@@ -286,8 +303,13 @@ public abstract class AppointmentListController extends FormBasicController impl
 		List<AppointmentRow> rows = loadModel();
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+		
+		if (syncRecordingsLink != null) {
+			boolean hasMeeting = rows.stream().anyMatch(row -> row.getAppointment().getMeeting() != null);
+			syncRecordingsLink.setVisible(hasMeeting);
+		}
 	}
-	
+
 	protected void forgeAppointmentView(AppointmentRow row, Appointment appointment) {
 		Locale locale = getLocale();
 		Date begin = appointment.getStart();
@@ -404,6 +426,28 @@ public abstract class AppointmentListController extends FormBasicController impl
 		row.setEditLink(link);
 	}
 
+	protected void forgeRecordingReferencesLinks(AppointmentRow row, List<BigBlueButtonRecordingReference> recordingReferences) {
+		if (recordingReferences.isEmpty()) return;
+		
+		recordingReferences.sort((r1, r2) -> r1.getStartDate().compareTo(r2.getStartDate()));
+		FormItemList recordingLinks = new FormItemList(recordingReferences.size());
+		for (int i = 0; i < recordingReferences.size(); i++) {
+			BigBlueButtonRecordingReference recording = recordingReferences.get(i);
+			FormLink link = uifactory.addFormLink("rec_" + recording.getRecordingId(), CMD_RECORDING, null, null, flc, Link.NONTRANSLATED);
+			String name = translate("recording");
+			if (recordingReferences.size() > 1) {
+				name = name + " " + (i+1);
+			}
+			name = name + "  ";
+			link.setI18nKey(name);
+			link.setIconLeftCSS("o_icon o_icon_lg o_vc_icon");
+			link.setNewWindow(true, true);
+			link.setUserObject(recording);
+			recordingLinks.add(link);
+		}
+		row.setRecordingLinks(recordingLinks);
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == backLink) {
@@ -412,6 +456,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 			doAddSingleAppointment(ureq);
 		} else if (source == addRecurringAppointmentLink) {
 			doAddRecurringAppointment(ureq);
+		} else if (source == syncRecordingsLink) {
+			doSyncRecordings();
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -433,11 +479,13 @@ public abstract class AppointmentListController extends FormBasicController impl
 			} else if (CMD_REMOVE.equals(cmd)) {
 				AppointmentRow row = (AppointmentRow)link.getUserObject();
 				doRemove(ureq, row.getAppointment());
+			} else if (CMD_RECORDING.equals(cmd)) {
+				BigBlueButtonRecordingReference recordingReference = (BigBlueButtonRecordingReference)link.getUserObject();
+				doOpenRecording(ureq, recordingReference);
 			} 
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -581,6 +629,11 @@ public abstract class AppointmentListController extends FormBasicController impl
 		cmc.activate();
 	}
 
+	private void doSyncRecordings() {
+		appointmentsService.syncRecorings(topic);
+		updateModel();
+	}
+
 	private void doEditAppointment(UserRequest ureq, Appointment appointment) {
 		appointmentEditCtrl = new AppointmentEditController(ureq, getWindowControl(), appointment);
 		listenTo(appointmentEditCtrl);
@@ -656,6 +709,16 @@ public abstract class AppointmentListController extends FormBasicController impl
 		cmc.activate();
 	}
 
+	private void doOpenRecording(UserRequest ureq, BigBlueButtonRecordingReference recordingReference) {
+		String url = appointmentsService.getRecordingUrl(ureq.getUserSession(), recordingReference);
+		if(StringHelper.containsNonWhitespace(url)) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		} else {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			showWarning("warning.recording.not.found");
+		}
+	}
+
 	@Override
 	protected void doDispose() {
 		//
@@ -672,5 +735,34 @@ public abstract class AppointmentListController extends FormBasicController impl
 		}
 		return cmps;
 	}
+	
+	public final static class FormItemList implements FormItemCollection {
+		
+		private List<FormItem> items;
+		
+		FormItemList(int initialCapacity) {
+			items = new ArrayList<>(initialCapacity);
+		}
 
+		public void add(FormItem item) {
+			items.add(item);
+		}
+
+		@Override
+		public Iterable<FormItem> getFormItems() {
+			return items;
+		}
+
+		@Override
+		public FormItem getFormComponent(String name) {
+			for (FormItem item : items) {
+				if (name.equals(item.getName())) {
+					return item;
+				}
+			}
+			return null;
+		}
+		
+	}
+	
 }

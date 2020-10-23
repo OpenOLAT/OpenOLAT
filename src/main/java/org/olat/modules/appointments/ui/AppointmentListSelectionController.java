@@ -41,6 +41,7 @@ import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.Topic.Type;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 
 /**
  * 
@@ -113,10 +114,15 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			noConfirmedAppointments = appointmentsService.getAppointmentCount(confirmedFindingsParams) == 0;
 		}
 		
+		Map<Long, List<BigBlueButtonRecordingReference>> appointmentKeyToRecordingReferences = appointmentsService.isBigBlueButtonEnabled()
+				? appointmentsService.getRecordingReferences(appointments)
+				: Collections.emptyMap();
+		
 		List<AppointmentRow> rows = new ArrayList<>(appointments.size());
 		for (Appointment appointment : appointments) {
 			List<Participation> participations = appointmentKeyToParticipation.getOrDefault(appointment.getKey(), emptyList());
-			AppointmentRow row = getWrappedAppointment(topic, appointment, participations, userHasNoConfirmedParticipation, noConfirmedAppointments);
+			List<BigBlueButtonRecordingReference> recordingReferences = appointmentKeyToRecordingReferences.getOrDefault(appointment.getKey(), emptyList());
+			AppointmentRow row = createAppointmentRow(topic, appointment, participations, recordingReferences, userHasNoConfirmedParticipation, noConfirmedAppointments);
 			if (row != null) {
 				rows.add(row);
 			}
@@ -124,9 +130,9 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		return rows;
 	}
 
-	private AppointmentRow getWrappedAppointment(Topic topic, Appointment appointment,
-			List<Participation> participations, boolean userHasNoConfirmedParticipation,
-			boolean noConfirmedAppointments) {
+	private AppointmentRow createAppointmentRow(Topic topic, Appointment appointment,
+			List<Participation> participations, List<BigBlueButtonRecordingReference> recordingReferences,
+			boolean userHasNoConfirmedParticipation, boolean noConfirmedAppointments) {
 		Optional<Participation> myParticipation = participations.stream()
 				.filter(p -> p.getIdentity().getKey().equals(getIdentity().getKey()))
 				.findFirst();
@@ -203,6 +209,10 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			selectionCSS = "o_ap_confirmed";
 		}
 		row.setSelectionCSS(selectionCSS);
+		
+		if (secCallback.canWatchRecording(organizers, participations)) {
+			forgeRecordingReferencesLinks(row, recordingReferences);
+		}
 		
 		return row;
 	}

@@ -23,6 +23,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.Topic.Type;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 
 /**
  * 
@@ -84,13 +86,18 @@ public class AppointmentListEditController extends AppointmentListController {
 		AppointmentSearchParams searchParams = new AppointmentSearchParams();
 		searchParams.setTopic(topic);
 		searchParams.setFetchTopic(true);
-		
+		searchParams.setFetchMeetings(true);
 		List<Appointment> appointments = appointmentsService.getAppointments(searchParams);
+		
 		ParticipationSearchParams pParams = new ParticipationSearchParams();
 		pParams.setAppointments(appointments);
 		Map<Long, List<Participation>> appointmentKeyToParticipations = appointmentsService
 				.getParticipations(pParams).stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
+		
+		Map<Long, List<BigBlueButtonRecordingReference>> appointmentKeyToRecordingReferences = appointmentsService.isBigBlueButtonEnabled()
+				? appointmentsService.getRecordingReferences(appointments)
+				: Collections.emptyMap();
 		
 		boolean anyConfirmed = appointments.stream()
 				.anyMatch(a -> Status.confirmed == a.getStatus());
@@ -98,7 +105,8 @@ public class AppointmentListEditController extends AppointmentListController {
 		List<AppointmentRow> rows = new ArrayList<>(appointments.size());
 		for (Appointment appointment : appointments) {
 			List<Participation> participations = appointmentKeyToParticipations.getOrDefault(appointment.getKey(), emptyList());
-			AppointmentRow row = createRow(appointment, participations, !anyConfirmed);
+			List<BigBlueButtonRecordingReference> recordingReferences = appointmentKeyToRecordingReferences.getOrDefault(appointment.getKey(), emptyList());
+			AppointmentRow row = createRow(appointment, participations, recordingReferences, !anyConfirmed);
 			if (row != null) {
 				rows.add(row);
 			}
@@ -111,7 +119,8 @@ public class AppointmentListEditController extends AppointmentListController {
 		return rows;
 	}
 	
-	private AppointmentRow createRow(Appointment appointment, List<Participation> participations, boolean noAppointmentConfirmed) {
+	private AppointmentRow createRow(Appointment appointment, List<Participation> participations,
+			List<BigBlueButtonRecordingReference> recordingReferences, boolean noAppointmentConfirmed) {
 		AppointmentRow row = new AppointmentRow(appointment);
 		
 		forgeAppointmentView(row, appointment);
@@ -182,6 +191,10 @@ public class AppointmentListEditController extends AppointmentListController {
 		
 		forgeDeleteLink(row);
 		forgeEditLink(row);
+		
+		if (secCallback.canWatchRecording(organizers, participations)) {
+			forgeRecordingReferencesLinks(row, recordingReferences);
+		}
 		
 		return row;
 	}

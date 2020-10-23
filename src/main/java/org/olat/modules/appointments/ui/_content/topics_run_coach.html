@@ -85,6 +85,13 @@
 												$r.escapeHtml($topic.getDetails())
 											</div>
 										#end
+										#if($r.isNotNull($topic.getRecordingLinkNames()))
+											<div>
+												#foreach($recordingLinkName in $topic.getRecordingLinkNames())
+													$r.render($recordingLinkName)
+												#end
+											</div>
+										#end
 										#if($r.isNotEmpty($topic.participants))
 											<div class="text-muted">
 												#foreach($participant in $topic.participants)

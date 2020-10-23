@@ -25,11 +25,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityManager;
@@ -44,6 +47,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.modules.appointments.Appointment;
@@ -66,10 +70,14 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingDeletionHandler;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
@@ -731,6 +739,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		String name = topic.getTitle();
 		String subIdent = topic.getSubIdent();
 		BigBlueButtonMeeting meeting = bigBlueButtonManager.createAndPersistMeeting(name, entry, subIdent, null, identity);
+		meeting.setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum.auto);
 		return appointmentDao.saveAppointment(appointment, meeting);
 	}
 
@@ -812,7 +821,69 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		return identityKeys.stream()
 				.map(key -> userManager.getUserDisplayName(key))
 				.sorted(String.CASE_INSENSITIVE_ORDER)
-				.collect(Collectors.joining(" /"));
+				.collect(Collectors.joining(" / "));
+	}
+
+	@Override
+	public void syncRecorings(Topic topic) {
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setTopic(topic);
+		appointmentDao.loadAppointments(params).stream()
+				.map(Appointment::getMeeting)
+				.filter(Objects::nonNull)
+				.forEach(meeting -> bigBlueButtonManager.getRecordingAndReferences(meeting, errors));
+	}
+
+	@Override
+	public Map<Long, List<BigBlueButtonRecordingReference>> getRecordingReferences(List<Appointment> appointments) {
+		List<BigBlueButtonMeeting> meetings = appointments.stream()
+				.map(Appointment::getMeeting)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+		
+		// Sync recording of running and of just finished meetings
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		Predicate<BigBlueButtonMeeting> isRecordingSyncNeeded = getIsRecordingSyncNeeded();
+		meetings.stream()
+				.filter(isRecordingSyncNeeded)
+				.forEach(meeting -> bigBlueButtonManager.getRecordingAndReferences(meeting, errors));
+		
+		// Get the recordings of all meetings from database
+		List<BigBlueButtonMeeting> allMeetings = meetings.stream()
+				.collect(Collectors.toList());
+		Map<Long, List<BigBlueButtonRecordingReference>> meetingKeyToRecordings = bigBlueButtonManager
+				.getRecordingReferences(allMeetings).stream()
+				.collect(Collectors.groupingBy(recording -> recording.getMeeting().getKey()));
+		
+		Map<Long, List<BigBlueButtonRecordingReference>> appointmentKeyToRecordings = new HashMap<>();
+		for (Appointment appointment : appointments) {
+			if (appointment.getMeeting() != null) {
+				List<BigBlueButtonRecordingReference> recordings = meetingKeyToRecordings.get(appointment.getMeeting().getKey());
+				if (recordings != null) {
+					appointmentKeyToRecordings.put(appointment.getKey(), recordings);
+				}
+			}
+		}
+		 
+		return appointmentKeyToRecordings;
+	}
+
+	private Predicate<BigBlueButtonMeeting> getIsRecordingSyncNeeded() {
+		Date now = new Date();
+		Date oneHourInPast = DateUtils.addHours(now, -1);
+		// The meeting has started and has not yet or recently (not more than one hour ago) ended.
+		return (BigBlueButtonMeeting meeting) -> (meeting.getStartDate().before(now) && meeting.getEndDate().after(oneHourInPast));
+	}
+
+	@Override
+	public String getRecordingUrl(UserSession usess, BigBlueButtonRecordingReference recordingReference) {
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		Optional<BigBlueButtonRecording> recording = bigBlueButtonManager.getRecordingAndReferences(recordingReference.getMeeting(), errors).stream()
+				.filter(rr -> recordingReference.getRecordingId().equals(rr.getRecording().getRecordId()))
+				.map(BigBlueButtonRecordingWithReference::getRecording)
+				.findFirst();
+		return recording.isPresent()? bigBlueButtonManager.getRecordingUrl(usess, recording.get()): null;
 	}
 
 }

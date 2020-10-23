@@ -29,6 +29,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -246,22 +247,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				dataModel.getValueAt(row, columnIndex) : null;
 		if (cellValue instanceof FormItem) {
 			FormItem formItem = (FormItem)cellValue;
-			formItem.setTranslator(translator);
-			if(ftE.getRootForm() != formItem.getRootForm()) {
-				formItem.setRootForm(ftE.getRootForm());
-			}
-			ftE.addFormItem(formItem);
-			if(formItem.isVisible()) {
-				Component cmp = formItem.getComponent();
-				cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, renderResult, null);
-				cmp.setDirty(false);
-			}
-			if(formItem.hasError()) {
-				Component errorCmp = formItem.getErrorC();
-				errorCmp.getHTMLRendererSingleton().render(renderer, target, formItem.getErrorC(),
-						ubu, translator, renderResult, null);
-				errorCmp.setDirty(false);
-			}
+			renderFormItem(renderer, target, ubu, translator, renderResult, ftE, formItem);
 		} else if(cellValue instanceof Component) {
 			Component cmp = (Component)cellValue;
 			cmp.setTranslator(translator);
@@ -269,10 +255,35 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, renderResult, null);
 				cmp.setDirty(false);
 			}
+		} else if (cellValue instanceof FormItemCollection) {
+			FormItemCollection collection = (FormItemCollection)cellValue;
+			for (FormItem formItem : collection.getFormItems()) {
+				renderFormItem(renderer, target, ubu, translator, renderResult, ftE, formItem);
+			}
 		} else {
 			fcm.getCellRenderer().render(renderer, target, cellValue, row, ftC, ubu, translator);
 		}
 		target.append("</td>");
+	}
+
+	private void renderFormItem(Renderer renderer, StringOutput target, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, FlexiTableElementImpl ftE, FormItem formItem) {
+		formItem.setTranslator(translator);
+		if(ftE.getRootForm() != formItem.getRootForm()) {
+			formItem.setRootForm(ftE.getRootForm());
+		}
+		ftE.addFormItem(formItem);
+		if(formItem.isVisible()) {
+			Component cmp = formItem.getComponent();
+			cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, renderResult, null);
+			cmp.setDirty(false);
+		}
+		if(formItem.hasError()) {
+			Component errorCmp = formItem.getErrorC();
+			errorCmp.getHTMLRendererSingleton().render(renderer, target, formItem.getErrorC(),
+					ubu, translator, renderResult, null);
+			errorCmp.setDirty(false);
+		}
 	}
 
 	@Override
