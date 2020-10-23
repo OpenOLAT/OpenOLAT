@@ -4512,6 +4512,7 @@ create index idx_org_role_to_r_to_org_idx on o_org_role_to_right(fk_organisation
 -- Contact tracing
 alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
 create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
+create index idx_qr_id_idx on o_ct_location (l_qr_id);
 
 
 commit

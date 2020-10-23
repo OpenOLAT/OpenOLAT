@@ -116,6 +116,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
         customQrTextEl = uifactory.addCheckboxesHorizontal("contact.tracing.cols.qr.text", editForm, ON_KEYS, TranslatorHelper.translateAll(getTranslator(), QR_TEXT_VALUES));
         customQrTextEl.addActionListener(FormEvent.ONCHANGE);
         qrTextEl = uifactory.addRichTextElementForStringDataCompact("qr.text.element", null, null, -1, -1, null, editForm, ureq.getUserSession(), getWindowControl());
+        qrTextEl.getEditorConfiguration().disableImageAndMovie();
         qrTextEl.addActionListener(FormEvent.ONCHANGE);
         guestsAllowedEl = uifactory.addCheckboxesHorizontal("contact.tracing.cols.guest", editForm, ON_KEYS, TranslatorHelper.translateAll(getTranslator(), GUEST_VALUES));
 
@@ -140,6 +141,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
             tableEl.setValue(location.getTable());
             guestsAllowedEl.select(ON_KEYS[0], location.isAccessibleByGuests());
             qrIdEl.setValue(location.getQrId());
+            qrIdEl.setExampleKey("noTransOnlyParam", new String[]{ContactTracingDispatcher.getRegistrationUrl(location.getQrId())});
             qrTextEl.setValue(location.getQrText());
 
             // Check whether custom Qr text exists
@@ -153,6 +155,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
 
         } else {
             qrTextEl.setVisible(false);
+            guestsAllowedEl.select(ON_KEYS[0], true);
             generateNumericQrID();
         }
     }
@@ -167,6 +170,8 @@ public class ContactTracingLocationEditController extends FormBasicController {
             updatePdfPreview(ureq);
         } else if (source == generatePdfPreviewLink) {
             generatePdfPreview(ureq);
+        } else if (source == customQrTextEl) {
+            qrTextEl.setVisible(customQrTextEl.isSelected(0));
         }
     }
 
@@ -269,7 +274,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
             }
             // If qrId is not used yet
             qrIdEl.setValue(qrId);
-            qrIdEl.setExampleKey("noTransOnlyParam", new String[]{ContactTracingDispatcher.getMeetingUrl(qrId)});
+            qrIdEl.setExampleKey("noTransOnlyParam", new String[]{ContactTracingDispatcher.getRegistrationUrl(qrId)});
         }
 
         validateFormItem(qrIdEl);

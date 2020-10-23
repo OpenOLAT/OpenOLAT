@@ -202,16 +202,18 @@ public class ContactTracingLocationDAO {
 
     public boolean qrIdExists(String qrId) {
         String query = new StringBuilder()
-                .append("select count(location) from contactTracingLocation location ")
-                .append("where qrId=:qrIdToCheck")
+                .append("select location.key from contactTracingLocation as location ")
+                .append("where location.qrId=:qrIdToCheck")
                 .toString();
 
-        Long quantity = dbInstance.getCurrentEntityManager()
+        List<Long> locations = dbInstance.getCurrentEntityManager()
                 .createQuery(query, Long.class)
                 .setParameter("qrIdToCheck", qrId)
-                .getSingleResult();
+                .setMaxResults(1)
+                .setFirstResult(0)
+                .getResultList();
 
-        return quantity > 0;
+        return !locations.isEmpty();
 
     }
 }

@@ -44,14 +44,18 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
+import org.olat.modules.contacttracing.ContactTracingModule;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
+import org.olat.user.UserPropertiesConfig;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,9 +76,14 @@ public class ContactTracingReportController extends FormBasicController {
 
     @Autowired
     ContactTracingManager contactTracingManager;
+    @Autowired
+    private UserPropertiesConfig userPropertiesConfig;
 
     public ContactTracingReportController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl);
+        setTranslator(userPropertiesConfig.getTranslator(getTranslator()));
+        setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
+        setTranslator(Util.createPackageTranslator(ContactTracingModule.class, getLocale(), getTranslator()));
 
         initForm(ureq);
         loadData(ureq);
@@ -289,21 +298,21 @@ public class ContactTracingReportController extends FormBasicController {
         Row headerRow = sheet.newRow();
 
         List<String> columns = new ArrayList<>();
-        columns.add("startTime");
-        columns.add("endTime");
-        columns.add(UserConstants.NICKNAME);
-        columns.add(UserConstants.FIRSTNAME);
-        columns.add(UserConstants.LASTNAME);
-        columns.add(UserConstants.STREET);
-        columns.add(UserConstants.EXTENDEDADDRESS);
-        columns.add(UserConstants.ZIPCODE);
-        columns.add(UserConstants.CITY);
-        columns.add(UserConstants.EMAIL);
-        columns.add(UserConstants.INSTITUTIONALEMAIL);
-        columns.add("genericEmail");
-        columns.add(UserConstants.TELMOBILE);
-        columns.add(UserConstants.TELPRIVATE);
-        columns.add(UserConstants.TELOFFICE);
+        columns.add(translate("contact.tracing.start.time"));
+        columns.add(translate("contact.tracing.end.time"));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.NICKNAME).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.FIRSTNAME).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.LASTNAME).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.STREET).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.EXTENDEDADDRESS).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.ZIPCODE).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.CITY).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.EMAIL).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.INSTITUTIONALEMAIL).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler("genericEmailProperty1").i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.TELMOBILE).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.TELPRIVATE).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.TELOFFICE).i18nColumnDescriptorLabelKey()));
 
         for (String headerValue : columns) {
             headerRow.addCell(columns.indexOf(headerValue), headerValue, workbook.getStyles().getHeaderStyle());

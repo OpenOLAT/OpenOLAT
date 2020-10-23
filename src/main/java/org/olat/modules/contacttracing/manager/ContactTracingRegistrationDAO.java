@@ -26,7 +26,6 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.contacttracing.ContactTracingLocation;
-import org.olat.modules.contacttracing.ContactTracingModule;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
 import org.olat.modules.contacttracing.model.ContactTracingRegistrationImpl;
@@ -43,8 +42,6 @@ public class ContactTracingRegistrationDAO {
 
     @Autowired
     private DB dbInstance;
-    @Autowired
-    private ContactTracingModule contactTracingModule;
 
     public ContactTracingRegistration create(ContactTracingLocation location, Date startDate, Date deletionDate) {
         ContactTracingRegistrationImpl entry = new ContactTracingRegistrationImpl();
@@ -145,13 +142,15 @@ public class ContactTracingRegistrationDAO {
 
     public boolean anyRegistrationAvailable() {
         String query = new StringBuilder()
-                .append("select count(entry) contactTracingRegistration entry")
+                .append("select registration.key contactTracingRegistration as registration")
                 .toString();
 
-        Long count = dbInstance.getCurrentEntityManager()
+        List<Long> registrations = dbInstance.getCurrentEntityManager()
                 .createQuery(query, Long.class)
-                .getSingleResult();
+                .setFirstResult(0)
+                .setMaxResults(1)
+                .getResultList();
 
-        return count != null && count > 0;
+        return !registrations.isEmpty();
     }
 }

@@ -56,7 +56,6 @@ public class ContactTracingConfirmResetController extends FormBasicController {
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
         warningEl = uifactory.addStaticTextElement("warning", null, warning, formLayout);
-        // warningEl.setElementCssClass("o_error");
 
         confirmationEl = uifactory.addCheckboxesHorizontal("contact.tracing.reset.confirmation", "contact.tracing.reset.confirmation.label", formLayout, CONFIRMATION_KEYS, new String[]{confirmation});
 

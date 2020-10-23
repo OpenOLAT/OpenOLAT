@@ -51,7 +51,7 @@ public class ContactTracingPDFController extends BasicController {
         Map<ContactTracingLocation, String> locationUrlMap = new HashMap<>();
 
         for (ContactTracingLocation location : locations) {
-            locationUrlMap.put(location, ContactTracingDispatcher.getMeetingUrl(location.getQrId()));
+            locationUrlMap.put(location, ContactTracingDispatcher.getRegistrationUrl(location.getQrId()));
         }
 
         qrContainer.contextPut("generalInstructions", contactTracingModule.getQrCodeInstructions());

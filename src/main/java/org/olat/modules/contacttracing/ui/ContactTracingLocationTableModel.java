@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.contacttracing.ContactTracingDispatcher;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 
 /**
@@ -137,32 +138,35 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
     }
 
     @Override
-    public Object getValueAt(ContactTracingLocation row, int col) {
+    public Object getValueAt(ContactTracingLocation location, int col) {
         switch (ContactTracingLocationCols.values()[col]) {
             case key:
-                return row.getKey();
+                return location.getKey();
             case reference:
-                return row.getReference();
+                return location.getReference();
             case title:
-                return row.getTitle();
+                return location.getTitle();
             case building:
-                return row.getBuilding();
+                return location.getBuilding();
             case room:
-                return row.getRoom();
+                return location.getRoom();
             case sector:
-                return row.getSector();
+                return location.getSector();
             case table:
-                return row.getTable();
+                return location.getTable();
             case qrId:
-                return row.getQrId();
+                return location.getQrId();
             case qrText:
-                return row.getQrText();
+                // TODO ALEX REndering
+                return location.getQrText();
+            case url:
+                return ContactTracingDispatcher.getRegistrationUrl(location.getQrId());
             case guest:
-                return row.isAccessibleByGuests();
+                return location.isAccessibleByGuests();
             case registrations:
-                return locationRegistrationMap.get(row);
+                return locationRegistrationMap.get(location);
             case settings:
-                return toolLinks.get(row);
+                return toolLinks.get(location);
             default:
                 return "ERROR";
         }
@@ -191,6 +195,7 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
         qrText("contact.tracing.cols.qr.text"),
         guest("contact.tracing.cols.guest"),
         registrations("contact.tracing.cols.registrations"),
+        url("contact.tracing.cols.url"),
         settings("contact.tracing.cols.settings", "o_icon o_icon-lg o_icon_actions");
 
         private final String i18nHeaderKey;

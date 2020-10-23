@@ -145,3 +145,4 @@ create table o_ct_registration (
 
 alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
 create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
+create index idx_qr_id_idx on o_ct_location (l_qr_id);

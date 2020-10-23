@@ -58,7 +58,7 @@ public class ContactTracingDispatcher implements Dispatcher {
 
 	private static final String CONTACT_TRACING_PATH = "trace";
 
-	public static String getMeetingUrl(String identifier) {
+	public static String getRegistrationUrl(String identifier) {
 		return new StringBuilder()
 				.append(Settings.getServerContextPathURI())
 				.append("/")

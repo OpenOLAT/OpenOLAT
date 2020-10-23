@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.contacttracing.ContactTracingLocation;
+import org.olat.modules.contacttracing.ContactTracingRegistration;
 
 /**
  * Initial date: 22.10.20<br>
@@ -37,38 +38,53 @@ public class ContactTracingHelper {
 
 		locationDetailsBuilder
 				.append("<p>")
-				.append("<b>").append(translator.translate("contact.tracing.location")).append(" ").append(location.getReference()).append("</b><br>");
+				.append("<table class='o_contact_tracing_location_details_table'>")
+				.append("<tr>");
+
+		// TODO CSS STYLE padding-right: 30px;
+		if (StringHelper.containsNonWhitespace(location.getTitle())) {
+			locationDetailsBuilder.append("<th scope='row'").append("<b>").append(translator.translate("contact.tracing.location")).append("</th>")
+				.append("<td>").append(location.getTitle()).append("</td>");
+		} else {
+			locationDetailsBuilder.append("<th colspan='2' style='padding-right: 30px;'>").append(translator.translate("contact.tracing.location")).append("</th>");
+		}
+
+		locationDetailsBuilder.append("</tr>");
 
 		if (StringHelper.containsNonWhitespace(location.getTitle())) {
-			locationDetailsBuilder.append(location.getTitle()).append("<br>");
+			locationDetailsBuilder.append("<tr>");
+			locationDetailsBuilder.append("<th scope='row'>").append(translator.translate("contact.tracing.cols.reference")).append("</th>");
+			locationDetailsBuilder.append("<td>").append(location.getReference()).append("</td>");
+			locationDetailsBuilder.append("</tr>");
 		}
 
-		if (StringHelper.containsNonWhitespace(location.getBuilding()) || StringHelper.containsNonWhitespace(location.getRoom())) {
-			if (StringHelper.containsNonWhitespace(location.getBuilding())) {
-				locationDetailsBuilder.append(location.getBuilding());
-			}
-			if (StringHelper.containsNonWhitespace(location.getBuilding()) && StringHelper.containsNonWhitespace(location.getRoom())) {
-				locationDetailsBuilder.append(" - ");
-			}
-			if (StringHelper.containsNonWhitespace(location.getRoom())) {
-				locationDetailsBuilder.append(location.getBuilding());
-			}
-			locationDetailsBuilder.append("<br>");
+		if (StringHelper.containsNonWhitespace(location.getBuilding())) {
+			locationDetailsBuilder.append("<tr>");
+			locationDetailsBuilder.append("<th scope='row'>").append(translator.translate("contact.tracing.cols.building")).append("</th>");
+			locationDetailsBuilder.append("<td>").append(location.getBuilding()).append("</td>");
+			locationDetailsBuilder.append("</tr>");
+		}
+		if (StringHelper.containsNonWhitespace(location.getRoom())) {
+			locationDetailsBuilder.append("<tr>");
+			locationDetailsBuilder.append("<th scope='row'>").append(translator.translate("contact.tracing.cols.room")).append("</th>");
+			locationDetailsBuilder.append("<td>").append(location.getRoom()).append("</td>");
+			locationDetailsBuilder.append("</tr>");
 		}
 
-		if (StringHelper.containsNonWhitespace(location.getSector()) || StringHelper.containsNonWhitespace(location.getTable())) {
-			if (StringHelper.containsNonWhitespace(location.getSector())) {
-				locationDetailsBuilder.append(location.getSector());
-			}
-			if (StringHelper.containsNonWhitespace(location.getSector()) && StringHelper.containsNonWhitespace(location.getTable())) {
-				locationDetailsBuilder.append(" - ");
-			}
-			if (StringHelper.containsNonWhitespace(location.getTable())) {
-				locationDetailsBuilder.append(location.getTable());
-			}
+		if (StringHelper.containsNonWhitespace(location.getSector())) {
+			locationDetailsBuilder.append("<tr>");
+			locationDetailsBuilder.append("<th scope='row'>").append(translator.translate("contact.tracing.cols.sector")).append("</th>");
+			locationDetailsBuilder.append("<td>").append(location.getSector()).append("</td>");
+			locationDetailsBuilder.append("</tr>");
+		}
+		if (StringHelper.containsNonWhitespace(location.getTable())) {
+			locationDetailsBuilder.append("<tr>");
+			locationDetailsBuilder.append("<th scope='row'>").append(translator.translate("contact.tracing.cols.table")).append("</th>");
+			locationDetailsBuilder.append("<td>").append(location.getTable()).append("</td>");
+			locationDetailsBuilder.append("</tr>");
 		}
 
-		locationDetailsBuilder.append("</p>");
+		locationDetailsBuilder.append("</table>").append("</p>");
 
 		return locationDetailsBuilder.toString();
 	}
@@ -89,7 +105,7 @@ public class ContactTracingHelper {
 		return subjectBuilder.toString();
 	}
 
-	public static String getMailBody(Translator translator, ContactTracingLocation location, FormItem firstNameEl, FormItem lastNameEl) {
+	public static String getMailBody(Translator translator, int retentionPeriod, ContactTracingLocation location, FormItem firstNameEl, FormItem lastNameEl) {
 		StringBuilder subjectBuilder = new StringBuilder();
 
 		if (firstNameEl instanceof TextElement && lastNameEl instanceof TextElement &&
@@ -102,7 +118,7 @@ public class ContactTracingHelper {
 		}
 
 		subjectBuilder.append("<br>")
-				.append(translator.translate("contact.tracing.registration.confirmation.mail.body"))
+				.append(translator.translate("contact.tracing.registration.confirmation.mail.body", new String[] {String.valueOf(retentionPeriod)}))
 				.append(getLocationsDetails(translator, location)).append("<br>")
 				.append(translator.translate("contact.tracing.registration.confirmation.mail.footer"));
 
@@ -125,5 +141,25 @@ public class ContactTracingHelper {
 		}
 
 		return "No valid mail provided!";
+	}
+
+	public static String getName(ContactTracingRegistration registration) {
+		StringBuilder nameBuilder = new StringBuilder();
+
+		if (StringHelper.containsNonWhitespace(registration.getFirstName()) || StringHelper.containsNonWhitespace(registration.getLastName())) {
+			if (StringHelper.containsNonWhitespace(registration.getFirstName())) {
+				nameBuilder.append(registration.getFirstName());
+			}
+
+			if (StringHelper.containsNonWhitespace(registration.getFirstName()) && StringHelper.containsNonWhitespace(registration.getLastName())) {
+				nameBuilder.append(" ");
+			}
+
+			if (StringHelper.containsNonWhitespace(registration.getFirstName())) {
+				nameBuilder.append(registration.getLastName());
+			}
+		}
+
+		return nameBuilder.toString();
 	}
 }

@@ -21,6 +21,8 @@ package org.olat.modules.contacttracing;
 
 import java.util.Date;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * Initial date: 19.10.20<br>
  *
@@ -125,15 +127,15 @@ public class ContactTracingSearchParams {
      * @return Boolean
      */
     public boolean isEmpty() {
-        return location == null &&
-                fullTextSearch == null &&
+        return  location == null &&
                 startDate == null &&
                 endDate == null &&
-                reference == null &&
-                title == null &&
-                building == null &&
-                room == null &&
-                sector == null &&
-                table == null;
+                !StringHelper.containsNonWhitespace(fullTextSearch) &&
+                !StringHelper.containsNonWhitespace(reference) &&
+                !StringHelper.containsNonWhitespace(title) &&
+                !StringHelper.containsNonWhitespace(building) &&
+                !StringHelper.containsNonWhitespace(room) &&
+                !StringHelper.containsNonWhitespace(sector) &&
+                !StringHelper.containsNonWhitespace(table);
     }
 }

@@ -31,6 +31,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.modules.contacttracing.ContactTracingLocation;
+import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.manager.ContactTracingManagerImpl;
 
 /**
@@ -49,6 +50,8 @@ public class ContactTracingRegistrationExternalWrapperController extends BasicCo
 	private ContactTracingRegistrationSelectionController selectionController;
 	private ContactTracingRegistrationFormController formController;
 	private ContactTracingRegistrationConfirmationController confirmationController;
+
+	private ContactTracingRegistration registration;
 
 	public ContactTracingRegistrationExternalWrapperController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location) {
 		super(ureq, wControl);
@@ -91,6 +94,7 @@ public class ContactTracingRegistrationExternalWrapperController extends BasicCo
 			}
 		} else if (source == formController) {
 			if (event == Event.DONE_EVENT) {
+				registration = formController.getRegistration();
 				openConfirmation(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				doRedirectDefault(ureq);
@@ -133,7 +137,7 @@ public class ContactTracingRegistrationExternalWrapperController extends BasicCo
 
 	private void openConfirmation(UserRequest ureq) {
 		if (confirmationController == null) {
-			confirmationController = new ContactTracingRegistrationConfirmationController(ureq, getWindowControl());
+			confirmationController = new ContactTracingRegistrationConfirmationController(ureq, getWindowControl(), location, registration);
 			listenTo(confirmationController);
 		}
 

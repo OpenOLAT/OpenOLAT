@@ -19,16 +19,23 @@
  */
 package org.olat.modules.contacttracing.ui;
 
+import java.util.Date;
+
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.contacttracing.ContactTracingLocation;
+import org.olat.modules.contacttracing.ContactTracingRegistration;
 
 /**
  * Initial date: 21.10.20<br>
@@ -37,10 +44,16 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class ContactTracingRegistrationConfirmationController extends FormBasicController {
 
+    private final ContactTracingLocation location;
+    private final ContactTracingRegistration registration;
+
     private FormLink closeLink;
 
-    public ContactTracingRegistrationConfirmationController(UserRequest ureq, WindowControl wControl) {
+    public ContactTracingRegistrationConfirmationController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location, ContactTracingRegistration registration) {
         super(ureq, wControl, "contact_tracing_registration_confirmation");
+
+        this.location = location;
+        this.registration = registration;
 
         initForm(ureq);
     }
@@ -48,6 +61,39 @@ public class ContactTracingRegistrationConfirmationController extends FormBasicC
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
         closeLink = uifactory.addFormLink("closeButton",  "contact.tracing.registration.close", null ,formLayout, Link.BUTTON);
+
+        initContext((FormLayoutContainer) formLayout);
+    }
+
+    private void initContext(FormLayoutContainer container) {
+        container.contextPut("registrationSuccessful", translate("contact.tracing.registration.successful"));
+        container.contextPut("registrationMessage", translate("contact.tracing.registration.successful.message"));
+
+        // Registration
+        container.contextPut("nickName", registration.getNickName());
+        container.contextPut("name", ContactTracingHelper.getName(registration));
+
+        // Date
+        Date startDate = registration.getStartDate();
+        Date endDate = registration.getEndDate();
+        boolean sameDay = CalendarUtils.isSameDay(startDate, endDate);
+
+        container.contextPut("sameDay", sameDay);
+        container.contextPut("startDate", StringHelper.formatLocaleDateFull(startDate, getLocale()));
+        container.contextPut("startTime",  StringHelper.formatLocaleTime(startDate, getLocale()));
+        container.contextPut("endDate",  StringHelper.formatLocaleDateFull(endDate, getLocale()));
+        container.contextPut("endTime",  StringHelper.formatLocaleTime(endDate, getLocale()));
+
+        // Location
+        container.contextPut("reference", location.getReference());
+        container.contextPut("title", location.getTitle());
+        container.contextPut("building", location.getBuilding());
+        container.contextPut("room", location.getRoom());
+        container.contextPut("sector", location.getSector());
+        container.contextPut("table", location.getTable());
+
+        // Icon
+        container.contextPut("confirmationIcon", "<i class='o_icon o_icon_contact_tracing_confirmation'></i>");
     }
 
     @Override

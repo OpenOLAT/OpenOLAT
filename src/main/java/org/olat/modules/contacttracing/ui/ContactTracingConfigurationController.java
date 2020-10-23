@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ContactTracingConfigurationController extends FormBasicController {
 
-    public static final String CONTACT_TRACING_CONFIRMATION_MAIL_KEY = "contact.tracing.registration.confirmation.mail";
+    public static final String CONTACT_TRACING_CONFIRMATION_MAIL_KEY = "contact.tracing.registration.confirmation.mail.body";
     public static final String CONTACT_TRACING_REGISTRATION_INTRO_KEY = "contact.tracing.registration.intro";
 
     private static final String[] ENABLED_KEYS = new String[]{"on"};

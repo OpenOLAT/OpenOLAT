@@ -28,6 +28,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -40,6 +41,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.TranslatorHelper;
+import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
@@ -56,6 +58,7 @@ import org.olat.modules.contacttracing.ContactTracingModule;
 import org.olat.modules.contacttracing.ContactTracingModule.AttributeState;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.user.ProfileFormController;
+import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,8 +78,10 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
     private final ContactTracingLocation location;
     private final boolean anonymous;
 
-    private DateChooser startTimeEl;
-    private DateChooser endTimeEl;
+    private ContactTracingRegistration registration;
+
+    private DateChooser startDateEl;
+    private DateChooser endDateEl;
 
     private FormItem nickNameEl;
     private FormItem firstNameEl;
@@ -97,6 +102,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
     private MultipleSelectionElement saveUserPropertiesToProfileEl;
 
     private Map<UserPropertyHandler, FormItem> userPropertyHandlerFormItemMap;
+    private Map<UserPropertyHandler, Boolean> updateablePropertyMap;
 
     @Autowired
     private ContactTracingManager contactTracingManager;
@@ -106,6 +112,10 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
     private UserPropertiesConfig userPropertiesConfig;
     @Autowired
     private MailManager mailManager;
+    @Autowired
+    private UserManager userManager;
+    @Autowired
+    private BaseSecurity baseSecurity;
 
     public ContactTracingRegistrationFormController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location) {
         this(ureq, wControl, location, false);
@@ -117,7 +127,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 
         UserSession usess = ureq.getUserSession();
-        this.user = usess.isAuthenticated() && !usess.getRoles().isGuestOnly() ? getIdentity().getUser() : null;
+        this.user = usess.isAuthenticated() && !usess.getRoles().isGuestOnly() ? baseSecurity.loadIdentityByKey(getIdentity().getKey()).getUser() : null;
         this.location = location;
         this.anonymous = anonymous && contactTracingModule.isAnonymousRegistrationForRegisteredUsersAllowed();
 
@@ -129,6 +139,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
         // List containing all form items
         userPropertyHandlerFormItemMap = new HashMap<>();
+        updateablePropertyMap = new HashMap<>();
 
         // Time recording
         FormLayoutContainer timeRecording = FormLayoutContainer.createDefaultFormLayout("timeRecording", getTranslator());
@@ -140,13 +151,13 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         formLayout.add(timeRecording);
 
         // Start and end time
-        startTimeEl = uifactory.addDateChooser("contact.tracing.start.time", null, timeRecording);
-        startTimeEl.setDateChooserTimeEnabled(true);
-        startTimeEl.setUserObject(contactTracingModule.getAttendanceStartTimeState());
+        startDateEl = uifactory.addDateChooser("contact.tracing.start.time", null, timeRecording);
+        startDateEl.setDateChooserTimeEnabled(true);
+        startDateEl.setUserObject(contactTracingModule.getAttendanceStartTimeState());
 
-        endTimeEl = uifactory.addDateChooser("contact.tracing.end.time", null, timeRecording);
-        endTimeEl.setDateChooserTimeEnabled(true);
-        endTimeEl.setUserObject(contactTracingModule.getAttendanceEndTimeState());
+        endDateEl = uifactory.addDateChooser("contact.tracing.end.time", null, timeRecording);
+        endDateEl.setDateChooserTimeEnabled(true);
+        endDateEl.setUserObject(contactTracingModule.getAttendanceEndTimeState());
 
         // User identification
         FormLayoutContainer userIdentification = FormLayoutContainer.createDefaultFormLayout("userIdentification", getTranslator());
@@ -158,36 +169,43 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         nickNameEl = nickNameHandler.addFormItem(getLocale(), user, usageIdentifier, false, userIdentification);
         nickNameEl.setUserObject(contactTracingModule.getNickNameState());
         userPropertyHandlerFormItemMap.put(nickNameHandler, nickNameEl);
+        updateablePropertyMap.put(nickNameHandler, nickNameEl.isEnabled());
 
         UserPropertyHandler firstNameHandler = userPropertiesConfig.getPropertyHandler(UserConstants.FIRSTNAME);
         firstNameEl = firstNameHandler.addFormItem(getLocale(), user, usageIdentifier, false, userIdentification);
         firstNameEl.setUserObject(contactTracingModule.getFirstNameState());
         userPropertyHandlerFormItemMap.put(firstNameHandler, firstNameEl);
+        updateablePropertyMap.put(firstNameHandler, firstNameEl.isEnabled());
 
         UserPropertyHandler lastNameHandler = userPropertiesConfig.getPropertyHandler(UserConstants.LASTNAME);
         lastNameEl = lastNameHandler.addFormItem(getLocale(), user, usageIdentifier, false, userIdentification);
         lastNameEl.setUserObject(contactTracingModule.getLastNameState());
         userPropertyHandlerFormItemMap.put(lastNameHandler, lastNameEl);
+        updateablePropertyMap.put(lastNameHandler, lastNameEl.isEnabled());
 
         UserPropertyHandler streetHandler = userPropertiesConfig.getPropertyHandler(UserConstants.STREET);
         streetEl = streetHandler.addFormItem(getLocale(), user, usageIdentifier, false, userIdentification);
         streetEl.setUserObject(contactTracingModule.getStreetState());
         userPropertyHandlerFormItemMap.put(streetHandler, streetEl);
+        updateablePropertyMap.put(streetHandler, streetEl.isEnabled());
 
         UserPropertyHandler extraLineHandler = userPropertiesConfig.getPropertyHandler(UserConstants.EXTENDEDADDRESS);
         extraLineEl = extraLineHandler.addFormItem(getLocale(), user, usageIdentifier, false, userIdentification);
         extraLineEl.setUserObject(contactTracingModule.getExtraAddressLineState());
         userPropertyHandlerFormItemMap.put(extraLineHandler, extraLineEl);
+        updateablePropertyMap.put(extraLineHandler, extraLineEl.isEnabled());
 
         UserPropertyHandler zipCodeHandler = userPropertiesConfig.getPropertyHandler(UserConstants.ZIPCODE);
         zipCodeEl = zipCodeHandler.addFormItem(getLocale(), user, usageIdentifier, false, userIdentification);
         zipCodeEl.setUserObject(contactTracingModule.getZipCodeState());
         userPropertyHandlerFormItemMap.put(zipCodeHandler, zipCodeEl);
+        updateablePropertyMap.put(zipCodeHandler, zipCodeEl.isEnabled());
 
         UserPropertyHandler cityHandler = userPropertiesConfig.getPropertyHandler(UserConstants.CITY);
         cityEl = cityHandler.addFormItem(getLocale(), user, usageIdentifier, false, userIdentification);
         cityEl.setUserObject(contactTracingModule.getCityState());
         userPropertyHandlerFormItemMap.put(cityHandler, cityEl);
+        updateablePropertyMap.put(cityHandler, cityEl.isEnabled());
 
         // Contact information
         FormLayoutContainer contactInformation = FormLayoutContainer.createDefaultFormLayout("contactInformation", getTranslator());
@@ -199,31 +217,37 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         emailEl = emailHandler.addFormItem(getLocale(), user, usageIdentifier, false, contactInformation);
         emailEl.setUserObject(contactTracingModule.getEmailState());
         userPropertyHandlerFormItemMap.put(emailHandler, emailEl);
+        updateablePropertyMap.put(emailHandler, emailEl.isEnabled());
 
         UserPropertyHandler institutionalEmailHandler = userPropertiesConfig.getPropertyHandler(UserConstants.INSTITUTIONALEMAIL);
         institutionalEmailEl = institutionalEmailHandler.addFormItem(getLocale(), user, usageIdentifier, false, contactInformation);
         institutionalEmailEl.setUserObject(contactTracingModule.getInstitutionalEMailState());
         userPropertyHandlerFormItemMap.put(institutionalEmailHandler, institutionalEmailEl);
+        updateablePropertyMap.put(institutionalEmailHandler, institutionalEmailEl.isEnabled());
 
         UserPropertyHandler genericEmailHandler = userPropertiesConfig.getPropertyHandler("genericEmailProperty1");
         genericEmailEl = genericEmailHandler.addFormItem(getLocale(), user, usageIdentifier, false, contactInformation);
         genericEmailEl.setUserObject(contactTracingModule.getGenericEmailState());
         userPropertyHandlerFormItemMap.put(genericEmailHandler, genericEmailEl);
+        updateablePropertyMap.put(genericEmailHandler, genericEmailEl.isEnabled());
 
         UserPropertyHandler mobilePhoneHandler = userPropertiesConfig.getPropertyHandler(UserConstants.TELMOBILE);
         mobilePhoneEl = mobilePhoneHandler.addFormItem(getLocale(), user, usageIdentifier, false, contactInformation);
         mobilePhoneEl.setUserObject(contactTracingModule.getMobilePhoneState());
         userPropertyHandlerFormItemMap.put(mobilePhoneHandler, mobilePhoneEl);
+        updateablePropertyMap.put(mobilePhoneHandler, mobilePhoneEl.isEnabled());
 
         UserPropertyHandler privatePhoneHandler = userPropertiesConfig.getPropertyHandler(UserConstants.TELPRIVATE);
         privatePhoneEl = privatePhoneHandler.addFormItem(getLocale(), user, usageIdentifier, false, contactInformation);
         privatePhoneEl.setUserObject(contactTracingModule.getPrivatePhoneState());
         userPropertyHandlerFormItemMap.put(privatePhoneHandler, privatePhoneEl);
+        updateablePropertyMap.put(privatePhoneHandler, privatePhoneEl.isEnabled());
 
         UserPropertyHandler officePhoneHandler = userPropertiesConfig.getPropertyHandler(UserConstants.TELOFFICE);
         officePhoneEl = officePhoneHandler.addFormItem(getLocale(), user, usageIdentifier, false, contactInformation);
         officePhoneEl.setUserObject(contactTracingModule.getOfficePhoneState());
         userPropertyHandlerFormItemMap.put(officePhoneHandler, officePhoneEl);
+        updateablePropertyMap.put(officePhoneHandler, officePhoneEl.isEnabled());
 
         saveUserPropertiesToProfileEl = uifactory.addCheckboxesHorizontal("contact.tracing.registration.save.to.profile.label", contactInformation, ON_KEYS, TranslatorHelper.translateAll(getTranslator(), new String[] {"contact.tracing.registration.save.to.profile"}));
 
@@ -239,15 +263,15 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
     private void loadData() {
         Date startDate = new Date();
 
-        startTimeEl.setDate(startDate);
-        checkEnabled(startTimeEl);
-        checkMandatory(startTimeEl);
-        checkVisible(startTimeEl);
+        startDateEl.setDate(startDate);
+        checkEnabled(startDateEl);
+        checkMandatory(startDateEl);
+        checkVisible(startDateEl);
 
-        endTimeEl.setDate(DateUtils.addMinutes(startDate, contactTracingModule.getDefaultDuration()));
-        checkEnabled(endTimeEl);
-        checkMandatory(endTimeEl);
-        checkVisible(endTimeEl);
+        endDateEl.setDate(DateUtils.addMinutes(startDate, contactTracingModule.getDefaultDuration()));
+        checkEnabled(endDateEl);
+        checkMandatory(endDateEl);
+        checkVisible(endDateEl);
 
         for (FormItem formItem : userPropertyHandlerFormItemMap.values()) {
             checkEnabled(formItem);
@@ -256,7 +280,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
             checkAnonymous(formItem);
         }
 
-        saveUserPropertiesToProfileEl.setVisible(user != null);
+        saveUserPropertiesToProfileEl.setVisible(user != null && !anonymous);
     }
 
     private void checkVisible(FormItem formItem) {
@@ -278,10 +302,15 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
             formItem.setEnabled(formItem.isEnabled() && state != AttributeState.disabled && state != AttributeState.automatic);
         }
 
-        // Disable email element for authenticated users
-        if (formItem == emailEl && user != null) {
-            formItem.setEnabled(false);
-            return;
+        // Disable email element if prefilled
+        if (formItem == emailEl) {
+            if (StringHelper.containsNonWhitespace(((TextElement) emailEl).getValue())) {
+                formItem.setEnabled(true);
+                return;
+            } else {
+                formItem.setEnabled(true);
+                return;
+            }
         }
 
         // Enable all text elements which are empty
@@ -325,7 +354,39 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         boolean allOk = super.validateFormLogic(ureq);
 
         // Check every form item
-        userPropertyHandlerFormItemMap.values().forEach(this::validateFormItem);
+        for (FormItem item : userPropertyHandlerFormItemMap.values()) {
+            allOk &= validateFormItem(item);
+        }
+
+        // Validate date choosers
+        Date startDate = startDateEl.getDate();
+        Date endDate = endDateEl.getDate();
+        Date currentDate = new Date();
+
+        if (startDate != null) {
+            if (startDate.after(currentDate)) {
+                allOk = false;
+                startDateEl.setErrorKey("contact.tracing.registration.date.start.error", null);
+            } else {
+                startDateEl.clearError();
+            }
+        } else if (startDateEl.isMandatory()){
+            startDateEl.setErrorKey("contact.tracing.required", null);
+        }
+
+        if (endDate != null) {
+            if (startDate != null && endDate.before(startDate)) {
+                allOk = false;
+                endDateEl.setErrorKey("contact.tracing.registration.date.end.before.start.error", null);
+            } else if (endDate.before(currentDate)) {
+                allOk = false;
+                endDateEl.setErrorKey("contact.tracing.registration.date.end.error", null);
+            } else {
+                endDateEl.clearError();
+            }
+        } else if (endDateEl.isMandatory()){
+            endDateEl.setErrorKey("contact.tracing.required", null);
+        }
 
         return allOk;
     }
@@ -346,33 +407,40 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
     protected void formOK(UserRequest ureq) {
         // Save user information if selected
         if (user != null && saveUserPropertiesToProfileEl.isSelected(0 )) {
-            userPropertyHandlerFormItemMap.forEach((userPropertyHandler, formItem) -> userPropertyHandler.updateUserFromFormItem(user, formItem));
+            Identity updateIdentity = baseSecurity.loadIdentityByKey(getIdentity().getKey());
 
-            // TODO Why not available after reboot?
+            userPropertyHandlerFormItemMap.forEach((userPropertyHandler, formItem) -> {
+                // If user is allowed to update this property, save content to user profile
+                // This check is necessary in case of disabled user properties combined with mandatory fields in the contact tracing form
+                if (updateablePropertyMap.get(userPropertyHandler)) {
+                    userPropertyHandler.updateUserFromFormItem(updateIdentity.getUser(), formItem);
+                }
+            });
+            userManager.updateUserFromIdentity(updateIdentity);
         }
 
         // Create new entry
         Date deletionDate = DateUtils.addDays(new Date(), contactTracingModule.getRetentionPeriod());
-        ContactTracingRegistration entry = contactTracingManager.createRegistration(location, startTimeEl.getDate(), deletionDate);
+        ContactTracingRegistration registration = contactTracingManager.createRegistration(location, startDateEl.getDate(), deletionDate);
 
         // Set information
-        entry.setEndDate(endTimeEl.getDate());
-        entry.setNickName(getValue(nickNameEl));
-        entry.setFirstName(getValue(firstNameEl));
-        entry.setLastName(getValue(lastNameEl));
-        entry.setStreet(getValue(streetEl));
-        entry.setExtraAddressLine(getValue(extraLineEl));
-        entry.setZipCode(getValue(zipCodeEl));
-        entry.setCity(getValue(cityEl));
-        entry.setEmail(getValue(emailEl));
-        entry.setInstitutionalEmail(getValue(institutionalEmailEl));
-        entry.setGenericEmail(getValue(genericEmailEl));
-        entry.setPrivatePhone(getValue(privatePhoneEl));
-        entry.setMobilePhone(getValue(mobilePhoneEl));
-        entry.setOfficePhone(getValue(officePhoneEl));
+        registration.setEndDate(endDateEl.getDate());
+        registration.setNickName(getValue(nickNameEl));
+        registration.setFirstName(getValue(firstNameEl));
+        registration.setLastName(getValue(lastNameEl));
+        registration.setStreet(getValue(streetEl));
+        registration.setExtraAddressLine(getValue(extraLineEl));
+        registration.setZipCode(getValue(zipCodeEl));
+        registration.setCity(getValue(cityEl));
+        registration.setEmail(getValue(emailEl));
+        registration.setInstitutionalEmail(getValue(institutionalEmailEl));
+        registration.setGenericEmail(getValue(genericEmailEl));
+        registration.setPrivatePhone(getValue(privatePhoneEl));
+        registration.setMobilePhone(getValue(mobilePhoneEl));
+        registration.setOfficePhone(getValue(officePhoneEl));
 
         // Update entry
-        contactTracingManager.persistRegistration(entry);
+        this.registration = contactTracingManager.persistRegistration(registration);
 
         // Send mail
         sendMail();
@@ -382,7 +450,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
 
     private void sendMail() {
         String subject = ContactTracingHelper.getMailSubject(getTranslator(), location);
-        String body = ContactTracingHelper.getMailBody(getTranslator(), location, firstNameEl, lastNameEl);
+        String body = ContactTracingHelper.getMailBody(getTranslator(), contactTracingModule.getRetentionPeriod(), location, firstNameEl, lastNameEl);
         String decoratedBody = mailManager.decorateMailBody(body, getLocale());
         String recipientAddress = ContactTracingHelper.getMailAddress(emailEl, institutionalEmailEl, genericEmailEl);
         Address from;
@@ -402,6 +470,10 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         if (!result.isSuccessful()) {
             log.error("Could not send registration notification message: Location[" + location.getKey() + "], Recipient[" + recipientAddress + "]");
         }
+    }
+
+    public ContactTracingRegistration getRegistration() {
+        return registration;
     }
 
     @Override

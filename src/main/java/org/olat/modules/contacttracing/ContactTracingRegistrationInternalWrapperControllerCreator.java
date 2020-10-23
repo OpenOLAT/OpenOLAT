@@ -28,6 +28,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
+import org.olat.core.util.Util;
 import org.olat.modules.contacttracing.ui.ContactTracingRegistrationInternalWrapperController;
 
 /**
@@ -80,5 +81,11 @@ public class ContactTracingRegistrationInternalWrapperControllerCreator extends 
     @Override
     public ContextEntryControllerCreator clone() {
         return new ContactTracingRegistrationInternalWrapperControllerCreator(contactTracingManager);
+    }
+
+    @Override
+    public String getTabName(ContextEntry ce, UserRequest ureq) {
+        return Util.createPackageTranslator(ContactTracingRegistrationInternalWrapperController.class, ureq.getLocale())
+                .translate("contact.tracing.general.title");
     }
 }

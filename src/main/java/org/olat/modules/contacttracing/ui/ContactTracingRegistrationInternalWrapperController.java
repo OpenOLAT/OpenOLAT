@@ -41,8 +41,11 @@ import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingModule;
+import org.olat.modules.contacttracing.ContactTracingRegistration;
+import org.olat.modules.contacttracing.manager.ContactTracingManagerImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,7 +60,8 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 
 	private final ContactTracingLocation location;
 	private final VelocityContainer mainVC;
-	private final boolean skipSelection;
+
+	private ContactTracingRegistration registration;
 
 	private ContactTracingRegistrationFormController formController;
 	private ContactTracingRegistrationFormController anonymousFormController;
@@ -72,7 +76,6 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 
 		this.location = location;
 		this.mainVC = createVelocityContainer("contact_tracing_registration_wrapper");
-		this.skipSelection = skipSelection;
 
 		UserSession userSession = ureq.getUserSession();
 
@@ -91,7 +94,7 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		// Nothing to do here
+
 	}
 
 	@Override
@@ -106,6 +109,7 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 			}
 		} else if (source == formController) {
 			if (event == Event.DONE_EVENT) {
+				registration = formController.getRegistration();
 				openConfirmation(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				formController.doDispose();
@@ -113,10 +117,15 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 			}
 		} else if (source == confirmationController) {
 			if (event == Event.CLOSE_EVENT) {
-				doRedirect(ureq);
+				getWindowControl()
+						.getWindowBackOffice()
+						.getWindow()
+						.getDTabs()
+						.closeDTab(ureq, OresHelper.createOLATResourceableInstance(ContactTracingManagerImpl.CONTACT_TRACING_CONTEXT_KEY, location.getKey()), null);
 			}
 		} else if (source == anonymousFormController) {
 			if (event == Event.DONE_EVENT) {
+				registration = anonymousFormController.getRegistration();
 				openConfirmation(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				doRedirect(ureq);
@@ -199,7 +208,7 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 
 	private void openConfirmation(UserRequest ureq) {
 		if (confirmationController == null) {
-			confirmationController = new ContactTracingRegistrationConfirmationController(ureq, getWindowControl());
+			confirmationController = new ContactTracingRegistrationConfirmationController(ureq, getWindowControl(), location, registration);
 			listenTo(confirmationController);
 		}
 

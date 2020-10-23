@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -100,13 +102,19 @@ public class ContactTracingLocationListController extends FormBasicController {
         DefaultFlexiColumnModel qrIdColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.qrId);
         DefaultFlexiColumnModel registrationsColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.registrations);
 
+        // Url column
+        DefaultFlexiColumnModel urlColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.url);
+        urlColumn.setDefaultVisible(false);
+
         // Key column
         DefaultFlexiColumnModel keyColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.key);
         keyColumn.setDefaultVisible(false);
 
         // QR text column
         DefaultFlexiColumnModel qrTextColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.qrText);
+        TextFlexiCellRenderer textFlexiCellRenderer = new TextFlexiCellRenderer(EscapeMode.antisamy);
         qrTextColumn.setDefaultVisible(false);
+        qrTextColumn.setCellRenderer(textFlexiCellRenderer);
 
         // Guest column
         DefaultFlexiColumnModel guestColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.guest);
@@ -123,6 +131,7 @@ public class ContactTracingLocationListController extends FormBasicController {
         columnModel.addFlexiColumnModel(roomColumn);
         columnModel.addFlexiColumnModel(buildingColumn);
         columnModel.addFlexiColumnModel(qrIdColumn);
+        columnModel.addFlexiColumnModel(urlColumn);
         columnModel.addFlexiColumnModel(qrTextColumn);
         columnModel.addFlexiColumnModel(guestColumn);
         columnModel.addFlexiColumnModel(registrationsColumn);

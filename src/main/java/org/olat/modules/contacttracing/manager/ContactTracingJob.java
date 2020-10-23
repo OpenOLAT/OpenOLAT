@@ -40,7 +40,7 @@ public class ContactTracingJob extends JobWithDB {
         ContactTracingManager contactTracingManager = CoreSpringFactory.getImpl(ContactTracingManager.class);
         ContactTracingModule contactTracingModule = CoreSpringFactory.getImpl(ContactTracingModule.class);
 
-        if (contactTracingModule.isEnabled() || (!contactTracingModule.isEnabled() && contactTracingManager.anyRegistrationsAvailable())) {
+        if (contactTracingModule.isEnabled() || contactTracingManager.anyRegistrationsAvailable()) {
             contactTracingManager.pruneRegistrations();
         }
     }
