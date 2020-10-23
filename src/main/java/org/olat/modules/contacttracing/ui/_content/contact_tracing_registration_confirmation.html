@@ -1,121 +1,90 @@
-<style>
-    .o_contact_tracing_confirmation_wrapper {
-        width: 100%;
-        height: 100%;
-        padding: 1em 1em 1em 1em;
-        border-radius: 4px;
-        border: solid transparent;
-        background-color: limegreen;
-        text-align: center !important;
-        font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif !important;
-        color: white;
-        font-size: 1.5em;
-    }
-    .o_contact_tracing_confirmation_wrapper .o_center {
-        width: 6em;
-        margin: 0 auto;
-    }
-</style>
+<div class="o_ct_confirmation_wrapper">
 
-<div class="o_contact_tracing_confirmation_wrapper">
-
-    <p>
     #if($r.isNotEmpty($confirmationIcon))
-    <div class="">
-        $confirmationIcon
-    </div>
+    <h1>$confirmationIcon</h1>
     #end
-    </p>
-
-    <p>
     #if($r.isNotEmpty($name))
-    <div class="">
-        $name
-    </div>
+    <h2>$name</h2>
     #end
-
-    #if($r.isNotEmpty($nickname))
-    <div class="">
-        $nickName
-    </div>
+    #if($r.isNotEmpty($nickName))
+    <h3>
+    $nickName
+    </h3>
     #end
-    </p>
-
-    <p>
+    <br>
+    <!--<p>
     #if($r.isNotEmpty($registrationSuccessful))
-    <div class="">
         $registrationSuccessful
-    </div>
     #end
-    </p>
+    </p>-->
 
-    <p>
     #if($r.isNotEmpty($reference))
-    <div class="">
+        <h1>
         $reference
-    </div>
+        </h1>
     #end
 
     #if($r.isNotEmpty($title))
-    <div class="">
+        <h3>
         $title
-    </div>
+        </h3>
     #end
 
-    #if($r.isNotEmpty($building))
-    <div class="">
+    <p>
+    #if($r.isNotEmpty($building) || $r.isNotEmpty($room))
+        #if($r.isNotEmpty($building))
         $building
-    </div>
+        #end
+
+        #if($r.isNotEmpty($building) && $r.isNotEmpty($room))
+        -
+        #end
+
+        #if($r.isNotEmpty($room))
+        $room
+        #end
     #end
 
-    #if($r.isNotEmpty($room))
-    <div class="">
-        $room
-    </div>
+    #if($r.isNotEmpty($sector) || $r.isNotEmpty($table))
+    #if($r.isNotEmpty($building) || $r.isNotEmpty($room))
+    <br>
     #end
 
     #if($r.isNotEmpty($sector))
-    <div class="">
-        $sector
-    </div>
+    <span>
+    $sector
+    </span>
+    #end
+
+    #if($r.isNotEmpty($sector) && $r.isNotEmpty($table))
+    <span>
+    -
+    </span>
     #end
 
     #if($r.isNotEmpty($table))
-    <div class="">
-        $table
-    </div>
+    <span>
+    $table
+    </span>
+    #end
+
     #end
     </p>
 
-    <p>
     #if($r.isTrue($sameDay))
-    <div class="">
-        $startDate
-    </div>
-    <div class="">
-        $startTime - $endTime
-    </div>
+    <h2>$startDate</h2>
+    <p>$startTime - $endTime</p>
     #else
-    <div class="">
-        $startDate $startTime
-    </div>
-    <div class="">
-        $endDate $endTime
-    </div>
+    <p>$startDate $startTime<br>
+        $endDate $endTime</p>
     #end
-    </p>
-
-    <p>
+    <br>
+    <p class="o_ct_message">
     #if($r.isNotEmpty($registrationMessage))
-    <div class="">
-        $registrationMessage
-    </div>
+    $registrationMessage
     #end
     </p>
-
-    <p>
-    <div class="o_center">
-        $r.render("closeButton")
-    </div>
-    </p>
+    <br>
+    $r.render("closeButton")
+    <br>
 </div>

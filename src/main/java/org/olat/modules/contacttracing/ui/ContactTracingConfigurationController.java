@@ -48,7 +48,6 @@ import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
-import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ContactTracingModule;
 import org.olat.modules.contacttracing.ContactTracingModule.AttributeState;
 import org.olat.user.UserPropertiesConfig;
@@ -85,7 +84,6 @@ public class ContactTracingConfigurationController extends FormBasicController {
     private MultipleSelectionElement enabledEl;
     private TextElement retentionPeriodEl;
     private TextElement defaultDurationEl;
-    private FormLink triggerCleanUpLink;
     private MultipleSelectionElement allowAnonymousRegistrationEl;
 
     private SingleSelection startTimeEL;
@@ -126,8 +124,6 @@ public class ContactTracingConfigurationController extends FormBasicController {
     @Autowired
     private ContactTracingModule contactTracingModule;
     @Autowired
-    private ContactTracingManager contactTracingManager;
-    @Autowired
     private UserPropertiesConfig userPropertiesConfig;
     @Autowired
     private I18nModule i18nModule;
@@ -167,7 +163,6 @@ public class ContactTracingConfigurationController extends FormBasicController {
         // Retention period
         retentionPeriodEl = uifactory.addTextElement("contact.tracing.retention.period", 3, null, generalConfig);
         retentionPeriodEl.setMandatory(true);
-        triggerCleanUpLink = uifactory.addFormLink("contact.tracing.trigger.cleanup", "contact.tracing.trigger.cleanup", null, generalConfig, Link.BUTTON);
         // Default stay duration
         defaultDurationEl = uifactory.addTextElement("contact.tracing.duration.default", 3, null, generalConfig);
         defaultDurationEl.setMandatory(true);
@@ -240,6 +235,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
 
         // Registration intro
         registrationIntroEl = uifactory.addStaticTextElement("contact.tracing.registration.intro", "contact.tracing.registration.intro.label", null, messagesConfig);
+        registrationIntroEl.setHelpTextKey("contact.tracing.registration.intro.help", null);
         FormLayoutContainer registrationIntroButtons = FormLayoutContainer.createButtonLayout("registrationIntroButtons", getTranslator());
         messagesConfig.add(registrationIntroButtons);
         registrationIntroReset = uifactory.addFormLink("contact.tracing.registration.intro.reset", registrationIntroButtons, Link.BUTTON);
@@ -306,11 +302,6 @@ public class ContactTracingConfigurationController extends FormBasicController {
             listenTo(confirmResetQRCodeInstructionsController);
             listenTo(cmc);
             cmc.activate();
-        } else if (source == triggerCleanUpLink) {
-            if (validatePeriod(retentionPeriodEl, 0, 365, translate("days"))) {
-                contactTracingManager.pruneRegistrations(Integer.parseInt(retentionPeriodEl.getValue()));
-                showInfo("contact.tracing.trigger.cleanup.info.message", retentionPeriodEl.getValue());
-            }
         }
 
         super.formInnerEvent(ureq, source, event);
@@ -487,13 +478,11 @@ public class ContactTracingConfigurationController extends FormBasicController {
     private void initVelocityContainers() {
         if (contactTracingModule.isEnabled()) {
             retentionPeriodEl.setVisible(true);
-            triggerCleanUpLink.setVisible(true);
             defaultDurationEl.setVisible(true);
             questionnaireConfig.setVisible(true);
             messagesConfig.setVisible(true);
         } else {
             retentionPeriodEl.setVisible(false);
-            triggerCleanUpLink.setVisible(false);
             defaultDurationEl.setVisible(false);
             questionnaireConfig.setVisible(false);
             messagesConfig.setVisible(false);

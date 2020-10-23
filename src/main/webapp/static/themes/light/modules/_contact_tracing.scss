@@ -1,0 +1,51 @@
+.o_ct_confirmation_wrapper {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  border: solid transparent;
+  background-color: limegreen;
+  text-align: center;
+  color: white;
+
+  h1,h2 {
+    color: white;
+    font-weight: bold;
+  }
+
+  h3 {
+    color: white;
+  }
+}
+
+.o_ct_pdf_wrapper {
+  text-align: center !important;
+
+  div img {
+    width: 100%;
+    margin: 1em 0;
+  }
+
+  p {
+    text-align: center !important;
+    margin: 1em 0;
+    font-size: 1.5em;
+  }
+}
+
+.o_pdf_center {
+  margin-right: auto;
+  margin-left: auto;
+  width: 25em;
+}
+
+.o_ct_pdf_section {
+  text-align: center !important;
+}
+
+.o_ct_pdf_reference {
+  font-weight: bold;
+}
+
+.o_ct_pdf_spacer {
+  margin: 2em 0;
+}

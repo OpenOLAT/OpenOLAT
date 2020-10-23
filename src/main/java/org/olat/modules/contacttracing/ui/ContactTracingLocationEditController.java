@@ -141,6 +141,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
             tableEl.setValue(location.getTable());
             guestsAllowedEl.select(ON_KEYS[0], location.isAccessibleByGuests());
             qrIdEl.setValue(location.getQrId());
+            qrIdEl.setHelpTextKey("contact.tracing.location.edit.qr.id.message", null);
             qrIdEl.setExampleKey("noTransOnlyParam", new String[]{ContactTracingDispatcher.getRegistrationUrl(location.getQrId())});
             qrTextEl.setValue(location.getQrText());
 
@@ -218,7 +219,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
 
     private void generateHumanReadableID() {
         // Try with reference
-        if (qrIdExists(referenceEl.getValue(), true)) {
+        if (qrIdExists(transformStringToIdentifier(referenceEl.getValue()), true)) {
             StringBuilder qrIdBuilder = new StringBuilder();
 
             // Try with building-room-sector-table

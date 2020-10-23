@@ -1,41 +1,5 @@
-<style>
-    .pdf_wrapper {
-        text-align: center !important;
-        font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif !important;
-    }
-
-    .center {
-        margin-right: auto;
-        margin-left: auto;
-        width: 30em;
-    }
-
-    .section {
-        text-align: center !important;
-    }
-
-    .reference {
-        font-weight: bold;
-    }
-
-    .spacer {
-        margin: 2em 0;
-    }
-
-    div.center img {
-        width: 100%;
-        margin: 1em 0;
-    }
-
-    p {
-        text-align: center !important;
-        margin: 1em 0;
-        font-size: 1.5em;
-    }
-</style>
-
 #foreach($location in $locationList)
-    <div class="o_print_break_after pdf_wrapper">
+    <div class="o_print_break_after o_ct_pdf_wrapper">
         #if($r.isNotEmpty("generalInstructions"))
         <p>
             $generalInstructions
@@ -43,15 +7,15 @@
         #end
 
         #if($r.isNotEmpty($location.getQrText()))
-        <div class="spacer"></div>
+        <div class="o_ct_pdf_spacer"></div>
         <p>
             $location.getQrText()
         </p>
         #end
 
         #if($r.isNotEmpty($location.getQrId()))
-        <div class="spacer"></div>
-        <div id="o_qrcode_$location.getQrId()" class="center"></div>
+        <div class="o_ct_pdf_spacer"></div>
+        <div id="o_qrcode_$location.getQrId()" class="o_pdf_center"></div>
         <script>
             jQuery(function() {
                 o_QRCode('o_qrcode_$location.getQrId()', '$locationUrlMap.get($location)');
@@ -60,11 +24,11 @@
         <p>
             <a id="o_qrcode_$location.getQrId()_link" target="_blank" href="$locationUrlMap.get($location)">$locationUrlMap.get($location)</a>
         </p>
-        <div class="spacer"></div>
+        <div class="o_ct_pdf_spacer"></div>
         #end
 
         #if($r.isNotEmpty($location.getReference()))
-        <p class="reference">
+        <p class="o_ct_pdf_reference">
             $location.getReference()
         </p>
         #end

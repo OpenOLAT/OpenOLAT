@@ -79,9 +79,9 @@ public class ContactTracingRegistrationConfirmationController extends FormBasicC
         boolean sameDay = CalendarUtils.isSameDay(startDate, endDate);
 
         container.contextPut("sameDay", sameDay);
-        container.contextPut("startDate", StringHelper.formatLocaleDateFull(startDate, getLocale()));
+        container.contextPut("startDate", StringHelper.formatLocaleDate(startDate.getTime(), getLocale()));
         container.contextPut("startTime",  StringHelper.formatLocaleTime(startDate, getLocale()));
-        container.contextPut("endDate",  StringHelper.formatLocaleDateFull(endDate, getLocale()));
+        container.contextPut("endDate",  StringHelper.formatLocaleDate(endDate.getTime(), getLocale()));
         container.contextPut("endTime",  StringHelper.formatLocaleTime(endDate, getLocale()));
 
         // Location
@@ -93,7 +93,7 @@ public class ContactTracingRegistrationConfirmationController extends FormBasicC
         container.contextPut("table", location.getTable());
 
         // Icon
-        container.contextPut("confirmationIcon", "<i class='o_icon o_icon_contact_tracing_confirmation'></i>");
+        container.contextPut("confirmationIcon", "<i class='o_icon o_icon_check'></i>");
     }
 
     @Override
