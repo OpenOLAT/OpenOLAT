@@ -139,7 +139,7 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 				.collect(Collectors.toSet());
 		
 		List<DisadvantageCompensation> allCompensations = disadvantageCompensationService
-				.getDisadvantageCompensations(courseEntry, courseNode.getIdent());
+				.getActiveDisadvantageCompensations(courseEntry, courseNode.getIdent());
 		return allCompensations.stream()
 				.filter(compensation -> identityKeys.contains(compensation.getIdentity().getKey()))
 				.map(compensation -> compensation.getIdentity().getKey())

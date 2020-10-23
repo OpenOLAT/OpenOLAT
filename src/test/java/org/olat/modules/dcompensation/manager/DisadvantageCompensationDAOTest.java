@@ -96,7 +96,7 @@ public class DisadvantageCompensationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getDisadvantageCompensationsByEntry() {
+	public void getActiveDisadvantageCompensationsByEntry() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("dcompensation-5");
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("dcompensation-6");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -108,7 +108,7 @@ public class DisadvantageCompensationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<DisadvantageCompensation> compensations = disadvantageCompensationDao
-				.getDisadvantageCompensations(entry, subIdent);
+				.getActiveDisadvantageCompensations(entry, subIdent);
 		Assert.assertNotNull(compensations);
 		Assert.assertEquals(1, compensations.size());
 		Assert.assertEquals(compensation, compensations.get(0));

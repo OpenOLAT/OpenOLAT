@@ -346,7 +346,7 @@ public class IQ12EditForm extends FormBasicController {
 			if (minval != null) {
 				String mv = minval.getValue();
 				try {
-					minValue = new Float(Float.parseFloat(mv));
+					minValue = Float.valueOf(mv);
 				} catch (NumberFormatException e1) {
 					// if not correct in qti file -> ignore
 				}
@@ -355,7 +355,7 @@ public class IQ12EditForm extends FormBasicController {
 			if (maxval != null) {
 				String mv = maxval.getValue();
 				try {
-					maxValue = new Float(Float.parseFloat(mv));
+					maxValue = Float.valueOf(mv);
 				} catch (NumberFormatException e1) {
 					// if not correct in qti file -> ignore
 				}
@@ -364,7 +364,7 @@ public class IQ12EditForm extends FormBasicController {
 			if (cutval != null) {
 				String cv = cutval.getValue();
 				try {
-					cutValue = new Float(Float.parseFloat(cv));
+					cutValue = Float.valueOf(cv);
 				} catch (NumberFormatException e1) {
 					// if not correct in qti file -> ignore
 				}

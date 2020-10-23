@@ -44,7 +44,7 @@ public interface DisadvantageCompensationService {
 	
 	public List<DisadvantageCompensation> getDisadvantageCompensations(IdentityRef identity);
 	
-	public List<DisadvantageCompensation> getDisadvantageCompensations(RepositoryEntryRef entry, String subIdent);
+	public List<DisadvantageCompensation> getActiveDisadvantageCompensations(RepositoryEntryRef entry, String subIdent);
 	
 	public List<DisadvantageCompensation> getDisadvantageCompensations(IdentityRef identity, RepositoryEntryRef entry, String subIdent);
 	

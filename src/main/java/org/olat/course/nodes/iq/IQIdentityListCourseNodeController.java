@@ -310,10 +310,11 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			}
 		}
 
-		List<DisadvantageCompensation> compensations = disadvantageCompensationService.getDisadvantageCompensations(courseEntry, courseNode.getIdent());
+		List<DisadvantageCompensation> compensations = disadvantageCompensationService
+				.getActiveDisadvantageCompensations(courseEntry, courseNode.getIdent());
 		for(DisadvantageCompensation compensation:compensations) {
 			Long identityKey = compensation.getIdentity().getKey();
-			Integer extraTimeInSeconds = compensation.getExtraTime() * 60;
+			Integer extraTimeInSeconds = compensation.getExtraTime();
 			ExtraInfos infos = identityToExtraTime.computeIfAbsent(identityKey,
 					key -> new ExtraInfos());
 			infos.setCompensationExtraTimeInSeconds(extraTimeInSeconds);

@@ -40,6 +40,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationAuditLog.Action;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
+import org.olat.modules.dcompensation.DisadvantageCompensationStatusEnum;
 import org.olat.modules.dcompensation.ui.UserDisadvantageCompensationEditController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,10 +77,20 @@ public class ConfirmCompensationExtraTimeController  extends FormBasicController
 		subIdentName = courseNode.getShortTitle();
 		this.lastSession = lastSession;
 		this.assessedIdentity = assessedIdentity;
+		
+		// Prefer an active compensation
 		List<DisadvantageCompensation> compensations = disadvantageCompensationService.getDisadvantageCompensations(assessedIdentity, entry, subIdent);
 		if(!compensations.isEmpty()) {
-			compensation = compensations.get(0);
+			for(DisadvantageCompensation c:compensations) {
+				if(c.getStatusEnum() == DisadvantageCompensationStatusEnum.active) {
+					compensation = c;
+				}
+			}
+			if(compensation == null) {
+				compensation = compensations.get(0);
+			}
 		}
+		
 		initForm(ureq);
 	}
 
@@ -96,6 +107,9 @@ public class ConfirmCompensationExtraTimeController  extends FormBasicController
 		int extraTime = 0;
 		if(lastSession != null && lastSession.getCompensationExtraTime() != null ) {
 			extraTime = lastSession.getCompensationExtraTime().intValue();
+		} else if(compensation != null && compensation.getExtraTime() != null
+				&& compensation.getStatusEnum() == DisadvantageCompensationStatusEnum.active) {
+			extraTime = compensation.getExtraTime();
 		}
 		String maxExtraTime = extraTime == 0 ? "" : Integer.toString(extraTime / 60);
 		extraTimeEl = uifactory.addTextElement("edit.extra.time", "edit.extra.time", 5, maxExtraTime, formLayout);
@@ -181,6 +195,7 @@ public class ConfirmCompensationExtraTimeController  extends FormBasicController
 			compensation.setApproval(approval);
 			compensation.setExtraTime(extraTime);
 			compensation.setApprovedBy(approvedBy);
+			compensation.setStatusEnum(DisadvantageCompensationStatusEnum.active);
 			compensation = disadvantageCompensationService.updateDisadvantageCompensation(compensation);
 			
 			String afterXml = disadvantageCompensationService.toXml(compensation);

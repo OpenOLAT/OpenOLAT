@@ -236,7 +236,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 				|| roles.hasRole(OrganisationRoles.curriculummanager);
 		boolean orgSearch = secCallback.canEditCurriculumElement(curriculumElement) && !adminSearch;
 		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[]{ CourseModule.getCourseTypeName() }, null, translate("add.resources"),
+				new String[]{ CourseModule.getCourseTypeName() }, null, null, translate("add.resources"),
 				false, false, true, orgSearch, adminSearch, Can.referenceable);
 		listenTo(repoSearchCtr);
 		

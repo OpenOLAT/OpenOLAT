@@ -195,7 +195,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		
 		RepositoryEntryFilter filter = new ManagedEntryfilter();
 		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[]{ CourseModule.getCourseTypeName() }, filter,
+				new String[]{ CourseModule.getCourseTypeName() }, filter, null,
 				translate("resources.add"), hasAuthorRight, hasAuthorRight, true, false, true, Can.referenceable);
 		listenTo(repoSearchCtr);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));

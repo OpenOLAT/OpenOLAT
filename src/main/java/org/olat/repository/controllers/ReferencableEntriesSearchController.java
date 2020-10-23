@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -110,20 +111,20 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String limitType, String commandLabel) {
-		this(wControl, ureq, new String[]{ limitType }, null, commandLabel, true, true, false, false, false, Can.referenceable);
+		this(wControl, ureq, new String[]{ limitType }, null, null, commandLabel, true, true, false, false, false, Can.referenceable);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel) {
-		this(wControl, ureq, limitTypes, null, commandLabel, true, true, false, false, false, Can.referenceable);
+		this(wControl, ureq, limitTypes, null, null, commandLabel, true, true, false, false, false, Can.referenceable);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel,
 			boolean canImport, boolean canCreate, boolean multiSelect, boolean organisationWildCard, boolean adminSearch) {
-		this(wControl, ureq, limitTypes, null, commandLabel, canImport, canCreate, multiSelect, organisationWildCard, adminSearch, Can.referenceable);
+		this(wControl, ureq, limitTypes, null, null, commandLabel, canImport, canCreate, multiSelect, organisationWildCard, adminSearch, Can.referenceable);
 	}
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq,
-			String[] limitTypes, RepositoryEntryFilter filter, String commandLabel,
+			String[] limitTypes, RepositoryEntryFilter filter, IdentityRef asParticipant, String commandLabel,
 			boolean canImport, boolean canCreate, boolean multiSelect, boolean organisationWildCard, boolean adminSearch, 
 			Can canBe) {
 
@@ -140,7 +141,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 
 		// add repo search controller
 		searchCtr = new RepositorySearchController(commandLabel, ureq, getWindowControl(),
-				false, multiSelect, limitTypes, organisationWildCard, filter);
+				false, multiSelect, limitTypes, organisationWildCard, filter, asParticipant);
 		listenTo(searchCtr);
 		
 		// do instantiate buttons

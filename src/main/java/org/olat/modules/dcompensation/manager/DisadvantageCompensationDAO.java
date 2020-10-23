@@ -88,14 +88,16 @@ public class DisadvantageCompensationDAO {
 				.getResultList();
 	}
 	
-	public List<DisadvantageCompensation> getDisadvantageCompensations(RepositoryEntryRef entry, String subIdent) {
+	public List<DisadvantageCompensation> getActiveDisadvantageCompensations(RepositoryEntryRef entry, String subIdent) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select compensation from dcompensation as compensation")
 		  .append(" inner join fetch compensation.identity as ident")
-		  .append(" where compensation.entry.key=:entryKey and compensation.subIdent=:subIdent");
+		  .append(" where compensation.entry.key=:entryKey and compensation.subIdent=:subIdent")
+		  .append(" and compensation.status=:status");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), DisadvantageCompensation.class)
+				.setParameter("status", DisadvantageCompensationStatusEnum.active.name())
 				.setParameter("entryKey", entry.getKey())
 				.setParameter("subIdent", subIdent)
 				.getResultList();

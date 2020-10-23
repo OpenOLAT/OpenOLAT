@@ -144,6 +144,14 @@ public class RepositoryEntryQueries {
 			}
 			query.append(")");	
 		}
+		
+		if(params.getAsParticipant() != null) {
+			query.append(" and exists (select relpart from repoentrytogroup as relpart, bgroupmember as participant")
+		      .append("   where relpart.entry.key=v.key and participant.group.key=relpart.group.key")
+		      .append("   and participant.role='").append(GroupRoles.participant.name()).append("'")
+		      .append("   and participant.identity.key=:participantKey")
+		      .append(" )");
+		}
 
 		if (resourceTypes != null && !resourceTypes.isEmpty()) {
 			query.append(" and res.resName in (:resourcetypes)");
@@ -210,6 +218,9 @@ public class RepositoryEntryQueries {
 		}
 		if(setIdentity) {
 			dbQuery.setParameter("identityKey", params.getIdentity().getKey());
+		}
+		if(params.getAsParticipant() != null) {
+			dbQuery.setParameter("participantKey", params.getAsParticipant().getKey());
 		}
 		return dbQuery;
 	}

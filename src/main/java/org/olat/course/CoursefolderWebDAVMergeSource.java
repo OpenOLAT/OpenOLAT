@@ -92,7 +92,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		
 		NoTermContainer noTermContainer = new NoTermContainer(namingAndGrouping);
 		
-		List<RepositoryEntry> editorEntries = repositoryManager.queryByOwner(getIdentity(), true, "CourseModule");
+		List<RepositoryEntry> editorEntries = repositoryManager.queryByOwner(getIdentity(), true, null, "CourseModule");
 		appendCourses(editorEntries, containers, terms, noTermContainer, namingAndGrouping, true);
 		
 		//add courses as participant and coaches

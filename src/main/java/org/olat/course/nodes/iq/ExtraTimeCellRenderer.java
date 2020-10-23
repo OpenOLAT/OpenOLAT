@@ -75,6 +75,9 @@ public class ExtraTimeCellRenderer implements FlexiCellRenderer {
 					if(extraTimeInSeconds != null) {
 						totalTime += extraTimeInSeconds;
 					}
+					if(compensationExtraTimeInSeconds != null) {
+						totalTime += compensationExtraTimeInSeconds;
+					}
 					
 					Calendar now = Calendar.getInstance();
 					Calendar cal = Calendar.getInstance();

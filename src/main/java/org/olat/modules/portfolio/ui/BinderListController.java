@@ -562,7 +562,7 @@ public class BinderListController extends FormBasicController
 		String commandLabel = translate("create.binder.selectTemplate");
 		removeAsListenerAndDispose(searchTemplateCtrl);
 		searchTemplateCtrl = new RepositorySearchController(commandLabel, ureq, getWindowControl(),
-				false, false, new String[]{ BinderTemplateResource.TYPE_NAME }, false, null);
+				false, false, new String[]{ BinderTemplateResource.TYPE_NAME }, false, null, null);
 		searchTemplateCtrl.enableSearchforAllXXAbleInSearchForm(Can.all);
 		searchTemplateCtrl.doSearchByTypeLimitAccess(new String[]{ BinderTemplateResource.TYPE_NAME }, ureq);
 		listenTo(searchTemplateCtrl);

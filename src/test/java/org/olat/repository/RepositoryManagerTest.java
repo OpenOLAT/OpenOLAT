@@ -244,12 +244,12 @@ public class RepositoryManagerTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(participant, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
-		List<RepositoryEntry> entries = repositoryManager.queryByOwner(owner, true);
+		List<RepositoryEntry> entries = repositoryManager.queryByOwner(owner, true, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertTrue(entries.contains(re));
 		
-		List<RepositoryEntry> partEntries = repositoryManager.queryByOwner(participant, true);
+		List<RepositoryEntry> partEntries = repositoryManager.queryByOwner(participant, true, null);
 		Assert.assertNotNull(partEntries);
 		Assert.assertEquals(0, partEntries.size());
 	}
@@ -263,7 +263,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 		
-		List<RepositoryEntry> entries = repositoryManager.queryByOwner(id, true);
+		List<RepositoryEntry> entries = repositoryManager.queryByOwner(id, true, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertTrue(entries.contains(re));
@@ -729,7 +729,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		
 		List<String> resourceTypes = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
 		List<RepositoryEntry> entries = repositoryManager
-				.queryResourcesLimitType(id, Roles.authorRoles(), false, resourceTypes, "re-member", "me", "no", true, true);
+				.queryResourcesLimitType(id, Roles.authorRoles(), false, resourceTypes, "re-member", "me", "no", id, true, true);
 		Assert.assertNotNull(entries);
 	}
 	
@@ -747,7 +747,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 			// create course and persist as OLATResourceImpl
 			Identity owner = (i % 2 > 0) ? id1 : id2;
 
-			OLATResourceable resourceable = OresHelper.createOLATResourceableInstance(resourceType, new Long(i));
+			OLATResourceable resourceable = OresHelper.createOLATResourceableInstance(resourceType, Long.valueOf(i));
 			OLATResource r =  OLATResourceManager.getInstance().createOLATResourceInstance(resourceable);
 			dbInstance.getCurrentEntityManager().persist(r);
 			
@@ -776,7 +776,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 		List<String> typelist = Collections.singletonList(resourceType);
 		// finally the search query
 		long startSearchReferencable = System.currentTimeMillis();
-		List<RepositoryEntry> results = repositoryManager.queryResourcesLimitType(id1, id1Roles, false, typelist, null, null, null, true, false);
+		List<RepositoryEntry> results = repositoryManager.queryResourcesLimitType(id1, id1Roles, false, typelist,
+				null, null, null, null, true, false);
 		long endSearchReferencable = System.currentTimeMillis();
 		log.info("found " + results.size() + " repo entries " + (endSearchReferencable - startSearchReferencable) + "ms");
 
@@ -1180,7 +1181,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 
 	private RepositoryEntry createRepositoryEntry(final String type, Identity owner, long i) {
-		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance(type, new Long(i));
+		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance(type, Long.valueOf(i));
 		OLATResource r =  resourceManager.createOLATResourceInstance(resourceable);
 		dbInstance.saveObject(r);
 		

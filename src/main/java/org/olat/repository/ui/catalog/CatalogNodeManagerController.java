@@ -1149,9 +1149,11 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		removeAsListenerAndDispose(entrySearchCtrl);
 		removeAsListenerAndDispose(cmc);
 
-		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN, getWindow());
+		catModificationLock = CoordinatorManager.getInstance().getCoordinator()
+				.getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN, getWindow());
 		if (catModificationLock.isSuccess()) {
-			entrySearchCtrl = new RepositorySearchController(translate("choose"), ureq, getWindowControl(), true, repositoryModule.isCatalogMultiSelectEnabled(), new String[0], false, null);
+			entrySearchCtrl = new RepositorySearchController(translate("choose"), ureq, getWindowControl(),
+					true, repositoryModule.isCatalogMultiSelectEnabled(), new String[0], false, null, null);
 			listenTo(entrySearchCtrl);
 			// OLAT-Admin has search form
 			if (isAdministrator) {

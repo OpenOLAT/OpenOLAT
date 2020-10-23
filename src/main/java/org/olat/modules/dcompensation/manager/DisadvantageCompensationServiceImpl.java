@@ -67,8 +67,8 @@ public class DisadvantageCompensationServiceImpl implements DisadvantageCompensa
 	}
 	
 	@Override
-	public List<DisadvantageCompensation> getDisadvantageCompensations(RepositoryEntryRef entry, String subIdent) {
-		return disadvantageCompensationDao.getDisadvantageCompensations(entry, subIdent);
+	public List<DisadvantageCompensation> getActiveDisadvantageCompensations(RepositoryEntryRef entry, String subIdent) {
+		return disadvantageCompensationDao.getActiveDisadvantageCompensations(entry, subIdent);
 	}
 
 	@Override

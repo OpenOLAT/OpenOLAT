@@ -248,7 +248,7 @@ public class RepositoryEntriesWebService {
 			Roles roles = getRoles(httpRequest);
 			
 			if(myEntries) {
-				List<RepositoryEntry> lstRepos = rm.queryByOwner(identity, true, restrictedType ? new String[] {type} : null);
+				List<RepositoryEntry> lstRepos = rm.queryByOwner(identity, true, null, restrictedType ? new String[] {type} : null);
 				boolean restrictedName = !name.equals("*");
 				boolean restrictedAuthor = !author.equals("*");
 				if(restrictedName || restrictedAuthor) {

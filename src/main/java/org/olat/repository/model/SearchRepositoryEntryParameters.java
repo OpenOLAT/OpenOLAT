@@ -22,6 +22,7 @@ package org.olat.repository.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.repository.CatalogEntry;
@@ -49,6 +50,7 @@ public class SearchRepositoryEntryParameters {
 	private boolean onlyExplicitMember;
 	private List<Long> repositoryEntryKeys;
 	private CatalogEntry parentEntry;
+	private IdentityRef asParticipant;
 	
 	public SearchRepositoryEntryParameters() {
 		//
@@ -191,5 +193,13 @@ public class SearchRepositoryEntryParameters {
 
 	public void setRepositoryEntryKeys(List<Long> repositoryEntryKeys) {
 		this.repositoryEntryKeys = repositoryEntryKeys;
+	}
+
+	public IdentityRef getAsParticipant() {
+		return asParticipant;
+	}
+
+	public void setAsParticipant(IdentityRef asParticipant) {
+		this.asParticipant = asParticipant;
 	}
 }

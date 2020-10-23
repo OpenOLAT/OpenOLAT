@@ -85,7 +85,7 @@ public class RepositoryUserDataManager implements UserDataDeletable, UserDataExp
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// Remove as owner
 		Identity adminIdentity = deletionModule.getAdminUserIdentity();
-		List<RepositoryEntry> ownedRepoEntries = repositoryManager.queryByOwner(identity, false);
+		List<RepositoryEntry> ownedRepoEntries = repositoryManager.queryByOwner(identity, false, null);
 		for (RepositoryEntry repositoryEntry: ownedRepoEntries) {
 			repositoryService.removeRole(identity, repositoryEntry, GroupRoles.owner.name());
 			if (adminIdentity != null && repositoryService.countMembers(repositoryEntry, GroupRoles.owner.name()) == 0) {

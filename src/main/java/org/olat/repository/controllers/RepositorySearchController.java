@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
@@ -101,6 +102,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	private Can enableSearchforAllInSearchForm;
 	private SearchType searchType;
 	private final Roles identityRoles;
+	private final IdentityRef asParticipant;
 	private final RepositoryEntryFilter filter;
 	private final boolean organisationWildCard;
 	
@@ -110,10 +112,12 @@ public class RepositorySearchController extends BasicController implements Activ
 	private RepositoryService repositoryService;
 
 	public RepositorySearchController(String selectButtonLabel, UserRequest ureq, WindowControl myWControl,
-			boolean withCancel, boolean multiSelect, String[] limitTypes, boolean organisationWildCard, RepositoryEntryFilter filter) {
+			boolean withCancel, boolean multiSelect, String[] limitTypes, boolean organisationWildCard,
+			RepositoryEntryFilter filter, IdentityRef asParticipant) {
 		super(ureq, myWControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		
 		this.filter = filter;
+		this.asParticipant = asParticipant;
 		this.organisationWildCard = organisationWildCard;
 		identityRoles = ureq.getUserSession().getRoles();
 		
@@ -249,7 +253,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		String author = searchForm.getAuthor();
 		String desc = searchForm.getDescription();
 		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(getIdentity(),
-				identityRoles,organisationWildCard, restrictedTypes, name, author, desc,
+				identityRoles,organisationWildCard, restrictedTypes, name, author, desc, asParticipant,
 				enableSearchforAllInSearchForm == Can.referenceable, enableSearchforAllInSearchForm == Can.copyable);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
@@ -278,7 +282,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		}
 		
 		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(owner, roles, organisationWildCard,
-				restrictedTypes, null, null, null, true, false);
+				restrictedTypes, null, null, null, asParticipant, true, false);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);
@@ -303,7 +307,7 @@ public class RepositorySearchController extends BasicController implements Activ
 			restrictedTypes.addAll(Arrays.asList(limitTypes));
 		}
 		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(owner, roles, organisationWildCard,
-				restrictedTypes, null, null, null, false, true);
+				restrictedTypes, null, null, null, asParticipant, false, true);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);
@@ -331,7 +335,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	
 	private void doSearchByOwnerLimitTypeInternal(Identity owner, String[] limitTypes, boolean updateFilters) {
 		searchType = SearchType.byOwner;
-		List<RepositoryEntry> entries = repositoryManager.queryByOwner(owner, true, limitTypes);
+		List<RepositoryEntry> entries = repositoryManager.queryByOwner(owner, true, asParticipant, limitTypes);
 		filterRepositoryEntries(entries);
 		if(updateFilters) {
 			updateFilters(entries, owner);
@@ -365,6 +369,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		searchType = null;
 
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), identityRoles, restrictedTypes);
+		params.setAsParticipant(asParticipant);
 		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);

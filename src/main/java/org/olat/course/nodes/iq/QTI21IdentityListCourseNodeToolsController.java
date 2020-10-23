@@ -55,6 +55,10 @@ import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
+import org.olat.modules.dcompensation.DisadvantageCompensation;
+import org.olat.modules.dcompensation.DisadvantageCompensationService;
+import org.olat.modules.dcompensation.DisadvantageCompensationStatusEnum;
+import org.olat.modules.dcompensation.ui.ConfirmDeleteDisadvantageCompensationController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +81,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private Link reopenLink;
 	private Link deleteDataLink;
 	private Link compensationExtraTimeLink;
+	private Link removeCompensationExtraTimeLink;
 	private TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
@@ -87,6 +92,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private CorrectionIdentityAssessmentItemListController correctionCtrl;
 	private ConfirmReopenAssessmentEntryController reopenForCorrectionCtrl;
 	private ConfirmCompensationExtraTimeController compensationExtraTimeCtrl;
+	private ConfirmDeleteDisadvantageCompensationController removeCompensationExtraTimeCtrl;
 	
 	private RepositoryEntry testEntry;
 	private RepositoryEntry courseEntry;
@@ -101,6 +107,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private UserManager userManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	public QTI21IdentityListCourseNodeToolsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			IQTESTCourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
@@ -152,10 +160,24 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		}
 		if(hasTimeLimit) {
 			compensationExtraTimeLink = addLink("tool.extra.time.compensation", "tool.extra.time.compensation", "o_icon o_icon-fw o_icon_disadvantage_compensation");
+			if(hasActiveDisadvantageCompensation()) {
+				removeCompensationExtraTimeLink = addLink("tool.remove.extra.time.compensation", "tool.remove.extra.time.compensation", "o_icon o_icon-fw o_icon_disadvantage_compensation");
+			}
 		}
 		if(lastSessionActive) {
 			pullTestLink = addLink("tool.pull", "tool.pull", "o_icon o_icon-fw o_icon_pull");
 		}
+	}
+	
+	private boolean hasActiveDisadvantageCompensation() {
+		List<DisadvantageCompensation> compensations = disadvantageCompensationService
+				.getDisadvantageCompensations(assessedIdentity, courseEntry, testCourseNode.getIdent());
+		for(DisadvantageCompensation compensation:compensations) {
+			if(compensation.getStatusEnum() == DisadvantageCompensationStatusEnum.active) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -190,6 +212,9 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		} else if(compensationExtraTimeLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doConfirmCompensationExtraTime(ureq);
+		} else if(removeCompensationExtraTimeLink == source) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
+			doConfirmRemoveCompensationExtraTime(ureq);
 		} else if(reopenLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doConfirmReopenTest(ureq);
@@ -213,7 +238,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 				cleanUp();
 				fireEvent(ureq, event);
 			}
-		} else if(resetDataCtrl == source || extraTimeCtrl == source || compensationExtraTimeCtrl == source || reopenCtrl == source) {
+		} else if(resetDataCtrl == source || extraTimeCtrl == source || reopenCtrl == source
+				|| compensationExtraTimeCtrl == source || removeCompensationExtraTimeCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
 			fireAlteredEvent(ureq, event);
@@ -239,12 +265,14 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(removeCompensationExtraTimeCtrl);
 		removeAsListenerAndDispose(compensationExtraTimeCtrl);
 		removeAsListenerAndDispose(reopenForCorrectionCtrl);
 		removeAsListenerAndDispose(correctionCtrl);
 		removeAsListenerAndDispose(extraTimeCtrl);
 		removeAsListenerAndDispose(resetDataCtrl);
 		removeAsListenerAndDispose(cmc);
+		removeCompensationExtraTimeCtrl = null;
 		compensationExtraTimeCtrl = null;
 		reopenForCorrectionCtrl = null;
 		correctionCtrl = null;
@@ -337,6 +365,19 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		String fullName  = userManager.getUserDisplayName(assessedIdentity);
 		String title = translate("extra.time.compensation", new String[] { fullName });
 		cmc = new CloseableModalController(getWindowControl(), null, compensationExtraTimeCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doConfirmRemoveCompensationExtraTime(UserRequest ureq) {
+		List<DisadvantageCompensation> compensations = disadvantageCompensationService
+				.getDisadvantageCompensations(assessedIdentity, courseEntry, testCourseNode.getIdent());
+		removeCompensationExtraTimeCtrl = new ConfirmDeleteDisadvantageCompensationController(ureq, getWindowControl(), compensations);
+		listenTo(removeCompensationExtraTimeCtrl);
+
+		String fullName  = userManager.getUserDisplayName(assessedIdentity);
+		String title = translate("remove.extra.time.compensation", new String[] { fullName });
+		cmc = new CloseableModalController(getWindowControl(), null, removeCompensationExtraTimeCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

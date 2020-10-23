@@ -48,10 +48,11 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
-import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.dcompensation.DisadvantageCompensationAuditLog.Action;
+import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -255,7 +256,8 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		if(guardModalController(searchFormCtrl)) return;
 
 		searchFormCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
-					CourseModule.ORES_TYPE_COURSE, translate("select.form"));
+					new String[] { CourseModule.ORES_TYPE_COURSE}, null, disadvantagedIdentity,
+					translate("select.entry"), false, false, false, false, true, Can.all);
 		listenTo(searchFormCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchFormCtrl.getInitialComponent(),
 				true, translate("select.entry"));

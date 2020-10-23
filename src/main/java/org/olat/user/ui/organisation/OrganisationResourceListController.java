@@ -219,7 +219,7 @@ public class OrganisationResourceListController extends FormBasicController impl
 		if(guardModalController(repoSearchCtr)) return;
 		
 		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[]{ CourseModule.getCourseTypeName() }, null,
+				new String[]{ CourseModule.getCourseTypeName() }, null, null,
 				translate("add.resources"), false, false, true, false, true, Can.referenceable);
 		listenTo(repoSearchCtr);
 		
