@@ -199,9 +199,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.numOfMembers, "members"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfParticipants, "members"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfCoaches, "members"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfOwners, "members"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfParticipants, "participants"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfCoaches, "coachs"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfOwners, "owners"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.calendars));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.lectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.learningProgress));
@@ -460,9 +460,16 @@ public class CurriculumComposerController extends FormBasicController implements
 					doEditCurriculumElement(ureq, row, null);
 				} else if("members".equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
-					List<ContextEntry> entries = BusinessControlFactory.getInstance()
-							.createCEListFromString(OresHelper.createOLATResourceableInstance("tab", 2l));
-					doEditCurriculumElement(ureq, row, entries);
+					doManager(ureq, row, "All");
+				} else if("participants".equals(cmd)) {
+					CurriculumElementRow row = tableModel.getObject(se.getIndex());
+					doManager(ureq, row, "Participants");
+				} else if("coachs".equals(cmd)) {
+					CurriculumElementRow row = tableModel.getObject(se.getIndex());
+					doManager(ureq, row, "Coachs");
+				} else if("owners".equals(cmd)) {
+					CurriculumElementRow row = tableModel.getObject(se.getIndex());
+					doManager(ureq, row, "Owners");
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				tableEl.reset(false, true, true);// only reload
@@ -485,6 +492,12 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doManager(UserRequest ureq, CurriculumElementRow row, String context) {
+		List<ContextEntry> entries = BusinessControlFactory.getInstance()
+				.createCEListFromString(OresHelper.createOLATResourceableInstance(context, 0l));
+		doManageMembers(ureq, row).activate(ureq, entries, null);
 	}
 	
 	private void doFocus() {
