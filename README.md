@@ -237,7 +237,7 @@ mvn compile -Pcompressjs,tomcat
 To read the OpenOlat REST API documentation:
 1. start OpenOlat
 2. go to Administration -> Core configuration -> REST API
-3. Make sure the REST API ist enabled
+3. Make sure the REST API is enabled
 4. Click the documentation link in the admin panel
 
 ### Automated tests
