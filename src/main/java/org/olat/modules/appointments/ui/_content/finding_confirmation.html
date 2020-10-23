@@ -7,4 +7,8 @@
 	</div>
 #end
 $r.render("users")
+#if($f.hasError("users"))
+	<span class="o_icon o_icon_error form-control-feedback"></span>
+	$r.render("users_ERROR")
+#end
 $r.render("buttons")
