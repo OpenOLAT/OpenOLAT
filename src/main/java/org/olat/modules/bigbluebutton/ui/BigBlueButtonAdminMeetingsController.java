@@ -169,7 +169,10 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 	
 	private void doDelete(BigBlueButtonMeeting meeting) {
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
-		bigBlueButtonManager.deleteMeeting(meeting, errors);
+		meeting = bigBlueButtonManager.getMeeting(meeting);
+		if(meeting != null) {
+			bigBlueButtonManager.deleteMeeting(meeting, errors);
+		}
 		updateModel();
 		if(errors.hasErrors()) {
 			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));
