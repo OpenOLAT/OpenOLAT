@@ -199,7 +199,7 @@ public class UserOverviewController extends BasicController implements Activatea
 		previousStudent = LinkFactory.createToolLink("previous.student", translate("previous.student"), this);
 		previousStudent.setIconLeftCSS("o_icon o_icon_previous");
 		previousStudent.setEnabled(numOfStudents > 1);
-		stackPanel.addTool(previousStudent, true);
+		//stackPanel.addTool(previousStudent, true);
 
 		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(mentee));
 		String details = translate("students.details", new String[]{
@@ -212,7 +212,7 @@ public class UserOverviewController extends BasicController implements Activatea
 		nextStudent = LinkFactory.createToolLink("next.student", translate("next.student"), this);
 		nextStudent.setIconLeftCSS("o_icon o_icon_next");
 		nextStudent.setEnabled(numOfStudents > 1);
-		stackPanel.addTool(nextStudent, true);
+		//stackPanel.addTool(nextStudent, true);
 		stackPanel.addListener(this);
 	}
 
