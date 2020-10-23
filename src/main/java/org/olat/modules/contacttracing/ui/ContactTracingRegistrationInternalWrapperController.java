@@ -39,8 +39,11 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.contacttracing.ContactTracingLocation;
+import org.olat.modules.contacttracing.ContactTracingModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 22.10.20<br>
@@ -54,17 +57,34 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 
 	private final ContactTracingLocation location;
 	private final VelocityContainer mainVC;
+	private final boolean skipSelection;
 
 	private ContactTracingRegistrationFormController formController;
+	private ContactTracingRegistrationFormController anonymousFormController;
 	private ContactTracingRegistrationConfirmationController confirmationController;
+	private ContactTracingRegistrationSelectionController selectionController;
 
-	public ContactTracingRegistrationInternalWrapperController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location) {
+	@Autowired
+	private ContactTracingModule contactTracingModule;
+
+	public ContactTracingRegistrationInternalWrapperController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location, boolean skipSelection) {
 		super(ureq, wControl);
 
 		this.location = location;
 		this.mainVC = createVelocityContainer("contact_tracing_registration_wrapper");
+		this.skipSelection = skipSelection;
 
-		openForm(ureq);
+		UserSession userSession = ureq.getUserSession();
+
+		// Open form directly if
+		// 	-> Coming from log in screen
+		//	-> Guest registration is deactivated
+		//	-> Guest registration for logged in users is deactivated
+		if (skipSelection || !location.isAccessibleByGuests() || (userSession.isAuthenticated() && !contactTracingModule.isAnonymousRegistrationForRegisteredUsersAllowed())) {
+			openForm(ureq);
+		} else {
+			openSelection(ureq);
+		}
 
 		putInitialPanel(mainVC);
 	}
@@ -76,14 +96,29 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == formController) {
+		if (source == selectionController) {
+			if (event == ContactTracingRegistrationExternalWrapperController.REGISTER_ANONYMOUS_EVENT) {
+				openAnonymousForm(ureq);
+			} else if (event == ContactTracingRegistrationExternalWrapperController.REGISTER_WITH_ACCOUNT_EVENT) {
+				openForm(ureq);
+			} else if (event == Event.CANCELLED_EVENT) {
+				doRedirect(ureq);
+			}
+		} else if (source == formController) {
 			if (event == Event.DONE_EVENT) {
 				openConfirmation(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
+				formController.doDispose();
 				doRedirect(ureq);
 			}
 		} else if (source == confirmationController) {
 			if (event == Event.CLOSE_EVENT) {
+				doRedirect(ureq);
+			}
+		} else if (source == anonymousFormController) {
+			if (event == Event.DONE_EVENT) {
+				openConfirmation(ureq);
+			} else if (event == Event.CANCELLED_EVENT) {
 				doRedirect(ureq);
 			}
 		}
@@ -132,6 +167,16 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 		return businessPath;
 	}
 
+	private void openSelection(UserRequest ureq) {
+		if (selectionController == null) {
+			selectionController = new ContactTracingRegistrationSelectionController(ureq, getWindowControl(), location);
+			listenTo(selectionController);
+		}
+
+		mainVC.put("selection", selectionController.getInitialComponent());
+		mainVC.setDirty(true);
+	}
+
 	private void openForm(UserRequest ureq) {
 		if (formController == null) {
 			formController = new ContactTracingRegistrationFormController(ureq, getWindowControl(), location);
@@ -139,6 +184,16 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 		}
 
 		mainVC.put("form", formController.getInitialComponent());
+		mainVC.setDirty(true);
+	}
+
+	private void openAnonymousForm(UserRequest ureq) {
+		if (anonymousFormController == null) {
+			anonymousFormController = new ContactTracingRegistrationFormController(ureq, getWindowControl(), location, true);
+			listenTo(anonymousFormController);
+		}
+
+		mainVC.put("form", anonymousFormController.getInitialComponent());
 		mainVC.setDirty(true);
 	}
 

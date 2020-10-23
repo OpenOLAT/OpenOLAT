@@ -39,6 +39,7 @@ public class ContactTracingModule extends AbstractSpringModule implements Config
     private static final String PROP_ENABLED =              "contact.tracing.enabled";
     private static final String PROP_RETENTION_PERIOD =     "contact.tracing.retention.period";
     private static final String PROP_DEFAULT_DURATION =     "contact.tracing.duration.default";
+    private static final String PROP_ALLOW_ANONYMOUS =      "contact.tracing.anonymous.registration.for.registered.users";
 
     private static final String PROP_ATTENDANCE_START =     "contact.tracing.attendance.start";
     private static final String PROP_ATTENDANCE_END =       "contact.tracing.attendance.end";
@@ -64,6 +65,8 @@ public class ContactTracingModule extends AbstractSpringModule implements Config
     private int retentionPeriod;
     @Value("${contact.tracing.duration.default}")
     private int defaultDuration;
+    @Value("${contact.tracing.anonymous.registration.for.registered.users}")
+    private boolean allowAnonymousRegistrationForRegisteredUsers;
 
     @Value("${contact.tracing.attendance.start}")
     private AttributeState attendanceStartTime;
@@ -133,6 +136,8 @@ public class ContactTracingModule extends AbstractSpringModule implements Config
         officePhone = getAttributeState(PROP_OFFICE_PHONE, officePhone);
 
         qrCodeInstructions = getStringPropertyValue(PROP_QR_INSTRUCTIONS, qrCodeInstructions);
+
+        allowAnonymousRegistrationForRegisteredUsers = getBooleanPropertyValue(PROP_ALLOW_ANONYMOUS);
     }
 
     private AttributeState getAttributeState(String property, AttributeState fallBack) {
@@ -179,6 +184,15 @@ public class ContactTracingModule extends AbstractSpringModule implements Config
     public void setDefaultDuration(int defaultDuration) {
         this.defaultDuration = defaultDuration;
         setIntProperty(PROP_DEFAULT_DURATION, defaultDuration, true);
+    }
+
+    public boolean isAnonymousRegistrationForRegisteredUsersAllowed() {
+        return allowAnonymousRegistrationForRegisteredUsers;
+    }
+
+    public void setAllowAnonymousRegistrationForRegisteredUsers(boolean allowAnonymousRegistrationForRegisteredUsers) {
+        this.allowAnonymousRegistrationForRegisteredUsers = allowAnonymousRegistrationForRegisteredUsers;
+        setBooleanProperty(PROP_ALLOW_ANONYMOUS, allowAnonymousRegistrationForRegisteredUsers, true);
     }
 
     public AttributeState getAttendanceStartTimeState() {

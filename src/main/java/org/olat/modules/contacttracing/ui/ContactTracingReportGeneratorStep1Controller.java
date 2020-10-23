@@ -68,7 +68,7 @@ public class ContactTracingReportGeneratorStep1Controller extends StepFormBasicC
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-        locationFullTextSearchEl = uifactory.addTextElement("contact.tracing.report.generator.search.location", -1, null, formLayout);
+        locationFullTextSearchEl = uifactory.addTextElement("contact.tracing.report.generator.search.full.text", -1, null, formLayout);
         referenceEl = uifactory.addTextElement("contact.tracing.cols.reference", -1, null, formLayout);
         titleEl = uifactory.addTextElement("contact.tracing.cols.title", -1, null, formLayout);
         buildingEl = uifactory.addTextElement("contact.tracing.cols.building", -1, null, formLayout);

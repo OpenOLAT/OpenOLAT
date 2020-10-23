@@ -55,7 +55,16 @@ public class ContactTracingRegistrationInternalWrapperControllerCreator extends 
         Long locationKey = olatResourceable.getResourceableId();
 
         ContactTracingLocation location = contactTracingManager.getLocation(locationKey);
-        return new ContactTracingRegistrationInternalWrapperController(ureq, wControl, location);
+
+        if (ces.size() > 1) {
+            ContextEntry selectionEntry = ces.get(1);
+            OLATResourceable selectionOlatResourceable = selectionEntry.getOLATResourceable();
+            boolean skipSelection = selectionOlatResourceable.getResourceableId().equals(1L);
+
+            return new ContactTracingRegistrationInternalWrapperController(ureq, wControl, location, skipSelection);
+        }
+
+        return new ContactTracingRegistrationInternalWrapperController(ureq, wControl, location, false);
     }
 
     @Override

@@ -76,6 +76,10 @@ public class ContactTracingRegistrationExternalWrapperController extends BasicCo
 						.append(ContactTracingManagerImpl.CONTACT_TRACING_CONTEXT_KEY)
 						.append("/")
 						.append(location.getKey())
+						.append("/")
+						.append(ContactTracingManagerImpl.CONTACT_TRACING_SELECTION_KEY)
+						.append("/")
+						.append("1")
 						.toString();
 
 				MediaResource redirect = new RedirectMediaResource(redirectURL);
@@ -101,7 +105,7 @@ public class ContactTracingRegistrationExternalWrapperController extends BasicCo
 	private void doRedirectDefault(UserRequest ureq) {
 		String redirectURL = new StringBuilder()
 				.append(Settings.getServerContextPathURI())
-				.append(DispatcherModule.PATH_DEFAULT)
+				.append(DispatcherModule.PATH_AUTHENTICATED)
 				.toString();
 		MediaResource redirect = new RedirectMediaResource(redirectURL);
 		ureq.getDispatchResult().setResultingMediaResource(redirect);

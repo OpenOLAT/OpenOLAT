@@ -66,8 +66,17 @@ public class ContactTracingConfigurationController extends FormBasicController {
     public static final String CONTACT_TRACING_REGISTRATION_INTRO_KEY = "contact.tracing.registration.intro";
 
     private static final String[] ENABLED_KEYS = new String[]{"on"};
-    private final String[] STATE_KEYS;
+    private static final String[] STATE_KEYS = new String[] {
+            AttributeState.mandatory.name(),
+            AttributeState.optional.name(),
+            AttributeState.disabled.name()
+    };
+    private static final String[] EXTENDED_STATE_KEYS = new String[] {
+            AttributeState.automatic.name(),
+            AttributeState.mandatory.name(),
+    };
     private final String[] STATE_VALUES;
+    private final String[] EXTENDED_STATE_VALUES;
 
     private FormLayoutContainer generalConfig;
     private FormLayoutContainer questionnaireConfig;
@@ -77,7 +86,9 @@ public class ContactTracingConfigurationController extends FormBasicController {
     private TextElement retentionPeriodEl;
     private TextElement defaultDurationEl;
     private FormLink triggerCleanUpLink;
+    private MultipleSelectionElement allowAnonymousRegistrationEl;
 
+    private SingleSelection startTimeEL;
     private SingleSelection endTimeEl;
     private SingleSelection nickNameEl;
     private SingleSelection firstNameEl;
@@ -129,17 +140,8 @@ public class ContactTracingConfigurationController extends FormBasicController {
         setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
         setTranslator(Util.createPackageTranslator(ContactTracingModule.class, getLocale(), getTranslator()));
 
-        STATE_KEYS = new String[] {
-                AttributeState.mandatory.name(),
-                AttributeState.optional.name(),
-                AttributeState.disabled.name()
-        };
-
-        STATE_VALUES = new String[] {
-                translate(AttributeState.mandatory),
-                translate(AttributeState.optional),
-                translate(AttributeState.disabled),
-        };
+        STATE_VALUES = TranslatorHelper.translateAll(getTranslator(), STATE_KEYS);
+        EXTENDED_STATE_VALUES = TranslatorHelper.translateAll(getTranslator(), EXTENDED_STATE_KEYS);
 
         initForm(ureq);
         initNumericTextElement(retentionPeriodEl, "days");
@@ -169,6 +171,10 @@ public class ContactTracingConfigurationController extends FormBasicController {
         // Default stay duration
         defaultDurationEl = uifactory.addTextElement("contact.tracing.duration.default", 3, null, generalConfig);
         defaultDurationEl.setMandatory(true);
+        // Allow anonymous registration for registered users
+        allowAnonymousRegistrationEl = uifactory.addCheckboxesHorizontal("contact.tracing.registration.anonymous.allowed.always.label", generalConfig, ENABLED_KEYS, TranslatorHelper.translateAll(getTranslator(), ENABLED_KEYS));
+        allowAnonymousRegistrationEl.setHelpTextKey("contact.tracing.registration.anonymous.allowed.always.help", null);
+        allowAnonymousRegistrationEl.addActionListener(FormEvent.ONCHANGE);
 
         // Questionnaire config
         questionnaireConfig = FormLayoutContainer.createDefaultFormLayout("questionnaireConfig", getTranslator());
@@ -177,7 +183,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
         formLayout.add("questionnaireConfig", questionnaireConfig);
 
         // Start time
-        uifactory.addStaticTextElement("contact.tracing.start.time", translate(contactTracingModule.getAttendanceStartTimeState()), questionnaireConfig);
+        startTimeEL = uifactory.addDropdownSingleselect("contact.tracing.start.time", questionnaireConfig, EXTENDED_STATE_KEYS, EXTENDED_STATE_VALUES);
         // End time
         endTimeEl = uifactory.addDropdownSingleselect("contact.tracing.end.time", questionnaireConfig, STATE_KEYS, STATE_VALUES);
         // Nick name
@@ -260,6 +266,9 @@ public class ContactTracingConfigurationController extends FormBasicController {
             contactTracingModule.setEnabled(enabledEl.isSelected(0));
             initVelocityContainers();
             fireEvent(ureq, Event.CHANGED_EVENT);
+        } else if (source == allowAnonymousRegistrationEl) {
+            contactTracingModule.setAllowAnonymousRegistrationForRegisteredUsers(allowAnonymousRegistrationEl.isSelected(0));
+            initVelocityContainers();
         } else if (source == registrationIntroCustomize) {
             singleKeyTranslatorController = new SingleKeyTranslatorController(ureq, getWindowControl(), CONTACT_TRACING_REGISTRATION_INTRO_KEY, ContactTracingAdminController.class, SingleKeyTranslatorController.InputType.RICH_TEXT_ELEMENT);
             cmc = new CloseableModalController(getWindowControl(), translate("close"), singleKeyTranslatorController.getInitialComponent(), true, translate("contact.tracing.registration.intro.translate.title"), true, true);
@@ -300,6 +309,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
         } else if (source == triggerCleanUpLink) {
             if (validatePeriod(retentionPeriodEl, 0, 365, translate("days"))) {
                 contactTracingManager.pruneRegistrations(Integer.parseInt(retentionPeriodEl.getValue()));
+                showInfo("contact.tracing.trigger.cleanup.info.message", retentionPeriodEl.getValue());
             }
         }
 
@@ -363,11 +373,12 @@ public class ContactTracingConfigurationController extends FormBasicController {
         if (contactTracingModule.getRetentionPeriod() != Integer.parseInt(retentionPeriodEl.getValue())) {
             contactTracingModule.setRetentionPeriod(Integer.parseInt(retentionPeriodEl.getValue()));
         }
-
         if (contactTracingModule.getDefaultDuration() != Integer.parseInt(defaultDurationEl.getValue())) {
             contactTracingModule.setDefaultDuration(Integer.parseInt(defaultDurationEl.getValue()));
         }
-
+        if (contactTracingModule.getAttendanceStartTimeState() != getState(startTimeEL)) {
+            contactTracingModule.setAttendanceStartTimeState(getState(startTimeEL));
+        }
         if (contactTracingModule.getAttendanceEndTimeState() != getState(endTimeEl)) {
             contactTracingModule.setAttendanceEndTimeState(getState(endTimeEl));
         }
@@ -443,7 +454,9 @@ public class ContactTracingConfigurationController extends FormBasicController {
         enabledEl.select(ENABLED_KEYS[0], contactTracingModule.isEnabled());
         retentionPeriodEl.setValue(String.valueOf(contactTracingModule.getRetentionPeriod()));
         defaultDurationEl.setValue(String.valueOf(contactTracingModule.getDefaultDuration()));
+        allowAnonymousRegistrationEl.select(ENABLED_KEYS[0], contactTracingModule.isAnonymousRegistrationForRegisteredUsersAllowed());
 
+        startTimeEL.select(contactTracingModule.getAttendanceStartTimeState().name(), true);
         endTimeEl.select(contactTracingModule.getAttendanceEndTimeState().name(), true);
         nickNameEl.select(contactTracingModule.getNickNameState().name(), true);
         firstNameEl.select(contactTracingModule.getFirstNameState().name(), true);
@@ -485,10 +498,6 @@ public class ContactTracingConfigurationController extends FormBasicController {
             questionnaireConfig.setVisible(false);
             messagesConfig.setVisible(false);
         }
-    }
-
-    private String translate(ContactTracingModule.AttributeState state) {
-        return translate(state.name());
     }
 
     private AttributeState getState(SingleSelection selectionElement) {

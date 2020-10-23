@@ -48,6 +48,7 @@ import org.springframework.stereotype.Service;
 public class ContactTracingManagerImpl implements ContactTracingManager {
 
     public static final String CONTACT_TRACING_CONTEXT_KEY = "ContactTracing";
+    public static final String CONTACT_TRACING_SELECTION_KEY = "Selection";
     private static final Logger log = Tracing.createLoggerFor(ContactTracingManager.class);
 
     @Autowired

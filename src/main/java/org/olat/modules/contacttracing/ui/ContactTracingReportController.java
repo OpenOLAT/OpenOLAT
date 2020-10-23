@@ -52,7 +52,6 @@ import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
-import org.olat.user.UserPropertiesConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,8 +72,6 @@ public class ContactTracingReportController extends FormBasicController {
 
     @Autowired
     ContactTracingManager contactTracingManager;
-    @Autowired
-    private UserPropertiesConfig userPropertiesConfig;
 
     public ContactTracingReportController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl);
@@ -225,8 +222,11 @@ public class ContactTracingReportController extends FormBasicController {
                         for (ContactTracingLocation location : locationEntryMap.keySet()) {
                             OpenXMLWorksheet sheet = workbook.nextWorksheet();
 
-                            List<String> columns = createHeader(sheet, workbook);
-                            createData(columns, locationEntryMap.get(location), sheet, workbook);
+                            createLocationHeader(sheet, workbook);
+                            createLocationData(location, sheet);
+
+                            createRegistrationsHeader(sheet, workbook);
+                            createRegistrationsData(locationEntryMap.get(location), sheet, workbook);
                         }
                     } catch (IOException e) {
                         log.error("", e);
@@ -249,8 +249,43 @@ public class ContactTracingReportController extends FormBasicController {
         }
     }
 
-    protected List<String> createHeader(OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
-        sheet.setHeaderRows(1);
+    protected void createLocationHeader(OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
+        Row headerRow = sheet.newRow();
+
+        List<String> columns = new ArrayList<>();
+        columns.add(translate("contact.tracing.cols.reference"));
+        columns.add(translate("contact.tracing.cols.title"));
+        columns.add(translate("contact.tracing.cols.building"));
+        columns.add(translate("contact.tracing.cols.room"));
+        columns.add(translate("contact.tracing.cols.sector"));
+        columns.add(translate("contact.tracing.cols.table"));
+        columns.add(translate("contact.tracing.cols.qr.id"));
+
+        for (String headerValue : columns) {
+            headerRow.addCell(columns.indexOf(headerValue), headerValue, workbook.getStyles().getHeaderStyle());
+        }
+    }
+
+    protected void createLocationData(ContactTracingLocation location, OpenXMLWorksheet sheet) {
+        // Create new row
+        Row dataRow = sheet.newRow();
+
+        // Fill row
+        int i = 0;
+        dataRow.addCell(i++, location.getReference());
+        dataRow.addCell(i++, location.getTitle());
+        dataRow.addCell(i++, location.getBuilding());
+        dataRow.addCell(i++, location.getRoom());
+        dataRow.addCell(i++, location.getSector());
+        dataRow.addCell(i++, location.getTable());
+        dataRow.addCell(i, location.getQrId());
+
+        // Append two rows to separate from content
+        sheet.newRow();
+        sheet.newRow();
+    }
+
+    protected void createRegistrationsHeader(OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
         Row headerRow = sheet.newRow();
 
         List<String> columns = new ArrayList<>();
@@ -273,61 +308,31 @@ public class ContactTracingReportController extends FormBasicController {
         for (String headerValue : columns) {
             headerRow.addCell(columns.indexOf(headerValue), headerValue, workbook.getStyles().getHeaderStyle());
         }
-
-        return columns;
     }
 
-    protected void createData(List<String> columns, List<ContactTracingRegistration> entries, OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
-        for (ContactTracingRegistration entry : entries) {
+    protected void createRegistrationsData(List<ContactTracingRegistration> registrations, OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
+        for (ContactTracingRegistration registration : registrations) {
             // Create new row
             Row dataRow = sheet.newRow();
 
             // Fill row
-            for (String column : columns) {
-                Object cellValue = getData(column, entry);
-                if(cellValue instanceof Date) {
-                    dataRow.addCell(columns.indexOf(column), (Date) cellValue, workbook.getStyles().getDateStyle());
-                } else if (cellValue instanceof String) {
-                    dataRow.addCell(columns.indexOf(column), (String) cellValue, workbook.getStyles().getDateStyle());
-                }
-            }
-        }
-    }
+            int i = 0;
+            dataRow.addCell(i++, registration.getStartDate(), workbook.getStyles().getDateTimeStyle());
+            dataRow.addCell(i++, registration.getEndDate(), workbook.getStyles().getDateTimeStyle());
+            dataRow.addCell(i++, registration.getNickName());
+            dataRow.addCell(i++, registration.getFirstName());
+            dataRow.addCell(i++, registration.getLastName());
+            dataRow.addCell(i++, registration.getStreet());
+            dataRow.addCell(i++, registration.getExtraAddressLine());
+            dataRow.addCell(i++, registration.getZipCode());
+            dataRow.addCell(i++, registration.getCity());
+            dataRow.addCell(i++, registration.getEmail());
+            dataRow.addCell(i++, registration.getInstitutionalEmail());
+            dataRow.addCell(i++, registration.getGenericEmail());
+            dataRow.addCell(i++, registration.getMobilePhone());
+            dataRow.addCell(i++, registration.getPrivatePhone());
+            dataRow.addCell(i, registration.getOfficePhone());
 
-    protected Object getData(String column, ContactTracingRegistration entry) {
-        switch (column) {
-            case "startTime":
-                return entry.getStartDate();
-            case "endTime":
-                return entry.getEndDate();
-            case UserConstants.NICKNAME:
-                return entry.getNickName();
-            case UserConstants.FIRSTNAME:
-                return entry.getFirstName();
-            case UserConstants.LASTNAME:
-                return entry.getLastName();
-            case UserConstants.STREET:
-                return entry.getStreet();
-            case UserConstants.EXTENDEDADDRESS:
-                return entry.getExtraAddressLine();
-            case UserConstants.ZIPCODE:
-                return entry.getZipCode();
-            case UserConstants.CITY:
-                return entry.getCity();
-            case UserConstants.EMAIL:
-                return entry.getEmail();
-            case UserConstants.INSTITUTIONALEMAIL:
-                return entry.getInstitutionalEmail();
-            case "genericEmail":
-                return entry.getGenericEmail();
-            case UserConstants.TELMOBILE:
-                return entry.getMobilePhone();
-            case UserConstants.TELPRIVATE:
-                return entry.getPrivatePhone();
-            case UserConstants.TELOFFICE:
-                return entry.getOfficePhone();
-            default:
-                return null;
         }
     }
 }

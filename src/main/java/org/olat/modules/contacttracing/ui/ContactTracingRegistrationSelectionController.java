@@ -31,6 +31,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.contacttracing.ContactTracingLocation;
+import org.olat.modules.contacttracing.ContactTracingModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 20.10.20<br>
@@ -40,13 +42,18 @@ import org.olat.modules.contacttracing.ContactTracingLocation;
 public class ContactTracingRegistrationSelectionController extends FormBasicController {
 
     private final ContactTracingLocation location;
+    private final boolean allowRegistrationAsGuest;
 
     private FormLink registerAsGuestLink;
+
+    @Autowired
+    ContactTracingModule contactTracingModule;
 
     public ContactTracingRegistrationSelectionController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location) {
         super(ureq, wControl, LAYOUT_DEFAULT);
 
         this.location = location;
+        this.allowRegistrationAsGuest = location.isAccessibleByGuests();
 
         initForm(ureq);
     }
@@ -54,16 +61,21 @@ public class ContactTracingRegistrationSelectionController extends FormBasicCont
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
         setFormTitle("contact.tracing.general.title");
-        setFormDescription("contact.tracing.registration.login.description");
+        setFormDescription("contact.tracing.registration.intro", new String[]{
+                String.valueOf(contactTracingModule.getRetentionPeriod()),
+                ContactTracingHelper.getLocationsDetails(getTranslator(), location)});
 
         FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
         buttonLayout.setRootForm(mainForm);
         formLayout.add(buttonLayout);
 
+        // Register with account
         uifactory.addFormSubmitButton("contact.tracing.registration.login.account", buttonLayout);
-        if (location.isAccessibleByGuests()) {
+        // Register without account
+        if (allowRegistrationAsGuest) {
             registerAsGuestLink = uifactory.addFormLink("contact.tracing.registration.login.guest", buttonLayout, Link.BUTTON);
         }
+        // Cancel registration
         uifactory.addFormCancelButton("contact.tracing.registration.login.cancel", buttonLayout, ureq, getWindowControl());
     }
 

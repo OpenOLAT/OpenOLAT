@@ -139,6 +139,8 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
     @Override
     public Object getValueAt(ContactTracingLocation row, int col) {
         switch (ContactTracingLocationCols.values()[col]) {
+            case key:
+                return row.getKey();
             case reference:
                 return row.getReference();
             case title:
@@ -178,6 +180,7 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
     }
 
     public enum ContactTracingLocationCols implements FlexiSortableColumnDef {
+        key("contact.tracing.cols.key"),
         reference("contact.tracing.cols.reference"),
         title("contact.tracing.cols.title"),
         building("contact.tracing.cols.building"),

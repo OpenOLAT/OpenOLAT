@@ -22,7 +22,12 @@ package org.olat.modules.contacttracing.ui;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.mail.Address;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,9 +42,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ContactTracingModule;
@@ -57,11 +67,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ContactTracingRegistrationFormController extends FormBasicController {
 
+    private static final Logger log = Tracing.createLoggerFor(ContactTracingRegistrationFormController.class);
     private static final String usageIdentifier = ProfileFormController.class.getCanonicalName();
     private static final String[] ON_KEYS = new String[] {"on"};
 
     private final User user;
     private final ContactTracingLocation location;
+    private final boolean anonymous;
 
     private DateChooser startTimeEl;
     private DateChooser endTimeEl;
@@ -92,14 +104,22 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
     private ContactTracingModule contactTracingModule;
     @Autowired
     private UserPropertiesConfig userPropertiesConfig;
+    @Autowired
+    private MailManager mailManager;
 
     public ContactTracingRegistrationFormController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location) {
+        this(ureq, wControl, location, false);
+    }
+
+    public ContactTracingRegistrationFormController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location, boolean anonymous) {
         super(ureq, wControl, LAYOUT_VERTICAL);
         setTranslator(userPropertiesConfig.getTranslator(getTranslator()));
         setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 
+        UserSession usess = ureq.getUserSession();
+        this.user = usess.isAuthenticated() && !usess.getRoles().isGuestOnly() ? getIdentity().getUser() : null;
         this.location = location;
-        this.user = ureq.getUserSession().isAuthenticated() && !ureq.getUserSession().getRoles().isGuestOnly() ? getIdentity().getUser() : null;
+        this.anonymous = anonymous && contactTracingModule.isAnonymousRegistrationForRegisteredUsersAllowed();
 
         initForm(ureq);
         loadData();
@@ -114,7 +134,9 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         FormLayoutContainer timeRecording = FormLayoutContainer.createDefaultFormLayout("timeRecording", getTranslator());
         timeRecording.setRootForm(mainForm);
         timeRecording.setFormTitle(translate("contact.tracing"));
-        timeRecording.setFormDescription(translate("contact.tracing.registration.intro", new String[]{String.valueOf(contactTracingModule.getRetentionPeriod())}));
+        timeRecording.setFormDescription(translate("contact.tracing.registration.intro", new String[]{
+                String.valueOf(contactTracingModule.getRetentionPeriod()),
+                ContactTracingHelper.getLocationsDetails(getTranslator(), location)}));
         formLayout.add(timeRecording);
 
         // Start and end time
@@ -231,6 +253,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
             checkEnabled(formItem);
             checkVisible(formItem);
             checkMandatory(formItem);
+            checkAnonymous(formItem);
         }
 
         saveUserPropertiesToProfileEl.setVisible(user != null);
@@ -258,18 +281,14 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         // Disable email element for authenticated users
         if (formItem == emailEl && user != null) {
             formItem.setEnabled(false);
+            return;
         }
 
-        // Enable all elements which are empty
+        // Enable all text elements which are empty
         if (formItem instanceof TextElement) {
-            if (!StringHelper.containsNonWhitespace(((TextElement) formItem).getValue())) {
+            if (!StringHelper.containsNonWhitespace(((TextElement) formItem).getValue()) || user == null) {
                 formItem.setEnabled(true);
             }
-        }
-
-        // Enable all fields for unregistered users
-        if (user == null) {
-            formItem.setEnabled(true);
         }
     }
 
@@ -284,6 +303,19 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
                 } else if (formItem instanceof DateChooser) {
                     ((DateChooser) formItem).setNotEmptyCheck("contact.tracing.required");
                 }
+            }
+        }
+    }
+
+    private void checkAnonymous(FormItem formItem) {
+        if (anonymous) {
+            if (formItem == nickNameEl) {
+                formItem.setVisible(false);
+            }
+
+            if (formItem instanceof TextElement) {
+                formItem.setEnabled(true);
+                ((TextElement) formItem).setValue(null);
             }
         }
     }
@@ -343,9 +375,33 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         contactTracingManager.persistRegistration(entry);
 
         // Send mail
-        // TODO Send mail
+        sendMail();
 
         fireEvent(ureq, Event.DONE_EVENT);
+    }
+
+    private void sendMail() {
+        String subject = ContactTracingHelper.getMailSubject(getTranslator(), location);
+        String body = ContactTracingHelper.getMailBody(getTranslator(), location, firstNameEl, lastNameEl);
+        String decoratedBody = mailManager.decorateMailBody(body, getLocale());
+        String recipientAddress = ContactTracingHelper.getMailAddress(emailEl, institutionalEmailEl, genericEmailEl);
+        Address from;
+        Address[] to;
+
+        try {
+            from = new InternetAddress(WebappHelper.getMailConfig("mailSupport"));
+            to = new Address[] {new InternetAddress(((recipientAddress)))};
+        } catch (AddressException e) {
+            log.error("Could not send registration notification message, bad mail address", e);
+            return;
+        }
+
+        MailerResult result = new MailerResult();
+        MimeMessage msg = mailManager.createMimeMessage(from, to, null, null, subject, decoratedBody, null, result);
+        mailManager.sendMessage(msg, result);
+        if (!result.isSuccessful()) {
+            log.error("Could not send registration notification message: Location[" + location.getKey() + "], Recipient[" + recipientAddress + "]");
+        }
     }
 
     @Override

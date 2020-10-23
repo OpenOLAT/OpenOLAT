@@ -57,7 +57,6 @@ public class ContactTracingLocationEditController extends FormBasicController {
     private static final String[] QR_TEXT_VALUES = new String[]{"contact.tracing.location.custom.qr.text"};
 
     private ContactTracingLocation location;
-    private boolean saveLocation;
 
     private TextElement referenceEl;
     private TextElement titleEl;
@@ -83,7 +82,6 @@ public class ContactTracingLocationEditController extends FormBasicController {
 
         // Save location
         this.location = location;
-        this.saveLocation = location != null;
 
         initForm(ureq);
         loadData();
@@ -297,7 +295,6 @@ public class ContactTracingLocationEditController extends FormBasicController {
     @Override
     protected void formOK(UserRequest ureq) {
         location = saveLocation();
-        saveLocation = true;
 
         fireEvent(ureq, Event.DONE_EVENT);
     }
@@ -336,9 +333,6 @@ public class ContactTracingLocationEditController extends FormBasicController {
 
     @Override
     protected void doDispose() {
-        // In case a preview has been generated for a new location but the form has been cancelled
-        if (!saveLocation && location != null) {
-            contactTracingManager.deleteLocations(Collections.singletonList(location));
-        }
+        // Nothing to dispose
     }
 }

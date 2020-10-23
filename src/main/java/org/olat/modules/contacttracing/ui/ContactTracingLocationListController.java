@@ -100,6 +100,10 @@ public class ContactTracingLocationListController extends FormBasicController {
         DefaultFlexiColumnModel qrIdColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.qrId);
         DefaultFlexiColumnModel registrationsColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.registrations);
 
+        // Key column
+        DefaultFlexiColumnModel keyColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.key);
+        keyColumn.setDefaultVisible(false);
+
         // QR text column
         DefaultFlexiColumnModel qrTextColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.qrText);
         qrTextColumn.setDefaultVisible(false);
@@ -113,6 +117,7 @@ public class ContactTracingLocationListController extends FormBasicController {
 
         // Columns model
         FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+        columnModel.addFlexiColumnModel(keyColumn);
         columnModel.addFlexiColumnModel(referenceColumn);
         columnModel.addFlexiColumnModel(titleColumn);
         columnModel.addFlexiColumnModel(roomColumn);
