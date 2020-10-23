@@ -84,6 +84,7 @@ public class AbsenceNoticeSearchController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		searchEl = uifactory.addTextElement("search.form.string", 128, "", formLayout);
+		searchEl.setHelpTextKey("search.form.string.hint.more", null);
 		
 		String[] typeValues = new String[] {
 			translate("noticed.type.absence"), translate("noticed.type.notified"), translate("noticed.type.dispensation")
