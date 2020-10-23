@@ -22,6 +22,7 @@ package org.olat.modules.contacttracing.manager;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
@@ -122,10 +123,6 @@ public class ContactTracingLocationDAO {
     }
 
     public List<ContactTracingLocation> getLocations(ContactTracingSearchParams searchParams) {
-        if (searchParams.isEmpty()) {
-            return getAllLocations();
-        }
-
         QueryBuilder queryBuilder = new QueryBuilder();
 
         queryBuilder.append("select distinct location from contactTracingLocation as location ")
@@ -143,22 +140,22 @@ public class ContactTracingLocationDAO {
                     .append(")");
         }
         if (searchParams.getReference() != null) {
-            queryBuilder.where().append("location.reference = :referenceString");
+            queryBuilder.where().append("lower(location.reference) like :referenceString");
         }
         if (searchParams.getTitle() != null) {
-            queryBuilder.where().append("location.title = :titleString");
+            queryBuilder.where().append("lower(location.title) like :titleString");
         }
         if (searchParams.getBuilding() != null) {
-            queryBuilder.where().append("location.building = :buildingString");
+            queryBuilder.where().append("lower(location.building) like :buildingString");
         }
         if (searchParams.getRoom() != null) {
-            queryBuilder.where().append("location.room = :roomString");
+            queryBuilder.where().append("lower(location.room) like :roomString");
         }
         if (searchParams.getSector() != null) {
-            queryBuilder.where().append("location.sector = :sectorString");
+            queryBuilder.where().append("lower(location.sector) like :sectorString");
         }
         if (searchParams.getTable() != null) {
-            queryBuilder.where().append("location.table = :tableString");
+            queryBuilder.where().append("lower(location.table) like :tableString");
         }
         if (searchParams.getStartDate() != null) {
             queryBuilder.where().append("registration.startDate >= :start");

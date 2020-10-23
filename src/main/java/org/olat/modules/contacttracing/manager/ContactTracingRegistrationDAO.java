@@ -21,6 +21,7 @@ package org.olat.modules.contacttracing.manager;
 
 import java.util.Date;
 import java.util.List;
+
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -59,6 +60,19 @@ public class ContactTracingRegistrationDAO {
 
         return entry;
     }
+    
+    public ContactTracingRegistration getByKey(Long key) {
+    	QueryBuilder queryBuilder = new QueryBuilder();
+    	queryBuilder.append("select entry from contactTracingRegistration entry");
+    	queryBuilder.and().append(" entry.key = :key");
+    	
+        List<ContactTracingRegistration> registrations = dbInstance.getCurrentEntityManager()
+                .createQuery(queryBuilder.toString(), ContactTracingRegistration.class)
+                .setParameter("key", key)
+                .getResultList();
+
+        return registrations == null || registrations.isEmpty() ? null : registrations.get(0);
+    }
 
     public void deleteEntries(List<ContactTracingLocation> locations) {
         String query = new StringBuilder()
@@ -88,35 +102,29 @@ public class ContactTracingRegistrationDAO {
         QueryBuilder queryBuilder = new QueryBuilder();
 
         queryBuilder.append("select count(entry) from contactTracingRegistration entry");
-        if (searchParams.getLocation() != null) {
-            queryBuilder.where().append("entry.location=:locationToCheck");
-        }
-        if (searchParams.getStartDate() != null) {
-            queryBuilder.where().append("entry.startDate >= :start");
-        }
-        if (searchParams.getEndDate() != null) {
-            queryBuilder.where().append("entry.endDate <= :end");
-        }
+        appendWhere(queryBuilder, searchParams);
 
         TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
                 .createQuery(queryBuilder.toString(), Long.class);
-        if (searchParams.getLocation() != null) {
-            query.setParameter("locationToCheck", searchParams.getLocation());
-        }
-        if (searchParams.getStartDate() != null) {
-            query.setParameter("start", searchParams.getStartDate());
-        }
-        if (searchParams.getEndDate() != null) {
-            query.setParameter("end", searchParams.getEndDate());
-        }
+        appendParams(query, searchParams);
         return query.getSingleResult();
     }
+
 
     public List<ContactTracingRegistration> getRegistrations(ContactTracingSearchParams searchParams) {
         QueryBuilder queryBuilder = new QueryBuilder();
 
         queryBuilder.append("select entry from contactTracingRegistration entry");
-        if (searchParams.getLocation() != null) {
+        appendWhere(queryBuilder, searchParams);
+
+        TypedQuery<ContactTracingRegistration> query = dbInstance.getCurrentEntityManager()
+                .createQuery(queryBuilder.toString(), ContactTracingRegistration.class);
+        appendParams(query, searchParams);
+        return query.getResultList();
+    }
+	
+	private void appendWhere(QueryBuilder queryBuilder, ContactTracingSearchParams searchParams) {
+		if (searchParams.getLocation() != null) {
             queryBuilder.where().append("entry.location=:locationToCheck");
         }
         if (searchParams.getStartDate() != null) {
@@ -125,10 +133,10 @@ public class ContactTracingRegistrationDAO {
         if (searchParams.getEndDate() != null) {
             queryBuilder.where().append("entry.endDate <= :end");
         }
-
-        TypedQuery<ContactTracingRegistration> query = dbInstance.getCurrentEntityManager()
-                .createQuery(queryBuilder.toString(), ContactTracingRegistration.class);
-        if (searchParams.getLocation() != null) {
+	}
+	
+	private void appendParams(TypedQuery<?> query, ContactTracingSearchParams searchParams) {
+		if (searchParams.getLocation() != null) {
             query.setParameter("locationToCheck", searchParams.getLocation());
         }
         if (searchParams.getStartDate() != null) {
@@ -137,13 +145,10 @@ public class ContactTracingRegistrationDAO {
         if (searchParams.getEndDate() != null) {
             query.setParameter("end", searchParams.getEndDate());
         }
-        return query.getResultList();
-    }
+	}
 
     public boolean anyRegistrationAvailable() {
-        String query = new StringBuilder()
-                .append("select registration.key contactTracingRegistration as registration")
-                .toString();
+        String query = "select registration.key from contactTracingRegistration as registration";
 
         List<Long> registrations = dbInstance.getCurrentEntityManager()
                 .createQuery(query, Long.class)
