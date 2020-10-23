@@ -125,6 +125,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		selectEntryButton.setVisible(compensation == null || compensation.getEntry() == null);
 		
 		elementEl = uifactory.addDropdownSingleselect("select.entry.element", formLayout, new String[0], new String[0]);
+		elementEl.setHelpTextKey("select.entry.element.hint", null);
 		if(compensation != null && compensation.getEntry() != null) {
 			updateElementSelection(compensation.getEntry());
 		}
