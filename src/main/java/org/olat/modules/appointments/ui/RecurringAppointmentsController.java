@@ -144,7 +144,7 @@ public class RecurringAppointmentsController extends FormBasicController {
 			welcomeEl = uifactory.addRichTextElementForStringDataMinimalistic("meeting.welcome", "meeting.welcome", "", 8, 60, formLayout, getWindowControl());
 			
 			KeyValues templatesKV = new KeyValues();
-			templates = appointmentsService.getBigBlueButtonTemplates(topic, getIdentity(), ureq.getUserSession().getRoles(), null);
+			templates = appointmentsService.getBigBlueButtonTemplates(() -> topic.getEntry().getKey(), getIdentity(), ureq.getUserSession().getRoles(), null);
 			templates.forEach(template -> templatesKV.add(KeyValues.entry(template.getKey().toString(), template.getName())));
 			templatesKV.sort(KeyValues.VALUE_ASC);
 			templateEl = uifactory.addDropdownSingleselect("meeting.template", "meeting.template", formLayout,
@@ -249,7 +249,7 @@ public class RecurringAppointmentsController extends FormBasicController {
 		if (maxParticipationsEl.isVisible() && StringHelper.containsNonWhitespace(maxParticipationsValue)) {
 			try {
 				maxParticipants = Integer.parseInt(maxParticipationsValue);
-				if (maxParticipants < 1) {
+				if (maxParticipants.intValue() < 1) {
 					maxParticipationsEl.setErrorKey("error.positiv.number", null);
 					allOk &= false;
 				}
@@ -311,8 +311,8 @@ public class RecurringAppointmentsController extends FormBasicController {
 				}
 				
 				allOk &= BigBlueButtonUIHelper.validateDuration(recurringFirstEl, leadTimeEl, followupTimeEl, template);
-				if (!recurringFirstEl.hasError() && !validateSlot(template)) {
-					 	recurringFirstEl.setErrorKey("server.overloaded", new String[] { null });
+				if (!recurringFirstEl.hasError() && !validateRecurringSlot(template)) {
+						recurringFirstEl.setErrorKey("server.overloaded", new String[] { null });
 						allOk &= false;
 					}
 			}
@@ -321,7 +321,7 @@ public class RecurringAppointmentsController extends FormBasicController {
 		return allOk;
 	}
 
-	private boolean validateSlot(BigBlueButtonMeetingTemplate template) {
+	private boolean validateRecurringSlot(BigBlueButtonMeetingTemplate template) {
 		long leadTime = BigBlueButtonUIHelper.getLongOrZero(leadTimeEl);
 		long followupTime = BigBlueButtonUIHelper.getLongOrZero(followupTimeEl);
 		

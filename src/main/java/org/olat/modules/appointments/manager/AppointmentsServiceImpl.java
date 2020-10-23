@@ -716,9 +716,9 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	}
 
 	@Override
-	public List<BigBlueButtonMeetingTemplate> getBigBlueButtonTemplates(Topic topic, Identity identity, Roles roles,
+	public List<BigBlueButtonMeetingTemplate> getBigBlueButtonTemplates(RepositoryEntryRef entryRef, Identity identity, Roles roles,
 			Long selectedTemplateKey) {
-		RepositoryEntry entry = repositoryService.loadByKey(topic.getEntry().getKey());
+		RepositoryEntry entry = repositoryService.loadByKey(entryRef.getKey());
 		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager.calculatePermissions(entry, null, identity, roles);
 		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates();
 		

@@ -182,7 +182,7 @@ public class AppointmentEditController extends FormBasicController {
 			
 			KeyValues templatesKV = new KeyValues();
 			Long selectedTemplateKey = meeting == null || meeting.getTemplate() == null ? null : meeting.getTemplate().getKey();
-			templates = appointmentsService.getBigBlueButtonTemplates(topic, getIdentity(), ureq.getUserSession().getRoles(), selectedTemplateKey);
+			templates = appointmentsService.getBigBlueButtonTemplates(() -> topic.getEntry().getKey(), getIdentity(), ureq.getUserSession().getRoles(), selectedTemplateKey);
 			templates.forEach(template -> templatesKV.add(KeyValues.entry(template.getKey().toString(), template.getName())));
 			templatesKV.sort(KeyValues.VALUE_ASC);
 			templateEl = uifactory.addDropdownSingleselect("meeting.template", "meeting.template", formLayout,

@@ -150,7 +150,7 @@ public interface AppointmentsService {
 	
 	public boolean isBigBlueButtonEnabled();
 	
-	public List<BigBlueButtonMeetingTemplate> getBigBlueButtonTemplates(Topic topic, Identity identity, Roles roles,
+	public List<BigBlueButtonMeetingTemplate> getBigBlueButtonTemplates(RepositoryEntryRef entryRef, Identity identity, Roles roles,
 			Long selectedTemplateKey);
 	
 	public Appointment addMeeting(Appointment appointment, Identity identity);
