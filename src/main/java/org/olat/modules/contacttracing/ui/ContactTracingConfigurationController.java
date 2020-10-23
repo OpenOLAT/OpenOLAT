@@ -478,11 +478,13 @@ public class ContactTracingConfigurationController extends FormBasicController {
     private void initVelocityContainers() {
         if (contactTracingModule.isEnabled()) {
             retentionPeriodEl.setVisible(true);
+            allowAnonymousRegistrationEl.setVisible(true);
             defaultDurationEl.setVisible(true);
             questionnaireConfig.setVisible(true);
             messagesConfig.setVisible(true);
         } else {
             retentionPeriodEl.setVisible(false);
+            allowAnonymousRegistrationEl.setVisible(false);
             defaultDurationEl.setVisible(false);
             questionnaireConfig.setVisible(false);
             messagesConfig.setVisible(false);
