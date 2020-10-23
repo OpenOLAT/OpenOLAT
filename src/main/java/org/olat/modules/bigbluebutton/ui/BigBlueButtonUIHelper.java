@@ -156,32 +156,63 @@ public class BigBlueButtonUIHelper {
 		
 		Date start = startDateEl.getDate();
 		Date end = endDateEl.getDate();
-		if(template != null && template.getMaxDuration() != null && start != null && end != null) {
-			// all calculation in milli-seconds
-			long realStart = start.getTime() - (60 * 1000 * getLongOrZero(leadTimeEl));
-			long realEnd = end.getTime() + (60 * 1000 * getLongOrZero(followupTimeEl));
-			long duration = realEnd - realStart;
-			long maxDuration  = (60 * 1000 * template.getMaxDuration());
-			if(duration > maxDuration) {
+		long leadTime = getLongOrZero(leadTimeEl);
+		long followupTime = getLongOrZero(followupTimeEl);
+		if (!validateDuration(start, end, leadTime, followupTime, template)) {
 				endDateEl.setErrorKey("error.duration", new String[] { template.getMaxDuration().toString() });
 				allOk &= false;
-			}
 		}
 		return allOk;
+	}
+	
+	public static boolean validateDuration(DateChooser startEndDateEl, TextElement leadTimeEl,
+			TextElement followupTimeEl, BigBlueButtonMeetingTemplate template) {
+		boolean allOk = true;
+		
+		Date start = startEndDateEl.getDate();
+		Date end = startEndDateEl.getSecondDate();
+		long leadTime = getLongOrZero(leadTimeEl);
+		long followupTime = getLongOrZero(followupTimeEl);
+		if (!validateDuration(start, end, leadTime, followupTime, template)) {
+			startEndDateEl.setErrorKey("error.duration", new String[] { template.getMaxDuration().toString() });
+				allOk &= false;
+		}
+		return allOk;
+	}
+
+	public static boolean validateDuration(Date start, Date end, long leadTime, long followupTime,
+			BigBlueButtonMeetingTemplate template) {
+		if(template != null && template.getMaxDuration() != null && start != null && end != null) {
+			// all calculation in milli-seconds
+			long realStart = start.getTime() - (60 * 1000 * leadTime);
+			long realEnd = end.getTime() + (60 * 1000 * followupTime);
+			long duration = realEnd - realStart;
+			long maxDuration  = (60 * 1000 * template.getMaxDuration());
+			return maxDuration >= duration;
+		}
+		return true;
 	}
 	
 	public static boolean validateSlot(DateChooser startDateEl, TextElement leadTimeEl, DateChooser endDateEl,
 			TextElement followupTimeEl, BigBlueButtonMeeting meeting, BigBlueButtonMeetingTemplate template) {
 		boolean allOk = true;
 		
-		boolean slotFree = getBigBlueButtonManager().isSlotAvailable(meeting, template,
-				startDateEl.getDate(), getLongOrZero(leadTimeEl), endDateEl.getDate(), getLongOrZero(followupTimeEl));
+		Date start = startDateEl.getDate();
+		Date end = endDateEl.getDate();
+		long leadTime = getLongOrZero(leadTimeEl);
+		long followupTime = getLongOrZero(followupTimeEl);
+		boolean slotFree = validateSlot(meeting, template, start, end, leadTime, followupTime);
 		if(!slotFree) {
 			startDateEl.setErrorKey("server.overloaded", null);
 			allOk &= false;
 		}
 		
 		return allOk;
+	}
+
+	public static boolean validateSlot(BigBlueButtonMeeting meeting, BigBlueButtonMeetingTemplate template, Date start,
+			Date end, long leadTime, long followupTime) {
+		return getBigBlueButtonManager().isSlotAvailable(meeting, template, start, leadTime, end, followupTime);
 	}
 	
 	public static boolean validatePermanentSlot(SingleSelection templateEl, BigBlueButtonMeeting meeting, BigBlueButtonMeetingTemplate template) {
