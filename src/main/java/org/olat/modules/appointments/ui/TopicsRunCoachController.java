@@ -90,6 +90,7 @@ public class TopicsRunCoachController extends BasicController {
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_GROUPS = "group";
 	private static final String CMD_RECORDING = "recording";
+	private static final String CMD_SYNC = "sync";
 
 	private final VelocityContainer mainVC;
 	private Link createButton;
@@ -262,7 +263,9 @@ public class TopicsRunCoachController extends BasicController {
 		}
 		
 		wrapOpenLink(wrapper);
-		wrapTools(wrapper);
+		
+		boolean hasMeetings = appointments.stream().anyMatch(appointment -> appointment.getMeeting() != null);
+		wrapTools(wrapper, hasMeetings);
 	}
 
 	private boolean isConfirmable(Appointment appointment, Map<Long, List<Participation>> appointmentKeyToParticipations) {
@@ -418,7 +421,7 @@ public class TopicsRunCoachController extends BasicController {
 		wrapper.setOpenLinkName(openLink.getComponentName());
 	}
 	
-	private void wrapTools(TopicWrapper wrapper) {
+	private void wrapTools(TopicWrapper wrapper, boolean hasMeetings) {
 		String toolsName = "tools_" + counter++;
 		Dropdown dropdown =  new Dropdown(toolsName, null, false, getTranslator());
 		dropdown.setEmbbeded(true);
@@ -438,6 +441,13 @@ public class TopicsRunCoachController extends BasicController {
 		groupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		groupLink.setUserObject(wrapper.getTopic());
 		dropdown.addComponent(groupLink);
+		
+		if (hasMeetings) {
+			Link syncRecordingsLink = LinkFactory.createCustomLink("sync_" + counter++, CMD_SYNC, "sync.recordings", Link.LINK, mainVC, this);
+			syncRecordingsLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
+			syncRecordingsLink.setUserObject(wrapper.getTopic());
+			dropdown.addComponent(syncRecordingsLink);
+		}
 		
 		Link deleteLink = LinkFactory.createCustomLink("delete_" + counter++, CMD_DELETE, "delete.topic", Link.LINK, mainVC, this);
 		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
@@ -511,6 +521,9 @@ public class TopicsRunCoachController extends BasicController {
 			} else if (CMD_DELETE.equals(cmd)) {
 				TopicRef topic = (TopicRef)link.getUserObject();
 				doConfirmDeleteTopic(ureq, topic);
+			} else if (CMD_SYNC.equals(cmd)) {
+				Topic topic = (Topic)link.getUserObject();
+				doSyncRecordings(topic);
 			} else if (CMD_JOIN.equals(cmd)) {
 				Appointment appointment = (Appointment)link.getUserObject();
 				doJoin(ureq, appointment);
@@ -593,6 +606,11 @@ public class TopicsRunCoachController extends BasicController {
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		String meetingUrl = appointmentsService.joinMeeting(reloadedAppointment, getIdentity(), errors);
 		redirectTo(ureq, meetingUrl, errors);
+	}
+	
+	private void doSyncRecordings(Topic topic) {
+		appointmentsService.syncRecorings(topic);
+		refresh();
 	}
 	
 	private void redirectTo(UserRequest ureq, String meetingUrl, BigBlueButtonErrors errors) {

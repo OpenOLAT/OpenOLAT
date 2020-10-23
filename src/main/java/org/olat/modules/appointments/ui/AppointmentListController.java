@@ -99,7 +99,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private FormLink backLink;
 	private FormLink addSingleAppointmentLink;
 	private FormLink addRecurringAppointmentLink;
-	private FormLink syncRecordingsLink;
 	private FlexiTableElement tableEl;
 	private AppointmentDataModel dataModel;
 	
@@ -176,9 +175,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 			topButtons.setElementCssClass("o_button_group o_button_group_right");
 			
 			if (secCallback.canEditAppointment(organizers)) {
-				syncRecordingsLink = uifactory.addFormLink("sync.recordings", topButtons, Link.BUTTON);
-				syncRecordingsLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
-				
 				DropdownItem addAppointmentDropdown = uifactory.addDropdownMenu("add.appointment", "add.appointment", topButtons, getTranslator());
 				addAppointmentDropdown.setOrientation(DropdownOrientation.right);
 				
@@ -303,11 +299,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 		List<AppointmentRow> rows = loadModel();
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-		
-		if (syncRecordingsLink != null) {
-			boolean hasMeeting = rows.stream().anyMatch(row -> row.getAppointment().getMeeting() != null);
-			syncRecordingsLink.setVisible(hasMeeting);
-		}
 	}
 
 	protected void forgeAppointmentView(AppointmentRow row, Appointment appointment) {
@@ -456,8 +447,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 			doAddSingleAppointment(ureq);
 		} else if (source == addRecurringAppointmentLink) {
 			doAddRecurringAppointment(ureq);
-		} else if (source == syncRecordingsLink) {
-			doSyncRecordings();
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -627,11 +616,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 				translate("add.appointment.recurring"));
 		listenTo(cmc);
 		cmc.activate();
-	}
-
-	private void doSyncRecordings() {
-		appointmentsService.syncRecorings(topic);
-		updateModel();
 	}
 
 	private void doEditAppointment(UserRequest ureq, Appointment appointment) {
