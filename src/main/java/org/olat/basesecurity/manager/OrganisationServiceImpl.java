@@ -99,7 +99,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		Organisation organisation = organisationDao.createAndPersistOrganisation(displayName, identifier, description, parentOrganisation, type);
 		if(parentOrganisation != null) {
 			Group organisationGroup = organisation.getGroup();
-			List<GroupMembership> memberships = groupDao.getMemberships(parentOrganisation.getGroup());
+			List<GroupMembership> memberships = groupDao.getMemberships(parentOrganisation.getGroup(),
+					GroupMembershipInheritance.inherited, GroupMembershipInheritance.root);
 			for(GroupMembership membership:memberships) {
 				if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited
 						|| membership.getInheritanceMode() == GroupMembershipInheritance.root) {
@@ -213,7 +214,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		}
 		
 		// propagate inheritance of the new parent
-		List<GroupMembership> memberships = groupDao.getMemberships(newParent.getGroup());
+		List<GroupMembership> memberships = groupDao.getMemberships(newParent.getGroup(),
+				GroupMembershipInheritance.inherited, GroupMembershipInheritance.root);
 		List<GroupMembership> membershipsToPropagate = new ArrayList<>();
 		for(GroupMembership membership:memberships) {
 			if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited || membership.getInheritanceMode() == GroupMembershipInheritance.root) {

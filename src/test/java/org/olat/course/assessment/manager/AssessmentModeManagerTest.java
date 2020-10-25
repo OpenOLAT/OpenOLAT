@@ -37,6 +37,8 @@ import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.course.assessment.model.AssessmentModeImpl;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
@@ -460,6 +462,25 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertTrue(currentModes.contains(mode));
 	}
 	
+	@Test
+	public void isNodeInUse() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		CourseNode node = new IQTESTCourseNode();
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setElementList(node.getIdent());
+		mode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		//check
+		boolean inUse = assessmentModeMgr.isNodeInUse(entry, node);
+		Assert.assertTrue(inUse);
+		
+		// other node
+		CourseNode otherNode = new IQTESTCourseNode();
+		boolean notInUse = assessmentModeMgr.isNodeInUse(entry, otherNode);
+		Assert.assertFalse(notInUse);
+	}
 	
 	@Test
 	public void isInAssessmentMode() {

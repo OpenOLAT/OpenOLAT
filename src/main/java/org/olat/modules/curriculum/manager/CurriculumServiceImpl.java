@@ -321,7 +321,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				beginDate, endDate, parentRef, elementType, calendars, lectures, learningProgress, curriculum);
 		if(element.getParent() != null) {
 			Group organisationGroup = element.getGroup();
-			List<GroupMembership> memberships = groupDao.getMemberships(element.getParent().getGroup());
+			List<GroupMembership> memberships = groupDao.getMemberships(element.getParent().getGroup(),
+					GroupMembershipInheritance.inherited, GroupMembershipInheritance.root);
 			for(GroupMembership membership:memberships) {
 				if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited
 						|| membership.getInheritanceMode() == GroupMembershipInheritance.root) {
@@ -460,7 +461,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		List<GroupMembership> membershipsToPropagate = new ArrayList<>();
 		Map<IdentityToRoleKey,GroupMembership> identityRoleToNewParentMembership = new HashMap<>();
 		if(newParent != null) {
-			List<GroupMembership> memberships = groupDao.getMemberships(newParent.getGroup());
+			List<GroupMembership> memberships = groupDao.getMemberships(newParent.getGroup(),
+					GroupMembershipInheritance.inherited, GroupMembershipInheritance.root);
 			for(GroupMembership membership:memberships) {
 				if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited || membership.getInheritanceMode() == GroupMembershipInheritance.root) {
 					membershipsToPropagate.add(membership);

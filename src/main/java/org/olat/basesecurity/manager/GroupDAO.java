@@ -19,6 +19,7 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -232,11 +233,39 @@ public class GroupDAO {
 			.getResultList();
 	}
 	
-	public List<GroupMembership> getMemberships(Group group) {
-		return dbInstance.getCurrentEntityManager()
-			.createNamedQuery("membershipsByGroup", GroupMembership.class)
-			.setParameter("groupKey", group.getKey())
-			.getResultList();
+	/**
+	 * 
+	 * @param group A group
+	 * @param inheritances Inheritances or nothing
+	 * @return A list of memberships with the identity and user fetched
+	 */
+	public List<GroupMembership> getMemberships(Group group, GroupMembershipInheritance... inheritances) {
+		List<String> inheritanceList = new ArrayList<>();
+		if(inheritances != null && inheritances.length > 0 && inheritances[0] != null) {
+			for(GroupMembershipInheritance inheritance:inheritances) {
+				if(inheritance != null) {
+					inheritanceList.add(inheritance.name());
+				}
+			}
+		}
+	
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select membership from bgroupmember as membership ")
+		  .append(" inner join fetch membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" where membership.group.key=:groupKey");
+		if(!inheritanceList.isEmpty()) {
+			sb.append(" and membership.inheritanceModeString in (:inheritanceList)");
+		}
+
+		TypedQuery<GroupMembership> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), GroupMembership.class)
+			.setParameter("groupKey", group.getKey());
+		if(!inheritanceList.isEmpty()) {
+			query.setParameter("inheritanceList", inheritanceList);
+		}
+		
+		return query.getResultList();
 	}
 	
 	public List<GroupMembership> getMemberships(Group group, String role) {
@@ -256,11 +285,16 @@ public class GroupDAO {
 	}
 	
 	public GroupMembership getMembership(Group group, IdentityRef identity, String role) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership from bgroupmember as membership")
+		  .append(" where membership.group.key=:groupKey and membership.role=:role and membership.identity.key=:identityKey");
 		List<GroupMembership> memberships = dbInstance.getCurrentEntityManager()
-			.createNamedQuery("membershipByGroupIdentityAndRole", GroupMembership.class)
+			.createQuery(sb.toString(), GroupMembership.class)
 			.setParameter("groupKey", group.getKey())
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("role", role)
+			.setFirstResult(0)
+			.setMaxResults(1)
 			.getResultList();
 		return memberships == null || memberships.isEmpty() ? null : memberships.get(0);
 	}
