@@ -218,13 +218,15 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 
 		// fill in data collection attributes
 		Date dcStart = lectureBlockInfo.getLectureEndDate();
-		dataCollection.setStart(dcStart);
 		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
 		minutesBeforeEnd = StringHelper.containsNonWhitespace(minutesBeforeEnd)? minutesBeforeEnd: "0";
 		dcStart = addMinutes(dcStart, "-" + minutesBeforeEnd);
+		dataCollection.setStart(dcStart);
+		
 		String duration = configs.getValue(CONFIG_KEY_DURATION_DAYS);
 		Date deadline = addDays(dcStart, duration);
 		dataCollection.setDeadline(deadline);
+		
 		String titleTemplate = configs.getValue(CONFIG_KEY_TITLE);
 		String title = titleCreator.merge(titleTemplate, Arrays.asList(course, teacher.getUser()));
 		dataCollection.setTitle(title);

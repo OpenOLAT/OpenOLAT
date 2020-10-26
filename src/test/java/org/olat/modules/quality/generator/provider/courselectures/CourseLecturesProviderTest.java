@@ -19,9 +19,12 @@
  */
 package org.olat.modules.quality.generator.provider.courselectures;
 
+import static java.lang.String.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -187,7 +190,7 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldnotGenerateAnnouncementIfStarted() {
+	public void shouldNotGenerateAnnouncementIfStarted() {
 		Date now = new Date();
 		Date startDate = DateUtils.addDays(now,-2);
 		Date startEnd = DateUtils.addDays(now, -1);
@@ -209,6 +212,34 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		
 		QualityReminder reminder = qualityService.loadReminder(dataCollection, QualityReminderType.ANNOUNCEMENT_COACH_TOPIC);
 		assertThat(reminder).isNull();
+	}
+	
+	@Test
+	public void shouldStartDataCollectionAsConfigured() {
+		Date now = new Date();
+		Date lectureStart = DateUtils.addDays(now, -2);
+		Date lectureEnd = DateUtils.addDays(now, -1);
+		RepositoryEntry courseEntry = createCourseWithLecture(lectureStart, lectureEnd);
+		CurriculumElement element = createCurriculumElement();
+		curriculumService.addRepositoryEntry(element, courseEntry, false);
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		int durationDays = 10;
+		QualityGeneratorConfigs configs = createConfigs(generator, valueOf(durationDays), element);
+		int startDataCollectionBeforeEnd = 45;
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_MINUTES_BEFORE_END, valueOf(startDataCollectionBeforeEnd));
+		
+		Date lastRun = DateUtils.addDays(now, -2);
+		
+		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		QualityDataCollection dataCollection = generated.get(0);
+		dbInstance.commitAndCloseSession();
+		
+		Date beforeEndAsConfigured = DateUtils.addMinutes(lectureEnd, -startDataCollectionBeforeEnd);
+		long withinAMinute = within(1, ChronoUnit.MINUTES).getValue();
+		Date deadline = DateUtils.addDays(beforeEndAsConfigured, durationDays);
+		assertThat(dataCollection.getStart()).isCloseTo(beforeEndAsConfigured, withinAMinute);
+		assertThat(dataCollection.getDeadline()).isCloseTo(deadline, withinAMinute);
 	}
 
 	private RepositoryEntry createCourseWithLecture(Date lectureStartDate, Date lectureEndDate) {
