@@ -1348,6 +1348,66 @@ public class CourseTest extends Deployments {
 	
 	
 	/**
+	 * An author create a course with a course element
+	 * to contact all members of the course. It add some
+	 * participants. A participant log in, go to the
+	 * course to use the contact form and send an E-mail.
+	 * 
+	 * @param loginPage The login page
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseDeleteCourseElement()
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Contact Course" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		CoursePageFragment courseRuntime = navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//create a course element of type Test with the test that we create above
+		String nodeTitle = "SomeNode";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("bc")
+			.nodeTitle(nodeTitle);
+
+		courseEditor
+			.autoPublish();
+		
+		courseRuntime
+			.clickTree()
+			.assertWithTitle(nodeTitle)
+			.selectWithTitle(nodeTitle);
+		
+		// delete the node
+		courseRuntime
+			.edit()
+			.selectNode(nodeTitle)
+			.deleteElement()
+			.autoPublish();
+		
+		courseRuntime
+			.clickTree();
+
+		// make sure the course element is deleted
+		By linkBy = By.xpath("//a[span[contains(text(),'" + nodeTitle + "')]]");
+		OOGraphene.waitElementDisappears(linkBy, 5, browser);
+	}
+	
+	
+	/**
 	 * An author creates a course with 4 course elements. A folder
 	 * which is visible to group, a forum which is visible to coaches,
 	 * an assessment and an info visible to the students which passed

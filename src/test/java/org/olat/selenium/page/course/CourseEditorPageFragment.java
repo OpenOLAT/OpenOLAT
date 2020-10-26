@@ -297,6 +297,26 @@ public class CourseEditorPageFragment {
 		return this;
 	}
 	
+	public CourseEditorPageFragment deleteElement() {
+		if(!browser.findElement(changeNodeToolsMenu).isDisplayed()) {
+			openChangeNodeToolsMenu();
+		}
+		
+		By deleteNodeLinkBy = By.cssSelector("a.o_sel_course_editor_delete_node");
+		browser.findElement(deleteNodeLinkBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By confirmBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
+		browser.findElement(confirmBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		
+		By undeleteButtonBy = By.xpath("//a[contains(@onclick,'undeletenode.button')]");
+		OOGraphene.waitElement(undeleteButtonBy, browser);
+		
+		return this;
+	}
+	
 	public CourseEditorPageFragment selectNode(String nodeTitle) {
 		By targetNodeBy = By.xpath("//div[contains(@class,'o_editor_menu')]//a[contains(@title,'" + nodeTitle + "')]");
 		browser.findElement(targetNodeBy).click();
@@ -502,9 +522,10 @@ public class CourseEditorPageFragment {
 	}
 	
 	/**
-	 * Don't forget to set access
+	 * Don't forget to set access.<br>
+	 * Click the bread crumb and publish the course.
 	 * 
-	 * @return
+	 * @return Itself
 	 */
 	public CoursePageFragment autoPublish() {
 		//back
