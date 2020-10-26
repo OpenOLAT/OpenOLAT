@@ -208,7 +208,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		Date beginWithLeadTime = evaluateLeadTime(begin, assessmentMode.getLeadTime());
 		((AssessmentModeImpl)assessmentMode).setBeginWithLeadTime(beginWithLeadTime);
 		Date end = assessmentMode.getEnd();
-		Date endWithFollowupTime = this.evaluateFollowupTime(end, assessmentMode.getFollowupTime());
+		Date endWithFollowupTime = evaluateFollowupTime(end, assessmentMode.getFollowupTime());
 		((AssessmentModeImpl)assessmentMode).setEndWithFollowupTime(endWithFollowupTime);
 
 		dbInstance.getCurrentEntityManager().persist(assessmentMode);

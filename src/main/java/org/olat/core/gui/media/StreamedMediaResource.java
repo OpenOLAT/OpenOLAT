@@ -24,7 +24,6 @@ import java.io.InputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.StringHelper;
 
 /**
