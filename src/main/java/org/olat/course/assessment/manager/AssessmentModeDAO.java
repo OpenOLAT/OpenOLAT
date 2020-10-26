@@ -293,7 +293,7 @@ public class AssessmentModeDAO {
 		  .append(" and (mode.startElement=:startIdent or mode.elementList like :nodeIdent)")
 		  .append(" and (mode.beginWithLeadTime>=:now")
 		  .append(" or mode.statusString ").in(Status.none, Status.leadtime, Status.assessment, Status.followup)
-		  .append(" or mod.endStatusString ").in(EndStatus.withoutDisadvantage).append(")");
+		  .append(" or mode.endStatusString ").in(EndStatus.withoutDisadvantage).append(")");
 
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.MILLISECOND, 0);

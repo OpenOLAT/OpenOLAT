@@ -19,7 +19,9 @@
  */
 package org.olat.basesecurity.manager;
 
+
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +32,7 @@ import org.junit.Test;
 import org.olat.basesecurity.Grant;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -71,11 +74,18 @@ public class GroupDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void createGroupMembership_oneWay() {
+	public void createGroupMembershipOneWay() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-1-");
 		Group group = groupDao.createGroup();
 		groupDao.addMembershipOneWay(group, id, "author");
 		dbInstance.commit();
+		
+		GroupMembership membership = groupDao.getMembership(group, id, "author");
+		Assert.assertNotNull(membership);
+		Assert.assertEquals(id, membership.getIdentity());
+		Assert.assertEquals(group, membership.getGroup());
+		Assert.assertEquals("author", membership.getRole());
+		Assert.assertEquals(GroupMembershipInheritance.none, membership.getInheritanceMode());
 	}
 	
 	@Test
@@ -137,6 +147,54 @@ public class GroupDAOTest extends OlatTestCase {
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 	}
+	
+	@Test
+	public void getMembershipsByGroup() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-30-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-31-");
+		Group group = groupDao.createGroup();
+		GroupMembership membership1 = groupDao.addMembershipTwoWay(group, id1, "author");
+		GroupMembership membership2 = groupDao.addMembershipTwoWay(group, id2, "author", GroupMembershipInheritance.root);
+		dbInstance.commit();
+		
+		List<GroupMembership> memberships = groupDao.getMemberships(group);
+		assertThat(memberships)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(membership1, membership2);
+	}
+	
+	@Test
+	public void getMembershipsByGroupAndInheritance() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-30-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-31-");
+		Group group = groupDao.createGroup();
+		GroupMembership membership1 = groupDao.addMembershipTwoWay(group, id1, "coach");
+		GroupMembership membership2 = groupDao.addMembershipTwoWay(group, id2, "author", GroupMembershipInheritance.root);
+		dbInstance.commit();
+		
+		// root only
+		List<GroupMembership> rootMemberships = groupDao.getMemberships(group, GroupMembershipInheritance.root);
+		assertThat(rootMemberships)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(membership2);
+		
+		// default only
+		List<GroupMembership> noneMemberships = groupDao.getMemberships(group, GroupMembershipInheritance.none);
+		assertThat(noneMemberships)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(membership1);
+		
+		// root and none
+		List<GroupMembership> rootNoneMemberships = groupDao.getMemberships(group, GroupMembershipInheritance.root, GroupMembershipInheritance.none);
+		assertThat(rootNoneMemberships)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(membership1, membership2);
+		
+		// inherited
+		List<GroupMembership> inheritedMemberships = groupDao.getMemberships(group, GroupMembershipInheritance.inherited);
+		Assert.assertTrue(inheritedMemberships.isEmpty());
+	}
+	
 
 	@Test
 	public void hasRole() {
@@ -370,6 +428,10 @@ public class GroupDAOTest extends OlatTestCase {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		groupDao.addGrant(group, "grant-role", "read-only", resource);
 		dbInstance.commitAndCloseSession();
+		
+		List<Grant> grants = groupDao.getGrants(group, "grant-role");
+		Assert.assertNotNull(grants);
+		
 	}
 	
 	@Test

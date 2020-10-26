@@ -133,17 +133,17 @@ public class DateUtils {
 		return c.getTime();
 	}
 
-	public static Date addMinutes(Date date, int minutes) {
-		Calendar c = Calendar.getInstance();
-		c.setTime(date);
-		c.add(Calendar.MINUTE, minutes);
-		return c.getTime();
-	}
-	
 	public static Date addHours(Date date, int hours) {
 		Calendar c = Calendar.getInstance();
 		c.setTime(date);
 		c.add(Calendar.HOUR, hours);
+		return c.getTime();
+	}
+	
+	public static Date addMinutes(Date date, int minutes) {
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.MINUTE, minutes);
 		return c.getTime();
 	}
 	
