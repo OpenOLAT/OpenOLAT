@@ -21,10 +21,8 @@ package org.olat.modules.quality.generator.provider.courselectures;
 
 import static java.lang.String.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 import static org.olat.test.JunitTestHelper.random;
 
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -236,7 +234,7 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Date beforeEndAsConfigured = DateUtils.addMinutes(lectureEnd, -startDataCollectionBeforeEnd);
-		long withinAMinute = within(1, ChronoUnit.MINUTES).getValue();
+		long withinAMinute = 60*1000;
 		Date deadline = DateUtils.addDays(beforeEndAsConfigured, durationDays);
 		assertThat(dataCollection.getStart()).isCloseTo(beforeEndAsConfigured, withinAMinute);
 		assertThat(dataCollection.getDeadline()).isCloseTo(deadline, withinAMinute);
