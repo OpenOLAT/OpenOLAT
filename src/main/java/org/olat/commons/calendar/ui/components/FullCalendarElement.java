@@ -155,9 +155,8 @@ public class FullCalendarElement extends FormItemImpl {
 			doSelect(ureq, selectedEventId, targetDomId);
 		} else if(StringHelper.containsNonWhitespace(addEventMarker)) {
 			String start = getRootForm().getRequestParameter("start");
-			String end = getRootForm().getRequestParameter("end");
 			String allDay = getRootForm().getRequestParameter("allDay");
-			doAdd(ureq, start, end, allDay);
+			doAdd(ureq, start, allDay);
 		} else if(StringHelper.containsNonWhitespace(movedEventId)) {
 			String dayDelta = getRootForm().getRequestParameter("dayDelta");
 			String minuteDelta = getRootForm().getRequestParameter("minuteDelta");
@@ -174,18 +173,15 @@ public class FullCalendarElement extends FormItemImpl {
 	}
 	
 	protected void doChangeView(String viewName, String start) {
+		if(FullCalendarViews.exists(viewName)) {
+			component.setViewName(viewName);
+		}
+		
 		if(StringHelper.isLong(start)) {
 			long startTime = Long.parseLong(start);
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(startTime);
 			component.setCurrentDate(cal.getTime());
-		}
-
-		if("month".equals(viewName)
-				|| "agendaWeek".equals(viewName) || "agendaDay".equals(viewName) 
-				|| "listYear".equals(viewName) || "listMonth".equals(viewName) || "listWeek".equals(viewName) || "listDay".equals(viewName)
-				|| "basicWeek".equals(viewName) || "basicDay".equals(viewName)) {
-			component.setViewName(viewName);
 		}
 	}
 	
@@ -206,12 +202,7 @@ public class FullCalendarElement extends FormItemImpl {
 			allDay = Boolean.FALSE;
 		}
 		
-		if(component.isOccurenceOfCalendarEvent(eventId)) {
-			String uid = component.getCalendarEventUid(eventId);
-			KalendarRenderWrapper cal = component.getCalendarById(uid);
-			KalendarRecurEvent rEvent = getCurrenceKalendarEvent(cal, eventId);
-			getRootForm().fireFormEvent(ureq, new CalendarGUIMoveEvent(this, rEvent, cal, day, minute, allDay));
-		} else if(component.isReccurenceOfCalendarEvent(eventId)) {
+		if(component.isOccurenceOfCalendarEvent(eventId) || component.isReccurenceOfCalendarEvent(eventId)) {
 			String uid = component.getCalendarEventUid(eventId);
 			KalendarRenderWrapper cal = component.getCalendarById(uid);
 			KalendarRecurEvent rEvent = getCurrenceKalendarEvent(cal, eventId);
@@ -236,12 +227,7 @@ public class FullCalendarElement extends FormItemImpl {
 			allDay = Boolean.FALSE;
 		}
 		
-		if(component.isOccurenceOfCalendarEvent(eventId)) {
-			String uid = component.getCalendarEventUid(eventId);
-			KalendarRenderWrapper cal = component.getCalendarById(uid);
-			KalendarRecurEvent rEvent = getCurrenceKalendarEvent(cal, eventId);
-			getRootForm().fireFormEvent(ureq, new CalendarGUIResizeEvent(this, rEvent, cal, minute, allDay));
-		} else if(component.isReccurenceOfCalendarEvent(eventId)) {
+		if(component.isOccurenceOfCalendarEvent(eventId) || component.isReccurenceOfCalendarEvent(eventId)) {
 			String uid = component.getCalendarEventUid(eventId);
 			KalendarRenderWrapper cal = component.getCalendarById(uid);
 			KalendarRecurEvent rEvent = getCurrenceKalendarEvent(cal, eventId);
@@ -253,7 +239,7 @@ public class FullCalendarElement extends FormItemImpl {
 		}
 	}
 	
-	private void doAdd(UserRequest ureq, String start, String end, String allDay) {
+	private void doAdd(UserRequest ureq, String start, String allDay) {
 		try {
 			boolean allDayEvent = "true".equalsIgnoreCase(allDay);
 			
@@ -262,15 +248,13 @@ public class FullCalendarElement extends FormItemImpl {
 				startDate = CalendarUtils.parseISO8601(start);
 			}
 			Date endDate = null;
-			if(StringHelper.containsNonWhitespace(end)) {
-				endDate = CalendarUtils.parseISO8601(end);
-				if(allDayEvent && end.indexOf('T') == -1) {
-					// all day event ended the next day at 00:00:00, OpenOLAT want something which ends the same day
-					Calendar cal = Calendar.getInstance();
-					cal.setTime(endDate);
-					cal.add(Calendar.DATE, -1);
-					endDate = cal.getTime();
-				}
+			if(FullCalendarViews.dayGridMonth.name().equals(component.getViewName()) || allDayEvent) {
+				endDate = CalendarUtils.parseISO8601(start);
+			} else {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(startDate);
+				cal.add(Calendar.HOUR_OF_DAY, 1);
+				endDate = cal.getTime();
 			}
 			getRootForm().fireFormEvent(ureq, new CalendarGUIAddEvent(this, null, startDate, endDate, allDayEvent));
 		} catch (ParseException e) {
@@ -281,12 +265,7 @@ public class FullCalendarElement extends FormItemImpl {
 	private void doSelect(UserRequest ureq, String eventId, String targetDomId) {
 		KalendarEvent event = component.getCalendarEvent(eventId);
 		
-		if(component.isOccurenceOfCalendarEvent(eventId)) {
-			String uid = component.getCalendarEventUid(eventId);
-			KalendarRenderWrapper cal = component.getCalendarById(uid);
-			KalendarRecurEvent recurEvent = getCurrenceKalendarEvent(cal, eventId);
-			getRootForm().fireFormEvent(ureq, new CalendarGUISelectEvent(this, recurEvent, cal, targetDomId));
-		} else if(component.isReccurenceOfCalendarEvent(eventId)) {
+		if(component.isOccurenceOfCalendarEvent(eventId) || component.isReccurenceOfCalendarEvent(eventId)) {
 			String uid = component.getCalendarEventUid(eventId);
 			KalendarRenderWrapper cal = component.getCalendarById(uid);
 			KalendarRecurEvent recurEvent = getCurrenceKalendarEvent(cal, eventId);

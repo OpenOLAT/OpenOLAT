@@ -129,8 +129,8 @@ $o-cal-color-width : 20px;
 	}
 }
 
-.o_cal_event_managed .fc-content:after  {
-	margin-right: 2px;
+.o_cal_event_managed > .fc-event-title:after, .o_cal_event_managed .fc-event-title-container:after  {
+	margin-right: 4px;
 	float: right;
 	font-family: FontAwesome;
 	font-style: normal;
@@ -141,8 +141,8 @@ $o-cal-color-width : 20px;
 	content: $fa-var-lock;
 }
 
-.o_cal_event_not_managed .fc-content:after {
-	margin-right: 2px;
+.o_cal_event_not_managed > .fc-event-title:after, .o_cal_event_not_managed .fc-event-title-container:after {
+	margin-right: 4px;
 	float: right;
 	font-family: FontAwesome;
 	font-style: normal;
@@ -153,8 +153,8 @@ $o-cal-color-width : 20px;
 	content: $fa-var-user;
 }
 
-.o_cal_event_livestream .fc-content:after {
-	margin-right: 2px;
+.o_cal_event_livestream > .fc-event-title:after, .o_cal_event_livestream .fc-event-title-container:after {
+	margin-right: 4px;
 	float: right;
 	font-family: FontAwesome;
 	font-style: normal;
@@ -165,8 +165,8 @@ $o-cal-color-width : 20px;
 	content: $fa-var-video-camera;
 }
 
-.o_cal_event_managed.o_cal_event_livestream .fc-content:after {
-	margin-right: 2px;
+.o_cal_event_managed.o_cal_event_livestream > .fc-event-title:after, .o_cal_event_managed.o_cal_event_livestream .fc-event-title-container:after {
+	margin-right: 4px;
 	float: right;
 	font-family: FontAwesome;
 	font-style: normal;
@@ -177,8 +177,8 @@ $o-cal-color-width : 20px;
 	content: "#{$fa-var-video-camera}\00a0#{$fa-var-lock}"
 }
 
-.o_cal_event_not_managed.o_cal_event_livestream .fc-content:after {
-	margin-right: 2px;
+.o_cal_event_not_managed.o_cal_event_livestream > .fc-event-title:after, .o_cal_event_not_managed.o_cal_event_livestream .fc-event-title-container:after {
+	margin-right: 4px;
 	float: right;
 	font-family: FontAwesome;
 	font-style: normal;
@@ -192,34 +192,37 @@ $o-cal-color-width : 20px;
 /* 
  * fullcalendar bootstrapify
  */
-.fc-button {
-	@include button-variant($btn-default-color, $btn-default-bg, $btn-default-border);
-	
-	&.fc-state-default {
-		text-shadow: none;
+ .o_cal .fc {
+ 
+	.fc-button {
+		@include button-variant($btn-default-color, $btn-default-bg, $btn-default-border);
+		
+		&.fc-button-default {
+			text-shadow: none;
+		}
+		&.fc-button-active {
+			@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+		}
 	}
-	&.fc-state-active {
-		@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
-	}
-}
-
-.fc-listYear-button:before, .fc-listMonth-button:before, .fc-listWeek-button:before, .fc-listDay-button:before {
-	content: $fa-var-list-alt;
-	margin-right: 5px;
-	font-family: FontAwesome;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 80%;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-}
-
-table.fc-list-table .fc-list-item {
-	background-color: white;
-	color: #5D5D5D ! important;
 	
-	a, span {
+	.fc-listYear-button:before, .fc-listMonth-button:before, .fc-listWeek-button:before, .fc-listDay-button:before {
+		content: $fa-var-list-alt;
+		margin-right: 5px;
+		font-family: FontAwesome;
+		font-style: normal;
+		font-weight: normal;
+		font-size: 80%;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+	
+	table.fc-list-table .fc-list-event {
+		background-color: white;
 		color: #5D5D5D ! important;
+		
+		a, span {
+			color: #5D5D5D ! important;
+		}
 	}
 }
 

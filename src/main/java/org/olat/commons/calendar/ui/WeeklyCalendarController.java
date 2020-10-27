@@ -800,7 +800,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		KalendarRenderWrapper calendarWrapper = calendarEl.getCalendar(addEvent.getCalendarID());
 		List<KalendarRenderWrapper> copyCalendarWrappers = new ArrayList<>(calendarWrappers);
 		
-		boolean isReadOnly = calendarWrapper == null ? true : calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
+		boolean isReadOnly = calendarWrapper == null || calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
 		for(KalendarRenderWrapper copyCalendarWrapper:copyCalendarWrappers) {
 			isReadOnly &= copyCalendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
 		}

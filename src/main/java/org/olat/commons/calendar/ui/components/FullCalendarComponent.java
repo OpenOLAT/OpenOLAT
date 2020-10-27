@@ -38,6 +38,7 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -58,7 +59,7 @@ public class FullCalendarComponent extends AbstractComponent {
 	private List<KalendarRenderWrapper> alwaysVisibleCalendars;
 	private List<KalendarRenderWrapper> calendars = new ArrayList<>();
 	private Date currentDate;
-	private String viewName = "month";
+	private String viewName = FullCalendarViews.dayGridMonth.name();
 	private boolean configurationEnabled;
 	private boolean aggregatedFeedEnabled;
 	private boolean differentiateManagedEvents;
@@ -95,7 +96,7 @@ public class FullCalendarComponent extends AbstractComponent {
 	}
 
 	public String getViewName() {
-		return viewName == null ? "month" : viewName;
+		return viewName == null ? FullCalendarViews.dayGridMonth.name() : viewName;
 	}
 
 	public void setViewName(String viewName) {
@@ -182,10 +183,13 @@ public class FullCalendarComponent extends AbstractComponent {
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
-		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/fullcalendar/lib/moment.min.js");
-		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.dnd.min.js");
-		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js");
-		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/fullcalendar/fullcalendar.min.js");
+		if(Settings.isDebuging()) {
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/fullcalendar/main.js");
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/fullcalendar/locales-all.js");
+		} else {
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/fullcalendar/main.min.js");
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/fullcalendar/locales-all.min.js");
+		}
 	}
 	
 	public boolean isOccurenceOfCalendarEvent(String eventId) {
@@ -218,7 +222,7 @@ public class FullCalendarComponent extends AbstractComponent {
 					startDate = occurenceDateFormat.parse(dateStr);
 				}
 			} catch (ParseException e) {
-				log.error("Cannot parse start date of occurence: " + dateStr, e);
+				log.error("Cannot parse start date of occurence: {}", dateStr, e);
 			}
 		}
 		return startDate;

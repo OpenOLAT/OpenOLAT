@@ -632,8 +632,8 @@ public class CourseTest extends Deployments {
 	
 	/**
 	 * Create a course with a calendar element, add a recurring event
-	 * all day, modify an occurence to an event between 13h and 15h.
-	 * Remove an other single occurence and at the end, remove all remaining
+	 * all day, modify an occurrence to an event between 13h and 15h.
+	 * Remove an other single occurrence and at the end, remove all remaining
 	 * events by removing the original event and confirm that
 	 * all must be deleted.
 	 * 

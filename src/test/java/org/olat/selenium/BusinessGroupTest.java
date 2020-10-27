@@ -629,7 +629,7 @@ public class BusinessGroupTest extends Deployments {
 	/**
 	 * A coach create a group, enable the calendar, create a recurring event
 	 * and save it. Reopen it, edit it and save it, confirm that it will
-	 * only change a single occurence of the recurring event. After change
+	 * only change a single occurrence of the recurring event. After change
 	 * the begin and end hour of all others events.
 	 * 
 	 * 

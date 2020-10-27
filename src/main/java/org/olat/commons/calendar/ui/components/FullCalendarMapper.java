@@ -266,7 +266,7 @@ public class FullCalendarMapper implements Mapper {
 				return formatDate.parse(date);
 			}
 		} catch (ParseException e) {
-			log.error("Cannot parse Fullcalendar date: " + date, e);
+			log.error("Cannot parse Fullcalendar date: {}", date, e);
 			return null;
 		}
 	}
