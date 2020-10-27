@@ -3599,7 +3599,6 @@ create index id_idx on o_olatresource (resid);
 alter table o_repositoryentry  add constraint FK2F9C439888C31018 foreign key (fk_olatresource) references o_olatresource (resource_id);
 -- index created by unique constraint
 
-create index descritpion_idx on o_repositoryentry (description);
 create index initialAuthor_idx on o_repositoryentry (initialauthor);
 create index resource_idx on o_repositoryentry (resourcename);
 create index displayname_idx on o_repositoryentry (displayname);

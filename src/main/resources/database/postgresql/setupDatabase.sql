@@ -3490,7 +3490,6 @@ create index name_idx4 on o_olatresource (resname);
 create index id_idx on o_olatresource (resid);
 
 -- repository
-create index descritpion_idx on o_repositoryentry (description);
 create index re_status_idx on o_repositoryentry (status);
 create index initialAuthor_idx on o_repositoryentry (initialauthor);
 create index resource_idx on o_repositoryentry (resourcename);
