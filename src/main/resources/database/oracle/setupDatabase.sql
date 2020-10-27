@@ -549,7 +549,7 @@ CREATE TABLE o_repositoryentry (
   lastusage date,
   softkey varchar2(36 char) NOT NULL,
   external_id varchar2(64 char),
-  external_ref varchar2(64 char),
+  external_ref varchar2(255 char),
   managed_flags varchar2(255 char),
   displayname varchar2(110 char) NOT NULL,
   resourcename varchar2(100 char) NOT NULL,
@@ -3696,7 +3696,6 @@ create index id_idx on o_olatresource (resid);
 alter table o_repositoryentry  add constraint FK2F9C439888C31018 foreign key (fk_olatresource) references o_olatresource (resource_id);
 -- index created by unique constraint
 
-create index descritpion_idx on o_repositoryentry (description);
 create index initialAuthor_idx on o_repositoryentry (initialauthor);
 create index resource_idx on o_repositoryentry (resourcename);
 create index displayname_idx on o_repositoryentry (displayname);

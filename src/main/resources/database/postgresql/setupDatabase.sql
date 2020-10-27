@@ -491,7 +491,7 @@ create table o_repositoryentry (
    creationdate timestamp,
    softkey varchar(36) not null unique,
    external_id varchar(64),
-   external_ref varchar(64),
+   external_ref varchar(255),
    managed_flags varchar(255),
    displayname varchar(110) not null,
    resourcename varchar(100) not null,
@@ -3587,7 +3587,6 @@ create index name_idx4 on o_olatresource (resname);
 create index id_idx on o_olatresource (resid);
 
 -- repository
-create index descritpion_idx on o_repositoryentry (description);
 create index re_status_idx on o_repositoryentry (status);
 create index initialAuthor_idx on o_repositoryentry (initialauthor);
 create index resource_idx on o_repositoryentry (resourcename);

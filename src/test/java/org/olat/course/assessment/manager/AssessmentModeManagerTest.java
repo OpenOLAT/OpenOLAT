@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +31,7 @@ import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Encoder;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Target;
@@ -37,6 +40,7 @@ import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.course.assessment.model.AssessmentModeImpl;
+import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.group.BusinessGroup;
@@ -929,6 +933,52 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertTrue(assessedIdentityKeys.contains(participant1.getKey()));
 		Assert.assertTrue(assessedIdentityKeys.contains(coach2.getKey()));
 		Assert.assertTrue(assessedIdentityKeys.contains(participant2.getKey()));
+	}
+	
+	@Test
+	public void getPlannedAssessmentMode() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+	
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setBegin(DateUtils.addDays(mode.getBegin(), -4));
+		mode.setEnd(DateUtils.addDays(mode.getEnd(), -4));
+		mode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		Date from = DateUtils.addDays(new Date(), -5);
+		Date to = DateUtils.addDays(new Date(), -2);
+		List<AssessmentMode> plannedModes = assessmentModeMgr.getPlannedAssessmentMode(entry, from, to);
+		assertThat(plannedModes)
+			.isNotNull()
+			.containsAnyOf(mode);
+	}
+	
+	@Test
+	public void findAssessmentModeSearchParams() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+	
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setBegin(DateUtils.addDays(mode.getBegin(), -25));
+		((AssessmentModeImpl)mode).setBeginWithLeadTime(mode.getBegin());
+		mode.setEnd(DateUtils.addDays(mode.getEnd(), -23));
+		((AssessmentModeImpl)mode).setEndWithFollowupTime(mode.getEnd());
+		mode.setName("Mode");
+		mode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		SearchAssessmentModeParams params = new SearchAssessmentModeParams();
+		params.setDate(DateUtils.addDays(new Date(), -24));
+		params.setIdAndRefs(entry.getKey().toString());
+		params.setName("Mode");
+	
+		List<AssessmentMode> plannedModes = assessmentModeMgr.findAssessmentMode(params);
+		assertThat(plannedModes)
+			.isNotNull()
+			.containsAnyOf(mode);
 	}
 	
 	@Test

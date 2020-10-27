@@ -172,15 +172,22 @@ public class EditCurriculumController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		displayNameEl.clearError();
-		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
-			displayNameEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
+		allOk &= validateTextElement(displayNameEl, 64, true);
+		allOk &= validateTextElement(identifierEl, 64, true);
 		
-		identifierEl.clearError();
-		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
-			identifierEl.setErrorKey("form.legende.mandatory", null);
+		return allOk;
+	}
+	
+	private boolean validateTextElement(TextElement el, int maxLength, boolean mandatory) {
+		boolean allOk = true;
+
+		el.clearError();
+		String val = el.getValue();
+		if(!StringHelper.containsNonWhitespace(val) && mandatory) {
+			el.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(StringHelper.containsNonWhitespace(val) && val.length() > maxLength) {
+			el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
 			allOk &= false;
 		}
 		

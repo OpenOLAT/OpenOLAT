@@ -297,6 +297,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				nodeTools.setElementCssClass("o_sel_course_editor_change_node");
 
 				deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "o_icon_delete_item");
+				deleteNodeLink.setElementCssClass("o_sel_course_editor_delete_node");
 				nodeTools.addComponent(deleteNodeLink);
 				moveNodeLink = LinkFactory.createToolLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), this, "o_icon_move");
 				moveNodeLink.setElementCssClass("o_sel_course_editor_move_node");

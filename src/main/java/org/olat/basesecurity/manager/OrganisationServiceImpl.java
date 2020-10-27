@@ -315,7 +315,6 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	
 	@Override
 	public boolean isMultiOrganisations() {
-		// TODO Auto-generated method stub
 		return  organisationDao.count(OrganisationStatus.notDelete()) > 1;
 	}
 
