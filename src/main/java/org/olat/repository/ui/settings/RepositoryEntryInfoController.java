@@ -140,10 +140,9 @@ public class RepositoryEntryInfoController extends FormBasicController {
 				uifactory.addStaticTextElement("cif.externalref", extRef, formLayout);
 			}
 		} else {
-			externalRef = uifactory.addTextElement("cif.externalref", "cif.externalref", 100, extRef, formLayout);
+			externalRef = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, extRef, formLayout);
 			externalRef.setHelpText(translate("cif.externalref.hover"));
 			externalRef.setHelpUrlForManualPage("Set up info page");
-			externalRef.setDisplaySize(30);
 		}
 
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(repositoryEntry);
@@ -252,7 +251,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		allOk &= validateTextElement(objectives, 2000);
 		allOk &= validateTextElement(requirements, 2000);
 		allOk &= validateTextElement(credits, 2000);
-		allOk &= validateTextElement(externalRef, 58);
+		allOk &= validateTextElement(externalRef, 255);
 
 		return allOk;
 	}
