@@ -549,7 +549,7 @@ CREATE TABLE o_repositoryentry (
   lastusage date,
   softkey varchar2(36 char) NOT NULL,
   external_id varchar2(64 char),
-  external_ref varchar2(64 char),
+  external_ref varchar2(255 char),
   managed_flags varchar2(255 char),
   displayname varchar2(110 char) NOT NULL,
   resourcename varchar2(100 char) NOT NULL,

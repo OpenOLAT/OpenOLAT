@@ -491,7 +491,7 @@ create table o_repositoryentry (
    creationdate timestamp,
    softkey varchar(36) not null unique,
    external_id varchar(64),
-   external_ref varchar(64),
+   external_ref varchar(255),
    managed_flags varchar(255),
    displayname varchar(110) not null,
    resourcename varchar(100) not null,
