@@ -43,6 +43,8 @@ public interface Access extends AccessRef, ModifiedInfo, CreateInfo {
 	
 	boolean isVersionControlled();
 	
+	boolean isDownload();
+	
 	VFSMetadata getMetadata();
 	
 	Identity getIdentity();

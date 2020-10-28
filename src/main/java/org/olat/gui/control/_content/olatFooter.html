@@ -15,7 +15,7 @@
 #if($footerInfos.hasFooterLine)
 	<div id="o_footer_textline">
 	#if($footerInfos.footerUrl && !$footerInfos.footerUrl.empty)
-		<a href="$footerInfos.footerUrl" target="_blank">$footerInfos.footerLine</a>
+		<a #if($r.isNotEmpty($footerInfos.footerUrl)) href="$footerInfos.footerUrl" target="_blank" #end>$footerInfos.footerLine</a>
 	#else
 		$footerInfos.footerLine
 	#end

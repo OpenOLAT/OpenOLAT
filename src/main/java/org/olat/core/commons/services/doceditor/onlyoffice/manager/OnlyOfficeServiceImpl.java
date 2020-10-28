@@ -124,7 +124,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	}
 
 	@Override
-	public ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, Mode mode, boolean versionControlled, String downloadUrl) {
+	public ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, Mode mode, boolean isDownloadEnabled, boolean versionControlled, String downloadUrl) {
 		String fileName = vfsMetadata.getFilename();
 
 		ApiConfigImpl apiConfig = new ApiConfigImpl();
@@ -160,7 +160,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		boolean edit = Mode.EDIT.equals(mode);
 		permissions.setEdit(edit);
 		permissions.setComment(true);
-		permissions.setDownload(true);
+		permissions.setDownload(isDownloadEnabled);
 		permissions.setFillForms(true);
 		permissions.setPrint(true);
 		permissions.setReview(true);

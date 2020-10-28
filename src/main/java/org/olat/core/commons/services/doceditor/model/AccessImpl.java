@@ -76,6 +76,8 @@ public class AccessImpl implements Access, Persistable {
 	private Mode mode;
 	@Column(name="o_version_controlled", nullable=false, insertable=true, updatable=false)
 	private boolean versionControlled;
+	@Column(name="o_download", nullable=false, insertable=true, updatable=false)
+	private boolean download;
 	
 	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_metadata", nullable=false, insertable=true, updatable=false)
@@ -146,6 +148,15 @@ public class AccessImpl implements Access, Persistable {
 
 	public void setVersionControlled(Boolean versionControlled) {
 		this.versionControlled = versionControlled;
+	}
+
+	@Override
+	public boolean isDownload() {
+		return download;
+	}
+
+	public void setDownload(boolean download) {
+		this.download = download;
 	}
 
 	@Override

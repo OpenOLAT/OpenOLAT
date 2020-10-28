@@ -70,8 +70,8 @@ public class DocEditorWebServiceTest extends OlatRestTestCase {
 		String randomAppName = random();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("restuser1");
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("restuser2");
-		Access access1 = accessDao.createAccess(randomMetadata(), identity, randomAppName, Mode.EDIT, true, new Date());
-		Access access2 = accessDao.createAccess(randomMetadata(), identity2, randomAppName, Mode.VIEW, false, new Date());
+		Access access1 = accessDao.createAccess(randomMetadata(), identity, randomAppName, Mode.EDIT, true, true, new Date());
+		Access access2 = accessDao.createAccess(randomMetadata(), identity2, randomAppName, Mode.VIEW, false, true, new Date());
 		dbInstance.commitAndCloseSession();	
 		
 		Assert.assertNotNull(access1);

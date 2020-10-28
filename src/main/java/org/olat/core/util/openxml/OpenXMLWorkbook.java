@@ -23,7 +23,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -76,12 +78,18 @@ public class OpenXMLWorkbook implements Closeable {
 	
 	private final ZipOutputStream zout;
 	private final int numberOfWorksheet;
+	private final List<String> worksheetsNames;
 	private OpenXMLWorksheet currentWorkSheet;
 	
 	public OpenXMLWorkbook(OutputStream outputStream, int numberOfWorksheet) {
+		this(outputStream, numberOfWorksheet, Collections.emptyList());
+	}
+	
+	public OpenXMLWorkbook(OutputStream outputStream, int numberOfWorksheet, List<String> worksheetsNames) {
 		zout = new ZipOutputStream(outputStream);
 		zout.setLevel(9);
 		this.numberOfWorksheet = numberOfWorksheet;
+		this.worksheetsNames = worksheetsNames;
 		for(int i=0; i<numberOfWorksheet; i++) {
 			worksheets.add(new OpenXMLWorksheet(generateId(), this, zout));
 		}
@@ -564,7 +572,15 @@ public class OpenXMLWorkbook implements Closeable {
 			int count = 1;
 			for(OpenXMLWorksheet sheet:worksheets) {
 				writer.writeStartElement("sheet");
-				writer.writeAttribute("name", "Sheet " + count);
+				
+				String sheetName = null;
+				if(worksheetsNames != null && count <= worksheetsNames.size()) {
+					sheetName = worksheetsNames.get(count - 1);
+				}
+				if(!StringHelper.containsNonWhitespace(sheetName)) {
+					sheetName = "Sheet " + count;
+				}
+				writer.writeAttribute("name", normalizeWorksheetName(sheetName));
 				writer.writeAttribute("sheetId", Integer.toString(count++));
 				writer.writeAttribute("r:id", sheet.getId());
 				writer.writeEndElement();
@@ -596,6 +612,19 @@ public class OpenXMLWorkbook implements Closeable {
 		} catch (XMLStreamException e) {
 			log.error("", e);
 		}
+	}
+	
+	private String normalizeWorksheetName(String text) {
+		text = text.replace('?', ' ')
+				.replace('\\', ' ')
+				.replace('/', ' ')
+				.replace('$', ' ')
+				.replace('{', '(')
+				.replace('}', ')')
+				.replace('[', '(')
+				.replace(']', ')');
+		return Normalizer.normalize(text, Normalizer.Form.NFKD)
+				.replaceAll("\\p{InCombiningDiacriticalMarks}+","");
 	}
 	
 	/*

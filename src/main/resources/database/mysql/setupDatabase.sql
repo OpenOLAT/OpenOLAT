@@ -1940,6 +1940,7 @@ create table o_de_access (
    o_expires_at datetime not null,
    o_mode varchar(64) not null,
    o_version_controlled bool not null,
+   o_download bool default true,
    fk_metadata bigint not null,
    fk_identity bigint not null,
    primary key (id)

@@ -56,13 +56,14 @@ public class AccessDAO {
 	}
 
 	public Access createAccess(VFSMetadata metadata, Identity identity, String editorType, Mode mode, boolean versionControlled,
-			Date expiresAt) {
+			boolean download, Date expiresAt) {
 		AccessImpl access = new AccessImpl();
 		access.setCreationDate(new Date());
 		access.setLastModified(access.getCreationDate());
 		access.setEditorType(editorType);
 		access.setMode(mode);
 		access.setVersionControlled(versionControlled);
+		access.setDownload(download);
 		access.setExpiresAt(expiresAt);
 		access.setMetadata(metadata);
 		access.setIdentity(identity);

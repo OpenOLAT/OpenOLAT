@@ -1866,6 +1866,7 @@ create table o_de_access (
    o_expires_at timestamp not null,
    o_mode varchar(64) not null,
    o_version_controlled number default 0 not null,
+   o_download number default 0,
    fk_metadata number(20) not null,
    fk_identity number(20) not null,
    primary key (id)

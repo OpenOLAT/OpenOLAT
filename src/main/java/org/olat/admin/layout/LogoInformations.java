@@ -60,14 +60,9 @@ public class LogoInformations {
 	public String getLogoAlt() {
 		String logoAlt = layoutModule.getLogoAlt();
 		if(!StringHelper.containsNonWhitespace(logoAlt)) {
-			logoAlt = Settings.getApplicationName();
+			logoAlt = "OpenOlat - infinite learning";
 		}
 		return logoAlt;
-	}
-	
-	public String getLogoLinkType() {
-		String logoLinkType = layoutModule.getLogoLinkType();
-		return logoLinkType;
 	}
 	
 	public String getLogoUri() {
@@ -100,19 +95,18 @@ public class LogoInformations {
 					logoLinkUri = BusinessControlFactory.getInstance().getAsURIString(ces, true);
 				}
 			}
-		} else {
+		} else if(StringHelper.containsNonWhitespace(layoutModule.getLogoLinkUri())) {
 			logoLinkUri = layoutModule.getLogoLinkUri();
 		}
-		if(StringHelper.containsNonWhitespace(logoLinkUri)) {
-			String serverURI = Settings.createServerURI();
-			if(logoLinkUri.startsWith(serverURI)) {
-				logoLinkUri = logoLinkUri.substring(serverURI.length());
-				if(!logoLinkUri.startsWith("/")) {
-					logoLinkUri = "/" + logoLinkUri;
-				}
+		if (!StringHelper.containsNonWhitespace(logoLinkUri)) {
+			logoLinkUri = "https://www.openolat.org";
+		}
+		String serverURI = Settings.createServerURI();
+		if(logoLinkUri.startsWith(serverURI)) {
+			logoLinkUri = logoLinkUri.substring(serverURI.length());
+			if(!logoLinkUri.startsWith("/")) {
+				logoLinkUri = "/" + logoLinkUri;
 			}
-		} else {
-			logoLinkUri = "";
 		}
 		String target = logoLinkUri.startsWith("http") ? "_blank" : null;
 		return new LogoLinkURI(logoLinkUri, target);
