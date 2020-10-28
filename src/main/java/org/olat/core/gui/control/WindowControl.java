@@ -60,6 +60,19 @@ public interface WindowControl {
 	public boolean removeModalDialog(Component comp);
 	
 	/**
+	 * This is a unique slot for a modal dialog above all others, especially the
+	 * dialogs of TinyMCE (which have a z-index of 65535). It is mostly used to
+	 * prevent redraw of the main component and/or the modals stacks because of
+	 * the presence of a TinyMCE component. A redraw of the rich text component
+	 * will discard all its own modal dialogs.
+	 * 
+	 * @param comp The component to push as top modal dialog
+	 */
+	public void pushAsTopModalDialog(Component comp);
+	
+	public boolean removeTopModalDialog(Component comp);
+	
+	/**
 	 * 
 	 * @param comp
 	 * @param targetId

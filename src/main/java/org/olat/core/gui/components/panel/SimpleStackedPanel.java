@@ -77,7 +77,7 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		log.error("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = "+ureq);
+		log.error("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = {}", ureq);
 	}
 
 	/**

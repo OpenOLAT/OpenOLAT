@@ -149,7 +149,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	
 	// PARTICIPATING
 	private GuiStack currentGuiStack;
-	private Panel main, modalPanel;
+	private Panel main;
+	private Panel modalPanel;
+	private Panel topModalPanel;
 	private GUIMessage guiMessage;
 	private OncePanel guimsgPanel;
 	private Panel cssHolder, guimsgHolder, currentMsgHolder;
@@ -541,6 +543,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// panel for modal overlays, placed right after the olat-header-div
 		modalPanel = new Panel("ccmodalpanel");
 		mainVc.put("modalpanel", modalPanel);
+		
+		topModalPanel = new Panel("topmodalpanel");
+		mainVc.put("topmodalpanel", topModalPanel);
 
 		// main, mandatory (e.g. a LayoutMain3ColsController)
 		main = new Panel("mainContent");
@@ -783,6 +788,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// maybe null if no current modal dialog -> clears the panel
 		StackedPanel modalStackP = currentGuiStack.getModalPanel();
 		modalPanel.setContent(modalStackP);
+		
+		StackedPanel topModalStackP = currentGuiStack.getTopModalPanel();
+		topModalPanel.setContent(topModalStackP);
 	}
 
 	/**

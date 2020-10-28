@@ -69,6 +69,7 @@ public class CloseableModalController extends DefaultController implements Modal
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CloseableModalController.class);
 	
 	private Link closeIcon;
+	private boolean topModal;
 	private boolean closeable;
 	private boolean displayAsOverlay;
 	private VelocityContainer myContent;
@@ -166,9 +167,9 @@ public class CloseableModalController extends DefaultController implements Modal
 	 * Special feature pop the modal above the TinyMCE dialog
 	 * box which have an hard coded z-index of 65536.
 	 */
-	public void tinyMceModal() {
+	public void topModal() {
+		this.topModal = true;
 		myContent.contextPut("tinyMceModal", Boolean.TRUE);
-		
 	}
 	
 	public void setCustomCSS(String className){
@@ -200,20 +201,34 @@ public class CloseableModalController extends DefaultController implements Modal
 	}
 
 	public void activate() {
-		if (displayAsOverlay) getWindowControl().pushAsModalDialog(myContent);
-		else getWindowControl().pushToMainArea(myContent);
+		if (displayAsOverlay) {
+			if(topModal) {
+				getWindowControl().pushAsTopModalDialog(myContent);
+			} else {
+				getWindowControl().pushAsModalDialog(myContent);
+			}
+		} else {
+			getWindowControl().pushToMainArea(myContent);
+		}
 	}
 	
 	/**
-	 * deactivates the modal controller. please do use this method here instead of getWindowControl().pop() !
-	 *
+	 * Deactivates the modal controller. please do use this method here instead of getWindowControl().pop() !
 	 */
 	public void deactivate() {
-		getWindowControl().pop();
+		if(topModal) {
+			getWindowControl().removeTopModalDialog(myContent);
+		} else {
+			getWindowControl().pop();
+		}
 	}
 
 	@Override
 	protected void doDispose() {
-		getWindowControl().removeModalDialog(myContent);
+		if(topModal) {
+			getWindowControl().removeTopModalDialog(myContent);
+		} else {
+			getWindowControl().removeModalDialog(myContent);
+		}
 	}
 }

@@ -46,6 +46,16 @@ public interface GuiStack {
 	public boolean removeModalDialog(Component content);
 	
 	/**
+	 * Push a different but single modal dialog atop (per z-index)
+	 * all others dialog.
+	 * 
+	 * @param content A component
+	 */
+	public void pushTopModalDialog(Component content);
+	
+	public boolean removeTopModalDialog(Component content);
+	
+	/**
 	 * 
 	 * @param content The component to push as callout window
 	 * @param targetId The target element
@@ -65,5 +75,7 @@ public interface GuiStack {
 	 * @return Returns the modalPanel, which should be put so that it looks modal (e.g. alpha-blended background) may be null if no modal panel is needed
 	 */
 	public StackedPanel getModalPanel();
+	
+	public StackedPanel getTopModalPanel();
 
 }

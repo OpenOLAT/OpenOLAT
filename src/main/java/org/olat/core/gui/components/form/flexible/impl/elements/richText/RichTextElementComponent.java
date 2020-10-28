@@ -249,7 +249,7 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 
 		cmc = new CloseableModalController(wControl, "close", myLinkChooserController.getInitialComponent(), true, myLinkChooserController.getTitle());
 		cmc.suppressDirtyFormWarning();
-		cmc.tinyMceModal();
+		cmc.topModal();
 		cmc.activate();
 		cmc.addControllerListener(this);
 	}
