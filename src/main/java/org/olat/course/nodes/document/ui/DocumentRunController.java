@@ -65,6 +65,7 @@ public class DocumentRunController extends BasicController {
 
 	private Controller docEditorCtrl;
 	
+	private final DocumentSecurityCallback secCallback;
 	private final VFSLeaf vfsLeaf;
 
 	@Autowired
@@ -73,6 +74,7 @@ public class DocumentRunController extends BasicController {
 	public DocumentRunController(UserRequest ureq, WindowControl wControl, DocumentCourseNode courseNode,
 		DocumentSecurityCallback secCallback, VFSContainer courseFolderCont, String docEditorCss) {
 		super(ureq, wControl);
+		this.secCallback = secCallback;
 		
 		VelocityContainer mainVC = createVelocityContainer("run");
 		putInitialPanel(mainVC);
@@ -110,6 +112,7 @@ public class DocumentRunController extends BasicController {
 			} else if (hasEditor(ureq, extension, Mode.EMBEDDED)) {
 				DocEditorConfigs docEditorConfigs = DocEditorConfigs.builder()
 						.withMode(Mode.EMBEDDED)
+						.withDownloadEnabled(secCallback.canDownload())
 						.addConfig(new DocEditorConfig(docEditorCss))
 						.build(vfsLeaf);
 				Access access = docEditorService.createAccess(getIdentity(), ureq.getUserSession().getRoles(), docEditorConfigs);
@@ -161,6 +164,7 @@ public class DocumentRunController extends BasicController {
 	private void doOpen(UserRequest ureq, Mode mode) {
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.withMode(mode)
+				.withDownloadEnabled(secCallback.canDownload())
 				.build(vfsLeaf);
 		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));

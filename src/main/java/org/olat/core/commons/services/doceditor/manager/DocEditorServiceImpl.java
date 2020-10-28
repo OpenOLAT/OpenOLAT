@@ -194,8 +194,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	public Access createAccess(Identity identity, Roles roles, DocEditorConfigs configs) {
 		Date expiresAt = Date.from(Instant.now().plus(Duration.ofHours(10)));
 		DocEditor editor = getPreferredEditor(identity, roles, configs);
-		return accessDao.createAccess(configs.getVfsLeaf().getMetaInfo(), identity, editor.getType(), configs.getMode(), configs.isVersionControlled(),
-				expiresAt);
+		return accessDao.createAccess(configs.getVfsLeaf().getMetaInfo(), identity, editor.getType(), configs.getMode(),
+				configs.isVersionControlled(), configs.isDownloadEnabled(), expiresAt);
 	}
  
 	private DocEditor getPreferredEditor(Identity identity, Roles roles, DocEditorConfigs configs) {

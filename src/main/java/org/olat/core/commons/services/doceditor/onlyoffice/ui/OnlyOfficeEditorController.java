@@ -86,11 +86,11 @@ public class OnlyOfficeEditorController extends BasicController {
 			mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
 		} else {
 			String mediaUrl = null;
-			if (Mode.EMBEDDED == access.getMode()) {
+			if (configs.isDownloadEnabled() && Mode.EMBEDDED == access.getMode()) {
 				mediaUrl = Settings.createServerURI() + registerMapper(ureq, new VFSMediaMapper(configs.getVfsLeaf()));
 			}
 			ApiConfig apiConfig = onlyOfficeService.getApiConfig(vfsMetadata, getIdentity(), access.getMode(),
-					configs.isVersionControlled(), mediaUrl);
+					access.isDownload(), configs.isVersionControlled(),  mediaUrl);
 			String apiConfigJson = onlyOfficeService.toJson(apiConfig);
 			log.debug("OnlyOffice ApiConfig: {}", apiConfigJson);
 			

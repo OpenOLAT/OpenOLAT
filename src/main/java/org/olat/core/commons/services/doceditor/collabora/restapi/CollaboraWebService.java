@@ -130,6 +130,7 @@ public class CollaboraWebService {
 				.withLastModifiedTime(getAsIso8601(metadata.getLastModified()))
 				.withUserCanWrite(Mode.EDIT == access.getMode())
 				.withDisablePrint(Boolean.FALSE)
+				.withDisableExport(!access.isDownload())
 				.withUserCanNotWriteRelative(Boolean.TRUE)
 				.build();
 		logCheckFileInfoResponse(checkFileInfoVO);

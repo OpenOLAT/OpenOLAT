@@ -41,6 +41,7 @@ public class DocEditorConfigs {
 	private final Mode mode;
 	private final boolean metaAvailable;
 	private final boolean versionControlled;
+	private final boolean downloadEnabled;
 	private final Map<String, Config> configs;
 
 	private DocEditorConfigs(Builder builder) {
@@ -48,6 +49,7 @@ public class DocEditorConfigs {
 		this.mode = builder.mode;
 		this.metaAvailable = builder.metaAvailable;
 		this.versionControlled = builder.versionControlled;
+		this.downloadEnabled = builder.downloadEnabled;
 		this.configs = new HashMap<>(builder.configs);
 	}
 	
@@ -82,6 +84,15 @@ public class DocEditorConfigs {
 		return versionControlled;
 	}
 
+	/**
+	 * Default: true
+	 *
+	 * @return
+	 */
+	public boolean isDownloadEnabled() {
+		return downloadEnabled;
+	}
+
 	public Config getConfig(String type) {
 		return this.configs.get(type);
 	}
@@ -94,7 +105,8 @@ public class DocEditorConfigs {
 		Builder builder = new Builder()
 				.withMode(configs.getMode())
 				.withMetaAvailable(configs.isMetaAvailable())
-				.withVersionControlled(configs.isVersionControlled());
+				.withVersionControlled(configs.isVersionControlled())
+				.withDownloadEnabled(configs.isDownloadEnabled());
 		// No deep copy right now.
 		builder.configs = new HashMap<>(configs.configs);
 		return builder;
@@ -105,6 +117,7 @@ public class DocEditorConfigs {
 		private Mode mode = Mode.VIEW;
 		private boolean metaAvailable = true;
 		private boolean versionControlled = false;
+		private boolean downloadEnabled = true;
 		private Map<String, Config> configs = new HashMap<>();
 
 		private Builder() {
@@ -123,6 +136,11 @@ public class DocEditorConfigs {
 		
 		public Builder withVersionControlled(boolean versionControlled) {
 			this.versionControlled = versionControlled;
+			return this;
+		}
+		
+		public Builder withDownloadEnabled(boolean downloadEnabled) {
+			this.downloadEnabled = downloadEnabled;
 			return this;
 		}
 		

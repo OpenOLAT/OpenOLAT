@@ -81,6 +81,7 @@ public class EditorConfigImpl implements EditorConfig {
 		this.user = user;
 	}
 
+	@Override
 	public Embedded getEmbedded() {
 		return embedded;
 	}
