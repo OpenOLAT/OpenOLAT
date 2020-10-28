@@ -96,9 +96,6 @@ public class LayoutAdminController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//themes
@@ -180,7 +177,7 @@ public class LayoutAdminController extends FormBasicController {
 
 		String oldFooterUrl = layoutModule.getFooterLinkUri();
 		footerUrl = uifactory.addTextElement("footerUrl", "footerUrl.description", 256, oldFooterUrl, footerCont);
-		footerUrl.setPlaceholderKey("linkUrl.default", null);
+		footerUrl.setPlaceholderKey("footerUrl.default", null);
 		
 		String oldFooterLine = layoutModule.getFooterLine();
 		footerLine = uifactory.addTextAreaElement("footerLine", "footerLine.description", -1, 3, 50, true, false, oldFooterLine, footerCont);
