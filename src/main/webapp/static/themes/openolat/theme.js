@@ -18,21 +18,18 @@
 			if (logoElement && logoElement.length > 0 && !logoElement.hasClass('o_clickable')) {
 				// add marker css to remember this link is already ok, add link reference
 				logoElement.addClass('o_clickable');					
-				logoElement.prop('href', "http://www.openolat.org");
+				logoElement.prop('href', "https://www.openolat.org");
 				logoElement.prop('target', "_blank");
-				logoElement.prop('title', 'OpenOLAT - infinite learning');
+				logoElement.prop('title', 'OpenOlat - infinite learning');
 			}
 		},
 		
 		/**
-		 * Method to install the theme add-ons. Will be re-executed after each DOM replacement. 
+		 * Method to install the theme add-ons. Uncomment the single line in the method to override the logo by a custom theme.
 		 * 
-		 * @method
 		 */
 		ThemeJS.prototype.execThemeJS = function() {
-			OPOL.themejs.addClientLinks()
-			// execute after each dom replacement (navbar might have been changed)
-			$(document).on("oo.dom.replacement.after", OPOL.themejs.addClientLinks);
+			//OPOL.themejs.addClientLinks()
 		}
 		
 		/**

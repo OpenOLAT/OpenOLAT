@@ -19,7 +19,6 @@
  */
 package org.olat.admin.layout;
 
-import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -52,11 +51,7 @@ public class FooterInformations {
 	}
 	
 	public String getFooterUrl() {
-		String uri = layoutModule.getFooterLinkUri();
-		if(!StringHelper.containsNonWhitespace(uri)) {
-			uri = Settings.getApplicationName();
-		}
-		return uri;
+		return layoutModule.getFooterLinkUri();
 	}
 	
 	private String convertFooterLine(String dbFooterLine) {

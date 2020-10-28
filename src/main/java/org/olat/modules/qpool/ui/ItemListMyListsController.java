@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.ui;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
+
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
@@ -67,35 +70,23 @@ public class ItemListMyListsController extends AbstractItemListController {
         myCollections = qpoolService.getCollections(getIdentity());
 		int numOfCollections = myCollections.size();
 
-		String[] myListKeys;
-		String[] myListValues;
-        if(numOfCollections == 0) {
-			myListKeys = new String[1];
-			myListValues = new String[1];
-			myListKeys[0] = "";
-			myListValues[0] = "";
-        } else {
-            myListKeys = new String[numOfCollections];
-            myListValues = new String[numOfCollections];
-            for(int i=numOfCollections; i-->0; ) {
-                QuestionItemCollection myCollection = myCollections.get(i);
-                myListKeys[i] = myCollection.getKey().toString();
-                myListValues[i] = myCollection.getName();
-            }
-        }
+		KeyValues listKV = new KeyValues();
+		if (numOfCollections == 0) {
+			listKV.add(entry("", ""));
+		} else {
+			for (QuestionItemCollection collection : myCollections) {
+				listKV.add(entry(collection.getKey().toString(), collection.getName()));
+			}
+			listKV.sort(KeyValues.VALUE_ASC);
+		}
 
-        myListEl = uifactory.addDropdownSingleselect("source.selector", "my.list", formLayout, myListKeys, myListValues, null);
+        myListEl = uifactory.addDropdownSingleselect("source.selector", "my.list", formLayout, listKV.keys(), listKV.values(), null);
         myListEl.setDomReplacementWrapperRequired(false);
         myListEl.getLabelC().setDomReplaceable(false);
         myListEl.addActionListener(FormEvent.ONCHANGE);
         if(numOfCollections > 0) {
-            myListEl.select(myListKeys[0], true);
-
-            QuestionItemCollection firstCollection = myCollections.get(0);
-            CollectionOfItemsSource source = new CollectionOfItemsSource(firstCollection, getIdentity(), ureq.getUserSession().getRoles(), getLocale());
-            source.setRestrictToFormat(restrictToFormat);
-			source.setExcludedItemTypes(excludeTypes);
-            updateSource(source);
+            myListEl.select(myListEl.getKey(0), true);
+            doSelectCollection(ureq, Long.parseLong(myListEl.getKey(0)));
         } else {
 			myListEl.setEnabled(false);
 		}

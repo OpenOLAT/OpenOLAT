@@ -95,7 +95,7 @@ public class LayoutModule extends AbstractSpringModule  {
 		if(StringHelper.containsNonWhitespace(logoLinkTypeObj)) {
 			logoLinkType = logoLinkTypeObj;
 		} else {
-			logoLinkType = null;
+			logoLinkType = LogoURLType.landingpage.name();
 		}
 		String logoUriObj = getStringPropertyValue(LOGO_URI, true);
 		if(StringHelper.containsNonWhitespace(logoUriObj)) {
