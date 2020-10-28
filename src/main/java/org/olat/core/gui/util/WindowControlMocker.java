@@ -64,6 +64,16 @@ public class WindowControlMocker implements WindowControl{
 	public boolean removeModalDialog(Component comp) {
 		return false;
 	}
+	
+	@Override
+	public void pushAsTopModalDialog(Component comp) {
+		//
+	}
+
+	@Override
+	public boolean removeTopModalDialog(Component comp) {
+		return false;
+	}
 
 	@Override
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {

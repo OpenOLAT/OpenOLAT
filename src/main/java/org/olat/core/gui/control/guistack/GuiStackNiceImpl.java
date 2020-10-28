@@ -51,6 +51,7 @@ public class GuiStackNiceImpl implements GuiStack {
 	
 	private StackedPanel panel;
 	private StackedPanel modalPanel;
+	private TopModalPanel topModalPanel;
 	private int modalLayers;
 
 	private WindowBackOffice wbo;
@@ -60,7 +61,7 @@ public class GuiStackNiceImpl implements GuiStack {
 		// Use a layered panel instead of a standard panel to support multiple modal layers
 		modalPanel = new LayeredPanel("guistackmodalpanel", 900, 100);
 		modalLayers = 0;
-		
+		topModalPanel = new TopModalPanel("topmodalpanel");
 	}
 
 	/**
@@ -88,27 +89,8 @@ public class GuiStackNiceImpl implements GuiStack {
 	public void pushModalDialog(Component content) {
 		wbo.sendCommandTo(new ScrollTopCommand());
 		
-		// wrap the component into a modal foreground dialog with alpha-blended-background
-		final Panel guiMsgPlace = new Panel("guimsgplace_for_modaldialog");
-		VelocityContainer inset = new VelocityContainer("inset", VELOCITY_ROOT + "/modalDialog.html", null, null) {
-			@Override
-			public void validate(UserRequest ureq, ValidationResult vr) {
-				super.validate(ureq, vr);
-				// just before rendering, we need to tell the windowbackoffice that we are a favorite for accepting gui-messages.
-				// the windowbackoffice doesn't know about guimessages, it is only a container that keeps them for one render cycle
-				List<ZIndexWrapper> zindexed = wbo.getGuiMessages();
-				zindexed.add(new ZIndexWrapper(guiMsgPlace, 10));
-			}
-		};
-		inset.put("cont", content);
-		inset.put("guimsgplace", guiMsgPlace);
 		int zindex = 900 + (modalLayers * 100) + 5;
-		inset.contextPut("zindexoverlay", zindex+1);
-		inset.contextPut("zindexshim", zindex);
-		inset.contextPut("zindexarea", zindex+5);
-		inset.contextPut("zindexextwindows", zindex+50);
-		
-		
+		VelocityContainer inset = wrapModal(content, zindex);
 		modalPanel.pushContent(inset);
 		// the links in the panel cannot be clicked because of the alpha-blended background over it, but if user chooses own css style ->
 		// FIXME:fj:b panel.setEnabled(false) causes effects if there is an image component in the panel -> the component is not dispatched
@@ -137,6 +119,50 @@ public class GuiStackNiceImpl implements GuiStack {
 			Component modalContent = inset.getComponent("cont");
 			if(modalContent == content) {
 				popContent();
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void pushTopModalDialog(Component content) {
+		wbo.sendCommandTo(new ScrollTopCommand());
+		
+		int zindex = TopModalPanel.TOP_MODAL_ZINDEX; // more than 65000 from TinyMCE, same as hard coded in 
+		VelocityContainer inset = wrapModal(content, zindex);
+		topModalPanel.setContent(inset);
+	}
+	
+	private VelocityContainer wrapModal(Component content, int zindex) {
+		final Panel guiMsgPlace = new Panel("guimsgplace_for_topmodaldialog");
+		VelocityContainer inset = new VelocityContainer("topinset", VELOCITY_ROOT + "/modalDialog.html", null, null) {
+			@Override
+			public void validate(UserRequest ureq, ValidationResult vr) {
+				super.validate(ureq, vr);
+				// just before rendering, we need to tell the windowbackoffice that we are a favorite for accepting gui-messages.
+				// the windowbackoffice doesn't know about guimessages, it is only a container that keeps them for one render cycle
+				List<ZIndexWrapper> zindexed = wbo.getGuiMessages();
+				zindexed.add(new ZIndexWrapper(guiMsgPlace, 10));
+			}
+		};
+		inset.put("cont", content);
+		inset.put("guimsgplace", guiMsgPlace);
+		inset.contextPut("zindexoverlay", zindex + 1);
+		inset.contextPut("zindexshim", zindex);
+		inset.contextPut("zindexarea", zindex + 5);
+		inset.contextPut("zindexextwindows", zindex + 50);
+		return inset;
+	}
+
+	@Override
+	public boolean removeTopModalDialog(Component content) {
+		Component insetCmp = topModalPanel.getContent();
+		if(insetCmp instanceof VelocityContainer) {
+			VelocityContainer inset = (VelocityContainer)insetCmp;
+			Component topModalContent = inset.getComponent("cont");
+			if(topModalContent == content) {
+				topModalPanel.setContent(null);
 				return true;
 			}
 		}
@@ -202,6 +228,7 @@ public class GuiStackNiceImpl implements GuiStack {
 	/**
 	 * @return
 	 */
+	@Override
 	public StackedPanel getPanel() {
 		return panel;
 	}
@@ -209,8 +236,13 @@ public class GuiStackNiceImpl implements GuiStack {
 	/**
 	 * @return Returns the modalPanel.
 	 */
+	@Override
 	public StackedPanel getModalPanel() {
 		return modalPanel;
 	}
 
+	@Override
+	public StackedPanel getTopModalPanel() {
+		return topModalPanel;
+	}
 }
