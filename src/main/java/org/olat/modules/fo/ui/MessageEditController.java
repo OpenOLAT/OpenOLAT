@@ -459,9 +459,6 @@ public class MessageEditController extends FormBasicController {
 		return allOk;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		try {
@@ -479,17 +476,20 @@ public class MessageEditController extends FormBasicController {
 		if (message.getKey() != null) {
 			message = fm.loadMessage(message.getKey());
 		}
-
-		// set values from form to message
-		commitBody();
-		commitPseudonym(ureq);
-
-		if(editMode == EditMode.newThread) {
-			commitNewThreadMode();
-		} else if(editMode == EditMode.edit) { 
-			commitEditMode();
-		} else if(editMode == EditMode.reply) { 
-			commitReplyMode();
+		if(message != null) {
+			// set values from form to message
+			commitBody();
+			commitPseudonym(ureq);
+	
+			if(editMode == EditMode.newThread) {
+				commitNewThreadMode();
+			} else if(editMode == EditMode.edit) { 
+				commitEditMode();
+			} else if(editMode == EditMode.reply) { 
+				commitReplyMode();
+			}
+		} else {
+			showWarning("error.message.deleted");
 		}
 	}
 	
