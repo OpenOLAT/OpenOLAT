@@ -880,8 +880,6 @@ public class MessageListController extends BasicController implements GenericEve
 						thread = message;
 					}
 					reloadModel(ureq, message);
-				} else {
-					showInfo("header.cannoteditmessage");
 				}
 			}
 			cmc.deactivate();

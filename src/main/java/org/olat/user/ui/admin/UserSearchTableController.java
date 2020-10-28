@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.admin.user.UserAdminController;
@@ -510,7 +511,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private void doMail(UserRequest ureq) {
 		if(guardModalController(contactCtr)) return;
 		
-		List<Identity> identities = getSelectedIdentitiesWithWarning();
+		List<Identity> identities = getSelectedIdentitiesWithWarning(new All());
 		if(identities.isEmpty()) {
 			return;
 		}
@@ -534,7 +535,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private void doBulkEdit(UserRequest ureq) {
 		if(userBulkChangesController != null) return;
 		
-		List<Identity> identities = getSelectedIdentitiesWithWarning();
+		List<Identity> identities = getSelectedIdentitiesWithWarning(new All());
 		if(identities.isEmpty()) {
 			return;
 		}
@@ -610,7 +611,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	}
 	
 	private void doBulkDelete(UserRequest ureq) {
-		List<Identity> identities = getSelectedIdentitiesWithWarning();
+		List<Identity> identities = getSelectedIdentitiesWithWarning(new ExcludePermanent());
 		if(identities.isEmpty()) {
 			return;
 		}
@@ -630,7 +631,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		cmc.activate(); 
 	}
 	
-	private List<Identity> getSelectedIdentitiesWithWarning() {
+	private List<Identity> getSelectedIdentitiesWithWarning(Predicate<Identity> filter) {
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
 		if(selections.isEmpty()) {
 			showWarning("msg.selectionempty");
@@ -644,13 +645,21 @@ public class UserSearchTableController extends FormBasicController implements Ac
 				identityKeys.add(row.getIdentityKey());
 			}
 		}
-		return securityManager.loadIdentityByKeys(identityKeys);
+		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
+		identities = identities.stream()
+				.filter(filter)
+				.collect(Collectors.toList());
+		if(identities.isEmpty()) {
+			showWarning("msg.selectionempty");
+			return Collections.emptyList();
+		}
+		return identities;
 	}
 	
 	private void doBulkStatus(UserRequest ureq) {
 		if(guardModalController(changeStatusController)) return;
 		
-		List<Identity> identities = getSelectedIdentitiesWithWarning();
+		List<Identity> identities = getSelectedIdentitiesWithWarning(new ExcludePermanent());
 		if(identities.isEmpty()) {
 			return;
 		}
@@ -673,7 +682,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private void doBulkMove(UserRequest ureq) {
 		if(guardModalController(userBulkMoveController)) return;
 		
-		List<Identity> identities = getSelectedIdentitiesWithWarning();
+		List<Identity> identities = getSelectedIdentitiesWithWarning(new All());
 		if(identities.isEmpty()) {
 			return;
 		}
@@ -726,6 +735,20 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		
 		public IdentityPropertiesRow getRow() {
 			return row;
+		}
+	}
+	
+	private static class ExcludePermanent implements Predicate<Identity> {
+		@Override
+		public boolean test(Identity t) {
+			return t != null && !Identity.STATUS_PERMANENT.equals(t.getStatus());
+		}
+	}
+	
+	private static class All implements Predicate<Identity> {
+		@Override
+		public boolean test(Identity t) {
+			return t != null;
 		}
 	}
 	
