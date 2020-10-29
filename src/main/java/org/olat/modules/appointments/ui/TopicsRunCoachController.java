@@ -97,7 +97,7 @@ public class TopicsRunCoachController extends BasicController {
 
 	private final BreadcrumbedStackedPanel stackPanel;
 	private CloseableModalController cmc;
-	private TopicCreateController topicCreateCtrl;
+	private AppointmentCreateController topicCreateCtrl;
 	private TopicEditController topicEditCtrl;
 	private TopicGroupsController topicGroupsCtrl;
 	private DialogBoxController confirmDeleteTopicCrtl;
@@ -535,7 +535,7 @@ public class TopicsRunCoachController extends BasicController {
 	}
 	
 	private void doAddTopic(UserRequest ureq) {
-		topicCreateCtrl = new TopicCreateController(ureq, getWindowControl(), entry, subIdent);
+		topicCreateCtrl = new AppointmentCreateController(ureq, getWindowControl(), entry, subIdent);
 		listenTo(topicCreateCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", topicCreateCtrl.getInitialComponent(), true,

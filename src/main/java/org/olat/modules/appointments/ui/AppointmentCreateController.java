@@ -81,7 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TopicCreateController extends FormBasicController {
+public class AppointmentCreateController extends FormBasicController {
 	
 	private static final String KEY_ON = "on";
 	private static final String[] KEYS_ON = new String[] { KEY_ON };
@@ -97,6 +97,7 @@ public class TopicCreateController extends FormBasicController {
 	private MultipleSelectionElement organizerEl;
 	private TextElement locationEl;
 	private TextElement maxParticipationsEl;
+	private TextElement detailsEl;
 	private MultipleSelectionElement recurringEl;
 	private FormLayoutContainer singleCont;
 	private DateChooser recurringFirstEl;
@@ -119,6 +120,7 @@ public class TopicCreateController extends FormBasicController {
 	private String subIdent;
 	private Topic topic;
 	private List<Identity> coaches;
+	private boolean recurringAppointments;
 	private List<BigBlueButtonMeetingTemplate> templates;
 	private List<AppointmentWrapper> appointmentWrappers;
 	private boolean multiParticipationsSelected = true;
@@ -132,7 +134,7 @@ public class TopicCreateController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public TopicCreateController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+	public AppointmentCreateController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			String subIdent) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
@@ -145,57 +147,82 @@ public class TopicCreateController extends FormBasicController {
 		updateUI();
 	}
 	
+	public AppointmentCreateController(UserRequest ureq, WindowControl wControl, Topic topic, boolean recurringAppointments) {
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
+		this.entry = topic.getEntry();
+		this.subIdent = topic.getSubIdent();
+		this.topic = topic;
+		this.recurringAppointments = recurringAppointments;
+		
+		initForm(ureq);
+		updateUI();
+	}
+	
 	public Topic getTopic() {
 		return topic;
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// Topic
-		titleEl = uifactory.addTextElement("topic.title", "topic.title", 128, null, formLayout);
-		titleEl.setMandatory(true);
-		
-		descriptionEl = uifactory.addTextAreaElement("topic.description", "topic.description", 2000, 3, 72, false,
-				false, null, formLayout);
-		
-		// Configs
-		KeyValues typeKV = new KeyValues();
-		typeKV.add(entry(Topic.Type.enrollment.name(), translate("topic.type.enrollment")));
-		typeKV.add(entry(Topic.Type.finding.name(), translate("topic.type.finding")));
-		typeEl = uifactory.addRadiosHorizontal("topic.type", formLayout, typeKV.keys(), typeKV.values());
-		typeEl.select(Topic.Type.enrollment.name(), true);
-		typeEl.addActionListener(FormEvent.ONCHANGE);
-		
-		configurationEl = uifactory.addCheckboxesVertical("topic.configuration", formLayout, emptyStrings(),
-				emptyStrings(), 1);
-		configurationEl.addActionListener(FormEvent.ONCHANGE);
-		
-		// Organizer
-		KeyValues coachesKV = new KeyValues();
-		for (Identity coach : coaches) {
-			coachesKV.add(entry(coach.getKey().toString(), userManager.getUserDisplayName(coach.getKey())));
-		}
-		coachesKV.sort(VALUE_ASC);
-		organizerEl = uifactory.addCheckboxesDropdown("organizer", "organizer", formLayout, coachesKV.keys(), coachesKV.values());
-		organizerEl.setVisible(!coaches.isEmpty());
-		
-		if (organizerEl.isVisible()) {
-			String defaultOrganizerKey = getIdentity().getKey().toString();
-			if (organizerEl.getKeys().contains(defaultOrganizerKey)) {
-					organizerEl.select(defaultOrganizerKey, true);
+		if (topic == null) {
+			// Topic
+			titleEl = uifactory.addTextElement("topic.title", "topic.title", 128, null, formLayout);
+			titleEl.setMandatory(true);
+			
+			descriptionEl = uifactory.addTextAreaElement("topic.description", "topic.description", 2000, 3, 72, false,
+					false, null, formLayout);
+			
+			// Configs
+			KeyValues typeKV = new KeyValues();
+			typeKV.add(entry(Topic.Type.enrollment.name(), translate("topic.type.enrollment")));
+			typeKV.add(entry(Topic.Type.finding.name(), translate("topic.type.finding")));
+			typeEl = uifactory.addRadiosHorizontal("topic.type", formLayout, typeKV.keys(), typeKV.values());
+			typeEl.select(Topic.Type.enrollment.name(), true);
+			typeEl.addActionListener(FormEvent.ONCHANGE);
+			
+			configurationEl = uifactory.addCheckboxesVertical("topic.configuration", formLayout, emptyStrings(),
+					emptyStrings(), 1);
+			configurationEl.addActionListener(FormEvent.ONCHANGE);
+			
+			// Organizer
+			KeyValues coachesKV = new KeyValues();
+			for (Identity coach : coaches) {
+				coachesKV.add(entry(coach.getKey().toString(), userManager.getUserDisplayName(coach.getKey())));
+			}
+			coachesKV.sort(VALUE_ASC);
+			organizerEl = uifactory.addCheckboxesDropdown("organizer", "organizer", formLayout, coachesKV.keys(), coachesKV.values());
+			organizerEl.setVisible(!coaches.isEmpty());
+			
+			if (organizerEl.isVisible()) {
+				String defaultOrganizerKey = getIdentity().getKey().toString();
+				if (organizerEl.getKeys().contains(defaultOrganizerKey)) {
+						organizerEl.select(defaultOrganizerKey, true);
+				}
 			}
 		}
 		
 		// Appointments
 		locationEl = uifactory.addTextElement("appointment.location", 128, null, formLayout);
-		locationEl.setHelpTextKey("appointment.init.value", null);
+		if (topic == null) {
+			locationEl.setHelpTextKey("appointment.init.value", null);
+		}
 		
 		maxParticipationsEl = uifactory.addTextElement("appointment.max.participations", 5, null, formLayout);
-		maxParticipationsEl.setHelpTextKey("appointment.init.value", null);
+		if (topic == null) {
+			maxParticipationsEl.setHelpTextKey("appointment.init.value", null);
+		}
 		
-		recurringEl = uifactory.addCheckboxesHorizontal("appointments.recurring", formLayout,
-				new String[] { "xx" }, new String[] { null });
-		recurringEl.addActionListener(FormEvent.ONCHANGE);
+		if (topic != null) {
+			detailsEl = uifactory.addTextAreaElement("appointment.details", "appointment.details", 2000, 4, 72, false,
+					false, null, formLayout);
+		}
+		
+		if (topic == null) {
+			recurringEl = uifactory.addCheckboxesHorizontal("appointments.recurring", formLayout,
+					new String[] { "xx" }, new String[] { null });
+			recurringEl.addActionListener(FormEvent.ONCHANGE);
+		}
 		
 		// Single appointments
 		singleCont = FormLayoutContainer.createCustomFormLayout("singleCont", getTranslator(), velocity_root + "/appointments_single.html");
@@ -283,20 +310,22 @@ public class TopicCreateController extends FormBasicController {
 	}
 
 	private void updateUI() {
-		boolean enrollment = typeEl.isOneSelected() && Type.valueOf(typeEl.getSelectedKey()) != Type.finding;
+		boolean enrollment = isEnrollment();
 		
-		KeyValues configKV = new KeyValues();
-		configKV.add(entry(KEY_MULTI_PARTICIPATION, translate("topic.multi.participation")));
-		if (enrollment) {
-			configKV.add(entry(KEY_COACH_CONFIRMATION, translate("topic.coach.confirmation")));
+		if (topic == null) {
+			KeyValues configKV = new KeyValues();
+			configKV.add(entry(KEY_MULTI_PARTICIPATION, translate("topic.multi.participation")));
+			if (enrollment) {
+				configKV.add(entry(KEY_COACH_CONFIRMATION, translate("topic.coach.confirmation")));
+			}
+			configurationEl.setKeysAndValues(configKV.keys(), configKV.values());
+			configurationEl.select(KEY_MULTI_PARTICIPATION, multiParticipationsSelected);
+			configurationEl.select(KEY_COACH_CONFIRMATION, coachConfirmationSelected);
 		}
-		configurationEl.setKeysAndValues(configKV.keys(), configKV.values());
-		configurationEl.select(KEY_MULTI_PARTICIPATION, multiParticipationsSelected);
-		configurationEl.select(KEY_COACH_CONFIRMATION, coachConfirmationSelected);
-
+		
 		maxParticipationsEl.setVisible(enrollment);
 		
-		boolean recurring = recurringEl.isAtLeastSelected(1);
+		boolean recurring = isRecurringSelected();
 		singleCont.setVisible(!recurring);
 		recurringFirstEl.setVisible(recurring);
 		recurringDaysOfWeekEl.setVisible(recurring);
@@ -314,6 +343,16 @@ public class TopicCreateController extends FormBasicController {
 			templateEl.setVisible(bbbRoom);
 			layoutEl.setVisible(bbbRoom);
 		}
+	}
+
+	private boolean isEnrollment() {
+		return topic == null
+				? typeEl.isOneSelected() && Type.valueOf(typeEl.getSelectedKey()) != Type.finding
+				: topic.getType() != Type.finding;
+	}
+
+	private boolean isRecurringSelected() {
+		return (recurringEl != null && recurringEl.isAtLeastSelected(1)) || recurringAppointments;
 	}
 	
 	@Override
@@ -376,10 +415,12 @@ public class TopicCreateController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		titleEl.clearError();
-		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
+		if (titleEl != null) {
+			titleEl.clearError();
+			if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+				titleEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
 		}
 		
 		maxParticipationsEl.clearError();
@@ -398,7 +439,7 @@ public class TopicCreateController extends FormBasicController {
 			}
 		}
 		
-		boolean recurring = recurringEl.isAtLeastSelected(1);
+		boolean recurring = isRecurringSelected();
 			
 		for (AppointmentWrapper wrapper : appointmentWrappers) {
 			DateChooser startEl = wrapper.getStartEl();
@@ -545,14 +586,15 @@ public class TopicCreateController extends FormBasicController {
 	}
 	
 	private void doSave() {
-		doSaveTopic();
-		doSaveOrganizers();
+		if (topic == null) {
+			doSaveTopic();
+			doSaveOrganizers();
+		}
 		
-		boolean reccuring = recurringEl.isAtLeastSelected(1);
-		if (reccuring) {
+		if (isRecurringSelected()) {
 			doSaveReccuringAppointments();
 		} else {
-			doSaveSingleAppointments();
+			doSaveIndividualAppointments();
 		}
 	}
 
@@ -588,7 +630,7 @@ public class TopicCreateController extends FormBasicController {
 		appointmentsService.updateOrganizers(topic, selectedOrganizers);
 	}
 
-	private void doSaveSingleAppointments() {
+	private void doSaveIndividualAppointments() {
 		for (AppointmentWrapper wrapper : appointmentWrappers) {
 			DateChooser startEl = wrapper.getStartEl();
 			DateChooser endEl = wrapper.getEndEl();
@@ -603,6 +645,11 @@ public class TopicCreateController extends FormBasicController {
 				
 				String location = locationEl.getValue();
 				appointment.setLocation(location);
+				
+				if (detailsEl != null) {
+					String details = detailsEl.getValue();
+					appointment.setDetails(details);
+				}
 				
 				if (maxParticipationsEl.isVisible()) {
 					String maxParticipationsValue = maxParticipationsEl.getValue();
@@ -639,6 +686,11 @@ public class TopicCreateController extends FormBasicController {
 			
 			String location = locationEl.getValue();
 			appointment.setLocation(location);
+			
+			if (detailsEl != null) {
+				String details = detailsEl.getValue();
+				appointment.setDetails(details);
+			}
 			
 			if (maxParticipationsEl.isVisible()) {
 				String maxParticipationsValue = maxParticipationsEl.getValue();
@@ -719,6 +771,10 @@ public class TopicCreateController extends FormBasicController {
 		if (after == null) {
 			appointmentWrappers.add(wrapper);
 		} else {
+			Date start = after.getStartEl().getDate();
+			startEl.setDate(start);
+			Date end = after.getEndEl().getDate();
+			endEl.setDate(end);
 			int index = appointmentWrappers.indexOf(after) + 1;
 			appointmentWrappers.add(index, wrapper);
 		}

@@ -97,7 +97,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private static final String CMD_RECORDING = "recording";
 	
 	private FormLink backLink;
-	private FormLink addSingleAppointmentLink;
+	private DropdownItem addAppointmentsDropdown;
+	private FormLink addIndividualAppointmentsLink;
 	private FormLink addRecurringAppointmentLink;
 	private FlexiTableElement tableEl;
 	private AppointmentDataModel dataModel;
@@ -107,7 +108,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private DialogBoxController confirmParticipationCrtl;
 	private FindingConfirmationController findingConfirmationCtrl;
 	private AppointmentEditController appointmentEditCtrl;
-	private RecurringAppointmentsController recurringAppointmentsCtrl;
+	private AppointmentCreateController addAppointmentsCtrl;
 	private UserSearchController userSearchCtrl;
 	private ParticipationRemoveController removeCtrl;
 	private AppointmentDeleteController appointmentDeleteCtrl;
@@ -146,8 +147,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 	protected abstract List<AppointmentRow> loadModel();
 	
 	protected void setAddAppointmentVisible(boolean visible) {
-		if (addSingleAppointmentLink != null) {
-			addSingleAppointmentLink.setVisible(visible);
+		if (addAppointmentsDropdown != null) {
+			addAppointmentsDropdown.setVisible(visible);
 		}
 	}
 	
@@ -175,13 +176,13 @@ public abstract class AppointmentListController extends FormBasicController impl
 			topButtons.setElementCssClass("o_button_group o_button_group_right");
 			
 			if (secCallback.canEditAppointment(organizers)) {
-				DropdownItem addAppointmentDropdown = uifactory.addDropdownMenu("add.appointment", "add.appointment", topButtons, getTranslator());
-				addAppointmentDropdown.setOrientation(DropdownOrientation.right);
+				addAppointmentsDropdown = uifactory.addDropdownMenu("add.appointment", "add.appointment", topButtons, getTranslator());
+				addAppointmentsDropdown.setOrientation(DropdownOrientation.right);
 				
-				addSingleAppointmentLink = uifactory.addFormLink("add.appointment.single", formLayout, Link.LINK);
-				addAppointmentDropdown.addElement(addSingleAppointmentLink);
+				addIndividualAppointmentsLink = uifactory.addFormLink("add.appointment.individual", formLayout, Link.LINK);
+				addAppointmentsDropdown.addElement(addIndividualAppointmentsLink);
 				addRecurringAppointmentLink = uifactory.addFormLink("add.appointment.recurring", formLayout, Link.LINK);
-				addAppointmentDropdown.addElement(addRecurringAppointmentLink);
+				addAppointmentsDropdown.addElement(addRecurringAppointmentLink);
 			}
 		}
 		
@@ -443,8 +444,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == backLink) {
 			fireEvent(ureq, Event.DONE_EVENT);
-		} else if (source == addSingleAppointmentLink) {
-			doAddSingleAppointment(ureq);
+		} else if (source == addIndividualAppointmentsLink) {
+			doAddIndividualAppointments(ureq);
 		} else if (source == addRecurringAppointmentLink) {
 			doAddRecurringAppointment(ureq);
 		} else if (source instanceof FormLink) {
@@ -496,7 +497,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (recurringAppointmentsCtrl == source) {
+		} else if (addAppointmentsCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				updateModel();
 			}
@@ -538,16 +539,16 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(recurringAppointmentsCtrl);
 		removeAsListenerAndDispose(findingConfirmationCtrl);
 		removeAsListenerAndDispose(appointmentDeleteCtrl);
+		removeAsListenerAndDispose(addAppointmentsCtrl);
 		removeAsListenerAndDispose(appointmentEditCtrl);
 		removeAsListenerAndDispose(userSearchCtrl);
 		removeAsListenerAndDispose(removeCtrl);
 		removeAsListenerAndDispose(cmc);
-		recurringAppointmentsCtrl = null;
 		findingConfirmationCtrl = null;
 		appointmentDeleteCtrl = null;
+		addAppointmentsCtrl = null;
 		appointmentEditCtrl = null;
 		userSearchCtrl = null;
 		removeCtrl = null;
@@ -598,21 +599,21 @@ public abstract class AppointmentListController extends FormBasicController impl
 		}
 	}
 
-	private void doAddSingleAppointment(UserRequest ureq) {
-		appointmentEditCtrl = new AppointmentEditController(ureq, getWindowControl(), topic);
-		listenTo(appointmentEditCtrl);
+	private void doAddIndividualAppointments(UserRequest ureq) {
+		addAppointmentsCtrl = new AppointmentCreateController(ureq, getWindowControl(), topic, false);
+		listenTo(addAppointmentsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", appointmentEditCtrl.getInitialComponent(), true,
-				translate("add.appointment.title"));
+		cmc = new CloseableModalController(getWindowControl(), "close", addAppointmentsCtrl.getInitialComponent(), true,
+				translate("add.appointment.individual"));
 		listenTo(cmc);
 		cmc.activate();
 	}
 
 	private void doAddRecurringAppointment(UserRequest ureq) {
-		recurringAppointmentsCtrl = new RecurringAppointmentsController(ureq, getWindowControl(), topic);
-		listenTo(recurringAppointmentsCtrl);
+		addAppointmentsCtrl = new AppointmentCreateController(ureq, getWindowControl(), topic, true);
+		listenTo(addAppointmentsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", recurringAppointmentsCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), "close", addAppointmentsCtrl.getInitialComponent(), true,
 				translate("add.appointment.recurring"));
 		listenTo(cmc);
 		cmc.activate();
