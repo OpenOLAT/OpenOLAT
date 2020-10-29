@@ -38,7 +38,7 @@ public class ContactTracingHelper {
 
 		locationDetailsBuilder
 				.append("<p>")
-				.append("<table class='o_contact_tracing_location_details_table'>")
+				.append("<table class='o_ct_location_details_table'>")
 				.append("<tr>");
 
 		// TODO CSS STYLE padding-right: 30px;

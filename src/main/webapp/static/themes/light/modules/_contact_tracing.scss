@@ -1,30 +1,42 @@
+// Used after registration to show confirmation
 .o_ct_confirmation_wrapper {
   width: 100%;
   height: 100%;
+  margin-bottom: 2em;
+  padding-bottom: 1.5em;
   border-radius: 4px;
   border: solid transparent;
-  background-color: limegreen;
+  background-color: $o-ct-confirmation-bg-color;
   text-align: center;
   color: white;
-
-  h1,h2 {
+  
+  h1, h2 {
     color: white;
     font-weight: bold;
   }
-
+  
   h3 {
     color: white;
   }
 }
 
+.o_ct_confirmation_icon {
+  font-size: 5em;
+}
+
+.o_ct_confirmation_location_details {
+  margin-top: 2.5em;
+}
+
+.o_ct_confirmation_message {
+  font-size: 1em;
+  margin: 2.5em 0 1.5em 0;
+}
+
+// Used to export to pdf
 .o_ct_pdf_wrapper {
   text-align: center !important;
-
-  div img {
-    width: 100%;
-    margin: 1em 0;
-  }
-
+  
   p {
     text-align: center !important;
     margin: 1em 0;
@@ -32,10 +44,15 @@
   }
 }
 
-.o_pdf_center {
+.o_ct_pdf_qr {
   margin-right: auto;
   margin-left: auto;
   width: 25em;
+  
+  img {
+    width: 100%;
+    margin: 1em 0;
+  }
 }
 
 .o_ct_pdf_section {
@@ -44,8 +61,20 @@
 
 .o_ct_pdf_reference {
   font-weight: bold;
+  text-align: center !important;
 }
 
 .o_ct_pdf_spacer {
   margin: 2em 0;
+}
+
+// Location details table, used in confirmation mail and registration intro
+.o_ct_location_details_table {
+  text-align: left;
+  
+  tr {
+    th {
+      padding-right: 2em;
+    }
+  }
 }

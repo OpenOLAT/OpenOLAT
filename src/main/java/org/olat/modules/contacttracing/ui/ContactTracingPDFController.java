@@ -29,6 +29,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.contacttracing.ContactTracingDispatcher;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingModule;
@@ -54,7 +55,7 @@ public class ContactTracingPDFController extends BasicController {
             locationUrlMap.put(location, ContactTracingDispatcher.getRegistrationUrl(location.getQrId()));
         }
 
-        qrContainer.contextPut("generalInstructions", contactTracingModule.getQrCodeInstructions());
+        qrContainer.contextPut("generalInstructions", StringHelper.xssScan(contactTracingModule.getQrCodeInstructions()));
         qrContainer.contextPut("locationList", locations);
         qrContainer.contextPut("locationUrlMap", locationUrlMap);
 

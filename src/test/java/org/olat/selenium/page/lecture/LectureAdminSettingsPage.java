@@ -135,7 +135,7 @@ public class LectureAdminSettingsPage {
 		OOGraphene.scrollTo(enableCheckBy, browser);
 		
 		WebElement enableCheckEl = browser.findElement(enableCheckBy);
-		OOGraphene.check(enableCheckEl, new Boolean(enable));
+		OOGraphene.check(enableCheckEl, Boolean.valueOf(enable));
 		OOGraphene.waitBusy(browser);
 		return this;
 		

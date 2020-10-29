@@ -154,20 +154,20 @@ public class MembersWizardPage {
 		if(owner) {
 			By ownerBy = By.cssSelector("label input[name='repoRights'][type='checkbox'][value='owner']");
 			WebElement ownerEl = browser.findElement(ownerBy);
-			OOGraphene.check(ownerEl, new Boolean(owner));
+			OOGraphene.check(ownerEl, Boolean.valueOf(owner));
 			OOGraphene.waitBusyAndScrollTop(browser);
 		}
 		
 		if(coach) {
 			By coachBy = By.cssSelector("label input[name='repoRights'][type='checkbox'][value='tutor']");
 			WebElement coachEl = browser.findElement(coachBy);
-			OOGraphene.check(coachEl, new Boolean(coach));
+			OOGraphene.check(coachEl, Boolean.valueOf(coach));
 			OOGraphene.waitBusyAndScrollTop(browser);
 		}
 		
 		By participantBy = By.cssSelector("label input[name='repoRights'][type='checkbox'][value='participant']");
 		WebElement participantEl = browser.findElement(participantBy);
-		OOGraphene.check(participantEl, new Boolean(participant));
+		OOGraphene.check(participantEl, Boolean.valueOf(participant));
 		OOGraphene.waitBusyAndScrollTop(browser);
 		return this;
 	}

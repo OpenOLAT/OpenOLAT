@@ -22,6 +22,7 @@ package org.olat.modules.contacttracing.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.services.pdf.PdfService;
@@ -46,6 +47,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.course.editor.overview.YesNoCellRenderer;
 import org.olat.modules.contacttracing.ContactTracingLocation;
@@ -74,12 +79,14 @@ public class ContactTracingLocationListController extends FormBasicController {
     private FormLink editLocationCalloutLink;
     private FormLink deleteCalloutLink;
     private FormLink addLocationLink;
+    private FormLink importLocationsLink;
 
     private CloseableModalController cmc;
     private CloseableCalloutWindowController calloutWindowController;
     private ContactTracingLocationEditController editLocationController;
     private ContactTracingLocationEditController addLocationController;
     private ContactTracingLocationDeleteConfirmController deleteConfirmController;
+    private StepsMainRunController importLocationsStepController;
 
     @Autowired
     private ContactTracingManager contactTracingManager;
@@ -115,10 +122,24 @@ public class ContactTracingLocationListController extends FormBasicController {
         TextFlexiCellRenderer textFlexiCellRenderer = new TextFlexiCellRenderer(EscapeMode.antisamy);
         qrTextColumn.setDefaultVisible(false);
         qrTextColumn.setCellRenderer(textFlexiCellRenderer);
+        
+        // Sector column
+        DefaultFlexiColumnModel sectorColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.sector);
+        sectorColumn.setDefaultVisible(false);
+        
+        // Table column
+        DefaultFlexiColumnModel tableColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.table);
+        tableColumn.setDefaultVisible(false);
 
+        // Seat number column
+        DefaultFlexiColumnModel seatNumberColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.seatNumber);
+        seatNumberColumn.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+        seatNumberColumn.setDefaultVisible(false);
+        
         // Guest column
         DefaultFlexiColumnModel guestColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.guest);
         guestColumn.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+       
         // Actions column
         DefaultFlexiColumnModel actionsColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.settings);
         actionsColumn.setIconHeader(ContactTracingLocationCols.settings.iconHeader());
@@ -128,8 +149,11 @@ public class ContactTracingLocationListController extends FormBasicController {
         columnModel.addFlexiColumnModel(keyColumn);
         columnModel.addFlexiColumnModel(referenceColumn);
         columnModel.addFlexiColumnModel(titleColumn);
-        columnModel.addFlexiColumnModel(roomColumn);
         columnModel.addFlexiColumnModel(buildingColumn);
+        columnModel.addFlexiColumnModel(roomColumn);
+        columnModel.addFlexiColumnModel(sectorColumn);
+        columnModel.addFlexiColumnModel(tableColumn);
+        columnModel.addFlexiColumnModel(seatNumberColumn);
         columnModel.addFlexiColumnModel(qrIdColumn);
         columnModel.addFlexiColumnModel(urlColumn);
         columnModel.addFlexiColumnModel(qrTextColumn);
@@ -151,9 +175,11 @@ public class ContactTracingLocationListController extends FormBasicController {
         tableEl.setEmtpyTableMessageKey("contact.tracing.location.table.empty");
         tableEl.setAndLoadPersistedPreferences(ureq, ContactTracingLocationListController.class.getCanonicalName());
 
-        // Create link to add a new location
+        // Create link to add a new location and import locations
         addLocationLink = uifactory.addFormLink("createNewLocation", "contact.tracing.location.add", null, formLayout, Link.BUTTON);
-        addLocationLink.setIconLeftCSS("o_icon o_icon_add");
+        addLocationLink.setIconLeftCSS("o_icon o_icon_fw o_icon_add");
+        importLocationsLink = uifactory.addFormLink("importLocations", "contact.tracing.locations.import", null, formLayout, Link.BUTTON);
+        importLocationsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
 
         // Create links to the batch buttons of the table
         generateQrCodeSelectedLocationsLink = uifactory.addFormLink("contact.tracing.location.qr.generate", formLayout, Link.BUTTON);
@@ -179,6 +205,19 @@ public class ContactTracingLocationListController extends FormBasicController {
             listenTo(addLocationController);
             listenTo(cmc);
             cmc.activate();
+        } else if (source == importLocationsLink) {
+        	// Create context wrapper (used to transfer data from step to step)
+            ContactTracingStepContextWrapper contextWrapper = new ContactTracingStepContextWrapper();
+
+            // Create first step and finish callback
+            Step importStep = new ContactTracingLocationImportStep1(ureq, contextWrapper);
+            FinishedCallback finish = new FinishedCallback();
+            CancelCallback cancel = new CancelCallback();
+
+            // Create step controller
+            importLocationsStepController = new StepsMainRunController(ureq, getWindowControl(), importStep, finish, cancel, translate("contact.tracing.locations.import"), null);
+            listenTo(importLocationsStepController);
+            getWindowControl().pushAsModalDialog(importLocationsStepController.getInitialComponent());
         } else if (source == generateQrCodeSelectedLocationsLink) {
             // Collect selected locations
             List<ContactTracingLocation> generatePDFLocations = new ArrayList<>();
@@ -259,6 +298,18 @@ public class ContactTracingLocationListController extends FormBasicController {
                 reloadData();
             }
             cleanUp();
+        } else if (source == importLocationsStepController) {
+            if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+                // Close the dialog
+                getWindowControl().pop();
+
+                // Remove steps controller
+                removeAsListenerAndDispose(importLocationsStepController);
+                importLocationsStepController = null;
+
+                // Reload form
+                reloadData();
+            }
         } else if (source == cmc) {
             cleanUp();
         }
@@ -337,5 +388,36 @@ public class ContactTracingLocationListController extends FormBasicController {
     @Override
     protected void doDispose() {
 
+    }
+    
+    private class FinishedCallback implements StepRunnerCallback {
+        @Override
+        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+        	// Get context wrapper
+        	ContactTracingStepContextWrapper contextWrapper = (ContactTracingStepContextWrapper) runContext.get("data");
+        	List<ContactTracingLocation> locationList = contextWrapper.getLocations();
+        	
+        	// Return if no locations available
+        	if (locationList == null || locationList.isEmpty()) {
+				return StepsMainRunController.DONE_UNCHANGED;
+			}
+        	
+        	Date creationDate = new Date();
+        	for (ContactTracingLocation location : locationList) {
+        		location.setCreationDate(creationDate);
+                location.setLastModified(creationDate);
+				contactTracingManager.saveLocation(location);
+			}
+        	
+            // Fire event
+            return StepsMainRunController.DONE_MODIFIED;
+        }
+    }
+    
+    private static class CancelCallback implements StepRunnerCallback {
+        @Override
+        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+            return Step.NOSTEP;
+        }
     }
 }

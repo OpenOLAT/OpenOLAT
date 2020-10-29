@@ -60,7 +60,11 @@ public class ContactTracingLocationDAO {
         contactTracingLocation.setQrText(qrText);
         contactTracingLocation.setAccessibleByGuests(guestsAllowed);
 
-        dbInstance.getCurrentEntityManager().persist(contactTracingLocation);
+        return persistLocation(contactTracingLocation);
+    }
+    
+    public ContactTracingLocation persistLocation(ContactTracingLocation contactTracingLocation) {
+    	dbInstance.getCurrentEntityManager().persist(contactTracingLocation);
         return contactTracingLocation;
     }
 

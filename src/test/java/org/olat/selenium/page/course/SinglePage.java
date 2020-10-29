@@ -48,12 +48,21 @@ public class SinglePage {
 	 * @return Itself
 	 */
 	public SinglePage assertInPage(String content) {
+		By contentBy = By.xpath("//p[text()[contains(.,'" + content + "')]]");
+		return assertInIFram(contentBy);
+	}
+	
+	public SinglePage assertImageInPage(String name) {
+		By contentBy = By.xpath("//p/img[contains(@src,'" + name + "')]");
+		return assertInIFram(contentBy);
+	}
+	
+	public SinglePage assertInIFram(By contentBy) {
 		By iframeBy = By.xpath("//div[contains(@class,'o_iframedisplay')]//iframe");
 		OOGraphene.waitElement(iframeBy, browser);
 		List<WebElement> iframes = browser.findElements(iframeBy);
 		browser = browser.switchTo().frame(iframes.get(0));
 		
-		By contentBy = By.xpath("//p[text()[contains(.,'" + content + "')]]");
 		OOGraphene.waitElement(contentBy, browser);
 
 		browser = browser.switchTo().defaultContent();

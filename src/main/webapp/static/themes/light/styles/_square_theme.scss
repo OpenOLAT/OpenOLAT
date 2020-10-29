@@ -101,7 +101,7 @@ wizard {
  */
 .fc-button {
 	box-shadow: none;
-	border-radius: none;
+	border-radius: 0px;
 	
 	&.fc-state-default {
 		background-image: none;
@@ -115,4 +115,9 @@ wizard {
 
 .fc-ltr .fc-event-hori.fc-event-start, .fc-ltr .fc-event-hori.fc-event-end {
 	border-radius: 0px;
+}
+
+/* contact tracing */
+.o_ct_confirmation_wrapper {
+	border-radius: 0;
 }

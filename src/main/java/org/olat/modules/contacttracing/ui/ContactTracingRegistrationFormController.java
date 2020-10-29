@@ -306,13 +306,19 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         // Disable email element if prefilled
         if (formItem == emailEl) {
             if (StringHelper.containsNonWhitespace(((TextElement) emailEl).getValue())) {
-                formItem.setEnabled(true);
+                formItem.setEnabled(false);
                 return;
             } else {
                 formItem.setEnabled(true);
                 return;
             }
         }
+        
+        // Disable nick name element if available
+        if (formItem == nickNameEl) {
+			formItem.setEnabled(false);
+			return;
+		}
 
         // Enable all text elements which are empty
         if (formItem instanceof TextElement) {
