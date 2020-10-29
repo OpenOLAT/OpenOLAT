@@ -1,48 +1,45 @@
 #foreach($location in $locationList)
     <div class="o_print_break_after o_ct_pdf_wrapper">
         #if($r.isNotEmpty("generalInstructions"))
-        <p>
+        <div class="o_ct_pdf_spacer">
             $generalInstructions
-        </p>
+        </div>
         #end
 
         #if($r.isNotEmpty($location.getQrText()))
-        <div class="o_ct_pdf_spacer"></div>
-        <p>
-            $location.getQrText()
-        </p>
+        <div class="o_ct_pdf_spacer">
+            $r.xssScan($location.getQrText())
+        </div>
         #end
 
         #if($r.isNotEmpty($location.getQrId()))
-        <div class="o_ct_pdf_spacer"></div>
-        <div id="o_qrcode_$location.getQrId()" class="o_pdf_center"></div>
-        <script>
-            jQuery(function() {
-                o_QRCode('o_qrcode_$location.getQrId()', '$locationUrlMap.get($location)');
-            });
-        </script>
-        <p>
-            <a id="o_qrcode_$location.getQrId()_link" target="_blank" href="$locationUrlMap.get($location)">$locationUrlMap.get($location)</a>
-        </p>
-        <div class="o_ct_pdf_spacer"></div>
+        <div class="o_ct_pdf_spacer">
+	        <div id="o_qrcode_$location.getQrId()" class="o_ct_pdf_qr"></div>
+	        <script>
+	            jQuery(function() {
+	                o_QRCode('o_qrcode_$location.getQrId()', '$locationUrlMap.get($location)');
+	            });
+	        </script>
+        </div>
+        <p><a id="o_qrcode_$location.getQrId()_link" target="_blank" href="$locationUrlMap.get($location)">$locationUrlMap.get($location)</a></p>
         #end
 
         #if($r.isNotEmpty($location.getReference()))
         <p class="o_ct_pdf_reference">
-            $location.getReference()
+            $r.xssScan($location.getReference())
         </p>
         #end
 
         #if($r.isNotEmpty($location.getTitle()))
         <p>
-            $location.getTitle()
+            $r.xssScan($location.getTitle())
         </p>
         #end
 
         #if($r.isNotEmpty($location.getRoom()) || $r.isNotEmpty($location.getBuilding()))
         <p>
             #if($r.isNotEmpty($location.getBuilding()))
-            $location.getBuilding()
+            $r.xssScan($location.getBuilding())
             #end
 
             #if($r.isNotEmpty($location.getBuilding()) && $r.isNotEmpty($location.getRoom()))
@@ -50,7 +47,7 @@
             #end
 
             #if($r.isNotEmpty($location.getRoom()))
-            $location.getRoom()
+            $r.xssScan($location.getRoom())
             #end
         </p>
         #end
@@ -58,7 +55,7 @@
         #if($r.isNotEmpty($location.getSector()) || $r.isNotEmpty($location.getTable()))
         <p>
             #if($r.isNotEmpty($location.getSector()))
-            $location.getSector()
+            $r.xssScan($location.getSector())
             #end
 
             #if($r.isNotEmpty($location.getSector()) && $r.isNotEmpty($location.getTable()))
@@ -66,7 +63,7 @@
             #end
 
             #if($r.isNotEmpty($location.getTable()))
-            $location.getTable()
+            $r.xssScan($location.getTable())
             #end
         </p>
         #end

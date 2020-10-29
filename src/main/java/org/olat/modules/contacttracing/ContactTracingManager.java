@@ -41,6 +41,14 @@ public interface ContactTracingManager {
      * @return A persisted contact tracing location
      */
     public ContactTracingLocation createLocation(String reference, String title, String building, String room , String sector, String table, String qrId, String qrText, boolean guestsAllowed);
+    
+    /**
+     * Saves a contact tracing location
+     * 
+     * @param location
+     * @return Persisted contact tracing location
+     */
+    public ContactTracingLocation saveLocation(ContactTracingLocation location);
 
     /**
      * Save changes done to an existing location

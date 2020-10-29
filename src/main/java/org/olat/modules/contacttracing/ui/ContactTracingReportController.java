@@ -132,7 +132,7 @@ public class ContactTracingReportController extends FormBasicController {
                 // Remove steps controller
                 removeAsListenerAndDispose(generateReportStepController);
                 generateReportStepController = null;
-
+                
                 // Reload form
                 loadData(ureq);
 
@@ -164,7 +164,7 @@ public class ContactTracingReportController extends FormBasicController {
 
     private void openReportGeneratorSteps(UserRequest ureq) {
         // Create context wrapper (used to transfer data from step to step)
-        ContactTracingReportGeneratorContextWrapper contextWrapper = new ContactTracingReportGeneratorContextWrapper();
+        ContactTracingStepContextWrapper contextWrapper = new ContactTracingStepContextWrapper();
 
         // Create first step and finish callback
         Step searchStep = new ContactTracingReportGeneratorStep1(ureq, contextWrapper);
@@ -185,8 +185,8 @@ public class ContactTracingReportController extends FormBasicController {
         String reason = reasonEl.getValue();
 
         String startLog = "Contact tracing report has been generated:";
-        String dateLog = "Date" +"\t\t\t\t" + date;
-        String issuedByLog = "Issued by" + "\t\t\t" + name + " - " + userID;
+        String dateLog = "Date" +"\t\t\t" + date;
+        String issuedByLog = "Issued by" + "\t\t" + name + " - " + userID;
         String authorizedByLog = "Authorized by" + "\t\t" + authorizedBy;
         String reasonLog = "Reason / Details" + "\t" + reason;
 
@@ -205,7 +205,7 @@ public class ContactTracingReportController extends FormBasicController {
     private class FinishedCallback implements StepRunnerCallback {
         @Override
         public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-            ContactTracingReportGeneratorContextWrapper contextWrapper = (ContactTracingReportGeneratorContextWrapper) runContext.get("data");
+            ContactTracingStepContextWrapper contextWrapper = (ContactTracingStepContextWrapper) runContext.get("data");
             Map<ContactTracingLocation, List<ContactTracingRegistration>> locationEntryMap = contextWrapper.getLocations()
                     .stream().collect(Collectors.toMap(location -> location, location -> new ArrayList<>()));
 
@@ -223,10 +223,19 @@ public class ContactTracingReportController extends FormBasicController {
 
             // Create excel sheet
             String label = "Contact_tracing_report_" + Formatter.formatDateFilesystemSave(new Date()) + ".xlsx";
+            List<String> sheetNames = new ArrayList<String>();
+            for (ContactTracingLocation location : locationEntryMap.keySet()) {
+				if (StringHelper.containsNonWhitespace(location.getBuilding())) {
+					sheetNames.add(location.getReference());
+				} else {
+					sheetNames.add(translate("contact.tracing.location") + " " + (sheetNames.size() + 1));
+				}
+			}
+            
             OpenXMLWorkbookResource spreadSheet = new OpenXMLWorkbookResource(label) {
                 @Override
                 protected void generate(OutputStream out) {
-                    try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, locationEntryMap.keySet().size())) {
+                    try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, locationEntryMap.keySet().size(), sheetNames)) {
                         // Generate a new sheet for every location
                         for (ContactTracingLocation location : locationEntryMap.keySet()) {
                             OpenXMLWorksheet sheet = workbook.nextWorksheet();
@@ -300,19 +309,19 @@ public class ContactTracingReportController extends FormBasicController {
         List<String> columns = new ArrayList<>();
         columns.add(translate("contact.tracing.start.time"));
         columns.add(translate("contact.tracing.end.time"));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.NICKNAME).i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.FIRSTNAME).i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.LASTNAME).i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.STREET).i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.EXTENDEDADDRESS).i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.ZIPCODE).i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.CITY).i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.EMAIL).i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.INSTITUTIONALEMAIL).i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler("genericEmailProperty1").i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.TELMOBILE).i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.TELPRIVATE).i18nColumnDescriptorLabelKey()));
-        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.TELOFFICE).i18nColumnDescriptorLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.NICKNAME).i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.FIRSTNAME).i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.LASTNAME).i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.STREET).i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.EXTENDEDADDRESS).i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.ZIPCODE).i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.CITY).i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.EMAIL).i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.INSTITUTIONALEMAIL).i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler("genericEmailProperty1").i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.TELMOBILE).i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.TELPRIVATE).i18nFormElementLabelKey()));
+        columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.TELOFFICE).i18nFormElementLabelKey()));
 
         for (String headerValue : columns) {
             headerRow.addCell(columns.indexOf(headerValue), headerValue, workbook.getStyles().getHeaderStyle());

@@ -21,6 +21,7 @@ package org.olat.modules.contacttracing.model;
 
 import java.util.Date;
 import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -67,6 +68,8 @@ public class ContactTracingLocationImpl implements ContactTracingLocation {
     private String sector;
     @Column(name = "l_table", nullable = true, unique = false, insertable = true, updatable = true)
     private String table;
+    @Column(name = "l_seat_number", nullable = false, unique = false, insertable = true, updatable = true)
+    private boolean seatNumberEnabled;
     @Column(name = "l_qr_id", nullable = false, unique = true, insertable = true, updatable = true)
     private String qrId;
     @Column(name = "l_qr_text", nullable = true, unique = false, insertable = true, updatable = true)
@@ -87,6 +90,7 @@ public class ContactTracingLocationImpl implements ContactTracingLocation {
         return creationDate;
     }
 
+    @Override
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }
@@ -119,6 +123,16 @@ public class ContactTracingLocationImpl implements ContactTracingLocation {
     @Override
     public void setTitle(String title) {
         this.title = title;
+    }
+    
+    @Override
+    public boolean isSeatNumberEnabled() {
+    	return this.seatNumberEnabled;
+    }
+    
+    @Override
+    public void setSeatNumberEnabled(boolean seatNumberEnabled) {
+    	this.seatNumberEnabled = seatNumberEnabled;
     }
 
     @Override

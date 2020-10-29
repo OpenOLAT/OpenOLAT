@@ -58,6 +58,7 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
 
     private Map<ContactTracingLocation, Long> locationRegistrationMap;
     private Map<ContactTracingLocation, FormLink> toolLinks;
+    private Map<ContactTracingLocation, Boolean> alreadyExistingMap;
     private List<ContactTracingLocation> backup;
 
     public ContactTracingLocationTableModel(FlexiTableColumnModel columnModel, Map<ContactTracingLocation, Long> locationRegistrationMap, Locale locale) {
@@ -65,9 +66,25 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
 
         // Save locale for sorting
         this.locale = locale;
+        
+        // Create new map to prevent NPE
+        alreadyExistingMap = new HashMap<>();
 
         // Set objects
         setObjects(locationRegistrationMap);
+    }
+    
+    public ContactTracingLocationTableModel(FlexiTableColumnModel columnModel, List<ContactTracingLocation> locationList, Locale locale) {
+    	super(columnModel);
+    	
+    	// Save locale for sorting
+    	this.locale = locale;
+    
+    	// Create new map to prevent NPE
+        alreadyExistingMap = new HashMap<>();
+        locationRegistrationMap = new HashMap<>();
+        
+        setObjects(locationList);
     }
 
     @Override
@@ -95,8 +112,10 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
             filteredList = backup.stream().filter(location -> {
                 if (location.getReference().toLowerCase().contains(search) ||
                         location.getTitle().toLowerCase().contains(search) ||
-                        location.getRoom().toLowerCase().contains(search) ||
                         location.getBuilding().toLowerCase().contains(search) ||
+                        location.getRoom().toLowerCase().contains(search) ||
+                        location.getSector().toLowerCase().contains(search) ||
+                        location.getTable().toLowerCase().contains(search) ||
                         location.getQrId().toLowerCase().contains(search)) {
                     return true;
                 }
@@ -112,18 +131,17 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
     }
 
     public void setObjects(Map<ContactTracingLocation, Long> locationRegistrationMap) {
-        // Extract locations out of map
-        this.backup = new ArrayList<>(locationRegistrationMap.keySet());
-
         // Save locationRegistrationMap
         this.locationRegistrationMap = locationRegistrationMap;
 
         // Call setObjects
-        setObjects(backup);
+        setObjects(new ArrayList<ContactTracingLocation>(locationRegistrationMap.keySet()));
     }
-
+    
     @Override
     public void setObjects(List<ContactTracingLocation> objects) {
+    	// Save backup
+    	this.backup = objects;
         // Set objects
         super.setObjects(objects);
         // Create tool links
@@ -136,10 +154,16 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
             toolLinks.put(location, toolsLink);
         }
     }
+    
+    public void setAlreadyExistingMap(Map<ContactTracingLocation, Boolean> alreadyExistingMap) {
+    	this.alreadyExistingMap = alreadyExistingMap;
+    }
 
     @Override
     public Object getValueAt(ContactTracingLocation location, int col) {
         switch (ContactTracingLocationCols.values()[col]) {
+        	case alreadyExisting:
+        		return alreadyExistingMap.get(location);
             case key:
                 return location.getKey();
             case reference:
@@ -154,10 +178,11 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
                 return location.getSector();
             case table:
                 return location.getTable();
+            case seatNumber:
+            	return location.isSeatNumberEnabled();
             case qrId:
                 return location.getQrId();
             case qrText:
-                // TODO ALEX REndering
                 return location.getQrText();
             case url:
                 return ContactTracingDispatcher.getRegistrationUrl(location.getQrId());
@@ -185,12 +210,14 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
 
     public enum ContactTracingLocationCols implements FlexiSortableColumnDef {
         key("contact.tracing.cols.key"),
+        alreadyExisting("contact.tracing.cols.already.existing", "o_icon i_icon_fw o_icon_warn"),
         reference("contact.tracing.cols.reference"),
         title("contact.tracing.cols.title"),
         building("contact.tracing.cols.building"),
         room("contact.tracing.cols.room"),
         sector("contact.tracing.cols.sector"),
         table("contact.tracing.cols.table"),
+        seatNumber("contact.tracing.cols.seat.number"),
         qrId("contact.tracing.cols.qr.id"),
         qrText("contact.tracing.cols.qr.text"),
         guest("contact.tracing.cols.guest"),

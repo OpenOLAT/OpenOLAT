@@ -19,36 +19,47 @@
  */
 package org.olat.modules.contacttracing.ui;
 
-import java.util.List;
-
-import org.olat.modules.contacttracing.ContactTracingLocation;
-import org.olat.modules.contacttracing.ContactTracingSearchParams;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.table.IconCssCellRenderer;
 
 /**
- * Initial date: 15.10.20<br>
- *
+ * Initial date: 29. Oct 2020
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ContactTracingReportGeneratorContextWrapper {
+public class ContactTracingWarningCellRenderer extends IconCssCellRenderer implements FlexiCellRenderer {
+	
 
-    private ContactTracingSearchParams searchParams;
+	@Override
+	protected String getCssClass(Object val) {
+		if(val == null) {
+			return null;
+		}
+		if(val instanceof Boolean) {
+			Boolean warning = (Boolean) val;
+			
+			return warning ? "o_icon o_icon_warn o_icon-fw" : null;
+		}
+		return null;
+	}
 
-    private List<ContactTracingLocation> locations;
+	@Override
+	protected String getCellValue(Object val) {
+		if(val == null) {
+			return null;
+		}
+		
+		if(val instanceof Object[]) {
+			Object[] value = (Object[])val;
+			String desc = (String)value[1];
+			return desc;
+		}
+		return null;
+	}
 
-    public ContactTracingSearchParams getSearchParams() {
-        return searchParams;
-    }
-
-    public void setSearchParams(ContactTracingSearchParams searchParams) {
-        this.searchParams = searchParams;
-    }
-
-    public List<ContactTracingLocation> getLocations() {
-        return locations;
-    }
-
-    public void setLocations(List<ContactTracingLocation> locations) {
-        this.locations = locations;
-    }
+	@Override
+	protected String getHoverText(Object val) {
+		return getCellValue(val);
+	}
 
 }
+

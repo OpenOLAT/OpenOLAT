@@ -71,6 +71,29 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
             return contactTracingLocationDAO.createAndPersistLocation(reference, title, building, room, sector, table, qrId, qrText, guestsAllowed);
         }
     }
+    
+    @Override
+    public ContactTracingLocation saveLocation(ContactTracingLocation location) {
+    	if (location == null || location.getQrId() == null) {
+            return null;
+        } else if (qrIdExists(location.getQrId())) {
+        	// If location with this QR ID is already existing, reload and update
+        	ContactTracingLocation updateLocation = getLocation(location.getQrId());
+        	updateLocation.setReference(location.getReference());
+        	updateLocation.setTitle(location.getTitle());
+        	updateLocation.setBuilding(location.getBuilding());
+        	updateLocation.setRoom(location.getRoom());
+        	updateLocation.setSector(location.getSector());
+        	updateLocation.setTable(location.getTable());
+        	updateLocation.setSeatNumberEnabled(location.isSeatNumberEnabled());
+        	updateLocation.setAccessibleByGuests(location.isAccessibleByGuests());
+        	updateLocation.setQrText(location.getQrText());
+        	
+        	return contactTracingLocationDAO.updateLocation(updateLocation);
+        } else {
+            return contactTracingLocationDAO.persistLocation(location);
+        }
+    }
 
     @Override
     public ContactTracingLocation updateLocation(ContactTracingLocation location) {
@@ -134,7 +157,12 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
 
     @Override
     public boolean qrIdExists(String qrId) {
-        return contactTracingLocationDAO.qrIdExists(qrId);
+    	// If empty ID is given, return true
+    	if(StringHelper.containsNonWhitespace(qrId)) {
+    		return contactTracingLocationDAO.qrIdExists(qrId);
+    	}
+    	
+        return true;
     }
 
     @Override
