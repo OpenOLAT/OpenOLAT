@@ -93,6 +93,12 @@ public class MetaInfoReader {
 			synchronized(saxParser) {
 				saxParser.parse(bin, new MetaHandler(null));
 			}
+			
+			// check if the lock data are complete, if not, remove the partial lock data
+			if(meta != null && meta.isLocked() && meta.getLockedBy() == null) {
+				meta.setLocked(false);
+				meta.setLockedDate(null);
+			}
 		} catch(Exception ex) {
 			log.error("Error while parsing binaries", ex);
 		}
@@ -106,12 +112,17 @@ public class MetaInfoReader {
 			synchronized(saxParser) {
 				saxParser.parse(bis, new MetaHandler(fMeta));
 			}
+			
+			if(meta != null && meta.isLocked() && meta.getLockedBy() == null) {
+				meta.setLocked(false);
+				meta.setLockedDate(null);
+			}
 		} catch (SAXParseException ex) {
 			if(!parseSAXFiltered(fMeta)) {
-				log.warn("SAX Parser error while parsing " + fMeta, ex);
+				log.warn("SAX Parser error while parsing {}", fMeta, ex);
 			}
 		} catch(Exception ex) {
-			log.error("Error while parsing " + fMeta, ex);
+			log.error("Error while parsing {}", fMeta, ex);
 		}
 		return true;
 	}
