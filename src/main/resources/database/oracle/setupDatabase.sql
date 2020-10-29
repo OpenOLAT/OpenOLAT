@@ -3276,6 +3276,7 @@ create table o_ct_location (
    l_building varchar2(255),
    l_sector varchar2(255),
    l_table varchar2(255),
+   l_seat_number number default 0 not null,
    l_qr_id varchar2(255) not null,
    l_qr_text varchar2(4000),
    l_guests number default 1 not null,
@@ -3303,6 +3304,7 @@ create table o_ct_registration (
    l_private_phone varchar2(255),
    l_mobile_phone varchar2(255),
    l_office_phone varchar2(255),
+   l_seat_number varchar2(64),
    fk_location number(20) not null,
    primary key (id)
 );
@@ -4512,7 +4514,6 @@ create index idx_org_role_to_r_to_org_idx on o_org_role_to_right(fk_organisation
 -- Contact tracing
 alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
 create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
-create index idx_qr_id_idx on o_ct_location (l_qr_id);
 
 
 commit
