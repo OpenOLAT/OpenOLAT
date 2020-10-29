@@ -23,9 +23,9 @@ import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -38,8 +38,6 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
-import org.olat.group.BusinessGroup;
-import org.olat.group.DeletableGroupData;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.user.UserDataExportable;
 import org.olat.user.manager.ManifestBuilder;
@@ -53,7 +51,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class GTAUserDataManager implements DeletableGroupData, UserDataExportable {
+public class GTAUserDataManager implements UserDataExportable {
 	
 	private static final Logger log = Tracing.createLoggerFor(GTAUserDataManager.class);
 	
@@ -61,18 +59,6 @@ public class GTAUserDataManager implements DeletableGroupData, UserDataExportabl
 	private DB dbInstance;
 	@Autowired
 	private GTAManager gtaManager;
-	
-	@Override
-	public boolean deleteGroupDataFor(BusinessGroup group) {
-		log.info(Tracing.M_AUDIT, "Delete tasks of business group: {}", group.getKey());
-		String deleteTasks = "delete from gtatask as task where task.businessGroup.key=:groupKey";
-		dbInstance.getCurrentEntityManager()
-				.createQuery(deleteTasks)
-				.setParameter("groupKey", group.getKey())
-				.executeUpdate();
-		return true;
-	}
-
 
 	@Override
 	public String getExporterID() {

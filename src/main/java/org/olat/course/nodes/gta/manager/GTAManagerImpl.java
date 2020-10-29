@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
@@ -94,6 +95,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.DeletableGroupData;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
@@ -121,7 +123,7 @@ import com.thoughtworks.xstream.XStream;
  *
  */
 @Service
-public class GTAManagerImpl implements GTAManager {
+public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	
 	private static final Logger log = Tracing.createLoggerFor(GTAManagerImpl.class);
 	
@@ -826,6 +828,40 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
+	public boolean deleteGroupDataFor(BusinessGroup group) {
+		
+		List<Task> groupTasks = getTasks(group);
+		List<Long> taskKeys = groupTasks.stream()
+				.map(Task::getKey)
+				.collect(Collectors.toList());
+		
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("delete from gtataskrevisiondate as taskrev where taskrev.task.key in (:taskKeys)");
+		int numOfDeletedObjects = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString())
+			.setParameter("taskKeys", taskKeys)
+			.executeUpdate();
+		
+		StringBuilder taskSb = new StringBuilder(128);
+		taskSb.append("delete from gtataskrevision as taskrev where taskrev.task.key in (:taskKeys)");
+		numOfDeletedObjects += dbInstance.getCurrentEntityManager()
+			.createQuery(taskSb.toString())
+			.setParameter("taskKeys", taskKeys)
+			.executeUpdate();
+		
+		numOfDeletedObjects += gtaMarkDao.deleteMark(taskKeys);
+		
+		String deleteTasks = "delete from gtatask as task where task.key in (:taskKeys)";
+		numOfDeletedObjects += dbInstance.getCurrentEntityManager().createQuery(deleteTasks)
+			.setParameter("taskKeys", taskKeys)
+			.executeUpdate();
+		
+		dbInstance.commit();
+
+		return numOfDeletedObjects > 0;
+	}
+
+	@Override
 	public List<Task> getTasks(TaskList taskList, GTACourseNode cNode) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select task from gtatask task ")
@@ -928,6 +964,13 @@ public class GTAManagerImpl implements GTAManager {
 			.getResultList();
 
 		return tasks.isEmpty() ? null : tasks.get(0);
+	}
+	
+	public List<Task> getTasks(BusinessGroupRef businessGroup) {
+		String q = "select task from gtatask task where task.businessGroup.key=:businessGroupKey";
+		return dbInstance.getCurrentEntityManager().createQuery(q, Task.class)
+			.setParameter("businessGroupKey", businessGroup.getKey())
+			.getResultList();
 	}
 
 	@Override
