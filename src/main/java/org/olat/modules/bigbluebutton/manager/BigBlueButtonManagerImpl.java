@@ -300,6 +300,11 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 
 	@Override
+	public BigBlueButtonServer getServer(Long key) {
+		return bigBlueButtonServerDao.getServer(key);
+	}
+
+	@Override
 	public List<BigBlueButtonServerInfos> getServersInfos() {
 		List<BigBlueButtonServer> servers = getServers();
 		return getServersInfos(servers);

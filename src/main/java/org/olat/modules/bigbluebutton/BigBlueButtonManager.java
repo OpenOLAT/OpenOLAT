@@ -50,6 +50,12 @@ public interface BigBlueButtonManager {
 	
 	public List<BigBlueButtonServer> getServers();
 	
+	/**
+	 * @param key The primary key of the server
+	 * @return A server or null if not found
+	 */
+	public BigBlueButtonServer getServer(Long key);
+	
 	public List<BigBlueButtonServerInfos> getServersInfos();
 	
 	public List<BigBlueButtonServerInfos> filterServersInfos(List<BigBlueButtonServerInfos> infos);

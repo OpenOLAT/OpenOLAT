@@ -70,5 +70,14 @@ public class BigBlueButtonServerDAO {
 				.createQuery(q, BigBlueButtonServer.class)
 				.getResultList();
 	}
+	
+	public BigBlueButtonServer getServer(Long serverKey) {
+		String q = "select server from bigbluebuttonserver server where server.key=:serverKey";
+		List<BigBlueButtonServer> servers = dbInstance.getCurrentEntityManager()
+				.createQuery(q, BigBlueButtonServer.class)
+				.setParameter("serverKey", serverKey)
+				.getResultList();
+		return servers == null || servers.isEmpty() ? null : servers.get(0);
+	}
 
 }

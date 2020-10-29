@@ -72,5 +72,24 @@ public class BigBlueButtonServerDAOTest extends OlatTestCase {
 		Assert.assertTrue(servers.contains(server));
 	}
 	
-
+	@Test
+	public void getServerByKey() {
+		String name = UUID.randomUUID().toString();
+		String url = "https://" + name + "/bigbluebutton";
+		String recordingUrl = "https://" + name + "/bigbluebutton/recordings";
+		String sharedSecret = name;
+		
+		BigBlueButtonServer server = bigBlueButtonServerDao.createServer(url, recordingUrl, sharedSecret);
+		dbInstance.commitAndCloseSession();
+		
+		BigBlueButtonServer loadedServer = bigBlueButtonServerDao.getServer(server.getKey());
+		Assert.assertNotNull(loadedServer);
+		Assert.assertEquals(server, loadedServer);
+	}
+	
+	@Test
+	public void getNotExistantServerByKey() {
+		BigBlueButtonServer loadedServer = bigBlueButtonServerDao.getServer(25474989l);
+		Assert.assertNull(loadedServer);
+	}
 }

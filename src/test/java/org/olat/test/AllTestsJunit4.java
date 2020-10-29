@@ -410,6 +410,8 @@ import org.junit.runners.Suite;
 	org.olat.core.dispatcher.mapper.MapperDAOTest.class,
 	org.olat.core.dispatcher.mapper.MapperServiceTest.class,
 	org.olat.restapi.AuthenticationTest.class,
+	org.olat.restapi.BigBlueButtonStatsWebServiceTest.class,
+	org.olat.restapi.BigBlueButtonServerWebServiceTest.class,
 	org.olat.restapi.CatalogTest.class,
 	org.olat.restapi.CalendarTest.class,
 	org.olat.restapi.CertificationTest.class,
