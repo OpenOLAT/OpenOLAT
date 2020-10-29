@@ -582,7 +582,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 				.setMaxResults(1)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
-		return count != null && !count.isEmpty() && count.get(0) != null && count.get(0).intValue() > 0;
+		return count != null && !count.isEmpty() && count.get(0) != null && count.get(0).longValue() > 0;
 	}
 	
 	public List<Identity> getOwnersOfParentLine(CatalogEntry entry) {

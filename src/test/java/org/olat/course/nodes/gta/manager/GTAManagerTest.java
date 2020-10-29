@@ -48,6 +48,7 @@ import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskRevisionDate;
 import org.olat.course.nodes.gta.model.TaskListImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.vitero.model.GroupRole;
@@ -73,6 +74,8 @@ public class GTAManagerTest extends OlatTestCase {
 	private GTAManagerImpl gtaManager;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
@@ -757,6 +760,102 @@ public class GTAManagerTest extends OlatTestCase {
 		List<Task> notDeletedAssignedTasks2_2 = gtaManager.getTasks(participant2, re2, node2);
 		Assert.assertNotNull(notDeletedAssignedTasks2_2);
 		Assert.assertEquals(1, notDeletedAssignedTasks2_2.size());
+	}
+	
+	@Test
+	public void deleteTaskGroup() {
+		//prepare
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-30");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-10");
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "Task group deletion", "Task group deletion desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
+		dbInstance.commit();
+		
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.group.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		File taskFile = new File("bg.txt");
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//select
+		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, node, taskFile, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(response);
+		
+		//check that there is tasks
+		List<Task> assignedTasks = gtaManager.getTasks(participant, re, node);
+		Assert.assertNotNull(assignedTasks);
+		Assert.assertEquals(1, assignedTasks.size());
+		
+		// create a revision date
+		gtaManager.createAndPersistTaskRevisionDate(assignedTasks.get(0), 2, TaskProcess.correction);
+		dbInstance.commitAndCloseSession();
+		
+		//delete
+		businessGroupService.deleteBusinessGroup(businessGroup);
+		dbInstance.commitAndCloseSession();
+		
+		List<Task> deletedTasks = gtaManager.getTasks(participant, re, node);
+		Assert.assertTrue(deletedTasks.isEmpty());
+	}
+	
+	@Test
+	public void deleteTaskGroupParano() {
+		//prepare
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-31");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-32");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-33");
+		BusinessGroup businessGroup1 = businessGroupDao.createAndPersist(coach, "Task 1 group deletion", "Task group deletion desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(participant1, businessGroup1, GroupRole.participant.name());
+		BusinessGroup businessGroup2 = businessGroupDao.createAndPersist(coach, "Task 2 group deletion", "Task group deletion desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(participant2, businessGroup2, GroupRole.participant.name());
+		
+		dbInstance.commit();
+		
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.group.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		File taskFile = new File("bg.txt");
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//select
+		AssignmentResponse response1 = gtaManager.selectTask(businessGroup1, tasks, node, taskFile, null);
+		AssignmentResponse response2 = gtaManager.selectTask(businessGroup2, tasks, node, taskFile, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(response1);
+		Assert.assertNotNull(response2);
+		
+		//check that there is tasks
+		List<Task> assignedTasks1 = gtaManager.getTasks(participant1, re, node);
+		List<Task> assignedTasks2 = gtaManager.getTasks(participant2, re, node);
+		Assert.assertEquals(1, assignedTasks1.size());
+		Assert.assertEquals(1, assignedTasks2.size());
+		
+		// create a revision date
+		TaskRevisionDate revDate1 = gtaManager.createAndPersistTaskRevisionDate(assignedTasks1.get(0), 2, TaskProcess.correction);
+		TaskRevisionDate revDate2 = gtaManager.createAndPersistTaskRevisionDate(assignedTasks2.get(0), 2, TaskProcess.correction);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(revDate1);
+		Assert.assertNotNull(revDate2);
+		
+		//delete
+		businessGroupService.deleteBusinessGroup(businessGroup1);
+		dbInstance.commitAndCloseSession();
+		
+		List<Task> deletedTasks = gtaManager.getTasks(participant1, re, node);
+		Assert.assertTrue(deletedTasks.isEmpty());
+		List<TaskRevisionDate> deletedRevisionsDate = gtaManager.getTaskRevisionsDate(response1.getTask());
+		Assert.assertTrue(deletedRevisionsDate.isEmpty());
+		
+		List<Task> stillAssignedTasks2 = gtaManager.getTasks(participant2, re, node);
+		Assert.assertEquals(1, stillAssignedTasks2.size());
+		List<TaskRevisionDate> deletedRevisionsDate2 = gtaManager.getTaskRevisionsDate(response2.getTask());
+		Assert.assertEquals(1, deletedRevisionsDate2.size());
+		Assert.assertEquals(revDate2, deletedRevisionsDate2.get(0));
 	}
 	
 	@Test

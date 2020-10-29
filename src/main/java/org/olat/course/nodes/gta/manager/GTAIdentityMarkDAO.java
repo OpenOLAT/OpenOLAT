@@ -120,4 +120,12 @@ public class GTAIdentityMarkDAO {
 				.executeUpdate();
 	}
 
+	public int deleteMark(List<Long> taskKeys) {
+		if (taskKeys == null || taskKeys.isEmpty()) return 0;
+		
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("deleteByTaskKeys")
+				.setParameter("taskKeys", taskKeys)
+				.executeUpdate();
+	}
 }

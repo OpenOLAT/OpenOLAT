@@ -177,7 +177,7 @@ public class InvitationDAO {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return keys == null || keys.isEmpty() || keys.get(0) == null ? false : keys.get(0).intValue() > 0;
+		return keys == null || keys.isEmpty() || keys.get(0) == null ? false : keys.get(0).longValue() > 0;
 	}
 	
 	/**

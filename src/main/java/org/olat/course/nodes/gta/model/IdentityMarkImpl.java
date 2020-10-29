@@ -68,7 +68,10 @@ import org.olat.course.nodes.gta.TaskList;
 			+ "   and mark.participant.key=:participantKey"),
 	@NamedQuery(name="deleteByTaskList", query =
 			  "delete from gtaMark mark"
-			+ " where mark.taskList.key=:taskListKey")
+			+ " where mark.taskList.key=:taskListKey"),
+	@NamedQuery(name="deleteByTaskKeys", query =
+			  "delete from gtaMark mark"
+			+ " where mark.key in (:taskKeys)")
 })
 public class IdentityMarkImpl implements IdentityMark, Persistable {
 
