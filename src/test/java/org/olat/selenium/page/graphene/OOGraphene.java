@@ -119,6 +119,30 @@ public class OOGraphene {
 			.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
 	}
 	
+	/**
+	 * Wait until the busy flag is ok, the browser scrolled
+	 * to the top and that the body of the top modal dialog is
+	 * visible. Top modal dialogs are a separate beast of the 
+	 * modal and are use to show a dialog above TinyMCE, the rich
+	 * text editor.
+	 * 
+	 * @param browser The browser
+	 */
+	public static void waitTopModalDialog(WebDriver browser) {
+		waitBusyAndScrollTop(browser);
+		By modalBy = By.cssSelector("div.o_ltop_modal_panel div.modal-dialog div.modal-body");
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(poolingSlow)
+			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));
+	}
+	
+	public static void waitTopModalDialogDisappears(WebDriver browser) {
+		By modalBy = By.xpath("//div[@class='o_ltop_modal_panel']//div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]");
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(poolingSlow)
+			.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
+	}
+	
 	public static void waitCallout(WebDriver browser) {
 		By calloutBy = By.cssSelector("div.popover-content div.o_callout_content");
 		waitElement(calloutBy, browser);

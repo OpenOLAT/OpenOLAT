@@ -117,7 +117,7 @@ public class CalendarPage {
 		
 		WebElement allDayEl = browser.findElement(locationBy);
 		OOGraphene.scrollTo(locationBy, browser);
-		OOGraphene.check(allDayEl, new Boolean(allDay));
+		OOGraphene.check(allDayEl, Boolean.valueOf(allDay));
 		
 		if(!allDay) {
 			By hourBy = By.xpath("//fieldset[contains(@class,'o_sel_cal_entry_form')]//div[contains(@class,'o_sel_cal_begin')]//input[contains(@id,'o_dch_')]");

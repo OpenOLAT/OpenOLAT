@@ -1806,6 +1806,69 @@ public class CourseElementTest extends Deployments {
 	
 	/**
 	 * An author creates a course with a single page course element,
+	 * create the HTML page in the course editor with the default button,
+	 * add an image and publish the course and go to the page to verify
+	 * if the content and the image are there.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseEditSinglePage()
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Single Course" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//create a course element of type Test with the test that we create above
+		String nodeTitle = "EditableSinglePage";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("sp")
+			.nodeTitle(nodeTitle);
+
+		String content = "A new single page with some content";
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
+		File imageFile = new File(imageUrl.toURI());
+		
+		SinglePageConfigurationPage spConfiguration = new SinglePageConfigurationPage(browser);
+		spConfiguration
+			.selectConfiguration()
+			.openDefaultPage()
+			.setContent(content)
+			.uploadImage(imageFile)
+			.saveContent();
+		
+		spConfiguration
+			.assertOnPreview();
+		
+		CoursePageFragment courseRuntime = courseEditor
+			.autoPublish();
+		
+		courseRuntime
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+		SinglePage singlePage = new SinglePage(browser);
+		singlePage
+			.assertInPage(content)
+			.assertImageInPage(imageFile.getName());
+	}
+	
+	/**
+	 * An author creates a course with a single page course element,
 	 * upload a PDF, publish the course and go to the page to check
 	 * if the file is available.
 	 * 

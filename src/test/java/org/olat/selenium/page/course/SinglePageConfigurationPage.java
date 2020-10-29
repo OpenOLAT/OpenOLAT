@@ -21,6 +21,7 @@ package org.olat.selenium.page.course;
 
 import java.io.File;
 
+import org.olat.selenium.page.core.TinyPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -63,6 +64,16 @@ public class SinglePageConfigurationPage {
 		
 		return this;
 	}
+	
+	public TinyPage openDefaultPage() {
+		By editBy = By.cssSelector("fieldset.o_sel_single_page_file_settings a.o_sel_filechooser_edit");
+		OOGraphene.waitElement(editBy, browser);
+		browser.findElement(editBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		return new TinyPage(browser);
+	}
+	
 	
 	public SinglePageConfigurationPage uploadFile(File file) {
 		By calloutBy = By.cssSelector("fieldset.o_sel_single_page_file_settings a.o_sel_filechooser_new");
