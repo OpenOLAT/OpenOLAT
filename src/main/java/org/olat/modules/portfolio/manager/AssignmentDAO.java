@@ -402,7 +402,7 @@ public class AssignmentDAO {
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();
-		return counts != null && !counts.isEmpty() && counts.get(0) != null && counts.get(0).intValue() >= 0;
+		return counts != null && !counts.isEmpty() && counts.get(0) != null && counts.get(0).longValue() >= 0;
 	}
 	
 	public boolean isFormEntryInUse(RepositoryEntryRef formEntry) {
@@ -416,7 +416,7 @@ public class AssignmentDAO {
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();
-		return counts != null && !counts.isEmpty() && counts.get(0) != null && counts.get(0).intValue() >= 0;
+		return counts != null && !counts.isEmpty() && counts.get(0) != null && counts.get(0).longValue() >= 0;
 	}
 	
 	public int deleteAssignmentReference(Assignment assignment) {

@@ -136,7 +136,7 @@ public class BigBlueButtonMeetingDAO {
 		}
 		
 		List<Long> otherKeys = query.getResultList();
-		return otherKeys != null && !otherKeys.isEmpty() && otherKeys.get(0) != null && otherKeys.get(0).intValue() > 0;
+		return otherKeys != null && !otherKeys.isEmpty() && otherKeys.get(0) != null && otherKeys.get(0).longValue() > 0;
 	}
 	
 	public List<String> getMeetingsIds(Date from, Date to ) {

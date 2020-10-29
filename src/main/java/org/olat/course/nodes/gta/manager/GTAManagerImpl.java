@@ -700,7 +700,7 @@ public class GTAManagerImpl implements GTAManager {
 				.setParameter("entryKey", entry.getKey())
 				.setParameter("courseNodeIdent", cNode.getIdent())
 				.getResultList();
-		return numOfTasks != null && !numOfTasks.isEmpty() && numOfTasks.get(0) != null && numOfTasks.get(0).intValue() > 0;
+		return numOfTasks != null && !numOfTasks.isEmpty() && numOfTasks.get(0) != null && numOfTasks.get(0).longValue() > 0;
 	}
 
 	@Override
@@ -711,7 +711,7 @@ public class GTAManagerImpl implements GTAManager {
 				.setParameter("courseNodeIdent", cNode.getIdent())
 				.setParameter("taskName", taskName)
 				.getResultList();
-		return numOfTasks != null && !numOfTasks.isEmpty() && numOfTasks.get(0) != null && numOfTasks.get(0).intValue() > 0;
+		return numOfTasks != null && !numOfTasks.isEmpty() && numOfTasks.get(0) != null && numOfTasks.get(0).longValue() > 0;
 	}
 
 	@Override

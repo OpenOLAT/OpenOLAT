@@ -278,7 +278,7 @@ public class TaxonomyCompetenceDAO {
 		}
 		
 		List<Long> keys = query.getResultList();
-		return keys != null && keys.size() > 0 && keys.get(0) != null && keys.get(0).intValue() > 0;
+		return keys != null && keys.size() > 0 && keys.get(0) != null && keys.get(0).longValue() > 0;
 	}
 	
 	public int replace(TaxonomyLevel source, TaxonomyLevel target) {
