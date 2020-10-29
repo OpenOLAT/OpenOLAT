@@ -126,6 +126,6 @@ public class TaxonomyLevelTypeDAO {
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();
-		return levels != null && !levels.isEmpty() && levels.get(0) != null && levels.get(0).intValue() > 0;
+		return levels != null && !levels.isEmpty() && levels.get(0) != null && levels.get(0).longValue() > 0;
 	}
 }

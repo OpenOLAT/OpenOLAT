@@ -213,7 +213,7 @@ public class GroupDAO {
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("role", role)
 			.getSingleResult();
-		return count == null ? false : count.intValue() > 0;
+		return count != null && count.longValue() > 0;
 	}
 	
 	public List<Identity> getMembers(Group group, String role) {

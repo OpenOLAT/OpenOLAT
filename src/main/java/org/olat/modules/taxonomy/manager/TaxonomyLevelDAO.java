@@ -394,7 +394,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return items != null && items.size() > 0 && items.get(0) != null && items.get(0).intValue() > 0;
+		return items != null && items.size() > 0 && items.get(0) != null && items.get(0).longValue() > 0;
 	}
 	
 	public boolean hasCompetenceUsing(TaxonomyLevelRef taxonomyLevel) {
@@ -405,7 +405,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return comptences != null && comptences.size() > 0 && comptences.get(0) != null && comptences.get(0).intValue() > 0;
+		return comptences != null && comptences.size() > 0 && comptences.get(0) != null && comptences.get(0).longValue() > 0;
 	}
 	
 	public boolean hasChildren(TaxonomyLevelRef taxonomyLevel) {
@@ -416,7 +416,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();
-		return children != null && children.size() > 0 && children.get(0) != null && children.get(0).intValue() > 0;
+		return children != null && children.size() > 0 && children.get(0) != null && children.get(0).longValue() > 0;
 	}
 	
 	public Taxonomy loadForUpdate(Taxonomy taxonomy) {

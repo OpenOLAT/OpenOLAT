@@ -74,7 +74,7 @@ public class BigBlueButtonAttendeeDAO {
 			.setMaxResults(1)
 			.getResultList();
 		return attendeeKeys != null && !attendeeKeys.isEmpty()
-				&& attendeeKeys.get(0) != null && attendeeKeys.get(0).intValue() > 0;
+				&& attendeeKeys.get(0) != null && attendeeKeys.get(0).longValue() > 0;
 	}
 	
 	public boolean hasAttendee(String pseudo, BigBlueButtonMeeting meeting) {
@@ -92,7 +92,7 @@ public class BigBlueButtonAttendeeDAO {
 			.setMaxResults(1)
 			.getResultList();
 		return attendeeKeys != null && !attendeeKeys.isEmpty()
-				&& attendeeKeys.get(0) != null && attendeeKeys.get(0).intValue() > 0;
+				&& attendeeKeys.get(0) != null && attendeeKeys.get(0).longValue() > 0;
 	}
 	
 	public BigBlueButtonAttendee getAttendee(IdentityRef identity, BigBlueButtonMeeting meeting) {
