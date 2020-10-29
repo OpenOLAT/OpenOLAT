@@ -3218,6 +3218,7 @@ create table o_ct_location (
     l_building varchar(255),
     l_sector varchar(255),
     l_table varchar(255),
+    l_seat_number boolean default false not null,
     l_qr_id varchar(255) not null,
     l_qr_text varchar(4000),
     l_guests boolean default true not null,
@@ -3245,6 +3246,7 @@ create table o_ct_registration (
     l_private_phone varchar(255),
     l_mobile_phone varchar(255),
     l_office_phone varchar(255),
+    l_seat_number varchar(64),
     fk_location int8 not null,
     primary key (id)
 );
