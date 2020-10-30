@@ -83,6 +83,9 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			if (teC.isFixedFontWidth()) {
 				sb.append(" o_fixed_font_with");
 			}
+			if (teC.isOriginalLineBreaks()) {
+				sb.append(" o_original_line_breaks");
+			}
 			sb.append("' style='");
 			/* we do not add the width, not applied to text areas in oo despite configurable 
 			if (teC.getCols() != -1) {
@@ -105,6 +108,9 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			  .append("\" class='form-control textarea");
 			if (teC.isFixedFontWidth()) {
 				sb.append(" o_fixed_font_with");
+			}
+			if (teC.isOriginalLineBreaks()) {
+				sb.append(" o_original_line_breaks");
 			}
 			sb.append("'");
 			if (teC.getCols() != -1) {
