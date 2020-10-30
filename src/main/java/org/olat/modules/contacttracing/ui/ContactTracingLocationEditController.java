@@ -102,7 +102,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
         roomEl = uifactory.addTextElement("contact.tracing.cols.room", 255, null, editForm);
         sectorEl = uifactory.addTextElement("contact.tracing.cols.sector", 255, null, editForm);
         tableEl = uifactory.addTextElement("contact.tracing.cols.table", 255, null, editForm);
-        seatNumberEnabledEl = uifactory.addCheckboxesHorizontal("seatNumberEnableEl", "contact.tracing.cols.seat.number", editForm, ON_KEYS, TranslatorHelper.translateAll(getTranslator(), QR_TEXT_VALUES));
+        seatNumberEnabledEl = uifactory.addCheckboxesHorizontal("seatNumberEnableEl", "contact.tracing.cols.seat.number", editForm, ON_KEYS, TranslatorHelper.translateAll(getTranslator(), SEAT_NUMBER_VALUES));
 
         qrIdEl = uifactory.addTextElement("contact.tracing.cols.qr.id", 255, null, editForm);
         qrIdEl.setNotEmptyCheck("contact.tracing.required");
@@ -142,6 +142,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
             roomEl.setValue(location.getRoom());
             sectorEl.setValue(location.getSector());
             tableEl.setValue(location.getTable());
+            seatNumberEnabledEl.select(ON_KEYS[0], location.isSeatNumberEnabled());
             guestsAllowedEl.select(ON_KEYS[0], location.isAccessibleByGuests());
             qrIdEl.setValue(location.getQrId());
             qrIdEl.setHelpTextKey("contact.tracing.location.edit.qr.id.message", null);
@@ -328,6 +329,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
             location.setRoom(roomEl.getValue());
             location.setSector(sectorEl.getValue());
             location.setTable(tableEl.getValue());
+            location.setSeatNumberEnabled(seatNumberEnabledEl.isSelected(0));
             location.setQrId(qrIdEl.getValue());
             location.setQrText(StringHelper.containsNonWhitespace(qrTextEl.getValue()) ? qrTextEl.getValue() : null);
             location.setAccessibleByGuests(guestsAllowedEl.isSelected(0));
