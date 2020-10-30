@@ -90,7 +90,6 @@ public class ContactTracingLocationImpl implements ContactTracingLocation {
         return creationDate;
     }
 
-    @Override
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }

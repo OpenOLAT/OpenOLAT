@@ -83,6 +83,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
 
     private DateChooser startDateEl;
     private DateChooser endDateEl;
+    private TextElement seatNumberEl;
 
     private FormItem nickNameEl;
     private FormItem firstNameEl;
@@ -143,22 +144,25 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         updateablePropertyMap = new HashMap<>();
 
         // Time recording
-        FormLayoutContainer timeRecording = FormLayoutContainer.createDefaultFormLayout("timeRecording", getTranslator());
-        timeRecording.setRootForm(mainForm);
-        timeRecording.setFormTitle(translate("contact.tracing"));
-        timeRecording.setFormDescription(translate("contact.tracing.registration.intro", new String[]{
+        FormLayoutContainer generalInformation = FormLayoutContainer.createDefaultFormLayout("timeRecording", getTranslator());
+        generalInformation.setRootForm(mainForm);
+        generalInformation.setFormTitle(translate("contact.tracing"));
+        generalInformation.setFormDescription(translate("contact.tracing.registration.intro", new String[]{
                 String.valueOf(contactTracingModule.getRetentionPeriod()),
-                ContactTracingHelper.getLocationsDetails(getTranslator(), location)}));
-        formLayout.add(timeRecording);
+                ContactTracingHelper.getLocationsDetails(getTranslator(), location, null)}));
+        formLayout.add(generalInformation);
 
         // Start and end time
-        startDateEl = uifactory.addDateChooser("contact.tracing.start.time", null, timeRecording);
+        startDateEl = uifactory.addDateChooser("contact.tracing.start.time", null, generalInformation);
         startDateEl.setDateChooserTimeEnabled(true);
         startDateEl.setUserObject(contactTracingModule.getAttendanceStartTimeState());
 
-        endDateEl = uifactory.addDateChooser("contact.tracing.end.time", null, timeRecording);
+        endDateEl = uifactory.addDateChooser("contact.tracing.end.time", null, generalInformation);
         endDateEl.setDateChooserTimeEnabled(true);
         endDateEl.setUserObject(contactTracingModule.getAttendanceEndTimeState());
+        
+        // Seat number
+        seatNumberEl = uifactory.addTextElement("contact.tracing.cols.seat.number", 64, null, generalInformation);
 
         // User identification
         FormLayoutContainer userIdentification = FormLayoutContainer.createDefaultFormLayout("userIdentification", getTranslator());
@@ -273,6 +277,8 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         checkEnabled(endDateEl);
         checkMandatory(endDateEl);
         checkVisible(endDateEl);
+        
+    	seatNumberEl.setVisible(location.isSeatNumberEnabled());
 
         for (FormItem formItem : userPropertyHandlerFormItemMap.values()) {
             checkEnabled(formItem);
@@ -433,6 +439,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         // Set information
         Date date = endDateEl.getDate() != null? endDateEl.getDate(): DateUtils.setTime(startDateEl.getDate(), 23, 59, 59);
 		registration.setEndDate(date);
+		registration.setSeatNumber(seatNumberEl.getValue());
         registration.setNickName(getValue(nickNameEl));
         registration.setFirstName(getValue(firstNameEl));
         registration.setLastName(getValue(lastNameEl));
@@ -458,7 +465,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
 
     private void sendMail() {
         String subject = ContactTracingHelper.getMailSubject(getTranslator(), location);
-        String body = ContactTracingHelper.getMailBody(getTranslator(), contactTracingModule.getRetentionPeriod(), location, firstNameEl, lastNameEl);
+        String body = ContactTracingHelper.getMailBody(getTranslator(), contactTracingModule.getRetentionPeriod(), location, registration);
         String decoratedBody = mailManager.decorateMailBody(body, getLocale());
         String recipientAddress = ContactTracingHelper.getMailAddress(emailEl, institutionalEmailEl, genericEmailEl);
         Address from;

@@ -22,7 +22,6 @@ package org.olat.modules.contacttracing.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.services.pdf.PdfService;
@@ -65,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ContactTracingLocationListController extends FormBasicController {
 
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 25;
     private static final String QR_CODE_GENERATE_CMD = "qr_code_generate_cmd";
     private static final String EDIT_CMD = "edit_cmd";
     private static final String DELETE_CMD = "delete_cmd";
@@ -165,7 +164,7 @@ public class ContactTracingLocationListController extends FormBasicController {
         tableModel = new ContactTracingLocationTableModel(columnModel, contactTracingManager.getLocationsWithRegistrations(), getLocale());
 
         // Table element
-        tableEl = uifactory.addTableElement(getWindowControl(), "locationsTable", tableModel, getTranslator(), formLayout);
+        tableEl = uifactory.addTableElement(getWindowControl(), "locationsTable", tableModel, PAGE_SIZE, false, getTranslator(), formLayout);
         tableEl.setPageSize(PAGE_SIZE);
         tableEl.setExportEnabled(true);
         tableEl.setSearchEnabled(true);
@@ -402,11 +401,8 @@ public class ContactTracingLocationListController extends FormBasicController {
 				return StepsMainRunController.DONE_UNCHANGED;
 			}
         	
-        	Date creationDate = new Date();
         	for (ContactTracingLocation location : locationList) {
-        		location.setCreationDate(creationDate);
-                location.setLastModified(creationDate);
-				contactTracingManager.saveLocation(location);
+				contactTracingManager.importLocation(location);
 			}
         	
             // Fire event

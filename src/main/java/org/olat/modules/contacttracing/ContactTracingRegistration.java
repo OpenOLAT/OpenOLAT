@@ -98,4 +98,8 @@ public interface ContactTracingRegistration extends Persistable, CreateInfo {
     public String getOfficePhone();
 
     public void setOfficePhone(String officePhone);
+    
+    public String getSeatNumber();
+    
+    public void setSeatNumber(String seatNumber);
 }

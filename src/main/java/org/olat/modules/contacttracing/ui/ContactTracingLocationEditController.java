@@ -55,6 +55,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
     private static final String[] ON_KEYS = new String[]{"on"};
     private static final String[] GUEST_VALUES = new String[]{"contact.tracing.location.allowed"};
     private static final String[] QR_TEXT_VALUES = new String[]{"contact.tracing.location.custom.qr.text"};
+    private static final String[] SEAT_NUMBER_VALUES = new String[]{"contact.tracing.location.seat.number.text"};
 
     private ContactTracingLocation location;
 
@@ -66,6 +67,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
     private TextElement tableEl;
     private TextElement qrIdEl;
     private RichTextElement qrTextEl;
+    private MultipleSelectionElement seatNumberEnabledEl;
     private MultipleSelectionElement customQrTextEl;
     private MultipleSelectionElement guestsAllowedEl;
     private FormLink generatePdfPreviewLink;
@@ -100,6 +102,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
         roomEl = uifactory.addTextElement("contact.tracing.cols.room", 255, null, editForm);
         sectorEl = uifactory.addTextElement("contact.tracing.cols.sector", 255, null, editForm);
         tableEl = uifactory.addTextElement("contact.tracing.cols.table", 255, null, editForm);
+        seatNumberEnabledEl = uifactory.addCheckboxesHorizontal("seatNumberEnableEl", "contact.tracing.cols.seat.number", editForm, ON_KEYS, TranslatorHelper.translateAll(getTranslator(), SEAT_NUMBER_VALUES));
 
         qrIdEl = uifactory.addTextElement("contact.tracing.cols.qr.id", 255, null, editForm);
         qrIdEl.setNotEmptyCheck("contact.tracing.required");
@@ -139,6 +142,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
             roomEl.setValue(location.getRoom());
             sectorEl.setValue(location.getSector());
             tableEl.setValue(location.getTable());
+            seatNumberEnabledEl.select(ON_KEYS[0], location.isSeatNumberEnabled());
             guestsAllowedEl.select(ON_KEYS[0], location.isAccessibleByGuests());
             qrIdEl.setValue(location.getQrId());
             qrIdEl.setHelpTextKey("contact.tracing.location.edit.qr.id.message", null);
@@ -314,6 +318,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
                     roomEl.getValue(),
                     sectorEl.getValue(),
                     tableEl.getValue(),
+                    seatNumberEnabledEl.isSelected(0),
                     qrIdEl.getValue(),
                     StringHelper.containsNonWhitespace(qrTextEl.getValue()) ? qrTextEl.getValue() : null,
                     guestsAllowedEl.isSelected(0));
@@ -324,6 +329,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
             location.setRoom(roomEl.getValue());
             location.setSector(sectorEl.getValue());
             location.setTable(tableEl.getValue());
+            location.setSeatNumberEnabled(seatNumberEnabledEl.isSelected(0));
             location.setQrId(qrIdEl.getValue());
             location.setQrText(StringHelper.containsNonWhitespace(qrTextEl.getValue()) ? qrTextEl.getValue() : null);
             location.setAccessibleByGuests(guestsAllowedEl.isSelected(0));

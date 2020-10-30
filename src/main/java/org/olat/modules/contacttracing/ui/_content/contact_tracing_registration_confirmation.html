@@ -57,6 +57,13 @@
 		    $table
 		    #end
 	    #end
+	    
+	    #if($r.isNotEmpty($seatNumber))
+	    	#if($r.isNotEmpty($building) || $r.isNotEmpty($room) || $r.isNotEmpty($sector) || $r.isNotEmpty($table))
+	    	<br>
+	    	#end
+		    $r.translate("contact.tracing.cols.seat.number") $seatNumber
+	    #end
 	    </p>
 	
 	    #if($r.isTrue($sameDay))

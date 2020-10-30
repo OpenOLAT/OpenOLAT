@@ -24,6 +24,7 @@ import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.assertj.core.api.SoftAssertions;
@@ -41,19 +42,24 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ContactTracingRegistrationDAOTest  extends OlatTestCase {
+public class ContactTracingRegistrationDAOTest extends OlatTestCase {
+	
+	private Random random = new Random();
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private ContactTracingLocationDAO locationDao;
-
 	@Autowired
 	private ContactTracingRegistrationDAO sut;
 	
+	private boolean randomBoolean() {
+		return random.nextInt(6) % 2 == 0;
+	}
+	
 	@Test
 	public void shouldCreateAndPersistRegistration() {
-		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		Date deletionDate = new Date();
 		Date startDate = new Date();
 		ContactTracingRegistration registration = sut.create(location, startDate, deletionDate);
@@ -111,12 +117,12 @@ public class ContactTracingRegistrationDAOTest  extends OlatTestCase {
 
 	@Test
 	public void shouldDeleteByLocations() {
-		ContactTracingLocation location1 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location1 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registration11 = sut.persist(sut.create(location1, new Date(), new Date()));
 		ContactTracingRegistration registration12 = sut.persist(sut.create(location1, new Date(), new Date()));
-		ContactTracingLocation location2 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location2 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registration21 = sut.persist(sut.create(location2, new Date(), new Date()));
-		ContactTracingLocation locationNotDeleted = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationNotDeleted = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registrationNotDeleted = sut.persist(sut.create(locationNotDeleted, new Date(), new Date()));
 		dbInstance.commitAndCloseSession();
 		
@@ -133,12 +139,12 @@ public class ContactTracingRegistrationDAOTest  extends OlatTestCase {
 
 	@Test
 	public void shouldPruneRegistartions() {
-		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registration11 = sut.persist(sut.create(location, new Date(), DateUtils.addHours(new Date(), -1)));
 		ContactTracingRegistration registration12 = sut.persist(sut.create(location, new Date(), DateUtils.addHours(new Date(), -2)));
-		ContactTracingLocation location2 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location2 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registration21 = sut.persist(sut.create(location2, new Date(), DateUtils.addDays(new Date(), -1)));
-		ContactTracingLocation locationPruned = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationPruned = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registrationNotPruned = sut.persist(sut.create(locationPruned, new Date(), DateUtils.addHours(new Date(), 11)));
 		dbInstance.commitAndCloseSession();
 		
@@ -155,10 +161,10 @@ public class ContactTracingRegistrationDAOTest  extends OlatTestCase {
 
 	@Test
 	public void shouldFilterByLocation() {
-		ContactTracingLocation location1 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location1 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registration11 = sut.persist(sut.create(location1, new Date(), new Date()));
 		ContactTracingRegistration registration12 = sut.persist(sut.create(location1, new Date(), new Date()));
-		ContactTracingLocation locationOther = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationOther = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registrationOther = sut.persist(sut.create(locationOther, new Date(), new Date()));
 		dbInstance.commitAndCloseSession();
 		
@@ -173,7 +179,7 @@ public class ContactTracingRegistrationDAOTest  extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByStart() {
-		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registration11 = sut.persist(sut.create(location, DateUtils.addHours(new Date(), 1), new Date()));
 		ContactTracingRegistration registration12 = sut.persist(sut.create(location, DateUtils.addHours(new Date(), 2), new Date()));
 		ContactTracingRegistration registrationOther = sut.persist(sut.create(location, DateUtils.addHours(new Date(), -1), new Date()));
@@ -191,7 +197,7 @@ public class ContactTracingRegistrationDAOTest  extends OlatTestCase {
 
 	@Test
 	public void shouldFilterByEnd() {
-		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registration11 = sut.create(location, new Date(), new Date());
 		registration11.setEndDate(DateUtils.addHours(new Date(), -1));
 		registration11 = sut.persist(registration11);
@@ -215,12 +221,34 @@ public class ContactTracingRegistrationDAOTest  extends OlatTestCase {
 	
 	@Test
 	public void shouldTestIfAnyRegistrationAvailable() {
-		ContactTracingLocation location1 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location1 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		sut.persist(sut.create(location1, new Date(), DateUtils.addHours(new Date(), -1)));
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(sut.anyRegistrationAvailable()).isTrue();
 	}
-
-
+	
+	public void shouldAddSeatNumber() {
+		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), true, random(), random(), false);
+		
+		ContactTracingRegistration registration1 = sut.create(location, new Date(), new Date());
+		String registration1SeatNumber = "24";
+		registration1.setSeatNumber(registration1SeatNumber);
+		registration1 = sut.persist(registration1);
+		
+		ContactTracingRegistration registration2 = sut.create(location, new Date(), new Date());
+		registration2 = sut.persist(registration2);
+		
+		ContactTracingSearchParams searchParams = new ContactTracingSearchParams();
+		searchParams.setLocation(location);
+		List<ContactTracingRegistration> registrations = sut.getRegistrations(searchParams);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(registrations).containsExactlyInAnyOrder(registration1, registration2);
+		softly.assertThat(registration1.getSeatNumber().equals(registration1SeatNumber));
+		softly.assertThat(registration2.getSeatNumber()).isNull();;
+		softly.assertAll();
+		
+		dbInstance.commitAndCloseSession();
+	}
 }

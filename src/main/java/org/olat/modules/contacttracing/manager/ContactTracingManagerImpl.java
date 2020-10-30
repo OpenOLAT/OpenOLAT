@@ -64,16 +64,17 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
      // Contact tracing locations
 
     @Override
-    public ContactTracingLocation createLocation(String reference, String title, String building, String room, String sector, String table, String qrId, String qrText, boolean guestsAllowed) {
+    public ContactTracingLocation createLocation(String reference, String title, String building, String room, String sector, String table, boolean seatNumberEnabled, String qrId, String qrText, boolean guestsAllowed) {
         if (qrIdExists(qrId)) {
             return null;
         } else {
-            return contactTracingLocationDAO.createAndPersistLocation(reference, title, building, room, sector, table, qrId, qrText, guestsAllowed);
+            return contactTracingLocationDAO.createAndPersistLocation(reference, title, building, room, sector, table, seatNumberEnabled, qrId, qrText, guestsAllowed);
         }
     }
     
+    // TODO Alex Test
     @Override
-    public ContactTracingLocation saveLocation(ContactTracingLocation location) {
+    public ContactTracingLocation importLocation(ContactTracingLocation location) {
     	if (location == null || location.getQrId() == null) {
             return null;
         } else if (qrIdExists(location.getQrId())) {
@@ -91,7 +92,17 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
         	
         	return contactTracingLocationDAO.updateLocation(updateLocation);
         } else {
-            return contactTracingLocationDAO.persistLocation(location);
+            return contactTracingLocationDAO.createAndPersistLocation(
+            		location.getReference(), 
+            		location.getTitle(), 
+            		location.getBuilding(), 
+            		location.getRoom(), 
+            		location.getSector(), 
+            		location.getTable(), 
+            		location.isSeatNumberEnabled(),
+            		location.getQrId(), 
+            		location.getQrText(), 
+            		location.isAccessibleByGuests());
         }
     }
 

@@ -19,8 +19,6 @@
  */
 package org.olat.modules.contacttracing;
 
-import java.util.Date;
-
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
@@ -32,12 +30,6 @@ import org.olat.core.id.Persistable;
  */
 public interface ContactTracingLocation extends Persistable, CreateInfo, ModifiedInfo {
 
-	/**
-	 * Set the creation date
-	 * @param creationDate
-	 */
-	public void setCreationDate(Date creationDate);
-	
     /**
      * @return Reference to location of QR code
      */

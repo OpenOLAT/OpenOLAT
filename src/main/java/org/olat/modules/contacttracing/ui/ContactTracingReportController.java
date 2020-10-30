@@ -309,6 +309,7 @@ public class ContactTracingReportController extends FormBasicController {
         List<String> columns = new ArrayList<>();
         columns.add(translate("contact.tracing.start.time"));
         columns.add(translate("contact.tracing.end.time"));
+        columns.add(translate("contact.tracing.cols.seat.number"));
         columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.NICKNAME).i18nFormElementLabelKey()));
         columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.FIRSTNAME).i18nFormElementLabelKey()));
         columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.LASTNAME).i18nFormElementLabelKey()));
@@ -337,6 +338,7 @@ public class ContactTracingReportController extends FormBasicController {
             int i = 0;
             dataRow.addCell(i++, registration.getStartDate(), workbook.getStyles().getDateTimeStyle());
             dataRow.addCell(i++, registration.getEndDate(), workbook.getStyles().getDateTimeStyle());
+            dataRow.addCell(i++, registration.getSeatNumber());
             dataRow.addCell(i++, registration.getNickName());
             dataRow.addCell(i++, registration.getFirstName());
             dataRow.addCell(i++, registration.getLastName());

@@ -463,9 +463,9 @@ public class ContactTracingConfigurationController extends FormBasicController {
         mobilePhoneEl.select(contactTracingModule.getMobilePhoneState().name(), true);
         officePhoneEl.select(contactTracingModule.getOfficePhoneState().name(), true);
 
-        registrationIntroEl.setValue(StringHelper.xssScan(translate(CONTACT_TRACING_REGISTRATION_INTRO_KEY, new String[]{String.valueOf(contactTracingModule.getRetentionPeriod())})));
-        registrationConfirmationMailEl.setValue(StringHelper.xssScan(translate(CONTACT_TRACING_CONFIRMATION_MAIL_KEY, new String[]{String.valueOf(contactTracingModule.getRetentionPeriod())})));
-        qrCodeInstructionsEl.setValue(StringHelper.xssScan(contactTracingModule.getQrCodeInstructions()));
+        registrationIntroEl.setValue(StringHelper.truncateText(StringHelper.xssScan(translate(CONTACT_TRACING_REGISTRATION_INTRO_KEY, new String[]{String.valueOf(contactTracingModule.getRetentionPeriod())}))));
+        registrationConfirmationMailEl.setValue(StringHelper.truncateText(StringHelper.xssScan(translate(CONTACT_TRACING_CONFIRMATION_MAIL_KEY, new String[]{String.valueOf(contactTracingModule.getRetentionPeriod())}))));
+        qrCodeInstructionsEl.setValue(StringHelper.truncateText(StringHelper.xssScan(contactTracingModule.getQrCodeInstructions())));
     }
 
     private void initNumericTextElement(TextElement textEl, String unit) {

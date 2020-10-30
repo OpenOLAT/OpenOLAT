@@ -20,6 +20,7 @@
 package org.olat.modules.contacttracing.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -31,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -43,6 +45,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.ExcelMediaResource;
 import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.model.ContactTracingLocationImpl;
@@ -105,7 +108,7 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 		
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			setFormDescription("contact.tracing.locations.import.instructions");
+			setFormDescription("contact.tracing.locations.import.instructions", new String[] {"on", "off", "on", "off"});
 			
 			// Add template download link
 			templateDownloadLink = uifactory.addFormLink("templateDownloadLink", "contact.tracing.locations.import.template.link", "contact.tracing.locations.import.template.link.label", formLayout, Link.LINK);
@@ -114,10 +117,18 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 			// Add selection of qr id generation
 			qrIdGenerationPreferenceEl = uifactory.addDropdownSingleselect("qrIdGeneration", "contact.tracing.cols.qr.id", formLayout, qrIdGenerationKeys, qrIdGenerationValues);
 			
+			// Add instruction sample
+			String page = Util.getPackageVelocityRoot(getClass()) + "/contact_tracing_import_instructions.html";
+			FormLayoutContainer instructions = FormLayoutContainer.createCustomFormLayout("instructions", getTranslator(), page);
+			instructions.setLabel("contact.tracing.locations.import.instructions.label", null);
+			formLayout.add(instructions);
+			
+			
 			// Add input element for locations
 			excelTextElement = uifactory.addTextAreaElement("importElement", "contact.tracing.locations", -1, 10, -1, true, true, true, null, formLayout);
 			excelTextElement.setNotEmptyCheck("contact.tracing.locations.import.mandatory");
 			excelTextElement.setMandatory(true);
+			excelTextElement.setElementCssClass("o_textarea_line_numbers");
 		}
 		
 		@Override
@@ -170,6 +181,7 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 				}
 				
 				String delimiter = "\t";
+				String[] trueArray = new String[] {"1", "on"}; 
 				// Use comma as fallback delimiter, e.g. for better testing
 				if (line.indexOf(delimiter) == -1) {
 					delimiter = ",";
@@ -190,8 +202,8 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 				location.setRoom(StringHelper.xssScan(columns[3]));
 				location.setSector(StringHelper.xssScan(columns[4]));
 				location.setTable(StringHelper.xssScan(columns[5]));
-				location.setSeatNumberEnabled(columns[6].equals("1") ? true : false);
-				location.setAccessibleByGuests(columns[7].equals("1") ? true : false);
+				location.setSeatNumberEnabled(Arrays.stream(trueArray).anyMatch(columns[6]::contains));
+				location.setAccessibleByGuests(Arrays.stream(trueArray).anyMatch(columns[7]::contains));
 				location.setQrId(StringHelper.xssScan(columns[8]));
 				location.setQrText(StringHelper.xssScan(columns[9]));
 				
@@ -298,52 +310,63 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 		private ExcelMediaResource createExcelTemplate(UserRequest ureq) {
 			String charset = UserManager.getInstance().getUserCharset(ureq.getIdentity());
 			StringBuilder headerRow = new StringBuilder();
-			StringBuilder dataRow = new StringBuilder();
+			StringBuilder dataRow1 = new StringBuilder();
+			StringBuilder dataRow2 = new StringBuilder();
 			
 			// Add columns
 			// Reference
 			headerRow.append(translate("contact.tracing.cols.reference")).append("\t");
-			dataRow.append("FX C1").append("\t");
+			dataRow1.append("fx C1").append("\t");
+			dataRow2.append("fx C2").append("\t");
 			
 			// Title
 			headerRow.append(translate("contact.tracing.cols.title")).append("\t");
-			dataRow.append("Small conference room").append("\t");
+			dataRow1.append("Small conference room").append("\t");
+			dataRow2.append("Big conference room").append("\t");
 			
 			// Building
 			headerRow.append(translate("contact.tracing.cols.building")).append("\t");
-			dataRow.append("Frentix Office").append("\t");
+			dataRow1.append("frentix Office").append("\t");
+			dataRow2.append("ZH Office").append("\t");
 			
 			// Room
 			headerRow.append(translate("contact.tracing.cols.room")).append("\t");
-			dataRow.append("Conf 1").append("\t");
+			dataRow1.append("Conf 1").append("\t");
+			dataRow2.append("Conf 2").append("\t");
 			
 			// Sector
 			headerRow.append(translate("contact.tracing.cols.sector")).append("\t");
-			dataRow.append("A").append("\t");
+			dataRow1.append("A").append("\t");
+			dataRow2.append("B").append("\t");
 			
 			// Table
 			headerRow.append(translate("contact.tracing.cols.table")).append("\t");
-			dataRow.append("1").append("\t");
+			dataRow1.append("4").append("\t");
+			dataRow2.append("10").append("\t");
 			
 			// Seat number
 			headerRow.append(translate("contact.tracing.cols.seat.number")).append("\t");
-			dataRow.append("0").append("\t");
+			dataRow1.append("off").append("\t");
+			dataRow2.append("on").append("\t");
 			
 			// Guests allowed
 			headerRow.append(translate("contact.tracing.cols.guest")).append("\t");
-			dataRow.append("1").append("\t");
+			dataRow1.append("on").append("\t");
+			dataRow2.append("off").append("\t");
 			
 			// QR ID
 			headerRow.append(translate("contact.tracing.cols.qr.id")).append("\t");
-			dataRow.append("").append("\t");
+			dataRow1.append("").append("\t");
+			dataRow2.append("").append("\t");
 			
 			// QR Text
 			headerRow.append(translate("contact.tracing.cols.qr.text"));
-			dataRow.append("<p style='font-size: 18px; font-weight: bold;'>Please disinfect the table after using this room!</p>");
+			dataRow1.append("<p style='font-size: 18px; font-weight: bold;'>Please disinfect the table after using this room!</p>");
+			dataRow2.append("Please disinfect the table after using this room!");
 			
 			// Concatenate header and data row
 			StringBuilder writeToFile = new StringBuilder();
-			writeToFile.append(headerRow).append("\n").append(dataRow);
+			writeToFile.append(headerRow).append("\n").append(dataRow1).append("\n").append(dataRow2);
 			
 			ExcelMediaResource emr = new ExcelMediaResource(writeToFile.toString(), charset);
 			emr.setFilename("ContactTracingImportTemplate");

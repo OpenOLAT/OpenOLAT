@@ -227,6 +227,12 @@ public class OAuthDispatcher implements Dispatcher {
 					if(identity == null) {
 						identity = securityManager.findIdentityByLogin(id);
 					}
+					if(identity == null) {
+						identity = securityManager.findIdentityByNameCaseInsensitive(id);
+					}
+					if(identity == null) {
+						identity = securityManager.findIdentityByNickName(id);
+					}
 					if(identity != null) {
 						securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), id, null, null);
 						registration.setIdentity(identity);

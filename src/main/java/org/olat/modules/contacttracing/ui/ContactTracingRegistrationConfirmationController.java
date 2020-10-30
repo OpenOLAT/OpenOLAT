@@ -91,6 +91,7 @@ public class ContactTracingRegistrationConfirmationController extends FormBasicC
         container.contextPut("room", location.getRoom());
         container.contextPut("sector", location.getSector());
         container.contextPut("table", location.getTable());
+        container.contextPut("seatNumber",registration.getSeatNumber());
 
         // Icon
         container.contextPut("confirmationIcon", "<i class='o_icon o_icon_check'></i>");
