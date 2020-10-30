@@ -310,52 +310,63 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 		private ExcelMediaResource createExcelTemplate(UserRequest ureq) {
 			String charset = UserManager.getInstance().getUserCharset(ureq.getIdentity());
 			StringBuilder headerRow = new StringBuilder();
-			StringBuilder dataRow = new StringBuilder();
+			StringBuilder dataRow1 = new StringBuilder();
+			StringBuilder dataRow2 = new StringBuilder();
 			
 			// Add columns
 			// Reference
 			headerRow.append(translate("contact.tracing.cols.reference")).append("\t");
-			dataRow.append("fx C1").append("\t");
+			dataRow1.append("fx C1").append("\t");
+			dataRow2.append("fx C2").append("\t");
 			
 			// Title
 			headerRow.append(translate("contact.tracing.cols.title")).append("\t");
-			dataRow.append("Small conference room").append("\t");
+			dataRow1.append("Small conference room").append("\t");
+			dataRow2.append("Big conference room").append("\t");
 			
 			// Building
 			headerRow.append(translate("contact.tracing.cols.building")).append("\t");
-			dataRow.append("frentix Office").append("\t");
+			dataRow1.append("frentix Office").append("\t");
+			dataRow2.append("ZH Office").append("\t");
 			
 			// Room
 			headerRow.append(translate("contact.tracing.cols.room")).append("\t");
-			dataRow.append("Conf 1").append("\t");
+			dataRow1.append("Conf 1").append("\t");
+			dataRow2.append("Conf 2").append("\t");
 			
 			// Sector
 			headerRow.append(translate("contact.tracing.cols.sector")).append("\t");
-			dataRow.append("A").append("\t");
+			dataRow1.append("A").append("\t");
+			dataRow2.append("B").append("\t");
 			
 			// Table
 			headerRow.append(translate("contact.tracing.cols.table")).append("\t");
-			dataRow.append("4").append("\t");
+			dataRow1.append("4").append("\t");
+			dataRow2.append("10").append("\t");
 			
 			// Seat number
 			headerRow.append(translate("contact.tracing.cols.seat.number")).append("\t");
-			dataRow.append("off").append("\t");
+			dataRow1.append("off").append("\t");
+			dataRow2.append("on").append("\t");
 			
 			// Guests allowed
 			headerRow.append(translate("contact.tracing.cols.guest")).append("\t");
-			dataRow.append("on").append("\t");
+			dataRow1.append("on").append("\t");
+			dataRow2.append("off").append("\t");
 			
 			// QR ID
 			headerRow.append(translate("contact.tracing.cols.qr.id")).append("\t");
-			dataRow.append("").append("\t");
+			dataRow1.append("").append("\t");
+			dataRow2.append("").append("\t");
 			
 			// QR Text
 			headerRow.append(translate("contact.tracing.cols.qr.text"));
-			dataRow.append("<p style='font-size: 18px; font-weight: bold;'>Please disinfect the table after using this room!</p>");
+			dataRow1.append("<p style='font-size: 18px; font-weight: bold;'>Please disinfect the table after using this room!</p>");
+			dataRow2.append("Please disinfect the table after using this room!");
 			
 			// Concatenate header and data row
 			StringBuilder writeToFile = new StringBuilder();
-			writeToFile.append(headerRow).append("\n").append(dataRow);
+			writeToFile.append(headerRow).append("\n").append(dataRow1).append("\n").append(dataRow2);
 			
 			ExcelMediaResource emr = new ExcelMediaResource(writeToFile.toString(), charset);
 			emr.setFilename("ContactTracingImportTemplate");

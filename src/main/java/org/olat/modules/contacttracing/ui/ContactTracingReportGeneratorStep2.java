@@ -38,6 +38,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.course.editor.overview.YesNoCellRenderer;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ui.ContactTracingLocationTableModel.ContactTracingLocationCols;
@@ -106,6 +107,11 @@ public class ContactTracingReportGeneratorStep2 extends BasicStep {
             DefaultFlexiColumnModel seatNumberColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.seatNumber);
             DefaultFlexiColumnModel guestColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.guest);
             DefaultFlexiColumnModel registrationsColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.registrations);
+            
+            // Yes No Cell Renderer
+            YesNoCellRenderer yesNoRenderer = new YesNoCellRenderer(getTranslator());
+            seatNumberColumn.setCellRenderer(yesNoRenderer);
+            guestColumn.setCellRenderer(yesNoRenderer);
 
             // Columns model
             FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
