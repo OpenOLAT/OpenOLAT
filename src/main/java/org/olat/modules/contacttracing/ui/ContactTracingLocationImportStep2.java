@@ -162,7 +162,7 @@ public class ContactTracingLocationImportStep2 extends BasicStep {
 	        tableModel = new ContactTracingLocationTableModel(columnModel, contextWrapper.getLocations(), getLocale());
 
 	        // Table element
-	        tableEl = uifactory.addTableElement(getWindowControl(), "locationsTable", tableModel, getTranslator(), formLayout);
+	        tableEl = uifactory.addTableElement(getWindowControl(), "locationsTable", tableModel, 25, false, getTranslator(), formLayout);
 	        tableEl.setPageSize(25);
 	        tableEl.setExportEnabled(false);
 	        tableEl.setSearchEnabled(true);
@@ -171,6 +171,9 @@ public class ContactTracingLocationImportStep2 extends BasicStep {
 	        tableEl.setShowAllRowsEnabled(true);
 	        tableEl.setEmptyTableSettings("contact.tracing.location.table.empty", false);
 	        tableEl.setAndLoadPersistedPreferences(ureq, ContactTracingLocationImportStep2.class.getCanonicalName());
+	        
+	        // Legend to table
+	        uifactory.addStaticTextElement("contact.tracing.locations.import.legend.label", translate("contact.tracing.locations.import.legend"), formLayout);
 		}
 		
 		private void loadData() {
@@ -209,7 +212,7 @@ public class ContactTracingLocationImportStep2 extends BasicStep {
 			
 			if (tableModel.getRowCount() != 0 && tableEl.getMultiSelectedIndex().isEmpty()) {
 				allOk = false;
-				showWarning("contact.tracing.import.selection.warning");
+				showWarning("contact.tracing.locations.import.selection.warning");
 			}
 			
 			return allOk;
@@ -231,7 +234,7 @@ public class ContactTracingLocationImportStep2 extends BasicStep {
 
 		@Override
 		protected void doDispose() {
-			// TODO Auto-generated method stub
+			// Nothing to dispose here
 			
 		}
     }

@@ -40,7 +40,7 @@ public interface ContactTracingManager {
      * @param qrId QR ID of the location - must be unique
      * @return A persisted contact tracing location
      */
-    public ContactTracingLocation createLocation(String reference, String title, String building, String room , String sector, String table, String qrId, String qrText, boolean guestsAllowed);
+    public ContactTracingLocation createLocation(String reference, String title, String building, String room , String sector, String table, boolean seatNumberEnabled, String qrId, String qrText, boolean guestsAllowed);
     
     /**
      * Saves a contact tracing location
@@ -48,7 +48,7 @@ public interface ContactTracingManager {
      * @param location
      * @return Persisted contact tracing location
      */
-    public ContactTracingLocation saveLocation(ContactTracingLocation location);
+    public ContactTracingLocation importLocation(ContactTracingLocation location);
 
     /**
      * Save changes done to an existing location

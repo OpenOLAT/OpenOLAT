@@ -183,7 +183,7 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
             case qrId:
                 return location.getQrId();
             case qrText:
-                return location.getQrText();
+                return StringHelper.truncateText(location.getQrText());
             case url:
                 return ContactTracingDispatcher.getRegistrationUrl(location.getQrId());
             case guest:
