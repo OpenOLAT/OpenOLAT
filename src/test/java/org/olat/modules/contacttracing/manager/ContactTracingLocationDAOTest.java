@@ -144,7 +144,7 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadByIdentifier() {
 		String qrId = random();
-		ContactTracingLocation location = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
+		ContactTracingLocation location = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), qrId, random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingLocation reloaded = sut.getLocation(qrId);
@@ -155,7 +155,7 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCheckIfQrIdExists() {
 		String qrId = random();
-		sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
+		sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), qrId, random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
