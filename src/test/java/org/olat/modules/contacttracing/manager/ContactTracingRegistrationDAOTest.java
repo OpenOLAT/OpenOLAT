@@ -227,6 +227,28 @@ public class ContactTracingRegistrationDAOTest extends OlatTestCase {
 		
 		assertThat(sut.anyRegistrationAvailable()).isTrue();
 	}
-
-
+	
+	public void shouldAddSeatNumber() {
+		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), true, random(), random(), false);
+		
+		ContactTracingRegistration registration1 = sut.create(location, new Date(), new Date());
+		String registration1SeatNumber = "24";
+		registration1.setSeatNumber(registration1SeatNumber);
+		registration1 = sut.persist(registration1);
+		
+		ContactTracingRegistration registration2 = sut.create(location, new Date(), new Date());
+		registration2 = sut.persist(registration2);
+		
+		ContactTracingSearchParams searchParams = new ContactTracingSearchParams();
+		searchParams.setLocation(location);
+		List<ContactTracingRegistration> registrations = sut.getRegistrations(searchParams);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(registrations).containsExactlyInAnyOrder(registration1, registration2);
+		softly.assertThat(registration1.getSeatNumber().equals(registration1SeatNumber));
+		softly.assertThat(registration2.getSeatNumber()).isNull();;
+		softly.assertAll();
+		
+		dbInstance.commitAndCloseSession();
+	}
 }
