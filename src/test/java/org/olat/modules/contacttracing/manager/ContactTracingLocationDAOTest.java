@@ -24,6 +24,7 @@ import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.assertj.core.api.SoftAssertions;
@@ -43,13 +44,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ContactTracingLocationDAOTest extends OlatTestCase {
 	
+	private Random random = new Random();
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private ContactTracingRegistrationDAO registrationDao;
-	
 	@Autowired
 	private ContactTracingLocationDAO sut;
+	
+	private boolean randomBoolean() {
+		return random.nextInt(6) % 2 == 0;
+	}
 
 	@Test
 	public void shouldCreateLocation() {
@@ -59,11 +65,12 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 		String room = random();
 		String sector = random();
 		String table = random();
+		boolean seatNumberEnabled = randomBoolean();
 		String qrId = random();
 		String qrText = random();
 		boolean guestsAllowed = true;
 		
-		ContactTracingLocation location = sut.createAndPersistLocation(reference, title, building, room, sector, table, qrId, qrText, guestsAllowed);
+		ContactTracingLocation location = sut.createAndPersistLocation(reference, title, building, room, sector, table, seatNumberEnabled, qrId, qrText, guestsAllowed);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
@@ -84,7 +91,7 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 
 	@Test
 	public void shouldUpdateLocation() {
-		ContactTracingLocation location = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 
 		String reference = random();
@@ -126,7 +133,7 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadByKey() {
-		ContactTracingLocation location = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingLocation reloaded = sut.getLocation(location.getKey());
@@ -137,7 +144,7 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadByIdentifier() {
 		String qrId = random();
-		ContactTracingLocation location = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), qrId, random(), false);
+		ContactTracingLocation location = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingLocation reloaded = sut.getLocation(qrId);
@@ -148,7 +155,7 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCheckIfQrIdExists() {
 		String qrId = random();
-		sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), qrId, random(), false);
+		sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
@@ -159,10 +166,10 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldDeleteLocations() {
-		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
-		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
-		ContactTracingLocation locationDeleted1 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
-		ContactTracingLocation locationDeleted2 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
+		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
+		ContactTracingLocation locationDeleted1 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
+		ContactTracingLocation locationDeleted2 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		sut.deleteLocations(List.of(locationDeleted1, locationDeleted2));
@@ -179,13 +186,13 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByReference() {
 		String reference = random();
-		ContactTracingLocation location1 = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location1 = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location1, new Date(), new Date()));
-		ContactTracingLocation location2 = sut.createAndPersistLocation("fuzzy " + reference, random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location2 = sut.createAndPersistLocation("fuzzy " + reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location2, new Date(), new Date()));
-		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date()));
-		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingSearchParams params = new ContactTracingSearchParams();
@@ -200,13 +207,13 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByTitle() {
 		String title = random();
-		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), title, random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), title, random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location1, new Date(), new Date()));
-		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), "fuzzy " + title, random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), "fuzzy " + title, random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location2, new Date(), new Date()));
-		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date()));
-		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), title, random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), title, random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingSearchParams params = new ContactTracingSearchParams();
@@ -221,13 +228,13 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByBuilding() {
 		String building = random();
-		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), building, random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), building, random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location1, new Date(), new Date()));
-		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), "fuzzy " + building, random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), "fuzzy " + building, random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location2, new Date(), new Date()));
-		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date()));
-		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), building, random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), building, random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingSearchParams params = new ContactTracingSearchParams();
@@ -242,13 +249,13 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByRoom() {
 		String room = random();
-		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), random(), room, random(), random(), random(), random(), false);
+		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), random(), room, random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location1, new Date(), new Date()));
-		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), random(), "fuzzy " + room, random(), random(), random(), random(), false);
+		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), random(), "fuzzy " + room, random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location2, new Date(), new Date()));
-		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date()));
-		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), random(), room, random(), random(), random(), random(), false);
+		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), random(), room, random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingSearchParams params = new ContactTracingSearchParams();
@@ -263,13 +270,13 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterBySector() {
 		String sector = random();
-		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), random(), random(), sector, random(), random(), random(), false);
+		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), random(), random(), sector, random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location1, new Date(), new Date()));
-		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), random(), random(), "fuzzy " + sector, random(), random(), random(), false);
+		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), random(), random(), "fuzzy " + sector, random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location2, new Date(), new Date()));
-		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date()));
-		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), random(), random(), sector, random(), random(), random(), false);
+		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), random(), random(), sector, random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingSearchParams params = new ContactTracingSearchParams();
@@ -284,13 +291,13 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByTable() {
 		String table = random();
-		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), table, random(), random(), false);
+		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), table, randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location1, new Date(), new Date()));
-		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), "fuzzy " + table, random(), random(), false);
+		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), "fuzzy " + table, randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location2, new Date(), new Date()));
-		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date()));
-		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), random(), random(), random(), table, random(), random(), false);
+		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), random(), random(), random(), table, randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingSearchParams params = new ContactTracingSearchParams();
@@ -305,10 +312,10 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByStartDate() {
 		String reference = random();
-		ContactTracingLocation locationEarlier = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationEarlier = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(locationEarlier, DateUtils.addHours(new Date(), -1), new Date()));
 		registrationDao.persist(registrationDao.create(locationEarlier, DateUtils.addHours(new Date(), -2), new Date()));
-		ContactTracingLocation locationLater = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationLater = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(locationLater, DateUtils.addHours(new Date(), 1), new Date()));
 		registrationDao.persist(registrationDao.create(locationLater, DateUtils.addHours(new Date(), 2), new Date()));
 		dbInstance.commitAndCloseSession();
@@ -326,14 +333,14 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByEndDate() {
 		String reference = random();
-		ContactTracingLocation locationEarlier = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationEarlier = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registration11 = registrationDao.create(locationEarlier, new Date(), new Date());
 		registration11.setEndDate(DateUtils.addHours(new Date(), -1));
 		registration11 = registrationDao.persist(registration11);
 		ContactTracingRegistration registration12 = registrationDao.create(locationEarlier, new Date(), new Date());
 		registration12.setEndDate(DateUtils.addHours(new Date(), -2));
 		registration12 = registrationDao.persist(registration12);
-		ContactTracingLocation locationLater = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationLater = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		ContactTracingRegistration registration21 = registrationDao.create(locationLater, new Date(), new Date());
 		registration21.setEndDate(DateUtils.addHours(new Date(), 1));
 		registration21 = registrationDao.persist(registration21);
@@ -352,13 +359,13 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByFullText() {
 		String fulltext = random();
-		ContactTracingLocation location1 = sut.createAndPersistLocation(fulltext, random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location1 = sut.createAndPersistLocation(fulltext, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location1, new Date(), new Date()));
-		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), "fuzzy " + fulltext, random(), random(), random(), random(), random(), false);
+		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), "fuzzy " + fulltext, random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(location2, new Date(), new Date()));
-		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date()));
-		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(fulltext, random(), random(), random(), random(), random(), random(), random(), false);
+		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(fulltext, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingSearchParams params = new ContactTracingSearchParams();

@@ -33,7 +33,7 @@ import org.olat.modules.contacttracing.ContactTracingRegistration;
  */
 public class ContactTracingHelper {
 
-	public static String getLocationsDetails(Translator translator, ContactTracingLocation location) {
+	public static String getLocationsDetails(Translator translator, ContactTracingLocation location, ContactTracingRegistration registration) {
 		StringBuilder locationDetailsBuilder = new StringBuilder();
 
 		locationDetailsBuilder
@@ -83,6 +83,12 @@ public class ContactTracingHelper {
 			locationDetailsBuilder.append("<td>").append(location.getTable()).append("</td>");
 			locationDetailsBuilder.append("</tr>");
 		}
+		if (registration != null && StringHelper.containsNonWhitespace(registration.getSeatNumber())) {
+			locationDetailsBuilder.append("<tr>");
+			locationDetailsBuilder.append("<th scope='row'>").append(translator.translate("contact.tracing.cols.seat.number")).append("</th>");
+			locationDetailsBuilder.append("<td>").append(registration.getSeatNumber()).append("</td>");
+			locationDetailsBuilder.append("</tr>");
+		}
 
 		locationDetailsBuilder.append("</table>").append("</p>");
 
@@ -105,21 +111,21 @@ public class ContactTracingHelper {
 		return subjectBuilder.toString();
 	}
 
-	public static String getMailBody(Translator translator, int retentionPeriod, ContactTracingLocation location, FormItem firstNameEl, FormItem lastNameEl) {
+	public static String getMailBody(Translator translator, int retentionPeriod, ContactTracingLocation location, ContactTracingRegistration registration) {
 		StringBuilder subjectBuilder = new StringBuilder();
 
-		if (firstNameEl instanceof TextElement && lastNameEl instanceof TextElement &&
-				StringHelper.containsNonWhitespace(((TextElement) firstNameEl).getValue()) &&
-				StringHelper.containsNonWhitespace(((TextElement) lastNameEl).getValue())) {
+		if (registration != null &&
+				StringHelper.containsNonWhitespace(registration.getFirstName()) &&
+				StringHelper.containsNonWhitespace(registration.getLastName())) {
 				subjectBuilder.append(translator.translate("contact.tracing.registration.confirmation.mail.greeting.personal", new String[] {
-						((TextElement) firstNameEl).getValue(), ((TextElement) lastNameEl).getValue()}));
+						registration.getFirstName(), registration.getLastName()}));
 		} else {
 			subjectBuilder.append(translator.translate("contact.tracing.registration.confirmation.mail.greeting.anonymous"));
 		}
 
 		subjectBuilder.append("<br>")
 				.append(translator.translate("contact.tracing.registration.confirmation.mail.body", new String[] {String.valueOf(retentionPeriod)}))
-				.append(getLocationsDetails(translator, location)).append("<br>")
+				.append(getLocationsDetails(translator, location, registration)).append("<br>")
 				.append(translator.translate("contact.tracing.registration.confirmation.mail.footer"));
 
 		return subjectBuilder.toString();

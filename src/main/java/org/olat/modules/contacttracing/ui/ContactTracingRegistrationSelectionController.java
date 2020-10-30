@@ -63,7 +63,7 @@ public class ContactTracingRegistrationSelectionController extends FormBasicCont
         setFormTitle("contact.tracing.general.title");
         setFormDescription("contact.tracing.registration.intro", new String[]{
                 String.valueOf(contactTracingModule.getRetentionPeriod()),
-                ContactTracingHelper.getLocationsDetails(getTranslator(), location)});
+                ContactTracingHelper.getLocationsDetails(getTranslator(), location, null)});
 
         FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
         buttonLayout.setRootForm(mainForm);

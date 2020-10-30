@@ -99,24 +99,32 @@ public class ContactTracingReportGeneratorStep2 extends BasicStep {
             // Columns
             DefaultFlexiColumnModel referenceColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.reference);
             DefaultFlexiColumnModel titleColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.title);
-            DefaultFlexiColumnModel roomColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.room);
             DefaultFlexiColumnModel buildingColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.building);
+            DefaultFlexiColumnModel roomColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.room);
+            DefaultFlexiColumnModel sectorColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.sector);
+            DefaultFlexiColumnModel tableColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.table);
+            DefaultFlexiColumnModel seatNumberColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.seatNumber);
+            DefaultFlexiColumnModel guestColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.guest);
             DefaultFlexiColumnModel registrationsColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.registrations);
 
             // Columns model
             FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
             columnModel.addFlexiColumnModel(referenceColumn);
             columnModel.addFlexiColumnModel(titleColumn);
-            columnModel.addFlexiColumnModel(roomColumn);
             columnModel.addFlexiColumnModel(buildingColumn);
+            columnModel.addFlexiColumnModel(roomColumn);
+            columnModel.addFlexiColumnModel(sectorColumn);
+            columnModel.addFlexiColumnModel(tableColumn);
+            columnModel.addFlexiColumnModel(seatNumberColumn);
+            columnModel.addFlexiColumnModel(guestColumn);
             columnModel.addFlexiColumnModel(registrationsColumn);
 
             // Table model
             tableModel = new ContactTracingLocationTableModel(columnModel, contactTracingManager.getLocationsWithRegistrations(contextWrapper.getSearchParams()), getLocale());
 
             // Table element
-            tableEl = uifactory.addTableElement(getWindowControl(), "locationsTable", tableModel, getTranslator(), formLayout);
-            tableEl.setPageSize(20);
+            tableEl = uifactory.addTableElement(getWindowControl(), "locationsTable", tableModel, 25, false, getTranslator(), formLayout);
+            tableEl.setPageSize(25);
             tableEl.setMultiSelect(true);
             tableEl.setSelectAllEnable(true);
             tableEl.setShowAllRowsEnabled(true);

@@ -21,6 +21,7 @@ package org.olat.modules.contacttracing.model;
 
 import java.util.Date;
 import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -95,6 +96,8 @@ public class ContactTracingRegistrationImpl implements ContactTracingRegistratio
     private String mobilePhone;
     @Column(name = "l_office_phone", nullable = true, insertable = true, updatable = true)
     private String officePhone;
+    @Column(name = "l_seat_number", nullable = true, insertable = true, updatable = true)
+    private String seatNumber;
 
     @Override
     public Long getKey() {
@@ -282,6 +285,16 @@ public class ContactTracingRegistrationImpl implements ContactTracingRegistratio
     @Override
     public void setOfficePhone(String officePhone) {
         this.officePhone = officePhone;
+    }
+    
+    @Override
+    public String getSeatNumber() {
+    	return this.seatNumber;
+    }
+    
+    @Override
+    public void setSeatNumber(String seatNumber) {
+    	this.seatNumber = seatNumber;
     }
 
     @Override

@@ -46,7 +46,7 @@ public class ContactTracingLocationDAO {
     @Autowired
     private DB dbInstance;
 
-    public ContactTracingLocation createAndPersistLocation(String reference, String title, String building, String room, String sector, String table, String qrId, String qrText, boolean guestsAllowed) {
+    public ContactTracingLocation createAndPersistLocation(String reference, String title, String building, String room, String sector, String table, boolean seatNumberEnabled, String qrId, String qrText, boolean guestsAllowed) {
         ContactTracingLocationImpl contactTracingLocation = new ContactTracingLocationImpl();
         contactTracingLocation.setCreationDate(new Date());
         contactTracingLocation.setLastModified(contactTracingLocation.getCreationDate());
@@ -56,6 +56,7 @@ public class ContactTracingLocationDAO {
         contactTracingLocation.setRoom(room);
         contactTracingLocation.setSector(sector);
         contactTracingLocation.setTable(table);
+        contactTracingLocation.setSeatNumberEnabled(seatNumberEnabled);
         contactTracingLocation.setQrId(qrId);
         contactTracingLocation.setQrText(qrText);
         contactTracingLocation.setAccessibleByGuests(guestsAllowed);

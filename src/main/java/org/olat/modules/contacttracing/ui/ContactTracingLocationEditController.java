@@ -55,6 +55,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
     private static final String[] ON_KEYS = new String[]{"on"};
     private static final String[] GUEST_VALUES = new String[]{"contact.tracing.location.allowed"};
     private static final String[] QR_TEXT_VALUES = new String[]{"contact.tracing.location.custom.qr.text"};
+    private static final String[] SEAT_NUMBER_VALUES = new String[]{"contact.tracing.location.seat.number.text"};
 
     private ContactTracingLocation location;
 
@@ -66,6 +67,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
     private TextElement tableEl;
     private TextElement qrIdEl;
     private RichTextElement qrTextEl;
+    private MultipleSelectionElement seatNumberEnabledEl;
     private MultipleSelectionElement customQrTextEl;
     private MultipleSelectionElement guestsAllowedEl;
     private FormLink generatePdfPreviewLink;
@@ -100,6 +102,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
         roomEl = uifactory.addTextElement("contact.tracing.cols.room", 255, null, editForm);
         sectorEl = uifactory.addTextElement("contact.tracing.cols.sector", 255, null, editForm);
         tableEl = uifactory.addTextElement("contact.tracing.cols.table", 255, null, editForm);
+        seatNumberEnabledEl = uifactory.addCheckboxesHorizontal("seatNumberEnableEl", "contact.tracing.cols.seat.number", editForm, ON_KEYS, TranslatorHelper.translateAll(getTranslator(), QR_TEXT_VALUES));
 
         qrIdEl = uifactory.addTextElement("contact.tracing.cols.qr.id", 255, null, editForm);
         qrIdEl.setNotEmptyCheck("contact.tracing.required");
@@ -314,6 +317,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
                     roomEl.getValue(),
                     sectorEl.getValue(),
                     tableEl.getValue(),
+                    seatNumberEnabledEl.isSelected(0),
                     qrIdEl.getValue(),
                     StringHelper.containsNonWhitespace(qrTextEl.getValue()) ? qrTextEl.getValue() : null,
                     guestsAllowedEl.isSelected(0));
