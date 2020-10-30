@@ -52,9 +52,11 @@ public abstract class TextAreaElementImpl extends AbstractTextElement implements
 	 *          available space
 	 * @param isAutoHeightEnabled true: element expands to fit content height,
 	 *          (max 100 lines); false: specified rows used
+	 * @param fixedFontWidth
+	 * @param originalLineBreaks Try to maintain the original line breaks and prevent the browser to add its own
 	 */
-	public TextAreaElementImpl(String name, String predefinedValue, int rows, int cols, boolean isAutoHeightEnabled, boolean fixedFontWidth) {
-		this(name, rows, cols, isAutoHeightEnabled, fixedFontWidth);
+	public TextAreaElementImpl(String name, String predefinedValue, int rows, int cols, boolean isAutoHeightEnabled, boolean fixedFontWidth, boolean originalLineBreaks) {
+		this(name, rows, cols, isAutoHeightEnabled, fixedFontWidth, originalLineBreaks);
 		setValue(predefinedValue);
 	}
 
@@ -66,10 +68,12 @@ public abstract class TextAreaElementImpl extends AbstractTextElement implements
 	 *          available space
 	 * @param isAutoHeightEnabled true: element expands to fit content height,
 	 *          (max 100 lines); false: specified rows used
+	 * @param fixedFontWidth
+	 * @param originalLineBreaks Try to maintain the original line breaks and prevent the browser to add its own
 	 */
-	protected TextAreaElementImpl(String name, int rows, int cols, boolean isAutoHeightEnabled, boolean fixedFontWidth) {
+	protected TextAreaElementImpl(String name, int rows, int cols, boolean isAutoHeightEnabled, boolean fixedFontWidth, boolean originalLineBreaks) {
 		super(name);
-		component = new TextAreaElementComponent(this, rows, cols, isAutoHeightEnabled, fixedFontWidth);
+		component = new TextAreaElementComponent(this, rows, cols, isAutoHeightEnabled, fixedFontWidth, originalLineBreaks);
 	}
 
 	/**

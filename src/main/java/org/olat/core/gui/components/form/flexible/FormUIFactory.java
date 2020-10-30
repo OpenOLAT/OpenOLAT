@@ -688,9 +688,31 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */
-	public TextAreaElement addTextAreaElement(String name, final String i18nLabel, final int maxLen, final int rows, final int cols, boolean isAutoHeightEnabled, boolean fixedFontWidth,
-		String initialValue, FormItemContainer formLayout) {
-		TextAreaElement te = new TextAreaElementImpl(name, initialValue, rows, cols, isAutoHeightEnabled, fixedFontWidth) {
+	public TextAreaElement addTextAreaElement(String name, final String i18nLabel, final int maxLen, final int rows, final int cols,
+			boolean isAutoHeightEnabled, boolean fixedFontWidth, String initialValue, FormItemContainer formLayout) {
+		return addTextAreaElement(name, i18nLabel, maxLen, rows, cols, isAutoHeightEnabled, fixedFontWidth, false, initialValue, formLayout);
+	}
+	
+	/**
+	 * Add a multi line text element
+	 * @param name
+	 * @param i18nLabel i18n key for the label or null to set no label at all.
+	 * @param maxLen
+	 * @param rows the number of lines or -1 to use default value
+	 * @param cols the number of characters per line or -1 to use 100% of the
+	 *          available space
+	 * @param isAutoHeightEnabled true: element expands to fit content height,
+	 *          (max 100 lines); false: specified rows used
+	 * @param fixedFontWidth 
+	 * @param originalLineBreaks Maintain the original line breaks and prevent the browser
+	 *          to add its own, scroll horizontally if necessary
+	 * @param initialValue Initial value
+	 * @param formLayout
+	 * @return
+	 */
+	public TextAreaElement addTextAreaElement(String name, final String i18nLabel, final int maxLen, final int rows, final int cols,
+			boolean isAutoHeightEnabled, boolean fixedFontWidth, boolean originalLineBreaks, String initialValue, FormItemContainer formLayout) {
+		TextAreaElement te = new TextAreaElementImpl(name, initialValue, rows, cols, isAutoHeightEnabled, fixedFontWidth, originalLineBreaks) {
 			{
 				setNotLongerThanCheck(maxLen, "text.element.error.notlongerthan");
 				// the text.element.error.notlongerthan uses a variable {0} that

@@ -46,6 +46,7 @@ class TextAreaElementComponent extends FormBaseComponentImpl {
 	private int rows;
 	private boolean autoHeightEnabled = false;
 	private boolean fixedFontWidth = false;
+	private boolean originalLineBreaks = false;
 
 	/**
 	 * Constructor for a text area element
@@ -57,14 +58,17 @@ class TextAreaElementComponent extends FormBaseComponentImpl {
 	 * @param isAutoHeightEnabled true: element expands to fit content height,
 	 *          (max 100 lines); false: specified rows used
 	 * @param fixedFontWidth 
+	 * @param originalLineBreaks Try to maintain the original line breaks and prevent the browser to add its own
 	 */
-	public TextAreaElementComponent(TextAreaElementImpl element, int rows, int cols, boolean isAutoHeightEnabled, boolean fixedFontWidth) {
+	public TextAreaElementComponent(TextAreaElementImpl element, int rows, int cols,
+			boolean isAutoHeightEnabled, boolean fixedFontWidth, boolean originalLineBreaks) {
 		super(element.getName());
 		this.element = element;
 		setCols(cols);
 		setRows(rows);
 		this.autoHeightEnabled = isAutoHeightEnabled;
 		this.fixedFontWidth = fixedFontWidth;
+		this.originalLineBreaks = originalLineBreaks;
 	}
 
 	TextAreaElementImpl getTextAreaElementImpl() {
@@ -102,6 +106,10 @@ class TextAreaElementComponent extends FormBaseComponentImpl {
 
 	public boolean isFixedFontWidth() {
 		return fixedFontWidth;
+	}
+	
+	public boolean isOriginalLineBreaks() {
+		return originalLineBreaks;
 	}
 
 	@Override

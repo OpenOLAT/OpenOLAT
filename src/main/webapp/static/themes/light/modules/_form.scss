@@ -101,6 +101,11 @@
 		font-family: $font-family-monospace;
 	}
 	
+	.form-control.textarea.o_original_line_breaks {
+		white-space: nowrap;
+		overflow-x: auto;
+	}
+	
 	.form-control.textarea_disabled.o_fixed_font_with {
 		white-space: pre-wrap;
 		height: auto;

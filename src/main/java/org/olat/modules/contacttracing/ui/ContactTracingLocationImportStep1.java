@@ -115,7 +115,7 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 			qrIdGenerationPreferenceEl = uifactory.addDropdownSingleselect("qrIdGeneration", "contact.tracing.cols.qr.id", formLayout, qrIdGenerationKeys, qrIdGenerationValues);
 			
 			// Add input element for locations
-			excelTextElement = uifactory.addTextAreaElement("importElement", "contact.tracing.locations", -1, 10, -1, true, true, null, formLayout);
+			excelTextElement = uifactory.addTextAreaElement("importElement", "contact.tracing.locations", -1, 10, -1, true, true, true, null, formLayout);
 			excelTextElement.setNotEmptyCheck("contact.tracing.locations.import.mandatory");
 			excelTextElement.setMandatory(true);
 		}

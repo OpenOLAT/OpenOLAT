@@ -474,7 +474,7 @@ class ImportStep00 extends BasicStep {
 			textContainer.contextPut("passwordRules", passwordRules);
 			textContainer.contextPut("passwordIntro", translate("form.password.validation.rules", new String[] { }));
 			
-			textAreaElement = uifactory.addTextAreaElement("importform", "form.importdata", -1, 10, 100, false, false, "", formLayout);
+			textAreaElement = uifactory.addTextAreaElement("importform", "form.importdata", -1, 10, 100, false, false, true, "", formLayout);
 			textAreaElement.setMandatory(true);
 			textAreaElement.setNotEmptyCheck("error.emptyform");
 		}
