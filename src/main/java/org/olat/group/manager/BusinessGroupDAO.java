@@ -280,6 +280,7 @@ public class BusinessGroupDAO {
 	 * @param group
 	 */
 	public void delete(BusinessGroup group) {
+		group = load(group.getKey());
 		groupDao.removeMemberships(group.getBaseGroup());
 		dbInstance.getCurrentEntityManager().remove(group);
 		dbInstance.getCurrentEntityManager().remove(group.getBaseGroup());

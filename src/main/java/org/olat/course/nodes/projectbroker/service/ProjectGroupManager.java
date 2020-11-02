@@ -34,6 +34,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.resource.OLATResource;
@@ -61,9 +62,10 @@ public interface ProjectGroupManager {
 	 * @param identity
 	 * @param cpm
 	 * @param courseNode
+	 * @param userCourseEnv 
 	 * @return
 	 */
-	public boolean isAccountManager(Identity identity, CoursePropertyManager cpm, CourseNode courseNode);
+	public boolean isAccountManager(Identity identity, CoursePropertyManager cpm, CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
 	/**
 	 * Delete an account-manager group and the key in the CoursePropertyManager. 

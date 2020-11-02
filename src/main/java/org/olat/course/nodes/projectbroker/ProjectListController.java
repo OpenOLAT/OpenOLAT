@@ -154,7 +154,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		contentVC.contextPut("infoProjectBrokerRunMode", infoProjectBrokerRunMode);
 		mainPanel = new SimpleStackedPanel("projectlist_panel");
 		CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		if (projectGroupManager.isAccountManager(ureq.getIdentity(), cpm, courseNode ) || userCourseEnv.isAdmin()) {
+		if (projectGroupManager.isAccountManager(ureq.getIdentity(), cpm, courseNode, userCourseEnv)) {
 			contentVC.contextPut("isAccountManager", true);
 			createNewProjectButton = LinkFactory.createButtonSmall("create.new.project.button", contentVC, this);
 			createNewProjectButton.setIconLeftCSS("o_icon o_icon_add");
@@ -213,6 +213,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == createNewProjectButton) {
 			String projectTitle = translate("new.project.title");
@@ -243,6 +244,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if ( (source == tableController) && (event instanceof TableEvent) ) {
 			handleTableEvent(urequest, (TableEvent)event);
@@ -391,6 +393,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	 *
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		//
 	}

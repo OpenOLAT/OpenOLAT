@@ -51,6 +51,7 @@ import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
@@ -155,20 +156,20 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	}
 
 	@Override
-	public boolean isAccountManager(Identity identity, CoursePropertyManager cpm, CourseNode courseNode) {
+	public boolean isAccountManager(Identity identity, CoursePropertyManager cpm, CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		try {
 			Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
 			if (accountManagerGroupProperty != null) {
 				Long groupKey = accountManagerGroupProperty.getLongValue();
 				BusinessGroup accountManagerGroup = businessGroupService.loadBusinessGroup(groupKey);
 				if (accountManagerGroup != null) {
-					return isAccountManager(identity,  accountManagerGroup);
+					return isAccountManager(identity,  accountManagerGroup, userCourseEnv);
 				}
 			}
 		} catch (AssertException e) {//detected multiple properties
 			log.error("", e);
 			if(tryToRepareAccountManagerProperty(cpm, courseNode)) {
-				return isAccountManager(identity, cpm, courseNode);
+				return isAccountManager(identity, cpm, courseNode, userCourseEnv);
 			}
 		}
 		return false;
@@ -266,6 +267,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	@Override
 	public List<Identity> addCandidates(final List<Identity> addIdentities, final Project project) {
 		List<Identity> addedIdentities = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<List<Identity>>(){
+			@Override
 			public List<Identity> execute() {
 				List<Identity> addedIdentityList = new ArrayList<>();
 				for (Identity identity : addIdentities) {
@@ -285,6 +287,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	@Override
 	public void removeCandidates(final List<Identity> addIdentities, final Project project) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
+			@Override
 			public Boolean execute() {
 				Project reloadedProject = (Project) dbInstance.loadObject(project, true);
 				for (Identity identity : addIdentities) {
@@ -372,12 +375,21 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	// PRIVATE METHODS
 	///////////////////
 
-	private boolean isAccountManager(Identity identity, BusinessGroup businessGroup) {
+	private boolean isAccountManager(Identity identity, BusinessGroup businessGroup, UserCourseEnvironment userCourseEnv) {
+		if (userCourseEnv.isAdmin()) {
+			return true;
+		}
 		if (businessGroup == null) {
 			return false;
 		}
-		return businessGroupService.hasRoles(identity, businessGroup, GroupRoles.participant.name())
-				   || businessGroupService.hasRoles(identity, businessGroup, GroupRoles.coach.name());
+		if (userCourseEnv.isCoach()) {
+			return businessGroupService.hasRoles(identity, businessGroup, GroupRoles.coach.name());
+		}
+		if (userCourseEnv.isParticipant()) {
+			return businessGroupService.hasRoles(identity, businessGroup, GroupRoles.participant.name());
+		}
+		
+		return false;
 	}
 
 	@Override
