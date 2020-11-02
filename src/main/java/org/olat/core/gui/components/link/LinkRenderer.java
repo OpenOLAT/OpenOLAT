@@ -362,7 +362,8 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				boolean hasUrl = StringHelper.containsNonWhitespace(link.getUrl());
 				String href = hasUrl ? link.getUrl() : "javascript:;";
 				sb.append("href=\"").append(href).append("\" onclick=\"")
-				  .append(FormJSHelper.getXHRFnCallFor(flexiLink, false, false, new NameValuePair("oo-opennewwindow-oo", "true")))
+				  .append(FormJSHelper.getXHRFnCallFor(flexiLink, false, false, flexiLink.isNewWindowWithSubmit(),
+						  new NameValuePair("oo-opennewwindow-oo", "true")))
 				  .append("; return false;\"");
 			} else {
 				String dispatchUri = flexiLink.getFormDispatchId();

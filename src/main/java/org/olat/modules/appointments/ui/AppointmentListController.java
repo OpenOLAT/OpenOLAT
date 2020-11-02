@@ -433,7 +433,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 			name = name + "  ";
 			link.setI18nKey(name);
 			link.setIconLeftCSS("o_icon o_icon_lg o_vc_icon");
-			link.setNewWindow(true, true);
+			link.setNewWindow(true, true, false);
 			link.setUserObject(recording);
 			recordingLinks.add(link);
 		}

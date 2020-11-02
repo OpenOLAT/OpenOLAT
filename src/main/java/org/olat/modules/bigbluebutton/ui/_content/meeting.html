@@ -34,10 +34,18 @@
 <div class="o_block_large o_info">$r.translate("meeting.create.intro")</div>
 #end
 
-<div class="o_button_group">
-#if($r.available("meeting.start.button") && $r.visible("meeting.start.button"))
-	$r.render("meeting.start.button")
+#if($r.visible("meeting.acknowledge.recording"))
+<div class="o_warning">
+	<h4>$r.translate("meeting.acknowledge.recording.explain.title")</h4>
+	<p>$r.translate("meeting.acknowledge.recording.explain")</p>
+	$r.render("meeting.acknowledge.recording")
+	#if($f.hasError("meeting.acknowledge.recording"))
+		$r.render("meeting.acknowledge.recording_ERROR")
+	#end
+</div>
 #end
+
+<div class="o_button_group">
 #if($r.available("meeting.join.button") && $r.visible("meeting.join.button"))
 	$r.render("meeting.join.button")
 #end

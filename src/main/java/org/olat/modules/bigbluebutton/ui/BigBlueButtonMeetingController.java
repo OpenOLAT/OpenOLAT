@@ -26,11 +26,11 @@ import java.util.TimerTask;
 
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -40,9 +40,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -50,8 +49,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.winmgr.CommandFactory;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
@@ -91,8 +88,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private final boolean moderatorStartMeeting;
 	private final OLATResourceable meetingOres;
 
-	private Link joinButton;
-	private ExternalLink guestJoinButton;
+	private FormLink joinButton;
+	private FormLink guestJoinButton;
+	private MultipleSelectionElement acknowledgeRecordingEl;
 	private FlexiTableElement tableEl;
 	private BigBlueButtonRecordingTableModel recordingTableModel;
 
@@ -167,19 +165,22 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			}
 		}
 		
-		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);
+		joinButton = uifactory.addFormLink("meeting.join.button", translate("meeting.join.button"), null,
+				formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		joinButton.setElementCssClass("o_sel_bbb_join");
-		joinButton.setTarget("_blank");
+		joinButton.setNewWindow(true, true, true);
 		joinButton.setVisible(!ended && !guest);
 		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
 		
-		String url = Settings.getServerContextPathURI() + "/bigbluebutton/" + meeting.getIdentifier();
-		guestJoinButton = LinkFactory.createExternalLink("meeting.guest.join.button", "meeting.guest.join.button", url);
+		guestJoinButton = uifactory.addFormLink("meeting.guest.join.button", formLayout, Link.BUTTON);
 		guestJoinButton.setElementCssClass("btn btn-lg btn-default o_sel_bbb_guest_join");
-		guestJoinButton.setName(translate("meeting.guest.join.button"));
-		guestJoinButton.setTarget("_blank");
+		guestJoinButton.setNewWindow(true, true, true);
 		guestJoinButton.setVisible(!ended && guest);
-		flc.getFormItemComponent().put("meeting.guest.join.button", guestJoinButton);
+		
+		KeyValues acknowledgeKeyValue = new KeyValues();
+		acknowledgeKeyValue.add(KeyValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
+		acknowledgeRecordingEl = uifactory.addCheckboxesHorizontal("meeting.acknowledge.recording", null, formLayout,
+				acknowledgeKeyValue.keys(), acknowledgeKeyValue.values());
 	}
 	
 	private void initRecordings(FormItemContainer formLayout) {
@@ -303,9 +304,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			if(moderator || administrator) {
 				flc.contextPut("notStarted", Boolean.FALSE);
 				if(!running && moderatorStartMeeting) {
-					joinButton.setCustomDisplayText(translate("meeting.start.button"));
+					joinButton.setI18nKey(translate("meeting.start.button"));
 				} else {
-					joinButton.setCustomDisplayText(translate("meeting.join.button"));
+					joinButton.setI18nKey(translate("meeting.join.button"));
 				}
 			} else if(!running && moderatorStartMeeting) {
 				flc.contextPut("notStarted", Boolean.TRUE);
@@ -327,6 +328,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			guestJoinButton.setElementCssClass("btn btn-lg btn-default o_sel_bbb_guest_join");			
 		}
 		joinButton.setPrimary(joinButton.isEnabled());
+		acknowledgeRecordingEl.setVisible(BigBlueButtonUIHelper.isRecord(meeting)
+				&& ((joinButton.isVisible() && joinButton.isEnabled())
+						|| (guestJoinButton.isEnabled() && guestJoinButton.isVisible())));
 	}
 
 	@Override
@@ -344,14 +348,6 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		}
 	}
 
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if(joinButton == source) {
-			doJoin(ureq);
-		}
-		super.event(ureq, source, event);
-	}
-	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmDeleteRecordingDialog == source) {
@@ -382,8 +378,28 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		if(acknowledgeRecordingEl != null) {
+			acknowledgeRecordingEl.clearError();
+			if(acknowledgeRecordingEl.isVisible()
+					&& acknowledgeRecordingEl.isEnabled() && !acknowledgeRecordingEl.isAtLeastSelected(1)) {
+				acknowledgeRecordingEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(joinButton == source) {
+			doJoin(ureq);
+		} else if(this.guestJoinButton == source) {
+			doGuestJoin(ureq);
+		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				if("delete".equals(se.getCommand())) {
@@ -415,12 +431,28 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		listenTo(publishCalloutCtrl);
 		publishCalloutCtrl.activate();
 	}
+	
+	private void doGuestJoin(UserRequest ureq) {
+		if(!validateFormLogic(ureq)) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			return;
+		}
+		
+		String meetingUrl = Settings.getServerContextPathURI() + "/bigbluebutton/" + meeting.getIdentifier();
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(meetingUrl));
+	}
 
 	private void doJoin(UserRequest ureq) {
+		if(!validateFormLogic(ureq)) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			return;
+		}
+
 		meeting = bigBlueButtonManager.getMeeting(meeting);
 		if(meeting == null) {
 			showWarning("warning.no.meeting");
 			fireEvent(ureq, Event.BACK_EVENT);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			return;
 		}
 		
@@ -436,16 +468,16 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.viewer;
 			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, role, Boolean.TRUE, errors);
 		}
-		redirectTo(ureq, meetingUrl, errors);
+		redirectTo(meetingUrl, errors);
 	}
 	
-	private void redirectTo(UserRequest ureq, String meetingUrl, BigBlueButtonErrors errors) {
+	private void redirectTo(String meetingUrl, BigBlueButtonErrors errors) {
 		if(errors.hasErrors()) {
-			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 		} else if(StringHelper.containsNonWhitespace(meetingUrl)) {
-			MediaResource redirect = new RedirectMediaResource(meetingUrl);
-			ureq.getDispatchResult().setResultingMediaResource(redirect);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(meetingUrl));
 		} else {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			showWarning("warning.no.access");
 		}
 	}

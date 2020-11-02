@@ -25,11 +25,13 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -76,6 +78,7 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 	
 	private TextElement nameEl;
 	private FormLink joinButton;
+	private MultipleSelectionElement acknowledgeRecordingEl;
 
 	private boolean readOnly = false;
 	private boolean moderatorStartMeeting;
@@ -146,6 +149,12 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		joinButton.setElementCssClass("o_sel_bbb_guest_join");
 		joinButton.setVisible(!end);
 		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
+		
+		KeyValues acknowledgeKeyValue = new KeyValues();
+		acknowledgeKeyValue.add(KeyValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
+		acknowledgeRecordingEl = uifactory.addCheckboxesHorizontal("meeting.acknowledge.recording", null, formLayout,
+				acknowledgeKeyValue.keys(), acknowledgeKeyValue.values());
+		acknowledgeRecordingEl.setVisible(!end && BigBlueButtonUIHelper.isRecord(meeting));
 	}
 	
 	private void reloadButtonsAndStatus() {
@@ -182,6 +191,7 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		}
 		// update button style to indicate that the user must now press to start
 		joinButton.setPrimary(joinButton.isEnabled());
+		acknowledgeRecordingEl.setVisible(joinButton.isEnabled() && BigBlueButtonUIHelper.isRecord(meeting));
 
 	}
 	
@@ -274,6 +284,13 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 			allOk &= false;
 		} else if(nameEl.getValue().length() > 64) {
 			nameEl.setErrorKey("form.error.toolong", new String[] { "64" });
+			allOk &= false;
+		}
+		
+		acknowledgeRecordingEl.clearError();
+		if(acknowledgeRecordingEl.isVisible()
+				&& acknowledgeRecordingEl.isEnabled() && !acknowledgeRecordingEl.isAtLeastSelected(1)) {
+			acknowledgeRecordingEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		

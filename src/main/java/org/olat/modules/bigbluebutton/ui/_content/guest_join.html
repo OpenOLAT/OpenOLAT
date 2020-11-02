@@ -31,6 +31,18 @@
 			</div>
 			#end
 		</div>
+		
+		#if($r.visible("meeting.acknowledge.recording"))
+		<div class="o_warning">
+			<h4>$r.translate("meeting.acknowledge.recording.explain.title")</h4>
+			<p>$r.translate("meeting.acknowledge.recording.explain")</p>
+			$r.render("meeting.acknowledge.recording")
+			#if($f.hasError("meeting.acknowledge.recording"))
+				$r.render("meeting.acknowledge.recording_ERROR")
+			#end
+		</div>
+		#end
+		
 		<div class=o_button_group>
 			$r.render("meeting.join.button")
 		</div>
