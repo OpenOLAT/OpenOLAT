@@ -52,6 +52,8 @@ import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.DialogConfigurationPage;
 import org.olat.selenium.page.course.DialogPage;
+import org.olat.selenium.page.course.DocumentConfigurationPage;
+import org.olat.selenium.page.course.DocumentPage;
 import org.olat.selenium.page.course.ForumCEPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.course.LTIConfigurationPage;
@@ -1280,6 +1282,56 @@ public class CourseElementTest extends Deployments {
 			.selectRootDirectory();
 		folder.openDropBox()
 			.assertOnFile(participantImageFile.getName());
+	}
+	
+
+	/**
+	 * An author creates a course with a document course element,
+	 * upload a PDF in the editor, publish the course and go to
+	 * the course element check if the document is there.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithDocument()
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "DocCourse" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//create a course element of type Test with the test that we create above
+		String nodeTitle = "Document";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("document")
+			.nodeTitle(nodeTitle);
+		
+		URL pdfDocumentUrl = JunitTestHelper.class.getResource("file_resources/handInTopic1.pdf");
+		File pdfDocumentFile = new File(pdfDocumentUrl.toURI());
+		
+		DocumentConfigurationPage docConfig = new DocumentConfigurationPage(browser);
+		docConfig
+			.selectConfiguration()
+			.uploadDocument(pdfDocumentFile);
+		
+		courseEditor
+			.autoPublish();
+		
+		DocumentPage doc = new DocumentPage(browser);
+		doc.assertDocumentLink(pdfDocumentFile.getName());
 	}
 
 
