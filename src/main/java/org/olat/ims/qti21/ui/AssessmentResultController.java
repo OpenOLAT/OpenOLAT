@@ -50,6 +50,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -417,7 +418,11 @@ public class AssessmentResultController extends FormBasicController {
 				r.setScore(itemSession.getManualScore());
 				r.setManualScore(itemSession.getManualScore());
 			}
-			r.setComment(itemSession.getCoachComment());
+			String comment = itemSession.getCoachComment();
+			if(comment != null) {
+				comment = Formatter.escWithBR(comment).toString();
+			}
+			r.setComment(comment);
 		}
 		
 		//update max score of section
