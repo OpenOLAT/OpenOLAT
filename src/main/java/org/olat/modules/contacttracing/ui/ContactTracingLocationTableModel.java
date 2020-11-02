@@ -239,7 +239,7 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
 
         @Override
         public boolean sortable() {
-            return true;
+            return this != settings;
         }
 
         @Override

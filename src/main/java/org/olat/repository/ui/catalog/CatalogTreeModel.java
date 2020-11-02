@@ -204,18 +204,17 @@ public class CatalogTreeModel extends GenericTreeModel implements InsertionTreeM
 	}
 
 	/**	 
-	 * Limit accessability to the given node
+	 * Limit accessibility to the given node
 	 * 
 	 * @param node
 	 * @param accessible
 	 */
 	private void changeAccessibility(GenericTreeNode node, boolean accessible) {
-		if (accessible) {
-			if(ownedEntries != null) {
-				node.setAccessible(accessible);
-			}
+		if(node == null) return;
+		
+		if (accessible && ownedEntries != null) {
+			node.setAccessible(accessible);
 		}
-		//
 		for (int cnt = 0; cnt < node.getChildCount(); cnt++) {
 			changeAccessibility((GenericTreeNode) node.getChildAt(cnt), accessible);
 		}

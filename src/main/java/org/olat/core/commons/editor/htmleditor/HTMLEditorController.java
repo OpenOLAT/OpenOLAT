@@ -64,6 +64,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.edusharing.EdusharingFilter;
+import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,6 +139,8 @@ public class HTMLEditorController extends FormBasicController implements Activat
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private EdusharingModule edusharingModule;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 
@@ -228,7 +231,7 @@ public class HTMLEditorController extends FormBasicController implements Activat
 		}
 		// Parse the content of the page
 		this.body = parsePage(fileLeaf);
-		if (edusharingProvider != null) {
+		if (edusharingProvider != null && edusharingModule.isEnabled() && fileLeaf.canMeta() == VFSConstants.YES) {
 			this.edusharingProvider = edusharingProvider;
 			this.edusharingProvider.setSubPath(fileLeaf);
 		}

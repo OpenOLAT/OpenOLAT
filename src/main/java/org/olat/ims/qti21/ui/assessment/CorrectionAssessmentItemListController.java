@@ -58,10 +58,12 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.ims.qti21.AssessmentItemSession;
+import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Module.CorrectionWorkflow;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.ui.assessment.CorrectionAssessmentItemTableModel.ItemCols;
 import org.olat.ims.qti21.ui.assessment.components.AutoCorrectedFlexiCellRenderer;
@@ -459,9 +461,18 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			Identity assessedIdentity = listEntry.getAssessedIdentity();
 			AssessmentTestSession candidateSession = listEntry.getTestSession();
 			TestSessionState testSessionState = qtiService.loadTestSessionState(listEntry.getTestSession());
-			
+
 			List<TestPlanNode> nodes = testSessionState.getTestPlan().getNodes(itemRef.getIdentifier());
 			if(nodes.size() == 1) {
+				if(reloadItemSession == null) {
+					TestPlanNode itemNode = nodes.get(0);
+					String stringuifiedIdentifier = itemNode.getKey().getIdentifier().toString();
+					ParentPartItemRefs parentParts = AssessmentTestHelper
+							.getParentSection(itemNode.getKey(), testSessionState, model.getResolvedAssessmentTest());
+					reloadItemSession = qtiService
+							.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier);
+				}
+				
 				TestPlanNode itemNode = nodes.get(0);
 				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(itemNode.getKey());
 				AssessmentItemCorrection itemCorrection = new AssessmentItemCorrection(assessedIdentity, 

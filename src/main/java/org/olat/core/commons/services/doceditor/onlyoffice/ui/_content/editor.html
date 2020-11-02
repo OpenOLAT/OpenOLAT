@@ -13,10 +13,8 @@
 			var waitForLoad = function() {
 				if (typeof DocsAPI != "undefined") {
 					var apiConfig = $apiConfig;
-					console.log("befor");
 					if ($mobileEnabled) {
 						var mobile = window.matchMedia("$mobileQuery").matches;
-						console.log("mobile " + mobile);
 						if (mobile) {
 							apiConfig.type = 'mobile';
 						}

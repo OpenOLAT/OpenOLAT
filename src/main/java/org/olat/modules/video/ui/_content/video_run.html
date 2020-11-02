@@ -38,7 +38,13 @@
 			stretching: 'responsive',
 			alwaysShowControls: $alwaysShowControls,
 			clickToPlayPause: $clickToPlayPause,
-			
+			hls: {
+		        path: '$r.staticLink("movie/mediaelementjs/hls/hls.min.js")',
+		    },
+		    flv : {
+		        path: '$r.staticLink("movie/mediaelementjs/flv/flv.min.js")',
+		        withCredentials: true
+		    },
 			## Enabled features - should be same order as in player.js. 
 			## Special here is tracks and sourcechooser which are not available in player.js
 			features: ['playpause','current','volume','progress','duration','tracks' #if($useSourceChooser),'sourcechooser'#end ,'speed','fullscreen','markers'],
