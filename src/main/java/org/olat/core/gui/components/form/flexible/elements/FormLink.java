@@ -39,6 +39,8 @@ public interface FormLink extends FormItem {
 	
 	public boolean isNewWindowAfterDispatchUrl();
 	
+	public boolean isNewWindowWithSubmit();
+	
 	/**
 	 * Specify if the link open a new window. This is not equivalent to the
 	 * method setUrl to open the link in a new window with Ctrl + click. The
@@ -54,8 +56,9 @@ public interface FormLink extends FormItem {
 	 * @param openInNewWindow Open a new window
 	 * @param afterDispatchUrl true if the URL will be send after the
 	 * 		link is clicked with a JS command.
+	 * @param withSubmit Form is submitted by the button
 	 */
-	public void setNewWindow(boolean openInNewWindow, boolean afterDispatchUrl);
+	public void setNewWindow(boolean openInNewWindow, boolean afterDispatchUrl, boolean withSubmit);
 	
 	public boolean isPopup();
 	

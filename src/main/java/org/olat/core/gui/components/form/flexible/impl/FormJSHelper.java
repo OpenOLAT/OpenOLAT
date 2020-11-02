@@ -29,12 +29,12 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -135,8 +135,8 @@ public class FormJSHelper {
 	 * @param pairs Additional name value pairs send by the link
 	 * @return
 	 */
-	public static String getXHRFnCallFor(FormItem item, boolean dirtyCheck, boolean pushState, NameValuePair... pairs) {
-		return getXHRFnCallFor(item.getRootForm(), item.getFormDispatchId(), 1, dirtyCheck, pushState, false, pairs);
+	public static String getXHRFnCallFor(FormItem item, boolean dirtyCheck, boolean pushState, boolean submit, NameValuePair... pairs) {
+		return getXHRFnCallFor(item.getRootForm(), item.getFormDispatchId(), 1, dirtyCheck, pushState, submit, pairs);
 	}
 	
 	/**

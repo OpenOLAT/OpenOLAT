@@ -240,6 +240,12 @@ public class BigBlueButtonUIHelper {
 		return followupTime;
 	}
 	
+	public static boolean isRecord(BigBlueButtonMeeting meeting) {
+		return meeting != null && meeting.getTemplate() != null
+				&& meeting.getTemplate().getRecord() != null
+				&& meeting.getTemplate().getRecord().booleanValue();
+	}
+	
 	private static BigBlueButtonManager getBigBlueButtonManager() {
 		return CoreSpringFactory.getImpl(BigBlueButtonManager.class);
 	}

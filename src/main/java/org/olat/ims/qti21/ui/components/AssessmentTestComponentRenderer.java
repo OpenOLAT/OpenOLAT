@@ -641,7 +641,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("<li class='o_assessmentitem'>");
 			sb.append("<button type='button' ");
 			String key = itemNode.getKey().toString();
-			sb.onClickKeyEnter(FormJSHelper.getXHRFnCallFor(component.getQtiItem(), true, true,
+			sb.onClickKeyEnter(FormJSHelper.getXHRFnCallFor(component.getQtiItem(), true, true, false,
 					new NameValuePair("cid", Event.reviewItem.name()), new NameValuePair("item", key)))
 			  .append(" class='btn btn-default' ").append(" disabled", !reviewable).append("><span class='questionTitle'>")
 			  .append(StringHelper.escapeHtml(itemNode.getSectionPartTitle())).append("</span>");
