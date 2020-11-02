@@ -50,6 +50,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.course.CourseFactory;
@@ -430,7 +431,12 @@ public class AssessmentResultController extends FormBasicController {
 				r.setScore(itemSession.getManualScore());
 				r.setManualScore(itemSession.getManualScore());
 			}
-			r.setComment(itemSession.getCoachComment());
+
+			String comment = itemSession.getCoachComment();
+			if(comment != null && !StringHelper.isHtml(comment)) {
+				comment = Formatter.escWithBR(comment).toString();
+			}
+			r.setComment(comment);
 			r.setItemSessionKey(itemSession.getKey());
 			
 			File assessmentDocsDir = qtiService.getAssessmentDocumentsDirectory(candidateSession, itemSession);
