@@ -322,13 +322,16 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 
 	@Override
 	public void delete(AssessmentMode assessmentMode) {
+		if(assessmentMode == null) return;// nothing to do
 		assessmentModeDao.delete(assessmentMode);
 	}
 	
 	@Override
 	public void delete(LectureBlock lectureBlock) {
 		AssessmentMode mode = assessmentModeDao.getAssessmentModeByLecture(lectureBlock);
-		delete(mode);
+		if(mode != null) {
+			delete(mode);
+		}
 	}
 	
 	@Override
