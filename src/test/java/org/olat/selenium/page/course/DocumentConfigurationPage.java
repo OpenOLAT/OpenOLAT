@@ -48,10 +48,38 @@ public class DocumentConfigurationPage {
 	public DocumentConfigurationPage uploadDocument(File file) {
 		By inputBy = By.xpath("//fieldset[contains(@class,'o_sel_document_settings_upload')]//div[contains(@class,'o_fileinput')]/input[@type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
+		return assertOnPreview(file.getName());
+	}
+	
+
+	public DocumentConfigurationPage selectDocument(String name) {
+		By inputBy = By.cssSelector("fieldset.o_sel_document_settings_upload a.o_sel_doc_select_repository_entry");
+		OOGraphene.waitElement(inputBy, browser);
+		browser.findElement(inputBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
-		By previewBy = By.xpath("//div[contains(@class,'o_cnd_document')]/div[contains(@class,'o_cnd_header')]/h4[text()[contains(.,'" + file.getName() + "')]]");
+		//find the row
+		By rowBy = By.xpath("//div[contains(@class,'')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + name + "')]]");
+		OOGraphene.waitElement(rowBy, browser);
+		browser.findElement(rowBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		//confirm
+		By confirmBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
+		OOGraphene.waitElement(confirmBy, browser);
+		browser.findElement(confirmBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		return assertOnPreview(name);
+	}
+	
+	public DocumentConfigurationPage assertOnPreview(String name) {
+		By previewBy = By.xpath("//div[contains(@class,'o_cnd_document')]/div[contains(@class,'o_cnd_header')]/h4[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(previewBy, browser);
 		return this;
 	}
+	
+	
 
 }

@@ -82,6 +82,7 @@ public class DocumentSelectionController extends FormBasicController {
 		formLayout.add(selectCont);
 		selectCourseFolderLink = uifactory.addFormLink("config.select.course.folder", selectCont, "btn btn-default");
 		selectRepositoryEntryLink = uifactory.addFormLink("config.select.repo.entry", selectCont, "btn btn-default");
+		selectRepositoryEntryLink.setElementCssClass("o_sel_doc_select_repository_entry");
 		
 		// Create
 		List<DocTemplate> templates = docTemplates.getTemplates();
