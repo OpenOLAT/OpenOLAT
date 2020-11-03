@@ -67,6 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EditBigBlueButtonMeetingController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] { "on" };
+	private static final String[] yesNoKeys = new String[] { "yes", "no" };
 
 	private FormLink openCalLink;
 	private TextElement nameEl;
@@ -79,6 +80,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private DateChooser endDateEl;
 	private SingleSelection templateEl;
 	private SingleSelection layoutEl;
+	private SingleSelection recordEl;
 	private SingleSelection publishingEl;
 	private MultipleSelectionElement guestEl;
 	private TextElement externalLinkEl;
@@ -209,6 +211,14 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		BigBlueButtonRecordingsPublishingEnum publish = meeting == null ? BigBlueButtonRecordingsPublishingEnum.auto :  meeting.getRecordingsPublishingEnum();
 		publishingEl.select(publish.name(), true);
 		publishingEl.setEnabled(editable);
+		
+		String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
+		recordEl = uifactory.addRadiosVertical("meeting.record", formLayout, yesNoKeys, yesNoValues);
+		if(meeting == null || BigBlueButtonUIHelper.isRecord(meeting)) {
+			recordEl.select(yesNoKeys[0], true);
+		} else {
+			recordEl.select(yesNoKeys[1], true);
+		}
 
 		KeyValues layoutKeyValues = new KeyValues();
 		layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
@@ -247,7 +257,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
-		BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, templates);
+		BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, recordEl, templates);
 		
 		if(mode == Mode.dates) {
 			Date startDate = meeting == null ? new Date() : meeting.getStartDate();
@@ -404,7 +414,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(templateEl == source) {
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, recordEl, templates);
 			boolean webcamAvailable = isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
 		} else if (openCalLink == source) {
@@ -466,7 +476,11 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 		
 		meeting.setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum.valueOf(publishingEl.getSelectedKey()));
-		
+		if(recordEl.isVisible() && recordEl.isOneSelected()) {
+			meeting.setRecord(Boolean.valueOf(yesNoKeys[0].equals(recordEl.getSelectedKey())));
+		} else {
+			meeting.setRecord(null);
+		}
 		meeting = bigBlueButtonManager.updateMeeting(meeting);
 
 		fireEvent(ureq, Event.DONE_EVENT);

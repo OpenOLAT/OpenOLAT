@@ -73,6 +73,7 @@ public class AppointmentEditController extends FormBasicController {
 	
 	private static final String KEY_ON = "on";
 	private static final String[] KEYS_ON = new String[] { KEY_ON };
+	private static final String[] KEYS_YES_NO = new String[] { "yes", "no" };
 	
 	private DateChooser startEl;
 	private DateChooser endEl;
@@ -87,6 +88,7 @@ public class AppointmentEditController extends FormBasicController {
 	private TextElement followupTimeEl;
 	private TextElement welcomeEl;
 	private SingleSelection templateEl;
+	private SingleSelection recordEl;
 	private SingleSelection layoutEl;
 	
 	private BigBlueButtonMeetingsCalendarController calCtr;
@@ -203,6 +205,16 @@ public class AppointmentEditController extends FormBasicController {
 			if(isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates))) {
 				layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
 			}
+			
+			String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
+			recordEl = uifactory.addRadiosVertical("meeting.record", formLayout, KEYS_YES_NO, yesNoValues);
+			recordEl.setEnabled(bbbEditable);
+			if(BigBlueButtonUIHelper.isRecord(meeting)) {
+				recordEl.select(KEYS_YES_NO[0], true);
+			} else {
+				recordEl.select(KEYS_YES_NO[1], true);
+			}
+			
 			layoutEl = uifactory.addDropdownSingleselect("meeting.layout", "meeting.layout", formLayout,
 					layoutKeyValues.keys(), layoutKeyValues.values());
 			layoutEl.setEnabled(bbbEditable);
@@ -230,7 +242,7 @@ public class AppointmentEditController extends FormBasicController {
 			
 			openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 			openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, recordEl, templates);
 			
 			String leadtime = meeting == null ? null : Long.toString(meeting.getLeadTime());
 			leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, leadtime, formLayout);
@@ -292,7 +304,7 @@ public class AppointmentEditController extends FormBasicController {
 		} else if (source == bbbRoomEl) {
 			updateUI();
 		} else if (templateEl == source) {
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, recordEl, templates);
 			boolean webcamAvailable = isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
 		} else if (openCalLink == source) {
@@ -465,6 +477,12 @@ public class AppointmentEditController extends FormBasicController {
 				meeting.setMeetingLayout(layout);
 			} else {
 				meeting.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
+			}
+			
+			if(recordEl.isVisible() && recordEl.isOneSelected()) {
+				meeting.setRecord(Boolean.valueOf(KEYS_YES_NO[0].equals(recordEl.getSelectedKey())));
+			} else {
+				meeting.setRecord(null);
 			}
 		} else {
 			appointment = appointmentsService.removeMeeting(appointment);

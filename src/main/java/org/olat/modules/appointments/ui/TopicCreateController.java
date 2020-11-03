@@ -85,6 +85,7 @@ public class TopicCreateController extends FormBasicController {
 	
 	private static final String KEY_ON = "on";
 	private static final String[] KEYS_ON = new String[] { KEY_ON };
+	private static final String[] KEYS_YES_NO = new String[] { "yes", "no" };
 	private static final String KEY_MULTI_PARTICIPATION = "multi.participation";
 	private static final String KEY_COACH_CONFIRMATION = "coach.confirmation";
 	private static final String CMD_REMOVE = "remove";
@@ -110,6 +111,7 @@ public class TopicCreateController extends FormBasicController {
 	private TextElement followupTimeEl;
 	private TextElement welcomeEl;
 	private SingleSelection templateEl;
+	private SingleSelection recordEl;
 	private SingleSelection layoutEl;
 	
 	private BigBlueButtonMeetingsCalendarController calCtr;
@@ -243,6 +245,10 @@ public class TopicCreateController extends FormBasicController {
 					templatesKV.keys(), templatesKV.values());
 			templateEl.addActionListener(FormEvent.ONCHANGE);
 			templateEl.select(templateEl.getKeys()[0], true);
+			
+			String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
+			recordEl = uifactory.addRadiosVertical("meeting.record", formLayout, KEYS_YES_NO, yesNoValues);
+			recordEl.select(KEYS_YES_NO[0], true);
 		
 			KeyValues layoutKeyValues = new KeyValues();
 			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
@@ -266,7 +272,7 @@ public class TopicCreateController extends FormBasicController {
 			
 			openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 			openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, recordEl, templates);
 			
 			leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, null, formLayout);
 			leadTimeEl.setExampleKey("meeting.leadTime.explain", null);
@@ -347,7 +353,7 @@ public class TopicCreateController extends FormBasicController {
 		} else if (source == bbbRoomEl) {
 			updateUI();
 		} else if (templateEl == source) {
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, recordEl, templates);
 			boolean webcamAvailable = isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
 		} else if (openCalLink == source) {
@@ -688,6 +694,12 @@ public class TopicCreateController extends FormBasicController {
 				meeting.setMeetingLayout(layout);
 			} else {
 				meeting.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
+			}
+			
+			if(recordEl.isVisible() && recordEl.isOneSelected()) {
+				meeting.setRecord(Boolean.valueOf(KEYS_YES_NO[0].equals(recordEl.getSelectedKey())));
+			} else {
+				meeting.setRecord(null);
 			}
 		}
 		return appointment;

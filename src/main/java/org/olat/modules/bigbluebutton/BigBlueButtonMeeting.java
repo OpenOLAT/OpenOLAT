@@ -189,6 +189,10 @@ public interface BigBlueButtonMeeting extends ModifiedInfo, CreateInfo {
 
 	public void setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum publishing);
 	
+	public Boolean getRecord();
+
+	public void setRecord(Boolean record);
+	
 	/**
 	 * The plain text name of the presenter or main organizer. By default the name
 	 * of the creator but can be change to anything. Metadata just for display

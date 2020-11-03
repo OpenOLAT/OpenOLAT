@@ -46,7 +46,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
  */
 public class BigBlueButtonUIHelper {
 	
-	public static void updateTemplateInformations(SingleSelection templateEl, TextElement externalLinkEl, List<BigBlueButtonMeetingTemplate> templates) {
+	public static void updateTemplateInformations(SingleSelection templateEl, TextElement externalLinkEl, SingleSelection recordEl, List<BigBlueButtonMeetingTemplate> templates) {
 		templateEl.setExampleKey(null, null);
 		if(templateEl.isOneSelected()) {
 			BigBlueButtonMeetingTemplate template = getSelectedTemplate(templateEl, templates);
@@ -65,8 +65,20 @@ public class BigBlueButtonUIHelper {
 			if(visible && !StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
 				externalLinkEl.setValue(Long.toString(CodeHelper.getForeverUniqueID()));
 			}
+			
+			if(recordEl != null) {
+				boolean recordVisible = template != null && template.getRecord() != null && template.getRecord().booleanValue();
+				boolean wasVisible = recordEl.isVisible();
+				recordEl.setVisible(recordVisible);
+				if(!recordEl.isOneSelected() || (recordVisible && !wasVisible)) {
+					recordEl.select("yes", true);	
+				}
+			}
 		} else {
 			externalLinkEl.setVisible(false);
+			if(recordEl != null) {
+				recordEl.setVisible(false);
+			}
 		}
 	}
 	
@@ -240,10 +252,19 @@ public class BigBlueButtonUIHelper {
 		return followupTime;
 	}
 	
+	public static boolean isRecord(BigBlueButtonMeetingTemplate template) {
+		return template != null && template.getRecord() != null && template.getRecord().booleanValue();
+	}
+	
 	public static boolean isRecord(BigBlueButtonMeeting meeting) {
-		return meeting != null && meeting.getTemplate() != null
+		boolean record = meeting != null && meeting.getTemplate() != null
 				&& meeting.getTemplate().getRecord() != null
 				&& meeting.getTemplate().getRecord().booleanValue();
+		// override only if template enables recording
+		if(record && meeting.getRecord() != null) {
+			record = meeting.getRecord().booleanValue();
+		}
+		return record;
 	}
 	
 	private static BigBlueButtonManager getBigBlueButtonManager() {
