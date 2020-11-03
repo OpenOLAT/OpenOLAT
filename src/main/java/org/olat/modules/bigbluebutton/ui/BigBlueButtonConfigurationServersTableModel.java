@@ -37,7 +37,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 public class BigBlueButtonConfigurationServersTableModel extends DefaultFlexiTableDataModel<BigBlueButtonServer>
 implements SortableFlexiTableDataModel<BigBlueButtonServer> {
 	
-	private final static ConfigServerCols[] COLS = ConfigServerCols.values();
+	private static final ConfigServerCols[] COLS = ConfigServerCols.values();
 
 	private final Locale locale;
 	

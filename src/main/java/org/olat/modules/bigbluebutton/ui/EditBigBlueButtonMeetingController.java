@@ -53,6 +53,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
+import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -80,6 +81,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private DateChooser endDateEl;
 	private SingleSelection templateEl;
 	private SingleSelection layoutEl;
+	private SingleSelection serverEl;
 	private SingleSelection recordEl;
 	private SingleSelection publishingEl;
 	private MultipleSelectionElement guestEl;
@@ -290,6 +292,17 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			followupTimeEl.setEnabled(editable);
 		}
 		
+		KeyValues serverKeyValues = new KeyValues();
+		serverKeyValues.add(KeyValues.entry("auto", translate("meeting.server.auto")));
+		appendServerList(serverKeyValues);
+		serverEl = uifactory.addDropdownSingleselect("meeting.server", formLayout, serverKeyValues.keys(), serverKeyValues.values());
+		serverEl.setEnabled(editable);
+		if(meeting != null && meeting.getServer() != null && serverKeyValues.containsKey(meeting.getServer().getKey().toString())) {
+			serverEl.select(meeting.getServer().getKey().toString(), true);
+		} else {
+			serverEl.select(serverKeyValues.keys()[0], true);
+		}
+		
 		if(withSaveButtons) {
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			formLayout.add("buttons", buttonLayout);
@@ -297,6 +310,19 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			if(editable) {
 				uifactory.addFormSubmitButton("save", buttonLayout);
 			}
+		}
+	}
+	
+	private void appendServerList(KeyValues serverKeyValues) {
+		List<BigBlueButtonServer> servers = bigBlueButtonManager.getServers();
+		for(BigBlueButtonServer server:servers) {
+			if(!server.isEnabled()) continue;
+			
+			String name = server.getName();
+			if(!StringHelper.containsNonWhitespace(name)) {
+				name = BigBlueButtonUIHelper.getServerNameFromUrl(server.getUrl());
+			}
+			serverKeyValues.add(KeyValues.entry(server.getKey().toString(), name));
 		}
 	}
 	
@@ -359,6 +385,12 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		templateEl.clearError();
 		if(!templateEl.isOneSelected()) {
 			templateEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		serverEl.clearError();
+		if(!serverEl.isOneSelected()) {
+			serverEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		
@@ -481,6 +513,15 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		} else {
 			meeting.setRecord(null);
 		}
+		
+		String selectedServerKey = serverEl.getSelectedKey();
+		if("auto".equals(selectedServerKey)) {
+			meeting.setServer(null);
+		} else if(StringHelper.isLong(selectedServerKey)) {
+			BigBlueButtonServer server = bigBlueButtonManager.getServer(Long.valueOf(selectedServerKey));
+			meeting.setServer(server);
+		}
+
 		meeting = bigBlueButtonManager.updateMeeting(meeting);
 
 		fireEvent(ureq, Event.DONE_EVENT);

@@ -245,4 +245,7 @@ public interface BigBlueButtonMeeting extends ModifiedInfo, CreateInfo {
 	 * @return
 	 */
 	public BigBlueButtonServer getServer();
+	
+	public void setServer(BigBlueButtonServer server);
+	
 }

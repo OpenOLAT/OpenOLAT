@@ -267,6 +267,20 @@ public class BigBlueButtonUIHelper {
 		return record;
 	}
 	
+	public static final String getServerNameFromUrl(String url) {
+		if(url == null) return null;
+		
+		int index = url.indexOf("://");
+		if(index >= 0) {
+			url = url.substring(index + 3);
+		}
+		int slashIndex = url.indexOf('/');
+		if(slashIndex >= 0) {
+			url = url.substring(0, slashIndex);
+		}
+		return url;
+	}
+	
 	private static BigBlueButtonManager getBigBlueButtonManager() {
 		return CoreSpringFactory.getImpl(BigBlueButtonManager.class);
 	}
