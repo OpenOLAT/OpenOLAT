@@ -1247,6 +1247,7 @@ create table o_bbb_meeting (
    b_end_with_followuptime timestamp,
    b_main_presenter varchar(255),
    b_recordings_publishing varchar(16) default 'auto',
+   b_record bool default null,
    fk_creator_id int8,
    fk_entry_id int8 default null,
    a_sub_ident varchar(64) default null,

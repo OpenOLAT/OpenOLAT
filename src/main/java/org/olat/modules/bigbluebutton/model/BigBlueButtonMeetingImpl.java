@@ -117,6 +117,8 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 
 	@Column(name="b_recordings_publishing", nullable=true, insertable=true, updatable=true)
 	private String recordingsPublishing;
+	@Column(name="b_record", nullable=true, insertable=true, updatable=true)
+	private Boolean record;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_creator_id", nullable=true, insertable=true, updatable=false)
@@ -366,6 +368,16 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 		} else {
 			this.recordingsPublishing = recordingsPublishing.name();
 		}
+	}
+
+	@Override
+	public Boolean getRecord() {
+		return record;
+	}
+
+	@Override
+	public void setRecord(Boolean record) {
+		this.record = record;
 	}
 
 	@Override

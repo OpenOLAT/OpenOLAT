@@ -79,6 +79,8 @@ public class UserToolsModule extends AbstractSpringModule {
 	}
 	
 	public String getUserTools(Preferences prefs) {
+		if(prefs == null) return null;
+		
 		String selectedToolV2s = (String)prefs.get(WindowManager.class, "user-tools-v2");
 		if(!StringHelper.containsNonWhitespace(selectedToolV2s)) {
 			String selectedTools = (String)prefs.get(WindowManager.class, "user-tools");

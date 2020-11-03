@@ -915,11 +915,15 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		}
 
 		if(template != null) {
+			boolean record = template.getRecord() != null && template.getRecord().booleanValue();
+			if(record && meeting.getRecord() != null) {
+				record = meeting.getRecord().booleanValue();
+			}
+
 			uriBuilder
 				.optionalParameter("maxParticipants", template.getMaxParticipants().intValue() + 1)
-				.optionalParameter("record", template.getRecord())
+				.optionalParameter("record", record)
 				.optionalParameter("breakoutRoomsEnabled", template.getBreakoutRoomsEnabled())
-				
 				// video options
 				.optionalParameter("muteOnStart", template.getMuteOnStart())
 				.optionalParameter("autoStartRecording", template.getAutoStartRecording())
