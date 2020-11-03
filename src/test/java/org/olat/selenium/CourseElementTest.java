@@ -1333,6 +1333,63 @@ public class CourseElementTest extends Deployments {
 		DocumentPage doc = new DocumentPage(browser);
 		doc.assertDocumentLink(pdfDocumentFile.getName());
 	}
+	
+
+	/**
+	 * An author upload a PDF document as learn resource, after that she creates
+	 * a course with a document course element, selects the PDF in the editor,
+	 * publish the course and go to the course element see if the document is
+	 * there.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithDocumentFromRepository()
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		URL pdfDocumentUrl = JunitTestHelper.class.getResource("file_resources/handInTopic1.pdf");
+		File pdfDocumentFile = new File(pdfDocumentUrl.toURI());
+		
+		//create a course
+		String docTitle = "PDF-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(docTitle, pdfDocumentFile);
+
+		//create a course
+		String courseTitle = "PDFDoc-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//create a course element of type Test with the test that we create above
+		String nodeTitle = "PDF";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("document")
+			.nodeTitle(nodeTitle);
+		
+		DocumentConfigurationPage docConfig = new DocumentConfigurationPage(browser);
+		docConfig
+			.selectConfiguration()
+			.selectDocument(docTitle);
+		
+		courseEditor
+			.autoPublish();
+		
+		DocumentPage doc = new DocumentPage(browser);
+		doc.assertDocumentLink(pdfDocumentFile.getName());
+	}
 
 
 	/**

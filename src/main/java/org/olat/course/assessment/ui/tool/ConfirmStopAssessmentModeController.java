@@ -51,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ConfirmStopAssessmentModeController extends FormBasicController {
 	
-	private final AssessmentMode mode;
+	private AssessmentMode mode;
 	
 	private MultipleSelectionElement withDisadvantagesEl;
 	private MultipleSelectionElement pullRunningSessionsEl;
@@ -76,6 +76,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		List<String> nodeList = mode.getElementAsList();
+		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
 		Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
 		boolean extensionTime = assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode);
 		
