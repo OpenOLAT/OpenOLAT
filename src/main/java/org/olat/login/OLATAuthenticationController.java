@@ -28,6 +28,7 @@ package org.olat.login;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.AuthHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -48,6 +49,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.login.auth.AuthenticationController;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.auth.OLATAuthentcationForm;
 import org.olat.registration.DisclaimerController;
@@ -177,13 +179,18 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			if (loginModule.isLoginBlocked(login)) {
 				// do not proceed when blocked
 				showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
-				getLogger().info(Tracing.M_AUDIT, "Login attempt on already blocked login for " + login + ". IP::" + ureq.getHttpReq().getRemoteAddr());
+				getLogger().info(Tracing.M_AUDIT, "Login attempt on already blocked login for {}. IP::{}", login, ureq.getHttpReq().getRemoteAddr());
 				return;
 			}
-			authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass);
-			if (authenticatedIdentity == null) {
+
+			AuthenticationStatus status = new AuthenticationStatus();
+			authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass, status);
+			if(status.getStatus() == AuthHelper.LOGIN_INACTIVE) {
+				showError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
+				return;
+			} else if (authenticatedIdentity == null) {
 				if (loginModule.registerFailedLoginAttempt(login)) {
-					getLogger().info(Tracing.M_AUDIT, "Too many failed login attempts for " + login + ". Login blocked. IP::" + ureq.getHttpReq().getRemoteAddr());
+					getLogger().info(Tracing.M_AUDIT, "Too many failed login attempts for {}. Login blocked. IP::{}", login, ureq.getHttpReq().getRemoteAddr());
 					showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
 					return;
 				} else {

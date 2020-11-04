@@ -20,8 +20,10 @@
 package org.olat.modules.opencast.manager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -117,6 +119,7 @@ public class OpencastServiceImpl implements OpencastService {
 		opencastEvent.setIdentifier(event.getIdentifier());
 		opencastEvent.setTitle(event.getTitle());
 		opencastEvent.setCreator(event.getCreator());
+		opencastEvent.setPresenters(Arrays.stream(event.getPresenter()).collect(Collectors.toList()));
 		opencastEvent.setStart(event.getStart());
 		// End has to be calculated with the duration, but the duration of the event is always 0.
 		// Only the duration of the metadata would be the right value. We skip that for now.

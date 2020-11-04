@@ -161,7 +161,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		}
 		
 		Identity authenticatedIdentity = authentications.get(0).getIdentity();
-		boolean loginAllowed = securityManager.isIdentityLoginAllowed(authenticatedIdentity);
+		boolean loginAllowed = securityManager.isIdentityLoginAllowed(authenticatedIdentity, authentications.get(0).getProvider());
 		if (!loginAllowed) {
 			return null;
 		}

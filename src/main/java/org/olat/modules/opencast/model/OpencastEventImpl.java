@@ -20,6 +20,7 @@
 package org.olat.modules.opencast.model;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.modules.opencast.OpencastEvent;
 
@@ -34,6 +35,7 @@ public class OpencastEventImpl implements OpencastEvent {
 	private String identifier;
 	private String title;
 	private String creator;
+	private List<String> presenters;
 	private Date start;
 	private Date end;
 
@@ -62,6 +64,15 @@ public class OpencastEventImpl implements OpencastEvent {
 
 	public void setCreator(String creator) {
 		this.creator = creator;
+	}
+
+	@Override
+	public List<String> getPresenters() {
+		return presenters;
+	}
+
+	public void setPresenters(List<String> presenters) {
+		this.presenters = presenters;
 	}
 
 	@Override
