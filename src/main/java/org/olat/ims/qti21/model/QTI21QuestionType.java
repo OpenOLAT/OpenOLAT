@@ -117,6 +117,8 @@ public enum QTI21QuestionType {
 	}
 	
 	public static QTI21QuestionType getTypeRelax(AssessmentItem item) {
+		if(item == null) return QTI21QuestionType.unkown;
+		
 		//we have create this one
 		List<Interaction> interactions = item.getItemBody().findInteractions();
 		
