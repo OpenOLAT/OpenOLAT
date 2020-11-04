@@ -1057,10 +1057,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 	
 	@Override
-	public boolean isIdentityLoginAllowed(Identity identity) {
+	public boolean isIdentityLoginAllowed(Identity identity, String provider) {
 		if(identity == null || identity.getStatus() == null) return false;
 		int status = identity.getStatus().intValue();
-		return status < Identity.STATUS_VISIBLE_LIMIT.intValue();
+		return status < Identity.STATUS_VISIBLE_LIMIT.intValue()
+				|| (ShibbolethDispatcher.PROVIDER_SHIB.equals(provider) && status == Identity.STATUS_INACTIVE.intValue());
 	}
 
 	@Override
@@ -1093,6 +1094,19 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		return reloadedIdentity;
 	}
 	
+	@Override
+	public Identity reactivatedIdentity(Identity identity) {
+		IdentityImpl reloadedIdentity = loadForUpdate(identity);
+		if(reloadedIdentity != null) {
+			reloadedIdentity.setStatus(Identity.STATUS_ACTIV);
+			reloadedIdentity.setInactivationDate(null);
+			reloadedIdentity.setInactivationEmailDate(null);
+			reloadedIdentity.setReactivationDate(null);
+		}
+		dbInstance.commit();
+		return reloadedIdentity;
+	}
+
 	@Override
 	public Identity saveDeletedByData(Identity identity, Identity doer) {
 		IdentityImpl reloadedIdentity = loadForUpdate(identity);

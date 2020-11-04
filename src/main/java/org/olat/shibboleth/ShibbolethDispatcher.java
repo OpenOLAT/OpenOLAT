@@ -174,6 +174,9 @@ public class ShibbolethDispatcher implements Dispatcher{
 			// Successful login
 			Identity authenticationedIdentity = ureq.getIdentity();
 			securityManager.setIdentityLastLogin(authenticationedIdentity);
+			if (Identity.STATUS_INACTIVE.equals(authenticationedIdentity.getStatus())) {
+				authenticationedIdentity = securityManager.reactivatedIdentity(authenticationedIdentity);
+			}
 			shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttriutes);
 			ureq.getUserSession().getIdentityEnvironment().addAttributes(
 					shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttriutes.toMap()));

@@ -287,7 +287,7 @@ public class AuthHelper {
 
 	/**
 	 * ONLY for authentication provider OLAT Authenticate Identity and do the
-	 * necessary work. Returns true if successfull, false otherwise.
+	 * necessary work. Returns true if successful, false otherwise.
 	 *
 	 * @param identity
 	 * @param authProvider
@@ -298,7 +298,7 @@ public class AuthHelper {
 		// continue only if user has login permission.
 		if (identity == null) return LOGIN_FAILED;
 		//test if a user may not logon, since he/she is in the PERMISSION_LOGON
-		if (!BaseSecurityManager.getInstance().isIdentityLoginAllowed(identity)) {
+		if (!BaseSecurityManager.getInstance().isIdentityLoginAllowed(identity, authProvider)) {
 			if(identity != null && Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
 				log.info(Tracing.M_AUDIT, "was denied login because inactive: {}", identity);
 				return LOGIN_INACTIVE;

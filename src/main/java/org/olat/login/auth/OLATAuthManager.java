@@ -195,7 +195,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 				authentication = securityManager.updateCredentials(authentication, password, defAlgorithm);
 			}
 			Identity identity = authentication.getIdentity();
-			if(!securityManager.isIdentityLoginAllowed(identity)) {
+			if(!securityManager.isIdentityLoginAllowed(identity, "OLAT")) {
 				if(status != null) {
 					if(Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
 						status.setStatus(AuthHelper.LOGIN_INACTIVE);

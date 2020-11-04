@@ -829,6 +829,88 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Date inactivationDate = ((IdentityImpl)id).getInactivationEmailDate();
 		Assert.assertNull(inactivationDate);
 	}
+
+	@Test
+	public void reactivatedIdentity() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-login-0");
+		((IdentityImpl)id).setStatus(Identity.STATUS_INACTIVE);
+		((IdentityImpl)id).setInactivationDate(new Date());
+		((IdentityImpl)id).setInactivationEmailDate(new Date());
+		((IdentityImpl)id).setReactivationDate(new Date());
+		id = dbInstance.getCurrentEntityManager().merge(id);
+		dbInstance.commitAndCloseSession();
+		
+		Identity reactivatedIdentity = securityManager.reactivatedIdentity(id);
+		Assert.assertNull(reactivatedIdentity.getInactivationDate());
+		Assert.assertNull(reactivatedIdentity.getReactivationDate());
+		Assert.assertNull(((IdentityImpl)reactivatedIdentity).getInactivationEmailDate());
+		dbInstance.commitAndCloseSession();
+		
+		Identity reloadedIdentity = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertNull(reloadedIdentity.getInactivationDate());
+		Assert.assertNull(reloadedIdentity.getReactivationDate());
+		Assert.assertNull(((IdentityImpl)reloadedIdentity).getInactivationEmailDate());
+	}
+	
+	/**
+	 * Little stress test for two locked queries
+	 */
+	@Test
+	public void reactivatedIdentityAndSetLastLogin() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-login-0");
+		((IdentityImpl)id).setStatus(Identity.STATUS_INACTIVE);
+		((IdentityImpl)id).setInactivationDate(new Date());
+		((IdentityImpl)id).setInactivationEmailDate(new Date());
+		((IdentityImpl)id).setReactivationDate(new Date());
+		id = dbInstance.getCurrentEntityManager().merge(id);
+		dbInstance.commitAndCloseSession();
+		
+		for(int i=0; i<5; i++) {
+			securityManager.setIdentityLastLogin(id);
+			securityManager.reactivatedIdentity(id);
+		}
+		
+		Identity reloadedIdentity = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertNull(reloadedIdentity.getInactivationDate());
+		Assert.assertNull(reloadedIdentity.getReactivationDate());
+		Assert.assertNull(((IdentityImpl)reloadedIdentity).getInactivationEmailDate());
+	}
+	
+	@Test
+	public void isIdentityLoginAllowed() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-login-0");
+		((IdentityImpl)id).setStatus(Identity.STATUS_ACTIV);
+		id = dbInstance.getCurrentEntityManager().merge(id);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertTrue(securityManager.isIdentityLoginAllowed(id, "OLAT"));
+		Assert.assertTrue(securityManager.isIdentityLoginAllowed(id, null));
+		Assert.assertTrue(securityManager.isIdentityLoginAllowed(id, "Shib"));
+	}
+	
+	@Test
+	public void isIdentityLoginAllowedInactive() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-login-1");
+		((IdentityImpl)id).setStatus(Identity.STATUS_INACTIVE);
+		id = dbInstance.getCurrentEntityManager().merge(id);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertFalse(securityManager.isIdentityLoginAllowed(id, "OLAT"));
+		Assert.assertFalse(securityManager.isIdentityLoginAllowed(id, null));
+		Assert.assertTrue(securityManager.isIdentityLoginAllowed(id, "Shib"));
+	}
+	
+	@Test
+	public void isIdentityLoginAllowedLoginDenied() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-login-2");
+		((IdentityImpl)id).setStatus(Identity.STATUS_LOGIN_DENIED);
+		id = dbInstance.getCurrentEntityManager().merge(id);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertFalse(securityManager.isIdentityLoginAllowed(id, "OLAT"));
+		Assert.assertFalse(securityManager.isIdentityLoginAllowed(id, null));
+		Assert.assertFalse(securityManager.isIdentityLoginAllowed(id, "Shib"));
+	}
 	
 	
 	@Test
