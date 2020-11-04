@@ -80,6 +80,7 @@ public class QTI21EditForm extends FormBasicController {
 			"no",
 			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS,
 			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY,
+			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY,
 			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT,
 			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME,
 	};
@@ -382,6 +383,15 @@ public class QTI21EditForm extends FormBasicController {
 				allOk &= false;
 			}
 			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
+			if(passedStartDateElement.getDate() == null) {
+				passedStartDateElement.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(passedEndDateElement.getDate() != null && passedStartDateElement.getDate().after(passedEndDateElement.getDate())) {
+				passedStartDateElement.setErrorKey("error.begin.after.end", null);
+				allOk &= false;
+			}
+			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
 			if(generalStartDateElement.getDate() == null) {
 				generalStartDateElement.setErrorKey("form.legende.mandatory", null);
@@ -462,6 +472,16 @@ public class QTI21EditForm extends FormBasicController {
 			failedEndDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
 			passedStartDateElement.setVisible(false);
 			passedEndDateElement.setVisible(false);
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
+			generalStartDateElement.setVisible(false);
+			generalEndDateElement.setVisible(false);
+			failedStartDateElement.setVisible(false);
+			failedEndDateElement.setVisible(false);
+			passedStartDateElement.setVisible(true);
+			passedStartDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
+			passedEndDateElement.setVisible(true);
+			passedEndDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS:
 			generalStartDateElement.setVisible(false);
@@ -620,6 +640,15 @@ public class QTI21EditForm extends FormBasicController {
 			
 			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE, failedStartDateElement.getDate());
 			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE, failedEndDateElement.getDate());
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+			
+			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE, passedStartDateElement.getDate());
+			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE, passedEndDateElement.getDate());
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
 			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);

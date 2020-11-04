@@ -172,6 +172,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	
 	public static final String CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS = "false";
 	public static final String CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY = "failedOnly";
+	public static final String CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY = "passedOnly";
 	public static final String CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT = "different";
 	public static final String CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME = "true";
 

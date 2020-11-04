@@ -786,6 +786,19 @@ public class IQRunController extends BasicController implements GenericEventList
 				break;
 			}
 			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
+			if (!scoreEval.getPassed()) {
+				isVisible = false;
+				break;
+			}
+			currentDate = new Date();
+			passedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
+			passedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
+			if(scoreEval.getPassed() && passedStartDate != null && currentDate.after(passedStartDate) && (passedEndDate == null || currentDate.before(passedEndDate))) {
+				isVisible = true;
+				break;
+			}
+			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
 			startDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
 			endDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);

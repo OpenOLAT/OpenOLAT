@@ -532,6 +532,32 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				}
 				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
 				break;
+			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
+				if (passed) {
+					startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+					endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+
+					if(startDate != null && currentDate.before(startDate)) {
+						Formatter formatter = Formatter.getInstance(getLocale());
+						String visibilityStartDate = formatter.formatDateAndTime(startDate);
+						String visibilityEndDate = "-";
+						if(endDate != null && currentDate.before(endDate)) {
+							visibilityEndDate = formatter.formatDateAndTime(endDate);
+						} else if(endDate != null && currentDate.after(endDate)) {
+							String visibilityPeriod = translate("showResults.visibility.past");
+							mainVC.contextPut("visibilityPeriod", visibilityPeriod);
+							break;
+						}
+						String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
+						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
+						break;
+					}
+				} else {
+					mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(false));
+					break;
+				}
+				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
+				break;
 			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
 				startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
 				endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
@@ -592,6 +618,12 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			failedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
 			
 			isVisible = isResultVisibleFailedOnly(scoreEval, failedStartDate, failedEndDate);
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
+			passedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+			passedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+			
+			isVisible = isResultVisibleFailedOnly(scoreEval, passedStartDate, passedEndDate);
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
 			startDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
