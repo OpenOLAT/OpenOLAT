@@ -46,6 +46,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.login.LoginModule;
 import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.login.oauth.spi.OpenIDVerifier;
@@ -187,6 +188,9 @@ public class OAuthDispatcher implements Dispatcher {
 				if (loginStatus != AuthHelper.LOGIN_OK) {
 					if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 						DispatcherModule.redirectToServiceNotAvailable(response);
+					} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+						error(ureq, translate(ureq, "login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
+						log.error("OAuth Login ok but the user is inactive: {}", identity);
 					} else {
 						// error, redirect to login screen
 						DispatcherModule.redirectToDefaultDispatcher(response); 
@@ -247,8 +251,15 @@ public class OAuthDispatcher implements Dispatcher {
 	}
 	
 	private String translate(UserRequest ureq, String i18nKey) {
-		Translator trans = Util.createPackageTranslator(OAuthAuthenticationController.class, ureq.getLocale());
+		Translator trans = Util.createPackageTranslator(OAuthAuthenticationController.class, ureq.getLocale(),
+				Util.createPackageTranslator(LoginModule.class, ureq.getLocale()));
 		return trans.translate(i18nKey);
+	}
+	
+	private String translate(UserRequest ureq, String i18nKey, String arg) {
+		Translator trans = Util.createPackageTranslator(OAuthAuthenticationController.class, ureq.getLocale(),
+				Util.createPackageTranslator(LoginModule.class, ureq.getLocale()));
+		return trans.translate(i18nKey, new String[] { arg });
 	}
 	
 	private String translateOauthError(UserRequest ureq, String error) {
@@ -293,7 +304,7 @@ public class OAuthDispatcher implements Dispatcher {
 			request.getSession().setAttribute("oauthRegistration", registration);
 			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + OAuthConstants.OAUTH_REGISTER_PATH + "/");
 		} catch (IOException e) {
-			log.error("Redirect failed: url=" + WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault(),e);
+			log.error("Redirect failed: url={}{}", WebappHelper.getServletContextPath(), DispatcherModule.getPathDefault(),e);
 		}
 	}
 }

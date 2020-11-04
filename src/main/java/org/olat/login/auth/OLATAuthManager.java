@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -145,10 +146,11 @@ public class OLATAuthManager implements AuthenticationSPI {
 	 */
 	@Override
 	public Identity authenticate(String login, String password) {
-		return authenticate(null, login, password);
+		AuthenticationStatus status = new AuthenticationStatus();
+		return authenticate(null, login, password, status);
 	}
 	
-	public Identity authenticate(Identity ident, String login, String password) {
+	public Identity authenticate(Identity ident, String login, String password, AuthenticationStatus status) {
 		Authentication authentication;	
 		if (ident == null) {
 			// check for email instead of username if ident is null
@@ -178,6 +180,9 @@ public class OLATAuthManager implements AuthenticationSPI {
 		}
 
 		if (authentication == null) {
+			if(status != null) {
+				status.setStatus(AuthHelper.LOGIN_FAILED);
+			}
 			log.info(Tracing.M_AUDIT, "Cannot authenticate user {} via provider OLAT", login);
 			return null;
 		}
@@ -191,12 +196,21 @@ public class OLATAuthManager implements AuthenticationSPI {
 			}
 			Identity identity = authentication.getIdentity();
 			if(!securityManager.isIdentityLoginAllowed(identity)) {
+				if(status != null) {
+					if(Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
+						status.setStatus(AuthHelper.LOGIN_INACTIVE);
+					} else {
+						status.setStatus(AuthHelper.LOGIN_DENIED);
+					}
+				}
 				return null;
 			}
 			if(identity != null && webDAVAuthManager != null) {
 				webDAVAuthManager.upgradePassword(identity, login, password);
 			}
 			return identity;
+		} else if(status != null) {
+			status.setStatus(AuthHelper.LOGIN_FAILED);
 		}
 		log.info(Tracing.M_AUDIT, "Cannot authenticate user {} via provider OLAT", login);
 		return null;

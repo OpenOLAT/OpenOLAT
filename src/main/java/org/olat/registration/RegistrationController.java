@@ -598,8 +598,10 @@ public class RegistrationController extends BasicController implements Activatea
 		int loginStatus = AuthHelper.doLogin(persistedIdentity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			//youppi
-		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
+		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+			getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
 		} else {
 			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 		}

@@ -308,19 +308,19 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			// is a Form cancelled, show Login Form
 			content = initLoginContent(ureq, null);
 			dmzPanel.setContent(content);
-		}else if (event instanceof AuthenticationEvent) {
+		} else if (event instanceof AuthenticationEvent) {
 			AuthenticationEvent authEvent = (AuthenticationEvent)event;
 			Identity identity = authEvent.getIdentity();
 			int loginStatus = AuthHelper.doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 			if (loginStatus == AuthHelper.LOGIN_OK) {
 				// it's ok
-			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
+			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 				DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+			} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+				getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
 			} else {
-				// fxdiff: show useradmin-mail for pw-requests
 				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 			}
-		
 		}
 	}
 }

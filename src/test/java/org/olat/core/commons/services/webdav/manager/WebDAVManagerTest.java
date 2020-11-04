@@ -42,6 +42,7 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
@@ -83,7 +84,7 @@ public class WebDAVManagerTest extends OlatTestCase {
 	@Test
 	public void handleBasicAuthentication_denied() {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-2");
-		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword());
+		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword(), new AuthenticationStatus());
 		dbInstance.commitAndCloseSession();// derived WebDAV authentications saved
 
 		// login successful
@@ -104,7 +105,7 @@ public class WebDAVManagerTest extends OlatTestCase {
 	@Test
 	public void handleDigestAuthentication() {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-3");
-		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword());
+		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword(), new AuthenticationStatus());
 		dbInstance.commitAndCloseSession();// derived WebDAV authentications saved
 		
 		HttpServletRequest request = new MockHttpServletRequest();
@@ -129,7 +130,7 @@ public class WebDAVManagerTest extends OlatTestCase {
 	@Test
 	public void handleDigestAuthentication_denied() {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-3");
-		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword());
+		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword(), new AuthenticationStatus());
 		dbInstance.commitAndCloseSession();// derived WebDAV authentications saved
 		
 		HttpServletRequest request = new MockHttpServletRequest("POST", "https://www.openolat.col");
