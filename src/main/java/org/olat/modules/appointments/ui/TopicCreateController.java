@@ -318,6 +318,7 @@ public class TopicCreateController extends FormBasicController {
 			followupTimeEl.setVisible(bbbRoom);
 			welcomeEl.setVisible(bbbRoom);
 			templateEl.setVisible(bbbRoom);
+			recordEl.setVisible(bbbRoom && BigBlueButtonUIHelper.isRecord(getSelectedTemplate(templateEl, templates)));
 			layoutEl.setVisible(bbbRoom);
 		}
 	}
