@@ -62,8 +62,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
-		<org.springframework.version>5.2.9.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.4.22.Final</org.hibernate.version>
+		<org.springframework.version>5.3.0</org.springframework.version>
+		<org.hibernate.version>5.4.23.Final</org.hibernate.version>
 		<apache.cxf>3.4.0</apache.cxf>
 		<apache.pdfbox>2.0.21</apache.pdfbox>
 		<apache.poi>4.1.2</apache.poi>
@@ -425,7 +425,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.35.2</version>
+				    <version>3.36.1</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1698,12 +1698,12 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcmail-jdk15on</artifactId>
-			<version>1.66</version>
+			<version>1.67</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.66</version>
+			<version>1.67</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.github.scribejava</groupId>
