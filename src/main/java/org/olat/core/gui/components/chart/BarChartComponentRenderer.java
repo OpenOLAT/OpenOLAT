@@ -48,6 +48,7 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 		String xLegend = chartCmp.getXLegend();
 
 		Stringuified infos = BarSeries.getDatasAndColors(seriesList, chartCmp.getDefaultBarClass());
+		int xScaleModule = seriesList.isEmpty()? 1: seriesList.get(0).getPoints().size() / 8;
 
 		String sum = getSum(seriesList);
 		String cmpId = chartCmp.getDispatchID();
@@ -72,7 +73,7 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 		  .append("    .domain([0, d3.max(data, function(d) { return ").append(sum).append("; })])\n")
 		  .append("    .range([height, 0]);\n")
 		  .append("\n")
-		  .append("var xAxis = d3.axisBottom(x);\n")
+		  .append("var xAxis = d3.axisBottom(x).tickValues(x.domain().filter(function(d,i){ return !(i%").append(xScaleModule).append(")}));\n")
 		  .append("\n")
 		  .append("var yAxis = d3.axisLeft(y);\n");
 
