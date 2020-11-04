@@ -49,6 +49,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.OLATAuthenticationController;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 
 /**
@@ -140,7 +141,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 			
 			// Authenticate user
 			OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
-			Identity identity = olatAuthenticationSpi.authenticate(null, userName, pwd);
+			Identity identity = olatAuthenticationSpi.authenticate(null, userName, pwd, new AuthenticationStatus());
 			if (identity == null) {
 				log.info("Could not authenticate user '{}', wrong password or user name", userName);
 				// redirect to OLAT loginscreen, add error parameter so that the loginform can mark itself as errorfull

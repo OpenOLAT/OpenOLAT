@@ -941,7 +941,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if(!configRef) {
 			int timeLimit = config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1);
 			if(timeLimit > 0) {
-				maxTimeLimit = new Long(timeLimit);
+				maxTimeLimit = Long.valueOf(timeLimit);
 			}
 		}
 		

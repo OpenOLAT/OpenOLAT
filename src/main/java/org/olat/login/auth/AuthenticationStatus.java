@@ -17,29 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.opencast;
-
-import java.util.Date;
-import java.util.List;
+package org.olat.login.auth;
 
 /**
  * 
- * Initial date: 10 Aug 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 4 nov. 2020<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface OpencastEvent {
+public class AuthenticationStatus {
 	
-	String getIdentifier();
+	private int status;
 	
-	String getTitle();
-	
-	String getCreator();
-	
-	List<String> getPresenters();
+	public AuthenticationStatus() {
+		//
+	}
 
-	Date getStart();
-	
-	Date getEnd();
-	
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
+	}
 }

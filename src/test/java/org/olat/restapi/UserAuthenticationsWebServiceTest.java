@@ -50,6 +50,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.support.vo.AuthenticationVO;
 import org.olat.restapi.support.vo.ErrorVO;
@@ -239,7 +240,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		EntityUtils.consume(response.getEntity());
 		
 		//check
-		Identity reloadedUser = authManager.authenticate(user, user.getName(), "top-secret");
+		Identity reloadedUser = authManager.authenticate(user, user.getName(), "top-secret", new AuthenticationStatus());
 		Assert.assertNotNull(reloadedUser);
 		Assert.assertEquals(user, reloadedUser);
 	}

@@ -88,10 +88,11 @@ public class AuthHelper {
 	/**
 	 * <code>LOGOUT_PAGE</code>
 	 */
-	public  static final int LOGIN_OK = 0;
+	public static final int LOGIN_OK = 0;
 	public static final int LOGIN_FAILED = 1;
 	public static final int LOGIN_DENIED = 2;
-	public  static final int LOGIN_NOTAVAILABLE = 3;
+	public static final int LOGIN_NOTAVAILABLE = 3;
+	public static final int LOGIN_INACTIVE = 4;
 
 	private static final int MAX_SESSION_NO_LIMIT = 0;
 
@@ -121,14 +122,13 @@ public class AuthHelper {
 	public static int doLogin(Identity identity, String authProvider, UserRequest ureq) {
 		int initializeStatus = initializeLogin(identity, authProvider, ureq, false);
 		if (initializeStatus != LOGIN_OK) {
-			return initializeStatus; // login not successfull
+			return initializeStatus; // login not successful
 		}
 
 		// do logging
 		ThreadLocalUserActivityLogger.log(OlatLoggingAction.OLAT_LOGIN, AuthHelper.class, LoggingResourceable.wrap(identity));
 
-		// brasato:: fix it
-		// successfull login, reregister window
+		// successful login, reregister window
 		ChiefController occ;
 		if(ureq.getUserSession().getRoles().isGuestOnly()){
 			occ = createGuestHome(ureq);
@@ -287,7 +287,7 @@ public class AuthHelper {
 
 	/**
 	 * ONLY for authentication provider OLAT Authenticate Identity and do the
-	 * necessary work. Returns true if successfull, false otherwise.
+	 * necessary work. Returns true if successful, false otherwise.
 	 *
 	 * @param identity
 	 * @param authProvider
@@ -298,7 +298,11 @@ public class AuthHelper {
 		// continue only if user has login permission.
 		if (identity == null) return LOGIN_FAILED;
 		//test if a user may not logon, since he/she is in the PERMISSION_LOGON
-		if (!BaseSecurityManager.getInstance().isIdentityLoginAllowed(identity)) {
+		if (!BaseSecurityManager.getInstance().isIdentityLoginAllowed(identity, authProvider)) {
+			if(identity != null && Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
+				log.info(Tracing.M_AUDIT, "was denied login because inactive: {}", identity);
+				return LOGIN_INACTIVE;
+			}
 			log.info(Tracing.M_AUDIT, "was denied login");
 			return LOGIN_DENIED;
 		}

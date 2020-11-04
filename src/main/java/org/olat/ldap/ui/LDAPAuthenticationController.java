@@ -53,6 +53,7 @@ import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationController;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.auth.OLATAuthentcationForm;
 import org.olat.registration.DisclaimerController;
@@ -193,7 +194,12 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			} else {
 				// try fallback to OLAT provider if configured
 				if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
-					authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass);
+					AuthenticationStatus status = new AuthenticationStatus();
+					authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass, status);
+					if(status.getStatus() == AuthHelper.LOGIN_INACTIVE) {
+						showError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
+						return;
+					}
 				}
 				if (authenticatedIdentity != null) {
 					provider = BaseSecurityModule.getDefaultAuthProviderIdentifier();
@@ -207,6 +213,9 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				} else {
 					showError("login.error", ldapError.get());
 				}
+				return;
+			} else if(Identity.STATUS_INACTIVE.equals(authenticatedIdentity.getStatus())) {
+				showError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
 				return;
 			} else {
 				try {
@@ -293,6 +302,8 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				securityManager.setIdentityLastLogin(authIdentity);
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
+			} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+				getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
 			} else {
 				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
 			}

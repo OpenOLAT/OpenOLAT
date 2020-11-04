@@ -62,7 +62,7 @@ public class CorrectionAssessmentItemRow extends CorrectionRow {
 	}
 	
 	public String getItemTitle() {
-		return item.getTitle();
+		return item == null ? "ERROR" : item.getTitle();
 	}
 	
 	public QTI21QuestionType getItemType() {

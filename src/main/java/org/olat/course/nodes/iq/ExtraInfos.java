@@ -34,15 +34,21 @@ public class ExtraInfos implements Comparable<ExtraInfos> {
 	private Integer compensationExtraTimeInSeconds;
 	private final Date start;
 	private final BigDecimal maxScore;
+	private final Double completion;
 	
 	public ExtraInfos() {
-		this(null, null, null);
+		this(null, null, null, null);
 	}
 	
-	public ExtraInfos(Integer extraTimeInSeconds, Date start, BigDecimal maxScore) {
+	public ExtraInfos(Integer extraTimeInSeconds, Date start, Double completion, BigDecimal maxScore) {
 		this.extraTimeInSeconds = extraTimeInSeconds;
 		this.start = start;
 		this.maxScore = maxScore;
+		this.completion = completion;
+	}
+	
+	public Double getCompletion() {
+		return completion;
 	}
 
 	public Integer getExtraTimeInSeconds() {

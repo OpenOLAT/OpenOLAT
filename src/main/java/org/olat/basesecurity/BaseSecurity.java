@@ -476,6 +476,17 @@ public interface BaseSecurity {
 	public Identity saveIdentityStatus(Identity identity, Integer status, Identity doer);
 	
 	/**
+	 * Set the status of the identity to active and reset all inactivation dates:
+	 * inactivation date, inactivation email date and reactivation date. A call
+	 * to @see setIdentityLastLogin is needed to prevent the status to be
+	 * set to inactive again.
+	 * 
+	 * @param identity the identity to reactivate
+	 * @return The merged identity
+	 */
+	public Identity reactivatedIdentity(Identity identity);
+	
+	/**
 	 * Set the date of the last login
 	 * @param identity
 	 * @return
@@ -528,10 +539,11 @@ public interface BaseSecurity {
 	 * Check if identity is allowed to log in. Deleted, login-denied or pending users
 	 * are not allowed to login.
 	 * 
-	 * @param identity
+	 * @param identity The identity
+	 * @param provider  The name of the authentication provider
 	 * @return true if active, inactive...
 	 */
-	public boolean isIdentityLoginAllowed(Identity identity);
+	public boolean isIdentityLoginAllowed(Identity identity, String provider);
 	
 
 	/**
