@@ -273,6 +273,12 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					row.setDetails(infos);
 				}
 				row.setMaxScore(infos.getMaxScore());
+				if(infos.getCompletion() != null) {
+					row.getCurrentCompletion().setCompletion(infos.getCompletion());
+				}
+				if(infos.getStart() != null) {
+					row.getCurrentRunStart().setDate(infos.getStart());
+				}
 			}
 		}
 		
@@ -299,12 +305,17 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			Long identityKey = session.getIdentity().getKey();
 			if(currentIdentityKey == null || !currentIdentityKey.equals(identityKey)) {
 				Date start = null;
+				Double completion = null;
 				Integer extraTimeInSeconds = null;
-				if(session.getFinishTime() == null && session.getExtraTime() != null) {
-					extraTimeInSeconds = session.getExtraTime();
+				if(session.getFinishTime() == null && session.getTerminationTime() == null) {
 					start = session.getCreationDate();
+					extraTimeInSeconds = session.getExtraTime();
+					if(session.getNumOfQuestions() != null && session.getNumOfAnsweredQuestions() != null) {
+						completion = session.getNumOfAnsweredQuestions().doubleValue() / session.getNumOfQuestions().doubleValue();
+					}
 				}
-				ExtraInfos infos = new ExtraInfos(extraTimeInSeconds, start, session.getMaxScore());
+				
+				ExtraInfos infos = new ExtraInfos(extraTimeInSeconds, start, completion, session.getMaxScore());
 				identityToExtraTime.put(identityKey, infos);
 				currentIdentityKey = identityKey;
 			}
