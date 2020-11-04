@@ -20,6 +20,7 @@
 package org.olat.modules.opencast;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 
@@ -34,6 +35,8 @@ public interface OpencastEvent {
 	String getTitle();
 	
 	String getCreator();
+	
+	List<String> getPresenters();
 
 	Date getStart();
 	

@@ -35,6 +35,7 @@ public class Event {
 	private String identifier;
 	private String title;
 	private String creator;
+	private String[] presenter;
 	private Date start;
 	private String duration;
 	
@@ -60,6 +61,14 @@ public class Event {
 
 	public void setCreator(String creator) {
 		this.creator = creator;
+	}
+
+	public String[] getPresenter() {
+		return presenter;
+	}
+
+	public void setPresenter(String[] presenter) {
+		this.presenter = presenter;
 	}
 
 	public Date getStart() {

@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.opencast.ui;
 
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -79,7 +81,8 @@ public class OpencastRunController extends BasicController {
 				mainVC.contextPut("title", event.getTitle());
 				String start = Formatter.getInstance(getLocale()).formatDateAndTime(event.getStart());
 				mainVC.contextPut("start", start);
-				mainVC.contextPut("creator", event.getCreator());
+				String presenter = event.getPresenters().stream().collect(Collectors.joining(", "));
+				mainVC.contextPut("presenter", presenter);
 				url = opencastService.getLtiEventMapperUrl(ureq.getUserSession(), event.getIdentifier(), roles);
 			} else {
 				mainVC.contextPut("error", translate("error.event.not.found", new String[] {title}));
