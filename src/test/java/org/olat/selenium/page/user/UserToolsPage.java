@@ -70,7 +70,7 @@ public class UserToolsPage {
 	 */
 	public UserToolsPage assertOnNotifications() {
 		By notificationPanelBy = By.cssSelector("div.o_notifications_news_wrapper");
-		OOGraphene.waitElement(notificationPanelBy, 5, browser);
+		OOGraphene.waitElement(notificationPanelBy, browser);
 		WebElement notificationPanel = browser.findElement(notificationPanelBy);
 		Assert.assertTrue(notificationPanel.isDisplayed());
 		return this;
@@ -81,8 +81,8 @@ public class UserToolsPage {
 	 * @return
 	 */
 	public UserToolsPage assertOnCalendar() {
-		By calendarBy = By.cssSelector("div.o_cal div.fc-view-container");
-		OOGraphene.waitElement(calendarBy, 5, browser);
+		By calendarBy = By.cssSelector("div.o_cal div.fc-view-harness.fc-view-harness-active");
+		OOGraphene.waitElement(calendarBy, browser);
 		WebElement calendarEl = browser.findElement(calendarBy);
 		Assert.assertTrue(calendarEl.isDisplayed());
 		return this;
