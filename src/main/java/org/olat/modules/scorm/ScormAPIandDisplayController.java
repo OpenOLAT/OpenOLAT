@@ -303,10 +303,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		}
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
 			switchToNextOrPreviousSco((Link)source);
@@ -314,10 +311,10 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			// user clicked a node in the tree navigation
 			TreeEvent te = (TreeEvent) event;
 			switchToPage(te);
-		} else if (source == myContent && event.getCommand().equals("abort")) {
+		} else if (source == myContent && "abort".equals(event.getCommand())) {
 			// user has wrong browser - abort
 			fireEvent(ureq, Event.FAILED_EVENT);
-		} else if (source == myContent && event.getCommand().equals("ping")) {
+		} else if (source == myContent && "ping".equals(event.getCommand())) {
 			// Nothing to do, just let the framework redraw itself if necessary
 			// This is used when LMS-Finished has been called and it is configured to 
 			// close the module automatically
@@ -326,7 +323,6 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	}
 	
 	@Override
-	//fxdiff FXOLAT-116: SCORM improvements
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == columnLayoutCtr) {
 			if(event == Event.BACK_EVENT) {
