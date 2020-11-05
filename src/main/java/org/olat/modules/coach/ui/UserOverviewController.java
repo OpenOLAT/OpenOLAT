@@ -59,9 +59,11 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.curriculum.certificate.CertificateAndEfficiencyStatementWrapperController;
@@ -72,6 +74,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.HomePageConfig;
@@ -153,6 +156,8 @@ public class UserOverviewController extends BasicController implements Activatea
 	private LectureModule lectureModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CoachingService coachingService;
 
 	public UserOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 								  StudentStatEntry statEntry, Identity mentee, int index, int numOfStudents, String role, RoleSecurityCallback roleSecurityCallback) {
@@ -449,8 +454,27 @@ public class UserOverviewController extends BasicController implements Activatea
 
 	private WeeklyCalendarController doOpenCalendar(UserRequest ureq) {
 		removeAsListenerAndDispose(calendarController);
-
+		
+		List<KalendarRenderWrapper> calendars = new ArrayList<>();
+		
 		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(mentee);
+		configCalendar(ureq, calendarWrapper, calendars);
+		
+		List<RepositoryEntry> courses = coachingService.getUserCourses(mentee);
+		for (RepositoryEntry courseEntry : courses) {
+			configCalendar(ureq, calendarManager.getCourseCalendar(CourseFactory.loadCourse(courseEntry)), calendars);
+		}
+
+		OLATResourceable callerOres = OresHelper.createOLATResourceableInstance(mentee.getName(), mentee.getKey());
+		WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(CMD_CALENDAR), null);
+		calendarController = new WeeklyCalendarController(ureq, bwControl, calendars,
+				CalendarController.CALLER_CURRICULUM, callerOres, false);
+		listenTo(calendarController);
+
+		return calendarController;
+	}
+	
+	private void configCalendar(UserRequest ureq, KalendarRenderWrapper calendarWrapper, List<KalendarRenderWrapper> calendars) {
 		CalendarUserConfiguration config = calendarManager.findCalendarConfigForIdentity(calendarWrapper.getKalendar(), getIdentity());
 		if (config != null) {
 			calendarWrapper.setConfiguration(config);
@@ -462,15 +486,7 @@ public class UserOverviewController extends BasicController implements Activatea
 		} else {
 			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 		}
-		List<KalendarRenderWrapper> calendars = new ArrayList<>();
+		
 		calendars.add(calendarWrapper);
-
-		OLATResourceable callerOres = OresHelper.createOLATResourceableInstance(mentee.getName(), mentee.getKey());
-		WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(CMD_CALENDAR), null);
-		calendarController = new WeeklyCalendarController(ureq, bwControl, calendars,
-				CalendarController.CALLER_CURRICULUM, callerOres, false);
-		listenTo(calendarController);
-
-		return calendarController;
 	}
 }

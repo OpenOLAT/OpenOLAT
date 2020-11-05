@@ -500,8 +500,8 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		else if (isLineManagerViewAvailable() == 1) {
 			GenericTreeNode organisationsNode = new GenericTreeNode();
 			organisationsNode.setUserObject(organisations.get(0));
-			organisationsNode.setTitle(translate(organisations.get(0).getDisplayName()));
-			organisationsNode.setAltText(translate(organisations.get(0).getDisplayName()));
+			organisationsNode.setTitle(organisations.get(0).getDisplayName());
+			organisationsNode.setAltText(organisations.get(0).getDisplayName());
 
 			root.addChild(organisationsNode);
 		}
