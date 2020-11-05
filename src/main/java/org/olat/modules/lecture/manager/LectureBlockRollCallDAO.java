@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -585,13 +586,19 @@ public class LectureBlockRollCallDAO {
 		//take in account: firstAddmissionDate and null
 		
 		Date now = new Date();
-
+		Set<Long> rollCallKeys = new HashSet<>();
 		Map<Long,LectureBlockStatistics> stats = new HashMap<>();
 		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultStream().forEach(rawObject -> {
-			int pos = 1;//jump roll call key
+			int pos = 0;//jump roll call key
+			Long rollCallKey = PersistenceHelper.extractLong(rawObject, pos++);
+			if(rollCallKeys.contains(rollCallKey)) {
+				return;
+			}
+			rollCallKeys.add(rollCallKey);
+			
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
 			Long lecturesAbsent = PersistenceHelper.extractLong(rawObject, pos++);
 			Boolean absenceAuthorized;
@@ -757,7 +764,7 @@ public class LectureBlockRollCallDAO {
 		Date now = new Date();
 		Map<Membership,LectureBlockIdentityStatistics> stats = new HashMap<>();
 		rawQuery.getResultStream().forEach(rawObject -> {
-			int pos = 0;//jump roll call key
+			int pos = 0;
 			Long identityKey = (Long)rawObject[pos++];
 			String identityName = (String)rawObject[pos++];
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
