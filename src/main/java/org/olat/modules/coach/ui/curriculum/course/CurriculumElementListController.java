@@ -314,6 +314,8 @@ public class CurriculumElementListController extends FormBasicController impleme
                 }
                 List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
                 repositoryService.filterMembership(assessedIdentity, repoKeys);
+                
+                Map<Long,CourseCurriculumTreeWithViewsRow> potentialParentRows = new HashMap<>();
 
                 for (CurriculumElementRepositoryEntryViews elementWithViews : elementsWithViews) {
                     CurriculumElement element = elementWithViews.getCurriculumElement();
@@ -323,29 +325,35 @@ public class CurriculumElementListController extends FormBasicController impleme
                         CourseCurriculumTreeWithViewsRow row = new CourseCurriculumTreeWithViewsRow(curriculum, element, elementMembership, 0);
                         forgeCalendarsLink(row);
                         rows.add(row);
+                        potentialParentRows.put(elementWithViews.getKey(), row);
                     } else if (elementWithViews.getEntries().size() == 1) {
                         CourseCurriculumTreeWithViewsRow row = new CourseCurriculumTreeWithViewsRow(curriculum, element, elementMembership, elementWithViews.getEntries().get(0), true);
                         forge(row, repoKeys, resourcesWithOffer);
                         forgeCalendarsLink(row);
                         rows.add(row);
+                        potentialParentRows.put(elementWithViews.getKey(), row);
                     } else {
                         CourseCurriculumTreeWithViewsRow elementRow = new CourseCurriculumTreeWithViewsRow(curriculum, element, elementMembership, elementWithViews.getEntries().size());
                         forgeCalendarsLink(elementRow);
                         rows.add(elementRow);
+                        potentialParentRows.put(elementWithViews.getKey(), elementRow);
                         for (RepositoryEntryMyView entry : elementWithViews.getEntries()) {
                             CourseCurriculumTreeWithViewsRow row = new CourseCurriculumTreeWithViewsRow(curriculum, element, elementMembership, entry, false);
+                            row.setParent(elementRow);
                             forge(row, repoKeys, resourcesWithOffer);
                             rows.add(row);
                         }
                     }
-
                 }
 
-
-                Map<Long, CourseCurriculumTreeWithViewsRow> keyToRow = rows.stream()
-                        .collect(Collectors.toMap(CourseCurriculumTreeWithViewsRow::getKey, row -> row, (row1, row2) -> row1));
                 rows.forEach(row -> {
-                    row.setParent(keyToRow.get(row.getParentKey()));
+                	if(row.getParent() == null) {
+                		if(row.getCurriculumElementParentKey() == null) {
+                			row.setParent(curriculumRow);
+                		} else {
+                			row.setParent(potentialParentRows.get(row.getCurriculumElementParentKey()));
+                		} 
+                	}
                     if (row.getOlatResource() != null) {
                         VFSLeaf image = repositoryManager.getImage(row.getRepositoryEntryResourceable().getResourceableId(), row.getOlatResource());
                         if (image != null) {
@@ -738,30 +746,5 @@ public class CurriculumElementListController extends FormBasicController impleme
             ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
             return true;
         }
-    }
-
-    private List<CourseCurriculumTreeWithViewsRow> sortCurriculumRows(List<CourseCurriculumTreeWithViewsRow> rows) {
-        List<CourseCurriculumTreeWithViewsRow> sortedRows = rows.stream().filter(row -> row.   getLevel() == 0).collect(Collectors.toList());
-
-        for (CourseCurriculumTreeWithViewsRow parent : sortedRows) {
-            if (parent.hasChildren()) {
-                sortedRows.addAll(sortedRows.indexOf(parent) + 1, sortCurriculumRows(rows, parent));
-            }
-        }
-
-        return sortedRows;
-    }
-
-    private List<CourseCurriculumTreeWithViewsRow> sortCurriculumRows(List<CourseCurriculumTreeWithViewsRow> rows, CourseCurriculumTreeWithViewsRow parent) {
-        List<CourseCurriculumTreeWithViewsRow> filteredRows = rows.stream().filter(row -> row.getParent() != null && row.getParent().equals(parent)).collect(Collectors.toList());
-        List<CourseCurriculumTreeWithViewsRow> sortedRows = new ArrayList<>(filteredRows);
-
-        for (CourseCurriculumTreeWithViewsRow child : filteredRows) {
-            if (child.hasChildren()) {
-                sortedRows.addAll(filteredRows.indexOf(child) + 1, sortCurriculumRows(rows, parent));
-            }
-        }
-
-        return filteredRows;
     }
 }
