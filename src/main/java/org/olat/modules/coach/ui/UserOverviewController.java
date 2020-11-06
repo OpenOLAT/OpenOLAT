@@ -26,7 +26,9 @@ import org.olat.admin.user.UserChangePasswordController;
 import org.olat.admin.user.UserShortDescription;
 import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.collaboration.CollaborationTools;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
@@ -62,6 +64,9 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.RoleSecurityCallback;
@@ -158,6 +163,10 @@ public class UserOverviewController extends BasicController implements Activatea
 	private CurriculumService curriculumService;
 	@Autowired
 	private CoachingService coachingService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CalendarModule calendarModule;
 
 	public UserOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 								  StudentStatEntry statEntry, Identity mentee, int index, int numOfStudents, String role, RoleSecurityCallback roleSecurityCallback) {
@@ -457,12 +466,25 @@ public class UserOverviewController extends BasicController implements Activatea
 		
 		List<KalendarRenderWrapper> calendars = new ArrayList<>();
 		
-		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(mentee);
-		configCalendar(ureq, calendarWrapper, calendars);
+		if(calendarModule.isEnablePersonalCalendar()) {
+			KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(mentee);
+			configCalendar(ureq, calendarWrapper, calendars);
+		}
 		
-		List<RepositoryEntry> courses = coachingService.getUserCourses(mentee);
-		for (RepositoryEntry courseEntry : courses) {
-			configCalendar(ureq, calendarManager.getCourseCalendar(CourseFactory.loadCourse(courseEntry)), calendars);
+		if(calendarModule.isEnableCourseElementCalendar() || calendarModule.isEnableCourseToolCalendar()) {
+			List<RepositoryEntry> courses = coachingService.getUserCourses(mentee);
+			for (RepositoryEntry courseEntry : courses) {
+				configCalendar(ureq, calendarManager.getCourseCalendar(CourseFactory.loadCourse(courseEntry)), calendars);
+			}
+		}
+		
+		if (calendarModule.isEnableGroupCalendar()) {
+			SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams(mentee, true, true);
+			groupParams.addTools(CollaborationTools.TOOL_CALENDAR);
+			List<BusinessGroup> groupsWithCalendar = businessGroupService.findBusinessGroups(groupParams, null, 0, -1);
+			for (BusinessGroup group : groupsWithCalendar) {
+				configCalendar(ureq, calendarManager.getGroupCalendar(group), calendars);
+			}
 		}
 
 		OLATResourceable callerOres = OresHelper.createOLATResourceableInstance(mentee.getName(), mentee.getKey());
