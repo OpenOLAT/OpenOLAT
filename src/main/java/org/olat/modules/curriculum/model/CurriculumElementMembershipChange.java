@@ -120,7 +120,7 @@ public class CurriculumElementMembershipChange extends Event {
 				|| (getCoach() != null && getCoach().booleanValue())
 				|| (getMasterCoach() != null && getMasterCoach().booleanValue())
 				|| (getCurriculumElementOwner() != null && getCurriculumElementOwner().booleanValue())
-				|| (getRepositoryEntryOwner() != null || this.getRepositoryEntryOwner().booleanValue());
+				|| (getRepositoryEntryOwner() != null && getRepositoryEntryOwner().booleanValue());
 	}
 	
 	public int numOfSegments() {
