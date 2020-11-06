@@ -288,6 +288,10 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 		return elementType == null ? null : element.getType().getDisplayName();
 	}
 	
+	public Long getCurriculumElementParentKey() {
+		return element == null || element.getParent() == null ? null : element.getParent().getKey();
+	}
+	
 	public boolean isCalendarsEnabled() {
 		boolean enabled = false;
 		if(element != null) {
