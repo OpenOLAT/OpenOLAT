@@ -15,9 +15,16 @@
 		<thead>
 			<tr>
             	#foreach($choice2 in $orderedSet2)
-				<th class="#if($foreach.index == 0) o_match_true_false_unanswered #elseif($foreach.index == 1) o_match_true_false_right #else o_match_true_false_wrong #end">$r.renderFlowStatics($choice2.getFlowStatics())</th>
-			#end
-				<th class="o_match_true_false_answer"> </th>
+				<th scope="col" class="#if($foreach.index == 0) o_match_true_false_unanswered #elseif($foreach.index == 1) o_match_true_false_right #else o_match_true_false_wrong #end">
+				#if($foreach.index == 0)
+					$r.translate("match.unanswered")
+				#elseif($foreach.index == 1)
+					$r.translate("match.true")
+				#else
+					$r.translate("match.false")
+				#end</th>
+				#end
+				<th scope="col" class="o_match_true_false_answer"> </th>
 			</tr>
         </thead>
 		<tbody>
