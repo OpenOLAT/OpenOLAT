@@ -641,8 +641,22 @@ public class RepositoryEntryMyCourseQueries {
 					break;
 				case custom: 
 					if (params.getParentEntry() != null) {
-						sb.append(" order by cei.position ");
-						appendAsc(sb, asc);
+						Integer entryAddPosition = params.getParentEntry().getEntryAddPosition();
+						if (entryAddPosition == null) {
+							entryAddPosition = repositoryModule.getCatalogAddEntryPosition();
+						}
+						
+						switch(entryAddPosition) {
+							case 0:
+								sb.append(" order by lower(cei.name) ");
+								appendAsc(sb, asc);
+								break;
+							case 1:
+							case 2:
+								sb.append(" order by cei.position ");
+								appendAsc(sb, asc);
+								break;
+						}
 					}					
 					break;
 				default:
