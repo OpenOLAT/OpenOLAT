@@ -173,9 +173,11 @@ public class UserInfoMainController extends AbstractUserInfoMainController imple
 				}
 				
 				main.setContent(controller.getInitialComponent());
-				TreeNode selectedNode = TreeHelper.findNodeByUserObject(type, menuTree.getTreeModel().getRootNode());
-				if(selectedNode != null) {
-					menuTree.setSelectedNode(selectedNode);
+				if(menuTree != null) {
+					TreeNode selectedNode = TreeHelper.findNodeByUserObject(type, menuTree.getTreeModel().getRootNode());
+					if(selectedNode != null) {
+						menuTree.setSelectedNode(selectedNode);
+					}
 				}
 			}
 		}
