@@ -1971,6 +1971,7 @@
 			<artifactId>java2html</artifactId>
 			<version>5.0</version>
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
@@ -1982,6 +1983,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
