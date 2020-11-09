@@ -63,7 +63,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.2.9.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.4.22.Final</org.hibernate.version>
+		<org.hibernate.version>5.4.23.Final</org.hibernate.version>
 		<apache.cxf>3.4.0</apache.cxf>
 		<apache.pdfbox>2.0.21</apache.pdfbox>
 		<apache.poi>4.1.2</apache.poi>
