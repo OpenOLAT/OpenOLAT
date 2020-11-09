@@ -677,3 +677,11 @@ div.o_correction_navigation {
 .o_cnd_peekview {
 	padding-top: 5px;
 }
+
+/* Opencast course element */
+.o_oc_search {
+	display: flex;
+	div:first-child {
+		margin-right: 5px;
+	}
+}

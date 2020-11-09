@@ -246,10 +246,13 @@ public class IdentityCompetencesController extends FormBasicController implement
 	private void doRemoveCompetence(IdentityCompetenceRow row) {
 		Taxonomy taxonomy = row.getTaxonomy();
 		TaxonomyCompetence competence = row.getCompetence();
-		String before = taxonomyService.toAuditXml(competence);
+		competence = taxonomyService.getTaxonomyCompetence(competence);
+		if(competence != null) {
+			String before = taxonomyService.toAuditXml(competence);
+			taxonomyService.removeTaxonomyLevelCompetence(competence);
+			taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.removeCompetence, before, null, null, taxonomy, competence, assessedIdentity, getIdentity());
+		}
 
-		taxonomyService.removeTaxonomyLevelCompetence(competence);
-		taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.removeCompetence, before, null, null, taxonomy, competence, assessedIdentity, getIdentity());
 		loadModel();
 		tableEl.reset(true, true, true);
 		

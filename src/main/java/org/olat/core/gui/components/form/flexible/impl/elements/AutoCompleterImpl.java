@@ -73,6 +73,7 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 		mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapper);
 	}
 	
+	@Override
 	public int getMaxEntries() {
 		return mapper.getMaxEntries();
 	}

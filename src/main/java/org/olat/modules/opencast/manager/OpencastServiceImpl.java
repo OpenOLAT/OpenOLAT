@@ -118,9 +118,11 @@ public class OpencastServiceImpl implements OpencastService {
 		OpencastEventImpl opencastEvent = new OpencastEventImpl();
 		opencastEvent.setIdentifier(event.getIdentifier());
 		opencastEvent.setTitle(event.getTitle());
+		opencastEvent.setDescription(event.getDescription());
 		opencastEvent.setCreator(event.getCreator());
 		opencastEvent.setPresenters(Arrays.stream(event.getPresenter()).collect(Collectors.toList()));
 		opencastEvent.setStart(event.getStart());
+		opencastEvent.setSeries(event.getSeries());
 		// End has to be calculated with the duration, but the duration of the event is always 0.
 		// Only the duration of the metadata would be the right value. We skip that for now.
 		return opencastEvent;

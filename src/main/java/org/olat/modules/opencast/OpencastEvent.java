@@ -34,6 +34,8 @@ public interface OpencastEvent {
 	
 	String getTitle();
 	
+	String getDescription();
+	
 	String getCreator();
 	
 	List<String> getPresenters();
@@ -41,5 +43,7 @@ public interface OpencastEvent {
 	Date getStart();
 	
 	Date getEnd();
+	
+	String getSeries();
 	
 }
