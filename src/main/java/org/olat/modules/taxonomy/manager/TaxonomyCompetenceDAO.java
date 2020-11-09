@@ -316,7 +316,9 @@ public class TaxonomyCompetenceDAO {
 	public void deleteCompetence(TaxonomyCompetence competence) {
 		TaxonomyCompetence reloadedCompetence = dbInstance.getCurrentEntityManager()
 			.getReference(TaxonomyCompetenceImpl.class, competence.getKey());
-		dbInstance.getCurrentEntityManager().remove(reloadedCompetence);
+		if(reloadedCompetence != null) {// onnly if not already deleted
+			dbInstance.getCurrentEntityManager().remove(reloadedCompetence);
+		}
 	}
 
 	private List<String> getTypesAsList(TaxonomyCompetenceTypes... competenceTypes) {

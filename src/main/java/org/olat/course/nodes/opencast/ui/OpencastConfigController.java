@@ -25,22 +25,29 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompleteFormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.OpencastCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.opencast.AuthDelegate;
+import org.olat.modules.opencast.OpencastEvent;
 import org.olat.modules.opencast.OpencastEventProvider;
 import org.olat.modules.opencast.OpencastSeriesProvider;
 import org.olat.modules.opencast.OpencastService;
+import org.olat.modules.opencast.ui.EventListController;
+import org.olat.modules.opencast.ui.EventListController.OpencastEventSelectionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,8 +68,13 @@ public class OpencastConfigController extends FormBasicController {
 	
 	private SingleSelection displayEl;
 	private AutoCompleter seriesEl;
+	private FormLayoutContainer eventCont;
 	private AutoCompleter eventEl;
+	private FormLink eventSearchLink;
 	private StaticTextElement identifierEl;
+	
+	private CloseableModalController cmc;
+	private EventListController eventSearchCtrl;
 	
 	private final ModuleConfiguration config;
 	
@@ -98,15 +110,23 @@ public class OpencastConfigController extends FormBasicController {
 		seriesEl.setKey(seriesIdentifier);
 		seriesEl.setMinLength(1);
 		
+		eventCont = FormLayoutContainer.createCustomFormLayout("event", getTranslator(), velocity_root + "/event_search.html");
+		eventCont.setLabel("config.event", null);
+		eventCont.setElementCssClass("o_urs");
+		eventCont.setRootForm(mainForm);
+		formLayout.add(eventCont);
+		
 		String eventIdentifier = config.getStringValue(OpencastCourseNode.CONFIG_EVENT_IDENTIFIER, null);
 		String eventTitle = null;
 		if (eventIdentifier != null) {
 			eventTitle = config.getStringValue(OpencastCourseNode.CONFIG_TITLE);
 		}
-		eventEl = uifactory.addTextElementWithAutoCompleter("config.event", "config.event", 128, eventTitle, formLayout);
+		eventEl = uifactory.addTextElementWithAutoCompleter("config.event.auto", "config.event.auto", 128, eventTitle, eventCont);
 		eventEl.setListProvider(new OpencastEventProvider(getIdentity(), MORE_KEY), ureq.getUserSession());
 		eventEl.setKey(eventIdentifier);
 		eventEl.setMinLength(1);
+		
+		eventSearchLink = uifactory.addFormLink("config.event.search", eventCont, Link.BUTTON);
 		
 		String identifier = null;
 		if (StringHelper.containsNonWhitespace(seriesIdentifier)) {
@@ -136,7 +156,7 @@ public class OpencastConfigController extends FormBasicController {
 	private void updateUI() {
 		boolean seriesSelected = displayEl.isOneSelected() && displayEl.getSelectedKey().equals(DISPLAY_KEY_SERIES);
 		seriesEl.setVisible(seriesSelected);
-		eventEl.setVisible(!seriesSelected);
+		eventCont.setVisible(!seriesSelected);
 	}
 
 	@Override
@@ -151,8 +171,34 @@ public class OpencastConfigController extends FormBasicController {
 					identifierEl.setValue(key);
 				}
 			}
+		} else if (source == eventSearchLink) {
+			doOpenEventSearch(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (eventSearchCtrl == source) {
+			if (event instanceof OpencastEventSelectionEvent) {
+				OpencastEvent opencastEvent = ((OpencastEventSelectionEvent)event).getEvent();
+				eventEl.setKey(opencastEvent.getIdentifier());
+				eventEl.setValue(opencastEvent.getTitle());
+				identifierEl.setValue(opencastEvent.getIdentifier());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(eventSearchCtrl);
+		removeAsListenerAndDispose(cmc);
+		eventSearchCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -160,17 +206,19 @@ public class OpencastConfigController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		seriesEl.clearError();
-		eventEl.clearError();
+		eventCont.clearError();
 		boolean seriesSelected = displayEl.isOneSelected() && displayEl.getSelectedKey().equals(DISPLAY_KEY_SERIES);
 		if (seriesSelected) {
 			if (!StringHelper.containsNonWhitespace(seriesEl.getValue())) {
 				seriesEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
+				identifierEl.setValue("");
 			}
 		} else {
 			if (!StringHelper.containsNonWhitespace(eventEl.getValue())) {
-				eventEl.setErrorKey("form.legende.mandatory", null);
+				eventCont.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
+				identifierEl.setValue("");
 			}
 		}
 		
@@ -195,6 +243,16 @@ public class OpencastConfigController extends FormBasicController {
 		}
 		
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+	}
+
+	private void doOpenEventSearch(UserRequest ureq) {
+		eventSearchCtrl = new EventListController(ureq, getWindowControl());
+		listenTo(eventSearchCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", eventSearchCtrl.getInitialComponent(), true,
+				translate("config.event.search"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	@Override

@@ -34,10 +34,12 @@ public class OpencastEventImpl implements OpencastEvent {
 	
 	private String identifier;
 	private String title;
+	private String description;
 	private String creator;
 	private List<String> presenters;
 	private Date start;
 	private Date end;
+	private String series;
 
 	@Override
 	public String getIdentifier() {
@@ -55,6 +57,15 @@ public class OpencastEventImpl implements OpencastEvent {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	@Override
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@Override
@@ -91,6 +102,15 @@ public class OpencastEventImpl implements OpencastEvent {
 
 	public void setEnd(Date end) {
 		this.end = end;
+	}
+
+	@Override
+	public String getSeries() {
+		return series;
+	}
+
+	public void setSeries(String series) {
+		this.series = series;
 	}
 
 }
