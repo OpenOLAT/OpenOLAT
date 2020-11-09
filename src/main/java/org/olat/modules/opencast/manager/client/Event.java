@@ -34,10 +34,12 @@ public class Event {
 	
 	private String identifier;
 	private String title;
+	private String description;
 	private String creator;
 	private String[] presenter;
 	private Date start;
 	private String duration;
+	private String series;
 	
 	public String getIdentifier() {
 		return identifier;
@@ -53,6 +55,14 @@ public class Event {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public String getCreator() {
@@ -85,6 +95,14 @@ public class Event {
 
 	public void setDuration(String duration) {
 		this.duration = duration;
+	}
+
+	public String getSeries() {
+		return series;
+	}
+
+	public void setSeries(String series) {
+		this.series = series;
 	}
 
 }
