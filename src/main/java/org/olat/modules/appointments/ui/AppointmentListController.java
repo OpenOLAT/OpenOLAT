@@ -64,6 +64,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.appointments.Appointment;
@@ -72,6 +73,7 @@ import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Organizer;
 import org.olat.modules.appointments.ParticipationResult;
+import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.Topic.Type;
 import org.olat.modules.appointments.ui.AppointmentDataModel.AppointmentCols;
@@ -91,6 +93,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_ADD_USER = "add";
 	private static final String CMD_REMOVE = "remove";
+	private static final String CMD_EXPORT = "export";
 	private static final String CMD_CONFIRM = "confirm";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_EDIT = "edit";
@@ -410,6 +413,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 		row.setRemoveLink(link);
 	}
 	
+	protected void forgeExportUserLink(AppointmentRow row) {
+		FormLink link = uifactory.addFormLink("export_" + row.getKey(), CMD_EXPORT, "export", null, null, Link.LINK);
+		link.setUserObject(row);
+		row.setRemoveLink(link);
+	}
+	
 	protected void forgeDeleteLink(AppointmentRow row) {
 		FormLink link = uifactory.addFormLink("delete_" + row.getKey(), CMD_DELETE, "delete", null, null, Link.LINK);
 		link.setUserObject(row);
@@ -473,6 +482,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 			} else if (CMD_REMOVE.equals(cmd)) {
 				AppointmentRow row = (AppointmentRow)link.getUserObject();
 				doRemove(ureq, row.getAppointment());
+			} else if (CMD_EXPORT.equals(cmd)) {
+				AppointmentRow row = (AppointmentRow)link.getUserObject();
+				doExportParticipations(ureq, row.getAppointment());
 			} else if (CMD_RECORDING.equals(cmd)) {
 				BigBlueButtonRecordingReference recordingReference = (BigBlueButtonRecordingReference)link.getUserObject();
 				doOpenRecording(ureq, recordingReference);
@@ -696,6 +708,23 @@ public abstract class AppointmentListController extends FormBasicController impl
 				true, translate("remove.user.title"));
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doExportParticipations(UserRequest ureq, Appointment appointment) {
+		ParticipationSearchParams searchParams = new ParticipationSearchParams();
+		searchParams.setAppointment(appointment);
+		ExcelExport export = new ExcelExport(ureq, searchParams, getExportName(topic));
+		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
+	}
+
+	private String getExportName(Topic topic) {
+		return new StringBuilder()
+				.append(translate("export.participations.file.prefix"))
+				.append("_")
+				.append(topic.getTitle())
+				.append("_")
+				.append(Formatter.formatDatetimeFilesystemSave(new Date()))
+				.toString();
 	}
 
 	private void doOpenRecording(UserRequest ureq, BigBlueButtonRecordingReference recordingReference) {

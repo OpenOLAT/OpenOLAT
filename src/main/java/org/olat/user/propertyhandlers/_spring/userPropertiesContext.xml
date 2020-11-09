@@ -1212,6 +1212,28 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.modules.appointments.ui.ExcelExport">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+					<property name="description" value="Excel export of participations in appointments" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
+						</property>
+					</bean>
+				</entry>
+				
 				<entry key="org.olat.user.ui.identity.UserRelationsController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Relations user to user" />
