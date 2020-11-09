@@ -57,6 +57,7 @@ class TopicDAO {
 		topic.setType(Type.enrollment);
 		topic.setMultiParticipation(true);
 		topic.setAutoConfirmation(false);
+		topic.setParticipationVisible(true);
 		topic.setEntry(entry);
 		topic.setSubIdent(subIdent);
 		

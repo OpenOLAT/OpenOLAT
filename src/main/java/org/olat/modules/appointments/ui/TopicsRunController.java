@@ -269,12 +269,15 @@ public class TopicsRunController extends BasicController implements Activateable
 			List<Participation> appointmentParticipations = appointmentsService.getParticipations(allParticipationParams);
 			
 			wrapAppointmentView(wrapper, appointment, appointmentParticipations);
-			
-			List<String> participants = appointmentParticipations.stream()
-					.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
-					.sorted(String.CASE_INSENSITIVE_ORDER)
-					.collect(Collectors.toList());
-			wrapper.setParticipants(participants);
+		
+			if (wrapper.getTopic().isParticipationVisible()) {
+				List<String> participants = appointmentParticipations.stream()
+						.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
+						.sorted(String.CASE_INSENSITIVE_ORDER)
+						.collect(Collectors.toList());
+				wrapper.setParticipants(participants);
+				
+			}
 		}
 	}
 

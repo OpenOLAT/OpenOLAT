@@ -54,6 +54,10 @@ public interface Topic extends TopicRef, ModifiedInfo, CreateInfo {
 	
 	public void setAutoConfirmation(boolean autoConfirmation);
 	
+	public boolean isParticipationVisible();
+	
+	public void setParticipationVisible(boolean participtionVisible);
+	
 	public RepositoryEntry getEntry();
 	
 	public String getSubIdent();

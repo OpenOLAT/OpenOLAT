@@ -88,6 +88,7 @@ public class AppointmentCreateController extends FormBasicController {
 	private static final String[] KEYS_YES_NO = new String[] { "yes", "no" };
 	private static final String KEY_MULTI_PARTICIPATION = "multi.participation";
 	private static final String KEY_COACH_CONFIRMATION = "coach.confirmation";
+	private static final String KEY_PARTICIPATION_VISIBLE = "participation.visible";
 	private static final String CMD_REMOVE = "remove";
 	private static final String CMD_ADD = "add";
 	
@@ -127,6 +128,7 @@ public class AppointmentCreateController extends FormBasicController {
 	private List<AppointmentWrapper> appointmentWrappers;
 	private boolean multiParticipationsSelected = true;
 	private boolean coachConfirmationSelected = true;
+	private boolean participationVisible = true;
 	private int counter = 0;
 	
 	@Autowired
@@ -324,9 +326,11 @@ public class AppointmentCreateController extends FormBasicController {
 			if (enrollment) {
 				configKV.add(entry(KEY_COACH_CONFIRMATION, translate("topic.coach.confirmation")));
 			}
+			configKV.add(entry(KEY_PARTICIPATION_VISIBLE, translate("topic.participation.visible")));
 			configurationEl.setKeysAndValues(configKV.keys(), configKV.values());
 			configurationEl.select(KEY_MULTI_PARTICIPATION, multiParticipationsSelected);
 			configurationEl.select(KEY_COACH_CONFIRMATION, coachConfirmationSelected);
+			configurationEl.select(KEY_PARTICIPATION_VISIBLE, participationVisible);
 		}
 		
 		maxParticipationsEl.setVisible(enrollment);
@@ -388,6 +392,7 @@ public class AppointmentCreateController extends FormBasicController {
 			Collection<String> configKeys = configurationEl.getSelectedKeys();
 			multiParticipationsSelected = configKeys.contains(KEY_MULTI_PARTICIPATION);
 			coachConfirmationSelected = configKeys.contains(KEY_COACH_CONFIRMATION);
+			participationVisible = configKeys.contains(KEY_PARTICIPATION_VISIBLE);
 		} else if (source == recurringEl) {
 			updateUI();
 		} else if (source == bbbRoomEl) {
@@ -625,6 +630,9 @@ public class AppointmentCreateController extends FormBasicController {
 				? false
 				: !configKeys.contains(KEY_COACH_CONFIRMATION);
 		topic.setAutoConfirmation(autoConfirmation);
+		
+		boolean participationVisible = configKeys.contains(KEY_PARTICIPATION_VISIBLE);
+		topic.setParticipationVisible(participationVisible);
 		
 		topic = appointmentsService.updateTopic(topic);
 	}

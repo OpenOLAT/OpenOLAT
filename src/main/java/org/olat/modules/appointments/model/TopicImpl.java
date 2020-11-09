@@ -76,6 +76,8 @@ public class TopicImpl implements Persistable, Topic {
 	private boolean multiParticipation;
 	@Column(name="a_auto_confirmation", nullable=false, insertable=true, updatable=true)
 	private boolean autoConfirmation;
+	@Column(name="a_participation_visible", nullable=false, insertable=true, updatable=true)
+	private boolean participationVisible;
 	
 	@ManyToOne(targetEntity=GroupImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_group_id", nullable=true, insertable=true, updatable=true)
@@ -164,6 +166,16 @@ public class TopicImpl implements Persistable, Topic {
 	@Override
 	public void setAutoConfirmation(boolean autoConfirmation) {
 		this.autoConfirmation = autoConfirmation;
+	}
+
+	@Override
+	public boolean isParticipationVisible() {
+		return participationVisible;
+	}
+
+	@Override
+	public void setParticipationVisible(boolean participationVisible) {
+		this.participationVisible = participationVisible;
 	}
 
 	@Override

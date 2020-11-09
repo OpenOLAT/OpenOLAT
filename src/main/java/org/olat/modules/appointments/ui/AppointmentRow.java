@@ -48,6 +48,7 @@ public class AppointmentRow {
 	private String details;
 	private String translatedStatus;
 	private String statusCSS;
+	private Boolean showNumberOfParticipations;
 	private Integer numberOfParticipations;
 	private Integer freeParticipations;
 	private FormItem dayEl;
@@ -85,7 +86,7 @@ public class AppointmentRow {
 	}
 
 	public ParticipantsWrapper getParticipantsWrapper() {
-		return new ParticipantsWrapper(participants);
+		return participants != null? new ParticipantsWrapper(participants): null;
 	}
 
 	public void setParticipants(List<String> participants) {
@@ -162,6 +163,14 @@ public class AppointmentRow {
 
 	public void setStatusCSS(String statusCSS) {
 		this.statusCSS = statusCSS;
+	}
+
+	public Boolean getShowNumberOfParticipations() {
+		return showNumberOfParticipations;
+	}
+
+	public void setShowNumberOfParticipations(Boolean showNumberOfParticipations) {
+		this.showNumberOfParticipations = showNumberOfParticipations;
 	}
 
 	public Integer getNumberOfParticipations() {

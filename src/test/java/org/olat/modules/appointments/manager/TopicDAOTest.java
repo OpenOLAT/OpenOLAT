@@ -68,6 +68,7 @@ public class TopicDAOTest extends OlatTestCase {
 		softly.assertThat(topic.getType()).isEqualTo(Topic.Type.enrollment);
 		softly.assertThat(topic.isMultiParticipation()).isTrue();
 		softly.assertThat(topic.isAutoConfirmation()).isFalse();
+		softly.assertThat(topic.isParticipationVisible()).isTrue();
 		softly.assertThat(topic.getEntry()).isEqualTo(entry);
 		softly.assertThat(topic.getSubIdent()).isEqualTo(subIdent);
 		softly.assertAll();
@@ -137,6 +138,7 @@ public class TopicDAOTest extends OlatTestCase {
 		topic.setType(Type.finding);
 		topic.setAutoConfirmation(true);
 		topic.setMultiParticipation(false);
+		topic.setParticipationVisible(false);
 		sut.updateTopic(topic);
 		dbInstance.commitAndCloseSession();
 		
@@ -148,6 +150,7 @@ public class TopicDAOTest extends OlatTestCase {
 		softly.assertThat(topic.getType()).isEqualByComparingTo(Type.finding);
 		softly.assertThat(topic.isAutoConfirmation()).isTrue();
 		softly.assertThat(topic.isMultiParticipation()).isFalse();
+		softly.assertThat(topic.isParticipationVisible()).isFalse();
 		softly.assertAll();
 	}
 	

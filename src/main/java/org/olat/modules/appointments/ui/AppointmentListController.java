@@ -137,6 +137,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 	protected abstract boolean canSelect();
 	
 	protected abstract boolean canEdit();
+
+	protected abstract boolean isParticipationVisible();
 	
 	protected abstract List<String> getFilters();
 	
@@ -208,10 +210,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 		DefaultFlexiColumnModel numberOfParticipationsModel = new DefaultFlexiColumnModel(AppointmentCols.numberOfParticipations);
 		numberOfParticipationsModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(numberOfParticipationsModel);
-		DefaultFlexiColumnModel participantsModel = new DefaultFlexiColumnModel(AppointmentCols.participants);
-		participantsModel.setCellRenderer(new ParticipationsRenderer());
-		participantsModel.setDefaultVisible(false);
-		columnsModel.addFlexiColumnModel(participantsModel);
+		if (isParticipationVisible()) {
+			DefaultFlexiColumnModel participantsModel = new DefaultFlexiColumnModel(AppointmentCols.participants);
+			participantsModel.setCellRenderer(new ParticipationsRenderer());
+			participantsModel.setDefaultVisible(false);
+			columnsModel.addFlexiColumnModel(participantsModel);
+		}
 		if (appointmentsService.isBigBlueButtonEnabled()) {
 			DefaultFlexiColumnModel recordingsModel = new DefaultFlexiColumnModel(AppointmentCols.recordings);
 			recordingsModel.setExportable(false);

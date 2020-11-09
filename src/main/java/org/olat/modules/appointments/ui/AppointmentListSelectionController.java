@@ -71,6 +71,11 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 	protected boolean canEdit() {
 		return false;
 	}
+
+	@Override
+	protected boolean isParticipationVisible() {
+		return topic.isParticipationVisible();
+	}
 	
 	@Override
 	protected List<String> getFilters() {
@@ -172,11 +177,16 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 		}
 		
-		List<String> participants = participations.stream()
-				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
-				.sorted(String.CASE_INSENSITIVE_ORDER)
-				.collect(Collectors.toList());
-		row.setParticipants(participants);
+		if (isParticipationVisible()) {
+			List<String> participants = participations.stream()
+					.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
+					.sorted(String.CASE_INSENSITIVE_ORDER)
+					.collect(Collectors.toList());
+			row.setParticipants(participants);
+		}
+		
+		Integer numberOfParticipations = Integer.valueOf(participations.size());
+		row.setNumberOfParticipations(numberOfParticipations);
 		
 		if (Type.finding == topic.getType()) {
 			if (noConfirmedAppointments || selected) {

@@ -67,6 +67,11 @@ public class AppointmentListEditController extends AppointmentListController {
 	}
 
 	@Override
+	protected boolean isParticipationVisible() {
+		return true;
+	}
+
+	@Override
 	protected List<String> getFilters() {
 		return FILTERS;
 	}
@@ -132,9 +137,9 @@ public class AppointmentListEditController extends AppointmentListController {
 		row.setParticipants(participants);
 
 		Integer numberOfParticipations = Integer.valueOf(participations.size());
-		if (Type.finding == topic.getType()) {
-			row.setNumberOfParticipations(numberOfParticipations);
-		}
+		row.setNumberOfParticipations(numberOfParticipations);
+		row.setShowNumberOfParticipations(Boolean.valueOf(Type.finding == topic.getType()));
+		
 		Integer maxParticipations = appointment.getMaxParticipations();
 		Integer freeParticipations = maxParticipations != null
 				? maxParticipations.intValue() - participations.size()

@@ -57,7 +57,7 @@
 						#end
 					</div>
 				#end
-				#if($row.getNumberOfParticipations() && $row.getNumberOfParticipations() != "")
+				#if($row.setShowNumberOfParticipations() && $row.getNumberOfParticipations() && $row.getNumberOfParticipations() != "")
 					<div  class="o_no_participants">
 						<i class="o_icon o_icon-fw o_icon_user">&nbsp;</i>
 						#if($row.getNumberOfParticipations() == 1)

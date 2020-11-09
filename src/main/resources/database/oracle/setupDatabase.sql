@@ -3207,6 +3207,7 @@ create table o_ap_topic (
    a_type varchar2(64) not null,
    a_multi_participation number default 1 not null,
    a_auto_confirmation number default 0 not null,
+   a_participation_visible number default 1 not null,
    fk_entry_id number(20) not null,
    fk_group_id number(20),
    a_sub_ident varchar2(64) not null,

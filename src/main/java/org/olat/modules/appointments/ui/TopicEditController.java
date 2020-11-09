@@ -64,6 +64,7 @@ public class TopicEditController extends FormBasicController {
 	
 	private static final String KEY_MULTI_PARTICIPATION = "multi.participation";
 	private static final String KEY_COACH_CONFIRMATION = "coach.confirmation";
+	private static final String KEY_PARTICIPATION_VISIBLE = "participation.visible";
 	
 	private TextElement titleEl;
 	private TextElement descriptionEl;
@@ -76,6 +77,7 @@ public class TopicEditController extends FormBasicController {
 	private List<Identity> coaches;
 	private boolean multiParticipationsSelected;
 	private boolean coachConfirmationSelected;
+	private boolean participationVisible;
 	
 	@Autowired
 	private AppointmentsService appointmentsService;
@@ -93,6 +95,7 @@ public class TopicEditController extends FormBasicController {
 		
 		multiParticipationsSelected = topic.isMultiParticipation();
 		coachConfirmationSelected = !topic.isAutoConfirmation();
+		participationVisible = topic.isParticipationVisible();
 		
 		initForm(ureq);
 		updateUI();
@@ -157,7 +160,6 @@ public class TopicEditController extends FormBasicController {
 
 	private void updateUI(boolean configChangeable) {
 		typeEl.setEnabled(configChangeable);
-		configurationEl.setEnabled(configChangeable);
 		
 		boolean enrollment = typeEl.isOneSelected() && Type.valueOf(typeEl.getSelectedKey()) != Type.finding;
 		
@@ -166,9 +168,14 @@ public class TopicEditController extends FormBasicController {
 		if (enrollment) {
 			configKV.add(entry(KEY_COACH_CONFIRMATION, translate("topic.coach.confirmation")));
 		}
+		configKV.add(entry(KEY_PARTICIPATION_VISIBLE, translate("topic.participation.visible")));
 		configurationEl.setKeysAndValues(configKV.keys(), configKV.values());
 		configurationEl.select(KEY_MULTI_PARTICIPATION, multiParticipationsSelected);
+		configurationEl.setEnabled(KEY_MULTI_PARTICIPATION, configChangeable);
 		configurationEl.select(KEY_COACH_CONFIRMATION, coachConfirmationSelected);
+		configurationEl.setEnabled(KEY_COACH_CONFIRMATION, configChangeable);
+		configurationEl.select(KEY_PARTICIPATION_VISIBLE, participationVisible);
+		configurationEl.setEnabled(KEY_PARTICIPATION_VISIBLE, true);
 	}
 
 	@Override
@@ -179,6 +186,7 @@ public class TopicEditController extends FormBasicController {
 			Collection<String> configKeys = configurationEl.getSelectedKeys();
 			multiParticipationsSelected = configKeys.contains(KEY_MULTI_PARTICIPATION);
 			coachConfirmationSelected = configKeys.contains(KEY_COACH_CONFIRMATION);
+			participationVisible = configKeys.contains(KEY_PARTICIPATION_VISIBLE);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -234,7 +242,10 @@ public class TopicEditController extends FormBasicController {
 				? false
 				: !configKeys.contains(KEY_COACH_CONFIRMATION);
 		topic.setAutoConfirmation(autoConfirmation);
-
+		
+		boolean participationVisible = configKeys.contains(KEY_PARTICIPATION_VISIBLE);
+		topic.setParticipationVisible(participationVisible);
+		
 		topic = appointmentsService.updateTopic(topic);
 	}
 	
