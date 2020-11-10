@@ -169,8 +169,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	
 	@Override
 	public boolean isAtLeastSelected(int howmany) {
-		boolean ok = selected.size() >= howmany;
-		return ok;
+		return selected.size() >= howmany;
 	}
 
 	@Override
@@ -225,10 +224,10 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		}
 		if(!originalIsDefined) {
 			originalIsDefined = true;
-			if(selected != null && selected.size() > 0){
+			if(!selected.isEmpty()){
 				original = new String[selected.size()];
 				original = selected.toArray(original);
-			}else{
+			} else {
 				original = null;
 			}
 		}
@@ -259,8 +258,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 				j++;
 			}
 			if (!foundKey){
-				log.warn("submitted key '" + key + "' was not found in the keys of formelement named "
-					+ this.getName() + " , keys=" + Arrays.asList(keys));
+				log.warn("submitted key '{}' was not found in the keys of formelement named {} , keys={}", key, getName(), Arrays.asList(keys));
 			}else{
 				selected.add(key);	
 			}
@@ -301,12 +299,18 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 				reqVals = form.getRequestParameterValues(getName() + "_SELBOX");
 			}
 			//
-			selected= new HashSet<>();
-			if (reqVals != null) {
-				for (int i = 0; i < reqVals.length; i++) {
-					selected.add(reqVals[i]);
+			Set<String> updatedSelected = new HashSet<>();
+			for(CheckboxElement check : component.getCheckComponents()) {
+				if(!check.isEnabled() && selected.contains(check.getKey())) {
+					updatedSelected.add(check.getKey());
 				}
 			}
+			if (reqVals != null) {
+				for (int i = 0; i < reqVals.length; i++) {
+					updatedSelected.add(reqVals[i]);
+				}
+			}
+			selected = updatedSelected;
 		}
 		String dispatchuri = form.getRequestParameter("dispatchuri");
 		if(dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
