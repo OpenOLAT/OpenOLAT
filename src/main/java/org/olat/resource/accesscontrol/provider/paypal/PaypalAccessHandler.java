@@ -65,6 +65,11 @@ public class PaypalAccessHandler implements AccessMethodHandler {
 	public boolean isPaymentMethod() {
 		return true;
 	}
+	
+	@Override
+	public boolean isOverlapAllowed(AccessMethodHandler handler) {
+		return true;
+	}
 
 	@Override
 	public String getType() {

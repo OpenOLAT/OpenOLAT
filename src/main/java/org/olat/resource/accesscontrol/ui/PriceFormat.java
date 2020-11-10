@@ -20,6 +20,7 @@
 package org.olat.resource.accesscontrol.ui;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -49,12 +50,12 @@ public class PriceFormat {
 			if(value != null && value.length() > 0) {
 				double val = Double.parseDouble(value);
 				BigDecimal bd = new BigDecimal(val);
-				price.setAmount(bd.setScale(2, BigDecimal.ROUND_HALF_UP));
+				price.setAmount(bd.setScale(2, RoundingMode.HALF_UP));
 			} else {
 				price.setAmount(BigDecimal.ZERO);
 			}
 		} catch (NumberFormatException e) {
-			log.error("Cannot format this value: " + value);
+			log.error("Cannot format this value: {}", value);
 		}  
 	}
 	
@@ -64,13 +65,13 @@ public class PriceFormat {
 			
 			double val = Double.parseDouble(value);
 			BigDecimal bd = new BigDecimal(val);
-			return bd.setScale(2, BigDecimal.ROUND_HALF_UP);
+			return bd.setScale(2, RoundingMode.HALF_UP);
 		}
 		return BigDecimal.ZERO;
 	}
 	
 	private static String extractNumbers(String value) {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		for(int i=0; i<value.length(); i++) {
 			char ch = value.charAt(i);
 			if(Character.isDigit(ch)) {
@@ -108,6 +109,6 @@ public class PriceFormat {
 			isoCurrencyCode = "CHF";
 		}
 
-		return isoCurrencyCode + '\u00A0' + price.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN).toString();
+		return isoCurrencyCode + '\u00A0' + price.getAmount().setScale(2, RoundingMode.HALF_EVEN).toString();
 	}
 }

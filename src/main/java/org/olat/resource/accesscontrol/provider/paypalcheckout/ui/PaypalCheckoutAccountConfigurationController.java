@@ -48,10 +48,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PaypalCheckoutAccountConfigurationController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] { "on" };
+	private static final String[] smartButtonsKeys = new String[] { "smartbuttons", "standard" };
 	
 	private TextElement clientIdEl;
 	private TextElement clientSecretEl;
 	private SingleSelection currencyEl;
+	private SingleSelection smartButtonsEl;
 	private MultipleSelectionElement enableEl;
 	
 	private final List<String> paypalCurrencies;
@@ -83,6 +85,16 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		enableEl.select(onKeys[0], acModule.isPaypalCheckoutEnabled());
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 		
+		KeyValues smartButtons = new KeyValues();
+		smartButtons.add(KeyValues.entry(smartButtonsKeys[0], translate("checkout.smart.buttons.enabled")));
+		smartButtons.add(KeyValues.entry(smartButtonsKeys[1], translate("checkout.standard")));
+		smartButtonsEl = uifactory.addRadiosVertical("checkout.smart.buttons", "checkout.smart.buttons", formLayout, smartButtons.keys(), smartButtons.values());
+		if(paypalModule.isSmartButtons()) {
+			smartButtonsEl.select(smartButtonsKeys[0], true);
+		} else {
+			smartButtonsEl.select(smartButtonsKeys[1], true);
+		}
+		
 		KeyValues currencies = new KeyValues();
 		paypalCurrencies.forEach(currency -> currencies.add(KeyValues.entry(currency, currency)));
 		currencyEl = uifactory.addDropdownSingleselect("currency", "currency", formLayout, currencies.keys(), currencies.values(), null);
@@ -99,7 +111,6 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
-		
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
 	}
 	
@@ -108,6 +119,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		currencyEl.setVisible(enabled);
 		clientIdEl.setVisible(enabled);
 		clientSecretEl.setVisible(enabled);
+		smartButtonsEl.setVisible(enabled);
 	}
 
 	@Override
@@ -133,7 +145,6 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 				&& !StringHelper.containsNonWhitespace(element.getValue())) {
 			element.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
-			
 		}
 		
 		return allOk;
@@ -157,6 +168,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 			if(currencyEl.isOneSelected() && paypalCurrencies.contains(currencyEl.getSelectedKey())) {
 				paypalModule.setPaypalCurrency(currencyEl.getSelectedKey());
 			}
+			paypalModule.setSmartButtons(smartButtonsEl.isOneSelected() && smartButtonsEl.isSelected(0));
 		} else {
 			paypalModule.setClientId(null);
 			paypalModule.setClientSecret(null);

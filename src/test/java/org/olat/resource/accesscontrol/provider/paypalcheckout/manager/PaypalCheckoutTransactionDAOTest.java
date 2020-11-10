@@ -22,6 +22,7 @@ package org.olat.resource.accesscontrol.provider.paypalcheckout.manager;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -145,6 +146,39 @@ public class PaypalCheckoutTransactionDAOTest extends OlatTestCase {
 		
 		PaypalCheckoutTransaction unkownTrx = transactionDao.loadTransactionBySecureUuid("something-uuid-but-not-real");
 		Assert.assertNull(unkownTrx);
+	}
+	
+	@Test
+	public void loadTransactionByPaypalOrderId() {
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalCheckoutAccessMethod.class);
+		AccessMethod checkoutMethod = methods.get(0);
+
+		//create an offer to buy
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("customer-1");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		Offer offer = acService.createOffer(entry.getOlatResource(), "TestSaveTransaction");
+		offer = acService.save(offer);
+		
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("customer-1");
+		dbInstance.commit();
+		
+		//create and save an order
+		Order order = acOrderManager.createOrder(identity);
+		OrderPart orderPart = acOrderManager.addOrderPart(order);
+		OrderLine item = acOrderManager.addOrderLine(orderPart, offer);
+		order = acOrderManager.save(order);
+		dbInstance.commit();
+		Assert.assertNotNull(item);
+		
+		String paypalOrderId = UUID.randomUUID().toString();
+		Price amount = new PriceImpl(new BigDecimal("5.00"), "CHF");
+		PaypalCheckoutTransaction trx = transactionDao.createTransaction(amount, order, orderPart, checkoutMethod);
+		trx.setPaypalOrderId(paypalOrderId);
+		dbInstance.commitAndCloseSession();
+
+		PaypalCheckoutTransaction orderedTrx = transactionDao.loadTransactionByPaypalOrderId(paypalOrderId);
+		Assert.assertNotNull(orderedTrx);
+		Assert.assertEquals(trx, orderedTrx);
 	}
 
 	@Test

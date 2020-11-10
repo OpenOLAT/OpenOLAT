@@ -20,6 +20,7 @@
 package org.olat.resource.accesscontrol.ui;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -119,7 +120,7 @@ public class OrderDetailController extends FormBasicController {
 		String orderTotalStr;
 		if(acModule.isVatEnabled()) {
 			BigDecimal vat = acModule.getVat();
-			String vatStr = vat == null ? "" : vat.setScale(3, BigDecimal.ROUND_HALF_EVEN).toPlainString();
+			String vatStr = vat == null ? "" : vat.setScale(3, RoundingMode.HALF_EVEN).toPlainString();
 			orderTotalStr = translate("access.info.price.vat", new String[]{orderTotal, vatStr});
 		} else {
 			orderTotalStr = translate("access.info.price.noVat", new String[]{orderTotal});

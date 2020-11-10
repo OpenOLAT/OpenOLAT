@@ -40,6 +40,7 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 	private static final String PAYPAL_CLIENT_ID = "paypal.checkout.v2.client.id";
 	private static final String PAYPAL_CLIENT_SECRET = "paypal.checkout.v2.client.secret";
 	private static final String PAYPAL_CURRENCY = "paypal.checkout.v2.currency";
+	private static final String PAYPAL_SMART_BUTTONS = "paypal.checkout.v2.smart.buttons";
 	
 	private static final String[] currencies = new String[] {
 			"AUD",
@@ -74,6 +75,8 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 	private boolean sandbox;
 	@Value("${paypal.checkout.v2.currency:CHF}")
 	private String paypalCurrency;
+	@Value("${paypal.checkout.v2.smart.buttons:true}")
+	private boolean smartButtons;
 	
 	@Autowired
 	public PaypalCheckoutModule(CoordinatorManager coordinatorManager) {
@@ -90,6 +93,7 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 		clientId = getStringPropertyValue(PAYPAL_CLIENT_ID, clientId);
 		clientSecret = getStringPropertyValue(PAYPAL_CLIENT_SECRET, clientSecret);
 		paypalCurrency = getStringPropertyValue(PAYPAL_CURRENCY, paypalCurrency);
+		smartButtons = "true".equals(getStringPropertyValue(PAYPAL_SMART_BUTTONS, Boolean.toString(smartButtons)));
 	}
 
 	public String getClientId() {
@@ -122,7 +126,16 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 		this.paypalCurrency = currency;
 		setStringProperty(PAYPAL_CURRENCY, currency, true);
 	}
+	
+	public boolean isSmartButtons() {
+		return smartButtons;
+	}
 
+	public void setSmartButtons(boolean smartButtons) {
+		this.smartButtons = smartButtons;
+		setStringProperty(PAYPAL_SMART_BUTTONS, Boolean.toString(smartButtons), true);
+	}
+	
 	public boolean isSandbox() {
 		return sandbox;
 	}

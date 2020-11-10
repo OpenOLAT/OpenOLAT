@@ -21,6 +21,7 @@
 package org.olat.resource.accesscontrol.ui;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -290,7 +291,7 @@ public class AccessConfigurationController extends FormBasicController {
 
 	protected void addConfiguration(OfferAccess link) {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
-		AccessInfo infos = new AccessInfo(handler.getMethodName(getLocale()), handler.isPaymentMethod(), null, link);
+		AccessInfo infos = new AccessInfo(handler.getMethodName(getLocale()), null, link, handler);
 		confControllers.add(infos);
 
 		if(editable) {
@@ -407,7 +408,8 @@ public class AccessConfigurationController extends FormBasicController {
 	
 	private void checkOverlap() {
 		boolean overlap = false;
-		
+		boolean overlapAllowed = true;
+
 		// Take a controller from the list
 		for (AccessInfo confControllerA : confControllers) {
 			// Compare it to every other from the list
@@ -421,27 +423,26 @@ public class AccessConfigurationController extends FormBasicController {
 
 					// One unlimited booking method and another
 					if (aFrom == null && aTo == null) {
-						overlap = true;
-						break;
+						overlap |= true;
+						overlapAllowed &= confControllerA.isOverlapAllowed(confControllerB);
 					} 
 					// Start and end overlap
 					else if (aTo != null && bFrom != null && aTo.compareTo(bFrom) >= 0){
 						// Exclude not overlapping methods
 						// Negate condition for no overlap => condition for overlap
 						if (!(aFrom != null && bTo != null && aFrom.compareTo(bTo) > 0)) {
-							overlap = true; 
-							break;
+							overlap |= true; 
 						}
 					} 
 					// Two booking methods without start date
 					else if (aFrom == null && bFrom == null) {
-						overlap = true;
-						break;
+						overlap |= true;
+						overlapAllowed &= confControllerA.isOverlapAllowed(confControllerB);
 					} 
 					// Two booking methods without end date
 					else if (aTo == null && bTo == null) {
-						overlap = true;
-						break;
+						overlap |= true;
+						overlapAllowed &= confControllerA.isOverlapAllowed(confControllerB);
 					}
 				}
 			}
@@ -453,6 +454,7 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		// Display a warning
 		confControllerContainer.contextPut("overlappingConfigs", overlap);
+		confControllerContainer.contextPut("overlappingErrorConfigs", !overlapAllowed);
 		confControllerContainer.setDirty(true);
 	}
 
@@ -461,16 +463,16 @@ public class AccessConfigurationController extends FormBasicController {
 		private String infos;
 		private String dates;
 		private OfferAccess link;
-		private final boolean paymentMethod;
+		private final AccessMethodHandler handler;
 		
 		private FormLink editButton;
 		private FormLink deleteButton;
 
-		public AccessInfo(String name, boolean paymentMethod, String infos, OfferAccess link) {
+		public AccessInfo(String name, String infos, OfferAccess link, AccessMethodHandler handler) {
 			this.name = name;
-			this.paymentMethod = paymentMethod;
 			this.infos = infos;
 			this.link = link;
+			this.handler = handler;
 		}
 
 		public String getName() {
@@ -482,7 +484,11 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 
 		public boolean isPaymentMethod() {
-			return paymentMethod;
+			return handler.isPaymentMethod();
+		}
+		
+		public boolean isOverlapAllowed(AccessInfo info) {
+			return handler.isOverlapAllowed(info.handler);
 		}
 
 		public String getDates() {
@@ -510,7 +516,7 @@ public class AccessConfigurationController extends FormBasicController {
 					String price = PriceFormat.fullFormat(link.getOffer().getPrice());
 					if(acModule.isVatEnabled()) {
 						BigDecimal vat = acModule.getVat();
-						String vatStr = vat == null ? "" : vat.setScale(3, BigDecimal.ROUND_HALF_EVEN).toPlainString();
+						String vatStr = vat == null ? "" : vat.setScale(3, RoundingMode.HALF_EVEN).toPlainString();
 						return translate("access.info.price.vat", new String[]{price, vatStr});
 
 					} else {
