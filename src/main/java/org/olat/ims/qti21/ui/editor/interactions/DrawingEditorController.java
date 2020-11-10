@@ -184,7 +184,7 @@ public class DrawingEditorController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
@@ -202,7 +202,7 @@ public class DrawingEditorController extends FormBasicController {
 			allOk &= status.isEmpty();
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	@Override
@@ -291,15 +291,17 @@ public class DrawingEditorController extends FormBasicController {
 		List<String> values = new ArrayList<>();
 
 		String selectedSize = null;
-		for(BackgroundSize availableSize:BackgroundSize.values()) {
-			int proposedSize = availableSize.size();
-			if(proposedSize <= size.getHeight() || proposedSize <= size.getWidth()) {
-				String s = Integer.toString(availableSize.size());
-				keys.add(s);
-				values.add(s + " x " + s);
-				if((proposedSize == size.getHeight() && proposedSize >= size.getWidth())
-						|| (proposedSize == size.getWidth() && proposedSize >= size.getHeight())) {
-					selectedSize = s;
+		if(size != null) {
+			for(BackgroundSize availableSize:BackgroundSize.values()) {
+				int proposedSize = availableSize.size();
+				if(proposedSize <= size.getHeight() || proposedSize <= size.getWidth()) {
+					String s = Integer.toString(availableSize.size());
+					keys.add(s);
+					values.add(s + " x " + s);
+					if((proposedSize == size.getHeight() && proposedSize >= size.getWidth())
+							|| (proposedSize == size.getWidth() && proposedSize >= size.getHeight())) {
+						selectedSize = s;
+					}
 				}
 			}
 		}
