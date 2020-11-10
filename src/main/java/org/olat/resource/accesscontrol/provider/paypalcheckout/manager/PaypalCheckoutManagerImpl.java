@@ -48,6 +48,7 @@ import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutMan
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutStatus;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutTransaction;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.CheckoutRequest;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.model.CreateSmartOrder;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -93,6 +94,35 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 	}
 
 	@Override
+	public CreateSmartOrder createOrder(Identity delivery, OfferAccess offerAccess) {
+		Offer offer = offerAccess.getOffer();
+		Price amount = offer.getPrice();
+
+		if(acService.reserveAccessToResource(delivery, offerAccess)) {
+			Order order = orderManager.saveOneClick(delivery, offerAccess, OrderStatus.PREPAYMENT);
+			PaypalCheckoutTransaction trx = transactionDao.createTransaction(amount, order, order.getParts().get(0), offerAccess.getMethod());
+			trx = checkoutProvider.createOrder(order, trx);
+			return new CreateSmartOrder(trx.getPaypalOrderId(), true);
+		}
+		log.info(Tracing.M_AUDIT, "Can reserve: {}", delivery);
+		return new CreateSmartOrder(null, false);
+	}
+	
+	public PaypalCheckoutTransaction approveOrder(PaypalCheckoutTransaction trx) {
+		try {
+			trx = checkoutProvider.captureOrder(trx);
+			if(PaypalCheckoutStatus.COMPLETED.name().equals(trx.getPaypalOrderStatus())) {
+				completeTransactionSucessfully(trx);
+			} else {
+				completeDeniedTransaction(trx);
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		return trx;
+	}
+
+	@Override
 	public void updateTransaction(String uuid) {
 		PaypalCheckoutTransaction trx = loadTransactionByUUID(uuid);
 		
@@ -106,6 +136,39 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 		}
 	}
 	
+	@Override
+	public void approveTransaction(String paypalOrderId) {
+		PaypalCheckoutTransaction trx = transactionDao.loadTransactionByPaypalOrderId(paypalOrderId);
+		if(trx != null) {
+			log.info(Tracing.M_AUDIT, "Paypal Checkout transaction approved: {}", trx);
+			completeTransaction(trx);
+		} else {
+			log.error("Paypal Checkout transaction not found for approval: {} (Paypal order id)", paypalOrderId);
+		}
+	}
+
+	@Override
+	public void cancelTransaction(String paypalOrderId) {
+		PaypalCheckoutTransaction trx = transactionDao.loadTransactionByPaypalOrderId(paypalOrderId);
+		if(trx != null) {
+			log.info(Tracing.M_AUDIT, "Paypal Checkout transaction cancelled: {}", trx);
+			cancelTransaction(trx);
+		} else {
+			log.error("Paypal Checkout transaction not found for cancellation: {} (Paypal order id)", paypalOrderId);
+		}
+	}
+
+	@Override
+	public void errorTransaction(String paypalOrderId) {
+		PaypalCheckoutTransaction trx = transactionDao.loadTransactionByPaypalOrderId(paypalOrderId);
+		if(trx != null) {
+			log.info(Tracing.M_AUDIT, "Paypal Checkout transaction error: {}", trx);
+			completeDeniedTransaction(trx);
+		} else {
+			log.error("Paypal Checkout transaction not found for error: {} (Paypal order id)", paypalOrderId);
+		}
+	}
+
 	private PaypalCheckoutTransaction completeTransaction(PaypalCheckoutTransaction trx) {
 		try {
 			trx = checkoutProvider.authorizeUrl(trx);
@@ -150,7 +213,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 					ResourceReservation reservation = acService.getReservation(identity, resource);
 					if(reservation != null) {
 						acService.removeReservation(identity, identity, reservation);
-						log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: " + reservation + " to " + identity);
+						log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: {} to {}", reservation, identity);
 					}
 				}
 			}
@@ -171,12 +234,12 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 					transactionManager.update(transaction, AccessTransactionStatus.ERROR);
 					for(OrderLine line:part.getOrderLines()) {
 						acService.denyAccesToResource(identity, line.getOffer());
-						log.info(Tracing.M_AUDIT, "Paypal payed access revoked for: " + buildLogMessage(line, method) + " to " + identity);
+						log.info(Tracing.M_AUDIT, "Paypal payed access revoked for: {} to {}",  buildLogMessage(line, method), identity);
 
 						ResourceReservation reservation = reservationDao.loadReservation(identity, line.getOffer().getResource());
 						if(reservation != null) {
 							acService.removeReservation(identity, identity, reservation);
-							log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: " + reservation + " to " + identity);
+							log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: {} to {}", reservation, identity);
 						}
 					}
 				}
@@ -201,10 +264,10 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 					transactionManager.save(transaction);
 					for(OrderLine line:part.getOrderLines()) {
 						if(acService.allowAccesToResource(identity, line.getOffer())) {
-							log.info(Tracing.M_AUDIT, "Paypal Checkout payed access granted for: " + buildLogMessage(line, method) + " to " + identity);
+							log.info(Tracing.M_AUDIT, "Paypal Checkout payed access granted for: {} to {}", buildLogMessage(line, method), identity);
 							transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
 						} else {
-							log.error("Paypal Checkout payed access refused for: " + buildLogMessage(line, method) + " to " + identity);
+							log.error("Paypal Checkout payed access refused for: {} to {}", buildLogMessage(line, method), identity);
 							transaction = transactionManager.update(transaction, AccessTransactionStatus.ERROR);
 						}
 					}

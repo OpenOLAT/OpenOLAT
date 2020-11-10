@@ -41,6 +41,7 @@ import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutAccessConfigurationController;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutAccessController;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutTransactionDetailsController;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalSmartButtonAccessController;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.FormController;
 
@@ -58,6 +59,15 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public boolean isPaymentMethod() {
+		return true;
+	}
+	
+	@Override
+	public boolean isOverlapAllowed(AccessMethodHandler handler) {
+		if(handler instanceof PaypalCheckoutAccessHandler) {
+			PaypalCheckoutModule paypalModule = CoreSpringFactory.getImpl(PaypalCheckoutModule.class);
+			return !paypalModule.isSmartButtons();
+		}
 		return true;
 	}
 
@@ -79,7 +89,14 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public FormController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form) {
-		if(form == null) {
+		PaypalCheckoutModule paypalModule = CoreSpringFactory.getImpl(PaypalCheckoutModule.class);
+		if(paypalModule.isSmartButtons()) {
+			if(form == null) {
+				return new PaypalSmartButtonAccessController(ureq, wControl, link);
+			} else {
+				return new PaypalSmartButtonAccessController(ureq, wControl, link, form);
+			}
+		} else if(form == null) {
 			return new PaypalCheckoutAccessController(ureq, wControl, link);
 		} else {
 			return new PaypalCheckoutAccessController(ureq, wControl, link, form);

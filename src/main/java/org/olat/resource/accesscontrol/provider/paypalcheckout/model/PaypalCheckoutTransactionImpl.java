@@ -34,6 +34,7 @@ import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.Target;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
 import org.olat.resource.accesscontrol.model.PriceImpl;
@@ -305,5 +306,38 @@ public class PaypalCheckoutTransactionImpl implements Persistable, PaypalCheckou
 	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("PaypalCheckoutTransaction[key=").append(getKey()).append("]")
+			.append("[price=").append(securePrice).append("]")
+			//order
+			.append("[orderId=").append(orderId).append("]")
+			.append("[orderPartId=").append(orderPartId).append("]")
+			.append("[methodId=").append(methodId).append("]");
+		if(StringHelper.containsNonWhitespace(paypalOrderId)) {
+			sb.append("[paypalOrderId=").append(paypalOrderId).append("]");
+		}
+		if(StringHelper.containsNonWhitespace(paypalOrderStatus)) {
+			sb.append("[paypalOrderStatus=").append(paypalOrderStatus).append("]");
+		}
+		if(StringHelper.containsNonWhitespace(paypalOrderStatusReason)) {
+			sb.append("[paypalOrderStatusReason=").append(paypalOrderStatusReason).append("]");
+		}
+		if(StringHelper.containsNonWhitespace(paypalAuthorizationId)) {
+			sb.append("[paypalAuthorizationId=").append(paypalAuthorizationId).append("]");
+		}
+		if(StringHelper.containsNonWhitespace(paypalCaptureId)) {
+			sb.append("[paypalCaptureId=").append(paypalCaptureId).append("]");
+		}
+		if(StringHelper.containsNonWhitespace(secureSuccessUUID)) {
+			sb.append("[successUUID=").append(secureSuccessUUID ).append("]");
+		}
+		if(StringHelper.containsNonWhitespace(secureCancelUUID)) {
+			sb.append("[cancelUUID=").append(secureCancelUUID).append("]");
+		}
+		return sb.toString();
 	}
 }

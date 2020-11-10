@@ -1,0 +1,99 @@
+<div class="o_paypal">
+	<fieldset class=" o_form form-horizontal clearfix">
+		<legend><i class="o_icon o_icon-fw o_ac_paypal_icon"> </i> $r.translate("access.paypal.title")</legend>
+		<div id="paypal_desc_${r.getCId()}" class="o_desc">$r.translate("access.paypal.desc.smart.buttons")</div>
+		<div id="paypal_processing_${r.getCId()}" class="o_desc" style="display: none;"><i class="o_icon o_icon-lg o_icon_pending o_icon-spin"> </i>  $r.translate("paypal.process.transaction")</div>
+		
+		<div id="paypal_wrapper_${r.getCId()}">
+	
+			#if($r.isNotEmpty($description))
+			<div class="form-group clearfix">
+				<label class="control-label col-sm-3" for-id="paypal_desc_${r.getCId()}">$r.translate("offer.description")</label>
+				<div class="col-sm-9"><p id="paypal_desc_${r.getCId()}" class="form-control-static">$description</p></div>
+			</div>
+			#end
+			<div class="form-group clearfix">
+				<label class="control-label col-sm-3" for-id="paypal_price_${r.getCId()}">$r.translate("offer.price")</label>
+				<div class="col-sm-9"><p id="paypal_price_${r.getCId()}" class="form-control-static">$price</p></div>
+			</div>
+			
+			<div id="paypal_buttons_${r.getCId()}">
+				<script defer>
+				jQuery(function() {	
+					jQuery.ajax({
+						url: 'https://www.paypal.com/sdk/js?client-id=$clientId&currency=$currency&intent=authorize',
+						cache: true,
+						dataType: "script",
+						success: loadButtons
+					});
+	
+					function loadButtons() {
+						paypal.Buttons({
+							createOrder: function(data, actions) {
+								return fetch('$mapperUri/create-paypal-transaction', {
+									method: 'post',
+									headers: { 'content-type': 'application/json' }
+								}).then(function(res) {
+									return res.json();
+								}).then(function(resData) {
+									// Use the same key name for order ID on the client and server
+									if(resData.reservation) {
+										return resData.orderID;
+									}
+									document.getElementById("paypal_wrapper_${r.getCId()}").style.display = "none";
+									document.getElementById("paypal_reservation_${r.getCId()}").style.display = "block";
+									return null; 
+								});
+							},
+							onApprove: function(data, actions) {
+								document.getElementById("paypal_wrapper_${r.getCId()}").style.display = "none";
+								document.getElementById("paypal_processing_${r.getCId()}").style.display = "block";
+								return fetch('$mapperUri/approve-paypal-transaction', {
+									method: 'post',
+									headers: { 'content-type': 'application/json' },
+									body: JSON.stringify({
+										orderID: data.orderID
+									})
+								}).then(function(res) {
+									return res.json();
+								}).then(function(resData) {
+									setTimeout(function() {
+										location.reload();
+									}, 100);
+								});
+							},
+							onCancel: function (data, actions) {
+								return fetch('$mapperUri/cancel-paypal-transaction', {
+									method: 'post',
+									headers: { 'content-type': 'application/json' },
+									body: JSON.stringify({
+										orderID: data.orderID
+									})
+								}).then(function(res) {
+									document.getElementById("paypal_wrapper_${r.getCId()}").style.display = "none";
+									document.getElementById("paypal_cancel_${r.getCId()}").style.display = "block";
+								});
+							},
+							onError: function (err) {
+								return fetch('$mapperUri/error-paypal-transaction', {
+									method: 'post',
+									headers: { 'content-type': 'application/json' },
+									body: JSON.stringify({
+										orderID: data.orderID
+									})
+								}).then(function(res) {
+									document.getElementById("paypal_wrapper_${r.getCId()}").style.display = "none";
+									document.getElementById("paypal_error_${r.getCId()}").style.display = "block";
+								});	
+				  			}
+						}).render('#paypal_buttons_${r.getCId()}');
+					}
+				});
+				</script>
+			</div>
+		</div>
+	</fieldset>
+	<div id="paypal_reservation_${r.getCId()}" class="o_error" style="display: none;" role="alert">$r.translate("paypal.reservation.failed") </div>
+	<div id="paypal_cancel_${r.getCId()}" class="o_warning" style="display: none;" role="alert">$r.translate("paypal.cancelled.transaction")</div>
+	<div id="paypal_error_${r.getCId()}" class="o_error" style="display: none;" role="alert">$r.translate("paypal.error.transaction")</div>
+</div>

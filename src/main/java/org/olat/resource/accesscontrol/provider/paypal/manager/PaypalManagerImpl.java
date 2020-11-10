@@ -180,7 +180,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 	private PaypalAccessMethod getMethodSecure(Long key) {
 		PaypalAccessMethod smethod = null;
 		List<PaypalAccessMethod> methods = getPaypalMethods();
-		if(methods.size() > 0) {
+		if(!methods.isEmpty()) {
 			smethod = methods.get(0);
 		} else {
 			smethod = new PaypalAccessMethod();
@@ -199,11 +199,9 @@ public class PaypalManagerImpl  implements PaypalManager {
 	private List<PaypalAccessMethod> getPaypalMethods() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(PaypalAccessMethod.class.getName()).append(" method");
-		
-		List<PaypalAccessMethod> methods = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), PaypalAccessMethod.class)
 				.getResultList();
-		return methods;
 	}
 	
 	@Override
@@ -284,8 +282,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 			query.setParameter("transactionId", transactionId);
 		}
 
-		List<PaypalTransaction> transactions = query.getResultList();
-		return transactions;
+		return query.getResultList();
 	}
 	
 	private boolean appendAnd(StringBuilder sb, boolean where) {
@@ -643,6 +640,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 		}
 	}
 
+	@Override
 	public PayResponse request(Identity delivery, OfferAccess offerAccess, String mapperUri, String sessionId) {
 		StringBuilder url = new StringBuilder();
 		url.append(Settings.createServerURI()).append(mapperUri);

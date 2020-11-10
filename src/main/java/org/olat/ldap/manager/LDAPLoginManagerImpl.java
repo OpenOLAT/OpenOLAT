@@ -326,8 +326,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		String userDN = ldapDao.searchUserForLogin(login, ctx);
 		if (userDN == null) {
-			log.info("Error when trying to bind user with username::" + login + " - user not found on LDAP server"
-					+ (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin() ? ", trying with OLAT login provider" : ""));
+			log.info("Error when trying to bind user with username::{} - user not found on LDAP server {}"
+					, login, (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin() ? ", trying with OLAT login provider" : ""));
 			errors.insert("Username or password incorrect");
 			return null;
 		}
@@ -843,15 +843,24 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			return null;
 		}
 		
-		String token = getAttributeValue(attrs.get(syncConfiguration.getLdapUserLoginAttribute()));
-		Authentication ldapAuth = authenticationDao.getAuthentication(token, LDAPAuthenticationController.PROVIDER_LDAP);
-		if(ldapAuth != null) {
-			return ldapAuth;
+		String uidAttribute = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
+		List<String> loginAttributes = syncConfiguration.getLdapUserLoginAttributes();
+		
+		String token = null;
+		for(String loginAttribute:loginAttributes) {
+			String loginToken = getAttributeValue(attrs.get(loginAttribute));
+			Authentication ldapAuth = authenticationDao.getAuthentication(loginToken, LDAPAuthenticationController.PROVIDER_LDAP);
+			if(ldapAuth != null) {
+				return ldapAuth;
+			}
+			// prefer the not uid attribute
+			if((loginAttributes.size() == 1 || !loginAttribute.equals(uidAttribute)) && token == null) {
+				token = loginToken;
+			}
 		}
 
-		String uid = getAttributeValue(attrs.get(syncConfiguration
-				.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)));
-		ldapAuth = authenticationDao.getAuthentication(uid, LDAPAuthenticationController.PROVIDER_LDAP);
+		String uid = getAttributeValue(attrs.get(uidAttribute));
+		Authentication ldapAuth = authenticationDao.getAuthentication(uid, LDAPAuthenticationController.PROVIDER_LDAP);
 		if(ldapAuth != null) {
 			if(StringHelper.containsNonWhitespace(token) && !token.equals(ldapAuth.getAuthusername())) {
 				ldapAuth.setAuthusername(token);
@@ -912,10 +921,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		List<String> returningAttrList = new ArrayList<>(2);
 		String userID = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
 		returningAttrList.add(userID);
-		String loginAttr = syncConfiguration.getLdapUserLoginAttribute();
-		if(loginAttr != null && !loginAttr.equals(userID)) {
-			returningAttrList.add(loginAttr);
-		}
+		List<String> loginAttrs = syncConfiguration.getLdapUserLoginAttributes();
+		returningAttrList.addAll(loginAttrs);
 		
 		String[] returningAttrs = returningAttrList.toArray(new String[returningAttrList.size()]);
 		String userFilter = syncConfiguration.getLdapUserFilter();
@@ -1580,8 +1587,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			log.error("could not bind to ldap");
 		}
 		
-		String ldapUserIDAttribute = syncConfiguration.getLdapUserLoginAttribute();
 		Authentication authentication = authenticationDao.getAuthentication(ident, LDAPAuthenticationController.PROVIDER_LDAP);
+		
+		List<String> ldapUserIDAttribute = syncConfiguration.getLdapUserLoginAttributes();
 		String filter = ldapDao.buildSearchUserFilter(ldapUserIDAttribute, authentication.getAuthusername());
 		
 		List<Attributes> ldapUserAttrs = new ArrayList<>();

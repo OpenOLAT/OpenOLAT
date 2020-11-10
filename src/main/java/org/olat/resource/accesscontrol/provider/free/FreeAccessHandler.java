@@ -64,6 +64,11 @@ public class FreeAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
+	public boolean isOverlapAllowed(AccessMethodHandler handler) {
+		return true;
+	}
+
+	@Override
 	public String getType() {
 		return METHOD_TYPE;
 	}

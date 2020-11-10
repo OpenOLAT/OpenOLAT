@@ -169,7 +169,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-" + UUID.randomUUID().toString());
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), false, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", Integer.valueOf(0), Integer.valueOf(2), false, false, null);
 		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 
@@ -200,7 +200,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	public void testFreeAccesToBusinessGroupWithWaitingList_enoughPlace() {
 		//create a group with a free offer
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(10), true, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", Integer.valueOf(0), Integer.valueOf(10), true, false, null);
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
 		offer = acService.save(offer);
 		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
@@ -230,7 +230,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-2");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-3");
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), true, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", Integer.valueOf(0), Integer.valueOf(2), true, false, null);
 		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 
@@ -272,7 +272,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), true, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", Integer.valueOf(0), Integer.valueOf(2), true, false, null);
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
 		offer = acService.save(offer);
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);
@@ -321,7 +321,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), false, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", Integer.valueOf(0), Integer.valueOf(2), false, false, null);
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
 		offer = acService.save(offer);
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);

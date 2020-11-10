@@ -95,6 +95,18 @@ public class PaypalCheckoutTransactionDAO {
 		return transactions.isEmpty() ? null : transactions.get(0);
 	}
 	
+	public PaypalCheckoutTransaction loadTransactionByPaypalOrderId(String paypalOrderId) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select trx from paypalcheckouttransaction as trx")
+		  .append(" where trx.paypalOrderId=:paypalOrderId");
+		
+		List<PaypalCheckoutTransaction> transactions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PaypalCheckoutTransaction.class)
+				.setParameter("paypalOrderId", paypalOrderId)
+				.getResultList();
+		return transactions.isEmpty() ? null : transactions.get(0);
+	}
+	
 	public List<PSPTransaction> loadTransactionBy(List<Order> orders) {
 		if(orders == null || orders.isEmpty()) return new ArrayList<>();
 		

@@ -415,10 +415,24 @@ public class LDAPSyncConfiguration {
 		this.ldapUserPasswordAttribute = attribute;
 	}
 
+	public List<String> getLdapUserLoginAttributes() {
+		if(StringHelper.containsNonWhitespace(ldapUserLoginAttribute)) {
+			String[] attrs = ldapUserLoginAttribute.split("[,]");
+			return List.of(attrs);
+		}
+		return List.of();
+	}
+	
+	/**
+	 * @return One or several attributes comma separated
+	 */
 	public String getLdapUserLoginAttribute() {
 		return ldapUserLoginAttribute;
 	}
 
+	/**
+	 * @param ldapUserLoginAttribute One or several attributes comma separated
+	 */
 	public void setLdapUserLoginAttribute(String ldapUserLoginAttribute) {
 		this.ldapUserLoginAttribute = ldapUserLoginAttribute;
 	}
@@ -511,11 +525,8 @@ public class LDAPSyncConfiguration {
 				}
 			}
 			if (!propertyExists) {
-				log.error("Error in checkIfOlatPropertiesExists(): configured LDAP attribute::"
-								+ ldapAttribute
-								+ " configured to map to OLAT user property::"
-								+ olatProperty
-								+ " but no such user property configured in olat_userconfig.xml");
+				log.error("Error in checkIfOlatPropertiesExists(): configured LDAP attribute::{} configured to map to OLAT user property::{} but no such user property configured in olat_userconfig.xml",
+						ldapAttribute, olatProperty);
 				return false;				
 			}
 		}
@@ -543,9 +554,7 @@ public class LDAPSyncConfiguration {
 				}
 			}
 			if ( ! propertyExists ) {
-				log.error("Error in checkIfStaticOlatPropertiesExists(): configured static OLAT user property::"
-						+ olatProperty
-						+ " is not configured in olat_userconfig.xml");
+				log.error("Error in checkIfStaticOlatPropertiesExists(): configured static OLAT user property::{} is not configured in olat_userconfig.xml", olatProperty);
 				return false;				
 			}			
 		}

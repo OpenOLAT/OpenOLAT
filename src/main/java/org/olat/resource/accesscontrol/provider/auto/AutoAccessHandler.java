@@ -59,6 +59,11 @@ public abstract class AutoAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
+	public boolean isOverlapAllowed(AccessMethodHandler handler) {
+		return true;
+	}
+
+	@Override
 	public AccessMethodSecurityCallback getSecurityCallback(Identity identity, Roles roles) {
 		return SYSTEM_AC_SECURITY_CALLBACK;
 	}

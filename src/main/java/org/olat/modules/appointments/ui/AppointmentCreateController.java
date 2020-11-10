@@ -273,7 +273,9 @@ public class AppointmentCreateController extends FormBasicController {
 			templateEl = uifactory.addDropdownSingleselect("meeting.template", "meeting.template", formLayout,
 					templatesKV.keys(), templatesKV.values());
 			templateEl.addActionListener(FormEvent.ONCHANGE);
-			templateEl.select(templateEl.getKeys()[0], true);
+			if(!templatesKV.isEmpty()) {
+				templateEl.select(templateEl.getKeys()[0], true);
+			}
 			
 			String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
 			recordEl = uifactory.addRadiosVertical("meeting.record", formLayout, KEYS_YES_NO, yesNoValues);
@@ -516,7 +518,11 @@ public class AppointmentCreateController extends FormBasicController {
 			
 			templateEl.clearError();
 			if(!templateEl.isOneSelected()) {
-				templateEl.setErrorKey("form.legende.mandatory", null);
+				if(templateEl.getKeys() == null || templateEl.getKeys().length == 0) {
+					templateEl.setErrorKey("error.bigbluebutton.no.templates", null);
+				} else {
+					templateEl.setErrorKey("form.legende.mandatory", null);
+				}
 				bbbOk &= false;
 			}
 			

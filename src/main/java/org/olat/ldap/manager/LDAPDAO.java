@@ -187,13 +187,11 @@ public class LDAPDAO {
 					}
 				}
 			} catch (SizeLimitExceededException e) {
-				log.error("SizeLimitExceededException after "
-								+ counter
-								+ " records when getting all users from LDAP, reconfigure your LDAP server, hints: http://www.ldapbrowser.com/forum/viewtopic.php?t=14", e);
+				log.error("SizeLimitExceededException after {} records when getting all users from LDAP, reconfigure your LDAP server, hints: http://www.ldapbrowser.com/forum/viewtopic.php?t=14", counter, e);
 			} catch (NamingException e) {
-				log.error("NamingException when trying to search users from LDAP using ldapBase::" + ldapBase + " on row::" + counter, e);
+				log.error("NamingException when trying to search users from LDAP using ldapBase::{} on row::{}", ldapBase, counter, e);
 			} catch (Exception e) {
-				log.error("Exception when trying to search users from LDAP using ldapBase::" + ldapBase + " on row::" + counter, e);
+				log.error("Exception when trying to search users from LDAP using ldapBase::{} on row::{}", ldapBase, counter, e);
 			}
 			log.debug("finished search for ldapBase:: {}", ldapBase);
 		}
@@ -202,8 +200,8 @@ public class LDAPDAO {
 	public String searchUserForLogin(String login, DirContext ctx) {
 		if(ctx == null) return null;
 		
-		String ldapUserIDAttribute = syncConfiguration.getLdapUserLoginAttribute();
-		String filter = buildSearchUserFilter(ldapUserIDAttribute, login);
+		List<String> ldapUserIDAttributes = syncConfiguration.getLdapUserLoginAttributes();
+		String filter = buildSearchUserFilter(ldapUserIDAttributes, login);
 		return searchUserDN(login, filter, ctx);
 	}
 	
@@ -236,7 +234,7 @@ public class LDAPDAO {
 					break;
 				}
 			} catch (NamingException e) {
-				log.error("NamingException when trying to bind user with username::" + username + " on ldapBase::" + ldapBase, e);
+				log.error("NamingException when trying to bind user with username::{} on ldapBase::{}", username, ldapBase, e);
 			}
 		}
 		
@@ -251,6 +249,34 @@ public class LDAPDAO {
 			filter.append("(&").append(ldapUserFilter);	
 		}
 		filter.append("(").append(attribute).append("=").append(uid).append(")");
+		if (ldapUserFilter != null) {
+			filter.append(")");	
+		}
+		return filter.toString();
+	}
+	
+	protected String buildSearchUserFilter(List<String> attributes, String uid) {
+		if(attributes == null || attributes.isEmpty()) {
+			return null;
+		} else if(attributes.size() == 1) {
+			return buildSearchUserFilter(attributes.get(0), uid);
+		}
+		
+		String ldapUserFilter = syncConfiguration.getLdapUserFilter();
+		StringBuilder filter = new StringBuilder(64);
+		if (ldapUserFilter != null) {
+			// merge preconfigured filter (e.g. object class, group filters) with username using AND rule
+			filter.append("(&").append(ldapUserFilter);	
+		}
+		
+		filter.append("(|");
+		for(int i=0; i<attributes.size(); i++) {
+			String attribute = attributes.get(i);
+			filter.append("(").append(attribute).append("=").append(uid).append(")");
+			
+		}
+		filter.append(")");
+		
 		if (ldapUserFilter != null) {
 			filter.append(")");	
 		}
@@ -311,7 +337,7 @@ public class LDAPDAO {
 		searchInLdap(userVisitor, filter.toString(), userAttrs, ctx);
 		List<LDAPUser> ldapUserList = userVisitor.getLdapUserList();
 		if(debug) {
-			log.debug("attrib search returned " + ldapUserList.size() + " results");
+			log.debug("attrib search returned {} results", ldapUserList.size());
 		}
 		return ldapUserList;
 	}

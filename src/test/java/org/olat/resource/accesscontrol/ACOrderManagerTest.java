@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -373,9 +374,9 @@ public class ACOrderManagerTest extends OlatTestCase {
 		assertEquals(ident7, retrivedOrder.getDelivery());
 		assertEquals(1, retrivedOrder.getParts().size());
 		
-		assertEquals(price1.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN), retrivedOrder.getTotalOrderLines().getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+		assertEquals(price1.getAmount().setScale(2, RoundingMode.HALF_EVEN), retrivedOrder.getTotalOrderLines().getAmount().setScale(2, RoundingMode.HALF_EVEN));
 		assertEquals(price1.getCurrencyCode(), retrivedOrder.getTotalOrderLines().getCurrencyCode());
-		assertEquals(price1.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN), retrivedOrder.getTotal().getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+		assertEquals(price1.getAmount().setScale(2, RoundingMode.HALF_EVEN), retrivedOrder.getTotal().getAmount().setScale(2, RoundingMode.HALF_EVEN));
 		assertEquals(price1.getCurrencyCode(), retrivedOrder.getTotal().getCurrencyCode());	
 		
 		//check order part
@@ -384,9 +385,9 @@ public class ACOrderManagerTest extends OlatTestCase {
 		assertNotNull(orderPart.getTotal());
 		assertNotNull(orderPart.getTotalOrderLines());
 		assertEquals(1, orderPart.getOrderLines().size());
-		assertEquals(price1.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN), orderPart.getTotalOrderLines().getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+		assertEquals(price1.getAmount().setScale(2, RoundingMode.HALF_EVEN), orderPart.getTotalOrderLines().getAmount().setScale(2, RoundingMode.HALF_EVEN));
 		assertEquals(price1.getCurrencyCode(), orderPart.getTotalOrderLines().getCurrencyCode());
-		assertEquals(price1.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN), orderPart.getTotal().getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+		assertEquals(price1.getAmount().setScale(2, RoundingMode.HALF_EVEN), orderPart.getTotal().getAmount().setScale(2, RoundingMode.HALF_EVEN));
 		assertEquals(price1.getCurrencyCode(), orderPart.getTotal().getCurrencyCode());	
 		
 		//check order line
@@ -396,9 +397,9 @@ public class ACOrderManagerTest extends OlatTestCase {
 		Assert.assertNotNull(line.getUnitPrice());
 		Assert.assertNotNull(line.getTotal());
 		Assert.assertEquals(offer1, line.getOffer());
-		Assert.assertEquals(price1.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN), line.getUnitPrice().getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+		Assert.assertEquals(price1.getAmount().setScale(2, RoundingMode.HALF_EVEN), line.getUnitPrice().getAmount().setScale(2, RoundingMode.HALF_EVEN));
 		Assert.assertEquals(price1.getCurrencyCode(), line.getUnitPrice().getCurrencyCode());
-		Assert.assertEquals(price1.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN), line.getTotal().getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+		Assert.assertEquals(price1.getAmount().setScale(2, RoundingMode.HALF_EVEN), line.getTotal().getAmount().setScale(2, RoundingMode.HALF_EVEN));
 		Assert.assertEquals(price1.getCurrencyCode(), line.getTotal().getCurrencyCode());	
 	}
 	

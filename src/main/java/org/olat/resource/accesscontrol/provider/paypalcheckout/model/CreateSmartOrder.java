@@ -17,36 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.shibboleth.manager;
-
-import java.util.Locale;
-
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
-import org.olat.resource.accesscontrol.provider.auto.AutoAccessHandler;
-import org.olat.shibboleth.ShibbolethModule;
-import org.springframework.stereotype.Component;
+package org.olat.resource.accesscontrol.provider.paypalcheckout.model;
 
 /**
- *
- * Initial date: 17.08.2017<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * 
+ * Initial date: 9 nov. 2020<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Component
-public class ShibbolethAutoAccessHandler extends AutoAccessHandler {
-	public static final String METHOD_TYPE = "auto.shib.method";
-
-	@Override
-	public String getType() {
-		return METHOD_TYPE;
+public class CreateSmartOrder {
+	
+	private final String paypalOrderId;
+	private final boolean reservationOk;
+	
+	public CreateSmartOrder(String paypalOrderId, boolean reservationOk) {
+		this.paypalOrderId = paypalOrderId;
+		this.reservationOk = reservationOk;
 	}
 	
-	
-
-	@Override
-	public String getMethodName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(ShibbolethModule.class, locale);
-		return translator.translate(METHOD_TYPE);
+	public boolean isReservationOk() {
+		return reservationOk;
 	}
+	
+	public String getPaypalOrderId() {
+		return paypalOrderId;
+	}
+
 }
