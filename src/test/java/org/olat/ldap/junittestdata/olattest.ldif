@@ -210,6 +210,21 @@ uid: cguerrera
 userPassword: olat
 modifyTimestamp: 20100630180000Z
 
+dn: uid=uschelling,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Ursula Schelling
+givenname: Ursula
+labeleduri: https://www.openolat.com/uschelling
+mail: uschelling@openolat.com
+o: Informatik
+sn: Schelling
+uid: uschelling
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
 dn: uid=lsalathe,ou=person,dc=olattest,dc=org
 objectClass: organizationalPerson
 objectClass: person

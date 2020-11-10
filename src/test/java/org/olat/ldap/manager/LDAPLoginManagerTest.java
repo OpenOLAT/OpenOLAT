@@ -671,6 +671,50 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findIdentityByLdapAuthenticationConvertFromOlat2Logins() {
+		LDAPError ldapError = new LDAPError();
+		
+		// Take an LDAP user, delete her LDAP authentication
+		List<String> firstLastName = Collections.singletonList("Ursula Schelling");
+		List<FindNamedIdentity> foundIdentities = securityManager.findIdentitiesBy(firstLastName);
+		Assert.assertEquals(1, foundIdentities.size());
+		
+		Identity identity = foundIdentities.get(0).getIdentity();
+		Authentication authentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		Assert.assertNotNull(authentication);
+		Assert.assertEquals("uschelling", authentication.getAuthusername());
+		securityManager.deleteAuthentication(authentication);
+		securityManager.createAndPersistAuthentication(identity, "OLAT", "uschelling", "secret", Algorithm.sha512);
+		dbInstance.commitAndCloseSession();
+		
+		// convert users to LDAP
+		boolean currentConvertExistingLocalUsers = ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers();
+		ldapLoginModule.setConvertExistingLocalUsersToLDAPUsers(true);
+		String currentLoginAttribute = syncConfiguration.getLdapUserLoginAttribute();
+		syncConfiguration.setLdapUserLoginAttribute("sn," + currentLoginAttribute);
+		
+		// use uid as login attribute	
+		Attributes attrs = ldapManager.bindUser("uschelling", "olat", ldapError);
+		Assert.assertNotNull(attrs);
+
+		LDAPError errors = new LDAPError();
+		Identity convertedIdentity = ldapManager.findIdentityByLdapAuthentication(attrs, errors);
+		Assert.assertNotNull(convertedIdentity);
+		Assert.assertEquals("Ursula", convertedIdentity.getUser().getFirstName());
+		Assert.assertEquals("Schelling", convertedIdentity.getUser().getLastName());
+
+		Authentication updatedAuthentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		Assert.assertNotNull(updatedAuthentication);
+		Assert.assertEquals("Schelling", updatedAuthentication.getAuthusername());
+
+		// revert configuration
+		ldapLoginModule.setConvertExistingLocalUsersToLDAPUsers(currentConvertExistingLocalUsers);
+		syncConfiguration.setLdapUserLoginAttribute(currentLoginAttribute);
+	}
+	
+	
+	
+	@Test
 	public void findIdentityByLdapAuthenticationConvertFromIdentityName() {
 		// Take an LDAP user, delete her LDAP authentication
 		List<String> firstLastName = Collections.singletonList("Leyla Salathe");

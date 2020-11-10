@@ -116,4 +116,30 @@ public class LDAPLoginTest extends OlatTestCase {
 		
 		syncConfiguration.setLdapUserLoginAttribute(currentLoginAttr);
 	}
+	
+	@Test
+	public void userBindLoginWithTwoLoginAttributes() throws Exception {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		String currentLoginAttr = syncConfiguration.getLdapUserLoginAttribute();
+
+		// use SN as login attribute
+		syncConfiguration.setLdapUserLoginAttribute("sn," + currentLoginAttr);
+
+		// try sn attribute
+		LDAPError errors = new LDAPError();
+		Attributes attrs = ldapManager.bindUser("Forster", "olat", errors);
+		Assert.assertNotNull(attrs);
+		Assert.assertEquals("dforster", attrs.get("uid").get());
+		Assert.assertTrue(errors.isEmpty());
+		
+		// try uid attribute
+		LDAPError altErrors = new LDAPError();
+		Attributes altAttrs = ldapManager.bindUser("dforster", "olat", altErrors);
+		Assert.assertNotNull(altAttrs);
+		Assert.assertEquals("Forster", altAttrs.get("sn").get());
+		Assert.assertEquals("dforster", altAttrs.get("uid").get());
+		Assert.assertTrue(altErrors.isEmpty());
+
+		syncConfiguration.setLdapUserLoginAttribute(currentLoginAttr);
+	}
 }
