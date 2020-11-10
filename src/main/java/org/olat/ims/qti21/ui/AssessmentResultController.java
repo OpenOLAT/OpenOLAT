@@ -433,8 +433,13 @@ public class AssessmentResultController extends FormBasicController {
 			}
 
 			String comment = itemSession.getCoachComment();
-			if(comment != null && !StringHelper.isHtml(comment)) {
-				comment = Formatter.escWithBR(comment).toString();
+			if(comment != null) {
+				if(StringHelper.isHtml(comment)) {
+					comment = StringHelper.xssScan(comment);
+					comment = Formatter.formatLatexFormulas(comment);
+				} else {
+					comment = Formatter.escWithBR(comment).toString();
+				}
 			}
 			r.setComment(comment);
 			r.setItemSessionKey(itemSession.getKey());
