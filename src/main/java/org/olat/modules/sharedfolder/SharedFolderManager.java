@@ -26,6 +26,7 @@
 package org.olat.modules.sharedfolder;
 
 import java.io.File;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
@@ -96,19 +97,17 @@ public class SharedFolderManager {
 		return new ZippedContainerMediaResource(exportFileName, sharedFolder, true);
 	}
 
-	public boolean exportSharedFolder(String sharedFolderSoftkey, File exportedDataDir) {
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(
-		 sharedFolderSoftkey, false);
+	public boolean exportSharedFolder(String sharedFolderSoftkey, String path, ZipOutputStream zout) {
+		RepositoryEntry re = RepositoryManager.getInstance()
+				.lookupRepositoryEntryBySoftkey(sharedFolderSoftkey, false);
 		if (re == null) return false;
-		File fExportBaseDirectory = new File(exportedDataDir, "sharedfolder");
-		if (!fExportBaseDirectory.mkdir()) return false;
 
 		// do intermediate commit to avoid transaction timeout
 		DBFactory.getInstance().intermediateCommit();
 
 		// export properties
-		RepositoryEntryImportExport reImportExport = new RepositoryEntryImportExport(re, fExportBaseDirectory);
-		return reImportExport.exportDoExport();
+		RepositoryEntryImportExport reImportExport = new RepositoryEntryImportExport(re, null);
+		return reImportExport.exportDoExport(path, zout);
 	}
 	
 	public RepositoryEntryImportExport getRepositoryImportExport(File importDataDir) {

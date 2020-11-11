@@ -235,7 +235,7 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 		// export shared folder
 		CourseConfig config = sourceCourse.getCourseConfig();
 		if (config.hasCustomSharedFolder()) {
-			exportSharedFolder(config, sourceCourse, fExportedDataDir, zout);
+			exportSharedFolder(config, sourceCourse, zout);
 		}
 		// export glossary
 		if (config.hasGlossary()) {
@@ -301,24 +301,20 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 		}
 	}
 	
-	private void exportSharedFolder(CourseConfig config, PersistingCourseImpl sourceCourse, File fExportedDataDir, ZipOutputStream zout) {
-		File sharedFolderExportDataDir = new File(fExportedDataDir, "sharedfolder");
+	private void exportSharedFolder(CourseConfig config, PersistingCourseImpl sourceCourse, ZipOutputStream zout) {
 		try {
-			sharedFolderExportDataDir.mkdir();
-		
 			log.info("exportToFilesystem: exporting shared folder course: {}", sourceCourse);
-			if (!SharedFolderManager.getInstance().exportSharedFolder(config.getSharedFolderSoftkey(), sharedFolderExportDataDir)) {
+			String exportPath = ICourse.EXPORTED_DATA_FOLDERNAME + "/" + "sharedfolder";
+			if (!SharedFolderManager.getInstance().exportSharedFolder(config.getSharedFolderSoftkey(), exportPath, zout)) {
 				// export failed, delete reference to shared folder in the course config
 				log.info("exportToFilesystem: export of shared folder failed.");
 				config.setSharedFolderSoftkey(CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY);
 				CoreSpringFactory.getImpl(CourseConfigManager.class).saveConfigTo(sourceCourse, config);
 			}
 			log.info("exportToFilesystem: exporting shared folder course done: {}", sourceCourse);
-			ZipUtil.addDirectoryToZip(sharedFolderExportDataDir.toPath(), ICourse.EXPORTED_DATA_FOLDERNAME, zout);
 		} catch (Exception e) {
 			log.error("", e);
 		} finally {
-			FileUtils.deleteDirsAndFiles(sharedFolderExportDataDir, true, true);
 			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}
