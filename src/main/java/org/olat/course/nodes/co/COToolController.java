@@ -41,6 +41,7 @@ import org.olat.course.nodes.co.COToolRecipientsController.Recipients;
 import org.olat.course.nodes.members.MembersManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.co.ContactFormController;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -81,7 +82,9 @@ public class COToolController extends BasicController {
 		ContactList dummyList = new ContactList("dummy");
 		dummyList.add(getIdentity());
 		cmsg.addEmailTo(dummyList);
-		emailCtrl = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg);
+		RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		CourseMailTemplate template = new CourseMailTemplate(entry, getIdentity(), getLocale());
+		emailCtrl = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg, template);
 		emailCtrl.setContactFormTitle(null);
 		Set<Recipients> recipients = recipientCtrl.getSelectedRecipients();
 		doSetReciepients(recipients);
