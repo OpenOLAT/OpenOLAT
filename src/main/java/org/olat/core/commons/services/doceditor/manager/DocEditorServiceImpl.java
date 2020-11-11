@@ -194,7 +194,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	public Access createAccess(Identity identity, Roles roles, DocEditorConfigs configs) {
 		Date expiresAt = Date.from(Instant.now().plus(Duration.ofHours(10)));
 		DocEditor editor = getPreferredEditor(identity, roles, configs);
-		return accessDao.createAccess(configs.getVfsLeaf().getMetaInfo(), identity, editor.getType(), configs.getMode(),
+		String editorType = editor != null? editor.getType(): "no-editor-found";
+		return accessDao.createAccess(configs.getVfsLeaf().getMetaInfo(), identity, editorType, configs.getMode(),
 				configs.isVersionControlled(), configs.isDownloadEnabled(), expiresAt);
 	}
  
@@ -208,7 +209,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		
 		List<DocEditor> leafEditors = getEditors(identity, roles, suffix, configs.getMode(), configs.isMetaAvailable());
 		if (leafEditors.isEmpty()) {
-			log.error("No document editor present for {}.", filename);
+			log.warn("No document editor present for {}.", filename);
+			return null;
 		}
 		
 		String preferredEditorType = getPreferredEditorType(identity);
@@ -292,6 +294,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 				} else {
 					url = createDocumentUrl(access);
 				}
+			} else {
+				url = createDocumentUrl(access);
 			}
 		}
 		return url;
