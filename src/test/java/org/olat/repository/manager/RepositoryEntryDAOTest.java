@@ -413,7 +413,7 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	@Test
 	public void getLastUsedRepositoryEntries() {
 		// insert test data
-		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("Wiki", new Long(CodeHelper.getForeverUniqueID()));
+		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("Wiki", Long.valueOf(CodeHelper.getForeverUniqueID()));
 		OLATResource resource = resourceManager.createAndPersistOLATResourceInstance(resourceable);
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test all", "", resource,
