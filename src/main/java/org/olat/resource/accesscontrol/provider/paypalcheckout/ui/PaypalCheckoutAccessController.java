@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -96,6 +97,9 @@ public class PaypalCheckoutAccessController extends FormBasicController implemen
 		
 		String description = link.getOffer().getDescription();
 		if(StringHelper.containsNonWhitespace(description)) {
+			if(!StringHelper.isHtml(description)) {
+				description = Formatter.escWithBR(description).toString();
+			}
 			description = StringHelper.xssScan(description);
 			uifactory.addStaticTextElement("offer.description", description, formLayout);
 		}
