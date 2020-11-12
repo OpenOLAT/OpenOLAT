@@ -29,6 +29,8 @@ import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.CheckoutRequest;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.CreateSmartOrder;
 
+import com.paypal.payments.Capture;
+
 /**
  * 
  * Initial date: 23 août 2019<br>
@@ -56,6 +58,15 @@ public interface PaypalCheckoutManager {
 	 * @param paypalOrderId The order id of the Paypal order.
 	 */
 	public void approveTransaction(String paypalOrderId);
+	
+	/**
+	 * This will complete the transaction successfully. Method to use
+	 * for deferred capture, if the capture is done manually on the PayPal
+	 * dashboard.
+	 * 
+	 * @param paypalAuthorizationId The authorization ID
+	 */
+	public void approveAuthorization(String paypalAuthorizationId, Capture capture);
 	
 	/**
 	 * 

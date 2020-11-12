@@ -288,7 +288,7 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 					currentContentStream.beginText();
 					currentContentStream.setFont(font, fontSize);
 					currentContentStream.newLineAtOffset(textx, lineTexty);
-					currentContentStream.showText(textLine);
+					showTextToStream(textLine, currentContentStream);
 					currentContentStream.endText();
 					lineTexty -= (lineHeightFactory * fontSize);
 				}
@@ -296,7 +296,7 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 				currentContentStream.beginText();
 				currentContentStream.setFont(font, fontSize);
 				currentContentStream.newLineAtOffset(textx, texty);
-				currentContentStream.showText(text);
+				showTextToStream(text, currentContentStream);
 				currentContentStream.endText();
 			}
 			texty -= rowHeights[i];

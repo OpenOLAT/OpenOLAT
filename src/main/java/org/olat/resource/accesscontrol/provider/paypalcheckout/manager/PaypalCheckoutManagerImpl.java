@@ -53,6 +53,8 @@ import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheck
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.paypal.payments.Capture;
+
 /**
  * 
  * Initial date: 23 août 2019<br>
@@ -113,6 +115,8 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 			trx = checkoutProvider.captureOrder(trx);
 			if(PaypalCheckoutStatus.COMPLETED.name().equals(trx.getPaypalOrderStatus())) {
 				completeTransactionSucessfully(trx);
+			} else if(PaypalCheckoutStatus.PENDING.name().equals(trx.getPaypalOrderStatus())) {
+				pendingTransaction(trx);
 			} else {
 				completeDeniedTransaction(trx);
 			}
@@ -144,6 +148,22 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 			completeTransaction(trx);
 		} else {
 			log.error("Paypal Checkout transaction not found for approval: {} (Paypal order id)", paypalOrderId);
+		}
+	}
+	
+	@Override
+	public void approveAuthorization(String paypalAuthorizationId, Capture capture) {
+		PaypalCheckoutTransaction trx = transactionDao.loadTransactionByAuthorizationId(paypalAuthorizationId);
+		if(trx != null && PaypalCheckoutStatus.PENDING.name().equals(trx.getPaypalOrderStatus())) {
+			// transfer data from capture to our transaction
+			checkoutProvider.captureToTransaction(capture, trx);
+			trx = transactionDao.update(trx);
+			dbInstance.commit();
+			
+			log.info(Tracing.M_AUDIT, "Paypal Checkout transaction approved: {}", trx);
+			completeTransactionSucessfully(trx);
+		} else {
+			log.error("Paypal Checkout transaction not found for approval: {} (Paypal authorization id)", paypalAuthorizationId);
 		}
 	}
 
@@ -179,6 +199,8 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 				} else {
 					completeDeniedTransaction(trx);
 				}
+			} else if(PaypalCheckoutStatus.PENDING.name().equals(trx.getPaypalOrderStatus())) {
+				pendingTransaction(trx);
 			} else {
 				completeDeniedTransaction(trx);
 			}
@@ -218,6 +240,24 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 				}
 			}
 		}
+	}
+	
+	private void pendingTransaction(PaypalCheckoutTransaction trx) {
+		Order order = orderManager.loadOrderByNr(trx.getOrderNr());
+		order = orderManager.save(order, OrderStatus.PREPAYMENT);
+		
+		PaypalCheckoutAccessMethod method = getMethodSecure(trx.getMethodId());
+		if(order.getKey().equals(trx.getOrderId())) {
+			for(OrderPart part:order.getParts()) {
+				if(part.getKey().equals(trx.getOrderPartId())) {
+					AccessTransaction transaction = transactionManager.createTransaction(order, part, method);
+					transactionManager.update(transaction, AccessTransactionStatus.PENDING);
+				}
+			}
+		} else {
+			log.error("Order not in sync with PaypalTransaction");
+		}
+		dbInstance.commit();
 	}
 	
 	private void completeDeniedTransaction(PaypalCheckoutTransaction trx) {

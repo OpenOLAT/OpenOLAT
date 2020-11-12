@@ -56,6 +56,7 @@ import com.paypal.orders.OrdersCreateRequest;
 import com.paypal.orders.PurchaseUnitRequest;
 import com.paypal.payments.AuthorizationsCaptureRequest;
 import com.paypal.payments.Capture;
+import com.paypal.payments.CapturesGetRequest;
 import com.paypal.payments.Money;
 import com.paypal.payments.StatusDetails;
 
@@ -78,7 +79,7 @@ public class CheckoutV2Provider {
 	private PaypalCheckoutTransactionDAO transactionDao;
 	
 	public PaypalCheckoutTransaction createOrder(org.olat.resource.accesscontrol.Order order, PaypalCheckoutTransaction trx) {
-		ApplicationContext applicationContext = new ApplicationContext();
+		ApplicationContext applicationContext = buildApplicationContext();
 		OrderRequest orderRequest = buildOrderRequest(order, "AUTHORIZE", applicationContext);
 		OrdersCreateRequest request = buildOrdersCreateRequest(orderRequest);
 
@@ -118,7 +119,7 @@ public class CheckoutV2Provider {
 		
 		String returnURL = url + "/" + trx.getSecureSuccessUUID() + ".html;jsessionid=" + sessionId + "?status=success";
 		String cancelURL = url + "/" + trx.getSecureCancelUUID() + ".html;jsessionid=" + sessionId + "?status=cancel";
-		ApplicationContext applicationContext = new ApplicationContext()
+		ApplicationContext applicationContext = buildApplicationContext()
 				.cancelUrl(cancelURL)
 				.returnUrl(returnURL);
 
@@ -163,6 +164,12 @@ public class CheckoutV2Provider {
 		dbInstance.commit();
         checkoutRequest.setCheckoutTransactionn(trx);
         return checkoutRequest;
+	}
+	
+	private ApplicationContext buildApplicationContext() {
+		ApplicationContext context = new ApplicationContext();
+		context.shippingPreference("NO_SHIPPING");
+		return context;
 	}
 	
 	private OrdersCreateRequest buildOrdersCreateRequest(OrderRequest orderRequest) {
@@ -243,28 +250,7 @@ public class CheckoutV2Provider {
 
 			if (response.statusCode() == 201) {
 				Capture capture = response.result();
-				String status = capture.status();
-				String captureId = capture.id();
-				String invoiceId = capture.invoiceId();
-				String statusReason = null;
-				StatusDetails statusDetails = capture.statusDetails();
-				if (statusDetails != null) {
-					statusReason = statusDetails.reason();
-				}
-				trx.setCapturePrice(getCapturedPrice(capture));
-				trx.setPaypalCaptureId(captureId);
-				trx.setPaypalInvoiceId(invoiceId);
-				trx.setPaypalOrderStatus(status);
-				trx.setPaypalOrderStatusReason(statusReason);
-				if(PaypalCheckoutStatus.PENDING.name().equals(status)) {
-					trx.setStatus(PaypalCheckoutStatus.PENDING);
-				} else if(PaypalCheckoutStatus.COMPLETED.name().equals(status)) {
-					trx.setStatus(PaypalCheckoutStatus.COMPLETED);
-				} else  {
-					trx.setStatus(PaypalCheckoutStatus.ERROR);
-				}
-
-				log.info(Tracing.M_AUDIT, "Capture: id:{} invoiceId:{} status:{} reason:{}", captureId, invoiceId, status, statusReason);
+				captureToTransaction(capture, trx);
 			} else {
 				trx.setStatus(PaypalCheckoutStatus.ERROR);
 				trx.setPaypalOrderStatus(PaypalCheckoutStatus.ERROR.name());
@@ -285,6 +271,53 @@ public class CheckoutV2Provider {
 		trx = transactionDao.update(trx);
 		dbInstance.commit();
 		return trx;
+	}
+	
+	public void captureToTransaction(Capture capture, PaypalCheckoutTransaction trx) {
+		String status = capture.status();
+		String captureId = capture.id();
+		String invoiceId = capture.invoiceId();
+		String statusReason = null;
+		StatusDetails statusDetails = capture.statusDetails();
+		if (statusDetails != null) {
+			statusReason = statusDetails.reason();
+		}
+		trx.setCapturePrice(getCapturedPrice(capture));
+		trx.setPaypalCaptureId(captureId);
+		trx.setPaypalInvoiceId(invoiceId);
+		trx.setPaypalOrderStatus(status);
+		trx.setPaypalOrderStatusReason(statusReason);
+		if(PaypalCheckoutStatus.PENDING.name().equals(status)) {
+			trx.setStatus(PaypalCheckoutStatus.PENDING);
+		} else if(PaypalCheckoutStatus.COMPLETED.name().equals(status)) {
+			trx.setStatus(PaypalCheckoutStatus.COMPLETED);
+		} else  {
+			trx.setStatus(PaypalCheckoutStatus.ERROR);
+		}
+		log.info(Tracing.M_AUDIT, "Capture: id:{} invoiceId:{} status:{} reason:{}", captureId, invoiceId, status, statusReason);
+	}
+	
+	public Capture getCapture(String captureId) {
+		Capture capture = null;
+		CapturesGetRequest request = new CapturesGetRequest(captureId);
+		try {
+			HttpResponse<Capture> response = client().execute(request);
+			if(log.isDebugEnabled()) {
+				log.debug("Status: code:{} status:{} capture id:{}", response.statusCode(), response.result().status(), response.result().id());
+				log.debug(new JSONObject(new Json().serialize(response.result())).toString(4));
+			}
+
+			if (response.statusCode() == 200) {
+				capture = response.result();
+			}
+		} catch (HttpException e) {
+            JSONObject message = new JSONObject(e.getMessage());
+            log.error(Tracing.M_AUDIT, message);
+			log.error(Tracing.M_AUDIT, "Capture", e);
+		} catch (Exception e) {
+			log.error(Tracing.M_AUDIT, "Capture", e);
+		}
+		return capture;
 	}
 	
 	private Price getCapturedPrice(Capture capture) {

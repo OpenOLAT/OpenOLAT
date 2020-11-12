@@ -25,6 +25,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -177,6 +178,16 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 		Assert.assertEquals(RepositoryEntryStatusEnum.published, reloadEntryInUse.getEntryStatus());
 	}
 	
+	@Test
+	public void deleteCoursePermanentlyByLifecycle() {
+		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-del-1");
+		RepositoryEntry re = JunitTestHelper.deployDemoCourse(initialAuthor);
+		dbInstance.commitAndCloseSession();
+		
+		boolean deleted = automaticLifecycleService.definitivelyDelete(re);
+		dbInstance.commitAndCloseSession();
+		Assert.assertTrue(deleted);
+	}
 
 	private RepositoryEntry createTrashedRepositoryEntry(String displayName, RepositoryEntryStatusEnum status, int startDays, int endDays, int trashedDays) {
 		RepositoryEntry entry = createRepositoryEntry(displayName, status, startDays, endDays);

@@ -648,9 +648,9 @@ public class CourseHandler implements RepositoryHandler {
 		UserManager um = UserManager.getInstance();
 		String charset = um.getUserCharset(identity);
 		try {
-			CourseFactory.archiveCourse(entry.getOlatResource(),charset, locale, identity, roles);
+			CourseFactory.archiveCourse(entry.getOlatResource(), charset, locale, identity, roles);
 		} catch (CorruptedCourseException e) {
-			log.error("The course is corrupted, cannot archive it: " + entry, e);
+			log.error("The course is corrupted, cannot archive it: {}", entry, e);
 		}
 		return true;
 	}

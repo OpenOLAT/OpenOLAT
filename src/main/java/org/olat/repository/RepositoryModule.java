@@ -101,7 +101,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	private String lifecycleAutoClose;
 	@Value("${repo.lifecycle.auto.delete:}")
 	private String lifecycleAutoDelete;
-	@Value("${repo.lifecycle.auto.definitively.delete:6month}")
+	@Value("${repo.lifecycle.auto.definitively.delete:}")
 	private String lifecycleAutoDefinitivelyDelete;
 	@Value("${repo.lifecylce.notification.close.delete:}")
 	private String lifecycleNotificationByCloseDelete;

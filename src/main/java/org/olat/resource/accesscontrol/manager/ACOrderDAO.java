@@ -276,7 +276,9 @@ public class ACOrderDAO {
 		  .append("  ").appendToArray("offer.resourcedisplayname").append(" as resDisplaynames,")
 		  .append("  ").appendToArray("trx.trx_status").append(" as trxStatus,")
 		  .append("  ").appendToArray("trx.fk_method_id").append(" as trxMethodIds,")
-		  .append("  ").appendToArray("pspTrx.trx_status").append(" as pspTrxStatus");
+		  .append("  ").appendToArray("pspTrx.trx_status").append(" as pspTrxStatus,")
+		  .append("  ").appendToArray("checkoutTrx.p_status").append(" as checkoutTrxStatus,")
+		  .append("  ").appendToArray("checkoutTrx.p_paypal_order_status").append(" as checkoutTrxPaypalStatus");
 		if(delivery == null) {
 			sb.append("  ,delivery.id as delivery_ident_id")
 			  .append("  ,delivery.name as delivery_ident_name")
@@ -297,6 +299,7 @@ public class ACOrderDAO {
 			  .append(" inner join o_user delivery_user on (delivery_user.fk_identity=delivery.id)");
 		}
 		sb.append(" left join o_ac_paypal_transaction pspTrx on (o.order_id = pspTrx.order_id)")
+		  .append(" left join o_ac_checkout_transaction checkoutTrx on (o.order_id = checkoutTrx.p_order_id)")
 		  .append(" left join o_ac_transaction trx on (o.order_id = trx.fk_order_id)");
 
 		boolean where = false;
@@ -403,6 +406,8 @@ public class ACOrderDAO {
 			String trxStatus = (String)order[pos++];
 			String trxMethodIds = (String)order[pos++];
 			String pspTrxStatus = (String)order[pos++];
+			String checkoutTrxStatus = (String)order[pos++];
+			String checkoutOrderTrxStatus = (String)order[pos++];
 
 			String username = null;
 			String[] userProperties = null;
@@ -418,7 +423,8 @@ public class ACOrderDAO {
 
 			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(), totalCurrencyCode, totalAmount,
 					creationDate, orderStatus, deliveryKey, resourceName,
-					trxStatus, trxMethodIds, pspTrxStatus, username, userProperties);
+					trxStatus, trxMethodIds, pspTrxStatus, checkoutTrxStatus, checkoutOrderTrxStatus,
+					username, userProperties);
 			items.add(item);
 		}
 		return items;

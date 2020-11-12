@@ -169,10 +169,19 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 				paypalModule.setPaypalCurrency(currencyEl.getSelectedKey());
 			}
 			paypalModule.setSmartButtons(smartButtonsEl.isOneSelected() && smartButtonsEl.isSelected(0));
+			doUpdateWebhook();
 		} else {
 			paypalModule.setClientId(null);
 			paypalModule.setClientSecret(null);
 		}
 		showInfo("saved");
+	}
+	
+	private void doUpdateWebhook() {
+		try {
+			paypalModule.updateWebhook();
+		} catch (Exception e) {
+			logError("", e);
+		}
 	}
 }

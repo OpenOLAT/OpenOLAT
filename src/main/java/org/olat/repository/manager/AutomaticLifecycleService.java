@@ -22,13 +22,23 @@ package org.olat.repository.manager;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.repository.ErrorList;
+import org.olat.repository.RepositoryDeletionModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLifeCycleValue;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -52,9 +62,13 @@ public class AutomaticLifecycleService {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryDeletionModule repositoryDeletionModule;
 	
 	public void manage() {
 		close();
@@ -116,9 +130,7 @@ public class AutomaticLifecycleService {
 				try {
 					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
 					if(!deleteManaged) {
-						log.info(Tracing.M_AUDIT, "Automatic deleting (definitively) course: {} [{}]", entry.getDisplayname(), entry.getKey());
-						repositoryService.deletePermanently(entry, null, null, null);
-						dbInstance.commit();
+						definitivelyDelete(entry);
 					}
 				} catch (Exception e) {
 					log.error("",  e);
@@ -128,6 +140,42 @@ public class AutomaticLifecycleService {
 		}
 	}
 	
+	/**
+	 * @param entry The repository entry to delete
+	 * @return true if the deletion happens without errors
+	 */
+	protected boolean definitivelyDelete(RepositoryEntry entry) {
+		boolean deleted = false;
+		Identity administrator = getDefaultAdministrator(entry);
+		if(administrator != null) {
+			Roles roles = securityManager.getRoles(administrator);
+			Locale locale = I18nManager.getInstance().getLocaleOrDefault(administrator.getUser().getPreferences().getLanguage());
+			log.info(Tracing.M_AUDIT, "Automatic deleting (definitively) course: {} [{}]", entry.getDisplayname(), entry.getKey());
+			ErrorList errors = repositoryService.deletePermanently(entry, administrator, roles, locale);
+			deleted = !errors.hasErrors();
+		} else {
+			log.error("Automatic deleting aborted, no administrator found for archives: {} [{}]", entry.getDisplayname(), entry.getKey());
+		}
+		dbInstance.commit();
+		return deleted;
+	}
+	
+	private Identity getDefaultAdministrator(RepositoryEntry entry) {
+		Identity administrator = repositoryDeletionModule.getAdminUserIdentity();
+		if(administrator == null) {
+			List<OrganisationRef> identityOrgs = repositoryService.getOrganisationReferences(entry);
+			SearchIdentityParams identityParams = new SearchIdentityParams();
+			identityParams.setOrganisations(identityOrgs);
+			identityParams.setRoles(new OrganisationRoles[]{ OrganisationRoles.administrator });
+			identityParams.setStatus(Identity.STATUS_VISIBLE_LIMIT);
+			List<Identity> admins = securityManager.getIdentitiesByPowerSearch(identityParams, 0, -1);
+			if(!admins.isEmpty()) {
+				administrator = admins.get(0);
+			}
+		}
+		return administrator;
+	}
+
 	protected List<RepositoryEntry> getRepositoryEntries(Date date, RepositoryEntryStatusEnum[] states) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from repositoryentry as v ")

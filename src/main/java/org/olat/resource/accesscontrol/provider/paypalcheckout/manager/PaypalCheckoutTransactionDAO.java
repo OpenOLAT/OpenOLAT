@@ -107,6 +107,18 @@ public class PaypalCheckoutTransactionDAO {
 		return transactions.isEmpty() ? null : transactions.get(0);
 	}
 	
+	public PaypalCheckoutTransaction loadTransactionByAuthorizationId(String paypalAuthorizationId) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select trx from paypalcheckouttransaction as trx")
+		  .append(" where trx.paypalAuthorizationId=:paypalAuthorizationId");
+		
+		List<PaypalCheckoutTransaction> transactions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PaypalCheckoutTransaction.class)
+				.setParameter("paypalAuthorizationId", paypalAuthorizationId)
+				.getResultList();
+		return transactions.isEmpty() ? null : transactions.get(0);
+	}
+	
 	public List<PSPTransaction> loadTransactionBy(List<Order> orders) {
 		if(orders == null || orders.isEmpty()) return new ArrayList<>();
 		

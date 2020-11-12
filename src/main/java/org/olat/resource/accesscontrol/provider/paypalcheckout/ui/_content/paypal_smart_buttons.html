@@ -19,15 +19,29 @@
 			
 			<div id="paypal_buttons_${r.getCId()}">
 				<script defer>
-				jQuery(function() {	
+				jQuery(function() {
 					jQuery.ajax({
 						url: 'https://www.paypal.com/sdk/js?client-id=$clientId&currency=$currency&intent=authorize',
 						cache: true,
 						dataType: "script",
-						success: loadButtons
+						success: loadButtons,
+						error: errorButtons,
 					});
-	
+					
+					function errorButtons() {
+						location.reload();
+					}
+					
 					function loadButtons() {
+						try {
+							internalLoadButtons();
+						} catch(e) {
+							if(window.console) console.log(e);
+							location.reload();
+						}
+					}
+					
+					function internalLoadButtons() {
 						paypal.Buttons({
 							createOrder: function(data, actions) {
 								return fetch('$mapperUri/create-paypal-transaction', {
