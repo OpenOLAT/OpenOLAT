@@ -141,6 +141,7 @@ public class OrderTableItem {
 		ERROR,
 		WARNING,
 		OK,
+		PENDING,
 		CANCELED,
 	}
 	

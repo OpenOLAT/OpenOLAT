@@ -45,6 +45,8 @@ public class RawOrderItem {
 	private final String trxStatus;
 	private final String trxMethodIds;
 	private final String pspTrxStatus;
+	private final String checkoutTrxStatus;
+	private final String checkoutOrderTrxStatus;
 	
 	private final String username;
 	private final String[] userProperties;
@@ -52,6 +54,7 @@ public class RawOrderItem {
 	public RawOrderItem(Long orderKey, String orderNr, String totalCurrencyCode, BigDecimal totalAmount,
 			Date creationDate, String orderStatus, Long deliveryKey, String resourceName,
 			String trxStatus, String trxMethodIds, String pspTrxStatus,
+			String checkoutTrxStatus, String checkoutOrderTrxStatus,
 			String username, String[] userProperties) {
 		this.orderKey = orderKey;
 		this.orderNr = orderNr;
@@ -63,6 +66,8 @@ public class RawOrderItem {
 		this.trxStatus = trxStatus;
 		this.trxMethodIds = trxMethodIds;
 		this.pspTrxStatus = pspTrxStatus;
+		this.checkoutTrxStatus = checkoutTrxStatus;
+		this.checkoutOrderTrxStatus = checkoutOrderTrxStatus;
 		this.username = username;
 		this.userProperties = userProperties;
 	}
@@ -105,6 +110,14 @@ public class RawOrderItem {
 
 	public String getPspTrxStatus() {
 		return pspTrxStatus;
+	}
+
+	public String getCheckoutTrxStatus() {
+		return checkoutTrxStatus;
+	}
+
+	public String getCheckoutOrderTrxStatus() {
+		return checkoutOrderTrxStatus;
 	}
 
 	public String getUsername() {

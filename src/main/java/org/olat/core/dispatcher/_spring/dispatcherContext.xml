@@ -91,6 +91,12 @@
 				<entry key="/pdfd/">
 					<ref bean="pdfDeliveryBean" />
 				</entry>
+				<entry key="/checkoutv2">
+					<ref bean="paypalCheckoutCallback" />
+				</entry>
+				<entry key="/checkoutv2/">
+					<ref bean="paypalCheckoutCallback" />
+				</entry>
 			</map>
 		</property>
 	</bean>

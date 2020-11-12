@@ -267,21 +267,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		/*
-		if(state != null) {
-			if(searchForm.setStateEntry(state)) {
-				loadModel();
-			}
-		}
-
-		if(entries == null || entries.isEmpty()) return;
-		
-		Long orderKey = entries.get(0).getOLATResourceable().getResourceableId();
-		OrdersDataModel model = (OrdersDataModel)tableCtr.getTableDataModel();
-		OrderTableItem order = model.getItem(orderKey);
-		if(order != null) {
-			selectOrder(ureq, order);
-		}
-		*/
+		//
 	}
 }

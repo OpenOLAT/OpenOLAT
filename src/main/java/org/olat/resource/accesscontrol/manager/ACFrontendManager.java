@@ -82,6 +82,7 @@ import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutStatus;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
@@ -372,13 +373,13 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Override
 	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument) {
 		if(link == null || link.getOffer() == null || link.getMethod() == null) {
-			log.info(Tracing.M_AUDIT, "Access refused (no offer) to: " + link + " for " + identity);
+			log.info(Tracing.M_AUDIT, "Access refused (no offer) to: {} for {}", link, identity);
 			return new AccessResult(false);
 		}
 
 		AccessMethodHandler handler = accessModule.getAccessMethodHandler(link.getMethod().getType());
 		if(handler == null) {
-			log.info(Tracing.M_AUDIT, "Access refused (no handler method) to: " + link + " for " + identity);
+			log.info(Tracing.M_AUDIT, "Access refused (no handler method) to: {} for {}", link, identity);
 			return new AccessResult(false);
 		}
 
@@ -388,13 +389,13 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				AccessTransaction transaction = transactionManager.createTransaction(order, order.getParts().get(0), link.getMethod());
 				transactionManager.save(transaction);
 				dbInstance.commit();
-				log.info(Tracing.M_AUDIT, "Access granted to: " + link + " for " + identity);
+				log.info(Tracing.M_AUDIT, "Access granted to: {} for {}", link, identity);
 				return new AccessResult(true);
 			} else {
-				log.info(Tracing.M_AUDIT, "Access error to: " + link + " for " + identity);
+				log.info(Tracing.M_AUDIT, "Access error to: {} for {}", link, identity);
 			}
 		} else {
-			log.info(Tracing.M_AUDIT, "Access refused to: " + link + " for " + identity);
+			log.info(Tracing.M_AUDIT, "Access refused to: {} for {}", link, identity);
 		}
 		return new AccessResult(false);
 	}
@@ -697,8 +698,15 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		for(RawOrderItem rawOrder:rawOrders) {
 			String orderStatusStr = rawOrder.getOrderStatus();
 			OrderStatus orderStatus = OrderStatus.valueOf(orderStatusStr);
-			Status finalStatus = getStatus(orderStatusStr,  rawOrder.getTrxStatus(), rawOrder.getPspTrxStatus());
-
+			
+			String pspTrxStatus = null;
+			if(StringHelper.containsNonWhitespace(rawOrder.getPspTrxStatus())) {
+				pspTrxStatus = rawOrder.getPspTrxStatus();
+			} else if(StringHelper.containsNonWhitespace(rawOrder.getCheckoutTrxStatus())) {
+				pspTrxStatus = rawOrder.getCheckoutTrxStatus();
+			}
+			
+			Status finalStatus = getStatus(orderStatusStr,  rawOrder.getTrxStatus(), pspTrxStatus);
 			String methodIds = rawOrder.getTrxMethodIds();
 			List<AccessMethod> orderMethods = new ArrayList<>(2);
 			if(StringHelper.containsNonWhitespace(methodIds)) {
@@ -721,21 +729,29 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		return items;
 	}
 
-	public Status getStatus(String orderStatus, String trxStatus, String pspTrxStatus) {
+	private Status getStatus(String orderStatus, String trxStatus, String pspTrxStatus) {
 		boolean warning = false;
 		boolean error = false;
 		boolean canceled = false;
+		boolean pending = false;
 
 		if(OrderStatus.CANCELED.name().equals(orderStatus)) {
 			canceled = true;
 		} else if(OrderStatus.ERROR.name().equals(orderStatus)) {
 			error = true;
 		} else if(OrderStatus.PREPAYMENT.name().equals(orderStatus)) {
-			warning = true;
+			if((trxStatus != null && trxStatus.contains(PaypalCheckoutStatus.PENDING.name()))
+					|| (pspTrxStatus != null && pspTrxStatus.contains(PaypalCheckoutStatus.PENDING.name()))) {
+				pending = true;
+			} else {
+				warning = true;
+			}
 		}
 
 		if(StringHelper.containsNonWhitespace(trxStatus)) {
-			if(trxStatus.contains(AccessTransactionStatus.CANCELED.name())) {
+			if(trxStatus.contains(AccessTransactionStatus.SUCCESS.name())) {
+				//has high prio
+			} else if(trxStatus.contains(AccessTransactionStatus.CANCELED.name())) {
 				canceled = true;
 			} else if(trxStatus.contains(AccessTransactionStatus.ERROR.name())) {
 				error = true;
@@ -750,15 +766,16 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			}
 		}
 
-		if(error) {
+		if(pending) {
+			return Status.PENDING;
+		} else if(error) {
 			return Status.ERROR;
 		} else if (warning) {
 			return Status.WARNING;
 		} else if(canceled) {
 			return Status.CANCELED;
-		} else {
-			return Status.OK;
-		}
+		} 
+		return Status.OK;
 	}
 
 	/**

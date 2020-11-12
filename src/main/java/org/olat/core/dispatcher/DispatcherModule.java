@@ -229,7 +229,15 @@ public class DispatcherModule {
 		try {
 			response.setStatus(HttpServletResponse.SC_NO_CONTENT);
 		} catch (Exception e) {
-			log.error("Send 204 failed: url=" + url, e);
+			log.error("Set 204 failed: url={}", url, e);
+		}
+	}
+	
+	public static final void setServerError(HttpServletResponse response) {
+		try {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		} catch (Exception e) {
+			log.error("Set 500 failed", e);
 		}
 	}
 	

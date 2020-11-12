@@ -30,6 +30,7 @@ package org.olat.resource.accesscontrol.model;
 public enum AccessTransactionStatus {
 	NEW,
 	SUCCESS,
+	PENDING,
 	CANCELED,
 	ERROR
 }

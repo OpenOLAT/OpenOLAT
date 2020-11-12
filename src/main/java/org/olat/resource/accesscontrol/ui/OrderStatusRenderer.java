@@ -55,10 +55,15 @@ public class OrderStatusRenderer implements FlexiCellRenderer {
 		} else if (val instanceof OrderTableItem) {
 			OrderTableItem item = (OrderTableItem)val;
 			switch(item.getStatus()) {
-				case ERROR: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_error_icon'> </i>"); break;
+				case ERROR:
+					sb.append("<i class='o_icon o_icon-fw o_ac_order_status_error_icon'> </i>");
+					break;
 				case WARNING:
 					sb.append("<i class='o_icon o_icon-fw o_ac_order_status_warning_icon'> </i>");
 					break;
+				case PENDING:
+					sb.append("<i class='o_icon o_icon-fw o_ac_order_status_pending_icon'> </i>");
+					break;	
 				case CANCELED:
 					String canceledTitle = translator.translate("order.status.canceled");
 					sb.append("<span title=\"").append(canceledTitle).append("\"><i class='o_icon o_icon-fw o_ac_order_status_canceled_icon'> </i></span>");
