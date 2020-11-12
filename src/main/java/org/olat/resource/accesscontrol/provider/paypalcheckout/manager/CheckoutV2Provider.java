@@ -78,7 +78,7 @@ public class CheckoutV2Provider {
 	private PaypalCheckoutTransactionDAO transactionDao;
 	
 	public PaypalCheckoutTransaction createOrder(org.olat.resource.accesscontrol.Order order, PaypalCheckoutTransaction trx) {
-		ApplicationContext applicationContext = new ApplicationContext();
+		ApplicationContext applicationContext = buildApplicationContext();
 		OrderRequest orderRequest = buildOrderRequest(order, "AUTHORIZE", applicationContext);
 		OrdersCreateRequest request = buildOrdersCreateRequest(orderRequest);
 
@@ -118,7 +118,7 @@ public class CheckoutV2Provider {
 		
 		String returnURL = url + "/" + trx.getSecureSuccessUUID() + ".html;jsessionid=" + sessionId + "?status=success";
 		String cancelURL = url + "/" + trx.getSecureCancelUUID() + ".html;jsessionid=" + sessionId + "?status=cancel";
-		ApplicationContext applicationContext = new ApplicationContext()
+		ApplicationContext applicationContext = buildApplicationContext()
 				.cancelUrl(cancelURL)
 				.returnUrl(returnURL);
 
@@ -163,6 +163,12 @@ public class CheckoutV2Provider {
 		dbInstance.commit();
         checkoutRequest.setCheckoutTransactionn(trx);
         return checkoutRequest;
+	}
+	
+	private ApplicationContext buildApplicationContext() {
+		ApplicationContext context = new ApplicationContext();
+		context.shippingPreference("NO_SHIPPING");
+		return context;
 	}
 	
 	private OrdersCreateRequest buildOrdersCreateRequest(OrderRequest orderRequest) {
