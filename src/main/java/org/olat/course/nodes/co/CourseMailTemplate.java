@@ -44,13 +44,13 @@ import org.olat.user.UserManager;
  */
 public class CourseMailTemplate extends MailTemplate {
 	
-	private static final String COURSEURL = "courseurl";
-	private static final String COURSENAME = "coursename";
-	private static final String COURSEDESCRIPTION = "coursedescription";
+	private static final String COURSE_URL = "courseUrl";
+	private static final String COURSE_NAME = "courseName";
+	private static final String COURSE_DESCRIPTION = "courseDescription";
 	private static final String USERNAME = "username";
-	private static final String FIRSTNAME = "firstname";
-	private static final String LASTNAME = "lastname";
-	private static final String FULLNAME = "fullname";
+	private static final String FIRST_NAME = "firstName";
+	private static final String LAST_NAME = "lastName";
+	private static final String FULL_NAME = "fullName";
 	private static final String EMAIL = "email";
 
 	private final Locale locale;
@@ -69,15 +69,15 @@ public class CourseMailTemplate extends MailTemplate {
 		List<String> variableNames = new ArrayList<>();
 		
 		if (entry != null) {
-			variableNames.add(COURSEURL);
-			variableNames.add(COURSENAME);
-			variableNames.add(COURSEDESCRIPTION);
+			variableNames.add(COURSE_URL);
+			variableNames.add(COURSE_NAME);
+			variableNames.add(COURSE_DESCRIPTION);
 		}
 		if (sender != null) {
 			variableNames.add(USERNAME);
-			variableNames.add(FIRSTNAME);
-			variableNames.add(LASTNAME);
-			variableNames.add(FULLNAME);
+			variableNames.add(FIRST_NAME);
+			variableNames.add(LAST_NAME);
+			variableNames.add(FULL_NAME);
 			variableNames.add(EMAIL);
 		}
 		
@@ -88,22 +88,25 @@ public class CourseMailTemplate extends MailTemplate {
 	public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
 		if(entry != null) {
 			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
-			vContext.put(COURSEURL, url);
-			vContext.put(COURSENAME, entry.getDisplayname());
-			vContext.put(COURSEDESCRIPTION, entry.getDescription());
+			vContext.put(COURSE_URL, url);
+			vContext.put("courseurl", url);
+			vContext.put(COURSE_NAME, entry.getDisplayname());
+			vContext.put("coursename", entry.getDisplayname());
+			vContext.put(COURSE_DESCRIPTION, entry.getDescription());
+			vContext.put("coursedescription", entry.getDescription());
 		}
 		if(sender != null) {
 			User user = sender.getUser();
 			UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 			BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 			
-			vContext.put(FIRSTNAME, user.getProperty(UserConstants.FIRSTNAME, null));
-			vContext.put(UserConstants.FIRSTNAME, user.getProperty(UserConstants.FIRSTNAME, null));
-			vContext.put(LASTNAME, user.getProperty(UserConstants.LASTNAME, null));
-			vContext.put(UserConstants.LASTNAME, user.getProperty(UserConstants.LASTNAME, null));
+			vContext.put(FIRST_NAME, user.getProperty(UserConstants.FIRSTNAME, null));
+			vContext.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
+			vContext.put(LAST_NAME, user.getProperty(UserConstants.LASTNAME, null));
+			vContext.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
 			String fullName = userManager.getUserDisplayName(sender);
-			vContext.put(FULLNAME, fullName);
-			vContext.put("fullName", fullName); 
+			vContext.put(FULL_NAME, fullName);
+			vContext.put("fullname", fullName); 
 			vContext.put("mail", userManager.getUserDisplayEmail(user, locale));
 			vContext.put(EMAIL, userManager.getUserDisplayEmail(user, locale));
 			String loginName = securityManager.findAuthenticationName(sender);
