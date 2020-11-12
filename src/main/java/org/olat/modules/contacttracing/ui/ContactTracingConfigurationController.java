@@ -266,13 +266,13 @@ public class ContactTracingConfigurationController extends FormBasicController {
             contactTracingModule.setAllowAnonymousRegistrationForRegisteredUsers(allowAnonymousRegistrationEl.isSelected(0));
             initVelocityContainers();
         } else if (source == registrationIntroCustomize) {
-            singleKeyTranslatorController = new SingleKeyTranslatorController(ureq, getWindowControl(), CONTACT_TRACING_REGISTRATION_INTRO_KEY, ContactTracingAdminController.class, SingleKeyTranslatorController.InputType.RICH_TEXT_ELEMENT);
+            singleKeyTranslatorController = new SingleKeyTranslatorController(ureq, getWindowControl(), CONTACT_TRACING_REGISTRATION_INTRO_KEY, ContactTracingAdminController.class, SingleKeyTranslatorController.InputType.RICH_TEXT_ELEMENT, null);
             cmc = new CloseableModalController(getWindowControl(), translate("close"), singleKeyTranslatorController.getInitialComponent(), true, translate("contact.tracing.registration.intro.translate.title"), true, true);
             listenTo(singleKeyTranslatorController);
             listenTo(cmc);
             cmc.activate();
         } else if (source == registrationConfirmationMailCustomize) {
-            singleKeyTranslatorController = new SingleKeyTranslatorController(ureq, getWindowControl(), CONTACT_TRACING_CONFIRMATION_MAIL_KEY, ContactTracingAdminController.class, SingleKeyTranslatorController.InputType.RICH_TEXT_ELEMENT);
+            singleKeyTranslatorController = new SingleKeyTranslatorController(ureq, getWindowControl(), CONTACT_TRACING_CONFIRMATION_MAIL_KEY, ContactTracingAdminController.class, SingleKeyTranslatorController.InputType.RICH_TEXT_ELEMENT, null);
             cmc = new CloseableModalController(getWindowControl(), translate("close"), singleKeyTranslatorController.getInitialComponent(), true, translate("contact.tracing.registration.confirmation.mail.translate.title"), true, true);
             listenTo(singleKeyTranslatorController);
             listenTo(cmc);

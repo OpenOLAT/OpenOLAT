@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
 
 /**
@@ -177,9 +178,8 @@ public class BGMailTemplateController extends FormBasicController {
 			subjectElem.setMandatory(true);
 		
 			bodyElem = uifactory.addTextAreaElement("bodyElem", "mailtemplateform.body", -1, 15, 60, true, false, template.getBodyTemplate(), formLayout);
-			bodyElem.setHelpText(translate("mailtemplateform.body.hover"));
-			bodyElem.setHelpUrlForManualPage("E-Mail");
 			bodyElem.setMandatory(true);
+			MailHelper.setVariableNamesAsHelp(bodyElem, template, getLocale());
 		}
 		
 		if(ccSenderAllowed) {

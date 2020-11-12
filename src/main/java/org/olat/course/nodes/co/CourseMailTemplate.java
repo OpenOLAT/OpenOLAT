@@ -19,6 +19,9 @@
  */
 package org.olat.course.nodes.co;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
@@ -41,6 +44,15 @@ import org.olat.user.UserManager;
  */
 public class CourseMailTemplate extends MailTemplate {
 	
+	private static final String COURSEURL = "courseurl";
+	private static final String COURSENAME = "coursename";
+	private static final String COURSEDESCRIPTION = "coursedescription";
+	private static final String USERNAME = "username";
+	private static final String FIRSTNAME = "firstname";
+	private static final String LASTNAME = "lastname";
+	private static final String FULLNAME = "fullname";
+	private static final String EMAIL = "email";
+
 	private final Locale locale;
 	private final Identity sender;
 	private final RepositoryEntry entry;
@@ -51,34 +63,54 @@ public class CourseMailTemplate extends MailTemplate {
 		this.sender = sender;
 		this.locale = locale;
 	}
+	
+	@Override
+	public Collection<String> getVariableNames() {
+		List<String> variableNames = new ArrayList<>();
+		
+		if (entry != null) {
+			variableNames.add(COURSEURL);
+			variableNames.add(COURSENAME);
+			variableNames.add(COURSEDESCRIPTION);
+		}
+		if (sender != null) {
+			variableNames.add(USERNAME);
+			variableNames.add(FIRSTNAME);
+			variableNames.add(LASTNAME);
+			variableNames.add(FULLNAME);
+			variableNames.add(EMAIL);
+		}
+		
+		return variableNames;
+	}
 
 	@Override
 	public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
 		if(entry != null) {
 			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
-			vContext.put("courseurl", url);
-			vContext.put("coursename", entry.getDisplayname());
-			vContext.put("coursedescription", entry.getDescription());
+			vContext.put(COURSEURL, url);
+			vContext.put(COURSENAME, entry.getDisplayname());
+			vContext.put(COURSEDESCRIPTION, entry.getDescription());
 		}
 		if(sender != null) {
 			User user = sender.getUser();
 			UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 			BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 			
-			vContext.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
+			vContext.put(FIRSTNAME, user.getProperty(UserConstants.FIRSTNAME, null));
 			vContext.put(UserConstants.FIRSTNAME, user.getProperty(UserConstants.FIRSTNAME, null));
-			vContext.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
+			vContext.put(LASTNAME, user.getProperty(UserConstants.LASTNAME, null));
 			vContext.put(UserConstants.LASTNAME, user.getProperty(UserConstants.LASTNAME, null));
 			String fullName = userManager.getUserDisplayName(sender);
-			vContext.put("fullname", fullName);
+			vContext.put(FULLNAME, fullName);
 			vContext.put("fullName", fullName); 
 			vContext.put("mail", userManager.getUserDisplayEmail(user, locale));
-			vContext.put("email", userManager.getUserDisplayEmail(user, locale));
+			vContext.put(EMAIL, userManager.getUserDisplayEmail(user, locale));
 			String loginName = securityManager.findAuthenticationName(sender);
 			if(!StringHelper.containsNonWhitespace(loginName)) {
 				loginName = sender.getName();
 			}
-			vContext.put("username", loginName);
+			vContext.put(USERNAME, loginName);
 		}
 	}
 }

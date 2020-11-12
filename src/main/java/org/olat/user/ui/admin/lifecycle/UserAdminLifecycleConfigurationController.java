@@ -36,7 +36,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.user.UserModule;
+import org.olat.user.manager.lifecycle.LifecycleMailTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -309,8 +311,9 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		if(guardModalController(translatorCtrl)) return;
 
 		SingleKeyTranslatorController.InputType inputType = bundle.isTextArea() ? SingleKeyTranslatorController.InputType.TEXT_AREA : SingleKeyTranslatorController.InputType.TEXT_ELEMENT;
+		String description = MailHelper.getVariableNamesHelp(LifecycleMailTemplate.variableNames(), getLocale());
 		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), bundle.getI18nKey(),
-				UserAdminLifecycleConfigurationController.class, inputType);
+				UserAdminLifecycleConfigurationController.class, inputType, description);
 		translatorCtrl.setUserObject(bundle);
 		listenTo(translatorCtrl);
 

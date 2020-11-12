@@ -20,8 +20,11 @@
 package org.olat.group.manager;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
@@ -177,6 +180,10 @@ public class BusinessGroupMailing {
 	
 	public static class MailTemplateDelegate extends MailTemplate {
 		
+		private final static String GROUP_NAME = "groupName";
+		private final static String GROUP_DESCRIPTION = "groupDescription";
+		private final static String COURSE_LIST = "courseList";
+		
 		private final MailTemplate delegate;
 		private final BGMailTemplateInfos infos;
 		
@@ -190,7 +197,23 @@ public class BusinessGroupMailing {
 			}
 			setSubjectTemplate(subject);
 		}
-
+		
+		@Override
+		public Collection<String> getVariableNames() {
+			Set<String> variableNames = new HashSet<>();
+			variableNames.addAll(delegate.getVariableNames());
+			if (StringHelper.containsNonWhitespace(infos.getGroupNameWithUrl())) {
+				variableNames.add(GROUP_NAME);
+			}
+			if (StringHelper.containsNonWhitespace(infos.getGroupDescription())) {
+				variableNames.add(GROUP_DESCRIPTION);
+			}
+			if (StringHelper.containsNonWhitespace(infos.getCourseList())) {
+				variableNames.add(COURSE_LIST);
+			}
+			return variableNames;
+		}
+		
 		@Override
 		public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
 			fillContextWithStandardIdentityValues(vContext, recipient, null);
@@ -198,11 +221,15 @@ public class BusinessGroupMailing {
 			delegate.putVariablesInMailContext(vContext, recipient);
 			
 			if(StringHelper.containsNonWhitespace(infos.getCourseList())) {
+				vContext.put(COURSE_LIST, infos.getCourseList());
 				vContext.put("courselist", infos.getCourseList());
 			} else if(vContext.get("courselistempty") != null) {
+				vContext.put(COURSE_LIST, vContext.get("courselistempty"));
 				vContext.put("courselist", vContext.get("courselistempty"));
 			}
+			vContext.put(GROUP_NAME, infos.getGroupNameWithUrl());
 			vContext.put("groupname", infos.getGroupNameWithUrl());
+			vContext.put(GROUP_DESCRIPTION, infos.getGroupDescription());
 			vContext.put("groupdescription", infos.getGroupDescription());
 		}
 

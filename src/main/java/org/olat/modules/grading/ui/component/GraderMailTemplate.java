@@ -19,6 +19,7 @@
  */
 package org.olat.modules.grading.ui.component;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -45,6 +46,24 @@ import org.olat.repository.RepositoryEntry;
  */
 public class GraderMailTemplate extends MailTemplate {
 	
+	private static final String COURSE_URL = "courseUrl";
+	private static final String COURSE_NAME = "courseName";
+	private static final String COURSE_TITLE = "courseTitle";
+	private static final String COURSE_REFERENCE = "courseReference";
+	private static final String COURSE_ELEMENT_TITLE = "courseElementTitle";
+	private static final String COURSE_ELEMENT_SHORT_TITLE = "courseElementShortTitle";
+	private static final String TEST_NAME = "testName";
+	private static final String TEST_TITLE = "testTitle";
+	private static final String TEST_REFERENCE = "testReference";
+	private static final String TEST_TAXONOMY = "testTaxonomy";
+	private static final String TEST_TAXONOMY_PATH = "testTaxonomyPath";
+	private static final String ASSESSMENT_DATE = "assessmentDate";
+	private static final String CORRECTION_URL = "correctionUrl";
+	
+	private static final List<String> VARIABLE_NAMES = List.of(COURSE_URL, COURSE_NAME, COURSE_TITLE, COURSE_REFERENCE,
+			COURSE_ELEMENT_TITLE, COURSE_ELEMENT_SHORT_TITLE, TEST_NAME, TEST_TITLE, TEST_REFERENCE, TEST_TAXONOMY,
+			TEST_TAXONOMY_PATH, ASSESSMENT_DATE, CORRECTION_URL);
+
 	private Date assessmentDate;
 	private RepositoryEntry entry;
 	private CourseNode courseNode;
@@ -159,6 +178,10 @@ public class GraderMailTemplate extends MailTemplate {
 		}
 		return template;
 	}
+	
+	public static Collection<String> variableNames() {
+		return VARIABLE_NAMES;
+	}
 
 	public Date getAssessmentDate() {
 		return assessmentDate;
@@ -224,13 +247,18 @@ public class GraderMailTemplate extends MailTemplate {
 		this.taxonomyLevelPath = taxonomyLevelPath;
 	}
 	
+	@Override
+	public Collection<String> getVariableNames() {
+		return VARIABLE_NAMES;
+	}
+
 	private void putCourseVariablesInMailContext(VelocityContext vContext, RepositoryEntry entry) {
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
-		putVariablesInMailContext(vContext, "courseUrl", url);
-		putVariablesInMailContext(vContext, "courseName", entry.getDisplayname());
-		putVariablesInMailContext(vContext, "courseTitle", entry.getDisplayname());
+		putVariablesInMailContext(vContext, COURSE_URL, url);
+		putVariablesInMailContext(vContext, COURSE_NAME, entry.getDisplayname());
+		putVariablesInMailContext(vContext, COURSE_TITLE, entry.getDisplayname());
 		if(StringHelper.containsNonWhitespace(entry.getExternalRef())) {
-			putVariablesInMailContext(vContext, "courseReference", entry.getExternalRef());
+			putVariablesInMailContext(vContext, COURSE_REFERENCE, entry.getExternalRef());
 		}
 	}
 	
@@ -239,8 +267,8 @@ public class GraderMailTemplate extends MailTemplate {
 		if(!StringHelper.containsNonWhitespace(title)) {
 			title = courseNode.getShortTitle();
 		}
-		putVariablesInMailContext(vContext, "courseElementTitle", title);
-		putVariablesInMailContext(vContext, "courseElementShortTitle", courseNode.getShortTitle());
+		putVariablesInMailContext(vContext, COURSE_ELEMENT_TITLE, title);
+		putVariablesInMailContext(vContext, COURSE_ELEMENT_SHORT_TITLE, courseNode.getShortTitle());
 	}
 	
 	private void putCourseNodeVariablesInMailContext(VelocityContext vContext, List<CourseNode> courseNodes) {
@@ -258,8 +286,8 @@ public class GraderMailTemplate extends MailTemplate {
 			shortTitleSb.append(node.getShortTitle());
 		}
 		
-		putVariablesInMailContext(vContext, "courseElementTitle", titleSb.toString());
-		putVariablesInMailContext(vContext, "courseElementShortTitle", shortTitleSb.toString());
+		putVariablesInMailContext(vContext, COURSE_ELEMENT_TITLE, titleSb.toString());
+		putVariablesInMailContext(vContext, COURSE_ELEMENT_SHORT_TITLE, shortTitleSb.toString());
 	}
 	
 	private void putCourseVariablesInMailContext(VelocityContext vContext, List<RepositoryEntry> entries) {
@@ -282,10 +310,10 @@ public class GraderMailTemplate extends MailTemplate {
 			}
 		}
 
-		putVariablesInMailContext(vContext, "courseUrl", urlSb.toString());
-		putVariablesInMailContext(vContext, "courseName", courseNameSb.toString());
-		putVariablesInMailContext(vContext, "courseTitle", courseNameSb.toString());
-		putVariablesInMailContext(vContext, "courseReference", courseReferenceSb.toString());
+		putVariablesInMailContext(vContext, COURSE_URL, urlSb.toString());
+		putVariablesInMailContext(vContext, COURSE_NAME, courseNameSb.toString());
+		putVariablesInMailContext(vContext, COURSE_TITLE, courseNameSb.toString());
+		putVariablesInMailContext(vContext, COURSE_REFERENCE, courseReferenceSb.toString());
 	}
 
 	@Override
@@ -307,33 +335,33 @@ public class GraderMailTemplate extends MailTemplate {
 		}
 		
 		if(referenceEntry != null) {
-			putVariablesInMailContext(vContext, "testName", referenceEntry.getDisplayname());
-			putVariablesInMailContext(vContext, "testTitle", referenceEntry.getDisplayname());
+			putVariablesInMailContext(vContext, TEST_NAME, referenceEntry.getDisplayname());
+			putVariablesInMailContext(vContext, TEST_TITLE, referenceEntry.getDisplayname());
 			if(StringHelper.containsNonWhitespace(referenceEntry.getExternalRef())) {
-				putVariablesInMailContext(vContext, "testReference", referenceEntry.getExternalRef());
+				putVariablesInMailContext(vContext, TEST_REFERENCE, referenceEntry.getExternalRef());
 			}
 		}
 		
 		if(StringHelper.containsNonWhitespace(taxonomyLevel)) {
 			putVariablesInMailContext(vContext, "testTaxonomie", taxonomyLevel);
-			putVariablesInMailContext(vContext, "testTaxonomy", taxonomyLevel);
+			putVariablesInMailContext(vContext, TEST_TAXONOMY, taxonomyLevel);
 		}
 		
 		if(StringHelper.containsNonWhitespace(taxonomyLevelPath)) {
 			putVariablesInMailContext(vContext, "testTaxonomiePath", taxonomyLevelPath);
-			putVariablesInMailContext(vContext, "testTaxonomyPath", taxonomyLevelPath);
+			putVariablesInMailContext(vContext, TEST_TAXONOMY_PATH, taxonomyLevelPath);
 		}
 		
 		if(assessmentDate != null) {
 			Preferences prefs = recipient.getUser().getPreferences();
 			Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
 			String assignmentDateString = Formatter.getInstance(locale).formatDate(assessmentDate);
-			putVariablesInMailContext(vContext, "assessmentDate", assignmentDateString);
+			putVariablesInMailContext(vContext, ASSESSMENT_DATE, assignmentDateString);
 		}
 		
 		String correctionUrl = BusinessControlFactory.getInstance()
 				.getURLFromBusinessPathString("[CoachSite:0][Grading:0][Assignments:0]");
-		putVariablesInMailContext(vContext, "correctionUrl", correctionUrl);
+		putVariablesInMailContext(vContext, CORRECTION_URL, correctionUrl);
 		putVariablesInMailContext(vContext, "correctionURL", correctionUrl);
 	}
 	

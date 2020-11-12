@@ -33,6 +33,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
+import org.olat.core.util.mail.MailHelper;
+import org.olat.modules.grading.ui.component.GraderMailTemplate;
 
 /**
  * 
@@ -134,8 +136,9 @@ public class GradingAdminTemplatesController extends FormBasicController {
 		if(guardModalController(translatorCtrl)) return;
 
 		SingleKeyTranslatorController.InputType inputType = bundle.isMultiLines() ? SingleKeyTranslatorController.InputType.TEXT_AREA : SingleKeyTranslatorController.InputType.TEXT_ELEMENT;
+		String description = MailHelper.getVariableNamesHelp(GraderMailTemplate.variableNames(), getLocale());
 		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), bundle.getI18nKey(),
-				GradingAdminTemplatesController.class, inputType);
+				GradingAdminTemplatesController.class, inputType, description);
 		translatorCtrl.setUserObject(bundle);
 		listenTo(translatorCtrl);
 

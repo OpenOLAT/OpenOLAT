@@ -34,6 +34,8 @@
 
 package org.olat.group.ui;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -230,8 +232,30 @@ public class BGMailHelper {
 			infos = new BGMailTemplateInfos("", "", "", "");
 		}
 		
-		// create a mail template which all these data
 		return new MailTemplate(subject, body, null) {
+			
+			private final static String GROUP_NAME = "groupName";
+			private final static String GROUP_DESCRIPTION = "groupDescription";
+			private final static String COURSE_LIST = "courseList";
+			private final static String COURSE_LIST_EMPTY = "courseListEmpty";
+			
+			@Override
+			public Collection<String> getVariableNames() {
+				List<String> variableNames = new ArrayList<>();
+				variableNames.addAll(getStandardIdentityVariableNames());
+				if (StringHelper.containsNonWhitespace(infos.getGroupNameWithUrl())) {
+					variableNames.add(GROUP_NAME);
+				}
+				if (StringHelper.containsNonWhitespace(infos.getGroupDescription())) {
+					variableNames.add(GROUP_DESCRIPTION);
+				}
+				if (StringHelper.containsNonWhitespace(infos.getCourseList())) {
+					variableNames.add(COURSE_LIST);
+					variableNames.add(COURSE_LIST_EMPTY);
+				}
+				return variableNames;
+			}
+
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 				fillContextWithStandardIdentityValues(context, identity, locale);
@@ -241,13 +265,18 @@ public class BGMailHelper {
 				//the email of the user, needs to stay named 'login'
 				context.put("login", user.getProperty(UserConstants.EMAIL, null));
 				// Put variables from greater context
+				context.put(GROUP_NAME, infos.getGroupNameWithUrl());
 				context.put("groupname", infos.getGroupNameWithUrl());
+				context.put(GROUP_DESCRIPTION, infos.getGroupDescription());
 				context.put("groupdescription", infos.getGroupDescription());
 				if(StringHelper.containsNonWhitespace(infos.getCourseList())) {
+					context.put(COURSE_LIST, infos.getCourseList());
 					context.put("courselist", infos.getCourseList());
 				} else {
+					context.put(COURSE_LIST, trans.translate("notification.mail.no.ressource", null));
 					context.put("courselist", trans.translate("notification.mail.no.ressource", null));
 				}
+				context.put(COURSE_LIST_EMPTY, trans.translate("notification.mail.no.ressource", null));
 				context.put("courselistempty", trans.translate("notification.mail.no.ressource", null));
 			}
 		};

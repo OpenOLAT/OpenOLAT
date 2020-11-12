@@ -20,8 +20,11 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.translator.Translator;
@@ -37,6 +40,20 @@ import org.olat.core.util.mail.MailTemplate;
  */
 public class GTAMailTemplate extends MailTemplate {
 	
+	private static final String NUMBER_OF_FILES = "numberOfFiles";
+	private static final String FILENAME = "filename";
+	private static final String DATE = "date";
+	private static final String TIME = "time";
+	private static final Set<String> VARIABLE_NAMES = new HashSet<>();
+	 
+	static {
+		VARIABLE_NAMES.addAll(getStandardIdentityVariableNames());
+		VARIABLE_NAMES.add(NUMBER_OF_FILES);
+		VARIABLE_NAMES.add(FILENAME);
+		VARIABLE_NAMES.add(DATE);
+		VARIABLE_NAMES.add(TIME);
+	}
+
 	private final Identity identity;
 	private final File[] files;
 	private final Translator translator;
@@ -47,13 +64,17 @@ public class GTAMailTemplate extends MailTemplate {
 		this.identity = identity;
 		this.files = files;
 	}
+	
+	public static final Collection<String> variableNames() {
+		return VARIABLE_NAMES;
+	}
 
 	@Override
 	public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
 		Locale locale = translator.getLocale();
 		//compatibility with the old TA
 		fillContextWithStandardIdentityValues(context, identity, translator.getLocale());
-		context.put("numberOfFiles", files == null ? "0" : Integer.toString(files.length));
+		context.put(NUMBER_OF_FILES, files == null ? "0" : Integer.toString(files.length));
 
 		if(files != null && files.length > 0) {
 			StringBuilder sb = new StringBuilder();
@@ -61,14 +82,14 @@ public class GTAMailTemplate extends MailTemplate {
 				if(sb.length() > 0) sb.append(", ");
 				sb.append(file.getName());
 			}
-			context.put("filename", sb.toString());
+			context.put(FILENAME, sb.toString());
 		} else {
-			context.put("filename", translator.translate("submission.nofile"));
+			context.put(FILENAME, translator.translate("submission.nofile"));
 		}
 		
 		Date now = new Date();
 		Formatter f = Formatter.getInstance(locale);
-		context.put("date", f.formatDate(now));
-		context.put("time", f.formatTime(now));
+		context.put(DATE, f.formatDate(now));
+		context.put(TIME, f.formatTime(now));
 	}
 }

@@ -19,8 +19,11 @@
  */
 package org.olat.repository;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
@@ -239,8 +242,24 @@ public class RepositoryMailing {
 		String subject = trans.translate(subjectKey);
 		String body = trans.translate(bodyKey, bodyArgs);
 		
-		// create a mail template which all these data
 		return new MailTemplate(subject, body, null) {
+			
+			private final static String COURSE_NAME = "courseName";
+			private final static String COURSE_DESCRIPTION = "courseDescription";
+			private final static String COURSE_URL = "courseUrl";
+			private final static String COURSE_REF = "courseRef";
+			
+			@Override
+			public Collection<String> getVariableNames() {
+				Set<String> variableNames = new HashSet<>();
+				variableNames.addAll(getStandardIdentityVariableNames());
+				variableNames.add(COURSE_NAME);
+				variableNames.add(COURSE_DESCRIPTION);
+				variableNames.add(COURSE_URL);
+				variableNames.add(COURSE_REF);
+				return variableNames;
+			}
+			
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 				// Put user variables into velocity context
@@ -248,10 +267,14 @@ public class RepositoryMailing {
 				User user = identity.getUser();
 				context.put("login", UserManager.getInstance().getUserDisplayEmail(user, locale));
 				// Put variables from greater context
+				context.put(COURSE_NAME, reName);
 				context.put("coursename", reName);
+				context.put(COURSE_DESCRIPTION, redescription);
 				context.put("coursedescription", redescription);
+				context.put(COURSE_URL, reUrl);
 				context.put("courseurl", reUrl);
 				String courseRef = re.getExternalRef() == null ? "" : re.getExternalRef();
+				context.put(COURSE_REF, courseRef);
 				context.put("courseref", courseRef);
 			}
 		};

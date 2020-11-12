@@ -27,12 +27,17 @@ package org.olat.core.util.mail;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -57,8 +62,11 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *         http://www.frentix.com
  */
 public class MailHelper {
-	private static Map<String, Translator> translators = new HashMap<>();
 	
+	private static final Comparator<String> CASE_INSENSTIVE = Comparator.comparing(Function.identity(),
+			String.CASE_INSENSITIVE_ORDER);
+	
+	private static Map<String, Translator> translators = new HashMap<>();
 	
 	public static String getMailFooter(Locale locale) {
 		Translator trans = getTranslator(locale);
@@ -142,7 +150,31 @@ public class MailHelper {
 		message += "</ul>\n";
 		return message;
 	}
-
+	
+	public static void setVariableNamesAsHelp(FormItem formItem, MailTemplate template, Locale locale) {
+		setVariableNamesAsHelp(formItem, template.getVariableNames(), locale);
+	}
+	
+	public static void setVariableNamesAsHelp(FormItem formItem, Collection<String> variableNames, Locale locale) {
+		String variableNamesHelp = getVariableNamesHelp(variableNames, locale);
+		if (StringHelper.containsNonWhitespace(variableNamesHelp)) {
+			formItem.setHelpText(variableNamesHelp);
+		}
+	}
+	
+	public static String getVariableNamesHelp(Collection<String> variableNames, Locale locale) {
+		if (variableNames != null && !variableNames.isEmpty()) {
+			Translator translator = getTranslator(locale);
+			String names = variableNames.stream()
+					.distinct()
+					.sorted(CASE_INSENSTIVE)
+					.map(name -> "$" + name)
+					.collect(Collectors.joining(", "));
+			return translator.translate("help.variable.names", new String[] {names});
+		}
+		return null;
+	}
+	
 	/**
 	 * Helper method to reuse translators. It makes no sense to build a new
 	 * translator over and over again. We keep one for each language and reuse

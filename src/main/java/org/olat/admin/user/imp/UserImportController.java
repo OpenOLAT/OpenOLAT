@@ -401,7 +401,9 @@ public class UserImportController extends BasicController {
 			public void putVariablesInMailContext(VelocityContext context, Identity emailedIdentity) {
 				// Put user variables into velocity context
 				User user = emailedIdentity.getUser();
+				context.put("firstName", user.getProperty(UserConstants.FIRSTNAME, null));
 				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
+				context.put("lastName", user.getProperty(UserConstants.LASTNAME, null));
 				context.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
 				//the email of the user, needs to stay named 'login'
 				context.put("login", user.getProperty(UserConstants.EMAIL, null));

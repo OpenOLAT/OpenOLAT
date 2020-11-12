@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.modules.ModuleConfiguration;
 
@@ -104,6 +105,7 @@ public class GTASubmissionEditController extends FormBasicController {
 		}
 		textEl = uifactory.addRichTextElementForStringDataMinimalistic("text", "submission.text", text, 10, -1, confirmationCont, getWindowControl());
 		textEl.setMandatory(true);
+		MailHelper.setVariableNamesAsHelp(textEl, GTAMailTemplate.variableNames(), getLocale());
 		
 		emailConfirmationEl = uifactory.addCheckboxesHorizontal("confirmation", "submission.email.confirmation", confirmationCont, enableKeys, enableValues);
 		boolean confirm = config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION);

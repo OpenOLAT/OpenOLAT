@@ -46,10 +46,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.modules.grading.GradingAssessedIdentityVisibility;
 import org.olat.modules.grading.GradingNotificationType;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
+import org.olat.modules.grading.ui.component.GraderMailTemplate;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -149,6 +151,7 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		notificationSubjectEl.setElementCssClass("o_sel_repo_grading_notification_subject");
 		notificationBodyEl = uifactory.addTextAreaElement("configuration.notification.body", 4, 60, configuration.getNotificationBody(), formLayout);
 		notificationBodyEl.setElementCssClass("o_sel_repo_grading_notification_body");
+		MailHelper.setVariableNamesAsHelp(notificationBodyEl, GraderMailTemplate.variableNames(), getLocale());
 		
 		spacerNotificationsEl = uifactory.addSpacerElement("spacer-notification", formLayout, false);
 		
@@ -157,6 +160,7 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		initWorkingDays(firstReminderPeriodEl, "o_sel_repo_grading_first_reminder_period");
 		firstReminderSubjectEl = uifactory.addTextElement("configuration.first.reminder.subject", 255, configuration.getFirstReminderSubject(), formLayout);
 		firstReminderBodyEl = uifactory.addTextAreaElement("configuration.first.reminder.body", 4, 60, configuration.getFirstReminderBody(), formLayout);
+		MailHelper.setVariableNamesAsHelp(firstReminderBodyEl, GraderMailTemplate.variableNames(), getLocale());
 
 		spacerReminderEl = uifactory.addSpacerElement("spacer-reminder", formLayout, false);
 		
@@ -167,6 +171,7 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		initWorkingDays(secondReminderPeriodEl, "o_sel_repo_grading_second_reminder_period");
 		secondReminderSubjectEl = uifactory.addTextElement("configuration.second.reminder.subject", 255, configuration.getSecondReminderSubject(), formLayout);
 		secondReminderBodyEl = uifactory.addTextAreaElement("configuration.second.reminder.body", 4, 60, configuration.getSecondReminderBody(), formLayout);
+		MailHelper.setVariableNamesAsHelp(secondReminderBodyEl, GraderMailTemplate.variableNames(), getLocale());
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

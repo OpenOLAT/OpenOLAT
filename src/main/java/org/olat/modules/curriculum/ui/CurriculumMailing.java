@@ -19,8 +19,11 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.core.CoreSpringFactory;
@@ -52,7 +55,7 @@ import org.olat.user.UserManager;
  *
  */
 public class CurriculumMailing {
-	
+
 	/**
 	 * The mail template when adding owner to a course.
 	 * 
@@ -110,19 +113,48 @@ public class CurriculumMailing {
 		
 		// create a mail template which all these data
 		return new MailTemplate(subject, body, null) {
+			
+			private static final String LOGIN = "login";
+			private static final String CURRICULUM_NAME = "curriculumName";
+			private static final String CURRICULUM_DESCRIPTION = "curriculumDescription";
+			private static final String CURRICULUM_URL = "curriculumUrl";
+			private static final String CURRICULUM_ELEMENT_NAME = "curriculumElementName";
+			private static final String CURRICULUM_ELEMENT_DESCRIPTION = "curriculumElementDescription";
+			private static final String CURRICULUM_ELEMENT_IDENTIFIER = "curriculumElementIdentifier";
+			
+			@Override
+			public Collection<String> getVariableNames() {
+				Set<String> variableNames = new HashSet<>();
+				variableNames.addAll(getStandardIdentityVariableNames());
+				variableNames.add(LOGIN);
+				variableNames.add(CURRICULUM_NAME);
+				variableNames.add(CURRICULUM_DESCRIPTION);
+				variableNames.add(CURRICULUM_URL);
+				variableNames.add(CURRICULUM_ELEMENT_NAME);
+				variableNames.add(CURRICULUM_ELEMENT_DESCRIPTION);
+				variableNames.add(CURRICULUM_ELEMENT_IDENTIFIER);
+				return variableNames;
+			}
+
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 				// Put user variables into velocity context
 				fillContextWithStandardIdentityValues(context, identity, locale);
 				User user = identity.getUser();
-				context.put("login", UserManager.getInstance().getUserDisplayEmail(user, locale));
+				context.put(LOGIN, UserManager.getInstance().getUserDisplayEmail(user, locale));
 				// Put variables from greater context
+				context.put(CURRICULUM_NAME, curriculumName);
 				context.put("curriculumname", curriculumName);
+				context.put(CURRICULUM_DESCRIPTION, curriculumDescription);
 				context.put("curriculumdescription", curriculumDescription);
+				context.put(CURRICULUM_URL, curriculumUrl);
 				context.put("curriculumurl", curriculumUrl);
 				
+				context.put(CURRICULUM_ELEMENT_NAME, curriculumElementName);
 				context.put("curriculumelementname", curriculumElementName);
+				context.put(CURRICULUM_ELEMENT_DESCRIPTION, curriculumElementDescription);
 				context.put("curriculumelementdescription", curriculumElementDescription);
+				context.put(CURRICULUM_ELEMENT_IDENTIFIER, curriculumElementIdentifier);
 				context.put("curriculumelementidentifier", curriculumElementIdentifier);
 			}
 		};

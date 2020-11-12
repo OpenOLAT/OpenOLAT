@@ -61,6 +61,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.EmailAddressValidator;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.user.UserManager;
@@ -217,6 +218,12 @@ public class ContactForm extends FormBasicController {
 		defaultEmailTo += tto.getValue();
 		tto.setValue(defaultEmailTo);
 		ttoBig.setValue(defaultEmailTo);
+	}
+	
+	
+	public void setBody(MailTemplate template) {
+		setBody(template.getBodyTemplate());
+		MailHelper.setVariableNamesAsHelp(tbody, template, getLocale());
 	}
 
 	public void setBody(String defaultBody) {
@@ -441,7 +448,7 @@ public class ContactForm extends FormBasicController {
 		if(index >= 0 && index < mailTemplates.size()) {
 			MailTemplate template = mailTemplates.get(index);
 			setSubject(template.getSubjectTemplate());
-			setBody(template.getBodyTemplate());
+			setBody(template);
 		}
 	}
 	

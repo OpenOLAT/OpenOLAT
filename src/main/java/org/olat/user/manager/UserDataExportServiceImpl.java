@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
@@ -44,7 +45,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
@@ -216,9 +216,11 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 		};
 		String subject = translator.translate("export.user.data.ready.subject", args);
 		String text = translator.translate("export.user.data.ready.text", args);
+		
 		MailTemplate template = new MailTemplate(subject, text, null) {
 			@Override
 			public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+				vContext.put("fullName", fullName);
 				vContext.put("fullname", fullName);
 				vContext.put("url", url);
 			}
@@ -234,6 +236,7 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 		return userDataExportDao.getLastUserDataExport(identity);
 	}
 	
+	@Override
 	public String getDownloadURL(Identity identity) {
 		String businessPath = "[Identity:" + identity.getKey() + "][mysettings:0][Data:0]";
 		return BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);

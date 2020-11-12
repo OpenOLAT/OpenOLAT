@@ -40,6 +40,20 @@ import org.olat.core.util.mail.MailTemplate;
  */
 public class QualityMailTemplateBuilder {
 	
+	private static final String FIRST_NAME = "firstName";
+	private static final String LAST_NAME = "lastName";
+	private static final String START = "start";
+	private static final String DEADLINE = "deadline";
+	private static final String TOPICTYPE = "topictype";
+	private static final String TOPIC = "topic";
+	private static final String TITLE = "title";
+	private static final String PREVIOUS_TITLE = "previousTitle";
+	private static final String SERIE_POSITION = "seriePosition";
+	private static final String CONTEXT = "context";
+	private static final String URL = "url";
+	private static final String INVITATION = "invitation";
+	private static final String RESULT = "result";
+	
 	private final Formatter formatter;
 	
 	private final String subject;
@@ -137,22 +151,25 @@ public class QualityMailTemplateBuilder {
 	
 	public MailTemplate build() {
 		File[] attachments = reportPdf != null? new File[] { reportPdf }: null;
+		
 		MailTemplate mailTempl = new MailTemplate(subject, body, attachments ) {
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {	
+				context.put(FIRST_NAME, blankIfNull(firstname));
 				context.put("firstname", blankIfNull(firstname));
+				context.put(LAST_NAME, blankIfNull(lastname));
 				context.put("lastname", blankIfNull(lastname));
-				context.put("start", blankIfNull(start));
-				context.put("deadline", blankIfNull(deadline));
-				context.put("topictype", blankIfNull(topictype));
-				context.put("topic", blankIfNull(topic));
-				context.put("title", blankIfNull(title));
-				context.put("previousTitle", blankIfNull(previousTitle));
-				context.put("seriePosition", blankIfNull(seriePosition));
-				context.put("context", blankIfNull(surveyContext));
-				context.put("url", blankIfNull(url));
-				context.put("invitation", blankIfNull(invitation));
-				context.put("result", blankIfNull(result));
+				context.put(START, blankIfNull(start));
+				context.put(DEADLINE, blankIfNull(deadline));
+				context.put(TOPICTYPE, blankIfNull(topictype));
+				context.put(TOPIC, blankIfNull(topic));
+				context.put(TITLE, blankIfNull(title));
+				context.put(PREVIOUS_TITLE, blankIfNull(previousTitle));
+				context.put(SERIE_POSITION, blankIfNull(seriePosition));
+				context.put(CONTEXT, blankIfNull(surveyContext));
+				context.put(URL, blankIfNull(url));
+				context.put(INVITATION, blankIfNull(invitation));
+				context.put(RESULT, blankIfNull(result));
 			}
 		};
 		return mailTempl;

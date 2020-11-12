@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.projectbroker.service;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -61,6 +62,22 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
+	
+	private static final String ENROLLED_IDENTITY_FIRST_NAME = "enrolledIdentityFirstName";
+	private static final String ENROLLED_IDENTITY_LAST_NAME = "enrolledIdentityLastName";
+	private static final String ENROLLED_IDENTITY_USERNAME = "enrolledIdentityUsername";
+	private static final String PROJECT_TITLE = "projectTitle";
+	private static final String CURRENT_DATE = "currentDate";
+	private static final String FIRSTNAME_PROJECT_MANAGER = "firstnameProjectManager";
+	private static final String LASTNAME_PROJECT_MANAGER = "lastnameProjectManager";
+	private static final String USERNAME_PROJECT_MANAGER = "usernameProjectManager";
+	private static final Collection<String> VARIABLE_NAMES =
+			List.of(ENROLLED_IDENTITY_FIRST_NAME, ENROLLED_IDENTITY_LAST_NAME, ENROLLED_IDENTITY_USERNAME,
+					PROJECT_TITLE, CURRENT_DATE);
+	private static final Collection<String> VARIABLE_NAMES_PROJECT_CHANGE =
+			List.of(PROJECT_TITLE, CURRENT_DATE, FIRSTNAME_PROJECT_MANAGER, LASTNAME_PROJECT_MANAGER,
+					USERNAME_PROJECT_MANAGER);
+	
 	private static final String KEY_ENROLLED_EMAIL_TO_PARTICIPANT_SUBJECT = "mail.enrolled.to.participant.subject";
 	private static final String KEY_ENROLLED_EMAIL_TO_PARTICIPANT_BODY    = "mail.enrolled.to.participant.body";
 	
@@ -99,12 +116,14 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 	
 	
 	// For Enrollment 
+	@Override
 	public MailerResult sendEnrolledEmailToParticipant(Identity enrolledIdentity, Project project, Translator pT) {
 		return sendEmail(enrolledIdentity, project, 
 				             pT.translate(KEY_ENROLLED_EMAIL_TO_PARTICIPANT_SUBJECT), 
 				             pT.translate(KEY_ENROLLED_EMAIL_TO_PARTICIPANT_BODY), pT.getLocale());
 	}
 
+	@Override
 	public MailerResult sendEnrolledEmailToManager(Identity enrolledIdentity, Project project, Translator pT) {
 		List<Identity> coaches = businessGroupService
 				.getMembers(project.getProjectGroup(), GroupRoles.coach.name());
@@ -114,12 +133,14 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 	}
 
 	// For cancel enrollment
+	@Override
 	public MailerResult sendCancelEnrollmentEmailToParticipant(Identity enrolledIdentity, Project project, Translator pT) {
 		return sendEmail(enrolledIdentity, project, 
         pT.translate(KEY_CANCEL_ENROLLMENT_EMAIL_TO_PARTICIPANT_SUBJECT), 
         pT.translate(KEY_CANCEL_ENROLLMENT_EMAIL_TO_PARTICIPANT_BODY), pT.getLocale());
 	}
 
+	@Override
 	public MailerResult sendCancelEnrollmentEmailToManager(Identity enrolledIdentity, Project project, Translator pT) {
 		List<Identity> coaches = businessGroupService
 				.getMembers(project.getProjectGroup(), GroupRoles.coach.name());
@@ -129,6 +150,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 	}
 
 	// Project change
+	@Override
 	public MailerResult sendProjectChangedEmailToParticipants(Identity changer, Project project, Translator pT) {
 		List<Identity> participants = businessGroupService
 				.getMembers(project.getProjectGroup(), GroupRoles.participant.name());
@@ -137,6 +159,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 				pT.translate(KEY_PROJECT_CHANGED_EMAIL_TO_PARTICIPANT_BODY), pT.getLocale());
 	}
 
+	@Override
 	public MailerResult sendProjectDeletedEmailToParticipants(Identity changer, Project project, Translator pT) {
 		List<Identity> participants = businessGroupService
 			.getMembers(project.getProjectGroup(), GroupRoles.participant.name());
@@ -145,6 +168,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 				pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_BODY), pT.getLocale());
 	}
 	
+	@Override
 	public MailerResult sendProjectDeletedEmailToManager(Identity changer, Project project, Translator pT) {
 		List<Identity> coaches = businessGroupService
 				.getMembers(project.getProjectGroup(), GroupRoles.coach.name());
@@ -153,6 +177,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
         pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_BODY), pT.getLocale());
 	}
 
+	@Override
 	public MailerResult sendProjectDeletedEmailToAccountManagers(Identity changer, Project project, CourseEnvironment courseEnv, CourseNode node, Translator pT){
 		Long groupKey = null;
 		Property accountManagerGroupProperty = courseEnv.getCoursePropertyManager().findCourseNodeProperty(node, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
@@ -172,22 +197,27 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		return null;
 	}
 	
+	@Override
 	public MailTemplate createRemoveAsCandiadateMailTemplate(Project project, Identity projectManager, Translator pT) {
 		return createProjectChangeMailTemplate( project, projectManager, pT.translate(KEY_REMOVE_CANDIDATE_EMAIL_SUBJECT), pT.translate(KEY_REMOVE_CANDIDATE_EMAIL_BODY), pT.getLocale());
 	}
 
+	@Override
 	public MailTemplate createAcceptCandiadateMailTemplate(Project project, Identity projectManager, Translator pT) {
 		return createProjectChangeMailTemplate( project, projectManager, pT.translate(KEY_ACCEPT_CANDIDATE_EMAIL_SUBJECT), pT.translate(KEY_ACCEPT_CANDIDATE_EMAIL_BODY), pT.getLocale());
 	}
 
+	@Override
 	public MailTemplate createAddCandidateMailTemplate(Project project, Identity projectManager, Translator pT) {
 		return createProjectChangeMailTemplate( project, projectManager, pT.translate(KEY_ADD_CANDIDATE_EMAIL_SUBJECT), pT.translate(KEY_ADD_CANDIDATE_EMAIL_BODY), pT.getLocale());
 	}
 
+	@Override
 	public MailTemplate createAddParticipantMailTemplate(Project project, Identity projectManager, Translator pT) {
 		return createProjectChangeMailTemplate( project, projectManager, pT.translate(KEY_ADD_PARTICIPANT_EMAIL_SUBJECT), pT.translate(KEY_ADD_PARTICIPANT_EMAIL_BODY), pT.getLocale());
 	}
 
+	@Override
 	public MailTemplate createRemoveParticipantMailTemplate(Project project, Identity projectManager, Translator pT) {
 		return createProjectChangeMailTemplate( project, projectManager, pT.translate(KEY_REMOVE_PARTICIPANT_EMAIL_SUBJECT), pT.translate(KEY_REMOVE_PARTICIPANT_EMAIL_BODY), pT.getLocale());
 	}
@@ -241,13 +271,8 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		return result;
 	}
 
-	/**
-	 * Create default template which fill in context 'firstname' , 'lastname' and 'username'.
-	 * @param subject
-	 * @param body
-	 * @return
-	 */
 	private MailTemplate createMailTemplate(Project project, Identity enrolledIdentity, String subject, String body, Locale locale) {	
+		
 		final String projectTitle = project.getTitle();
 		final String currentDate  = Formatter.getInstance(locale).formatDateAndTime(new Date());
 		final String firstNameEnrolledIdentity = enrolledIdentity.getUser().getProperty(UserConstants.FIRSTNAME, null);
@@ -255,40 +280,48 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		final String usernameEnrolledIdentity  = enrolledIdentity.getName();
 			
 		return new MailTemplate(subject, body, null) {
+			
+			@Override
+			public Collection<String> getVariableNames() {
+				return VARIABLE_NAMES;
+			}
+			
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+				context.put(ENROLLED_IDENTITY_FIRST_NAME, firstNameEnrolledIdentity);
 				context.put("enrolled_identity_firstname", firstNameEnrolledIdentity);
-				context.put("enrolled_identity_lastname",  lastnameEnrolledIdentity);
-				context.put("enrolled_identity_username",  usernameEnrolledIdentity);
-				// Put variables from greater context
-				context.put("projectTitle", projectTitle);
-				context.put("currentDate", currentDate);
+				context.put(ENROLLED_IDENTITY_LAST_NAME, lastnameEnrolledIdentity);
+				context.put("enrolled_identity_lastname", lastnameEnrolledIdentity);
+				context.put(ENROLLED_IDENTITY_USERNAME, usernameEnrolledIdentity);
+				context.put("enrolled_identity_username", usernameEnrolledIdentity);
+				context.put(PROJECT_TITLE, projectTitle);
+				context.put(CURRENT_DATE, currentDate);
 			}
 		};
 	}
 
-	/**
-	 * Create default template which fill in context 'firstname' , 'lastname' and 'username'.
-	 * @param subject
-	 * @param body
-	 * @return
-	 */
 	private MailTemplate createProjectChangeMailTemplate(Project project, Identity changer, String subject, String body, Locale locale) {	
+		
 		final String projectTitle = project.getTitle();
 		final String currentDate  = Formatter.getInstance(locale).formatDateAndTime(new Date());
 		final String firstnameProjectManager = changer.getUser().getProperty(UserConstants.FIRSTNAME, null);
 		final String lastnameProjectManager  = changer.getUser().getProperty(UserConstants.LASTNAME, null);
 		final String usernameProjectManager  = changer.getName();
-			
+		
 		return new MailTemplate(subject, body, null) {
+			
+			@Override
+			public Collection<String> getVariableNames() {
+				return VARIABLE_NAMES_PROJECT_CHANGE;
+			}
+			
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-				// Put variables from greater context
-				context.put("projectTitle", projectTitle);
-				context.put("currentDate", currentDate);
-				context.put("firstnameProjectManager", firstnameProjectManager);
-				context.put("lastnameProjectManager", lastnameProjectManager);
-				context.put("usernameProjectManager", usernameProjectManager);
+				context.put(PROJECT_TITLE, projectTitle);
+				context.put(CURRENT_DATE, currentDate);
+				context.put(FIRSTNAME_PROJECT_MANAGER, firstnameProjectManager);
+				context.put(LASTNAME_PROJECT_MANAGER, lastnameProjectManager);
+				context.put(USERNAME_PROJECT_MANAGER, usernameProjectManager);
 			}
 		};
 	}

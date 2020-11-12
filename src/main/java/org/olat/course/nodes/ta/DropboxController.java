@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -95,6 +96,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class DropboxController extends BasicController {
 	
+	private static final String LOGIN = "login";
+	private static final String FIRST_NAME = "firstName";
+	private static final String LAST_NAME = "lastName";
+	private static final String EMAIL = "email";
+	private static final String FILENAME = "filename";
+	private static final String DATE = "date";
+	private static final String TIME = "time";
+	private static final Collection<String> VARIABLE_NAMES = List.of(LOGIN, FIRST_NAME, LAST_NAME, EMAIL, FILENAME, DATE, TIME);
+	
+	public static Collection<String> variableNames() {
+		return VARIABLE_NAMES;
+	}
+
 	public static final String DROPBOX_DIR_NAME = "dropboxes";
 	// config
 	
@@ -350,20 +364,21 @@ public class DropboxController extends BasicController {
 	}
 	
 	private String getConfirmation(UserRequest ureq, String filename) {
-	  //grab confirmation-text from bb-config
 		String confirmation = config.getStringValue(TACourseNode.CONF_DROPBOX_CONFIRMATION);
 		
 		Context c = new VelocityContext();
 		Identity identity = ureq.getIdentity();
-		c.put("login", identity.getName());
+		c.put(LOGIN, identity.getName());
+		c.put(FIRST_NAME, identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()));
 		c.put("first", identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()));
+		c.put(LAST_NAME, identity.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
 		c.put("last", identity.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
-		c.put("email", UserManager.getInstance().getUserDisplayEmail(identity, getLocale()));
-		c.put("filename", filename);
+		c.put(EMAIL, UserManager.getInstance().getUserDisplayEmail(identity, getLocale()));
+		c.put(FILENAME, filename);
 		Date now = new Date();
 		Formatter f = Formatter.getInstance(ureq.getLocale());
-		c.put("date", f.formatDate(now));
-		c.put("time", f.formatTime(now));
+		c.put(DATE, f.formatDate(now));
+		c.put(TIME, f.formatTime(now));
 		
 		// update attempts counter for this user: one file - one attempts
 		courseAssessmentService.incrementAttempts(node, userCourseEnv, Role.user);

@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.modules.ModuleConfiguration;
 
@@ -111,6 +112,7 @@ public class DropboxForm extends FormBasicController {
 		}
 		
 		confirmation = uifactory.addTextAreaElement("confirmation", "form.dropbox.confirmation", 2500, 4, 40, true, false, sConfirmation != null ? sConfirmation : "", formLayout);
+		MailHelper.setVariableNamesAsHelp(confirmation, DropboxController.variableNames(), getLocale());
 		
 		Boolean enableMail = (Boolean)config.get(TACourseNode.CONF_DROPBOX_ENABLEMAIL);
 		if(enableMail != null) {

@@ -34,7 +34,6 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.SearchIdentityParams;
@@ -46,10 +45,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityLifecycle;
-import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -60,7 +57,6 @@ import org.olat.core.util.session.UserSessionManager;
 import org.olat.repository.RepositoryDeletionModule;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserLifecycleManager;
-import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.olat.user.ui.admin.lifecycle.UserAdminLifecycleConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,9 +83,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	private IdentityDAO identityDao;
 	@Autowired
 	private MailManager mailManager;
-	@Autowired
-	private UserManager userManager;
-	@Autowired
+	@Autowired 
 	private BaseSecurity securityManager;
 	@Autowired
 	private UserSessionManager userSessionManager;
@@ -392,38 +386,6 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		cal.add(Calendar.DATE, -days);
 		Date date = cal.getTime();
 		return CalendarUtils.startOfDay(date);
-	}
-	
-	private final class LifecycleMailTemplate extends MailTemplate {
-		
-		private final Locale locale;
-		
-		public LifecycleMailTemplate(String subject, String body, Locale locale) {
-			super(subject, body, null);
-			this.locale = locale;
-		}
-
-		@Override
-		public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
-			if(recipient != null) {
-				User user = recipient.getUser();
-				
-				vContext.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
-				vContext.put(UserConstants.FIRSTNAME, user.getProperty(UserConstants.FIRSTNAME, null));
-				vContext.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
-				vContext.put(UserConstants.LASTNAME, user.getProperty(UserConstants.LASTNAME, null));
-				String fullName = userManager.getUserDisplayName(recipient);
-				vContext.put("fullname", fullName);
-				vContext.put("fullName", fullName); 
-				vContext.put("mail", userManager.getUserDisplayEmail(user, locale));
-				vContext.put("email", userManager.getUserDisplayEmail(user, locale));
-				String loginName = securityManager.findAuthenticationName(recipient);
-				if(!StringHelper.containsNonWhitespace(loginName)) {
-					loginName = recipient.getName();
-				}
-				vContext.put("username", loginName);
-			}
-		}
 	}
 	
 	private static final class UserDataDeletableComparator implements Comparator<UserDataDeletable> {

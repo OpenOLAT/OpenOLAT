@@ -216,7 +216,8 @@ public class UsrPropCfgTableController extends FormBasicController {
 				String key2Translate2 = handler.i18nColumnDescriptorLabelKey();
 
 				String[] keys2Translate = { key2Translate1, key2Translate2 };
-				singleKeyTrnsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys2Translate, UserPropertyHandler.class, SingleKeyTranslatorController.InputType.TEXT_ELEMENT);
+				singleKeyTrnsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys2Translate,
+						UserPropertyHandler.class, SingleKeyTranslatorController.InputType.TEXT_ELEMENT, null);
 				listenTo(singleKeyTrnsCtrl);
 				removeAsListenerAndDispose(translatorCallout);
 				translatorCallout = new CloseableCalloutWindowController(ureq, getWindowControl(), singleKeyTrnsCtrl.getInitialComponent(),

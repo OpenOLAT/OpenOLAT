@@ -43,12 +43,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.RuleSPI;
+import org.olat.modules.reminder.manager.CourseReminderTemplate;
 import org.olat.modules.reminder.model.ReminderRules;
 import org.olat.modules.reminder.model.SendTime;
 import org.olat.modules.reminder.rule.DateRuleSPI;
@@ -149,6 +151,7 @@ public class CourseReminderEditController extends FormBasicController {
 		}
 		emailEl = uifactory.addRichTextElementForStringDataMinimalistic("email.content", "email.content", emailContent, 10, 60, contentCont, getWindowControl());
 		emailEl.setMandatory(true);
+		MailHelper.setVariableNamesAsHelp(emailEl, CourseReminderTemplate.variableNames(), getLocale());
 		
 		String buttonPage = velocity_root + "/edit_rules_buttons.html";
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createCustomFormLayout("buttons", getTranslator(), buttonPage);
