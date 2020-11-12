@@ -354,7 +354,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 				currentContentStream.setTextMatrix(Matrix.getRotateInstance(3 * (Math.PI / 2), textx + cellMargin, texty - cellMargin));
 				textx += colWidth;
 			}
-			currentContentStream.showText(cleanString(text));
+			showTextToStream(text, currentContentStream);
 			currentContentStream.endText();
 		}
 
@@ -381,7 +381,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 							currentContentStream.beginText();
 							currentContentStream.setFont(font, fontSize);
 							currentContentStream.newLineAtOffset(textx, lineTexty);
-							currentContentStream.showText(textLine);
+							showTextToStream(textLine, currentContentStream);
 							currentContentStream.endText();
 							lineTexty -= (lineHeightFactory * fontSize);
 						}
@@ -389,7 +389,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 						currentContentStream.beginText();
 						currentContentStream.setFont(font, fontSize);
 						currentContentStream.newLineAtOffset(textx, texty);
-						currentContentStream.showText(text);
+						showTextToStream(text, currentContentStream);
 						currentContentStream.endText();
 					}
 				}
