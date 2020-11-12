@@ -63,7 +63,6 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.certificate.CertificatesManager;
-import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -134,7 +133,6 @@ public class UserOverviewController extends BasicController implements Activatea
 	private GroupOverviewController groupOverviewController;
 	private UserOrderController userOrderController;
 	private ParticipantLecturesOverviewController lecturesController;
-	private CertificateAndEfficiencyStatementListController efficiencyStatementListController;
 	private WeeklyCalendarController calendarController;
 	private CourseListWrapperController courseListWrapperController;
 	private CertificateAndEfficiencyStatementWrapperController certificateAndEfficiencyStatementWrapperController;
@@ -307,7 +305,7 @@ public class UserOverviewController extends BasicController implements Activatea
 		if (roleSecurityCallback.canViewGroupMemberships()) {
 			groupTabIndex = functionsTabbedPane.addTab(ureq, translate("groups.menu.title"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_GROUPS), null);
-				groupOverviewController = new GroupOverviewController(ureq, bwControl, mentee, false, false);
+				groupOverviewController = new GroupOverviewController(uureq, bwControl, mentee, false, false);
 				listenTo(groupOverviewController);
 				return groupOverviewController.getInitialComponent();
 			});
@@ -320,7 +318,7 @@ public class UserOverviewController extends BasicController implements Activatea
 		if (roleSecurityCallback.canViewAndEditProfile()) {
 			profileTabIndex = functionsTabbedPane.addTab(ureq, translate("profile"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_PROFILE), null);
-				profileAndHomePageEditController =  new ProfileAndHomePageEditController(ureq, bwControl, mentee, roleSecurityCallback.isAdministrativeUser());
+				profileAndHomePageEditController =  new ProfileAndHomePageEditController(uureq, bwControl, mentee, roleSecurityCallback.isAdministrativeUser());
 				listenTo(profileAndHomePageEditController);
 				return profileAndHomePageEditController.getInitialComponent();
 			});
