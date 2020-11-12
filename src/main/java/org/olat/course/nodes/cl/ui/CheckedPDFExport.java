@@ -315,7 +315,7 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 			currentContentStream.beginText();
 			currentContentStream.setFont(font, fontSize);
 			currentContentStream.newLineAtOffset(textx, texty - headerHeight + cellMargin);
-			currentContentStream.showText(cleanString(text));
+			showTextToStream(text, currentContentStream);
 			currentContentStream.endText();
 			textx += colWidth;
 		}

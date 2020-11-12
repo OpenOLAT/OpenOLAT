@@ -511,13 +511,13 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 						currentContentStream.beginText();
 						currentContentStream.setFont(font, fontSize - 2);
 						currentContentStream.newLineAtOffset(boxx + 2f, texty);
-						currentContentStream.showText(comment);
+						showTextToStream(comment, currentContentStream);
 						currentContentStream.endText();
 					} else {
 						currentContentStream.beginText();
 						currentContentStream.setFont(font, fontSize);
 						currentContentStream.newLineAtOffset(boxx + 2f, texty);
-						currentContentStream.showText(comment);
+						showTextToStream(comment, currentContentStream);
 						currentContentStream.endText();
 					}
 				}
