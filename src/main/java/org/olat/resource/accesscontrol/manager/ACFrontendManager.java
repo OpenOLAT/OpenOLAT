@@ -482,6 +482,12 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
+	public boolean isAccessToResourcePending(OLATResource resource, IdentityRef identity) {	
+		List<Order> orders = orderManager.findPendingOrders(resource, identity);
+		return !orders.isEmpty();
+	}
+
+	@Override
 	public boolean allowAccesToResource(final Identity identity, final Offer offer) {
 		//check if offer is ok: key is stupid but further check as date, validity...
 		if(offer.getKey() == null) {

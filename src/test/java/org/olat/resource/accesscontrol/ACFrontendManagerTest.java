@@ -398,6 +398,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		CodeHelper.printMilliSecondTime(start, "One click");
 	}
 	
+	
 	@Test
 	public void testStandardMethods() {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("ac-method-mgr");
