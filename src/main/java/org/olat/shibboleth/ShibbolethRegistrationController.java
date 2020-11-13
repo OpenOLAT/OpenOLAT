@@ -57,6 +57,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.dispatcher.LocaleNegotiator;
+import org.olat.login.auth.OLATAuthManager;
 import org.olat.registration.DisclaimerController;
 import org.olat.registration.LanguageChooserController;
 import org.olat.registration.RegistrationManager;
@@ -109,6 +110,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OLATAuthManager olatAuthManager;
 	@Autowired
 	private ShibbolethModule shibbolethModule;
 	@Autowired
@@ -263,9 +266,11 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		} else if (source == regForm) {
 			if (event == Event.DONE_EVENT) {
 				String choosenLogin = regForm.getUsernameEl();
-				Identity identity = securityManager.findIdentityByName(choosenLogin);
-
-
+				Identity identity = securityManager.findIdentityByLogin(choosenLogin);
+				if(identity == null) {
+					securityManager.findIdentityByNickName(choosenLogin);
+				}
+				
 				if (identity == null) { // ok, create new user
 					if (isMandatoryUserPropertyMissing()){
 						regWithUserPropForm = new ShibbolethRegistrationUserPropertiesFrom(ureq, getWindowControl(), shibbolethAttributes);
