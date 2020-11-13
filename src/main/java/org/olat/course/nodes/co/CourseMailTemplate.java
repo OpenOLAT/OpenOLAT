@@ -69,6 +69,10 @@ public class CourseMailTemplate extends MailTemplate {
 	public static Collection<String> variableNames() {
 		return VARIABLE_NAMES;
 	}
+
+	public static String createCourseUrl(RepositoryEntry repositoryEntry) {
+		return Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repositoryEntry.getKey();
+	}
 	
 	@Override
 	public Collection<String> getVariableNames() {
@@ -93,7 +97,7 @@ public class CourseMailTemplate extends MailTemplate {
 	@Override
 	public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
 		if(entry != null) {
-			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+			String url = createCourseUrl(entry);
 			vContext.put(COURSE_URL, url);
 			vContext.put("courseurl", url);
 			vContext.put(COURSE_NAME, entry.getDisplayname());

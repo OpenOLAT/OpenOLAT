@@ -143,7 +143,7 @@ public class ContactFormController extends BasicController {
 		if(StringHelper.containsNonWhitespace(cmsg.getBodyText())) {
 			cntctForm.setBody(cmsg.getBodyText());
 		} else if(template != null && StringHelper.containsNonWhitespace(template.getBodyTemplate())) {
-			cntctForm.setBody(template.getBodyTemplate());
+			cntctForm.setBody(template);
 		}
 		
 		if(StringHelper.containsNonWhitespace(cmsg.getSubject())) {

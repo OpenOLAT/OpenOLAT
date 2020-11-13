@@ -84,6 +84,9 @@ public class COToolController extends BasicController {
 		cmsg.addEmailTo(dummyList);
 		RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		CourseMailTemplate template = new CourseMailTemplate(entry, getIdentity(), getLocale());
+		String courseUrl = CourseMailTemplate.createCourseUrl(entry);
+		String body = translate("tool.default.body", new String[] {courseUrl});
+		template.setBodyTemplate(body);
 		emailCtrl = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg, template);
 		emailCtrl.setContactFormTitle(null);
 		Set<Recipients> recipients = recipientCtrl.getSelectedRecipients();
