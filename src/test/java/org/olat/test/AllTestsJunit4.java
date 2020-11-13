@@ -552,6 +552,7 @@ import org.junit.runners.Suite;
 	org.olat.shibboleth.handler.FirstValueHandlerTest.class,
 	org.olat.shibboleth.handler.SchacGenderHandlerTest.class,
 	org.olat.user.UserManagerImplTest.class,
+	org.olat.user.propertyhandlers.DatePropertyHandlerTest.class,
 	org.olat.user.propertyhandlers.LinkedinPropertyHandlerTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.FileElementRendererTest.class,
 	/**

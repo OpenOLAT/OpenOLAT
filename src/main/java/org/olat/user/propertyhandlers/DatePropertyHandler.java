@@ -62,11 +62,6 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 	 */
 	private DateFormat INTERNAL_DATE_FORMATTER = new SimpleDateFormat("yyyyMMdd", Locale.GERMAN);
 
-	
-	/**
-	 * @Override
-	 * @see org.olat.user.AbstractUserPropertyHandler#getUserProperty(org.olat.core.id.User, java.util.Locale)
-	 */
 	@Override
 	public String getUserProperty(User user, Locale locale) {
 		Date date = decode(getInternalValue(user));
@@ -75,28 +70,18 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 		return Formatter.getInstance(locale).formatDate(date);
 	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormItem(org.olat.core.id.User, org.olat.core.gui.components.form.flexible.FormItem)
-	 */
 	@Override
 	public void updateUserFromFormItem(User user, FormItem formItem) {
 		String internalValue = getStringValue(formItem);
 		setInternalValue(user, internalValue);
 	}
 
-
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.components.form.flexible.FormItem)
-	 */
 	@Override
 	public String getStringValue(FormItem formItem) {
 		Date date = ((org.olat.core.gui.components.form.flexible.elements.DateChooser) formItem).getDate();
 		return encode(date);
 	}
-	
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(java.lang.String, java.util.Locale)
-	 */
+
 	@Override
 	public String getStringValue(String displayValue, Locale locale) {
 		if (StringHelper.containsNonWhitespace(displayValue)) {
@@ -112,11 +97,6 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 		return null;
 	}
 
-	
-	/**
-	 *  
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#addFormItem(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean, org.olat.core.gui.components.form.flexible.FormItemContainer)
-	 */
 	@Override
 	public FormItem addFormItem(Locale locale, final User user, String usageIdentifyer, boolean isAdministrativeUser,	FormItemContainer formItemContainer) {
 		org.olat.core.gui.components.form.flexible.elements.DateChooser dateElem = null;
@@ -140,11 +120,6 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 		return dateElem;
 	}
 
-
-	
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
-	 */
 	@Override
 	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		
@@ -155,9 +130,9 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 		}
 		List<ValidationStatus> validation = new ArrayList<>();
 		dateElem.validate(validation);
-		if (validation.size()==0){
+		if (validation.isEmpty()){
 			return true;
-		}else{
+		} else {
 			// errorkey should be set by dateElem.validate formItem.setErrorKey(i18nFormElementLabelKey()+ ".error", null);		
 			return false;			
 		}
@@ -180,18 +155,15 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 	 * @return
 	 */
 	private Date decode(String value) {
-		if ( ! StringHelper.containsNonWhitespace(value)) return null;
+		if (!StringHelper.containsNonWhitespace(value)) return null;
 		try {
 			return INTERNAL_DATE_FORMATTER.parse(value.trim());
-		} catch (ParseException e) {
+		} catch (ParseException | NumberFormatException e) {
 			log.warn("Could not parse BirthDayField from database", e);
 			return null;
 		}
 	}
 	
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValidValue(java.lang.String, org.olat.core.gui.components.form.ValidationError, java.util.Locale)
-	 */
 	@Override
 	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
 		if (StringHelper.containsNonWhitespace(value)) {
@@ -199,7 +171,7 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 			df.setLenient(false);
 			try {
 				df.parse(value.trim());
-			} catch (ParseException e) {
+			} catch (ParseException | NumberFormatException e) {
 				validationError.setErrorKey(i18nFormElementLabelKey()+ ".error");
 				return false;
 			}
