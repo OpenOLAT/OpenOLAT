@@ -273,6 +273,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 		String mB = (String) config.get(COEditController.CONFIG_KEY_MBODY_DEFAULT);
 		String mBody = (mB != null) ? mB : "";
 		teArElBody = uifactory.addRichTextElementForStringDataMinimalistic("mBody", "message.body", mBody, 8, 60, formLayout, getWindowControl());
+		MailHelper.setVariableNamesAsHelp(teArElBody, CourseMailTemplate.variableNames(), getLocale());
 		
 		submitButton = uifactory.addFormSubmitButton("save", formLayout);
 		update();

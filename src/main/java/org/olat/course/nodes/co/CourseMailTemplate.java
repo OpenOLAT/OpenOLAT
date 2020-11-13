@@ -52,6 +52,8 @@ public class CourseMailTemplate extends MailTemplate {
 	private static final String LAST_NAME = "lastName";
 	private static final String FULL_NAME = "fullName";
 	private static final String EMAIL = "email";
+	private static final Collection<String> VARIABLE_NAMES =
+			List.of(COURSE_URL, COURSE_NAME, COURSE_DESCRIPTION, USERNAME, FIRST_NAME, LAST_NAME, FULL_NAME, EMAIL);
 
 	private final Locale locale;
 	private final Identity sender;
@@ -62,6 +64,10 @@ public class CourseMailTemplate extends MailTemplate {
 		this.entry = entry;
 		this.sender = sender;
 		this.locale = locale;
+	}
+	
+	public static Collection<String> variableNames() {
+		return VARIABLE_NAMES;
 	}
 	
 	@Override
