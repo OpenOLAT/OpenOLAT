@@ -123,7 +123,7 @@ public class ReportCalloutController extends FormBasicController {
 	private void doLastYearReport(UserRequest ureq) {
 		Calendar cal = Calendar.getInstance();
 		Date end = CalendarUtils.endOfDay(cal.getTime());
-		cal.add(Calendar.MONTH, -1);
+		cal.add(Calendar.YEAR, -1);
 		Date start = CalendarUtils.startOfDay(cal.getTime());
 		doReport(ureq, start, end);
 	}

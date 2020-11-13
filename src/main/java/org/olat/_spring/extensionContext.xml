@@ -613,10 +613,10 @@
 			</property>
 		</bean>	
 		
-		<!--  user  bulk-pw change  ("OLAT password") -->
+		<!-- User bulk password change  ("OLAT password") -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-			<property name="order" value="7304" />
-			<property name="actionController">	
+			<property name="order" value="8900" />
+			<property name="actionController">
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.user.bulkChange.UserBulkChangePasswordController"/>
 				</bean>
@@ -629,8 +629,8 @@
 					<value>org.olat.admin.SystemAdminMainController</value>		
 				</list>
 			</property>
-			<property name="parentTreeNodeIdentifier" value="sysconfigParent" />
-		</bean>		
+			<property name="parentTreeNodeIdentifier" value="loginAndSecurityParent" />
+		</bean>
 
 
 

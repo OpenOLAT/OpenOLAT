@@ -21,12 +21,13 @@ package org.olat.resource.accesscontrol.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.SimpleStackedPanel;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.repository.RepositoryEntry;
+import org.olat.resource.accesscontrol.ACService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -35,14 +36,23 @@ import org.olat.core.gui.control.controller.BasicController;
  *
  */
 public class AccessRefusedController extends BasicController {
+	
+	@Autowired
+	private ACService acService;
 
 	public AccessRefusedController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, null);
+	}
+	
+	public AccessRefusedController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
 		
-		VelocityContainer mainVC = createVelocityContainer("access_refused");
-		StackedPanel contentP = new SimpleStackedPanel("");
-		contentP.setContent(mainVC);
-		putInitialPanel(contentP);
+		boolean pending = entry != null && acService
+				.isAccessToResourcePending(entry.getOlatResource(), getIdentity());
+		
+		String template = pending ? "access_pending" : "access_refused";
+		VelocityContainer mainVC = createVelocityContainer(template);
+		putInitialPanel(mainVC);
 	}
 
 	@Override

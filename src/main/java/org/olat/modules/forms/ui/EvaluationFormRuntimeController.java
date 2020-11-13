@@ -58,6 +58,8 @@ public class EvaluationFormRuntimeController extends RepositoryEntryRuntimeContr
 			if(((EvaluationFormEditorController)editorCtrl).hasChanges()) {
 				doReloadRuntimeController(ureq);
 			}
+		} else if (toolbarPanel.getRootController() == toolbarPanel.getLastController()) {
+			doReloadRuntimeController(ureq);
 		}
 	}
 	

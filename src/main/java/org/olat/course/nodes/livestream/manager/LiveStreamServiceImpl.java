@@ -204,8 +204,10 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 	public String[] splitUrl(String url) {
 		if (!StringHelper.containsNonWhitespace(url)) return new String[0];
 		
+		String cleanedUrl = url.replace(" ", "");
+		
 		String urlSeparator = liveStreamModule.getUrlSeparator();
-		return url.split(urlSeparator);
+		return cleanedUrl.split(urlSeparator);
 	}
 
 	@Override

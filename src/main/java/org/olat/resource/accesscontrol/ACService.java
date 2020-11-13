@@ -74,6 +74,8 @@ public interface ACService {
 	 * @return
 	 */
 	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean allowNonInteractiveAccess);
+	
+	public boolean isAccessToResourcePending(OLATResource resource, IdentityRef identity);
 
 
 	public Offer createOffer(OLATResource resource, String resourceName);

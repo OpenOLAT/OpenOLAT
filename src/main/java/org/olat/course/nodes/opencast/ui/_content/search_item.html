@@ -1,0 +1,10 @@
+<div class="o_oc_search">
+#if($r.available("config.series.auto"))
+	$r.render("config.series.auto")
+	$r.render("config.series.search")
+#end
+#if($r.available("config.event.auto"))
+	$r.render("config.event.auto")
+	$r.render("config.event.search")
+#end
+</div>

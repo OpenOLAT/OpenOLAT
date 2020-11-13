@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -48,6 +48,7 @@ import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.CourseNode;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,14 +65,13 @@ public class ValidationStepForm extends StepFormBasicController {
 	private FlexiTableElement validTableEl;
 	private FlexiTableElement invalidTableEl;
 
-	private final UserManager userManager;
-	private final BaseSecurity securityManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	public ValidationStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "validation");
-		
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		initForm(ureq);
 		doValidate();
 	}
@@ -156,8 +156,9 @@ public class ValidationStepForm extends StepFormBasicController {
 		Map<String,Identity> idToIdentityMap = new HashMap<>();
 		
 		for(String assessedId : assessedIdList) {
-			Identity identity = securityManager.findIdentityByLogin(assessedId);
-			if(identity != null) {
+			List<FindNamedIdentity> identities = securityManager.findIdentitiesBy(Collections.singletonList(assessedId));
+			if(!identities.isEmpty()) {
+				Identity identity = identities.get(0).getIdentity();
 				idToIdentityMap.put(assessedId, identity);
 				continue;
 			}
@@ -166,7 +167,7 @@ public class ValidationStepForm extends StepFormBasicController {
 				List<Identity> found = userManager.findIdentitiesWithProperty(prop, assessedId);
 				if(found != null && !found.isEmpty()) {
 					// ignore multiple hits, just take the first one
-					identity = found.get(0);
+					Identity identity = found.get(0);
 					idToIdentityMap.put(assessedId, identity);
 					continue;
 				}

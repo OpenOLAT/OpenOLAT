@@ -25,9 +25,9 @@
 
 package org.olat.shibboleth;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -36,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.login.LoginModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,16 +43,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Initial Date:  09.08.2004
  *
- * @author Mike Stock
- * 
- * Comment:  
+ * @author Mike Stock 
  * 
  */
-
 public class ShibbolethMigrationForm extends FormBasicController {
 	private static final Logger log = Tracing.createLoggerFor(ShibbolethMigrationForm.class);
 	
-
 	private final Authentication authentication;
 	private TextElement login;
 	private TextElement password;
@@ -65,7 +60,6 @@ public class ShibbolethMigrationForm extends FormBasicController {
 	
 	public ShibbolethMigrationForm(UserRequest ureq, WindowControl wControl, Authentication authentication) {
 		super(ureq, wControl);
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		this.authentication = authentication;
 		initForm(ureq);
 	}
@@ -75,10 +69,10 @@ public class ShibbolethMigrationForm extends FormBasicController {
 		if (!securityManager.checkCredentials(authentication, password.getValue())) {
 			if (loginModule.registerFailedLoginAttempt(login.getValue())) {
 				password.setErrorKey("smf.error.blocked", null);
-				log.info(Tracing.M_AUDIT, "Too many failed login attempts for " + login.getValue() + ". Login blocked.");
+				log.info(Tracing.M_AUDIT, "Too many failed login attempts for {}. Login blocked.", login.getValue());
 			} else {
 				password.setErrorKey("smf.error.password", null);
-				log.info(Tracing.M_AUDIT, "Invalid password in ShibbolethMigration for login: " + login.getValue());
+				log.info(Tracing.M_AUDIT, "Invalid password in ShibbolethMigration for login: {}", login.getValue());
 			}
 			return false;
 		}
@@ -88,7 +82,9 @@ public class ShibbolethMigrationForm extends FormBasicController {
 	/**
 	 * @return Authentication
 	 */
-	protected Authentication getAuthentication() { return authentication; }
+	protected Authentication getAuthentication() {
+		return authentication;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -103,7 +99,7 @@ public class ShibbolethMigrationForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		login = uifactory.addTextElement("smf_login", "smf.login", 128, authentication.getIdentity().getName(), formLayout);
+		login = uifactory.addTextElement("smf_login", "smf.login", 128, authentication.getAuthusername(), formLayout);
 		login.setEnabled(false);
 		
 		password = uifactory.addPasswordElement("smf_password", "smf.password", 255, "", formLayout);

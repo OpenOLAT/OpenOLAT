@@ -45,8 +45,10 @@ import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.manager.ACOrderDAO;
 import org.olat.resource.accesscontrol.manager.ACTransactionDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.AccessTransactionImpl;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
+import org.olat.resource.accesscontrol.model.OrderImpl;
 import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
@@ -509,6 +511,71 @@ public class ACOrderManagerTest extends OlatTestCase {
 		//load order
 		Order retrievedOrder1 = acOrderManager.loadOrderByKey(order1.getKey());
 		assertNotNull(retrievedOrder1);
+	}
+	
+	@Test
+	public void findPendingOrders() {
+		//create some offers to buy
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pending-");
+		OLATResource randomOres = createResource();
+		Offer offer = acService.createOffer(randomOres, "Test pending resource 1");
+		offer = acService.save(offer);
+		dbInstance.commitAndCloseSession();
+		
+		//create a link offer to method
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
+		assertNotNull(methods);
+		assertEquals(1, methods.size());
+		AccessMethod method = methods.get(0);
+		OfferAccess access = acMethodManager.createOfferAccess(offer, method);
+		acMethodManager.save(access);
+		dbInstance.commitAndCloseSession();
+		
+		//save an order
+		Order order = acOrderManager.saveOneClick(id, access);
+		((OrderImpl)order).setOrderStatus(OrderStatus.NEW);
+		order = acOrderManager.save(order);
+		dbInstance.commitAndCloseSession();
+		
+		List<Order> newOrders = acOrderManager.findPendingOrders(randomOres, id);
+		Assert.assertTrue(newOrders.isEmpty());
+
+		// add a transaction in new status
+		OrderPart part = order.getParts().get(0);
+		AccessTransaction accessTransaction = acTransactionManager.createTransaction(order, part, method);
+		((AccessTransactionImpl)accessTransaction).setStatus(AccessTransactionStatus.NEW);
+		acTransactionManager.save(accessTransaction);
+		dbInstance.commitAndCloseSession();
+		
+		List<Order> reallyNewOrders = acOrderManager.findPendingOrders(randomOres, id);
+		Assert.assertTrue(reallyNewOrders.isEmpty());
+		
+		// add a transaction pending
+		order = acOrderManager.loadOrderByKey(order.getKey());
+		((OrderImpl)order).setOrderStatus(OrderStatus.PREPAYMENT);
+		order = acOrderManager.save(order);
+		part = order.getParts().get(0);
+		AccessTransaction pendingAccessTransaction = acTransactionManager.createTransaction(order, part, method);
+		((AccessTransactionImpl)pendingAccessTransaction).setStatus(AccessTransactionStatus.PENDING);
+		acTransactionManager.save(pendingAccessTransaction);
+		dbInstance.commitAndCloseSession();
+		
+		List<Order> pendingOrders = acOrderManager.findPendingOrders(randomOres, id);
+		Assert.assertFalse(pendingOrders.isEmpty());
+		Assert.assertEquals(order, pendingOrders.get(0));
+		
+		// add a transaction success
+		order = acOrderManager.loadOrderByKey(order.getKey());
+		((OrderImpl)order).setOrderStatus(OrderStatus.PREPAYMENT);
+		order = acOrderManager.save(order);
+		part = order.getParts().get(0);
+		AccessTransaction successAccessTransaction = acTransactionManager.createTransaction(order, part, method);
+		((AccessTransactionImpl)successAccessTransaction).setStatus(AccessTransactionStatus.SUCCESS);
+		acTransactionManager.save(successAccessTransaction);
+		dbInstance.commitAndCloseSession();
+		
+		List<Order> successOrders = acOrderManager.findPendingOrders(randomOres, id);
+		Assert.assertTrue(successOrders.isEmpty());
 	}
 	
 	private OLATResource createResource() {
