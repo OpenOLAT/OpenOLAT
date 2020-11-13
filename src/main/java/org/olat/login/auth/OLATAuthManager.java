@@ -150,26 +150,46 @@ public class OLATAuthManager implements AuthenticationSPI {
 		return authenticate(null, login, password, status);
 	}
 	
+	public Identity findIdentityByLogin(String login) {
+		// check first for email
+		Identity ident = findIdentityByEmail(login);
+		if(ident == null) {
+			Authentication authentication = securityManager.findAuthenticationByAuthusername(login, "OLAT");
+			if(authentication != null) {
+				ident = authentication.getIdentity();
+			}
+		}
+		return ident;
+	}
+	
+	/**
+	 * 
+	 * @param login The login
+	 * @return Identity if email matches and email login allowed
+	 */
+	private Identity findIdentityByEmail(String login) {
+		Identity ident = null;
+		if(loginModule.isAllowLoginUsingEmail() && MailHelper.isValidEmailAddress(login)){
+			List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(login));
+			// check for email changed with verification workflow
+			if(identities.size() == 1) {
+				ident = identities.get(0);
+			} else if(identities.size() > 1) {
+				log.error("more than one identity found with email::{}", login);
+			}
+			
+			if (ident == null) {
+				ident = findIdentInChangingEmailWorkflow(login);
+			}
+		}
+		return ident;
+	}
+	
 	public Identity authenticate(Identity ident, String login, String password, AuthenticationStatus status) {
 		Authentication authentication;	
 		if (ident == null) {
 			// check for email instead of username if ident is null
-			if(loginModule.isAllowLoginUsingEmail()) {
-				if (MailHelper.isValidEmailAddress(login)){
-					List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(login));
-					// check for email changed with verification workflow
-					if(identities.size() == 1) {
-						ident = identities.get(0);
-					} else if(identities.size() > 1) {
-						log.error("more than one identity found with email::{}", login);
-					}
-					
-					if (ident == null) {
-						ident = findIdentInChangingEmailWorkflow(login);
-					}
-				}
-			} 
-			
+			ident = findIdentityByEmail(login);
 			if(ident == null) {
 				authentication = securityManager.findAuthenticationByAuthusername(login, "OLAT");
 			} else {

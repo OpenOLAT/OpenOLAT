@@ -165,6 +165,9 @@ public class OpencastServiceImpl implements OpencastService {
 		OpencastSeriesImpl opencastSeries = new OpencastSeriesImpl();
 		opencastSeries.setIdentifier(series.getIdentifier());
 		opencastSeries.setTitle(series.getTitle());
+		opencastSeries.setDescription(series.getDescription());
+		opencastSeries.setContributors(Arrays.stream(series.getContributors()).collect(Collectors.toList()));
+		opencastSeries.setSubjects(Arrays.stream(series.getSubjects()).collect(Collectors.toList()));
 		return opencastSeries;
 	}
 

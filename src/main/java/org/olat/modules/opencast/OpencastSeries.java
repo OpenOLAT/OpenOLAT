@@ -19,6 +19,8 @@
  */
 package org.olat.modules.opencast;
 
+import java.util.List;
+
 /**
  * 
  * Initial date: 12 Aug 2020<br>
@@ -30,5 +32,11 @@ public interface OpencastSeries {
 	String getIdentifier();
 
 	String getTitle();
+	
+	String getDescription();
+	
+	List<String> getContributors();
+	
+	List<String> getSubjects();
 
 }

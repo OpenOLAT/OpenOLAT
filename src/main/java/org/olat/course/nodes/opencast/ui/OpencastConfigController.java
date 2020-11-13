@@ -44,10 +44,13 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.opencast.AuthDelegate;
 import org.olat.modules.opencast.OpencastEvent;
 import org.olat.modules.opencast.OpencastEventProvider;
+import org.olat.modules.opencast.OpencastSeries;
 import org.olat.modules.opencast.OpencastSeriesProvider;
 import org.olat.modules.opencast.OpencastService;
 import org.olat.modules.opencast.ui.EventListController;
 import org.olat.modules.opencast.ui.EventListController.OpencastEventSelectionEvent;
+import org.olat.modules.opencast.ui.SeriesListController;
+import org.olat.modules.opencast.ui.SeriesListController.OpencastSeriesSelectionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -67,13 +70,16 @@ public class OpencastConfigController extends FormBasicController {
 	private static final String MORE_KEY = ".....";
 	
 	private SingleSelection displayEl;
+	private FormLayoutContainer seriesCont;
 	private AutoCompleter seriesEl;
+	private FormLink seriesSearchLink;
 	private FormLayoutContainer eventCont;
 	private AutoCompleter eventEl;
 	private FormLink eventSearchLink;
 	private StaticTextElement identifierEl;
 	
 	private CloseableModalController cmc;
+	private SeriesListController seriesSearchCtrl;
 	private EventListController eventSearchCtrl;
 	
 	private final ModuleConfiguration config;
@@ -100,19 +106,27 @@ public class OpencastConfigController extends FormBasicController {
 		String selectedKey = config.has(OpencastCourseNode.CONFIG_EVENT_IDENTIFIER)? DISPLAY_KEY_EVENT: DISPLAY_KEY_SERIES;
 		displayEl.select(selectedKey, true);
 		
+		// Series
+		seriesCont = FormLayoutContainer.createCustomFormLayout("series", getTranslator(), velocity_root + "/search_item.html");
+		seriesCont.setLabel("config.series", null);
+		seriesCont.setRootForm(mainForm);
+		formLayout.add(seriesCont);
+		
 		String seriesIdentifier = config.getStringValue(OpencastCourseNode.CONFIG_SERIES_IDENTIFIER, null);
 		String seriesTitle = null;
 		if (seriesIdentifier != null) {
 			seriesTitle = config.getStringValue(OpencastCourseNode.CONFIG_TITLE);
 		}
-		seriesEl = uifactory.addTextElementWithAutoCompleter("config.series", "config.series", 128, seriesTitle, formLayout);
+		seriesEl = uifactory.addTextElementWithAutoCompleter("config.series.auto", "config.series.auto", 128, seriesTitle, seriesCont);
 		seriesEl.setListProvider(new OpencastSeriesProvider(getIdentity(), MORE_KEY), ureq.getUserSession());
 		seriesEl.setKey(seriesIdentifier);
 		seriesEl.setMinLength(1);
 		
-		eventCont = FormLayoutContainer.createCustomFormLayout("event", getTranslator(), velocity_root + "/event_search.html");
+		seriesSearchLink = uifactory.addFormLink("config.series.search", seriesCont, Link.BUTTON);
+		
+		// Event
+		eventCont = FormLayoutContainer.createCustomFormLayout("event", getTranslator(), velocity_root + "/search_item.html");
 		eventCont.setLabel("config.event", null);
-		eventCont.setElementCssClass("o_urs");
 		eventCont.setRootForm(mainForm);
 		formLayout.add(eventCont);
 		
@@ -128,6 +142,7 @@ public class OpencastConfigController extends FormBasicController {
 		
 		eventSearchLink = uifactory.addFormLink("config.event.search", eventCont, Link.BUTTON);
 		
+		// General
 		String identifier = null;
 		if (StringHelper.containsNonWhitespace(seriesIdentifier)) {
 			identifier = seriesIdentifier;
@@ -155,7 +170,7 @@ public class OpencastConfigController extends FormBasicController {
 	
 	private void updateUI() {
 		boolean seriesSelected = displayEl.isOneSelected() && displayEl.getSelectedKey().equals(DISPLAY_KEY_SERIES);
-		seriesEl.setVisible(seriesSelected);
+		seriesCont.setVisible(seriesSelected);
 		eventCont.setVisible(!seriesSelected);
 	}
 
@@ -171,6 +186,8 @@ public class OpencastConfigController extends FormBasicController {
 					identifierEl.setValue(key);
 				}
 			}
+		} else if (source == seriesSearchLink) {
+			doOpenSeriesSearch(ureq);
 		} else if (source == eventSearchLink) {
 			doOpenEventSearch(ureq);
 		}
@@ -179,7 +196,16 @@ public class OpencastConfigController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (eventSearchCtrl == source) {
+		if (seriesSearchCtrl == source) {
+			if (event instanceof OpencastSeriesSelectionEvent) {
+				OpencastSeries opencastSeries = ((OpencastSeriesSelectionEvent)event).getSeries();
+				seriesEl.setKey(opencastSeries.getIdentifier());
+				seriesEl.setValue(opencastSeries.getTitle());
+				identifierEl.setValue(opencastSeries.getIdentifier());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (eventSearchCtrl == source) {
 			if (event instanceof OpencastEventSelectionEvent) {
 				OpencastEvent opencastEvent = ((OpencastEventSelectionEvent)event).getEvent();
 				eventEl.setKey(opencastEvent.getIdentifier());
@@ -195,8 +221,10 @@ public class OpencastConfigController extends FormBasicController {
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(seriesSearchCtrl);
 		removeAsListenerAndDispose(eventSearchCtrl);
 		removeAsListenerAndDispose(cmc);
+		seriesSearchCtrl = null;
 		eventSearchCtrl = null;
 		cmc = null;
 	}
@@ -243,6 +271,16 @@ public class OpencastConfigController extends FormBasicController {
 		}
 		
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+	}
+
+	private void doOpenSeriesSearch(UserRequest ureq) {
+		seriesSearchCtrl = new SeriesListController(ureq, getWindowControl());
+		listenTo(seriesSearchCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", seriesSearchCtrl.getInitialComponent(), true,
+				translate("config.series.search"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doOpenEventSearch(UserRequest ureq) {

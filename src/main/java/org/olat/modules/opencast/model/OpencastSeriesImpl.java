@@ -19,6 +19,8 @@
  */
 package org.olat.modules.opencast.model;
 
+import java.util.List;
+
 import org.olat.modules.opencast.OpencastSeries;
 
 /**
@@ -31,6 +33,9 @@ public class OpencastSeriesImpl implements OpencastSeries {
 
 	private String identifier;
 	private String title;
+	private String description;
+	private List<String> contributors;
+	private List<String> subjects;
 	
 	@Override
 	public String getIdentifier() {
@@ -48,6 +53,33 @@ public class OpencastSeriesImpl implements OpencastSeries {
 	}
 	public void setTitle(String title) {
 		this.title = title;
+	}
+	
+	@Override
+	public String getDescription() {
+		return description;
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	@Override
+	public List<String> getContributors() {
+		return contributors;
+	}
+	
+	public void setContributors(List<String> contributors) {
+		this.contributors = contributors;
+	}
+	
+	@Override
+	public List<String> getSubjects() {
+		return subjects;
+	}
+	
+	public void setSubjects(List<String> subjects) {
+		this.subjects = subjects;
 	}
 	
 }
