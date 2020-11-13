@@ -55,6 +55,7 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.appointments.Appointment;
@@ -87,6 +88,7 @@ public class TopicsRunCoachController extends BasicController {
 	private static final String CMD_OPEN = "open";
 	private static final String CMD_JOIN = "join";
 	private static final String CMD_EDIT = "edit";
+	private static final String CMD_EXPORT = "export";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_GROUPS = "group";
 	private static final String CMD_RECORDING = "recording";
@@ -442,6 +444,11 @@ public class TopicsRunCoachController extends BasicController {
 		groupLink.setUserObject(wrapper.getTopic());
 		dropdown.addComponent(groupLink);
 		
+		Link exportLink = LinkFactory.createCustomLink("export_" + counter++, CMD_EXPORT, "export.participations", Link.LINK, mainVC, this);
+		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		exportLink.setUserObject(wrapper.getTopic());
+		dropdown.addComponent(exportLink);
+		
 		if (hasMeetings) {
 			Link syncRecordingsLink = LinkFactory.createCustomLink("sync_" + counter++, CMD_SYNC, "sync.recordings", Link.LINK, mainVC, this);
 			syncRecordingsLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
@@ -518,6 +525,9 @@ public class TopicsRunCoachController extends BasicController {
 			} else if (CMD_GROUPS.equals(cmd)) {
 				Topic topic = (Topic)link.getUserObject();
 				doEditGroups(ureq, topic);
+			} else if (CMD_EXPORT.equals(cmd)) {
+				Topic topic = (Topic)link.getUserObject();
+				doExport(ureq, topic);
 			} else if (CMD_DELETE.equals(cmd)) {
 				TopicRef topic = (TopicRef)link.getUserObject();
 				doConfirmDeleteTopic(ureq, topic);
@@ -574,7 +584,24 @@ public class TopicsRunCoachController extends BasicController {
 		
 		stackPanel.pushController(topic.getTitle(), topicGroupsCtrl);
 	}
+	
+	private void doExport(UserRequest ureq, Topic topic) {
+		ParticipationSearchParams searchParams = new ParticipationSearchParams();
+		searchParams.setTopic(topic);
+		ExcelExport export = new ExcelExport(ureq, searchParams, getExportName(topic));
+		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
+	}
 
+	private String getExportName(Topic topic) {
+		return new StringBuilder()
+				.append(translate("export.participations.file.prefix"))
+				.append("_")
+				.append(topic.getTitle())
+				.append("_")
+				.append(Formatter.formatDatetimeFilesystemSave(new Date()))
+				.toString();
+	}
+	
 	private void doOpenTopic(UserRequest ureq, Topic topic) {
 		removeAsListenerAndDispose(topicRunCtrl);
 		

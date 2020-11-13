@@ -173,6 +173,10 @@ public class AppointmentListEditController extends AppointmentListController {
 			forgeRemoveUserLink(row);
 		}
 		
+		if (!participations.isEmpty()) {
+			forgeExportUserLink(row);
+		}
+		
 		if (Type.finding == topic.getType()) {
 			if (noAppointmentConfirmed) {
 				forgeConfirmLink(row, true);
