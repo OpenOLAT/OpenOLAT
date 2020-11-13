@@ -32,6 +32,9 @@ public class Series {
 	
 	private String identifier;
 	private String title;
+	private String description;
+	private String[] contributors;
+	private String[] subjects;
 
 	public String getIdentifier() {
 		return identifier;
@@ -47,6 +50,30 @@ public class Series {
 	
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String[] getContributors() {
+		return contributors;
+	}
+
+	public void setContributors(String[] contributors) {
+		this.contributors = contributors;
+	}
+
+	public String[] getSubjects() {
+		return subjects;
+	}
+
+	public void setSubjects(String[] subjects) {
+		this.subjects = subjects;
 	}
 	
 }
