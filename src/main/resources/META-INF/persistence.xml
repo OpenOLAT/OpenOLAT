@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence version="2.0"
-   xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="
-        http://java.sun.com/xml/ns/persistence
-        http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+<persistence version="2.2"
+             xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="
+        http://xmlns.jcp.org/xml/ns/persistence
+        http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
 	<persistence-unit name="default">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> 
 		
@@ -285,6 +285,7 @@
 		<class>org.olat.user.model.UserDataExportImpl</class>
 		
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
+		<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>
@@ -292,7 +293,6 @@
 			<property name="hibernate.query.in_clause_parameter_padding" value="true"/>
 			<property name="hibernate.connection.handling_mode" value="DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION"/>
 			<property name="hibernate.session_factory.interceptor" value="org.olat.core.commons.persistence.AuditInterceptor"/>
-			<property name="jboss.as.jpa.providerModule" value="org.hibernate:5.4" />
 		</properties>
 	</persistence-unit>
 </persistence>

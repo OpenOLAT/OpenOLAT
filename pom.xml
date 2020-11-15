@@ -68,6 +68,7 @@
 		<apache.pdfbox>2.0.21</apache.pdfbox>
 		<apache.poi>4.1.2</apache.poi>
 		<apache.log4j>2.13.3</apache.log4j>
+		<org.slf4j>1.7.30</org.slf4j>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
 		<io.undertow>2.2.2.Final</io.undertow>
 		<jackson.version>2.11.3</jackson.version>
@@ -380,8 +381,13 @@
 			</activation>
 			<dependencies>
 				<dependency>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+					<version>${org.slf4j}</version>
+				</dependency>
+				<dependency>
 					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-core</artifactId>
+					<artifactId>log4j-slf4j-impl</artifactId>
 					<version>${apache.log4j}</version>
 				</dependency>
 				<!-- Apache CXF for tomcat -->
@@ -573,7 +579,184 @@
 				</plugins>
 			</build>
 		</profile>
+		
+		<!-- This is a build which deliver a WAR for JBoss EAP, simple installation -->
+		<profile>
+			<id>jbosseap</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-to-slf4j</artifactId>
+					<version>${apache.log4j}</version>
+				</dependency>
+				<!-- Apache CXF for tomcat -->
+				<dependency>
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-frontend-jaxws</artifactId>
+					<version>${apache.cxf}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.apache.ant</groupId>
+							<artifactId>ant</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+					<version>${apache.cxf}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>javax.annotation</groupId>
+							<artifactId>javax.annotation-api</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-transports-http</artifactId>
+					<version>${apache.cxf}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.cxf</groupId>
+				    <artifactId>cxf-rt-rs-service-description-openapi-v3</artifactId>
+				    <version>${apache.cxf}</version>
+				</dependency>
+				<dependency>
+				    <groupId>org.webjars</groupId>
+				    <artifactId>swagger-ui</artifactId>
+				    <version>3.36.1</version>
+				</dependency>
+				<dependency>
+				    <groupId>jakarta.xml.ws</groupId>
+				    <artifactId>jakarta.xml.ws-api</artifactId>
+				    <version>2.3.3</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-core</artifactId>
+					<version>${org.hibernate.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.slf4j</groupId>
+							<artifactId>slf4j-log4j12</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>javax.activation</groupId>
+							<artifactId>javax.activation-api</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>javax.xml.bind</groupId>
+							<artifactId>jaxb-api</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-entitymanager</artifactId>
+					<version>${org.hibernate.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.infinispan</groupId>
+					<artifactId>infinispan-hibernate-cache-v53</artifactId>
+					<version>${org.infinispan.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-hikaricp</artifactId>
+					<version>${org.hibernate.version}</version>
+				</dependency>
+				
+				<dependency>
+					<groupId>org.infinispan</groupId>
+					<artifactId>infinispan-core</artifactId>
+					<version>${org.infinispan.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.jboss.spec.javax.transaction</groupId>
+							<artifactId>jboss-transaction-api_1.1_spec</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.jboss.logging</groupId>
+							<artifactId>jboss-logging</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.codehaus.woodstox</groupId>
+							<artifactId>woodstox-core-asl</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.codehaus.woodstox</groupId>
+							<artifactId>stax2-api</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.rhq.helpers</groupId>
+							<artifactId>rhq-pluginAnnotations</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+		
+				<dependency>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-jms_1.1_spec</artifactId>
+					<version>1.1.1</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>activemq-client</artifactId>
+					<version>${activemq.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>activemq-broker</artifactId>
+					<version>${activemq.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>activemq-spring</artifactId>
+					<version>${activemq.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.apache.xbean</groupId>
+							<artifactId>xbean-spring</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.activemq</groupId>
+							<artifactId>activemq-pool</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.geronimo.specs</groupId>
+							<artifactId>geronimo-jta_1.0.1B_spec</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>commons-pool</groupId>
+							<artifactId>commons-pool</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+			</dependencies>
+			
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<configuration>
+							<webResources>
+								<resource>
+									<directory>src/main/webapp-jbosseap</directory>
+									<filtering>false</filtering>
+								</resource>
+							</webResources>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 
+		<!-- This is only to play with an optimized WAR to cluster OpenOlat, highly experimental, never used in production -->
 		<profile>
 			<id>wildfly</id>
 			<dependencies>
@@ -1864,7 +2047,8 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.30</version>
+			<version>${org.slf4j}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -1876,11 +2060,7 @@
 			<artifactId>log4j-jul</artifactId>
 			<version>${apache.log4j}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
-			<version>${apache.log4j}</version>
-		</dependency>
+
 		<!-- Replace commons-logging -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -1891,7 +2071,6 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>${apache.log4j}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.lmax</groupId>

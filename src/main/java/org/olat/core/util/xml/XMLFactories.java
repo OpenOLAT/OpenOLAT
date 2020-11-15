@@ -45,7 +45,7 @@ public class XMLFactories {
 	
 	public static final DocumentBuilderFactory newDocumentBuilderFactory()
 	throws ParserConfigurationException {
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance("com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl", null);
         documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
         documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, ""); // compliant
@@ -63,7 +63,7 @@ public class XMLFactories {
 	
 	public static final SAXParser newSAXParser()
 	throws ParserConfigurationException, SAXException {
-		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParserFactory factory = SAXParserFactory.newInstance("com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl", null);
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		SAXParser parser = factory.newSAXParser();
 		parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
@@ -73,7 +73,7 @@ public class XMLFactories {
 	
 	public static final SAXParser newSAXParser(boolean validating, boolean namespaceAware)
 	throws ParserConfigurationException, SAXException {
-		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParserFactory factory = SAXParserFactory.newInstance("com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl", null);
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		factory.setValidating(validating);
 		factory.setNamespaceAware(namespaceAware);

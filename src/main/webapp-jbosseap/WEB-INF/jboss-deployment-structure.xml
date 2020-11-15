@@ -1,0 +1,11 @@
+<jboss-deployment-structure>
+	<deployment>
+		<exclude-subsystems>
+            <subsystem name="weld" />
+        </exclude-subsystems>
+		<exclusions>
+			<module name="org.hibernate" />
+			<module name="org.apache.commons.logging" />
+		</exclusions>
+	</deployment>
+</jboss-deployment-structure>

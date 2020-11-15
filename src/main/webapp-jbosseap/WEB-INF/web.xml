@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+            http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1"
+         metadata-complete="true">
+
+	<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   -->
+	<!-- IMPORTANT : DO NOT CHANGE SEQUENCE OF XML TYPES BECAUSE VALIDATION MAY FAIL  -->
+	<!-- Please check before checkin http://www.xmlvalidation.com/index.php           -->
+	<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  -->
+	<absolute-ordering />
+	<display-name>OLAT Online Learning and Training</display-name>
+	<description>
+     Online Learning and Training Application (OLAT) is a Learning Management Platform.
+	</description>
+
+
+	<!-- 1. Context-Param -->
+	<!-- add all spring config files here -->
+    <context-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>
+                   classpath:/org/olat/_spring/mainContext.xml
+            </param-value>
+    </context-param>
+   
+   <context-param>
+    	<param-name>contextInitializerClasses</param-name>
+    	<param-value>org.olat.core.CoreSpringInitializer</param-value>
+	</context-param>
+
+	<!-- 2. Filters -->
+	<filter>
+		<filter-name>PaypalIPNFilter</filter-name>
+		<filter-class>org.olat.resource.accesscontrol.provider.paypal.PaypalIPNFilter</filter-class>
+	</filter>
+	
+	<filter>
+		<filter-name>RESTApiLoginFilter</filter-name>
+		<filter-class>org.olat.restapi.security.RestApiLoginFilter</filter-class>
+	</filter>
+	
+	<filter>
+		<filter-name>HeadersFilter</filter-name>
+		<filter-class>org.olat.core.servlets.HeadersFilter</filter-class>
+	</filter>
+	
+	<!-- The mapping to the Login filter REST API -->
+	<filter-mapping>
+		<filter-name>PaypalIPNFilter</filter-name>
+		<url-pattern>/paypal/*</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>RESTApiLoginFilter</filter-name>
+		<url-pattern>/restapi/*</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>HeadersFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- 3. Listeners -->
+    <!-- triggers the above spring files to be processed by the spring framework  -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<listener>
+		<listener-class>org.olat.restapi.security.RestApiSessionListener</listener-class>
+	</listener>
+	<listener>
+		<listener-class>org.olat.core.dispatcher.mapper.MapperSessionListener</listener-class>
+	</listener>
+    
+    <!-- 4. Servlets -->
+	<!-- OLAT servlet -->
+	<servlet>
+		<servlet-name>openolatservlet</servlet-name>
+		<servlet-class>org.olat.core.servlets.OpenOLATServlet</servlet-class>
+		<!-- Set the load order -->
+		<load-on-startup>1</load-on-startup>
+		<multipart-config>
+			<file-size-threshold>10240</file-size-threshold>
+		</multipart-config>
+	</servlet>
+	<servlet>
+		<servlet-name>rawservlet</servlet-name>
+		<servlet-class>org.olat.core.servlets.StaticServlet</servlet-class>
+		<!-- Set the load order -->
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<!-- Apache CXF Servlet -->
+	<servlet>
+        <servlet-name>RESTServletAdaptor</servlet-name>
+        <display-name>CXF Servlet</display-name>
+        <servlet-class>
+            org.apache.cxf.transport.servlet.CXFServlet
+        </servlet-class>
+        <load-on-startup>1</load-on-startup>
+        <multipart-config>
+			<file-size-threshold>10240</file-size-threshold>
+		</multipart-config>
+    </servlet>
+ 
+	<!-- RSS feed requests -->
+	<servlet>
+		<servlet-name>rss</servlet-name>
+		<servlet-class>org.olat.core.commons.services.notifications.PersonalRSSServlet</servlet-class>
+		<load-on-startup>3</load-on-startup>
+	</servlet>	
+
+	<!-- ICAL feed requests -->
+	<servlet>
+		<servlet-name>ical</servlet-name>
+		<servlet-class>org.olat.commons.calendar.ICalServlet</servlet-class>
+		<load-on-startup>3</load-on-startup>
+	</servlet>	
+
+	<!-- 5.Servlet-Mapping -->
+	<!-- The mapping for the OLAT servlet -->
+	<servlet-mapping>
+		<servlet-name>openolatservlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+		
+	<servlet-mapping>
+		<servlet-name>openolatservlet</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>rawservlet</servlet-name>
+		<url-pattern>/raw/*</url-pattern>
+	</servlet-mapping>
+	
+	<!-- The mapping to the REST API -->
+	<servlet-mapping>
+		<servlet-name>RESTServletAdaptor</servlet-name>
+		<url-pattern>/restapi/*</url-pattern>
+	</servlet-mapping>
+	
+	<!-- The mapping to the Login filter REST API -->
+	<filter-mapping>
+		<filter-name>RESTApiLoginFilter</filter-name>
+		<url-pattern>/restapi/*</url-pattern>
+	</filter-mapping>
+	
+	<!-- The mapping for the RSS servlet -->
+	<servlet-mapping>
+		<servlet-name>rss</servlet-name>
+		<url-pattern>/rss/*</url-pattern>
+	</servlet-mapping>
+	
+	<!-- The mapping for the ICal servlet -->
+	<servlet-mapping>
+		<servlet-name>ical</servlet-name>
+		<url-pattern>/ical/*</url-pattern>
+  	</servlet-mapping><!-- Spring loading -->
+
+	<!-- 6. Session-Config -->
+	<!-- default session timeout -->
+	<session-config>
+		<session-timeout>60</session-timeout>
+    </session-config>
+ 	
+ 	<error-page>
+		<error-code>400</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>401</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>402</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>403</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>404</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>405</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>406</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>407</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>408</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>409</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>410</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>411</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>412</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>413</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>414</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>415</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>416</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+ 	<error-page>
+		<error-code>417</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+	<error-page>
+		<error-code>500</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+	<error-page>
+		<error-code>501</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+	<error-page>
+		<error-code>502</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+	<error-page>
+		<error-code>503</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+	<error-page>
+		<error-code>504</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+	<error-page>
+		<error-code>505</error-code>
+    	<location>/errors/error.html</location>
+    </error-page>
+    <error-page>
+    	<exception-type>java.lang.Throwable</exception-type>
+    	<location>/errors/error.html</location>
+    </error-page>
+</web-app>
