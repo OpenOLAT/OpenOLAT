@@ -384,6 +384,8 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 	}
 	
 	private void exportBCCourseNode(PersistingCourseImpl sourceCourse, BCCourseNode courseNode, ZipOutputStream zout) {
+		if(courseNode.isSharedFolder()) return;
+		
 		try(ShieldOutputStream fOut = new ShieldOutputStream(zout)) {
 			VFSContainer nodeContainer = VFSManager.olatRootContainer(BCCourseNode.getFoldernodePathRelToFolderBase(sourceCourse.getCourseEnvironment(), courseNode), null);
 	
