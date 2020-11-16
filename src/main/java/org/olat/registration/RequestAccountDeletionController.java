@@ -142,7 +142,7 @@ public class RequestAccountDeletionController extends FormBasicController {
 		contactMessage.setBodyText(translate("request.delete.account.body", args));
 		
 		String mailAddress = userModule.getMailToRequestAccountDeletion();
-		ContactList contact = new ContactList(mailAddress);
+		ContactList contact = new ContactList(translate("request.delete.email.name"));
 		contact.add(mailAddress);
 		contactMessage.addEmailTo(contact);
 
