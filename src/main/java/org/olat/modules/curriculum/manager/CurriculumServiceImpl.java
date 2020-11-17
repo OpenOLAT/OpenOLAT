@@ -168,7 +168,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		for(CurriculumElement rootElement:curriculum.getRootElements()) {
 			deleted &= deleteCurriculumElement(rootElement);
 		}
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
 		if(deleted) {
 			curriculumDao.delete(curriculum);
