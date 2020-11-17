@@ -62,6 +62,7 @@ import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zapodot.junit.ldap.EmbeddedLdapRule;
 import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
@@ -81,6 +82,8 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserModule userModule;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -354,6 +357,94 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		Assert.assertFalse(roles.isRolesManager());
 		Assert.assertFalse(roles.isSystemAdmin());
 		Assert.assertFalse(roles.isUserManager());
+	}
+	
+	@Test
+	public void syncWithoutEmail() throws LDAPException {
+		boolean emailMandatory = userModule.isEmailMandatory();
+		userModule.setEmailMandatory(false);
+		
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		Identity idWithoutEmail = securityManager.findIdentityByLogin("afrommenwiler");
+		Assert.assertNotNull(idWithoutEmail);
+		Assert.assertEquals("Annabelle", idWithoutEmail.getUser().getFirstName());
+		Assert.assertEquals("Frommenwiler", idWithoutEmail.getUser().getLastName());
+		Assert.assertNull(idWithoutEmail.getUser().getEmail());
+		
+		// make a change
+		String dn = "uid=afrommenwiler,ou=person,dc=olattest,dc=org";
+		List<Modification> modifications = new ArrayList<>();
+		modifications.add(new Modification(ModificationType.REPLACE, "givenname", "Annabella"));
+		embeddedLdapRule.ldapConnection().modify(dn, modifications);
+		
+		// simple sync
+		ldapManager.doSyncSingleUserWithLoginAttribute(idWithoutEmail);
+		dbInstance.commitAndCloseSession();
+		
+		Identity id = securityManager.loadIdentityByKey(idWithoutEmail.getKey());
+		Assert.assertNotNull(id);
+		Assert.assertEquals("Annabella", id.getUser().getFirstName());
+		Assert.assertEquals("Frommenwiler", id.getUser().getLastName());
+		Assert.assertNull(id.getUser().getEmail());
+
+		userModule.setEmailMandatory(emailMandatory);
+	}
+	
+	/**
+	 * The email is written in OpenOlat and doesn't come from LDAP
+	 * 
+	 * @throws LDAPException
+	 */
+	@Test
+	public void syncWithoutEmailOlatEmail() throws LDAPException {
+		boolean emailMandatory = userModule.isEmailMandatory();
+		userModule.setEmailMandatory(false);
+		
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		Identity idWithoutEmail = securityManager.findIdentityByLogin("mbuchholz");
+		Assert.assertNotNull(idWithoutEmail);
+		Assert.assertEquals("Michel", idWithoutEmail.getUser().getFirstName());
+		Assert.assertEquals("Buchholz", idWithoutEmail.getUser().getLastName());
+		Assert.assertNull(idWithoutEmail.getUser().getEmail());
+		
+		User user = idWithoutEmail.getUser();
+		user.setProperty(UserConstants.EMAIL, "michel.b@openolat.org");
+		userManager.updateUserFromIdentity(idWithoutEmail);
+		dbInstance.commitAndCloseSession();
+		
+		Identity id =  securityManager.loadIdentityByKey(idWithoutEmail.getKey());
+		
+		// simple sync
+		ldapManager.doSyncSingleUserWithLoginAttribute(id);
+		dbInstance.commitAndCloseSession();
+		
+		Identity reloadedId = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertNotNull(reloadedId);
+		Assert.assertEquals("Michel", reloadedId.getUser().getFirstName());
+		Assert.assertEquals("Buchholz", reloadedId.getUser().getLastName());
+		Assert.assertEquals("michel.b@openolat.org", reloadedId.getUser().getEmail());
+		
+		// batch sync
+		boolean allOkTwice = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOkTwice);
+		
+		Identity resynchedId = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertNotNull(resynchedId);
+		Assert.assertEquals("Michel", resynchedId.getUser().getFirstName());
+		Assert.assertEquals("Buchholz", resynchedId.getUser().getLastName());
+		Assert.assertEquals("michel.b@openolat.org", resynchedId.getUser().getEmail());
+		
+		resynchedId.getUser().setProperty(UserConstants.EMAIL, null);
+		userManager.updateUserFromIdentity(resynchedId);
+		dbInstance.commitAndCloseSession();
+		
+		userModule.setEmailMandatory(emailMandatory);
 	}
 	
 	@Test
@@ -682,7 +773,7 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		Identity identity = foundIdentities.get(0).getIdentity();
 		Authentication authentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
 		Assert.assertNotNull(authentication);
-		Assert.assertEquals("uschelling", authentication.getAuthusername());
+		Assert.assertTrue(authentication.getAuthusername().contains("chelling"));
 		securityManager.deleteAuthentication(authentication);
 		securityManager.createAndPersistAuthentication(identity, "OLAT", "uschelling", "secret", Algorithm.sha512);
 		dbInstance.commitAndCloseSession();

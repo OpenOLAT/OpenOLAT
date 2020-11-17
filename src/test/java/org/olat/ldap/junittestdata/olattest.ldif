@@ -273,6 +273,34 @@ employeeType: ldaplearning
 userPassword: olat
 modifyTimestamp: 20100630180000Z
 
+dn: uid=afrommenwiler,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Annabelle Frommenwiler
+givenname: Annabelle
+labeleduri: https://www.openolat.com/afrommenwiler
+o: Informatik
+sn: Frommenwiler
+uid: afrommenwiler
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
+dn: uid=mbuchholz,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Michel Buchholz
+givenname: Michel
+labeleduri: https://www.openolat.com/mbuchholz
+o: Informatik
+sn: Buchholz
+uid: mbuchholz
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
 dn: cn=ldaplearning,ou=groups,dc=olattest,dc=org
 objectclass: top
 objectclass: groupOfNames
