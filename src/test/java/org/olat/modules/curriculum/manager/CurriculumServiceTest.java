@@ -24,8 +24,10 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
@@ -37,7 +39,10 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -56,9 +61,13 @@ public class CurriculumServiceTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private QualityService qualityService;
+	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Test
 	public void addCurriculumManagers() {
@@ -114,5 +123,76 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertFalse(membership.isCoach());
 		Assert.assertFalse(membership.isRepositoryEntryOwner());
 		Assert.assertFalse(membership.isCurriculumElementOwner());
+	}
+	
+	@Test
+	public void deleteCurriculum() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("Element-for-del", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commit();
+
+		// add the course and a participant to the curriculum
+		curriculumService.addRepositoryEntry(element2, entry, false);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
+		curriculumService.addMember(element1, participant, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
+		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculumList);
+		Assert.assertNotNull(myElements);
+		Assert.assertEquals(2, myElements.size());
+		
+		curriculumService.deleteCurriculum(curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// check
+		Curriculum deletedCurriculum = curriculumService.getCurriculum(curriculum);
+		Assert.assertNull(deletedCurriculum);
+	}
+	
+	@Test
+	public void deleteCurriculumInQuality() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("Element-for-del", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		Organisation organisation = organisationService.getDefaultOrganisation();
+		QualityDataCollection dataCollection = qualityService.createDataCollection(Collections.singletonList(organisation), entry);
+		dataCollection.setTopicCurriculumElement(element1);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commit();
+
+		// add the course and a participant to the curriculum
+		curriculumService.addRepositoryEntry(element2, entry, false);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
+		curriculumService.addMember(element1, participant, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
+		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculumList);
+		Assert.assertNotNull(myElements);
+		Assert.assertEquals(2, myElements.size());
+		
+		curriculumService.deleteCurriculum(curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// check
+		Curriculum deletedCurriculum = curriculumService.getCurriculum(curriculum);
+		Assert.assertNotNull(deletedCurriculum);
+		Assert.assertEquals(CurriculumStatus.deleted.name(), deletedCurriculum.getStatus());
 	}
 }
