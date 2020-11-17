@@ -125,7 +125,6 @@ public class CurriculumComposerController extends FormBasicController implements
 	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
 	private CurriculumElementCalendarController calendarsCtrl;
 	private CurriculumElementLecturesController lecturesCtrl;
-	private CurriculumMembersManagementController membersMgmtCtrl;
 	private CurriculumElementLearningPathController learningPathController;
 	
 	private int counter;
@@ -503,7 +502,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doFocus() {
 		CurriculumElementRow focusedRow = tableModel.getFocusedCurriculumElementRow();
 		boolean visible = focusedRow != null;
-		if(manageFocusedMembersLink.isVisible() != visible) {
+		if(manageFocusedMembersLink != null && manageFocusedMembersLink.isVisible() != visible) {
 			manageFocusedMembersLink.setVisible(visible);
 			toolbarPanel.getToolBar().setDirty(true);
 		}
@@ -662,7 +661,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		Long focus = focusedRow.getKey();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Members", focus);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		membersMgmtCtrl = new CurriculumMembersManagementController(ureq, bwControl, toolbarPanel,
+		CurriculumMembersManagementController membersMgmtCtrl = new CurriculumMembersManagementController(ureq, bwControl, toolbarPanel,
 				curriculum, curriculumElement, secCallback);
 		listenTo(membersMgmtCtrl);
 

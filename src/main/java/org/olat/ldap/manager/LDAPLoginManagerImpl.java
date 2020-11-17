@@ -48,7 +48,6 @@ import javax.naming.ldap.Control;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -98,6 +97,7 @@ import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.ValidationResult;
 import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -123,6 +123,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	private DB dbInstance;
 	@Autowired
 	private LDAPDAO ldapDao;
+	@Autowired
+	private UserModule userModule;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -575,9 +577,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	@Override
 	public Identity createAndPersistUser(Attributes userAttributes) {
 		// Get and Check Config
-		String[] reqAttrs = syncConfiguration.checkRequestAttributes(userAttributes);
-		if (reqAttrs != null) {
-			log.warn("Can not create and persist user, the following attributes are missing::{}", ArrayUtils.toString(reqAttrs));
+		List<String> reqAttrs = syncConfiguration.checkRequestAttributes(userAttributes, userModule.isEmailMandatory());
+		if (!reqAttrs.isEmpty()) {
+			log.warn("Can not create and persist user, the following attributes are missing::{}", reqAttrs);
 			return null;
 		}
 		
@@ -593,14 +595,16 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			log.error("Can't create user with username='{}', this identity name does already exist in the database", uid);
 			return null;
 		}
-		if (!MailHelper.isValidEmailAddress(email)) {
-			// needed to prevent possibly an AssertException in findIdentityByEmail breaking the sync!
-			log.error("Cannot try to lookup user {} by email with an invalid email::{}", uid, email);
-			return null;
-		}
-		if (!userManager.isEmailAllowed(email)) {
-			log.error("Can't create user {} with email='{}', a user with that email does already exist in the database", uid, email);
-			return null;
+		if(StringHelper.containsNonWhitespace(email) || userModule.isEmailMandatory()) {
+			if (!MailHelper.isValidEmailAddress(email)) {
+				// needed to prevent possibly an AssertException in findIdentityByEmail breaking the sync!
+				log.error("Cannot try to lookup user {} by email with an invalid email::{}", uid, email);
+				return null;
+			}
+			if (!userManager.isEmailAllowed(email)) {
+				log.error("Can't create user {} with email='{}', a user with that email does already exist in the database", uid, email);
+				return null;
+			}
 		}
 		
 		// Create User (first and lastname is added in next step)
@@ -630,11 +634,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				}
 			}
 		} catch (NamingException e) {
-			log.error("NamingException when trying to create and persist LDAP user with username::" + uid, e);
+			log.error("NamingException when trying to create and persist LDAP user with username::{}", uid, e);
 			return null;
 		} catch (Exception e) {
 			// catch any exception here to properly log error
-			log.error("Unknown exception when trying to create and persist LDAP user with username::" + uid, e);
+			log.error("Unknown exception when trying to create and persist LDAP user with username::{}", uid, e);
 			return null;
 		}
 
@@ -718,10 +722,12 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	 * @throws NamingException
 	 */
 	private String getAttributeValue(Attribute attribute) {
+		if(attribute == null) return null;
+		
 		try {
 			return (String)attribute.get();
 		} catch (NamingException e) {
-			log.error("NamingException when trying to get attribute value for attribute::" + attribute, e);
+			log.error("NamingException when trying to get attribute value for attribute::{}", attribute, e);
 			return null;
 		}
 	}
@@ -790,7 +796,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					break;
 				}
 			} catch (NamingException e) {
-				log.error("NamingException when trying to bind user with username::" + identity.getKey() + " on ldapBase::" + ldapBase, e);
+				log.error("NamingException when trying to bind user with username::{} on ldapBase::{}", identity.getKey(), ldapBase, e);
 			}
 		}
 
@@ -1283,19 +1289,18 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 						ldapUser.setCachedIdentity(new IdentityRefImpl(identity.getKey()));
 					}
 				} else if (errors.isEmpty()) {
-					String[] reqAttrs = syncConfiguration.checkRequestAttributes(userAttrs);
-					if (reqAttrs == null) {
+					List<String> reqAttrs = syncConfiguration.checkRequestAttributes(userAttrs, userModule.isEmailMandatory());
+					if (reqAttrs.isEmpty()) {
 						newLdapUserList.add(ldapUser);
 					} else {
-						log.warn("LDAP batch sync: can't create user with username::{} : missing required attributes::{}",
-							user, ArrayUtils.toString(reqAttrs));
+						log.warn("LDAP batch sync: can't create user with username::{} : missing required attributes::{}", user, reqAttrs);
 					}
 				} else {
 					log.warn(errors.get());
 				}
 			} catch (Exception e) {
 				// catch here to go on with other users on exeptions!
-				log.error("some error occured in looping over set of changed user-attributes, actual user " + user + ". Will still continue with others.", e);
+				log.error("some error occured in looping over set of changed user-attributes, actual user {}. Will still continue with others.", user, e);
 				errors.insert("Cannot sync user: " + user);
 			} finally {
 				dbInstance.commit();
@@ -1304,7 +1309,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				}
 			}
 			if(count % 1000 == 0) {
-				log.info("Retrieve " + count + "/" + ldapUserList.size() + " users in LDAP server");
+				log.info("Retrieve {}/{} users in LDAP server", count, ldapUserList.size());
 			}
 			count++;
 		}

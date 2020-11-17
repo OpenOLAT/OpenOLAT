@@ -570,17 +570,18 @@ public class LDAPSyncConfiguration {
 	 * @return null If all required Attributes are found, otherwise String[] of missing Attributes
 	 * 
 	 */
-	public String[] checkRequestAttributes(Attributes attrs) {
+	public List<String> checkRequestAttributes(Attributes attrs, boolean emailMandatory) {
 		Map<String, String> reqAttrMap = getRequestAttributes();
-		String[] missingAttr = new String[reqAttrMap.size()];
-		int y = 0;
+		List<String> missingAttrList = new ArrayList<>();
 		for (String attKey : reqAttrMap.keySet()) {
 			attKey = attKey.trim();
-			if (attrs.get(attKey) == null) {
-				missingAttr[y++] = attKey;
+			boolean missing = attrs.get(attKey) == null;
+			boolean optional = !emailMandatory && "email".equals(userAttributeMap.get(attKey));
+			if (missing && !optional) {
+				missingAttrList.add(attKey);
 			}
 		}
-		return (y == 0) ? null : missingAttr;
+		return missingAttrList;
 	}
 	
 	/**
