@@ -130,11 +130,7 @@ public class AppointmentListEditController extends AppointmentListController {
 		
 		forgeAppointmentView(row, appointment);
 		
-		List<String> participants = participations.stream()
-				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
-				.sorted(String.CASE_INSENSITIVE_ORDER)
-				.collect(Collectors.toList());
-		row.setParticipants(participants);
+		forgeParticipants(row, participations);
 
 		Integer numberOfParticipations = Integer.valueOf(participations.size());
 		row.setNumberOfParticipations(numberOfParticipations);
@@ -198,8 +194,8 @@ public class AppointmentListEditController extends AppointmentListController {
 			}
 		}
 		
-		forgeDeleteLink(row);
 		forgeEditLink(row);
+		forgeDeleteLink(row);
 		
 		if (secCallback.canWatchRecording(organizers, participations)) {
 			forgeRecordingReferencesLinks(row, recordingReferences);

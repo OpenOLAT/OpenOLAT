@@ -21,6 +21,8 @@ package org.olat.modules.appointments.ui;
 
 import java.util.List;
 
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.appointments.Appointment;
@@ -39,6 +41,7 @@ public class AppointmentRow {
 	private final Appointment appointment;
 	private Participation participation;
 	private List<String> participants;
+	private Component showMoreLink;
 	private String date;
 	private String dateLong;
 	private String dateShort1;
@@ -53,13 +56,10 @@ public class AppointmentRow {
 	private Integer freeParticipations;
 	private FormItem dayEl;
 	private String selectionCSS;
-	private FormLink selectLink;
-	private FormLink addUserLink;
-	private FormLink removeLink;
-	private FormLink confirmLink;
-	private FormLink deleteLink;
-	private FormLink editLink;
 	private FormItemList recordingLinks;
+	private FormLink selectLink;
+	private FormLink confirmLink;
+	private DropdownItem commandDropdown;
 	
 	public AppointmentRow(Appointment appointment) {
 		this.appointment = appointment;
@@ -91,6 +91,14 @@ public class AppointmentRow {
 
 	public void setParticipants(List<String> participants) {
 		this.participants = participants;
+	}
+
+	public Component getShowMoreLink() {
+		return showMoreLink;
+	}
+
+	public void setShowMoreLink(Component showMoreLink) {
+		this.showMoreLink = showMoreLink;
 	}
 	
 	public String getDate() {
@@ -208,6 +216,14 @@ public class AppointmentRow {
 	public void setSelectionCSS(String selectionCSS) {
 		this.selectionCSS = selectionCSS;
 	}
+	
+	public FormItemList getRecordingLinks() {
+		return recordingLinks;
+	}
+
+	public void setRecordingLinks(FormItemList recordingLinks) {
+		this.recordingLinks = recordingLinks;
+	}
 
 	public FormLink getSelectLink() {
 		return selectLink;
@@ -221,30 +237,6 @@ public class AppointmentRow {
 		this.selectLink = selectLink;
 	}
 	
-	public FormLink getAddUserLink() {
-		return addUserLink;
-	}
-
-	public String getAddUserLinkName() {
-		return addUserLink != null? addUserLink.getName(): null;
-	}
-
-	public void setAddUserLink(FormLink addUserLink) {
-		this.addUserLink = addUserLink;
-	}
-	
-	public FormLink getRemoveLink() {
-		return removeLink;
-	}
-
-	public String getRemoveLinkName() {
-		return removeLink != null? removeLink.getName(): null;
-	}
-
-	public void setRemoveLink(FormLink removeLink) {
-		this.removeLink = removeLink;
-	}
-	
 	public FormLink getConfirmLink() {
 		return confirmLink;
 	}
@@ -256,37 +248,13 @@ public class AppointmentRow {
 	public void setConfirmLink(FormLink confirmLink) {
 		this.confirmLink = confirmLink;
 	}
-
-	public FormLink getDeleteLink() {
-		return deleteLink;
+	
+	public DropdownItem getCommandDropdown() {
+		return commandDropdown;
 	}
 
-	public String getDeleteLinkName() {
-		return deleteLink != null? deleteLink.getComponent().getComponentName(): null;
-	}
-
-	public void setDeleteLink(FormLink deleteLink) {
-		this.deleteLink = deleteLink;
-	}
-
-	public FormLink getEditLink() {
-		return editLink;
-	}
-
-	public String getEditLinkName() {
-		return editLink != null? editLink.getComponent().getComponentName(): null;
-	}
-
-	public void setEditLink(FormLink editLink) {
-		this.editLink = editLink;
-	}
-
-	public FormItemList getRecordingLinks() {
-		return recordingLinks;
-	}
-
-	public void setRecordingLinks(FormItemList recordingLinks) {
-		this.recordingLinks = recordingLinks;
+	public void setCommandDropdown(DropdownItem commandDropdown) {
+		this.commandDropdown = commandDropdown;
 	}
 
 }

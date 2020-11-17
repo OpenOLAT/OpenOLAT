@@ -1324,11 +1324,17 @@ public class FormUIFactory {
 	
 	
 	public DropdownItem addDropdownMenu(String name, String i18nLabel, FormItemContainer formLayout, Translator translator) {
-		DropdownItem dropdown = new DropdownItem(name, name, translator);
+		return addDropdownMenu(name, name, i18nLabel, formLayout, translator);
+	}
+		
+	public DropdownItem addDropdownMenu(String name, String label, String i18nLabel, FormItemContainer formLayout, Translator translator) {
+		DropdownItem dropdown = new DropdownItem(name, label, translator);
 		dropdown.setEmbbeded(true);
 		dropdown.setButton(true);
 		setLabelIfNotNull(i18nLabel, dropdown);
-		formLayout.add(dropdown);
+		if (formLayout != null) {
+			formLayout.add(dropdown);
+		}
 		return dropdown;
 	}
 	

@@ -24,8 +24,11 @@ import static java.util.Collections.singletonList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
@@ -54,6 +57,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -72,6 +76,7 @@ import org.olat.modules.appointments.Appointment.Status;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Organizer;
+import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationResult;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
@@ -90,6 +95,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class AppointmentListController extends FormBasicController implements FlexiTableComponentDelegate {
 	
+	private static final String CMD_MORE = "more";
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_ADD_USER = "add";
 	private static final String CMD_REMOVE = "remove";
@@ -98,6 +104,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_RECORDING = "recording";
+	private static final long PARTICIPANTS_RENDER_LIMIT = 3;
 	
 	private FormLink backLink;
 	private DropdownItem addAppointmentsDropdown;
@@ -119,6 +126,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	protected Topic topic;
 	protected final AppointmentsSecurityCallback secCallback;
 	protected final List<Organizer> organizers;
+	private final Set<Appointment> showAllParticipations = new HashSet<>();
 	
 	@Autowired
 	protected AppointmentsService appointmentsService;
@@ -230,21 +238,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 			columnsModel.addFlexiColumnModel(selectModel);
 		}
 		if (canEdit()) {
-			DefaultFlexiColumnModel addUserModel = new DefaultFlexiColumnModel(AppointmentCols.addUser);
-			addUserModel.setExportable(false);
-			columnsModel.addFlexiColumnModel(addUserModel);
-			DefaultFlexiColumnModel removeModel = new DefaultFlexiColumnModel(AppointmentCols.removeUser);
-			removeModel.setExportable(false);
-			columnsModel.addFlexiColumnModel(removeModel);
-			DefaultFlexiColumnModel deleteModel = new DefaultFlexiColumnModel(AppointmentCols.delete);
-			deleteModel.setExportable(false);
-			columnsModel.addFlexiColumnModel(deleteModel);
-			DefaultFlexiColumnModel editModel = new DefaultFlexiColumnModel(AppointmentCols.edit);
-			editModel.setExportable(false);
-			columnsModel.addFlexiColumnModel(editModel);
 			DefaultFlexiColumnModel confirmModel = new DefaultFlexiColumnModel(AppointmentCols.confirm);
 			confirmModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(confirmModel);
+			DefaultFlexiColumnModel commandsModel = new DefaultFlexiColumnModel(AppointmentCols.commands);
+			commandsModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(commandsModel);
 		}
 		
 		dataModel = new AppointmentDataModel(columnsModel, getTranslator());
@@ -375,60 +374,98 @@ public abstract class AppointmentListController extends FormBasicController impl
 		DateElement dayEl = DateComponentFactory.createDateElementWithYear("day_" + row.getKey(), date);
 		row.setDayEl(dayEl);
 	}
-	
-	protected void forgeSelectionLink(AppointmentRow row, boolean selected, boolean enabled) {
-		String i18n = selected? "appointment.selected": "appointment.select";
-		FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, i18n, null, null, Link.LINK);
-		link.setUserObject(row);
-		if (selected) {
-			link.setIconLeftCSS("o_icon o_icon_lg o_icon_selected");
-		} else {
-			link.setIconLeftCSS("o_icon o_icon_lg o_icon_unselected");
+
+	protected void forgeParticipants(AppointmentRow row, List<Participation> participations) {
+		long limit = showAllParticipations.contains(row.getAppointment())? Long.MAX_VALUE: PARTICIPANTS_RENDER_LIMIT;
+		List<String> participants = participations.stream()
+				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
+				.sorted(String.CASE_INSENSITIVE_ORDER)
+				.limit(limit)
+				.collect(Collectors.toList());
+		row.setParticipants(participants);
+		
+		if (participations.size() > PARTICIPANTS_RENDER_LIMIT) {
+			String name = "more_" + row.getKey();
+			Link showMoreLink = LinkFactory.createCustomLink(name, CMD_MORE, "", Link.LINK + Link.NONTRANSLATED, null, this);
+			
+			long hiddenParticipations = participations.size() - PARTICIPANTS_RENDER_LIMIT;
+			String displayText = showAllParticipations.contains(row.getAppointment())
+					? translate("show.less")
+					: translate("show.more", new String[] { String.valueOf(hiddenParticipations)} );
+			showMoreLink.setCustomDisplayText(displayText);
+			showMoreLink.setUserObject(row);
+			row.setShowMoreLink(showMoreLink);
+			flc.getFormItemComponent().put(name, showMoreLink);
 		}
-		link.setEnabled(enabled);
+	}
+	
+	protected void forgeSelectionLink(AppointmentRow row, boolean selected) {
+		String i18n = selected? "appointment.selected": "appointment.select";
+		FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, i18n, null, null, Link.BUTTON);
+		link.setUserObject(row);
+		if (!selected) {
+			link.setIconLeftCSS("o_icon o_icon_lg o_icon_selected");
+			link.setElementCssClass("btn-primary");
+		}
 		row.setSelectLink(link);
 	}
 	
 	protected void forgeConfirmLink(AppointmentRow row, boolean confirmable) {
 		String i18nKey = confirmable? "confirm": "unconfirm";
-		FormLink link = uifactory.addFormLink("confirm_" + row.getKey(), CMD_CONFIRM, i18nKey, null, null, Link.LINK);
+		FormLink link = uifactory.addFormLink("confirm_" + row.getKey(), CMD_CONFIRM, i18nKey, null, null, Link.BUTTON);
 		link.setUserObject(row);
-		if (!confirmable) {
-			link.setIconLeftCSS("o_icon o_icon_lg o_icon_selected");
-		} else {
-			link.setIconLeftCSS("o_icon o_icon_lg o_icon_unselected");
+		link.setIconLeftCSS("o_icon o_icon_lg o_icon_selected");
+		if (confirmable) {
+			link.setElementCssClass("o_button_confirm");
 		}
 		row.setConfirmLink(link);
 	}
-
+	
+	private DropdownItem getOrCreateCommandDroppdown(AppointmentRow row) {
+		DropdownItem dropdown = row.getCommandDropdown();
+		if (dropdown == null) {
+			dropdown = uifactory.addDropdownMenu("cmd_" + row.getKey(), "commands", null, null, getTranslator());
+			dropdown.setCarretIconCSS("o_icon o_icon-lg o_icon_commands");
+			dropdown.setOrientation(DropdownOrientation.right);
+			dropdown.setUserObject(row);
+			row.setCommandDropdown(dropdown);
+		}
+		return dropdown;
+	}
+	
 	protected void forgeAddUserLink(AppointmentRow row) {
-		FormLink link = uifactory.addFormLink("add_" + row.getKey(), CMD_ADD_USER, "add.user", null, null, Link.LINK);
+		FormLink link = uifactory.addFormLink("add_" + row.getKey(), CMD_ADD_USER, "add.user", null, flc, Link.LINK);
 		link.setUserObject(row);
-		row.setAddUserLink(link);
+		link.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
+		getOrCreateCommandDroppdown(row).addElement(link);
 	}
 
 	protected void forgeRemoveUserLink(AppointmentRow row) {
-		FormLink link = uifactory.addFormLink("remove_" + row.getKey(), CMD_REMOVE, "remove.user", null, null, Link.LINK);
+		FormLink link = uifactory.addFormLink("remove_" + row.getKey(), CMD_REMOVE, "remove.user", null, flc, Link.LINK);
+		link.setIconLeftCSS("o_icon o_icon-fw o_icon_remove_member");
 		link.setUserObject(row);
-		row.setRemoveLink(link);
+		getOrCreateCommandDroppdown(row).addElement(link);
 	}
 	
 	protected void forgeExportUserLink(AppointmentRow row) {
-		FormLink link = uifactory.addFormLink("export_" + row.getKey(), CMD_EXPORT, "export", null, null, Link.LINK);
+		FormLink link = uifactory.addFormLink("export_" + row.getKey(), CMD_EXPORT, "export.participations", null, flc, Link.LINK);
 		link.setUserObject(row);
-		row.setRemoveLink(link);
+		link.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		getOrCreateCommandDroppdown(row).addElement(link);
 	}
 	
 	protected void forgeDeleteLink(AppointmentRow row) {
-		FormLink link = uifactory.addFormLink("delete_" + row.getKey(), CMD_DELETE, "delete", null, null, Link.LINK);
+		FormLink link = uifactory.addFormLink("delete_" + row.getKey(), CMD_DELETE, "delete", null, flc, Link.LINK);
 		link.setUserObject(row);
-		row.setDeleteLink(link);
+		link.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
+		getOrCreateCommandDroppdown(row).addElement(link);
 	}
 	
 	protected void forgeEditLink(AppointmentRow row) {
-		FormLink link = uifactory.addFormLink("edit_" + row.getKey(), CMD_EDIT, "edit", null, null, Link.LINK);
+		FormLink link = uifactory.addFormLink("edit_" + row.getKey(), CMD_EDIT, "edit", null, flc, Link.LINK);
+		link.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		link.setUserObject(row);
-		row.setEditLink(link);
+		getOrCreateCommandDroppdown(row).addElement(link);
 	}
 
 	protected void forgeRecordingReferencesLinks(AppointmentRow row, List<BigBlueButtonRecordingReference> recordingReferences) {
@@ -451,6 +488,19 @@ public abstract class AppointmentListController extends FormBasicController impl
 			recordingLinks.add(link);
 		}
 		row.setRecordingLinks(recordingLinks);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source instanceof Link) {
+			Link link = (Link)source;
+			String cmd = link.getCommand();
+			if (CMD_MORE.equals(cmd)) {
+				AppointmentRow row = (AppointmentRow)link.getUserObject();
+				doToggleShowMoreParticipations(row);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -574,6 +624,16 @@ public abstract class AppointmentListController extends FormBasicController impl
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doToggleShowMoreParticipations(AppointmentRow row) {
+		Appointment appointment = row.getAppointment();
+		if (showAllParticipations.contains(appointment)) {
+			showAllParticipations.remove(appointment);
+		} else {
+			showAllParticipations.add(appointment);
+		}
+		updateModel();
 	}
 	
 	private void doToggleParticipation(UserRequest ureq, AppointmentRow row) {
@@ -749,6 +809,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 			AppointmentRow appointmentRow = (AppointmentRow)rowObject;
 			if (appointmentRow.getDayEl() != null) {
 				cmps.add(appointmentRow.getDayEl().getComponent());
+			}
+			if (appointmentRow.getShowMoreLink() != null) {
+				cmps.add(appointmentRow.getShowMoreLink());
 			}
 		}
 		return cmps;

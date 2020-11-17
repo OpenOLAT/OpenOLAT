@@ -178,32 +178,28 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		}
 		
 		if (isParticipationVisible()) {
-			List<String> participants = participations.stream()
-					.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
-					.sorted(String.CASE_INSENSITIVE_ORDER)
-					.collect(Collectors.toList());
-			row.setParticipants(participants);
+			forgeParticipants(row, participations);
 		}
 		
 		Integer numberOfParticipations = Integer.valueOf(participations.size());
 		row.setNumberOfParticipations(numberOfParticipations);
 		
 		if (Type.finding == topic.getType()) {
-			if (noConfirmedAppointments || selected) {
-				forgeSelectionLink(row, selected, noConfirmedAppointments);
+			if (noConfirmedAppointments) {
+				forgeSelectionLink(row, selected);
 			}
 		} else if (topic.isMultiParticipation() || userHasNoConfirmedParticipation) {
-			row.setFreeParticipations(freeParticipations);
-			
 			boolean selectable = confirmedByCoach
 					? false
 					: freeParticipations == null // no limit
 						|| freeParticipations.intValue() > 0;
 			
 			boolean unselectable = selected && Appointment.Status.planned == appointment.getStatus();
-			boolean enabled = selectable || unselectable;
-			if (enabled || selected) {
-				forgeSelectionLink(row, selected, enabled);
+			if (selectable || unselectable) {
+				forgeSelectionLink(row, selected);
+				if (!confirmedByCoach) {
+					row.setFreeParticipations(freeParticipations);
+				}
 			}
 		}
 		

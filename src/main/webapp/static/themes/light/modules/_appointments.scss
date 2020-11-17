@@ -135,10 +135,6 @@
 	
 	.panel {
 		margin-bottom: 10px;
-		
-		.panel-body {
-			padding-bottom: 8px;
-		}
 	}
 
 	.o_datecomp {
@@ -148,6 +144,8 @@
 	.o_date,
 	.o_time {
 		font-weight: bold;
+		font-size: 110%;
+		margin-bottom: 0.2em;
 	}
 	.o_time_normal {
 		.o_time {
@@ -157,7 +155,7 @@
 	
 	.o_no_participants {
 		font-weight: bold;
-		font-size: 1.1em;
+		font-size: 110%;
 		margin-top: 0.5em;
 	}
 	
@@ -172,16 +170,25 @@
 		}
 	}
 	
-	.panel-body {
-		display: flex;
-		flex-flow: nowrap;
+	.o_status_wrapper {
+		position: relative;
+		.o_status {
+			position: absolute;
+			top: 0px;
+			right: 0px;
+			margin-top: -16px;
+			margin-right: -16px;
+			
+			.o_labeled {
+				padding: 5px 10px;
+				font-size: 80%;
+			}
+		}
 	}
 	
 	.o_main_cont {
-		flex: 1 95%;
 		display: flex;
-		flex-flow: row wrap;
-		justify-content: space-between;
+		flex-flow: row no-wrap;
 	}
 	
 	.o_buttons {
@@ -189,39 +196,27 @@
 		flex-flow: column-reverse;
 		margin-left: auto;
 		
-		.o_button_group {
-			display: flex;
-			margin: 0px;
-			white-space: nowrap;
-			a {
-				margin-bottom: 0px;
-			}
+		a:first-child {
+			margin-right: -1px;
 		}
-	}
-	
-	.o_select_button {
-		background-color: $o-ap-selectable-color;
-		border-top-right-radius: 2px;
-		border-bottom-right-radius: 2px;
-		width: 50px;
-		min-width: 50px;
-		max-width: 50px;
-		display: flex;
-		margin: -15px -15px -8px 15px;
 		
-		a {
-			flex: auto;
-			color: $o-ap-select-icon-color !important;
-			text-decoration: none;
-			text-align: center;
+		.btn-group {
 			display: flex;
-			align-items: center;
-			justify-content: center;
-			i:before {
-				font-size: 1.35em;
-			}
+			margin-left: auto;
+		}
+		
+		.o_button_confirm {
+			background-color: 	$o-ap-planned-color;
+			border-color: 		$o-ap-planned-color;
+			color: 				$o-ap-select-icon-color;
+		}
+		
+		.o_free_places {
+			margin-bottom: 2px;
+			margin-right: 3px;
+			margin-left: auto;
 			span {
-				display: none;
+				font-size: 110%;
 			}
 		}
 	}
@@ -230,22 +225,12 @@
 		border-color: $o-ap-planned-color;
 		border-width: 2px;
 		box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.2); 
-		
-		.o_select_button {
-			font-weight: bold;
-			background-color: $o-ap-planned-color;
-		}
 	}
 	
 	.o_ap_confirmed {
 		border-color: $o-ap-confirmed-color;
 		border-width: 2px;
 		box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.2); 
-		
-		.o_select_button {
-			font-weight: bold;
-			background-color: $o-ap-confirmed-color;
-		}
 	}
 }
 

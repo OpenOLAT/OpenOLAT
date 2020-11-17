@@ -118,11 +118,8 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 			case participants: return row.getParticipantsWrapper();
 			case recordings: return row.getRecordingLinks();
 			case select: return row.getSelectLink();
-			case addUser: return row.getAddUserLink();
-			case removeUser: return row.getRemoveLink();
 			case confirm: return row.getConfirmLink();
-			case delete: return row.getDeleteLink();
-			case edit: return row.getEditLink();
+			case commands: return row.getCommandDropdown();
 			default: return null;
 		}
 	}
@@ -145,11 +142,8 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 		participants("participants"),
 		recordings("recordings"),
 		select("select"),
-		addUser("add.user"),
-		removeUser("remove.user"),
 		confirm("confirm"),
-		edit("edit"),
-		delete("delete");
+		commands("table.header.commands");
 		
 		private final String i18nKey;
 		

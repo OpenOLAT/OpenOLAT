@@ -64,6 +64,14 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 		dropdown.setOrientation(orientation);
 	}
 	
+	public String getCarretIconCSS() {
+		return dropdown.getCarretIconCSS();
+	}
+
+	public void setCarretIconCSS(String carretIconCSS) {
+		dropdown.setCarretIconCSS(carretIconCSS);
+	}
+	
 	public void setDomReplacementWrapperRequired(boolean required) {
 		dropdown.setDomReplacementWrapperRequired(required);
 	}
