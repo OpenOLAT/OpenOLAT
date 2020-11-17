@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -119,6 +120,9 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 	}
 	
 	private void updateWebhook(String id, String secret) {
+		// Webhook only works with a real domain
+		if("localhost".equals(Settings.getServerDomainName())) return;
+		
 		webhookId = webhookProvider.hasWebhook(id, secret, sandbox);
 		if(webhookId == null) {
 			List<String> eventNames = new ArrayList<>();
