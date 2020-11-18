@@ -191,7 +191,11 @@ public class QTI21AdminController extends FormBasicController {
 			logError("", e);
 			String message = e.getMessage() == null ? "" : e.getMessage();
 			String [] errorArgs = new String[]{ message };
-			certificateEl.setErrorKey("error.digital.certificate.cannotread", errorArgs);
+			if(message != null && message.contains("password")) {
+				certificateEl.setErrorKey("error.digital.certificate.wrongpassword", errorArgs);
+			} else {
+				certificateEl.setErrorKey("error.digital.certificate.cannotread", errorArgs);
+			}
 			allOk &= false;
 		}
 		

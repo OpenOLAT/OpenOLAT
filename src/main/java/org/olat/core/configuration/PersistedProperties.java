@@ -45,9 +45,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -159,6 +159,9 @@ public class PersistedProperties implements Initializable, Destroyable{
 	private String userDataDirectory;
 	
 	static {
+		if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
+			Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+		}
 		Security.insertProviderAt(new BouncyCastleProvider(), 1);
 	}
 	
