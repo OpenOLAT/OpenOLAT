@@ -462,7 +462,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 	
 	protected void forgeEditLink(AppointmentRow row) {
-		FormLink link = uifactory.addFormLink("edit_" + row.getKey(), CMD_EDIT, "edit", null, flc, Link.LINK);
+		FormLink link = uifactory.addFormLink("edit_" + row.getKey(), CMD_EDIT, "appointment.edit", null, flc, Link.LINK);
 		link.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		link.setUserObject(row);
 		getOrCreateCommandDroppdown(row).addElement(link);

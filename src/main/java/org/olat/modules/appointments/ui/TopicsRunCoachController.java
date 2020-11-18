@@ -146,7 +146,7 @@ public class TopicsRunCoachController extends BasicController {
 		clearVC();
 		
 		if (secCallback.canCreateTopic()) {
-			createButton = LinkFactory.createButton("add.topic", mainVC, this);
+			createButton = LinkFactory.createButton("create.topic", mainVC, this);
 			createButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		}
 		
@@ -158,7 +158,7 @@ public class TopicsRunCoachController extends BasicController {
 		List<String> componentNames = new ArrayList<>();
 		for (Component component : mainVC.getComponents()) {
 			if (!"infoSubscription".equals(component.getComponentName()) && 
-					!"add.topic".equals(component.getComponentName())) {
+					!"create.topic".equals(component.getComponentName())) {
 				componentNames.add(component.getComponentName());
 			}
 		}
@@ -576,7 +576,7 @@ public class TopicsRunCoachController extends BasicController {
 		listenTo(topicCreateCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", topicCreateCtrl.getInitialComponent(), true,
-				translate("add.topic.title"));
+				translate("create.topic.title"));
 		listenTo(cmc);
 		cmc.activate();
 	}

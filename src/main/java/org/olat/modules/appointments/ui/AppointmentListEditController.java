@@ -160,6 +160,8 @@ public class AppointmentListEditController extends AppointmentListController {
 			selectionCSS = selectionCSS + " o_time_normal";
 		}
 		row.setSelectionCSS(selectionCSS);
+
+		forgeEditLink(row);
 		
 		boolean addUser = freeParticipations == null || freeParticipations.intValue() > 0;
 		boolean removeUser = participations.size() > 0;
@@ -194,7 +196,6 @@ public class AppointmentListEditController extends AppointmentListController {
 			}
 		}
 		
-		forgeEditLink(row);
 		forgeDeleteLink(row);
 		
 		if (secCallback.canWatchRecording(organizers, participations)) {
