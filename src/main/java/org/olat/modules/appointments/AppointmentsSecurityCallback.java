@@ -47,4 +47,6 @@ public interface AppointmentsSecurityCallback {
 	
 	public boolean canWatchRecording(Collection<Organizer> organizers, Collection<Participation> participations);
 
+	public boolean canSubscribe();
+	
 }

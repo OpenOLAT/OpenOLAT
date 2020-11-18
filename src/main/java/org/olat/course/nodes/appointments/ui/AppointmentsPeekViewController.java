@@ -82,6 +82,10 @@ public class AppointmentsPeekViewController extends BasicController {
 		
 		if (appointment != null) {
 			mainVC.contextPut("appointment", appointment);
+		} else {
+			String role = getTranslatedRole(userCourseEnv);
+			String noAppointments = translate("no.upcomming.appointments", new String[] { role } );
+			mainVC.contextPut("noAppointments", noAppointments);
 		}
 		
 		putInitialPanel(mainVC);
@@ -200,6 +204,18 @@ public class AppointmentsPeekViewController extends BasicController {
 		
 		wrapper.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 		wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
+	}
+
+	private String getTranslatedRole(UserCourseEnvironment userCourseEnv) {
+		String i18nKey;
+		if (userCourseEnv.isAdmin()) {
+			i18nKey = "no.upcomming.appointments.owner";
+		} else if (userCourseEnv.isCoach()) {
+			i18nKey = "no.upcomming.appointments.coach";
+		} else {
+			i18nKey = "no.upcomming.appointments.participant";
+		}
+		return translate(i18nKey);
 	}
 
 	@Override

@@ -132,11 +132,13 @@ public class TopicsRunCoachController extends BasicController {
 		
 		mainVC = createVelocityContainer("topics_run_coach");
 		
-		PublisherData publisherData = appointmentsService.getPublisherData(entry, subIdent);
-		SubscriptionContext subContext = appointmentsService.getSubscriptionContext(entry, subIdent);
-		subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, publisherData, true);
-		listenTo(subscriptionCtrl);
-		mainVC.put("infoSubscription", subscriptionCtrl.getInitialComponent());
+		if (secCallback.canSubscribe()) {
+			PublisherData publisherData = appointmentsService.getPublisherData(entry, subIdent);
+			SubscriptionContext subContext = appointmentsService.getSubscriptionContext(entry, subIdent);
+			subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, publisherData, true);
+			listenTo(subscriptionCtrl);
+			mainVC.put("infoSubscription", subscriptionCtrl.getInitialComponent());
+		}
 		
 		refresh();
 		putInitialPanel(mainVC);
