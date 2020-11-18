@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -81,6 +82,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TopicsRunController extends BasicController implements Activateable2 {
 
+	private static final long PARTICIPANTS_RENDER_LIMIT = 3;
+	private static final String CMD_MORE = "more";
 	private static final String CMD_OPEN = "open";
 	private static final String CMD_JOIN = "join";
 	private static final String CMD_EMAIL = "email";
@@ -99,6 +102,7 @@ public class TopicsRunController extends BasicController implements Activateable
 
 	private List<TopicWrapper> topics;
 	private int counter;
+	private final Set<Topic> showAllParticipations = new HashSet<>();
 	
 	@Autowired
 	private AppointmentsService appointmentsService;
@@ -271,12 +275,7 @@ public class TopicsRunController extends BasicController implements Activateable
 			wrapAppointmentView(wrapper, appointment, appointmentParticipations);
 		
 			if (wrapper.getTopic().isParticipationVisible()) {
-				List<String> participants = appointmentParticipations.stream()
-						.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
-						.sorted(String.CASE_INSENSITIVE_ORDER)
-						.collect(Collectors.toList());
-				wrapper.setParticipants(participants);
-				
+				wrapParticipants(wrapper, appointmentParticipations);
 			}
 		}
 	}
@@ -386,6 +385,29 @@ public class TopicsRunController extends BasicController implements Activateable
 		return meeting != null && meeting.getServer() != null && !meeting.getServer().isEnabled();
 	}
 	
+	private void wrapParticipants(TopicWrapper wrapper, List<Participation> participations) {
+		long limit = showAllParticipations.contains(wrapper.getTopic())? Long.MAX_VALUE: PARTICIPANTS_RENDER_LIMIT;
+		List<String> participants = participations.stream()
+				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
+				.sorted(String.CASE_INSENSITIVE_ORDER)
+				.limit(limit)
+				.collect(Collectors.toList());
+		wrapper.setParticipants(participants);
+		
+		if (participations.size() > PARTICIPANTS_RENDER_LIMIT) {
+			String name = "more_" + wrapper.getTopic().getKey();
+			Link showMoreLink = LinkFactory.createCustomLink(name, CMD_MORE, "", Link.LINK+ Link.NONTRANSLATED, mainVC, this);
+			
+			long hiddenParticipations = participations.size() - PARTICIPANTS_RENDER_LIMIT;
+			String displayText = showAllParticipations.contains(wrapper.getTopic())
+					? translate("show.less")
+					: translate("show.more", new String[] { String.valueOf(hiddenParticipations)} );
+			showMoreLink.setCustomDisplayText(displayText);
+			showMoreLink.setUserObject(wrapper.getTopic());
+			wrapper.setShowMoreLinkName(showMoreLink.getComponentName());
+		}
+	}
+	
 	private void wrapOpenLink(TopicWrapper wrapper, TopicRef topic, String i18n) {
 		Link openLink = LinkFactory.createCustomLink("open" + counter++, CMD_OPEN, i18n, Link.LINK, mainVC, this);
 		openLink.setIconRightCSS("o_icon o_icon_start");
@@ -474,7 +496,10 @@ public class TopicsRunController extends BasicController implements Activateable
 		if (source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
-			if (CMD_OPEN.equals(cmd)) {
+			if (CMD_MORE.equals(cmd)) {
+				Topic topic = (Topic)link.getUserObject();
+				doToggleShowMoreParticipations(topic);
+			} else if (CMD_OPEN.equals(cmd)) {
 				Topic topic = (Topic)link.getUserObject();
 				doOpenTopic(ureq, topic);
 			} else if (CMD_EMAIL.equals(cmd)) {
@@ -488,6 +513,15 @@ public class TopicsRunController extends BasicController implements Activateable
 				doOpenRecording(ureq, recordingReference);
 			}
 		}
+	}
+	
+	private void doToggleShowMoreParticipations(Topic topic) {
+		if (showAllParticipations.contains(topic)) {
+			showAllParticipations.remove(topic);
+		} else {
+			showAllParticipations.add(topic);
+		}
+		refresh();
 	}
 
 	private void doOpenTopic(UserRequest ureq, Topic topic) {
@@ -566,6 +600,7 @@ public class TopicsRunController extends BasicController implements Activateable
 		private List<String> organizerNames;
 		private String emailLinkName;
 		private List<String> participants;
+		private String showMoreLinkName;
 		private Boolean future;
 		private String dayName;
 		private String date;
@@ -630,6 +665,14 @@ public class TopicsRunController extends BasicController implements Activateable
 
 		public void setParticipants(List<String> participants) {
 			this.participants = participants;
+		}
+
+		public String getShowMoreLinkName() {
+			return showMoreLinkName;
+		}
+
+		public void setShowMoreLinkName(String showMoreLinkName) {
+			this.showMoreLinkName = showMoreLinkName;
 		}
 
 		public Boolean getFuture() {

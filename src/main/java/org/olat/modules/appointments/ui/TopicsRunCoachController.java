@@ -25,10 +25,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -85,6 +87,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TopicsRunCoachController extends BasicController {
 
+	private static final long PARTICIPANTS_RENDER_LIMIT = 3;
+	private static final String CMD_MORE = "more";
 	private static final String CMD_OPEN = "open";
 	private static final String CMD_JOIN = "join";
 	private static final String CMD_EDIT = "edit";
@@ -110,6 +114,7 @@ public class TopicsRunCoachController extends BasicController {
 	private final String subIdent;
 	private final AppointmentsSecurityCallback secCallback;
 	private int counter;
+	private Set<Topic> showAllParticipations = new HashSet<>();
 	
 	@Autowired
 	private AppointmentsService appointmentsService;
@@ -257,11 +262,7 @@ public class TopicsRunCoachController extends BasicController {
 				wrapper.setFuture(Boolean.TRUE);
 			}
 			
-			List<String> participants = appointmentParticipations.stream()
-					.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
-					.sorted(String.CASE_INSENSITIVE_ORDER)
-					.collect(Collectors.toList());
-			wrapper.setParticipants(participants);
+			wrapParticipants(wrapper, appointmentParticipations);
 		}
 		
 		wrapOpenLink(wrapper);
@@ -313,6 +314,29 @@ public class TopicsRunCoachController extends BasicController {
 		
 		String message = messages.isEmpty()? null: messages.stream().collect(Collectors.joining("<br>"));
 		wrapper.setMessage(message);
+	}
+	
+	private void wrapParticipants(TopicWrapper wrapper, List<Participation> participations) {
+		long limit = showAllParticipations.contains(wrapper.getTopic())? Long.MAX_VALUE: PARTICIPANTS_RENDER_LIMIT;
+		List<String> participants = participations.stream()
+				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
+				.sorted(String.CASE_INSENSITIVE_ORDER)
+				.limit(limit)
+				.collect(Collectors.toList());
+		wrapper.setParticipants(participants);
+		
+		if (participations.size() > PARTICIPANTS_RENDER_LIMIT) {
+			String name = "more_" + wrapper.getTopic().getKey();
+			Link showMoreLink = LinkFactory.createCustomLink(name, CMD_MORE, "", Link.LINK+ Link.NONTRANSLATED, mainVC, this);
+			
+			long hiddenParticipations = participations.size() - PARTICIPANTS_RENDER_LIMIT;
+			String displayText = showAllParticipations.contains(wrapper.getTopic())
+					? translate("show.less")
+					: translate("show.more", new String[] { String.valueOf(hiddenParticipations)} );
+			showMoreLink.setCustomDisplayText(displayText);
+			showMoreLink.setUserObject(wrapper.getTopic());
+			wrapper.setShowMoreLinkName(showMoreLink.getComponentName());
+		}
 	}
 	
 	private void forgeAppointmentView(TopicWrapper wrapper, Appointment appointment, List<Participation> participations) {
@@ -516,7 +540,10 @@ public class TopicsRunCoachController extends BasicController {
 		} else if (source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
-			if (CMD_OPEN.equals(cmd)) {
+			if (CMD_MORE.equals(cmd)) {
+				Topic topic = (Topic)link.getUserObject();
+				doToggleShowMoreParticipations(topic);
+			} else if (CMD_OPEN.equals(cmd)) {
 				Topic topic = (Topic)link.getUserObject();
 				doOpenTopic(ureq, topic);
 			} else if (CMD_EDIT.equals(cmd)) {
@@ -602,6 +629,15 @@ public class TopicsRunCoachController extends BasicController {
 				.toString();
 	}
 	
+	private void doToggleShowMoreParticipations(Topic topic) {
+		if (showAllParticipations.contains(topic)) {
+			showAllParticipations.remove(topic);
+		} else {
+			showAllParticipations.add(topic);
+		}
+		refresh();
+	}
+	
 	private void doOpenTopic(UserRequest ureq, Topic topic) {
 		removeAsListenerAndDispose(topicRunCtrl);
 		
@@ -675,6 +711,7 @@ public class TopicsRunCoachController extends BasicController {
 		
 		//next appointment
 		private List<String> participants;
+		private String showMoreLinkName;
 		private String dayName;
 		private String date;
 		private String date2;
@@ -738,6 +775,14 @@ public class TopicsRunCoachController extends BasicController {
 
 		public void setParticipants(List<String> participants) {
 			this.participants = participants;
+		}
+
+		public String getShowMoreLinkName() {
+			return showMoreLinkName;
+		}
+
+		public void setShowMoreLinkName(String showMoreLinkName) {
+			this.showMoreLinkName = showMoreLinkName;
 		}
 
 		public String getDayName() {
