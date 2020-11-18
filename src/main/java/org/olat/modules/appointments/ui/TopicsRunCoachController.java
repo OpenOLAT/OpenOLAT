@@ -455,6 +455,7 @@ public class TopicsRunCoachController extends BasicController {
 		dropdown.setButton(true);
 		dropdown.setButtonSize(ButtonSize.small);
 		dropdown.setOrientation(DropdownOrientation.right);
+		dropdown.setExpandContentHeight(true); 
 		mainVC.put(toolsName, dropdown);
 		wrapper.setToolsName(toolsName);
 		

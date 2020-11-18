@@ -428,6 +428,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 			dropdown.setCarretIconCSS("o_icon o_icon-lg o_icon_commands");
 			dropdown.setOrientation(DropdownOrientation.right);
 			dropdown.setUserObject(row);
+			dropdown.setEmbbeded(true);
+			dropdown.setExpandContentHeight(true); 
 			row.setCommandDropdown(dropdown);
 		}
 		return dropdown;
@@ -462,7 +464,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 	
 	protected void forgeEditLink(AppointmentRow row) {
-		FormLink link = uifactory.addFormLink("edit_" + row.getKey(), CMD_EDIT, "appointment.edit", null, flc, Link.LINK);
+		FormLink link = uifactory.addFormLink("edit_" + row.getKey(), CMD_EDIT, "edit.appointment", null, flc, Link.LINK);
 		link.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		link.setUserObject(row);
 		getOrCreateCommandDroppdown(row).addElement(link);
