@@ -583,9 +583,6 @@
 		<!-- This is a build which deliver a WAR for JBoss EAP, simple installation -->
 		<profile>
 			<id>jbosseap</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.logging.log4j</groupId>
