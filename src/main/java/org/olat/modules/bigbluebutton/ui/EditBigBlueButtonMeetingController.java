@@ -204,6 +204,16 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			templateEl.select(templatesKeys[0], true);
 		}
 		
+		String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
+		recordEl = uifactory.addRadiosVertical("meeting.record", formLayout, yesNoKeys, yesNoValues);
+		recordEl.addActionListener(FormEvent.ONCHANGE);
+		recordEl.setEnabled(editable);
+		if(meeting == null || BigBlueButtonUIHelper.isRecord(meeting)) {
+			recordEl.select(yesNoKeys[0], true);
+		} else {
+			recordEl.select(yesNoKeys[1], true);
+		}
+		
 		KeyValues publishKeyValues = new KeyValues();
 		publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.auto.name(), translate("meeting.publishing.auto")));
 		publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.manual.name(), translate("meeting.publishing.manual")));
@@ -211,14 +221,6 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		BigBlueButtonRecordingsPublishingEnum publish = meeting == null ? BigBlueButtonRecordingsPublishingEnum.auto :  meeting.getRecordingsPublishingEnum();
 		publishingEl.select(publish.name(), true);
 		publishingEl.setEnabled(editable);
-		
-		String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
-		recordEl = uifactory.addRadiosVertical("meeting.record", formLayout, yesNoKeys, yesNoValues);
-		if(meeting == null || BigBlueButtonUIHelper.isRecord(meeting)) {
-			recordEl.select(yesNoKeys[0], true);
-		} else {
-			recordEl.select(yesNoKeys[1], true);
-		}
 
 		KeyValues layoutKeyValues = new KeyValues();
 		layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
@@ -257,7 +259,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
-		BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, recordEl, templates);
+		BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, publishingEl, recordEl, templates);
 		
 		if(mode == Mode.dates) {
 			Date startDate = meeting == null ? new Date() : meeting.getStartDate();
@@ -414,9 +416,11 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(templateEl == source) {
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, recordEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, publishingEl, recordEl, templates);
 			boolean webcamAvailable = isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
+		} else if(recordEl == source) {
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, publishingEl, recordEl, templates);
 		} else if (openCalLink == source) {
 			doOpenCalendar(ureq);
 		} else if (externalLinkEl == source) {
@@ -475,7 +479,11 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			meeting.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
 		}
 		
-		meeting.setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum.valueOf(publishingEl.getSelectedKey()));
+		if(publishingEl.isVisible() && publishingEl.isOneSelected()) {
+			meeting.setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum.valueOf(publishingEl.getSelectedKey()));
+		} else {
+			meeting.setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum.manual);
+		}
 		if(recordEl.isVisible() && recordEl.isOneSelected()) {
 			meeting.setRecord(Boolean.valueOf(yesNoKeys[0].equals(recordEl.getSelectedKey())));
 		} else {

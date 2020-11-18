@@ -46,7 +46,8 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
  */
 public class BigBlueButtonUIHelper {
 	
-	public static void updateTemplateInformations(SingleSelection templateEl, TextElement externalLinkEl, SingleSelection recordEl, List<BigBlueButtonMeetingTemplate> templates) {
+	public static void updateTemplateInformations(SingleSelection templateEl, TextElement externalLinkEl,
+			SingleSelection publishingEl, SingleSelection recordEl, List<BigBlueButtonMeetingTemplate> templates) {
 		templateEl.setExampleKey(null, null);
 		if(templateEl.isOneSelected()) {
 			BigBlueButtonMeetingTemplate template = getSelectedTemplate(templateEl, templates);
@@ -73,11 +74,18 @@ public class BigBlueButtonUIHelper {
 				if(!recordEl.isOneSelected() || (recordVisible && !wasVisible)) {
 					recordEl.select("yes", true);	
 				}
+				
+				if(publishingEl != null) {
+					publishingEl.setVisible(recordVisible && "yes".equals(recordEl.getSelectedKey()));
+				}
 			}
 		} else {
 			externalLinkEl.setVisible(false);
 			if(recordEl != null) {
 				recordEl.setVisible(false);
+			}
+			if(publishingEl != null) {
+				publishingEl.setVisible(false);
 			}
 		}
 	}

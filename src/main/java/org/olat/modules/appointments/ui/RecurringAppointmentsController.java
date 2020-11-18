@@ -180,7 +180,7 @@ public class RecurringAppointmentsController extends FormBasicController {
 			
 			openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 			openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, recordEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, null, recordEl, templates);
 			
 			leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, null, formLayout);
 			leadTimeEl.setExampleKey("meeting.leadTime.explain", null);
@@ -235,7 +235,7 @@ public class RecurringAppointmentsController extends FormBasicController {
 		if (source == bbbRoomEl) {
 			updateUI();
 		} else if (templateEl == source) {
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, recordEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, null, recordEl, templates);
 			boolean webcamAvailable = isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
 		} else if (openCalLink == source) {
