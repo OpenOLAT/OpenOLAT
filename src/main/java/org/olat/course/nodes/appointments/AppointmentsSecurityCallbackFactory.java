@@ -130,6 +130,11 @@ public class AppointmentsSecurityCallbackFactory {
 			return participations.stream()
 					.anyMatch(p -> p.getIdentity().getKey().equals(identity.getKey()));
 		}
+
+		@Override
+		public boolean canSubscribe() {
+			return coach;
+		}
 		
 	}
 
