@@ -22,10 +22,7 @@ package org.olat.core.util.xml;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
-import java.security.Provider;
-import java.security.Security;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,12 +50,6 @@ public class XMLDigitalSignatureUtilTest {
 		new PersistedProperties(event -> {
 			//
 		});
-	}
-
-	@Test
-	public void bouncyCastleAtFirstPlace() throws Exception {
-		Provider[] providers = Security.getProviders();
-		Assert.assertEquals(BouncyCastleProvider.PROVIDER_NAME, providers[0].getName());
 	}
 	
 	/**
