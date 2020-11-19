@@ -1345,8 +1345,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			} else if("LecturesAdmin".equalsIgnoreCase(type)) {
 				activateSubEntries(ureq, doLecturesAdmin(ureq), entries);
-			} else if("CourseFolder".equalsIgnoreCase(type)) {
-				doCourseFolder(ureq);
 			} else if("AssessmentMode".equalsIgnoreCase(type)) {
 				doAssessmentMode(ureq);
 			} else if("CourseAreas".equalsIgnoreCase(type)) {
@@ -1392,18 +1390,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						} else {
 							subEntries = entries.subList(1, entries.size());
 						}
-						assessmentCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+						if(assessmentCtrl != null) {
+							assessmentCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+						}
 					} catch (OLATSecurityException e) {
 						//the wrong link to the wrong person
 					}
 				}
+			} else if("CourseFolder".equalsIgnoreCase(type)) {
+				FolderRunController folderCtrl = doCourseFolder(ureq);
+				if(folderCtrl != null && entries.size() > 1) {
+					folderCtrl.activatePath(ureq, BusinessControlFactory.getInstance().getPath(entries.get(1)));
+				}
 			} else if(type != null && type.startsWith("path=")) {
-				if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
-					String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
-					FolderRunController folderCtrl = doCourseFolder(ureq);
-					if(folderCtrl != null) {
-						folderCtrl.activatePath(ureq, path);
-					}
+				FolderRunController folderCtrl = doCourseFolder(ureq);
+				if(folderCtrl != null) {
+					folderCtrl.activatePath(ureq, BusinessControlFactory.getInstance().getPath(entries.get(0)));
 				}
 			}
 		}
@@ -1724,24 +1726,26 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private FolderRunController doCourseFolder(UserRequest ureq) {
 		if(delayedClose == Delayed.courseFolder || requestForClose(ureq)) {
-			removeCustomCSS();
-			// Folder for course with custom link model to jump to course nodes
-			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-			VFSContainer courseContainer;
-			if(overrideReadOnly) {
-				courseContainer = course.getCourseFolderContainer(overrideReadOnly);
-			} else {
-				courseContainer = course.getCourseFolderContainer();
+			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+				removeCustomCSS();
+				// Folder for course with custom link model to jump to course nodes
+				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+				VFSContainer courseContainer;
+				if(overrideReadOnly) {
+					courseContainer = course.getCourseFolderContainer(overrideReadOnly);
+				} else {
+					courseContainer = course.getCourseFolderContainer();
+				}
+				VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), courseContainer);
+				CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
+	
+				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("CourseFolder", 0l), null);
+				FolderRunController ctrl = new FolderRunController(namedCourseFolder, true, true, true, true, ureq, swControl, null, customLinkTreeModel, null);
+				ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
+				courseFolderCtrl = pushController(ureq, translate("command.coursefolder"), ctrl);
+				setActiveTool(folderLink);
+				currentToolCtr = courseFolderCtrl;
 			}
-			VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), courseContainer);
-			CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
-
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("CourseFolder", 0l), null);
-			FolderRunController ctrl = new FolderRunController(namedCourseFolder, true, true, true, true, ureq, swControl, null, customLinkTreeModel, null);
-			ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
-			courseFolderCtrl = pushController(ureq, translate("command.coursefolder"), ctrl);
-			setActiveTool(folderLink);
-			currentToolCtr = courseFolderCtrl;
 		} else {
 			delayedClose = Delayed.courseFolder;
 		}
@@ -1750,15 +1754,17 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void doCourseAreas(UserRequest ureq) {
 		if(delayedClose == Delayed.courseAreas || requestForClose(ureq)) {
-			removeCustomCSS();
-			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("CourseAreas", 0l), null);
-			CourseAreasController ctrl = new CourseAreasController(ureq, swControl,
-					getRepositoryEntry().getOlatResource(), getUserCourseEnvironment().isCourseReadOnly());
-			ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
-			areasCtrl = pushController(ureq, translate("command.courseareas"), ctrl);
-			setActiveTool(areaLink);
-			currentToolCtr = areasCtrl;
+			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+				removeCustomCSS();
+				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("CourseAreas", 0l), null);
+				CourseAreasController ctrl = new CourseAreasController(ureq, swControl,
+						getRepositoryEntry().getOlatResource(), getUserCourseEnvironment().isCourseReadOnly());
+				ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
+				areasCtrl = pushController(ureq, translate("command.courseareas"), ctrl);
+				setActiveTool(areaLink);
+				currentToolCtr = areasCtrl;
+			}
 		} else {
 			delayedClose = Delayed.courseAreas;
 		}
@@ -1900,7 +1906,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		String guiPrefsKey = CourseGlossaryFactory.createGuiPrefsKey(getOlatResourceable());
 		Boolean state = (Boolean) prefs.get(CourseGlossaryToolLinkController.class, guiPrefsKey);
-		Boolean newState = state == null ? Boolean.TRUE : new Boolean(!state.booleanValue());
+		Boolean newState = state == null ? Boolean.TRUE : Boolean.valueOf(!state.booleanValue());
 		setGlossaryLinkTitle(ureq, newState);
 		prefs.putAndSave(CourseGlossaryToolLinkController.class, guiPrefsKey, newState);
 	}
@@ -2120,7 +2126,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			currentToolCtr = forumCtrl;
 		} else {
 			delayedClose = Delayed.forum;
-		};
+		}
 	}
 	
 	private CourseDocumentsController doDocuments(UserRequest ureq) {
