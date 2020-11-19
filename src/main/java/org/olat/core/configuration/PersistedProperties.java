@@ -159,10 +159,7 @@ public class PersistedProperties implements Initializable, Destroyable{
 	private String userDataDirectory;
 	
 	static {
-		if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
-			Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-		}
-		Security.insertProviderAt(new BouncyCastleProvider(), 1);
+		Security.addProvider(new BouncyCastleProvider());
 	}
 	
 	public PersistedProperties(GenericEventListener listener) {
