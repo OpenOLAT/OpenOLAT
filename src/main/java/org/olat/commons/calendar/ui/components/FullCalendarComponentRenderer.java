@@ -131,6 +131,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		  .append("   },\n")
 		  .append("   timezone: false,\n")
 		  .append("   firstDay:").append(firstDay).append(",\n")
+		  .append("   weekNumberCalculation: 'ISO',\n")
 		  .append("   defaultDate: moment('").append(formatDate(cal.getTime())).append("'),\n")
 		  .append("   defaultView:'").append(fcC.getViewName()).append("',\n")
 		  .append("   weekNumbers: true,\n")
