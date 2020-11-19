@@ -55,6 +55,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 	private SingleSelection currencyEl;
 	private SingleSelection smartButtonsEl;
 	private MultipleSelectionElement enableEl;
+	private MultipleSelectionElement pendingReviewEl;
 	
 	private final List<String> paypalCurrencies;
 
@@ -94,6 +95,12 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		} else {
 			smartButtonsEl.select(smartButtonsKeys[1], true);
 		}
+
+		String[] onPendingValues = new String[] { translate("paypal.pending.review.accept") };
+		pendingReviewEl = uifactory.addCheckboxesHorizontal("pending.review", "paypal.pending.review", formLayout, onKeys, onPendingValues);
+		pendingReviewEl.setExampleKey("paypal.pending.review.accept.explain", null);
+		pendingReviewEl.select(onKeys[0], paypalModule.isAcceptPendingReview());
+		pendingReviewEl.addActionListener(FormEvent.ONCHANGE);
 		
 		KeyValues currencies = new KeyValues();
 		paypalCurrencies.forEach(currency -> currencies.add(KeyValues.entry(currency, currency)));
@@ -169,6 +176,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 				paypalModule.setPaypalCurrency(currencyEl.getSelectedKey());
 			}
 			paypalModule.setSmartButtons(smartButtonsEl.isOneSelected() && smartButtonsEl.isSelected(0));
+			paypalModule.setAcceptPendingReview(pendingReviewEl.isAtLeastSelected(1));
 			doUpdateWebhook();
 		} else {
 			paypalModule.setClientId(null);

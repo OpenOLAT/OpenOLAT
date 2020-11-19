@@ -21,7 +21,7 @@
 				<script defer>
 				jQuery(function() {
 					jQuery.ajax({
-						url: 'https://www.paypal.com/sdk/js?client-id=$clientId&currency=$currency&intent=authorize',
+						url: 'https://www.paypal.com/sdk/js?client-id=$clientId&currency=${currency}&intent=authorize&commit=true&disable-funding=${excludeFundings}',
 						cache: true,
 						dataType: "script",
 						success: loadButtons,

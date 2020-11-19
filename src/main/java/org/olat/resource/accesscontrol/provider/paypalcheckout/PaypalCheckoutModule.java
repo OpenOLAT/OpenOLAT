@@ -50,6 +50,7 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 	private static final String PAYPAL_CURRENCY = "paypal.checkout.v2.currency";
 	private static final String PAYPAL_SMART_BUTTONS = "paypal.checkout.v2.smart.buttons";
 	private static final String PAYPAL_WEBHOOK_ID = "paypal.webhhok.id";
+	private static final String PAYPAL_ACCEPT_PENDING_REVIEW = "paypal.checkout.v2.accept.pending.review";
 	
 	private static final String[] currencies = new String[] {
 			"AUD",
@@ -86,6 +87,10 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 	private String paypalCurrency;
 	@Value("${paypal.checkout.v2.smart.buttons:true}")
 	private boolean smartButtons;
+	@Value("${paypal.checkout.v2.exclude.funding:credit,sepa}")
+	private String excludeFundings;
+	@Value("${paypal.checkout.v2.accept.pending.review:false}")
+	private boolean acceptPendingReview;
 	@Value("${paypal.webhhok.id:#{null}}")
 	private String webhookId;
 	
@@ -109,7 +114,8 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 		paypalCurrency = getStringPropertyValue(PAYPAL_CURRENCY, paypalCurrency);
 		webhookId = getStringPropertyValue(PAYPAL_WEBHOOK_ID, webhookId);
 		smartButtons = "true".equals(getStringPropertyValue(PAYPAL_SMART_BUTTONS, Boolean.toString(smartButtons)));
-		
+		acceptPendingReview = "true".equals(getStringPropertyValue(PAYPAL_ACCEPT_PENDING_REVIEW, Boolean.toString(acceptPendingReview)));
+
 		if(!StringHelper.containsNonWhitespace(webhookId) && StringHelper.containsNonWhitespace(clientId) && StringHelper.containsNonWhitespace(clientSecret)) {
 			updateWebhook(clientId, clientSecret);
 		}
@@ -178,6 +184,23 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 		setStringProperty(PAYPAL_SMART_BUTTONS, Boolean.toString(smartButtons), true);
 	}
 	
+	public boolean isAcceptPendingReview() {
+		return acceptPendingReview;
+	}
+	
+	public void setAcceptPendingReview(boolean accept) {
+		this.acceptPendingReview = accept;
+		setStringProperty(PAYPAL_ACCEPT_PENDING_REVIEW, Boolean.toString(accept), true);
+	}
+	
+	public String getExcludeFundings() {
+		return excludeFundings;
+	}
+
+	public void setExcludeFundings(String excludeFundings) {
+		this.excludeFundings = excludeFundings;
+	}
+
 	public boolean isSandbox() {
 		return sandbox;
 	}

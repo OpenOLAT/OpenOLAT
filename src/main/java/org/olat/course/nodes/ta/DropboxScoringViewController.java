@@ -101,16 +101,17 @@ public class DropboxScoringViewController extends BasicController {
 	private VelocityContainer myContent;
 	private Link taskLaunchButton;
 	private Link cancelTaskButton;
-	private FolderRunController dropboxFolderRunController, returnboxFolderRunController;
+	private FolderRunController dropboxFolderRunController;
+	private FolderRunController returnboxFolderRunController;
 	private String assignedTask;
 	private StatusForm statusForm;
 	private CloseableModalController cmc;
 	private IFrameDisplayController iFrameCtr;
 	private DialogBoxController dialogBoxController;
 	private boolean hasNotification = false;
-	private SubscriptionContext subsContext;
-	private ContextualSubscriptionController contextualSubscriptionCtr;
 	
+	@Autowired
+	protected UserManager userManager;
 	@Autowired
 	private QuotaManager quotaManager;
 	@Autowired
@@ -160,9 +161,9 @@ public class DropboxScoringViewController extends BasicController {
 
 		ModuleConfiguration modConfig = node.getModuleConfiguration();
 		Boolean bValue = (Boolean)modConfig.get(TACourseNode.CONF_TASK_ENABLED);
-		myContent.contextPut("hasTask", (bValue != null) ? bValue : new Boolean(false));
+		myContent.contextPut("hasTask", (bValue != null) ? bValue : Boolean.valueOf(false));
 		Boolean hasDropbox = (Boolean)modConfig.get(TACourseNode.CONF_DROPBOX_ENABLED); //configured value
-		Boolean hasDropboxValue = (hasDropbox != null) ? hasDropbox : new Boolean(true);
+		Boolean hasDropboxValue = (hasDropbox != null) ? hasDropbox : Boolean.valueOf(true);
 		myContent.contextPut("hasDropbox", hasDropboxValue);
 		
 		Boolean hasReturnbox = (Boolean)modConfig.get(TACourseNode.CONF_RETURNBOX_ENABLED);
@@ -170,16 +171,14 @@ public class DropboxScoringViewController extends BasicController {
 
 		// dropbox display
 		Identity assessee = userCourseEnv.getIdentityEnvironment().getIdentity();
-		String assesseeName = assessee.getName();
-		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
-		String assesseeFullName = StringHelper.escapeHtml(userManager.getUserDisplayName(assessee));
 
 		// notification
 		if (hasNotification) {
-			subsContext = DropboxFileUploadNotificationHandler.getSubscriptionContext(userCourseEnv.getCourseEnvironment(), node);
+			SubscriptionContext subsContext = DropboxFileUploadNotificationHandler.getSubscriptionContext(userCourseEnv.getCourseEnvironment(), node);
 			if (subsContext != null) {
 				String path = DropboxController.getDropboxPathRelToFolderRoot(userCourseEnv.getCourseEnvironment(), node);
-				contextualSubscriptionCtr = AbstractTaskNotificationHandler.createContextualSubscriptionController(ureq, this.getWindowControl(), path, subsContext, DropboxController.class);
+				ContextualSubscriptionController contextualSubscriptionCtr = AbstractTaskNotificationHandler
+						.createContextualSubscriptionController(ureq, getWindowControl(), path, subsContext, DropboxController.class);
 				myContent.put("subscription", contextualSubscriptionCtr.getInitialComponent());
 				myContent.contextPut("hasNotification", Boolean.TRUE);
 			}
@@ -187,24 +186,14 @@ public class DropboxScoringViewController extends BasicController {
 			myContent.contextPut("hasNotification", Boolean.FALSE);
 		}
 		
-		VFSContainer rootDropbox = VFSManager.olatRootContainer(getDropboxFilePath(assesseeName), null);
-		rootDropbox.setLocalSecurityCallback( getDropboxVfsSecurityCallback());
-		VFSContainer namedDropbox = new NamedContainerImpl(assesseeFullName, rootDropbox);
-		namedDropbox.setLocalSecurityCallback(getDropboxVfsSecurityCallback());
-	
+		VFSContainer namedDropbox = getDropboxFilePath(assessee);
 		dropboxFolderRunController = new FolderRunController(namedDropbox, false, ureq, getWindowControl());
 		listenTo(dropboxFolderRunController);
 		
 		myContent.put("dropbox", dropboxFolderRunController.getInitialComponent());
 
-		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		// returnbox display
-		VFSContainer rootReturnbox = VFSManager.olatRootContainer(getReturnboxFilePath(assesseeName), null);
-		VFSSecurityCallback secCallback = getReturnboxVfsSecurityCallback(rootReturnbox.getRelPath(), assessedIdentity);
-		rootReturnbox.setLocalSecurityCallback(secCallback);
-		VFSContainer namedReturnbox = new NamedContainerImpl(assesseeFullName, rootReturnbox);
-		namedReturnbox.setLocalSecurityCallback(secCallback);
-
+		VFSContainer namedReturnbox = getReturnboxFilePath(assessee);
 		returnboxFolderRunController = new FolderRunController(namedReturnbox, false, ureq, getWindowControl());
 		returnboxFolderRunController.disableSubscriptionController();
 		listenTo(returnboxFolderRunController);
@@ -214,7 +203,6 @@ public class DropboxScoringViewController extends BasicController {
 		// insert Status Pull-Down Menu depending on user role == author
 		boolean isAuthor = ureq.getUserSession().getRoles().isAuthor();
 		boolean isTutor  = userCourseEnv.isCoach();
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
 		if (assessmentConfig.hasStatus() && (isAuthor || isTutor)) {
 			myContent.contextPut("hasStatusPullDown", Boolean.TRUE);
@@ -226,7 +214,7 @@ public class DropboxScoringViewController extends BasicController {
 			myContent.put("statusForm",statusForm.getInitialComponent());
 		}
 		
-		assignedTask = TaskController.getAssignedTask(assessedIdentity, userCourseEnv.getCourseEnvironment(), node);
+		assignedTask = TaskController.getAssignedTask(assessee, userCourseEnv.getCourseEnvironment(), node);
 		if (assignedTask != null) {
 			myContent.contextPut("assignedtask", assignedTask);
 			myContent.contextPut("taskIcon", CSSHelper.createFiletypeIconCssClassFor(assignedTask));
@@ -321,7 +309,7 @@ public class DropboxScoringViewController extends BasicController {
 					BusinessControl bc = BusinessControlFactory.getInstance().createBusinessControl(ce, getWindowControl().getBusinessControl());
 					String link = BusinessControlFactory.getInstance().getAsURIString(bc, true);
 					
-					log.debug("DEBUG : Returnbox notification email with link=" + link);
+					log.debug("Returnbox notification email with link={}", link);
 					String subject = translate("returnbox.email.subject");
 					String body = translate("returnbox.email.body", new String[] { userCourseEnv.getCourseEnvironment().getCourseTitle(), node.getShortTitle(),
 									folderEvent.getFilename(), link });
@@ -375,25 +363,40 @@ public class DropboxScoringViewController extends BasicController {
 	private void removeAssignedTask(UserCourseEnvironment courseEnv, Identity identity) {
 		CoursePropertyManager cpm = courseEnv.getCourseEnvironment().getCoursePropertyManager();
 		List<Property> properties = cpm.findCourseNodeProperties(node, identity, null, TaskController.PROP_ASSIGNED);
-		if(properties!=null && properties.size()>0) {
+		if(properties!=null && !properties.isEmpty()) {
 		  Property propety = properties.get(0);
 		  cpm.deleteProperty(propety);
 		  assignedTask = null;
 		}
 	  //removed sampled  				
 		properties = cpm.findCourseNodeProperties(node, null, null, TaskController.PROP_SAMPLED);
-		if(properties!=null && properties.size()>0) {
+		if(properties!=null && !properties.isEmpty()) {
 		  Property propety = properties.get(0);
 		  cpm.deleteProperty(propety);		  
 		}		
 	}
 
-	protected String getDropboxFilePath(String assesseeName) {
-		return DropboxController.getDropboxPathRelToFolderRoot(userCourseEnv.getCourseEnvironment(), node) + "/" + assesseeName;
+	protected VFSContainer getDropboxFilePath(Identity assesseeIdentity) {
+		String assesseeFullName = StringHelper.escapeHtml(userManager.getUserDisplayName(assesseeIdentity));
+		String path = DropboxController.getDropboxPathRelToFolderRoot(userCourseEnv.getCourseEnvironment(), node)
+				+ "/" + assesseeIdentity.getName();
+		VFSContainer rootDropbox = VFSManager.olatRootContainer(path, null);
+		rootDropbox.setLocalSecurityCallback( getDropboxVfsSecurityCallback());
+		VFSContainer namedDropbox = new NamedContainerImpl(assesseeFullName, rootDropbox);
+		namedDropbox.setLocalSecurityCallback(getDropboxVfsSecurityCallback());
+		return namedDropbox;
 	}
 
-	protected String getReturnboxFilePath(String assesseeName) {
-		return ReturnboxController.getReturnboxPathRelToFolderRoot(userCourseEnv.getCourseEnvironment(), node) + "/" + assesseeName;
+	protected VFSContainer getReturnboxFilePath(Identity assesseeIdentity) {
+		String assesseeFullName = StringHelper.escapeHtml(userManager.getUserDisplayName(assesseeIdentity));
+		String path = ReturnboxController.getReturnboxPathRelToFolderRoot(userCourseEnv.getCourseEnvironment(), node)
+				+ "/" + assesseeIdentity.getName();
+		VFSContainer rootReturnbox = VFSManager.olatRootContainer(path, null);
+		VFSSecurityCallback secCallback = getReturnboxVfsSecurityCallback(rootReturnbox.getRelPath(), assesseeIdentity);
+		rootReturnbox.setLocalSecurityCallback(secCallback);
+		VFSContainer namedReturnbox = new NamedContainerImpl(assesseeFullName, rootReturnbox);
+		namedReturnbox.setLocalSecurityCallback(secCallback);
+		return namedReturnbox;
 	}
 
 	/**
