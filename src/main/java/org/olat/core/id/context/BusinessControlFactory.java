@@ -503,7 +503,7 @@ public class BusinessControlFactory {
 					}
 				}
 			} catch (ParseException e) {
-				log.warn("Error parsing the date after activate: " + dateEntry, e);
+				log.warn("Error parsing the date after activate: {}", dateEntry, e);
 			}
 		}
 		return date;
