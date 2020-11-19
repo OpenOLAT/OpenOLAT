@@ -28,6 +28,8 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 /**
  * 
  * Initial date: 16 févr. 2017<br>
@@ -47,7 +49,7 @@ public class CryptoUtil {
 		if(certificate.getName().equals("cacerts")) {
 			keyStore = KeyStore.getInstance("JKS");
 		} else  {
-			keyStore = KeyStore.getInstance("PKCS12");
+			keyStore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
 		}
 		keyStore.load(new FileInputStream(certificate), password.toCharArray());
 

@@ -409,10 +409,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public boolean deleteCurriculumElement(CurriculumElementRef element) {
 		if(element == null) return true; // nothing to do
-		
+
+		boolean delete = true;
 		List<CurriculumElement> children = curriculumElementDao.getChildren(element);
 		for(CurriculumElement child:children) {
-			deleteCurriculumElement(child);
+			delete &= deleteCurriculumElement(child);
 		}
 
 		CurriculumElementImpl reloadedElement = (CurriculumElementImpl)curriculumElementDao.loadByKey(element.getKey());
@@ -429,7 +430,6 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		// remove relations to lecture blocks
 		lectureBlockToGroupDao.deleteLectureBlockToGroup(reloadedElement.getGroup());
 		
-		boolean delete = true;
 		Map<String,CurriculumDataDeletable> deleteDelegates = CoreSpringFactory.getBeansOfType(CurriculumDataDeletable.class);
 		for(CurriculumDataDeletable deleteDelegate:deleteDelegates.values()) {
 			delete &= deleteDelegate.deleteCurriculumElementData(reloadedElement);
