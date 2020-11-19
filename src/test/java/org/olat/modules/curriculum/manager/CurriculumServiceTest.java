@@ -195,4 +195,47 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertNotNull(deletedCurriculum);
 		Assert.assertEquals(CurriculumStatus.deleted.name(), deletedCurriculum.getStatus());
 	}
+	
+	
+	@Test
+	public void deleteCurriculumInQualityWithSubElement() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel-10", "Element for nothing",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("Element-for-del-11", "Element for nothing",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2under = curriculumService.createCurriculumElement("Element-for-del-under-11-1", "Element under for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		Organisation organisation = organisationService.getDefaultOrganisation();
+		QualityDataCollection dataCollection = qualityService.createDataCollection(Collections.singletonList(organisation), entry);
+		dataCollection.setTopicCurriculumElement(element2under);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commit();
+
+		// add the course and a participant to the curriculum
+		curriculumService.addRepositoryEntry(element2, entry, false);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
+		curriculumService.addMember(element1, participant, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
+		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculumList);
+		Assert.assertNotNull(myElements);
+		Assert.assertEquals(3, myElements.size());
+		
+		curriculumService.deleteCurriculum(curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// check
+		Curriculum deletedCurriculum = curriculumService.getCurriculum(curriculum);
+		Assert.assertNotNull(deletedCurriculum);
+		Assert.assertEquals(CurriculumStatus.deleted.name(), deletedCurriculum.getStatus());
+	}
 }
