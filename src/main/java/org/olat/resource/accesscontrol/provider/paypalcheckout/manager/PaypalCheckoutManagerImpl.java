@@ -45,6 +45,7 @@ import org.olat.resource.accesscontrol.manager.ACTransactionDAO;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutManager;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutModule;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutStatus;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutTransaction;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.CheckoutRequest;
@@ -76,6 +77,8 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private CheckoutV2Provider checkoutProvider;
+	@Autowired
+	private PaypalCheckoutModule checkoutModule;
 	@Autowired
 	private ACTransactionDAO transactionManager;
 	@Autowired
@@ -248,10 +251,14 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 		
 		PaypalCheckoutAccessMethod method = getMethodSecure(trx.getMethodId());
 		if(order.getKey().equals(trx.getOrderId())) {
+			Identity identity = order.getDelivery();
 			for(OrderPart part:order.getParts()) {
 				if(part.getKey().equals(trx.getOrderPartId())) {
 					AccessTransaction transaction = transactionManager.createTransaction(order, part, method);
-					transactionManager.update(transaction, AccessTransactionStatus.PENDING);
+					transaction = transactionManager.update(transaction, AccessTransactionStatus.PENDING);
+					if(checkoutModule.isAcceptPendingReview()) {
+						allowAccessToResource(identity, part, transaction, method);
+					}
 				}
 			}
 		} else {
@@ -301,22 +308,26 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 			for(OrderPart part:order.getParts()) {
 				if(part.getKey().equals(trx.getOrderPartId())) {
 					AccessTransaction transaction = transactionManager.createTransaction(order, part, method);
-					transactionManager.save(transaction);
-					for(OrderLine line:part.getOrderLines()) {
-						if(acService.allowAccesToResource(identity, line.getOffer())) {
-							log.info(Tracing.M_AUDIT, "Paypal Checkout payed access granted for: {} to {}", buildLogMessage(line, method), identity);
-							transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
-						} else {
-							log.error("Paypal Checkout payed access refused for: {} to {}", buildLogMessage(line, method), identity);
-							transaction = transactionManager.update(transaction, AccessTransactionStatus.ERROR);
-						}
-					}
+					transaction = transactionManager.save(transaction);
+					allowAccessToResource(identity, part, transaction, method);
 				}
 			}
 		} else {
 			log.error("Order not in sync with Paypal Checkout Transaction");
 		}
 		dbInstance.commit();
+	}
+	
+	private void allowAccessToResource(Identity identity, OrderPart part, AccessTransaction transaction, PaypalCheckoutAccessMethod method) {
+		for(OrderLine line:part.getOrderLines()) {
+			if(acService.allowAccesToResource(identity, line.getOffer())) {
+				log.info(Tracing.M_AUDIT, "Paypal Checkout payed access granted for: {} to {}", buildLogMessage(line, method), identity);
+				transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
+			} else {
+				log.error("Paypal Checkout payed access refused for: {} to {}", buildLogMessage(line, method), identity);
+				transaction = transactionManager.update(transaction, AccessTransactionStatus.ERROR);
+			}
+		}
 	}
 	
 	private PaypalCheckoutAccessMethod getMethodSecure(Long key) {

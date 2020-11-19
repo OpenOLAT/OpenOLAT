@@ -740,6 +740,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		boolean error = false;
 		boolean canceled = false;
 		boolean pending = false;
+		boolean okPending = false;
 
 		if(OrderStatus.CANCELED.name().equals(orderStatus)) {
 			canceled = true;
@@ -749,6 +750,9 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			if((trxStatus != null && trxStatus.contains(PaypalCheckoutStatus.PENDING.name()))
 					|| (pspTrxStatus != null && pspTrxStatus.contains(PaypalCheckoutStatus.PENDING.name()))) {
 				pending = true;
+			} else if((trxStatus != null && trxStatus.contains("SUCCESS"))
+					&& (pspTrxStatus != null && pspTrxStatus.contains("INPROCESS"))) {
+				okPending = true;
 			} else {
 				warning = true;
 			}
@@ -772,13 +776,19 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			}
 		}
 
+		if(okPending) {
+			return Status.OK_PENDING;
+		}
 		if(pending) {
 			return Status.PENDING;
-		} else if(error) {
+		}
+		if(error) {
 			return Status.ERROR;
-		} else if (warning) {
+		}
+		if (warning) {
 			return Status.WARNING;
-		} else if(canceled) {
+		}
+		if(canceled) {
 			return Status.CANCELED;
 		} 
 		return Status.OK;

@@ -68,6 +68,10 @@ public class OrderStatusRenderer implements FlexiCellRenderer {
 					String canceledTitle = translator.translate("order.status.canceled");
 					sb.append("<span title=\"").append(canceledTitle).append("\"><i class='o_icon o_icon-fw o_ac_order_status_canceled_icon'> </i></span>");
 					break;
+				case OK_PENDING:
+					String acceptedButPending = translator.translate("order.status.ok.pending");
+					sb.append("<span title=\"").append(acceptedButPending).append("\"><i class='o_icon o_icon-fw o_ac_order_status_payed_icon'> </i> <small><i class='o_icon o_ac_order_status_pending_icon'> </i></small></span>");
+					break;	
 				default:
 					String payedTitle = translator.translate("order.status.payed");
 					sb.append("<span title=\"").append(payedTitle).append("\"><i class='o_icon o_icon-fw o_ac_order_status_payed_icon'> </i></span>");

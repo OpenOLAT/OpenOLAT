@@ -69,6 +69,8 @@ public class PaypalSmartButtonAccessController extends FormBasicController imple
 			layoutCont.contextPut("clientId", appId);
 			String currency = link.getOffer().getPrice().getCurrencyCode();
 			layoutCont.contextPut("currency", currency);
+			String excludeFundings = paypalModule.getExcludeFundings();
+			layoutCont.contextPut("excludeFundings", excludeFundings == null ? "" : excludeFundings);
 			
 			String description = link.getOffer().getDescription();
 			if(StringHelper.containsNonWhitespace(description)) {

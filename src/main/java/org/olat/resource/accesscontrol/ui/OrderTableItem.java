@@ -121,11 +121,11 @@ public class OrderTableItem {
 		return methods;
 	}
 
-	public Collection<AccessTransaction> getTransactions2() {
+	public Collection<AccessTransaction> getTransactions() {
 		return transactions;
 	}
 	
-	public Collection<PSPTransaction> getPSPTransactions2() {
+	public Collection<PSPTransaction> getPSPTransactions() {
 		return pspTransactions;
 	}
 	
@@ -141,6 +141,7 @@ public class OrderTableItem {
 		ERROR,
 		WARNING,
 		OK,
+		OK_PENDING,
 		PENDING,
 		CANCELED,
 	}
