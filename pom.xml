@@ -63,7 +63,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.3.1</org.springframework.version>
-		<org.hibernate.version>5.4.23.Final</org.hibernate.version>
+		<org.hibernate.version>5.4.24.Final</org.hibernate.version>
 		<apache.cxf>3.4.1</apache.cxf>
 		<apache.pdfbox>2.0.21</apache.pdfbox>
 		<apache.poi>4.1.2</apache.poi>
@@ -2458,7 +2458,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.17.2</version>
+			<version>3.18.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
