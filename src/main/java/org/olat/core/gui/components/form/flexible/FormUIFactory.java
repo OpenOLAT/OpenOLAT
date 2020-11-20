@@ -36,6 +36,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.form.flexible.elements.AddRemoveElement;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
@@ -60,6 +61,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleText;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErrorText;
+import org.olat.core.gui.components.form.flexible.impl.elements.AddRemoveElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.AddRemoveElementImpl.AddRemoveMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompleterImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.DownloadLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementImpl;
@@ -1348,6 +1351,26 @@ public class FormUIFactory {
 			formLayout.add(ratingCmp);
 		}
 		return ratingCmp;
+	}
+	
+	public AddRemoveElement addAddRemoveElement(String name, String i18nLabel, int presentation, boolean showText, FormItemContainer formLayout) {
+		AddRemoveElementImpl addRemove = new AddRemoveElementImpl(name, presentation);
+		addRemove.setShowText(showText);
+		setLabelIfNotNull(i18nLabel, addRemove);
+		if(formLayout != null) {
+			formLayout.add(addRemove);
+		}
+		return addRemove;
+	}
+	
+	public AddRemoveElement addAddRemoveElement(String i18nLabel, int presentation, boolean showText, FormItemContainer formLayout) {
+		return addAddRemoveElement(i18nLabel, i18nLabel, presentation, showText, formLayout);
+	}
+	
+	public AddRemoveElement addAddRemoveElement(String name, String i18nLabel, int presentation, boolean showText, AddRemoveMode displayMode, FormItemContainer formLayout) {
+		AddRemoveElement addRemove = addAddRemoveElement(name, i18nLabel, presentation, showText, formLayout);
+		addRemove.setAddRemoveMode(displayMode);
+		return addRemove;
 	}
 	
 }

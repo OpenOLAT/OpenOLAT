@@ -40,6 +40,7 @@ a.o_disabled.navbar-text {
         }
       }
 		}
+	.o_icon_fw,
     .o_icon-fw {
       position: absolute;
       top: floor($grid-gutter-width / 2); 
@@ -543,6 +544,7 @@ body.o_dmz {
     @if $o-navbar-more-dropdown-enable-icons {
       padding-left: $grid-gutter-width + 10px; // some extra space for the icon
     }
+	.o_icon_fw,
     .o_icon-fw {
       @if $o-navbar-more-dropdown-enable-icons{
         display: inline-block;

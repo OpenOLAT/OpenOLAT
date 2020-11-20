@@ -31,6 +31,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_actions:before { content: $fa-var-gears;}
 .o_icon_activate:before { content: $fa-var-check-circle-o; }
 .o_icon_add_html:before { content: $fa-var-code; }
+.o_icon_addremove_add:before { content: $fa-var-check; }
+.o_icon_addremove_remove:before { content: $fa-var-times; }
 .o_icon_administrator:before { content: $fa-var-bolt; }
 .o_icon_align_left:before { content: $fa-var-align-left; }
 .o_icon_align_middle:before { content: $fa-var-align-center; }
@@ -458,8 +460,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_edubase_icon:before, %o_icon_edubase { content:"\E885"; font-family: openolat; }
 .o_edusharing_icon:before, %o_icon_edusharing { content:"\E803"; font-family: openolat; font-size: 90%; }
 .o_opencast_icon:before, %o_icon_opencast { content:"\E804"; font-family: openolat; }
-.o_livestream_icon:before, { content: $fa-var-video-camera;}
-.o_unkown_icon:before, { content: $fa-var-user-secret;}
+.o_livestream_icon:before { content: $fa-var-video-camera;}
+.o_unkown_icon:before { content: $fa-var-user-secret;}
 
 /* portal icons */
 .o_portlet_infomsg_icon:before {content: $fa-var-info-circle; }
