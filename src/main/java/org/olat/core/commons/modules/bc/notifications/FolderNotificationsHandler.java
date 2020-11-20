@@ -34,6 +34,8 @@ import java.util.Locale;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FileInfo;
 import org.olat.core.commons.modules.bc.FolderManager;
+import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -44,6 +46,7 @@ import org.olat.core.commons.services.notifications.manager.NotificationsUpgrade
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -78,6 +81,10 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 	private NotificationsManager notificationsManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private VFSVersionModule versionModule;
+	@Autowired
+	private List<DocEditor> editors;
 	
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(final Subscriber subscriber, Locale locale, Date compareDate) {
@@ -125,7 +132,11 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 					Long identityKey = fi.getAuthorIdentityKey();
 					Date modDate = fi.getLastModified();
 
-					String desc = translator.translate("notifications.entry", new String[] { title, NotificationHelper.getFormatedName(identityKey) });
+					// Documents may be edited with a document editor, so author is not the modifier
+					boolean anonymous = versionModule.getMaxNumberOfVersions() < 1 && hasDocumentEditor(fi.getMetaInfo());
+					String desc = anonymous
+							? translator.translate("notifications.entry.anonymous", new String[] { title })
+							: translator.translate("notifications.entry", new String[] { title, NotificationHelper.getFormatedName(identityKey) });
 					String urlToSend = null;
 					String businessPath = null;
 					if(p.getBusinessPath() != null) {
@@ -146,6 +157,15 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 		return si;
 	}
 	
+	private boolean hasDocumentEditor(VFSMetadata metaInfo) {
+		String suffix = FileUtils.getFileSuffix(metaInfo.getFilename());
+		return editors.stream()
+				.filter(DocEditor::isEnable)
+				.filter(editor -> editor.isSupportingFormat(suffix, Mode.EDIT, true))
+				.findFirst()
+				.isPresent();
+	}
+
 	private void checkPublisher(Publisher p) {
 		try {
 			if("BusinessGroup".equals(p.getResName())) {
