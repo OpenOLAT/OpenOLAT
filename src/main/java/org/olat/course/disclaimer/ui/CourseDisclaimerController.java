@@ -167,13 +167,13 @@ public class CourseDisclaimerController extends FormBasicController {
 
 		if (disclaimer1Enabled) {
 			allOk &= validateTextInput(disclaimer1TitleEl, 255);
-			allOk &= validateTextInput(disclaimer1TermsEl, 2550);
+			allOk &= validateTextInput(disclaimer1TermsEl, 10000);
 			allOk &= validateTextInput(disclaimer1Label1El, -1);
 		}
 
 		if (disclaimer2Enabled) {
 			allOk &= validateTextInput(disclaimer2TitleEl, 255);
-			allOk &= validateTextInput(disclaimer2TermsEl, 2550);
+			allOk &= validateTextInput(disclaimer2TermsEl, 10000);
 			allOk &= validateTextInput(disclaimer2Label1El, -1);
 		}
 

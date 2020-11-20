@@ -58,7 +58,7 @@ public class OnlyOfficeEditor implements DocEditor {
 
 	@Override
 	public boolean isEnable() {
-		return onlyOfficeModule.isEnabled() && onlyOfficeModule.isEnabled();
+		return onlyOfficeModule.isEnabled() && onlyOfficeModule.isEditorEnabled();
 	}
 
 	@Override
