@@ -81,6 +81,8 @@ public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGrou
 			return row.isWaitinglistEnabled();
 		case onWaitinglist: 
 			return row.getOnWaitinglist();
+		case coaches:
+			return row.getCoaches();
 		case participants: 
 			return row.getParticipants();
 
@@ -95,7 +97,7 @@ public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGrou
 	}
 
 	public List<String> getNames() {
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 
 		for (ENEditGroupTableContentRow row : getObjects()) {
 			names.add(row.getGroupName());
@@ -105,7 +107,7 @@ public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGrou
 	}
 
 	public List<Long> getKeys() {
-		List<Long> keys = new ArrayList<Long>();
+		List<Long> keys = new ArrayList<>();
 
 		for (ENEditGroupTableContentRow row : getObjects()) {
 			keys.add(row.getKey());
@@ -123,6 +125,7 @@ public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGrou
 		minParticipants("engroupedit.table.minPart"),
 		maxParticipants("engroupedit.table.maxPart"),
 		description("engroupedit.table.description"),
+		coaches("engroupedit.table.coaches"),
 		participants("engroupedit.table.enrolled"),
 		waitinglistEnabled("engroupedit.table.waitinglist"),
 		onWaitinglist("engroupedit.table.waitinglistParticipants"),

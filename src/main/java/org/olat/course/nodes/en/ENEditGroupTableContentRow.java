@@ -35,6 +35,7 @@ public class ENEditGroupTableContentRow {
 	private final String description;
 	private final int minParticipants;
 	private final int maxParticipants;
+	private final int coaches;
 	private final int participants;
 	private final int onWaitinglist;
 	private final boolean waitinglistEnabled;
@@ -46,6 +47,7 @@ public class ENEditGroupTableContentRow {
 		minParticipants = 0;
 		maxParticipants = 0;
 		participants = 0;
+		coaches = 0;
 		onWaitinglist = 0;
 		waitinglistEnabled = false;
 	}
@@ -59,6 +61,7 @@ public class ENEditGroupTableContentRow {
 		this.waitinglistEnabled = group.getWaitingListEnabled();
 		this.onWaitinglist = enrollment.getNumInWaitingList();
 		this.participants = enrollment.getNumOfParticipants();
+		this.coaches = -1;
 	}
 	
 	public ENEditGroupTableContentRow(BusinessGroup group, StatisticsBusinessGroupRow stats) {
@@ -70,6 +73,7 @@ public class ENEditGroupTableContentRow {
 		this.waitinglistEnabled = group.getWaitingListEnabled();
 		this.onWaitinglist = stats.getNumWaiting();
 		this.participants = stats.getNumOfParticipants();
+		this.coaches = stats.getNumOfCoaches();
 	}
 	
 	
@@ -91,6 +95,10 @@ public class ENEditGroupTableContentRow {
 
 	public String getMaxParticipants() {
 		return maxParticipants > -1 ? String.valueOf(maxParticipants) : " - ";
+	}
+
+	public int getCoaches() {
+		return coaches;
 	}
 
 	public int getParticipants() {
