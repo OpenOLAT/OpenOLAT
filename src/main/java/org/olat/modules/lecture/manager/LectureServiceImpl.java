@@ -1160,6 +1160,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		lectureBlock = getLectureBlock(lectureBlock);
 		
 		if(closeLectures) {
+			lectureBlock.setEffectiveLecturesNumber(lectureBlock.getPlannedLecturesNumber());
 			lectureBlock.setStatus(LectureBlockStatus.done);
 			lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
 		} else {
