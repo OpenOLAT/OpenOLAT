@@ -47,6 +47,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
@@ -631,9 +632,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = getModuleConfiguration();
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		
-		String name = assessedIdentity.getUser().getLastName()
-				+ "_" + assessedIdentity.getUser().getFirstName()
-				+ "_" + assessedIdentity.getName();
+		User user = assessedIdentity.getUser();
+		String name = user.getLastName()
+				+ "_" + user.getFirstName()
+				+ "_" + (StringHelper.containsNonWhitespace(user.getNickName()) ? user.getNickName() : assessedIdentity.getName());
 		
 		int flow = 0;//for beautiful ordering
 		String userDirName = dirName + "/" + StringHelper.transformDisplayNameToFileSystemName(name);
