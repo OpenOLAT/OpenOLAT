@@ -213,6 +213,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.appointments.manager.ParticipationDAOTest.class,
 	org.olat.modules.appointments.manager.TopicDAOTest.class,
 	org.olat.modules.appointments.manager.TopicToGroupDAOTest.class,
+	org.olat.modules.appointments.ui.DuplicateTopicCallbackTest.class,
 	org.olat.modules.bigbluebutton.manager.BigBlueButtonServerDAOTest.class,
 	org.olat.modules.bigbluebutton.manager.BigBlueButtonMeetingDAOTest.class,
 	org.olat.modules.bigbluebutton.manager.BigBlueButtonAttendeeDAOTest.class,

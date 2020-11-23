@@ -80,7 +80,7 @@ import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationResult;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
-import org.olat.modules.appointments.Topic.Type;
+import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.appointments.ui.AppointmentDataModel.AppointmentCols;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
@@ -140,7 +140,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 		this.topic = topic;
 		this.secCallback = secCallback;
 		this.organizers = appointmentsService.getOrganizers(topic);
-
 		initForm(ureq);
 		updateModel();
 	}

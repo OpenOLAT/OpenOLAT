@@ -124,6 +124,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_dispensation_authorized:before { content: $fa-var-check-circle-o; color: $brand-success }
 .o_icon_dispensation_unauthorized:before { content: $fa-var-exclamation-triangle; color: $brand-warning }
 .o_icon_download:before { content: $fa-var-download;}
+.o_icon_duplicate:before { content: $fa-var-clone; }
 .o_icon_edit:before { content: $fa-var-edit;}
 .o_icon_edit_file:before { content: $fa-var-edit;}
 .o_icon_edit_metadata:before { content: $fa-var-gear;}

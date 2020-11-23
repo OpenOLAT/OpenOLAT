@@ -53,6 +53,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
@@ -68,7 +69,7 @@ import org.olat.modules.appointments.Organizer;
 import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
-import org.olat.modules.appointments.Topic.Type;
+import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
@@ -92,6 +93,7 @@ public class TopicsRunCoachController extends BasicController {
 	private static final String CMD_OPEN = "open";
 	private static final String CMD_JOIN = "join";
 	private static final String CMD_EDIT = "edit";
+	private static final String CMD_DUPLICATE = "duplicate";
 	private static final String CMD_EXPORT = "export";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_GROUPS = "group";
@@ -109,6 +111,7 @@ public class TopicsRunCoachController extends BasicController {
 	private DialogBoxController confirmDeleteTopicCrtl;
 	private AppointmentListEditController topicRunCtrl;
 	private ContextualSubscriptionController subscriptionCtrl;
+	private StepsMainRunController wizard;
 	
 	private final RepositoryEntry entry;
 	private final String subIdent;
@@ -483,6 +486,11 @@ public class TopicsRunCoachController extends BasicController {
 			dropdown.addComponent(syncRecordingsLink);
 		}
 		
+		Link duplicateLink = LinkFactory.createCustomLink("dup_" + counter++, CMD_DUPLICATE, "duplicate.topic", Link.LINK, mainVC, this);
+		duplicateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_duplicate");
+		duplicateLink.setUserObject(wrapper.getTopic());
+		dropdown.addComponent(duplicateLink);
+		
 		Link deleteLink = LinkFactory.createCustomLink("delete_" + counter++, CMD_DELETE, "delete.topic", Link.LINK, mainVC, this);
 		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
 		deleteLink.setUserObject(wrapper.getTopic());
@@ -510,6 +518,14 @@ public class TopicsRunCoachController extends BasicController {
 		} else if (topicGroupsCtrl == source) {
 			stackPanel.popUpToRootController(ureq);
 			cleanUp();
+		} else if (wizard == source) {
+			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					refresh();
+				}
+				cleanUp();
+			}
 		} else if (source == confirmDeleteTopicCrtl) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				TopicRef topic = (TopicRef)confirmDeleteTopicCrtl.getUserObject();
@@ -529,10 +545,12 @@ public class TopicsRunCoachController extends BasicController {
 		removeAsListenerAndDispose(topicCreateCtrl);
 		removeAsListenerAndDispose(topicGroupsCtrl);
 		removeAsListenerAndDispose(topicRunCtrl);
+		removeAsListenerAndDispose(wizard);
 		removeAsListenerAndDispose(cmc);
 		topicCreateCtrl = null;
 		topicGroupsCtrl = null;
 		topicRunCtrl = null;
+		wizard = null;
 		cmc = null;
 	}
 
@@ -558,6 +576,9 @@ public class TopicsRunCoachController extends BasicController {
 			} else if (CMD_EXPORT.equals(cmd)) {
 				Topic topic = (Topic)link.getUserObject();
 				doExport(ureq, topic);
+			} else if (CMD_DUPLICATE.equals(cmd)) {
+				Topic topic = (Topic)link.getUserObject();
+				doDuplicateTopic(ureq, topic);
 			} else if (CMD_DELETE.equals(cmd)) {
 				TopicRef topic = (TopicRef)link.getUserObject();
 				doConfirmDeleteTopic(ureq, topic);
@@ -631,7 +652,15 @@ public class TopicsRunCoachController extends BasicController {
 				.append(Formatter.formatDatetimeFilesystemSave(new Date()))
 				.toString();
 	}
-	
+
+	private void doDuplicateTopic(UserRequest ureq, Topic topic) {
+		removeAsListenerAndDispose(wizard);
+		wizard = new StepsMainRunController(ureq, getWindowControl(), new DuplicateTopic1Step(ureq, topic),
+				new DuplicateTopicCallback(), null, translate("duplicate.topic.title"), "");
+		listenTo(wizard);
+		getWindowControl().pushAsModalDialog(wizard.getInitialComponent());
+	}
+
 	private void doToggleShowMoreParticipations(Topic topic) {
 		if (showAllParticipations.contains(topic)) {
 			showAllParticipations.remove(topic);

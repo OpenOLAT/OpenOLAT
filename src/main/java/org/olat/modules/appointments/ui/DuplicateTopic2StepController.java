@@ -1,0 +1,340 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.appointments.ui;
+
+import static org.olat.core.gui.components.util.KeyValues.entry;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
+import org.olat.core.gui.control.generic.wizard.StepsEvent;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.appointments.Appointment;
+import org.olat.modules.appointments.AppointmentSearchParams;
+import org.olat.modules.appointments.AppointmentsService;
+import org.olat.modules.appointments.Topic;
+import org.olat.modules.appointments.TopicLight;
+import org.olat.modules.appointments.TopicLight.Type;
+import org.olat.modules.appointments.ui.DuplicateTopicCallback.AppointmentInput;
+import org.olat.modules.appointments.ui.DuplicateTopicCallback.DuplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * 
+ * Initial date: 19 Nov 2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.comm
+ *
+ */
+public class DuplicateTopic2StepController extends StepFormBasicController {
+	
+	private static final String KEY_NONE = "none";
+	private static final String KEY_PERIOD = "period";
+	private static final String KEY_FIRST = "first";
+	
+	private static final Comparator<Appointment> START_END_COMPARATOR = 
+			Comparator.comparing(Appointment::getStart)
+			.thenComparing(Appointment::getStart)
+			.thenComparing(Appointment::getKey);
+	
+	private SingleSelection moveEl;
+	private FlexiTableElement tableEl;
+	private FormLayoutContainer periodCont;
+	private TextElement periodDaysEl;
+	private TextElement periodHoursEl;
+	private TextElement periodMinutesEl;
+	private DateChooser firstEl;
+	private AppointmentInputDataModel dataModel;
+
+	private final DuplicationContext context;
+	private final TopicLight topic;
+	private final List<Appointment> sourceAppointments;
+	private final Date currentFirstStart;
+	private long moveMillis;
+	
+	@Autowired
+	private AppointmentsService appointmentsService;
+
+	public DuplicateTopic2StepController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			StepsRunContext runContext, Topic sourceTopic) {
+		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
+		
+		context = DuplicateTopicCallback.getDuplicationContext(runContext);
+		topic = context.getTopic();
+		
+		AppointmentSearchParams aParams = new AppointmentSearchParams();
+		aParams.setTopic(sourceTopic);
+		sourceAppointments = appointmentsService.getAppointments(aParams).stream()
+				.sorted(START_END_COMPARATOR)
+				.collect(Collectors.toList());
+		
+		currentFirstStart = sourceAppointments.isEmpty() ? new Date(): sourceAppointments.get(0).getStart();
+		
+		initForm(ureq);
+		loadModel();
+		updateUI();
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer configCont = FormLayoutContainer.createDefaultFormLayout("configs", getTranslator());
+		configCont.setRootForm(mainForm);
+		formLayout.add(configCont);
+		
+		KeyValues moveKV = new KeyValues();
+		moveKV.add(entry(KEY_NONE, translate("duplicate.move.none")));
+		moveKV.add(entry(KEY_PERIOD, translate("duplicate.move.period")));
+		moveKV.add(entry(KEY_FIRST, translate("duplicate.move.first")));
+		moveEl = uifactory.addRadiosHorizontal("duplicate.move", configCont, moveKV.keys(), moveKV.values());
+		moveEl.addActionListener(FormEvent.ONCHANGE);
+		moveEl.select(KEY_NONE, true);
+		
+		periodCont = FormLayoutContainer.createCustomFormLayout("period", getTranslator(), velocity_root + "/time_period.html");
+		((AbstractComponent)periodCont.getComponent()).setDomReplacementWrapperRequired(false);
+		periodCont.setLabel("duplicate.period",null);
+		periodCont.setRootForm(mainForm);
+		configCont.add(periodCont);
+		
+		periodDaysEl = uifactory.addTextElement("days", 3, "", periodCont);
+		periodDaysEl.setDisplaySize(3);
+		((AbstractComponent)periodDaysEl.getComponent()).setDomReplacementWrapperRequired(false);
+		periodDaysEl.addActionListener(FormEvent.ONCHANGE);
+		
+		periodHoursEl = uifactory.addTextElement("hours", 3, "", periodCont);
+		((AbstractComponent)periodHoursEl.getComponent()).setDomReplacementWrapperRequired(false);
+		periodHoursEl.setDisplaySize(3);
+		periodHoursEl.addActionListener(FormEvent.ONCHANGE);
+		
+		periodMinutesEl = uifactory.addTextElement("minutes", 3, "", periodCont);
+		((AbstractComponent)periodMinutesEl.getComponent()).setDomReplacementWrapperRequired(false);
+		periodMinutesEl.setDisplaySize(3);
+		periodMinutesEl.addActionListener(FormEvent.ONCHANGE);
+		
+		firstEl = uifactory.addDateChooser("duplicate.first", new Date(), configCont);
+		firstEl.setDateChooserTimeEnabled(true);
+		firstEl.addActionListener(FormEvent.ONCHANGE);
+		
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.location));
+		DefaultFlexiColumnModel detailsModel = new DefaultFlexiColumnModel(Cols.details);
+		detailsModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(detailsModel);
+		if (Type.finding != topic.getType()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.maxParticipations));
+		}
+		
+		dataModel = new AppointmentInputDataModel(columnsModel, getTranslator());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
+		tableEl.setAndLoadPersistedPreferences(ureq, "appointments-duplicate");
+		tableEl.setEmtpyTableMessageKey("table.empty.appointments");
+	}
+	
+	private void loadModel() {
+		List<AppointmentInput> rows = new ArrayList<>(sourceAppointments.size());
+		for (Appointment appointment : sourceAppointments) {
+			Date start = new Date(appointment.getStart().getTime() + moveMillis);
+			Date end = new Date(appointment.getEnd().getTime() + moveMillis);
+			AppointmentInput row = new AppointmentInput(appointment, start, end);
+			rows.add(row);
+		}
+		
+		dataModel.setObjects(rows);
+		tableEl.reset(true, true, true);
+	}
+	
+	private void updateUI() {
+		periodCont.clearError();
+
+		boolean none = moveEl.isOneSelected() && moveEl.getSelectedKey().equals(KEY_NONE);
+		if (none) {
+			moveMillis = 0;
+		}
+		
+		boolean period = moveEl.isOneSelected() && moveEl.getSelectedKey().equals(KEY_PERIOD);
+		periodCont.setVisible(period);
+		if (period && validatePeriod()) {
+			moveMillis = 0;
+			if (StringHelper.containsNonWhitespace(periodDaysEl.getValue())) {
+				moveMillis += Integer.parseInt(periodDaysEl.getValue()) * 24 * 60 * 60 * 1000;
+			}
+			if (StringHelper.containsNonWhitespace(periodHoursEl.getValue())) {
+				moveMillis += Integer.parseInt(periodHoursEl.getValue()) * 60 * 60 * 1000;
+			}
+			if (StringHelper.containsNonWhitespace(periodMinutesEl.getValue())) {
+				moveMillis += Integer.parseInt(periodMinutesEl.getValue()) * 60 * 1000;
+			}
+		}
+		
+		
+		boolean firstDate = moveEl.isOneSelected() && moveEl.getSelectedKey().equals(KEY_FIRST);
+		firstEl.setVisible(firstDate);
+		if (firstDate && firstEl.getDate() != null) {
+			moveMillis = firstEl.getDate().getTime() - currentFirstStart.getTime();
+		}
+		
+		loadModel();
+	}
+	
+	private boolean validatePeriod() {
+		boolean allOk = true;
+		
+		int min = 0;
+		int max = 1000;
+		allOk &= validatePeriod(periodDaysEl, min, max);
+		allOk &= validatePeriod(periodHoursEl, min, max);
+		allOk &= validatePeriod(periodMinutesEl, min, max);
+		
+		if (!allOk) {
+			periodCont.setErrorKey("error.period.number", new String[] { String.valueOf(min), String.valueOf(max)} );
+		}
+		return allOk;
+	}
+
+	private boolean validatePeriod(TextElement element, int min, int max) {
+		if (StringHelper.containsNonWhitespace(element.getValue())) {
+			try {
+				int value = Integer.parseInt(element.getValue());
+				if (min > value || max < value) {
+					return false;
+				}
+			} catch (NumberFormatException e) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == moveEl) {
+			updateUI();
+		} else if (source == periodDaysEl) {
+			updateUI();
+		} else if (source == periodHoursEl) {
+			updateUI();
+		} else if (source == periodMinutesEl) {
+			updateUI();
+		} else if (source == firstEl) {
+			updateUI();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean ollOk = super.validateFormLogic(ureq);
+		
+		periodCont.clearError();
+		boolean period = moveEl.isOneSelected() && moveEl.getSelectedKey().equals(KEY_PERIOD);
+		if (period) {
+			ollOk &= validatePeriod();
+		}
+		
+		return ollOk;
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		context.setAppointments(dataModel.getObjects());
+		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+	
+	private final class AppointmentInputDataModel extends DefaultFlexiTableDataModel<AppointmentInput> {
+		
+		private final Translator translator;
+		
+		public AppointmentInputDataModel(FlexiTableColumnModel columnsModel, Translator translator) {
+			super(columnsModel);
+			this.translator = translator;
+		}
+		
+		@Override
+		public Object getValueAt(int row, int col) {
+			AppointmentInput appointment = getObject(row);
+			return getValueAt(appointment, col);
+		}
+
+		public Object getValueAt(AppointmentInput row, int col) {
+			switch(Cols.values()[col]) {
+				case start: return row.getStart();
+				case end: return row.getEnd();
+				case location: return AppointmentsUIFactory.getDisplayLocation(translator, row.getAppointment());
+				case details: return row.getAppointment().getDetails();
+				case maxParticipations: return row.getAppointment().getMaxParticipations();
+				default: return null;
+			}
+		}
+
+		@Override
+		public DefaultFlexiTableDataModel<AppointmentInput> createCopyWithEmptyList() {
+			return new AppointmentInputDataModel(getTableColumnModel(), translator);
+		}
+	}
+		
+	private enum Cols implements FlexiColumnDef {
+		start("appointment.start"),
+		end("appointment.end"),
+		location("appointment.location"),
+		details("appointment.details"),
+		maxParticipations("appointment.max.participations");
+		
+		private final String i18nKey;
+		
+		private Cols(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+		
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+	}
+}

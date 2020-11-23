@@ -63,7 +63,7 @@ import org.olat.modules.appointments.Organizer;
 import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
-import org.olat.modules.appointments.Topic.Type;
+import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;

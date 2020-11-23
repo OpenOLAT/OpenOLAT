@@ -30,7 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.appointments.Topic;
-import org.olat.modules.appointments.Topic.Type;
+import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.appointments.model.TopicImpl;
 import org.olat.repository.RepositoryEntry;

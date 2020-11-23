@@ -61,7 +61,7 @@ import org.olat.modules.appointments.ParticipationRef;
 import org.olat.modules.appointments.ParticipationResult;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
-import org.olat.modules.appointments.Topic.Type;
+import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.appointments.TopicToGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;

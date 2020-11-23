@@ -19,57 +19,60 @@
  */
 package org.olat.modules.appointments.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.appointments.Appointment;
-import org.olat.modules.appointments.TopicLight.Type;
+import org.olat.modules.appointments.Organizer;
+import org.olat.modules.appointments.Topic;
+import org.olat.modules.appointments.TopicLight;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
- * Initial date: 18 May 2020<br>
+ * Initial date: 19 Nov 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AppointmentDeleteController extends AbstractParticipationRemoveController {
+public class DuplicateTopicEditController extends AbstractTopicController {
 
-	public AppointmentDeleteController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
-		super(ureq, wControl, appointment);
-	}
-	
-	@Override
-	boolean isShowParticipations() {
-		return getNumParticipations() > 0;
+	private final Topic sourceTopic;
+
+	public DuplicateTopicEditController(UserRequest ureq, WindowControl wControl, TopicLight topic, Topic sourceTopic) {
+		super(ureq, wControl, topic);
+		this.sourceTopic = sourceTopic;
+		init(ureq);
 	}
 
 	@Override
-	boolean isParticipationsReadOnly() {
+	protected RepositoryEntryRef getRepositoryEntry() {
+		return sourceTopic.getEntry();
+	}
+
+	@Override
+	protected List<Organizer> getCurrentOrganizers() {
+		return appointmentsService.getOrganizers(sourceTopic);
+	}
+
+	@Override
+	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected boolean isConfigChangeable() {
 		return true;
 	}
 
 	@Override
-	boolean isAllParticipationsSelected() {
-		return true;
+	protected boolean isConfigChanged() {
+		return false;
 	}
 
 	@Override
-	String getSubmitI18nKey() {
-		return "delete";
-	}
-	
-	@Override
-	protected void initFormTop(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (Type.finding != getCurrentAppointment().getTopic().getType() && getNumParticipations() > 0) {
-			setFormDescription("appointment.delete.participations", new String[] { String.valueOf(getNumParticipations()) } );
-		} else {
-			setFormDescription("confirm.appointment.delete");
-		}
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 
-	@Override
-	void onAfterRemoving() {
-		getAppointmentsService().deleteAppointment(getCurrentAppointment());
-	}
-	
 }

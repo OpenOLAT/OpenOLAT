@@ -30,7 +30,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.appointments.Topic;
-import org.olat.modules.appointments.Topic.Type;
+import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.appointments.TopicRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;

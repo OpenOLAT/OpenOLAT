@@ -19,23 +19,38 @@
  */
 package org.olat.modules.appointments;
 
-import org.olat.basesecurity.Group;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
-import org.olat.repository.RepositoryEntry;
-
 /**
  * 
- * Initial date: 11 Apr 2020<br>
+ * Initial date: 19 Nov 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Topic extends TopicRef, TopicLight, ModifiedInfo, CreateInfo {
+public interface TopicLight {
 	
-	public RepositoryEntry getEntry();
-	
-	public String getSubIdent();
-	
-	public Group getGroup();
+	public enum Type { enrollment, finding }
+
+	String getTitle();
+
+	void setTitle(String title);
+
+	String getDescription();
+
+	void setDescription(String description);
+
+	Type getType();
+
+	void setType(Type type);
+
+	boolean isMultiParticipation();
+
+	void setMultiParticipation(boolean multiParticipation);
+
+	boolean isAutoConfirmation();
+
+	void setAutoConfirmation(boolean autoConfirmation);
+
+	boolean isParticipationVisible();
+
+	void setParticipationVisible(boolean participtionVisible);
 
 }
