@@ -28,6 +28,7 @@ import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
@@ -71,9 +72,11 @@ public class PaypalSmartButtonAccessController extends FormBasicController imple
 			layoutCont.contextPut("currency", currency);
 			String excludeFundings = paypalModule.getExcludeFundings();
 			layoutCont.contextPut("excludeFundings", excludeFundings == null ? "" : excludeFundings);
+			layoutCont.contextPut("csrfToken", ureq.getUserSession().getCsrfToken());
 			
 			String description = link.getOffer().getDescription();
 			if(StringHelper.containsNonWhitespace(description)) {
+				description = Formatter.escWithBR(description).toString();
 				description = StringHelper.xssScan(description);
 				layoutCont.contextPut("description", description);
 			}

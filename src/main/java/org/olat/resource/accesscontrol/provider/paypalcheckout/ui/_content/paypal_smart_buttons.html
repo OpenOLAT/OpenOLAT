@@ -18,26 +18,33 @@
 			</div>
 			
 			<div id="paypal_buttons_${r.getCId()}">
-				<script defer>
+				<script defer data-csp-nonce="${csrfToken}">
 				jQuery(function() {
 					jQuery.ajax({
 						url: 'https://www.paypal.com/sdk/js?client-id=$clientId&currency=${currency}&intent=authorize&commit=true&disable-funding=${excludeFundings}',
-						cache: true,
+						cache: true,//paypal don't like the anti-cache parameter
 						dataType: "script",
 						success: loadButtons,
 						error: errorButtons,
 					});
 					
 					function errorButtons() {
-						location.reload();
+						if(window.console) console.log('Errors');
 					}
 					
 					function loadButtons() {
 						try {
-							internalLoadButtons();
+							setTimeout(function() {
+								internalLoadButtons();
+								var numOfPayPal = jQuery('#paypal_buttons_${r.getCId()} iframe').length;
+								if(numOfPayPal == 0) {
+									setTimeout(function() {
+										internalLoadButtons();
+									}, 100);
+								}
+							}, 100);
 						} catch(e) {
 							if(window.console) console.log(e);
-							location.reload();
 						}
 					}
 					
