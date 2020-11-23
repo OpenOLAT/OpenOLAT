@@ -148,9 +148,11 @@ public class QtiMaxScoreEstimator {
                 /* Selection without replacement */
                 for (int i=0; i<remainingSelections; i++) {
                     int index = maxIndex(childrenMaxScore);
-                    MaxScoreVisitor max = childrenMaxScore.get(index);
-                    childrenMaxScore.set(index, null);
-                    visitor.add(max);
+                    if(index >= 0 && index < childrenMaxScore.size()) {
+	                    MaxScoreVisitor max = childrenMaxScore.get(index);
+	                    childrenMaxScore.set(index, null);
+	                    visitor.add(max);
+                    }
                 }
             }
         }

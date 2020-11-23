@@ -108,7 +108,7 @@ public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<Enrol
 				// Waiting-list
 				if (enrollmentRow.isWaitingListEnabled()) {
 					// Waitinglist is enabled => show current size
-					return new Integer(enrollmentRow.getNumInWaitingList());
+					return Integer.valueOf(enrollmentRow.getNumInWaitingList());
 				}
 				return trans.translate("grouplist.table.noWaitingList");
 			case 5:

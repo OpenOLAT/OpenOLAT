@@ -199,6 +199,8 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 				trx = checkoutProvider.captureOrder(trx);
 				if(PaypalCheckoutStatus.COMPLETED.name().equals(trx.getPaypalOrderStatus())) {
 					completeTransactionSucessfully(trx);
+				} else if(PaypalCheckoutStatus.PENDING.name().equals(trx.getPaypalOrderStatus())) {
+					pendingTransaction(trx);
 				} else {
 					completeDeniedTransaction(trx);
 				}

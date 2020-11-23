@@ -71,8 +71,6 @@ public class GroupSelectionController extends FormBasicController {
 	private NewBGController groupCreateCntrllr;
 	private CloseableModalController cmc;
 	
-	private String[] groupNames;
-	private String[] groupKeys;
 	private boolean createEnable;
 	
 	private FlexiTableElement groupTableElement;
@@ -111,7 +109,7 @@ public class GroupSelectionController extends FormBasicController {
 		Map<Long, StatisticsBusinessGroupRow> stats = businessGroupService.findBusinessGroupsStatistics(params).stream().collect(Collectors.toMap(StatisticsBusinessGroupRow::getKey, g -> g, (u, v) -> u));
 		
 		groupTableRows = new ArrayList<>();
-		Set<Integer> selectedRows = new HashSet<Integer>();
+		Set<Integer> selectedRows = new HashSet<>();
 		
 		for (BusinessGroup businessGroup : groups) {
 			groupTableRows.add(new ENEditGroupTableContentRow(businessGroup, stats.get(businessGroup.getKey())));
@@ -207,6 +205,11 @@ public class GroupSelectionController extends FormBasicController {
 		descriptionColumn.setDefaultVisible(true);
 		descriptionColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(descriptionColumn);
+		
+		DefaultFlexiColumnModel coachesColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.coaches);
+		coachesColumn.setDefaultVisible(true);
+		coachesColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(coachesColumn);
 		
 		DefaultFlexiColumnModel participantsColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.participants);
 		participantsColumn.setDefaultVisible(true);
