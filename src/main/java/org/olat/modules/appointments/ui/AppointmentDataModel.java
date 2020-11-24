@@ -32,7 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.DateUtils;
+import org.olat.modules.appointments.Appointment;
 
 /**
  * 
@@ -86,13 +86,8 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 			return true;
 		}
 		if (filterKeys.contains(FILTER_FUTURE)) {
-			Date end = row.getAppointment().getEnd();
-			end = DateUtils.isSameDate(end, row.getAppointment().getStart())
-					? DateUtils.setTime(end, 23, 59, 59)
-					: end;
-			if (date.before(end)) {
-				return true;
-			}
+			Appointment appointment = row.getAppointment();
+			return AppointmentsUIFactory.isEndInFuture(appointment, date);
 		}
 		return false;
 	}

@@ -20,10 +20,12 @@
 package org.olat.modules.appointments.ui;
 
 import static java.util.Collections.emptyList;
+import static org.olat.modules.appointments.ui.AppointmentsUIFactory.isEndInPast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -123,11 +125,12 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 				? appointmentsService.getRecordingReferences(appointments)
 				: Collections.emptyMap();
 		
+		Date now = new Date();
 		List<AppointmentRow> rows = new ArrayList<>(appointments.size());
 		for (Appointment appointment : appointments) {
 			List<Participation> participations = appointmentKeyToParticipation.getOrDefault(appointment.getKey(), emptyList());
 			List<BigBlueButtonRecordingReference> recordingReferences = appointmentKeyToRecordingReferences.getOrDefault(appointment.getKey(), emptyList());
-			AppointmentRow row = createAppointmentRow(topic, appointment, participations, recordingReferences, userHasNoConfirmedParticipation, noConfirmedAppointments);
+			AppointmentRow row = createAppointmentRow(topic, appointment, participations, recordingReferences, userHasNoConfirmedParticipation, noConfirmedAppointments, now);
 			if (row != null) {
 				rows.add(row);
 			}
@@ -137,7 +140,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 
 	private AppointmentRow createAppointmentRow(Topic topic, Appointment appointment,
 			List<Participation> participations, List<BigBlueButtonRecordingReference> recordingReferences,
-			boolean userHasNoConfirmedParticipation, boolean noConfirmedAppointments) {
+			boolean userHasNoConfirmedParticipation, boolean noConfirmedAppointments, Date now) {
 		Optional<Participation> myParticipation = participations.stream()
 				.filter(p -> p.getIdentity().getKey().equals(getIdentity().getKey()))
 				.findFirst();
@@ -185,11 +188,11 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		row.setNumberOfParticipations(numberOfParticipations);
 		
 		if (Type.finding == topic.getType()) {
-			if (noConfirmedAppointments) {
+			if (noConfirmedAppointments && (AppointmentsUIFactory.isEndInFuture(appointment, now) || selected)) {
 				forgeSelectionLink(row, selected);
 			}
 		} else if (topic.isMultiParticipation() || userHasNoConfirmedParticipation) {
-			boolean selectable = Appointment.Status.confirmed == appointment.getStatus()
+			boolean selectable = Appointment.Status.confirmed == appointment.getStatus() || isEndInPast(appointment, now)
 					? false
 					: freeParticipations == null // no limit
 						|| freeParticipations.intValue() > 0;

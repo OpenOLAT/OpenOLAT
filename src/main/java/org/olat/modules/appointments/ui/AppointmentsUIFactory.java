@@ -19,7 +19,10 @@
  */
 package org.olat.modules.appointments.ui;
 
+import java.util.Date;
+
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.appointments.Appointment;
 
@@ -47,6 +50,18 @@ public class AppointmentsUIFactory {
 		}
 		
 		return sb.length() > 0? sb.toString(): null;
+	}
+	
+	public static boolean isEndInFuture(Appointment appointment, Date now) {
+		Date end = appointment.getEnd();
+		end = DateUtils.isSameDate(end, appointment.getStart())
+				? DateUtils.setTime(end, 23, 59, 59)
+				: end;
+		return now.before(end);
+	}
+	
+	public static boolean isEndInPast(Appointment appointment, Date now) {
+		return !isEndInFuture(appointment, now);
 	}
 	
 }
