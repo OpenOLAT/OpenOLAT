@@ -197,7 +197,7 @@ public class ShibbolethManagerImplTest {
 	public void shouldNotBookAdvanceOrderWhenDisabled() {
 		when(acModuleMock.isAutoEnabled()).thenReturn(false);
 		Collection<AdvanceOrder> advanceOrders = new HashSet<>();
-		when(autoAccessManagerMock.loadPendingAdvanceOrders(identityMock)).thenReturn(advanceOrders);
+		when(autoAccessManagerMock.loadAdvanceOrders(null)).thenReturn(advanceOrders);
 
 		sut.syncUser(identityMock, attributesMock);
 

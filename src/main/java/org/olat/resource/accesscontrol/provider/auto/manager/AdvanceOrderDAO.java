@@ -34,6 +34,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder.Status;
+import org.olat.resource.accesscontrol.provider.auto.AdvanceOrderSearchParams;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 import org.olat.resource.accesscontrol.provider.auto.model.AdvanceOrderImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,32 +66,37 @@ public class AdvanceOrderDAO {
 		return advanceOrder;
 	}
 
-	boolean exists(Identity identity, IdentifierKey identifierKey, String identifierValue, AccessMethod method) {
-		Long numberOfAdvanceOrder = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("exists", Long.class)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("identifierKey", identifierKey)
-				.setParameter("identifierValue", identifierValue)
-				.setParameter("methodKey", method.getKey())
-				.getSingleResult();
-		return numberOfAdvanceOrder != null && numberOfAdvanceOrder > 0;
-	}
-
-	Collection<AdvanceOrder> loadPendingAdvanceOrders(Identity identity) {
-		if (identity == null) return new ArrayList<>(0);
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("select advanceOrder from advanceOrder advanceOrder")
-		  .append(" where advanceOrder.identity.key=:identityKey")
-		  .append("   and advanceOrder.status=:status");
-
-		List<AdvanceOrder> advanceOrder = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), AdvanceOrder.class)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("status", Status.PENDING)
-				.getResultList();
-
-		return advanceOrder;
+	List<AdvanceOrder> loadAdvanceOrders(AdvanceOrderSearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select advanceOrder from advanceOrder advanceOrder");
+		if (searchParams.getIdentitfRef() != null) {
+			sb.and().append("advanceOrder.identity.key = :identityKey");
+		}
+		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
+			sb.and().append("advanceOrder.status in (:status)");
+		}
+		if (searchParams.getIdentifierKey() != null) {
+			sb.and().append("advanceOrder.identifierKey = :identifierKey");
+		}
+		if (searchParams.getMethod() != null) {
+			sb.and().append("advanceOrder.method.key = :methodKey");
+		}
+		
+		TypedQuery<AdvanceOrder> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AdvanceOrder.class);
+		if (searchParams.getIdentitfRef() != null) {
+			query.setParameter("identityKey", searchParams.getIdentitfRef().getKey());
+		}
+		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
+			query.setParameter("status", searchParams.getStatus());
+		}
+		if (searchParams.getIdentifierKey() != null) {
+			query.setParameter("identifierKey", searchParams.getIdentifierKey());
+		}
+		if (searchParams.getMethod() != null) {
+			query.setParameter("methodKey", searchParams.getMethod().getKey());
+		}
+		return query.getResultList();
 	}
 
 	Collection<AdvanceOrder> loadPendingAdvanceOrders(Collection<IdentifierKeyValue> identifiers) {
@@ -142,7 +148,7 @@ public class AdvanceOrderDAO {
 				.executeUpdate();
 	}
 
-	AdvanceOrder save(AdvanceOrder advanceOrder) {
+	public AdvanceOrder save(AdvanceOrder advanceOrder) {
 		if(advanceOrder.getKey() == null) {
 			dbInstance.getCurrentEntityManager().persist(advanceOrder);
 		} else {
@@ -158,22 +164,21 @@ public class AdvanceOrderDAO {
 		if (!multiOrder) {
 			advanceOrder.setStatus(Status.DONE);
 		}
-		advanceOrder.setStatusModified(new Date());
 		advanceOrder = save(advanceOrder);
 
 		return advanceOrder;
 	}
 
-	public void updateAllStatus(Status status) {
+	public void resetStatusPending() {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("update advanceOrder advanceOrder");
 		sb.append("   set advanceOrder.status = :status");
 		sb.append("     , advanceOrder.lastModified = :lastModified");
-		sb.and().append(" advanceOrder.status <> :status");
+		sb.and().append(" advanceOrder.status not ").in(Status.PENDING, Status.CANCELED);
 		
 		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
-				.setParameter("status", status)
+				.setParameter("status", Status.PENDING)
 				.setParameter("lastModified", new Date())
 				.executeUpdate();
 	}

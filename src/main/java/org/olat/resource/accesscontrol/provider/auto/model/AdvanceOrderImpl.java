@@ -167,6 +167,7 @@ public class AdvanceOrderImpl implements Persistable, AdvanceOrder {
 	@Override
 	public void setStatus(Status status) {
 		this.status = status;
+		setStatusModified(new Date());
 	}
 
 	@Override
@@ -174,7 +175,6 @@ public class AdvanceOrderImpl implements Persistable, AdvanceOrder {
 		return statusModified;
 	}
 
-	@Override
 	public void setStatusModified(Date statusModified) {
 		this.statusModified = statusModified;
 	}

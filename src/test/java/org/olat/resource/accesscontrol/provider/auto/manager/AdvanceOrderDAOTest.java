@@ -20,6 +20,7 @@
 package org.olat.resource.accesscontrol.provider.auto.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,6 +39,7 @@ import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder.Status;
+import org.olat.resource.accesscontrol.provider.auto.AdvanceOrderSearchParams;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 import org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAO.IdentifierKeyValue;
 import org.olat.test.JunitTestHelper;
@@ -122,9 +124,37 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 
 		assertThat(savedAdvanceOrder.getStatus()).isEqualTo(Status.DONE);
 	}
+	
+	@Test
+	public void shouldLoadAdvanceOrders() {
+		Identity identityOther = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		IdentifierKey key = IdentifierKey.externalId;
+		String value = random();
+		AdvanceOrder advanceOrder1 = sut.save(sut.create(identity, key, value, freeMethod));
+		AdvanceOrder advanceOrder2 = sut.save(sut.create(identity, key, random(), freeMethod));
+		AdvanceOrder advanceOrderOtherIdentity = sut.save(sut.create(identityOther, key, value, freeMethod));
+		AdvanceOrder advanceOrderOtherKey= sut.save(sut.create(identity, IdentifierKey.internalId, value, freeMethod));
+		AdvanceOrder advanceOrderOtherMethod = sut.save(sut.create(identity, key, value, tokenMethod));
+		dbInstance.commitAndCloseSession();
+		
+		AdvanceOrderSearchParams params = new AdvanceOrderSearchParams();
+		params.setIdentitfRef(identity);
+		params.setIdentifierKey(key);
+		params.setMethod(freeMethod);
+		List<AdvanceOrder> advanceOrders = sut.loadAdvanceOrders(params);
+		
+		assertThat(advanceOrders)
+				.containsExactlyInAnyOrder(
+						advanceOrder1,
+						advanceOrder2)
+				.doesNotContain(
+						advanceOrderOtherIdentity,
+						advanceOrderOtherKey,
+						advanceOrderOtherMethod);
+	}
 
 	@Test
-	public void shouldFindPendingAdvanceOrderForIdentity() {
+	public void shouldLoadAdvanceOrderByIdentityAndStatus() {
 		AdvanceOrder firstPendingAdvanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
 		sut.save(firstPendingAdvanceOrder);
 		AdvanceOrder secondPendingAdvanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
@@ -136,7 +166,10 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 		sut.accomplishAndSave(doneAdvanceOrder, false);
 		dbInstance.commitAndCloseSession();
 
-		Collection<AdvanceOrder> pendingAdvanceOrders = sut.loadPendingAdvanceOrders(identity);
+		AdvanceOrderSearchParams params = new AdvanceOrderSearchParams();
+		params.setIdentitfRef(identity);
+		params.setStatus(Status.PENDING);
+		Collection<AdvanceOrder> pendingAdvanceOrders = sut.loadAdvanceOrders(params);
 
 		assertThat(pendingAdvanceOrders).hasSize(2);
 	}
@@ -196,7 +229,9 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 
 		sut.deleteAdvanceOrder(aoToDelete);
 
-		assertThat(sut.loadPendingAdvanceOrders(identity)).hasSize(3).doesNotContain(aoToDelete);
+		AdvanceOrderSearchParams params = new AdvanceOrderSearchParams();
+		params.setIdentitfRef(identity);
+		assertThat(sut.loadAdvanceOrders(params)).hasSize(3).doesNotContain(aoToDelete);
 	}
 
 	@Test
@@ -263,83 +298,40 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 
 		assertThat(accomplishedAdvanceOrder.getStatus()).isEqualTo(advanceOrder.getStatus());
 	}
-
-	@Test
-	public void shouldExistIfAllValuesTheSame() {
-		AdvanceOrder advanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
-		sut.save(advanceOrder);
-		dbInstance.commitAndCloseSession();
-
-		boolean exists = sut.exists(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
-
-		assertThat(exists).isTrue();
-	}
-
-	@Test
-	public void shouldNotExistIfTheIdentityIsDifferent() {
-		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("other");
-		AdvanceOrder advanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
-		sut.save(advanceOrder);
-		dbInstance.commitAndCloseSession();
-
-		boolean exists = sut.exists(otherIdentity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
-
-		assertThat(exists).isFalse();
-	}
-
-
-	@Test
-	public void shouldNotExistIfTheIdentifierKeyIsDifferent() {
-		AdvanceOrder advanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
-		sut.save(advanceOrder);
-		dbInstance.commitAndCloseSession();
-
-		boolean exists = sut.exists(identity, IdentifierKey.internalId, IDENTIFIER_VALUE, freeMethod);
-
-		assertThat(exists).isFalse();
-	}
-
-	@Test
-	public void shouldNotExistIfTheIdentifierValueIsDifferent() {
-		AdvanceOrder advanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
-		sut.save(advanceOrder);
-		dbInstance.commitAndCloseSession();
-
-		boolean exists = sut.exists(identity, IDENTIFIER_KEY, "otherValue", freeMethod);
-
-		assertThat(exists).isFalse();
-	}
-
-	@Test
-	public void shouldNotExistIfTheHandlerTypeIsDifferent() {
-		AdvanceOrder advanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
-		sut.save(advanceOrder);
-		dbInstance.commitAndCloseSession();
-
-		boolean exists = sut.exists(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, tokenMethod);
-
-		assertThat(exists).isFalse();
-	}
 	
 	@Test
-	public void shouldUpdateAllStatus() {
+	public void shouldResetStatusToPending() {
 		AdvanceOrder advanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
 		advanceOrder.setStatus(AdvanceOrder.Status.DONE);
 		sut.save(advanceOrder);
 		AdvanceOrder advanceOrder2 = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
 		advanceOrder2.setStatus(AdvanceOrder.Status.DONE);
 		sut.save(advanceOrder2);
+		AdvanceOrder advanceOrder3 = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
+		advanceOrder3.setStatus(AdvanceOrder.Status.PENDING);
+		sut.save(advanceOrder3);
+		AdvanceOrder advanceOrder4 = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
+		advanceOrder4.setStatus(AdvanceOrder.Status.CANCELED);
+		sut.save(advanceOrder4);
 		dbInstance.commitAndCloseSession();
 		
-		Collection<AdvanceOrder> pending = sut.loadPendingAdvanceOrders(identity);
+		AdvanceOrderSearchParams params = new AdvanceOrderSearchParams();
+		params.setIdentitfRef(identity);
+		params.setStatus(Status.PENDING);
+		Collection<AdvanceOrder> pending = sut.loadAdvanceOrders(params);
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(pending).hasSize(0);
+		softly.assertThat(pending).hasSize(1);
 		
-		sut.updateAllStatus(AdvanceOrder.Status.PENDING);
+		sut.resetStatusPending();
 		dbInstance.commitAndCloseSession();
 		
-		pending = sut.loadPendingAdvanceOrders(identity);
-		softly.assertThat(pending).hasSize(2);
+		pending = sut.loadAdvanceOrders(params);
+		softly.assertThat(pending).hasSize(3);
+		
+		params.setStatus(Status.CANCELED);
+		softly.assertThat(sut.loadAdvanceOrders(params)).hasSize(1);
+		params.setStatus(Status.DONE);
+		softly.assertThat(sut.loadAdvanceOrders(params)).hasSize(0);
 		softly.assertAll();
 	}
 

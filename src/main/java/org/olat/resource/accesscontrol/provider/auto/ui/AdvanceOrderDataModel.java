@@ -22,13 +22,17 @@ package org.olat.resource.accesscontrol.provider.auto.ui;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder.Status;
 
 
 /**
@@ -38,13 +42,35 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class AdvanceOrderDataModel extends DefaultFlexiTableDataModel<AdvanceOrderRow>
-		implements SortableFlexiTableDataModel<AdvanceOrderRow> {
+		implements SortableFlexiTableDataModel<AdvanceOrderRow>, FilterableFlexiTableModel {
 
+	public static final String FILTER_PENDING = "pending";
+	public static final String FILTER_ALL = "all";
+	
 	private final Locale locale;
+	private List<AdvanceOrderRow> backups;
 
 	public AdvanceOrderDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public void setObjects(List<AdvanceOrderRow> objects) {
+		super.setObjects(objects);
+		backups = objects;
+	}
+	
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		if (filters == null || filters.isEmpty() || FILTER_ALL.equals(filters.get(0).getFilter())) {
+			super.setObjects(backups);
+		} else {
+			List<AdvanceOrderRow> pendingRows = backups.stream()
+					.filter(r -> Status.PENDING == r.getAdvanceOrder().getStatus())
+					.collect(Collectors.toList());
+			super.setObjects(pendingRows);
+		}
 	}
 
 	@Override
@@ -68,6 +94,10 @@ public class AdvanceOrderDataModel extends DefaultFlexiTableDataModel<AdvanceOrd
 				return row.getAdvanceOrder().getIdentifierKey().toString();
 			case identifierValue:
 				return row.getAdvanceOrder().getIdentifierValue();
+			case status:
+				return row.getAdvanceOrder().getStatus();
+			case statusModified:
+				return row.getAdvanceOrder().getStatusModified();
 			case method:
 				return Arrays.asList(row.getAdvanceOrder().getMethod());
 			default:
@@ -84,6 +114,8 @@ public class AdvanceOrderDataModel extends DefaultFlexiTableDataModel<AdvanceOrd
 		creationDate("advanceOrder.creationDate", "creationdate"),
 		identifierKey("advanceOrder.identitfier.key", "a_identitfier_key"),
 		identifierValue("advanceOrder.identitfier.value", "a_identitfier_value"),
+		status("advanceOrder.status", "status"),
+		statusModified("advanceOrder.statusModified", "statusModified"),
 		method("advanceOrder.method", "trxMethodIds");
 
 		private final String i18nKey;

@@ -168,15 +168,6 @@ public class AutoAccessManagerImplTest {
 	}
 
 	@Test
-	public void shouldAddAdvanceEntryOnlyIfNotExists() {
-		when(advanceOrderDaoMock.exists(IDENTITY, IdentifierKey.internalId, SECOND_VALUE, accessMethodDummy)).thenReturn(true);
-
-		sut.createAdvanceOrders(advanceOrderInputMock);
-
-		verify(advanceOrderDaoMock, times(5)).create(any(Identity.class), any(IdentifierKey.class), anyString(), any(AutoAccessMethod.class));
-	}
-
-	@Test
 	public void shouldNotGrantAccessIfAlreadyDone() {
 		Collection<AdvanceOrder> advanceOrders = new ArrayList<>();
 		AdvanceOrderImpl doneAdvanceOrder = new AdvanceOrderImpl();
@@ -283,4 +274,5 @@ public class AutoAccessManagerImplTest {
 
 		verify(identifierHandlerMock, times(IdentifierKey.values().length)).getRepositoryEntryValue(any(IdentifierKey.class), any(RepositoryEntry.class));
 	}
+	
 }
