@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -39,8 +40,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.modules.appointments.ui.AppointmentDataModel;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
+import org.olat.resource.accesscontrol.provider.auto.AdvanceOrderSearchParams;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.resource.accesscontrol.provider.auto.ui.AdvanceOrderDataModel.AdvanceOrderCol;
 import org.olat.resource.accesscontrol.ui.AccessMethodRenderer;
@@ -81,12 +84,34 @@ public class AdvanceOrderController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AdvanceOrderCol.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AdvanceOrderCol.identifierKey));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AdvanceOrderCol.identifierValue));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AdvanceOrderCol.status, new AdvanceOrderStatusRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AdvanceOrderCol.statusModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AdvanceOrderCol.method, new AccessMethodRenderer(acModule)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.advanceOrder.delete", translate("delete"), CMD_DELETE));
 
 		dataModel = new AdvanceOrderDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), formLayout);
 		tableEl.setEmtpyTableMessageKey("table.advanceOrder.empty");
+		tableEl.setAndLoadPersistedPreferences(ureq, "advance-orders");
+		
+		initFilters();
+	}
+	
+	private void initFilters() {
+		List<FlexiTableFilter> tableFilters = new ArrayList<>(2);
+		List<FlexiTableFilter> selectedFilters = new ArrayList<>(1);
+		
+		FlexiTableFilter pendingFilter = new FlexiTableFilter(translate("filter.pending"), AdvanceOrderDataModel.FILTER_PENDING, false);
+		tableFilters.add(pendingFilter);
+		selectedFilters.add(pendingFilter);
+		
+		tableFilters.add(FlexiTableFilter.SPACER);
+		
+		FlexiTableFilter allFilter = new FlexiTableFilter(translate("filter.all"), AppointmentDataModel.FILTER_ALL, true);
+		tableFilters.add(allFilter);
+		
+		tableEl.setFilters("Filters", tableFilters, true);
+		tableEl.setSelectedFilters(selectedFilters);
 	}
 
 	@Override
@@ -138,7 +163,9 @@ public class AdvanceOrderController extends FormBasicController {
 	}
 
 	private void loadModel() {
-		Collection<AdvanceOrder> advanceOrders = autoAccessManager.loadPendingAdvanceOrders(identity);
+		AdvanceOrderSearchParams searchParams = new AdvanceOrderSearchParams();
+		searchParams.setIdentitfRef(identity);
+		Collection<AdvanceOrder> advanceOrders = autoAccessManager.loadAdvanceOrders(searchParams);
 		List<AdvanceOrderRow> rows = new ArrayList<>(advanceOrders.size());
 		for(AdvanceOrder advanceOrder: advanceOrders) {
 			rows.add(new AdvanceOrderRow(advanceOrder));

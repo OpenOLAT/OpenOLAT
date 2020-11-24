@@ -35,7 +35,6 @@ import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
-import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
 import org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAO;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
@@ -71,6 +70,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private static final String AUTO_EXTERNAL_REF_DELIMITER = "method.auto.external.ref.delimiter";
 	private static final String AUTO_MULTI_BOOKING = "method.auto.multi.booking";
 	private static final String AUTO_RESET_TO_PENDING = "method.auto.reset.to.pending";
+	private static final String AUTO_CANCELATION = "method.auto.cancelation";
 
 	@Value("${resource.accesscontrol.enabled:true}")
 	private boolean enabled;
@@ -86,6 +86,8 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private boolean autoMultiBooking;
 	@Value("${method.auto.reset.to.pending}")
 	private boolean autoResetToPending;
+	@Value("${method.auto.cancelation}")
+	private boolean autoCancelation;
 	@Value("${method.token.enabled:true}")
 	private boolean tokenEnabled;
 	@Value("${method.paypal.enabled:false}")
@@ -173,6 +175,11 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 			autoResetToPending = "true".equals(autoResetToPendingObj);
 		}
 		
+		String autoCancelationObj = getStringPropertyValue(AUTO_CANCELATION, true);
+		if(StringHelper.containsNonWhitespace(autoCancelationObj)) {
+			autoCancelation = "true".equals(autoCancelationObj);
+		}
+		
 		String homeEnabledObj = getStringPropertyValue(AC_HOME_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(homeEnabledObj)) {
 			homeOverviewEnabled = "true".equals(homeEnabledObj);
@@ -209,7 +216,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 
 	private void resetResetAutoStatusToPending() {
 		if (autoResetToPending) {
-			advanceOrderDao.updateAllStatus(AdvanceOrder.Status.PENDING);
+			advanceOrderDao.resetStatusPending();
 			dbInstance.commitAndCloseSession();
 		}
 	}
@@ -272,6 +279,15 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	public void setAutoMultiBooking(boolean autoMultiBooking) {
 		this.autoMultiBooking = autoMultiBooking;
 		setStringProperty(AUTO_MULTI_BOOKING, Boolean.toString(autoMultiBooking), true);
+	}
+
+	public boolean isAutoCancelation() {
+		return autoCancelation;
+	}
+
+	public void setAutoCancelation(boolean autoCancelation) {
+		this.autoCancelation = autoCancelation;
+		setStringProperty(AUTO_CANCELATION, Boolean.toString(autoCancelation), true);
 	}
 
 	public boolean isPaypalEnabled() {

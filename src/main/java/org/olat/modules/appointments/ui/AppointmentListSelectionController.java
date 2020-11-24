@@ -189,7 +189,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 				forgeSelectionLink(row, selected);
 			}
 		} else if (topic.isMultiParticipation() || userHasNoConfirmedParticipation) {
-			boolean selectable = confirmedByCoach
+			boolean selectable = Appointment.Status.confirmed == appointment.getStatus()
 					? false
 					: freeParticipations == null // no limit
 						|| freeParticipations.intValue() > 0;
@@ -197,7 +197,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			boolean unselectable = selected && Appointment.Status.planned == appointment.getStatus();
 			if (selectable || unselectable) {
 				forgeSelectionLink(row, selected);
-				if (!confirmedByCoach) {
+				if (Appointment.Status.confirmed != appointment.getStatus()) {
 					row.setFreeParticipations(freeParticipations);
 				}
 			}

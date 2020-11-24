@@ -40,10 +40,10 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder.Status;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrderInput;
+import org.olat.resource.accesscontrol.provider.auto.AdvanceOrderSearchParams;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 import org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAO.IdentifierKeyValue;
-import org.olat.resource.accesscontrol.provider.auto.model.AutoAccessMethod;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -81,29 +81,56 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 
 		IdentifierValueSplitter splitter = splitterFactory.getSplitter(input.getSplitterType());
 		Collection<String> values = splitter.split(input.getRawValues());
+		List<AccessMethod> methods = acService.getAvailableMethodsByType(input.getMethodClass());
+		AccessMethod method = methods.get(0);
 		for (IdentifierKey key : input.getKeys()) {
+			AdvanceOrderSearchParams params = new AdvanceOrderSearchParams();
+			params.setIdentitfRef(input.getIdentity());
+			params.setIdentifierKey(key);
+			params.setMethod(method);
+			List<AdvanceOrder> advanceOrders = advanceOrderDAO.loadAdvanceOrders(params);
 			for (String value : values) {
-				createAndPersistAdvanceOrderIfNotExist(input.getIdentity(), key, value, input.getMethodClass());
+				createAndPersistAdvanceOrderIfNotExist(advanceOrders, input.getIdentity(), key, value, method);
+			}
+		
+			if (acModule.isAutoCancelation()) {
+				cancelAdvanceOrders(advanceOrders, values);
 			}
 		}
 	}
 
-	private void createAndPersistAdvanceOrderIfNotExist(Identity identity, IdentifierKey key, String value, Class<? extends AutoAccessMethod> type) {
-		List<AccessMethod> methods = acService.getAvailableMethodsByType(type);
-		AccessMethod method = methods.get(0);
-		if (doesNotExist(identity, key, value, method)) {
-			AdvanceOrder advanceOrder = advanceOrderDAO.create(identity, key, value, method);
+	private void createAndPersistAdvanceOrderIfNotExist(List<AdvanceOrder> advanceOrders, Identity identity, IdentifierKey key, String value, AccessMethod method) {
+		AdvanceOrder advanceOrder = getAdvanceOrder(advanceOrders, value);
+		if (advanceOrder == null) {
+			advanceOrder = advanceOrderDAO.create(identity, key, value, method);
+			advanceOrderDAO.save(advanceOrder);
+		} else if (Status.CANCELED == advanceOrder.getStatus()) {
+			advanceOrder.setStatus(Status.PENDING);
 			advanceOrderDAO.save(advanceOrder);
 		}
 	}
-
-	private boolean doesNotExist(Identity identity, IdentifierKey key, String value, AccessMethod method) {
-		return !advanceOrderDAO.exists(identity, key, value, method);
+	
+	private AdvanceOrder getAdvanceOrder(List<AdvanceOrder> advanceOrders, String identifierValue) {
+		for (AdvanceOrder advanceOrder : advanceOrders) {
+			if (identifierValue.equals(advanceOrder.getIdentifierValue())) {
+				return advanceOrder;
+			}
+		}
+		return null;
 	}
-
+	
+	private void cancelAdvanceOrders(List<AdvanceOrder> advanceOrders, Collection<String> values) {
+		for (AdvanceOrder advanceOrder : advanceOrders) {
+			if (!values.contains(advanceOrder.getIdentifierValue())) {
+				advanceOrder.setStatus(Status.CANCELED);
+				advanceOrderDAO.save(advanceOrder);
+			}
+		}
+	}
+	
 	@Override
-	public Collection<AdvanceOrder> loadPendingAdvanceOrders(Identity identity) {
-		return advanceOrderDAO.loadPendingAdvanceOrders(identity);
+	public Collection<AdvanceOrder> loadAdvanceOrders(AdvanceOrderSearchParams searchParams) {
+		return advanceOrderDAO.loadAdvanceOrders(searchParams);
 	}
 
 	@Override
@@ -134,7 +161,10 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 
 	@Override
 	public void grantAccessToCourse(Identity identity) {
-		Collection<AdvanceOrder> pendingAdvanceOrders = loadPendingAdvanceOrders(identity);
+		AdvanceOrderSearchParams searchParams = new AdvanceOrderSearchParams();
+		searchParams.setIdentitfRef(identity);
+		searchParams.setStatus(Status.PENDING);
+		Collection<AdvanceOrder> pendingAdvanceOrders = loadAdvanceOrders(searchParams);
 		grantAccess(pendingAdvanceOrders);
 	}
 
@@ -158,15 +188,14 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 	}
 
 	private void tryToGrantAccess(AdvanceOrder advanceOrder) {
-		if (isAdvanceOrderAccomplished(advanceOrder))
-			return;
-
-		List<RepositoryEntry> entries = findRepositoryEntries(advanceOrder);
-		if (!entries.isEmpty()) {
-			for (RepositoryEntry entry: entries) {
-				grantAccessIfHasNoAccess(advanceOrder, entry);
+		if (Status.PENDING == advanceOrder.getStatus()) {
+			List<RepositoryEntry> entries = findRepositoryEntries(advanceOrder);
+			if (!entries.isEmpty()) {
+				for (RepositoryEntry entry: entries) {
+					grantAccessIfHasNoAccess(advanceOrder, entry);
+				}
+				advanceOrderDAO.accomplishAndSave(advanceOrder, acModule.isAutoMultiBooking());
 			}
-			advanceOrderDAO.accomplishAndSave(advanceOrder, acModule.isAutoMultiBooking());
 		}
 	}
 
@@ -176,10 +205,6 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 			OfferAccess offerAccess = getOrCreateOfferAccess(resource, entry, advanceOrder.getMethod());
 			makeOrder(offerAccess, advanceOrder);
 		}
-	}
-
-	private boolean isAdvanceOrderAccomplished(AdvanceOrder advanceOrder) {
-		return !Status.PENDING.equals(advanceOrder.getStatus());
 	}
 
 	private List<RepositoryEntry> findRepositoryEntries(AdvanceOrder advanceOrder) {

@@ -36,7 +36,9 @@ public interface AdvanceOrder extends CreateInfo, ModifiedInfo {
 
 	public enum Status {
 		PENDING,
-		DONE}
+		DONE, 
+		CANCELED
+	}
 
 	public Long getKey();
 
@@ -51,8 +53,6 @@ public interface AdvanceOrder extends CreateInfo, ModifiedInfo {
 	public void setStatus(Status status);
 
 	public Date getStatusModified();
-
-	public void setStatusModified(Date modified);
 
 	public Identity getIdentity();
 }

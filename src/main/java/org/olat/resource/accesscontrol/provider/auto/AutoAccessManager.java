@@ -45,13 +45,8 @@ public interface AutoAccessManager {
 	 * @param input
 	 */
 	public void createAdvanceOrders(AdvanceOrderInput input);
-
-	/**
-	 * Load all pending advance orders of an identity.
-	 *
-	 * @param identity
-	 */
-	public Collection<AdvanceOrder> loadPendingAdvanceOrders(Identity identity);
+	
+	public Collection<AdvanceOrder> loadAdvanceOrders(AdvanceOrderSearchParams searchParams);
 
 	/**
 	 * Load all pending advance orders for a ReposiotyEntry.
