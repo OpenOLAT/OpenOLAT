@@ -73,8 +73,8 @@ public class HomePageSettingsController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	public void updateIdentityToModify(UserRequest ureq, Identity identityToModify) {
-		this.identityToModify = identityToModify;
+	public void updateIdentityToModify(UserRequest ureq, Identity identity) {
+		this.identityToModify = identity;
 		updatePreview(ureq);
 	}
 

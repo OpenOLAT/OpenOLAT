@@ -31,7 +31,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -228,5 +230,16 @@ public class RegistrationManagerTest extends OlatTestCase {
 		assertTrue(registrationManager.validateEmailUsername("aoi@cyberiacafe.ch"));
 		assertFalse(registrationManager.validateEmailUsername("aoi@cyberia.ch"));
 		assertTrue(registrationManager.validateEmailUsername("aoi@blog.cyberiacafe.ch"));
+	}
+	
+	@Test
+	public void readWriteTemporaryMap() {
+		Map<String, String> mailMap = new HashMap<>();
+		mailMap.put("currentEMail", "current");
+		mailMap.put("changedEMail", "changed");
+		String xml = registrationManager.temporaryValueToString(mailMap);
+		Map<String, String> xmlMap = registrationManager.readTemporaryValue(xml);
+		Assert.assertEquals("current", xmlMap.get("currentEMail"));
+		Assert.assertEquals("changed", xmlMap.get("changedEMail"));
 	}
 }

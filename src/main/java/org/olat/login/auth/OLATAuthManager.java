@@ -56,7 +56,6 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.xml.XStreamHelper;
 import org.olat.ldap.LDAPError;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
@@ -262,9 +261,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 		List<TemporaryKey> tk = registrationManager.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
 		if (tk != null) {
 			for (TemporaryKey temporaryKey : tk) {
-				@SuppressWarnings("unchecked")
-				Map<String, String> mails = (Map<String, String>)XStreamHelper.createXStreamInstance()
-					.fromXML(temporaryKey.getEmailAddress());
+				Map<String, String> mails = registrationManager.readTemporaryValue(temporaryKey.getEmailAddress());
 				String currentEmail = mails.get("currentEMail");
 				String changedEmail = mails.get("changedEMail");
 				if (login.equals(changedEmail) && StringHelper.containsNonWhitespace(currentEmail)) {
