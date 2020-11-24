@@ -185,7 +185,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		} else if (topic.isMultiParticipation() || userHasNoConfirmedParticipation) {
 			row.setFreeParticipations(freeParticipations);
 			
-			boolean selectable = confirmedByCoach
+			boolean selectable = Appointment.Status.confirmed == appointment.getStatus()
 					? false
 					: freeParticipations == null // no limit
 						|| freeParticipations.intValue() > 0;
