@@ -369,8 +369,8 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 
 	@Override
 	public void lmsFinish(String olatSahsId, Properties scoreProp, Properties lessonStatusProp) {
+		doStartPage(null);
 		if (config.getBooleanSafe(ScormEditController.CONFIG_CLOSE_ON_FINISH, false)) {
-			doStartPage(null);
 			scormDispC.close();
 		}
 	}

@@ -10,7 +10,11 @@
 		## method to send a ping to the framework to draw itself after finish
 		function pingAfterFinish() { 
 			window.suppressOlatOnUnloadOnce = true;
-			$r.javaScriptCommand('ping'); 
+			try {
+				$r.javaScriptCommand('ping');
+			} catch(e) {
+				if(window.console) console.log(e);
+			}
 		}
 	</script>
 	<script>
