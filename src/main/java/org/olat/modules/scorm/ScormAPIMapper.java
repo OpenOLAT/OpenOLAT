@@ -36,12 +36,16 @@ import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -322,43 +326,90 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		String apiCallParamTwo = request.getParameter("apiCallParamTwo");
 		
 		if(log.isDebugEnabled()) {
-			log.debug("scorm api request by user:"+ identity.getName() +": " + apiCall + "('" + apiCallParamOne + "' , '" + apiCallParamTwo + "')");
+			log.debug("scorm api request by user: {}: {} ('{}' , '{}')", identity.getName(), apiCall, apiCallParamOne, apiCallParamTwo);
 		}
 
+		if (apiCall != null && apiCall.equals("initcall")) {
+			//used for Mozilla / firefox only to get more time for fireing the onunload stuff triggered by overwriting the content.
+			log.info("Init call");
+			return createInitResource(request);
+		}
+
+		if (apiCall != null) {
+			String returnValue = apiCall(apiCall, apiCallParamOne, apiCallParamTwo);
+			return createResource(returnValue, request);
+		} else if(relPath.contains("batch")) {
+			try {				
+				String batch = IOUtils.toString(request.getReader());
+				JSONArray batchArray = new JSONArray(batch);
+				for(int i=0; i<batchArray.length(); i++) {
+					JSONObject obj = batchArray.getJSONObject(i);
+					apiCall = obj.getString("apiCall");
+					apiCallParamOne = obj.getString("param1");
+					apiCallParamTwo = obj.getString("param2");
+					apiCall(apiCall, apiCallParamOne, apiCallParamTwo);
+				}
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+		return createResource("", request);
+	}
+	
+	private String apiCall(String apiCall, String apiCallParamOne, String apiCallParamTwo) {
+		String returnValue = "";
+		if (apiCall.equals(LMS_INITIALIZE)) {
+			returnValue = scormAdapter.LMSInitialize(apiCallParamOne);
+		} else if (apiCall.equals(LMS_GETVALUE)) {
+			returnValue = scormAdapter.LMSGetValue(apiCallParamOne);
+		} else if (apiCall.equals(LMS_SETVALUE)) {
+			returnValue = scormAdapter.LMSSetValue(apiCallParamOne, apiCallParamTwo);
+		} else if (apiCall.equals(LMS_COMMIT)) {
+			returnValue = scormAdapter.LMSCommit(apiCallParamOne);
+		} else if (apiCall.equals(LMS_FINISH)) {
+			returnValue = scormAdapter.LMSFinish(apiCallParamOne);
+		} else if (apiCall.equals(LMS_GETLASTERROR)) {
+			returnValue = scormAdapter.LMSGetLastError();
+		} else if (apiCall.equals(LMS_GETDIAGNOSTIC)) {
+			returnValue = scormAdapter.LMSGetDiagnostic(apiCallParamOne);
+		} else if (apiCall.equals(LMS_GETERRORSTRING)) {
+			returnValue = scormAdapter.LMSGetErrorString(apiCallParamOne);
+		}
+		return returnValue;
+	}
+	
+	private MediaResource createInitResource(HttpServletRequest request) {
+		MediaResource resource;
+		boolean acceptJson = ServletUtil.acceptJson(request);
+		if(acceptJson && request == null) {
+			resource = createHTMLResource("");
+		} else {
+			resource = createHTMLResource("<html><body></body></html>");
+		}
+		return resource;
+	}
+	
+	private MediaResource createResource(String returnValue, HttpServletRequest request) {
+		MediaResource resource;
+		boolean acceptJson = ServletUtil.acceptJson(request);
+		if(acceptJson && request == null) {
+			resource = createHTMLResource("");
+			
+		} else if(StringHelper.containsNonWhitespace(returnValue)) {
+			String data = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><p>" + returnValue + "</p></body></html>";
+			resource = createHTMLResource(data);
+		} else {
+			resource = createHTMLResource("");
+		}
+		return resource;
+	}
+	
+
+	private StringMediaResource createHTMLResource(String data) {
 		StringMediaResource smr = new StringMediaResource();
 		smr.setContentType("text/html");
 		smr.setEncoding("utf-8");
-		
-		if (apiCall != null && apiCall.equals("initcall")) {
-			//used for Mozilla / firefox only to get more time for fireing the onunload stuff triggered by overwriting the content.
-			smr.setData("<html><body></body></html>");
-			return smr;
-		}
-
-		String returnValue = "";
-		if (apiCall != null) {
-			if (apiCall.equals(LMS_INITIALIZE)) {
-				returnValue = scormAdapter.LMSInitialize(apiCallParamOne);
-			} else if (apiCall.equals(LMS_GETVALUE)) {
-				returnValue = scormAdapter.LMSGetValue(apiCallParamOne);
-			} else if (apiCall.equals(LMS_SETVALUE)) {
-				returnValue = scormAdapter.LMSSetValue(apiCallParamOne, apiCallParamTwo);
-			} else if (apiCall.equals(LMS_COMMIT)) {
-				returnValue = scormAdapter.LMSCommit(apiCallParamOne);
-			} else if (apiCall.equals(LMS_FINISH)) {
-				returnValue = scormAdapter.LMSFinish(apiCallParamOne);
-			} else if (apiCall.equals(LMS_GETLASTERROR)) {
-				returnValue = scormAdapter.LMSGetLastError();
-			} else if (apiCall.equals(LMS_GETDIAGNOSTIC)) {
-				returnValue = scormAdapter.LMSGetDiagnostic(apiCallParamOne);
-			} else if (apiCall.equals(LMS_GETERRORSTRING)) {
-				returnValue = scormAdapter.LMSGetErrorString(apiCallParamOne);
-			}
-			smr.setData("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><p>"
-					+ returnValue + "</p></body></html>");
-			return smr;
-		}
-		smr.setData("");
+		smr.setData(data);
 		return smr;
 	}
 }

@@ -88,8 +88,8 @@ public	class OLATApiAdapter implements ch.ethz.pfplms.scorm.api.ApiAdapterInterf
 	private Properties scoresProp; // keys: sahsId; values = raw score of an sco
 	private Properties lessonStatusProp;
 	
-	private final String SCORE_IDENT = "cmi.core.score.raw";
-	private final String LESSON_STATUS_IDENT = "cmi.core.lesson_status";
+	private static final String SCORE_IDENT = "cmi.core.score.raw";
+	private static final String LESSON_STATUS_IDENT = "cmi.core.lesson_status";
 	private File scorePropsFile;
 	private File lessonStatusPropsFile;
 	
@@ -162,7 +162,7 @@ public	class OLATApiAdapter implements ch.ethz.pfplms.scorm.api.ApiAdapterInterf
 
 	private final void say (String s) {
 		
-			log.debug("core: "+s);
+			log.debug("core: {}", s);
 		
 	}
 

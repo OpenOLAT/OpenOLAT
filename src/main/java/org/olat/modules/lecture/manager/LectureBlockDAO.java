@@ -237,6 +237,29 @@ public class LectureBlockDAO {
 			  .append("   where block.entry.key=v.key and membership.identity.key=:teacherKey")
 			  .append(" )");
 		}
+		
+		//quick search in repository entry infos
+		Long quickId = null;
+		String quickRefs = null;
+		String quickText = null;
+		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			quickRefs = searchParams.getSearchString();
+			sb.append(" and (v.externalId=:quickRef or ");
+			PersistenceHelper.appendFuzzyLike(sb, "v.externalRef", "quickText", dbInstance.getDbVendor());
+			sb.append(" or v.softkey=:quickRef or ");
+			quickText = PersistenceHelper.makeFuzzyQueryString(quickRefs);
+			PersistenceHelper.appendFuzzyLike(sb, "v.displayname", "quickText", dbInstance.getDbVendor());
+			if(StringHelper.isLong(quickRefs)) {
+				try {
+					quickId = Long.parseLong(quickRefs);
+					sb.append(" or v.key=:quickVKey or res.resId=:quickVKey");
+				} catch (NumberFormatException e) {
+					//
+				}
+			}
+			sb.append(")");	
+		}
+		
 		//TODO absences coach
 		if(searchParams.getManager() != null || searchParams.getMasterCoach() != null) {
 			sb.append(" and exists (select membership.key from repoentrytogroup as rel, bgroupmember as membership")
@@ -261,6 +284,16 @@ public class LectureBlockDAO {
 			query.setParameter("managerKey", searchParams.getManager().getKey());
 		} else if(searchParams.getMasterCoach() != null) {
 			query.setParameter("managerKey", searchParams.getMasterCoach().getKey());
+		}
+		
+		if(quickId != null) {
+			query.setParameter("quickVKey", quickId);
+		}
+		if(quickRefs != null) {
+			query.setParameter("quickRef", quickRefs);
+		}
+		if(quickText != null) {
+			query.setParameter("quickText", quickText);
 		}
 		
 		List<Object[]> rawObjects = query.getResultList();
@@ -916,6 +949,7 @@ public class LectureBlockDAO {
 			  .append(" or ").likeFuzzy(" identUser.firstName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(" or ").likeFuzzy(" identUser.lastName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(" or ").likeFuzzy(" identUser.email", "fuzzyString", dbInstance.getDbVendor())
+			  .append(" or ").likeFuzzy(" identUser.nickName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(")");
 		}
 		
@@ -984,6 +1018,7 @@ public class LectureBlockDAO {
 			  .append(" or ").likeFuzzy(" identUser.firstName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(" or ").likeFuzzy(" identUser.lastName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(" or ").likeFuzzy(" identUser.email", "fuzzyString", dbInstance.getDbVendor())
+			  .append(" or ").likeFuzzy(" identUser.nickName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(")");
 		}
 		
