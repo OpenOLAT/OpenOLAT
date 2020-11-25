@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -73,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * the sco api calls to the scorm RTE backend. It provides also an navigation to
  * navigate in the tree with "pre" "next" buttons.
  */
-public class ScormAPIandDisplayController extends MainLayoutBasicController implements ConfigurationChangedListener {
+public class ScormAPIandDisplayController extends MainLayoutBasicController implements ConfigurationChangedListener, ScormAPICallback {
 
 	protected static final String LMS_INITIALIZE = "LMSInitialize";
 	protected static final String LMS_GETVALUE = "LMSGetValue";
@@ -136,6 +137,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		try {
 			scormAdapter = new OLATApiAdapter();	
 			scormAdapter.addAPIListener(apiCallback);
+			scormAdapter.addAPIListener(this);
 			String fullname = UserManager.getInstance().getUserDisplayName(getIdentity());
 			String scormResourceIdStr = scormResourceId == null ? null : scormResourceId.toString();
 			scormAdapter.init(cpRoot, scormResourceIdStr, courseIdNodeId, FolderConfig.getCanonicalRoot(), username, fullname, lesson_mode, credit_mode, hashCode());
@@ -322,6 +324,16 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		}		 
 	}
 	
+	@Override
+	public void lmsCommit(String olatSahsId, Properties scoScores, Properties scoLessonStatus) {
+		//
+	}
+
+	@Override
+	public void lmsFinish(String olatSahsId, Properties scoProps, Properties scoLessonStatus) {
+		myContent.setDirty(false);
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == columnLayoutCtr) {
