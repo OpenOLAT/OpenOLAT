@@ -949,6 +949,7 @@ public class LectureBlockDAO {
 			  .append(" or ").likeFuzzy(" identUser.firstName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(" or ").likeFuzzy(" identUser.lastName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(" or ").likeFuzzy(" identUser.email", "fuzzyString", dbInstance.getDbVendor())
+			  .append(" or ").likeFuzzy(" identUser.nickName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(")");
 		}
 		
@@ -1017,6 +1018,7 @@ public class LectureBlockDAO {
 			  .append(" or ").likeFuzzy(" identUser.firstName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(" or ").likeFuzzy(" identUser.lastName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(" or ").likeFuzzy(" identUser.email", "fuzzyString", dbInstance.getDbVendor())
+			  .append(" or ").likeFuzzy(" identUser.nickName", "fuzzyString", dbInstance.getDbVendor())
 			  .append(")");
 		}
 		
