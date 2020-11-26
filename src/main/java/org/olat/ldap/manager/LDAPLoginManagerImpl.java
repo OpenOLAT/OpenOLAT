@@ -530,6 +530,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					user.setProperty(propName, value);
 				}
 			} else {
+				if(value.length() > 255) {
+					value = value.substring(0, 255);
+				}
 				user.setProperty(propName, value);
 			}
 		}
@@ -1355,7 +1358,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					}
 				} catch (Exception e) {
 					// catch here to go on with other users on exeptions!
-					log.error("some error occured while creating new users, actual userAttribs " + userAttrs + ". Will still continue with others.", e);
+					log.error("some error occured while creating new users, actual userAttribs {}. Will still continue with others.", userAttrs, e);
 				} finally {
 					dbInstance.commit();
 					if(newCount % 20 == 0) {
@@ -1397,14 +1400,16 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		
 		int syncGroupCount = 0;
+		// exclusion list to prevent loading several times user which cannot be found
+		Set<String> excludedMembers = new HashSet<>();
 		for(LDAPGroup group:cnToGroupMap.values()) {
 			BusinessGroup managedGroup = getManagerBusinessGroup(group.getCommonName());
 			if(managedGroup != null) {
-				syncBusinessGroup(ctx, managedGroup, group, dnToIdentityKeyMap, errors);
+				syncBusinessGroup(ctx, managedGroup, group, dnToIdentityKeyMap, excludedMembers, errors);
 			}
 			dbInstance.commitAndCloseSession();
 			if(syncGroupCount % 100 == 0) {
-				log.info("Synched " + syncGroupCount + "/" + cnToGroupMap.size() + " LDAP groups");
+				log.info("Synched {}/{} LDAP groups", syncGroupCount, cnToGroupMap.size());
 			}
 			syncGroupCount++;
 		}
@@ -1441,7 +1446,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 	}
 	
-	private void syncBusinessGroup(LdapContext ctx, BusinessGroup businessGroup, LDAPGroup ldapGroup, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors) {
+	private void syncBusinessGroup(LdapContext ctx, BusinessGroup businessGroup, LDAPGroup ldapGroup,
+			Map<String,LDAPUser> dnToIdentityKeyMap, Set<String> excludes, LDAPError errors) {
 		List<Identity> currentMembers = businessGroupRelationDao
 				.getMembers(businessGroup, GroupRoles.coach.name(), GroupRoles.participant.name());
 		Set<Long> currentMemberKeys = new HashSet<>();
@@ -1449,18 +1455,30 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			currentMemberKeys.add(currentMember.getKey());
 		}
 
+		int count = 0;
 		Set<LDAPUser> coaches = new HashSet<>(ldapGroup.getCoaches());
 		Set<LDAPUser> participants = new HashSet<>(ldapGroup.getParticipants());
 		// transfer member cn's to the participants list
 		for(String member:ldapGroup.getMembers()) {
 			try {
+				if(excludes.contains(member)) {
+					continue;
+				}
+				
 				LDAPUser ldapUser = getLDAPUser(ctx, member, dnToIdentityKeyMap, errors);
-				if(ldapUser != null && !participants.contains(ldapUser)) {
+				if(ldapUser == null) {
+					excludes.add(member);
+				} else if(!participants.contains(ldapUser)) {
 					participants.add(ldapUser);
 				}
 			} catch (Exception e) {
-				log.error("Cannot retrieve this LDAP group member: " + member, e);
+				log.error("Cannot retrieve this LDAP group member: {}", member, e);
 			}
+
+			if(count % 20 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+			count++;
 		}
 		// transfer to ldap user flagged as coach to the coach list
 		for(Iterator<LDAPUser> participantIt=participants.iterator(); participantIt.hasNext(); ) {
@@ -1473,7 +1491,6 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			}
 		}
 		
-		int count = 0;
 		Set<LDAPUser> members = new HashSet<>(participants);
 		members.addAll(coaches);
 		for(LDAPUser member:members) {
@@ -1576,6 +1593,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				identity = findIdentityByLdapAuthentication(userAttrs, errors);
 				if(identity != null) {
 					dnToIdentityKeyMap.put(userDN, ldapUser);
+					ldapUser.setCachedIdentity(new IdentityRefImpl(identity.getKey()));
 				}
 			}
 		}

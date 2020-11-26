@@ -54,7 +54,7 @@ public class RelationRoleDAOTest extends OlatTestCase {
 	@Test
 	public void createRelationRole() {
 		String role = UUID.randomUUID().toString();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, "External-id", "External-ref", null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, "External-id", "External-ref", null);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(relationRole);
@@ -68,7 +68,7 @@ public class RelationRoleDAOTest extends OlatTestCase {
 	@Test
 	public void loadRelationRole_byKey() {
 		String role = UUID.randomUUID().toString();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		RelationRole loadedRelationRole = relationRoleDao.loadRelationRoleByKey(relationRole.getKey());
@@ -81,7 +81,7 @@ public class RelationRoleDAOTest extends OlatTestCase {
 	@Test
 	public void loadRelationRole_byRole() {
 		String role = UUID.randomUUID().toString();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		RelationRole loadedRelationRole = relationRoleDao.loadRelationRoleByRole(role);
@@ -96,9 +96,9 @@ public class RelationRoleDAOTest extends OlatTestCase {
 		String role1 = UUID.randomUUID().toString();
 		String role2 = UUID.randomUUID().toString();
 		String roleOther = UUID.randomUUID().toString();
-		RelationRole relationRole1 = relationRoleDao.createRelationRole(role1, null, null, null, true);
-		RelationRole relationRole2 = relationRoleDao.createRelationRole(role2, null, null, null, true);
-		RelationRole relationRole3 = relationRoleDao.createRelationRole(roleOther, null, null, null, true);
+		RelationRole relationRole1 = relationRoleDao.createRelationRole(role1, null, null, null);
+		RelationRole relationRole2 = relationRoleDao.createRelationRole(role2, null, null, null);
+		RelationRole relationRole3 = relationRoleDao.createRelationRole(roleOther, null, null, null);
 		String right1 = UUID.randomUUID().toString();
 		RelationRight relationRight1 = relationRightDao.createRelationRight(right1);
 		String rightOther = UUID.randomUUID().toString();
@@ -117,7 +117,7 @@ public class RelationRoleDAOTest extends OlatTestCase {
 	@Test
 	public void addRight() {
 		String role = UUID.randomUUID().toString();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		String right = UUID.randomUUID().toString();
 		RelationRight relationRight = relationRightDao.createRelationRight(right);
 		relationRoleDao.addRight(relationRole, relationRight);
@@ -138,7 +138,7 @@ public class RelationRoleDAOTest extends OlatTestCase {
 	@Test
 	public void setRights_once() {
 		String role = UUID.randomUUID().toString();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		String right = UUID.randomUUID().toString();
 		RelationRight relationRight1 = relationRightDao.createRelationRight(right + "-1");
 		RelationRight relationRight2 = relationRightDao.createRelationRight(right + "-2");
@@ -167,7 +167,7 @@ public class RelationRoleDAOTest extends OlatTestCase {
 	@Test
 	public void setRights_twice() {
 		String role = UUID.randomUUID().toString();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		String right = UUID.randomUUID().toString();
 		RelationRight relationRight1 = relationRightDao.createRelationRight(right + "-1");
 		RelationRight relationRight2 = relationRightDao.createRelationRight(right + "-2");
@@ -217,7 +217,7 @@ public class RelationRoleDAOTest extends OlatTestCase {
 	@Test
 	public void deleteRelationRole() {
 		String role = UUID.randomUUID().toString();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		String right = UUID.randomUUID().toString();
 		RelationRight relationRight1 = relationRightDao.createRelationRight(right + "-1");
 		RelationRight relationRight2 = relationRightDao.createRelationRight(right + "-2");

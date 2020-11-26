@@ -73,7 +73,7 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	
 	@Override
 	public RelationRole createRole(String role, List<RelationRight> rights) {
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		if(rights != null && !rights.isEmpty()) {
 			relationRoleDao.setRights(relationRole, rights);
 		}
@@ -83,7 +83,7 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	@Override
 	public RelationRole createRole(String role, String externalId, String externalRef,
 			RelationRoleManagedFlag[] managedFlags, List<RelationRight> rights) {
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, externalId, externalRef, managedFlags, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, externalId, externalRef, managedFlags);
 		if(rights != null && !rights.isEmpty()) {
 			relationRoleDao.setRights(relationRole, rights);
 		}
