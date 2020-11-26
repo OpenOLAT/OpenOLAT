@@ -34,93 +34,119 @@
 			</div>
 			<div class="panel-body">
 				<div class="o_topic">
-					<div class="col-sm-6">
-						<div class="o_warning">
-							$topic.getMessage()
+					<div class="o_row">
+						<div class="o_c2">
+							<div class="o_warning">
+								$topic.getMessage()
+							</div>
 						</div>
-					</div>
-					
-					<div class="col-sm-6">
-						<div class="o_next_appointment">
-							#if($topic.getDayName())
-								#if($r.isNotNull($topic.getFuture()))
-									<h5>#if($topic.getFuture())$r.translate("appointment.next")#else$r.translate("appointment.last")#end</h5>
-								#end
-								<div class="o_main_cont">
-									<div>
-										$r.render($topic.getDayName())
-									</div>
-									<div class="o_main">
-										#if($topic.getDate() && $topic.getDate() != "")
-											<div class="o_date">
-												<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
-												$topic.getDate()
-												&nbsp;<span class='o_labeled $topic.getStatusCSS()'>$topic.getTranslatedStatus()</span>
-											</div>
-										#end
-										#if($topic.getDate2() && $topic.getDate2() != "")
-											<div class="o_date">
-												<i class="o_icon o_icon-fw">&nbsp;</i>
-												$topic.getDate2()
-											</div>
-										#end
-										#if($topic.getTime() && $topic.getTime() != "")
-											<div class="o_time">
-												<i class="o_icon o_icon-fw o_icon_time">&nbsp;</i>
-												$topic.getTime()
-												#if($r.isNull($topic.getDate())) 
+						<div class="o_c2">
+							<div class="o_grow_10">
+								#if($topic.getDayName())
+									#if($r.isNotNull($topic.getFuture()))
+										<h5>#if($topic.getFuture())$r.translate("appointment.next")#else$r.translate("appointment.last")#end</h5>
+									#end
+									<div class="o_main_cont">
+										<div>
+											$r.render($topic.getDayName())
+										</div>
+										<div class="o_main">
+											#if($topic.getDate() && $topic.getDate() != "")
+												<div class="o_date">
+													<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
+													$topic.getDate()
 													&nbsp;<span class='o_labeled $topic.getStatusCSS()'>$topic.getTranslatedStatus()</span>
-												#end
-											</div>
-										#end
-										#if($topic.getLocation() && $topic.getLocation() != "")
-											<div>
-												<i class="o_icon o_icon-fw o_icon_home">&nbsp;</i>
-												$r.escapeHtml($topic.getLocation())
-											</div>
-										#end
-										#if($topic.getDetails() && $topic.getDetails() != "")
-											<div>
-												<i class="o_icon o_icon-fw o_icon_info_ap">&nbsp;</i>
-												$r.escapeHtml($topic.getDetails())
-											</div>
-										#end
-										#if($r.isNotNull($topic.getRecordingLinkNames()))
-											<div>
-												#foreach($recordingLinkName in $topic.getRecordingLinkNames())
-													$r.render($recordingLinkName)
-												#end
-											</div>
-										#end
-										#if($r.isNotEmpty($topic.participants))
-											<div class="text-muted">
-												#foreach($participant in $topic.participants)
-													<span class='o_participant'><i class='o_icon o_icon_user'>&nbsp;</i>$participant &nbsp;</span>
-												#end
-											</div>
-										#end
+												</div>
+											#end
+											#if($topic.getDate2() && $topic.getDate2() != "")
+												<div class="o_date">
+													<i class="o_icon o_icon-fw">&nbsp;</i>
+													$topic.getDate2()
+												</div>
+											#end
+											#if($topic.getTime() && $topic.getTime() != "")
+												<div class="o_time">
+													<i class="o_icon o_icon-fw o_icon_time">&nbsp;</i>
+													$topic.getTime()
+													#if($r.isNull($topic.getDate())) 
+														&nbsp;<span class='o_labeled $topic.getStatusCSS()'>$topic.getTranslatedStatus()</span>
+													#end
+												</div>
+											#end
+											#if($topic.getLocation() && $topic.getLocation() != "")
+												<div>
+													<i class="o_icon o_icon-fw o_icon_home">&nbsp;</i>
+													$r.escapeHtml($topic.getLocation())
+												</div>
+											#end
+											#if($topic.getDetails() && $topic.getDetails() != "")
+												<div>
+													<i class="o_icon o_icon-fw o_icon_info_ap">&nbsp;</i>
+													$r.escapeHtml($topic.getDetails())
+												</div>
+											#end
+											#if($r.isNotNull($topic.getRecordingLinkNames()))
+												<div>
+													#foreach($recordingLinkName in $topic.getRecordingLinkNames())
+														$r.render($recordingLinkName)
+													#end
+												</div>
+											#end
+											#if($r.isNotEmpty($topic.participants))
+												<div class="text-muted">
+													#foreach($participant in $topic.participants)
+														<span class='o_participant'><i class='o_icon o_icon_user'>&nbsp;</i>$participant &nbsp;</span>
+													#end
+												</div>
+											#end
+										</div>
 									</div>
-								</div>
-							#end
-							#if($r.isNotNull($topic.getServerWarning()))
-								<div class="o_error">
-									$topic.getServerWarning()
-								</div>
-							#end
+								#end
+							</div>
 							
-							#if($r.isNotNull($topic.getJoinLinkName()))
-								<div class="o_button_group">
-									$r.render($topic.getJoinLinkName())
+							#if(!$topic.isBbb())
+								<div class="o_button_group o_button_group_right">
+									#if($r.isNotNull($topic.getOpenLinkName()))
+										$r.render($topic.getOpenLinkName())
+									#end
 								</div>
-							#end
-						</div>
-						
-						<div class="o_button_group o_button_group_right">
-							#if($r.isNotNull($topic.getOpenLinkName()))
-								$r.render($topic.getOpenLinkName())
 							#end
 						</div>
 					</div>
+					#if($topic.isBbb())
+						<div class="o_row">
+							<div class="o_c2">
+								#if($r.visible($topic.getAcknowledgeName()))
+									<div class="o_warning o_bbb_warning">
+										<h4>$r.translate("meeting.acknowledge.recording.explain.title")</h4>
+										<p>$r.translate("meeting.acknowledge.recording.explain")</p>
+										$r.render($topic.getAcknowledgeName())
+										#if($f.hasError($topic.getAcknowledgeName()))
+											$r.render("$topic.getAcknowledgeName()_ERROR")
+										#end
+									</div>
+								#end
+							</div>
+							<div class="o_c2">
+								<div class="o_grow_10"></div>
+								#if($r.isNotNull($topic.getServerWarning()))
+									<div class="o_error">
+										$topic.getServerWarning()
+									</div>
+								#end
+								#if($r.isNotNull($topic.getJoinLinkName()))
+									<div class="o_button_group">
+										$r.render($topic.getJoinLinkName())
+									</div>
+								#end
+								<div class="o_button_group o_button_group_right o_open">
+									#if($r.isNotNull($topic.getOpenLinkName()))
+										$r.render($topic.getOpenLinkName())
+									#end
+								</div>
+							</div>
+						</div>
+					#end
 				</div>
 			</div>
 		</div>

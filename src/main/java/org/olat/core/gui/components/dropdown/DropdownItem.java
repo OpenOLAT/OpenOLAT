@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown.ButtonSize;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -143,5 +144,13 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 	 */
 	public boolean isExpandContentHeight() {
 		return dropdown.isExpandContentHeight();
+	}
+
+	public void setCarretIconCSS(String carretIconCSS) {
+		dropdown.setCarretIconCSS(carretIconCSS);
+	}
+
+	public void setButtonSize(ButtonSize buttonSize) {
+		dropdown.setButtonSize(buttonSize);
 	}
 }

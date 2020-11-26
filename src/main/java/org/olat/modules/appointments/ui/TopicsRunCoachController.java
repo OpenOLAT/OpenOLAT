@@ -25,10 +25,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -37,23 +39,26 @@ import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionCon
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
-import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.date.DateElement;
 import org.olat.core.gui.components.dropdown.Dropdown.ButtonSize;
+import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.winmgr.CommandFactory;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -71,7 +76,7 @@ import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
-import org.olat.modules.bigbluebutton.ui.BigBlueButtonErrorHelper;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -83,7 +88,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TopicsRunCoachController extends BasicController {
+public class TopicsRunCoachController extends FormBasicController {
 
 	private static final String CMD_OPEN = "open";
 	private static final String CMD_JOIN = "join";
@@ -94,8 +99,7 @@ public class TopicsRunCoachController extends BasicController {
 	private static final String CMD_RECORDING = "recording";
 	private static final String CMD_SYNC = "sync";
 
-	private final VelocityContainer mainVC;
-	private Link createButton;
+	private FormLink createButton;
 
 	private final BreadcrumbedStackedPanel stackPanel;
 	private CloseableModalController cmc;
@@ -109,6 +113,7 @@ public class TopicsRunCoachController extends BasicController {
 	private final RepositoryEntry entry;
 	private final String subIdent;
 	private final AppointmentsSecurityCallback secCallback;
+	private Set<Long> acknowlededRecordings = new HashSet<>();
 	private int counter;
 	
 	@Autowired
@@ -118,50 +123,36 @@ public class TopicsRunCoachController extends BasicController {
 
 	public TopicsRunCoachController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback) {
-		super(ureq, wControl);
+		super(ureq, wControl, "topics_run_coach");
 		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.secCallback = secCallback;
 		
-		mainVC = createVelocityContainer("topics_run_coach");
-		
 		if (secCallback.canSubscribe()) {
 			PublisherData publisherData = appointmentsService.getPublisherData(entry, subIdent);
 			SubscriptionContext subContext = appointmentsService.getSubscriptionContext(entry, subIdent);
 			subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, publisherData, true);
 			listenTo(subscriptionCtrl);
-			mainVC.put("infoSubscription", subscriptionCtrl.getInitialComponent());
+			flc.put("infoSubscription", subscriptionCtrl.getInitialComponent());
 		}
 		
+		initForm(ureq);
 		refresh();
-		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (secCallback.canCreateTopic()) {
+			createButton = uifactory.addFormLink("add.topic", formLayout, Link.BUTTON);
+			createButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		}
 	}
 	
 	private void refresh() {
-		clearVC();
-		
-		if (secCallback.canCreateTopic()) {
-			createButton = LinkFactory.createButton("add.topic", mainVC, this);
-			createButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
-		}
-		
 		List<TopicWrapper> topics = loadTopicWrappers();
-		mainVC.contextPut("topics", topics);
-	}
-	
-	private void clearVC() {
-		List<String> componentNames = new ArrayList<>();
-		for (Component component : mainVC.getComponents()) {
-			if (!"infoSubscription".equals(component.getComponentName()) && 
-					!"add.topic".equals(component.getComponentName())) {
-				componentNames.add(component.getComponentName());
-			}
-		}
-		for (String componentName : componentNames) {
-			mainVC.remove(componentName);
-		}
+		flc.contextPut("topics", topics);
 	}
 	
 	private List<TopicWrapper> loadTopicWrappers() {
@@ -318,6 +309,8 @@ public class TopicsRunCoachController extends BasicController {
 	}
 	
 	private void forgeAppointmentView(TopicWrapper wrapper, Appointment appointment, List<Participation> participations) {
+		wrapper.setAppointment(appointment);
+		
 		Locale locale = getLocale();
 		Date begin = appointment.getStart();
 		Date end = appointment.getEnd();
@@ -362,7 +355,8 @@ public class TopicsRunCoachController extends BasicController {
 		wrapper.setDetails(appointment.getDetails());
 		
 		String dayName = "day_" + counter++;
-		DateComponentFactory.createDateComponentWithYear(dayName, appointment.getStart(), mainVC);
+		DateElement dateEl = DateComponentFactory.createDateElementWithYear(dayName, appointment.getStart());
+		flc.add(dayName, dateEl);
 		wrapper.setDayName(dayName);
 		
 		if (appointmentsService.isBigBlueButtonEnabled()) {
@@ -379,19 +373,33 @@ public class TopicsRunCoachController extends BasicController {
 	}
 	
 	private void wrapMeeting(TopicWrapper wrapper, Appointment appointment) {
+		wrapper.setBbb(true);
 		BigBlueButtonMeeting meeting = appointment.getMeeting();
 		boolean disabled = isDisabled(meeting);
 		if (disabled) {
 			wrapper.setServerWarning(translate("error.serverDisabled"));
 		}
 		
-		Link joinButton = LinkFactory.createCustomLink("join" + counter++, CMD_JOIN, "meeting.join.button", Link.BUTTON_LARGE, mainVC, this);
-		joinButton.setTarget("_blank");
+		FormLink joinButton = uifactory.addFormLink("join" + counter++, CMD_JOIN, "meeting.join.button", null, flc, Link.BUTTON_LARGE);
+		joinButton.setNewWindow(true, true, true);
 		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
 		joinButton.setEnabled(!disabled);
 		joinButton.setPrimary(joinButton.isEnabled());
-		joinButton.setUserObject(appointment);
-		wrapper.setJoinLinkName(joinButton.getComponentName());
+		joinButton.setUserObject(wrapper);
+		wrapper.setJoinLinkName(joinButton.getName());
+		
+		if (BigBlueButtonUIHelper.isRecord(meeting)) {
+			KeyValues acknowledgeKeyValue = new KeyValues();
+			acknowledgeKeyValue.add(KeyValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
+			MultipleSelectionElement acknowledgeRecordingEl = uifactory.addCheckboxesHorizontal("ack_" + counter++, null, flc,
+					acknowledgeKeyValue.keys(), acknowledgeKeyValue.values());
+			if (acknowlededRecordings.contains(wrapper.getTopic().getKey())) {
+				acknowledgeRecordingEl.select(acknowledgeRecordingEl.getKey(0), true);
+			}
+			acknowledgeRecordingEl.addActionListener(FormEvent.ONCHANGE);
+			acknowledgeRecordingEl.setUserObject(wrapper);
+			wrapper.setAcknowledgeRecordingEl(acknowledgeRecordingEl);
+		}
 	}
 	
 	private void wrapRecordings(TopicWrapper wrapper, List<BigBlueButtonRecordingReference> recordingReferences) {
@@ -399,17 +407,18 @@ public class TopicsRunCoachController extends BasicController {
 		List<String> recordingLinkNames = new ArrayList<>(recordingReferences.size());
 		for (int i = 0; i < recordingReferences.size(); i++) {
 			BigBlueButtonRecordingReference recording = recordingReferences.get(i);
-			Link link = LinkFactory.createCustomLink("rec_" + counter++, CMD_RECORDING, null, Link.NONTRANSLATED, mainVC, this);
+			
+			FormLink link = uifactory.addFormLink("rec_" + counter++, CMD_RECORDING, null, null, flc, Link.NONTRANSLATED);
 			String name = translate("recording");
 			if (recordingReferences.size() > 1) {
 				name = name + " " + (i+1);
 			}
 			name = name + "  ";
-			link.setCustomDisplayText(name);
+			link.setLinkTitle(name);
 			link.setIconLeftCSS("o_icon o_icon_lg o_vc_icon");
-			link.setNewWindow(true, true);
+			link.setNewWindow(true, true, true);
 			link.setUserObject(recording);
-			recordingLinkNames.add(link.getComponentName());
+			recordingLinkNames.add(link.getName());
 		}
 		wrapper.setRecordingLinkNames(recordingLinkNames);
 	}
@@ -419,49 +428,46 @@ public class TopicsRunCoachController extends BasicController {
 	}
 
 	private void wrapOpenLink(TopicWrapper wrapper) {
-		Link openLink = LinkFactory.createCustomLink("open" + counter++, CMD_OPEN, "appointments.open", Link.LINK, mainVC, this);
-		openLink.setIconRightCSS("o_icon o_icon_start");
-		openLink.setUserObject(wrapper.getTopic());
-		wrapper.setOpenLinkName(openLink.getComponentName());
+		FormLink link = uifactory.addFormLink("open" + counter++, CMD_OPEN, "appointments.open", null, flc,  Link.LINK);
+		link.setIconRightCSS("o_icon o_icon_start");
+		link.setUserObject(wrapper.getTopic());
+		wrapper.setOpenLinkName(link.getName());
 	}
 	
 	private void wrapTools(TopicWrapper wrapper, boolean hasMeetings) {
 		String toolsName = "tools_" + counter++;
-		Dropdown dropdown =  new Dropdown(toolsName, null, false, getTranslator());
-		dropdown.setEmbbeded(true);
+		DropdownItem dropdown = uifactory.addDropdownMenu(toolsName, null, null, flc, getTranslator());
 		dropdown.setCarretIconCSS("o_icon o_icon_tool");
-		dropdown.setButton(true);
 		dropdown.setButtonSize(ButtonSize.small);
 		dropdown.setOrientation(DropdownOrientation.right);
-		mainVC.put(toolsName, dropdown);
 		wrapper.setToolsName(toolsName);
 		
-		Link editorLink = LinkFactory.createCustomLink("edit_" + counter++, CMD_EDIT, "edit.topic", Link.LINK, mainVC, this);
+		FormLink editorLink = uifactory.addFormLink("edit_" + counter++, CMD_EDIT, "edit.topic", null, flc,  Link.LINK);
 		editorLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		editorLink.setUserObject(wrapper.getTopic());
-		dropdown.addComponent(editorLink);
+		dropdown.addElement(editorLink);
 		
-		Link groupLink = LinkFactory.createCustomLink("group_" + counter++, CMD_GROUPS, "edit.groups", Link.LINK, mainVC, this);
+		FormLink groupLink = uifactory.addFormLink("group_" + counter++, CMD_GROUPS, "edit.groups", null, flc,  Link.LINK);
 		groupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		groupLink.setUserObject(wrapper.getTopic());
-		dropdown.addComponent(groupLink);
+		dropdown.addElement(groupLink);
 		
-		Link exportLink = LinkFactory.createCustomLink("export_" + counter++, CMD_EXPORT, "export.participations", Link.LINK, mainVC, this);
+		FormLink exportLink = uifactory.addFormLink("export_" + counter++, CMD_EXPORT, "export.participations", null, flc,  Link.LINK);
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		exportLink.setUserObject(wrapper.getTopic());
-		dropdown.addComponent(exportLink);
+		dropdown.addElement(exportLink);
 		
 		if (hasMeetings) {
-			Link syncRecordingsLink = LinkFactory.createCustomLink("sync_" + counter++, CMD_SYNC, "sync.recordings", Link.LINK, mainVC, this);
+			FormLink syncRecordingsLink = uifactory.addFormLink("sync_" + counter++, CMD_SYNC, "sync.recordings", flc,  Link.LINK);
 			syncRecordingsLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
 			syncRecordingsLink.setUserObject(wrapper.getTopic());
-			dropdown.addComponent(syncRecordingsLink);
+			dropdown.addElement(syncRecordingsLink);
 		}
 		
-		Link deleteLink = LinkFactory.createCustomLink("delete_" + counter++, CMD_DELETE, "delete.topic", Link.LINK, mainVC, this);
+		FormLink deleteLink = uifactory.addFormLink("delete_" + counter++, CMD_DELETE, "delete.topic", flc,  Link.LINK);
 		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
 		deleteLink.setUserObject(wrapper.getTopic());
-		dropdown.addComponent(deleteLink);
+		dropdown.addElement(deleteLink);
 	}
 	
 	@Override
@@ -510,14 +516,15 @@ public class TopicsRunCoachController extends BasicController {
 		topicRunCtrl = null;
 		cmc = null;
 	}
+	
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == createButton) {
 			doAddTopic(ureq);
-		} else if (source instanceof Link) {
-			Link link = (Link)source;
-			String cmd = link.getCommand();
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
 			if (CMD_OPEN.equals(cmd)) {
 				Topic topic = (Topic)link.getUserObject();
 				doOpenTopic(ureq, topic);
@@ -537,13 +544,27 @@ public class TopicsRunCoachController extends BasicController {
 				Topic topic = (Topic)link.getUserObject();
 				doSyncRecordings(topic);
 			} else if (CMD_JOIN.equals(cmd)) {
-				Appointment appointment = (Appointment)link.getUserObject();
-				doJoin(ureq, appointment);
+				TopicWrapper wrapper = (TopicWrapper)link.getUserObject();
+				doJoin(wrapper);
 			} else if (CMD_RECORDING.equals(cmd)) {
 				BigBlueButtonRecordingReference recordingReference = (BigBlueButtonRecordingReference)link.getUserObject();
 				doOpenRecording(ureq, recordingReference);
 			}
+		} else if (source instanceof MultipleSelectionElement) {
+			MultipleSelectionElement mse = (MultipleSelectionElement)source;
+			Topic topic = ((TopicWrapper)mse.getUserObject()).getTopic();
+			if (mse.isAtLeastSelected(1)) {
+				acknowlededRecordings.add(topic.getKey());
+			} else {
+				acknowlededRecordings.remove(topic.getKey());
+			}
 		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		super.event(ureq, source, event);
 	}
 	
 	private void doAddTopic(UserRequest ureq) {
@@ -615,42 +636,49 @@ public class TopicsRunCoachController extends BasicController {
 		stackPanel.pushController(panelTitle, topicRunCtrl);
 	}
 	
-	private void doJoin(UserRequest ureq, Appointment appointment) {
+	private void doJoin(TopicWrapper wrapper) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
-		params.setAppointment(appointment);
+		params.setAppointment(wrapper.getAppointment());
 		params.setFetchTopic(true);
 		params.setFetchMeetings(true);
 		List<Appointment> appointments = appointmentsService.getAppointments(params);
-		Appointment reloadedAppointment = null;
+		Appointment appointment = null;
 		if (!appointments.isEmpty()) {
-			reloadedAppointment = appointments.get(0);
+			appointment = appointments.get(0);
 		}
 		
-		if (reloadedAppointment == null || reloadedAppointment.getMeeting() == null) {
+		if (appointment == null || appointment.getMeeting() == null) {
 			showWarning("warning.no.meeting");
-			fireEvent(ureq, Event.BACK_EVENT);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			return;
+		}
+		if (BigBlueButtonUIHelper.isRecord(appointment.getMeeting()) && !acknowlededRecordings.contains(appointment.getTopic().getKey())) {
+			wrapper.getAcknowledgeRecordingEl().setErrorKey("form.legende.mandatory", null);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			return;
+		} else if (wrapper.getAcknowledgeRecordingEl() != null) {
+			wrapper.getAcknowledgeRecordingEl().clearError();
 		}
 		
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
-		String meetingUrl = appointmentsService.joinMeeting(reloadedAppointment, getIdentity(), errors);
-		redirectTo(ureq, meetingUrl, errors);
+		String meetingUrl = appointmentsService.joinMeeting(appointment, getIdentity(), errors);
+		redirectTo(meetingUrl, errors);
+	}
+	
+	private void redirectTo(String meetingUrl, BigBlueButtonErrors errors) {
+		if(errors.hasErrors()) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+		} else if(StringHelper.containsNonWhitespace(meetingUrl)) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(meetingUrl));
+		} else {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			showWarning("warning.no.access");
+		}
 	}
 	
 	private void doSyncRecordings(Topic topic) {
 		appointmentsService.syncRecorings(topic);
 		refresh();
-	}
-	
-	private void redirectTo(UserRequest ureq, String meetingUrl, BigBlueButtonErrors errors) {
-		if(errors.hasErrors()) {
-			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));
-		} else if(StringHelper.containsNonWhitespace(meetingUrl)) {
-			MediaResource redirect = new RedirectMediaResource(meetingUrl);
-			ureq.getDispatchResult().setResultingMediaResource(redirect);
-		} else {
-			showWarning("warning.no.access");
-		}
 	}
 
 	private void doOpenRecording(UserRequest ureq, BigBlueButtonRecordingReference recordingReference) {
@@ -661,6 +689,11 @@ public class TopicsRunCoachController extends BasicController {
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			showWarning("warning.recording.not.found");
 		}
+	}
+	
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 	@Override
@@ -676,6 +709,7 @@ public class TopicsRunCoachController extends BasicController {
 		private String message;
 		
 		//next appointment
+		private Appointment appointment;
 		private List<String> participants;
 		private String dayName;
 		private String date;
@@ -687,9 +721,11 @@ public class TopicsRunCoachController extends BasicController {
 		private String statusCSS;
 		private Boolean future;
 		
+		private MultipleSelectionElement acknowledgeRecordingEl;
 		private String openLinkName;
 		private String toolsName;
 		
+		private boolean bbb;
 		private String joinLinkName;
 		private String serverWarning;
 		private List<String> recordingLinkNames;
@@ -732,6 +768,14 @@ public class TopicsRunCoachController extends BasicController {
 
 		public void setMessage(String message) {
 			this.message = message;
+		}
+
+		public Appointment getAppointment() {
+			return appointment;
+		}
+
+		public void setAppointment(Appointment appointment) {
+			this.appointment = appointment;
 		}
 
 		public List<String> getParticipants() {
@@ -813,6 +857,18 @@ public class TopicsRunCoachController extends BasicController {
 		public void setFuture(Boolean future) {
 			this.future = future;
 		}
+		
+		public MultipleSelectionElement getAcknowledgeRecordingEl() {
+			return acknowledgeRecordingEl;
+		}
+
+		public void setAcknowledgeRecordingEl(MultipleSelectionElement acknowledgeRecordingEl) {
+			this.acknowledgeRecordingEl = acknowledgeRecordingEl;
+		}
+
+		public String getAcknowledgeName() {
+			return acknowledgeRecordingEl != null? acknowledgeRecordingEl.getName(): null;
+		}
 
 		public String getOpenLinkName() {
 			return openLinkName;
@@ -828,6 +884,14 @@ public class TopicsRunCoachController extends BasicController {
 
 		public void setToolsName(String toolsName) {
 			this.toolsName = toolsName;
+		}
+
+		public boolean isBbb() {
+			return bbb;
+		}
+
+		public void setBbb(boolean bbb) {
+			this.bbb = bbb;
 		}
 
 		public String getJoinLinkName() {
