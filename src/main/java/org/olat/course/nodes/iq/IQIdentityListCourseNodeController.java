@@ -250,7 +250,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 	
 	private boolean isTestRunning() {
-		List<Identity> identities = getIdentities();
+		List<Identity> identities = getIdentities(false);
 		if(isTestQTI21()) {
 			return qtiService.isRunningAssessmentTestSession(getCourseRepositoryEntry(),
 					courseNode.getIdent(), getReferencedRepositoryEntry(), identities);
@@ -452,21 +452,30 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				courseNode, assessedIdentity, coachCourseEnv);
 	}
 	
-	private List<Identity> getIdentities() {
+	/**
+	 * 
+	 * @param allIfAdmin Admin. have the possibility to see not participants.
+	 * @return A list of identities
+	 */
+	private List<Identity> getIdentities(boolean allIfAdmin) {
 		AssessmentToolOptions asOptions = getOptions();
 		List<Identity> identities = asOptions.getIdentities();
 		if (group != null) {
 			identities = groupService.getMembers(group, GroupRoles.participant.toString());
 		} else if (identities != null) {
 			identities = asOptions.getIdentities();			
-		} else if (asOptions.isAdmin()){
-			identities = ScoreAccountingHelper.loadParticipants(getCourseEnvironment());
+		} else if (asOptions.isAdmin()) {
+			if(allIfAdmin) {
+				identities = ScoreAccountingHelper.loadUsers(getCourseEnvironment());
+			} else {
+				identities = ScoreAccountingHelper.loadParticipants(getCourseEnvironment());
+			}
 		}
 		return identities;
 	}
 	
 	private void doExportResults(UserRequest ureq) {
-		List<Identity> identities = getIdentities();
+		List<Identity> identities = getIdentities(true);
 		if (identities != null && !identities.isEmpty()) {
 			MediaResource resource;
 			CourseEnvironment courseEnv = getCourseEnvironment();
