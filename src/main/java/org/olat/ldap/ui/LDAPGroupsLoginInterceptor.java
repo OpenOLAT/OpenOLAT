@@ -54,8 +54,8 @@ public class LDAPGroupsLoginInterceptor extends FormBasicController implements S
 		if(ldapModule.isLDAPEnabled()) {
 			try {
 				UserSession usess = ureq.getUserSession();
-				if(usess.isAuthenticated()
-						&& LDAPAuthenticationController.PROVIDER_LDAP.equals(usess.getSessionInfo().getAuthProvider())) {
+				// Need to be provider agnostic, Panther login need to be synchronized too
+				if(usess.isAuthenticated()) {
 					ldapManager.syncUserGroups(getIdentity());
 				}
 			} catch (Exception e) {
