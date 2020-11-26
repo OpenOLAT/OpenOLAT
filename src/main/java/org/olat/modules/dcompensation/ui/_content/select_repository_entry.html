@@ -1,4 +1,4 @@
-#if($r.isNotNull($entryName)) <i class="o_icon o_icon-lg o_CourseModule_icon"> </i> $r.escapeHtml($entryName) #end
+#if($r.isNotNull($entryName)) <p class='form-control-static'><i class="o_icon o_icon-lg o_CourseModule_icon"> </i> $r.escapeHtml($entryName)</p> #end
 #if($r.visible("select.entry")) 
 	$r.render("select.entry") 
 #end

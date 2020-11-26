@@ -74,12 +74,21 @@ public class DisadvantageCompensationDAO {
 		return dbInstance.getCurrentEntityManager().merge(compensation);
 	}
 	
+	/**
+	 * Fetch all repository informations.
+	 * 
+	 * @param identity
+	 * @return
+	 */
 	public List<DisadvantageCompensation> getDisadvantageCompensations(IdentityRef identity) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select compensation from dcompensation as compensation")
 		  .append(" inner join fetch compensation.creator as creator")
 		  .append(" inner join fetch creator.user as userCreator")
 		  .append(" inner join fetch compensation.entry as v")
+		  .append(" inner join fetch v.olatResource as res")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" where compensation.identity.key=:identityKey");
 
 		return dbInstance.getCurrentEntityManager()

@@ -86,6 +86,7 @@ implements SortableFlexiTableDataModel<UserDisadvantageCompensationRow>, Filtera
 			case entryKey: return row.getEntryKey();
 			case externalRef: return row.getEntryExternalRef();
 			case courseElement: return row.getCourseElement();
+			case testEntryExternalRef: return row.getTestExternalRef();
 			case extraTime: return row.getExtraTime();
 			case approvedBy: return row.getApprovedBy();
 			case approvalDate: return row.getApprovalDate();
@@ -114,6 +115,7 @@ implements SortableFlexiTableDataModel<UserDisadvantageCompensationRow>, Filtera
 		entry("table.header.entry.displayname"),
 		externalRef("table.header.entry.external.ref"),
 		courseElement("table.header.course.element"),
+		testEntryExternalRef("table.header.course.element.entry.ref"),
 		extraTime("table.header.extra.time"),
 		approvedBy("table.header.approved.by"),
 		approvalDate("table.header.approval.date"),
