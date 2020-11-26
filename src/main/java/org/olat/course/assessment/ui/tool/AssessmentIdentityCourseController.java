@@ -113,7 +113,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		identityAssessmentVC.contextPut("user", assessedIdentity.getUser());
 		
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		infosController = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course);
+		infosController = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course, null);
 		listenTo(infosController);
 		identityAssessmentVC.put("identityInfos", infosController.getInitialComponent());
 		

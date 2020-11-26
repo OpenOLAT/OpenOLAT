@@ -57,7 +57,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	@Test
 	public void createIdentityToIdentityRelation() {
 		String role = random();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
 		dbInstance.commitAndCloseSession();
@@ -76,7 +76,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	@Test
 	public void isUsed_yes() {
 		String role = random();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
 		IdentityToIdentityRelation relation = identityToIdentityRelationDao.createRelation(idSource, idTarget, relationRole, null, null);
@@ -90,7 +90,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	@Test
 	public void isUsed_no() {
 		String role = random();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		boolean used = identityToIdentityRelationDao.isUsed(relationRole);
@@ -100,7 +100,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	@Test
 	public void hasRelation() {
 		String role = random();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
 		IdentityToIdentityRelation relation = identityToIdentityRelationDao.createRelation(idSource, idTarget, relationRole, null, null);
@@ -120,7 +120,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRelation() {
 		String role = random();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
 		IdentityToIdentityRelation relation = identityToIdentityRelationDao.createRelation(idSource, idTarget, relationRole, "External-id", "all");
@@ -141,7 +141,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRelationsAsSource() {
 		String role = random();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
 		IdentityToIdentityRelation relation = identityToIdentityRelationDao.createRelation(idSource, idTarget, relationRole, null, null);
@@ -162,7 +162,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRelationsAsTarget() {
 		String role = random();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
 		IdentityToIdentityRelation relation = identityToIdentityRelationDao.createRelation(idSource, idTarget, relationRole, null, null);
@@ -184,9 +184,9 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRelationsAsTarget_filterRight() {
 		// Init roles
-		RelationRole roleA = relationRoleDao.createRelationRole(random(), null, null, null, true);
-		RelationRole roleB = relationRoleDao.createRelationRole(random(), null, null, null, true);
-		RelationRole roleNoRight = relationRoleDao.createRelationRole(random(), null, null, null, true);
+		RelationRole roleA = relationRoleDao.createRelationRole(random(), null, null, null);
+		RelationRole roleB = relationRoleDao.createRelationRole(random(), null, null, null);
+		RelationRole roleNoRight = relationRoleDao.createRelationRole(random(), null, null, null);
 		// Init rights
 		relationRightDao.ensureRightExists("testRight");
 		RelationRight right = relationRightDao.loadRelationRightByRight("testRight");
@@ -225,7 +225,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getSources() {
 		String role = random();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-8");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-9");
 		IdentityToIdentityRelation relation = identityToIdentityRelationDao.createRelation(idSource, idTarget, relationRole, null, null);
@@ -240,7 +240,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getTargets() {
 		String role = random();
-		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null, true);
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-8");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-9");
 		IdentityToIdentityRelation relation = identityToIdentityRelationDao.createRelation(idSource, idTarget, relationRole, null, null);

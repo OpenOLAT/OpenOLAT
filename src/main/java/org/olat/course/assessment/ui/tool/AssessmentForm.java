@@ -75,10 +75,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Jun 24, 2004
- * 
- * <ul>
- * 	
- * </ul>
  *
  * @author gnaegi
  */

@@ -152,9 +152,14 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	@Override
 	protected String getTableId() {
 		if(isTestQTI21()) {
-			return"qti21-assessment-tool-identity-list-v2";
+			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
+			RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
+			if(testCourseNode != null && testCourseNode.hasQTI21TimeLimit(qtiTestEntry)) {
+				return"qti21-assessment-tool-identity-list-extra-v3";
+			}
+			return"qti21-assessment-tool-identity-list-v3";
 		}
-		return "qti-assessment-tool-identity-list-v2";
+		return "qti-assessment-tool-identity-list-v3";
 	}
 
 	@Override
@@ -172,10 +177,15 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(testCourseNode != null && testCourseNode.hasQTI21TimeLimit(qtiTestEntry)) {
 			int timeLimitInSeconds = testCourseNode.getQTI21TimeLimitMaxInSeconds(qtiTestEntry);
 			boolean suspendEnabled = isSuspendEnable();
-			Date endDate = testCourseNode.getModuleConfiguration().getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
-			FlexiCellRenderer renderer = new ExtraTimeCellRenderer(!suspendEnabled, timeLimitInSeconds, endDate, getLocale());
-			String header = suspendEnabled ? "table.header.extra.time" : "table.header.end.date";
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(header, IdentityCourseElementCols.details.ordinal(), renderer));
+			if(!suspendEnabled) {
+				Date endDate = testCourseNode.getModuleConfiguration().getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
+				FlexiCellRenderer renderer = new EndTimeCellRenderer(timeLimitInSeconds, endDate, getLocale());
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.end.date",
+						IdentityCourseElementCols.details.ordinal(), renderer));
+			}
+
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.extra.time",
+					IdentityCourseElementCols.details.ordinal(), new ExtraTimeCellRenderer()));
 		}
 	}
 	
@@ -240,7 +250,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 	
 	private boolean isTestRunning() {
-		List<Identity> identities = getIdentities();
+		List<Identity> identities = getIdentities(false);
 		if(isTestQTI21()) {
 			return qtiService.isRunningAssessmentTestSession(getCourseRepositoryEntry(),
 					courseNode.getIdent(), getReferencedRepositoryEntry(), identities);
@@ -442,21 +452,30 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				courseNode, assessedIdentity, coachCourseEnv);
 	}
 	
-	private List<Identity> getIdentities() {
+	/**
+	 * 
+	 * @param allIfAdmin Admin. have the possibility to see not participants.
+	 * @return A list of identities
+	 */
+	private List<Identity> getIdentities(boolean allIfAdmin) {
 		AssessmentToolOptions asOptions = getOptions();
 		List<Identity> identities = asOptions.getIdentities();
 		if (group != null) {
 			identities = groupService.getMembers(group, GroupRoles.participant.toString());
 		} else if (identities != null) {
 			identities = asOptions.getIdentities();			
-		} else if (asOptions.isAdmin()){
-			identities = ScoreAccountingHelper.loadParticipants(getCourseEnvironment());
+		} else if (asOptions.isAdmin()) {
+			if(allIfAdmin) {
+				identities = ScoreAccountingHelper.loadUsers(getCourseEnvironment());
+			} else {
+				identities = ScoreAccountingHelper.loadParticipants(getCourseEnvironment());
+			}
 		}
 		return identities;
 	}
 	
 	private void doExportResults(UserRequest ureq) {
-		List<Identity> identities = getIdentities();
+		List<Identity> identities = getIdentities(true);
 		if (identities != null && !identities.isEmpty()) {
 			MediaResource resource;
 			CourseEnvironment courseEnv = getCourseEnvironment();

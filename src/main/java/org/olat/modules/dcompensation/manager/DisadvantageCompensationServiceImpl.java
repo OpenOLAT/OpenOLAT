@@ -61,6 +61,9 @@ public class DisadvantageCompensationServiceImpl implements DisadvantageCompensa
 		return disadvantageCompensationDao.updateDisadvantageCompensation(compensation);
 	}
 	
+	/**
+	 * Fetch all repository informations (resource, statistics...)
+	 */
 	@Override
 	public List<DisadvantageCompensation> getDisadvantageCompensations(IdentityRef identity) {
 		return disadvantageCompensationDao.getDisadvantageCompensations(identity);

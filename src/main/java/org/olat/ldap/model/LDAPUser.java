@@ -46,6 +46,8 @@ public class LDAPUser {
 	private Attributes attributes;
 	private IdentityRef cachedIdentity;
 	
+	private boolean notFound = false;
+	
 	public String getDn() {
 		return dn;
 	}
@@ -142,6 +144,14 @@ public class LDAPUser {
 		this.cachedIdentity = cachedIdentity;
 	}
 	
+	public boolean isNotFound() {
+		return notFound;
+	}
+
+	public void setNotFound(boolean notFound) {
+		this.notFound = notFound;
+	}
+
 	@Override
 	public int hashCode() {
 		return dn == null ? 76789 : dn.hashCode();

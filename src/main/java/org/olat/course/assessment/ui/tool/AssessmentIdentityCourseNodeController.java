@@ -109,7 +109,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		identityAssessmentVC = createVelocityContainer("identity_personal_node_infos");
 		initDetails();
 		
-		identityInfosCtrl = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course);
+		identityInfosCtrl = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course, courseNode);
 		listenTo(identityInfosCtrl);
 		identityAssessmentVC.put("identityInfos", identityInfosCtrl.getInitialComponent());
 

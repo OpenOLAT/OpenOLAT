@@ -36,8 +36,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.dcompensation.DisadvantageCompensation;
+import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.user.DisplayPortraitController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -51,11 +55,15 @@ public class AssessedIdentityLargeInfosController extends BasicController {
 	private final DisplayPortraitController portraitCtr;
 	private final UserShortDescription userShortDescrCtr;
 	
+	@Autowired
+	private DisadvantageCompensationService disadvantageCompensationService;
+	
 	public AssessedIdentityLargeInfosController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity) {
-		this(ureq, wControl, assessedIdentity, null);
+		this(ureq, wControl, assessedIdentity, null, null);
 	}
 	
-	public AssessedIdentityLargeInfosController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, ICourse course) {
+	public AssessedIdentityLargeInfosController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity,
+			ICourse course, CourseNode courseNode) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("user_infos_large");
 		mainVC.contextPut("user", assessedIdentity.getUser());
@@ -63,15 +71,21 @@ public class AssessedIdentityLargeInfosController extends BasicController {
 		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), assessedIdentity, true, true);
 		mainVC.put("portrait", portraitCtr.getInitialComponent());
 		listenTo(portraitCtr);
-		
+
+		Builder rowsBuilder = Rows.builder();
+		if(courseNode != null) {
+			DisadvantageCompensation compensation = disadvantageCompensationService.getActiveDisadvantageCompensation(assessedIdentity,
+					course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent());
+			if(compensation != null && compensation.getExtraTime() != null) {
+				int extraTimeInMinutes = compensation.getExtraTime().intValue() / 60;
+				rowsBuilder.addRow(translate("compensation.label"), translate("compensation.value", new String[] { Integer.toString(extraTimeInMinutes) }));
+			}
+		}
 		List<BusinessGroup> participantGroups = course != null
 				? course.getCourseEnvironment().getCourseGroupManager().getParticipatingBusinessGroups(assessedIdentity)
 				: new ArrayList<>();
 		final Collator collator = Collator.getInstance(getLocale());
-		Collections.sort(participantGroups, (a, b) -> {
-			return collator.compare(a.getName(), b.getName());
-		});
-		Builder rowsBuilder = Rows.builder();
+		Collections.sort(participantGroups, (a, b) -> collator.compare(a.getName(), b.getName()));
 		if (!participantGroups.isEmpty()) {
 			String groupNames = participantGroups.stream()
 					.map(BusinessGroup::getName)

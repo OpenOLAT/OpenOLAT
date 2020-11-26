@@ -117,8 +117,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		selectRepositoryEntryLayout.setMandatory(true);
 		formLayout.add(selectRepositoryEntryLayout);
 		if(compensation != null && compensation.getEntry() != null) {
-			String displayName = StringHelper.escapeHtml(compensation.getEntry().getDisplayname());
-			selectRepositoryEntryLayout.contextPut("entryName", displayName);
+			updateEntryName(compensation.getEntry());
 		}
 		selectEntryButton = uifactory.addFormLink("select.entry", selectRepositoryEntryLayout, Link.BUTTON);
 		selectEntryButton.getComponent().setSuppressDirtyFormWarning(true);
@@ -127,7 +126,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		elementEl = uifactory.addDropdownSingleselect("select.entry.element", formLayout, new String[0], new String[0]);
 		elementEl.setHelpTextKey("select.entry.element.hint", null);
 		if(compensation != null && compensation.getEntry() != null) {
-			updateElementSelection(compensation.getEntry());
+			updateElementSelection(compensation.getEntry(), compensation.getSubIdent());
 		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -269,17 +268,36 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 	
 	private void doSelectForm(RepositoryEntry selectedEntry) {
 		this.entry = selectedEntry;
-		selectRepositoryEntryLayout.contextPut("entryName", selectedEntry.getDisplayname());
-		updateElementSelection(selectedEntry);	
+		updateEntryName(selectedEntry);
+		String currentSelected = null;
+		if(elementEl != null && elementEl.isOneSelected()) {
+			currentSelected = elementEl.getSelectedKey();
+		}
+		updateElementSelection(selectedEntry, currentSelected);	
 	}
 	
-	private void updateElementSelection(RepositoryEntry selectedEntry) {
+	private void updateEntryName(RepositoryEntry selectedEntry) {
+		if(selectedEntry == null) {
+			selectRepositoryEntryLayout.contextRemove("entryName");
+		} else {
+			StringBuilder sb = new StringBuilder(64);
+			sb.append(StringHelper.escapeHtml(selectedEntry.getDisplayname()));
+			if(StringHelper.containsNonWhitespace(entry.getExternalRef())) {
+				sb.append(" (").append(StringHelper.escapeHtml(selectedEntry.getExternalRef())).append(")");
+			}
+			selectRepositoryEntryLayout.contextPut("entryName", sb.toString());
+		}
+	}
+	
+	private void updateElementSelection(RepositoryEntry selectedEntry, String currentSelectedIdent) {
 		final KeyValues values = new KeyValues();
 		Visitor visitor = node -> {
 			if(node instanceof IQTESTCourseNode) {
 				IQTESTCourseNode testNode = (IQTESTCourseNode)node;
-				if(testNode.hasQTI21TimeLimit(testNode.getCachedReferencedRepositoryEntry())) {
-					values.add(KeyValues.entry(testNode.getIdent(), testNode.getShortTitle()));
+				RepositoryEntry testEntry = testNode.getCachedReferencedRepositoryEntry();
+				if(testNode.hasQTI21TimeLimit(testEntry)) {
+					String value = makeElementValue(testNode, testEntry);
+					values.add(KeyValues.entry(testNode.getIdent(), value));
 				}
 			}
 		};
@@ -289,5 +307,18 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		new TreeVisitor(visitor, rootNode, false)
 			.visitAll();
 		elementEl.setKeysAndValues(values.keys(), values.values(), null);
+		if(currentSelectedIdent != null && values.containsKey(currentSelectedIdent)) {
+			elementEl.select(currentSelectedIdent, true);
+		}
+	}
+	
+	private String makeElementValue(IQTESTCourseNode testNode, RepositoryEntry testEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(StringHelper.escapeHtml(testNode.getShortTitle()))
+		  .append(" - ").append(StringHelper.escapeHtml(testEntry.getDisplayname()));
+		if(StringHelper.containsNonWhitespace(testEntry.getExternalRef())) {
+			sb.append(" (").append(StringHelper.escapeHtml(testEntry.getExternalRef())).append(")");
+		}
+		return sb.toString();
 	}
 }

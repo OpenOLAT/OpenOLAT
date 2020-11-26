@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Authentication;
@@ -180,14 +181,23 @@ public class AuthenticationDAO {
 		return results.get(0);
 	}
 	
+	/**
+	 * The flush mode is set to COMMIT for performance reason. Especially for LDAP synchronization
+	 * on very large groups. Identity and user are fetched with.
+	 * 
+	 * @param authUsername The authentication user name
+	 * @param provider The provider
+	 * @return An authentication
+	 */
 	public Authentication getAuthentication(String authUsername, String provider) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
-		  .append(" inner join auth.identity as ident")
-		  .append(" inner join ident.user as user")
+		  .append(" inner join fetch auth.identity as ident")
+		  .append(" inner join fetch ident.user as user")
 		  .append(" where lower(auth.authusername)=:authUsername and auth.provider=:provider");
 		List<Authentication> authentications = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
+				.setFlushMode(FlushModeType.COMMIT)
 				.setParameter("authUsername", authUsername.toLowerCase())
 				.setParameter("provider", provider)
 				.setFirstResult(0)
