@@ -78,8 +78,11 @@
 	}
 	
 	.o_warning {
-		margin-top: 0px;
+		margin-top: 5px;
 		margin-bottom: 0px;
+		&.o_bbb_warning {
+			margin-top: 15px;
+		}
 	}
 	.o_selected_msg {
 		margin-top: 5px;
@@ -98,20 +101,25 @@
 	
 	@media all and (min-width: $screen-sm-min) {
 		.o_topic {
-			display: flex;
-			justify-content: stretch;
-			
-			.col-sm-6:nth-child(2) {
+			.o_row {
 				display: flex;
-				justify-content: stretch;
-				flex-direction: column;
-				
-				.o_next_appointment {
-					flex-grow: 10;
+				.o_c2 {
+					flex: 50%;
+					padding-left: 15px;
+					padding-right: 15px;
+					
 				}
-				.o_button_group {
-					flex-grow: 1;
-					align-self: flex-end;
+				.o_c2:last-child {
+					display: flex;
+					justify-content: stretch;
+					flex-direction: column;
+					.o_grow_10 {
+						flex-grow: 10;
+					}
+					.o_button_group.o_open {
+						flex-grow: 1;
+						align-self: flex-end;
+					}
 				}
 			}
 		}

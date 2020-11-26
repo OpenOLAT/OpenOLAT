@@ -762,7 +762,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		List<Appointment> appointments = appointmentDao.loadAppointments(params);
 		if (!appointments.isEmpty()) {
 			Appointment appointment = appointments.get(0);
-			removeMeeting(appointment);
+			appointmentDao.saveAppointment(appointment, null);
 		}
 	}
 	

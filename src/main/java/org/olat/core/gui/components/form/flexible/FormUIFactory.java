@@ -1325,11 +1325,10 @@ public class FormUIFactory {
 		return slider;
 	}
 	
-	
 	public DropdownItem addDropdownMenu(String name, String i18nLabel, FormItemContainer formLayout, Translator translator) {
 		return addDropdownMenu(name, name, i18nLabel, formLayout, translator);
 	}
-		
+	
 	public DropdownItem addDropdownMenu(String name, String label, String i18nLabel, FormItemContainer formLayout, Translator translator) {
 		DropdownItem dropdown = new DropdownItem(name, label, translator);
 		dropdown.setEmbbeded(true);

@@ -102,6 +102,17 @@
 						</div>
 					#end
 					
+					#if($r.visible($topic.getAcknowledgeName()))
+						<div class="o_warning o_bbb_warning">
+							<h4>$r.translate("meeting.acknowledge.recording.explain.title")</h4>
+							<p>$r.translate("meeting.acknowledge.recording.explain")</p>
+							$r.render($topic.getAcknowledgeName())
+							#if($f.hasError($topic.getAcknowledgeName()))
+								$r.render("$topic.getAcknowledgeName()_ERROR")
+							#end
+						</div>
+					#end
+					
 					#if($r.isNotNull($topic.getJoinLinkName()))
 						<div class="o_button_group">
 							$r.render($topic.getJoinLinkName())
