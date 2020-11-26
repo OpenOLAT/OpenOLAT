@@ -151,7 +151,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (secCallback.canCreateTopic()) {
-			createButton = uifactory.addFormLink("add.topic", formLayout, Link.BUTTON);
+			createButton = uifactory.addFormLink("create.topic", formLayout, Link.BUTTON);
 			createButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		}
 	}
@@ -327,7 +327,7 @@ public class TopicsRunCoachController extends FormBasicController {
 			String displayText = showAllParticipations.contains(wrapper.getTopic())
 					? translate("show.less")
 					: translate("show.more", new String[] { String.valueOf(hiddenParticipations)} );
-			showMoreLink.setLinkTitle(displayText);
+			showMoreLink.setI18nKey(displayText);
 			showMoreLink.setUserObject(wrapper.getTopic());
 			wrapper.setShowMoreLinkName(showMoreLink.getName());
 		}
