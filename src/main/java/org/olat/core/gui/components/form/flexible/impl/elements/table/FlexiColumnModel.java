@@ -59,6 +59,8 @@ public interface FlexiColumnModel {
 	
 	public String getHeaderLabel();
 	
+	public String getHeaderTooltip();
+	
 	public String getIconHeader();
 	
 	public Integer getHeaderAlignment();
