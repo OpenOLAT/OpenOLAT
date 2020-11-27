@@ -105,6 +105,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	private Translator translator;
 	private RepositoryEntry entry;
 	private final CourseEnvironment courseEnv;
+	private final boolean withNonParticipants;
 	private UserRequest ureq;
 	
 	private final Set<RepositoryEntry> testEntries = new HashSet<>();
@@ -114,12 +115,13 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	@Autowired
 	private QTI21Service qtiService;
 	
-	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities,
+	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, boolean withNonParticipants,
 			QTICourseNode courseNode, String archivePath, Locale locale) {
 		CoreSpringFactory.autowireObject(this);
 		this.courseNode = courseNode;
 		this.identities = identities;
 		this.courseEnv = courseEnv;
+		this.withNonParticipants = withNonParticipants;
 		
 		displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -213,9 +215,17 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	
 	private void exportExcelResults(RepositoryEntry testEntry, ZipOutputStream zout) {
 		ArchiveOptions options = new ArchiveOptions();
-		options.setIdentities(identities);
+		if(!withNonParticipants) {
+			options.setIdentities(identities);
+		}
 		QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, testEntry, entry, courseNode.getIdent());
-		searchParams.setLimitToIdentities(identities);
+		if(withNonParticipants) {
+			searchParams.setViewAllUsers(true);
+			searchParams.setViewNonMembers(true);
+		} else {
+			searchParams.setLimitToIdentities(identities);
+		}
+		
 		QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(translator.getLocale(), searchParams);
 		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName() + "_" + testEntry.getDisplayname())
 				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())

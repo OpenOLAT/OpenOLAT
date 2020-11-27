@@ -480,7 +480,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			MediaResource resource;
 			CourseEnvironment courseEnv = getCourseEnvironment();
 			if(isTestQTI21()) {
-				resource = new QTI21ResultsExportMediaResource(courseEnv, identities, (IQTESTCourseNode)courseNode, "", getLocale());
+				resource = new QTI21ResultsExportMediaResource(courseEnv, identities, assessmentCallback.isAdmin(),
+						(IQTESTCourseNode)courseNode, "", getLocale());
 			} else {
 				resource = new QTI12ResultsExportMediaResource(courseEnv, identities, (IQTESTCourseNode)courseNode, "", getLocale());
 			}
