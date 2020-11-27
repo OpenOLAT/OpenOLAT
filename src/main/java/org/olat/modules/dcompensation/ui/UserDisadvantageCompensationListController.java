@@ -53,16 +53,11 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationAuditLog;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.dcompensation.DisadvantageCompensationStatusEnum;
 import org.olat.modules.dcompensation.ui.UserDisadvantageCompensationTableModel.CompensationCols;
-import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -121,8 +116,8 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompensationCols.entryKey));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompensationCols.entry, "select_course"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompensationCols.externalRef, "select_course"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompensationCols.courseElement, "select_test"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompensationCols.testEntryExternalRef, "select_test"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompensationCols.courseElement, "select_course"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompensationCols.courseElementIdent, "select_course"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompensationCols.extraTime,
 				new ExtraTimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompensationCols.approvedBy));
@@ -152,7 +147,7 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 		filters.add(new FlexiTableFilter(translate("show.all"), "all", true));
 		tableEl.setFilters("status", filters, false);
 		tableEl.setSelectedFilterKey(DisadvantageCompensationStatusEnum.active.name());
-		tableEl.setAndLoadPersistedPreferences(ureq, "user-disadvantage-compensations-list-v2");
+		tableEl.setAndLoadPersistedPreferences(ureq, "user-disadvantage-compensations-list-v3");
 	}
 
 	@Override
@@ -168,23 +163,12 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
 
-			RepositoryEntry testEntry = getTestEntry(compensation);
-			UserDisadvantageCompensationRow row = new UserDisadvantageCompensationRow(compensation, testEntry, creatorFullName, toolsLink);
+			UserDisadvantageCompensationRow row = new UserDisadvantageCompensationRow(compensation, creatorFullName, toolsLink);
 			rows.add(row);
 			toolsLink.setUserObject(row);
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-	}
-	
-	private RepositoryEntry getTestEntry(DisadvantageCompensation compensation) {
-		ICourse course = CourseFactory.loadCourse(compensation.getEntry());
-		CourseNode courseNode = course.getRunStructure().getNode(compensation.getSubIdent());
-		if(courseNode instanceof IQTESTCourseNode) {
-			IQTESTCourseNode node = (IQTESTCourseNode)courseNode;
-			return node.getCachedReferencedRepositoryEntry();
-		}
-		return null;
 	}
 	
 	@Override
@@ -224,8 +208,6 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 				SelectionEvent se = (SelectionEvent)event;
 				if("select_course".equals(se.getCommand())) {
 					doOpenCourse(ureq, tableModel.getObject(se.getIndex()));
-				} else if("select_test".equals(se.getCommand())) {
-					doOpenTest(ureq, tableModel.getObject(se.getIndex()));
 				}
 			}
 		} else if(source instanceof FormLink) {
@@ -241,14 +223,6 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 	private void doOpenCourse(UserRequest ureq, UserDisadvantageCompensationRow row) {
 		String businessPath = "[RepositoryEntry:" + row.getEntry().getKey() + "][CourseNode:" + row.getCourseElementId() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-	}
-	
-	private void doOpenTest(UserRequest ureq, UserDisadvantageCompensationRow row) {
-		RepositoryEntry testEntry = row.getTestEntry();
-		if(testEntry != null) {
-			String businessPath = "[RepositoryEntry:" + testEntry.getKey() + "]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-		}
 	}
 	
 	private void doAddCompensation(UserRequest ureq) {

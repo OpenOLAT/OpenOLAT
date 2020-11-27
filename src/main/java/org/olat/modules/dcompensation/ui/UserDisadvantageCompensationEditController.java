@@ -216,7 +216,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		String approvedBy = approvedByEl.getValue();
 		int extraTime = Integer.parseInt(extraTimeEl.getValue()) * 60;
 		String subIdent = elementEl.getSelectedKey();
-		String subIdentName = elementEl.getSelectedValue();
+		String subIdentName = getCourseNodeName(entry, subIdent,elementEl.getSelectedValue());
 		
 		if(compensation == null) {
 			compensation = disadvantageCompensationService.createDisadvantageCompensation(disadvantagedIdentity,
@@ -312,12 +312,21 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		}
 	}
 	
+	private String getCourseNodeName(RepositoryEntry selectedEntry, String ident, String value) {
+		ICourse course = CourseFactory.loadCourse(selectedEntry);
+		CourseNode rootNode = course.getRunStructure().getNode(ident);
+		if(rootNode != null) {
+			return rootNode.getShortTitle();
+		}
+		return value;
+	}
+	
 	private String makeElementValue(IQTESTCourseNode testNode, RepositoryEntry testEntry) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(StringHelper.escapeHtml(testNode.getShortTitle()))
-		  .append(" - ").append(StringHelper.escapeHtml(testEntry.getDisplayname()));
+		sb.append(testNode.getShortTitle())
+		  .append(" - ").append(testEntry.getDisplayname());
 		if(StringHelper.containsNonWhitespace(testEntry.getExternalRef())) {
-			sb.append(" (").append(StringHelper.escapeHtml(testEntry.getExternalRef())).append(")");
+			sb.append(" (").append(testEntry.getExternalRef()).append(")");
 		}
 		return sb.toString();
 	}
