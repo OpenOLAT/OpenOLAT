@@ -127,6 +127,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		selectEntryButton.setVisible(compensation == null || compensation.getEntry() == null);
 		
 		elementEl = uifactory.addDropdownSingleselect("select.entry.element", formLayout, new String[0], new String[0]);
+		elementEl.addActionListener(FormEvent.ONCHANGE);
 		elementEl.setHelpTextKey("select.entry.element.hint", null);
 		if(compensation != null && compensation.getEntry() != null) {
 			updateElementSelection(compensation.getEntry(), compensation.getSubIdent());
@@ -246,6 +247,8 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(selectEntryButton == source) {
 			doSelectEntry(ureq);
+		} else if(elementEl == source) {
+			updateElementPath(CourseFactory.loadCourse(entry));	
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -312,15 +315,23 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		new TreeVisitor(visitor, rootNode, false)
 			.visitAll();
 		elementEl.setKeysAndValues(values.keys(), values.values(), null);
-		elementEl.setHelpText("");
 		if(currentSelectedIdent != null && values.containsKey(currentSelectedIdent)) {
 			elementEl.select(currentSelectedIdent, true);
-			CourseNode node = course.getRunStructure().getNode(currentSelectedIdent);
-			String path = getCourseNodePath(node);
-			if(path != null) {
-				elementEl.setExampleKey("noTransOnlyParam", new String[] { path });
-			}	
 		}
+		updateElementPath(course);
+	}
+	
+	private void updateElementPath(ICourse course) {
+		String path = "";
+		if(elementEl.isOneSelected()) {
+			String nodeIdent = elementEl.getSelectedKey();
+			CourseNode node = course.getRunStructure().getNode(nodeIdent);
+			String parentLine = getCourseNodePath(node);
+			if(parentLine != null) {
+				path = parentLine;
+			}
+		}
+		elementEl.setExampleKey("noTransOnlyParam", new String[] { path });
 	}
 	
 	private String getCourseNodePath(CourseNode node) {

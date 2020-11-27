@@ -26,6 +26,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.nodes.AppointmentsCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.Organizer;
 import org.olat.modules.appointments.Participation;
@@ -102,9 +103,15 @@ public class AppointmentsSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canJoinMeeting(BigBlueButtonMeeting meeting, Collection<Organizer> organizers, Collection<Participation> participations) {
-			if (readOnly || meeting == null) return false;
+		public boolean canJoinMeeting(Appointment appointment, Collection<Organizer> organizers, Collection<Participation> participations) {
+			if (readOnly 
+					|| appointment == null
+					|| appointment.getMeeting() == null
+					|| Appointment.Status.confirmed != appointment.getStatus()) {
+				return false;
+			}
 			
+			BigBlueButtonMeeting meeting = appointment.getMeeting();
 			boolean participation = isParticipation(participations);
 			boolean organizer = isOrganizer(organizers);
 			if (participation || organizer) {

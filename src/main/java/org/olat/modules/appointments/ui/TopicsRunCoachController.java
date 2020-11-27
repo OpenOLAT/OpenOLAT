@@ -385,7 +385,7 @@ public class TopicsRunCoachController extends FormBasicController {
 		wrapper.setDayName(dayName);
 		
 		if (appointmentsService.isBigBlueButtonEnabled()) {
-			if (secCallback.canJoinMeeting(appointment.getMeeting(), wrapper.getOrganizers(), participations)) {
+			if (secCallback.canJoinMeeting(appointment, wrapper.getOrganizers(), participations)) {
 				wrapMeeting(wrapper, appointment);
 			}
 			if (secCallback.canWatchRecording(wrapper.getOrganizers(), participations)) {

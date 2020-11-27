@@ -21,8 +21,6 @@ package org.olat.modules.appointments;
 
 import java.util.Collection;
 
-import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
-
 /**
  * 
  * Initial date: 13 Apr 2020<br>
@@ -43,7 +41,7 @@ public interface AppointmentsSecurityCallback {
 	
 	public boolean canSelectAppointments();
 	
-	public boolean canJoinMeeting(BigBlueButtonMeeting meeting, Collection<Organizer> organizers, Collection<Participation> participations);
+	public boolean canJoinMeeting(Appointment appointment, Collection<Organizer> organizers, Collection<Participation> participations);
 	
 	public boolean canWatchRecording(Collection<Organizer> organizers, Collection<Participation> participations);
 

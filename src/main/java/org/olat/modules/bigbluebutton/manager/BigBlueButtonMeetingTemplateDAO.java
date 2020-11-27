@@ -93,7 +93,8 @@ public class BigBlueButtonMeetingTemplateDAO {
 	
 	public List<BigBlueButtonMeetingTemplate> getTemplates() {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select template from bigbluebuttontemplate as template");
+		sb.append("select template from bigbluebuttontemplate as template")
+		  .append(" order by lower(template.name) asc");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BigBlueButtonMeetingTemplate.class)
