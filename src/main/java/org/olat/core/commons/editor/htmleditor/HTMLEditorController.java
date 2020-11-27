@@ -356,7 +356,7 @@ public class HTMLEditorController extends FormBasicController implements Activat
 			//
 			// Add resize handler
 			RichTextConfiguration editorConfiguration = htmlElement.getEditorConfiguration(); 
-			editorConfiguration.addOnInitCallbackFunction("b_resizetofit_htmleditor()");
+			editorConfiguration.addOnInitCallbackFunction("setTimeout(function() { b_resizetofit_htmleditor()}, 100);");
 			editorConfiguration.enableEditorHeight();
 			if(StringHelper.containsNonWhitespace(mediaPath)) {
 				editorConfiguration.setFileBrowserUploadRelPath(mediaPath);
