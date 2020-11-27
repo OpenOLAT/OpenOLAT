@@ -334,7 +334,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 		wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 		
 		if (appointmentsService.isBigBlueButtonEnabled()) {
-			if (secCallback.canJoinMeeting(appointment.getMeeting(), wrapper.getOrganizers(), appointmentParticipations)) {
+			if (secCallback.canJoinMeeting(appointment, wrapper.getOrganizers(), appointmentParticipations)) {
 				wrapMeeting(wrapper, appointment);
 			}
 			if (secCallback.canWatchRecording(wrapper.getOrganizers(), appointmentParticipations)) {
