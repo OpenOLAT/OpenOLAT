@@ -37,13 +37,20 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public interface DocEditor {
 	
-	public enum Mode {EDIT, VIEW, EMBEDDED};
+	public enum Mode {EDIT, VIEW, EMBEDDED}
 	
 	boolean isEnable();
 	
 	String getType();
 	
 	String getDisplayName(Locale locale);
+	
+	/**
+	 * Lower value has higher priority.
+	 *
+	 * @return
+	 */
+	int getPriority();
 	
 	boolean isEditEnabled();
 	

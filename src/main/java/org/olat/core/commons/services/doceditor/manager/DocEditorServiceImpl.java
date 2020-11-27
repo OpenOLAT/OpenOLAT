@@ -213,17 +213,21 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 			return null;
 		}
 		
-		String preferredEditorType = getPreferredEditorType(identity);
-		if (preferredEditorType != null) {
-			for (DocEditor docEditor : leafEditors) {
-				if (preferredEditorType.equals(docEditor.getType())) {
-					return docEditor;
+		boolean canSetPreferredEditor = getExternalEditors(identity, roles).size() >= 2;
+		if (canSetPreferredEditor) {
+			String preferredEditorType = getPreferredEditorType(identity);
+			if (preferredEditorType != null) {
+				for (DocEditor docEditor : leafEditors) {
+					if (preferredEditorType.equals(docEditor.getType())) {
+						return docEditor;
+					}
 				}
 			}
 		}
 	
-		// If no preference return someone
-		return leafEditors.get(0);
+		return leafEditors.stream()
+				.sorted((e1, e2) -> Integer.compare(e1.getPriority(), e2.getPriority()))
+				.findFirst().get();
 	}
 	
 	@Override
