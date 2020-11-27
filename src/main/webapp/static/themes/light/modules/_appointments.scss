@@ -247,6 +247,15 @@
 		display: flex;
 		flex-flow: row wrap;
 		
+		.o_duration {
+			:first-child {
+				display: inline-block;
+			}
+			.o_min {
+				margin-right: 20px;
+			}
+		}
+		
 		// Space in every screen size
 		margin-top: 8px;
 		&:first-child {

@@ -81,6 +81,7 @@ import org.olat.modules.appointments.ParticipationResult;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight.Type;
+import org.olat.modules.appointments.ui.AppointmentCreateController.AppointmentInputType;
 import org.olat.modules.appointments.ui.AppointmentDataModel.AppointmentCols;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
@@ -108,7 +109,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 	
 	private FormLink backLink;
 	private DropdownItem addAppointmentsDropdown;
-	private FormLink addIndividualAppointmentsLink;
+	private FormLink addStartDurationAppointmentsLink;
+	private FormLink addStartEndAppointmentsLink;
 	private FormLink addRecurringAppointmentLink;
 	private FlexiTableElement tableEl;
 	private AppointmentDataModel dataModel;
@@ -191,8 +193,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 				addAppointmentsDropdown = uifactory.addDropdownMenu("add.appointment", "add.appointment", topButtons, getTranslator());
 				addAppointmentsDropdown.setOrientation(DropdownOrientation.right);
 				
-				addIndividualAppointmentsLink = uifactory.addFormLink("add.appointment.individual", formLayout, Link.LINK);
-				addAppointmentsDropdown.addElement(addIndividualAppointmentsLink);
+				addStartDurationAppointmentsLink = uifactory.addFormLink("add.appointment.start.duration", formLayout, Link.LINK);
+				addAppointmentsDropdown.addElement(addStartDurationAppointmentsLink);
+				addStartEndAppointmentsLink = uifactory.addFormLink("add.appointment.start.end", formLayout, Link.LINK);
+				addAppointmentsDropdown.addElement(addStartEndAppointmentsLink);
 				addRecurringAppointmentLink = uifactory.addFormLink("add.appointment.recurring", formLayout, Link.LINK);
 				addAppointmentsDropdown.addElement(addRecurringAppointmentLink);
 			}
@@ -508,8 +512,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == backLink) {
 			fireEvent(ureq, Event.DONE_EVENT);
-		} else if (source == addIndividualAppointmentsLink) {
-			doAddIndividualAppointments(ureq);
+		} else if (source == addStartDurationAppointmentsLink) {
+			doAddStartDurationAppointments(ureq);
+		} else if (source == addStartEndAppointmentsLink) {
+			doAddStartEndAppointments(ureq);
 		} else if (source == addRecurringAppointmentLink) {
 			doAddRecurringAppointment(ureq);
 		} else if (source instanceof FormLink) {
@@ -676,8 +682,18 @@ public abstract class AppointmentListController extends FormBasicController impl
 		}
 	}
 
-	private void doAddIndividualAppointments(UserRequest ureq) {
-		addAppointmentsCtrl = new AppointmentCreateController(ureq, getWindowControl(), topic, false);
+	private void doAddStartDurationAppointments(UserRequest ureq) {
+		addAppointmentsCtrl = new AppointmentCreateController(ureq, getWindowControl(), topic, AppointmentInputType.startDuration);
+		listenTo(addAppointmentsCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", addAppointmentsCtrl.getInitialComponent(), true,
+				translate("add.appointment.individual"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doAddStartEndAppointments(UserRequest ureq) {
+		addAppointmentsCtrl = new AppointmentCreateController(ureq, getWindowControl(), topic, AppointmentInputType.startEnd);
 		listenTo(addAppointmentsCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", addAppointmentsCtrl.getInitialComponent(), true,
@@ -687,7 +703,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 
 	private void doAddRecurringAppointment(UserRequest ureq) {
-		addAppointmentsCtrl = new AppointmentCreateController(ureq, getWindowControl(), topic, true);
+		addAppointmentsCtrl = new AppointmentCreateController(ureq, getWindowControl(), topic, AppointmentInputType.recurring);
 		listenTo(addAppointmentsCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", addAppointmentsCtrl.getInitialComponent(), true,

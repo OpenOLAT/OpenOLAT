@@ -2,9 +2,15 @@
 	#foreach($appointment in $appointments)
 		<div class="o_appointment">
 			<div>$r.render(${appointment.getStartElName()})</div>
-			<div>
-				$r.render(${appointment.getEndElName()})
-			</div>
+			#if(${appointment.getDurationElName()})
+				<div class="o_duration">
+					$r.render(${appointment.getDurationElName()})
+					<span class="o_min">&nbsp;$r.translate("appointment.input.start.duration.min")</span>
+				</div>
+			#end
+			#if(${appointment.getEndElName()})
+				<div>$r.render(${appointment.getEndElName()})</div>
+			#end
 			<div class="btn-group" role="group">
 				$r.render(${appointment.getAddElName()})
 				$r.render(${appointment.getRemoveElName()})

@@ -22,6 +22,9 @@ package org.olat.modules.appointments.ui;
 import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.util.ArrayHelper.emptyStrings;
+import static org.olat.modules.appointments.ui.StartDuration.getEnd;
+import static org.olat.modules.appointments.ui.StartDuration.none;
+import static org.olat.modules.appointments.ui.StartDuration.ofString;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.getSelectedTemplate;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.isWebcamLayoutAvailable;
 
@@ -83,14 +86,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AppointmentCreateController extends FormBasicController {
 	
+	private static final String CMD_DURATION = "dur_";
 	private static final String KEY_ON = "on";
 	private static final String[] KEYS_ON = new String[] { KEY_ON };
 	private static final String[] KEYS_YES_NO = new String[] { "yes", "no" };
 	private static final String KEY_MULTI_PARTICIPATION = "multi.participation";
 	private static final String KEY_COACH_CONFIRMATION = "coach.confirmation";
 	private static final String KEY_PARTICIPATION_VISIBLE = "participation.visible";
-	private static final String CMD_REMOVE = "remove";
-	private static final String CMD_ADD = "add";
+	private static final String CMD_START_DURATION_REMOVE = "start.duration.remove";
+	private static final String CMD_START_DURATION_ADD = "start.duration.add";
+	private static final String CMD_START_END_REMOVE = "start.end.remove";
+	private static final String CMD_START_END_ADD = "start.end.add";
+	
+	public enum AppointmentInputType { startDuration, startEnd, recurring }
 	
 	private TextElement titleEl;
 	private TextElement descriptionEl;
@@ -100,9 +108,10 @@ public class AppointmentCreateController extends FormBasicController {
 	private TextElement locationEl;
 	private TextElement maxParticipationsEl;
 	private TextElement detailsEl;
-	private MultipleSelectionElement recurringEl;
-	private FormLayoutContainer singleCont;
 	private DateChooser recurringFirstEl;
+	private SingleSelection appointmentInputTypeEl;
+	private FormLayoutContainer startDurationCont;
+	private FormLayoutContainer startEndCont;
 	private MultipleSelectionElement recurringDaysOfWeekEl;
 	private DateChooser recurringLastEl;
 	private SpacerElement bbbSpacer;
@@ -123,9 +132,10 @@ public class AppointmentCreateController extends FormBasicController {
 	private String subIdent;
 	private Topic topic;
 	private List<Identity> coaches;
-	private boolean recurringAppointments;
+	private AppointmentInputType appointmentInputType;
 	private List<BigBlueButtonMeetingTemplate> templates;
-	private List<AppointmentWrapper> appointmentWrappers;
+	private List<AppointmentWrapper> startDurationWrappers = new ArrayList<>();
+	private List<AppointmentWrapper> startEndWrappers = new ArrayList<>();
 	private boolean multiParticipationsSelected = true;
 	private boolean coachConfirmationSelected = true;
 	private boolean participationVisible = true;
@@ -144,6 +154,7 @@ public class AppointmentCreateController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.subIdent = subIdent;
+		this.appointmentInputType = AppointmentInputType.startDuration;
 		
 		coaches = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.coach.name());
 		
@@ -151,13 +162,13 @@ public class AppointmentCreateController extends FormBasicController {
 		updateUI();
 	}
 	
-	public AppointmentCreateController(UserRequest ureq, WindowControl wControl, Topic topic, boolean recurringAppointments) {
+	public AppointmentCreateController(UserRequest ureq, WindowControl wControl, Topic topic, AppointmentInputType appointmentInputType) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		this.entry = topic.getEntry();
 		this.subIdent = topic.getSubIdent();
 		this.topic = topic;
-		this.recurringAppointments = recurringAppointments;
+		this.appointmentInputType  = appointmentInputType;
 		
 		initForm(ureq);
 		updateUI();
@@ -223,22 +234,34 @@ public class AppointmentCreateController extends FormBasicController {
 		}
 		
 		if (topic == null) {
-			recurringEl = uifactory.addCheckboxesHorizontal("appointments.recurring", formLayout,
-					new String[] { "xx" }, new String[] { null });
-			recurringEl.addActionListener(FormEvent.ONCHANGE);
+			KeyValues inputKV = new KeyValues();
+			inputKV.add(KeyValues.entry(AppointmentInputType.startDuration.name(), translate("appointment.input.start.duration")));
+			inputKV.add(KeyValues.entry(AppointmentInputType.startEnd.name(), translate("appointment.input.start.end")));
+			inputKV.add(KeyValues.entry(AppointmentInputType.recurring.name(), translate("appointment.input.recurring")));
+			appointmentInputTypeEl = uifactory.addRadiosHorizontal("appointment.input.type", formLayout, inputKV.keys(), inputKV.values());
+			appointmentInputTypeEl.select(appointmentInputType.name(), true);
+			appointmentInputTypeEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		
-		// Single appointments
-		singleCont = FormLayoutContainer.createCustomFormLayout("singleCont", getTranslator(), velocity_root + "/appointments_single.html");
-		formLayout.add(singleCont);
-		singleCont.setRootForm(mainForm);
-		singleCont.setLabel("appointments", null);
+		// Appointments with start / duration
+		startDurationCont = FormLayoutContainer.createCustomFormLayout("startDurationCont", getTranslator(), velocity_root + "/appointments_single.html");
+		formLayout.add(startDurationCont);
+		startDurationCont.setRootForm(mainForm);
+		startDurationCont.setLabel("appointments", null);
 		
-		appointmentWrappers = new ArrayList<>();
-		doCreateAppointmentWrapper(null);
-		singleCont.contextPut("appointments", appointmentWrappers);
+		doCreateStartDurationWrapper(null);
+		startDurationCont.contextPut("appointments", startDurationWrappers);
 		
-		// Reccuring appointments
+		// Appointments with start / end
+		startEndCont = FormLayoutContainer.createCustomFormLayout("startEndCont", getTranslator(), velocity_root + "/appointments_single.html");
+		formLayout.add(startEndCont);
+		startEndCont.setRootForm(mainForm);
+		startEndCont.setLabel("appointments", null);
+		
+		doCreateStartEndWrapper(null);
+		startEndCont.contextPut("appointments", startEndWrappers);
+		
+		// Recurring appointments
 		recurringFirstEl = uifactory.addDateChooser("appointments.recurring.first", null, formLayout);
 		recurringFirstEl.setDateChooserTimeEnabled(true);
 		recurringFirstEl.setSecondDate(true);
@@ -337,8 +360,11 @@ public class AppointmentCreateController extends FormBasicController {
 		
 		maxParticipationsEl.setVisible(enrollment);
 		
-		boolean recurring = isRecurringSelected();
-		singleCont.setVisible(!recurring);
+		startDurationCont.setVisible(AppointmentInputType.startDuration == appointmentInputType);
+		
+		startEndCont.setVisible(AppointmentInputType.startEnd == appointmentInputType);
+		
+		boolean recurring = AppointmentInputType.recurring == appointmentInputType;
 		recurringFirstEl.setVisible(recurring);
 		recurringDaysOfWeekEl.setVisible(recurring);
 		recurringLastEl.setVisible(recurring);
@@ -362,10 +388,6 @@ public class AppointmentCreateController extends FormBasicController {
 		return topic == null
 				? typeEl.isOneSelected() && Type.valueOf(typeEl.getSelectedKey()) != Type.finding
 				: topic.getType() != Type.finding;
-	}
-
-	private boolean isRecurringSelected() {
-		return (recurringEl != null && recurringEl.isAtLeastSelected(1)) || recurringAppointments;
 	}
 	
 	@Override
@@ -395,7 +417,10 @@ public class AppointmentCreateController extends FormBasicController {
 			multiParticipationsSelected = configKeys.contains(KEY_MULTI_PARTICIPATION);
 			coachConfirmationSelected = configKeys.contains(KEY_COACH_CONFIRMATION);
 			participationVisible = configKeys.contains(KEY_PARTICIPATION_VISIBLE);
-		} else if (source == recurringEl) {
+		} else if (source == appointmentInputTypeEl) {
+			if (appointmentInputTypeEl.isOneSelected()) {
+				appointmentInputType = AppointmentInputType.valueOf(appointmentInputTypeEl.getSelectedKey());
+			}
 			updateUI();
 		} else if (source == bbbRoomEl) {
 			updateUI();
@@ -410,16 +435,27 @@ public class AppointmentCreateController extends FormBasicController {
 		} else if (source instanceof DateChooser) {
 			DateChooser dateChooser = (DateChooser)source;
 			AppointmentWrapper wrapper = (AppointmentWrapper)dateChooser.getUserObject();
-			doInitEndDate(wrapper);
+			doSetEndDate(wrapper);
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if (CMD_ADD.equals(cmd)) {
+			if (CMD_START_DURATION_ADD.equals(cmd)) {
 				AppointmentWrapper wrapper = (AppointmentWrapper)link.getUserObject();
-				doCreateAppointmentWrapper(wrapper);
-			} else if (CMD_REMOVE.equals(cmd)) {
+				doCreateStartDurationWrapper(wrapper);
+			} else if (CMD_START_DURATION_REMOVE.equals(cmd)) {
 				AppointmentWrapper wrapper = (AppointmentWrapper)link.getUserObject();
-				doRemoveAppointmentWrapper(wrapper);
+				doRemoveAppointmentWrapper(startDurationWrappers, wrapper);
+			} else if (CMD_START_END_ADD.equals(cmd)) {
+				AppointmentWrapper wrapper = (AppointmentWrapper)link.getUserObject();
+				doCreateStartEndWrapper(wrapper);
+			} else if (CMD_START_END_REMOVE.equals(cmd)) {
+				AppointmentWrapper wrapper = (AppointmentWrapper)link.getUserObject();
+				doRemoveAppointmentWrapper(startEndWrappers, wrapper);
+			}
+		} else if (source instanceof TextElement) {
+			if (source.getName().startsWith(CMD_DURATION)) {
+				AppointmentWrapper wrapper = (AppointmentWrapper)source.getUserObject();
+				doSetEndDate(wrapper);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -453,14 +489,36 @@ public class AppointmentCreateController extends FormBasicController {
 			}
 		}
 		
-		boolean recurring = isRecurringSelected();
-			
-		for (AppointmentWrapper wrapper : appointmentWrappers) {
+		for (AppointmentWrapper wrapper : startDurationWrappers) {
+			DateChooser startEl = wrapper.getStartEl();
+			if (AppointmentInputType.startDuration == appointmentInputType) {
+				if (wrapper.getStartEl().getDate() != null && !StringHelper.containsNonWhitespace(wrapper.getDurationEl().getValue())) {
+					startEl.setErrorKey("form.legende.mandatory", null);
+					allOk &= false;
+				} else if (wrapper.getStartEl().getDate() == null && StringHelper.containsNonWhitespace(wrapper.getDurationEl().getValue())) {
+					startEl.setErrorKey("form.legende.mandatory", null);
+					allOk &= false;
+				} else if (StringHelper.containsNonWhitespace(wrapper.getDurationEl().getValue())) {
+					try {
+						Integer duration = Integer.parseInt(wrapper.getDurationEl().getValue());
+						if (duration.intValue() < 1) {
+							startEl.setErrorKey("error.positiv.number", null);
+							allOk &= false;
+						}
+					} catch (NumberFormatException e) {
+						startEl.setErrorKey("error.positiv.number", null);
+						allOk &= false;
+					}
+				}
+			}
+		}
+		
+		for (AppointmentWrapper wrapper : startEndWrappers) {
 			DateChooser startEl = wrapper.getStartEl();
 			DateChooser endEl = wrapper.getEndEl();
 			startEl.clearError();
 			endEl.clearError();
-			if (!recurring) {
+			if (AppointmentInputType.startEnd == appointmentInputType) {
 				if (startEl.getDate() == null && endEl.getDate() != null) {
 					startEl.setErrorKey("form.legende.mandatory", null);
 					allOk &= false;
@@ -483,7 +541,7 @@ public class AppointmentCreateController extends FormBasicController {
 		recurringFirstEl.clearError();
 		recurringDaysOfWeekEl.clearError();
 		recurringLastEl.clearError();
-		if (recurring) {
+		if (AppointmentInputType.recurring == appointmentInputType) {
 			if (recurringFirstEl.getDate() == null || recurringFirstEl.getSecondDate() == null) {
 				recurringFirstEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
@@ -538,14 +596,15 @@ public class AppointmentCreateController extends FormBasicController {
 					}
 				}
 				
-				if (recurring) {
+				if (AppointmentInputType.recurring == appointmentInputType) {
 					allOk &= BigBlueButtonUIHelper.validateDuration(recurringFirstEl, leadTimeEl, followupTimeEl, template);
 					if (!recurringFirstEl.hasError() && !validateRecurringSlot(template)) {
 						recurringFirstEl.setErrorKey("server.overloaded", new String[] { null });
 						bbbOk &= false;
 					}
 				} else {
-					for (AppointmentWrapper wrapper : appointmentWrappers) {
+					List<AppointmentWrapper> wrappers = AppointmentInputType.startDuration == appointmentInputType? startDurationWrappers: startEndWrappers;
+					for (AppointmentWrapper wrapper : wrappers) {
 						DateChooser startEl = wrapper.getStartEl();
 						DateChooser endEl = wrapper.getEndEl();
 						startEl.clearError();
@@ -609,10 +668,18 @@ public class AppointmentCreateController extends FormBasicController {
 			doSaveOrganizers();
 		}
 		
-		if (isRecurringSelected()) {
+		switch (appointmentInputType) {
+		case startDuration:
+			doSaveWrappedAppointments(startDurationWrappers);
+			break;
+		case startEnd:
+			doSaveWrappedAppointments(startEndWrappers);
+			break;
+		case recurring:
 			doSaveReccuringAppointments();
-		} else {
-			doSaveIndividualAppointments();
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -651,7 +718,7 @@ public class AppointmentCreateController extends FormBasicController {
 		appointmentsService.updateOrganizers(topic, selectedOrganizers);
 	}
 
-	private void doSaveIndividualAppointments() {
+	private void doSaveWrappedAppointments(Collection<AppointmentWrapper> appointmentWrappers) {
 		for (AppointmentWrapper wrapper : appointmentWrappers) {
 			DateChooser startEl = wrapper.getStartEl();
 			DateChooser endEl = wrapper.getEndEl();
@@ -772,58 +839,117 @@ public class AppointmentCreateController extends FormBasicController {
 		return appointment;
 	}
 	
-	private void doCreateAppointmentWrapper(AppointmentWrapper after) {
+	private void doCreateStartDurationWrapper(AppointmentWrapper after) {
 		AppointmentWrapper wrapper = new AppointmentWrapper();
 		
-		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, null, singleCont);
+		StartDuration previous = none();
+		StartDuration previous2 = none();
+		if (after != null) {
+			previous = ofString(after.getStartEl().getDate(), after.getDurationEl().getValue());
+			int index = startDurationWrappers.indexOf(after);
+			if (index >= 1) {
+				AppointmentWrapper after2 = startDurationWrappers.get(index - 1);
+				previous2 = ofString(after2.getStartEl().getDate(), after2.getDurationEl().getValue());
+			}
+		}
+		StartDuration next = StartDuration.next(previous, previous2);
+		
+		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, next.getStart(), startDurationCont);
 		startEl.setDateChooserTimeEnabled(true);
 		startEl.setUserObject(wrapper);
 		startEl.addActionListener(FormEvent.ONCHANGE);
 		wrapper.setStartEl(startEl);
 		
-		DateChooser endEl = uifactory.addDateChooser("end_" + counter++, null, singleCont);
-		endEl.setDateChooserTimeEnabled(true);
+		String duration = next.getDuration() != null? next.getDuration().toString(): null;
+		TextElement durationEl = uifactory.addTextElement(CMD_DURATION + counter++, 2, duration, startDurationCont);
+		durationEl.setDisplaySize(1);
+		durationEl.addActionListener(FormEvent.ONCHANGE);
+		durationEl.setUserObject(wrapper);
+		wrapper.setDurationEl(durationEl);
+		
+		Date end = getEnd(next);
+		DateChooser endEl = uifactory.addDateChooser("end_" + counter++, end, startDurationCont);
+		endEl.setTimeOnly(true);
+		endEl.setEnabled(false);
 		wrapper.setEndEl(endEl);
 		
-		FormLink addEl = uifactory.addFormLink("add_" + counter++, CMD_ADD, "", null, singleCont, Link.NONTRANSLATED + Link.BUTTON);
+		FormLink addEl = uifactory.addFormLink("add_" + counter++, CMD_START_DURATION_ADD, "", null, startDurationCont, Link.NONTRANSLATED + Link.BUTTON);
 		addEl.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		addEl.setUserObject(wrapper);
 		wrapper.setAddEl(addEl);
 		
-		FormLink removeEl = uifactory.addFormLink("remove_" + counter++, CMD_REMOVE, "", null, singleCont, Link.NONTRANSLATED + Link.BUTTON);
+		FormLink removeEl = uifactory.addFormLink("remove_" + counter++, CMD_START_DURATION_REMOVE, "", null, startDurationCont, Link.NONTRANSLATED + Link.BUTTON);
 		removeEl.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
 		removeEl.setUserObject(wrapper);
 		wrapper.setRemoveEl(removeEl);
 		
 		if (after == null) {
-			appointmentWrappers.add(wrapper);
+			startDurationWrappers.add(wrapper);
+		} else {
+			int index = startDurationWrappers.indexOf(after) + 1;
+			startDurationWrappers.add(index, wrapper);
+		}
+		showHideRemoveButtons(startDurationWrappers);
+	}
+	
+	private void doCreateStartEndWrapper(AppointmentWrapper after) {
+		AppointmentWrapper wrapper = new AppointmentWrapper();
+		
+		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, null, startEndCont);
+		startEl.setDateChooserTimeEnabled(true);
+		startEl.setUserObject(wrapper);
+		startEl.addActionListener(FormEvent.ONCHANGE);
+		wrapper.setStartEl(startEl);
+		
+		DateChooser endEl = uifactory.addDateChooser("end_" + counter++, null, startEndCont);
+		endEl.setDateChooserTimeEnabled(true);
+		wrapper.setEndEl(endEl);
+		
+		FormLink addEl = uifactory.addFormLink("add_" + counter++, CMD_START_END_ADD, "", null, startEndCont, Link.NONTRANSLATED + Link.BUTTON);
+		addEl.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		addEl.setUserObject(wrapper);
+		wrapper.setAddEl(addEl);
+		
+		FormLink removeEl = uifactory.addFormLink("remove_" + counter++, CMD_START_END_REMOVE, "", null, startEndCont, Link.NONTRANSLATED + Link.BUTTON);
+		removeEl.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
+		removeEl.setUserObject(wrapper);
+		wrapper.setRemoveEl(removeEl);
+		
+		if (after == null) {
+			startEndWrappers.add(wrapper);
 		} else {
 			Date start = after.getStartEl().getDate();
 			startEl.setDate(start);
 			Date end = after.getEndEl().getDate();
 			endEl.setDate(end);
-			int index = appointmentWrappers.indexOf(after) + 1;
-			appointmentWrappers.add(index, wrapper);
+			int index = startEndWrappers.indexOf(after) + 1;
+			startEndWrappers.add(index, wrapper);
 		}
-		showHideRemoveButtons();
+		showHideRemoveButtons(startEndWrappers);
 	}
 
-	private void doRemoveAppointmentWrapper(AppointmentWrapper wrapper) {
+	private void doRemoveAppointmentWrapper(Collection<AppointmentWrapper> appointmentWrappers, AppointmentWrapper wrapper) {
 		appointmentWrappers.remove(wrapper);
-		showHideRemoveButtons();
+		showHideRemoveButtons(appointmentWrappers);
 	}
 
-	private void showHideRemoveButtons() {
+	private void showHideRemoveButtons(Collection<AppointmentWrapper> appointmentWrappers) {
 		boolean enabled = appointmentWrappers.size() != 1;
 		appointmentWrappers.stream()
 				.forEach(wrapper -> wrapper.getRemoveEl().setEnabled(enabled));
 	}
 
-	private void doInitEndDate(AppointmentWrapper wrapper) {
+	private void doSetEndDate(AppointmentWrapper wrapper) {
 		DateChooser startEl = wrapper.getStartEl();
-		DateChooser endEl = wrapper.getEndEl();
-		if (startEl.getDate() != null && endEl.getDate() == null) {
-			endEl.setDate(startEl.getDate());
+		if (startEl != null) {
+			TextElement durationEl = wrapper.getDurationEl();
+			DateChooser endEl = wrapper.getEndEl();
+			if (durationEl != null) {
+				Date end = getEnd(ofString(startEl.getDate(), durationEl.getValue()));
+				endEl.setDate(end);
+			} else if (endEl != null && startEl.getDate() != null && endEl.getDate() == null) {
+				endEl.setDate(startEl.getDate());
+			}
 		}
 	}
 	
@@ -847,6 +973,7 @@ public class AppointmentCreateController extends FormBasicController {
 	public static final class AppointmentWrapper {
 		
 		private DateChooser startEl;
+		private TextElement durationEl;
 		private DateChooser endEl;
 		private FormLink addEl;
 		private FormLink removeEl;
@@ -863,6 +990,18 @@ public class AppointmentCreateController extends FormBasicController {
 			this.startEl = startEl;
 		}
 		
+		public String getDurationElName() {
+			return durationEl != null? durationEl.getComponent().getComponentName(): null;
+		}
+		
+		public TextElement getDurationEl() {
+			return durationEl;
+		}
+
+		public void setDurationEl(TextElement durationEl) {
+			this.durationEl = durationEl;
+		}
+
 		public String getEndElName() {
 			return endEl != null? endEl.getComponent().getComponentName(): null;
 		}

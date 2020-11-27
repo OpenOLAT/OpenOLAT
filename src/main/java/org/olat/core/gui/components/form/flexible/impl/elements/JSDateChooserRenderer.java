@@ -229,10 +229,13 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 
 	private void renderTextElementReadonly(StringOutput sb, JSDateChooserComponent jsdcc, int maxlength, Translator translator) {
 		String receiverId = jsdcc.getTextElementComponent().getFormDispatchId();
-		renderDateChooserDisabled(sb, jsdcc, jsdcc.getValue(), "o_first_date", maxlength);
+		if (!jsdcc.isTimeOnlyEnabled()) {
+			renderDateChooserDisabled(sb, jsdcc, jsdcc.getValue(), "o_first_date", maxlength);
+		}
 		//input fields for hour and minute
-		if (jsdcc.isDateChooserTimeEnabled()) {
-			renderTimeDisabled(sb, jsdcc.getDate(), receiverId, "o_first_ms");
+		if (jsdcc.isDateChooserTimeEnabled() || jsdcc.isTimeOnlyEnabled()) {
+			String timeOnlyCss = jsdcc.isTimeOnlyEnabled() ? " o_time_only" : "";
+			renderTimeDisabled(sb, jsdcc.getDate(), receiverId, "o_first_ms".concat(timeOnlyCss));
 			if(jsdcc.isSecondDate() && jsdcc.isSameDay()) {
 				String separator;
 				if(jsdcc.getSeparator() != null) {

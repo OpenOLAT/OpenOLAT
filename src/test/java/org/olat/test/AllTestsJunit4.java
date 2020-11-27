@@ -261,6 +261,7 @@ import org.junit.runners.Suite;
 	org.olat.basesecurity.manager.OrganisationTypeToTypeDAOTest.class,
 	org.olat.basesecurity.manager.OrganisationServiceTest.class,
 	org.olat.basesecurity.manager.SecurityGroupDAOTest.class,
+	org.olat.modules.appointments.ui.StartDurationTest.class,
 	org.olat.modules.ceditor.ContentEditorXStreamTest.class,
 	org.olat.modules.ceditor.model.ContainerSettingsTest.class,
 	org.olat.modules.edusharing.manager.EdusharingUsageDAOTest.class,
