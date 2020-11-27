@@ -19,7 +19,10 @@
  */
 package org.olat.modules.dcompensation.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -216,7 +219,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		String approvedBy = approvedByEl.getValue();
 		int extraTime = Integer.parseInt(extraTimeEl.getValue()) * 60;
 		String subIdent = elementEl.getSelectedKey();
-		String subIdentName = elementEl.getSelectedValue();
+		String subIdentName = getCourseNodeName(entry, subIdent,elementEl.getSelectedValue());
 		
 		if(compensation == null) {
 			compensation = disadvantageCompensationService.createDisadvantageCompensation(disadvantagedIdentity,
@@ -296,8 +299,10 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 				IQTESTCourseNode testNode = (IQTESTCourseNode)node;
 				RepositoryEntry testEntry = testNode.getCachedReferencedRepositoryEntry();
 				if(testNode.hasQTI21TimeLimit(testEntry)) {
-					String value = makeElementValue(testNode, testEntry);
-					values.add(KeyValues.entry(testNode.getIdent(), value));
+					StringBuilder sb = new StringBuilder(32);
+					sb.append(testNode.getShortTitle())
+					  .append(" (").append(testNode.getIdent()).append(")");
+					values.add(KeyValues.entry(testNode.getIdent(), sb.toString()));
 				}
 			}
 		};
@@ -307,18 +312,43 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		new TreeVisitor(visitor, rootNode, false)
 			.visitAll();
 		elementEl.setKeysAndValues(values.keys(), values.values(), null);
+		elementEl.setHelpText("");
 		if(currentSelectedIdent != null && values.containsKey(currentSelectedIdent)) {
 			elementEl.select(currentSelectedIdent, true);
+			CourseNode node = course.getRunStructure().getNode(currentSelectedIdent);
+			String path = getCourseNodePath(node);
+			if(path != null) {
+				elementEl.setExampleKey("noTransOnlyParam", new String[] { path });
+			}	
 		}
 	}
 	
-	private String makeElementValue(IQTESTCourseNode testNode, RepositoryEntry testEntry) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(StringHelper.escapeHtml(testNode.getShortTitle()))
-		  .append(" - ").append(StringHelper.escapeHtml(testEntry.getDisplayname()));
-		if(StringHelper.containsNonWhitespace(testEntry.getExternalRef())) {
-			sb.append(" (").append(StringHelper.escapeHtml(testEntry.getExternalRef())).append(")");
+	private String getCourseNodePath(CourseNode node) {
+		if(node == null) return null;
+		
+		List<CourseNode> parentLine = new ArrayList<>();
+		for(CourseNode parent = (CourseNode)node.getParent(); parent != null; parent=(CourseNode)parent.getParent()) {
+			parentLine.add(parent);
+		}
+		if(parentLine.size() <= 1) {
+			return null;
+		}
+		
+		Collections.reverse(parentLine);
+		
+		StringBuilder sb = new StringBuilder(128);
+		for(CourseNode n:parentLine) {
+			sb.append("/ ").append(n.getShortTitle()).append(" ");
 		}
 		return sb.toString();
+	}
+	
+	private String getCourseNodeName(RepositoryEntry selectedEntry, String ident, String value) {
+		ICourse course = CourseFactory.loadCourse(selectedEntry);
+		CourseNode rootNode = course.getRunStructure().getNode(ident);
+		if(rootNode != null) {
+			return rootNode.getShortTitle();
+		}
+		return value;
 	}
 }

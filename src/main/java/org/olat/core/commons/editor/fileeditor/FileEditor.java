@@ -61,6 +61,11 @@ public class FileEditor implements DocEditor {
 	}
 
 	@Override
+	public int getPriority() {
+		return 10;
+	}
+
+	@Override
 	public String getType() {
 		return TYPE;
 	}

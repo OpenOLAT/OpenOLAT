@@ -24,7 +24,6 @@ import java.util.Date;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationStatusEnum;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
@@ -36,17 +35,15 @@ import org.olat.repository.RepositoryEntryRef;
 public class UserDisadvantageCompensationRow {
 	
 	private final String creatorFullName;
-	private final RepositoryEntry testEntry;
 	private final DisadvantageCompensation compensation;
 	
 	private final FormLink toolsLink;
 	
-	public UserDisadvantageCompensationRow(DisadvantageCompensation compensation, RepositoryEntry testEntry,
+	public UserDisadvantageCompensationRow(DisadvantageCompensation compensation,
 			String creatorFullName, FormLink toolsLink) {
 		this.compensation = compensation;
 		this.creatorFullName = creatorFullName;
 		this.toolsLink = toolsLink;
-		this.testEntry = testEntry;
 	}
 	
 	public Long getKey() {
@@ -83,14 +80,6 @@ public class UserDisadvantageCompensationRow {
 	
 	public String getCourseElement() {
 		return compensation.getSubIdentName();
-	}
-	
-	public RepositoryEntry getTestEntry() {
-		return testEntry;
-	}
-	
-	public String getTestExternalRef() {
-		return testEntry == null ? null : testEntry.getExternalRef();
 	}
 	
 	public Integer getExtraTime() {

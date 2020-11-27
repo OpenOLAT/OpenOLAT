@@ -67,6 +67,11 @@ public class OnlyOfficeEditor implements DocEditor {
 	}
 
 	@Override
+	public int getPriority() {
+		return 100;
+	}
+
+	@Override
 	public String getDisplayName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(OnlyOfficeEditorController.class, locale);
 		return translator.translate("editor.display.name");

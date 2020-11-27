@@ -75,6 +75,10 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 	private void renderHeader(StringOutput sb, FlexiTableComponent ftC, FlexiColumnModel fcm, Translator translator) {
 		String header = getHeader(fcm, translator);
 		sb.append("<th scope='col'");
+		if(StringHelper.containsNonWhitespace(fcm.getHeaderTooltip())) {
+			String title =  fcm.getHeaderTooltip();
+			sb.append(" title=\"").appendHtmlEscaped(title).append("\"");
+		} 
 		if (fcm.getSortKey() != null || fcm.getHeaderAlignment() != null) {
 			sb.append(" class='");
 			// append sort key to make column width set via css

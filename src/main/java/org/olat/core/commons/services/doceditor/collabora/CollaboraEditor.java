@@ -73,6 +73,11 @@ public class CollaboraEditor implements DocEditor {
 	}
 
 	@Override
+	public int getPriority() {
+		return 50;
+	}
+
+	@Override
 	public boolean isEditEnabled() {
 		return true;
 	}
