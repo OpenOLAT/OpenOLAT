@@ -312,7 +312,6 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		new TreeVisitor(visitor, rootNode, false)
 			.visitAll();
 		elementEl.setKeysAndValues(values.keys(), values.values(), null);
-		elementEl.setHelpText("");
 		if(currentSelectedIdent != null && values.containsKey(currentSelectedIdent)) {
 			elementEl.select(currentSelectedIdent, true);
 			CourseNode node = course.getRunStructure().getNode(currentSelectedIdent);
