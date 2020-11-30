@@ -72,9 +72,11 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	public static final String ICON_CSS = "o_filetype_file";
 
 	// Configs
-	private static final int CURRENT_VERSION = 1;
+	private static final int CURRENT_VERSION = 2;
 	public static final String CONFIG_DOC_COURSE_REL_PATH = "doc.course.folder";
 	public static final String CONFIG_DOC_REPO_SOFT_KEY = "doc.repo";
+	public static final String CONFIG_HEIGHT_AUTO = "auto";
+	public static final String CONFIG_KEY_HEIGHT = "height";
 	public static final String CONFIG_KEY_EDIT_OWNER = "edit.owner";
 	public static final String CONFIG_KEY_EDIT_COACH = "edit.coach";
 	public static final String CONFIG_KEY_EDIT_PARTICIPANT = "edit.participant";
@@ -193,6 +195,9 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(CONFIG_KEY_DOWNLOAD_COACH, true);
 			config.setBooleanEntry(CONFIG_KEY_DOWNLOAD_PARTICIPANT, true);
 			config.setBooleanEntry(CONFIG_KEY_DOWNLOAD_GUEST, true);
+		}
+		if (config.getConfigurationVersion() < 2) {
+			config.set(CONFIG_KEY_HEIGHT, CONFIG_HEIGHT_AUTO);
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
