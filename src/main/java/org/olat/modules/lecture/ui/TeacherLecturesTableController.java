@@ -69,6 +69,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.ui.mode.AssessmentModeForLectureEditController;
+import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureModule;
@@ -349,10 +350,12 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 			Collections.sort(participants, new IdentityComparator(getLocale()));
 		}
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(row);
+		List<AbsenceNotice> notices = lectureService.getAbsenceNoticeRelatedTo(lectureBlock);
+
 		try {
 			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, authorizedAbsenceEnabled, getTranslator());
 			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
-			export.create(participants, rollCalls);
+			export.create(participants, rollCalls, notices);
 			ureq.getDispatchResult().setResultingMediaResource(export);
 		} catch (IOException | TransformerException e) {
 			logError("", e);

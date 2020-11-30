@@ -30,10 +30,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.PDPageTree;
 import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
+import org.apache.pdfbox.pdmodel.PDPageTree;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.util.Matrix;
 import org.olat.core.gui.media.MediaResource;
@@ -41,11 +42,11 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.pdf.PdfDocument;
+import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.repository.RepositoryEntry;
@@ -145,41 +146,41 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 		}
 	}
 
-	public void create(List<Identity> rows, List<LectureBlockRollCall> rollCalls)
+	public void create(List<Identity> rows, List<LectureBlockRollCall> rollCalls, List<AbsenceNotice> notices)
     throws IOException, TransformerException {
-	    	addPageLandscape();
-	    	String lectureBlockTitle = lectureBlock.getTitle();
-	    	String resourceTitle = entry.getDisplayname();
-	    	addMetadata(lectureBlockTitle, resourceTitle, teacher);
+		addPageLandscape();
+		String lectureBlockTitle = lectureBlock.getTitle();
+		String resourceTitle = entry.getDisplayname();
+		addMetadata(lectureBlockTitle, resourceTitle, teacher);
 	
-	    	String title = resourceTitle + " - " + lectureBlockTitle;
-	    	title = translator.translate("attendance.list.title", new String[] { title });
-	    	addParagraph(title, 16, true, width);
+		String title = resourceTitle + " - " + lectureBlockTitle;
+		title = translator.translate("attendance.list.title", new String[] { title });
+		addParagraph(title, 16, true, width);
 	
-	    	Formatter formatter = Formatter.getInstance(translator.getLocale());
+		Formatter formatter = Formatter.getInstance(translator.getLocale());
 		String dates = translator.translate("pdf.table.dates", new String[] {
 			formatter.formatDate(lectureBlock.getStartDate()),
 			formatter.formatTimeShort(lectureBlock.getStartDate()),
 			formatter.formatTimeShort(lectureBlock.getEndDate())
 		});
 	
-	    	addParagraph(dates, 12, true, width);
+		addParagraph(dates, 12, true, width);
 	  	
-	    	float cellMargin = 5.0f;
-	    	float fontSize = 10.0f;
+		float cellMargin = 5.0f;
+		float fontSize = 10.0f;
 	    	
-	    	Row[] content = getRows(rows, rollCalls);
+		Row[] content = getRows(rows, rollCalls, notices);
 	    	
-	    	int numOfRows = content.length;
-	    	for(int offset=0; offset<numOfRows; ) {
-	    		offset += drawTable(content, offset, fontSize, cellMargin);
-	    		closePage();
-	        	if(offset<numOfRows) {
-	        		addPageLandscape();
-	        	}
-	    	}
-	    	
-	    	addPageNumbers(); 
+		int numOfRows = content.length;
+		for(int offset=0; offset<numOfRows; ) {
+			offset += drawTable(content, offset, fontSize, cellMargin);
+			closePage();
+			if(offset<numOfRows) {
+				addPageLandscape();
+			}
+		}
+		
+		addPageNumbers(); 
 	}
 	
 	@Override
@@ -228,7 +229,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
         }
     }
 		
-	private Row[] getRows(List<Identity> rows, List<LectureBlockRollCall> rollCalls) {
+	private Row[] getRows(List<Identity> rows, List<LectureBlockRollCall> rollCalls, List<AbsenceNotice> notices) {
 		int numOfRows = rows.size();
 		Map<Identity,LectureBlockRollCall> rollCallMap = new HashMap<>();
 		for(LectureBlockRollCall rollCall:rollCalls) {
@@ -236,34 +237,42 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 		}
 	
 		Row[] content = new Row[numOfRows];
-	    	for(int i=0; i<numOfRows; i++) {
-	    		Identity row = rows.get(i);
-	        	String fullname = getName(row);
-
-	        	String comment = null;
-	        	boolean authorised = false;
-	        	boolean[] absences = new boolean[numOfLectures];
-        		Arrays.fill(absences, false);
-
-        		LectureBlockRollCall rollCall = rollCallMap.get(rows.get(i));
-	        	if(rollCall != null) {
-	        		if(rollCall.getLecturesAbsentList() != null) {
-		        		List<Integer> absenceList = rollCall.getLecturesAbsentList();
-		        		for(int j=0; j<numOfLectures; j++) {
-		        			absences[j] = absenceList.contains(Integer.valueOf(j));
-		        		}
-		        	}
-	        		if(rollCall.getAbsenceAuthorized() != null) {
-		        		authorised = rollCall.getAbsenceAuthorized().booleanValue();		
-		        	}
-		        	if(StringHelper.containsNonWhitespace(rollCall.getComment())) {
-		        		comment = rollCall.getComment();
-		        	}
-	        	}
-	        	content[i] = new Row(fullname, absences, authorised, comment);
-	    	}
-	    	
-	    	return content;
+		for(int i=0; i<numOfRows; i++) {
+			Identity row = rows.get(i);
+			String fullname = getName(row);
+		
+			String comment = null;
+			boolean authorised = false;
+			boolean[] absences = new boolean[numOfLectures];
+			Arrays.fill(absences, false);
+			
+			AbsenceNotice notice = notices.stream()
+					.filter(n -> n.getIdentity().equals(row))
+					.findFirst().orElse(null);
+		
+			LectureBlockRollCall rollCall = rollCallMap.get(rows.get(i));
+			if(rollCall != null) {
+				if(rollCall.getLecturesAbsentList() != null) {
+		    		List<Integer> absenceList = rollCall.getLecturesAbsentList();
+		    		for(int j=0; j<numOfLectures; j++) {
+		    			absences[j] = absenceList.contains(Integer.valueOf(j)) || notice != null;
+		    		}
+		    	}
+		    	authorised = (rollCall.getAbsenceAuthorized() != null && rollCall.getAbsenceAuthorized().booleanValue())
+		    			|| (notice != null && notice.getAbsenceAuthorized() != null && notice.getAbsenceAuthorized().booleanValue());
+		    	if(StringHelper.containsNonWhitespace(rollCall.getComment())) {
+		    		comment = rollCall.getComment();
+		    	}
+			} else if(notice != null) {
+		    	for(int j=0; j<numOfLectures; j++) {
+		    		absences[j] = true;
+		    	}
+		    	authorised = notice.getAbsenceAuthorized() != null && notice.getAbsenceAuthorized().booleanValue();	
+			}
+			content[i] = new Row(fullname, absences, authorised, comment);
+		}
+		
+		return content;
 	}
 	
 	private String getName(Identity identity) {

@@ -60,6 +60,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.DailyRollCall;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
@@ -460,10 +461,11 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 			Collections.sort(participants, new IdentityComparator(getLocale()));
 		}
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(block);
+		List<AbsenceNotice> notices = lectureService.getAbsenceNoticeRelatedTo(lectureBlock);
 		try {
 			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, authorizedAbsenceEnabled, getTranslator());
 			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
-			export.create(participants, rollCalls);
+			export.create(participants, rollCalls, notices);
 			ureq.getDispatchResult().setResultingMediaResource(export);
 		} catch (IOException | TransformerException e) {
 			logError("", e);
