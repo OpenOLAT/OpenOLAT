@@ -1324,15 +1324,14 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	
 	@Override
 	public void closeDTab(UserRequest ureq, OLATResourceable ores, HistoryPoint launchedFromPoint) {
-
 		// Now try to go back to place that is attached to (optional) root back business path
 		if (launchedFromPoint != null && StringHelper.containsNonWhitespace(launchedFromPoint.getBusinessPath())
-				&& launchedFromPoint.getEntries() != null && launchedFromPoint.getEntries().size() > 0) {
+				&& launchedFromPoint.getEntries() != null && !launchedFromPoint.getEntries().isEmpty()
+				&& startsWithBusinessPath(launchedFromPoint.getEntries().get(0))) {
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromPoint(launchedFromPoint);
 			if(bc.hasContextEntry()) {
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
-				try {
-					//make the resume secure. If something fail, don't generate a red screen
+				try {//make the resume secure. If something fail, don't generate a red screen
 					NewControllerFactory.getInstance().launch(ureq, bwControl);
 				} catch (Exception e) {
 					logError("Error while resuming with root level back business path::" + launchedFromPoint.getBusinessPath(), e);
@@ -1343,12 +1342,48 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// Navigate beyond the stack, our own layout has been popped - close this tab
 		DTabs tabs = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
 		if (tabs != null) {
-			
 			DTab tab = tabs.getDTab(ores);
 			if (tab != null) {
 				tabs.removeDTab(ureq, tab);						
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * @param path
+	 * @return true if a site or tabs starts with the business path
+	 */
+	private boolean startsWithBusinessPath(ContextEntry entry) {
+		BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(List.of(entry));
+		String path = BusinessControlFactory.getInstance().getAsString(bc);
+		
+		try {
+			if(sites != null && siteToBornSite != null) {
+				for(SiteInstance site:sites) {
+					BornSiteInstance bs = siteToBornSite.get(site);
+					if (bs != null && bs.getController() != null) {
+						String bp = bs.getController().getWindowControlForDebug().getBusinessControl().getAsString();
+						if(bp != null && bp.startsWith(path)) {
+							return true;
+						}
+					}
+				}
+			}
+			
+			if(dtabsControllers != null) {
+				for(Controller ctrl:dtabsControllers) {
+					String bp = ctrl.getWindowControlForDebug().getBusinessControl().getAsString();
+					if(bp != null && bp.startsWith(path)) {
+						return true;
+					}
+				}
+			}
+		} catch (Exception e) {
+			logError("", e);
+		}
+		
+		return false;
 	}
 
 	@Override
