@@ -97,6 +97,11 @@ public class DocumentRunController extends BasicController {
 			String cssClass = CSSHelper.createFiletypeIconCssClassFor(lowerFilename);
 			mainVC.contextPut("cssClass", cssClass);
 			
+			String height = courseNode.getModuleConfiguration().getStringValue(DocumentCourseNode.CONFIG_KEY_HEIGHT, DocumentCourseNode.CONFIG_HEIGHT_AUTO);
+			if (!DocumentCourseNode.CONFIG_HEIGHT_AUTO.equals(height)) {
+				mainVC.contextPut("height", height);
+			}
+			
 			String extension = FileUtils.getFileSuffix(filename);
 			if ("png".equals(extension) || "jpg".equals(extension) || "jpeg".equals(extension) || "gif".equals(extension)) {
 				String mediaUrl = registerMapper(ureq, new VFSMediaMapper(vfsLeaf));
@@ -104,7 +109,8 @@ public class DocumentRunController extends BasicController {
 				mainVC.contextPut("mediaUrl", mediaUrl);
 			} else if (SoundFileResource.validate(filename)) {
 				DeliveryOptions options = new DeliveryOptions();
-				options.setHeight("40");
+				String optionsHight = DocumentCourseNode.CONFIG_HEIGHT_AUTO.equals(height)? "40": height;
+				options.setHeight(optionsHight);
 				IFrameDisplayController idc = new IFrameDisplayController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), null, options);
 				listenTo(idc);	
 				idc.setCurrentURI(filename);

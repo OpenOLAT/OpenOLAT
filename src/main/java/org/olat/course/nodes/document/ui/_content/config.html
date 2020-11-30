@@ -2,6 +2,9 @@
 	<legend>$r.contextHelpWithWrapper("Content#_document")
 	$r.translate("config.title")</legend>
 	$r.render("display")
+	#if($r.visible("layout"))
+		$r.render("layout")
+	#end
 	#if($r.visible("rights"))
 		$r.render("rights")
 	#end

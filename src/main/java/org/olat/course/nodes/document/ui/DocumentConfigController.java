@@ -102,6 +102,7 @@ public class DocumentConfigController extends BasicController {
 	private final BreadcrumbPanel stackPanel;
 	private CloseableModalController cmc;
 	private DocumentDisplayController documentDisplayCtrl;
+	private DocumentLayoutController documentLayoutCtrl;
 	private DocumentRightsController documentRightsCtrl;
 	private DocumentSelectionController selectionCtrl;
 	private FileChooserController fileChooserCtr;
@@ -142,6 +143,10 @@ public class DocumentConfigController extends BasicController {
 		listenTo(documentDisplayCtrl);
 		mainVC.put("display", documentDisplayCtrl.getInitialComponent());
 		
+		documentLayoutCtrl = new DocumentLayoutController(ureq, wControl, courseNode);
+		listenTo(documentLayoutCtrl);
+		mainVC.put("layout", documentLayoutCtrl.getInitialComponent());
+		
 		documentRightsCtrl = new DocumentRightsController(ureq, wControl, courseNode);
 		listenTo(documentRightsCtrl);
 		mainVC.put("rights", documentRightsCtrl.getInitialComponent());
@@ -174,6 +179,8 @@ public class DocumentConfigController extends BasicController {
 			} else if (DocumentDisplayController.EVENT_COPY_TO_COURSE == event) {
 				doAskCopyToCourse(ureq, documentSource.getEntry());
 			}
+		} else if (source == documentLayoutCtrl) {
+			fireEvent(ureq, event);
 		} else if (source == documentRightsCtrl) {
 			fireEvent(ureq, event);
 		} else if (source == selectionCtrl) {
@@ -309,6 +316,8 @@ public class DocumentConfigController extends BasicController {
 		
 		documentDisplayCtrl.setDocumentSource(ureq ,documentSource);
 		
+		documentLayoutCtrl.getInitialComponent().setVisible(documentAvailable);
+		
 		documentRightsCtrl.setVfsLeaf(ureq, documentSource.getVfsLeaf());
 		documentRightsCtrl.getInitialComponent().setVisible(documentAvailable);
 	}
@@ -384,9 +393,7 @@ public class DocumentConfigController extends BasicController {
 	}
 	
 	private Function<VFSLeaf, DocEditorConfigs> getConfigProvider() {
-		return vfsLeaf -> {
-			return DocEditorConfigs.builder().withMode(DocEditor.Mode.EDIT).build(vfsLeaf);
-		};
+		return vfsLeaf -> DocEditorConfigs.builder().withMode(DocEditor.Mode.EDIT).build(vfsLeaf);
 	}
 	
 	private void doCopyToRepository(UserRequest ureq) {

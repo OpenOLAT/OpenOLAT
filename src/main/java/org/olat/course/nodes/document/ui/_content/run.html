@@ -14,7 +14,9 @@
 		$r.render("run.file")
 	#end
 	#if($image)
-		<img src="$mediaUrl/$filename" />
+		<div #if($height) style='height:${height}px'#end>
+			<img src="$mediaUrl/$filename" />
+		</div>
 	#elseif($r.available("audio"))
 		<div class="clearfix">
 			$r.render("audio")
@@ -25,13 +27,19 @@
 		</div>
 		<script>
 		/* <![CDATA[ */
-			b_resizeIframeToMainMaxHeight("cndContent");
-			var contentHeight = jQuery('#o_main_center_content').height();
-			document.documentElement.style.setProperty('--cndcontentheight', `${contentHeight}px`);
-			jQuery(document).on("oo.window.resize.after", () => {
-				b_resizeIframeToMainMaxHeight("cndContent");
-				var contentHeight = jQuery('#o_main_center_content').height();
+			function setHeight() {
+				var contentHeight;
+				#if($height)
+					contentHeight = '$height';
+				#else
+					b_resizeIframeToMainMaxHeight("cndContent");
+					contentHeight = jQuery('#o_main_center_content').height()
+				#end
 				document.documentElement.style.setProperty('--cndcontentheight', `${contentHeight}px`);
+			}
+			setHeight();
+			jQuery(document).on("oo.window.resize.after", () => {
+				setHeight();
 			});
 		/* ]]> */
 		</script>
