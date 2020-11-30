@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
@@ -37,6 +38,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureService;
@@ -131,7 +133,7 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 			pos++;
 		}
 		
-		if(teachers != null && teachers.size() > 0) {
+		if(teachers != null && !teachers.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
 			for(Identity teacher:teachers) {
 				if(sb.length() > 0) sb.append(", ");
@@ -184,10 +186,12 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 	}
 	
 	private void addContent(OpenXMLWorksheet exportSheet) {
+		List<AbsenceNotice> notices = lectureService.getAbsenceNoticeRelatedTo(lectureBlock);
+
 		List<Identity> participants = lectureService.getParticipants(lectureBlock);
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(lectureBlock);
 		Map<Identity,LectureBlockRollCall> participantToRollCallMap = rollCalls.stream()
-				.collect(Collectors.toMap(r -> r.getIdentity(), r -> r));
+				.collect(Collectors.toMap(LectureBlockRollCall::getIdentity, Function.identity()));
 		
 		for(Identity participant:participants) {
 			Row row = exportSheet.newRow();
@@ -199,20 +203,53 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 				row.addCell(pos++, val);
 			}
 			
+			AbsenceNotice notice = notices.stream()
+					.filter(n -> n.getIdentity().equals(participant))
+					.findFirst().orElse(null);
+			
 			LectureBlockRollCall rollCall = participantToRollCallMap.get(participant);
 			if(rollCall != null) {
-				List<Integer> absentList = rollCall.getLecturesAbsentList();
-				for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
-					String val = absentList.contains(i) ? "x" : null;
-					row.addCell(pos++, val);
-				}
-	
-				if(authorizedAbsenceEnabled && rollCall.getAbsenceAuthorized() != null
-						&& rollCall.getAbsenceAuthorized().booleanValue()) {
-					row.addCell(pos++, "x");
-					row.addCell(pos++, rollCall.getAbsenceReason());
-				}
+				addRollCallContent(rollCall, notice, row, pos);
+			} else if(notice != null) {
+				addNoticeContent(notice, row, pos);
 			}
+		}
+	}
+	
+	private void addRollCallContent(LectureBlockRollCall rollCall, AbsenceNotice notice, Row row, int pos) {
+		List<Integer> absentList = rollCall.getLecturesAbsentList();
+		for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
+			String val = absentList.contains(i) || notice != null ? "x" : null;
+			row.addCell(pos++, val);
+		}
+		
+		boolean authorized = (rollCall.getAbsenceAuthorized() != null && rollCall.getAbsenceAuthorized().booleanValue())
+				|| (notice != null && notice.getAbsenceAuthorized() != null && notice.getAbsenceAuthorized());
+
+		if(authorizedAbsenceEnabled && authorized) {
+			row.addCell(pos++, "x");
+			
+			StringBuilder sb = new StringBuilder();
+			if(StringHelper.containsNonWhitespace(rollCall.getAbsenceReason())) {
+				sb.append(rollCall.getAbsenceReason());
+			}
+			if(notice != null && StringHelper.containsNonWhitespace(notice.getAbsenceReason())) {
+				if(sb.length() > 0) sb.append(" ");
+				sb.append(notice.getAbsenceReason());
+			}
+			row.addCell(pos, sb.toString());
+		}
+	}
+	
+	private void addNoticeContent(AbsenceNotice notice, Row row, int pos) {
+		for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
+			row.addCell(pos++, "x");
+		}
+		
+		boolean authorized = (notice != null && notice.getAbsenceAuthorized() != null && notice.getAbsenceAuthorized());
+		if(authorizedAbsenceEnabled && authorized) {
+			row.addCell(pos++, "x");
+			row.addCell(pos, notice.getAbsenceReason());
 		}
 	}
 }
