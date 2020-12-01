@@ -53,6 +53,7 @@ import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ldap.LDAPError;
 import org.olat.ldap.LDAPLoginManager;
@@ -98,6 +99,8 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 	private LDAPSyncConfiguration syncConfiguration;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
 	@ClassRule
 	public static final EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder
@@ -602,6 +605,45 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 			.extracting(id -> id.getUser())
 			.extracting(user -> user.getNickName())
 			.containsExactlyInAnyOrder("gstieger");
+	}
+	
+
+	@Test
+	public void syncUserGroupsRemove() throws LDAPException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-ldap");
+		
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setExactName("ldapopenolat");
+		List<BusinessGroup> ldapGroups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		Assert.assertEquals(1, ldapGroups.size());
+
+		BusinessGroup ldapGroup = ldapGroups.get(0);
+		
+		String externalId = UUID.randomUUID().toString();
+		BusinessGroup managedGroup = businessGroupService.createBusinessGroup(admin, "External LDAP Group", "", externalId, null, null, null, false, false, null);
+		Identity id1 = securityManager.findIdentityByLogin("dforster");
+		businessGroupRelationDao.addRole(id1, managedGroup, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		// set synchronization settings
+		syncConfiguration.setCoachedGroupAttribute("memberOf");
+		syncConfiguration.setCoachedGroupAttributeSeparator(",");
+		syncConfiguration.setGroupCoachAsParticipant("true");
+		
+		id1 = securityManager.findIdentityByLogin("dforster");
+		ldapManager.syncUserGroups(id1);
+		dbInstance.commitAndCloseSession();
+		
+		// check the user is still in the real LDAP group
+		List<Identity> participants = businessGroupService.getMembers(ldapGroup, GroupRoles.participant.name());
+		Assert.assertFalse(participants.isEmpty());
+		Assert.assertTrue(participants.contains(id1));
+		// check the user was removed from the mocked managed group
+		List<Identity> managedParticipants = businessGroupService.getMembers(managedGroup, GroupRoles.participant.name());
+		Assert.assertTrue(managedParticipants.isEmpty());
+		Assert.assertFalse(managedParticipants.contains(id1));
 	}
 	
 	@Test

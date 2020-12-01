@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
@@ -808,9 +809,12 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			List<String> groupDNs = syncConfiguration.getLdapGroupBases();
 			String groupFilter = "(&(objectClass=groupOfNames)(member=" + userDN + "))";
 			List<LDAPGroup> groups = ldapDao.searchGroups(ctx, groupDNs, groupFilter);
+			Set<BusinessGroup> managedGroups = getIdentityManagedGroups(identity);
 			for(LDAPGroup group:groups) {
 				BusinessGroup managedGroup = getManagerBusinessGroup(group.getCommonName());
 				if(managedGroup != null) {
+					managedGroups.remove(managedGroup);
+					
 					List<String> roles = businessGroupRelationDao.getRoles(identity, managedGroup);
 					if(roles.isEmpty()) {
 						boolean coach = groupList != null && groupList.contains(group.getCommonName());
@@ -823,7 +827,24 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					}
 				}
 			}
+			
+			for(BusinessGroup managedGroup:managedGroups) {
+				businessGroupRelationDao.removeRole(identity, managedGroup, GroupRoles.coach.name());
+				businessGroupRelationDao.removeRole(identity, managedGroup, GroupRoles.participant.name());
+			}
 		}
+	}
+	
+	private Set<BusinessGroup> getIdentityManagedGroups(Identity identity) {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setIdentity(identity);
+		params.setOwner(true);
+		params.setAttendee(true);
+		params.setWaiting(true);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		return groups.stream().filter(group -> StringHelper.containsNonWhitespace(group.getExternalId()))
+				.collect(Collectors.toSet());
+		
 	}
 
 	/**
