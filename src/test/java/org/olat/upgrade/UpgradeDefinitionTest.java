@@ -44,13 +44,26 @@ public class UpgradeDefinitionTest extends OlatTestCase {
 	 * classpath
 	 */
 	@Test
-	public void testFileResourceFromClasspath() {
-		UpgradesDefinitions defs = upgradesDefinitions;
-		for(OLATUpgrade upgrade: defs.getUpgrades()) {
-			String path = "/database/mysql/"+upgrade.getAlterDbStatements();
-			Resource file = new ClassPathResource(path);
-			assertTrue("file not found: "+path, file.exists());
-		}
+	public void testFileResourceFromClasspathPostreSQL() {
+		testFileResourceFromClasspath("postgresql");
 	}
 	
+	@Test
+	public void testFileResourceFromClasspathMySQL() {
+		testFileResourceFromClasspath("mysql");
+	}
+	
+	@Test
+	public void testFileResourceFromClasspathOracle() {
+		testFileResourceFromClasspath("oracle");
+	}
+	
+	private void testFileResourceFromClasspath(String database) {
+		UpgradesDefinitions defs = upgradesDefinitions;
+		for(OLATUpgrade upgrade: defs.getUpgrades()) {
+			String path = "/database/" + database + "/" + upgrade.getAlterDbStatements();
+			Resource file = new ClassPathResource(path);
+			assertTrue("file not found: " + path, file.exists());
+		}
+	}
 }
