@@ -185,10 +185,11 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		} else if (topic.isMultiParticipation() || userHasNoConfirmedParticipation) {
 			row.setFreeParticipations(freeParticipations);
 			
-			boolean selectable = Appointment.Status.confirmed == appointment.getStatus()
-					? false
-					: freeParticipations == null // no limit
-						|| freeParticipations.intValue() > 0;
+			
+			boolean selectable = Appointment.Status.planned == appointment.getStatus() || (topic.isAutoConfirmation() && !selected)
+					? freeParticipations == null // no limit
+						|| freeParticipations.intValue() > 0
+					: false;
 			
 			boolean unselectable = selected && Appointment.Status.planned == appointment.getStatus();
 			boolean enabled = selectable || unselectable;
