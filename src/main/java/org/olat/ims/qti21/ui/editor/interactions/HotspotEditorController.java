@@ -187,7 +187,7 @@ public class HotspotEditorController extends FormBasicController {
 		}
 		
 		initialBackgroundImage = getCurrentBackground();
-		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
+		backgroundEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.imd.background", "form.imd.background", formLayout);
 		backgroundEl.setEnabled(!restrictedEdit && !readOnly);
 		if(initialBackgroundImage != null) {
 			backgroundEl.setInitialFile(initialBackgroundImage);

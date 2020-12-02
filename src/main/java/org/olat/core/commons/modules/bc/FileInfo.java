@@ -50,11 +50,8 @@ public class FileInfo {
 		this.lastModified = lastModified;
 	}
 	
-	/**
-	 * @return the author
-	 */
-	public Long getAuthorIdentityKey() {
-		return metaInfo == null || metaInfo.getAuthor() == null ? null : metaInfo.getAuthor().getKey();
+	public Long getModifiedByIdentityKey() {
+		return metaInfo == null || metaInfo.getFileLastModifiedBy() == null ? null : metaInfo.getFileLastModifiedBy().getKey();
 	}
 
 	/**

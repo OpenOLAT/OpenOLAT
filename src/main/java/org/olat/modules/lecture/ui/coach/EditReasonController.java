@@ -172,7 +172,7 @@ public class EditReasonController extends FormBasicController {
 		filesLayout.setLabel("attachment.upload", null);
 		formLayout.add(filesLayout);
 
-		documentUploadEl = uifactory.addFileElement(getWindowControl(), "attachment.upload", formLayout);
+		documentUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "attachment.upload", formLayout);
 		documentUploadEl.addActionListener(FormEvent.ONCHANGE);
 	}
 

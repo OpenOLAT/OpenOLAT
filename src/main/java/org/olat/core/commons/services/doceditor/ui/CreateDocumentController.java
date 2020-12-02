@@ -202,7 +202,7 @@ public class CreateDocumentController extends FormBasicController {
 		if (vfsLeaf != null) {
 			DocTemplate docTemplate = getSelectedTemplate();
 			if (docTemplate != null) {
-				VFSManager.copyContent(docTemplate.getContentProvider().getContent(getLocale()), vfsLeaf);
+				VFSManager.copyContent(docTemplate.getContentProvider().getContent(getLocale()), vfsLeaf, getIdentity());
 			}
 		}
 	}

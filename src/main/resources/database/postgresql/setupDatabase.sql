@@ -1772,6 +1772,7 @@ create table o_vfs_metadata (
    fk_locked_identity bigint,
    fk_license_type bigint,
    fk_author bigint,
+   fk_lastmodified_by bigint,
    fk_parent bigint,
    primary key (id)
 );
@@ -4023,6 +4024,8 @@ create index idx_page_pfpage_idx on o_pf_page_user_infos (fk_page_id);
 -- vfs metadata
 alter table o_vfs_metadata add constraint fmeta_to_author_idx foreign key (fk_locked_identity) references o_bs_identity (id);
 create index idx_fmeta_to_author_idx on o_vfs_metadata (fk_locked_identity);
+alter table o_vfs_metadata add constraint fmeta_modified_by_idx foreign key (fk_lastmodified_by) references o_bs_identity (id);
+create index idx_fmeta_modified_by_idx on o_vfs_metadata (fk_lastmodified_by);
 alter table o_vfs_metadata add constraint fmeta_to_lockid_idx foreign key (fk_author) references o_bs_identity (id);
 create index idx_fmeta_to_lockid_idx on o_vfs_metadata (fk_author);
 alter table o_vfs_metadata add constraint fmeta_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);

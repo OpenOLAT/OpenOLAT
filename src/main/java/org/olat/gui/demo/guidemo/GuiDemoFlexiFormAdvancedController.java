@@ -178,15 +178,15 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
 		// File Chooser
 		// There is a multipart parameter problem with that element.
-		file = uifactory.addFileElement(getWindowControl(), "file", "advanced_form.file", form);
+		file = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", "advanced_form.file", form);
 		file.setArea(false);
 		file.setHelpText("Old-school styling");
 
-		file2 = uifactory.addFileElement(getWindowControl(), "file2", "advanced_form.file", form);
+		file2 = uifactory.addFileElement(getWindowControl(), getIdentity(), "file2", "advanced_form.file", form);
 		file2.setHelpText("Drag&Drop area styling");
 
 		
-		file3 = uifactory.addFileElement(getWindowControl(), "file3", "advanced_form.file", form);
+		file3 = uifactory.addFileElement(getWindowControl(), getIdentity(), "file3", "advanced_form.file", form);
 		file3.setArea(false); 
 		file3.addActionListener(FormEvent.ONCHANGE);
 		file3.setDeleteEnabled(true);
@@ -194,7 +194,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		file3.setHelpText("Old-school styling with delete and file preview");
 
 		
-		file4 = uifactory.addFileElement(getWindowControl(), "file4", "advanced_form.file", form);
+		file4 = uifactory.addFileElement(getWindowControl(), getIdentity(), "file4", "advanced_form.file", form);
 		file4.addActionListener(FormEvent.ONCHANGE);
 		file4.setDeleteEnabled(true);
 		file4.setPreview(usess, true);

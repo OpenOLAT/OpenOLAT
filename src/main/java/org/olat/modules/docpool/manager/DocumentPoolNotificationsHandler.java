@@ -162,10 +162,12 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 				}
 				iconCssClass = metaInfo.getIconCssClass();
 			}
-			Long identityKey = infos.getAuthorIdentityKey();
+			Long identityKey = infos.getModifiedByIdentityKey();
 			Date modDate = infos.getLastModified();
 
-			String desc = translator.translate("notifications.document.entry", new String[] { title, NotificationHelper.getFormatedName(identityKey) });
+			String desc = identityKey == null
+					? translator.translate("notifications.entry.anonymous", new String[] { title })
+					: translator.translate("notifications.entry", new String[] { title, NotificationHelper.getFormatedName(identityKey) });
 			String urlToSend = null;
 			String businessPath = null;
 			if(p.getBusinessPath() != null) {

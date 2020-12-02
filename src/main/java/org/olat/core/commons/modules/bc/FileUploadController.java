@@ -252,7 +252,7 @@ public class FileUploadController extends FormBasicController {
 			}
 		}
 
-		fileEl = uifactory.addFileElement(getWindowControl(), "fileEl", "ul.file", fileUpload);
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "fileEl", "ul.file", fileUpload);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
 		setMaxUploadSizeKB((uploadLimitKB < remainingQuotKB ? uploadLimitKB : remainingQuotKB));
@@ -742,6 +742,7 @@ public class FileUploadController extends FormBasicController {
 			meta.setAuthor(getIdentity());
 			//clear write the meta
 			vfsRepositoryService.updateMetadata(meta);
+			vfsRepositoryService.itemSaved((VFSLeaf)item, getIdentity());
 			vfsRepositoryService.resetThumbnails((VFSLeaf)item);
 		}
 		

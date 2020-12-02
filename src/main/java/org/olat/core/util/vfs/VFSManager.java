@@ -36,10 +36,11 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.apache.logging.log4j.Logger;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -779,14 +780,13 @@ public class VFSManager {
 	 * Copy the content of the file in the target leaf.
 	 * @param source A file
 	 * @param target The target leaf
+	 * @param savedBy 
 	 * @return
 	 */
-	public static boolean copyContent(File source, VFSLeaf target) {
+	public static boolean copyContent(File source, VFSLeaf target, Identity savedBy) {
 		try(InputStream in = new FileInputStream(source);
 				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
-			boolean ok = copyContent(bis, target);
-			CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(target);
-			return ok;
+			return copyContent(bis, target, savedBy);
 		} catch(IOException ex) {
 			log.error("", ex);
 			return false;
@@ -798,16 +798,17 @@ public class VFSManager {
 	 * 
 	 * @param source
 	 * @param target
+	 * @param savedBy 
 	 * @return True on success, false on failure
 	 */
-	public static boolean copyContent(InputStream inStream, VFSLeaf target) {
+	public static boolean copyContent(InputStream inStream, VFSLeaf target, Identity savedBy) {
 		boolean successful;
 		if (inStream != null && target != null) {
 			// write the input to the output
 			try(InputStream in = new BufferedInputStream(inStream);
 					OutputStream out = new BufferedOutputStream(target.getOutputStream(false))) {
 				FileUtils.cpio(in, out, "");
-				CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(target);
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(target, savedBy);
 				successful = true;
 			} catch (IOException e) {
 				// something went wrong.

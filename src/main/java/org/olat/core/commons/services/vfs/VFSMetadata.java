@@ -55,6 +55,8 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	
 	public Date getFileLastModified();
 	
+	public Identity getFileLastModifiedBy();
+	
 	public long getFileSize();
 	
 	public boolean isDirectory();

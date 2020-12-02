@@ -253,7 +253,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		VFSContainer container = attachmentStorage.getContainer(dir);
 		String uniqueName = VFSManager.similarButNonExistingName(container, name);
 		VFSLeaf file = container.createChildLeaf(uniqueName);
-		VFSManager.copyContent(stream, file);
+		VFSManager.copyContent(stream, file, null);
 		return dir + uniqueName;
 	}
 	

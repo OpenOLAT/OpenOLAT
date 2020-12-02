@@ -99,7 +99,7 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 				updated = vfsRepositoryService.addVersion(vfsLeaf, access.getIdentity(), "Collabora Online",
 						fileInputStream);
 			} else {
-				updated = VFSManager.copyContent(fileInputStream, vfsLeaf);
+				updated = VFSManager.copyContent(fileInputStream, vfsLeaf, access.getIdentity());
 			}
 		} catch(Exception e) {
 			log.error("", e);

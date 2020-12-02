@@ -72,7 +72,7 @@ public class VideoPosterUploadForm extends FormBasicController {
 		VFSContainer videoResourceFileroot = new LocalFolderImpl(FileResourceManager.getInstance().getFileResourceRootImpl(videoResource).getBasefile());
 		metaDataFolder = VFSManager.getOrCreateContainer(videoResourceFileroot, "media");
 
-		posterField = uifactory.addFileElement(getWindowControl(), "poster", "video.config.poster", formLayout);
+		posterField = uifactory.addFileElement(getWindowControl(), getIdentity(), "poster", "video.config.poster", formLayout);
 		posterField.limitToMimeType(imageMimeTypes, "poster.error.filetype", null);
 		posterField.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		posterField.setPreview(ureq.getUserSession(), true);

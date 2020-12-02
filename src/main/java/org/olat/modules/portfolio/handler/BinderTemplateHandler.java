@@ -164,7 +164,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 
 			RepositoryEntryImportExport rei = new RepositoryEntryImportExport(re, zipRoot);
 			if(rei.anyExportedPropertiesAvailable()) {
-				re = rei.importContent(re, fResourceRootContainer.createChildContainer("media"));
+				re = rei.importContent(re, fResourceRootContainer.createChildContainer("media"), initialAuthor);
 			}
 			//delete the imported files
 			FileUtils.deleteDirsAndFiles(zipRoot, true, true);

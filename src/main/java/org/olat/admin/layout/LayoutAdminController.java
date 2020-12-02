@@ -130,7 +130,7 @@ public class LayoutAdminController extends FormBasicController {
 		deleteLogo = uifactory.addFormLink("deleteimg", "delete", null, logoCont, Link.BUTTON);
 		deleteLogo.setVisible(hasLogo);
 		
-		logoUpload = uifactory.addFileElement(getWindowControl(), "customizing.logo", "customizing.logo", logoCont);
+		logoUpload = uifactory.addFileElement(getWindowControl(), getIdentity(), "customizing.logo", "customizing.logo", logoCont);
 		logoUpload.setMaxUploadSizeKB(1024, null, null);
 		logoUpload.setPreview(ureq.getUserSession(), true);
 		logoUpload.addActionListener(FormEvent.ONCHANGE);

@@ -51,7 +51,7 @@ public class FileChooserController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_gta_upload_task_form");
 		
-		fileEl = uifactory.addFileElement(getWindowControl(), "file", "dropbox.upload", formLayout);
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", "dropbox.upload", formLayout);
 		fileEl.setMaxUploadSizeKB(maxUploadSizeKb, "error.limit.exceeded", new String[]{ Long.toString(maxUploadSizeKb) });
 		fileEl.setMandatory(true);
 		fileEl.addActionListener(FormEvent.ONCHANGE);

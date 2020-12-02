@@ -137,7 +137,7 @@ public class DrawingEditorController extends FormBasicController {
 		}
 		
 		initialBackgroundImage = getCurrentBackground();
-		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
+		backgroundEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.imd.background", "form.imd.background", formLayout);
 		backgroundEl.setPreview(ureq.getUserSession(), true);
 		backgroundEl.setEnabled(!restrictedEdit && !readOnly);
 		if(initialBackgroundImage != null) {

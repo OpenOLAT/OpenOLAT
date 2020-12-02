@@ -77,12 +77,13 @@ public class CertificatesManagerTest extends OlatTestCase {
 	
 	@Test
 	public void createTemplate() throws URISyntaxException {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-0");
 		URL templateUrl = CertificatesManagerTest.class.getResource("template.pdf");
 		Assert.assertNotNull(templateUrl);
 		File templateFile = new File(templateUrl.toURI());
 		
 		String certificateName = UUID.randomUUID() + ".pdf";
-		CertificateTemplate template = certificatesManager.addTemplate(certificateName, templateFile, null, null, true);
+		CertificateTemplate template = certificatesManager.addTemplate(certificateName, templateFile, null, null, true, identity);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(template);

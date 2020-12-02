@@ -48,6 +48,7 @@ import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -268,7 +269,7 @@ public class RepositoryEntryImportExport {
 		return true;
 	}
 	
-	public RepositoryEntry importContent(RepositoryEntry newEntry, VFSContainer mediaContainer) {
+	public RepositoryEntry importContent(RepositoryEntry newEntry, VFSContainer mediaContainer, Identity initialAuthor) {
 		if(!anyExportedPropertiesAvailable()) return newEntry;
 
 		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
@@ -283,7 +284,7 @@ public class RepositoryEntryImportExport {
 			File newFile = new File(baseDirectory, movieName);
 			try(InputStream inStream = new FileInputStream(newFile)) {
 				VFSLeaf movieLeaf = mediaContainer.createChildLeaf(newEntry.getKey() + "." + extension);
-				VFSManager.copyContent(inStream, movieLeaf);
+				VFSManager.copyContent(inStream, movieLeaf, initialAuthor);
 			} catch(IOException e) {
 				log.error("", e);
 			}

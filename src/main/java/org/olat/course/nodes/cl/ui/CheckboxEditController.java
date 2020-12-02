@@ -160,7 +160,7 @@ public class CheckboxEditController extends FormBasicController {
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "description", desc, 5, -1, formLayout,
 				getWindowControl());
 
-		fileEl = uifactory.addFileElement(getWindowControl(), "file", formLayout);
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", formLayout);
 		fileEl.setDeleteEnabled(true);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		if(courseNode != null && checkbox != null && StringHelper.containsNonWhitespace(checkbox.getFilename())) {
@@ -242,7 +242,7 @@ public class CheckboxEditController extends FormBasicController {
 			VFSLeaf leaf = container.createChildLeaf(filename);
 			File uploadedFile = fileEl.getUploadFile();
 			try(InputStream inStream = new FileInputStream(uploadedFile)) {
-				VFSManager.copyContent(inStream, leaf);
+				VFSManager.copyContent(inStream, leaf, getIdentity());
 			} catch (IOException e) {
 				logError("", e);
 			}

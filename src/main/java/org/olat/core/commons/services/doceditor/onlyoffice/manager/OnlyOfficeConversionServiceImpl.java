@@ -203,7 +203,7 @@ public class OnlyOfficeConversionServiceImpl implements OnlyOfficeConversionServ
 				CloseableHttpResponse httpResponse = httpClient.execute(downLoadRequest);) {
 			if (httpResponse.getStatusLine().getStatusCode() == 200) {
 				InputStream content = httpResponse.getEntity().getContent();
-				thumbnailCreated = VFSManager.copyContent(content, thumbnailLeaf);
+				thumbnailCreated = VFSManager.copyContent(content, thumbnailLeaf, null);
 			} else {
 				log.warn("Get thumbnail from ONLYOFICE failed. URL: {}", fileUrl);
 			}

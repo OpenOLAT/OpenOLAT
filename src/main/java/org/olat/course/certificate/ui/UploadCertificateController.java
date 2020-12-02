@@ -83,7 +83,7 @@ public class UploadCertificateController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		fileEl = uifactory.addFileElement(getWindowControl(), "template.file", formLayout);
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "template.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] orientationValues = new String[]{
@@ -131,9 +131,9 @@ public class UploadCertificateController extends FormBasicController {
 		if(template != null) {
 			String name = fileEl.getUploadFileName();
 			if(templateToUpdate == null) {
-				certificatesManager.addTemplate(name, template, getFormat(), getOrientation(), true);
+				certificatesManager.addTemplate(name, template, getFormat(), getOrientation(), true, getIdentity());
 			} else {
-				certificatesManager.updateTemplate(templateToUpdate, name, template, getFormat(), getOrientation());
+				certificatesManager.updateTemplate(templateToUpdate, name, template, getFormat(), getOrientation(), getIdentity());
 			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);

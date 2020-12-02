@@ -82,7 +82,7 @@ public class VideoTrackUploadForm extends FormBasicController {
 		langsItem = uifactory.addDropdownSingleselect("track.langs", formLayout,
 				langsWithoutDup.toArray(new String[langsWithoutDup.size()]),
 				dispLangsWithoutDup.toArray(new String[dispLangsWithoutDup.size()]), null);
-		fileEl = uifactory.addFileElement(getWindowControl(), "track.upload", formLayout);
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "track.upload", formLayout);
 		langsItem.setMandatory(true);
 
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());

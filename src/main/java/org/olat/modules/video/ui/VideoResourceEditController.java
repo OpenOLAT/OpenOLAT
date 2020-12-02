@@ -113,7 +113,7 @@ public class VideoResourceEditController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(meta.getUrl())) {
 			urlEl = uifactory.addTextElement("video.config.url", 512, meta.getUrl(), formLayout);
 		} else {
-			uploadFileEl = uifactory.addFileElement(getWindowControl(), "upload", "video.replace.upload", formLayout);
+			uploadFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "upload", "video.replace.upload", formLayout);
 			uploadFileEl.addActionListener(FormEvent.ONCHANGE);
 			uploadFileEl.limitToMimeType(videoMimeTypes, "video.mime.type.error", null);
 		}
@@ -149,7 +149,7 @@ public class VideoResourceEditController extends FormBasicController {
 		if (uploadFileEl.getUploadSize() > 0 && uploadFile.exists()){
 			video.delete();
 			VFSLeaf uploadVideo = vfsContainer.createChildLeaf(VIDEO_RESOURCE);
-			VFSManager.copyContent(uploadFile, uploadVideo);
+			VFSManager.copyContent(uploadFile, uploadVideo, getIdentity());
 			//update video dimensions
 			Size dimensions = movieService.getSize(uploadVideo, VideoManagerImpl.FILETYPE_MP4);
 			// update video duration

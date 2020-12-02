@@ -456,12 +456,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
-	public void itemSaved(VFSLeaf leaf) {
+	public void itemSaved(VFSLeaf leaf, Identity savedBy) {
 		if(leaf == null || leaf.canMeta() != VFSConstants.YES) return; // nothing to do
 		
 		String relativePath = getContainerRelativePath(leaf);
 		Date lastModified = new Date(leaf.getLastModified());
-		metadataDao.updateMetadata(leaf.getSize(), lastModified, relativePath, leaf.getName());
+		// Ensure the existence of the matadata before the update.
+		if (metadataDao.getMetadata(relativePath, leaf.getName(), false) == null) {
+			getMetadataFor(leaf);
+		}
+		metadataDao.updateMetadata(leaf.getSize(), lastModified, savedBy, relativePath, leaf.getName());
 	}
 
 	@Override
@@ -901,7 +905,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			if (addToRevisions(currentLeaf, metadata, identity, comment, false)) {
 				// copy the content of the new file to the old
 				VFSLeaf revFile = getRevisionLeaf(metadata, ((VFSRevisionImpl)revision));
-				if (VFSManager.copyContent(revFile.getInputStream(), currentLeaf)) {
+				if (VFSManager.copyContent(revFile.getInputStream(), currentLeaf, metadata.getFileLastModifiedBy())) {
 					metadata = metadataDao.loadMetadata(metadata.getKey());
 					((VFSMetadataImpl)metadata).copyValues((VFSRevisionImpl)revision);
 					metadata = metadataDao.updateMetadata(metadata);
@@ -932,7 +936,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			if(newFile instanceof net.sf.jazzlib.ZipInputStream || newFile instanceof java.util.zip.ZipInputStream) {
 				newFile = new ShieldInputStream(newFile);
 			}
-			allOk = VFSManager.copyContent(newFile, currentFile);
+			allOk = VFSManager.copyContent(newFile, currentFile, identity);
 		} else {
 			log.error("Cannot create a version of this file: {}", currentFile);
 		}

@@ -52,7 +52,7 @@ public class PFFileUploadController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		uploadFileEl = uifactory.addFileElement(getWindowControl(), "upload", "textfield.upload", formLayout);
+		uploadFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "upload", "textfield.upload", formLayout);
 		uploadFileEl.addActionListener(FormEvent.ONCHANGE);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

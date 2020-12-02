@@ -215,7 +215,7 @@ public class PFManager {
 			int fileCount = countFiles(dropbox);
 			if (fileCount <= limitFileCount) {
 				VFSLeaf uploadedFile = dropbox.createChildLeaf(fileName);
-				VFSManager.copyContent(uploadFile, uploadedFile);
+				VFSManager.copyContent(uploadFile, uploadedFile, identity);
 				return true;
 			}
 			
@@ -237,7 +237,7 @@ public class PFManager {
 		if (uploadFile.exists() && uploadFile.isFile() && uploadFile.length() > 0) {
 			VFSContainer dropbox = resolveOrCreateReturnFolder(courseEnv, pfNode, identity);
 			VFSLeaf uploadedFile = dropbox.createChildLeaf(fileName);
-			VFSManager.copyContent(uploadFile, uploadedFile);
+			VFSManager.copyContent(uploadFile, uploadedFile, identity);
 		}
 	}
 	

@@ -257,7 +257,7 @@ public class ProfileFormController extends FormBasicController {
 
 		boolean portraitEnable = isAdministrativeUser 
 				|| (canModify && !userModule.isPortraitManaged());
-		portraitUpload = uifactory.addFileElement(getWindowControl(), "ul.select", "ul.select", groupContainer);
+		portraitUpload = uifactory.addFileElement(getWindowControl(), getIdentity(), "ul.select", "ul.select", groupContainer);
 		portraitUpload.setMaxUploadSizeKB(10000, null, null);
 		portraitUpload.setPreview(ureq.getUserSession(), true);
 		portraitUpload.addActionListener(FormEvent.ONCHANGE);
@@ -276,7 +276,7 @@ public class ProfileFormController extends FormBasicController {
 			formLayout.add(groupContainer);
 
 			File logoFile = dps.getLargestLogo(identityToModify);
-			logoUpload = uifactory.addFileElement(getWindowControl(), "logo.select", "logo.select", groupContainer);
+			logoUpload = uifactory.addFileElement(getWindowControl(), getIdentity(), "logo.select", "logo.select", groupContainer);
 			logoUpload.setMaxUploadSizeKB(10000, null, null);
 			logoUpload.setPreview(ureq.getUserSession(), true);
 			logoUpload.addActionListener(FormEvent.ONCHANGE);

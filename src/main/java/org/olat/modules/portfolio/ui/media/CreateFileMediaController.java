@@ -237,7 +237,7 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		VFSLeaf vfsLeaf = new LocalFileImpl(file);
 		DocTemplate docTemplate = getSelectedFileType();
 		if (docTemplate != null) {
-			VFSManager.copyContent(docTemplate.getContentProvider().getContent(getLocale()), vfsLeaf);
+			VFSManager.copyContent(docTemplate.getContentProvider().getContent(getLocale()), vfsLeaf, getIdentity());
 		}
 	}
 

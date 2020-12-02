@@ -407,7 +407,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 				File assessedFolder = getAssessedFolder(row, identity);
 				identityHasReturnFile = assessedFolder.exists();
 				if(identityHasReturnFile) {
-					processReturnFile(courseNode, row, uce, assessedFolder);
+					processReturnFile(courseNode, row, uce, assessedFolder, coachIdentity);
 				}
 			}
 			
@@ -489,7 +489,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		}
 	}
 	
-	private void processReturnFile(CourseNode courseNode, BulkAssessmentRow row, UserCourseEnvironment uce, File assessedFolder) {
+	private void processReturnFile(CourseNode courseNode, BulkAssessmentRow row, UserCourseEnvironment uce, File assessedFolder, Identity coachIdentity) {
 		Identity identity = uce.getIdentityEnvironment().getIdentity();
 		VFSContainer returnBox = getReturnBox(uce, courseNode, identity);
 		if(returnBox != null) {
@@ -504,7 +504,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 				VFSLeaf returnLeaf = returnBox.createChildLeaf(returnFilename);
 				if(returnFile.exists()) {
 					try(InputStream inStream = new FileInputStream(returnFile)) {
-						VFSManager.copyContent(inStream, returnLeaf);
+						VFSManager.copyContent(inStream, returnLeaf, coachIdentity);
 					} catch (IOException e) {
 						log.error("Cannot copy return file {} from {}", returnFilename, row.getIdentityKey(), e);
 					}

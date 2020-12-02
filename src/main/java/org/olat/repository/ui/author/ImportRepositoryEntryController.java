@@ -111,7 +111,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("cmd.import.ressource.desc");
 		
-		uploadFileEl = uifactory.addFileElement(getWindowControl(), "upload", "import.file", formLayout);
+		uploadFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "upload", "import.file", formLayout);
 		uploadFileEl.addActionListener(FormEvent.ONCHANGE);
 
 		

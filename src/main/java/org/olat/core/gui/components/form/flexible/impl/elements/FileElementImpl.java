@@ -52,6 +52,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -115,6 +116,7 @@ public class FileElementImpl extends FormItemImpl
 	private String[] fileExampleParams;
 
 	private WindowControl wControl;
+	private Identity savedBy;
 
 	/**
 	 * Constructor for a file element. Use the limitToMimeType and setter
@@ -122,9 +124,10 @@ public class FileElementImpl extends FormItemImpl
 	 * 
 	 * @param name
 	 */
-	public FileElementImpl(WindowControl wControl, String name) {
+	public FileElementImpl(WindowControl wControl, Identity savedBy, String name) {
 		super(name);
 		this.wControl = wControl;
+		this.savedBy = savedBy;
 		component = new FileElementComponent(this);
 		setElementCssClass(null); // trigger default css 
 	}
@@ -551,10 +554,10 @@ public class FileElementImpl extends FormItemImpl
 				if (crop && cropSelection != null) {
 					CoreSpringFactory.getImpl(ImageService.class).cropImage(tempUploadFile, targetFile, cropSelection);
 					targetLeaf = (VFSLeaf) destinationContainer.resolve(targetFile.getName());
-					CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(targetLeaf);
+					CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(targetLeaf, savedBy);
 				} else if (FileUtils.copyFileToFile(tempUploadFile, targetFile, true)) {
 					targetLeaf = (VFSLeaf) destinationContainer.resolve(targetFile.getName());
-					CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(targetLeaf);
+					CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(targetLeaf, savedBy);
 				} else {
 					log.error("Error after copying content from temp file, cannot copy file::"
 							+ (tempUploadFile == null ? "NULL" : tempUploadFile) + " - "
@@ -571,7 +574,7 @@ public class FileElementImpl extends FormItemImpl
 				VFSLeaf leaf = destinationContainer.createChildLeaf(uploadFilename);
 				boolean success = false;
 				try {
-					success = VFSManager.copyContent(tempUploadFile, leaf);
+					success = VFSManager.copyContent(tempUploadFile, leaf, savedBy);
 				} catch (Exception e) {
 					log.error("Error while copying content from temp file: {}", tempUploadFile, e);
 				}

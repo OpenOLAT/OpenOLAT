@@ -97,7 +97,7 @@ public class CertificateChooserController extends UploadCertificateController {
 		
 		uifactory.addSpacerElement("spaceman", formLayout, false);
 		
-		fileEl = uifactory.addFileElement(getWindowControl(), "template.file", formLayout);
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "template.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] orientationValues = new String[]{
@@ -164,7 +164,7 @@ public class CertificateChooserController extends UploadCertificateController {
 		File template = fileEl.getUploadFile();
 		if(template != null) {
 			String name = fileEl.getUploadFileName();
-			selectedTemplate = certificatesManager.addTemplate(name, template, getFormat(), getOrientation(), false);
+			selectedTemplate = certificatesManager.addTemplate(name, template, getFormat(), getOrientation(), false, getIdentity());
 			if(selectedTemplate == null) {
 				showError("upload.wrong.mimetype");
 			}

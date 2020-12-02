@@ -129,12 +129,10 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 						}
 						iconCssClass = metaInfo.getIconCssClass();
 					}
-					Long identityKey = fi.getAuthorIdentityKey();
+					Long identityKey = fi.getModifiedByIdentityKey();
 					Date modDate = fi.getLastModified();
 
-					// Documents may be edited with a document editor, so author is not the modifier
-					boolean anonymous = versionModule.getMaxNumberOfVersions() < 1 && hasDocumentEditor(fi.getMetaInfo());
-					String desc = anonymous
+					String desc = identityKey == null
 							? translator.translate("notifications.entry.anonymous", new String[] { title })
 							: translator.translate("notifications.entry", new String[] { title, NotificationHelper.getFormatedName(identityKey) });
 					String urlToSend = null;

@@ -108,7 +108,7 @@ public interface VFSRepositoryService {
 	 */
 	public List<VFSMetadata> getNewest(VFSMetadata ancestorMetadata, int maxResults);
 	
-	public void itemSaved(VFSLeaf leaf);
+	public void itemSaved(VFSLeaf leaf, Identity savedBy);
 	
 	public VFSMetadata updateMetadata(VFSMetadata data);
 	

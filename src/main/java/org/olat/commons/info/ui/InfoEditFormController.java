@@ -101,7 +101,7 @@ public class InfoEditFormController extends FormBasicController {
 		messageEl.setMandatory(true);
 		messageEl.setMaxLength(MESSAGE_MAX_LENGTH);
 		
-		attachmentEl = uifactory.addFileElement(getWindowControl(), "attachment", formLayout);
+		attachmentEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "attachment", formLayout);
 		attachmentEl.setDeleteEnabled(true);
 		attachmentEl.setMaxUploadSizeKB(5000, "attachment.max.size", new String[] { "5000" });
 		

@@ -64,7 +64,7 @@ public class DocumentUploadController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_gta_upload_form");
 
-		fileEl = uifactory.addFileElement(getWindowControl(), "file", "solution.file", formLayout);
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", "solution.file", formLayout);
 		fileEl.setMandatory(true);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		if(fileToReplace != null) {

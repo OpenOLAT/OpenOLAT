@@ -288,7 +288,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		docsLayoutCont.contextPut("mapperUri", mapperUri);
 		scoreCont.add(docsLayoutCont);
 
-		uploadDocsEl = uifactory.addFileElement(getWindowControl(), "assessment.item.docs.upload", "assessment.item.docs.upload", scoreCont);
+		uploadDocsEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "assessment.item.docs.upload", "assessment.item.docs.upload", scoreCont);
 		uploadDocsEl.addActionListener(FormEvent.ONCHANGE);
 		uploadDocsEl.setVisible(!readOnly);
 		

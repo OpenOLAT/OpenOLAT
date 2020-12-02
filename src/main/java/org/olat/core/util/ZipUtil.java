@@ -355,7 +355,7 @@ public class ZipUtil {
 							VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
 							if(newEntry == null) {
 								newEntry = createIn.createChildLeaf(name);
-								if (!copyShielded(oZip, newEntry)) {
+								if (!copyShielded(oZip, newEntry, identity)) {
 									return false;
 								}
 							} else if (newEntry.canVersion() == VFSConstants.YES) {
@@ -366,7 +366,7 @@ public class ZipUtil {
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
-								if (!copyShielded(oZip, newEntry)) {
+								if (!copyShielded(oZip, newEntry, identity)) {
 									return false;
 								}
 								lastLeaf = newEntry;
@@ -384,9 +384,9 @@ public class ZipUtil {
 		return true;
 	} // unzip
 	
-	private static boolean copyShielded(net.sf.jazzlib.ZipInputStream oZip, VFSLeaf newEntry) {
+	private static boolean copyShielded(net.sf.jazzlib.ZipInputStream oZip, VFSLeaf newEntry, Identity savedBy) {
 		try(InputStream in = new ShieldInputStream(oZip)) {
-			return VFSManager.copyContent(in, newEntry);
+			return VFSManager.copyContent(in, newEntry, savedBy);
 		} catch(Exception e) {
 			handleIOException("", e);
 			return false;

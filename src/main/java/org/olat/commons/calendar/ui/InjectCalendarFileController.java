@@ -58,7 +58,7 @@ public class InjectCalendarFileController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		importFile = uifactory.addFileElement(getWindowControl(), "cal.import.form.prompt", "cal.import.form.prompt", formLayout);
+		importFile = uifactory.addFileElement(getWindowControl(), getIdentity(), "cal.import.form.prompt", "cal.import.form.prompt", formLayout);
 
 		//standard cancel panel
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());

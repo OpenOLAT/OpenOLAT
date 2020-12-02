@@ -80,6 +80,9 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	private boolean directory;
 	@Column(name="f_lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date fileLastModified;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_lastmodified_by", nullable=true, insertable=true, updatable=true)
+	private Identity fileLastModifiedBy;
 	@Column(name="f_size", nullable=false, insertable=true, updatable=true)
 	private long fileSize;
 	@Column(name="f_uri", nullable=false, insertable=true, updatable=true)
@@ -209,6 +212,15 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	}
 
 	@Override
+	public Identity getFileLastModifiedBy() {
+		return fileLastModifiedBy;
+	}
+
+	public void setFileLastModifiedBy(Identity fileLastModifiedBy) {
+		this.fileLastModifiedBy = fileLastModifiedBy;
+	}
+
+	@Override
 	public long getFileSize() {
 		return fileSize;
 	}
@@ -318,6 +330,7 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 		return uuid;
 	}
 
+	@Override
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
 	}
@@ -497,6 +510,7 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 		this.materializedPathKeys = materializedPathKeys;
 	}
 
+	@Override
 	public String getMigrated() {
 		return migrated;
 	}

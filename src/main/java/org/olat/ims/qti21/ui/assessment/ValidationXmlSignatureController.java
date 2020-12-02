@@ -66,7 +66,7 @@ public class ValidationXmlSignatureController extends FormBasicController {
 		validationMessage.setLabel(null, null);
 		formLayout.add(validationMessage);
 		
-		uploadEl = uifactory.addFileElement(getWindowControl(), "validate.xml.signature.file", formLayout);
+		uploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "validate.xml.signature.file", formLayout);
 		uploadEl.addActionListener(FormEvent.ONCHANGE);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

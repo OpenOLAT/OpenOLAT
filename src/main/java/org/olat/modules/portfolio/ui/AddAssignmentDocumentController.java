@@ -60,7 +60,7 @@ public class AddAssignmentDocumentController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_pf_add_assignment_doc");
 
-		fileEl = uifactory.addFileElement(getWindowControl(), "file", "assignment.file", formLayout);
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", "assignment.file", formLayout);
 		fileEl.setMandatory(true);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 

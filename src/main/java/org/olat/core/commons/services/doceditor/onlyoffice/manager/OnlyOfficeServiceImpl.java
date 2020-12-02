@@ -260,7 +260,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 				if (versionControlled && vfsLeaf.canVersion() == VFSConstants.YES) {
 					updated = vfsRepositoryService.addVersion(vfsLeaf, identity, "OnlyOffice", content);
 				} else {
-					updated = VFSManager.copyContent(content, vfsLeaf);
+					updated = VFSManager.copyContent(content, vfsLeaf, identity);
 				}
 			} else {
 				log.warn("Update content from ONLYOFICE failed. URL: " + url);

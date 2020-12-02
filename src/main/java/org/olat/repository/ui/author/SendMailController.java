@@ -128,7 +128,7 @@ public class SendMailController extends FormBasicController {
 		bodyEl = uifactory.addRichTextElementForStringDataMinimalistic("body", "contact.body", "", 15, 8, formLayout, getWindowControl());
 		bodyEl.setMandatory(true);
 		
-		attachmentEl = uifactory.addFileElement(getWindowControl(), "file_upload_1", "contact.attachment", formLayout);
+		attachmentEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file_upload_1", "contact.attachment", formLayout);
 		attachmentEl.addActionListener(FormEvent.ONCHANGE);
 		attachmentEl.setExampleKey("contact.attachment.maxsize", new String[]{ Integer.toString(contactAttachmentMaxSizeInMb) });
 		

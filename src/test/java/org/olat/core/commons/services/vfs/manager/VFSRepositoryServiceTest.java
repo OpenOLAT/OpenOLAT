@@ -20,16 +20,19 @@
 package org.olat.core.commons.services.vfs.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +43,7 @@ import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.manager.LicenseCleaner;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -48,6 +52,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -168,6 +173,23 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		List<VFSMetadata> afterChildren = vfsRepositoryService.getChildren(containerPath);
 		Assert.assertNotNull(afterChildren);
 		Assert.assertEquals(0, afterChildren.size());
+	}
+	
+	@Test
+	public void itemSaved() {
+		Identity savedBy = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		VFSLeaf leaf = createFile();
+		dbInstance.commitAndCloseSession();
+		
+		vfsRepositoryService.itemSaved(leaf, savedBy);
+		dbInstance.commitAndCloseSession();
+		
+		VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(leaf);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(vfsMetadata.getFileLastModified()).isCloseTo(new Date(), 5000);
+		softly.assertThat(vfsMetadata.getFileLastModifiedBy()).isEqualTo(savedBy);
+		softly.assertThat(vfsMetadata.getFileSize()).isEqualTo(leaf.getSize());
+		softly.assertAll();
 	}
 	
 	@Test

@@ -601,7 +601,7 @@ public class AssessmentForm extends FormBasicController {
 			docsLayoutCont.contextPut("mapperUri", mapperUri);
 			formLayout.add(docsLayoutCont);
 
-			uploadDocsEl = uifactory.addFileElement(getWindowControl(), "form.upload", null, formLayout);
+			uploadDocsEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.upload", null, formLayout);
 			uploadDocsEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		

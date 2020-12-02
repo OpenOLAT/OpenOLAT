@@ -1884,6 +1884,7 @@ create table o_vfs_metadata (
    f_revision_comment text(32000),
    fk_license_type bigint,
    fk_author bigint,
+   fk_lastmodified_by bigint,
    fk_parent bigint,
    primary key (id)
 );
@@ -4058,6 +4059,7 @@ create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_respo
 
 -- vfs metadata
 alter table o_vfs_metadata add constraint fmeta_to_author_idx foreign key (fk_locked_identity) references o_bs_identity (id);
+alter table o_vfs_metadata add constraint fmeta_modified_by_idx foreign key (fk_lastmodified_by) references o_bs_identity (id);
 alter table o_vfs_metadata add constraint fmeta_to_lockid_idx foreign key (fk_author) references o_bs_identity (id);
 alter table o_vfs_metadata add constraint fmeta_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 alter table o_vfs_metadata add constraint fmeta_to_parent_idx foreign key (fk_parent) references o_vfs_metadata (id);

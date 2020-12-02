@@ -88,7 +88,7 @@ public class FileUploadController extends FormBasicController implements Evaluat
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String fileElId = "file_upload_" + CodeHelper.getRAMUniqueID();
 		flc.contextPut("item", fileElId);
-		fileEl = uifactory.addFileElement(getWindowControl(), fileElId, "", formLayout);
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), fileElId, "", formLayout);
 		fileEl.setPreview(ureq.getUserSession(), true);
 		fileEl.setButtonsEnabled(false);
 		fileEl.setDeleteEnabled(true);

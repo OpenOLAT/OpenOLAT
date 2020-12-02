@@ -1810,6 +1810,7 @@ create table o_vfs_metadata (
    fk_locked_identity number(20),
    fk_license_type number(20),
    fk_author number(20),
+   fk_lastmodified_by number(20),
    fk_parent number(20),
    primary key (id)
 );
@@ -4057,6 +4058,8 @@ create index idx_qti_marks_to_identity_idx on o_qti_assessment_marks (fk_identit
 -- vfs
 alter table o_vfs_metadata add constraint fmeta_to_author_idx foreign key (fk_locked_identity) references o_bs_identity (id);
 create index idx_fmeta_to_author_idx on o_vfs_metadata (fk_locked_identity);
+alter table o_vfs_metadata add constraint fmeta_modified_by_idx foreign key (fk_lastmodified_by) references o_bs_identity (id);
+create index idx_fmeta_modified_by_idx on o_vfs_metadata (fk_lastmodified_by);
 alter table o_vfs_metadata add constraint fmeta_to_lockid_idx foreign key (fk_author) references o_bs_identity (id);
 create index idx_fmeta_to_lockid_idx on o_vfs_metadata (fk_author);
 alter table o_vfs_metadata add constraint fmeta_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);

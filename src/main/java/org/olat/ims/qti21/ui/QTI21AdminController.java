@@ -95,7 +95,7 @@ public class QTI21AdminController extends FormBasicController {
 		digitalSignatureEl.setExampleKey("digital.signature.text", null);
 		digitalSignatureEl.addActionListener(FormEvent.ONCHANGE);
 		
-		certificateEl = uifactory.addFileElement(getWindowControl(), "digital.signature.certificate", "digital.signature.certificate", formLayout);
+		certificateEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "digital.signature.certificate", "digital.signature.certificate", formLayout);
 		certificateEl.setExampleKey("digital.signature.certificate.example", null);
 		certificateEl.setHelpText(translate("digital.signature.certificate.hint"));
 		if(StringHelper.containsNonWhitespace(qti21Module.getDigitalSignatureCertificate())) {

@@ -228,7 +228,7 @@ public class PageMetadataEditController extends FormBasicController {
 		summaryEl.setEnabled(editTitleAndSummary);
 		summaryEl.getEditorConfiguration().setPathInStatusBar(false);
 
-		imageUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
+		imageUpload = uifactory.addFileElement(getWindowControl(), getIdentity(), "file","fileupload", formLayout);			
 		imageUpload.setPreview(ureq.getUserSession(), true);
 		imageUpload.addActionListener(FormEvent.ONCHANGE);
 		imageUpload.setDeleteEnabled(true);
@@ -285,7 +285,7 @@ public class PageMetadataEditController extends FormBasicController {
 		downloadAssignmentDocEl = uifactory.addDownloadLink("assignments.doc", "", "assignment.template.doc", null, formLayout);
 		downloadAssignmentDocEl.setVisible(false);
 		
-		assignmentDocUploadEl = uifactory.addFileElement(getWindowControl(), "assignment.template.documents", formLayout);
+		assignmentDocUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "assignment.template.documents", formLayout);
 		assignmentDocUploadEl.addActionListener(FormEvent.ONCHANGE);
 		assignmentDocUploadEl.setVisible(false);
 

@@ -317,7 +317,7 @@ public class CourseHandler implements RepositoryHandler {
 		
 		RepositoryEntryImportExport imp = new RepositoryEntryImportExport(fImportBaseDirectory);
 		if(imp.anyExportedPropertiesAvailable()) {
-			re = imp.importContent(re, getMediaContainer(re));
+			re = imp.importContent(re, getMediaContainer(re), initialAuthor);
 		}
 		
 		//import reminders

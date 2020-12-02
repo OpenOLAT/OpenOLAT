@@ -21,6 +21,7 @@ package org.olat.core.commons.services.vfs.manager;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +29,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.id.Identity;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -162,13 +165,15 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(metadata);
 		
-		vfsMetadataDao.updateMetadata(12345l, new Date(),relativePath, filename);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(JunitTestHelper.random());
+		vfsMetadataDao.updateMetadata(12345l, new GregorianCalendar(2019, 1, 1).getTime(), identity, relativePath, filename);
 		dbInstance.commitAndCloseSession();
 		
 		VFSMetadata loadedMetadata = vfsMetadataDao.loadMetadata(metadata.getKey());
 		
 		Assert.assertEquals(metadata, loadedMetadata);
 		Assert.assertEquals(12345l, loadedMetadata.getFileSize());
+		Assert.assertEquals(identity, loadedMetadata.getFileLastModifiedBy());
 	}
 	
 	@Test

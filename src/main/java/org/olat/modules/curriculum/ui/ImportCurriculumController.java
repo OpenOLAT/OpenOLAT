@@ -73,7 +73,7 @@ public class ImportCurriculumController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		uploadFileEl = uifactory.addFileElement(getWindowControl(), "curriculum.file", formLayout);
+		uploadFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "curriculum.file", formLayout);
 		uploadFileEl.limitToMimeType(Collections.singleton("application/zip"), "error.mimetype", new String[]{ "ZIP" });
 		uploadFileEl.setMandatory(true);
 		uploadFileEl.addActionListener(FormEvent.ONCHANGE);

@@ -98,6 +98,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.ValidationStatus;
@@ -1211,27 +1212,30 @@ public class FormUIFactory {
 	
 	/**
 	 * Add a file upload element, with a label's i18n key being the same as the <code>name<code>.
-	 * If you do not want a label, use the {@link FormUIFactory#addFileElement(String, String, FormItemContainer)} 
+	 * If you do not want a label, use the {@link FormUIFactory#addFileElement(String, Identity, String, FormItemContainer)} 
 	 * method with <code>null</code> value for the <code>i18nKey</code>. 
-	 * 
+	 * @param wControl 
+	 * @param savedBy 
 	 * @param name
 	 * @param formLayout
 	 * @return
 	 */
-	public FileElement addFileElement(WindowControl wControl, String name, FormItemContainer formLayout) {
-		return addFileElement(wControl, name, name, formLayout);
+	public FileElement addFileElement(WindowControl wControl, Identity savedBy, String name, FormItemContainer formLayout) {
+		return addFileElement(wControl, savedBy, name, name, formLayout);
 	}
 	
 		
 	/**
 	 * Add a file upload element
+	 * @param wControl 
+	 * @param savedBy
 	 * @param name
-	 * @param i18nKey
 	 * @param formLayout
+	 * @param i18nKey
 	 * @return
 	 */
-	public FileElement addFileElement(WindowControl wControl, String name, String i18nLabel, FormItemContainer formLayout) {
-		FileElement fileElement = new FileElementImpl(wControl, name);
+	public FileElement addFileElement(WindowControl wControl, Identity savedBy, String name, String i18nLabel, FormItemContainer formLayout) {
+		FileElement fileElement = new FileElementImpl(wControl, savedBy, name);
 		setLabelIfNotNull(i18nLabel, fileElement);
 		formLayout.add(fileElement);
 		return fileElement;

@@ -94,7 +94,7 @@ public class ForumArchive {
 				File attachment = attachmentEntry.getKey();
 				DocReference ref = attachmentEntry.getValue();
 				VFSLeaf leaf = attachmentsContainer.createChildLeaf(ref.getFilename());
-				VFSManager.copyContent(attachment, leaf);	
+				VFSManager.copyContent(attachment, leaf, null);
 			}
 		}
 	}

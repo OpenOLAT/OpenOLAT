@@ -176,7 +176,7 @@ public class DataStepForm extends StepFormBasicController {
 
 		// return files only when configured
 		if(settings.isHasReturnFiles()) {
-			returnFileEl = uifactory.addFileElement(getWindowControl(), "returnfiles", "return.files", formLayout);
+			returnFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "returnfiles", "return.files", formLayout);
 			Set<String> mimes = new HashSet<>();
 			mimes.add(WebappHelper.getMimeType("file.zip"));
 			returnFileEl.limitToMimeType(mimes, "return.mime", null);
@@ -327,7 +327,7 @@ public class DataStepForm extends StepFormBasicController {
 	
 	private void copyUploadFile(BulkAssessmentDatas datas, File uploadedFile, List<BulkAssessmentRow> rows) throws IOException {
 		try(FileInputStream inStream = new FileInputStream(uploadedFile)) {
-			if(VFSManager.copyContent(inStream, targetArchive)) {
+			if(VFSManager.copyContent(inStream, targetArchive, getIdentity())) {
 				datas.setReturnFiles(targetArchive.getRelPath());
 				processReturnFiles(targetArchive, rows);
 			}

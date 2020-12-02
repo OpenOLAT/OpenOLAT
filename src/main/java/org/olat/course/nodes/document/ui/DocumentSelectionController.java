@@ -71,7 +71,7 @@ public class DocumentSelectionController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Upload
-		uploadEl = uifactory.addFileElement(getWindowControl(), "config.file.upload", formLayout);
+		uploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "config.file.upload", formLayout);
 		uploadEl.addActionListener(FormEvent.ONCHANGE);
 		uploadEl.setMaxUploadSizeKB(leftQuataKB, null, null);
 		

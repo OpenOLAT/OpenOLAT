@@ -123,7 +123,7 @@ public class AssignmentTemplatesEditController extends FormBasicController {
 	private void loadModel() {
 		List<Assignment> assignments = portfolioService.getBindersAssignmentsTemplates(binder);
 		List<AssignmentTemplateRow> rows = assignments.stream()
-				.map(a -> forgeRow(a)).collect(Collectors.toList());
+				.map(this::forgeRow).collect(Collectors.toList());
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
@@ -225,7 +225,7 @@ public class AssignmentTemplatesEditController extends FormBasicController {
 		if (container != null) {
 			try(InputStream in = new FileInputStream(uploadedFile)) {
 				VFSLeaf storedFile = container.createChildLeaf(uploadedFileName);
-				VFSManager.copyContent(in, storedFile);
+				VFSManager.copyContent(in, storedFile, getIdentity());
 			} catch (Exception e) {
 				logError("", e);
 			}

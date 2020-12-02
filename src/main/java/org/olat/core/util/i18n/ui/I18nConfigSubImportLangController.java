@@ -84,7 +84,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 		}
 		// 
 		// The import file upload
-		importFile = uifactory.addFileElement(getWindowControl(), "configuration.management.package.import.file", formLayout);
+		importFile = uifactory.addFileElement(getWindowControl(), getIdentity(), "configuration.management.package.import.file", formLayout);
 		importFile.setLabel("configuration.management.package.import.file", null);
 		importFile.setMandatory(true, "configuration.management.package.import.file.error.mandatory");
 		// Limit to jar files and set upload limit to 50 MB

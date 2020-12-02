@@ -301,7 +301,7 @@ public class AssignmentEditController extends FormBasicController {
 		filesLayout.setLabel("assignment.document.upload", null);
 		formLayout.add(filesLayout);
 
-		documentUploadEl = uifactory.addFileElement(getWindowControl(), "assignment.document.upload", formLayout);
+		documentUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "assignment.document.upload", formLayout);
 		documentUploadEl.addActionListener(FormEvent.ONCHANGE);
 	}
 	

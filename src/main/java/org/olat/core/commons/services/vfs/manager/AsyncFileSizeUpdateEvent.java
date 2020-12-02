@@ -32,8 +32,8 @@ public class AsyncFileSizeUpdateEvent extends MultiUserEvent {
 	private static final long serialVersionUID = 5439824954399187557L;
 	public static final String ASYNC_FILE_SIZE = "async-file-size-updates";
 	
-	private String filename;
-	private String relativePath;
+	private final String filename;
+	private final String relativePath;
 	
 	public AsyncFileSizeUpdateEvent(String relativePath, String filename) {
 		super(ASYNC_FILE_SIZE);
@@ -48,4 +48,5 @@ public class AsyncFileSizeUpdateEvent extends MultiUserEvent {
 	public String getRelativePath() {
 		return relativePath;
 	}
+
 }

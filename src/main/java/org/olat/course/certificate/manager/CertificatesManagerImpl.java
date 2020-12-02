@@ -1116,7 +1116,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
-	public CertificateTemplate addTemplate(String name, File file, String format, String orientation, boolean publicTemplate) {
+	public CertificateTemplate addTemplate(String name, File file, String format, String orientation, boolean publicTemplate, Identity addedBy) {
 		CertificateTemplateImpl template = new CertificateTemplateImpl();
 
 		template.setCreationDate(new Date());
@@ -1127,7 +1127,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 		String filename = name.toLowerCase();
 		if(filename.endsWith(".pdf")) {
-			if(addPdfTemplate(name, file, template)) {
+			if(addPdfTemplate(name, file, template, addedBy)) {
 				dbInstance.getCurrentEntityManager().persist(template);
 			} else {
 				template = null;
@@ -1145,7 +1145,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	@Override
-	public CertificateTemplate updateTemplate(CertificateTemplate template, String name, File file, String format, String orientation) {
+	public CertificateTemplate updateTemplate(CertificateTemplate template, String name, File file, String format, String orientation, Identity updatedBy) {
 		CertificateTemplateImpl templateToUpdate = (CertificateTemplateImpl)template;
 		templateToUpdate.setLastModified(new Date());
 		templateToUpdate.setFormat(format);
@@ -1154,7 +1154,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String filename = name.toLowerCase();
 		File templateFile = getTemplateFile(templateToUpdate);
 		if(filename.endsWith(".pdf")) {
-			if(addPdfTemplate(name, file, templateToUpdate)) {
+			if(addPdfTemplate(name, file, templateToUpdate, updatedBy)) {
 				templateToUpdate = dbInstance.getCurrentEntityManager().merge(templateToUpdate);
 			} else {
 				templateToUpdate = null;
@@ -1188,7 +1188,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 	}
 	
-	private boolean addPdfTemplate(String name, File file, CertificateTemplateImpl template) {
+	private boolean addPdfTemplate(String name, File file, CertificateTemplateImpl template, Identity savedBy) {
 		String dir = templatesStorage.generateDir();
 		VFSContainer templateDir = templatesStorage.getContainer(dir);
 		
@@ -1202,7 +1202,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 		
 		try(InputStream inStream = Files.newInputStream(file.toPath())) {
-			if(VFSManager.copyContent(inStream, templateLeaf)) {
+			if(VFSManager.copyContent(inStream, templateLeaf, savedBy)) {
 				template.setName(name);
 				template.setPath(dir + templateLeaf.getName());
 				return true;

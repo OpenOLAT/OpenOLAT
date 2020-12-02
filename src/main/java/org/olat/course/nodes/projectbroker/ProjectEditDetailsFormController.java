@@ -298,7 +298,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			}
 		}
 
-		attachmentFileName = uifactory.addFileElement(getWindowControl(), "detailsform.attachmentfilename.label", formLayout);
+		attachmentFileName = uifactory.addFileElement(getWindowControl(), getIdentity(), "detailsform.attachmentfilename.label", formLayout);
 		attachmentFileName.setLabel("detailsform.attachmentfilename.label", null);
 		if (project.getAttachmentFileName() != null && !project.getAttachmentFileName().equals("")) {
 			attachmentFileName.setInitialFile(new File(project.getAttachmentFileName()));

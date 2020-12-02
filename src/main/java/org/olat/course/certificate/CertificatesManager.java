@@ -73,18 +73,20 @@ public interface CertificatesManager {
 	 * @param name The filename of the template
 	 * @param file The file which is / or contains the template
 	 * @param publicTemplate True if the tempalte is accessible system-wide
+	 * @param addedBy the file uploader
 	 * @return
 	 */
-	public CertificateTemplate addTemplate(String name, File file, String format, String orientation, boolean publicTemplate);
+	public CertificateTemplate addTemplate(String name, File file, String format, String orientation, boolean publicTemplate, Identity addedBy);
 	
 	/**
 	 * Update the template files
 	 * @param template
 	 * @param name
 	 * @param file
+	 * @param identity 
 	 * @return
 	 */
-	public CertificateTemplate updateTemplate(CertificateTemplate template, String name, File file, String format, String orientation);
+	public CertificateTemplate updateTemplate(CertificateTemplate template, String name, File file, String format, String orientation, Identity updatedBy);
 	
 	/**
 	 * Delete the template in the file system and in the database

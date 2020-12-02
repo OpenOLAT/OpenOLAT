@@ -163,7 +163,7 @@ public class CatalogEntryEditController extends FormBasicController {
 		entriesSortSelect = uifactory.addDropdownSingleselect("sort.entries", formLayout, sortSelectKeys, translatedEntryKeys);
 
 		VFSLeaf img = catalogEntry == null || catalogEntry.getKey() == null ? null : catalogManager.getImage(catalogEntry);
-		fileUpload = uifactory.addFileElement(getWindowControl(), "entry.pic", "entry.pic", formLayout);
+		fileUpload = uifactory.addFileElement(getWindowControl(), getIdentity(), "entry.pic", "entry.pic", formLayout);
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
 		fileUpload.setPreview(ureq.getUserSession(), true);

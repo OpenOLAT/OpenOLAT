@@ -23,11 +23,16 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 
 /**
@@ -51,6 +56,9 @@ public class VFSMetadataFileSaved implements Persistable {
 	private Date fileLastModified;
 	@Column(name="f_size", nullable=false, insertable=true, updatable=true)
 	private long fileSize;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_lastmodified_by", nullable=true, insertable=true, updatable=true)
+	private Identity fileLastModifiedBy;
 	@Column(name="f_deleted", nullable=false, insertable=true, updatable=true)
 	private boolean deleted;
 	@Column(name="f_filename", nullable=false, insertable=false, updatable=false)
@@ -73,6 +81,14 @@ public class VFSMetadataFileSaved implements Persistable {
 
 	public void setFileLastModified(Date fileLastModified) {
 		this.fileLastModified = fileLastModified;
+	}
+
+	public Identity getFileLastModifiedBy() {
+		return fileLastModifiedBy;
+	}
+
+	public void setFileLastModifiedBy(Identity fileLastModifiedBy) {
+		this.fileLastModifiedBy = fileLastModifiedBy;
 	}
 
 	public long getFileSize() {

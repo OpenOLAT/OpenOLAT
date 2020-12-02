@@ -328,18 +328,17 @@ public class MetaInfoFormController extends FormBasicController {
 				uifactory.addStaticTextElement("mf.lockedBy", lockedDetails, formLayout);
 			}
 			
-			// username
 			String author = userManager.getUserDisplayName(meta == null ? null : meta.getAuthor());
 			uifactory.addStaticTextElement("mf.author", StringHelper.escapeHtml(author), formLayout);
 
-			// filesize
 			uifactory.addStaticTextElement("mf.size", StringHelper.escapeHtml(sizeText), formLayout);
 
-			// last modified date
 			String lastModified = meta == null ? "" : Formatter.getInstance(getLocale()).formatDate(meta.getFileLastModified());
 			uifactory.addStaticTextElement("mf.lastModified", lastModified, formLayout);
+			
+			String modifiedBy = userManager.getUserDisplayName(meta == null ? null : meta.getFileLastModifiedBy());
+			uifactory.addStaticTextElement("mf.modified.by", StringHelper.escapeHtml(modifiedBy), formLayout);
 
-			// file type
 			uifactory.addStaticTextElement("mf.type", StringHelper.escapeHtml(typeText), formLayout);
 
 			String downloads = meta == null ? "" : String.valueOf(meta.getDownloadCount());
