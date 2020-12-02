@@ -20,7 +20,7 @@
 package org.olat.modules.appointments.ui;
 
 import static java.util.Collections.emptyList;
-import static org.olat.modules.appointments.ui.AppointmentsUIFactory.isEndInPast;
+import static org.olat.modules.appointments.ui.AppointmentsUIFactory.isEndInFuture;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -192,10 +192,12 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 				forgeSelectionLink(row, selected);
 			}
 		} else if (topic.isMultiParticipation() || userHasNoConfirmedParticipation) {
-			boolean selectable = Appointment.Status.confirmed == appointment.getStatus() || isEndInPast(appointment, now)
-					? false
-					: freeParticipations == null // no limit
-						|| freeParticipations.intValue() > 0;
+			boolean selectable = false;
+			if ((Appointment.Status.planned == appointment.getStatus() || (topic.isAutoConfirmation() && !selected)) 
+					&& isEndInFuture(appointment, now)
+					&& (freeParticipations == null || freeParticipations.intValue() > 0)) {
+				selectable = true;
+			}
 			
 			boolean unselectable = selected && Appointment.Status.planned == appointment.getStatus();
 			if (selectable || unselectable) {

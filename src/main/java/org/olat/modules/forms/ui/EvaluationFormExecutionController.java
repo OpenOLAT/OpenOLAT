@@ -94,7 +94,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private boolean showDoneButton;
 
 	private EvaluationFormSession session;
-	private final EvaluationFormResponses responses;
+	private EvaluationFormResponses responses;
 	
 
 	@Autowired
@@ -103,7 +103,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private EvaluationFormManager evaluationFormManager;
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session) {
-		this(ureq, wControl, null, null, session, null, null, null, false, true);
+		this(ureq, wControl, null, null, session, null, null, false, true);
 	}
 
 	/**
@@ -112,17 +112,18 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	 */
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			EvaluationFormResponses responses, Form form, DataStorage storage, Component header) {
-		this(ureq, wControl, form, storage, session, responses, null, header, false, true);
+		this(ureq, wControl, form, storage, session, null, header, false, true);
+		this.responses = responses;
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			boolean readOnly, boolean showDoneButton) {
-		this(ureq, wControl, null, null, session, null, null, null, readOnly, showDoneButton);
+		this(ureq, wControl, null, null, session, null, null, readOnly, showDoneButton);
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
-			EvaluationFormSession session, EvaluationFormResponses responses, ExecutionIdentity executionIdentity,
-			Component header, boolean readOnly, boolean showDoneButton) {
+			EvaluationFormSession session, ExecutionIdentity executionIdentity, Component header, boolean readOnly,
+			boolean showDoneButton) {
 		super(ureq, wControl, "execute");
 
 		this.session = session;
@@ -138,14 +139,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			this.form = evaluationFormManager.loadForm(formEntry);
 			this.storage = evaluationFormManager.loadStorage(formEntry);
 		}
-
-		if (responses != null) {
-			this.responses = responses;
-		} else {
-			SessionFilter filter = SessionFilterFactory.create(session);
-			this.responses = evaluationFormManager.loadResponsesBySessions(filter);
-		}
-
+		
 		if (executionIdentity != null) {
 			this.executionIdentity = executionIdentity;
 		} else {
@@ -241,9 +235,13 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	}
 
 	private void loadResponses() {
-		if (session == null)
-			return;
-
+		if (session == null) return;
+		
+		if (responses == null) {
+			SessionFilter filter = SessionFilterFactory.create(session);
+			responses = evaluationFormManager.loadResponsesBySessions(filter);
+		}
+		
 		for (ExecutionFragment fragment : fragments) {
 			fragment.initResponse(session, responses);
 		}
@@ -272,9 +270,11 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		if (saveLink == source) {
 			if(mainForm.validate(ureq)) {
 				mainForm.forceSubmittedAndValid();
-				doSaveResponses();
-				Double progress = doCalculateProgress();
-				fireEvent(ureq, new ProgressEvent(progress));
+				boolean saved = doSaveResponses(ureq);
+				if (saved) {
+					Double progress = doCalculateProgress();
+					fireEvent(ureq, new ProgressEvent(progress));
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -295,7 +295,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		// Suppress unwanted submit e.g. by pressing enter
 		if (!doneLink.isVisible()) return;
 		
-		boolean responsesSaved = doSaveResponses();
+		boolean responsesSaved = doSaveResponses(ureq);
 		if (responsesSaved) {
 			doConfirmDone(ureq);
 		}
@@ -323,7 +323,15 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		}
 	}
 
-	private boolean doSaveResponses() {
+	private boolean doSaveResponses(UserRequest ureq) {
+		session= evaluationFormManager.loadSessionByKey(session);
+		if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
+			showWarning("error.session.done");
+			responses = null; // reload
+			initForm(ureq);
+			return false;
+		}
+		
 		boolean allSaved = true;
 		for (ExecutionFragment fragment : fragments) {
 			try {
