@@ -1,1 +1,0 @@
-alter table o_gta_task_list drop column g_roundrobin;

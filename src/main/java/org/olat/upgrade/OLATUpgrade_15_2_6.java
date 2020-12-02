@@ -28,7 +28,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.appointments.Organizer;
-import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,12 +43,8 @@ public class OLATUpgrade_15_2_6 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_15.2.6";
 	private static final String CLEAN_UP_APPOINTMENT_ORGANIZERS = "CLEAN UP APPOINTMENT ORGANIZERS";
 
-	private static final int BATCH_SIZE = 1000;
-	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
 	public OLATUpgrade_15_2_6() {
 		super();

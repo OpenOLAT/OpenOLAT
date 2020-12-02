@@ -22,7 +22,6 @@ package org.olat.upgrade;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.Properties;
 
@@ -91,13 +90,9 @@ public class OLATUpgrade_15_2_2 extends OLATUpgrade {
 			String userDataDirectory = WebappHelper.getUserDataRoot();
 			File configurationPropertiesFile = Paths.get(userDataDirectory, "system", "configuration", "org.olat.repository.RepositoryModule.properties").toFile();
 			if (configurationPropertiesFile.exists()) {
-				InputStream is = null;
-				OutputStream fileStream = null;
-				try {
-					is = new FileInputStream(configurationPropertiesFile);
+				try(InputStream is = new FileInputStream(configurationPropertiesFile)) {
 					Properties configuredProperties = new Properties();
 					configuredProperties.load(is);
-					is.close();
 
 					String addAtLast = configuredProperties.getProperty(CATALOG_ADD_LAST);
 					if (addAtLast != null) {
@@ -116,15 +111,8 @@ public class OLATUpgrade_15_2_2 extends OLATUpgrade {
 						repositoryModule.setCatalogAddEntryPosition(0);
 					}
 				} catch (Exception e) {
-					log.error("Error when reading / writing user properties config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
+					log.error("Error when reading / writing user properties config file from path::{}", configurationPropertiesFile.getAbsolutePath(), e);
 					allOk &= false;
-				} finally {
-					try {
-						if (is != null ) is.close();
-					} catch (Exception e) {
-						log.error("Could not close stream from " + configurationPropertiesFile.getAbsolutePath(), e);
-						allOk &= false;
-					}
 				}
 			}
 

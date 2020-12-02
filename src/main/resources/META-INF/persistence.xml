@@ -36,11 +36,7 @@
 		<mapping-file>org/olat/course/db/impl/CourseDBEntryImpl.hbm.xml</mapping-file>
 
 		<!-- Start upgraders mapping -->
-		<mapping-file>org/olat/upgrade/model/BusinessGroupUpgrade.hbm.xml</mapping-file>
-		<mapping-file>org/olat/upgrade/model/BGResourceRelation.hbm.xml</mapping-file>
 		<mapping-file>org/olat/upgrade/model/RepositoryEntryUpgrade.hbm.xml</mapping-file>
-		<class>org.olat.upgrade.model.RepositoryEntryUpgradeToGroupRelation</class>
-		<class>org.olat.upgrade.model.InvitationUpgrade</class>
 		<class>org.olat.upgrade.model.UpgradeTaxonomyLevel</class>
 		<class>org.olat.upgrade.model.UpgradeQuestionItem</class>
 		<class>org.olat.upgrade.model.CurriculumElementPos</class>

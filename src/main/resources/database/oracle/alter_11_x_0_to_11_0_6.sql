@@ -1,1 +1,0 @@
-alter table o_cer_certificate add column c_next_recertification date;

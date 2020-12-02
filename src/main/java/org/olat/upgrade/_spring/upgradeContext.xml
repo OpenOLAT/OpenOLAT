@@ -22,18 +22,7 @@
 	<bean id="olatupgrades" class="org.olat.upgrade.UpgradesDefinitions" >
 		<property name="upgrades">
 			<list>
-				<!-- add upgrade bean here -->
-				<bean id="upgrade_10_0_0" class="org.olat.upgrade.OLATUpgrade_10_0_0"/>
-				<bean id="upgrade_10_0_3" class="org.olat.upgrade.OLATUpgrade_10_0_3"/>
-				<bean id="upgrade_10_1_0" class="org.olat.upgrade.OLATUpgrade_10_1_0"/>
-				<bean id="upgrade_10_3_0" class="org.olat.upgrade.OLATUpgrade_10_3_0"/>
-				<bean id="upgrade_10_4_0" class="org.olat.upgrade.OLATUpgrade_10_4_0"/>
-				<bean id="upgrade_11_0_0" class="org.olat.upgrade.OLATUpgrade_11_0_0"/>
-				<bean id="upgrade_11_0_2" class="org.olat.upgrade.OLATUpgrade_11_0_2"/>
-				<bean id="upgrade_11_0_6" class="org.olat.upgrade.OLATUpgrade_11_0_6"/>
-				<bean id="upgrade_11_2_1" class="org.olat.upgrade.OLATUpgrade_11_2_1"/>
-				<bean id="upgrade_11_3_0" class="org.olat.upgrade.OLATUpgrade_11_3_0"/>
-				<bean id="upgrade_11_4_0" class="org.olat.upgrade.OLATUpgrade_11_4_0"/>				
+				<!-- add upgrade bean here -->			
 				<bean id="upgrade_12_0_0" class="org.olat.upgrade.OLATUpgrade_12_0_0"/>
 				<bean id="upgrade_12_2_0" class="org.olat.upgrade.OLATUpgrade_12_2_0"/>
 				<bean id="upgrade_12_3_0" class="org.olat.upgrade.OLATUpgrade_12_3_0"/>
