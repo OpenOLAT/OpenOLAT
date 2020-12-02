@@ -231,6 +231,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 			DefaultFlexiColumnModel removeModel = new DefaultFlexiColumnModel(AppointmentCols.removeUser);
 			removeModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(removeModel);
+			DefaultFlexiColumnModel exportModel = new DefaultFlexiColumnModel(AppointmentCols.exportParticipants);
+			exportModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(exportModel);
 			DefaultFlexiColumnModel deleteModel = new DefaultFlexiColumnModel(AppointmentCols.delete);
 			deleteModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(deleteModel);
@@ -411,7 +414,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	protected void forgeExportUserLink(AppointmentRow row) {
 		FormLink link = uifactory.addFormLink("export_" + row.getKey(), CMD_EXPORT, "export", null, null, Link.LINK);
 		link.setUserObject(row);
-		row.setRemoveLink(link);
+		row.setExportLink(link);
 	}
 	
 	protected void forgeDeleteLink(AppointmentRow row) {

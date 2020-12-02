@@ -120,6 +120,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 			case select: return row.getSelectLink();
 			case addUser: return row.getAddUserLink();
 			case removeUser: return row.getRemoveLink();
+			case exportParticipants: return row.getExportLink();
 			case confirm: return row.getConfirmLink();
 			case delete: return row.getDeleteLink();
 			case edit: return row.getEditLink();
@@ -147,6 +148,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 		select("select"),
 		addUser("add.user"),
 		removeUser("remove.user"),
+		exportParticipants("export.participations"),
 		confirm("confirm"),
 		edit("edit"),
 		delete("delete");

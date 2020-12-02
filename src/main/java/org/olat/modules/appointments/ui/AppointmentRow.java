@@ -55,6 +55,7 @@ public class AppointmentRow {
 	private FormLink selectLink;
 	private FormLink addUserLink;
 	private FormLink removeLink;
+	private FormLink exportLink;
 	private FormLink confirmLink;
 	private FormLink deleteLink;
 	private FormLink editLink;
@@ -234,6 +235,18 @@ public class AppointmentRow {
 
 	public void setRemoveLink(FormLink removeLink) {
 		this.removeLink = removeLink;
+	}
+	
+	public FormLink getExportLink() {
+		return exportLink;
+	}
+
+	public String getExportLinkName() {
+		return exportLink != null? exportLink.getName(): null;
+	}
+
+	public void setExportLink(FormLink exportLink) {
+		this.exportLink = exportLink;
 	}
 	
 	public FormLink getConfirmLink() {
