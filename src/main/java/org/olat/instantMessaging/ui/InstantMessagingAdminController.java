@@ -64,7 +64,7 @@ public class InstantMessagingAdminController extends FormBasicController {
 	private final InstantMessagingModule imModule;
 
 	public InstantMessagingAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "admin");
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		
 		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		
@@ -75,6 +75,8 @@ public class InstantMessagingAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//enable all
 		FormLayoutContainer moduleFlc = FormLayoutContainer.createDefaultFormLayout("flc_module", getTranslator());
+		moduleFlc.setFormTitle(translate("im.module.enable.title"));
+		moduleFlc.setFormContextHelp("Instant Messaging");
 		formLayout.add(moduleFlc);
 	
 		String[] enabledValues = new String[]{ translate("enabled") };
@@ -84,6 +86,7 @@ public class InstantMessagingAdminController extends FormBasicController {
 		
 		//options
 		FormLayoutContainer chatOptionsFlc = FormLayoutContainer.createDefaultFormLayout("flc_chatOptions", getTranslator());
+		chatOptionsFlc.setFormTitle(translate("im.module.options.chat.title"));
 		formLayout.add(chatOptionsFlc);
 
 		imEnableGroupEl = uifactory.addCheckboxesHorizontal("im.module.enabled.group", chatOptionsFlc, enabledKeys, enabledValues);
@@ -113,6 +116,7 @@ public class InstantMessagingAdminController extends FormBasicController {
 		imEnableCourseAnonymDefaultEl.addActionListener(FormEvent.ONCHANGE);
 
 		FormLayoutContainer messageOptionsFlc = FormLayoutContainer.createDefaultFormLayout("flc_messageOptions", getTranslator());
+		messageOptionsFlc.setFormTitle(translate("im.module.options.message.title"));
 		formLayout.add(messageOptionsFlc);
 		
  		imEnablePrivateEl = uifactory.addCheckboxesHorizontal("im.module.enabled.private", messageOptionsFlc, enabledKeys, enabledValues);
@@ -165,6 +169,7 @@ public class InstantMessagingAdminController extends FormBasicController {
 		}
 	}
 	
+	@Override
 	protected void doDispose() {
 		// nothing to dispose
 	}
