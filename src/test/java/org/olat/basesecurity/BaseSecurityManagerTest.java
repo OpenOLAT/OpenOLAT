@@ -266,9 +266,42 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertEquals(id.getUser().getKey(), foundId.getUserKey());
 		Assert.assertTrue(foundId.getStatus() < Identity.STATUS_VISIBLE_LIMIT);
 	}
+	
+	@Test
+	public void loadIdentityShortByKeys() {
+		//create a user it
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("find-me-short-2-");
+		dbInstance.commitAndCloseSession();
+		
+		//find it
+		List<IdentityShort> foundIdList = securityManager.loadIdentityShortByKeys(List.of(id.getKey()));
+		Assert.assertNotNull(foundIdList);
+		Assert.assertEquals(1, foundIdList.size());
+		Assert.assertEquals(id.getKey(), foundIdList.get(0).getKey());
+	}
+	
+	@Test
+	public void loadIdentityShortByKeysLarge() {
+		//create a user it
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("find-me-short-3-");
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> lofOfkeys = new ArrayList<>(64004);
+		for(int i=1; i<64000; i++) {
+			lofOfkeys.add(Long.valueOf(i));
+		}
+		lofOfkeys.add(id.getKey());
+
+		//find it
+		List<IdentityShort> foundIdList = securityManager.loadIdentityShortByKeys(List.of(id.getKey()));
+		Assert.assertNotNull(foundIdList);
+		assertThat(foundIdList)
+			.extracting(idShort -> idShort.getKey())
+			.contains(id.getKey());
+	}
 
 	@Test
-	public void testLoadIdentityByKeys() {
+	public void loadIdentityByKeys() {
 		//create a security group with 2 identities
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("load-1-sec-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("load-2-sec-");
@@ -285,7 +318,24 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testLoadIdentityByKey() {
+	public void loadIdentityByKeysLarge() {
+		//create a security group with 2 identities
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("load-8-sec-");
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> lofOfkeys = new ArrayList<>(64004);
+		for(int i=1; i<64000; i++) {
+			lofOfkeys.add(Long.valueOf(i + 128000));
+		}
+		lofOfkeys.add(id.getKey());
+		
+		List<Identity> identities = securityManager.loadIdentityByKeys(lofOfkeys);
+		Assert.assertNotNull(identities);
+		Assert.assertTrue(identities.contains(id));
+	}
+	
+	@Test
+	public void loadIdentityByKey() {
 		//create a security group with 2 identities
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("load-1-sec-");
 		dbInstance.commitAndCloseSession();

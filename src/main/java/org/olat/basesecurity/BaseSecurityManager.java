@@ -552,15 +552,20 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		if (identityKeys == null || identityKeys.isEmpty()) {
 			return Collections.emptyList();
 		}
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(512);
 		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user user")
 		  .append(" where ident.key in (:keys)");
 		
-		return dbInstance.getCurrentEntityManager()
+		List<Identity> identities = new ArrayList<>(identityKeys.size());
+		for (List<Long> chunkOfIdentityKeys : PersistenceHelper.collectionOfChunks(new ArrayList<>(identityKeys))) {
+			List<Identity> chunkOfIdentities = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
-				.setParameter("keys", identityKeys)
+				.setParameter("keys", chunkOfIdentityKeys)
 				.getResultList();
+			identities.addAll(chunkOfIdentities);
+		}
+		return identities;
 	}
 
 	@Override
@@ -671,13 +676,16 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		if (identityKeys == null || identityKeys.isEmpty()) {
 			return Collections.emptyList();
 		}
-		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from bidentityshort as ident where ident.key in (:keys)");
-		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), IdentityShort.class)
-				.setParameter("keys", identityKeys)
+
+		List<IdentityShort> identitiesShort = new ArrayList<>(identityKeys.size());
+		for (List<Long> chunkOfIdentityKeys : PersistenceHelper.collectionOfChunks(new ArrayList<>(identityKeys))) {
+			List<IdentityShort> chunkOfIdentitiesShort = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("getIdentityShortByKeys", IdentityShort.class)
+				.setParameter("keys", chunkOfIdentityKeys)
 				.getResultList();
+			identitiesShort.addAll(chunkOfIdentitiesShort);
+		}
+		return identitiesShort;
 	}
 	
 	@Override

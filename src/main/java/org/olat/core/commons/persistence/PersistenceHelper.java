@@ -32,9 +32,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-import org.olat.core.id.Persistable;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.id.Persistable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -52,6 +54,7 @@ public class PersistenceHelper {
 	
 	private static final Logger log = Tracing.createLoggerFor(PersistenceHelper.class);
 	private static boolean charCountNativeUTF8 = true;
+	private static final int DEFAULT_CHUNK_SIZE = 16384;
 	
 	/**
 	 * Spring only constructor. Use static methods to access the helper
@@ -425,5 +428,22 @@ public class PersistenceHelper {
 			return sb.toString();
 		}
 		return content;
+	}
+	
+	/*
+	 * Big lists must be partitioned because PostgreSQL can not handle so many elements in IN operator,
+	 * see https://makk.es/blog/postgresql-parameter-limitation/.
+	 * Solution taken from https://e.printstacktrace.blog/divide-a-list-to-lists-of-n-size-in-Java-8/.
+	 */
+	public static <T> Collection<List<T>> collectionOfChunks(List<T> list) {
+		return collectionOfChunks(list, 1);
+	}
+	
+	public static <T> Collection<List<T>> collectionOfChunks(List<T> list, int numOfParameters) {
+		final int chunkSize = DEFAULT_CHUNK_SIZE / numOfParameters;
+		AtomicInteger counter = new AtomicInteger();
+		return list.stream()
+			.collect(Collectors.groupingBy(it -> counter.getAndIncrement() / chunkSize))
+			.values();
 	}
 }

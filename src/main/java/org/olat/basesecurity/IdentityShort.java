@@ -45,6 +45,7 @@ import org.olat.core.id.Persistable;
 @Table(name="o_bs_identity_short_v")
 @NamedQuery(name="selectAllIdentitiesShortUnordered", query="select ident from bidentityshort as ident")
 @NamedQuery(name="getIdentityShortById", query="select identity from bidentityshort as identity where identity.key=:identityKey")
+@NamedQuery(name="getIdentityShortByKeys", query="select ident from bidentityshort as ident where ident.key in (:keys)")
 public class IdentityShort implements Persistable, IdentityNames {
 
 	private static final long serialVersionUID = -9039644291427632379L;

@@ -35,6 +35,7 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -98,27 +99,29 @@ public class IdentityDAO {
 		  .append(" or lower(concat(user.firstName,' ', user.lastName)) in (:names)")
 		  .append(" or lower(user.nickName) in (:names)")
 		  .append(" or lower(user.email) in (:names)")
-		  .append(" or lower(user.institutionalEmail) in (:names)")
+		 .append(" or lower(user.institutionalEmail) in (:names)")
 		  .append(" or lower(user.institutionalUserIdentifier) in (:names)");
 
 		List<String> loweredIdentityNames = names.stream()
 				.map(String::toLowerCase).collect(Collectors.toList());
 		
-		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
-				.setParameter("names", loweredIdentityNames)
-				.getResultList();
-		
 		Set<String> loweredIdentityNamesSet = new HashSet<>(loweredIdentityNames);
-		
 		Map<Identity, FindNamedIdentity> namedIdentities = new HashMap<>();
-		for(Object[] rawObject:rawObjects) {
-			Identity identity = (Identity)rawObject[0];
-			Authentication authentication = (Authentication)rawObject[1];
-			FindNamedIdentity namedIdentity = namedIdentities
-					.computeIfAbsent(identity, FindNamedIdentity::new);
-			appendName(namedIdentity, authentication, loweredIdentityNamesSet);
+		for (List<String> chunkOfIdentityNames : PersistenceHelper.collectionOfChunks(new ArrayList<>(loweredIdentityNames), 7)) {
+			List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Object[].class)
+					.setParameter("names", chunkOfIdentityNames)
+					.getResultList();
+			
+			for(Object[] rawObject:rawObjects) {
+				Identity identity = (Identity)rawObject[0];
+				Authentication authentication = (Authentication)rawObject[1];
+				FindNamedIdentity namedIdentity = namedIdentities
+						.computeIfAbsent(identity, FindNamedIdentity::new);
+				appendName(namedIdentity, authentication, loweredIdentityNamesSet);
+			}
 		}
+		
 		return new ArrayList<>(namedIdentities.values());
 	}
 	

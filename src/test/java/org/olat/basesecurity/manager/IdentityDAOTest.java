@@ -19,6 +19,8 @@
  */
 package org.olat.basesecurity.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,7 +46,7 @@ public class IdentityDAOTest extends OlatTestCase {
 	private IdentityDAO identityDao;
 	
 	@Test
-	public void findByNames_login() {
+	public void findByNamesLogin() {
 		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("id-dao-1");
 		String login = identity.getLogin();
 		
@@ -56,7 +58,7 @@ public class IdentityDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void findByNames_legacyName() {
+	public void findByNamesLegacyName() {
 		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("id-dao-2");
 		String name = identity.getIdentity().getName();
 		
@@ -68,7 +70,7 @@ public class IdentityDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void findByNames_firstLastNames() {
+	public void findByNamesFirstLastNames() {
 		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("id-dao-3");
 		String fullname = identity.getUser().getFirstName() + " " + identity.getUser().getLastName();
 		
@@ -77,6 +79,24 @@ public class IdentityDAOTest extends OlatTestCase {
 		Assert.assertNotNull(namedIdentities);
 		Assert.assertEquals(1, namedIdentities.size());
 		Assert.assertEquals(identity.getIdentity(), namedIdentities.get(0).getIdentity());
+	}
+	
+	@Test
+	public void findByNamesALot() {
+		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("id-dao-5");
+		String nickName = identity.getIdentity().getUser().getProperty(UserConstants.NICKNAME, null);
+		
+		List<String> lofOfNames = new ArrayList<>(65600);
+		for(int i=0; i<65536; i++) {
+			lofOfNames.add("this_is_a_fake_" + i);
+		}
+		lofOfNames.add(nickName);
+		
+		List<FindNamedIdentity> loadedIdentities = identityDao.findByNames(lofOfNames);
+		assertThat(loadedIdentities)
+			.isNotNull()
+			.extracting(namedId -> namedId.getIdentity())
+			.contains(identity.getIdentity());
 	}
 	
 	@Test
