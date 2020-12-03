@@ -1,0 +1,22 @@
+<div class="o_sel_teams_meeting">
+<h3>$r.escapeHtml($subject)</h3>
+
+#if($r.isNotNull($start) || $r.isNotNull($end))
+<div><i class="o_icon o_icon_lifecycle_date"> </i> #if($r.isNotNull($start))$start#end - #if($r.isNotNull($end))$end#end</div>
+#end
+#if($r.isNotEmpty($description))
+	<div class="o_block_large o_info">$r.xssScan($description)</div>
+#end
+
+#if($r.isTrue($ended))
+	<div class="o_block_large o_warning">$r.translate("meeting.ended")</div>
+#end
+
+<div class="o_button_group">
+#if($r.available("meeting.join.button") && $r.visible("meeting.join.button"))
+	$r.render("meeting.join.button")
+#end
+</div>
+
+
+</div>

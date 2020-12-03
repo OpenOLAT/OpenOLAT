@@ -59,8 +59,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerCallback;
-import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
@@ -103,6 +101,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.manager.BinderUserInformationsDAO;
 import org.olat.modules.portfolio.ui.BinderController;
+import org.olat.modules.teams.ui.TeamsMeetingsRunController;
 import org.olat.modules.wiki.DryRunAssessmentProvider;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiSecurityCallback;
@@ -198,6 +197,10 @@ public class CollaborationTools implements Serializable {
 	 * constant used to identify the BigBlueButton for a group
 	 */
 	public static final String TOOL_BIGBLUEBUTTON = "hasBigBlueButton";
+	/**
+	 * constant used to identify the BigBlueButton for a group
+	 */
+	public static final String TOOL_TEAMS = "hasTeams";
 	
 	/**
 	 * Only owners have write access to the calendar.
@@ -225,6 +228,7 @@ public class CollaborationTools implements Serializable {
 	public static final String KEY_CALENDAR_ACCESS = "cal";
 	public static final String KEY_FOLDER_ACCESS = "folder";
 	private static final String KEY_BIGBLUEBUTTON_ACCESS = "folder";
+	private static final String KEY_TEAMS_ACCESS = "teams";
 
 	//o_clusterOK by guido
 	private Hashtable<String, Boolean> cacheToolStates;
@@ -340,35 +344,28 @@ public class CollaborationTools implements Serializable {
 		if(forumProperty != null) {
 			forum = fom.loadForum(forumProperty.getLongValue());
 		} else {
-			forum = coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Forum>(){
-				@Override
-				public Forum execute() {
-					Forum aforum;
-					Long forumKey;
-					Property forumKeyProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
-					if (forumKeyProperty == null) {
-						// First call of forum, create new forum and save
-						aforum = fom.addAForum();
-						forumKey = aforum.getKey();
-						if (log.isDebugEnabled()) {
-							log.debug("created new forum in collab tools: foid::" + forumKey.longValue() + " for ores::"
-									+ ores.getResourceableTypeName() + "/" + ores.getResourceableId());
-						}
-						forumKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM, null, forumKey, null, null);
-						npm.saveProperty(forumKeyProperty);
-					} else {
-						// Forum does already exist, load forum with key from properties
-						forumKey = forumKeyProperty.getLongValue();
-						aforum = fom.loadForum(forumKey);
-						if (aforum == null) { throw new AssertException("Unable to load forum with key " + forumKey.longValue() + " for ores "
-								+ ores.getResourceableTypeName() + " with key " + ores.getResourceableId()); }
-						if (log.isDebugEnabled()) {
-							log.debug("loading forum in collab tools from properties: foid::" + forumKey.longValue() + " for ores::"
-									+ ores.getResourceableTypeName() + "/" + ores.getResourceableId());
-						}
-					}
-					return aforum;
+			forum = coordinatorManager.getCoordinator().getSyncer().doInSync(ores, () -> {
+				Forum aforum;
+				Long forumKey;
+				Property forumKeyProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
+				if (forumKeyProperty == null) {
+					// First call of forum, create new forum and save
+					aforum = fom.addAForum();
+					forumKey = aforum.getKey();
+					log.debug("created new forum in collab tools: foid::{} for ores::{}/{}",
+							forumKey, ores.getResourceableTypeName(),  ores.getResourceableId());
+					forumKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM, null, forumKey, null, null);
+					npm.saveProperty(forumKeyProperty);
+				} else {
+					// Forum does already exist, load forum with key from properties
+					forumKey = forumKeyProperty.getLongValue();
+					aforum = fom.loadForum(forumKey);
+					if (aforum == null) { throw new AssertException("Unable to load forum with key " + forumKey.longValue() + " for ores "
+							+ ores.getResourceableTypeName() + " with key " + ores.getResourceableId()); }
+					log.debug("loading forum in collab tools from properties: foid::{} for ores::{}/{}",
+							forumKey, ores.getResourceableTypeName(), ores.getResourceableId());
 				}
+				return aforum;
 			});
 		}
 		return forum;
@@ -451,7 +448,7 @@ public class CollaborationTools implements Serializable {
 					ICourse course = CourseFactory.loadCourse(repoEntry);
 					courses.add(course);
 				} catch (CorruptedCourseException e) {
-					log.error("Course corrupted: " + repoEntry.getKey() + " (" + repoEntry.getOlatResource().getResourceableId() + ")", e);
+					log.error("Course corrupted: {} ({})", repoEntry.getKey(), repoEntry.getOlatResource().getResourceableId(), e);
 				}
 			}
 		}
@@ -601,6 +598,11 @@ public class CollaborationTools implements Serializable {
 		boolean administrator = admin || "all".equals(getBigBlueButtonAccessProperty());
 		return new BigBlueButtonRunController(ureq, wControl, null, null, group, configuration, administrator, administrator, false);
 	}
+	
+	public TeamsMeetingsRunController createTeamsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
+		boolean administrator = admin || "all".equals(getTeamsAccessProperty());
+		return new TeamsMeetingsRunController(ureq, wControl, null, null, group, administrator, administrator, false);
+	}
 
 	/**
 	 * @param toolToChange
@@ -686,7 +688,7 @@ public class CollaborationTools implements Serializable {
 			try {
 				CoreSpringFactory.getImpl(OpenMeetingsManager.class).deleteAll(ores, null, null);
 			} catch (OpenMeetingsException e) {
-				log.error("A room could not be deleted for group: " + ores, e);
+				log.error("A room could not be deleted for group: {}", ores, e);
 			}
 		}
 
@@ -735,9 +737,7 @@ public class CollaborationTools implements Serializable {
 		// handle Boolean Values via String Field in Property DB Table
 		final String toolValueStr = toolValue ? TRUE : FALSE;
 		final PropertyManager pm = PropertyManager.getInstance();
-		coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor() {
-			@Override
-			public void execute() {				
+		coordinatorManager.getCoordinator().getSyncer().doInSync(ores, () -> {			
 				Property property = getPropertyOf(selectedTool);
 				if (property == null) {
 					// not existing -> create it
@@ -754,7 +754,7 @@ public class CollaborationTools implements Serializable {
 				
 				// property becomes persistent
 				pm.saveProperty(property);
-			}});
+			});
 		this.dirty = true;
 		cacheToolStates.put(selectedTool, Boolean.valueOf(toolValue));
 	}
@@ -833,6 +833,34 @@ public class CollaborationTools implements Serializable {
 		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_BIGBLUEBUTTON_ACCESS);
 		if (property == null) { // create a new one
 			Property nP = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_BIGBLUEBUTTON_ACCESS, null, null, access, null);
+			npm.saveProperty(nP);
+		} else { // modify the existing one
+			property.setStringValue(access);
+			npm.updateProperty(property);
+		}
+	}
+	
+	/**
+	 * @return Gets the Teams access property
+	 */
+	public String getTeamsAccessProperty() {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_TEAMS_ACCESS);
+		if (property == null) { // no entry
+			return null;
+		}
+		// read the text value of the existing property
+		return property.getStringValue();
+	}
+	
+	/**
+	 * @param Save Teams access property.
+	 */
+	public void saveTeamsAccessProperty(String access) {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_TEAMS_ACCESS);
+		if (property == null) { // create a new one
+			Property nP = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_TEAMS_ACCESS, null, null, access, null);
 			npm.saveProperty(nP);
 		} else { // modify the existing one
 			property.setStringValue(access);

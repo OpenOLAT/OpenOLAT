@@ -8,8 +8,6 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:component-scan base-package="org.olat.course.nodes.en,org.olat.course.nodes.cl,org.olat.course.nodes.projectbroker.service,org.olat.course.nodes.gta,org.olat.course.nodes.pf" />
-	  
 	<!-- Course node spring config: Course Nodes are searched on the whole classpath, just place your CourceNodeConfiguration somewhere
 	on the classpath best as a jar. The xml file with ending ...Context.xml has do to be outside of the jar to get automatically loaded -->
 	

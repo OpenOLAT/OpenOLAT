@@ -1,0 +1,8 @@
+<div class="clearfix o_sel_teams_overview">
+#if($r.available("meeting"))
+	$r.render("backLink")
+	$r.render("meeting")
+#else
+	$r.render("meetings")
+#end
+</div>

@@ -1,0 +1,8 @@
+<h3>$r.translate("meetings.upcoming")</h3>
+$r.render("upcomingMeetings")
+#if($r.visible("pastMeetings"))
+<div class="o_block_large">
+	<h3>$r.translate("meetings.past")</h3>
+	$r.render("pastMeetings")
+</div>
+#end

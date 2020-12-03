@@ -23,6 +23,7 @@
 	<import resource="classpath:/org/olat/course/nodes/openmeetings/_spring/buildingblockContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/adobeconnect/_spring/buildingblockContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/bigbluebutton/_spring/buildingblockContext.xml"/>
+	<import resource="classpath:/org/olat/course/nodes/teams/_spring/buildingblockContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/portfolio/_spring/portfolioBBContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/vitero/_spring/buildingblockContext.xml"/>
 	<import resource="classpath:/org/olat/course/statistic/_spring/statisticContext.xml"/>

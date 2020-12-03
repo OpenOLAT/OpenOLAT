@@ -47,6 +47,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.wiki.WikiModule;
 
 /**
@@ -120,6 +121,11 @@ public class CollaborationToolsFactory {
 		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isGroupsEnabled() && hasBigBlueButtonTemplates()) {
 			toolArr.add(CollaborationTools.TOOL_BIGBLUEBUTTON);
 		}
+		TeamsModule teamsModule = CoreSpringFactory.getImpl(TeamsModule.class);
+		if(teamsModule.isEnabled() && teamsModule.isGroupsEnabled()) {
+			toolArr.add(CollaborationTools.TOOL_TEAMS);
+		}
+		
 		TOOLS = ArrayHelper.toArray(toolArr);				
 	}
 	

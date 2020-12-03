@@ -1262,6 +1262,27 @@ create table o_bbb_recording (
    primary key (id)
 );
 
+-- Teams
+create table o_teams_meeting (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   t_subject varchar(255),
+   t_description varchar(4000),
+   t_start_date datetime default null,
+   t_end_date datetime default null,
+   t_join_information varchar(4000),
+   t_online_meeting_id varchar(128),
+   t_online_meeting_join_url varchar(2000),
+   t_allowed_presenters varchar(32) default 'EVERYONE',
+   t_access_level varchar(32) default 'EVERYONE',
+   t_entry_exit_announcement bool default true,
+   fk_entry_id bigint default null,
+   a_sub_ident varchar(64) default null,
+   fk_group_id bigint default null,
+   fk_creator_id bigint default null,
+   primary key (id)
+);
 
 -- assessment tables
 -- efficiency statments
@@ -3477,6 +3498,7 @@ alter table o_bbb_meeting ENGINE = InnoDB;
 alter table o_bbb_server ENGINE = InnoDB;
 alter table o_bbb_attendee ENGINE = InnoDB;
 alter table o_bbb_recording ENGINE = InnoDB;
+alter table o_teams_meeting ENGINE = InnoDB;
 alter table o_im_message ENGINE = InnoDB;
 alter table o_im_notification ENGINE = InnoDB;
 alter table o_im_roster_entry ENGINE = InnoDB;
@@ -3890,6 +3912,11 @@ alter table o_bbb_attendee add constraint bbb_attend_ident_idx foreign key (fk_i
 alter table o_bbb_attendee add constraint bbb_attend_meet_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
 
 alter table o_bbb_recording add constraint bbb_record_meet_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
+
+-- Teams
+alter table o_teams_meeting add constraint teams_meet_entry_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+alter table o_teams_meeting add constraint teams_meet_grp_idx foreign key (fk_group_id) references o_gp_business (group_id);
+alter table o_teams_meeting add constraint teams_meet_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
 
 -- tag
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);

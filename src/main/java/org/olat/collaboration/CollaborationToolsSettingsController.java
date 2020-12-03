@@ -51,6 +51,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonCollaborationSettingsController;
+import org.olat.modules.teams.ui.TeamsCollaborationSettingsController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -68,6 +69,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 	private NewsFormController newsController;
 	private CalendarToolSettingsController calendarForm;
 	private FolderToolSettingsController folderForm;
+	private TeamsCollaborationSettingsController teamsController; 
 	private BigBlueButtonCollaborationSettingsController bigBlueButtonController;
 
 	private boolean lastCalendarEnabledState;
@@ -111,6 +113,13 @@ public class CollaborationToolsSettingsController extends BasicController {
 		} else {
 			vc_collabtools.contextPut("bigBlueButtonToolEnabled", Boolean.FALSE);
 		}
+		
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_TEAMS)) {
+			addTeamsTool(ureq);
+		} else {
+			vc_collabtools.contextPut("teamsToolEnabled", Boolean.FALSE);
+		}
+		
 		
 		UserSession usess = ureq.getUserSession();
 		
@@ -197,6 +206,20 @@ public class CollaborationToolsSettingsController extends BasicController {
 		vc_collabtools.put("bigbluebuttonform", bigBlueButtonController.getInitialComponent());
 	}
 	
+	private void addTeamsTool(UserRequest ureq) {
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
+		String access = collabTools.getTeamsAccessProperty();
+
+		removeAsListenerAndDispose(teamsController);
+
+		teamsController = new TeamsCollaborationSettingsController(ureq, getWindowControl(), access);
+		teamsController.setEnabled(!managed);
+		listenTo(teamsController);
+		
+		vc_collabtools.contextPut("teamsToolEnabled", Boolean.TRUE);
+		vc_collabtools.put("teamsform", teamsController.getInitialComponent());
+	}
+	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
@@ -248,6 +271,13 @@ public class CollaborationToolsSettingsController extends BasicController {
 			addBigBlueButtonTool(ureq);
 		} else {
 			vc_collabtools.contextPut("bigBlueButtonToolEnabled", Boolean.FALSE);
+		}
+		
+		// update BigBlueButton form: only show when enabled
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_TEAMS)) {
+			addTeamsTool(ureq);
+		} else {
+			vc_collabtools.contextPut("teamsToolEnabled", Boolean.FALSE);
 		}
 		
 		// update calendar form: only show when enabled
