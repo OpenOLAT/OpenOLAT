@@ -80,8 +80,10 @@ import org.olat.modules.bigbluebutton.GuestPolicyEnum;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingAdminInfos;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingInfos;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingsSearchParameters;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 import org.olat.repository.RepositoryEntry;
@@ -127,6 +129,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private BigBlueButtonMeetingDAO bigBlueButtonMeetingDao;
 	@Autowired
 	private BigBlueButtonAttendeeDAO bigBlueButtonAttendeeDao;
+	@Autowired
+	private BigBlueButtonMeetingQueries bigBlueButtonMeetingQueries;
 	@Autowired
 	private BigBlueButtonMeetingTemplateDAO bigBlueButtonMeetingTemplateDao;
 	@Autowired
@@ -453,6 +457,17 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		return bigBlueButtonMeetingDao.getUpcomingMeetings(entry, subIdent, maxResults);
 	}
 	
+	@Override
+	public int countMeetings(BigBlueButtonMeetingsSearchParameters params) {
+		return bigBlueButtonMeetingQueries.count(params);
+	}
+
+	@Override
+	public List<BigBlueButtonMeetingAdminInfos> searchMeetings(BigBlueButtonMeetingsSearchParameters params,
+			int firstResult, int maxResults) {
+		return bigBlueButtonMeetingQueries.search(params, firstResult, maxResults);
+	}
+
 	@Override
 	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
 		BigBlueButtonMeeting reloadedMeeting = bigBlueButtonMeetingDao.loadByKey(meeting.getKey());

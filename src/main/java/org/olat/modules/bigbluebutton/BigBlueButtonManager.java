@@ -29,6 +29,8 @@ import org.olat.core.util.UserSession;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.manager.BigBlueButtonUriBuilder;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingAdminInfos;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingsSearchParameters;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 import org.olat.repository.RepositoryEntry;
@@ -119,6 +121,10 @@ public interface BigBlueButtonManager {
 	public BigBlueButtonMeetingTemplate createAndPersistTemplate(String name);
 	
 	public boolean isIdentifierInUse(String identifier, BigBlueButtonMeeting reference);
+	
+	public int countMeetings(BigBlueButtonMeetingsSearchParameters params);
+	
+	public List<BigBlueButtonMeetingAdminInfos> searchMeetings(BigBlueButtonMeetingsSearchParameters params, int firstResult, int maxResults);
 
 	public List<BigBlueButtonMeetingTemplate> getTemplates();
 	

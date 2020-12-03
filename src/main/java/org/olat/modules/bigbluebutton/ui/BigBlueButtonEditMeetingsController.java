@@ -170,6 +170,9 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		tableEl.setAndLoadPersistedPreferences(ureq, "bigbluebutton-connect-edit-meetings-list");
 		tableEl.setMultiSelect(!readOnly);
 		tableEl.setSelectAllEnable(true);
+		if(deleteButton != null) {
+			tableEl.addBatchButton(deleteButton);
+		}
 	}
 
 	@Override
