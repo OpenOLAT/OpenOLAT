@@ -63,14 +63,17 @@ public class VelocityTemplatesPreWarm implements PreWarm {
 				Files.walkFileTree(fPath, new SimpleFileVisitor<Path>() {
 					@Override
 					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-						try(StringOutput writer = new StringOutput()) {
-							String path = fPath.relativize(file).toString();
-							if(path.endsWith(".html") && path.contains("/_content/")) {
+						String path = fPath.relativize(file).toString();
+						if(path.contains("/_i18n/")) {
+							return FileVisitResult.SKIP_SUBTREE;
+						}
+						if(path.endsWith(".html") && path.contains("/_content/")) {
+							try(StringOutput writer = new StringOutput()) {
 								VelocityHelper.getInstance().mergeContent(path, context, writer, null);
 								numOfTemplates.incrementAndGet();
+							} catch (IOException | ResourceNotFoundException | ParseErrorException e) {
+								log.error("", e);
 							}
-						} catch (IOException | ResourceNotFoundException | ParseErrorException e) {
-							log.error("", e);
 						}
 						return FileVisitResult.CONTINUE;
 					}
@@ -79,7 +82,7 @@ public class VelocityTemplatesPreWarm implements PreWarm {
 		} catch (IOException e) {
 			log.error("", e);
 		}
-		log.info("Velocity cache filled with " + numOfTemplates + " templates in (ms): " + CodeHelper.nanoToMilliTime(start));
+		log.info("Velocity cache filled with {} templates in (ms): {}", numOfTemplates, CodeHelper.nanoToMilliTime(start));
 	}
 
 }
