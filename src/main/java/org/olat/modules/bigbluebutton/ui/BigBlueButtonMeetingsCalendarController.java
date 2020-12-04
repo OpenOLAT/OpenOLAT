@@ -22,12 +22,13 @@ package org.olat.modules.bigbluebutton.ui;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.commons.calendar.ui.components.FullCalendarComponent;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
+import org.olat.commons.calendar.ui.components.FullCalendarViews;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -62,7 +63,7 @@ public class BigBlueButtonMeetingsCalendarController extends FormBasicController
 
 	
 	public BigBlueButtonMeetingsCalendarController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, FormBasicController.LAYOUT_BAREBONE);		
+		super(ureq, wControl, "meetings_calendar");		
 		initForm(ureq);
 	}
 
@@ -70,12 +71,12 @@ public class BigBlueButtonMeetingsCalendarController extends FormBasicController
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates();
-		if (templates == null || templates.size() == 0 ) {
+		if (templates == null || templates.isEmpty()) {
 			return;
 		}
 		
 		List<KalendarRenderWrapper> calendarWrappers = new ArrayList<>();
-		HashMap<Long, Kalendar> calendars = new HashMap<>();
+		Map<Long, Kalendar> calendars = new HashMap<>();
 		
 		// Create a template calendar for each template / room. This is all in-memory, no ics files
 		for (int i = 0; i < templates.size(); i++) {
@@ -113,9 +114,9 @@ public class BigBlueButtonMeetingsCalendarController extends FormBasicController
 		}
 		
 		
-		Translator calTrans = Util.createPackageTranslator(CalendarManager.class, ureq.getLocale(), getTranslator());
+		Translator calTrans = Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator());
 		FullCalendarElement calComp = new FullCalendarElement(ureq, "calComp", calendarWrappers, calTrans);
-		((FullCalendarComponent) calComp.getComponent()).setViewName("agendaWeek");
+		calComp.setView(FullCalendarViews.timeGridWeek);
 		formLayout.add(calComp);
 	}
 	

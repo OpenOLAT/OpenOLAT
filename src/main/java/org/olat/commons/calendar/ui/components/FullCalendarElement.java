@@ -75,6 +75,10 @@ public class FullCalendarElement extends FormItemImpl {
 		component.setCurrentDate(date);
 	}
 	
+	public void setView(FullCalendarViews view) {
+		component.setViewName(view.name());
+	}
+	
 	public boolean isConfigurationEnabled() {
 		return component.isConfigurationEnabled();
 	}

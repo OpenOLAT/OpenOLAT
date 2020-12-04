@@ -150,7 +150,7 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 		} else if(confirmBatchDelete == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				@SuppressWarnings("unchecked")
-				List<BigBlueButtonMeeting> meetings = (List<BigBlueButtonMeeting>)confirmBatchDelete.getUserObject();
+				List<BigBlueButtonMeetingAdminInfos> meetings = (List<BigBlueButtonMeetingAdminInfos>)confirmBatchDelete.getUserObject();
 				doDelete(meetings);
 			}
 			cleanUp();
@@ -268,9 +268,10 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 		}
 	}
 	
-	private void doDelete(List<BigBlueButtonMeeting> meetings) {
+	private void doDelete(List<BigBlueButtonMeetingAdminInfos> meetingsInfos) {
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
-		for(BigBlueButtonMeeting meeting:meetings) {
+		for(BigBlueButtonMeetingAdminInfos meetingInfos:meetingsInfos) {
+			BigBlueButtonMeeting meeting = meetingInfos.getMeeting();
 			meeting = bigBlueButtonManager.getMeeting(meeting);
 			if(meeting != null) {
 				bigBlueButtonManager.deleteMeeting(meeting, errors);
