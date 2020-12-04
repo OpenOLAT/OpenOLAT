@@ -39,15 +39,10 @@ public class ServerCellRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof String) {
 			String url = (String)cellValue;
-			int index = url.indexOf("://");
-			if(index >= 0) {
-				url = url.substring(index + 3);
-			}
-			int slashIndex = url.indexOf('/');
-			if(slashIndex >= 0) {
-				url = url.substring(0, slashIndex);
-			}
+			url = BigBlueButtonUIHelper.getServerNameFromUrl(url);
 			target.append("<span title=\"").append((String)cellValue).append("\">").append(url).append("</span>");
 		}
 	}
+	
+
 }

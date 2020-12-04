@@ -53,6 +53,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
+import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -80,6 +81,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private DateChooser endDateEl;
 	private SingleSelection templateEl;
 	private SingleSelection layoutEl;
+	private SingleSelection serverEl;
 	private SingleSelection recordEl;
 	private SingleSelection publishingEl;
 	private MultipleSelectionElement guestEl;
@@ -87,13 +89,17 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 
 	private final Mode mode;
 	private final String subIdent;
-	private final boolean editable;
 	private final RepositoryEntry entry;
 	private final boolean withSaveButtons;
 	private final BusinessGroup businessGroup;
 	private BigBlueButtonMeeting meeting;
 	private final List<BigBlueButtonTemplatePermissions> permissions;
 	private List<BigBlueButtonMeetingTemplate> templates;
+	
+	private final boolean running;
+	private final boolean editable;
+	private final boolean editableInternal;
+	private final boolean administrator;
 	
 	private BigBlueButtonMeetingsCalendarController calCtr;
 	private CloseableModalController cmc;
@@ -111,6 +117,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		super(ureq, wControl);
 		withSaveButtons = true;
 		editable = true;
+		running = false;
+		editableInternal = true;
+		administrator = ureq.getUserSession().getRoles().isAdministrator();
 		
 		this.mode = mode;
 		this.entry = entry;
@@ -132,17 +141,41 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		businessGroup = meeting.getBusinessGroup();
 		this.meeting = meeting;
 		this.permissions = permissions;
-		editable = meeting.getServer() == null || meeting.isPermanent();
 		templates = bigBlueButtonManager.getTemplates();
 		
+		running = isRunning(meeting, ureq);
+		editable = isEditable(meeting, ureq);
+		editableInternal = isEditableInternal(meeting, ureq);
+		administrator = ureq.getUserSession().getRoles().isAdministrator();
+		
 		initForm(ureq);
+	}
+	
+	private boolean isEditable(BigBlueButtonMeeting m, UserRequest ureq) {
+		Date now = ureq.getRequestTimestamp();
+		return m == null || m.isPermanent()
+				|| (m.getStartWithLeadTime() != null && m.getStartWithLeadTime().compareTo(now) > 0);
+	}
+	
+	private boolean isEditableInternal(BigBlueButtonMeeting m, UserRequest ureq) {
+		Date now = ureq.getRequestTimestamp();
+		return m == null || m.isPermanent()
+				|| (m.getEndWithFollowupTime() != null && now.compareTo(m.getEndWithFollowupTime()) < 0);
+	}
+	
+	private boolean isRunning(BigBlueButtonMeeting m, UserRequest ureq) {
+		Date now = ureq.getRequestTimestamp();
+		return m != null && !m.isPermanent()
+				&& (m.getStartWithLeadTime() != null && m.getEndWithFollowupTime() != null)
+				&& (m.getStartWithLeadTime().compareTo(now) <= 0 && m.getEndWithFollowupTime().compareTo(now) >= 0)
+				&& (m.getServer() != null && bigBlueButtonManager.isMeetingRunning(m));
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_bbb_edit_meeting");
 		
-		if(!editable) {
+		if(running || !editable) {
 			setFormWarning("warning.meeting.started");
 		}
 		
@@ -150,7 +183,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		nameEl = uifactory.addTextElement("meeting.name", "meeting.name", 128, name, formLayout);
 		nameEl.setElementCssClass("o_sel_bbb_edit_meeting_name");
 		nameEl.setMandatory(true);
-		nameEl.setEnabled(editable);
+		nameEl.setEnabled(editable || editableInternal);
 		if(editable && !StringHelper.containsNonWhitespace(name)) {
 			nameEl.setFocus(true);
 		}
@@ -163,7 +196,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		String description = meeting == null ? "" : meeting.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("meeting.description", "meeting.description", 2000, 4, 72, false, false, description, formLayout);
-		descriptionEl.setEnabled(editable);
+		descriptionEl.setEnabled(editable || editableInternal);
 		
 		String welcome = meeting == null ? "" : meeting.getWelcome();
 		welcomeEl = uifactory.addRichTextElementForStringDataMinimalistic("meeting.welcome", "meeting.welcome", welcome, 8, 60, formLayout, getWindowControl());
@@ -172,7 +205,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		String presenter = meeting == null ? userManager.getUserDisplayName(getIdentity()) : meeting.getMainPresenter();
 		mainPresenterEl = uifactory.addTextElement("meeting.main.presenter", "meeting.main.presenter", 128, presenter, formLayout);
 		mainPresenterEl.setElementCssClass("o_sel_bbb_edit_meeting_presenter");
-		mainPresenterEl.setEnabled(editable);
+		mainPresenterEl.setEnabled(editable || editableInternal);
 		
 		Long selectedTemplateKey = meeting == null || meeting.getTemplate() == null
 				? null : meeting.getTemplate().getKey();
@@ -204,6 +237,18 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			templateEl.select(templatesKeys[0], true);
 		}
 		
+		KeyValues serverKeyValues = new KeyValues();
+		serverKeyValues.add(KeyValues.entry("auto", translate("meeting.server.auto")));
+		appendServerList(serverKeyValues);
+		serverEl = uifactory.addDropdownSingleselect("meeting.server", formLayout, serverKeyValues.keys(), serverKeyValues.values());
+		serverEl.setEnabled((editable || editableInternal || running) && administrator);
+		serverEl.addActionListener(FormEvent.ONCHANGE);
+		if(meeting != null && meeting.getServer() != null && serverKeyValues.containsKey(meeting.getServer().getKey().toString())) {
+			serverEl.select(meeting.getServer().getKey().toString(), true);
+		} else {
+			serverEl.select(serverKeyValues.keys()[0], true);
+		}
+		
 		String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
 		recordEl = uifactory.addRadiosVertical("meeting.record", formLayout, yesNoKeys, yesNoValues);
 		recordEl.addActionListener(FormEvent.ONCHANGE);
@@ -229,6 +274,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 		layoutEl = uifactory.addDropdownSingleselect("meeting.layout", "meeting.layout", formLayout,
 				layoutKeyValues.keys(), layoutKeyValues.values());
+		layoutEl.setEnabled(editable);
 		boolean layoutSelected = false;
 		String selectedLayout = meeting == null ? BigBlueButtonMeetingLayoutEnum.standard.name() : meeting.getMeetingLayout().name();
 		for(String layoutKey:layoutKeyValues.keys()) {
@@ -296,9 +342,22 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			formLayout.add("buttons", buttonLayout);
 			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-			if(editable) {
+			if(editable || editableInternal) {
 				uifactory.addFormSubmitButton("save", buttonLayout);
 			}
+		}
+	}
+	
+	private void appendServerList(KeyValues serverKeyValues) {
+		List<BigBlueButtonServer> servers = bigBlueButtonManager.getServers();
+		for(BigBlueButtonServer server:servers) {
+			if(!server.isEnabled()) continue;
+			
+			String name = server.getName();
+			if(!StringHelper.containsNonWhitespace(name)) {
+				name = BigBlueButtonUIHelper.getServerNameFromUrl(server.getUrl());
+			}
+			serverKeyValues.add(KeyValues.entry(server.getKey().toString(), name));
 		}
 	}
 	
@@ -364,6 +423,12 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		serverEl.clearError();
+		if(!serverEl.isOneSelected()) {
+			serverEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		// dates ok
 		if(allOk) {
 			BigBlueButtonMeetingTemplate template = BigBlueButtonUIHelper.getSelectedTemplate(templateEl, templates);
@@ -425,8 +490,17 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			doOpenCalendar(ureq);
 		} else if (externalLinkEl == source) {
 			BigBlueButtonUIHelper.validateReadableIdentifier(externalLinkEl, meeting);
+		} else if (serverEl == source) {
+			serverChangeWarning();
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void serverChangeWarning() {
+		if(meeting != null && meeting.getServer() != null && (running || meeting.isPermanent())
+				&& !serverEl.getSelectedKey().equals(meeting.getServer().getKey().toString())) {
+			showWarning("warning.change.server");
+		}
 	}
 
 	@Override
@@ -489,6 +563,15 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		} else {
 			meeting.setRecord(null);
 		}
+		
+		String selectedServerKey = serverEl.getSelectedKey();
+		if("auto".equals(selectedServerKey)) {
+			meeting.setServer(null);
+		} else if(StringHelper.isLong(selectedServerKey)) {
+			BigBlueButtonServer server = bigBlueButtonManager.getServer(Long.valueOf(selectedServerKey));
+			meeting.setServer(server);
+		}
+
 		meeting = bigBlueButtonManager.updateMeeting(meeting);
 
 		fireEvent(ureq, Event.DONE_EVENT);

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -73,9 +74,14 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeeting> {
 			case template: return getTemplate(row);
 			case server: return getServer(row);
 			case resource: return getResourceName(row);
-			case edit: return row.isPermanent() || row.getServer() == null;
+			case edit: return editable(row);
 			default: return "ERROR";
 		}
+	}
+	
+	private Boolean editable(BigBlueButtonMeeting row) {
+		return row.isPermanent()
+				|| (row.getEndDate() != null && !row.getEndDate().before(new Date()));
 	}
 	
 	private String getServer(BigBlueButtonMeeting meeting) {
