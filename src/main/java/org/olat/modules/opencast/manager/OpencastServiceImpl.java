@@ -93,11 +93,17 @@ public class OpencastServiceImpl implements OpencastService {
 	}
 
 	@Override
-	public List<OpencastEvent> getEvents(String metadata) {
+	public List<OpencastEvent> getEvents(String metadata, boolean publishedOnly) {
 		GetEventsParams params = GetEventsParams.builder()
 				.addFilter(Filter.textFilter, metadata)
 				.build();
-		return getEvents(params);
+		List<OpencastEvent> events = getEvents(params);
+		if (publishedOnly) {
+			events = events.stream()
+					.filter(event -> opencastRestClient.isEpisodeExisting(event.getIdentifier()))
+					.collect(Collectors.toList());
+		}
+		return events;
 	}
 
 	private List<OpencastEvent> getEvents(GetEventsParams params) {

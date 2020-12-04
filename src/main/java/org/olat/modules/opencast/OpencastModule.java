@@ -46,6 +46,7 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 
 	private static final String ENABLED = "opencast.enabled";
 	private static final String API_URL = "api.url";
+	private static final String API_PRESENTATION_URL = "api.presentation.url";
 	private static final String API_USERNAME = "api.username";
 	private static final String API_PASSOWRD = "api.password";
 	private static final String LTI_URL = "lti.url";
@@ -64,6 +65,8 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 	private boolean enabled;
 	@Value("${opencast.api.url}")
 	private String apiUrl;
+	@Value("${opencast.api.presentation.url}")
+	private String apiPresentationUrl;
 	@Value("${opencast.api.username}")
 	private String apiUsername;
 	@Value("${opencast.api.password}")
@@ -106,6 +109,7 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 		}
 		
 		apiUrl = getStringPropertyValue(API_URL, apiUrl);
+		apiPresentationUrl = getStringPropertyValue(API_PRESENTATION_URL, apiPresentationUrl);
 		apiUsername = getStringPropertyValue(API_USERNAME, apiUsername);
 		apiPassword = getStringPropertyValue(API_PASSOWRD, apiPassword);
 		refreshApiAuthorization();
@@ -156,6 +160,15 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 	public void setApiUrl(String apiUrl) {
 		this.apiUrl = apiUrl;
 		setStringProperty(API_URL, apiUrl, true);
+	}
+
+	public String getApiPresentationUrl() {
+		return apiPresentationUrl;
+	}
+
+	public void setApiPresentationUrl(String apiPresentationUrl) {
+		this.apiPresentationUrl = apiPresentationUrl;
+		setStringProperty(API_PRESENTATION_URL, apiPresentationUrl, true);
 	}
 
 	public String getApiUrl() {
