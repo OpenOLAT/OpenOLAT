@@ -51,7 +51,7 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 	private Map<MapperKey,Mapper> mapperKeyToMapper = new ConcurrentHashMap<>();
 	private Map<String,List<MapperKey>> sessionIdToMapperKeys = new ConcurrentHashMap<>();
 
-	private CacheWrapper<String, Serializable> mapperCache;
+	private CacheWrapper<String, Mapper> mapperCache;
 	
 	@Autowired
 	private MapperDAO mapperDao;
@@ -122,6 +122,8 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 					mapperDao.updateConfiguration(encryptedMapId, (Serializable)mapper, expirationTime);
 				}
 			}
+		} else if(expirationTime > 0) {
+			mapperCache.put(encryptedMapId, mapper, expirationTime);
 		}
 
 		mapperKeyToMapper.put(mapperKey, mapper);
@@ -143,11 +145,11 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 		MapperKey mapperKey = new MapperKey(session, id);
 		Mapper mapper = mapperKeyToMapper.get(mapperKey);
 		if(mapper == null) {
-			mapper = (Mapper)mapperCache.get(id);
+			mapper = mapperCache.get(id);
 			if(mapper == null) {
 				mapper = mapperDao.retrieveMapperById(id);
 				if(mapper != null) {
-					mapperCache.put(id, (Serializable)mapper);
+					mapperCache.put(id, mapper);
 				}
 			}
 		}

@@ -91,7 +91,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VideoDisplayController extends BasicController {
 
 	private static final String GUIPREF_KEY_PREFERRED_RESOLUTION = "preferredResolution";
-
+	private static final int EXPIRATION_TIME = 60 * 60;// one hour
+	
 	private VideoAssessmentItemController questionCtrl;
 	private UserCommentsAndRatingsController commentsAndRatingCtr;
 	
@@ -337,9 +338,10 @@ public class VideoDisplayController extends BasicController {
 			// Mapper for Video
 			
 			// Mapper for versions specific because not in same base as the resource itself
-			String transcodingMapperId = "transcoding-" + videoEntry.getOlatResource().getResourceableId();
+			String transcodingMapperId = mainVC.getDispatchID() + "-transcoding-" + videoEntry.getOlatResource().getResourceableId();
 			VFSContainer transcodedContainer = videoManager.getTranscodingContainer(videoEntry.getOlatResource());
-			String transcodedUrl = registerCacheableMapper(ureq, transcodingMapperId, new VideoMediaMapper(transcodedContainer));
+			String transcodedUrl = registerCacheableMapper(ureq, transcodingMapperId,
+					new VideoMediaMapper(transcodedContainer), EXPIRATION_TIME);
 			mainVC.contextPut("transcodedUrl", transcodedUrl);
 			
 			// Add transcoded versions
@@ -408,8 +410,9 @@ public class VideoDisplayController extends BasicController {
 	}
 	
 	private void loadMetadataAndDisplayOptions(UserRequest ureq) {
-		String masterMapperId = "master-" + videoEntry.getOlatResource().getResourceableId();
-		String masterUrl = registerCacheableMapper(ureq, masterMapperId, new VideoMediaMapper(videoManager.getMasterContainer(videoEntry.getOlatResource())));
+		String masterMapperId = mainVC.getDispatchID() + "-master-" + videoEntry.getOlatResource().getResourceableId();
+		String masterUrl = registerCacheableMapper(ureq, masterMapperId,
+				new VideoMediaMapper(videoManager.getMasterContainer(videoEntry.getOlatResource())), EXPIRATION_TIME);
 		mainVC.contextPut("masterUrl", masterUrl);
 		
 		mainVC.contextPut("title", videoEntry.getDisplayname());

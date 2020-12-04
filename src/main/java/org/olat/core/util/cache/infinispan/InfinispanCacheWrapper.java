@@ -28,6 +28,7 @@ package org.olat.core.util.cache.infinispan;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
@@ -56,6 +57,15 @@ public class InfinispanCacheWrapper<U,V> implements CacheWrapper<U,V> {
 	@Override
 	public int size() {
 		return cache.size();
+	}
+
+	@Override
+	public long maxCount() {
+		try {
+			return cache.getCacheConfiguration().memory().maxCount();
+		} catch (Exception e) {
+			return -1l;
+		}
 	}
 
 	@Override
@@ -101,6 +111,11 @@ public class InfinispanCacheWrapper<U,V> implements CacheWrapper<U,V> {
 	@Override
 	public V put(U key, V value) {
 		return cache.put(key, value);
+	}
+
+	@Override
+	public V put(U key, V value, int expirationTime) {
+		return cache.put(key, value, expirationTime, TimeUnit.SECONDS, expirationTime, TimeUnit.SECONDS);
 	}
 
 	@Override

@@ -1151,6 +1151,11 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		}
 
 		@Override
+		public HashMap<String, Serializable> put(NewCacheKey key, HashMap<String, Serializable> value, int expirationTime) {
+			return map.put(key, value);
+		}
+
+		@Override
 		public HashMap<String, Serializable> putIfAbsent(NewCacheKey key, HashMap<String, Serializable> value) {
 			return map.putIfAbsent(key, value);
 		}
@@ -1179,6 +1184,11 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		@Override
 		public int size() {
 			return map.size();
+		}
+
+		@Override
+		public long maxCount() {
+			return -1;
 		}
 
 		@Override
