@@ -48,7 +48,8 @@ public class OpencastRestClientTest extends OlatTestCase {
 	
 	@Before
 	public void setUp() {
-		opencastModule.setApiUrl("http://localhost:8480");
+		opencastModule.setApiUrl("http://localhost:8480/api");
+		opencastModule.setApiPresentationUrl("http://localhost:8480/search");
 		opencastModule.setApiCredentials("admin", "opencast");
 	}
 
@@ -98,5 +99,25 @@ public class OpencastRestClientTest extends OlatTestCase {
 		}
 		softly.assertAll();
 	}
+	
+	@Test
+	public void shouldDeleteEvent() throws InterruptedException {
+		String identifier = "41a88d0d-a9f4-4928-81cf-7a23fef2f992";
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(sut.getEvent(identifier)).as("Event exists in admin").isNotNull();
+		softly.assertThat(sut.isEpisodeExisting(identifier)).as("Episode exists in presentation").isTrue();
+		
+		softly.assertThat(sut.deleteEvent(identifier)).as("deleted").isTrue();
+		
+		Thread.sleep(5000);
+		softly.assertThat(sut.getEvent(identifier)).as("Event does not exist in admin anymore").isNull();
+		softly.assertThat(sut.isEpisodeExisting(identifier)).as("Episode does not exist in presentation anymore").isFalse();
+		
+		softly.assertThat(sut.deleteEvent(identifier)).as("2. deleted").isTrue(); // because nothing to delete
+		
+		softly.assertAll();
+	}
+
 	
 }

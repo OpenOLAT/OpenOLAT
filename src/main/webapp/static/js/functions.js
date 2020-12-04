@@ -581,6 +581,7 @@ function o_ainvoke(r) {
 								newc = jQuery('#' + newcId);
 								replaceElement = true;
 							}
+							
 							if (newc != null) {
 								var eds = jQuery('div.o_richtext_mce textarea', newc);
 								for(var t=0; t<eds.length; t++) {
@@ -1906,7 +1907,8 @@ function checkDrakes() {
 function destroyRunningVideos(videos) {
 	try {
 		if(videos !== "undefined" && videos != null && videos.length > 0) {
-			videos.each(function() {
+			videos.each(function(index, el) {
+				// try to stop media element player
 				try {
 					if(this.player) {
 						this.player.setMuted(true);
@@ -1915,6 +1917,15 @@ function destroyRunningVideos(videos) {
 					} else {
 						if(window.console) console.log('Not found');
 					} 
+				} catch(e) {
+					if(window.console) console.log(e);
+				}
+				
+				// try to unload video element
+				try {
+					el.pause();
+					el.removeAttribute('src'); // empty source
+					el.load();
 				} catch(e) {
 					if(window.console) console.log(e);
 				}
