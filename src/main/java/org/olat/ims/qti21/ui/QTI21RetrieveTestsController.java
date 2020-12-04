@@ -77,9 +77,9 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	private RepositoryEntry assessedEntry;
 	private IQTESTCourseNode courseNode;
 	
-	private List<Identity> identities;
-	private List<AssessmentTestSession> sessions;
-	private Set<Long> identityKeysWithCompensations;
+	private final List<Identity> identities;
+	private final List<AssessmentTestSession> sessions;
+	private final Set<Long> identityKeysWithCompensations;
 	
 	@Autowired
 	private DB dbInstance;
@@ -128,6 +128,8 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 		this.assessedEntry = assessedEntry;
 		identities = getIdentities(asOptions, null);
 		sessions = qtiService.getRunningAssessmentTestSession(assessedEntry, null, assessedEntry);
+		identityKeysWithCompensations = Collections.emptySet();
+		
 		initForm(ureq);
 	}
 	

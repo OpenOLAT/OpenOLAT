@@ -819,7 +819,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	
 	@Override
 	public void signAssessmentResult(AssessmentTestSession candidateSession, DigitalSignatureOptions signatureOptions, Identity assessedIdentity) {
-		if(!qtiModule.isDigitalSignatureEnabled() || !signatureOptions.isDigitalSignature()) return;//nothing to do
+		if(!qtiModule.isDigitalSignatureEnabled() || signatureOptions == null || !signatureOptions.isDigitalSignature()) return;//nothing to do
 		
 		try {
 			File resultFile = getAssessmentResultFile(candidateSession);
