@@ -142,6 +142,19 @@ public class OpencastRestClient {
 	}
 
 	public boolean deleteEvent(String identifier) {
+		boolean deleted = true;
+		Event event = getEvent(identifier);
+		if (event != null) {
+			deleted &= deleteEventFromAdmin(identifier);
+			
+		}
+		if (isEpisodeExisting(identifier)) {
+			deleted &= deleteEpisode(identifier);
+		}
+		return deleted;
+	}
+
+	private boolean deleteEventFromAdmin(String identifier) {
 		URI uri = URI.create(opencastModule.getApiUrl() + "/events/" + identifier);
 		HttpDelete request = new HttpDelete(uri);
 		decorateRequest(request);
@@ -211,6 +224,53 @@ public class OpencastRestClient {
 			log.error("Cannot send: {}", uri, e);
 		}
 		return NO_SERIES;
+	}
+	
+	public boolean isEpisodeExisting(String identifier) {
+		URI uri;
+		try {
+			uri = new URIBuilder(opencastModule.getApiPresentationUrl() + "/episode.json")
+				.addParameter("id", identifier)
+				.build();
+		} catch (Exception e) {
+			log.error("Cannot get Opencast episode.", e);
+			return false;
+		}
+		
+		HttpGet request = new HttpGet(uri);
+		decorateRequest(request);
+		
+		try(CloseableHttpClient client = HttpClientBuilder.create().build();
+				CloseableHttpResponse response = client.execute(request)) {
+			int statusCode = response.getStatusLine().getStatusCode();
+			log.debug("Status code of: {} {}", uri, statusCode);
+			if (statusCode == HttpStatus.SC_OK) {
+				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
+				SearchResult result = objectMapper.readValue(json, SearchResult.class);
+				return result.getSearchResults().getTotal() > 0;
+			}
+		} catch(Exception e) {
+			log.error("Cannot send: {}", uri, e);
+		}
+		return false;
+	}
+
+	private boolean deleteEpisode(String identifier) {
+		URI uri = URI.create(opencastModule.getApiPresentationUrl() + "/" + identifier);
+		HttpDelete request = new HttpDelete(uri);
+		decorateRequest(request);
+		
+		try(CloseableHttpClient client = HttpClientBuilder.create().build();
+				CloseableHttpResponse response = client.execute(request)) {
+			int statusCode = response.getStatusLine().getStatusCode();
+			log.debug("Status code of: {} {}", uri, statusCode);
+			if (statusCode == HttpStatus.SC_NO_CONTENT || statusCode == HttpStatus.SC_OK) {
+				return true;
+			}
+		} catch(Exception e) {
+			log.error("Cannot send: {}", uri, e);
+		}
+		return false;
 	}
 	
 	private void decorateRequest(HttpGet request, AuthDelegate authDelegate) {
