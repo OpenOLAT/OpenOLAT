@@ -90,6 +90,9 @@ public interface CacheWrapper<U, V> {
 	 */
 	public V put(U key, V value);
 	
+	public V put(U key, V value, int expirationTime);
+	
+	
 	public V putIfAbsent(U key, V value);
 	
 	public V replace(U key, V value);
@@ -116,6 +119,8 @@ public interface CacheWrapper<U, V> {
 	 * @return
 	 */
 	public int size();
+	
+	public long maxCount();
 	
 	/**
 	 * This can be dangerous

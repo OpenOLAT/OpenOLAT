@@ -339,6 +339,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 				.setMaxResults(batchSize);
 		
 		int count = 0;
+		long maxCount = userToNameCache.maxCount();
 		List<IdentityShort> identities;
 		do {
 			identities = query.setFirstResult(count).getResultList();
@@ -349,7 +350,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 				}
 			}
 			count += identities.size();
-		} while(identities.size() >= batchSize);
+		} while(identities.size() >= batchSize && count < maxCount);
 		
 		return count;
 	}

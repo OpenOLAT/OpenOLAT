@@ -19,10 +19,11 @@
  */
 package org.olat.user;
 
-import org.olat.core.configuration.PreWarm;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.configuration.PreWarm;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -35,12 +36,15 @@ import org.springframework.stereotype.Service;
 public class UserDisplayNamePreWarm implements PreWarm {
 	
 	private static final Logger log = Tracing.createLoggerFor(UserDisplayNamePreWarm.class);
+	
+	@Autowired
+	private UserManager userManager;
 
 	@Override
 	public void run() {
 		long start = System.nanoTime();
 		log.info("Start filling the user displayname cache");
-		int numOfNames = UserManager.getInstance().warmUp();
-		log.info("Display name cache filled with " + numOfNames + " names in (ms): " + CodeHelper.nanoToMilliTime(start));
+		int numOfNames = userManager.warmUp();
+		log.info("Display name cache filled with {} names in (ms): {}", numOfNames, CodeHelper.nanoToMilliTime(start));
 	}
 }
