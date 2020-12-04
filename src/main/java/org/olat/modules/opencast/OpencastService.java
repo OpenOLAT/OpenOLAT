@@ -59,9 +59,10 @@ public interface OpencastService {
 	 * Get the events with the metadata in the bibliographic data
 	 *
 	 * @param metadata
+	 * @param publishedOnly only get events which are published on the presentation service
 	 * @return
 	 */
-	List<OpencastEvent> getEvents(String metadata);
+	List<OpencastEvent> getEvents(String metadata, boolean publishedOnly);
 	
 	/**
 	 * Delete all events with the identifier.

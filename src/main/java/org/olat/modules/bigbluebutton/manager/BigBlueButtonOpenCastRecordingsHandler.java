@@ -105,7 +105,7 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 			return Collections.emptyList();
 		}
 		
-		List<OpencastEvent> events = opencastService.getEvents(meeting.getMeetingId());
+		List<OpencastEvent> events = opencastService.getEvents(meeting.getMeetingId(), true);
 		List<BigBlueButtonRecording> recordings = new ArrayList<>(events.size());
 		for (OpencastEvent event : events) {
 			String recordId = event.getIdentifier();
