@@ -61,6 +61,7 @@ import org.olat.ims.qti21.QTI21Module.CorrectionWorkflow;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.ConfirmReopenAssessmentEntryController;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityTableModel.IdentityCols;
+import org.olat.ims.qti21.ui.assessment.components.AutoCorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.CorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.NotCorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.ToReviewFlexiCellRenderer;
@@ -168,7 +169,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.answered));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.notAnswered));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.autoCorrected, new CorrectedFlexiCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.autoCorrected, new AutoCorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.corrected, new CorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.notCorrected, new NotCorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.toReview, new ToReviewFlexiCellRenderer()));
@@ -245,6 +246,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 	private void appendStatistics(CorrectionIdentityRow row, AssessmentItemSession itemSession,
 			ItemSessionState itemSessionState, AssessmentItemRef itemRef) {
 		row.addSession();
+		row.addQuestion();
 		if(itemSessionState.isResponded()) {
 			row.addAnswered();
 		} else {
@@ -262,6 +264,12 @@ public class CorrectionIdentityListController extends FormBasicController {
 		boolean manualCorrection = model.isManualCorrection(itemRef);
 		if(!row.isManualCorrection()) {
 			row.setManualCorrection(manualCorrection);
+		}
+		if(!manualCorrection) {
+			row.addAutoCorrectedQuestion();
+			if(!itemSessionState.isResponded()) {
+				row.addAutoCorrectedNotAnswered();
+			}
 		}
 		if(manualCorrection) {
 			if(manualScore == null) {
