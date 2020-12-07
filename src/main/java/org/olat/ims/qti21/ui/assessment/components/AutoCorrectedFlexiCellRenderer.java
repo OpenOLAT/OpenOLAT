@@ -26,6 +26,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.ims.qti21.ui.assessment.model.CorrectionIdentityAssessmentItemRow;
+import org.olat.ims.qti21.ui.assessment.model.CorrectionIdentityRow;
 import org.olat.ims.qti21.ui.assessment.model.CorrectionRow;
 
 /**
@@ -40,7 +41,9 @@ public class AutoCorrectedFlexiCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		Object obj = source.getFlexiTableElement().getTableDataModel().getObject(row);
-		if(obj instanceof CorrectionRow) {
+		if(obj instanceof CorrectionIdentityRow) {
+			render(target, (CorrectionIdentityRow)obj);
+		} else if(obj instanceof CorrectionRow) {
 			render(target, (CorrectionRow)obj);
 		} else if(obj instanceof CorrectionIdentityAssessmentItemRow) {
 			render(target, (CorrectionIdentityAssessmentItemRow)obj);
@@ -57,10 +60,17 @@ public class AutoCorrectedFlexiCellRenderer implements FlexiCellRenderer {
 			}
 		}
 	}
+
+	private void render(StringOutput target, CorrectionIdentityRow identityRow) {
+		target.append(identityRow.getNumAutoCorrected());
+		if(identityRow.getNumAutoCorrectedNotAnswered() == 0) {
+			target.append(" <i class='o_icon o_icon_fw o_icon_ok'> </i> ");
+		}
+	}
 	
 	private void render(StringOutput target, CorrectionIdentityAssessmentItemRow itemRow) {
 		if(!itemRow.isManualCorrection() && itemRow.getManualScore() == null) {
-			target.append("<i class='o_icon o_icon_fw o_icon_ok'> </i>");
+			target.append(" <i class='o_icon o_icon_fw o_icon_ok'> </i>");
 		}
 	}
 }

@@ -38,6 +38,10 @@ public class CorrectionIdentityRow extends CorrectionRow {
 	private final Identity identity;
 	private final AssessmentTestSession candidateSession;
 	private final String[] identityProps;
+
+	private int numQuestions = 0;
+	private int numAutoCorrectedQuestions = 0;
+	private int numAutoCorrectedNotAnswered = 0;
 	
 	public CorrectionIdentityRow(String user, Identity identity, AssessmentTestSession candidateSession,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
@@ -77,5 +81,32 @@ public class CorrectionIdentityRow extends CorrectionRow {
 	
 	public String getIdentityProp(int index) {
 		return identityProps[index];
+	}
+	
+	public int getNumQuestions() {
+		return numQuestions;
+	}
+	
+	public int addQuestion() {
+		numQuestions++;
+		return numQuestions;
+	}
+	
+	public int getNumAutoCorrectedQuestions() {
+		return numAutoCorrectedQuestions;
+	}
+	
+	public int addAutoCorrectedQuestion() {
+		numAutoCorrectedQuestions++;
+		return numAutoCorrectedQuestions;
+	}
+	
+	public int getNumAutoCorrectedNotAnswered() {
+		return numAutoCorrectedNotAnswered;
+	}
+	
+	public int addAutoCorrectedNotAnswered() {
+		numAutoCorrectedNotAnswered++;
+		return numAutoCorrectedNotAnswered;
 	}
 }
