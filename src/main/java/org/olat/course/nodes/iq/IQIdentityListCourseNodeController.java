@@ -254,12 +254,20 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	@Override
 	protected void loadModel(UserRequest ureq) {
 		super.loadModel(ureq);
-		
-		if(((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(getReferencedRepositoryEntry())) {
-			Map<Long,ExtraTimeInfos> extraTimeInfos = getExtraTimes();
-			List<AssessedIdentityElementRow> rows = usersTableModel.getObjects();
-			for(AssessedIdentityElementRow row:rows) {
-				row.setDetails(extraTimeInfos.get(row.getIdentityKey()));
+
+		RepositoryEntry testEntry = getReferencedRepositoryEntry();
+		boolean timeLimit = ((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(testEntry);
+		Map<Long,ExtraTimeInfos> extraTimeInfos = getExtraTimes();
+		List<AssessedIdentityElementRow> rows = usersTableModel.getObjects();
+		for(AssessedIdentityElementRow row:rows) {
+			ExtraTimeInfos infos = extraTimeInfos.get(row.getIdentityKey());
+			if(infos != null) {
+				if(timeLimit) {
+					row.setDetails(infos);
+				}
+				if(infos.getCompletion() != null) {
+					row.getCurrentCompletion().setCompletion(infos.getCompletion());
+				}
 			}
 		}
 		
@@ -285,12 +293,19 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		for(AssessmentTestSession session:sessions) {
 			Long identityKey = session.getIdentity().getKey();
 			if(currentIdentityKey == null || !currentIdentityKey.equals(identityKey)) {
-				if(session.getFinishTime() == null && session.getExtraTime() != null) {
-					Integer extraTimeInSeconds = session.getExtraTime();
-					Date start = session.getCreationDate();
-					ExtraTimeInfos infos = new ExtraTimeInfos(extraTimeInSeconds, start);
-					identityToExtraTime.put(identityKey, infos);
+				Date start = null;
+				Double completion = null;
+				Integer extraTimeInSeconds = null;
+				if(session.getFinishTime() == null && session.getTerminationTime() == null) {
+					start = session.getCreationDate();
+					extraTimeInSeconds = session.getExtraTime();
+					if(session.getNumOfQuestions() != null && session.getNumOfQuestions().intValue() > 0 && session.getNumOfAnsweredQuestions() != null) {
+						completion = session.getNumOfAnsweredQuestions().doubleValue() / session.getNumOfQuestions().doubleValue();
+					}
 				}
+				
+				ExtraTimeInfos infos = new ExtraTimeInfos(extraTimeInSeconds, start, completion);
+				identityToExtraTime.put(identityKey, infos);
 				currentIdentityKey = identityKey;
 			}
 		}

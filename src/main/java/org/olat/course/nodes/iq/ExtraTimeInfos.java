@@ -31,10 +31,16 @@ public class ExtraTimeInfos implements Comparable<ExtraTimeInfos> {
 
 	private final Integer extraTimeInSeconds;
 	private final Date start;
+	private final Double completion;
 	
-	public ExtraTimeInfos(Integer extraTimeInSeconds, Date start) {
+	public ExtraTimeInfos(Integer extraTimeInSeconds, Date start, Double completion) {
 		this.extraTimeInSeconds = extraTimeInSeconds;
 		this.start = start;
+		this.completion = completion;
+	}
+	
+	public Double getCompletion() {
+		return completion;
 	}
 
 	public Integer getExtraTimeInSeconds() {
