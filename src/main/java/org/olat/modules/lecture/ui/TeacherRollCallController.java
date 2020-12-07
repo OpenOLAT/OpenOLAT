@@ -196,6 +196,8 @@ public class TeacherRollCallController extends FormBasicController {
 			layoutCont.contextPut("lectureBlockOptional", !lectureBlock.isCompulsory());
 			layoutCont.setFormTitle(translate("lecture.block", args));
 			layoutCont.setFormDescription(StringHelper.escapeJavaScript(lectureBlock.getDescription()));
+			String i18nInfos = lectureBlock.getPlannedLecturesNumber() == 1 ? "rollcall.coach.hint" : "rollcall.coach.hints";
+			layoutCont.contextPut("lecturesInfos", translate(i18nInfos, new String[] { Integer.toString(lectureBlock.getPlannedLecturesNumber())}));
 		}
 		
 		if(withBack) {

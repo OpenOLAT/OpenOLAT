@@ -271,7 +271,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	@Override
 	protected void loadModel(UserRequest ureq) {
 		super.loadModel(ureq);
-		
+
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
 		boolean timeLimit = ((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(testEntry);
 		Map<Long,ExtraInfos> extraInfos = getExtraInfos();
@@ -320,7 +320,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				if(session.getFinishTime() == null && session.getTerminationTime() == null) {
 					start = session.getCreationDate();
 					extraTimeInSeconds = session.getExtraTime();
-					if(session.getNumOfQuestions() != null && session.getNumOfAnsweredQuestions() != null) {
+					if(session.getNumOfQuestions() != null && session.getNumOfQuestions().intValue() > 0 && session.getNumOfAnsweredQuestions() != null) {
 						completion = session.getNumOfAnsweredQuestions().doubleValue() / session.getNumOfQuestions().doubleValue();
 					}
 				}

@@ -46,6 +46,8 @@ public class LectureStatisticsSearchParameters {
 	private List<OrganisationRef> organisations;
 	private List<RepositoryEntryRef> entries;
 	
+	private String curriculumSearchString;
+	
 	public String getLogin() {
 		return login;
 	}
@@ -124,5 +126,13 @@ public class LectureStatisticsSearchParameters {
 		} else {
 			this.organisations = new ArrayList<>(organisations);
 		}
+	}
+
+	public String getCurriculumSearchString() {
+		return curriculumSearchString;
+	}
+
+	public void setCurriculumSearchString(String curriculumSearchString) {
+		this.curriculumSearchString = curriculumSearchString;
 	}
 }

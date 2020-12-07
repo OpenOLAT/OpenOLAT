@@ -46,6 +46,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
@@ -68,6 +69,7 @@ public class LecturesSearchFormController extends FormBasicController {
 	
 	private TextElement login;
 	private TextElement bulkEl;
+	private TextElement curriculumEl;
 	private FormLink searchButton;
 	private DateChooser startDateEl;
 	private DateChooser endDateEl;
@@ -83,6 +85,8 @@ public class LecturesSearchFormController extends FormBasicController {
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -193,6 +197,9 @@ public class LecturesSearchFormController extends FormBasicController {
 		startDateEl.setElementCssClass("o_sel_repo_lifecycle_validfrom");
 		endDateEl = uifactory.addDateChooser("date.end", "date.end", null, privateDatesCont);
 		endDateEl.setElementCssClass("o_sel_repo_lifecycle_validto");
+		
+		curriculumEl = uifactory.addTextElement("curriculum", "curriculum", 255, null, formLayout);
+		curriculumEl.setVisible(curriculumModule.isEnabled());
 	
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonCont);
@@ -251,6 +258,8 @@ public class LecturesSearchFormController extends FormBasicController {
 		params.setBulkIdentifiers(getBulkIdentifiers());
 		params.setUserProperties(getSearchProperties());
 		params.setOrganisations(searcheableOrganisations);
+		
+		params.setCurriculumSearchString(curriculumEl.getValue());
 		return params;
 	}
 	
@@ -332,6 +341,10 @@ public class LecturesSearchFormController extends FormBasicController {
 		}
 		
 		if(isNotEmpty(bulkEl.getValue())) {
+			atLeastOne |= true;
+		}
+		
+		if(curriculumEl.isVisible() && isNotEmpty(curriculumEl.getValue())) {
 			atLeastOne |= true;
 		}
 		

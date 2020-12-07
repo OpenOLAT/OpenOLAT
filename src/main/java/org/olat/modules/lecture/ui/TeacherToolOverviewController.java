@@ -23,19 +23,19 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
-import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
+import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -49,12 +49,14 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 	private final LecturesSecurityCallback secCallback;
 
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private LectureService lectureService;
 	
 	public TeacherToolOverviewController(UserRequest ureq, WindowControl wControl, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, secCallback.viewAs() == LectureRoles.lecturemanager, "Lectures::UserTools", true, false);
 		this.secCallback = secCallback;
-		initTables(ureq, false, false);
+		initTables(ureq, true, false);
 		
 		LecturesBlockSearchParameters searchParams = getDefaultSearchParameters();
 		searchCtrl.setDefaultDates(searchParams.getStartDate(), searchParams.getEndDate());
@@ -80,15 +82,23 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 		}
 		searchParams.setViewAs(getIdentity(), secCallback.viewAs());
 		
-		List<LectureBlock> blocks = lectureService.getLectureBlocks(searchParams);
-		List<LectureBlockRef> assessedBlockRefs = lectureService.getAssessedLectureBlocks(searchParams);
-		Set<Long> assessedBlockKeys = assessedBlockRefs.stream()
-				.map(LectureBlockRef::getKey).collect(Collectors.toSet());
-		List<LectureBlockRow> rows = new ArrayList<>(blocks.size());
-		for(LectureBlock block:blocks) {
+		List<LectureBlockWithTeachers> blocksWithTeachers = lectureService
+				.getLectureBlocksWithTeachers(searchParams);
+		
+		List<LectureBlockRow> rows = new ArrayList<>(blocksWithTeachers.size());
+		for(LectureBlockWithTeachers blockWithTeachers:blocksWithTeachers) {
+			LectureBlock block = blockWithTeachers.getLectureBlock();
 			RepositoryEntry entry = block.getEntry();
+			
+			StringBuilder teachers = new StringBuilder(32);
+			String separator = translate("user.fullname.separator");
+			for(Identity teacher:blockWithTeachers.getTeachers()) {
+				if(teachers.length() > 0) teachers.append(" ").append(separator).append(" ");
+				teachers.append(userManager.getUserDisplayName(teacher));
+			}
+			
 			rows.add(new LectureBlockRow(block, entry.getDisplayname(), entry.getExternalRef(),
-					"", true, assessedBlockKeys.contains(block.getKey())));
+					teachers.toString(), true, blockWithTeachers.isAssessmentMode()));
 		}
 		return rows;
 	}
