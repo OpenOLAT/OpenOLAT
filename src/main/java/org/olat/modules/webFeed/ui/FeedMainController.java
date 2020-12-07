@@ -164,6 +164,7 @@ public class FeedMainController extends BasicController implements Activateable2
 		vcInfo = uiFactory.createInfoVelocityContainer(this);
 		vcInfo.contextPut("feed", feed);
 		vcInfo.contextPut("helper", helper);
+		vcInfo.contextPut("suppressCache", "");
 		
 		if (subsContext != null) {
 			String businessPath = wControl.getBusinessControl().getAsString();
@@ -176,8 +177,7 @@ public class FeedMainController extends BasicController implements Activateable2
 		vcRightCol = uiFactory.createRightColumnVelocityContainer(this);
 		vcMain.put("rightColumn", vcRightCol);
 
-		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(feed, false);
-		if (repositoryEntry == null && callback.mayEditMetadata()) {
+		if (callback.mayEditMetadata()) {
 			editFeedButton = LinkFactory.createButtonSmall("feed.edit", vcInfo, this);
 			editFeedButton.setElementCssClass("o_sel_feed_edit");
 		}
@@ -197,11 +197,7 @@ public class FeedMainController extends BasicController implements Activateable2
 		putInitialPanel(vcMain);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// feed for this event and make sure the updated feed object is in the view
@@ -209,25 +205,10 @@ public class FeedMainController extends BasicController implements Activateable2
 		vcInfo.contextPut("feed", feed);
 		
 		if (source == editFeedButton) {
-			lock = feedManager.acquireLock(feed, ureq.getIdentity());
-			if (lock.isSuccess()) {
-				if (feed.isExternal()) {
-					oldFeedUrl = feed.getExternalFeedUrl();
-				} 
-				feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory);
-				activateModalDialog(feedFormCtr, uiFactory.getTranslator().translate("feed.edit"));
-			} else {
-				String fullName = userManager.getUserDisplayName(lock.getOwner());
-				String i18nMsg = lock.isDifferentWindows() ? "feed.is.being.edited.by.same.user" : "feed.is.being.edited.by";
-				showInfo(i18nMsg, fullName);
-			}
+			doEditFeedDescription(ureq);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cmc) {
@@ -258,7 +239,7 @@ public class FeedMainController extends BasicController implements Activateable2
 					vcInfo.setDirty(true);
 					// For external podcasts, set the feed to undefined if the feed url
 					// has been set empty.
-					if (feed.isExternal()) {
+					if (feed.isExternal() && feedFormCtr.canChangeUrl()) {
 						String newFeed = feed.getExternalFeedUrl();
 						displayUrlCtr.setUrl(newFeed);
 						if (newFeed == null) {
@@ -279,6 +260,7 @@ public class FeedMainController extends BasicController implements Activateable2
 					itemsCtr.resetItems(ureq, feed);	
 					// Set the URIs correctly
 					helper.setURIs(feed);
+					vcInfo.contextPut("feed", feed);
 
 					// Dispose the feedFormCtr
 					removeAsListenerAndDispose(feedFormCtr);
@@ -304,7 +286,7 @@ public class FeedMainController extends BasicController implements Activateable2
 		} else if (source == itemsCtr && event.equals(ItemsController.HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT)) {
 			feed = feedManager.loadFeed(feed);
 			oldFeedUrl = feed.getExternalFeedUrl();			
-			feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory);
+			feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory, true);
 			activateModalDialog(feedFormCtr, uiFactory.getTranslator().translate("feed.edit"));
 		} else if (source == itemsCtr && event.equals(ItemsController.FEED_INFO_IS_DIRTY_EVENT)) {
 			vcInfo.setDirty(true);
@@ -359,6 +341,23 @@ public class FeedMainController extends BasicController implements Activateable2
 				vcInfo.contextPut("feed", feed);
 				vcInfo.setDirty(true);
 			}
+		}
+	}
+	
+	private void doEditFeedDescription(UserRequest ureq) {
+		lock = feedManager.acquireLock(feed, getIdentity());
+		if (lock.isSuccess()) {
+			if (feed.isExternal()) {
+				oldFeedUrl = feed.getExternalFeedUrl();
+			}
+
+			RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(feed, false);
+			feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory, repositoryEntry == null);
+			activateModalDialog(feedFormCtr, uiFactory.getTranslator().translate("feed.edit"));
+		} else {
+			String fullName = userManager.getUserDisplayName(lock.getOwner());
+			String i18nMsg = lock.isDifferentWindows() ? "feed.is.being.edited.by.same.user" : "feed.is.being.edited.by";
+			showInfo(i18nMsg, fullName);
 		}
 	}
 }

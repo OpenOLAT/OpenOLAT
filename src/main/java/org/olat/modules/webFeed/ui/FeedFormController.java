@@ -64,6 +64,7 @@ import org.olat.modules.webFeed.manager.ValidatedURL;
 class FeedFormController extends FormBasicController {
 	private Feed feed;
 	private Quota feedQuota;
+	private final boolean canChangeUrl;
 	
 	private TextElement title;
 	private FileElement file;
@@ -81,10 +82,12 @@ class FeedFormController extends FormBasicController {
 	 * @param ureq
 	 * @param control
 	 */
-	public FeedFormController(UserRequest ureq, WindowControl wControl, Feed feed, FeedUIFactory uiFactory) {
+	public FeedFormController(UserRequest ureq, WindowControl wControl,
+			Feed feed, FeedUIFactory uiFactory, boolean canChangeUrl) {
 		super(ureq, wControl);
 		this.feed = feed;
-		this.feedQuota = FeedManager.getInstance().getQuota(feed);
+		this.canChangeUrl = canChangeUrl;
+		feedQuota = FeedManager.getInstance().getQuota(feed);
 		setTranslator(uiFactory.getTranslator());
 		initForm(ureq);
 	}
@@ -94,13 +97,17 @@ class FeedFormController extends FormBasicController {
 	protected void doDispose() {
 		// nothing to dispose
 	}
+	
+	public boolean canChangeUrl() {
+		return canChangeUrl && feedUrl != null;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		feed.setTitle(title.getValue());
 		feed.setDescription(description.getValue());
 		
-		if(feed.isExternal()) {
+		if(canChangeUrl && feed.isExternal() && feedUrl != null) {
 			feed.setExternalFeedUrl(feedUrl.isEmpty() ? null : feedUrl.getValue());
 		}
 		
@@ -177,7 +184,7 @@ class FeedFormController extends FormBasicController {
 	 */
 	private boolean validateExternalFeedUrl(){
 		//if not external, there is no text-element, do not check, just return true
-		if(!feed.isExternal()) return true;
+		if(!feed.isExternal() || !canChangeUrl) return true;
 		
 		boolean validUrl = false;
 		if(feedUrl.isEmpty()) {
@@ -256,7 +263,7 @@ class FeedFormController extends FormBasicController {
 		file.setMaxUploadSizeKB(maxFileSizeKB, "ULLimitExceeded", new String[]{ Integer.toString(maxFileSizeKB / 1024), supportAddr });
 
 		// if external feed, display feed-url text-element:
-		if(feed.isExternal()){
+		if(canChangeUrl && feed.isExternal()){
 			feedUrl = uifactory.addTextElement("feedUrl", "feed.form.feedurl", 5000, feed.getExternalFeedUrl(), flc);
 			feedUrl.setElementCssClass("o_sel_feed_url");
 			feedUrl.setDisplaySize(70);
