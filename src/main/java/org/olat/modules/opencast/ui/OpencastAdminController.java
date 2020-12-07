@@ -59,6 +59,7 @@ public class OpencastAdminController extends FormBasicController {
 	
 	private MultipleSelectionElement enabledEl;
 	private TextElement apiUrlEl;
+	private TextElement apiUrlPresentationEl;
 	private TextElement apiUsernameEl;
 	private TextElement apiPasswordEl;
 	private TextElement ltiUrlEl;
@@ -102,6 +103,11 @@ public class OpencastAdminController extends FormBasicController {
 		apiUrlEl = uifactory.addTextElement("admin.api.url", "admin.api.url", 128, apiUrl, formLayout);
 		apiUrlEl.setExampleKey("admin.api.url.example", null);
 		apiUrlEl.setMandatory(true);
+		
+		String apiPresentationUrl = opencastModule.getApiPresentationUrl();
+		apiUrlPresentationEl = uifactory.addTextElement("admin.api.presentation.url", "admin.api.presentation.url", 128, apiPresentationUrl, formLayout);
+		apiUrlPresentationEl.setExampleKey("admin.api.presentation.url.example", null);
+		apiUrlPresentationEl.setMandatory(true);
 		
 		String apiUsername = opencastModule.getApiUsername();
 		apiUsernameEl = uifactory.addTextElement("admin.api.username", 128, apiUsername, formLayout);
@@ -218,6 +224,7 @@ public class OpencastAdminController extends FormBasicController {
 		//validate only if the module is enabled
 		if(enabledEl.isAtLeastSelected(1)) {
 			allOk &= validateIsMandatory(apiUrlEl);
+			allOk &= validateIsMandatory(apiUrlPresentationEl);
 			allOk &= validateIsMandatory(apiUsernameEl);
 			allOk &= validateIsMandatory(apiPasswordEl);
 			allOk &= validateIsMandatory(ltiUrlEl);
@@ -250,6 +257,10 @@ public class OpencastAdminController extends FormBasicController {
 		String apiUrl = apiUrlEl.getValue();
 		apiUrl = apiUrl.endsWith("/")? apiUrl.substring(0, apiUrl.length() - 1): apiUrl;
 		opencastModule.setApiUrl(apiUrl);
+		
+		String apiPresentationUrl = apiUrlPresentationEl.getValue();
+		apiPresentationUrl = apiPresentationUrl.endsWith("/")? apiPresentationUrl.substring(0, apiPresentationUrl.length() - 1): apiPresentationUrl;
+		opencastModule.setApiPresentationUrl(apiPresentationUrl);
 		
 		String apiUsername = apiUsernameEl.getValue();
 		String apiPassword = apiPasswordEl.getValue();
