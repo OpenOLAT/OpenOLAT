@@ -734,12 +734,51 @@ public class LectureBlockRollCallDAO {
 			sb.append(" and re.key in (:repoEntryKeys)");
 		}
 		
+		Long curriculumKey = null;
+		String curriculumRef = null;
+		String curriculumFuzzyRef = null;
+		if(StringHelper.containsNonWhitespace(params.getCurriculumSearchString())) {
+			curriculumRef = params.getCurriculumSearchString();
+			curriculumFuzzyRef = PersistenceHelper.makeFuzzyQueryString(curriculumRef);
+			
+			sb.append(" and exists (select curEl.key from curriculumelement as curEl")
+			  .append("  inner join curEl.curriculum as cur")
+			  .append("  where curEl.group.key=bGroup.key")
+			  .append("  and (")
+			  .append("   cur.externalId=:curriculumRef")
+			  .append("   or")
+			  .likeFuzzy("cur.displayName", "curriculumFuzzyRef", dbInstance.getDbVendor())
+			  .append("   or")
+			  .likeFuzzy("cur.identifier", "curriculumFuzzyRef", dbInstance.getDbVendor())
+			  .append("   or")
+			  .append("   curEl.externalId=:curriculumRef")
+			  .append("   or")
+			  .likeFuzzy("curEl.displayName", "curriculumFuzzyRef", dbInstance.getDbVendor())
+			  .append("   or")
+			  .likeFuzzy("curEl.identifier", "curriculumFuzzyRef", dbInstance.getDbVendor());
+
+			if(StringHelper.isLong(curriculumRef)) {
+				curriculumKey = Long.valueOf(curriculumRef);
+				sb.append(" or cur.key=:curriculumKey").append(" or curEl.key=:curriculumKey");
+			}
+			sb.append(" ))");
+		}
+
 		Map<String,Object> queryParams = new HashMap<>();
 		appendUsersStatisticsSearchParams(params, queryParams, userPropertyHandlers, sb);
 
 		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("identityKey", identity.getKey());
+		if(curriculumKey != null) {
+			rawQuery.setParameter("curriculumKey", curriculumKey);
+		}
+		if(curriculumRef != null) {
+			rawQuery.setParameter("curriculumRef", curriculumRef);
+		}
+		if(curriculumFuzzyRef != null) {
+			rawQuery.setParameter("curriculumFuzzyRef", curriculumFuzzyRef);
+		}
 		if(StringHelper.containsNonWhitespace(params.getLogin())) {
 			rawQuery.setParameter("login", params.getLogin());
 		}
