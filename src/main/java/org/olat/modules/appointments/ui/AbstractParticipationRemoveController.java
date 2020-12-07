@@ -275,6 +275,12 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 				allOk &= false;
 			}
 		}
+		noAppointmentsEl.clearError();
+		if (noAppointmentsEl.isVisible()) {
+			noAppointmentsEl.setErrorKey("error.select.appointment", null);
+			allOk &= false;
+			
+		}
 		
 		return allOk;
 	}
