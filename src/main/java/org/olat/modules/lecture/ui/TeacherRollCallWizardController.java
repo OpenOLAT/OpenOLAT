@@ -80,7 +80,7 @@ public class TeacherRollCallWizardController extends BasicController {
 		putInitialPanel(mainVC);
 		
 		if(calledIdentity == null) {
-			doClosseRollCall(ureq);
+			doCloseRollCall(ureq);
 		} else {
 			doSelect(ureq, calledIdentity);
 		}
@@ -103,6 +103,8 @@ public class TeacherRollCallWizardController extends BasicController {
 				doNext(ureq);
 			} else if(event == Event.CANCELLED_EVENT) {
 				doClose(ureq);
+			} else if(event == Event.CLOSE_EVENT) {
+				doCloseRollCall(ureq);
 			}
 		} else if(closeRollCallCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
@@ -118,11 +120,11 @@ public class TeacherRollCallWizardController extends BasicController {
 			calledIdentity = participants.get(index + 1);
 			doSelect(ureq, calledIdentity);
 		} else if(index + 1 >= participants.size() || index == -1) {
-			doClosseRollCall(ureq);
+			doCloseRollCall(ureq);
 		}
 	}
 	
-	private void doClosseRollCall(UserRequest ureq) {
+	private void doCloseRollCall(UserRequest ureq) {
 		removeAsListenerAndDispose(participantCtrl);
 		removeAsListenerAndDispose(closeRollCallCtrl);
 		

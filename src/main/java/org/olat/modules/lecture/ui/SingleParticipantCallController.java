@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -59,6 +60,7 @@ public class SingleParticipantCallController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 	
+	private FormLink closeButton;
 	private FormLink selectAllLink;
 	private TextElement commentEl;
 	private TextElement absenceReasonEl;
@@ -94,10 +96,9 @@ public class SingleParticipantCallController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		int numOfChecks = lectureBlock.getPlannedLecturesNumber();
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			
-			int numOfChecks = lectureBlock.getPlannedLecturesNumber();
 			List<Integer> absences = rollCall.getLecturesAbsentList();
 			for(int i=0; i<numOfChecks; i++) {
 				String checkId = "check_" + i ;
@@ -163,6 +164,9 @@ public class SingleParticipantCallController extends FormBasicController {
 		selectAllLink = uifactory.addFormLink("all", formLayout);
 		uifactory.addFormSubmitButton("save", "save.next", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		
+		String i18nCloseKey = numOfChecks == 1 ? "close.lecture.block" : "close.lecture.blocks";
+		closeButton = uifactory.addFormLink("close", i18nCloseKey, null, formLayout, Link.BUTTON);
 	}
 
 	@Override
@@ -234,12 +238,27 @@ public class SingleParticipantCallController extends FormBasicController {
 			doCheckAuthorized();
 		} else if(authorizedAbsencedEl == source) {
 			absenceReasonEl.setVisible(authorizedAbsencedEl.isAtLeastSelected(1));
+		} else if(closeButton == source) {
+			if(validateFormLogic(ureq)) {
+				doSave();
+				fireEvent(ureq, Event.CLOSE_EVENT);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		doSave();
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doSave() {
 		List<Integer> absenceList = getAbsenceList();
 
 		String comment = commentEl.getValue();
@@ -253,14 +272,8 @@ public class SingleParticipantCallController extends FormBasicController {
 		}
 		lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),
 				Integer.toString(rollCall.getLecturesAttendedNumber()), lectureBlock, rollCall, lectureBlock.getEntry(), calledIdentity, getIdentity());
-		
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
-
-	@Override
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
+	
 	
 	private void doSelectAll() {
 		for(MultipleSelectionElement check:checks) {
