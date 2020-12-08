@@ -24,8 +24,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.Window;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.Tracing;
 
 /**
  * 
@@ -34,6 +36,8 @@ import org.olat.core.id.OLATResourceable;
  *
  */
 public class WindowedResourceableList {
+	
+	private static final Logger log = Tracing.createLoggerFor(WindowedResourceableList.class);
 
 	private final Deque<WindowedResourceable> registeredResources = new ArrayDeque<>();
 	
@@ -61,9 +65,12 @@ public class WindowedResourceableList {
 	}
 	
 	public synchronized void deregisterResourceable(OLATResourceable resource, String subIdent, Window window) {
-		WindowedResourceable wResource = new WindowedResourceable(window.getInstanceId(), resource, subIdent);
-		Collection<WindowedResourceable> wResources = Collections.singletonList(wResource);
-		registeredResources.removeAll(wResources);
+		try {
+			WindowedResourceable wResource = new WindowedResourceable(window.getInstanceId(), resource, subIdent);
+			Collection<WindowedResourceable> wResources = Collections.singletonList(wResource);
+			registeredResources.removeAll(wResources);
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
-
 }
