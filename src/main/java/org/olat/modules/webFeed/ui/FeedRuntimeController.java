@@ -20,11 +20,14 @@
 package org.olat.modules.webFeed.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
+import org.olat.repository.ui.settings.ReloadSettingsEvent;
 
 /**
  * 
@@ -40,8 +43,20 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof FeedMainController) {
+			if(event instanceof ReloadSettingsEvent) {
+				processReloadSettingsEvent((ReloadSettingsEvent)event);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+	
+	@Override
 	protected RepositoryEntrySettingsController createSettingsController(UserRequest ureq, WindowControl bwControl, RepositoryEntry refreshedEntry) {
 		return new FeedSettingsController(ureq, addToHistory(ureq, bwControl), toolbarPanel, refreshedEntry);
 	}
+	
+	
 	
 }
