@@ -873,6 +873,8 @@ public class LectureBlockRollCallDAO {
 						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
 				stats.put(memberKey, entryStatistics);
 			}
+			
+			long currentAbsences = entryStatistics.getTotalAbsentLectures();
 
 			appendStatistics(entryStatistics, compulsory, status,
 					rollCallEndDate, rollCallStatus,
@@ -880,6 +882,10 @@ public class LectureBlockRollCallDAO {
 					absenceNoticeKey, absenceNoticeAuthorized, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
 					firstAdmissionDate, now);
+			
+			if(entryStatistics.getTotalAbsentLectures() > currentAbsences) {
+				entryStatistics.addAbsentLectureBlock(lectureBlockKey);
+			}
 		});
 		
 		List<LectureBlockIdentityStatistics> statisticsList = new ArrayList<>(stats.values());

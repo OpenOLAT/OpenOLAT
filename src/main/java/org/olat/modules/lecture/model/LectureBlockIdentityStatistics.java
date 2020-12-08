@@ -19,6 +19,9 @@
  */
 package org.olat.modules.lecture.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.modules.lecture.LectureRateWarning;
 
 /**
@@ -33,6 +36,7 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 	private final String identityName;
 	private final String[] identityProps;
 	
+	private List<Long> absentLectureBlocks;
 	private LectureRateWarning explicitWarning;
 	
 	public LectureBlockIdentityStatistics(Long identityKey, String identityName, String[] identityProps,
@@ -57,6 +61,22 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 	public void setExplicitWarning(LectureRateWarning explicitWarning) {
 		this.explicitWarning = explicitWarning;
 	}
+	
+	/**
+	 * @return null if empty
+	 */
+	public List<Long> getAbsentLectureBlocks() {
+		return absentLectureBlocks;
+	}
+	
+	public void addAbsentLectureBlock(Long lectureBlockKey) {
+		if(lectureBlockKey == null) return;
+		
+		if(absentLectureBlocks == null) {
+			absentLectureBlocks = new ArrayList<>();
+		}
+		absentLectureBlocks.add(lectureBlockKey);
+	}
 
 	public String getIdentityProp(int pos) {
 		if(identityProps != null && pos >= 0 && pos < identityProps.length) {
@@ -74,6 +94,9 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 		clone.addTotalEffectiveLectures(getTotalEffectiveLectures());		
 		clone.addTotalLectureBlocks(getTotalLectureBlocks());
 		clone.addTotalPersonalPlannedLectures(getTotalPersonalPlannedLectures());
+		if(absentLectureBlocks != null) {
+			clone.absentLectureBlocks = new ArrayList<>(absentLectureBlocks);
+		}
 		return clone;
 	}
 	
@@ -86,6 +109,9 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 		clone.addTotalEffectiveLectures(getTotalEffectiveLectures());		
 		clone.addTotalLectureBlocks(getTotalLectureBlocks());
 		clone.addTotalPersonalPlannedLectures(getTotalPersonalPlannedLectures());
+		if(absentLectureBlocks != null) {
+			clone.absentLectureBlocks = new ArrayList<>(absentLectureBlocks);
+		}
 		return clone;
 	}
 	
@@ -96,5 +122,12 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 		addTotalEffectiveLectures(statistics.getTotalEffectiveLectures());		
 		addTotalLectureBlocks(statistics.getTotalLectureBlocks());
 		addTotalPersonalPlannedLectures(statistics.getTotalPersonalPlannedLectures());
+		if(statistics.getAbsentLectureBlocks() != null) {
+			if(absentLectureBlocks == null) {
+				absentLectureBlocks = new ArrayList<>(statistics.getAbsentLectureBlocks());
+			} else {
+				absentLectureBlocks.addAll(statistics.getAbsentLectureBlocks());
+			}
+		}
 	}
 }

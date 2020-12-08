@@ -511,6 +511,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
+	public List<LectureBlock> getLectureBlocks(List<Long> keys) {
+		return lectureBlockDao.loadByKeys(keys);
+	}
+
+	@Override
 	public List<Reason> getAllReasons() {
 		return reasonDao.getReasons();
 	}

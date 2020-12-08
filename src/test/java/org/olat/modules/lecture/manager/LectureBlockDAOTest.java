@@ -178,6 +178,38 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadByKey() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello loader of block");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlock loadedBlock = lectureBlockDao.loadByKey(lectureBlock.getKey());
+		Assert.assertNotNull(loadedBlock);
+		Assert.assertEquals(lectureBlock, loadedBlock);
+	}
+	
+	@Test
+	public void loadByKeys() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello loader of block");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> keys = List.of(lectureBlock.getKey());
+		List<LectureBlock> loadedBlocks = lectureBlockDao.loadByKeys(keys);
+		Assert.assertNotNull(loadedBlocks);
+		Assert.assertEquals(1, loadedBlocks.size());
+		Assert.assertEquals(lectureBlock, loadedBlocks.get(0));
+	}
+	
+	@Test
 	public void searchLectureBlocks_lectureManager() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-teacher-1");
 		Identity lectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-manager-1");

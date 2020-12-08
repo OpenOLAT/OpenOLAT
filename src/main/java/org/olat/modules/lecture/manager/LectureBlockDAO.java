@@ -106,6 +106,20 @@ public class LectureBlockDAO {
 		return block;
 	}
 	
+	public List<LectureBlock> loadByKeys(List<Long> keys) {
+		if(keys == null || keys.isEmpty()) return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select block from lectureblock block")
+		  .append(" left join fetch block.reasonEffectiveEnd reason")
+		  .append(" inner join fetch block.entry entry")
+		  .append(" where block.key in (:blockKeys)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlock.class)
+				.setParameter("blockKeys", keys)
+				.getResultList();
+	}
+	
 	public LectureBlock loadByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select block from lectureblock block")

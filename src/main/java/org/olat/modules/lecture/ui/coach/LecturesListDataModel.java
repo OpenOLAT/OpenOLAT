@@ -38,8 +38,10 @@ import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LecturesListDataModel extends DefaultFlexiTableDataModel<LectureBlockIdentityStatistics>
-implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTableFooterModel {
+public class LecturesListDataModel extends DefaultFlexiTableDataModel<LectureBlockIdentityStatisticsRow>
+implements SortableFlexiTableDataModel<LectureBlockIdentityStatisticsRow>, FlexiTableFooterModel {
+	
+	private static final StatsCols[] COLS = StatsCols.values();
 	
 	private final Translator translator;
 	private AggregatedLectureBlocksStatistics totalStatistics;
@@ -51,36 +53,38 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 
 	@Override
 	public void sort(SortKey orderBy) {
-		SortableFlexiTableModelDelegate<LectureBlockIdentityStatistics> sorter
+		SortableFlexiTableModelDelegate<LectureBlockIdentityStatisticsRow> sorter
 			= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
-		List<LectureBlockIdentityStatistics> views = sorter.sort();
+		List<LectureBlockIdentityStatisticsRow> views = sorter.sort();
 		super.setObjects(views);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		LectureBlockIdentityStatistics stats = getObject(row);
+		LectureBlockIdentityStatisticsRow stats = getObject(row);
 		return getValueAt(stats, col);
 	}
 
 	@Override
-	public Object getValueAt(LectureBlockIdentityStatistics row, int col) {
+	public Object getValueAt(LectureBlockIdentityStatisticsRow row, int col) {
+		LectureBlockIdentityStatistics stats = row.getStatistics();
 		if(col >= 0 && col < StatsCols.values().length) {
-			switch(StatsCols.values()[col]) {
-				case id: return row.getIdentityKey();
-				case externalRef: return row.getExternalRef();
-				case entry: return row.getDisplayName();
-				case plannedLectures: return positive(row.getTotalPersonalPlannedLectures());
-				case attendedLectures: return positive(row.getTotalAttendedLectures());
+			switch(COLS[col]) {
+				case id: return stats.getIdentityKey();
+				case externalRef: return stats.getExternalRef();
+				case entry: return stats.getDisplayName();
+				case plannedLectures: return positive(stats.getTotalPersonalPlannedLectures());
+				case attendedLectures: return positive(stats.getTotalAttendedLectures());
 				case unauthorizedAbsenceLectures:
-				case absentLectures: return positive(row.getTotalAbsentLectures());
-				case authorizedAbsenceLectures: return positive(row.getTotalAuthorizedAbsentLectures());
-				case currentRate: return row.getAttendanceRate();
+				case absentLectures:
+					return row.getUnauthorizedLink() == null ? positive(stats.getTotalAbsentLectures()) : row.getUnauthorizedLink();
+				case authorizedAbsenceLectures: return positive(stats.getTotalAuthorizedAbsentLectures());
+				case currentRate: return stats.getAttendanceRate();
 			}
 		}
 		
 		int propPos = col - LecturesListController.USER_PROPS_OFFSET;
-		return row.getIdentityProp(propPos);
+		return stats.getIdentityProp(propPos);
 	}
 
 	@Override
@@ -109,13 +113,13 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 		return pos < 0 ? 0 : pos;
 	}
 	
-	public void setObjects(List<LectureBlockIdentityStatistics> objects, AggregatedLectureBlocksStatistics totalStatistics) {
+	public void setObjects(List<LectureBlockIdentityStatisticsRow> objects, AggregatedLectureBlocksStatistics totalStatistics) {
 		super.setObjects(objects);
 		this.totalStatistics = totalStatistics;
 	}
 	
 	@Override
-	public DefaultFlexiTableDataModel<LectureBlockIdentityStatistics> createCopyWithEmptyList() {
+	public LecturesListDataModel createCopyWithEmptyList() {
 		return new LecturesListDataModel(getTableColumnModel(), translator);
 	}
 	
