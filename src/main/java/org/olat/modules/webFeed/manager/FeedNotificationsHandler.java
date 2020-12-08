@@ -109,7 +109,7 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 					title = getHeader(translator, displayName);
 				}
 
-				OLATResourceable feedOres = OresHelper.createOLATResourceableInstance(p.getType(), new Long(p.getData()));
+				OLATResourceable feedOres = OresHelper.createOLATResourceableInstance(p.getType(), Long.valueOf(p.getData()));
 				Feed feed = feedManager.loadFeed(feedOres);
 				List<Item> listItems = feedManager.loadItems(feed);
 				List<SubscriptionListItem> items = new ArrayList<>();

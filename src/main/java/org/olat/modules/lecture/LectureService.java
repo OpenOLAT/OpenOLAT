@@ -205,6 +205,8 @@ public interface LectureService {
 	 */
 	public LectureBlock getLectureBlock(LectureBlockRef block);
 	
+	public List<LectureBlock> getLectureBlocks(List<Long> keys);
+	
 	/**
 	 * Make a copy of the specified lecture block.
 	 * @param block

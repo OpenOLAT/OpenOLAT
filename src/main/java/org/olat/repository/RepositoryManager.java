@@ -803,6 +803,22 @@ public class RepositoryManager {
 		dbInstance.commit();
 		return updatedRe;
 	}
+	
+	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		
+		reloadedRe.setDisplayname(displayName);
+		reloadedRe.setDescription(description);
+		
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+
+		dbInstance.commit();
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
+		return updatedRe;
+	}
 
 	/**
 	 * This method doesn't update empty and null values! ( Reserved to unit tests

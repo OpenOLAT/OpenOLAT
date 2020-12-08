@@ -37,6 +37,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.event.SelectLectureBlockEvent;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,14 @@ public class LecturesListSegmentController extends BasicController {
 		segmentView.addSegment(detailledListLink, false);
 
 		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof SelectLectureBlockEvent) {
+			fireEvent(ureq, event);// propagate selection
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

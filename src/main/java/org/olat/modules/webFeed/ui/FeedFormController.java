@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.Quota;
@@ -48,6 +49,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.manager.ValidatedURL;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * This controller is responsible for editing feed information. <br />
@@ -66,26 +68,28 @@ class FeedFormController extends FormBasicController {
 	private Quota feedQuota;
 	private final boolean canChangeUrl;
 	
-	private TextElement title;
+	private TextElement titleEl;
 	private FileElement file;
-	private RichTextElement description;
+	private RichTextElement descriptionEl;
 	private FormLink cancelButton;
 	private FormLink deleteImage;
-	private boolean imageDeleted = false;
-
 	/**
 	 * if form edits an external feed:
 	 */
 	private TextElement feedUrl;
+	
+	private RepositoryEntry entry;
+	private boolean imageDeleted = false;
 	
 	/**
 	 * @param ureq
 	 * @param control
 	 */
 	public FeedFormController(UserRequest ureq, WindowControl wControl,
-			Feed feed, FeedUIFactory uiFactory, boolean canChangeUrl) {
+			Feed feed, FeedUIFactory uiFactory, RepositoryEntry entry, boolean canChangeUrl) {
 		super(ureq, wControl);
 		this.feed = feed;
+		this.entry = entry;
 		this.canChangeUrl = canChangeUrl;
 		feedQuota = FeedManager.getInstance().getQuota(feed);
 		setTranslator(uiFactory.getTranslator());
@@ -104,8 +108,8 @@ class FeedFormController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		feed.setTitle(title.getValue());
-		feed.setDescription(description.getValue());
+		feed.setTitle(titleEl.getValue());
+		feed.setDescription(descriptionEl.getValue());
 		
 		if(canChangeUrl && feed.isExternal() && feedUrl != null) {
 			feed.setExternalFeedUrl(feedUrl.isEmpty() ? null : feedUrl.getValue());
@@ -155,12 +159,12 @@ class FeedFormController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		String descriptionText = description.getValue();
+		String descriptionText = descriptionEl.getValue();
 		boolean allOk = true;
 		if(descriptionText.length() <= 4000) {
-			description.clearError();
+			descriptionEl.clearError();
 		} else {
-			description.setErrorKey("input.toolong", new String[]{"4000"});
+			descriptionEl.setErrorKey("input.toolong", new String[]{"4000"});
 			allOk = false;
 		}
 		
@@ -221,16 +225,23 @@ class FeedFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// title might be longer from external source
-		String saveTitle = PersistenceHelper.truncateStringDbSave(feed.getTitle(), 256, true);
-		title = uifactory.addTextElement("title", "feed.title.label", 256, saveTitle, formLayout);
-		title.setElementCssClass("o_sel_feed_title");
-		title.setMandatory(true);
-		title.setNotEmptyCheck("feed.form.field.is_mandatory");
+		String title = PersistenceHelper.truncateStringDbSave(feed.getTitle(), 256, true);
+		if(!StringHelper.containsNonWhitespace(title) && entry != null) {
+			title = entry.getDisplayname();
+		}
+		titleEl = uifactory.addTextElement("title", "feed.title.label", 256, title, formLayout);
+		titleEl.setElementCssClass("o_sel_feed_title");
+		titleEl.setMandatory(true);
+		titleEl.setNotEmptyCheck("feed.form.field.is_mandatory");
+		
+		String description = feed.getDescription();
+		if(!StringHelper.containsNonWhitespace(title) && entry != null) {
+			description = entry.getDescription();
+		}
 
-		description = uifactory.addRichTextElementForStringDataMinimalistic("description", "feed.form.description", feed
-				.getDescription(), 5, -1, formLayout, getWindowControl());
-		description.setMaxLength(4000);
-		RichTextConfiguration richTextConfig = description.getEditorConfiguration();
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "feed.form.description", description, 5, -1, formLayout, getWindowControl());
+		descriptionEl.setMaxLength(4000);
+		RichTextConfiguration richTextConfig = descriptionEl.getEditorConfiguration();
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
 
