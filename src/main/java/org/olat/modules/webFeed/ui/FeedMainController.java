@@ -392,7 +392,7 @@ public class FeedMainController extends BasicController implements Activateable2
 			VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));
 			VFSContainer tmpContainer = tmpHome.createChildContainer(UUID.randomUUID().toString());
 			VFSLeaf tmpImage = tmpContainer.createChildLeaf(image.getUploadFileName());
-			VFSManager.copyContent(image.getUploadFile(), tmpImage);
+			VFSManager.copyContent(image.getUploadFile(), tmpImage, getIdentity());
 			repositoryManager.setImage(tmpImage, re);
 			tmpContainer.deleteSilently();
 		}
