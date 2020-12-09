@@ -609,11 +609,13 @@ public class AppointmentCreateController extends FormBasicController {
 						DateChooser endEl = wrapper.getEndEl();
 						startEl.clearError();
 						endEl.clearError();
-						if (!BigBlueButtonUIHelper.validateDuration(startEl, leadTimeEl, endEl, followupTimeEl, template)) {
-							bbbOk &= false;
-						}
-						if (!BigBlueButtonUIHelper.validateSlot(startEl, leadTimeEl, endEl, followupTimeEl, null, template)) {
-							bbbOk &= false;
+						if (startEl.getDate() != null && endEl.getDate() != null) {
+							if (!BigBlueButtonUIHelper.validateDuration(startEl, leadTimeEl, endEl, followupTimeEl, template)) {
+								bbbOk &= false;
+							}
+							if (!BigBlueButtonUIHelper.validateSlot(startEl, leadTimeEl, endEl, followupTimeEl, null, template)) {
+								bbbOk &= false;
+							}
 						}
 					}
 				}
@@ -854,7 +856,7 @@ public class AppointmentCreateController extends FormBasicController {
 		}
 		StartDuration next = StartDuration.next(previous, previous2);
 		
-		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, next.getStart(), startDurationCont);
+		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, null, next.getStart(), startDurationCont);
 		startEl.setDateChooserTimeEnabled(true);
 		startEl.setUserObject(wrapper);
 		startEl.addActionListener(FormEvent.ONCHANGE);
@@ -868,7 +870,7 @@ public class AppointmentCreateController extends FormBasicController {
 		wrapper.setDurationEl(durationEl);
 		
 		Date end = getEnd(next);
-		DateChooser endEl = uifactory.addDateChooser("end_" + counter++, end, startDurationCont);
+		DateChooser endEl = uifactory.addDateChooser("end_" + counter++, null, end, startDurationCont);
 		endEl.setTimeOnly(true);
 		endEl.setEnabled(false);
 		wrapper.setEndEl(endEl);
@@ -895,13 +897,13 @@ public class AppointmentCreateController extends FormBasicController {
 	private void doCreateStartEndWrapper(AppointmentWrapper after) {
 		AppointmentWrapper wrapper = new AppointmentWrapper();
 		
-		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, null, startEndCont);
+		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, null, null, startEndCont);
 		startEl.setDateChooserTimeEnabled(true);
 		startEl.setUserObject(wrapper);
 		startEl.addActionListener(FormEvent.ONCHANGE);
 		wrapper.setStartEl(startEl);
 		
-		DateChooser endEl = uifactory.addDateChooser("end_" + counter++, null, startEndCont);
+		DateChooser endEl = uifactory.addDateChooser("end_" + counter++, null, null, startEndCont);
 		endEl.setDateChooserTimeEnabled(true);
 		wrapper.setEndEl(endEl);
 		
