@@ -191,7 +191,7 @@ public class CloseableModalController extends DefaultController implements Modal
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == closeIcon){
-			getWindowControl().pop();
+			deactivate();
 			fireEvent(ureq, CLOSE_MODAL_EVENT);
 		}
 	}
