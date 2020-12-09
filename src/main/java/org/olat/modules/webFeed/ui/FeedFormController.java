@@ -159,13 +159,22 @@ class FeedFormController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(titleEl.getValue() != null && titleEl.getValue().length() >= 100) {
+			titleEl.setErrorKey("input.toolong", new String[]{"100"} );
+			allOk &= false;
+		}
+		
+		descriptionEl.clearError();
 		String descriptionText = descriptionEl.getValue();
-		boolean allOk = true;
-		if(descriptionText.length() <= 4000) {
-			descriptionEl.clearError();
-		} else {
+		if(descriptionText != null && descriptionText.length() > 4000) {
 			descriptionEl.setErrorKey("input.toolong", new String[]{"4000"});
-			allOk = false;
+			allOk &= false;
 		}
 		
 		if (file.isUploadSuccess()) {
@@ -177,8 +186,9 @@ class FeedFormController extends FormBasicController {
 				getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString(uploadLimitKB.floatValue() / 1024f, 1), supportAddr }));				
 			}
 		}
-
-		return allOk && validateExternalFeedUrl() && super.validateFormLogic(ureq);
+		
+		allOk &= validateExternalFeedUrl();
+		return allOk;
 	}
 	
 	/**
@@ -239,7 +249,7 @@ class FeedFormController extends FormBasicController {
 			description = entry.getDescription();
 		}
 
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "feed.form.description", description, 5, -1, formLayout, getWindowControl());
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "feed.form.description", description, 8, -1, formLayout, getWindowControl());
 		descriptionEl.setMaxLength(4000);
 		RichTextConfiguration richTextConfig = descriptionEl.getEditorConfiguration();
 		// set upload dir to the media dir
