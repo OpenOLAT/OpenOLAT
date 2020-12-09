@@ -44,6 +44,8 @@ import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.microsoft.graph.models.extensions.User;
+
 /**
  * 
  * Initial date: 20 nov. 2020<br>
@@ -59,6 +61,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 	private final boolean moderator;
 	private final boolean administrator;
 	private final OLATResourceable meetingOres;
+	private final User graphUser;
 	
 	@Autowired
 	private TeamsService teamsService;
@@ -70,6 +73,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		this.meeting = meeting;
 		this.moderator = moderator;
 		this.administrator = administrator;
+		graphUser = teamsService.lookupUser(getIdentity());
 		meetingOres = OresHelper.createOLATResourceableInstance(TeamsMeeting.class.getSimpleName(), meeting.getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), meetingOres);
 		
@@ -115,6 +119,12 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 				descr = Formatter.escWithBR(descr).toString();
 			}
 			layoutCont.contextPut("description", descr);
+		}
+		
+		if(graphUser != null && StringHelper.containsNonWhitespace(graphUser.displayName)) {
+			layoutCont.contextPut("asUser", translate("as.user", new String[] { graphUser.displayName } ));
+		} else {
+			layoutCont.contextPut("asUser", translate("as.user.guest"));
 		}
 	}
 	
@@ -178,7 +188,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 
 	private void doJoin(UserRequest ureq) {
 		TeamsErrors errors = new TeamsErrors();
-		meeting = teamsService.joinMeeting(meeting, getIdentity(), errors);
+		meeting = teamsService.joinMeeting(meeting, getIdentity(), (administrator || moderator), errors);
 		if(meeting == null) {
 			showWarning("warning.no.meeting");
 			fireEvent(ureq, Event.BACK_EVENT);

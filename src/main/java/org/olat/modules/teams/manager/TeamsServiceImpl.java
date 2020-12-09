@@ -19,18 +19,24 @@
  */
 package org.olat.modules.teams.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.login.oauth.spi.MicrosoftAzureADFSProvider;
 import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
+import org.olat.modules.teams.model.ConnectionInfos;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.model.TeamsMeetingImpl;
 import org.olat.modules.teams.model.TeamsMeetingsSearchParameters;
@@ -40,6 +46,7 @@ import org.springframework.stereotype.Service;
 
 import com.microsoft.graph.models.extensions.OnlineMeeting;
 import com.microsoft.graph.models.extensions.User;
+import com.microsoft.graph.models.generated.OnlineMeetingRole;
 
 /**
  * 
@@ -55,7 +62,11 @@ public class TeamsServiceImpl implements TeamsService {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
 	private MicrosoftGraphDAO graphDao;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private TeamsMeetingDAO teamsMeetingDao;
 	@Autowired
@@ -117,29 +128,63 @@ public class TeamsServiceImpl implements TeamsService {
 	}
 
 	@Override
-	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity presenter, TeamsErrors errors) {
+	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, TeamsErrors errors) {
 		meeting = teamsMeetingDao.loadByKey(meeting.getKey());
 		if(meeting != null && !StringHelper.containsNonWhitespace(meeting.getOnlineMeetingId())) {
 			dbInstance.commitAndCloseSession();
-			User gPresenter = findPresenter(presenter);
+			User gPresenter = lookupUser(identity);
 			OnlineMeeting onlineMeeting = graphDao.createMeeting(meeting, gPresenter, errors);
 			if(onlineMeeting != null) {
 				((TeamsMeetingImpl)meeting).setOnlineMeetingId(onlineMeeting.id);
 				((TeamsMeetingImpl)meeting).setOnlineMeetingJoinUrl(onlineMeeting.joinUrl);
 				meeting = teamsMeetingDao.updateMeeting(meeting);
 			}
+		} else if(StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
+			dbInstance.commitAndCloseSession();
+			User graphUser = lookupUser(identity);
+			if(graphUser != null) {
+				OnlineMeetingRole role = presenter ? OnlineMeetingRole.PRESENTER : OnlineMeetingRole.ATTENDEE;
+				graphDao.updateOnlineMeeting(meeting, graphUser, role);
+			}
 		}
 		return meeting;
 	}
 	
-	private User findPresenter(Identity presenter) {
-		String email = presenter.getUser().getProperty(UserConstants.EMAIL, null);
-		String institutionalEmail = presenter.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
+	@Override
+	public User lookupUser(Identity identity) {
+		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
+		String institutionalEmail = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
 		List<User> users = graphDao.searchUsersByMail(email, institutionalEmail);
 		if(users.size() == 1) {
 			return users.get(0);
 		}
-		log.debug("Cannot find user with email: {} or institutional email: {} (users found {})", email, institutionalEmail, users.size());
+		
+		List<String> principals = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(email)) {
+			principals.add(email);
+		}
+		if(StringHelper.containsNonWhitespace(institutionalEmail)) {
+			principals.add(institutionalEmail);
+		}
+		Authentication authentication = securityManager.findAuthentication(identity, MicrosoftAzureADFSProvider.PROVIDER);
+		if(authentication != null && StringHelper.containsNonWhitespace(authentication.getAuthusername())) {
+			principals.add(authentication.getAuthusername());
+		}
+		User user = graphDao.searchUserByUserPrincipalName(principals);
+		if(user == null) {
+			log.debug("Cannot find user with email: {} or institutional email: {} (users found {})", email, institutionalEmail, users.size());
+		}
 		return null;
+	}
+
+	@Override
+	public ConnectionInfos checkConnection() {
+		return graphDao.check();
+	}
+
+	@Override
+	public ConnectionInfos checkConnection(String clientId, String clientSecret, String tenantGuid,
+			String applicationId, String producerId, String onBehalfId) {
+		return graphDao.check(clientId, clientSecret, tenantGuid, applicationId, producerId, onBehalfId);
 	}
 }

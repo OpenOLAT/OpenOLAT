@@ -118,13 +118,13 @@ public class TeamsEditMeetingsController extends FormBasicController {
 		}
 		
 		tableModel = new TeamsMeetingTableModel(columnsModel, getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "meetings", tableModel, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "meetings", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setEmtpyTableMessageKey("no.meetings");
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), true));
 		tableEl.setSortSettings(sortOptions);
-		tableEl.setAndLoadPersistedPreferences(ureq, "teams-edit-meetings-list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "teams-edit-meetings-list-v2");
 		tableEl.setMultiSelect(!readOnly);
 		tableEl.setSelectAllEnable(true);
 		if(deleteButton != null) {

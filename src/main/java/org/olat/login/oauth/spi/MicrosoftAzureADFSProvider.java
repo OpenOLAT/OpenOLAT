@@ -55,6 +55,8 @@ import com.github.scribejava.core.oauth.OAuthService;
 public class MicrosoftAzureADFSProvider implements OAuthSPI {
 	
 	private static final Logger log = Tracing.createLoggerFor(MicrosoftAzureADFSProvider.class);
+	
+	public static final String PROVIDER = "AZUREAD";
 
 	@Value("${azure.adfs.attributename.useridentifyer:userPrincipalName}")
 	private String idAttributeName;
@@ -111,7 +113,7 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 	
 	@Override
 	public String getProviderName() {
-		return "AZUREAD";
+		return PROVIDER;
 	}
 
 	@Override

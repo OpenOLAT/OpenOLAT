@@ -14,7 +14,7 @@
 
 <div class="o_button_group">
 #if($r.available("meeting.join.button") && $r.visible("meeting.join.button"))
-	$r.render("meeting.join.button")
+	$r.render("meeting.join.button") #if($r.isNotEmpty($asUser)) ($asUser) #end
 #end
 </div>
 

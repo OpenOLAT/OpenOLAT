@@ -22,6 +22,7 @@ package org.olat.modules.teams.manager;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
+import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.graph.authentication.IAuthenticationProvider;
 import com.microsoft.graph.http.IHttpRequest;
 
@@ -35,17 +36,31 @@ public class AuthenticationTokenProvider implements IAuthenticationProvider {
 	
 	private static final Logger log = Tracing.createLoggerFor(AuthenticationTokenProvider.class);
 	
-	private final MicrosoftGraphAccessTokenManagerImpl accessTokenManager;
+	private final MicrosoftGraphAccessTokenManager accessTokenManager;
 	
-	public AuthenticationTokenProvider(MicrosoftGraphAccessTokenManagerImpl accessTokenManager) {
+	public AuthenticationTokenProvider(MicrosoftGraphAccessTokenManager accessTokenManager) {
 		this.accessTokenManager = accessTokenManager;
+	}
+
+	public String getClientId() {
+		return accessTokenManager.getClientId();
+	}
+
+	public String getClientSecret() {
+		return accessTokenManager.getClientSecret();
+	}
+
+	public String getTenantGuid() {
+		return accessTokenManager.getTenantGuid();
 	}
 
 	@Override
 	public void authenticateRequest(IHttpRequest request) {
         try {
-        	String accessToken = accessTokenManager.getAccessToken();
-            request.addHeader("Authorization", "Bearer " + accessToken);
+        	IAuthenticationResult result = accessTokenManager.getAccessToken();
+        	if(result != null) {
+        		request.addHeader("Authorization", "Bearer " + result.accessToken());
+        	}
         } catch (Exception e) {
         	log.error("", e);
         }

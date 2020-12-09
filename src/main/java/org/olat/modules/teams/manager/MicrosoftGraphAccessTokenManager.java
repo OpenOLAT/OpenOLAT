@@ -19,14 +19,11 @@
  */
 package org.olat.modules.teams.manager;
 
-import java.util.HashSet;
+import java.net.MalformedURLException;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.modules.teams.TeamsModule;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
@@ -44,68 +41,84 @@ import com.microsoft.aad.msal4j.SilentParameters;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service
-public class MicrosoftGraphAccessTokenManagerImpl {
+class MicrosoftGraphAccessTokenManager {
 	
-	private static final Logger log = Tracing.createLoggerFor(MicrosoftGraphAccessTokenManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(MicrosoftGraphAccessTokenManager.class);
 	
-	private TokenCacheAccessAspect cache = new TokenCacheAccessAspect();
+	private static final Set<String> SCOPES = Set.of("https://graph.microsoft.com/.default");
 	
-	@Autowired
-	private TeamsModule teamsModule;
+	private final TokenCacheAccessAspect cache = new TokenCacheAccessAspect();
 	
-	public String getAccessToken() {
-		String clientId = teamsModule.getApiKey();
-		String clientSecret = teamsModule.getApiSecret();
-		String tenantGuid = teamsModule.getTenantGuid();
+	private final String clientId;
+	private final String clientSecret;
+	private final String tenantGuid;
+	
+	MicrosoftGraphAccessTokenManager(String clientId, String clientSecret, String tenantGuid) {
+		this.clientId = clientId;
+		this.clientSecret = clientSecret;
+		this.tenantGuid = tenantGuid;
+	}
+	
+	public String getClientId() {
+		return clientId;
+	}
+	
+	public String getClientSecret() {
+		return clientSecret;
+	}
+	
+	public String getTenantGuid() {
+		return tenantGuid;
+	}
+	
+	public IAuthenticationResult getAccessToken() {
 		return connect(clientId, clientSecret, tenantGuid);
 	}
 	
-	private String connect(String clientId, String clientSecret, String tenantGuid) {
-		Set<String> scopes = new HashSet<>();
-		scopes.add("https://graph.microsoft.com/.default");
-		String authority = "https://login.microsoftonline.com/" + tenantGuid +  "/";
+	private IAuthenticationResult connect(String id, String secret, String tenant) {
+		ConfidentialClientApplication cca = createClientApplication(id, secret, tenant);
 		
-		
-		try {
-			IClientCredential credential = ClientCredentialFactory.createFromSecret(clientSecret);
-			ConfidentialClientApplication cca = ConfidentialClientApplication
-			                 .builder(clientId, credential)
-			                 .authority(authority)
-			                 .setTokenCacheAccessAspect(cache)
-			                 .build();
-		
-			IAuthenticationResult result;
+		IAuthenticationResult result = null;
+		if(cca != null) {
 	        try {
 	            SilentParameters silentParameters = SilentParameters
-	            	.builder(scopes)
+	            	.builder(SCOPES)
 	            	.build();
-	
 	            // try to acquire token silently. This call will fail since the token cache does not
 	            // have a token for the application you are requesting an access token for
 	            result = cca.acquireTokenSilently(silentParameters).join();
 	        } catch (Exception ex) {
 	            if (ex.getCause() instanceof MsalException) {
-	
 	                ClientCredentialParameters parameters = ClientCredentialParameters
-	                		.builder(scopes)
+	                		.builder(SCOPES)
 	                		.build();
-	
 	                // Try to acquire a token. If successful, you should see
 	                // the token information printed out to console
 	                result = cca.acquireToken(parameters).join();
 	            } else {
-	                // Handle other exceptions accordingly
-	                throw ex;
+	                log.error("", ex);
 	            }
 	        }
-	       	String accessToken = result.accessToken();
-	       	log.debug(Tracing.M_AUDIT, "Access token: {}", accessToken);
-	       	return accessToken;
-		} catch (Exception e) {
-			log.error("", e);
 		}
-		return null;
+        
+       	String accessToken = result == null ? null : result.accessToken();
+       	log.debug(Tracing.M_AUDIT, "Access token: {}", accessToken);
+       	return result;
+	}
+	
+	private ConfidentialClientApplication createClientApplication(String id, String secret, String tenant) {
+		String authority = "https://login.microsoftonline.com/" + tenant +  "/";	
+		try {
+			IClientCredential credential = ClientCredentialFactory.createFromSecret(secret);
+			return ConfidentialClientApplication
+			                 .builder(id, credential)
+			                 .authority(authority)
+			                 .setTokenCacheAccessAspect(cache)
+			                 .build();
+		} catch (MalformedURLException e) {
+			log.error("Authorithy is not an URL: {}", authority, e);
+			return null;
+		}
 	}
 	
 	private class TokenCacheAccessAspect implements ITokenCacheAccessAspect {
@@ -120,8 +133,7 @@ public class MicrosoftGraphAccessTokenManagerImpl {
 		@Override
 		public void afterCacheAccess(ITokenCacheAccessContext iTokenCacheAccessContext) {
 			data = iTokenCacheAccessContext.tokenCache().serialize();
-			log.debug(Tracing.M_AUDIT, "Access token: {}", data);
+			log.debug(Tracing.M_AUDIT, "Access cached token: {}", data);
 		}
 	}
-
 }

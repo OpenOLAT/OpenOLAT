@@ -24,9 +24,12 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.teams.model.ConnectionInfos;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.model.TeamsMeetingsSearchParameters;
 import org.olat.repository.RepositoryEntry;
+
+import com.microsoft.graph.models.extensions.User;
 
 /**
  * 
@@ -57,10 +60,17 @@ public interface TeamsService {
 	
 	public boolean isMeetingRunning(TeamsMeeting meeting);
 	
-	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity presenter, TeamsErrors errors);
+	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, TeamsErrors errors);
 
 	public int countMeetings(TeamsMeetingsSearchParameters searchParams);
 	
 	public List<TeamsMeeting> searchMeetings(TeamsMeetingsSearchParameters searchParams, int firstResult, int maxResults);
+	
+	public User lookupUser(Identity identity);
+	
+	public ConnectionInfos checkConnection();
+	
+	public ConnectionInfos checkConnection(String clientId, String clientSecret, String tenantGuid,
+			String applicationId, String producerId, String onBehalfId);
 
 }

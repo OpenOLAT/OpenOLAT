@@ -19,6 +19,7 @@
  */
 package org.olat.modules.teams.manager;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -28,13 +29,15 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
+import org.olat.modules.teams.model.ConnectionInfos;
 import org.olat.modules.teams.model.TeamsError;
 import org.olat.modules.teams.model.TeamsErrorCodes;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.microsoft.graph.authentication.IAuthenticationProvider;
+import com.microsoft.graph.core.ClientException;
+import com.microsoft.graph.models.extensions.Application;
 import com.microsoft.graph.models.extensions.IGraphServiceClient;
 import com.microsoft.graph.models.extensions.Identity;
 import com.microsoft.graph.models.extensions.IdentitySet;
@@ -42,12 +45,14 @@ import com.microsoft.graph.models.extensions.ItemBody;
 import com.microsoft.graph.models.extensions.MeetingParticipantInfo;
 import com.microsoft.graph.models.extensions.MeetingParticipants;
 import com.microsoft.graph.models.extensions.OnlineMeeting;
+import com.microsoft.graph.models.extensions.Organization;
 import com.microsoft.graph.models.extensions.User;
 import com.microsoft.graph.models.generated.AccessLevel;
 import com.microsoft.graph.models.generated.BodyType;
 import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
 import com.microsoft.graph.models.generated.OnlineMeetingRole;
 import com.microsoft.graph.requests.extensions.GraphServiceClient;
+import com.microsoft.graph.requests.extensions.IApplicationCollectionPage;
 import com.microsoft.graph.requests.extensions.IUserCollectionPage;
 
 /**
@@ -65,12 +70,34 @@ public class MicrosoftGraphDAO {
 
 	@Autowired
 	private TeamsModule teamsModule;
-	@Autowired
-	private MicrosoftGraphAccessTokenManagerImpl accessTokenManager;
+	
+	private AuthenticationTokenProvider tokenProvider;
+	
+	private synchronized AuthenticationTokenProvider getTokenProvider() {
+		if(tokenProvider == null
+				|| (teamsModule.getApiKey() != null && !teamsModule.getApiKey().equals(tokenProvider.getClientId()))
+				|| (teamsModule.getApiSecret() != null && !teamsModule.getApiSecret().equals(tokenProvider.getClientSecret()))
+				|| (teamsModule.getTenantGuid() != null && !teamsModule.getTenantGuid().equals(tokenProvider.getTenantGuid()))) {
+			String clientId = teamsModule.getApiKey();
+			String clientSecret = teamsModule.getApiSecret();
+			String tenantGuid = teamsModule.getTenantGuid();
+			MicrosoftGraphAccessTokenManager tokenManager = new MicrosoftGraphAccessTokenManager(clientId, clientSecret, tenantGuid);
+			tokenProvider = new AuthenticationTokenProvider(tokenManager);
+		}
+		return tokenProvider;
+	}
 	
 	public IGraphServiceClient client() {
-		@SuppressWarnings("deprecation")
-		IAuthenticationProvider authProvider = new AuthenticationTokenProvider(accessTokenManager);
+		AuthenticationTokenProvider authProvider = getTokenProvider();
+		IGraphServiceClient graphClient = GraphServiceClient
+				.builder()
+				.authenticationProvider(authProvider)
+				.buildClient();
+		graphClient.setServiceRoot(SERVICE_ROOT);
+		return graphClient;
+	}
+	
+	public IGraphServiceClient client(AuthenticationTokenProvider authProvider) {
 		IGraphServiceClient graphClient = GraphServiceClient
 				.builder()
 				.authenticationProvider(authProvider)
@@ -151,39 +178,211 @@ public class MicrosoftGraphDAO {
 	}
 
 	/**
+	 * $filter=otherMails/any(x:x eq ‘xxx@abc.com’)
+	 * 
 	 * @param email The E-mail (mandatory)
 	 * @param institutionalEmail The institutional E-mail (optional)
 	 * @return The first users found
 	 */
 	public List<User> searchUsersByMail(String email, String institutionalEmail) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("mail eq '").append(email).append("'");
+		sb.append("mail eq '").append(email).append("'")
+		  .append(" or otherMails/any(x:x eq '").append(email).append("')");
 		if(StringHelper.containsNonWhitespace(institutionalEmail)) {
-			sb.append(" or mail eq '").append(institutionalEmail).append("'");
+			sb.append(" or mail eq '").append(institutionalEmail).append("'")
+			  .append(" or otherMails/any(x:x eq '").append(institutionalEmail).append("')");
 		}
 
 		IUserCollectionPage user = client()
 				.users()
 				.buildRequest()
 				.filter(sb.toString())
-				.select("displayName,id,mail")
+				.select("displayName,id,mail,otherMails")
 				.get();
 		return user.getCurrentPage();
 	}
+	
+	/**
+	 * 
+	 * @param mail
+	 * @param issuer
+	 * @return
+	 */
+	public User searchUserByUserPrincipalName(List<String> principals) {
+		if(principals == null || principals.isEmpty()) return null;
+		
+		StringBuilder sb = new StringBuilder();
+		for(String principal:principals) {
+			if(sb.length() > 0) {
+				sb.append(" or ");
+			}
+			sb.append("userPrincipalName eq '").append(principal).append("'");
+		}
 
-	public OnlineMeeting updateOnlineMeeting(TeamsMeeting meeting) {
+		IUserCollectionPage user = client().users()
+				.buildRequest()
+				.filter(sb.toString())
+				.select("displayName,id,mail,otherMails")
+				.top(1)
+				.get();
+		
+		List<User> users = user.getCurrentPage();
+		return users.isEmpty() ? null : users.get(0);
+	}
+	
+	public User searchUserById(String id, IGraphServiceClient client) {
+		try {
+			return client
+					.users(id)
+					.buildRequest()
+					.select("displayName,id,mail,otherMails")
+					.get();
+		} catch (ClientException e) {
+			log.error("Cannot find user with id: {}", id, e);
+			return null;
+		}
+	}
+	
+	public List<User> getAllUsers() {
+		IUserCollectionPage user = client()
+				.users()
+				.buildRequest()
+				.select("displayName,id,mail,otherMails")
+				.get();
+		return user.getCurrentPage();
+	}
+	
+	public Organization getOrganisation(String id, IGraphServiceClient client) {
+		try {
+			return client
+				.organization(id)
+				.buildRequest()
+				.select("id,displayName")
+				.get();
+		} catch (ClientException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public Application getApplication(String id, IGraphServiceClient client) {
+		try {
+			IApplicationCollectionPage appsPage = client
+				.applications()
+				.buildRequest()
+				.filter("appId eq '" + id + "'")
+				.top(1)
+				.get();
+			
+			List<Application> apps = appsPage.getCurrentPage();
+			return apps == null || apps.isEmpty() ? null : apps.get(0);
+		} catch (ClientException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public ConnectionInfos check(String clientId, String clientSecret, String tenantGuid,
+			String applicationId, String producerId, String onBehalfId) {
+		
+		try {
+			MicrosoftGraphAccessTokenManager accessTokenManager = new MicrosoftGraphAccessTokenManager(clientId, clientSecret, tenantGuid);
+			AuthenticationTokenProvider authProvider = new AuthenticationTokenProvider(accessTokenManager);
+			IGraphServiceClient client = client(authProvider);
+			
+			Organization org = getOrganisation(tenantGuid, client);
+			String organisation = org == null ? null : org.displayName;
+			
+			String onBehalfDisplayName = null;
+			if(StringHelper.containsNonWhitespace(onBehalfId)) {
+				User onbehalfUser = searchUserById(onBehalfId, client);
+				onBehalfDisplayName = onbehalfUser == null ? null : onbehalfUser.displayName;
+			}
+			
+			String producerDisplayName = null;
+			if(StringHelper.containsNonWhitespace(producerId)) {
+				User producer = searchUserById(producerId, client);
+				producerDisplayName = producer == null ? null : producer.displayName;
+			}
+			
+			String application = null;
+			if(StringHelper.containsNonWhitespace(applicationId)) {
+				Application app = getApplication(applicationId, client);
+				application = app == null ? null : app.displayName;
+			}
+
+			return new ConnectionInfos(organisation, onBehalfDisplayName, producerDisplayName, application);
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public final ConnectionInfos check() {
+		try {
+			IGraphServiceClient client = client();
+			String tenantId = teamsModule.getTenantGuid();
+			Organization org = getOrganisation(tenantId, client);
+			String organisation = org == null ? null : org.displayName;
+			
+			User onbehalfUser = null;
+			String onBehalfDisplayName = null;
+			if(StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
+				onbehalfUser = searchUserById(teamsModule.getOnBehalfUserId(), client);
+				onBehalfDisplayName = onbehalfUser == null ? null : onbehalfUser.displayName;
+			}
+
+			String producerDisplayName = null;
+			if(StringHelper.containsNonWhitespace(teamsModule.getProducerId())) {
+				if(onbehalfUser != null && onbehalfUser.id.equals(teamsModule.getProducerId())) {
+					producerDisplayName = onbehalfUser.displayName;
+				} else {
+					User producer = searchUserById(teamsModule.getProducerId(), client);
+					producerDisplayName = producer == null ? null : producer.displayName;
+				}
+			}
+
+			String application = null;
+			if(StringHelper.containsNonWhitespace(teamsModule.getApplicationId())) {
+				Application app = getApplication(teamsModule.getApplicationId(), client);
+				application = app == null ? null : app.displayName;
+			}
+
+			return new ConnectionInfos(organisation, onBehalfDisplayName, producerDisplayName, application);
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+
+	/**
+	 * This method is only supported if the application is allowed to
+	 * operate on behalf of a real user.
+	 * 
+	 * @param meeting The meeting
+	 * @param user The user
+	 * @param role The role of the user
+	 * @return The updated meeting
+	 */
+	public OnlineMeeting updateOnlineMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role) {
 		String id =  meeting.getOnlineMeetingId();
 		
 		OnlineMeeting onlineMeeting = new OnlineMeeting();
 		onlineMeeting.startDateTime = toCalendar(meeting.getStartDate());
 		onlineMeeting.endDateTime = toCalendar(meeting.getEndDate());
 		onlineMeeting.subject = meeting.getSubject();
+		
+		MeetingParticipants participants = new MeetingParticipants();
+		IdentitySet identitySet = createIdentitySetById(user);
+		participants.attendees = new ArrayList<>();
+		participants.attendees.add(createParticipantInfo(identitySet, role));
+		onlineMeeting.participants = participants;
 
 		OnlineMeeting updatedOnlineMeeting = client()
-				.communications()
+				.users(teamsModule.getOnBehalfUserId())
 				.onlineMeetings(id)
 				.buildRequest()
-				.put(onlineMeeting);
+				.patch(onlineMeeting);
 		
 		log.info(Tracing.M_AUDIT, "Oneline-Meeting updated with id: {}", id);
 		return updatedOnlineMeeting;

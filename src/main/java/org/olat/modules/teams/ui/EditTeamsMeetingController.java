@@ -38,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -74,6 +75,8 @@ public class EditTeamsMeetingController extends FormBasicController {
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private TeamsModule teamsModule;
 	@Autowired
 	private TeamsService teamsService;
 	
@@ -144,8 +147,10 @@ public class EditTeamsMeetingController extends FormBasicController {
 		joinInformationEl.setEnabled(editable);
 		
 		KeyValues accessKeyValues = new KeyValues();
+		String organisation = teamsModule.getTenantOrganisation();
 		accessKeyValues.add(KeyValues.entry(AccessLevel.EVERYONE.name(), translate("meeting.accesslevel.everyone")));
-		accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE.name(), translate("meeting.accesslevel.same.enterprise")));
+		accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE.name(),
+				translate("meeting.accesslevel.same.enterprise", new String[] { organisation })));
 		accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE_AND_FEDERATED.name(), translate("meeting.accesslevel.same.enterprise.federated")));
 		accessLevelEl = uifactory.addDropdownSingleselect("meeting.accesslevel", formLayout, accessKeyValues.keys(), accessKeyValues.values());
 		accessLevelEl.setMandatory(true);

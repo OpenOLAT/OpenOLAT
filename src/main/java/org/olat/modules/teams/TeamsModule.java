@@ -41,10 +41,12 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String PROP_COURSE_ENABLED = "vc.teams.courses";
 	private static final String PROP_PRODUCER_ID = "vc.teams.producer.id";
 	private static final String PROP_APPLICATION_ID = "vc.teams.application.id";
+	private static final String PROP_ONBEHALF_ID = "vc.teams.on.behalf.user.id";
 	
 	private static final String MSGRAPH_API_KEY = "vc.teams.api.key";
 	private static final String MSGRAPH_API_SECRET = "vc.teams.api.secret";
 	private static final String MSGRAPH_TENANT_GUID = "vc.teams.tenant.guid";
+	private static final String MSGRAPH_TENANT_ORG = "vc.teams.tenant.organisation";
 	
 	@Value("${vc.teams.enabled}")
 	private boolean enabled;
@@ -55,10 +57,14 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	private String apiSecret;
 	@Value("${vc.teams.tenant.guid}")
 	private String tenantGuid;
+	@Value("${vc.teams.tenant.organisation}")
+	private String organisation;
 	@Value("${vc.teams.producer.id}")
 	private String producerId;
 	@Value("${vc.teams.application.id}")
 	private String applicationId;
+	@Value("${vc.teams.on.behalf.user.id}")
+	private String onBehalfUserId;
 	
 	@Value("${vc.teams.groups:true}")
 	private String groupsEnabled;
@@ -81,6 +87,8 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 		apiKey = getStringPropertyValue(MSGRAPH_API_KEY, apiKey);
 		apiSecret = getStringPropertyValue(MSGRAPH_API_SECRET, apiSecret);
 		tenantGuid = getStringPropertyValue(MSGRAPH_TENANT_GUID, tenantGuid);
+		organisation = getStringPropertyValue(MSGRAPH_TENANT_ORG, organisation);
+		onBehalfUserId = getStringPropertyValue(PROP_ONBEHALF_ID, onBehalfUserId);
 		
 		producerId = getStringPropertyValue(PROP_PRODUCER_ID, producerId);
 		applicationId = getStringPropertyValue(PROP_APPLICATION_ID, applicationId);
@@ -131,8 +139,22 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(MSGRAPH_TENANT_GUID, tenantGuid, true);
 	}
 	
+	public String getTenantOrganisation() {
+		return organisation;
+	}
+	
+	public void setTenantOrganisation(String organisation) {
+		this.organisation = organisation;
+		setStringProperty(MSGRAPH_TENANT_ORG, organisation, true);
+	}
+	
 	public String getOnBehalfUserId() {
-		return null;
+		return onBehalfUserId;
+	}
+	
+	public void setOnBehalfUserId(String userId) {
+		this.onBehalfUserId = userId;
+		setStringProperty(PROP_ONBEHALF_ID, userId, true);
 	}
 	
 	public String getProducerId() {

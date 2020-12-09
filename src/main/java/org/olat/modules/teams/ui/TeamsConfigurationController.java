@@ -22,15 +22,20 @@ package org.olat.modules.teams.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.teams.TeamsModule;
+import org.olat.modules.teams.TeamsService;
+import org.olat.modules.teams.model.ConnectionInfos;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -47,17 +52,29 @@ public class TeamsConfigurationController extends FormBasicController {
 	private TextElement clientIdEl;
 	private TextElement secretEl;
 	private TextElement tenantEl;
+	private StaticTextElement organisationEl;
 	private TextElement applicationIdEl;
+	private StaticTextElement applicationEl;
 	private TextElement producerIdEl;
+	private StaticTextElement producerEl;
+	private TextElement onBehalfUserIdEl;
+	private StaticTextElement onBehalfUserEl;
+	private FormLink checkConnectionButton;
 	
 	@Autowired
 	private TeamsModule teamsModule;
+	@Autowired
+	private TeamsService teamsService;
 	
 	public TeamsConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		initForm(ureq);
 		updateUI();
+		if(teamsModule.isEnabled()) {
+			loadModel();
+		}
 	}
+	
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -79,16 +96,57 @@ public class TeamsConfigurationController extends FormBasicController {
 		String tenant = teamsModule.getTenantGuid();
 		tenantEl = uifactory.addTextElement("tenant", "azure.tenant.guid", 255, tenant, formLayout);
 		tenantEl.setMandatory(true);
+		String organisation = teamsModule.getTenantOrganisation();
+		organisationEl = uifactory.addStaticTextElement("organisation", "azure.tenant.organisation", organisation, formLayout);
+		organisationEl.setVisible(StringHelper.containsNonWhitespace(organisation));
 		
-		String applicationid = teamsModule.getApplicationId();
-		applicationIdEl = uifactory.addTextElement("appId", "graph.application.id", 255, applicationid, formLayout);
+		uifactory.addSpacerElement("spacer1", formLayout, false);
+		
+		String applicationId = teamsModule.getApplicationId();
+		applicationIdEl = uifactory.addTextElement("appId", "graph.application.id", 255, applicationId, formLayout);
+		applicationEl = uifactory.addStaticTextElement("application", "graph.application.displayname", organisation, formLayout);
+		applicationEl.setVisible(false);
+		
 		String producerId = teamsModule.getProducerId();
-		producerIdEl = uifactory.addTextElement("producer", "graph.producer.id", 255, producerId, formLayout);
+		producerIdEl = uifactory.addTextElement("producer.id", "graph.producer.id", 255, producerId, formLayout);
+		producerEl = uifactory.addStaticTextElement("producer", "graph.producer.displayname", organisation, formLayout);
+		producerEl.setVisible(false);
+		
+		uifactory.addSpacerElement("spacer1", formLayout, false);
+		
+		String onBehalfUserId = teamsModule.getOnBehalfUserId();
+		onBehalfUserIdEl = uifactory.addTextElement("onbehalf.id", "graph.onbehalf.user", 255, onBehalfUserId, formLayout);
+		onBehalfUserEl = uifactory.addStaticTextElement("onbehalf", "graph.onbehalf.displayname", organisation, formLayout);
+		onBehalfUserEl.setVisible(false);
 		
 		//buttons save - check
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
+		checkConnectionButton = uifactory.addFormLink("check.connection", "check.connection", null, buttonLayout, Link.BUTTON);
+	}
+	
+	private void loadModel() {
+		ConnectionInfos infos = teamsService.checkConnection();
+		updateModel(infos);
+	}
+	
+	private void updateModel(ConnectionInfos infos) {
+		String organisation = infos == null ? "" : infos.getOrganisation();
+		organisationEl.setValue(organisation);
+		organisationEl.setVisible(StringHelper.containsNonWhitespace(organisation));
+		
+		String application = infos == null ? "" : infos.getApplication();
+		applicationEl.setValue(application);
+		applicationEl.setVisible(StringHelper.containsNonWhitespace(application));
+		
+		String producer = infos == null ? "" : infos.getProducerDisplayName();
+		producerEl.setValue(producer);
+		producerEl.setVisible(StringHelper.containsNonWhitespace(producer));
+		
+		String onBehalf = infos == null ? "" : infos.getOnBehalfDisplayName();
+		onBehalfUserEl.setValue(onBehalf);
+		onBehalfUserEl.setVisible(StringHelper.containsNonWhitespace(onBehalf));
 	}
 
 	@Override
@@ -100,6 +158,8 @@ public class TeamsConfigurationController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(moduleEnabled == source) {
 			updateUI();
+		} else if(this.checkConnectionButton == source) {
+			doCheckConnection();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -111,6 +171,12 @@ public class TeamsConfigurationController extends FormBasicController {
 		tenantEl.setVisible(enabled);
 		producerIdEl.setVisible(enabled);
 		applicationIdEl.setVisible(enabled);
+		onBehalfUserIdEl.setVisible(enabled);
+		checkConnectionButton.setVisible(enabled);
+		organisationEl.setVisible(enabled && StringHelper.containsNonWhitespace(organisationEl.getValue()));
+		applicationEl.setVisible(enabled && StringHelper.containsNonWhitespace(applicationEl.getValue()));
+		producerEl.setVisible(enabled && StringHelper.containsNonWhitespace(producerEl.getValue()));
+		onBehalfUserEl.setVisible(enabled && StringHelper.containsNonWhitespace(onBehalfUserEl.getValue()));
 	}
 
 	@Override
@@ -147,14 +213,24 @@ public class TeamsConfigurationController extends FormBasicController {
 			teamsModule.setApiKey(clientIdEl.getValue());
 			teamsModule.setApiSecret(secretEl.getValue());
 			teamsModule.setTenantGuid(tenantEl.getValue());
+			teamsModule.setTenantOrganisation(organisationEl.getValue());
 			teamsModule.setApplicationId(applicationIdEl.getValue());
 			teamsModule.setProducerId(producerIdEl.getValue());
+			teamsModule.setOnBehalfUserId(onBehalfUserIdEl.getValue());
 		} else {
 			teamsModule.setApiKey(null);
 			teamsModule.setApiSecret(null);
 			teamsModule.setTenantGuid(null);
+			teamsModule.setTenantOrganisation(null);
 			teamsModule.setApplicationId(null);
 			teamsModule.setProducerId(null);
+			teamsModule.setOnBehalfUserId(null);
 		}
+	}
+	
+	private void doCheckConnection() {
+		ConnectionInfos infos = teamsService.checkConnection(clientIdEl.getValue(), secretEl.getValue(), tenantEl.getValue(),
+				applicationIdEl.getValue(), producerIdEl.getValue(), onBehalfUserIdEl.getValue());
+		updateModel(infos);
 	}
 }
