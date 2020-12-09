@@ -54,7 +54,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
-import org.olat.course.member.wizard.ImportMembersContext;
+import org.olat.course.member.wizard.MembersContext;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -348,7 +348,7 @@ public class CurriculumMembersManagementController extends BasicController imple
 	private void doChooseMembers(UserRequest ureq, CurriculumElement focusedElement) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		ImportMembersContext membersContext= ImportMembersContext.valueOf(curriculum, focusedElement, overrideManaged, true);
+		MembersContext membersContext= MembersContext.valueOf(curriculum, focusedElement, overrideManaged, true);
 		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
@@ -364,7 +364,7 @@ public class CurriculumMembersManagementController extends BasicController imple
 	private void doImportMembers(UserRequest ureq, CurriculumElement focusedElement) {
 		removeAsListenerAndDispose(importMembersWizard);
 		
-		ImportMembersContext membersContext= ImportMembersContext.valueOf(curriculum, focusedElement, overrideManaged, true);
+		MembersContext membersContext= MembersContext.valueOf(curriculum, focusedElement, overrideManaged, true);
 		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);

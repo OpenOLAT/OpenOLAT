@@ -37,6 +37,7 @@ import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChangeEvent {
 	private static final long serialVersionUID = 8499004967313689825L;
 
+	private List<RepositoryEntryPermissionChangeEvent> repositoryChanges;
 	private List<BusinessGroupMembershipChange> groupChanges;
 	private List<CurriculumElementMembershipChange> curriculumChanges;
 	
@@ -55,6 +56,14 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 			}
 		}
 		return groups;
+	}
+	
+	public List<RepositoryEntryPermissionChangeEvent> getRepoChanges() {
+		return repositoryChanges;
+	}
+	
+	public void setRepoChanges(List<RepositoryEntryPermissionChangeEvent> repoPermissionChanges) {
+		repositoryChanges = repoPermissionChanges;
 	}
 	
 	public List<BusinessGroupMembershipChange> getGroupChanges() {
@@ -86,11 +95,25 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 			return Collections.emptyList();
 		}
 		
-		List<RepositoryEntryPermissionChangeEvent> repoChanges = new ArrayList<>();
-		for(Identity member:members) {
-			repoChanges.add(new RepositoryEntryPermissionChangeEvent(member, this));
+		List<RepositoryEntryPermissionChangeEvent> repoChanges = getRepoChanges();
+		if (repoChanges == null || repoChanges.isEmpty()) {
+			// Fallback solution
+			List<RepositoryEntryPermissionChangeEvent> changes = new ArrayList<>();
+			for (Identity member : members) {
+				changes.add(new RepositoryEntryPermissionChangeEvent(member, this));
+			}
+			
+			return changes;
 		}
-		return repoChanges;
+		
+		List<RepositoryEntryPermissionChangeEvent> allModifications = new ArrayList<>();
+		for (RepositoryEntryPermissionChangeEvent repoChange : repoChanges) {
+			for(Identity member:members) {
+				allModifications.add(new RepositoryEntryPermissionChangeEvent(member, repoChange));
+			}
+		}
+		
+		return allModifications;
 	}
 	
 	public List<BusinessGroupMembershipChange> generateBusinessGroupMembershipChange(List<Identity> members) {

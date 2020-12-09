@@ -50,6 +50,14 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 		action = "tt-focus";
 	}
 	
+	public TreeNodeFlexiCellRenderer(boolean focusEnabled) {
+		if (focusEnabled) {
+			this.action = "tt-focus";
+		} else {
+			this.action = null;
+		}
+	}
+	
 	public TreeNodeFlexiCellRenderer(String action) {
 		this.action = action;
 	}

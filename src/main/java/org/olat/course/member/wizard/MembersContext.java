@@ -30,7 +30,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ImportMembersContext {
+public class MembersContext {
 	
 	private final BusinessGroup group;
 	private final Curriculum curriculum;
@@ -39,29 +39,33 @@ public class ImportMembersContext {
 	
 	private final boolean overrideManaged;
 	private final boolean extendedCurriculumRoles;
+	private final boolean sendMailMandatory;
 	
-	private ImportMembersContext(RepositoryEntry repoEntry, BusinessGroup group, Curriculum curriculum,
-			CurriculumElement rootCurriculumElement, boolean overrideManaged, boolean extendedCurriculumRoles) {
+	private MembersContext(RepositoryEntry repoEntry, BusinessGroup group, Curriculum curriculum,
+			CurriculumElement rootCurriculumElement, boolean overrideManaged, boolean extendedCurriculumRoles, boolean sendMailMandatory) {
 		this.repoEntry = repoEntry;
 		this.group = group;
 		this.curriculum = curriculum;
 		this.rootCurriculumElement = rootCurriculumElement;
 		this.overrideManaged = overrideManaged;
 		this.extendedCurriculumRoles = extendedCurriculumRoles;
+		this.sendMailMandatory = sendMailMandatory;
 	}
 	
-	public static ImportMembersContext valueOf(BusinessGroup businessGroup) {
-		return new ImportMembersContext(null, businessGroup, null, null, false, false);
+	public static MembersContext valueOf(BusinessGroup businessGroup) {
+		return new MembersContext(null, businessGroup, null, null, false, false, false);
 	}
 	
-	public static ImportMembersContext valueOf(RepositoryEntry repoEntry, boolean overrideManaged) {
-		return new ImportMembersContext(repoEntry, null, null, null, overrideManaged, false);
+	public static MembersContext valueOf(RepositoryEntry repoEntry, boolean overrideManaged) {
+		return new MembersContext(repoEntry, null, null, null, overrideManaged, false, false);
 	}
 	
-	public static ImportMembersContext valueOf(Curriculum curriculum, CurriculumElement rootCurriculumElement,
-			boolean overrideManaged, boolean extendedCurriculumRoles) {
-		return new ImportMembersContext(null, null, curriculum, rootCurriculumElement,
-				overrideManaged, extendedCurriculumRoles);
+	public static MembersContext valueOf(RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged, boolean sendMailMandatory) {
+		return new MembersContext(repoEntry, businessGroup, null, null, overrideManaged, false, sendMailMandatory);
+	}
+	
+	public static MembersContext valueOf(Curriculum curriculum, CurriculumElement rootCurriculumElement, boolean overrideManaged, boolean extendedCurriculumRoles) {
+		return new MembersContext(null, null, curriculum, rootCurriculumElement, overrideManaged, extendedCurriculumRoles, false);
 	}
 
 	public BusinessGroup getGroup() {
@@ -86,5 +90,9 @@ public class ImportMembersContext {
 	
 	public boolean isExtendedCurriculumRoles() {
 		return extendedCurriculumRoles;
+	}
+	
+	public boolean isSendMailMandatory() {
+		return sendMailMandatory;
 	}
 }

@@ -914,8 +914,8 @@ $o-files-size-large				: #E82A0C;
 $o-ct-confirmation-bg-color		: limegreen;
 
 /* AddRemove Component */
-$o-addremove-add-color			: #b8f096;
-$o-addremove-remove-color		: #ff9d8f;
+$o-addremove-add-color			: $state-success-bg;
+$o-addremove-remove-color		: $state-danger-bg;
 
 
 

@@ -33,7 +33,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class ImportMember_1a_LoginListStep extends BasicStep {
 	
-	public ImportMember_1a_LoginListStep(UserRequest ureq, ImportMembersContext membersContext) {
+	public ImportMember_1a_LoginListStep(UserRequest ureq, MembersContext membersContext) {
 		super(ureq);
 		setNextStep(new ImportMember_2_ConfirmMemberChoiceStep(ureq, membersContext));
 		setI18nTitleAndDescr("import.import.title", "import.import.title");

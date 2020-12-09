@@ -43,7 +43,7 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.course.member.wizard.ImportMembersContext;
+import org.olat.course.member.wizard.MembersContext;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.group.BusinessGroupService;
@@ -146,7 +146,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		ImportMembersContext membersContext = ImportMembersContext.valueOf(repoEntry, false);
+		MembersContext membersContext = MembersContext.valueOf(repoEntry, false);
 		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
@@ -162,7 +162,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		ImportMembersContext membersContext = ImportMembersContext.valueOf(repoEntry, false);
+		MembersContext membersContext = MembersContext.valueOf(repoEntry, false);
 		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);

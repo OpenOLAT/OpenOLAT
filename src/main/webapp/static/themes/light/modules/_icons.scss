@@ -298,6 +298,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_restore:before { content: $fa-var-thumbs-up; }
 .o_icon_results_visible:before { content: $fa-var-eye;}
 .o_icon_results_hidden:before { content: $fa-var-eye-slash;}
+.o_icon_review_add:before { content: $fa-var-plus-square; }
+.o_icon_review_added:before { content: $fa-var-check; }
+.o_icon_review_remove:before { content: $fa-var-minus-square; }
+.o_icon_review_removed:before { content: $fa-var-times; }
 .o_icon_reviewer:before { content: $fa-var-user-md;}
 .o_icon_right:before { content: $fa-var-arrow-circle-right; }
 .o_icon_rss:before { content: $fa-var-rss;}
@@ -833,4 +837,12 @@ a.o_icon {
 	&:hover,&:focus {
 		text-decoration: none;
 	}
+}
+
+.o_icon_success {
+	color: $state-success-text;
+}
+
+.o_icon_danger {
+	color: $state-danger-text;
 }

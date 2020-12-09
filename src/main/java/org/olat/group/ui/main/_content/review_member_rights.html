@@ -1,0 +1,26 @@
+<div style="margin-top: 7px;">
+	<div class="col-sm-6">
+		<strong>$r.translate("review.member.right.added")</strong>
+		<ul>
+			#if($r.isEmpty($addedList))
+				<li><i>$r.translate("review.member.no.changes")</i></li>
+			#else
+				#foreach($added in $addedList)
+				<li>$added.getUser().getFirstName() $added.getUser().getLastName()</li>
+				#end
+			#end
+		</ul>	
+	</div>
+	<div class="col-sm-6">
+		<strong>$r.translate("review.member.right.removed")</strong>
+		<ul>
+			#if($r.isEmpty($removedList))
+				<li><i>$r.translate("review.member.no.changes")</i></li>
+			#else
+				#foreach($removed in $removedList)
+				<li>$removed.getUser().getFirstName() $removed.getUser().getLastName()</li>
+				#end
+			#end
+		</ul>	
+	</div>
+</div>

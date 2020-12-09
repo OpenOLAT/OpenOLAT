@@ -41,7 +41,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
-import org.olat.course.member.wizard.ImportMembersContext;
+import org.olat.course.member.wizard.MembersContext;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.group.BusinessGroup;
@@ -202,7 +202,7 @@ public class BusinessGroupMembersController extends BasicController {
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		ImportMembersContext membersContext = ImportMembersContext.valueOf(businessGroup);
+		MembersContext membersContext = MembersContext.valueOf(businessGroup);
 		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(runContext);
@@ -218,7 +218,7 @@ public class BusinessGroupMembersController extends BasicController {
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		ImportMembersContext membersContext = ImportMembersContext.valueOf(businessGroup);
+		MembersContext membersContext = MembersContext.valueOf(businessGroup);
 		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(runContext);

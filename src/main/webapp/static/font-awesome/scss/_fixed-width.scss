@@ -1,6 +1,7 @@
 // Fixed Width Icons
 // -------------------------
-.#{$fa-css-prefix}-fw {
+.#{$fa-css-prefix}-fw,
+.#{$fa-css-prefix}_fw {
   width: (18em / 14);
   text-align: center;
 }

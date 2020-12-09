@@ -34,9 +34,9 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class ImportMember_3_ChoosePermissionStep extends BasicStep {
 
-	private final ImportMembersContext membersContext;
+	private final MembersContext membersContext;
 	
-	public ImportMember_3_ChoosePermissionStep(UserRequest ureq, ImportMembersContext membersContext) {
+	public ImportMember_3_ChoosePermissionStep(UserRequest ureq, MembersContext membersContext) {
 		super(ureq);
 		this.membersContext = membersContext;
 		setNextStep(new ImportMember_4_MailStep(ureq, membersContext.getRepoEntry()));

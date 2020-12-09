@@ -38,7 +38,7 @@ public class ImportMemberPermissionChoiceController extends StepFormBasicControl
 	private EditMembershipController permissionCtrl;
 
 	public ImportMemberPermissionChoiceController(UserRequest ureq, WindowControl wControl,
-			ImportMembersContext membersContext, Form rootForm, StepsRunContext runContext) {
+			MembersContext membersContext, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 		
 		permissionCtrl = new EditMembershipController(ureq, getWindowControl(), null, membersContext, rootForm);

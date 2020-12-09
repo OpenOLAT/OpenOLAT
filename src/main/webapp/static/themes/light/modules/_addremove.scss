@@ -1,17 +1,23 @@
 .o_addremove_add_active {
-	@include box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
-	background-color: $o-addremove-add-color;
+	background-color: $o-addremove-add-color !important;
 
 	&:hover {
-		background-color: transparentize($o-addremove-add-color, .3);
+		background-color: darken($o-addremove-add-color, 10%);
 	}
 }
 
-.o_addremove_remove_active {
-	@include box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
-	background-color: $o-addremove-remove-color;
+.o_addremove_remove_active {	
+	background-color: $o-addremove-remove-color !important;
 
 	&:hover {
-		background-color: transparentize($o-addremove-remove-color, .3);
+		background-color: darken($o-addremove-remove-color, 10%);
 	}
+}
+
+.o_badge_added {
+	background-color: $state-success-text;
+}
+
+.o_badge_removed {
+	background-color: $state-danger-text;
 }

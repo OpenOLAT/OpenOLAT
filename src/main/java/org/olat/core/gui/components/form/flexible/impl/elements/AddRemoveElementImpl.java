@@ -168,7 +168,7 @@ public class AddRemoveElementImpl extends FormItemImpl implements AddRemoveEleme
 		addSelected = true;
 		removeSelected = false;
 		
-		addLink.setElementCssClass(addActiveCssClass);
+		addLink.setElementCssClass("active o_addremove_add_active");
 		removeLink.setElementCssClass(null);
 	}
 
@@ -178,7 +178,7 @@ public class AddRemoveElementImpl extends FormItemImpl implements AddRemoveEleme
 		removeSelected = true;
 		
 		addLink.setElementCssClass(null);
-		removeLink.setElementCssClass(removeActiveCssClass);
+		removeLink.setElementCssClass("active o_addremove_remove_active");
 	}
 
 	@Override

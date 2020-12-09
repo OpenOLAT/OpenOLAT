@@ -55,7 +55,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.member.wizard.ImportMembersContext;
+import org.olat.course.member.wizard.MembersContext;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -363,7 +363,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		ImportMembersContext membersContext = ImportMembersContext.valueOf(repoEntry, overrideManaged);
+		MembersContext membersContext = MembersContext.valueOf(repoEntry, overrideManaged);
 		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
@@ -379,7 +379,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		ImportMembersContext membersContext = ImportMembersContext.valueOf(repoEntry, overrideManaged);
+		MembersContext membersContext = MembersContext.valueOf(repoEntry, overrideManaged);
 		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);

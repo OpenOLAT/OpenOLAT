@@ -66,6 +66,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -81,6 +85,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.member.MemberListController;
+import org.olat.course.member.wizard.MembersContext;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupModule;
@@ -99,6 +104,7 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -146,8 +152,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private MemberLeaveConfirmationController leaveDialogBox;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditSingleMembershipController editSingleMemberCtrl;
-	private final List<UserPropertyHandler> userPropertyHandlers;
+	private StepsMainRunController editMemberShipStepsController;
 
+	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AtomicInteger counter = new AtomicInteger();
 	protected final RepositoryEntry repoEntry;
 	private final BusinessGroup businessGroup;
@@ -427,12 +434,21 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			}
 			cmc.deactivate();
 			cleanUpPopups();
+		} else if (source == editMemberShipStepsController) {
+            if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+                // Close the dialog
+                getWindowControl().pop();
+                cleanUpPopups();
+                
+                // Reload form
+                reloadModel();
+            }
 		} else if(source == editMembersCtrl) {
-			cmc.deactivate();
+			/*cmc.deactivate();
 			if(event instanceof MemberPermissionChangeEvent) {
 				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
 				doConfirmChangePermission(ureq, e, editMembersCtrl.getMembers());
-			}
+			}*/
 		} else if(source == editSingleMemberCtrl) {
 			cmc.deactivate();
 			cleanUpPopups();
@@ -479,11 +495,14 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		removeAsListenerAndDispose(editSingleMemberCtrl);
 		removeAsListenerAndDispose(leaveDialogBox);
 		removeAsListenerAndDispose(contactCtrl);
+        removeAsListenerAndDispose(editMemberShipStepsController);
+        
 		cmc = null;
 		contactCtrl = null;
 		leaveDialogBox = null;
 		editMembersCtrl = null;
 		editSingleMemberCtrl = null;
+		editMemberShipStepsController = null;
 	}
 	
 	protected final void doConfirmRemoveMembers(UserRequest ureq, List<MemberRow> members) {
@@ -540,14 +559,33 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				listenTo(editSingleMemberCtrl);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), editSingleMemberCtrl.getInitialComponent(),
 						true, translate("edit.member"));
+				cmc.activate();
+				listenTo(cmc);
 			} else {
+				// Collect data in membersContext
+				boolean sendMailMandatory = groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+				MembersContext membersContext = MembersContext.valueOf(repoEntry, businessGroup, overrideManaged, sendMailMandatory);
+				
+				
+				// Create first step and finish callback
+		        Step editMembershipStep = new EditMembershipStep1(ureq, identities, membersContext);
+		        FinishedCallback finish = new FinishedCallback();
+		        CancelCallback cancel = new CancelCallback();
+		        
+		        
+		        // Create step controller
+		        editMemberShipStepsController = new StepsMainRunController(ureq, getWindowControl(), editMembershipStep, finish, cancel, translate("edit.member"), null);
+		        listenTo(editMemberShipStepsController);
+		        getWindowControl().pushAsModalDialog(editMemberShipStepsController.getInitialComponent());
+		        
+				/*
 				editMembersCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup, overrideManaged);
 				listenTo(editMembersCtrl);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), editMembersCtrl.getInitialComponent(),
 						true, translate("edit.member"));
+						*/
 			}
-			cmc.activate();
-			listenTo(cmc);
+			
 		}
 	}
 	
@@ -633,7 +671,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
 			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, repoEntry, repoChanges, mailing);
 
-			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, changes.getCurriculumChanges(), mailing);
+			List<CurriculumElementMembershipChange> curriuclumChanges = changes.generateCurriculumElementMembershipChange(members);
+			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriuclumChanges, mailing);
 		}
 
 		//commit all changes to the group memberships
@@ -859,6 +898,36 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		chatLink.setUserObject(row);
 		row.setChatLink(chatLink);
 	}
+	
+	private class FinishedCallback implements StepRunnerCallback {
+        @Override
+        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+        	// Extract data from wizard
+            MemberPermissionChangeEvent changeEvent = (MemberPermissionChangeEvent) runContext.get("membershipChanges");
+            @SuppressWarnings("unchecked")
+			List<Identity> members = (List<Identity>) runContext.get("members");
+            boolean sendMail = (Boolean) runContext.get("sendMail");
+            
+            // Apply changes
+            if(changeEvent.size() != 0) {
+            	if(members == null) {
+    				doChangePermission(ureq, changeEvent, sendMail);
+    			} else {
+    				doChangePermission(ureq, changeEvent, members, sendMail);
+    			}
+    		}
+
+            // Fire event
+            return StepsMainRunController.DONE_MODIFIED;
+        }
+    }
+
+    private static class CancelCallback implements StepRunnerCallback {
+        @Override
+        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+            return Step.NOSTEP;
+        }
+    }	
 	
 	private class GraduationConfirmation {
 		private final List<MemberRow> rows;

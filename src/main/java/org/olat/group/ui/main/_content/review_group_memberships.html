@@ -1,0 +1,78 @@
+<div style="margin-top: 7px;">
+	<div class="col-sm-6">
+		<strong>$r.translate("review.member.group.coach.added")</strong>
+		<ul>
+			#if($r.isEmpty($coachAddedList))
+				<li><i>$r.translate("review.member.no.changes")</i></li>
+			#else
+				#foreach($coachAdded in $coachAddedList)
+				<li>$coachAdded.getUser().getFirstName() $coachAdded.getUser().getLastName()</li>
+				#end
+			#end
+		</ul>	
+	</div>
+	<div class="col-sm-6">
+		<strong>$r.translate("review.member.group.coach.removed")</strong>
+		<ul>
+			#if($r.isEmpty($coachRemovedList))
+				<li><i>$r.translate("review.member.no.changes")</i></li>
+			#else
+				#foreach($coachRemoved in $coachRemovedList)
+				<li>$coachRemoved.getUser().getFirstName() $coachRemoved.getUser().getLastName()</li>
+				#end
+			#end
+		</ul>	
+	</div>
+	
+	<div class="col-sm-6">
+		<strong>$r.translate("review.member.group.participant.added")</strong>
+		<ul>
+			#if($r.isEmpty($participantAddedList))
+				<li><i>$r.translate("review.member.no.changes")</i></li>
+			#else
+				#foreach($participantAdded in $participantAddedList)
+				<li>$participantAdded.getUser().getFirstName() $participantAdded.getUser().getLastName()</li>
+				#end
+			#end
+		</ul>	
+	</div>
+	<div class="col-sm-6">
+		<strong>$r.translate("review.member.group.participant.removed")</strong>
+		<ul>
+			#if($r.isEmpty($participantRemovedList))
+				<li><i>$r.translate("review.member.no.changes")</i></li>
+			#else
+				#foreach($participantRemoved in $participantRemovedList)
+				<li>$participantRemoved.getUser().getFirstName() $participantRemoved.getUser().getLastName()</li>
+				#end
+			#end
+		</ul>	
+	</div>
+	
+	#if($waitingListChanges)
+	<div class="col-sm-6">
+		<strong>$r.translate("review.member.group.waiting.list.added")</strong>
+		<ul>
+			#if($r.isEmpty($waitingListAddedList))
+				<li><i>$r.translate("review.member.no.changes")</i></li>
+			#else
+				#foreach($watingListAdded in $waitingListAddedList)
+				<li>$watingListAdded.getUser().getFirstName() $watingListAdded.getUser().getLastName()</li>
+				#end
+			#end
+		</ul>	
+	</div>
+	<div class="col-sm-6">
+		<strong>$r.translate("review.member.group.waiting.list.removed")</strong>
+		<ul>
+			#if($r.isEmpty($waitingListRemovedList))
+				<li><i>$r.translate("review.member.no.changes")</i></li>
+			#else
+				#foreach($waitingListRemoved in $waitingListRemovedList)
+				<li>$waitingListRemoved.getUser().getFirstName() $waitingListRemoved.getUser().getLastName()</li>
+				#end
+			#end
+		</ul>	
+	</div>
+	#end
+</div>
