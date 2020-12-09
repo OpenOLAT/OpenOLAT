@@ -17,11 +17,12 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.panel;
+package org.olat.core.gui.control.guistack;
 
 import java.util.List;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.panel.PanelRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.RenderingState;
@@ -31,16 +32,15 @@ import org.olat.core.gui.translator.Translator;
 
 /**
  * Description:<br>
- * Renderer for the LayeredPanel. Renders the layers with a class
- * "b_layeredPanel" and a z-index style starting with the configuration on the
- * LayeredPanel component.
+ * Renderer for the LayeredPanel. Renders the layers with a class defined
+ * a CSS class in the panel.
  * 
  * <P>
  * Initial Date: 28.10.2010 <br>
  * 
  * @author gnaegi
  */
-public class LayeredPanelRenderer extends PanelRenderer {
+class LayeredPanelRenderer extends PanelRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source,
@@ -48,28 +48,13 @@ public class LayeredPanelRenderer extends PanelRenderer {
 			String[] args) {
 
 		LayeredPanel panel = (LayeredPanel) source;
-		int layerLevel = panel.getStartLayerIndex();
-		int increment = panel.getIndexIncrement();
 		List<Component> layers = panel.getLayers();
 		// Render lower layers first, highest last
 		int level = 0;
 		for (Component component : layers) {
-			if (component.getSpanAsDomReplaceable()) {
-				sb.append("<span");
-			} else {
-				sb.append("<div");
-			}
-			sb.append(" class=\"o_layered_panel o_layer_").append(level).append("\" style=\"z-index:")
-					.append(layerLevel).append("\">");
+			sb.append("<div class=\"").append(panel.getCssClass()).append(" o_layer_").append(level).append("\">");
 			renderer.render(sb, component, args);
-			if (component.getSpanAsDomReplaceable()) {
-				sb.append("</span>");
-			} else {
-				sb.append("</div>");
-			}
-
-			// Increment layer z-index for next layer iteration
-			layerLevel += increment;
+			sb.append("</div>");
 			level++;
 		}
 	}
@@ -80,7 +65,6 @@ public class LayeredPanelRenderer extends PanelRenderer {
 			RenderingState rstate) {
 		LayeredPanel panel = (LayeredPanel) source;
 		List<Component> layers = panel.getLayers();
-		//
 		for (Component component : layers) {
 			if (component != null) {
 				// delegate header rendering to the content
@@ -94,7 +78,6 @@ public class LayeredPanelRenderer extends PanelRenderer {
 			StringOutput sb, Component source, RenderingState rstate) {
 		LayeredPanel panel = (LayeredPanel) source;
 		List<Component> layers = panel.getLayers();
-		//
 		for (Component component : layers) {
 			if (component != null) {
 				// delegate header rendering to the content

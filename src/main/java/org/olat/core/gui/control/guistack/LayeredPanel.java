@@ -17,13 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.panel;
+package org.olat.core.gui.control.guistack;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 
 /**
  * Description:<br>
@@ -35,7 +36,7 @@ import org.olat.core.gui.components.ComponentRenderer;
  * 
  * @author gnaegi
  */
-public class LayeredPanel extends SimpleStackedPanel {
+class LayeredPanel extends SimpleStackedPanel {
 	private static final ComponentRenderer LAYERED_RENDERER = new LayeredPanelRenderer();
 	private int startLayerIndex;
 	private int indexIncrement;
@@ -43,15 +44,14 @@ public class LayeredPanel extends SimpleStackedPanel {
 	/**
 	 * Constructor
 	 * 
-	 * @param name
-	 *            Panel name
-	 * @param startLayer
-	 *            The z-index of the first layer in this panel
-	 * @param indexIncrement
-	 *            The difference of the z-index to the next layer
+	 * @param name Panel name
+	 * @param cssClass The wrapper CSS class over each modal dialog
+	 * @param startLayer The z-index of the first layer in this panel
+	 * @param indexIncrement The difference of the z-index to the next layer
 	 */
-	public LayeredPanel(String name, int startLayer, int indexIncrement) {
+	public LayeredPanel(String name, String cssClass, int startLayer, int indexIncrement) {
 		super(name);
+		setCssClass(cssClass);
 		this.startLayerIndex = startLayer;
 		this.indexIncrement = indexIncrement;
 	}
@@ -60,14 +60,14 @@ public class LayeredPanel extends SimpleStackedPanel {
 	 * @return number representing the z-index of the first layer
 	 */
 	int getStartLayerIndex() {
-		return this.startLayerIndex;
+		return startLayerIndex;
 	}
 
 	/**
-	 * @return number representing the z-index difference beteween layers
+	 * @return number representing the z-index difference between layers
 	 */
 	int getIndexIncrement() {
-		return this.indexIncrement;
+		return indexIncrement;
 	}
 
 	/**
@@ -79,11 +79,8 @@ public class LayeredPanel extends SimpleStackedPanel {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.panel.Panel#getHTMLRendererSingleton()
-	 */
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return LAYERED_RENDERER;
 	}
-
 }

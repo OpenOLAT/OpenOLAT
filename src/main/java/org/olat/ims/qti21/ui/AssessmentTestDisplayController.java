@@ -574,10 +574,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 
 	private void doExitTest(UserRequest ureq) {
+		resourcesList.deregisterResourceable(entry, subIdent, getWindow());
 		fireEvent(ureq, new QTI21Event(QTI21Event.EXIT));
 	}
 	
 	private void doCloseResults(UserRequest ureq) {
+		resourcesList.deregisterResourceable(entry, subIdent, getWindow());
 		fireEvent(ureq, new QTI21Event(QTI21Event.CLOSE_RESULTS));
 	}
 	
@@ -593,6 +595,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		VelocityContainer suspendedVC = createVelocityContainer("suspended");
 		mainPanel.setContent(suspendedVC);
 		suspendAssessmentTest(ureq.getRequestTimestamp());
+		resourcesList.deregisterResourceable(entry, subIdent, getWindow());
 		fireEvent(ureq, new Event("suspend"));
 	}
 
@@ -816,7 +819,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		testSessionController = qtiService.getCachedTestSessionController(candidateSession, testSessionController);
 		testSessionController.setCurrentRequestTimestamp(ureq.getRequestTimestamp());
 		
-		if(timeLimitBarrier(ureq) || sessionReseted(ureq) || sessionEndedOrSuspended()) {
+		if(authorMode && qe.getEvent() == QTIWorksAssessmentTestEvent.Event.restart) {
+			restartTest(ureq);
+		} else if(timeLimitBarrier(ureq) || sessionReseted(ureq) || sessionEndedOrSuspended()) {
 			return;
 		}
 		
@@ -891,6 +896,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private void restartTest(UserRequest ureq) {
+		resourcesList.deregisterResourceable(entry, subIdent, getWindow());
 		if(!candidateSession.isAuthorMode()) return;
 		fireEvent(ureq, new RestartEvent());
 	}

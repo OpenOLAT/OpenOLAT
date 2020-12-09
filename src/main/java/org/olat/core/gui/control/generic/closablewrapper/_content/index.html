@@ -19,17 +19,6 @@
 jQuery(function() {
 	jQuery('#$r.getId("o_closablewapper_") > .modal-backdrop')
 		.css('height', 0).css('height', jQuery('#$r.getId("o_closablewapper_")')[0].scrollHeight);
-	
-	#if($r.isTrue($tinyMceModal))
-	jQuery('body>div.mce-container').each(function(index, el) {
-		if(el.style.display !== "none") {
-			jQuery('#$r.getId("o_closablewapper_")').each(function(modIndex, modEl) {
-				modEl.style.zIndex=100000;
-			});
-		}
-	});
-	#end
-	
 	#if($r.isTrue($suppressDirty))
 	addFormDirtyExclusion('$r.getId("o_closablewapper_")');
 	#end
