@@ -116,6 +116,7 @@ public class CloseableModalController extends DefaultController implements Modal
 		this.closeable = closeable;
 		final Panel guiMsgPlace = new Panel("guimessage_place");
 		myContent = new VelocityContainer("closeablewrapper", VELOCITY_ROOT + "/index.html", null, this) {
+			@Override
 			public void validate(UserRequest ureq, ValidationResult vr) {
 				super.validate(ureq, vr);
 				// just before rendering, we need to tell the windowbackoffice that we are a favorite for accepting gui-messages.

@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.LayeredPanel;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
@@ -50,18 +49,18 @@ public class GuiStackNiceImpl implements GuiStack {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(GuiStackNiceImpl.class);
 	
 	private StackedPanel panel;
-	private StackedPanel modalPanel;
-	private TopModalPanel topModalPanel;
-	private int modalLayers;
+	private final StackedPanel modalPanel;
+	private final StackedPanel topModalPanel;
+	private int modalLayers = 0;
+	private int topModalLayers = 0;
 
 	private WindowBackOffice wbo;
 
 	private GuiStackNiceImpl() {
 		panel = new SimpleStackedPanel("guistackpanel");
 		// Use a layered panel instead of a standard panel to support multiple modal layers
-		modalPanel = new LayeredPanel("guistackmodalpanel", 900, 100);
-		modalLayers = 0;
-		topModalPanel = new TopModalPanel("topmodalpanel");
+		modalPanel = new LayeredPanel("guistackmodalpanel", "o_layered_panel", 900, 100);
+		topModalPanel = new LayeredPanel("topmodalpanel", "o_ltop_modal_panel", 70000, 100);
 	}
 
 	/**
@@ -73,9 +72,6 @@ public class GuiStackNiceImpl implements GuiStack {
 		setContent(initialBaseComponent);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.GuiStackHandle#setContent(org.olat.core.gui.components.Component)
-	 */
 	private void setContent(Component newContent) {
 		panel.setContent(newContent);
 	}
@@ -87,6 +83,11 @@ public class GuiStackNiceImpl implements GuiStack {
 	 */
 	@Override
 	public void pushModalDialog(Component content) {
+		if(this.topModalLayers > 0) {
+			pushTopModalDialog(content);
+			return;
+		}
+
 		wbo.sendCommandTo(new ScrollTopCommand());
 		
 		int zindex = 900 + (modalLayers * 100) + 5;
@@ -106,13 +107,16 @@ public class GuiStackNiceImpl implements GuiStack {
 		// within a controller
 		// - solution c is a safe and easy way to allow dispatching (only in case a mediaresource is returned as a result of the dispatching) even
 		// if parent elements are not enabled
-		
-		
+
 		modalLayers++;
 	}
 	
 	@Override
 	public boolean removeModalDialog(Component content) {
+		if(topModalLayers > 0 && removeTopModalDialog(content)) {
+			return true;
+		}
+		
 		Component insetCmp = modalPanel.getContent();
 		if(insetCmp instanceof VelocityContainer) {
 			VelocityContainer inset = (VelocityContainer)insetCmp;
@@ -128,10 +132,12 @@ public class GuiStackNiceImpl implements GuiStack {
 	@Override
 	public void pushTopModalDialog(Component content) {
 		wbo.sendCommandTo(new ScrollTopCommand());
-		
-		int zindex = TopModalPanel.TOP_MODAL_ZINDEX; // more than 65000 from TinyMCE, same as hard coded in 
+
+		int zindex = 70000 + (topModalLayers * 100) + 5;
 		VelocityContainer inset = wrapModal(content, zindex);
-		topModalPanel.setContent(inset);
+		topModalPanel.pushContent(inset);
+		
+		topModalLayers++;
 	}
 	
 	private VelocityContainer wrapModal(Component content, int zindex) {
@@ -162,7 +168,7 @@ public class GuiStackNiceImpl implements GuiStack {
 			VelocityContainer inset = (VelocityContainer)insetCmp;
 			Component topModalContent = inset.getComponent("cont");
 			if(topModalContent == content) {
-				topModalPanel.setContent(null);
+				popContent();
 				return true;
 			}
 		}
@@ -174,6 +180,7 @@ public class GuiStackNiceImpl implements GuiStack {
 		// wrap the component into a modal foreground dialog with alpha-blended-background
 		final Panel guiMsgPlace = new Panel("guimsgplace_for_callout");
 		VelocityContainer inset = new VelocityContainer("inset", VELOCITY_ROOT + "/callout.html", null, null) {
+			@Override
 			public void validate(UserRequest ureq, ValidationResult vr) {
 				super.validate(ureq, vr);
 				// just before rendering, we need to tell the windowbackoffice that we are a favorite for accepting gui-messages.
@@ -216,7 +223,10 @@ public class GuiStackNiceImpl implements GuiStack {
 	@Override
 	public Component popContent() {
 		Component popComponent;
-		if (modalLayers > 0) {
+		if(topModalLayers > 0) {
+			topModalLayers--;
+			popComponent = topModalPanel.popContent();
+		} else if (modalLayers > 0) {
 			modalLayers--;
 			popComponent = modalPanel.popContent();
 		} else {
