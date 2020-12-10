@@ -26,7 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.addremove.AddRemoveComponent;
 import org.olat.core.gui.components.addremove.AddRemoveEvent;
-import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.AddRemoveElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -46,7 +45,7 @@ public class AddRemoveElementImpl extends FormItemImpl implements AddRemoveEleme
 	public static final String COMMAND_REMOVE = "remove";
 	public static final String COMMAND_RESET = "reset";
 	
-	public static enum AddRemoveMode { THREE_STATE, TWO_STATE };
+	public enum AddRemoveMode { THREE_STATE, TWO_STATE }
 	
 	private final AddRemoveComponent addRemoveComponent;
 	private final FormLink addLink;
@@ -73,11 +72,14 @@ public class AddRemoveElementImpl extends FormItemImpl implements AddRemoveEleme
 		super(name);
 		
 		long idPrefix = CodeHelper.getRAMUniqueID();
+		String id = idPrefix + "_" + name;
 		
-		addRemoveComponent = new AddRemoveComponent(this, idPrefix + "_" + name + "_component");
+		addRemoveComponent = new AddRemoveComponent(this, id.concat("_component"));
 		
-		addLink = new FormLinkImpl(idPrefix + "_" + name +"_add", COMMAND_ADD, "", presentation | Link.NONTRANSLATED);
-		removeLink = new FormLinkImpl(idPrefix + "_" + name +"_remove", COMMAND_REMOVE, "", presentation | Link.NONTRANSLATED);
+		addLink = new FormLinkImpl(id.concat("_add"), COMMAND_ADD, "", presentation | Link.NONTRANSLATED);
+		addLink.setElementCssClass("o_sel_add");
+		removeLink = new FormLinkImpl(id.concat("_remove"), COMMAND_REMOVE, "", presentation | Link.NONTRANSLATED);
+		removeLink.setElementCssClass("o_sel_remove");
 	}
 	
 	@Override
@@ -99,8 +101,6 @@ public class AddRemoveElementImpl extends FormItemImpl implements AddRemoveEleme
 		}
 		
 		String dispatchuri = getRootForm().getRequestParameter("dispatchuri");
-		dispatchuri.replace(FormBaseComponentIdProvider.DISPPREFIX, "");
-		
 		if(addLink != null && addLink.getFormDispatchId().equals(dispatchuri)) {
 			if (!isAddSelected()) {
 				selectAdd();
@@ -121,12 +121,6 @@ public class AddRemoveElementImpl extends FormItemImpl implements AddRemoveEleme
 	}
 	
 	@Override
-	public void doDispatchFormRequest(UserRequest ureq) {
-		// TODO Auto-generated method stub
-		super.doDispatchFormRequest(ureq);
-	}
-	
-	@Override
 	public boolean isAddSelected() {
 		return addSelected;
 	}
@@ -144,19 +138,19 @@ public class AddRemoveElementImpl extends FormItemImpl implements AddRemoveEleme
 	@Override
 	public Boolean getSelection() {
 		if (isAddSelected()) {
-			return true;
-		} else if (isRemoveSelected()) {
-			return false;
-		} else {
-			return null;
+			return Boolean.TRUE;
 		}
+		if (isRemoveSelected()) {
+			return Boolean.FALSE;
+		} 
+		return null;
 	}
 	
 	@Override
 	public void setSelection(Boolean selection) {
 		if (selection == null) {
 			reset();
-		} else if (selection) {
+		} else if (selection.booleanValue()) {
 			selectAdd();
 		} else {
 			selectRemove();
@@ -168,8 +162,8 @@ public class AddRemoveElementImpl extends FormItemImpl implements AddRemoveEleme
 		addSelected = true;
 		removeSelected = false;
 		
-		addLink.setElementCssClass("active o_addremove_add_active");
-		removeLink.setElementCssClass(null);
+		addLink.setElementCssClass("o_sel_add active o_addremove_add_active");
+		removeLink.setElementCssClass("o_sel_remove");
 	}
 
 	@Override
@@ -177,8 +171,8 @@ public class AddRemoveElementImpl extends FormItemImpl implements AddRemoveEleme
 		addSelected = false;
 		removeSelected = true;
 		
-		addLink.setElementCssClass(null);
-		removeLink.setElementCssClass("active o_addremove_remove_active");
+		addLink.setElementCssClass("o_sel_add");
+		removeLink.setElementCssClass("o_sel_remove active o_addremove_remove_active");
 	}
 
 	@Override
@@ -186,9 +180,8 @@ public class AddRemoveElementImpl extends FormItemImpl implements AddRemoveEleme
 		addSelected = false;
 		removeSelected = false;
 		
-		
-		addLink.setElementCssClass(null);
-		removeLink.setElementCssClass(null);
+		addLink.setElementCssClass("o_sel_add");
+		removeLink.setElementCssClass("o_sel_remove");
 	}
 	
 	@Override
@@ -330,7 +323,7 @@ public class AddRemoveElementImpl extends FormItemImpl implements AddRemoveEleme
 	protected void rootFormAvailable() {
 		// If enabled or not must be set now in case it was set during construction time
 		addRemoveComponent.setEnabled(isEnabled());
-		addRemoveComponent.setTranslator(getTranslator()); // TODO Alex Ask Stephane: Necessary? 
+		addRemoveComponent.setTranslator(getTranslator());
 		
 		if (addLink.getRootForm() != getRootForm()) {
 			addLink.setRootForm(getRootForm());

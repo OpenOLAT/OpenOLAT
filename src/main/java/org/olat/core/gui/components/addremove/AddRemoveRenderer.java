@@ -42,12 +42,11 @@ public class AddRemoveRenderer extends DefaultComponentRenderer {
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
 		
-		if(source instanceof AddRemoveComponent) {
-			renderAddRemove(renderer, sb, args, (AddRemoveComponent) source, translator);
-		}
+		AddRemoveComponent cmp = (AddRemoveComponent)source;
+		renderAddRemove(renderer, sb, cmp, translator);
 	}
 
-	private void renderAddRemove(Renderer renderer, StringOutput sb, String[] args, AddRemoveComponent addRemoveComponent, Translator translator) {
+	private void renderAddRemove(Renderer renderer, StringOutput sb, AddRemoveComponent addRemoveComponent, Translator translator) {
 		AddRemoveElement addRemoveElement = addRemoveComponent.getAddRemoveElement();
 		String addText = ""; 
 		String removeText = ""; 
@@ -82,8 +81,11 @@ public class AddRemoveRenderer extends DefaultComponentRenderer {
 		addRemoveElement.getRemoveLink().setI18nKey(removeText);
 		addRemoveElement.getRemoveLink().setIconLeftCSS(addRemoveElement.getRemoveIcon());
 		
-		
-		sb.append("<div class='btn-group o_addremove'>");
+		sb.append("<div class='btn-group o_addremove");
+		if(addRemoveComponent.getElementCssClass() != null) {
+			sb.append(" ").append(addRemoveComponent.getElementCssClass());
+		}
+		sb.append("'>");
 		renderer.render(addRemoveElement.getAddLink().getComponent(), sb, null);
 		renderer.render(addRemoveElement.getRemoveLink().getComponent(), sb, null);
 		sb.append("</div>");
