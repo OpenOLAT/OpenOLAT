@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
@@ -53,10 +52,10 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatisticsRow>, Flexi
 
 	@Override
 	public void sort(SortKey orderBy) {
-		SortableFlexiTableModelDelegate<LectureBlockIdentityStatisticsRow> sorter
-			= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
-		List<LectureBlockIdentityStatisticsRow> views = sorter.sort();
-		super.setObjects(views);
+		if(orderBy != null) {
+			List<LectureBlockIdentityStatisticsRow> views = new LecturesListDataSortDelegate(orderBy, this, null).sort();
+			super.setObjects(views);
+		}
 	}
 
 	@Override

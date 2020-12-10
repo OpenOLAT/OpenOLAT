@@ -113,13 +113,25 @@ public class LecturesSearchController extends BasicController implements Activat
 				doSelectLectureBlock(ureq, slbe.getLectureBlock());
 			}
 		} else if(rollCallCtrl == source) {
-			if(event == Event.CANCELLED_EVENT) {
-				stackPanel.popController(rollCallCtrl);
-				removeAsListenerAndDispose(rollCallCtrl);// don't clean up the others
-				rollCallCtrl = null;
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT) {
+				doCloseRollCall();
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void doCloseRollCall() {
+		stackPanel.popController(rollCallCtrl);
+		removeAsListenerAndDispose(rollCallCtrl);// don't clean up the others
+		rollCallCtrl = null;
+		
+		List<LectureBlockIdentityStatistics> statistics = searchStatistics();
+		if(listCtrl != null) {
+			listCtrl.reloadModel(statistics);
+		}
+		if(multipleUsersCtrl != null) {
+			multipleUsersCtrl.reloadModel(statistics);
+		}
 	}
 	
 	private void cleanUp() {
@@ -131,12 +143,16 @@ public class LecturesSearchController extends BasicController implements Activat
 		listCtrl = null;
 	}
 	
-	private void doSearch(UserRequest ureq) {
+	private List<LectureBlockIdentityStatistics> searchStatistics() {
 		LectureStatisticsSearchParameters params = searchForm.getSearchParameters();
 		List<UserPropertyHandler> userPropertyHandlers = searchForm.getUserPropertyHandlers();
-		List<LectureBlockIdentityStatistics> statistics = lectureService
+		return lectureService
 				.getLecturesStatistics(params, userPropertyHandlers, getIdentity());
-		
+	}
+	
+	private void doSearch(UserRequest ureq) {
+		List<UserPropertyHandler> userPropertyHandlers = searchForm.getUserPropertyHandlers();
+		List<LectureBlockIdentityStatistics> statistics = searchStatistics();
 		Set<Long> identities = statistics.stream().map(LectureBlockIdentityStatistics::getIdentityKey)
 			     .collect(Collectors.toSet());
 		
