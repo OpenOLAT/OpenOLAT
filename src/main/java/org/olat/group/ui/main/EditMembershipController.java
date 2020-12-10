@@ -136,9 +136,6 @@ public class EditMembershipController extends FormBasicController {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	private static final String[] keys = new String[] { "ison" };
-	private static final String[] values = new String[] {""};
-	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, Identity member,
 			RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged) {
 		super(ureq, wControl, "edit_member");
@@ -431,7 +428,7 @@ public class EditMembershipController extends FormBasicController {
 		String name = "cb" + UUID.randomUUID().toString().replace("-", "");
 		AddRemoveElement addRemove = new AddRemoveElementImpl(name, Link.BUTTON_XSMALL);
 		addRemove.setShowText(false);
-		addRemove.setElementCssClass("o_sel_role");
+		addRemove.setElementCssClass("o_sel_role_".concat(role));
 		flc.add(name, addRemove);
 		addRemove.setSelection(selected);
 		addRemove.setEnabled(enabled);
@@ -467,14 +464,17 @@ public class EditMembershipController extends FormBasicController {
 			repoOwnerRoleEl = uifactory.addAddRemoveElement("repoOwnerRight", "role.repo.owner", Link.BUTTON, true, addRemoveMode, repoRights);
 			repoOwnerRoleEl.setAddText(grantText);
 			repoOwnerRoleEl.setRemoveText(denyText);
+			repoOwnerRoleEl.setElementCssClass("o_sel_role_owner");
 			repoOwnerRoleEl.setEnabled(!managed);
 			repoCoachRoleEl = uifactory.addAddRemoveElement("repoCoachRight", "role.repo.tutor", Link.BUTTON, true, addRemoveMode, repoRights);
 			repoCoachRoleEl.setAddText(grantText);
 			repoCoachRoleEl.setRemoveText(denyText);
+			repoCoachRoleEl.setElementCssClass("o_sel_role_coach");
 			repoCoachRoleEl.setEnabled(!managed);
 			repoParticipantRoleEl = uifactory.addAddRemoveElement("repoParticipantRight", "role.repo.participant", Link.BUTTON, true, addRemoveMode, repoRights);
 			repoParticipantRoleEl.setAddText(grantText);
 			repoParticipantRoleEl.setRemoveText(denyText);
+			repoParticipantRoleEl.setElementCssClass("o_sel_role_participant");
 			repoParticipantRoleEl.setEnabled(!managed);
 			
 			if (member != null) {

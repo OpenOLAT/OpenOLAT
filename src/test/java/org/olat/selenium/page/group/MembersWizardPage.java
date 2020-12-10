@@ -152,24 +152,36 @@ public class MembersWizardPage {
 	
 	public MembersWizardPage selectRepositoryEntryRole(boolean owner, boolean coach, boolean participant) {
 		if(owner) {
-			By ownerBy = By.cssSelector("label input[name='repoRights'][type='checkbox'][value='owner']");
-			WebElement ownerEl = browser.findElement(ownerBy);
-			OOGraphene.check(ownerEl, Boolean.valueOf(owner));
-			OOGraphene.waitBusyAndScrollTop(browser);
+			select("owner", true);
 		}
-		
 		if(coach) {
-			By coachBy = By.cssSelector("label input[name='repoRights'][type='checkbox'][value='tutor']");
-			WebElement coachEl = browser.findElement(coachBy);
-			OOGraphene.check(coachEl, Boolean.valueOf(coach));
-			OOGraphene.waitBusyAndScrollTop(browser);
+			select("coach", true);
 		}
-		
-		By participantBy = By.cssSelector("label input[name='repoRights'][type='checkbox'][value='participant']");
-		WebElement participantEl = browser.findElement(participantBy);
-		OOGraphene.check(participantEl, Boolean.valueOf(participant));
-		OOGraphene.waitBusyAndScrollTop(browser);
+		select("participant", participant);
 		return this;
+	}
+	
+	private void select(String role, boolean add) {
+		String cmpXpath = "//div[contains(@class,'o_sel_role_" + role + "')]//div[contains(@class,'o_addremove')]/a";	
+		if(add) {
+			By activeAddBy = By.xpath(cmpXpath + "[contains(@class,'o_addremove_add_active')]");
+			List<WebElement> activeAddEls = browser.findElements(activeAddBy);
+			if(activeAddEls.isEmpty()) {
+				By addBy = By.xpath(cmpXpath + "[contains(@class,'o_sel_add')]");
+				browser.findElement(addBy).click();
+				OOGraphene.waitBusyAndScrollTop(browser);
+				OOGraphene.waitElement(activeAddBy, browser);
+			}
+		} else {
+			By activeRemoveBy = By.xpath(cmpXpath + "[contains(@class,'o_addremove_remove_active')]");
+			List<WebElement> activeRemoveEls = browser.findElements(activeRemoveBy);
+			if(activeRemoveEls.isEmpty()) {
+				By removeBy = By.xpath(cmpXpath + "[contains(@class,'o_sel_remove')]");
+				browser.findElement(removeBy).click();
+				OOGraphene.waitBusyAndScrollTop(browser);
+				OOGraphene.waitElement(activeRemoveBy, browser);
+			}
+		}
 	}
 	
 	public MembersWizardPage selectGroupAsParticipant(String groupName) {
