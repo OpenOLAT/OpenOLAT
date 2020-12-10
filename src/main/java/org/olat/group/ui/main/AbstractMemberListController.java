@@ -668,15 +668,15 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		MailPackage mailing = new MailPackage(sendMail);
 		if(repoEntry != null) {
 			Roles roles = ureq.getUserSession().getRoles();
-			List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
+			List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.getRepoChanges();
 			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, repoEntry, repoChanges, mailing);
 
-			List<CurriculumElementMembershipChange> curriuclumChanges = changes.generateCurriculumElementMembershipChange(members);
+			List<CurriculumElementMembershipChange> curriuclumChanges = changes.getCurriculumChanges();
 			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriuclumChanges, mailing);
 		}
 
 		//commit all changes to the group memberships
-		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
+		List<BusinessGroupMembershipChange> allModifications = changes.getGroupChanges();
 		businessGroupService.updateMemberships(getIdentity(), allModifications, mailing);
 
 		reloadModel();

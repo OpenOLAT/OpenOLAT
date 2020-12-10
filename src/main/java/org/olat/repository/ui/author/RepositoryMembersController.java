@@ -43,9 +43,9 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.course.member.wizard.MembersContext;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
+import org.olat.course.member.wizard.MembersContext;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.AbstractMemberListController;
@@ -189,11 +189,11 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		//commit changes to the repository entry
 		MailerResult result = new MailerResult();
 		MailPackage reMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
-		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
+		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.getRepoChanges();
 		repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, repoEntry, repoChanges, reMailing);
 
 		//commit all changes to the group memberships
-		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
+		List<BusinessGroupMembershipChange> allModifications = changes.getGroupChanges();
 		MailPackage bgMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		businessGroupService.updateMemberships(getIdentity(), allModifications, bgMailing);
 		boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();

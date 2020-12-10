@@ -597,14 +597,20 @@ public class EditMembershipController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(selectAllCurriculumOwnerEl == source) {
-			toogleCurriculumMembership(selectAllCurriculumOwnerEl.getSelection(), CurriculumRoles.owner,
-					"select.all.curriculum.owners", "deselect.all.curriculum.owners");
+			List<MemberCurriculumOption> memberOptions = curriculumTableDataModel.getObjects();
+			for (MemberCurriculumOption memberOption : memberOptions) {
+				memberOption.getOwner().setSelection(selectAllCurriculumOwnerEl.getSelection());
+			}
 		} else if(selectAllCurriculumCoachEl == source) {
-			toogleCurriculumMembership(selectAllCurriculumCoachEl.getSelection(), CurriculumRoles.coach,
-					"select.all.curriculum.coaches", "deselect.all.curriculum.coaches");
+			List<MemberCurriculumOption> memberOptions = curriculumTableDataModel.getObjects();
+			for (MemberCurriculumOption memberOption : memberOptions) {
+				memberOption.getCoach().setSelection(selectAllCurriculumCoachEl.getSelection());
+			}
 		} else if(selectAllCurriculumParticipantEl == source) {
-			toogleCurriculumMembership(selectAllCurriculumParticipantEl.getSelection(), CurriculumRoles.participant,
-					"select.all.curriculum.participants", "deselect.all.curriculum.participants");
+			List<MemberCurriculumOption> memberOptions = curriculumTableDataModel.getObjects();
+			for (MemberCurriculumOption memberOption : memberOptions) {
+				memberOption.getParticipant().setSelection(selectAllCurriculumParticipantEl.getSelection());
+			}
 		} else if (selectAllGroupWaitingListEl == source) {
 			List<MemberGroupOption> memberOptions = groupTableDataModel.getObjects();
 			for(MemberGroupOption memberOption:memberOptions) {
@@ -643,16 +649,6 @@ public class EditMembershipController extends FormBasicController {
 		} 
 		super.formInnerEvent(ureq, source, event);
 	}
-	
-	private void toogleCurriculumMembership(Boolean select, CurriculumRoles role, String selectI18nKey, String deselectI18nKey) {
-		List<MemberCurriculumOption> memberOptions = curriculumTableDataModel.getObjects();
-		for(MemberCurriculumOption memberOption:memberOptions) {
-			AddRemoveElement element = memberOption.getSelection(role);
-			if(element.isEnabled()) {
-				element.setSelection(select);
-			}
-		}
-	}
 
 	public void collectRepoChanges(MemberPermissionChangeEvent e) {
 		if(repoEntry == null) return;
@@ -661,13 +657,12 @@ public class EditMembershipController extends FormBasicController {
 
 		if (member != null) {
 			RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
-			RepositoryEntryPermissionChangeEvent change = new RepositoryEntryPermissionChangeEvent(member);
 			
-			change.setRepoOwner(getChange(repoOwnerRoleEl.getSelection(), repoPermission.isOwner()));
-			change.setRepoTutor(getChange(repoCoachRoleEl.getSelection(), repoPermission.isTutor()));
-			change.setRepoParticipant(getChange(repoParticipantRoleEl.getSelection(), repoPermission.isParticipant()));
+			e.setRepoOwner(getChange(repoOwnerRoleEl.getSelection(), repoPermission.isOwner()));
+			e.setRepoTutor(getChange(repoCoachRoleEl.getSelection(), repoPermission.isTutor()));
+			e.setRepoParticipant(getChange(repoParticipantRoleEl.getSelection(), repoPermission.isParticipant()));
 			
-			repoChanges.add(change);
+			return;			
 		} else if (members != null){
 			for (Identity member : members) {
 				List<RepositoryEntryMembership> memberships = repositoryManager.getRepositoryEntryMembership(repoEntry, member);
@@ -693,17 +688,46 @@ public class EditMembershipController extends FormBasicController {
 	
 	public void collectGroupChanges(MemberPermissionChangeEvent e) {
 		List<BusinessGroupMembershipChange> changes = new ArrayList<>();
+		List<MemberGroupOption> changedGroups = groupTableDataModel.getObjects().stream().filter(group -> group.containsChanges()).collect(Collectors.toList());
+		List<Long> groupKeys = changedGroups.stream().map(change -> change.getGroupKey()).collect(Collectors.toList());
 		
-		for(MemberGroupOption option:groupTableDataModel.getObjects()) {
-			BGPermission bgPermission = PermissionHelper.getPermission(option.getGroupKey(), member, groupMemberships);
-			BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(member, option.getGroup());
-			
-			change.setTutor(getChange(option.getTutor().getSelection(), bgPermission.isTutor()));
-			change.setParticipant(getChange(option.getParticipant().getSelection(), bgPermission.isParticipant()));
-			change.setWaitingList(getChange(option.getWaiting().getSelection(), bgPermission.isWaitingList()));
-
-			if(change.getTutor() != null || change.getParticipant() != null || change.getWaitingList() != null) {
-				changes.add(change);
+		Identity[] membersArray;
+		List<BusinessGroupMembership> allMemberships = new ArrayList<>();
+		
+		if (members != null) {
+			membersArray = new Identity[members.size()];
+			members.toArray(membersArray);
+			allMemberships = businessGroupService.getBusinessGroupMembership(groupKeys, membersArray);
+		}
+		
+		for(MemberGroupOption option:changedGroups) {
+			if (members != null) {
+				for (Identity member : members) {	
+					List<BusinessGroupMembership> memberships = allMemberships.stream().filter(ms -> ms.getIdentityKey().equals(member.getKey())).collect(Collectors.toList());
+					BGPermission bgPermission = PermissionHelper.getPermission(option.getGroupKey(), member, memberships);
+					BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(member, option.getGroup());
+					
+					
+					change.setTutor(getChange(option.getTutor().getSelection(), bgPermission.isTutor()));
+					change.setParticipant(getChange(option.getParticipant().getSelection(), bgPermission.isParticipant()));
+					change.setWaitingList(getChange(option.getWaiting().getSelection(), bgPermission.isWaitingList()));
+		
+					if(change.getTutor() != null || change.getParticipant() != null || change.getWaitingList() != null) {
+						changes.add(change);
+					}
+				}
+			} else {
+				BGPermission bgPermission = PermissionHelper.getPermission(option.getGroupKey(), member, groupMemberships);
+				BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(member, option.getGroup());
+				
+				
+				change.setTutor(getChange(option.getTutor().getSelection(), bgPermission.isTutor()));
+				change.setParticipant(getChange(option.getParticipant().getSelection(), bgPermission.isParticipant()));
+				change.setWaitingList(getChange(option.getWaiting().getSelection(), bgPermission.isWaitingList()));
+	
+				if(change.getTutor() != null || change.getParticipant() != null || change.getWaitingList() != null) {
+					changes.add(change);
+				}
 			}
 		}
 		e.setGroupChanges(changes);
@@ -711,26 +735,62 @@ public class EditMembershipController extends FormBasicController {
 	
 	public void collectCurriculumElementChanges(MemberPermissionChangeEvent e) {
 		List<CurriculumElementMembershipChange> changes = new ArrayList<>();
+		List<MemberCurriculumOption> changedCurriculaOptions = curriculumTableDataModel.getObjects().stream().filter(curriculum -> curriculum.containsChanges()).collect(Collectors.toList());
+		List<CurriculumElement> changedCurricula = changedCurriculaOptions.stream().map(option -> option.getElement()).collect(Collectors.toList());
 		
-		for(MemberCurriculumOption option:curriculumTableDataModel.getObjects()) {
-			RepoPermission rePermission = PermissionHelper.getPermission(option.getElement(), member, curriculumElementMemberships);
-			CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, option.getElement());
-
-			change.setRepositoryEntryOwner(getChange(option.getOwner().getSelection(), rePermission.isOwner()));
-			change.setCoach(getChange(option.getCoach().getSelection(), rePermission.isTutor()));
-			change.setParticipant(getChange(option.getParticipant().getSelection(), rePermission.isParticipant()));
-			
-			if(option.getMasterCoach() != null) {
-				change.setMasterCoach(getChange(option.getMasterCoach().getSelection(), rePermission.isMasterCoach()));
-			}
-			if(option.getElementOwner() != null) {
-				change.setCurriculumElementOwner(getChange(option.getElementOwner().getSelection(), rePermission.isCurriculumElementOwner()));
-			}
-			
-			if(change.getCurriculumElementOwner() != null || change.getRepositoryEntryOwner() != null
-					|| change.getCoach() != null || change.getParticipant() != null
-					|| change.getCurriculumElementOwner() != null || change.getMasterCoach() != null) {
-				changes.add(change);
+		Identity[] membersArray;
+		List<CurriculumElementMembership> allMemberships = new ArrayList<>();
+		
+		if (members != null) {
+			membersArray = new Identity[members.size()];
+			members.toArray(membersArray);
+			allMemberships = curriculumService.getCurriculumElementMemberships(changedCurricula, membersArray);
+		}
+		
+		for(MemberCurriculumOption option : changedCurriculaOptions) {
+			if (members != null) {
+				for (Identity member : members) {
+					List<CurriculumElementMembership> curriculumElementMemberships = allMemberships.stream().filter(membership -> membership.getIdentityKey().equals(member.getKey())).collect(Collectors.toList());
+					RepoPermission rePermission = PermissionHelper.getPermission(option.getElement(), member, curriculumElementMemberships);
+					CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, option.getElement());
+		
+					change.setRepositoryEntryOwner(getChange(option.getOwner().getSelection(), rePermission.isOwner()));
+					change.setCoach(getChange(option.getCoach().getSelection(), rePermission.isTutor()));
+					change.setParticipant(getChange(option.getParticipant().getSelection(), rePermission.isParticipant()));
+					
+					if(option.getMasterCoach() != null) {
+						change.setMasterCoach(getChange(option.getMasterCoach().getSelection(), rePermission.isMasterCoach()));
+					}
+					if(option.getElementOwner() != null) {
+						change.setCurriculumElementOwner(getChange(option.getElementOwner().getSelection(), rePermission.isCurriculumElementOwner()));
+					}
+					
+					if(change.getCurriculumElementOwner() != null || change.getRepositoryEntryOwner() != null
+							|| change.getCoach() != null || change.getParticipant() != null
+							|| change.getCurriculumElementOwner() != null || change.getMasterCoach() != null) {
+						changes.add(change);
+					}
+				}
+			} else {
+				RepoPermission rePermission = PermissionHelper.getPermission(option.getElement(), member, curriculumElementMemberships);
+				CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, option.getElement());
+	
+				change.setRepositoryEntryOwner(getChange(option.getOwner().getSelection(), rePermission.isOwner()));
+				change.setCoach(getChange(option.getCoach().getSelection(), rePermission.isTutor()));
+				change.setParticipant(getChange(option.getParticipant().getSelection(), rePermission.isParticipant()));
+				
+				if(option.getMasterCoach() != null) {
+					change.setMasterCoach(getChange(option.getMasterCoach().getSelection(), rePermission.isMasterCoach()));
+				}
+				if(option.getElementOwner() != null) {
+					change.setCurriculumElementOwner(getChange(option.getElementOwner().getSelection(), rePermission.isCurriculumElementOwner()));
+				}
+				
+				if(change.getCurriculumElementOwner() != null || change.getRepositoryEntryOwner() != null
+						|| change.getCoach() != null || change.getParticipant() != null
+						|| change.getCurriculumElementOwner() != null || change.getMasterCoach() != null) {
+					changes.add(change);
+				}
 			}
 		}
 		
@@ -743,6 +803,18 @@ public class EditMembershipController extends FormBasicController {
 		} else {
 			return selection;
 		}
+	}
+	
+	private static boolean containsChange(AddRemoveElement addRemove) {
+		if (addRemove == null) {
+			return false;
+		}
+		
+		if (addRemove.getSelection() != null) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	private static class MemberCurriculumOption {
@@ -801,14 +873,9 @@ public class EditMembershipController extends FormBasicController {
 		public void setElementOwner(AddRemoveElement elementOwner) {
 			this.elementOwner = elementOwner;
 		}
-
-		public AddRemoveElement getSelection(CurriculumRoles role) {
-			switch(role) {
-				case owner: return owner;
-				case coach: return coach;
-				case participant: return participant;
-				default: return null;
-			}
+		
+		public boolean containsChanges() {
+			return containsChange(owner) || containsChange(coach) || containsChange(participant) || containsChange(masterCoach) || containsChange(elementOwner);
 		}
 	}
 
@@ -872,6 +939,10 @@ public class EditMembershipController extends FormBasicController {
 		
 		public void setWaiting(AddRemoveElement waiting) {
 			this.waiting = waiting;
+		}
+		
+		public boolean containsChanges() {
+			return  containsChange(tutor) || containsChange(participant) || containsChange(waiting);
 		}
 	}
 	

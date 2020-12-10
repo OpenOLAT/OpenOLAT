@@ -127,7 +127,8 @@ public class EditMembershipStep2 extends BasicStep {
 			
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			FlexiCellRenderer cellRenderer = new EditMembershipReviewTableRenderer();
-			TreeNodeFlexiCellRenderer treeRenderer = new TreeNodeFlexiCellRenderer(false);
+			FlexiCellRenderer treeDelegate = new EditMembershipReviewTreeRenderer();
+			TreeNodeFlexiCellRenderer treeRenderer = new TreeNodeFlexiCellRenderer(treeDelegate);
 			
 			
 			DefaultFlexiColumnModel changeElementOrName = new DefaultFlexiColumnModel(EditMemberShipReviewCols.name);
@@ -177,7 +178,7 @@ public class EditMembershipStep2 extends BasicStep {
 							changeRow.setOwnerPermissionState(2);
 							changeRow.increaseTotalAddedOwner();
 						} else {
-							changeRow.setOwnerPermissionState(2);
+							changeRow.setOwnerPermissionState(4);
 							changeRow.increaseTotalRemovedOwner();
 						}
 					} else if (repoPermission.isOwner()) {
@@ -206,7 +207,7 @@ public class EditMembershipStep2 extends BasicStep {
 			}
 			
 			// Group changes
-			if (changeEvent.generateBusinessGroupMembershipChange(members).size() > 0) {
+			if (changeEvent.getGroupChanges().size() > 0) {
 				EditMembershipReviewTableRow groupChanges = new EditMembershipReviewTableRow(null, 1, true);
 				groupChanges.setNameOrIdentifier(translate("review.member.group.changes"));
 				objects.add(groupChanges);
@@ -224,7 +225,7 @@ public class EditMembershipStep2 extends BasicStep {
 						changedGroupTableRows.put(group, rows);
 					});
 				
-				for (BusinessGroupMembershipChange change : changeEvent.generateBusinessGroupMembershipChange(members)) {
+				for (BusinessGroupMembershipChange change : changeEvent.getGroupChanges()) {
 					List<BusinessGroupMembership> memberships = businessGroupService.getBusinessGroupMembership(businessGroupKeys, change.getMember());
 					BGPermission bgPermission = PermissionHelper.getPermission(change.getGroupKey(), change.getMember(), memberships);
 					
@@ -288,7 +289,7 @@ public class EditMembershipStep2 extends BasicStep {
 			}
 			
 			// Curriculum changes
-			if (changeEvent.generateCurriculumElementMembershipChange(members).size() > 0) {
+			if (changeEvent.getCurriculumChanges().size() > 0) {
 				EditMembershipReviewTableRow curriculumChanges = new EditMembershipReviewTableRow(null, 1, true);
 				curriculumChanges.setNameOrIdentifier(translate("review.member.curriculum.changes"));
 				objects.add(curriculumChanges);
@@ -296,7 +297,7 @@ public class EditMembershipStep2 extends BasicStep {
 				Map<CurriculumElement, List<EditMembershipReviewTableRow>> changedCurriculumTableRows = new HashMap<>();
 				
 				// Init helper map				
-				for (CurriculumElementMembershipChange change : changeEvent.generateCurriculumElementMembershipChange(members)) {
+				for (CurriculumElementMembershipChange change : changeEvent.getCurriculumChanges()) {
 					EditMembershipReviewTableRow parentRow;
 					
 					if (!changedCurriculumTableRows.containsKey(change.getElement())) {

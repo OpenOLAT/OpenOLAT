@@ -87,6 +87,7 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 	public int size() {
 		return (groupChanges == null ? 0 : groupChanges.size())
 				+ (curriculumChanges == null ? 0 : curriculumChanges.size())
+				+ (repositoryChanges == null ? 0 : repositoryChanges.size())
 				+ super.size();
 	}
 	
