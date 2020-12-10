@@ -82,7 +82,7 @@ public class LecturesListController extends FormBasicController {
 	private final String propsIdentifier;
 	private final boolean authorizedAbsenceEnabled;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final List<LectureBlockIdentityStatistics> statistics;
+	private List<LectureBlockIdentityStatistics> statistics;
 	
 	private LectureBlocksCallout lectureBlocksListCtrl;
 	private CloseableCalloutWindowController lectureBlocksListCalloutCtrl;
@@ -145,6 +145,12 @@ public class LecturesListController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setFooter(true);
+	}
+	
+	public void reloadModel(List<LectureBlockIdentityStatistics> statistics) {
+		this.statistics = new ArrayList<>(statistics);
+		loadModel();
+		tableEl.reset(false, false, true);
 	}
 	
 	private void loadModel() {

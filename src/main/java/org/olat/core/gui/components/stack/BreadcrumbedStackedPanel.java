@@ -589,6 +589,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 			// special case: root crumb
 			Link link = stack.get(0);
 			String unescapedText = StringHelper.unescapeHtml(link.getCustomDisplayText());
+			unescapedText = StringHelper.xssScan(unescapedText);
 			closeText = getTranslator().translate("doclose", new String[] { unescapedText });
 			showClose = isShowCloseLinkForRootCrumb();
 			backLink.setTitle(closeText);
@@ -596,6 +597,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		} else {
 			Link link = stack.get(stack.size()-1);
 			String unescapedText = StringHelper.unescapeHtml(link.getCustomDisplayText());
+			unescapedText = StringHelper.xssScan(unescapedText);
 			closeText = getTranslator().translate("doclose", new String[] { unescapedText });
 			showClose = isShowCloseLink();
 			backLink.setTitle(getTranslator().translate("back"));

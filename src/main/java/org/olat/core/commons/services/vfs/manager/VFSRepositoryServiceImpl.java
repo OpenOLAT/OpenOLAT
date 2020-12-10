@@ -266,6 +266,10 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 	@Override
 	public VFSMetadata getMetadataFor(File file) {
+		if(file == null || file.getParentFile() == null) {
+			return null;
+		}
+		
 		String relativePath = getRelativePath(file.getParentFile());
 		if(relativePath.equals("..")) {
 			return null;

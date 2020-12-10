@@ -121,6 +121,15 @@ public class LecturesListSegmentController extends BasicController {
 		//
 	}
 	
+	public void reloadModel(List<LectureBlockIdentityStatistics> statistics) {
+		if(aggregatedListCtrl != null) {
+			aggregatedListCtrl.reloadModel(statistics);
+		}
+		if(detailledListCtrl != null) {
+			detailledListCtrl.reloadModel(statistics);
+		}
+	}
+	
 	private Controller doOpenAggregatedListController(UserRequest ureq) {
 		if(aggregatedListCtrl == null) {
 			List<LectureBlockIdentityStatistics> aggregatedStatistics = lectureService.groupByIdentity(statistics);
