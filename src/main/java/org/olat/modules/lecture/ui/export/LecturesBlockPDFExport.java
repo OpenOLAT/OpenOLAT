@@ -208,7 +208,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
             contentStream.beginText();
             contentStream.setFont(font, footerFontSize );
             contentStream.setTextMatrix(Matrix.getTranslateInstance(marginLeftRight, y + 14));
-            contentStream.showText(translator.translate("rollcall.coach.hint"));
+            contentStream.showText(translator.translate("rollcall.coach.hint.generic"));
             contentStream.endText();
             
             contentStream.beginText();
