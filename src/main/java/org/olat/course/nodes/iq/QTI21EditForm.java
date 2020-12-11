@@ -364,13 +364,19 @@ public class QTI21EditForm extends FormBasicController {
 			} else if(passedEndDateElement.getDate() != null && passedStartDateElement.getDate().after(passedEndDateElement.getDate())) {
 				passedStartDateElement.setErrorKey("error.begin.after.end", null);
 				allOk &= false;
-			} 
+			} else if (passedStartDateElement.getDate() != null && passedEndDateElement.getDate() != null && passedStartDateElement.getDate().equals(passedEndDateElement.getDate())) {
+				passedEndDateElement.setErrorKey("error.begin.end.same", null);
+				allOk &= false;
+			}
 			
 			if(failedStartDateElement.getDate() == null) {
 				failedStartDateElement.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			} else if(failedEndDateElement.getDate() != null && failedStartDateElement.getDate().after(failedEndDateElement.getDate())) {
 				failedStartDateElement.setErrorKey("error.begin.after.end", null);
+				allOk &= false;
+			} else if (failedStartDateElement.getDate() != null && failedEndDateElement.getDate() != null && failedStartDateElement.getDate().equals(failedEndDateElement.getDate())) {
+				failedEndDateElement.setErrorKey("error.begin.end.same", null);
 				allOk &= false;
 			}
 			break;
