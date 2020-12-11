@@ -623,7 +623,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			passedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
 			passedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
 			
-			isVisible = isResultVisibleFailedOnly(scoreEval, passedStartDate, passedEndDate);
+			isVisible = isResultVisiblePassedOnly(scoreEval, passedStartDate, passedEndDate);
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
 			startDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
@@ -656,7 +656,21 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		boolean isVisible = scoreEval != null;
 		
 		if (isVisible) {			
-			if (scoreEval.getPassed() != null && !scoreEval.getPassed().booleanValue()) {
+			if (scoreEval.getPassed() != null && !scoreEval.getPassed()) {
+				isVisible &= isResultVisible(startDate, endDate);
+			} else {
+				isVisible &= false;
+			}
+		}
+		
+		return isVisible;
+	}
+	
+	private boolean isResultVisiblePassedOnly(ScoreEvaluation scoreEval, Date startDate, Date endDate) {
+		boolean isVisible = scoreEval != null;
+		
+		if (isVisible) {			
+			if (scoreEval.getPassed() != null && scoreEval.getPassed()) {
 				isVisible &= isResultVisible(startDate, endDate);
 			} else {
 				isVisible &= false;
@@ -670,7 +684,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		boolean isVisible = scoreEval != null;
 		
 		if (isVisible) {
-			if (scoreEval.getPassed() != null && scoreEval.getPassed().booleanValue()) {
+			if (scoreEval.getPassed() != null && scoreEval.getPassed()) {
 				isVisible &= isResultVisible(passedStartDate, passedEndDate);
 			} else {
 				isVisible &= isResultVisible(failedStartDate, failedEndDate);
