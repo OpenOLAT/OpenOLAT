@@ -164,8 +164,8 @@ public class ReportResource extends OpenXMLWorkbookResource {
 	
 	private void createGradersData(OpenXMLWorksheet gradersSheet, OpenXMLWorkbook workbook) {
 		GradersSearchParameters searchParams = new GradersSearchParameters();
-		searchParams.setGradingFrom(from);
-		searchParams.setGradingTo(to);
+		searchParams.setClosedFromDate(from);
+		searchParams.setClosedToDate(to);
 		searchParams.setManager(manager);
 		searchParams.setGrader(grader);
 		searchParams.setReferenceEntry(referenceEntry);
