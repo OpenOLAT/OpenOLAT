@@ -253,6 +253,9 @@ public class GraderToIdentityDAO {
 		  .append(" inner join record.grader as rel")
 		  .append(" inner join rel.identity as ident")
 		  .append(" inner join rel.entry as refEntry");
+		if(searchParams.getClosedFromDate() != null && searchParams.getClosedToDate() != null) {
+			sb.append(" left join record.assignment as assignment");
+		}
 
 		applyGradersSearchParameters(sb, searchParams, false);
 		if(searchParams.getGradingFrom() != null) {
@@ -261,6 +264,15 @@ public class GraderToIdentityDAO {
 		if(searchParams.getGradingTo() != null) {
 			sb.and().append("record.dateOfRecord<=:gradingToDate");
 		}
+		
+		if(searchParams.getClosedFromDate() != null && searchParams.getClosedToDate() != null) {
+			sb.and().append("assignment.closingDate>=:closedFromDate and assignment.closingDate<=:closedToDate");
+		} else if(searchParams.getClosedFromDate() != null) {
+			sb.and().append("assignment.closingDate>=:closedFromDate");
+		} else if(searchParams.getClosedToDate() != null) {
+			sb.and().append("assignment.closingDate<=:closedToDate");
+		}
+		
 		sb.append(" group by refEntry.key");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -288,6 +300,9 @@ public class GraderToIdentityDAO {
 			sb.append(" inner join rel.entry as refEntry")
 			  .append(" inner join refEntry.olatResource as refResource");
 		}
+		if(searchParams.getClosedFromDate() != null && searchParams.getClosedToDate() != null) {
+			sb.append(" left join record.assignment as assignment");
+		}
 
 		applyGradersSearchParameters(sb, searchParams, false);
 		if(searchParams.getGradingFrom() != null) {
@@ -296,6 +311,15 @@ public class GraderToIdentityDAO {
 		if(searchParams.getGradingTo() != null) {
 			sb.and().append("record.dateOfRecord<=:gradingToDate");
 		}
+		
+		if(searchParams.getClosedFromDate() != null && searchParams.getClosedToDate() != null) {
+			sb.and().append("assignment.closingDate>=:closedFromDate and assignment.closingDate<=:closedToDate");
+		} else if(searchParams.getClosedFromDate() != null) {
+			sb.and().append("assignment.closingDate>=:closedFromDate");
+		} else if(searchParams.getClosedToDate() != null) {
+			sb.and().append("assignment.closingDate<=:closedToDate");
+		}
+		
 		sb.append(" group by ident.key");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -398,6 +422,21 @@ public class GraderToIdentityDAO {
 			GradingAssignmentDAO.applyAssignmentSearchParameters(sb, searchParams.getGradingFrom(), searchParams.getGradingTo());
 			sb.append(")");
 		}
+		
+		if(applyFromTo && (searchParams.getClosedFromDate() != null || searchParams.getClosedToDate() != null)) {
+			sb.and()
+			  .append(" exists (select closedAssignment from gradingassignment as closedAssignment")
+			  .append("  where closedAssignment.grader.key=rel.key");
+			
+			if(searchParams.getClosedFromDate() != null && searchParams.getClosedToDate() != null) {
+				sb.and().append("closedAssignment.closingDate>=:closedFromDate and closedAssignment.closingDate<=:closedToDate");
+			} else if(searchParams.getClosedFromDate() != null) {
+				sb.and().append("closedAssignment.closingDate>=:closedFromDate");
+			} else if(searchParams.getClosedToDate() != null) {
+				sb.and().append("closedAssignment.closingDate<=:closedToDate");
+			}
+			sb.append(")");
+		}
 	}
 	
 
@@ -471,6 +510,14 @@ public class GraderToIdentityDAO {
 		
 		GradingAssignmentDAO.applyAssignmentSearchParameters(sb, searchParams.getGradingFrom(), searchParams.getGradingTo());
 		
+		if(searchParams.getClosedFromDate() != null && searchParams.getClosedToDate() != null) {
+			sb.and().append("assignment.closingDate>=:closedFromDate and assignment.closingDate<=:closedToDate");
+		} else if(searchParams.getClosedFromDate() != null) {
+			sb.and().append("assignment.closingDate>=:closedFromDate");
+		} else if(searchParams.getClosedToDate() != null) {
+			sb.and().append("assignment.closingDate<=:closedToDate");
+		}
+		
 		sb.append(" group by rel.identity.key");
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -510,6 +557,12 @@ public class GraderToIdentityDAO {
 		}
 		if(applyDates && searchParams.getGradingTo() != null) {
 			query.setParameter("gradingToDate", searchParams.getGradingTo(), TemporalType.TIMESTAMP);
+		}
+		if(applyDates && searchParams.getClosedFromDate() != null) {
+			query.setParameter("closedFromDate", searchParams.getClosedFromDate(), TemporalType.TIMESTAMP);
+		}
+		if(applyDates && searchParams.getClosedToDate() != null) {
+			query.setParameter("closedToDate", searchParams.getClosedToDate(), TemporalType.TIMESTAMP);
 		}
 		if(searchParams.getManager() != null) {
 			query.setParameter("managerKey", searchParams.getManager().getKey());
