@@ -8,6 +8,18 @@
 	<div class="o_block_large o_info">$r.xssScan($description)</div>
 #end
 
+#if($r.isNotEmpty($externalUrl) && $r.isFalse($ended))
+<div class="o_block_large">
+	<label forid="externalusersmeetingurl">$r.translate("meeting.url.external.users")</label>
+	<div class="o_copy_code o_nowrap form-control-static"><a href="javascript:;" id="o_extteamsmeetingurl"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"> </i></a><input id="externalusersmeetingurl" type="text" value="$externalUrl" onclick="this.select()"/></div>
+	<script>
+	jQuery(function() {
+		o_QRCodePopup('o_extteamsmeetingurl', '$externalUrl', 'right');
+	});
+	</script>
+</div>
+#end
+
 #if($r.isTrue($ended))
 	<div class="o_block_large o_warning">$r.translate("meeting.ended")</div>
 #end

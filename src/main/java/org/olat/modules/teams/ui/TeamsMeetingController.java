@@ -39,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.teams.TeamsDispatcher;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.model.TeamsErrors;
@@ -121,6 +122,11 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 			layoutCont.contextPut("description", descr);
 		}
 		
+		if((administrator || moderator) && StringHelper.containsNonWhitespace(meeting.getReadableIdentifier())) {
+			String url = TeamsDispatcher.getMeetingUrl(meeting.getReadableIdentifier());
+			layoutCont.contextPut("externalUrl", url);
+		}
+		
 		if(graphUser != null && StringHelper.containsNonWhitespace(graphUser.displayName)) {
 			layoutCont.contextPut("asUser", translate("as.user", new String[] { graphUser.displayName } ));
 		} else {
@@ -132,6 +138,18 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		return meeting != null && meeting.getEndDate() != null && new Date().after(meeting.getEndDate());
 	}
 	
+	private boolean isAccessible() {
+		if(meeting == null) return false;
+		if(meeting.isPermanent()) {
+			return true;
+		}
+
+		Date now = new Date();
+		Date start = (administrator || moderator) ? meeting.getStartWithLeadTime() : meeting.getStartDate();
+		Date end = meeting.getEndWithFollowupTime();
+		return !((start != null && start.compareTo(now) >= 0) || (end != null && end.compareTo(now) <= 0));
+	}
+	
 	private void reloadButtonsAndStatus() {
 		meeting = teamsService.getMeeting(meeting);
 		updateButtonsAndStatus();
@@ -140,9 +158,10 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 	
 	private void updateButtonsAndStatus() {
 		boolean isEnded = isEnded();
+		boolean accessible = isAccessible();
 		flc.contextPut("ended", Boolean.valueOf(isEnded));
 		flc.contextPut("notStarted", Boolean.TRUE);
-		joinButton.setEnabled(!readOnly);
+		joinButton.setEnabled(!readOnly && accessible);
 		
 		boolean running = teamsService.isMeetingRunning(meeting);
 		if(moderator || administrator) {

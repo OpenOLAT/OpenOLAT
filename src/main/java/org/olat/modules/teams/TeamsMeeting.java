@@ -45,13 +45,92 @@ public interface TeamsMeeting extends ModifiedInfo, CreateInfo {
 	
 	public void setDescription(String description);
 	
+	public String getMainPresenter();
+	
+	public void setMainPresenter(String mainPresenter);
+	
 	public Date getStartDate();
 	
 	public void setStartDate(Date startDate);
 	
+	/**
+	 * The minutes a meeting can be joined by the coaches prior to the start time,
+	 * e.g. for preparation of slides. Is not taken into account room quota
+	 * calculation.
+	 * 
+	 * @return
+	 */
+	public long getLeadTime();
+	
+	public void setLeadTime(long leadTime);
+
+	/**
+	 * The calculated date when the Teams meeting can be opened technically
+	 * @return
+	 */
+	public Date getStartWithLeadTime();
+	
 	public Date getEndDate();
 	
 	public void setEndDate(Date startDate);
+	
+	/**
+	 * The minutes a meeting can be over time. Is not taken into account room quota
+	 * calculation.
+	 * 
+	 * @return
+	 */
+	public long getFollowupTime();
+	
+	public void setFollowupTime(long followupTime);
+
+	/**
+	 * The calculated latest date when the BBB meeting is closed automatically
+	 * 
+	 * @return
+	 */
+	public Date getEndWithFollowupTime();
+	
+	/**
+	 * Permanent meetings have no start and end date. E.g. for groups who want to
+	 * make spontaneous meetings without scheduling meetings in the first place.
+	 * Note that permanent can quickly consume the available meeting quota as the
+	 * count as current active meetings.
+	 * 
+	 * @return
+	 */
+	public boolean isPermanent();
+	
+	public void setPermanent(boolean permanent);
+	
+	/**
+	 * Allow joining of external users via URL.
+	 * @return
+	 */
+	public boolean isGuest();
+	
+	public void setGuest(boolean guest);
+
+	/**
+	 * The identifier is used in the OpenOlat dispatcher to not expose the real
+	 * meeting ID to the user, e.g. when accessed by external guests. Teams does not now
+	 * this ID, it is OO internal only. 
+	 * 
+	 * @return
+	 */
+	public String getIdentifier();
+
+	/**
+	 * The readable identifier is similar to the identifier but can be modified by
+	 * users in the edit for to create a human readable URL when sending the meeting
+	 * join URL via email to participants. Teams does not now this ID, it is OpenOlat
+	 * internal only.
+	 * 
+	 * @return
+	 */
+	public String getReadableIdentifier();
+
+	public void setReadableIdentifier(String readableIdentifier);
 	
 	public String getJoinInformation();
 	
@@ -68,6 +147,10 @@ public interface TeamsMeeting extends ModifiedInfo, CreateInfo {
 	public String getAccessLevel();
 	
 	public void setAccessLevel(String accessLevel);
+	
+	public String getLobbyBypassScope();
+	
+	public void setLobbyBypassScope(String scope);
 	
 	public boolean isEntryExitAnnouncement();
 	

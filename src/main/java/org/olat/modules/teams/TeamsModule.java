@@ -192,4 +192,8 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 		coursesEnabled = enabled ? "true" : "false";
 		setStringProperty(PROP_COURSE_ENABLED, coursesEnabled, true);
 	}
+	
+	public boolean isOnlineMeetingExtendedOptionsEnabled() {
+		return StringHelper.containsNonWhitespace(onBehalfUserId);
+	}
 }

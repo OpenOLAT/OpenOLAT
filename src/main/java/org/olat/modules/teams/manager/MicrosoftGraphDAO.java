@@ -42,6 +42,7 @@ import com.microsoft.graph.models.extensions.IGraphServiceClient;
 import com.microsoft.graph.models.extensions.Identity;
 import com.microsoft.graph.models.extensions.IdentitySet;
 import com.microsoft.graph.models.extensions.ItemBody;
+import com.microsoft.graph.models.extensions.LobbyBypassSettings;
 import com.microsoft.graph.models.extensions.MeetingParticipantInfo;
 import com.microsoft.graph.models.extensions.MeetingParticipants;
 import com.microsoft.graph.models.extensions.OnlineMeeting;
@@ -49,6 +50,7 @@ import com.microsoft.graph.models.extensions.Organization;
 import com.microsoft.graph.models.extensions.User;
 import com.microsoft.graph.models.generated.AccessLevel;
 import com.microsoft.graph.models.generated.BodyType;
+import com.microsoft.graph.models.generated.LobbyBypassScope;
 import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
 import com.microsoft.graph.models.generated.OnlineMeetingRole;
 import com.microsoft.graph.requests.extensions.GraphServiceClient;
@@ -137,7 +139,11 @@ public class MicrosoftGraphDAO {
 		MeetingParticipants participants = new MeetingParticipants();
 		if(organizer != null) {
 			IdentitySet identitySet = createIdentitySetById(organizer);
-			participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRESENTER);
+			participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
+			IdentitySet identityAsPresenterSet = createIdentitySetById(organizer);
+			participants.attendees = new ArrayList<>();
+			MeetingParticipantInfo  infos = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.PRESENTER);
+			participants.attendees.add(infos);
 		} else if(StringHelper.containsNonWhitespace(teamsModule.getProducerId())) {
 			IdentitySet identitySet = createIdentitySetById(teamsModule.getProducerId());
 			participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
@@ -147,14 +153,21 @@ public class MicrosoftGraphDAO {
 		}
 		
 		OnlineMeeting onlineMeeting = new OnlineMeeting();
-		onlineMeeting.startDateTime = toCalendar(meeting.getStartDate());
-		onlineMeeting.endDateTime = toCalendar(meeting.getEndDate());
+		if(meeting.getStartDate() != null && meeting.getEndDate() != null) {
+			onlineMeeting.startDateTime = toCalendar(meeting.getStartDate());
+			onlineMeeting.endDateTime = toCalendar(meeting.getEndDate());
+		}
 		onlineMeeting.subject = meeting.getSubject();
 		onlineMeeting.participants = participants;
 		onlineMeeting.allowedPresenters = toOnlineMeetingPresenters(meeting.getAllowedPresenters());
 		onlineMeeting.accessLevel = toAccessLevel(meeting.getAccessLevel());
 		onlineMeeting.entryExitAnnouncement = Boolean.valueOf(meeting.isEntryExitAnnouncement());
 		
+		LobbyBypassSettings lobbyBypassSettings = new LobbyBypassSettings();
+		lobbyBypassSettings.isDialInBypassEnabled = Boolean.FALSE;
+		lobbyBypassSettings.scope = toLobbyBypassScope(meeting.getLobbyBypassScope());
+		onlineMeeting.lobbyBypassSettings = lobbyBypassSettings;
+
 		String joinInformations = meeting.getJoinInformation();
 		if(StringHelper.containsNonWhitespace(joinInformations)) {
 			ItemBody body = new ItemBody();
@@ -163,18 +176,86 @@ public class MicrosoftGraphDAO {
 			} else {
 				body.contentType = BodyType.TEXT;
 			}
-			body.content = joinInformations;
+			body.content = "<html><body>" + joinInformations + "</body></html>";
 			onlineMeeting.joinInformation = body;
 		}
 		
-		onlineMeeting = client()
-				.communications()
-				.onlineMeetings()
-				.buildRequest()
-				.post(onlineMeeting);
+		if(StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
+			onlineMeeting = client()
+					.users(teamsModule.getOnBehalfUserId())
+					.onlineMeetings()
+					.buildRequest()
+					.post(onlineMeeting);
+		} else {
+			onlineMeeting = client()
+					.communications()
+					.onlineMeetings()
+					.buildRequest()
+					.post(onlineMeeting);
+		}
 		
-		log.info(Tracing.M_AUDIT, "Oneline-Meeting created with id: {}", onlineMeeting.id);
+		log.info(Tracing.M_AUDIT, "Online-Meeting created with id: {}", onlineMeeting.id);
 		return onlineMeeting;
+	}
+	
+	/**
+	 * This method is only supported if the application is allowed to
+	 * operate on behalf of a real user.
+	 * 
+	 * @param meeting The meeting
+	 * @param user The user
+	 * @param role The role of the user
+	 * @return The updated meeting
+	 */
+	public OnlineMeeting updateOnlineMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role) {
+		String id =  meeting.getOnlineMeetingId();
+		
+		OnlineMeeting onlineMeeting = new OnlineMeeting();
+		if(meeting.getStartDate() != null && meeting.getEndDate() != null) {
+			onlineMeeting.startDateTime = toCalendar(meeting.getStartDate());
+			onlineMeeting.endDateTime = toCalendar(meeting.getEndDate());
+		}
+		onlineMeeting.subject = meeting.getSubject();
+		
+		MeetingParticipants participants = new MeetingParticipants();
+		IdentitySet identitySet = createIdentitySetById(user);
+		participants.attendees = new ArrayList<>();
+		participants.attendees.add(createParticipantInfo(identitySet, role));
+		onlineMeeting.participants = participants;
+		
+		// access, body informations cannot be updatet
+		onlineMeeting.allowedPresenters = toOnlineMeetingPresenters(meeting.getAllowedPresenters());
+		
+		LobbyBypassSettings lobbyBypassSettings = new LobbyBypassSettings();
+		lobbyBypassSettings.isDialInBypassEnabled = Boolean.FALSE;
+		lobbyBypassSettings.scope = toLobbyBypassScope(meeting.getLobbyBypassScope());
+		onlineMeeting.lobbyBypassSettings = lobbyBypassSettings;
+
+		OnlineMeeting updatedOnlineMeeting = client()
+				.users(teamsModule.getOnBehalfUserId())
+				.onlineMeetings(id)
+				.buildRequest()
+				.patch(onlineMeeting);
+		
+		log.info(Tracing.M_AUDIT, "Online-Meeting updated with id: {}", id);
+		return updatedOnlineMeeting;
+	}
+	
+	public OnlineMeeting searchOnlineMeeting(String externalId) {
+		return client()
+				.users(teamsModule.getOnBehalfUserId())
+				.onlineMeetings(externalId)
+				.buildRequest()
+				.get();
+	}
+	
+	public void delete(String meetingId) {
+		client()
+				.users(teamsModule.getOnBehalfUserId())
+				.onlineMeetings(meetingId)
+				.buildRequest()
+				.delete();
+		
 	}
 
 	/**
@@ -355,45 +436,16 @@ public class MicrosoftGraphDAO {
 		}
 	}
 
-	/**
-	 * This method is only supported if the application is allowed to
-	 * operate on behalf of a real user.
-	 * 
-	 * @param meeting The meeting
-	 * @param user The user
-	 * @param role The role of the user
-	 * @return The updated meeting
-	 */
-	public OnlineMeeting updateOnlineMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role) {
-		String id =  meeting.getOnlineMeetingId();
-		
-		OnlineMeeting onlineMeeting = new OnlineMeeting();
-		onlineMeeting.startDateTime = toCalendar(meeting.getStartDate());
-		onlineMeeting.endDateTime = toCalendar(meeting.getEndDate());
-		onlineMeeting.subject = meeting.getSubject();
-		
-		MeetingParticipants participants = new MeetingParticipants();
-		IdentitySet identitySet = createIdentitySetById(user);
-		participants.attendees = new ArrayList<>();
-		participants.attendees.add(createParticipantInfo(identitySet, role));
-		onlineMeeting.participants = participants;
-
-		OnlineMeeting updatedOnlineMeeting = client()
-				.users(teamsModule.getOnBehalfUserId())
-				.onlineMeetings(id)
-				.buildRequest()
-				.patch(onlineMeeting);
-		
-		log.info(Tracing.M_AUDIT, "Oneline-Meeting updated with id: {}", id);
-		return updatedOnlineMeeting;
-	}
-	
-	public OnlineMeeting searchOnlineMeeting(String externalId) {
-		return client()
-				.users(teamsModule.getOnBehalfUserId())
-				.onlineMeetings(externalId)
-				.buildRequest()
-				.get();
+	public static final LobbyBypassScope toLobbyBypassScope(String string) {
+		LobbyBypassScope val = LobbyBypassScope.ORGANIZATION;
+		if(StringHelper.containsNonWhitespace(string)) {
+			try {
+				val = LobbyBypassScope.valueOf(string);
+			} catch (Exception e) {
+				log.error("Cannot parse lobby bypass scope: {}", string, e);
+			}
+		}
+		return val;
 	}
 	
 	public static final AccessLevel toAccessLevel(String string) {

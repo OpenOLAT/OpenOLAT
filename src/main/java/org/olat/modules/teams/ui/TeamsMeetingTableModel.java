@@ -19,6 +19,7 @@
  */
 package org.olat.modules.teams.ui;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.teams.TeamsMeeting;
 
 /**
@@ -66,11 +66,17 @@ implements SortableFlexiTableDataModel<TeamsMeeting> {
 	public Object getValueAt(TeamsMeeting row, int col) {
 		switch(COLS[col]) {
 			case subject: return row.getSubject();
+			case permanent: return Boolean.valueOf(row.isPermanent());
 			case start: return row.getStartDate();
 			case end: return row.getEndDate();
-			case edit: return !StringHelper.containsNonWhitespace(row.getOnlineMeetingId());
+			case edit: return canEdit(row);
 			default: return "ERROR";
 		}
+	}
+	
+	private boolean canEdit(TeamsMeeting row) {
+		return row.isPermanent()
+				|| (row.getEndDate() != null && !row.getEndDate().before(new Date()));
 	}
 
 	@Override
@@ -81,6 +87,7 @@ implements SortableFlexiTableDataModel<TeamsMeeting> {
 	public enum MeetingsCols implements FlexiSortableColumnDef {
 		
 		subject("meeting.subject"),
+		permanent("table.header.permanent"),
 		start("meeting.start"),
 		end("meeting.end"),
 		edit("edit");

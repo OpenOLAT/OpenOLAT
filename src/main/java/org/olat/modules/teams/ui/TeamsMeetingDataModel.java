@@ -51,6 +51,7 @@ public class TeamsMeetingDataModel extends DefaultFlexiTableDataSourceModel<Team
 		TeamsMeeting meeting = getObject(row);
 		switch(COLS[col]) {
 			case subject: return meeting.getSubject();
+			case permanent: return Boolean.valueOf(meeting.isPermanent());
 			case startDate: return meeting.getStartDate();
 			case endDate: return meeting.getEndDate();
 			case context: return getContext(meeting);
@@ -80,6 +81,7 @@ public class TeamsMeetingDataModel extends DefaultFlexiTableDataSourceModel<Team
 	public enum SoMeetingsCols implements FlexiSortableColumnDef {
 		
 		subject("meeting.subject"),
+		permanent("table.header.permanent"),
 		startDate("meeting.start"),
 		endDate("meeting.end"),
 		context("meeting.context");

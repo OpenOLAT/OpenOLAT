@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -46,12 +48,20 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsService;
+import org.olat.modules.teams.ui.EditTeamsMeetingController.Mode;
 import org.olat.modules.teams.ui.TeamsMeetingTableModel.MeetingsCols;
+import org.olat.modules.teams.ui.recurring.TeamsRecurringMeeting;
+import org.olat.modules.teams.ui.recurring.TeamsRecurringMeeting1Step;
+import org.olat.modules.teams.ui.recurring.TeamsRecurringMeetingsContext;
+import org.olat.modules.teams.ui.recurring.TeamsRecurringMeetingsContext.RecurringMode;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,7 +73,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TeamsEditMeetingsController extends FormBasicController {
 
 	private FormLink deleteButton;
-	private FormLink addMeetingButton;
+	private FormLink addSingleMeetingButton;
+	private FormLink addPermanentMeetingButton;
+	private FormLink addDailyRecurringMeetingsLink;
+	private FormLink addWeekyRecurringMeetingsLink;
 	private FlexiTableElement tableEl;
 	private TeamsMeetingTableModel tableModel;
 	
@@ -76,7 +89,11 @@ public class TeamsEditMeetingsController extends FormBasicController {
 	private DialogBoxController confirmDelete;
 	private DialogBoxController confirmBatchDelete;
 	private EditTeamsMeetingController editMeetingCtlr;
-	
+	private StepsMainRunController addDailyMeetingCtrl;
+	private StepsMainRunController addWeeklyMeetingCtrl;
+
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private TeamsService teamsService;
 	
@@ -95,8 +112,24 @@ public class TeamsEditMeetingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(!readOnly) {
-			addMeetingButton = uifactory.addFormLink("add.single.meeting", formLayout, Link.BUTTON);
-			addMeetingButton.setElementCssClass("o_sel_teams_single_meeting_add");
+			DropdownItem addMeetingDropdown = uifactory.addDropdownMenu("add.meeting", "add.meeting", formLayout, getTranslator());
+			addMeetingDropdown.setOrientation(DropdownOrientation.right);
+			addMeetingDropdown.setElementCssClass("o_sel_teams_meeting_add");
+
+			addSingleMeetingButton = uifactory.addFormLink("add.single.meeting", formLayout, Link.LINK);
+			addSingleMeetingButton.setElementCssClass("o_sel_teams_single_meeting_add");
+			addMeetingDropdown.addElement(addSingleMeetingButton);
+			
+			addPermanentMeetingButton = uifactory.addFormLink("add.permanent.meeting", formLayout, Link.LINK);
+			addPermanentMeetingButton.setElementCssClass("o_sel_teams_permanent_meeting_add");
+			addMeetingDropdown.addElement(addPermanentMeetingButton);
+			
+			addDailyRecurringMeetingsLink = uifactory.addFormLink("add.daily.meeting", formLayout, Link.LINK);
+			addDailyRecurringMeetingsLink.setElementCssClass("o_sel_teams_daily_meeting_add");
+			addMeetingDropdown.addElement(addDailyRecurringMeetingsLink);
+			addWeekyRecurringMeetingsLink = uifactory.addFormLink("add.weekly.meeting", formLayout, Link.LINK);
+			addWeekyRecurringMeetingsLink.setElementCssClass("o_sel_teams_weekly_meeting_add");
+			addMeetingDropdown.addElement(addWeekyRecurringMeetingsLink);
 
 			deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		}
@@ -104,6 +137,7 @@ public class TeamsEditMeetingsController extends FormBasicController {
 		// upcoming meetings table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.subject));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.permanent));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.end));
 		if(!readOnly) {
@@ -164,6 +198,14 @@ public class TeamsEditMeetingsController extends FormBasicController {
 				doDelete(meetings);
 			}
 			cleanUp();
+		} else if(addDailyMeetingCtrl == source || addWeeklyMeetingCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					loadModel();
+				}
+				cleanUp();
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -188,11 +230,17 @@ public class TeamsEditMeetingsController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addMeetingButton == source) {
-			doAddSingleMeeting(ureq);
-		} else if(deleteButton == source) {
+		if(deleteButton == source) {
 			List<TeamsMeeting> selectedMeetings = getSelectedMeetings();
 			doConfirmDelete(ureq, selectedMeetings);
+		} else if(addSingleMeetingButton == source) {
+			doAddSingleMeeting(ureq);
+		} else if(addPermanentMeetingButton == source) {
+			doAddPermanentMeeting(ureq);
+		} else if(addDailyRecurringMeetingsLink == source) {
+			doAddDailyRecurringMeeting(ureq);
+		} else if(addWeekyRecurringMeetingsLink == source) {
+			doAddWeeklyRecurringMeeting(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -214,7 +262,17 @@ public class TeamsEditMeetingsController extends FormBasicController {
 	}
 
 	private void doAddSingleMeeting(UserRequest ureq) {
-		editMeetingCtlr = new EditTeamsMeetingController(ureq, getWindowControl(), entry, subIdent, group);
+		editMeetingCtlr = new EditTeamsMeetingController(ureq, getWindowControl(), entry, subIdent, group, Mode.dates);
+		listenTo(editMeetingCtlr);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+				true, translate("add.single.meeting"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doAddPermanentMeeting(UserRequest ureq) {
+		editMeetingCtlr = new EditTeamsMeetingController(ureq, getWindowControl(), entry, subIdent, group, Mode.permanent);
 		listenTo(editMeetingCtlr);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
@@ -234,6 +292,62 @@ public class TeamsEditMeetingsController extends FormBasicController {
 				true, translate("edit.meeting"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void doAddDailyRecurringMeeting(UserRequest ureq) {
+		removeAsListenerAndDispose(addDailyMeetingCtrl);
+		
+		final TeamsRecurringMeetingsContext context = new TeamsRecurringMeetingsContext(entry, subIdent, group, RecurringMode.daily);
+		context.setMainPresenter(userManager.getUserDisplayName(getIdentity()));
+		
+		TeamsRecurringMeeting1Step step = new TeamsRecurringMeeting1Step(ureq, context);
+		StepRunnerCallback finishCallback = (uureq, swControl, runContext) -> {
+			addRecurringMeetings(context);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		String title = translate("add.daily.meeting");
+		addDailyMeetingCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finishCallback, null, title, "");
+		listenTo(addDailyMeetingCtrl);
+		getWindowControl().pushAsModalDialog(addDailyMeetingCtrl.getInitialComponent());
+	}
+
+	
+	private void doAddWeeklyRecurringMeeting(UserRequest ureq) {
+		removeAsListenerAndDispose(addWeeklyMeetingCtrl);
+		
+		final TeamsRecurringMeetingsContext context = new TeamsRecurringMeetingsContext(entry, subIdent, group, RecurringMode.weekly);
+		context.setMainPresenter(userManager.getUserDisplayName(getIdentity()));
+
+		TeamsRecurringMeeting1Step step = new TeamsRecurringMeeting1Step(ureq, context);
+		StepRunnerCallback finishCallback = (uureq, swControl, runContext) -> {
+			addRecurringMeetings(context);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		String title = translate("add.weekly.meeting");
+		addWeeklyMeetingCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finishCallback, null, title, "");
+		listenTo(addWeeklyMeetingCtrl);
+		getWindowControl().pushAsModalDialog(addWeeklyMeetingCtrl.getInitialComponent());
+	}
+	
+	private void addRecurringMeetings(TeamsRecurringMeetingsContext context) {
+		for(TeamsRecurringMeeting meeting:context.getMeetings()) {
+			if(meeting.isDeleted()) {
+				continue;
+			}
+			
+			TeamsMeeting tMeeting = teamsService.createMeeting(context.getName(), meeting.getStartDate(), meeting.getEndDate(),
+					context.getEntry(), context.getSubIdent(), context.getBusinessGroup(), getIdentity());
+			tMeeting.setDescription(context.getDescription());
+			tMeeting.setMainPresenter(context.getMainPresenter());
+			tMeeting.setPermanent(false);
+			tMeeting.setLeadTime(context.getLeadTime());
+			tMeeting.setFollowupTime(context.getFollowupTime());
+			tMeeting.setAccessLevel(context.getAccessLevel());
+			tMeeting.setAllowedPresenters(context.getAllowedPresenters());
+			tMeeting.setEntryExitAnnouncement(context.isEntryExitAnnouncement());
+			tMeeting.setLobbyBypassScope(context.getLobbyBypassScope());
+			teamsService.updateMeeting(tMeeting);
+		}
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, TeamsMeeting meeting) {

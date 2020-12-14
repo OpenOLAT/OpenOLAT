@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -32,6 +33,10 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.microsoft.graph.models.generated.AccessLevel;
+import com.microsoft.graph.models.generated.LobbyBypassScope;
+import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
 
 /**
  * 
@@ -63,12 +68,19 @@ public class TeamsMeetingDAOTest extends OlatTestCase {
 		Assert.assertNotNull(meeting.getLastModified());
 		Assert.assertNotNull(meeting.getStartDate());
 		Assert.assertNotNull(meeting.getEndDate());
+		Assert.assertEquals(0l, meeting.getLeadTime());
+		Assert.assertEquals(0l, meeting.getFollowupTime());
 		
 		Assert.assertEquals(name, meeting.getSubject());
 		Assert.assertEquals(creator, meeting.getCreator());
 		Assert.assertEquals(entry, meeting.getEntry());
 		Assert.assertEquals(subIdent, meeting.getSubIdent());
 		Assert.assertNull(meeting.getBusinessGroup());
+		
+		Assert.assertEquals(AccessLevel.SAME_ENTERPRISE_AND_FEDERATED.name(), meeting.getAccessLevel());
+		Assert.assertEquals(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), meeting.getAllowedPresenters());
+		Assert.assertTrue(meeting.isEntryExitAnnouncement());
+		Assert.assertEquals(LobbyBypassScope.ORGANIZATION_AND_FEDERATED.name(), meeting.getLobbyBypassScope());
 	}
 	
 	@Test
@@ -98,9 +110,64 @@ public class TeamsMeetingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getMeetingByIdentifier() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String name = "Online-Meeting - 6";
+		String subIdent = UUID.randomUUID().toString();
+		
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("teams-3");
+		TeamsMeeting meeting = teamsMeetingDao.createMeeting(name, new Date(), new Date(),
+				entry, subIdent, null, creator);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(meeting);
+		
+		TeamsMeeting reloadedMeeting = teamsMeetingDao.loadByIdentifier(meeting.getIdentifier());
+
+		Assert.assertNotNull(reloadedMeeting);
+		Assert.assertEquals(meeting, reloadedMeeting);
+	}
+	
+	@Test
+	public void isIdentifierInUse() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String name = "Online-Meeting - 6";
+		String subIdent = UUID.randomUUID().toString();
+		
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("teams-4");
+		TeamsMeeting meeting = teamsMeetingDao.createMeeting(name, new Date(), new Date(),
+				entry, subIdent, null, creator);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(meeting);
+		
+		boolean inUse = teamsMeetingDao.isIdentifierInUse(meeting.getIdentifier(), null);
+		Assert.assertTrue(inUse);
+		boolean iUseIt = teamsMeetingDao.isIdentifierInUse(meeting.getIdentifier(), meeting);
+		Assert.assertFalse(iUseIt);
+		String randomIdentifier = UUID.randomUUID().toString();
+		boolean neverUsed = teamsMeetingDao.isIdentifierInUse(randomIdentifier, meeting);
+		Assert.assertFalse(neverUsed);
+	}
+	
+	@Test
+	public void getAllMeetings() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String name = "Online-Meeting - 7";
+		String subIdent = UUID.randomUUID().toString();
+		
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("teams-4");
+		TeamsMeeting meeting = teamsMeetingDao.createMeeting(name, new Date(), new Date(),
+				entry, subIdent, null, creator);
+		dbInstance.commitAndCloseSession();
+		
+		List<TeamsMeeting> allMeetings = teamsMeetingDao.getAllMeetings();
+		Assert.assertNotNull(allMeetings);
+		Assert.assertTrue(allMeetings.contains(meeting));
+	}
+	
+	@Test
 	public void getMeetingsbyRepositoryEntryAndSubIdent() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		String name = "Online-Meeting - 3";
+		String name = "Online-Meeting - 8";
 		String subIdent = UUID.randomUUID().toString();
 		TeamsMeeting meeting = teamsMeetingDao.createMeeting(name, new Date(), new Date(),
 				entry, subIdent, null, null);
@@ -111,6 +178,28 @@ public class TeamsMeetingDAOTest extends OlatTestCase {
 		Assert.assertNotNull(meetings);
 		Assert.assertEquals(1, meetings.size());
 		Assert.assertEquals(meeting, meetings.get(0));
+	}
+	
+	@Test
+	public void getUpcomingMeetings() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String name = "Online-Meeting - 9";
+		String subIdent = UUID.randomUUID().toString();
+		Date start = DateUtils.addDays(new Date(), 2);
+		Date end = DateUtils.addHours(start, 2);
+		TeamsMeeting upcomingMeeting = teamsMeetingDao.createMeeting(name, start, end,
+				entry, subIdent, null, null);
+		
+		Date pastStart = DateUtils.addDays(new Date(), -2);
+		Date pastEnd = DateUtils.addHours(pastStart, 2);
+		TeamsMeeting pastMeeting = teamsMeetingDao.createMeeting(name, pastStart, pastEnd,
+				entry, subIdent, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<TeamsMeeting> meetings = teamsMeetingDao.getUpcomingMeetings(entry, subIdent, 5);
+		Assert.assertNotNull(meetings);
+		Assert.assertTrue(meetings.contains(upcomingMeeting));
+		Assert.assertFalse(meetings.contains(pastMeeting));
 	}
 
 }

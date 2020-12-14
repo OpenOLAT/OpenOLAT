@@ -89,6 +89,12 @@ public class TeamsServiceImpl implements TeamsService {
 			BusinessGroup businessGroup) {
 		return teamsMeetingDao.getMeetings(entry, subIdent, businessGroup);
 	}
+	
+	@Override
+	public List<TeamsMeeting> getAllMeetings() {
+		return teamsMeetingDao.getAllMeetings();
+		
+	}
 
 	@Override
 	public List<TeamsMeeting> getUpcomingsMeetings(RepositoryEntry entry, String subIdent, int maxResults) {
@@ -118,8 +124,34 @@ public class TeamsServiceImpl implements TeamsService {
 		
 		TeamsMeeting reloadedMeeting = teamsMeetingDao.loadByKey(meeting.getKey());
 		if(reloadedMeeting != null) {
+			String onlineMeetingId = reloadedMeeting.getOnlineMeetingId();
 			teamsMeetingDao.deleteMeeting(reloadedMeeting);
+			
+			if(StringHelper.containsNonWhitespace(onlineMeetingId)
+					&& StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
+				try {
+					graphDao.delete(onlineMeetingId);
+				} catch (Exception e) {
+					log.error("Cannot delete meeting with id: {}", onlineMeetingId, e);
+				}
+			}
 		}
+	}
+	
+	@Override
+	public TeamsMeeting getMeeting(String identifier) {
+		if(StringHelper.containsNonWhitespace(identifier)) {
+			return teamsMeetingDao.loadByIdentifier(identifier);
+		}
+		return null;
+	}
+
+	@Override
+	public boolean isIdentifierInUse(String identifier, TeamsMeeting reference) {
+		if(StringHelper.containsNonWhitespace(identifier)) {
+			return teamsMeetingDao.isIdentifierInUse(identifier, reference);
+		}
+		return false;
 	}
 
 	@Override

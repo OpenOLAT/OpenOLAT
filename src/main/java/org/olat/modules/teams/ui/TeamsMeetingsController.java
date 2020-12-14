@@ -38,7 +38,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroup;
-import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeetingsCols;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.ui.TeamsMeetingTableModel.MeetingsCols;
@@ -81,6 +80,7 @@ public class TeamsMeetingsController extends FormBasicController {
 		// upcoming meetings table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.subject));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.permanent));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.end));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
@@ -90,7 +90,7 @@ public class TeamsMeetingsController extends FormBasicController {
 		upcomingTableEl.setEmtpyTableMessageKey("no.upcoming.meetings");
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
-		sortOptions.setDefaultOrderBy(new SortKey(BMeetingsCols.start.name(), true));
+		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), true));
 		upcomingTableEl.setSortSettings(sortOptions);
 		upcomingTableEl.setAndLoadPersistedPreferences(ureq, "teams-upcoming-meetings-list");
 		

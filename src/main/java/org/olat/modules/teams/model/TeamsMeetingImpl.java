@@ -73,18 +73,44 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="t_start_date", nullable=true, insertable=true, updatable=true)
 	private Date startDate;
+	@Column(name="t_leadtime", nullable=true, insertable=true, updatable=true)
+	private long leadTime;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="t_start_with_leadtime", nullable=true, insertable=true, updatable=true)
+	private Date startWithLeadTime;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="t_end_date", nullable=true, insertable=true, updatable=true)
 	private Date endDate;
+	@Column(name="t_followuptime", nullable=true, insertable=true, updatable=true)
+	private long followupTime;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="t_end_with_followuptime", nullable=true, insertable=true, updatable=true)
+	private Date endWithFollowupTime;
+	
+	@Column(name="t_permanent", nullable=false, insertable=true, updatable=true)
+	private boolean permanent;
+	
+	@Column(name="t_main_presenter", nullable=true, insertable=true, updatable=true)
+	private String mainPresenter;
 
 	@Column(name="t_allowed_presenters", nullable=true, insertable=true, updatable=true)
 	private String allowedPresenters;
 	@Column(name="t_access_level", nullable=true, insertable=true, updatable=true)
 	private String accessLevel;
+	@Column(name="t_lobby_bypass_scope", nullable=true, insertable=true, updatable=true)
+	private String lobbyBypassScope;
 	@Column(name="t_entry_exit_announcement", nullable=true, insertable=true, updatable=true)
 	private boolean entryExitAnnouncement;
 	@Column(name="t_join_information", nullable=true, insertable=true, updatable=true)
 	private String joinInformation;
+
+	@Column(name="t_guest", nullable=false, insertable=true, updatable=true)
+	private boolean guest;
+	@Column(name="t_identifier", nullable=true, insertable=true, updatable=true)
+	private String identifier;
+	@Column(name="t_read_identifier", nullable=true, insertable=true, updatable=true)
+	private String readableIdentifier;
 	
 	@Column(name="t_online_meeting_id", nullable=true, insertable=true, updatable=true)
 	private String onlineMeetingId;
@@ -165,6 +191,25 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	}
 
 	@Override
+	public long getLeadTime() {
+		return leadTime;
+	}
+
+	@Override
+	public void setLeadTime(long leadTime) {
+		this.leadTime = leadTime;
+	}
+
+	@Override
+	public Date getStartWithLeadTime() {
+		return startWithLeadTime;
+	}
+
+	public void setStartWithLeadTime(Date startWithLeadTime) {
+		this.startWithLeadTime = startWithLeadTime;
+	}
+
+	@Override
 	public Date getEndDate() {
 		return endDate;
 	}
@@ -172,6 +217,64 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	@Override
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
+	}
+
+	@Override
+	public long getFollowupTime() {
+		return followupTime;
+	}
+
+	@Override
+	public void setFollowupTime(long followupTime) {
+		this.followupTime = followupTime;
+	}
+
+	@Override
+	public Date getEndWithFollowupTime() {
+		return endWithFollowupTime;
+	}
+
+	public void setEndWithFollowupTime(Date endWithFollowupTime) {
+		this.endWithFollowupTime = endWithFollowupTime;
+	}
+
+	@Override
+	public boolean isPermanent() {
+		return permanent;
+	}
+
+	@Override
+	public void setPermanent(boolean permanent) {
+		this.permanent = permanent;
+	}
+
+	@Override
+	public boolean isGuest() {
+		return guest;
+	}
+
+	@Override
+	public void setGuest(boolean guest) {
+		this.guest = guest;
+	}
+
+	@Override
+	public String getIdentifier() {
+		return identifier;
+	}
+
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
+	}
+
+	@Override
+	public String getReadableIdentifier() {
+		return readableIdentifier;
+	}
+
+	@Override
+	public void setReadableIdentifier(String readableIdentifier) {
+		this.readableIdentifier = readableIdentifier;
 	}
 
 	@Override
@@ -207,6 +310,7 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 		return allowedPresenters;
 	}
 
+	@Override
 	public void setAllowedPresenters(String allowedPresenters) {
 		this.allowedPresenters = allowedPresenters;
 	}
@@ -216,8 +320,19 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 		return accessLevel;
 	}
 
+	@Override
 	public void setAccessLevel(String accessLevel) {
 		this.accessLevel = accessLevel;
+	}
+
+	@Override
+	public String getLobbyBypassScope() {
+		return lobbyBypassScope;
+	}
+
+	@Override
+	public void setLobbyBypassScope(String lobbyBypassScope) {
+		this.lobbyBypassScope = lobbyBypassScope;
 	}
 
 	@Override
@@ -228,6 +343,16 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	@Override
 	public void setEntryExitAnnouncement(boolean entryExitAnnouncement) {
 		this.entryExitAnnouncement = entryExitAnnouncement;
+	}
+
+	@Override
+	public String getMainPresenter() {
+		return mainPresenter;
+	}
+
+	@Override
+	public void setMainPresenter(String mainPresenter) {
+		this.mainPresenter = mainPresenter;
 	}
 
 	@Override

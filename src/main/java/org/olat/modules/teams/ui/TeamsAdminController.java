@@ -19,6 +19,8 @@
  */
 package org.olat.modules.teams.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -30,6 +32,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 
 /**
@@ -38,8 +43,9 @@ import org.olat.core.util.resource.OresHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeamsAdminController extends BasicController {
+public class TeamsAdminController extends BasicController implements Activateable2 {
 
+	private final Link calendarLink;
 	private final Link meetingsLink;
 	private final Link configurationLink;
 	private final VelocityContainer mainVC;
@@ -47,6 +53,7 @@ public class TeamsAdminController extends BasicController {
 	
 	private TeamsConfigurationController configCtrl;
 	private TeamsAdminMeetingsController adminListCtrl;
+	private TeamsMeetingsCalendarController calendarsCtrl;
 	
 	public TeamsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -59,6 +66,8 @@ public class TeamsAdminController extends BasicController {
 		
 		meetingsLink = LinkFactory.createLink("meetings.title", mainVC, this);
 		segmentView.addSegment(meetingsLink, false);
+		calendarLink = LinkFactory.createLink("calendar.title", mainVC, this);
+		segmentView.addSegment(calendarLink, false);
 
 		doOpenConfiguration(ureq);
 		
@@ -68,6 +77,23 @@ public class TeamsAdminController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Configuration".equalsIgnoreCase(type)) {
+			doOpenConfiguration(ureq);
+			segmentView.select(configurationLink);
+		} else if("Meetings".equalsIgnoreCase(type)) {
+			doOpenMeetingsList(ureq);
+			segmentView.select(meetingsLink);
+		} else if("Calendar".equalsIgnoreCase(type)) {
+			doOpenCalendar(ureq);
+			segmentView.select(calendarLink);
+		}
 	}
 
 	@Override
@@ -81,25 +107,43 @@ public class TeamsAdminController extends BasicController {
 					doOpenConfiguration(ureq);
 				} else if (clickedLink == meetingsLink) {
 					doOpenMeetingsList(ureq);
+				} else if (clickedLink == calendarLink) {
+					doOpenCalendar(ureq);
 				}
 			}
 		}
 	}
 	
 	private void doOpenConfiguration(UserRequest ureq) {
-		removeAsListenerAndDispose(configCtrl);
-
-		WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Configuration", 0l), null);
-		configCtrl = new TeamsConfigurationController(ureq, bwControl);
-		listenTo(configCtrl);
-
+		if(configCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Configuration", 0l), null);
+			configCtrl = new TeamsConfigurationController(ureq, bwControl);
+			listenTo(configCtrl);
+		} else {
+			addToHistory(ureq, configCtrl);
+		}
 		mainVC.put("segmentCmp", configCtrl.getInitialComponent());
 	}
 	
 	private void doOpenMeetingsList(UserRequest ureq) {
-		adminListCtrl = new TeamsAdminMeetingsController(ureq, getWindowControl(), false);
-		listenTo(adminListCtrl);
-		
+		if(adminListCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Meetings", 0l), null);
+			adminListCtrl = new TeamsAdminMeetingsController(ureq, bwControl, false);
+			listenTo(adminListCtrl);
+		} else {
+			addToHistory(ureq, adminListCtrl);
+		}
 		mainVC.put("segmentCmp", adminListCtrl.getInitialComponent());
+	}
+	
+	private void doOpenCalendar(UserRequest ureq) {
+		if(calendarsCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Calendar", 0l), null);
+			calendarsCtrl = new TeamsMeetingsCalendarController(ureq, bwControl);
+			listenTo(calendarsCtrl);
+		} else {
+			addToHistory(ureq, calendarsCtrl);
+		}
+		mainVC.put("segmentCmp", calendarsCtrl.getInitialComponent());
 	}
 }

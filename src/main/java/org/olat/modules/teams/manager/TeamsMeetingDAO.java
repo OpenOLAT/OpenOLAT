@@ -19,8 +19,10 @@
  */
 package org.olat.modules.teams.manager;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.TypedQuery;
 
@@ -37,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.microsoft.graph.models.generated.AccessLevel;
+import com.microsoft.graph.models.generated.LobbyBypassScope;
 import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
 
 /**
@@ -58,10 +61,16 @@ public class TeamsMeetingDAO {
 		meeting.setLastModified(meeting.getCreationDate());
 		meeting.setSubject(subject);
 		meeting.setStartDate(startDate);
+		meeting.setLeadTime(0l);
 		meeting.setEndDate(endDate);
-		meeting.setAllowedPresenters(OnlineMeetingPresenters.EVERYONE.name());
-		meeting.setAccessLevel(AccessLevel.EVERYONE.name());
+		meeting.setFollowupTime(0l);
+		// ID for OO internal dispatcher (guest access). BBB does not now this ID. 
+		meeting.setIdentifier(UUID.randomUUID().toString());
+		
+		meeting.setAllowedPresenters(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name());
+		meeting.setAccessLevel(AccessLevel.SAME_ENTERPRISE_AND_FEDERATED.name());
 		meeting.setEntryExitAnnouncement(true);
+		meeting.setLobbyBypassScope(LobbyBypassScope.ORGANIZATION_AND_FEDERATED.name());
 		meeting.setEntry(entry);
 		meeting.setSubIdent(subIdent);
 		meeting.setBusinessGroup(businessGroup);
@@ -84,13 +93,61 @@ public class TeamsMeetingDAO {
 		return meetings == null || meetings.isEmpty() ? null : meetings.get(0);
 	}
 	
+	public TeamsMeeting loadByIdentifier(String identifier) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting from teamsmeeting as meeting")
+		  .append(" left join fetch meeting.entry as entry")
+		  .append(" left join fetch meeting.businessGroup as businessGroup")
+		  .append(" left join fetch meeting.creator as creator")
+		  .append(" left join fetch creator.user as creatorUser")
+		  .append(" where meeting.identifier=:identifier or meeting.readableIdentifier=:identifier");
+		
+		List<TeamsMeeting> meetings = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), TeamsMeeting.class)
+				.setParameter("identifier", identifier)
+				.getResultList();
+		return meetings == null || meetings.isEmpty() ? null : meetings.get(0);
+	}
+	
+	public boolean isIdentifierInUse(String identifier, TeamsMeeting reference) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting.key from teamsmeeting as meeting")
+		  .append(" where (meeting.identifier=:identifier or meeting.readableIdentifier=:identifier)");
+		if(reference != null) {
+			sb.append(" and meeting.key<>:referenceKey");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("identifier", identifier)
+				.setFirstResult(0)
+				.setMaxResults(1);
+		if(reference != null) {
+			query.setParameter("referenceKey", reference.getKey());
+		}
+		
+		List<Long> otherKeys = query.getResultList();
+		return otherKeys != null && !otherKeys.isEmpty() && otherKeys.get(0) != null && otherKeys.get(0).longValue() > 0;
+	}
+	
 	public TeamsMeeting updateMeeting(TeamsMeeting meeting) {
-		((TeamsMeetingImpl)meeting).setLastModified(new Date());
+		TeamsMeetingImpl meetingImpl = (TeamsMeetingImpl)meeting;
+		meetingImpl.setLastModified(new Date());
+		updateDates(meetingImpl, meeting.getStartDate(), meeting.getLeadTime(),
+				meeting.getEndDate(), meeting.getFollowupTime());
 		return dbInstance.getCurrentEntityManager().merge(meeting);
 	}
 	
 	public void deleteMeeting(TeamsMeeting meeting) {
 		dbInstance.getCurrentEntityManager().remove(meeting);
+	}
+	
+	public List<TeamsMeeting> getAllMeetings() {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting from teamsmeeting as meeting");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), TeamsMeeting.class)
+				.getResultList();
 	}
 	
 	public List<TeamsMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup) {
@@ -142,6 +199,62 @@ public class TeamsMeetingDAO {
 			query.setParameter("subIdent", subIdent);
 		}
 		return query.getResultList();
+	}
+	
+	private void updateDates(TeamsMeetingImpl meet, Date start, long leadTime, Date end, long followupTime) {
+		if(start == null) {
+			meet.setStartDate(null);
+			meet.setLeadTime(0);
+			meet.setStartWithLeadTime(null);
+		} else {
+			meet.setStartDate(start);
+			meet.setLeadTime(leadTime);
+			meet.setStartWithLeadTime(calculateStartWithLeadTime(start, leadTime));
+		}
+		
+		if(end == null) {
+			meet.setEndDate(null);
+			meet.setFollowupTime(0);
+			meet.setEndWithFollowupTime(null);
+		} else {
+			meet.setEndDate(end);
+			meet.setFollowupTime(followupTime);
+			meet.setEndWithFollowupTime(calculateEndWithFollowupTime(end, followupTime));
+		}
+	}
+	
+	protected Date calculateStartWithLeadTime(Date start, long leadTime) {
+		start = cleanDate(start);
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(start);
+		if(leadTime > 0) {
+			cal.add(Calendar.MINUTE, -(int)leadTime);
+		}
+		return cal.getTime();
+	}
+	
+	protected Date calculateEndWithFollowupTime(Date end, long followupTime) {
+		end = cleanDate(end);
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(end);
+		if(followupTime > 0) {
+			cal.add(Calendar.MINUTE, (int)followupTime);
+		}
+		return cal.getTime();
+	}
+	
+	/**
+	 * Remove seconds and milliseconds.
+	 * 
+	 * @return A date without seconds and milliseconds
+	 */
+	private Date cleanDate(Date date) {
+		if(date == null) return null;
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal.getTime();
 	}
 
 }

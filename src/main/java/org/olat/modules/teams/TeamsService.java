@@ -56,9 +56,15 @@ public interface TeamsService {
 	public List<TeamsMeeting> getMeetings(RepositoryEntry entry, String subIdent,
 			BusinessGroup businessGroup);
 	
+	public List<TeamsMeeting> getAllMeetings();
+	
 	public List<TeamsMeeting> getUpcomingsMeetings(RepositoryEntry entry, String subIdent, int maxResults);
 	
+	public boolean isIdentifierInUse(String identifier, TeamsMeeting meeting);
+	
 	public boolean isMeetingRunning(TeamsMeeting meeting);
+	
+	public TeamsMeeting getMeeting(String identifier);
 	
 	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, TeamsErrors errors);
 

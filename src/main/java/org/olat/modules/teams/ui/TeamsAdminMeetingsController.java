@@ -94,6 +94,7 @@ public class TeamsAdminMeetingsController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SoMeetingsCols.subject));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SoMeetingsCols.permanent));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SoMeetingsCols.startDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SoMeetingsCols.endDate));
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("context", new TextFlexiCellRenderer());

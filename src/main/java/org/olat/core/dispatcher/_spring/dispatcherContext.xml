@@ -67,6 +67,9 @@
 				<entry key="/bigbluebutton/">
 					<ref bean="bigbluebuttonguestjoinbean" />
 				</entry>
+				<entry key="/teams/">
+					<ref bean="teamsguestjoinbean" />
+				</entry>
 				<entry key="/trace/">
 					<ref bean="contacttracingbean" />
 				</entry>
@@ -285,6 +288,9 @@
 	<bean id="bigbluebuttonguestjoinbean"
 		class="org.olat.modules.bigbluebutton.BigBlueButtonDispatcher" />
 
+	<bean id="teamsguestjoinbean"
+		class="org.olat.modules.teams.TeamsDispatcher" />
+		
 	<bean id="contacttracingbean"
 		  class="org.olat.modules.contacttracing.ContactTracingDispatcher" />
 		
