@@ -42,6 +42,7 @@ import javax.naming.ldap.PagedResultsResponseControl;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.ldap.LDAPConstants;
 import org.olat.ldap.LDAPLoginModule;
@@ -64,7 +65,7 @@ public class LDAPDAO {
 	
 	private static final Logger log = Tracing.createLoggerFor(LDAPDAO.class);
 	
-	private static final int PAGE_SIZE = 50;
+	private static final int DEFAULT_PAGE_SIZE = 50;
 	private static final TimeZone UTC_TIME_ZONE;
 	private static final String PAGED_RESULT_CONTROL_OID = "1.2.840.113556.1.4.319";
 	
@@ -122,19 +123,21 @@ public class LDAPDAO {
 		ctls.setReturningAttributes(returningAttrs);
 		ctls.setCountLimit(0); // set no limits
 		
-		boolean paging = isPagedResultControlSupported(ctx);
+		final int pageSize = pageSize();
+		final boolean paging = isPagedResultControlSupported(ctx);
 	
 		int counter = 0;
 		try {
 			if(paging) {
 				byte[] cookie = null;
-				ctx.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.NONCRITICAL) });
+				ctx.setRequestControls(new Control[] { new PagedResultsControl(pageSize, Control.NONCRITICAL) });
 				do {
 					NamingEnumeration<SearchResult> enm = ctx.search(ldapBase, filter, ctls);
 					while (enm.hasMore()) {
 						visitor.visit(enm.next());
 					}
-					cookie = getCookie(ctx);
+					cookie = getCookie(ctx, pageSize);
+					counter++;
 				} while (cookie != null);
 			} else {
 				ctx.setRequestControls(null); // reset on failure, see FXOLAT-299
@@ -162,21 +165,22 @@ public class LDAPDAO {
 		ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 		ctls.setReturningAttributes(returningAttrs);
 		ctls.setCountLimit(0); // set no limits
-		
-		boolean paging = isPagedResultControlSupported(ctx);
+
+		final int pageSize = pageSize();
+		final boolean paging = isPagedResultControlSupported(ctx);
 		for (String ldapBase : syncConfiguration.getLdapBases()) {
 			int counter = 0;
 			try {
 				if(paging) {
 					byte[] cookie = null;
-					ctx.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.NONCRITICAL) });
+					ctx.setRequestControls(new Control[] { new PagedResultsControl(pageSize, Control.NONCRITICAL) });
 					do {
 						NamingEnumeration<SearchResult> enm = ctx.search(ldapBase, filter, ctls);
 						while (enm.hasMore()) {
 							visitor.visit(enm.next());
 							counter++;
 						}
-						cookie = getCookie(ctx);
+						cookie = getCookie(ctx, pageSize);
 					} while (cookie != null);
 				} else {
 					ctx.setRequestControls(null); // reset on failure, see FXOLAT-299
@@ -309,7 +313,7 @@ public class LDAPDAO {
 		StringBuilder filter = new StringBuilder();
 		if (syncTime == null) {
 			if(debug)  log.debug("LDAP get user attribs since never -> full sync!");
-			if (filter != null) {
+			if (userFilter != null) {
 				filter.append(userFilter);				
 			}
 		} else {
@@ -317,7 +321,7 @@ public class LDAPDAO {
 			SimpleDateFormat generalizedTimeFormatter = new SimpleDateFormat(dateFormat);
 			generalizedTimeFormatter.setTimeZone(UTC_TIME_ZONE);
 			String syncTimeForm = generalizedTimeFormatter.format(syncTime);
-			if(debug) log.debug("LDAP get user attribs since " + syncTime + " -> means search with date restriction-filter: " + syncTimeForm);
+			if(debug) log.debug("LDAP get user attribs since {} -> means search with date restriction-filter: {}", syncTime, syncTimeForm);
 			if (userFilter != null) {
 				// merge user filter with time fileter using and rule
 				filter.append("(&").append(userFilter);				
@@ -334,11 +338,14 @@ public class LDAPDAO {
 
 		String[] userAttrs = getEnhancedUserAttributes();
 		LDAPUserVisitor userVisitor = new LDAPUserVisitor(syncConfiguration);
+		long start = System.nanoTime();
+		log.info("Start loading users from LDAP server");
 		searchInLdap(userVisitor, filter.toString(), userAttrs, ctx);
 		List<LDAPUser> ldapUserList = userVisitor.getLdapUserList();
 		if(debug) {
 			log.debug("attrib search returned {} results", ldapUserList.size());
 		}
+		log.info("{} LDAP users retrieved in {}ms", ldapUserList.size(), CodeHelper.nanoToMilliTime(start));
 		return ldapUserList;
 	}
 	
@@ -376,7 +383,7 @@ public class LDAPDAO {
 		return userAttrList.toArray(new String[userAttrList.size()]);
 	}
 	
-	private byte[] getCookie(LdapContext ctx) throws NamingException, IOException {
+	private byte[] getCookie(LdapContext ctx, int pageSize) throws NamingException, IOException {
 		byte[] cookie = null;
 		// Examine the paged results control response
 		Control[] controls = ctx.getResponseControls();
@@ -389,7 +396,7 @@ public class LDAPDAO {
 		  }
 		}
 		// Re-activate paged results
-		ctx.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, cookie, Control.NONCRITICAL) });
+		ctx.setRequestControls(new Control[] { new PagedResultsControl(pageSize, cookie, Control.NONCRITICAL) });
 		return cookie;
 	}
 	
@@ -425,4 +432,8 @@ public class LDAPDAO {
 		}
 	}
 
+	private int pageSize() {
+		Integer  pageSize = ldapLoginModule.getBatchSize();
+		return pageSize == null ? DEFAULT_PAGE_SIZE : pageSize.intValue();
+	}
 }

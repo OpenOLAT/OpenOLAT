@@ -102,7 +102,7 @@ public class DeletStep00 extends BasicStep{
 			for(Integer index:selectedIndexes) {
 				identities.add(tableModel.getObject(index.intValue()));
 			}
-			addToRunContext("hasIdentitiesToDelete", new Boolean(identities.size() > 0));
+			addToRunContext("hasIdentitiesToDelete", Boolean.valueOf(!identities.isEmpty()));
 			addToRunContext("identitiesToDelete", identities);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}

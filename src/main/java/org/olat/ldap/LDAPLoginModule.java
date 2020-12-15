@@ -85,6 +85,8 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	private String systemPW;
 	@Value("${ldap.connectionTimeout}")
 	private Integer connectionTimeout;
+	@Value("${ldap.batch.size:50}")
+	private Integer batchSize;
 	/**
 	 * Create LDAP users on the fly when authenticated successfully
 	 */
@@ -269,7 +271,7 @@ public class LDAPLoginModule extends AbstractSpringModule {
 
 			// Schedule job now
 			scheduler.scheduleJob(jobDetail, trigger);
-			log.info("LDAP cron syncer is enabled with expression::" + ldapSyncCronSyncExpression);
+			log.info("LDAP cron syncer is enabled with expression::{}", ldapSyncCronSyncExpression);
 		} catch (Exception e) {
 			setLdapSyncCronSync(false);
 			log.error("LDAP configuration in attribute 'ldapSyncCronSyncExpression' is not valid ("
@@ -313,7 +315,7 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		try {
 			x509Cert.checkValidity();
 			if (daysFromNow > 0) {
-				Date nowPlusDays = new Date(System.currentTimeMillis() + (new Long(daysFromNow).longValue() * 24l * 60l * 60l * 1000l));
+				Date nowPlusDays = new Date(System.currentTimeMillis() + (daysFromNow * 24l * 60l * 60l * 1000l));
 				x509Cert.checkValidity(nowPlusDays);
 			}
 		} catch (Exception e) {
@@ -332,7 +334,7 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		if (StringHelper.containsNonWhitespace(param)) {
 			return true;
 		} else {
-			log.error("Missing configuration '" + param + "'. Add this configuration to olatextconfig.xml first. Disabling LDAP");
+			log.error("Missing configuration '{}'. Add this configuration to olatextconfig.xml first. Disabling LDAP", param);
 			setEnableLDAPLogins(false);
 			return false;
 		}
@@ -396,9 +398,14 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		ldapUrl = ldapUrlConfig.trim();
 	}
 	
+	public Integer getBatchSize() {
+		return batchSize;
+	}
 
-	
-	
+	public void setBatchSize(Integer batchSize) {
+		this.batchSize = batchSize;
+	}
+
 	public Integer getLdapConnectionTimeout() {
 		return connectionTimeout;
 	}
