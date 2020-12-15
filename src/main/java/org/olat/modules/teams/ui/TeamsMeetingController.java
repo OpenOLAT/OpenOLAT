@@ -215,6 +215,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 			return;
 		} else if(errors.hasErrors()) {
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			getWindowControl().setError(TeamsUIHelper.formatErrors(getTranslator(), errors));
 			return;
 		}
 		

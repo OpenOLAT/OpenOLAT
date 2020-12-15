@@ -37,6 +37,8 @@ import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.model.ConnectionInfos;
+import org.olat.modules.teams.model.TeamsError;
+import org.olat.modules.teams.model.TeamsErrorCodes;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.model.TeamsMeetingImpl;
 import org.olat.modules.teams.model.TeamsMeetingsSearchParameters;
@@ -71,7 +73,7 @@ public class TeamsServiceImpl implements TeamsService {
 	private TeamsMeetingDAO teamsMeetingDao;
 	@Autowired
 	private TeamsMeetingQueries teamsMeetingQueries;
-	
+
 	@Override
 	public TeamsMeeting createMeeting(String subject, Date startDate, Date endDate, RepositoryEntry entry, String subIdent,
 			BusinessGroup businessGroup, Identity creator) {
@@ -162,24 +164,54 @@ public class TeamsServiceImpl implements TeamsService {
 	@Override
 	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, TeamsErrors errors) {
 		meeting = teamsMeetingDao.loadByKey(meeting.getKey());
-		if(meeting != null && !StringHelper.containsNonWhitespace(meeting.getOnlineMeetingId())) {
-			dbInstance.commitAndCloseSession();
-			User gPresenter = lookupUser(identity);
-			OnlineMeeting onlineMeeting = graphDao.createMeeting(meeting, gPresenter, errors);
-			if(onlineMeeting != null) {
-				((TeamsMeetingImpl)meeting).setOnlineMeetingId(onlineMeeting.id);
-				((TeamsMeetingImpl)meeting).setOnlineMeetingJoinUrl(onlineMeeting.joinUrl);
-				meeting = teamsMeetingDao.updateMeeting(meeting);
+		if(meeting == null) {
+			errors.append(new TeamsError(TeamsErrorCodes.meetingDeleted));
+		} else if(!StringHelper.containsNonWhitespace(meeting.getOnlineMeetingId())) {
+			if(presenter) {
+				dbInstance.commitAndCloseSession();
+				User gPresenter = lookupUser(identity);
+				meeting = createOnlineMeeting(meeting, gPresenter, errors);
+			} else {
+				errors.append(new TeamsError(TeamsErrorCodes.presenterMissing));
 			}
 		} else if(StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
 			dbInstance.commitAndCloseSession();
 			User graphUser = lookupUser(identity);
-			if(graphUser != null) {
-				OnlineMeetingRole role = presenter ? OnlineMeetingRole.PRESENTER : OnlineMeetingRole.ATTENDEE;
-				graphDao.updateOnlineMeeting(meeting, graphUser, role);
-			}
+			updateOnlineMeeting(meeting, graphUser, presenter);
 		}
 		return meeting;
+	}
+	
+	private TeamsMeeting createOnlineMeeting(TeamsMeeting meeting, User presenter, TeamsErrors errors) {
+		TeamsMeeting lockedMeeting = null;
+		try {
+			lockedMeeting = teamsMeetingDao.loadForUpdate(meeting);
+			if(lockedMeeting == null) {
+				errors.append(new TeamsError(TeamsErrorCodes.meetingDeleted));
+			} else if(StringHelper.containsNonWhitespace(lockedMeeting.getOnlineMeetingId())) {
+				updateOnlineMeeting(lockedMeeting, presenter, true);
+			} else {
+				OnlineMeeting onlineMeeting = graphDao.createMeeting(lockedMeeting, presenter, errors);
+				if(onlineMeeting != null) {
+					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingId(onlineMeeting.id);
+					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingJoinUrl(onlineMeeting.joinUrl);
+					lockedMeeting = teamsMeetingDao.updateMeeting(lockedMeeting);
+				}
+			}
+		} catch (Exception e) {
+			errors.append(new TeamsError(TeamsErrorCodes.unkown));
+			log.error("Cannot create teams meeting", e);
+		} finally {
+			dbInstance.commit();
+		}
+		return lockedMeeting;
+	}
+	
+	private void updateOnlineMeeting(TeamsMeeting meeting, User graphUser, boolean presenter) {
+		if(graphUser != null && StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
+			OnlineMeetingRole role = presenter ? OnlineMeetingRole.PRESENTER : OnlineMeetingRole.ATTENDEE;
+			graphDao.updateOnlineMeeting(meeting, graphUser, role);
+		}
 	}
 	
 	@Override

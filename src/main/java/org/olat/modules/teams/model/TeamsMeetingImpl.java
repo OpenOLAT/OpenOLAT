@@ -412,4 +412,15 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("teamsMeeting[key=").append(getKey() == null ? "NULL" : getKey().toString())
+		  .append(";subject=").append(getSubject() == null ? "" : getSubject())
+		  .append("]");
+		return super.toString();
+	}
+	
+	
 }

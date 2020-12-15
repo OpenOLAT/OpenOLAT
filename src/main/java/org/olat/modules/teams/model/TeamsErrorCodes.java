@@ -27,6 +27,8 @@ package org.olat.modules.teams.model;
  */
 public enum TeamsErrorCodes {
 	organizerMissing,
+	presenterMissing,
+	meetingDeleted,
 	unkown
 	;
 

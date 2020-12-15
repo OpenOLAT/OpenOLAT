@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -89,6 +90,22 @@ public class TeamsMeetingDAO {
 		List<TeamsMeeting> meetings = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), TeamsMeeting.class)
 				.setParameter("meetingKey", key)
+				.getResultList();
+		return meetings == null || meetings.isEmpty() ? null : meetings.get(0);
+	}
+	
+	public TeamsMeeting loadForUpdate(TeamsMeeting meeting) {
+		//first remove it from caches
+		dbInstance.getCurrentEntityManager().detach(meeting);
+
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting from teamsmeeting as meeting")
+		  .append(" where meeting.key=:meetingKey");
+
+		List<TeamsMeeting> meetings = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), TeamsMeeting.class)
+				.setParameter("meetingKey", meeting.getKey())
+				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
 		return meetings == null || meetings.isEmpty() ? null : meetings.get(0);
 	}
