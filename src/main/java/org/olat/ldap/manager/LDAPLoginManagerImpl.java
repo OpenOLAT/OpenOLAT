@@ -1042,10 +1042,13 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			//check server capabilities
 			// Get time before sync to have a save sync time when sync is successful
 			String sinceSentence = (lastSyncDate == null ? "" : " since last sync from " + lastSyncDate);
-			doBatchSyncDeletedUsers(ctx, sinceSentence);
-			// bind again to use an initial unmodified context. lookup of server-properties might fail otherwise!
-			ctx.close();
-			ctx = bindSystem();
+			if (ldapLoginModule.isDeleteRemovedLDAPUsersOnSync()) {
+				doBatchSyncDeletedUsers(ctx, sinceSentence);
+				// bind again to use an initial unmodified context. lookup of server-properties might fail otherwise!
+				ctx.close();
+				ctx = bindSystem();
+			}
+			
 			Map<String,LDAPUser> dnToIdentityKeyMap = new HashMap<>();
 			List<LDAPUser> ldapUsers = doBatchSyncNewAndModifiedUsers(ctx, sinceSentence, dnToIdentityKeyMap, errors);
 			ctx.close();
@@ -1323,7 +1326,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					log.warn(errors.get());
 				}
 			} catch (Exception e) {
-				// catch here to go on with other users on exeptions!
+				// catch here to go on with other users on exceptions!
 				log.error("some error occured in looping over set of changed user-attributes, actual user {}. Will still continue with others.", user, e);
 				errors.insert("Cannot sync user: " + user);
 			} finally {
@@ -1340,7 +1343,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		
 		// sync existing users
 		if (changedMapIdentityMap == null || changedMapIdentityMap.isEmpty()) {
-			log.info("LDAP batch sync: no users to sync" + sinceSentence);
+			log.info("LDAP batch sync: no users to sync {}", sinceSentence);
 		} else {
 			int syncCount = 0;
 			for (IdentityRef ident : changedMapIdentityMap.keySet()) {
@@ -1357,10 +1360,10 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					}
 				}
 				if(syncCount % 1000 == 0) {
-					log.info("Update " + syncCount + "/" + changedMapIdentityMap.size() + " LDAP users");
+					log.info("Update {}/{} LDAP users", syncCount, changedMapIdentityMap.size());
 				}
 			}
-			log.info("LDAP batch sync: " + changedMapIdentityMap.size() + " users synced" + sinceSentence);
+			log.info("LDAP batch sync: {} users synced {}", changedMapIdentityMap.size(), sinceSentence);
 		}
 		
 		// create new users
@@ -1388,10 +1391,10 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				}
 				
 				if(newCount % 1000 == 0) {
-					log.info("Create " + count + "/" + newLdapUserList.size() + " LDAP users");
+					log.info("Create {}/{} LDAP users", count, newLdapUserList.size());
 				}
 			}
-			log.info("LDAP batch sync: " + newLdapUserList.size() + " users created" + sinceSentence);
+			log.info("LDAP batch sync: {} users created {}", newLdapUserList.size(), sinceSentence);
 		}
 
 		dbInstance.commitAndCloseSession();
@@ -1420,19 +1423,21 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			doSyncGroupByAttribute(ldapUsers, cnToGroupMap);
 		}
 		
-		int syncGroupCount = 0;
-		// exclusion list to prevent loading several times user which cannot be found
-		Set<String> excludedMembers = new HashSet<>();
-		for(LDAPGroup group:cnToGroupMap.values()) {
-			BusinessGroup managedGroup = getManagerBusinessGroup(group.getCommonName());
-			if(managedGroup != null) {
-				syncBusinessGroup(ctx, managedGroup, group, dnToIdentityKeyMap, excludedMembers, errors);
+		if(syncConfiguration.syncGroupWithLDAPGroup() || syncConfiguration.syncGroupWithAttribute()) {
+			int syncGroupCount = 0;
+			// exclusion list to prevent loading several times user which cannot be found
+			Set<String> excludedMembers = new HashSet<>();
+			for(LDAPGroup group:cnToGroupMap.values()) {
+				BusinessGroup managedGroup = getManagerBusinessGroup(group.getCommonName());
+				if(managedGroup != null) {
+					syncBusinessGroup(ctx, managedGroup, group, dnToIdentityKeyMap, excludedMembers, errors);
+				}
+				dbInstance.commitAndCloseSession();
+				if(syncGroupCount % 100 == 0) {
+					log.info("Synched {}/{} LDAP groups", syncGroupCount, cnToGroupMap.size());
+				}
+				syncGroupCount++;
 			}
-			dbInstance.commitAndCloseSession();
-			if(syncGroupCount % 100 == 0) {
-				log.info("Synched {}/{} LDAP groups", syncGroupCount, cnToGroupMap.size());
-			}
-			syncGroupCount++;
 		}
 	}
 	
