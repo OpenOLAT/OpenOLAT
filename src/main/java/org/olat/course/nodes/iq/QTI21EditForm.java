@@ -387,6 +387,9 @@ public class QTI21EditForm extends FormBasicController {
 			} else if(failedEndDateElement.getDate() != null && failedStartDateElement.getDate().after(failedEndDateElement.getDate())) {
 				failedStartDateElement.setErrorKey("error.begin.after.end", null);
 				allOk &= false;
+			} else if (failedStartDateElement.getDate() != null && failedEndDateElement.getDate() != null && failedStartDateElement.getDate().equals(failedEndDateElement.getDate())) {
+				failedEndDateElement.setErrorKey("error.begin.end.same", null);
+				allOk &= false;
 			}
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
@@ -396,6 +399,9 @@ public class QTI21EditForm extends FormBasicController {
 			} else if(passedEndDateElement.getDate() != null && passedStartDateElement.getDate().after(passedEndDateElement.getDate())) {
 				passedStartDateElement.setErrorKey("error.begin.after.end", null);
 				allOk &= false;
+			} else if (passedStartDateElement.getDate() != null && passedEndDateElement.getDate() != null && passedStartDateElement.getDate().equals(passedEndDateElement.getDate())) {
+				passedEndDateElement.setErrorKey("error.begin.end.same", null);
+				allOk &= false;
 			}
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
@@ -404,6 +410,9 @@ public class QTI21EditForm extends FormBasicController {
 				allOk &= false;
 			} else if(generalEndDateElement.getDate() != null && generalStartDateElement.getDate().after(generalEndDateElement.getDate())) {
 				generalStartDateElement.setErrorKey("error.begin.after.end", null);
+				allOk &= false;
+			} else if (generalEndDateElement.getDate() != null && generalStartDateElement.getDate() != null && generalStartDateElement.getDate().equals(generalEndDateElement.getDate())) {
+				generalEndDateElement.setErrorKey("error.begin.end.same", null);
 				allOk &= false;
 			}
 			break;
