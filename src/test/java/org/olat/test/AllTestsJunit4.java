@@ -329,6 +329,8 @@ import org.junit.runners.Suite;
 	org.olat.modules.taxonomy.manager.TaxonomyCompetenceAuditLogDAOTest.class,
 	org.olat.modules.teams.manager.TeamsMeetingDAOTest.class,
 	org.olat.modules.teams.manager.TeamsMeetingQueriesTest.class,
+	org.olat.modules.teams.manager.TeamsUserDAOTest.class,
+	org.olat.modules.teams.manager.TeamsAttendeeDAOTest.class,
 	org.olat.modules.video.VideoFormatTest.class,
 	org.olat.modules.video.manager.VideoTranscodingDAOTest.class,
 	org.olat.modules.video.manager.VideoMetadataDAOTest.class,

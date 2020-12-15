@@ -44,3 +44,40 @@ alter table o_teams_meeting add constraint teams_meet_entry_idx foreign key (fk_
 alter table o_teams_meeting add constraint teams_meet_grp_idx foreign key (fk_group_id) references o_gp_business (group_id);
 alter table o_teams_meeting add constraint teams_meet_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
 
+
+create table o_teams_user (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   t_identifier varchar(128),
+   t_displayname varchar(512),
+   fk_identity_id bigint default null,
+   unique(fk_identity_id),
+   primary key (id)
+);
+alter table o_teams_user ENGINE = InnoDB;
+
+alter table o_teams_user add constraint teams_user_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+
+
+create table o_teams_attendee (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   t_role varchar(32),
+   t_join_date datetime not null,
+   fk_identity_id bigint default null,
+   fk_teams_user_id bigint default null,
+   fk_meeting_id bigint not null,
+   primary key (id)
+
+);
+alter table o_teams_attendee ENGINE = InnoDB;
+
+alter table o_teams_attendee add constraint teams_att_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+alter table o_teams_attendee add constraint teams_att_user_idx foreign key (fk_teams_user_id) references o_teams_user (id);
+alter table o_teams_attendee add constraint teams_att_meet_idx foreign key (fk_meeting_id) references o_teams_meeting (id);
+
+
+
+

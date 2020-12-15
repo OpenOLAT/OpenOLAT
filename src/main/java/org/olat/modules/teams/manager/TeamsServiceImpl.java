@@ -46,6 +46,7 @@ import org.olat.login.oauth.spi.MicrosoftAzureADFSProvider;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
+import org.olat.modules.teams.TeamsUser;
 import org.olat.modules.teams.model.ConnectionInfos;
 import org.olat.modules.teams.model.TeamsError;
 import org.olat.modules.teams.model.TeamsErrorCodes;
@@ -77,6 +78,8 @@ public class TeamsServiceImpl implements TeamsService {
 	@Autowired
 	private TeamsModule teamsModule;
 	@Autowired
+	private TeamsUserDAO teamsUserDao;
+	@Autowired
 	private MicrosoftGraphDAO graphDao;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -84,6 +87,8 @@ public class TeamsServiceImpl implements TeamsService {
 	private TeamsMeetingDAO teamsMeetingDao;
 	@Autowired
 	private CalendarManager calendarManager;
+	@Autowired
+	private TeamsAttendeeDAO teamsAttendeeDao;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
@@ -178,7 +183,7 @@ public class TeamsServiceImpl implements TeamsService {
 	}
 
 	@Override
-	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, TeamsErrors errors) {
+	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, boolean guest, TeamsErrors errors) {
 		meeting = teamsMeetingDao.loadByKey(meeting.getKey());
 		if(meeting == null) {
 			errors.append(new TeamsError(TeamsErrorCodes.meetingDeleted));
@@ -190,10 +195,17 @@ public class TeamsServiceImpl implements TeamsService {
 			} else {
 				errors.append(new TeamsError(TeamsErrorCodes.presenterMissing));
 			}
-		} else if(StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
+		} else if(identity != null && StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
 			dbInstance.commitAndCloseSession();
 			User graphUser = lookupUser(identity);
 			updateOnlineMeeting(meeting, graphUser, presenter);
+		}
+		
+		if(identity != null && meeting != null && !guest
+				&& StringHelper.containsNonWhitespace(meeting.getOnlineMeetingJoinUrl())
+				&& !teamsAttendeeDao.hasAttendee(identity, meeting)) {
+			OnlineMeetingRole role = presenter ? OnlineMeetingRole.PRESENTER : OnlineMeetingRole.ATTENDEE;
+			teamsAttendeeDao.createAttendee(identity, null, role.name(), new Date(), meeting);
 		}
 		return meeting;
 	}
@@ -232,11 +244,23 @@ public class TeamsServiceImpl implements TeamsService {
 	
 	@Override
 	public User lookupUser(Identity identity) {
+		TeamsUser teamsUser = teamsUserDao.getUser(identity);
+		if(teamsUser != null) {
+			User user = new User();
+			user.id = teamsUser.getIdentifier();
+			user.displayName = teamsUser.getDisplayName();
+			return user;
+		}
+
+		
 		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
 		String institutionalEmail = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
 		List<User> users = graphDao.searchUsersByMail(email, institutionalEmail);
 		if(users.size() == 1) {
-			return users.get(0);
+			User user = users.get(0);
+			teamsUserDao.createUser(identity, user.id, user.displayName);
+			dbInstance.commit();
+			return user;
 		}
 		
 		List<String> principals = new ArrayList<>();
@@ -253,6 +277,9 @@ public class TeamsServiceImpl implements TeamsService {
 		User user = graphDao.searchUserByUserPrincipalName(principals);
 		if(user == null) {
 			log.debug("Cannot find user with email: {} or institutional email: {} (users found {})", email, institutionalEmail, users.size());
+		} else {
+			teamsUserDao.createUser(identity, user.id, user.displayName);
+			dbInstance.commit();
 		}
 		return null;
 	}

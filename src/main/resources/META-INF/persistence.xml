@@ -271,6 +271,8 @@
 		<class>org.olat.modules.taxonomy.model.TaxonomyCompetenceImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyCompetenceAuditLogImpl</class>
 		<class>org.olat.modules.teams.model.TeamsMeetingImpl</class>
+		<class>org.olat.modules.teams.model.TeamsUserImpl</class>
+		<class>org.olat.modules.teams.model.TeamsAttendeeImpl</class>
 		<class>org.olat.modules.video.model.VideoTranscodingImpl</class>
 		<class>org.olat.modules.video.model.VideoMetaImpl</class>
 		<class>org.olat.modules.webFeed.model.FeedImpl</class>

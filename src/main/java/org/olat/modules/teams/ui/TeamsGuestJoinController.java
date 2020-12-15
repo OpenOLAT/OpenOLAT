@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
@@ -54,6 +55,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsService;
+import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -265,10 +267,19 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 	private void doJoin(UserRequest ureq) {
 		if(!allowedToMeet) return;
 		
-		meeting = teamsService.getMeeting(meeting);
+		TeamsErrors errors = new TeamsErrors();
+		boolean guest = ureq.getUserSession().getRoles().isGuestOnly();
+		Identity id = guest ? null : getIdentity();
+		meeting = teamsService.joinMeeting(meeting, id, false, guest, errors);
+		
 		if(StringHelper.containsNonWhitespace(meeting.getOnlineMeetingJoinUrl())) {
 			MediaResource resource = new RedirectMediaResource(meeting.getOnlineMeetingJoinUrl());
 			ureq.getDispatchResult().setResultingMediaResource(resource);
+		} else if(errors.hasErrors()) {
+			getWindowControl().setError(TeamsUIHelper.formatErrors(getTranslator(), errors));
+			reloadButtonsAndStatus();
+		} else {
+			reloadButtonsAndStatus();
 		}
 	}
 }

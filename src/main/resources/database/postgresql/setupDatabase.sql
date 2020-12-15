@@ -1316,6 +1316,30 @@ create table o_teams_meeting (
    primary key (id)
 );
 
+create table o_teams_user (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   t_identifier varchar(128),
+   t_displayname varchar(512),
+   fk_identity_id int8 default null,
+   unique(fk_identity_id),
+   primary key (id)
+);
+
+create table o_teams_attendee (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   t_role varchar(32),
+   t_join_date timestamp not null,
+   fk_identity_id int8 default null,
+   fk_teams_user_id int8 default null,
+   fk_meeting_id int8 not null,
+   primary key (id)
+
+);
+
 -- efficiency statments
 create table o_as_eff_statement (
    id int8 not null,
@@ -3843,6 +3867,16 @@ alter table o_teams_meeting add constraint teams_meet_grp_idx foreign key (fk_gr
 create index idx_teams_meet_grp_idx on o_teams_meeting(fk_group_id);
 alter table o_teams_meeting add constraint teams_meet_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
 create index idx_teams_meet_creator_idx on o_teams_meeting(fk_creator_id);
+
+alter table o_teams_user add constraint teams_user_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_teams_user_ident_idx on o_teams_user(fk_identity_id);
+
+alter table o_teams_attendee add constraint teams_att_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_teams_att_ident_idx on o_teams_attendee(fk_identity_id);
+alter table o_teams_attendee add constraint teams_att_user_idx foreign key (fk_teams_user_id) references o_teams_user (id);
+create index idx_teams_att_user_idx on o_teams_attendee(fk_teams_user_id);
+alter table o_teams_attendee add constraint teams_att_meet_idx foreign key (fk_meeting_id) references o_teams_meeting (id);
+create index idx_teams_att_meet_idx on o_teams_attendee(fk_meeting_id);
 
 -- tag
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);

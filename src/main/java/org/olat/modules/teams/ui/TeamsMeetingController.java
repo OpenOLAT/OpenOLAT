@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -58,6 +59,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 	private FormLink joinButton;
 	
 	private TeamsMeeting meeting;
+	private final boolean guest;
 	private final boolean readOnly;
 	private final boolean moderator;
 	private final boolean administrator;
@@ -74,6 +76,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		this.meeting = meeting;
 		this.moderator = moderator;
 		this.administrator = administrator;
+		guest = ureq.getUserSession().getRoles().isGuestOnly();
 		graphUser = teamsService.lookupUser(getIdentity());
 		meetingOres = OresHelper.createOLATResourceableInstance(TeamsMeeting.class.getSimpleName(), meeting.getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), meetingOres);
@@ -207,7 +210,9 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 
 	private void doJoin(UserRequest ureq) {
 		TeamsErrors errors = new TeamsErrors();
-		meeting = teamsService.joinMeeting(meeting, getIdentity(), (administrator || moderator), errors);
+		
+		Identity id = guest ? null : getIdentity();
+		meeting = teamsService.joinMeeting(meeting, id, (administrator || moderator), guest, errors);
 		if(meeting == null) {
 			showWarning("warning.no.meeting");
 			fireEvent(ureq, Event.BACK_EVENT);

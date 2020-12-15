@@ -66,7 +66,7 @@ public interface TeamsService {
 	
 	public TeamsMeeting getMeeting(String identifier);
 	
-	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, TeamsErrors errors);
+	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, boolean guest, TeamsErrors errors);
 
 	public int countMeetings(TeamsMeetingsSearchParameters searchParams);
 	
