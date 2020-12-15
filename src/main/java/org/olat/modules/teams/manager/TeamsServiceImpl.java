@@ -26,11 +26,21 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.commons.calendar.CalendarManagedFlag;
+import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.model.Kalendar;
+import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.login.oauth.spi.MicrosoftAzureADFSProvider;
 import org.olat.modules.teams.TeamsMeeting;
@@ -43,6 +53,7 @@ import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.model.TeamsMeetingImpl;
 import org.olat.modules.teams.model.TeamsMeetingsSearchParameters;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +82,10 @@ public class TeamsServiceImpl implements TeamsService {
 	private BaseSecurity securityManager;
 	@Autowired
 	private TeamsMeetingDAO teamsMeetingDao;
+	@Autowired
+	private CalendarManager calendarManager;
+	@Autowired
+	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private TeamsMeetingQueries teamsMeetingQueries;
 
@@ -116,7 +131,7 @@ public class TeamsServiceImpl implements TeamsService {
 	@Override
 	public TeamsMeeting updateMeeting(TeamsMeeting meeting) {
 		meeting = teamsMeetingDao.updateMeeting(meeting);
-
+		updateCalendarEvent(meeting);
 		return meeting;
 	}
 	
@@ -127,6 +142,7 @@ public class TeamsServiceImpl implements TeamsService {
 		TeamsMeeting reloadedMeeting = teamsMeetingDao.loadByKey(meeting.getKey());
 		if(reloadedMeeting != null) {
 			String onlineMeetingId = reloadedMeeting.getOnlineMeetingId();
+			removeCalendarEvent(reloadedMeeting);
 			teamsMeetingDao.deleteMeeting(reloadedMeeting);
 			
 			if(StringHelper.containsNonWhitespace(onlineMeetingId)
@@ -250,5 +266,104 @@ public class TeamsServiceImpl implements TeamsService {
 	public ConnectionInfos checkConnection(String clientId, String clientSecret, String tenantGuid,
 			String applicationId, String producerId, String onBehalfId) {
 		return graphDao.check(clientId, clientSecret, tenantGuid, applicationId, producerId, onBehalfId);
+	}
+	
+	private void removeCalendarEvent(TeamsMeeting meeting) {
+		Kalendar calendar = getCalendar(meeting);
+		if(calendar == null) return;
+		
+		String externalId = generateEventExternalId(meeting);
+		List<KalendarEvent> events = calendar.getEvents();
+		for(KalendarEvent event:events) {
+			if(externalId.equals(event.getExternalId())) {
+				calendarManager.removeEventFrom(calendar, event);
+			}
+		}
+	}
+	
+	private void updateCalendarEvent(TeamsMeeting meeting) {
+		Kalendar calendar = getCalendar(meeting);
+		if(calendar == null) return;
+		
+		CalendarManagedFlag[] managedFlags = { CalendarManagedFlag.all };
+		
+		String externalId = generateEventExternalId(meeting);
+		List<KalendarEvent> events = calendar.getEvents();
+		for(KalendarEvent event:events) {
+			if(externalId.equals(event.getExternalId())) {
+				if(meeting.isPermanent()) {
+					calendarManager.removeEventFrom(calendar, event);
+				} else {
+					event.setSubject(meeting.getSubject());
+					event.setDescription(meeting.getDescription());
+					event.setBegin(meeting.getStartDate());
+					event.setEnd(meeting.getEndDate());
+					event.setManagedFlags(managedFlags);
+					if(event.getKalendarEventLinks() == null || event.getKalendarEventLinks().isEmpty()) {
+						KalendarEventLink eventLink = generateEventLink(meeting);
+						if(eventLink != null) {
+							List<KalendarEventLink> kalendarEventLinks = new ArrayList<>();
+							kalendarEventLinks.add(eventLink);
+							event.setKalendarEventLinks(kalendarEventLinks);
+						}
+					}
+					calendarManager.updateEventFrom(calendar, event);
+				}
+				return;
+			}
+		}
+		
+		if(!meeting.isPermanent()) {
+			String eventId = CodeHelper.getGlobalForeverUniqueID();
+			KalendarEvent newEvent = new KalendarEvent(eventId, null, meeting.getSubject(), meeting.getStartDate(), meeting.getEndDate());
+			newEvent.setDescription(meeting.getDescription());
+			newEvent.setManagedFlags(managedFlags);
+			newEvent.setExternalId(externalId);
+			KalendarEventLink eventLink = generateEventLink(meeting);
+			if(eventLink != null) {
+				List<KalendarEventLink> kalendarEventLinks = new ArrayList<>();
+				kalendarEventLinks.add(eventLink);
+				newEvent.setKalendarEventLinks(kalendarEventLinks);
+			}
+			calendarManager.addEventTo(calendar, newEvent);
+		}
+	}
+	
+	private String generateEventExternalId(TeamsMeeting meeting) {
+		return "ms-teams-meeting-" + meeting.getKey();
+	}
+	
+	private KalendarEventLink generateEventLink(TeamsMeeting meeting) {
+		String id = meeting.getKey().toString();
+		String displayName = meeting.getSubject();
+		if(meeting.getEntry() != null) {
+			StringBuilder businessPath = new StringBuilder(128);
+			businessPath.append("[RepositoryEntry:").append(meeting.getEntry().getKey()).append("]");
+			if(StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
+				businessPath.append("[CourseNode:").append(meeting.getSubIdent()).append("]");
+			}
+			businessPath.append("[Meeting:").append(meeting.getKey()).append("]");
+			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath.toString());
+			return new KalendarEventLink("teams", id, displayName, url, "o_CourseModule_icon");
+		} else if(meeting.getBusinessGroup() != null) {
+			StringBuilder businessPath = new StringBuilder(128);
+			businessPath.append("[BusinessGroup:").append(meeting.getBusinessGroup().getKey())
+				.append("][toolteams:0][Meeting:").append(meeting.getKey()).append("]");
+			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath.toString());
+			return new KalendarEventLink("teams", id, displayName, url, "o_icon_group");
+		}
+		return null;
+	}
+	
+	private Kalendar getCalendar(TeamsMeeting meeting) {
+		KalendarRenderWrapper wrapper = null;
+		if(meeting.getBusinessGroup() != null) {
+			wrapper = calendarManager.getGroupCalendar(meeting.getBusinessGroup());
+		} else if(meeting.getEntry() != null) {
+			RepositoryEntry entry = repositoryEntryDao.loadByKey(meeting.getEntry().getKey());
+			ICourse course = CourseFactory.loadCourse(entry);
+			wrapper = calendarManager.getCourseCalendar(course);
+		}
+		return wrapper == null ? null: wrapper.getKalendar();
 	}
 }
