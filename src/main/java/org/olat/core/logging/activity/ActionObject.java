@@ -104,6 +104,8 @@ public enum ActionObject {
 	lectures,
 	lecturesRollcall,
 	assessmentdocument,
-	completionType;
+	completionType,
+	teams,
+	bigbluebutton;
 
 }

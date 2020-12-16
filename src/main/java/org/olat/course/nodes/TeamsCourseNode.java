@@ -21,6 +21,7 @@ package org.olat.course.nodes;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -38,6 +39,8 @@ import org.olat.course.nodes.teams.TeamsPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.ui.TeamsMeetingsRunController;
 import org.olat.repository.RepositoryEntry;
 
@@ -138,7 +141,12 @@ public class TeamsCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public void cleanupOnDelete(ICourse course) {
-		//TODO teams
+		TeamsService teamsService = CoreSpringFactory.getImpl(TeamsService.class);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<TeamsMeeting> meetings = teamsService.getMeetings(courseEntry, getIdent(), null);
+		for(TeamsMeeting meeting:meetings) {
+			teamsService.deleteMeeting(meeting);
+		}
 		super.cleanupOnDelete(course);
 	}
 }

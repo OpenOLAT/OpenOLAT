@@ -111,6 +111,9 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String WIKI_SOFTKEY = "WIKI_SOFTKEY";
 	public static final transient String DOCUMENTS_ENABLED = "DOCUMENTS_ENABLED";
 	public static final transient String KEY_CALENDAR_ENABLED = "KEY_CALENDAR_ENABLED";
+	public static final transient String TEAMS_ENABLED = "TEAMS_ENABLED";
+	public static final transient String BIGBLUEBUTTON_ENABLED = "BIGBLUEBUTTON_ENABLED";
+	public static final transient String BIGBLUEBUTTON_MODERATOR_STARTS_MEETING = "BIGBLUEBUTTON_MODERATOR_STARTS_MEETING";
 
 	public static final transient String KEY_GLOSSARY_ENABLED = "KEY_GLOSSARY_ENABLED";
 	public static final transient String KEY_GLOSSARY_SOFTKEY = "KEY_GLOSSARY_SOFTKEY";
@@ -195,7 +198,10 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(FORUM_ENABLED, Boolean.FALSE);
 		configuration.put(WIKI_ENABLED, Boolean.FALSE);
 		configuration.put(DOCUMENTS_ENABLED, Boolean.FALSE);
-
+		configuration.put(TEAMS_ENABLED, Boolean.FALSE);
+		configuration.put(BIGBLUEBUTTON_ENABLED, Boolean.FALSE);
+		configuration.put(BIGBLUEBUTTON_MODERATOR_STARTS_MEETING, Boolean.TRUE);
+		
 		configuration.put(NODE_ACCESS_TYPE, NODE_ACCESS_TYPE_DEFAULT);
 		configuration.put(KEY_COMPLETION_TYPE, CompletionType.numberOfNodes.name());
 
@@ -288,7 +294,7 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(RECERTIFICATION_ENABLED))
 					configuration.put(RECERTIFICATION_ENABLED, Boolean.FALSE);
 				if (!configuration.containsKey(RECERTIFICATION_TIMELAPSE))
-					configuration.put(RECERTIFICATION_TIMELAPSE, new Integer(0));
+					configuration.put(RECERTIFICATION_TIMELAPSE, Integer.valueOf(0));
 				this.version = 10;
 			}
 
@@ -398,7 +404,21 @@ public class CourseConfig implements Serializable, Cloneable {
 				}
 				if (!configuration.containsKey(DISCLAIMER_2_LABEL_2)) {
 					configuration.put(DISCLAIMER_2_LABEL_2, "");
-				} 
+				}
+
+				this.version = 20;
+			}
+			
+			if(version == 20) {
+				if (!configuration.containsKey(TEAMS_ENABLED)) {
+					configuration.put(TEAMS_ENABLED, Boolean.FALSE);
+				}
+				if (!configuration.containsKey(BIGBLUEBUTTON_ENABLED)) {
+					configuration.put(BIGBLUEBUTTON_ENABLED, Boolean.FALSE);
+				}
+				if (!configuration.containsKey(BIGBLUEBUTTON_MODERATOR_STARTS_MEETING)) {
+					configuration.put(BIGBLUEBUTTON_MODERATOR_STARTS_MEETING, Boolean.TRUE);
+				}
 			}
 
 			/*
@@ -715,10 +735,37 @@ public class CourseConfig implements Serializable, Cloneable {
 	public void setEmailEnabled(boolean b) {
 		configuration.put(EMAIL_ENABLED, Boolean.valueOf(b));
 	}
+	
+	public boolean isTeamsEnabled() {
+		Boolean bool = (Boolean) configuration.get(TEAMS_ENABLED);
+		return bool != null && bool.booleanValue();
+	}
+
+	public void setTeamsEnabled(boolean b) {
+		configuration.put(TEAMS_ENABLED, Boolean.valueOf(b));
+	}
+	
+	public boolean isBigBlueButtonEnabled() {
+		Boolean bool = (Boolean) configuration.get(BIGBLUEBUTTON_ENABLED);
+		return bool != null && bool.booleanValue();
+	}
+
+	public void setBigBlueButtonEnabled(boolean b) {
+		configuration.put(BIGBLUEBUTTON_ENABLED, Boolean.valueOf(b));
+	}
+	
+	public boolean isBigBlueButtonModeratorStartsMeeting() {
+		Boolean bool = (Boolean) configuration.get(BIGBLUEBUTTON_MODERATOR_STARTS_MEETING);
+		return bool == null || bool.booleanValue();
+	}
+
+	public void setBigBlueButtonModeratorStartsMeeting(boolean b) {
+		configuration.put(BIGBLUEBUTTON_MODERATOR_STARTS_MEETING, Boolean.valueOf(b));
+	}
 
 	public boolean isBlogEnabled() {
 		Boolean bool = (Boolean) configuration.get(BLOG_ENABLED);
-		return bool.booleanValue();
+		return bool != null && bool.booleanValue();
 	}
 
 	public void setBlogEnabled(boolean b) {
@@ -915,6 +962,9 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setParticipantListEnabled(isParticipantListEnabled());
 		clone.setParticipantInfoEnabled(isParticipantInfoEnabled());
 		clone.setEmailEnabled(isEmailEnabled());
+		clone.setTeamsEnabled(isTeamsEnabled());
+		clone.setBigBlueButtonEnabled(isBigBlueButtonEnabled());
+		clone.setBigBlueButtonModeratorStartsMeeting(isBigBlueButtonModeratorStartsMeeting());
 		clone.setBlogEnabled(isBlogEnabled());
 		clone.setBlogSoftKey(getBlogSoftKey());
 		clone.setForumEnabled(isForumEnabled());

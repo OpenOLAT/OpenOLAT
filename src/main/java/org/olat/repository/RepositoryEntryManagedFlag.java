@@ -50,6 +50,8 @@ public enum RepositoryEntryManagedFlag {
       participantList(settings, all),
       participantInfo(settings, all),
       email(settings, all),
+      teams(settings, all),
+      bigbluebutton(settings, all),
       blog(settings, all),
       wiki(settings, all),
       forum(settings, all),

@@ -319,6 +319,8 @@ public class BigBlueButtonMeetingDAO {
 			sb.and().append("meeting.entry.key=:entryKey");
 			if(StringHelper.containsNonWhitespace(subIdent)) {
 				sb.and().append("meeting.subIdent=:subIdent");
+			} else {
+				sb.and().append("meeting.subIdent is null");
 			}
 		}
 		if(businessGroup != null) {
@@ -352,6 +354,8 @@ public class BigBlueButtonMeetingDAO {
 		  .append(" and meeting.startDate is not null and meeting.endDate is not null");
 		if(StringHelper.containsNonWhitespace(subIdent)) {
 			sb.append(" and meeting.subIdent=:subIdent");
+		} else {
+			sb.append(" and meeting.subIdent is null");
 		}
 		sb.append(" and meeting.endDate>=:now")
 		  .append(" order by meeting.startDate asc");

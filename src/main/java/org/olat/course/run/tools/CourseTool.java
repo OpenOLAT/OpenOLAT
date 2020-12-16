@@ -30,7 +30,9 @@ public enum CourseTool {
 	participantlist("command.participant.list", "o_cmembers_icon"),
 	participantinfos("command.participant.info", "o_infomsg_icon"),
 	learningpath("command.learning.path", "o_icon_learning_path"),
-	wiki("command.wiki", "o_wiki_icon");
+	wiki("command.wiki", "o_wiki_icon"),
+	teams("command.teams", "o_vc_icon"),
+	bigbluebutton("command.bigbluebutton", "o_vc_icon");
 	
 	private final String i18nKey;
 	private final String iconCss;

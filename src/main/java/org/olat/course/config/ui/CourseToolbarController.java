@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -55,6 +56,8 @@ import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.WikiResource;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.teams.TeamsModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -96,6 +99,9 @@ public class CourseToolbarController extends FormBasicController {
 	private SelectionElement documentsEl;
 	private SelectionElement chatEl;
 	private SelectionElement glossaryEl;
+	private MultipleSelectionElement teamsEl;
+	private MultipleSelectionElement bigBlueButtonEl;
+	private MultipleSelectionElement bigBlueButtonModeratorStartsMeetingEl;
 
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController blogSearchCtrl;
@@ -116,6 +122,10 @@ public class CourseToolbarController extends FormBasicController {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private ReferenceManager referenceManager;
+	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	
 	public CourseToolbarController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, CourseConfig courseConfig) {
@@ -220,6 +230,39 @@ public class CourseToolbarController extends FormBasicController {
 		if(managedEmail && emailEnabled) {
 			canHideToolbar &= false;
 		}
+		
+		boolean teamsVisible = teamsModule.isEnabled() && teamsModule.isCoursesEnabled();
+		if(teamsVisible) {
+			boolean teamsEnabled = courseConfig.isTeamsEnabled();
+			boolean managedTeams = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.teams);
+			teamsEl = uifactory.addCheckboxesHorizontal("teamsIsOn", "chkbx.teams.onoff", formLayout, onKeys, onValues);
+			teamsEl.select(onKeys[0], teamsEnabled);
+			teamsEl.setEnabled(editable && !managedTeams);
+			if(managedTeams && teamsEnabled) {
+				canHideToolbar &= false;
+			}
+		}
+		
+		boolean bigBlueButtonVisible = bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isCoursesEnabled();
+		if(bigBlueButtonVisible) {
+			boolean bigBlueButtonEnabled = courseConfig.isBigBlueButtonEnabled();
+			boolean managedBigBlueButton = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bigbluebutton);
+			bigBlueButtonEl = uifactory.addCheckboxesHorizontal("bigBlueButtonIsOn", "chkbx.bigbluebutton.onoff", formLayout, onKeys, onValues);
+			bigBlueButtonEl.addActionListener(FormEvent.ONCHANGE);
+			bigBlueButtonEl.select(onKeys[0], bigBlueButtonEnabled);
+			bigBlueButtonEl.setEnabled(editable && !managedBigBlueButton);
+			if(managedBigBlueButton && bigBlueButtonEnabled) {
+				canHideToolbar &= false;
+			}
+
+			boolean moderatorsStartsMeeting = courseConfig.isBigBlueButtonModeratorStartsMeeting();
+			String[] moderatorsValues = new String[] { translate("chkbx.bigbluebutton.moderator") };
+			bigBlueButtonModeratorStartsMeetingEl = uifactory.addCheckboxesHorizontal("bigBlueButtonModerators", null, formLayout, onKeys, moderatorsValues);
+			bigBlueButtonModeratorStartsMeetingEl.select(onKeys[0], moderatorsStartsMeeting);
+			bigBlueButtonModeratorStartsMeetingEl.setEnabled(editable && !managedBigBlueButton);
+			bigBlueButtonModeratorStartsMeetingEl.setVisible(bigBlueButtonEl.isSelected(0));
+		}
+		
 		boolean blogEnabled = courseConfig.isBlogEnabled();
 		boolean managedBlog = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.blog);
 		blogEl = uifactory.addCheckboxesHorizontal("blogIsOn", "chkbx.blog.onoff", formLayout, onKeys, onValues);
@@ -350,6 +393,8 @@ public class CourseToolbarController extends FormBasicController {
 			updateUI();
 		} else if (source == wikiSelectLink) {
 			doSelectWiki(ureq);
+		} else if(bigBlueButtonEl == source) {
+			bigBlueButtonModeratorStartsMeetingEl.setVisible(bigBlueButtonEl.isAtLeastSelected(1));
 		} else if(toolbarEl == source) {
 			if(!toolbarEl.isSelected(0) && isAnyToolSelected()) {
 				showWarning("chkbx.toolbar.off.warning");
@@ -365,6 +410,8 @@ public class CourseToolbarController extends FormBasicController {
 				|| participantListEl.isSelected(0)
 				|| participantInfoEl.isSelected(0)
 				|| emailEl.isSelected(0)
+				|| (teamsEl != null && teamsEl.isAtLeastSelected(1))
+				|| (bigBlueButtonEl != null && bigBlueButtonEl.isAtLeastSelected(1))
 				|| blogEl.isSelected(0)
 				|| wikiEl.isSelected(0)
 				|| forumEl.isSelected(0)
@@ -383,6 +430,13 @@ public class CourseToolbarController extends FormBasicController {
 		participantListEl.setVisible(enabled);
 		participantInfoEl.setVisible(enabled);
 		emailEl.setVisible(enabled);
+		if(teamsEl != null) {
+			teamsEl.setVisible(enabled);
+		}
+		if(bigBlueButtonEl != null) {
+			bigBlueButtonEl.setVisible(enabled);
+			bigBlueButtonModeratorStartsMeetingEl.setVisible(enabled && bigBlueButtonEl.isAtLeastSelected(1));
+		}
 		blogEl.setVisible(enabled);
 		blogCont.setVisible(enabled);
 		wikiEl.setVisible(enabled);
@@ -397,9 +451,9 @@ public class CourseToolbarController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == blogSearchCtrl) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				RepositoryEntry blogEntry = blogSearchCtrl.getSelectedEntry();
-				if (blogEntry != null) {
-					this.blogEntry = blogEntry;
+				RepositoryEntry re = blogSearchCtrl.getSelectedEntry();
+				if (re != null) {
+					blogEntry = re;
 					updateUI();
 				}
 			}
@@ -407,9 +461,9 @@ public class CourseToolbarController extends FormBasicController {
 			cleanUp();
 		} else if (source == wikiSearchCtrl) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				RepositoryEntry wikiEntry = wikiSearchCtrl.getSelectedEntry();
-				if (wikiEntry != null) {
-					this.wikiEntry = wikiEntry;
+				RepositoryEntry re = wikiSearchCtrl.getSelectedEntry();
+				if (re != null) {
+					wikiEntry = re;
 					updateUI();
 				}
 			}
@@ -430,27 +484,23 @@ public class CourseToolbarController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		blogCont.clearError();
 		boolean blogEnabled = blogEl.isSelected(0);
-		if (blogEnabled) {
-			if (blogEntry == null) {
-				blogCont.setErrorKey("error.no.blog.selected", null);
-				allOk = false;
-			}
+		if (blogEnabled && blogEntry == null) {
+			blogCont.setErrorKey("error.no.blog.selected", null);
+			allOk = false;
 		}
 
 		wikiCont.clearError();
 		boolean wikiEnabled = wikiEl.isSelected(0);
-		if (wikiEnabled) {
-			if (wikiEntry == null) {
-				wikiCont.setErrorKey("error.no.wiki.selected", null);
-				allOk = false;
-			}
+		if (wikiEnabled && wikiEntry == null) {
+			wikiCont.setErrorKey("error.no.wiki.selected", null);
+			allOk = false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -481,6 +531,18 @@ public class CourseToolbarController extends FormBasicController {
 		boolean enableEmail = emailEl.isSelected(0);
 		boolean updateEmail = courseConfig.isEmailEnabled() != enableEmail;
 		courseConfig.setEmailEnabled(enableEmail && toolbarEnabled);
+		
+		boolean enableTeams = teamsEl != null && teamsEl.isSelected(0);
+		boolean updateTeams = courseConfig.isTeamsEnabled() != enableTeams;
+		courseConfig.setTeamsEnabled(enableTeams && toolbarEnabled);
+		
+		boolean enableBigBlueButton = bigBlueButtonEl != null && bigBlueButtonEl.isSelected(0);
+		boolean updateBigBlueButton = courseConfig.isBigBlueButtonEnabled() != enableBigBlueButton;
+		courseConfig.setBigBlueButtonEnabled(enableBigBlueButton && toolbarEnabled);
+		
+		boolean bigBlueButtonModeratorStarts = bigBlueButtonModeratorStartsMeetingEl == null || bigBlueButtonModeratorStartsMeetingEl.isSelected(0);
+		updateBigBlueButton |= courseConfig.isBigBlueButtonModeratorStartsMeeting() != bigBlueButtonModeratorStarts;
+		courseConfig.setBigBlueButtonModeratorStartsMeeting(bigBlueButtonModeratorStarts && toolbarEnabled);
 		
 		boolean enableBlog = blogEl.isSelected(0);
 		boolean updateBlog = courseConfig.isBlogEnabled() != enableBlog;
@@ -568,7 +630,27 @@ public class CourseToolbarController extends FormBasicController {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.email, course.getResourceableId()), course);
 		}
-	
+		
+		if(updateTeams) {
+			ILoggingAction loggingAction = enableTeams ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_TEAMS_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_TEAMS_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.teams, course.getResourceableId()), course);
+		}
+		
+		if(updateBigBlueButton) {
+			ILoggingAction loggingAction = enableBigBlueButton ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_BIGBLUEBUTTON_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_BIGBLUEBUTTON_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.bigbluebutton, course.getResourceableId()), course);
+		}
+		
 		if(updateBlog) {
 			ILoggingAction loggingAction = enableBlog ?
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_BLOG_ENABLED:

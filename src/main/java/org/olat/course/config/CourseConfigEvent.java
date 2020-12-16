@@ -70,6 +70,8 @@ public class CourseConfigEvent extends MultiUserEvent {
 		chat,
 		glossary,
 		layout,
-		completionType
+		completionType,
+		teams,
+		bigbluebutton
 	}
 }

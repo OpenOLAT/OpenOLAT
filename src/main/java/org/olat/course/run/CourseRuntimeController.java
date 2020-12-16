@@ -137,6 +137,8 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingDefaultConfiguration;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
@@ -144,6 +146,7 @@ import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
 import org.olat.modules.lecture.ui.TeacherOverviewController;
 import org.olat.modules.reminder.ReminderModule;
+import org.olat.modules.teams.ui.TeamsMeetingsRunController;
 import org.olat.note.NoteController;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
@@ -190,7 +193,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		efficiencyStatementsLink, noteLink, leaveLink,
 		// course tools
 		learningPathLink, learningPathsLink, calendarLink, chatLink, participantListLink, participantInfoLink,
-		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink,
+		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink, teamsLink, bigBlueButtonLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link currentUserCountLink;
@@ -208,6 +211,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CustomDBMainController databasesCtrl;
 	private FolderRunController courseFolderCtrl;
 	private InfoRunController participatInfoCtrl;
+	private TeamsMeetingsRunController teamsCtrl;
 	private SearchInputController searchController;
 	private StatisticMainController statisticsCtrl;
 	private CourseRemindersController remindersCtrl;
@@ -216,6 +220,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private MembersToolRunController participatListCtrl;
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
+	private BigBlueButtonRunController bigBlueButtonCtrl;
 	private AssessmentModeListController assessmentModeCtrl;
 	private LectureRepositoryAdminController lecturesAdminCtrl;
 	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
@@ -927,6 +932,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock && userCourseEnv != null) {
+			teamsLink = LinkFactory.createToolLink("teams", translate(CourseTool.teams.getI18nKey()), this, CourseTool.teams.getIconCss());
+			teamsLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[teams:0]"));
+			teamsLink.setVisible(cc.isTeamsEnabled());
+			toolbarPanel.addTool(teamsLink);
+		}
+		
+		if(!assessmentLock && userCourseEnv != null) {
+			bigBlueButtonLink = LinkFactory.createToolLink("bigbluebutton", translate(CourseTool.bigbluebutton.getI18nKey()), this, CourseTool.bigbluebutton.getIconCss());
+			bigBlueButtonLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[bigbluebutton:0]"));
+			bigBlueButtonLink.setVisible(cc.isBigBlueButtonEnabled());
+			toolbarPanel.addTool(bigBlueButtonLink);
+		}
+		
+		if(!assessmentLock && userCourseEnv != null) {
 			blogLink = LinkFactory.createToolLink("blog", translate(CourseTool.blog.getI18nKey()), this, CourseTool.blog.getIconCss());
 			blogLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[blog:0]"));
@@ -1082,6 +1103,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doParticipantInfo(ureq);
 		} else if(emailLink == source) {
 			doEmail(ureq);
+		} else if(teamsLink == source) {
+			doTeams(ureq);
+		} else if(bigBlueButtonLink == source) {
+			doBigBlueButton(ureq);
 		} else if(blogLink == source) {
 			doBlog(ureq);
 		} else if(wikiLink == source) {
@@ -1316,6 +1341,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if (blogLink != null && blogLink.isVisible()) {
 					activateSubEntries(ureq, doBlog(ureq), entries);
 				}
+			} else if("Teams".equalsIgnoreCase(type)) {
+				if (teamsLink != null && teamsLink.isVisible()) {
+					activateSubEntries(ureq, doTeams(ureq), entries);
+				}
+			} else if("BigBlueButton".equalsIgnoreCase(type)) {
+				if (bigBlueButtonLink != null && bigBlueButtonLink.isVisible()) {
+					activateSubEntries(ureq, doBigBlueButton(ureq), entries);
+				}
 			} else if("Wiki".equalsIgnoreCase(type)) {
 				if (wikiLink != null && wikiLink.isVisible()) {
 					activateSubEntries(ureq, doWiki(ureq), entries);
@@ -1420,6 +1453,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void doOpenTool(UserRequest ureq, CourseTool tool) {
 		switch (tool) {
+		case bigbluebutton: {
+			if (bigBlueButtonLink != null && bigBlueButtonLink.isVisible()) {
+				doBigBlueButton(ureq);
+			} else {
+				doShowToolNotAvailable(CourseTool.bigbluebutton);
+			}
+		}
+		break;
 		case blog: {
 			if (blogLink != null && blogLink.isVisible()) {
 				doBlog(ureq);
@@ -1483,6 +1524,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doParticipantInfo(ureq);
 			} else {
 				doShowToolNotAvailable(CourseTool.participantinfos);
+			}
+		}
+		break;
+		case teams: {
+			if (teamsLink != null && teamsLink.isVisible()) {
+				doTeams(ureq);
+			} else {
+				doShowToolNotAvailable(CourseTool.teams);
 			}
 		}
 		break;
@@ -2098,6 +2147,53 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		return null;
 	}
 	
+	private TeamsMeetingsRunController doTeams(UserRequest ureq) {
+		if(delayedClose == Delayed.teams || requestForClose(ureq)) {
+			removeCustomCSS();
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableType("teams");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
+			boolean admin = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+			boolean moderator = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+			teamsCtrl = new TeamsMeetingsRunController(ureq, swControl, getRepositoryEntry(), null, null,
+					admin, moderator, userCourseEnv.isCourseReadOnly());
+			
+			pushController(ureq, translate("command.teams"), teamsCtrl);
+			setActiveTool(teamsLink);
+			currentToolCtr = teamsCtrl;
+			return teamsCtrl;
+		}	
+		delayedClose = Delayed.teams;
+		return null;
+	}
+	
+	private BigBlueButtonRunController doBigBlueButton(UserRequest ureq) {
+		if(delayedClose == Delayed.bigbluebutton || requestForClose(ureq)) {
+			removeCustomCSS();
+			
+			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+			final CourseConfig cc = course.getCourseConfig(); // do not cache cc, not save
+			boolean moderatorStart = cc.isBigBlueButtonModeratorStartsMeeting();
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableType("bigbluebutton");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
+			boolean admin = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+			boolean moderator = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+			BigBlueButtonMeetingDefaultConfiguration configuration = new BigBlueButtonMeetingDefaultConfiguration(moderatorStart);
+			bigBlueButtonCtrl = new BigBlueButtonRunController(ureq, swControl, getRepositoryEntry(), null, null,
+					configuration, admin, moderator, userCourseEnv.isCourseReadOnly());
+			
+			pushController(ureq, translate("command.bigbluebutton"), bigBlueButtonCtrl);
+			setActiveTool(bigBlueButtonLink);
+			currentToolCtr = bigBlueButtonCtrl;
+			return bigBlueButtonCtrl;
+		}
+		delayedClose = Delayed.bigbluebutton;
+		return null;
+	}
+	
 	private WikiToolController doWiki(UserRequest ureq) {
 		if(delayedClose == Delayed.wiki || requestForClose(ureq)) {
 			removeCustomCSS();
@@ -2321,6 +2417,24 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 				break;
 			}
+			case teams: {
+				if(teamsLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					teamsLink.setVisible(cc.isTeamsEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
+			case bigbluebutton: {
+				if(bigBlueButtonLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					bigBlueButtonLink.setVisible(cc.isBigBlueButtonEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
 			case blog: {
 				if(blogLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -2499,6 +2613,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		blog,
 		wiki,
 		forum,
-		documents
+		documents,
+		teams,
+		bigbluebutton
 	}
 }
