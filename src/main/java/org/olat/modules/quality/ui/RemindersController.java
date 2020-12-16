@@ -140,15 +140,16 @@ public class RemindersController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		invitation = save(invitation, QualityReminderType.INVITATION, invitationEl);
-		reminder1 = save(reminder1, QualityReminderType.REMINDER1, reminder1El);
-		reminder2 = save(reminder2, QualityReminderType.REMINDER2, reminder2El);
+		invitation = save(QualityReminderType.INVITATION, invitationEl);
+		reminder1 = save(QualityReminderType.REMINDER1, reminder1El);
+		reminder2 = save(QualityReminderType.REMINDER2, reminder2El);
 		updateUI();
 	}
 	
-	private QualityReminder save(QualityReminder reminder, QualityReminderType type, DateChooser reminderEl) {
+	private QualityReminder save(QualityReminderType type, DateChooser reminderEl) {
 		QualityReminder savedReminder = null;
 		if (reminderEl.isEnabled()) {
+			QualityReminder reminder = qualityService.loadReminder(dataCollection, type);
 			if (reminderEl.getDate() != null) {
 				if (reminder != null) {
 					savedReminder = qualityService.updateReminderDatePlaned(reminder, reminderEl.getDate());
