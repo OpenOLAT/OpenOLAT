@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -60,6 +61,8 @@ public class TeamsConfigurationController extends FormBasicController {
 	private TextElement onBehalfUserIdEl;
 	private StaticTextElement onBehalfUserEl;
 	private FormLink checkConnectionButton;
+	private SpacerElement appSpacer;
+	private SpacerElement onBehlafSpacer;
 	
 	@Autowired
 	private TeamsModule teamsModule;
@@ -100,7 +103,7 @@ public class TeamsConfigurationController extends FormBasicController {
 		organisationEl = uifactory.addStaticTextElement("organisation", "azure.tenant.organisation", organisation, formLayout);
 		organisationEl.setVisible(StringHelper.containsNonWhitespace(organisation));
 		
-		uifactory.addSpacerElement("spacer1", formLayout, false);
+		appSpacer = uifactory.addSpacerElement("spacer1", formLayout, false);
 		
 		String applicationId = teamsModule.getApplicationId();
 		applicationIdEl = uifactory.addTextElement("appId", "graph.application.id", 255, applicationId, formLayout);
@@ -112,7 +115,7 @@ public class TeamsConfigurationController extends FormBasicController {
 		producerEl = uifactory.addStaticTextElement("producer", "graph.producer.displayname", organisation, formLayout);
 		producerEl.setVisible(false);
 		
-		uifactory.addSpacerElement("spacer1", formLayout, false);
+		onBehlafSpacer = uifactory.addSpacerElement("spacer2", formLayout, false);
 		
 		String onBehalfUserId = teamsModule.getOnBehalfUserId();
 		onBehalfUserIdEl = uifactory.addTextElement("onbehalf.id", "graph.onbehalf.user", 255, onBehalfUserId, formLayout);
@@ -177,6 +180,8 @@ public class TeamsConfigurationController extends FormBasicController {
 		applicationEl.setVisible(enabled && StringHelper.containsNonWhitespace(applicationEl.getValue()));
 		producerEl.setVisible(enabled && StringHelper.containsNonWhitespace(producerEl.getValue()));
 		onBehalfUserEl.setVisible(enabled && StringHelper.containsNonWhitespace(onBehalfUserEl.getValue()));
+		appSpacer.setVisible(enabled);
+		onBehlafSpacer.setVisible(enabled);
 	}
 
 	@Override

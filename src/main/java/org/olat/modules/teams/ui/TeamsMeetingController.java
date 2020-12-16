@@ -212,7 +212,8 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		TeamsErrors errors = new TeamsErrors();
 		
 		Identity id = guest ? null : getIdentity();
-		meeting = teamsService.joinMeeting(meeting, id, (administrator || moderator), guest, errors);
+		boolean presenter = (administrator || moderator);
+		meeting = teamsService.joinMeeting(meeting, id, presenter, guest, errors);
 		if(meeting == null) {
 			showWarning("warning.no.meeting");
 			fireEvent(ureq, Event.BACK_EVENT);

@@ -36,6 +36,8 @@ public interface SingleSelection extends SelectionElement {
 	public String NO_SELECTION_KEY = "noSelectionKey";
 
 	public String[] getKeys();
+	
+	public boolean containsKey(String value);
 
 	public String getSelectedKey();
 	

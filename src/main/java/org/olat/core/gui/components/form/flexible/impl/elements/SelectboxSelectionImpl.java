@@ -84,6 +84,18 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	}
 
 	@Override
+	public boolean containsKey(String value) {
+		if(keys != null && keys.length > 0) {
+			for(String key:keys) {
+				if((key == null && value == null) || (key != null && key.equals(value))) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public void setDomReplacementWrapperRequired(boolean required) {
 		component.setDomReplacementWrapperRequired(required);
 	}

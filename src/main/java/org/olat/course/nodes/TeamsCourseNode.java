@@ -77,8 +77,7 @@ public class TeamsCourseNode extends AbstractAccessableCourseNode {
 			ICourse course, UserCourseEnvironment userCourseEnv) {
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// create edit controller
-		TeamsEditController childTabCtrl = new TeamsEditController(ureq, wControl, this);
-		
+		TeamsEditController childTabCtrl = new TeamsEditController(ureq, wControl);
 		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course, chosenNode,
 				userCourseEnv, childTabCtrl);
 		nodeEditCtr.addControllerListener(childTabCtrl);

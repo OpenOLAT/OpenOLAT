@@ -127,6 +127,18 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	}
 	
 	@Override
+	public boolean containsKey(String value) {
+		if(keys != null && keys.length > 0) {
+			for(String key:keys) {
+				if((key == null && value == null) || (key != null && key.equals(value))) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	@Override
 	public String getKey(int which) {
 		return keys[which];
 	}

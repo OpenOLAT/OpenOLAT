@@ -76,7 +76,7 @@ implements SortableFlexiTableDataModel<TeamsMeeting> {
 	
 	private boolean canEdit(TeamsMeeting row) {
 		return row.isPermanent()
-				|| (row.getEndDate() != null && !row.getEndDate().before(new Date()));
+				|| (row.getEndWithFollowupTime() != null && row.getEndWithFollowupTime().after(new Date()));
 	}
 
 	@Override

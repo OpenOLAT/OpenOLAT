@@ -27,6 +27,9 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 
+import com.microsoft.graph.models.generated.LobbyBypassScope;
+import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
+
 /**
  * 
  * Initial date: 20 nov. 2020<br>
@@ -144,6 +147,8 @@ public interface TeamsMeeting extends ModifiedInfo, CreateInfo {
 	
 	public void setAllowedPresenters(String allowedPresenters);
 	
+	public OnlineMeetingPresenters getAllowedPresentersEnum();
+	
 	public String getAccessLevel();
 	
 	public void setAccessLevel(String accessLevel);
@@ -151,6 +156,8 @@ public interface TeamsMeeting extends ModifiedInfo, CreateInfo {
 	public String getLobbyBypassScope();
 	
 	public void setLobbyBypassScope(String scope);
+
+	public LobbyBypassScope getLobbyBypassScopeEnum();
 	
 	public boolean isEntryExitAnnouncement();
 	

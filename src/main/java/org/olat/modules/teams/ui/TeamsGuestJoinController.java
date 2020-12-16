@@ -46,9 +46,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.TeamsCourseNode;
-import org.olat.course.nodes.teams.TeamsEditController;
 import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -75,7 +72,6 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 	private FormLink joinButton;
 
 	private boolean readOnly = false;
-	private boolean moderatorStartMeeting;
 	private final boolean allowedToMeet;
 	private TeamsMeeting meeting;
 	private OLATResourceable meetingOres;
@@ -92,7 +88,6 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 	public TeamsGuestJoinController(UserRequest ureq, WindowControl wControl, TeamsMeeting meeting) {
 		super(ureq, wControl, "guest_join");
 		this.meeting = meeting;
-		moderatorStartMeeting = isModeratorStartMeeting();
 		allowedToMeet = isAllowedToMeet(ureq);
 		initForm(ureq);
 		updateButtonsAndStatus();
@@ -161,7 +156,7 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 	
 		if(allowedToMeet && accessible) {
 			boolean running = teamsService.isMeetingRunning(meeting);
-			if(!running && moderatorStartMeeting) {
+			if(!running) {
 				flc.contextPut("notStarted", Boolean.TRUE);
 				joinButton.setEnabled(false);
 			} else {
@@ -208,21 +203,6 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 			return businessGroupService.isIdentityInBusinessGroup(getIdentity(), meeting.getBusinessGroup());
 		}
 		return false;
-	}
-	
-	private boolean isModeratorStartMeeting() {
-		if(meeting == null) return true;
-		if(meeting.getEntry() != null) {
-			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(meeting.getEntry().getKey());
-			ICourse course = CourseFactory.loadCourse(entry);
-			CourseNode courseNode = course.getRunStructure().getNode(meeting.getSubIdent());
-			if(courseNode instanceof TeamsCourseNode) {
-				// check if the node exists and that it's a Teams node
-				return courseNode.getModuleConfiguration()
-						.getBooleanSafe(TeamsEditController.MODERATOR_START_MEETING, true);
-			}
-		}
-		return true;
 	}
 	
 	private boolean isEnded() {

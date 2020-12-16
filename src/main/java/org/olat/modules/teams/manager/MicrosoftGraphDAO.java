@@ -135,18 +135,45 @@ public class MicrosoftGraphDAO {
 		return user.getCurrentPage();
 	}
 	
-	public OnlineMeeting createMeeting(TeamsMeeting meeting, User organizer, TeamsErrors errors) {
+	public static boolean canAttendeeOpenMeeting(TeamsMeeting meeting) {
+		return (meeting.getAllowedPresentersEnum() == OnlineMeetingPresenters.EVERYONE
+				|| meeting.getAllowedPresentersEnum() == OnlineMeetingPresenters.ORGANIZATION)
+			&& (meeting.getLobbyBypassScopeEnum() == LobbyBypassScope.EVERYONE
+					|| meeting.getLobbyBypassScopeEnum() == LobbyBypassScope.ORGANIZATION
+					|| meeting.getLobbyBypassScopeEnum() == LobbyBypassScope.ORGANIZATION_AND_FEDERATED);
+		
+	}
+	
+	public OnlineMeeting createMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, TeamsErrors errors) {
 		MeetingParticipants participants = new MeetingParticipants();
-		if(organizer != null) {
-			IdentitySet identitySet = createIdentitySetById(organizer);
-			participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
-			IdentitySet identityAsPresenterSet = createIdentitySetById(organizer);
-			participants.attendees = new ArrayList<>();
-			MeetingParticipantInfo  infos = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.PRESENTER);
-			participants.attendees.add(infos);
+		if(user != null) {
+			if(role == OnlineMeetingRole.PRESENTER) {
+				IdentitySet identitySet = createIdentitySetById(user);
+				participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
+				IdentitySet identityAsPresenterSet = createIdentitySetById(user);
+				participants.attendees = new ArrayList<>();
+				MeetingParticipantInfo  infos = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.PRESENTER);
+				participants.attendees.add(infos);
+			} else if(StringHelper.containsNonWhitespace(teamsModule.getProducerId()) && canAttendeeOpenMeeting(meeting)) {
+				// Attendee can create an online meeting only if they have a chance to enter it
+				IdentitySet identitySet = createIdentitySetById(teamsModule.getProducerId());
+				participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
+				IdentitySet identityAsPresenterSet = createIdentitySetById(user);
+				participants.attendees = new ArrayList<>();
+				MeetingParticipantInfo  infos = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.ATTENDEE);
+				participants.attendees.add(infos);
+			} else {
+				errors.append(new TeamsError(TeamsErrorCodes.organizerMissing));
+				return null;
+			}	
 		} else if(StringHelper.containsNonWhitespace(teamsModule.getProducerId())) {
-			IdentitySet identitySet = createIdentitySetById(teamsModule.getProducerId());
-			participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
+			if(canAttendeeOpenMeeting(meeting)) {
+				IdentitySet identitySet = createIdentitySetById(teamsModule.getProducerId());
+				participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
+			} else {
+				errors.append(new TeamsError(TeamsErrorCodes.organizerMissing));
+				return null;
+			}
 		} else {
 			errors.append(new TeamsError(TeamsErrorCodes.organizerMissing));
 			return null;
@@ -472,25 +499,15 @@ public class MicrosoftGraphDAO {
 		return val;
 	}
 	
+	private IdentitySet createIdentitySetById(User user) {
+		return createIdentitySetById(user.id);
+	}
+	
 	private IdentitySet createIdentitySetById(String id) {
 		IdentitySet identitySet = new IdentitySet();
 		Identity user = new Identity();
 		user.id = id;
 		identitySet.user = user;
-
-		if(StringHelper.containsNonWhitespace(teamsModule.getApplicationId())) {
-			Identity app = new Identity();
-			app.id = teamsModule.getApplicationId();
-			identitySet.application = app;
-		}
-		return identitySet;
-	}
-	
-	private IdentitySet createIdentitySetById(User user) {
-		IdentitySet identitySet = new IdentitySet();
-		Identity userIdentity = new Identity();
-		userIdentity.id = user.id;
-		identitySet.user = userIdentity;
 
 		if(StringHelper.containsNonWhitespace(teamsModule.getApplicationId())) {
 			Identity app = new Identity();

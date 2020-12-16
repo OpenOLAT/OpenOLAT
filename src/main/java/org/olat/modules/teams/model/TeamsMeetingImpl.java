@@ -32,14 +32,20 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.manager.MicrosoftGraphDAO;
 import org.olat.repository.RepositoryEntry;
+
+import com.microsoft.graph.models.generated.LobbyBypassScope;
+import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
 
 /**
  * 
@@ -309,6 +315,15 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	public String getAllowedPresenters() {
 		return allowedPresenters;
 	}
+	
+	@Override
+	@Transient
+	public OnlineMeetingPresenters getAllowedPresentersEnum() {
+		if(StringHelper.containsNonWhitespace(allowedPresenters)) {
+			return MicrosoftGraphDAO.toOnlineMeetingPresenters(allowedPresenters);
+		}
+		return null;
+	}
 
 	@Override
 	public void setAllowedPresenters(String allowedPresenters) {
@@ -333,6 +348,15 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	@Override
 	public void setLobbyBypassScope(String lobbyBypassScope) {
 		this.lobbyBypassScope = lobbyBypassScope;
+	}
+
+	@Override
+	@Transient
+	public LobbyBypassScope getLobbyBypassScopeEnum() {
+		if(StringHelper.containsNonWhitespace(lobbyBypassScope)) {
+			return MicrosoftGraphDAO.toLobbyBypassScope(lobbyBypassScope);
+		}
+		return null;
 	}
 
 	@Override

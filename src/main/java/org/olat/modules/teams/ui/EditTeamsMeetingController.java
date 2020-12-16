@@ -131,7 +131,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 	private boolean isEditable(TeamsMeeting m, UserRequest ureq) {
 		Date now = ureq.getRequestTimestamp();
 		return m == null || m.isPermanent()
-				|| (m.getStartWithLeadTime() != null && m.getStartWithLeadTime().compareTo(now) > 0);
+				|| (m.getEndWithFollowupTime() != null && m.getEndWithFollowupTime().compareTo(now) > 0);
 	}
 	
 	private boolean isEditableGraph(TeamsMeeting m) {
@@ -223,13 +223,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 		accessLevelEl = uifactory.addDropdownSingleselect("meeting.accesslevel", formLayout, accessKeyValues.keys(), accessKeyValues.values());
 		accessLevelEl.setMandatory(true);
 		accessLevelEl.setEnabled(editable && editableGraph);
-		accessLevelEl.setVisible(meetingExtendedOptionsEnabled);
-		if(meeting != null && meeting.getAccessLevel() != null && accessKeyValues.containsKey(meeting.getAccessLevel())) {
-			accessLevelEl.select(meeting.getAccessLevel(), true);
-		} else {
-			accessLevelEl.select(AccessLevel.SAME_ENTERPRISE_AND_FEDERATED.name(), true);
-		}
-		
+
 		KeyValues presentersKeyValues = new KeyValues();
 		presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), translate("meeting.presenters.role")));
 		presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.ORGANIZATION.name(), translate("meeting.presenters.organization")));
@@ -237,12 +231,6 @@ public class EditTeamsMeetingController extends FormBasicController {
 		presentersEl = uifactory.addDropdownSingleselect("meeting.presenters", formLayout, presentersKeyValues.keys(), presentersKeyValues.values());
 		presentersEl.setMandatory(true);
 		presentersEl.setEnabled(editable);
-		presentersEl.setVisible(meetingExtendedOptionsEnabled);
-		if(meeting != null && meeting.getAllowedPresenters() != null && presentersKeyValues.containsKey(meeting.getAllowedPresenters())) {
-			presentersEl.select(meeting.getAllowedPresenters(), true);
-		} else {
-			presentersEl.select(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), true);
-		}
 		
 		String[] onValues = new String[] { translate("meeting.annoncement.on") };
 		annoncementEl = uifactory.addCheckboxesHorizontal("meeting.annoncement", formLayout, onKeys, onValues);
@@ -262,12 +250,8 @@ public class EditTeamsMeetingController extends FormBasicController {
 		lobbyEl = uifactory.addDropdownSingleselect("meeting.lobby.bypass", formLayout, lobbyKeyValues.keys(), lobbyKeyValues.values());
 		lobbyEl.setMandatory(true);
 		lobbyEl.setEnabled(editable);
-		lobbyEl.setVisible(meetingExtendedOptionsEnabled);
-		if(meeting != null && meeting.getLobbyBypassScope() != null && lobbyKeyValues.containsKey(meeting.getLobbyBypassScope())) {
-			lobbyEl.select(meeting.getLobbyBypassScope(), true);
-		} else {
-			lobbyEl.select(LobbyBypassScope.ORGANIZATION_AND_FEDERATED.name(), true);
-		}
+
+		TeamsUIHelper.setDefaults(accessLevelEl, presentersEl, lobbyEl, meeting, meetingExtendedOptionsEnabled);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

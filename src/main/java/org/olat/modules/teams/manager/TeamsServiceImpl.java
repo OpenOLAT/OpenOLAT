@@ -184,42 +184,42 @@ public class TeamsServiceImpl implements TeamsService {
 
 	@Override
 	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, boolean guest, TeamsErrors errors) {
+		OnlineMeetingRole role = (presenter && !guest) ? OnlineMeetingRole.PRESENTER : OnlineMeetingRole.ATTENDEE;
 		meeting = teamsMeetingDao.loadByKey(meeting.getKey());
 		if(meeting == null) {
 			errors.append(new TeamsError(TeamsErrorCodes.meetingDeleted));
 		} else if(!StringHelper.containsNonWhitespace(meeting.getOnlineMeetingId())) {
-			if(presenter) {
+			if(presenter || (!guest)) {
 				dbInstance.commitAndCloseSession();
-				User gPresenter = lookupUser(identity);
-				meeting = createOnlineMeeting(meeting, gPresenter, errors);
+				User user = lookupUser(identity);
+				meeting = createOnlineMeeting(meeting, user, role, errors);
 			} else {
 				errors.append(new TeamsError(TeamsErrorCodes.presenterMissing));
 			}
-		} else if(identity != null && StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
+		} else if(identity != null && !guest && StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
 			dbInstance.commitAndCloseSession();
-			User graphUser = lookupUser(identity);
-			updateOnlineMeeting(meeting, graphUser, presenter);
+			User user = lookupUser(identity);
+			updateOnlineMeeting(meeting, user, role);
 		}
 		
 		if(identity != null && meeting != null && !guest
 				&& StringHelper.containsNonWhitespace(meeting.getOnlineMeetingJoinUrl())
 				&& !teamsAttendeeDao.hasAttendee(identity, meeting)) {
-			OnlineMeetingRole role = presenter ? OnlineMeetingRole.PRESENTER : OnlineMeetingRole.ATTENDEE;
 			teamsAttendeeDao.createAttendee(identity, null, role.name(), new Date(), meeting);
 		}
 		return meeting;
 	}
 	
-	private TeamsMeeting createOnlineMeeting(TeamsMeeting meeting, User presenter, TeamsErrors errors) {
+	private TeamsMeeting createOnlineMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, TeamsErrors errors) {
 		TeamsMeeting lockedMeeting = null;
 		try {
 			lockedMeeting = teamsMeetingDao.loadForUpdate(meeting);
 			if(lockedMeeting == null) {
 				errors.append(new TeamsError(TeamsErrorCodes.meetingDeleted));
 			} else if(StringHelper.containsNonWhitespace(lockedMeeting.getOnlineMeetingId())) {
-				updateOnlineMeeting(lockedMeeting, presenter, true);
+				updateOnlineMeeting(lockedMeeting, user, role);
 			} else {
-				OnlineMeeting onlineMeeting = graphDao.createMeeting(lockedMeeting, presenter, errors);
+				OnlineMeeting onlineMeeting = graphDao.createMeeting(lockedMeeting, user, role, errors);
 				if(onlineMeeting != null) {
 					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingId(onlineMeeting.id);
 					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingJoinUrl(onlineMeeting.joinUrl);
@@ -235,9 +235,8 @@ public class TeamsServiceImpl implements TeamsService {
 		return lockedMeeting;
 	}
 	
-	private void updateOnlineMeeting(TeamsMeeting meeting, User graphUser, boolean presenter) {
+	private void updateOnlineMeeting(TeamsMeeting meeting, User graphUser, OnlineMeetingRole role) {
 		if(graphUser != null && StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
-			OnlineMeetingRole role = presenter ? OnlineMeetingRole.PRESENTER : OnlineMeetingRole.ATTENDEE;
 			graphDao.updateOnlineMeeting(meeting, graphUser, role);
 		}
 	}
