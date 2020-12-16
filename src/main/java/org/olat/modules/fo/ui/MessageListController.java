@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkResourceStat;
 import org.olat.core.commons.services.mark.MarkingService;
@@ -168,6 +168,8 @@ public class MessageListController extends BasicController implements GenericEve
 	private LoadMode loadMode;
 	private List<MessageView> backupViews;
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -1143,11 +1145,13 @@ public class MessageListController extends BasicController implements GenericEve
 	}
 	
 	private void doToogleSticky() {
+		thread = forumManager.getMessageById(thread.getKey());
+		
 		Status status = Status.getStatus(thread.getStatusCode());
 		status.setSticky(!status.isSticky());
 		thread.setStatusCode(Status.getStatusCode(status));
 		thread = forumManager.updateMessage(thread, false);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		stickyButton.setVisible(!status.isSticky() && foCallback.mayEditMessageAsModerator());
 		removeStickyButton.setVisible(status.isSticky() && foCallback.mayEditMessageAsModerator());
@@ -1171,7 +1175,7 @@ public class MessageListController extends BasicController implements GenericEve
 			status.setClosed(true);
 			thread.setStatusCode(Status.getStatusCode(status));
 			thread = forumManager.updateMessage(thread, false);
-			DBFactory.getInstance().commit();// before sending async event
+			dbInstance.commit();// before sending async event
 			
 			closeThreadButton.setVisible(false);
 			openThreadButton.setVisible(!guestOnly);
@@ -1190,7 +1194,7 @@ public class MessageListController extends BasicController implements GenericEve
 			status.setClosed(false);
 			thread.setStatusCode(Status.getStatusCode(status));
 			thread = forumManager.updateMessage(thread, true);
-			DBFactory.getInstance().commit();// before sending async event
+			dbInstance.commit();// before sending async event
 			
 			closeThreadButton.setVisible(!guestOnly);
 			openThreadButton.setVisible(false);
@@ -1215,7 +1219,7 @@ public class MessageListController extends BasicController implements GenericEve
 			status.setHidden(true);
 			thread.setStatusCode(Status.getStatusCode(status));
 			thread = forumManager.updateMessage(thread, false);
-			DBFactory.getInstance().commit();// before sending async event
+			dbInstance.commit();// before sending async event
 			
 			hideThreadButton.setVisible(false);
 			showThreadButton.setVisible(!guestOnly);
@@ -1240,7 +1244,7 @@ public class MessageListController extends BasicController implements GenericEve
 			status.setHidden(false);
 			thread.setStatusCode(Status.getStatusCode(status));
 			thread = forumManager.updateMessage(thread, true);
-			DBFactory.getInstance().commit();// before sending async event
+			dbInstance.commit();// before sending async event
 			
 			hideThreadButton.setVisible(!guestOnly);
 			showThreadButton.setVisible(false);
@@ -1459,7 +1463,7 @@ public class MessageListController extends BasicController implements GenericEve
 			Message parentMessage = forumManager.getMessageById(parentMessageKey);
 			message = forumManager.moveMessage(message, parentMessage);
 			markRead(message);
-			DBFactory.getInstance().commit();//commit before sending event
+			dbInstance.commit();//commit before sending event
 			
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_MOVE, getClass(), LoggingResourceable.wrap(message));
 			Long threadKey = parentMessage.getThreadtop() == null ? parentMessage.getKey() : parentMessage.getThreadtop().getKey();
