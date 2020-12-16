@@ -269,7 +269,7 @@ public class PwChangeController extends BasicController {
 		String serverpath = Settings.getServerContextPathURI();
 		String authenticationName = securityManager.findAuthenticationName(identity, "OLAT");
 		String userName = authenticationName;
-		if(StringHelper.isLong(authenticationName) && loginModule.isAllowLoginUsingEmail()) {
+		if((userName == null || StringHelper.isLong(authenticationName)) && loginModule.isAllowLoginUsingEmail()) {
 			userName = emailAdress;
 		}
 		
