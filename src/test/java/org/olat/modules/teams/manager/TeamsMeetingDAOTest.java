@@ -77,10 +77,10 @@ public class TeamsMeetingDAOTest extends OlatTestCase {
 		Assert.assertEquals(subIdent, meeting.getSubIdent());
 		Assert.assertNull(meeting.getBusinessGroup());
 		
-		Assert.assertEquals(AccessLevel.SAME_ENTERPRISE_AND_FEDERATED.name(), meeting.getAccessLevel());
-		Assert.assertEquals(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), meeting.getAllowedPresenters());
+		Assert.assertEquals(AccessLevel.EVERYONE.name(), meeting.getAccessLevel());
+		Assert.assertEquals(OnlineMeetingPresenters.EVERYONE.name(), meeting.getAllowedPresenters());
 		Assert.assertTrue(meeting.isEntryExitAnnouncement());
-		Assert.assertEquals(LobbyBypassScope.ORGANIZATION_AND_FEDERATED.name(), meeting.getLobbyBypassScope());
+		Assert.assertEquals(LobbyBypassScope.ORGANIZATION.name(), meeting.getLobbyBypassScope());
 	}
 	
 	@Test
