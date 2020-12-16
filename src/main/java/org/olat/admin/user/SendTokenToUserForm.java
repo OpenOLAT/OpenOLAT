@@ -40,6 +40,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
@@ -132,11 +133,13 @@ public class SendTokenToUserForm extends FormBasicController {
 
 			String serverpath = Settings.getServerContextPathURI();
 			Translator userTrans = Util.createPackageTranslator(RegistrationManager.class, locale) ;
-			String body = userTrans.translate("pwchange.intro", new String[] { user.getName() })
-					+ userTrans.translate("pwchange.body", new String[] {
-							serverpath, dummyKey, i18nModule.getLocaleKey(locale)
-					});
-			return body;
+			String authenticationName = securityManager.findAuthenticationName(user, "OLAT");
+			String userName = authenticationName;
+			if((userName == null || StringHelper.isLong(authenticationName)) && loginModule.isAllowLoginUsingEmail()) {
+				userName = emailAdress;
+			}
+			return userTrans.translate("pwchange.intro", new String[] { userName, authenticationName, emailAdress })
+					+ userTrans.translate("pwchange.body", new String[] { serverpath, dummyKey, i18nModule.getLocaleKey(locale) });
 		}
 		else return "This function is not available for users without an email-adress!";
 	}
