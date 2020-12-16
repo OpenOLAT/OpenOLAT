@@ -98,6 +98,11 @@
 	    <test.env.db.oracle.pass>olat00002</test.env.db.oracle.pass>
 	    <test.env.db.oracle.host>localhost</test.env.db.oracle.host>
 	    <test.env.db.oracle.host.port>1521</test.env.db.oracle.host.port>
+	    <test.env.msgraph.app.id></test.env.msgraph.app.id>
+	    <test.env.msgraph.app.secret></test.env.msgraph.app.secret>
+	    <test.env.msgraph.app.tenant></test.env.msgraph.app.tenant>
+	    <test.env.msgraph.teams.producer></test.env.msgraph.teams.producer>
+	    <test.env.msgraph.teams.onbehalf></test.env.msgraph.teams.onbehalf>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
 	    <test.env.webdriver.firefox.version>v0.27.0</test.env.webdriver.firefox.version>

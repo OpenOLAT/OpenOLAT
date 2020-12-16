@@ -244,11 +244,13 @@ public class MicrosoftGraphDAO {
 		}
 		onlineMeeting.subject = meeting.getSubject();
 		
-		MeetingParticipants participants = new MeetingParticipants();
-		IdentitySet identitySet = createIdentitySetById(user);
-		participants.attendees = new ArrayList<>();
-		participants.attendees.add(createParticipantInfo(identitySet, role));
-		onlineMeeting.participants = participants;
+		if(user != null) {
+			MeetingParticipants participants = new MeetingParticipants();
+			IdentitySet identitySet = createIdentitySetById(user);
+			participants.attendees = new ArrayList<>();
+			participants.attendees.add(createParticipantInfo(identitySet, role));
+			onlineMeeting.participants = participants;
+		}
 		
 		// access, body informations cannot be updatet
 		onlineMeeting.allowedPresenters = toOnlineMeetingPresenters(meeting.getAllowedPresenters());
