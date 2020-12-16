@@ -264,7 +264,7 @@ public class CORunController extends BasicController {
 	private ContactList retrieveCoachesFromCourse() {
 		List<Identity> coaches = cgm.getCoaches();
 		List<Identity> curriculumCoaches = cgm.getCoachesFromCurriculumElements();
-		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
+		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
 		cl.addAllIdentites(coaches);
 		cl.addAllIdentites(curriculumCoaches);
 		return cl;
