@@ -173,7 +173,7 @@ public class RestorePageController extends FormBasicController {
 		SectionRef selectSection = null;
 		if (sectionsEl != null && sectionsEl.isOneSelected() && sectionsEl.isEnabled() && sectionsEl.isVisible()) {
 			String selectedKey = sectionsEl.getSelectedKey();
-			selectSection = new SectionKeyRef(new Long(selectedKey));
+			selectSection = new SectionKeyRef(Long.valueOf(selectedKey));
 		}
 		return selectSection;
 	}
@@ -193,7 +193,7 @@ public class RestorePageController extends FormBasicController {
 			} else {
 				try {
 					String selectedKey = bindersEl.getSelectedKey();
-					currentBinder = portfolioService.getBinderByKey(new Long(selectedKey));
+					currentBinder = portfolioService.getBinderByKey(Long.valueOf(selectedKey));
 					sectionsEl.setVisible(true);
 					updateSections();
 				} catch(NumberFormatException e) {

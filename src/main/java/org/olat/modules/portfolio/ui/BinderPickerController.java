@@ -211,14 +211,14 @@ public class BinderPickerController extends FormBasicController {
 			//if(courseNode.hasPassedConfigured()) {
 				Boolean passed = assessmentEntry.getPassed();
 				assessmentInfosContainer.contextPut("passed", passed);
-				assessmentInfosContainer.contextPut("hasPassedValue", new Boolean(passed != null));
+				assessmentInfosContainer.contextPut("hasPassedValue", Boolean.valueOf(passed != null));
 				//Float cutValue = courseNode.getCutValueConfiguration();
 				//assessmentInfosContainer.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(cutValue));
 			//}
 
 			// get comment
 			String comment = assessmentEntry.getComment();
-			assessmentInfosContainer.contextPut("hasCommentField", new Boolean(comment != null));
+			assessmentInfosContainer.contextPut("hasCommentField", Boolean.valueOf(comment != null));
 			if (comment != null) {
 				assessmentInfosContainer.contextPut("comment", comment);
 			}

@@ -129,10 +129,10 @@ public class InvitationEditRightsController extends FormBasicController {
 		String busLink = getInvitationLink();
 		String sender = userManager.getUserDisplayName(getIdentity());
 		String[] args = new String[] {
-			busLink,								// {0}
-			sender,									// {1}
-			getIdentity().getUser().getFirstName(),	// {2}
-			getIdentity().getUser().getLastName()	// {3}
+			busLink,								// 0
+			sender,									// 1
+			getIdentity().getUser().getFirstName(),	// 2
+			getIdentity().getUser().getLastName()	// 3
 		};
 		
 		String subject = translate("invitation.extern.mail.subject", args);
@@ -143,7 +143,6 @@ public class InvitationEditRightsController extends FormBasicController {
 				//
 			}
 		};
-		
 		
 		initForm(ureq);
 		loadModel();

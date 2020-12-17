@@ -102,7 +102,7 @@ public class AssignmentMoveController extends FormBasicController {
 		Long selectSection = null;
 		if (sectionsEl != null && sectionsEl.isOneSelected() && sectionsEl.isEnabled() && sectionsEl.isVisible()) {
 			String selectedKey = sectionsEl.getSelectedKey();
-			selectSection = new Long(selectedKey);
+			selectSection = Long.valueOf(selectedKey);
 		}
 		return selectSection;
 	}

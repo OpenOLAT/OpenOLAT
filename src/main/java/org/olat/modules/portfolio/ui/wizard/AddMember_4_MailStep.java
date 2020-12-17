@@ -52,7 +52,6 @@ public class AddMember_4_MailStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		MemberMailController controller = new MemberMailController(ureq, wControl, binder, form, runContext);
-		return controller;
+		return new MemberMailController(ureq, wControl, binder, form, runContext);
 	}
 }

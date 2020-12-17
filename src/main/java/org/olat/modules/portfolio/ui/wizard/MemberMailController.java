@@ -65,10 +65,17 @@ public class MemberMailController extends StepFormBasicController {
 		
 		mailTemplate = (MailTemplate)runContext.get("maiTemplate");
 		if(mailTemplate == null) {
-			String subject = translate("invitation.mail.subject");
 			String sender = userManager.getUserDisplayName(getIdentity());
 			String busLink = Settings.getServerContextPathURI() + "/url/HomeSite/0/PortfolioV2/0/SharedWithMe/0/Binder/" + binder.getKey();
-			String body = translate("invitation.mail.body", new String[]{ busLink, sender});
+			
+			String[] args = new String[] {
+				busLink,								// 0
+				sender,									// 1
+				getIdentity().getUser().getFirstName(),	// 2
+				getIdentity().getUser().getLastName()	// 3
+			};
+			String subject = translate("invitation.mail.subject", args);
+			String body = translate("invitation.mail.body", args);
 			
 			mailTemplate = new MailTemplate(subject, body, null) {
 				@Override
