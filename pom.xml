@@ -62,19 +62,19 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
-		<org.springframework.version>5.3.1</org.springframework.version>
-		<org.hibernate.version>5.4.25.Final</org.hibernate.version>
+		<org.springframework.version>5.3.2</org.springframework.version>
+		<org.hibernate.version>5.4.26.Final</org.hibernate.version>
 		<apache.cxf>3.4.1</apache.cxf>
 		<apache.pdfbox>2.0.21</apache.pdfbox>
 		<apache.poi>4.1.2</apache.poi>
 		<apache.log4j>2.14.0</apache.log4j>
 		<org.slf4j>1.7.30</org.slf4j>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
-		<io.undertow>2.2.2.Final</io.undertow>
+		<io.undertow>2.2.3.Final</io.undertow>
 		<jackson.version>2.12.0</jackson.version>
 		<org.mysql.version>8.0.22</org.mysql.version>
 		<org.postgresql.version>42.2.18</org.postgresql.version>
-		<org.infinispan.version>11.0.7.Final</org.infinispan.version>
+		<org.infinispan.version>11.0.8.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
@@ -436,7 +436,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.37.2</version>
+				    <version>3.38.0</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -2328,7 +2328,7 @@
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
-			<version>1.4.14</version>
+			<version>1.4.15</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.mail</groupId>
@@ -2351,7 +2351,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.8.0</version>
+			<version>1.8.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
@@ -2559,7 +2559,7 @@
 		<dependency>
 			<groupId>org.eu.ingwar.tools</groupId>
 			<artifactId>arquillian-suite-extension</artifactId>
-			<version>1.2.0</version>
+			<version>1.2.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2570,7 +2570,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>29.0-jre</version>
+			<version>30.1-jre</version>
 		</dependency>
 		<!--  selenium first -->
 		<dependency>
