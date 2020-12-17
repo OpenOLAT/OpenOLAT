@@ -2126,7 +2126,7 @@
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
-			<version>1.4.14</version>
+			<version>1.4.15</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.mail</groupId>
@@ -2334,7 +2334,7 @@
 		<dependency>
 			<groupId>org.eu.ingwar.tools</groupId>
 			<artifactId>arquillian-suite-extension</artifactId>
-			<version>1.2.0</version>
+			<version>1.2.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
