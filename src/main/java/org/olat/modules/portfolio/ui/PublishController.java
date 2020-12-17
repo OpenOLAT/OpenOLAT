@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
@@ -46,6 +47,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
@@ -112,6 +114,8 @@ public class PublishController extends BasicController implements TooledControll
 	private MailManager mailManager;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private PortfolioService portfolioService;
 	
@@ -379,18 +383,24 @@ public class PublishController extends BasicController implements TooledControll
 	private void doAddInvitation(UserRequest ureq, Identity invitee) {
 		removeAsListenerAndDispose(addMembersWizard);
 		
-		Step start = new AddMember_3_ChoosePermissionStep(ureq, binder, invitee);
-		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
-			AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
-			MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
-			addMembers(rightsContext, mailTemplate);
-			return StepsMainRunController.DONE_MODIFIED;
-		};
+		Roles inviteeRoles = securityManager.getRoles(invitee);
+		if(inviteeRoles.isInvitee()) {
+			doAddInvitation(ureq, invitee.getUser().getEmail());
+		} else {
 		
-		addMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("add.member"), "o_sel_course_member_import_1_wizard");
-		listenTo(addMembersWizard);
-		getWindowControl().pushAsModalDialog(addMembersWizard.getInitialComponent());
+			Step start = new AddMember_3_ChoosePermissionStep(ureq, binder, invitee);
+			StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+				AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
+				MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
+				addMembers(rightsContext, mailTemplate);
+				return StepsMainRunController.DONE_MODIFIED;
+			};
+			
+			addMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+					translate("add.member"), "o_sel_course_member_import_1_wizard");
+			listenTo(addMembersWizard);
+			getWindowControl().pushAsModalDialog(addMembersWizard.getInitialComponent());
+		}
 	}
 	
 	private void doEditInvitation(UserRequest ureq, Identity invitee) {

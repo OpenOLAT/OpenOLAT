@@ -453,7 +453,7 @@ public class MediaCenterController extends FormBasicController
 				String rowKeyStr = ureq.getParameter("img_select");
 				if(StringHelper.isLong(rowKeyStr)) {
 					try {
-						Long rowKey = new Long(rowKeyStr);
+						Long rowKey = Long.valueOf(rowKeyStr);
 						List<MediaRow> rows = model.getObjects();
 						for(MediaRow row:rows) {
 							if(row != null && row.getKey().equals(rowKey)) {
@@ -608,7 +608,7 @@ public class MediaCenterController extends FormBasicController
 			int index = row.indexOf("/");
 			if(index > 0) {
 				row = row.substring(0, index);
-				Long key = new Long(row); 
+				Long key = Long.valueOf(row); 
 				List<MediaRow> rows = binderModel.getObjects();
 				for(MediaRow prow:rows) {
 					if(key.equals(prow.getKey())) {
