@@ -189,8 +189,11 @@ public class AuthoringEnvPage {
 		By typeBy = By.xpath("//div[@id='o_cocif_node_access']//input[@name='cif.node.access'][@value='condition']");
 		browser.findElement(typeBy).click();
 		OOGraphene.waitBusy(browser);
-		
-		By createBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_wizard");
+		// select the simple wizard
+		By simpleCourseWizardBy = By.xpath("//div[@id='o_cocsc_wizard']//input[@name='csc.wizard'][@value='simple.course']");
+		browser.findElement(simpleCourseWizardBy).click();
+		// create the course
+		By createBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
 		browser.findElement(createBy).click();
 		OOGraphene.waitBusy(browser);
 		return new CourseWizardPage(browser);
