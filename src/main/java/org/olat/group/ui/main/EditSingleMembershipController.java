@@ -41,7 +41,7 @@ import org.olat.repository.RepositoryEntry;
 public class EditSingleMembershipController extends BasicController {
 	
 	private final MemberInfoController infoCtrl;
-	private final EditMembershipController membershipCtrl;
+	private final EditSingleOrImportMembershipController membershipCtrl;
 	
 	private final Identity member;
 	private final RepositoryEntry repoEntry;
@@ -59,7 +59,7 @@ public class EditSingleMembershipController extends BasicController {
 		listenTo(infoCtrl);
 		mainVC.put("infos", infoCtrl.getInitialComponent());
 		
-		membershipCtrl = new EditMembershipController(ureq, wControl, identity, repoEntry, group, overrideManaged);
+		membershipCtrl = new EditSingleOrImportMembershipController(ureq, wControl, identity, repoEntry, group, overrideManaged);
 		listenTo(membershipCtrl);
 		mainVC.put("edit", membershipCtrl.getInitialComponent());
 		
@@ -78,7 +78,7 @@ public class EditSingleMembershipController extends BasicController {
 		listenTo(infoCtrl);
 		mainVC.put("infos", infoCtrl.getInitialComponent());
 		
-		membershipCtrl = new EditMembershipController(ureq, wControl, identity, curriculum, curriculumElement, overrideManaged);
+		membershipCtrl = new EditSingleOrImportMembershipController(ureq, wControl, identity, curriculum, curriculumElement, overrideManaged);
 		listenTo(membershipCtrl);
 		mainVC.put("edit", membershipCtrl.getInitialComponent());
 		

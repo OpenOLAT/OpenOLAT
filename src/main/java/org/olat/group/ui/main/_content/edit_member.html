@@ -1,12 +1,31 @@
 <div class="o_sel_edit_permissions">
 #if($r.available("repoRights"))
-	$r.render("repoRights")
+	<fieldset>
+		<legend>$editTitle</legend>
+		$r.render("repoRights")
+	</fieldset>
 #end
-#if($r.visible("groupRights"))
-	$r.render("groupRights")
+#if($r.visible("groupList"))
+	<fieldset>
+		<legend>$r.translate("edit.member.groups")</legend>
+		<div class="o_button_group o_button_group_right"><div class="btn-group">
+			$r.render("select.all.group.coaches")
+			$r.render("select.all.group.participants")
+			$r.render("select.all.group.waiting")
+		</div></div>
+		$r.render("groupList")
+	</fieldset>
 #end
-#if($r.visible("curriculumRights"))
-	$r.render("curriculumRights")
+#if($r.visible("curriculumList"))
+	<fieldset>
+		<legend>$r.translate("edit.member.curriculums")</legend>
+		<div class="o_button_group o_button_group_right"><div class="btn-group">
+			$r.render("select.all.curriculum.owners")
+			$r.render("select.all.curriculum.coaches")
+			$r.render("select.all.curriculum.participants")
+		</div></div>
+		$r.render("curriculumList")
+	</fieldset>
 #end
 </div>
 #if($r.available("buttonLayout"))
