@@ -195,7 +195,9 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 			allowNoSelection = true;
 			addNoSelectionEntry();
 		}
-		initSelectionElements();
+		if (keys != null) {
+			initSelectionElements();
+		}
 	}
 
 	@Override
