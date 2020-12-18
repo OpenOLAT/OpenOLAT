@@ -109,14 +109,17 @@ public class ProjectImpl extends PersistentObject implements Project {
 	//////////
 	// GETTER
 	//////////
+	@Override
 	public String getTitle() {
 		return title;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}
 
+	@Override
 	public String getAttachmentFileName() {
 		return attachmentFileName;
 	}
@@ -172,30 +175,40 @@ public class ProjectImpl extends PersistentObject implements Project {
 	 * 
 	 * @return Map containing the raw properties data
 	 */
-	Map<String, String> getCustomfields() {
-		if (customfields == null) setCustomfields(new HashMap<String, String>());
+	public Map<String, String> getCustomfields() {
+		if (customfields == null) {
+			setCustomfields(new HashMap<>());
+		}
 		return customfields;
 	}
-
+	
+	/**
+	 * Hibernate setter
+	 * @param fields
+	 */
+	public void setCustomfields(Map<String, String> customfields) {
+		this.customfields = customfields;
+	}
 
 	//////////
 	// SETTER
 	//////////
+	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-
+	@Override
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-
+	@Override
 	public void setState(String state) {
 		this.state = state;
 	}
 
-
+	@Override
 	public void setMaxMembers(int maxMembers) {
 		this.maxMembers = maxMembers;
 	}
@@ -240,36 +253,32 @@ public class ProjectImpl extends PersistentObject implements Project {
 		return false;
 	}
 
+	@Override
 	public void setAttachedFileName(String attachmentFileName) {
 		this.attachmentFileName = attachmentFileName;
 	}
 
+	@Override
 	public int getCustomFieldSize() {
-		return customfields.size();
+		return getCustomfields().size();
 	}
-	
+
+	@Override
 	public String getCustomFieldValue(int index) {
-		String value = customfields.get(CUSTOMFIELD_KEY + index);
+		String value = getCustomfields().get(CUSTOMFIELD_KEY + index);
 		if (value != null ) {
 			return value;
-		} else {
-			return "";
 		}
+		return "";
 	}
 
-	/**
-	 * Hibernate setter
-	 * @param fields
-	 */
-	private void setCustomfields(Map<String, String> customfields) {
-		this.customfields = customfields;
-	}
-
+	@Override
 	public void setCustomFieldValue(int index, String value) {
-		log.debug("setValue index=" + index + " : " + value);
-		customfields.put(CUSTOMFIELD_KEY + index, value);
+		log.debug("setValue index={} : {}", index, value);
+		getCustomfields().put(CUSTOMFIELD_KEY + index, value);
 	}
 
+	@Override
 	public ProjectEvent getProjectEvent(Project.EventType eventType) {
 		LifeCycleManager lifeCycleManager = LifeCycleManager.createInstanceFor(this);
 		LifeCycleEntry startLifeCycleEntry = lifeCycleManager.lookupLifeCycleEntry(eventType.toString(), EVENT_START);
@@ -284,13 +293,14 @@ public class ProjectImpl extends PersistentObject implements Project {
 		}
 		
 		ProjectEvent projectEvent = new ProjectEvent(eventType, startDate , endDate);
-		log.debug("getProjectEvent projectEvent=" + projectEvent);
+		log.debug("getProjectEvent projectEvent={}", projectEvent);
 		return projectEvent;
 	}
 
+	@Override
 	public void setProjectEvent(ProjectEvent projectEvent ) {
 		LifeCycleManager lifeCycleManager = LifeCycleManager.createInstanceFor(this);
-		log.debug("setProjectEvent projectEvent=" + projectEvent);
+		log.debug("setProjectEvent projectEvent={}", projectEvent);
 		if (projectEvent.getStartDate() != null) {
 			lifeCycleManager.markTimestampFor(projectEvent.getStartDate(), projectEvent.getEventType().toString(), EVENT_START);
 		} else {
@@ -315,6 +325,7 @@ public class ProjectImpl extends PersistentObject implements Project {
 	 * Hibernate setter
 	 * @param mailNotificationEnabled
 	 */
+	@Override
 	public void setMailNotificationEnabled(boolean mailNotificationEnabled) {
 		this.mailNotificationEnabled = mailNotificationEnabled;
 	}
