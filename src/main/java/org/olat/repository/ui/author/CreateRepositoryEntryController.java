@@ -33,17 +33,14 @@ import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -59,6 +56,8 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
+import org.olat.repository.wizard.RepositoryWizardProvider;
+import org.olat.repository.wizard.RepositoryWizardService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,22 +71,25 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	
 	public static final Event CREATION_WIZARD = new Event("start_wizard");
 	
-	protected FormLink wizardButton;
 	private TextElement displaynameEl;
 	private SingleSelection organisationEl;
 	private FormLayoutContainer exampleHelpEl;
+	private SingleSelection wizardEl;
 	
 	private RepositoryEntry addedEntry;
 	private final RepositoryHandler handler;
+	private final boolean wizardsEnabled;
 	private final List<Organisation> manageableOrganisations;
 	
-	private Object userObject;
+	private Object createObject;
 	private LicenseType licenseType;
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryWizardService wizardService;
 	@Autowired
 	private LicenseService licenseService;
 	@Autowired
@@ -98,9 +100,10 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
-	
-	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler) {
+
+	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler, boolean wizardsEnabled) {
 		super(ureq, wControl);
+		this.wizardsEnabled = wizardsEnabled;
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.handler = handler;
 		
@@ -110,22 +113,25 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	}
 
 	@Override
-	public RepositoryHandler getHandler() {
-		return handler;
-	}
-
-	@Override
 	public RepositoryEntry getAddedEntry() {
 		return addedEntry;
 	}
 
-	public Object getCreateObject() {
-		return userObject;
+	@Override
+	public RepositoryHandler getHandler() {
+		return handler;
+	}
+	
+	@Override
+	public RepositoryWizardProvider getWizardProvider() {
+		return wizardEl != null && wizardEl.isOneSelected()
+				? wizardService.getProvider(wizardEl.getSelectedKey())
+				: null;
 	}
 
 	@Override
-	public void setCreateObject(Object userObject) {
-		this.userObject = userObject;
+	public void setCreateObject(Object createObject) {
+		this.createObject = createObject;
 	}
 
 	@Override
@@ -180,17 +186,23 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		
 		initAdditionalFormElements(formLayout, listener, ureq);
 		
+		if (wizardsEnabled) {
+			List<RepositoryWizardProvider> wizardProviders = wizardService.getProviders(handler.getSupportedType());
+			if (!wizardProviders.isEmpty()) {
+				KeyValues wizardKV = new KeyValues();
+				wizardProviders.forEach(provider -> wizardKV.add(KeyValues.entry(provider.getType(), provider.getDisplayName(getLocale()))));
+				wizardKV.sort(KeyValues.VALUE_ASC);
+				wizardEl = uifactory.addRadiosVertical("csc.wizard", formLayout, wizardKV.keys(), wizardKV.values());
+				wizardEl.enableNoneSelection();
+			}
+		}
+		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
 		FormSubmit submit = uifactory.addFormSubmitButton("cmd.create.ressource", buttonContainer);
 		submit.setElementCssClass("o_sel_author_create_submit");
 		
-		if(handler != null && handler.isPostCreateWizardAvailable()) {
-			wizardButton = uifactory.addFormLink("csc.startwizard", buttonContainer, Link.BUTTON);
-			wizardButton.setElementCssClass("o_sel_author_create_wizard");
-		}
-
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
 	
@@ -228,19 +240,12 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	@Override
 	protected void formOK(UserRequest ureq) {
 		doCreate();
-		fireEvent(ureq, Event.DONE_EVENT);
-		fireEvent(ureq, new EntryChangedEvent(addedEntry, getIdentity(), Change.added, "create"));
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(wizardButton == source) {
-			if(validateFormLogic(ureq)) {
-				doCreate();
-				fireEvent(ureq, CREATION_WIZARD);
-			}
+		if (wizardEl != null && wizardEl.isOneSelected()) {
+			fireEvent(ureq, CREATION_WIZARD);
+		} else {
+			fireEvent(ureq, Event.DONE_EVENT);
 		}
-		super.formInnerEvent(ureq, source, event);
+		fireEvent(ureq, new EntryChangedEvent(addedEntry, getIdentity(), Change.added, "create"));
 	}
 
 	@Override
@@ -261,7 +266,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 			organisation = organisationService.getDefaultOrganisation();
 		}
 		
-		addedEntry = handler.createResource(getIdentity(), displayname, "", getCreateObject(), organisation, getLocale());
+		addedEntry = handler.createResource(getIdentity(), displayname, "", createObject, organisation, getLocale());
 		if (licenseModule.isEnabled(licenseHandler)) {
 			if(licenseType != null) {
 				ResourceLicense license = licenseService.loadOrCreateLicense(addedEntry.getOlatResource());

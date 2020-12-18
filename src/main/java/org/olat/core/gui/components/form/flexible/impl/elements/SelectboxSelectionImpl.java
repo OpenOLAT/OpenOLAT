@@ -31,8 +31,8 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
@@ -51,9 +51,10 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	private boolean originalSelect = false;
 	private int selectedIndex = -1;
 	private boolean allowNoSelection = false;
+	private String translatedNoSelectionValue;
 
 	private final SelectboxComponent component;
-	private final Translator noSelectionTranslator;
+	private final Locale locale;
 
 	/**
 	 * set your layout
@@ -62,19 +63,16 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	 * @param locale
 	 */
 	public SelectboxSelectionImpl(String id, String name, Locale locale) {
-		this(id, name, Util.createPackageTranslator(SelectboxSelectionImpl.class, locale));
-	}
-	
-	SelectboxSelectionImpl(String id, String name, Translator noSelectonTranslator) {
 		super(id, name, false);
 		
-		this.noSelectionTranslator = noSelectonTranslator;
+		this.locale = locale;
 		
 		String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
 		component = new SelectboxComponent(ssscId , getName() + "_SELBOX", translator, this);
 	}
 
-	String[] getValues() {
+	@Override
+	public String[] getValues() {
 		return values;
 	}
 
@@ -100,17 +98,11 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 		component.setDomReplacementWrapperRequired(required);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelectionContainer#getSelected()
-	 */
 	@Override
 	public int getSelected() {
 		return selectedIndex - getNoValueOffset();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelectionContainer#getSelectedKey()
-	 */
 	@Override
 	public String getSelectedKey() {
 		if (!isOneSelected()) throw new AssertException("no key selected");
@@ -125,17 +117,11 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelectionContainer#isOneSelected()
-	 */
 	@Override
 	public boolean isOneSelected() {
 		return getSelected() != -1;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelection#setKeysAndValues(String[], String[], String[])
-	 */
 	@Override
 	public void setKeysAndValues(String[] keys, String[] values, String[] cssClasses) {
 		if (keys.length != values.length) {
@@ -154,25 +140,16 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 		component.setOptionsAndValues(this.keys, this.values, this.cssClasses);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#getCurriculumKey(int)
-	 */
 	@Override
 	public String getKey(int which) {
 		return keys[which + getNoValueOffset()];
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#getSize()
-	 */
 	@Override
 	public int getSize() {
 		return keys.length - getNoValueOffset();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#getValue(int)
-	 */
 	@Override
 	public String getValue(int which) {
 		return values[which + getNoValueOffset()];
@@ -194,31 +171,35 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	}
 
 	@Override
-	public void setAllowNoSelection(boolean allowNoSelection) {
-		boolean changedToTrue = !this.allowNoSelection && allowNoSelection;
-		boolean changedToFalse = this.allowNoSelection && !allowNoSelection;
-		if (changedToFalse) {
-			removeNoSelectionEntry();
-		}
-		this.allowNoSelection = allowNoSelection;
-		if (changedToTrue) {
+	public void enableNoneSelection() {
+		enableNoneSelection(null);
+	}
+
+	@Override
+	public void enableNoneSelection(String translatedValue) {
+		translatedNoSelectionValue = translatedValue;
+		if (!allowNoSelection) {
+			allowNoSelection = true;
 			addNoSelectionEntry();
 		}
 		component.setOptionsAndValues(this.keys, this.values, this.cssClasses);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#isSelected(int)
-	 */
+	@Override
+	public void disableNoneSelection() {
+		translatedNoSelectionValue = null;
+		if (allowNoSelection) {
+			removeNoSelectionEntry();
+			allowNoSelection = false;
+		}
+		component.setOptionsAndValues(this.keys, this.values, this.cssClasses);
+	}
+
 	@Override
 	public boolean isSelected(int which) {
 		return which == getSelected();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionElement#select(java.lang.String, boolean)
-	 */
 	@Override
 	public void select(String key, boolean select) {
 		boolean found = false;
@@ -301,9 +282,6 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 		clearError();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#setEnabled(boolean)
-	 */
 	@Override
 	public void setEnabled(boolean isEnabled) {
 		super.setEnabled(isEnabled);
@@ -316,9 +294,6 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 		component.setVisible(isVisible);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider#getFormDispatchId()
-	 */
 	@Override
 	public String getFormDispatchId() {
 		/**
@@ -346,7 +321,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 			String[] movedKeys = new String[keys.length + 1];
 			String[] movedValues = new String[values.length + 1];
 			movedKeys[0] = SingleSelection.NO_SELECTION_KEY;
-			movedValues[0] = noSelectionTranslator.translate("selection.no.value");
+			movedValues[0] = getTranslatedNoSelectioValue();
 			for (int i=keys.length; i-->0;) {
 				movedKeys[i + 1] = keys[i];
 				movedValues[i + 1] = values[i];
@@ -362,6 +337,14 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 			}
 			cssClasses = movedCssClasses;
 		}
+	}
+	
+	private String getTranslatedNoSelectioValue() {
+		if (!StringHelper.containsNonWhitespace(translatedNoSelectionValue)) {
+			translatedNoSelectionValue = Util.createPackageTranslator(SelectboxSelectionImpl.class, locale)
+					.translate("selection.no.value");
+		}
+		return translatedNoSelectionValue;
 	}
 	
 	private void removeNoSelectionEntry() {
@@ -382,7 +365,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 				movedCssClasses[i - 1] = cssClasses[i];
 			}
 			cssClasses = movedCssClasses;
-		};
+		}
 	}
 	
 }

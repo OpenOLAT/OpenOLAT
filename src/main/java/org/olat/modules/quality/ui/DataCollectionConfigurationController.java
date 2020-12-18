@@ -194,7 +194,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		topicTypeEl = uifactory.addDropdownSingleselect("data.collection.topic.type.select", formLayout,
 				QualityUIFactory.getTopicTypeKeys(actual),
 				QualityUIFactory.getTopicTypeValues(getTranslator(), actual));
-		topicTypeEl.setAllowNoSelection(true);
+		topicTypeEl.enableNoneSelection();
 		topicTypeEl.addActionListener(FormEvent.ONCHANGE);
 		if (topicType != null) {
 			topicTypeEl.select(QualityUIFactory.getTopicTypeKey(topicType), true);

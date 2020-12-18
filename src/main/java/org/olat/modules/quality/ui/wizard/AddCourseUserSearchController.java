@@ -53,7 +53,7 @@ public class AddCourseUserSearchController extends StepFormBasicController {
 
 		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[] { "CourseModule" }, translate("participation.user.course.add.choose"),
-				false, false, true, false, true);
+				false, false, true, false, true, false);
 		listenTo(searchController);
 		initForm (ureq);
 	}

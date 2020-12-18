@@ -215,7 +215,7 @@ public class PortfolioConfigForm extends FormBasicController {
 		removeAsListenerAndDispose(cmc);
 		
 		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, BINDER_RESOURCE,
-				translate("select.map2"), false, true, false, false, false);
+				translate("select.map2"), false, true, false, false, false, false);
 		listenTo(searchController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("select.map"));

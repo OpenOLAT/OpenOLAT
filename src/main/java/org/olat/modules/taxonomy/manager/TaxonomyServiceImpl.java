@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.manager;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -135,7 +136,12 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	public TaxonomyLevel getTaxonomyLevel(TaxonomyLevelRef ref) {
 		if(ref == null || ref.getKey() == null) return null;
 		return taxonomyLevelDao.loadByKey(ref.getKey());
-	}	
+	}
+
+	@Override
+	public List<TaxonomyLevel> getTaxonomyLevelsByKeys(Collection<? extends TaxonomyLevelRef> refs) {
+		return taxonomyLevelDao.loadLevels(refs);
+	}
 
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevelParentLine(TaxonomyLevel taxonomyLevel, Taxonomy taxonomy) {

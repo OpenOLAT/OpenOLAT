@@ -212,7 +212,7 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 		
 		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[] {VideoFileResource.TYPE_NAME}, translate(NLS_COMMAND_CHOOSEVIDEO),
-				true, false, false, false, false);
+				true, false, false, false, false, false);
 		listenTo(searchController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate(NLS_COMMAND_CHOOSEVIDEO));

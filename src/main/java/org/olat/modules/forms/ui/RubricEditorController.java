@@ -548,7 +548,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		}
 
 		SingleSelection radioEl = uifactory.addRadiosVertical("slider_" + CodeHelper.getRAMUniqueID(), null, flc, theKeys, theValues);
-		radioEl.setAllowNoSelection(true);
+		radioEl.enableNoneSelection();
 		radioEl.setDomReplacementWrapperRequired(false);
 		int widthInPercent = Math.round(100.0f / steps) - 1;
 		radioEl.setWidthInPercent(widthInPercent, true);

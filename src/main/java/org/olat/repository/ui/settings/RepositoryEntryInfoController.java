@@ -59,6 +59,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.MediaContainerFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -236,41 +237,14 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		// Check for empty display name
-		if (!StringHelper.containsNonWhitespace(displayName.getValue())) {
-			displayName.setErrorKey("cif.error.displayname.empty", new String[] {});
-			allOk = false;
-		} else if (displayName.hasError()) {
-			allOk = false;
-		} else {
-			displayName.clearError();
-		}
-		
-		allOk &= validateTextElement(description, 80000);
-
-		allOk &= validateTextElement(objectives, 2000);
-		allOk &= validateTextElement(requirements, 2000);
-		allOk &= validateTextElement(credits, 2000);
-		allOk &= validateTextElement(externalRef, 255);
+		allOk &= RepositoyUIFactory.validateTextElement(displayName, true, 110);
+		allOk &= RepositoyUIFactory.validateTextElement(description, false, 80000);
+		allOk &= RepositoyUIFactory.validateTextElement(objectives, false, 2000);
+		allOk &= RepositoyUIFactory.validateTextElement(requirements, false, 2000);
+		allOk &= RepositoyUIFactory.validateTextElement(credits, false, 2000);
+		allOk &= RepositoyUIFactory.validateTextElement(externalRef, false, 255);
 
 		return allOk;
-	}
-	
-	private boolean validateTextElement(TextElement el, int maxLength) {
-		boolean ok;
-		if(el == null) {
-			ok = true;
-		} else {
-			String val = el.getValue();
-			el.clearError();
-			if(val != null && val.length() > maxLength) {
-				el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
-				ok = false;
-			} else {
-				ok = true;
-			}
-		}
-		return ok;
 	}
 
 	@Override

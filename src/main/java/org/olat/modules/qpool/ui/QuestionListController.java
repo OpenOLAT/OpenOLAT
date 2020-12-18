@@ -111,6 +111,7 @@ import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.CreateEntryController;
+import org.olat.repository.ui.author.CreateRepositoryEntryController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -883,7 +884,7 @@ public class QuestionListController extends AbstractItemListController implement
 			allowed = new String[]{ ImsQTI21Resource.TYPE_NAME };
 		}
 		importTestCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, allowed,
-				null, null, translate("import.repository"), false, false, false, false, true, Can.copyable);
+				null, null, translate("import.repository"), false, false, false, false, true, false, Can.copyable);
 		listenTo(importTestCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -1066,7 +1067,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(addController);
 
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
-		addController = handler.createCreateRepositoryEntryController(ureq, getWindowControl());
+		addController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler, false);
 		addController.setCreateObject(new QItemList(items, groupBy));
 		addController.setLicenseType(licenseType);
 		listenTo(addController);

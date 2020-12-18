@@ -20,7 +20,6 @@
 package org.olat.repository.ui.author;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -28,7 +27,6 @@ import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.CourseFactory;
-import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -49,9 +47,9 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 	@Autowired
 	private NodeAccessService nodeAccessService;
 
-	public CreateCourseRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler) {
-		super(ureq, wControl, handler);
-		updateUI();
+	public CreateCourseRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler,
+			boolean wizardsEnabled) {
+		super(ureq, wControl, handler, wizardsEnabled);
 	}
 
 	@Override
@@ -71,19 +69,6 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 		
 		nodeAccessEl.setHelpText(helpText);
 		nodeAccessEl.setHelpUrlForManualPage("Learning path course");
-	}
-
-	private void updateUI() {
-		boolean hasWizard = nodeAccessEl.isOneSelected() && ConditionNodeAccessProvider.TYPE.equals(nodeAccessEl.getSelectedKey());
-		wizardButton.setVisible(hasWizard);
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == nodeAccessEl) {
-			updateUI();
-		}
-		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

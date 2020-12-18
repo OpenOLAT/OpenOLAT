@@ -40,7 +40,6 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -113,11 +112,6 @@ public class WebDocumentHandler extends FileHandler {
 		return createDelegate.createResource(initialAuthor, displayname, description, createObject, organisation, locale);
 	}
 	
-	@Override
-	public boolean isPostCreateWizardAvailable() {
-		return false;
-	}
-
 	@Override
 	public boolean supportImport() {
 		return true;
@@ -247,11 +241,6 @@ public class WebDocumentHandler extends FileHandler {
 	@Override
 	public boolean supportsAssessmentDetails() {
 		return false;
-	}
-
-	@Override
-	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
 
 	@Override

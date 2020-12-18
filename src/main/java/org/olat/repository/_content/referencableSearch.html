@@ -10,6 +10,9 @@
 		#if($r.available("cmd.import.url.ressource"))
 			$r.render("cmd.import.url.ressource")
 		#end
+		#if($r.available("cancel"))
+			$r.render("cancel")
+		#end
 	</div>
 	$r.render("segments")
 	<div class="o_segments_content">

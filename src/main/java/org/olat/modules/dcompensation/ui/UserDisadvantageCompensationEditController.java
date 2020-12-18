@@ -263,7 +263,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 
 		searchFormCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
 					new String[] { CourseModule.ORES_TYPE_COURSE}, null, disadvantagedIdentity,
-					translate("select.entry"), false, false, false, false, true, Can.all);
+					translate("select.entry"), false, false, false, false, true, false, Can.all);
 		listenTo(searchFormCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchFormCtrl.getInitialComponent(),
 				true, translate("select.entry"));

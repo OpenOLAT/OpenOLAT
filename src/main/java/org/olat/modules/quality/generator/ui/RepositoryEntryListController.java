@@ -232,7 +232,7 @@ public abstract class RepositoryEntryListController extends FormBasicController 
 	private void doSelectRepositoryEntry(UserRequest ureq) {
 		selectCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[] { CourseModule.getCourseTypeName() }, translate("repository.entry.select.title"),
-				false, false, true, false, true);
+				false, false, true, false, true, false);
 		listenTo(selectCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

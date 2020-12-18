@@ -20,6 +20,7 @@ import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.gui.control.Controller;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.wizard.RepositoryWizardProvider;
 
 public interface CreateEntryController extends Controller {
 	
@@ -31,4 +32,6 @@ public interface CreateEntryController extends Controller {
 	
 	public RepositoryHandler getHandler();
 	
+	public RepositoryWizardProvider getWizardProvider();
+
 }

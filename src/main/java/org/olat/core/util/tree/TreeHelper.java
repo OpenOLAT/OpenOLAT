@@ -30,11 +30,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
@@ -173,5 +173,12 @@ public class TreeHelper {
 				makeTreeFlat(child, outNodeList);
 			}
 		}
+	}
+	
+	public static INode getLastNode(INode node) {
+		if (node.getChildCount() == 0) {
+			return node;
+		}
+		return getLastNode(node.getChildAt(node.getChildCount() - 1));
 	}
 }

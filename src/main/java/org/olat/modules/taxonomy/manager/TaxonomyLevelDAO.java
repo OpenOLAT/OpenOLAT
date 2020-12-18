@@ -21,11 +21,14 @@ package org.olat.modules.taxonomy.manager;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
@@ -135,6 +138,20 @@ public class TaxonomyLevelDAO implements InitializingBean {
 				.setParameter("levelKey", key)
 				.getResultList();
 		return levels == null || levels.isEmpty() ? null : levels.get(0);
+	}
+	
+	public List<TaxonomyLevel> loadLevels(Collection<? extends TaxonomyLevelRef> refs) {
+		if (refs == null || refs.isEmpty()) return new ArrayList<>(0);
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select level from ctaxonomylevel as level");
+		sb.append(" where level.key in (:keys)");
+		
+		Collection<Long> keys = refs.stream().map(TaxonomyLevelRef::getKey).collect(Collectors.toList());
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), TaxonomyLevel.class)
+				.setParameter("keys", keys)
+				.getResultList();
 	}
 	
 	public List<TaxonomyLevel> getLevels(TaxonomyRef taxonomy) {

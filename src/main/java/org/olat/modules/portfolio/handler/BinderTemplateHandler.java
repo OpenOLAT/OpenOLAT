@@ -31,14 +31,12 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -107,11 +105,6 @@ public class BinderTemplateHandler implements RepositoryHandler {
 		portfolioService.createAndPersistBinderTemplate(initialAuthor, re, locale);
 		DBFactory.getInstance().commit();
 		return re;
-	}
-	
-	@Override
-	public boolean isPostCreateWizardAvailable() {
-		return false;
 	}
 	
 	@Override
@@ -296,8 +289,4 @@ public class BinderTemplateHandler implements RepositoryHandler {
 		return CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(ores, "subkey");
 	}
 
-	@Override
-	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
-	}
 }

@@ -19,12 +19,7 @@
  */
 package org.olat.repository.ui.settings;
 
-import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
-import static org.olat.core.gui.components.util.KeyValues.entry;
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,7 +57,6 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.RepositoryEntryToTaxonomyLevel;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -71,6 +65,7 @@ import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -247,41 +242,15 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	}
 
 	private void initFormTaxonomy(FormItemContainer formLayout, TaxonomyRef taxonomyRef) {
-		taxonomyLevels = repositoryEntry.getTaxonomyLevels().stream()
-				.map(RepositoryEntryToTaxonomyLevel::getTaxonomyLevel)
-				.collect(Collectors.toSet());
 		List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
+		taxonomyLevels = new HashSet<>(repositoryService.getTaxonomy(repositoryEntry));
 
-		KeyValues keyValues = new KeyValues();
-		for (TaxonomyLevel level:allTaxonomyLevels) {
-			String key = Long.toString(level.getKey());
-			ArrayList<String> names = new ArrayList<>();
-			addParentNames(names, level);
-			Collections.reverse(names);
-			String value = String.join(" / ", names);
-			keyValues.add(entry(key, value));
-		}
-		keyValues.sort(VALUE_ASC);
-	
+		KeyValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(allTaxonomyLevels);
 		taxonomyLevelEl = uifactory.addCheckboxesDropdown("taxonomyLevels", "cif.taxonomy.levels", formLayout,
 				keyValues.keys(), keyValues.values(), null, null);
-		List<TaxonomyLevel> reLevels = repositoryService.getTaxonomy(repositoryEntry);
-		for (TaxonomyLevel reLevel : reLevels) {
-			String key = reLevel.getKey().toString();
-			if (keyValues.containsKey(key)) {
-				taxonomyLevelEl.select(key, true);
-			}
-		}
+		RepositoyUIFactory.selectTaxonomyLevels(taxonomyLevelEl, taxonomyLevels);
 	}
 	
-	private void addParentNames(List<String> names, TaxonomyLevel level) {
-		names.add(level.getDisplayName());
-		TaxonomyLevel parent = level.getParent();
-		if (parent != null) {
-			addParentNames(names, parent);
-		}
-	}
-
 	@Override
 	protected void doDispose() {
 		// Controllers autodisposed by basic controller
@@ -291,9 +260,9 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		allOk &= validateTextElement(language, 255);
-		allOk &= validateTextElement(expenditureOfWork, 225);
-		allOk &= validateTextElement(authors, 2000);
+		allOk &= RepositoyUIFactory.validateTextElement(language, false, 255);
+		allOk &= RepositoyUIFactory.validateTextElement(expenditureOfWork, false, 225);
+		allOk &= RepositoyUIFactory.validateTextElement(authors, false, 2000);
 
 		if (licenseEl != null) {
 			licenseEl.clearError();
@@ -304,23 +273,6 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		}
 
 		return allOk;
-	}
-	
-	private boolean validateTextElement(TextElement el, int maxLength) {
-		boolean ok;
-		if(el == null) {
-			ok = true;
-		} else {
-			String val = el.getValue();
-			el.clearError();
-			if(val != null && val.length() > maxLength) {
-				el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
-				ok = false;
-			} else {
-				ok = true;
-			}
-		}
-		return ok;
 	}
 
 	@Override

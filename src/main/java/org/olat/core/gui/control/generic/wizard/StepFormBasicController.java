@@ -26,6 +26,7 @@
 package org.olat.core.gui.control.generic.wizard;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -122,6 +123,15 @@ public abstract class StepFormBasicController extends FormBasicController implem
 	
 	protected Object getFromRunContext(String key) {
 		return runContext.get(key);
+	}
+	
+	protected Object getOrCreateFromRunContext(String key, Supplier<Object> creator) {
+		Object object = getFromRunContext(key);
+		if (object == null) {
+			object = creator.get();
+			addToRunContext(key, object);
+		}
+		return object;
 	}
 
 	@SuppressWarnings({ "unused", "unchecked" })

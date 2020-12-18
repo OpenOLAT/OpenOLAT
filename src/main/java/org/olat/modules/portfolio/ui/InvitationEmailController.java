@@ -75,7 +75,7 @@ public class InvitationEmailController extends FormBasicController {
 		mailEl.setNotEmptyCheck("map.share.empty.warn");
 		
 		existingInviteeEl = uifactory.addDropdownSingleselect("invitee", "existing.invitee.selection", formLayout, new String[0], new String[0]);
-		existingInviteeEl.setAllowNoSelection(true);
+		existingInviteeEl.enableNoneSelection();
 		existingInviteeEl.setVisible(false);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

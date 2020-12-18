@@ -40,7 +40,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.course.editor.PublishStep01AccessForm;
+import org.olat.repository.wizard.ui.AccessAndPropertiesController;
 
 import de.tuchemnitz.wizard.workflows.coursecreation.model.CourseCreationConfiguration;
 
@@ -82,7 +82,7 @@ public class CcStep02 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepP = new PublishStep01AccessForm(ureq, windowControl, form, stepsRunContext);
+		StepFormController stepP = new AccessAndPropertiesController(ureq, windowControl, form, stepsRunContext);
 		return stepP;
 	}
 

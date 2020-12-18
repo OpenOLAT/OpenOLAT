@@ -9,7 +9,7 @@
         http://www.springframework.org/schema/context/spring-context.xsd">
   
 	<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" system-properties-mode="OVERRIDE"/>
-	<context:component-scan base-package="org.olat.basesecurity,org.olat.note,org.olat.social,org.olat.commons.memberlist,org.olat.commons.info,org.olat.collaboration" />
+	<context:component-scan base-package="org.olat.basesecurity,org.olat.note,org.olat.social,org.olat.commons.memberlist,org.olat.commons.info,org.olat.collaboration,de.tuchemnitz.wizard.workflows.coursecreation" />
 	<context:annotation-config />
 
 	<import resource="classpath:/org/olat/core/_spring/mainCorecontext.xml"/>

@@ -36,7 +36,6 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -79,13 +78,6 @@ public interface RepositoryHandler {
 
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
 			Object createObject, Organisation organisation, Locale locale);
-
-	/**
-	 * Typically for course wizard
-	 * 
-	 * @return
-	 */
-	public boolean isPostCreateWizardAvailable();
 
 	/**
 	 * This resource support import of files.
@@ -207,26 +199,16 @@ public interface RepositoryHandler {
 			TooledStackedPanel toolbar);
 
 	/**
-	 * Called if a user wants to create a Resourceable via wizard.
-	 * 
-	 * @param res
-	 * @param ureq
-	 * @param wControl
-	 * @return Controller that guides trough the creation workflow via wizard.
-	 */
-	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq,
-			WindowControl wControl);
-
-	/**
 	 * Called if a user wants to open the create repository entry dialog for a
 	 * Resourceable
 	 * 
 	 * @param ureq
 	 * @param wControl
+	 * @param wizardsEnabled 
 	 * @return Controller able to create resourceable.
 	 */
-	default CreateEntryController createCreateRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
-		return new CreateRepositoryEntryController(ureq, wControl, this);
+	default CreateEntryController createCreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, boolean wizardsEnabled) {
+		return new CreateRepositoryEntryController(ureq, wControl, this, wizardsEnabled);
 	}
 
 	/**

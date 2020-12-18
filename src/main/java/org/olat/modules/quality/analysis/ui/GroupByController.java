@@ -334,10 +334,10 @@ public abstract class GroupByController extends FormBasicController implements F
 		groupEl1 = uifactory.addDropdownSingleselect("heatmap.group1", groupingCont, emptyArray(), emptyArray());
 		groupEl1.addActionListener(FormEvent.ONCHANGE);
 		groupEl2 = uifactory.addDropdownSingleselect("heatmap.group2", groupingCont, emptyArray(), emptyArray());
-		groupEl2.setAllowNoSelection(true);
+		groupEl2.enableNoneSelection();
 		groupEl2.addActionListener(FormEvent.ONCHANGE);
 		groupEl3 = uifactory.addDropdownSingleselect("heatmap.group3", groupingCont, emptyArray(), emptyArray());
-		groupEl3.setAllowNoSelection(true);
+		groupEl3.enableNoneSelection();
 		groupEl3.addActionListener(FormEvent.ONCHANGE);
 		
 		// Insufficient filter

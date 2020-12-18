@@ -176,7 +176,7 @@ public class ContactForm extends FormBasicController {
 			templateEl.setVisible(false);
 		} else {
 			templateEl.setVisible(templates.size() > 1);
-			templateEl.setAllowNoSelection(templates.size() == 1);
+			templateEl.enableNoneSelection();
 			
 			KeyValues templatesKeyValues = new KeyValues();
 			for(int i=0; i<templates.size(); i++) {
@@ -480,7 +480,7 @@ public class ContactForm extends FormBasicController {
 		
 		templateEl = uifactory.addDropdownSingleselect("ttemplates", NLS_CONTACT_TEMPLATES, formLayout, new String[0], new String[0]);
 		templateEl.setVisible(false);
-		templateEl.setAllowNoSelection(true);
+		templateEl.enableNoneSelection();
 		templateEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String fullName = userManager.getUserDisplayName(emailFrom);

@@ -19,6 +19,9 @@
  */
 package org.olat.modules.taxonomy.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -110,6 +113,20 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 		Assert.assertNotNull(reloadedSecondLevel.getCreationDate());
 		Assert.assertEquals(taxonomy, reloadedSecondLevel.getTaxonomy());
 		Assert.assertEquals(rootLevel, reloadedSecondLevel.getParent());
+	}
+	
+	@Test
+	public void loadTaxonomyLevels_byKeys() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy(random(), random(), null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), random(), null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), random(), null, null, null, null, taxonomy);
+		TaxonomyLevel levelOther = taxonomyLevelDao.createTaxonomyLevel(random(), random(), random(), null, null, null, null, taxonomy);
+		dbInstance.commit();
+		
+		List<TaxonomyLevel> levels = taxonomyLevelDao.loadLevels(List.of(level1, level2));
+		assertThat(levels)
+				.containsExactlyInAnyOrder(level1, level2)
+				.doesNotContain(levelOther);
 	}
 	
 	@Test

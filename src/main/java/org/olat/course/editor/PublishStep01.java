@@ -35,6 +35,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryModule;
+import org.olat.repository.wizard.ui.AccessAndPropertiesController;
 
 /**
  * Description:<br>
@@ -84,7 +85,7 @@ class PublishStep01 extends BasicStep {
 	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext stepsRunContext, Form form) {
-		return new PublishStep01AccessForm(ureq, wControl, form, stepsRunContext);
+		return new AccessAndPropertiesController(ureq, wControl, form, stepsRunContext);
 	}
 
 }

@@ -371,7 +371,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addRadiosHorizontal(final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues) {
-		SingleSelection ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal);
+		SingleSelection ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
 		ss.setKeysAndValues(theKeys, theValues, null);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);
@@ -406,7 +406,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addRadiosVertical(final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues) {
-		SingleSelection ss = new SingleSelectionImpl(name, name,  SingleSelection.Layout.vertical);
+		SingleSelection ss = new SingleSelectionImpl(name, name,  SingleSelection.Layout.vertical, formLayout.getTranslator().getLocale());
 		ss.setKeysAndValues(theKeys, theValues, null);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);

@@ -398,6 +398,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	 * 
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 		/*
 		 * activate a new step immediate after dispatch - a new step form controller

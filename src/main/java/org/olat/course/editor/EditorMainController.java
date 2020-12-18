@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -105,8 +106,11 @@ import org.olat.course.run.preview.PreviewConfigController;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.PublishTreeModel;
+import org.olat.course.wizard.CourseWizardService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
+import org.olat.repository.wizard.AccessAndProperties;
+import org.olat.repository.wizard.ui.AccessAndPropertiesController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -1126,11 +1130,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					}
 				}
 				
-				if (runContext.containsKey("accessAndProperties")) {
-					CourseAccessAndProperties accessAndProperties = (CourseAccessAndProperties) runContext.get("accessAndProperties");
+				if (runContext.containsKey(AccessAndPropertiesController.RUN_CONTEXT_KEY)) {
+					AccessAndProperties accessAndProperties = (AccessAndProperties) runContext.get(AccessAndPropertiesController.RUN_CONTEXT_KEY);
 					// fires an EntryChangedEvent for repository entry notifying
 					// about modification.
-					publishManager.changeAccessAndProperties(getIdentity(), accessAndProperties);
+					CourseWizardService courseWizardService = CoreSpringFactory.getImpl(CourseWizardService.class);
+					courseWizardService.changeAccessAndProperties(getIdentity(), accessAndProperties, true);
 					hasChanges = true;					
 				}
 				

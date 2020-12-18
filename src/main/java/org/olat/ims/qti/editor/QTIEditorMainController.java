@@ -1062,7 +1062,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		removeAsListenerAndDispose(createConvertedTestController);
 
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
-		createConvertedTestController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
+		createConvertedTestController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler, false);
 		createConvertedTestController.setCreateObject(qtiEntry.getOlatResource());
 		createConvertedTestController.setDisplayname(qtiEntry.getDisplayname());
 		listenTo(createConvertedTestController);

@@ -75,11 +75,6 @@ public abstract class QTIHandler extends FileHandler {
 		return false;
 	}
 
-	@Override
-	public boolean isPostCreateWizardAvailable() {
-		return false;
-	}
-
 	protected RepositoryEntry createResource(String type, FileResource ores, Identity initialAuthor,
 			String displayname, String description, Object object, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);

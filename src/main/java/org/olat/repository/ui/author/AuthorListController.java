@@ -127,6 +127,7 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
+import org.olat.repository.wizard.RepositoryWizardProvider;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
@@ -549,7 +550,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				reloadRows();
 				cleanUp();
 			} else if(CreateRepositoryEntryController.CREATION_WIZARD.equals(event)) {
-				doPostCreateWizard(ureq, createCtrl.getAddedEntry(), createCtrl.getHandler());
+				doPostCreateWizard(ureq, createCtrl.getAddedEntry(), createCtrl.getHandler(), createCtrl.getWizardProvider());
 			} else {
 				cleanUp();
 			}
@@ -578,6 +579,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
 				getWindowControl().pop();
 				RepositoryEntry newEntry = (RepositoryEntry)wizardCtrl.getRunContext().get("authoringNewEntry");
+				RepositoryHandler handler = (RepositoryHandler)wizardCtrl.getRunContext().get("repoHandler");
+				releaseLock(handler);
 				reloadRows();
 				cleanUp();
 				launchEditDescription(ureq, newEntry);
@@ -836,7 +839,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(guardModalController(createCtrl)) return;
 
 		removeAsListenerAndDispose(createCtrl);
-		createCtrl = handler.createCreateRepositoryEntryController(ureq, getWindowControl());
+		createCtrl = handler.createCreateRepositoryEntryController(ureq, getWindowControl(), true);
 		listenTo(createCtrl);
 		removeAsListenerAndDispose(cmc);
 		
@@ -868,14 +871,52 @@ public class AuthorListController extends FormBasicController implements Activat
 		return true;
 	}
 	
-	private void doPostCreateWizard(UserRequest ureq, RepositoryEntry newEntry, RepositoryHandler handler) {
+	private void doPostCreateWizard(UserRequest ureq, RepositoryEntry newEntry, RepositoryHandler handler,
+			RepositoryWizardProvider wizardProvider) {
 		if(wizardCtrl != null) return;
 		
 		cleanUp();
-		wizardCtrl = handler.createWizardController(newEntry, ureq, getWindowControl());
-		wizardCtrl.getRunContext().put("authoringNewEntry", newEntry);
-		listenTo(wizardCtrl);
-		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
+		
+		LockedRun run = () -> {
+			wizardCtrl = wizardProvider.createWizardController(ureq, getWindowControl(), newEntry, null);
+			wizardCtrl.getRunContext().put("authoringNewEntry", newEntry);
+			wizardCtrl.getRunContext().put("repoHandler", handler);
+			listenTo(wizardCtrl);
+			getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
+		};
+		
+		OLATResourceable ores = newEntry.getOlatResource();
+		lockAndRun(ureq, ores, handler, false, run);
+	}
+	
+	private void lockAndRun(UserRequest ureq, OLATResourceable ores, RepositoryHandler handler, boolean releaseFinally, LockedRun run) {
+		if (ores == null) {
+			showError("error.wizard.start");
+			return;
+		}
+		boolean isAlreadyLocked = handler.isLocked(ores);
+		try {
+			lockResult = handler.acquireLock(ores, ureq.getIdentity());
+			if (lockResult == null || (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
+				run.run();
+			} else if (lockResult != null && lockResult.isSuccess() && isAlreadyLocked) {
+				String fullName = userManager.getUserDisplayName(lockResult .getOwner());
+				showInfo("warning.course.alreadylocked.bySameUser", fullName);
+				lockResult = null; // invalid lock, it was already locked
+			} else {
+				String fullName = userManager.getUserDisplayName(lockResult .getOwner());
+				showInfo("warning.course.alreadylocked", fullName);
+			}
+		} finally {
+			if (releaseFinally && (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
+				releaseLock(handler);
+			}
+		}
+	}
+	
+	private void releaseLock(RepositoryHandler handler ) {
+		handler.releaseLock(lockResult);
+		lockResult = null;
 	}
 	
 	private void doResetExtendedSearch(UserRequest ureq) {
@@ -1151,37 +1192,18 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
 		OLATResourceable ores = entry.getOlatResource();
-		if (ores == null) {
-			showError("error.download");
-			return;
-		}
 		
-		boolean isAlreadyLocked = typeToDownload.isLocked(ores);
-		try {			
-		  lockResult = typeToDownload.acquireLock(ores, ureq.getIdentity());
-		  if(lockResult == null || (lockResult.isSuccess() && !isAlreadyLocked)) {
-		    MediaResource mr = typeToDownload.getAsMediaResource(ores);
-		    if(mr!=null) {
-		      repositoryService.incrementDownloadCounter(entry);
-		      ureq.getDispatchResult().setResultingMediaResource(mr);
-		    } else {
-			    showError("error.export");
-			    fireEvent(ureq, Event.FAILED_EVENT);			
-		    }
-		  } else if(lockResult !=null && lockResult.isSuccess() && isAlreadyLocked) {
-		  	String fullName = userManager.getUserDisplayName(lockResult.getOwner());
-		  	showInfo("warning.course.alreadylocked.bySameUser", fullName);
-		  	lockResult = null; //invalid lock, it was already locked
-		  } else {
-		  	String fullName = userManager.getUserDisplayName(lockResult.getOwner());
-		  	showInfo("warning.course.alreadylocked", fullName);
-		  }
-		} finally {	
-			if((lockResult!=null && lockResult.isSuccess() && !isAlreadyLocked)) {
-			  typeToDownload.releaseLock(lockResult);		
-			  lockResult = null;
+		LockedRun run = () -> {
+			MediaResource mr = typeToDownload.getAsMediaResource(ores);
+			if(mr!=null) {
+				repositoryService.incrementDownloadCounter(entry);
+				ureq.getDispatchResult().setResultingMediaResource(mr);
+			} else {
+				showError("error.export");
+				fireEvent(ureq, Event.FAILED_EVENT);
 			}
-		}
+		};
+		lockAndRun(ureq, ores, typeToDownload, true, run);
 	}
 	
 	private void launch(UserRequest ureq, AuthoringEntryRow row) {
@@ -1292,6 +1314,12 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected boolean canManage(AuthoringEntryRow row) {
 		return repositoryService.hasRoleExpanded(getIdentity(), row, OrganisationRoles.learnresourcemanager.name(),
 				OrganisationRoles.administrator.name(), GroupRoles.owner.name());
+	}
+	
+	private interface LockedRun {
+		
+		void run();
+		
 	}
 	
 	private class ReferencesController extends BasicController {

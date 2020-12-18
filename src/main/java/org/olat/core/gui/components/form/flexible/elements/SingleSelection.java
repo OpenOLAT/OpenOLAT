@@ -38,6 +38,8 @@ public interface SingleSelection extends SelectionElement {
 	public String[] getKeys();
 	
 	public boolean containsKey(String value);
+	
+	public String[] getValues();
 
 	public String getSelectedKey();
 	
@@ -58,7 +60,11 @@ public interface SingleSelection extends SelectionElement {
 	
 	public boolean isAllowNoSelection();
 	
-	public void setAllowNoSelection(boolean allowNoSelection);
+	public void enableNoneSelection();
+	
+	public void enableNoneSelection(String translatedValue);
+	
+	public void disableNoneSelection();
 	
 	public boolean isEscapeHtml();
 	

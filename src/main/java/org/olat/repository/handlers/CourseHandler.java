@@ -47,12 +47,8 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.control.generic.wizard.Step;
-import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -66,8 +62,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.mail.MailHelper;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -81,7 +75,6 @@ import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.Structure;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.editor.CourseAccessAndProperties;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.export.CourseExportMediaResource;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -118,11 +111,6 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 
-import de.tuchemnitz.wizard.workflows.coursecreation.CourseCreationHelper;
-import de.tuchemnitz.wizard.workflows.coursecreation.CourseCreationMailHelper;
-import de.tuchemnitz.wizard.workflows.coursecreation.model.CourseCreationConfiguration;
-import de.tuchemnitz.wizard.workflows.coursecreation.steps.CcStep00;
-
 
 /**
  * Initial Date: Apr 15, 2004
@@ -143,8 +131,8 @@ public class CourseHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public CreateEntryController createCreateRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
-		return new CreateCourseRepositoryEntryController(ureq, wControl, this);
+	public CreateEntryController createCreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, boolean wizardsEnabled) {
+		return new CreateCourseRepositoryEntryController(ureq, wControl, this, wizardsEnabled);
 	}
 
 	@Override
@@ -162,11 +150,6 @@ public class CourseHandler implements RepositoryHandler {
 		return re;
 	}
 	
-	@Override
-	public boolean isPostCreateWizardAvailable() {
-		return true;
-	}
-
 	@Override
 	public String getCreateLabelI18nKey() {
 		return "new.course";
@@ -590,35 +573,6 @@ public class CourseHandler implements RepositoryHandler {
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
 		return CourseFactory.createEditorController(ureq, wControl, toolbar, re, null);
-	}
-
-	@Override
-	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		// load the course structure
-		final RepositoryEntry repoEntry = (RepositoryEntry) res;
-		ICourse course = CourseFactory.loadCourse(repoEntry);
-		Translator cceTranslator = Util.createPackageTranslator(CourseCreationHelper.class, ureq.getLocale());
-		final CourseCreationConfiguration courseConfig = new CourseCreationConfiguration(course.getCourseTitle(), Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repoEntry.getKey());
-		// wizard finish callback called after "finish" is called
-		final CourseCreationHelper ccHelper = new CourseCreationHelper(ureq.getLocale(), repoEntry, courseConfig , course);
-		StepRunnerCallback finishCallback = (uureq, control, runContext) -> {
-				// retrieve access and properties
-				CourseAccessAndProperties accessAndProps = (CourseAccessAndProperties) runContext.get("accessAndProperties");
-				courseConfig.setAccessAndProperties(accessAndProps);
-				
-				// here goes the code which reads out the wizards data from the runContext and then does some wizardry
-				ccHelper.finalizeWorkflow(uureq);
-				control.setInfo(CourseCreationMailHelper.getSuccessMessageString(uureq));
-				// send notification mail
-				final MailerResult mr = CourseCreationMailHelper.sentNotificationMail(uureq, ccHelper.getConfiguration());
-				Roles roles = uureq.getUserSession().getRoles();
-				boolean detailedErrorOuput = roles.isAdministrator() || roles.isSystemAdmin();
-				MailHelper.printErrorsAndWarnings(mr, control, detailedErrorOuput, uureq.getLocale());
-				return StepsMainRunController.DONE_MODIFIED;
-			};
-
-		Step start  = new CcStep00(ureq, courseConfig, repoEntry);
-		return new StepsMainRunController(ureq, wControl, start, finishCallback, null, cceTranslator.translate("coursecreation.title"), "o_sel_course_create_wizard");
 	}
 
 	@Override

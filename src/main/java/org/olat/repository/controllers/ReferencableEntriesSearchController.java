@@ -90,6 +90,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private Link adminEntriesLink;
 	private Link importRessourceButton;
 	private Link importRessourceUrlButton;
+	private Link cancelButton;
 	private Component createRessourceCmp;
 	
 	private CloseableModalController cmc;
@@ -111,21 +112,21 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String limitType, String commandLabel) {
-		this(wControl, ureq, new String[]{ limitType }, null, null, commandLabel, true, true, false, false, false, Can.referenceable);
+		this(wControl, ureq, new String[]{ limitType }, null, null, commandLabel, true, true, false, false, false,false,  Can.referenceable);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel) {
-		this(wControl, ureq, limitTypes, null, null, commandLabel, true, true, false, false, false, Can.referenceable);
+		this(wControl, ureq, limitTypes, null, null, commandLabel, true, true, false, false, false, false, Can.referenceable);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel,
-			boolean canImport, boolean canCreate, boolean multiSelect, boolean organisationWildCard, boolean adminSearch) {
-		this(wControl, ureq, limitTypes, null, null, commandLabel, canImport, canCreate, multiSelect, organisationWildCard, adminSearch, Can.referenceable);
+			boolean canImport, boolean canCreate, boolean multiSelect, boolean organisationWildCard, boolean adminSearch, boolean showCancel) {
+		this(wControl, ureq, limitTypes, null, null, commandLabel, canImport, canCreate, multiSelect, organisationWildCard, adminSearch, showCancel, Can.referenceable);
 	}
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq,
 			String[] limitTypes, RepositoryEntryFilter filter, IdentityRef asParticipant, String commandLabel,
-			boolean canImport, boolean canCreate, boolean multiSelect, boolean organisationWildCard, boolean adminSearch, 
+			boolean canImport, boolean canCreate, boolean multiSelect, boolean organisationWildCard, boolean adminSearch, boolean showCancel,
 			Can canBe) {
 
 		super(ureq, wControl);
@@ -187,7 +188,12 @@ public class ReferencableEntriesSearchController extends BasicController {
 				importRessourceUrlButton.setElementCssClass("o_sel_repo_popup_import_url_resource");
 			}
 		}
-
+		
+		if (showCancel) {
+			cancelButton = LinkFactory.createButtonSmall("cancel", mainVC, this);
+			cancelButton.setSuppressDirtyFormWarning(true);
+		}
+		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		allEntriesLink = LinkFactory.createCustomLink(CMD_ALL_ENTRIES, CMD_ALL_ENTRIES, "referencableSearch." + CMD_ALL_ENTRIES, Link.LINK, mainVC, this);
 		allEntriesLink.setElementCssClass("o_sel_repo_popup_all_resources");
@@ -319,7 +325,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(createController);
 			RepositoryHandler handler = (RepositoryHandler)((Link)source).getUserObject();
-			createController = handler.createCreateRepositoryEntryController(ureq, getWindowControl());
+			createController = handler.createCreateRepositoryEntryController(ureq, getWindowControl(), false);
 			listenTo(createController);
 			
 			String title = translate(handler.getCreateLabelI18nKey());
@@ -333,6 +339,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 			doImportResource(ureq);
 		} else if (source == importRessourceUrlButton) {
 			doImportResourceUrl(ureq);
+		} else if (source == cancelButton) {
+			fireEvent(ureq, Event.CANCELLED_EVENT);
 		}
 	}
 

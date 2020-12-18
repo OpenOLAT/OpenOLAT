@@ -44,7 +44,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -279,11 +278,6 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	}
 
 	@Override
-	public boolean isPostCreateWizardAvailable() {
-		return false;
-	}
-	
-	@Override
 	public boolean supportImport() {
 		return true;
 	}
@@ -419,11 +413,6 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel toolbar, Identity assessedIdentity) {
 		return new QTI21AssessmentDetailsController(ureq, wControl, toolbar, re, assessedIdentity);
-	}
-
-	@Override
-	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		return null;
 	}
 
 	@Override

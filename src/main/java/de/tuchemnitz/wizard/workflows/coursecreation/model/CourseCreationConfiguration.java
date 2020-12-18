@@ -47,8 +47,8 @@ import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
-import org.olat.course.editor.CourseAccessAndProperties;
 import org.olat.repository.CatalogEntry;
+import org.olat.repository.wizard.AccessAndProperties;
 
 import de.tuchemnitz.wizard.workflows.coursecreation.CourseCreationHelper;
 
@@ -110,18 +110,18 @@ public class CourseCreationConfiguration {
 	// selected catalog entry
 	private CatalogEntry selectedParent = null;
 	
-	private CourseAccessAndProperties accessAndProperties;
+	private AccessAndProperties accessAndProperties;
 
 	public CourseCreationConfiguration(final String courseTitle, final String extLink) {
 		this.courseTitle = courseTitle;
 		this.extLink = extLink;
 	}
 	
-	public CourseAccessAndProperties getAccessAndProperties() {
+	public AccessAndProperties getAccessAndProperties() {
 		return accessAndProperties;
 	}
 
-	public void setAccessAndProperties(CourseAccessAndProperties accessAndProperties) {
+	public void setAccessAndProperties(AccessAndProperties accessAndProperties) {
 		this.accessAndProperties = accessAndProperties;
 	}
 

@@ -120,7 +120,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		};
 		settingTypeEl = uifactory.addDropdownSingleselect("settings.type", "settings.type", null, profileCont, settingTypeKeys, settingTypeValues, null);
 		settingTypeEl.setDomReplacementWrapperRequired(false);
-		settingTypeEl.setAllowNoSelection(true);
+		settingTypeEl.enableNoneSelection();
 		
 		chooseProfileButton = uifactory.addFormLink("settings.choose.profile", profileCont, Link.BUTTON);
 		

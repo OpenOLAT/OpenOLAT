@@ -249,7 +249,7 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 
 	@Override
 	public List<TaxonomyLevel> loadContextTaxonomyLevels(AnalysisSearchParameter searchParams, boolean withParents) {
-		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(null);
+		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevelsByKeys(null);
 		List<String> pathes = filterDao.loadContextTaxonomyLevelPathes(searchParams);
 		if (withParents) {
 			levels.removeIf(e -> isUnusedChild(e.getMaterializedPathKeys(), pathes));

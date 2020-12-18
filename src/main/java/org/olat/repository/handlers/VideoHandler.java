@@ -34,7 +34,6 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
@@ -105,11 +104,6 @@ public class VideoHandler extends FileHandler {
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
 			Object createObject, Organisation organisation, Locale locale) {
 		return null;
-	}
-
-	@Override
-	public boolean isPostCreateWizardAvailable() {
-		return false;
 	}
 
 	@Override
@@ -242,11 +236,6 @@ public class VideoHandler extends FileHandler {
 	}
 
 	@Override
-	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
-	}
-
-	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re,  RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
 		return new VideoRuntimeController(ureq, wControl, re, reSecurity, (uureq, wwControl, toolbarPanel, entry, rereSecurity, assessmentMode) -> 
 			new VideoDisplayController(uureq, wwControl, entry)
@@ -263,6 +252,7 @@ public class VideoHandler extends FileHandler {
 		return null;
 	}
 
+	@Override
 	protected String getDeletedFilePrefix() {
 		return "del_video_";
 	}

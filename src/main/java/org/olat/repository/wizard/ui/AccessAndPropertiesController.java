@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.editor;
+package org.olat.repository.wizard.ui;
 
 import java.util.List;
 
@@ -32,24 +32,28 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
+import org.olat.course.editor.ChooseNodeController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.author.AuthoringEditAccessAndBookingController;
 import org.olat.repository.ui.author.AuthoringEditAuthorAccessController;
+import org.olat.repository.wizard.AccessAndProperties;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 /**
  * @author fkiefer
  */
-public class PublishStep01AccessForm extends StepFormBasicController {
+public class AccessAndPropertiesController extends StepFormBasicController {
+
+	public static final String RUN_CONTEXT_KEY = "accessAndProperties";
 
 	private RepositoryEntry entry;
 
 	private final AuthoringEditAuthorAccessController authorAccessCtrl;
 	private final AuthoringEditAccessAndBookingController accessAndBookingCtrl;
 	
-	public PublishStep01AccessForm(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
+	public AccessAndPropertiesController(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 		super(ureq, control, rootForm, runContext, LAYOUT_BAREBONE, null);
 		Translator translator = Util.createPackageTranslator(
 				Util.createPackageTranslator(RepositoryService.class, AuthoringEditAccessAndBookingController.class, getLocale()),
@@ -95,7 +99,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		RepositoryEntryAllowToLeaveOptions setting = accessAndBookingCtrl.getSelectedLeaveSetting();
 		RepositoryEntryStatusEnum accessStatus = accessAndBookingCtrl.getEntryStatus();
 		
-		CourseAccessAndProperties accessProperties = new CourseAccessAndProperties(entry,
+		AccessAndProperties accessProperties = new AccessAndProperties(entry,
 				setting, accessStatus, bookable, accessAllUsers, accessGuests, organisations);
 		
 		accessProperties.setCanCopy(authorAccessCtrl.canCopy());
@@ -105,7 +109,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		accessProperties.setDeletedOffer(accessAndBookingCtrl.getDeletedOffers());
 		accessProperties.setConfirmationEmail(accessAndBookingCtrl.isSendConfirmationEmail());
 					
-		addToRunContext("accessAndProperties", accessProperties);	
+		addToRunContext(RUN_CONTEXT_KEY, accessProperties);	
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

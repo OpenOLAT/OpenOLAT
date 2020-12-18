@@ -222,7 +222,7 @@ public class CourseSiteAdminController extends FormBasicController {
 	private void doSelecCourse(UserRequest ureq, LanguageConfigurationRow row) {
 		removeAsListenerAndDispose(selectCtrl);
 		selectCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{ "CourseModule" }, translate("select"),
-				true, true, false, false, true);
+				true, true, false, false, true, false);
 		selectCtrl.setUserObject(row);
 		listenTo(selectCtrl);
 		

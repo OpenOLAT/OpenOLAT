@@ -97,7 +97,7 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 			default:
 				singleChoiceEl = uifactory.addDropdownSingleselect(name, null, flc, keys, values);
 		}
-		singleChoiceEl.setAllowNoSelection(true);
+		singleChoiceEl.enableNoneSelection();
 	}
 
 	@Override

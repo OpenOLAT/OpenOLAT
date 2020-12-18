@@ -108,7 +108,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout,
 				contexts.getKeys(), contexts.getValues(), null);
 		contextEl.setElementCssClass("o_sel_qpool_metadata_context");
-		contextEl.setAllowNoSelection(true);
+		contextEl.enableNoneSelection();
 		contextEl.setEnabled(contexts.getKeys().length > 0);
 		if (item.getEducationalContext() != null) {
 			contextEl.select(item.getEducationalContext().getKey().toString(), true);
@@ -136,7 +136,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType",
 				formLayout, types.getKeys(), types.getValues(), null);
 		assessmentTypeEl.setElementCssClass("o_sel_qpool_metadata_assessment_type");
-		assessmentTypeEl.setAllowNoSelection(true);
+		assessmentTypeEl.enableNoneSelection();
 		if(StringHelper.containsNonWhitespace(item.getAssessmentType())) {
 			assessmentTypeEl.select(item.getAssessmentType(), true);
 		}

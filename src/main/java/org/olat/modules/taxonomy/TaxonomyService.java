@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -107,6 +108,8 @@ public interface TaxonomyService {
 	 */
 	public TaxonomyLevel getTaxonomyLevel(TaxonomyLevelRef ref);
 
+	public List<TaxonomyLevel> getTaxonomyLevelsByKeys(Collection<? extends TaxonomyLevelRef> refs);
+	
 	/**
 	 * 
 	 * @param taxonomyLevel The taxonomy level

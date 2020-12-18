@@ -96,24 +96,26 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 	
 	public static class RadioElementComponent {
 
-		private SingleSelection selectionWrapper;
-		private int which;
+		private final SingleSelection selectionWrapper;
+		private final int which;
+		private final String key;
+		private final String value;
+		private final boolean selected;
 
-		RadioElementComponent(SingleSelection selectionWrapper, int which) {
+		RadioElementComponent(SingleSelection selectionWrapper, int which, String key, String value, boolean selected) {
 			this.selectionWrapper = selectionWrapper;
 			this.which = which;
+			this.key = key;
+			this.value = value;
+			this.selected = selected;
 		}
 
 		String getGroupingName(){
 			return selectionWrapper.getName();
 		}
-		
-		int getWhichWeAre(){
-			return which;
-		}
 
 		String getKey() {
-			return selectionWrapper.getKey(which);
+			return key;
 		}
 		
 		String getFormDispatchId() {
@@ -121,11 +123,11 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		}
 
 		public String getValue() {
-			return selectionWrapper.getValue(which);
+			return value;
 		}
 
 		public boolean isSelected() {
-			return selectionWrapper.isSelected(which);
+			return selected;
 		}
 		
 		public int getAction(){

@@ -182,7 +182,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 			contextsKeyValues = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
 			contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", generalCont,
 					contextsKeyValues.getKeys(), contextsKeyValues.getValues(), null);
-			contextEl.setAllowNoSelection(true);
+			contextEl.enableNoneSelection();
 			decorate(contextEl, generalCont);
 		}
 		
@@ -202,7 +202,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		KeyValues types = MetaUIFactory.getAssessmentTypes(getTranslator());
 		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType", generalCont,
 				types.getKeys(), types.getValues(), null);
-		assessmentTypeEl.setAllowNoSelection(true);
+		assessmentTypeEl.enableNoneSelection();
 		decorate(assessmentTypeEl, generalCont);
 	}
 	

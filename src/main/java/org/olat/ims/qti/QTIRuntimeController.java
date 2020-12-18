@@ -213,7 +213,7 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 
 		OLATResource originalObject = getRepositoryEntry().getOlatResource();
 		RepositoryHandler qti21Handler = repositoryHandlerFactory.getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
-		createConvertedTestController = new CreateRepositoryEntryController(ureq, getWindowControl(), qti21Handler);
+		createConvertedTestController = new CreateRepositoryEntryController(ureq, getWindowControl(), qti21Handler, false);
 		createConvertedTestController.setCreateObject(originalObject);
 		createConvertedTestController.setDisplayname(getRepositoryEntry().getDisplayname());
 		createConvertedTestController.setExampleAndHelp(translate("convert.qti21.hint"), "Change+from+QTI+1.2+to+QTI+2.1");

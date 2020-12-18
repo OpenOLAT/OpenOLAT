@@ -49,7 +49,6 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
-import org.olat.course.editor.CourseAccessAndProperties;
 import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.PublishProcess;
 import org.olat.course.editor.PublishSetInformations;
@@ -63,15 +62,12 @@ import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.co.COEditController;
 import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.course.wizard.CourseWizardService;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.CatalogManager;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.Offer;
-import org.olat.resource.accesscontrol.OfferAccess;
 
 import de.tuchemnitz.wizard.helper.course.CourseExtensionHelper;
 import de.tuchemnitz.wizard.helper.course.HTMLDocumentHelper;
@@ -85,12 +81,13 @@ import de.tuchemnitz.wizard.workflows.coursecreation.model.CourseCreationConfigu
  * course nodes and contents.
  * 
  * <P>
+ * 
  * @author Marcel Karras (toka@freebits.de)
  * @author Norbert Englisch (norbert.englisch@informatik.tu-chemnitz.de)
  * @author Sebastian Fritzsche (seb.fritzsche@googlemail.com)
  */
 public class CourseCreationHelper {
-	
+
 	private static final Logger log = Tracing.createLoggerFor(CourseCreationHelper.class);
 
 	private CourseCreationConfiguration courseConfig;
@@ -133,6 +130,7 @@ public class CourseCreationHelper {
 
 	/**
 	 * Finalizes the course creation workflow via wizard.
+	 * 
 	 * @param ureq
 	 */
 	public void finalizeWorkflow(final UserRequest ureq) {
@@ -142,10 +140,11 @@ public class CourseCreationHelper {
 		// single page node
 		CourseNode singlePageNode = null;
 		if (courseConfig.isCreateSinglePage()) {
-			singlePageNode = CourseExtensionHelper.createSinglePageNode(course, translator.translate("cce.informationpage"), translator
-					.translate("cce.informationpage.descr"));
+			singlePageNode = CourseExtensionHelper.createSinglePageNode(course,
+					translator.translate("cce.informationpage"), translator.translate("cce.informationpage.descr"));
 			if (singlePageNode instanceof SPCourseNode) {
-				final String relPath = CourseEditorHelper.createUniqueRelFilePathFromShortTitle(singlePageNode, course.getCourseFolderContainer());
+				final String relPath = CourseEditorHelper.createUniqueRelFilePathFromShortTitle(singlePageNode,
+						course.getCourseFolderContainer());
 				HTMLDocumentHelper.createHtmlDocument(course, relPath, courseConfig.getSinglePageText(translator));
 				((SPCourseNode) singlePageNode).getModuleConfiguration().set(SPEditController.CONFIG_KEY_FILE, relPath);
 			}
@@ -153,26 +152,26 @@ public class CourseCreationHelper {
 		// enrollment node
 		CourseNode enCourseNode = null;
 		if (courseConfig.isCreateEnrollment()) {
-			enCourseNode = CourseExtensionHelper.createEnrollmentNode(course, translator.translate("cce.enrollment"), translator
-					.translate("cce.enrollment.descr"));
+			enCourseNode = CourseExtensionHelper.createEnrollmentNode(course, translator.translate("cce.enrollment"),
+					translator.translate("cce.enrollment.descr"));
 		}
 		// download folder node
 		CourseNode downloadFolderNode = null;
 		if (courseConfig.isCreateDownloadFolder()) {
-			downloadFolderNode = CourseExtensionHelper.createDownloadFolderNode(course, translator.translate("cce.downloadfolder"),
-					translator.translate("cce.downloadfolder.descr"));
+			downloadFolderNode = CourseExtensionHelper.createDownloadFolderNode(course,
+					translator.translate("cce.downloadfolder"), translator.translate("cce.downloadfolder.descr"));
 		}
 		// forum node
 		CourseNode forumNode = null;
 		if (courseConfig.isCreateForum()) {
-			forumNode = CourseExtensionHelper.createForumNode(course, translator.translate("cce.forum"), translator
-					.translate("cce.forum.descr"));
+			forumNode = CourseExtensionHelper.createForumNode(course, translator.translate("cce.forum"),
+					translator.translate("cce.forum.descr"));
 		}
 		// contact form node
 		CourseNode contactNode = null;
 		if (courseConfig.isCreateContactForm()) {
-			contactNode = CourseExtensionHelper.createContactFormNode(course, translator.translate("cce.contactform"), translator
-					.translate("cce.contactform.descr"));
+			contactNode = CourseExtensionHelper.createContactFormNode(course, translator.translate("cce.contactform"),
+					translator.translate("cce.contactform.descr"));
 			if (contactNode instanceof COCourseNode) {
 
 				final List<String> emails = new ArrayList<>();
@@ -199,18 +198,19 @@ public class CourseCreationHelper {
 			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 			// get default context for learning groups
-			
+
 			// create n learning groups with m allowed members
-	
+
 			List<Long> groupIdsList = new ArrayList<>();
 			for (int i = 0; i < courseConfig.getGroupCount(); i++) {
 				// create group
 				String name = groupBaseName + " " + (i + 1);
 				BusinessGroup learningGroup = bgs.createBusinessGroup(ureq.getIdentity(), name, null, 0,
-						courseConfig.getSubscriberCount(), courseConfig.getEnableWaitlist(), courseConfig.getEnableFollowup(),
-						addedEntry);
+						courseConfig.getSubscriberCount(), courseConfig.getEnableWaitlist(),
+						courseConfig.getEnableFollowup(), addedEntry);
 				// enable the contact collaboration tool
-				CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(learningGroup);
+				CollaborationTools ct = CollaborationToolsFactory.getInstance()
+						.getOrCreateCollaborationTools(learningGroup);
 				ct.setToolEnabled(CollaborationTools.TOOL_CONTACT, true);
 				// append to current learning group list
 				groupIdsList.add(learningGroup.getKey());
@@ -218,7 +218,8 @@ public class CourseCreationHelper {
 			enCourseNode.getModuleConfiguration().set(ENCourseNode.CONFIG_GROUP_IDS, groupIdsList);
 
 			// set signout property
-			enCourseNode.getModuleConfiguration().set(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED, courseConfig.getEnableSignout());
+			enCourseNode.getModuleConfiguration().set(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED,
+					courseConfig.getEnableSignout());
 
 			// access limits on chosen course elements
 			if (courseConfig.getEnableAccessLimit()) {
@@ -268,36 +269,8 @@ public class CourseCreationHelper {
 		// 3.1. setup rights
 		// --------------------------
 		if (courseConfig.getPublish()) {
-			ACService acService = CoreSpringFactory.getImpl(ACService.class);
-			RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-			
-			CourseAccessAndProperties accessAndProps = courseConfig.getAccessAndProperties();	
-			
-			addedEntry = repositoryManager.setAccess(accessAndProps.getRepositoryEntry(),
-					 accessAndProps.isAllUsers(), accessAndProps.isGuests(), accessAndProps.isBookable(),
-					 accessAndProps.getSetting(), accessAndProps.getOrganisations());
-			
-			addedEntry = repositoryManager.setAccessAndProperties(addedEntry, accessAndProps.getStatus(),
-					accessAndProps.isAllUsers(), accessAndProps.isGuests(),
-					accessAndProps.isCanCopy(), accessAndProps.isCanReference(), accessAndProps.isCanDownload());
-			
-			if(accessAndProps.isBookable()) {
-				Boolean confirmationEmail = accessAndProps.getConfirmationEmail();
-				boolean sendConfirmationEmail = confirmationEmail != null && confirmationEmail.booleanValue();
-	
-				List<OfferAccess> offerAccess = accessAndProps.getOfferAccess();
-				for (OfferAccess newLink : offerAccess) {
-					if(sendConfirmationEmail) {
-						Offer offer = newLink.getOffer();
-						offer.setConfirmationEmail(sendConfirmationEmail);
-						if(offer.getKey() != null) {
-							acService.save(offer);
-						}
-					}
-					
-					acService.saveOfferAccess(newLink);
-				}
-			}
+			CourseWizardService courseWizardService = CoreSpringFactory.getImpl(CourseWizardService.class);
+			courseWizardService.changeAccessAndProperties(ureq.getIdentity(), courseConfig.getAccessAndProperties(), false);
 		}
 
 		course = CourseFactory.openCourseEditSession(course.getResourceableId());
@@ -349,6 +322,7 @@ public class CourseCreationHelper {
 
 	/**
 	 * Internal helper method to create the group names
+	 * 
 	 * @return group name
 	 */
 	private String createGroupBaseName() {

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.editor;
+package org.olat.repository.wizard;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ import org.olat.resource.accesscontrol.OfferAccess;
  * @author fkiefer
  *
  */
-public class CourseAccessAndProperties {
+public class AccessAndProperties {
 	private final RepositoryEntry repoEntry;
 	private RepositoryEntryAllowToLeaveOptions setting;
 	private RepositoryEntryStatusEnum status;
@@ -48,11 +48,7 @@ public class CourseAccessAndProperties {
 	private List<OfferAccess> offerAccess;
 	private List<Offer> deletedOffer;
 	
-	public CourseAccessAndProperties(RepositoryEntry re) {
-		this.repoEntry = re;
-	}
-	
-	public CourseAccessAndProperties(RepositoryEntry re, RepositoryEntryAllowToLeaveOptions setting,
+	public AccessAndProperties(RepositoryEntry re, RepositoryEntryAllowToLeaveOptions setting,
 			RepositoryEntryStatusEnum status, boolean bookable, boolean allUsers, boolean guests,
 			List<Organisation> organisations) {
 		this.repoEntry = re;
