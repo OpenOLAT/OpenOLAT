@@ -47,7 +47,7 @@ public class TestSelectionStep extends BasicStep {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.test", null);
-		setNextStep(new CertificateStep(ureq, entry));
+		setNextStep(new ReexamStep(ureq, entry));
 	}
 
 	@Override

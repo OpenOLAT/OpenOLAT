@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -118,7 +119,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	private FormLink cancelButton;
 	private FormLink closeLink;
 	private Step startStep;
-	// private Stack<FormItem> stepTitleLinks;
 	private List<FormItem> stepTitleLinks;
 	private int currentStepIndex = 0;
 	private Stack<FormItem> stepPages;
@@ -138,10 +138,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 			StepRunnerCallback cancel, String wizardTitle, String elementCssClass) {
 		this(ureq, control, startStep, finish, cancel, wizardTitle, elementCssClass, "");
 	}
-	/**
-	 * @param ureq
-	 * @param control
-	 */
+	
 	public StepsMainRunController(UserRequest ureq, WindowControl control, Step startStep, StepRunnerCallback finish,
 			StepRunnerCallback cancel, String wizardTitle, String elementCssClass, String contextHelpPage) {
 		super(ureq, control, "stepslayout");
@@ -171,11 +168,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		return stepsContext;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
@@ -187,7 +179,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, org.olat.core.gui.components.form.flexible.impl.FormEvent event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		int whichTitleClickedIndex = stepTitleLinks.indexOf(source);
 		if (source == cancelButton || source == closeLink) {
 			if (cancel != null) {
@@ -248,12 +240,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.add("stepLinks", stepTitleLinks);
@@ -281,20 +267,45 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		formLayout.add(finishButton);
 		formLayout.add(cancelButton);
 		formLayout.add(closeLink);
-		// add all step titles, but disabled.
-		Step tmp = startStep;
-		do {
-			FormItem title = tmp.getStepTitle();
-			title.setEnabled(false);
-			stepTitleLinks.add(title);
-			tmp = tmp.nextStep();
-		} while (tmp != Step.NOSTEP);
-		// init buttons and the like
+		
+		updateTitleItems();
+		
 		currentStepIndex = -1;// start with -1 to be on zero after calling
 		// update current step index to velocity
 		flc.contextPut("currentStep", currentStepIndex + 1);
 		// next step the first time
 		addNextStep(startStep.getStepController(ureq, getWindowControl(), this.stepsContext, this.mainForm), startStep);
+	}
+	
+	private void updateTitleItems() {
+		if (stepTitleLinks == null || stepTitleLinks.size() != getNumberOfSteps()) {
+			List<FormItem> items = createTitleItems();
+			stepTitleLinks.clear();
+			stepTitleLinks.addAll(items);
+		}
+	}
+	
+	private List<FormItem> createTitleItems() {
+		List<FormItem> items = new ArrayList<>();
+		int index = 0;
+		Step tmp = startStep;
+		do {
+			FormItem title = tmp.getStepTitle();
+			title.setEnabled(currentStepIndex >= index++);
+			items.add(title);
+			tmp = tmp.nextStep();
+		} while (tmp != Step.NOSTEP);
+		return items;
+	}
+	
+	private int getNumberOfSteps() {
+		int index = 0;
+		Step tmp = startStep;
+		do {
+			index++;
+			tmp = tmp.nextStep();
+		} while (tmp != Step.NOSTEP);
+		return index;
 	}
 
 	private void addNextStep(StepFormController child, Step nextStep) {
@@ -323,12 +334,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	}
 
 	@Override
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	protected void event(final UserRequest ureq, Controller source, Event event) {
 		/*
 		 * FIXME:pb: 
@@ -346,6 +351,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 					//next but no more step -> finish
 					finishWizard(ureq);
 				} else {
+					updateTitleItems();
 					nextChildCreator = new ControllerCreator() {
 						private final UserRequest ureqForAfterDispatch = ureq;
 						@Override
@@ -393,11 +399,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(Event event) {
 		/*
