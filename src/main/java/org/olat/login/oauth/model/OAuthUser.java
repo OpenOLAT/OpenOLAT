@@ -30,10 +30,12 @@ import org.olat.core.id.UserConstants;
 public class OAuthUser {
 	
 	private String id;
+	private String nickName;
 	private String email;
 	private String firstName;
 	private String lastName;
 	private String institutionalUserIdentifier;
+	private String institutionalName;
 	private String lang;
 	
 	public String getId() {
@@ -43,7 +45,15 @@ public class OAuthUser {
 	public void setId(String id) {
 		this.id = id;
 	}
-	
+
+	public String getNickName() {
+		return nickName;
+	}
+
+	public void setNickName(String nickName) {
+		this.nickName = nickName;
+	}
+
 	public String getEmail() {
 		return email;
 	}
@@ -76,6 +86,14 @@ public class OAuthUser {
 		this.institutionalUserIdentifier = institutionalUserIdentifier;
 	}
 
+	public String getInstitutionalName() {
+		return institutionalName;
+	}
+
+	public void setInstitutionalName(String institutionalName) {
+		this.institutionalName = institutionalName;
+	}
+
 	public String getLang() {
 		return lang;
 	}
@@ -85,15 +103,14 @@ public class OAuthUser {
 	}
 
 	public String getProperty(String propName) {
-		String value;
 		switch(propName) {
-			case UserConstants.EMAIL: value = email; break;
-			case UserConstants.FIRSTNAME: value = firstName; break;
-			case UserConstants.LASTNAME: value = lastName; break;
-			case UserConstants.INSTITUTIONALUSERIDENTIFIER: value = institutionalUserIdentifier; break;
-			default: value = null; break;
-		}
-		return value;	
+			case UserConstants.EMAIL: return email;
+			case UserConstants.FIRSTNAME: return firstName;
+			case UserConstants.LASTNAME: return lastName;
+			case UserConstants.INSTITUTIONALUSERIDENTIFIER: return institutionalUserIdentifier;
+			case UserConstants.INSTITUTIONALNAME: return institutionalName;
+			default: return null;
+		}	
 	}
 	
 	@Override

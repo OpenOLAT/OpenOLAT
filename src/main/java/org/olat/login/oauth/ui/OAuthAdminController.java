@@ -93,6 +93,12 @@ public class OAuthAdminController extends FormBasicController {
 	private TextElement tequilaApiSecretEl;
 	private TextElement tequilaOAuth2EndpointEl;
 	
+	private MultipleSelectionElement keycloakEl;
+	private TextElement keycloakClientIdEl;
+	private TextElement keycloakClientSecretEl;
+	private TextElement keycloakEndpointEl;
+	private TextElement keycloakRealmEl;
+	
 	private MultipleSelectionElement openIdConnectIFEl;
 	private MultipleSelectionElement openIdConnectIFDefaultEl;
 	private TextElement openIdConnectIFApiKeyEl;
@@ -139,6 +145,7 @@ public class OAuthAdminController extends FormBasicController {
 		initFacebookForm(formLayout);
 		initAdfsForm(formLayout);
 		initAzureAdfsForm(formLayout);
+		initKeycloakForm(formLayout);
 		initTequilaForm(formLayout);
 		initOpenIDConnectForm(formLayout);
 		
@@ -318,6 +325,38 @@ public class OAuthAdminController extends FormBasicController {
 		}
 	}
 	
+	private void initKeycloakForm(FormItemContainer formLayout) {
+		FormLayoutContainer keycloakCont = FormLayoutContainer.createDefaultFormLayout("keycloak", getTranslator());
+		keycloakCont.setFormTitle(translate("keycloak.admin.title"));
+		keycloakCont.setFormTitleIconCss("o_icon o_icon_provider_openid");
+		keycloakCont.setRootForm(mainForm);
+		formLayout.add(keycloakCont);
+		
+		keycloakEl = uifactory.addCheckboxesHorizontal("keycloak.enabled", keycloakCont, keys, values);
+		keycloakEl.addActionListener(FormEvent.ONCHANGE);
+		
+		String keycloakEndpoint = oauthModule.getKeycloakEndpoint();
+		keycloakEndpointEl = uifactory.addTextElement("keycloak.endpoint", "keycloak.endpoint", 256, keycloakEndpoint, keycloakCont);
+		keycloakEndpointEl.setExampleKey("keycloak.endpoint.example", null);
+
+		String keycloakRealm = oauthModule.getKeycloakRealm();
+		keycloakRealmEl = uifactory.addTextElement("keycloak.realm", "keycloak.realm", 256, keycloakRealm, keycloakCont);
+		
+		String keycloakClientId = oauthModule.getKeycloakClientId();
+		keycloakClientIdEl = uifactory.addTextElement("keycloak.id", "keycloak.api.id", 256, keycloakClientId, keycloakCont);
+		String keycloakClientSecret = oauthModule.getKeycloakClientSecret();
+		keycloakClientSecretEl = uifactory.addTextElement("keycloak.secret", "keycloak.api.secret", 256, keycloakClientSecret, keycloakCont);
+		
+		if(oauthModule.isKeycloakEnabled()) {
+			keycloakEl.select(keys[0], true);
+		} else {
+			keycloakClientIdEl.setVisible(false);
+			keycloakClientSecretEl.setVisible(false);
+			keycloakEndpointEl.setVisible(false);
+			keycloakRealmEl.setVisible(false);
+		}
+	}
+	
 	private void initTequilaForm(FormItemContainer formLayout) {
 		FormLayoutContainer tequilaCont = FormLayoutContainer.createDefaultFormLayout("tequila", getTranslator());
 		tequilaCont.setFormTitle(translate("tequila.admin.title"));
@@ -437,6 +476,8 @@ public class OAuthAdminController extends FormBasicController {
 		allOk &= mandatory(azureAdfsEl, azureAdfsApiKeyEl, azureAdfsApiSecretEl);
 		//tequila
 		allOk &= mandatory(tequilaEl, tequilaApiKeyEl, tequilaApiSecretEl, tequilaOAuth2EndpointEl);
+		//keycloak
+		allOk &= mandatory(keycloakEl, keycloakClientIdEl, keycloakClientSecretEl, keycloakEndpointEl, keycloakRealmEl);
 		//open id connect
 		allOk &= mandatory(openIdConnectIFEl, openIdConnectIFAuthorizationEndPointEl, openIdConnectIFApiKeyEl, openIdConnectIFApiSecretEl);
 		
@@ -511,11 +552,16 @@ public class OAuthAdminController extends FormBasicController {
 			azureAdfsApiSecretEl.setVisible(azureAdfsEl.isAtLeastSelected(1));
 			azureAdfsDefaultEl.setVisible(azureAdfsEl.isAtLeastSelected(1));
 			azureAdfsTenantEl.setVisible(azureAdfsEl.isAtLeastSelected(1));
+		} else if(source == keycloakEl) {
+			keycloakClientIdEl.setVisible(keycloakEl.isAtLeastSelected(1));
+			keycloakClientSecretEl.setVisible(keycloakEl.isAtLeastSelected(1));
+			keycloakEndpointEl.setVisible(keycloakEl.isAtLeastSelected(1));
+			keycloakRealmEl.setVisible(keycloakEl.isAtLeastSelected(1));
 		} else if(source == tequilaEl) {
 			tequilaApiKeyEl.setVisible(tequilaEl.isAtLeastSelected(1));
 			tequilaApiSecretEl.setVisible(tequilaEl.isAtLeastSelected(1));
 			tequilaOAuth2EndpointEl.setVisible(tequilaEl.isAtLeastSelected(1));
-		} else if(source == openIdConnectIFEl) {
+		}  else if(source == openIdConnectIFEl) {
 			openIdConnectIFIssuerEl.setVisible(openIdConnectIFEl.isAtLeastSelected(1));
 			openIdConnectIFApiKeyEl.setVisible(openIdConnectIFEl.isAtLeastSelected(1));
 			openIdConnectIFDefaultEl.setVisible(openIdConnectIFEl.isAtLeastSelected(1));
@@ -603,6 +649,20 @@ public class OAuthAdminController extends FormBasicController {
 			oauthModule.setAzureAdfsApiSecret("");
 			oauthModule.setAzureAdfsRootEnabled(false);
 			oauthModule.setAzureAdfsTenant("");
+		}
+		
+		if(keycloakEl.isAtLeastSelected(1)) {
+			oauthModule.setKeycloakEnabled(true);
+			oauthModule.setKeycloakClientId(keycloakClientIdEl.getValue());
+			oauthModule.setKeycloakClientSecret(keycloakClientSecretEl.getValue());
+			oauthModule.setKeycloakEndpoint(keycloakEndpointEl.getValue());
+			oauthModule.setKeycloakRealm(keycloakRealmEl.getValue());
+		} else {
+			oauthModule.setKeycloakEnabled(false);
+			oauthModule.setKeycloakClientId("");
+			oauthModule.setKeycloakClientSecret("");
+			oauthModule.setKeycloakEndpoint("");
+			oauthModule.setKeycloakRealm("");
 		}
 		
 		if(tequilaEl.isAtLeastSelected(1)) {
