@@ -100,6 +100,8 @@ public class EditMembershipController extends FormBasicController {
 	
 	private FlexiTableElement groupTableEl;
 	private FlexiTableElement curriculumTableEl;
+	private FlexiTableElement groupBatchTableEl;
+	private FlexiTableElement curriculumBatchTableEl;
 	private AddRemoveElement repoOwnerRoleEl;
 	private AddRemoveElement repoCoachRoleEl;
 	private AddRemoveElement repoParticipantRoleEl;
@@ -123,6 +125,7 @@ public class EditMembershipController extends FormBasicController {
 	private boolean withButtons;
 	private final boolean overrideManaged;
 	private final boolean extendedCurriculumRoles;
+	private final boolean curriculumVisible;
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry repoEntry;
 	private final Curriculum curriculum;
@@ -138,7 +141,7 @@ public class EditMembershipController extends FormBasicController {
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, Identity member,
 			RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged) {
-		super(ureq, wControl, "edit_member");
+		super(ureq, wControl, "edit_multi_member");
 		this.member = member;
 		this.members = null;
 		this.repoEntry = repoEntry;
@@ -147,6 +150,7 @@ public class EditMembershipController extends FormBasicController {
 		rootCurriculumElement = null;
 		this.withButtons = true;
 		this.overrideManaged = overrideManaged;
+		this.curriculumVisible = false;
 		extendedCurriculumRoles = false;
 		this.addRemoveMode = AddRemoveMode.TWO_STATE;
 		
@@ -176,7 +180,7 @@ public class EditMembershipController extends FormBasicController {
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
 			RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged) {
-		super(ureq, wControl, "edit_member");
+		super(ureq, wControl, "edit_multi_member");
 		
 		this.member = null;
 		this.members = (members == null ? null : new ArrayList<>(members));
@@ -188,6 +192,7 @@ public class EditMembershipController extends FormBasicController {
 		this.overrideManaged = overrideManaged;
 		extendedCurriculumRoles = false;
 		this.addRemoveMode = AddRemoveMode.THREE_STATE;
+		this.curriculumVisible = false;
 		
 		memberships = Collections.emptyList();
 
@@ -197,7 +202,7 @@ public class EditMembershipController extends FormBasicController {
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
 			Curriculum curriculum, CurriculumElement curriculumElement, boolean overrideManaged) {
-		super(ureq, wControl, "edit_member");
+		super(ureq, wControl, "edit_multi_member");
 		
 		member = null;
 		this.members = (members == null ? null : new ArrayList<>(members));
@@ -209,6 +214,7 @@ public class EditMembershipController extends FormBasicController {
 		this.overrideManaged = overrideManaged;
 		extendedCurriculumRoles = true;
 		this.addRemoveMode = AddRemoveMode.THREE_STATE;
+		this.curriculumVisible = true;
 		
 		memberships = Collections.emptyList();
 
@@ -218,7 +224,7 @@ public class EditMembershipController extends FormBasicController {
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, Identity member,
 			Curriculum curriculum, CurriculumElement curriculumElement, boolean overrideManaged) {
-		super(ureq, wControl, "edit_member");
+		super(ureq, wControl, "edit_multi_member");
 		
 		this.member = member;
 		this.members = null;
@@ -230,6 +236,7 @@ public class EditMembershipController extends FormBasicController {
 		this.overrideManaged = overrideManaged;
 		extendedCurriculumRoles = true;
 		this.addRemoveMode = AddRemoveMode.TWO_STATE;
+		this.curriculumVisible = true;
 		
 		memberships = Collections.emptyList();
 		curriculumElementMemberships =  curriculumService
@@ -241,7 +248,7 @@ public class EditMembershipController extends FormBasicController {
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
 			MembersContext membersContext, Form rootForm) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
+		super(ureq, wControl, LAYOUT_CUSTOM, "edit_multi_member", rootForm);
 		
 		member = null;
 		this.members = (members == null ? null : new ArrayList<>(members));
@@ -253,6 +260,7 @@ public class EditMembershipController extends FormBasicController {
 		overrideManaged = membersContext.isOverrideManaged();
 		extendedCurriculumRoles = membersContext.isExtendedCurriculumRoles();
 		this.addRemoveMode = AddRemoveMode.THREE_STATE;
+		this.curriculumVisible = false;
 		
 		memberships = Collections.emptyList();
 
@@ -318,6 +326,7 @@ public class EditMembershipController extends FormBasicController {
 		
 		selectAllGroupWaitingListEl.setEnabled(anyGroupWithWaitingList);
 		groupTableDataModel.setObjects(options);
+		groupBatchTableEl.setVisible(options.size() > 1);
 		groupContainer.setVisible(!options.isEmpty());
 		
 		List<CurriculumElement> curriculumElements = loadCurriculumElements();
@@ -344,7 +353,8 @@ public class EditMembershipController extends FormBasicController {
 		}
 		
 		curriculumTableDataModel.setObjects(curriculumOptions);
-		curriculumContainer.setVisible(!curriculumOptions.isEmpty());
+		curriculumBatchTableEl.setVisible(curriculumVisible && curriculumOptions.size() > 1);
+		curriculumContainer.setVisible(curriculumVisible && !curriculumOptions.isEmpty());
 	}
 	
 	private List<CurriculumElement> loadCurriculumElements() {
@@ -496,12 +506,28 @@ public class EditMembershipController extends FormBasicController {
 		groupRightActions.setElementCssClass("pull-right");
 		groupContainer.add(groupRightActions);
 		
-		selectAllGroupCoachEl = uifactory.addAddRemoveElement("edit.members.group.select.all.coach", Link.BUTTON_SMALL, false, groupRightActions);
+		selectAllGroupCoachEl = uifactory.addAddRemoveElement("edit.members.group.select.all.coach", Link.BUTTON_XSMALL, true, null);
 		selectAllGroupCoachEl.setElementCssClass("o_spacer_left");
-		selectAllGroupParticipantEl = uifactory.addAddRemoveElement("edit.members.group.select.all.participant", Link.BUTTON_SMALL, false, groupRightActions);
+		selectAllGroupParticipantEl = uifactory.addAddRemoveElement("edit.members.group.select.all.participant", Link.BUTTON_XSMALL, true, null);
 		selectAllGroupParticipantEl.setElementCssClass("o_spacer_left");
-		selectAllGroupWaitingListEl = uifactory.addAddRemoveElement("edit.members.group.select.all.waiting.list", Link.BUTTON_SMALL, false, groupRightActions);
-		selectAllGroupWaitingListEl.setElementCssClass("o_spacer_left");		
+		selectAllGroupWaitingListEl = uifactory.addAddRemoveElement("edit.members.group.select.all.waiting.list", Link.BUTTON_XSMALL, true, null);
+		selectAllGroupWaitingListEl.setElementCssClass("o_spacer_left");	
+		
+		FlexiTableColumnModel groupBatchActionsColumns = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		groupBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.empty));
+		groupBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.empty));
+		groupBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.empty));
+		groupBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.empty));
+		groupBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.groupCoach));
+		groupBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.groupParticipant));
+		groupBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.groupWaiting));
+		
+		BatchActionsRow groupBatchActionsRow = new BatchActionsRow(selectAllGroupCoachEl, selectAllGroupParticipantEl, selectAllGroupWaitingListEl, null);
+		BatchActionsTableDataModel groupBatchActionsTableModel = new BatchActionsTableDataModel(groupBatchActionsColumns, Collections.singletonList(groupBatchActionsRow));
+		groupBatchTableEl = uifactory.addTableElement(getWindowControl(), "group_batch_actions", groupBatchActionsTableModel, getTranslator(), groupRightActions);
+		groupBatchTableEl.setCustomizeColumns(false);
+		groupBatchTableEl.setNumOfRowsEnabled(false);
+		groupBatchTableEl.setVisible(members != null && members.size() > 1);
 		
 		FlexiTableColumnModel groupTableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		groupTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.groupName));
@@ -529,12 +555,26 @@ public class EditMembershipController extends FormBasicController {
 		curriculumRightActions.setElementCssClass("pull-right");
 		curriculumContainer.add(curriculumRightActions);
 		
-		selectAllCurriculumOwnerEl = uifactory.addAddRemoveElement("edit.members.curriculum.select.all.owner", Link.BUTTON_SMALL, false, curriculumRightActions);
+		selectAllCurriculumOwnerEl = uifactory.addAddRemoveElement("edit.members.curriculum.select.all.owner", Link.BUTTON_XSMALL, true, null);
 		selectAllCurriculumOwnerEl.setElementCssClass("o_spacer_left");
-		selectAllCurriculumCoachEl = uifactory.addAddRemoveElement("edit.members.curriculum.select.all.coach", Link.BUTTON_SMALL, false, curriculumRightActions);
+		selectAllCurriculumCoachEl = uifactory.addAddRemoveElement("edit.members.curriculum.select.all.coach", Link.BUTTON_XSMALL, true, null);
 		selectAllCurriculumCoachEl.setElementCssClass("o_spacer_left");
-		selectAllCurriculumParticipantEl = uifactory.addAddRemoveElement("edit.members.curriculum.select.all.participant", Link.BUTTON_SMALL, false, curriculumRightActions);
+		selectAllCurriculumParticipantEl = uifactory.addAddRemoveElement("edit.members.curriculum.select.all.participant", Link.BUTTON_XSMALL, true, null);
 		selectAllCurriculumParticipantEl.setElementCssClass("o_spacer_left");
+		
+		FlexiTableColumnModel curriculumBatchActionsColumns = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		curriculumBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.empty));
+		curriculumBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.empty));
+		curriculumBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.empty));
+		curriculumBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.curriculumOwner));
+		curriculumBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.curriculumCoach));
+		curriculumBatchActionsColumns.addFlexiColumnModel(new DefaultFlexiColumnModel(BatchActionCols.curriculumParticipant));
+		
+		BatchActionsRow curriculumBatchActionsRow = new BatchActionsRow(selectAllCurriculumCoachEl, selectAllCurriculumParticipantEl, null, selectAllCurriculumOwnerEl);
+		BatchActionsTableDataModel curriculumBatchActionsTableModel = new BatchActionsTableDataModel(curriculumBatchActionsColumns, Collections.singletonList(curriculumBatchActionsRow));
+		curriculumBatchTableEl = uifactory.addTableElement(getWindowControl(), "curriculum_batch_actions", curriculumBatchActionsTableModel, getTranslator(), curriculumRightActions);
+		curriculumBatchTableEl.setCustomizeColumns(false);
+		curriculumBatchTableEl.setNumOfRowsEnabled(false);
 		
 		FlexiTableColumnModel curriculumTableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(curriculum == null) {
@@ -946,6 +986,70 @@ public class EditMembershipController extends FormBasicController {
 		}
 	}
 	
+	private static class BatchActionsTableDataModel extends DefaultFlexiTableDataModel<BatchActionsRow> {
+
+		public BatchActionsTableDataModel(FlexiTableColumnModel columnModel, List<BatchActionsRow> objects) {
+			super(objects, columnModel);
+		}
+
+		@Override
+		public Object getValueAt(int row, int col) {
+			BatchActionsRow actions = getObject(row);
+			
+			switch (BatchActionCols.values()[col]) {
+				case curriculumCoach: 
+				case groupCoach:
+					return actions.getCoach();
+				case curriculumParticipant:
+				case groupParticipant:
+					return actions.getParticipant();
+				case groupWaiting: 
+					return actions.getWating();
+				case curriculumOwner:
+					return actions.getOwner();
+				case empty:
+				default:
+					return null;
+			}
+		}
+
+		@Override
+		public DefaultFlexiTableDataModel<BatchActionsRow> createCopyWithEmptyList() {
+			return null;
+		}
+		
+	}
+	
+	private static class BatchActionsRow {
+		private AddRemoveElement coach;
+		private AddRemoveElement participant;
+		private AddRemoveElement wating;
+		private AddRemoveElement owner;
+		
+		public BatchActionsRow(AddRemoveElement coach, AddRemoveElement participant, AddRemoveElement waiting, AddRemoveElement owner) {
+			this.coach = coach;
+			this.participant = participant; 
+			this.wating = waiting;
+			this.owner = owner;
+		}
+		
+		public AddRemoveElement getCoach() {
+			return coach;
+		}
+		
+		public AddRemoveElement getParticipant() {
+			return participant;
+		}
+		
+		public AddRemoveElement getWating() {
+			return wating;
+		}
+		
+		public AddRemoveElement getOwner() {
+			return owner;
+		}
+	}
+	
 
 	private static class EditCurriculumMembershipTableDataModel extends DefaultFlexiTableDataModel<MemberCurriculumOption>  {
 		
@@ -1032,6 +1136,27 @@ public class EditMembershipController extends FormBasicController {
 					}
 				}
 			}
+		}
+	}
+	
+	public enum BatchActionCols implements FlexiColumnDef {
+		empty("table.header.empty"),
+		groupCoach("edit.members.group.select.all.coach"),
+		groupParticipant("edit.members.group.select.all.participant"),
+		groupWaiting("edit.members.group.select.all.waiting.list"),
+		curriculumCoach("edit.members.curriculum.select.all.coach"),
+		curriculumParticipant("edit.members.curriculum.select.all.participant"),
+		curriculumOwner("edit.members.curriculum.select.all.owner");
+
+		private final String i18n;
+		
+		private BatchActionCols(String i18n) {
+			this.i18n = i18n;
+		}
+		
+		@Override
+		public String i18nHeaderKey() {
+			return i18n;
 		}
 	}
 	

@@ -1,0 +1,30 @@
+<div class="o_sel_edit_permissions">
+#if($r.available("repoRights"))
+	$r.render("repoRights")
+#end
+#if($r.visible("groupRights"))
+	<div class="o_edit_membership_groups">
+		$r.render("groupRights")
+	</div>
+#end
+#if($r.visible("curriculumRights"))
+	<div class="o_edit_membership_curricula">
+		$r.render("curriculumRights")
+	</div>
+#end
+</div>
+#if($r.available("buttonLayout"))
+	<div class="o_button_group">$r.render("buttonLayout")</div>
+#end
+
+
+<script>
+/* <![CDATA[ */ 
+jQuery(function() {
+	var groupTables = jQuery('.o_edit_membership_groups table');
+	var curriculumTables = jQuery('.o_edit_membership_curricula table');
+	BFormatter.alignTableColumns(groupTables);
+	BFormatter.alignTableColumns(curriculumTables);
+});
+/* ]]> */
+</script>

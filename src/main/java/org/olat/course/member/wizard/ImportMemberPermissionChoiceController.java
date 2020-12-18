@@ -27,7 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.group.ui.main.EditMembershipController;
+import org.olat.group.ui.main.EditSingleOrImportMembershipController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 
 /**
@@ -35,13 +35,13 @@ import org.olat.group.ui.main.MemberPermissionChangeEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ImportMemberPermissionChoiceController extends StepFormBasicController {
-	private EditMembershipController permissionCtrl;
+	private EditSingleOrImportMembershipController permissionCtrl;
 
 	public ImportMemberPermissionChoiceController(UserRequest ureq, WindowControl wControl,
 			MembersContext membersContext, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 		
-		permissionCtrl = new EditMembershipController(ureq, getWindowControl(), null, membersContext, rootForm);
+		permissionCtrl = new EditSingleOrImportMembershipController(ureq, getWindowControl(), null, membersContext, rootForm);
 		listenTo(permissionCtrl);
 
 		initForm (ureq);

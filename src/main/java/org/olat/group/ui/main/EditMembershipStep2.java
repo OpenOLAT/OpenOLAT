@@ -208,10 +208,6 @@ public class EditMembershipStep2 extends BasicStep {
 			
 			// Group changes
 			if (changeEvent.getGroupChanges().size() > 0) {
-				EditMembershipReviewTableRow groupChanges = new EditMembershipReviewTableRow(null, 1, true);
-				groupChanges.setNameOrIdentifier(translate("review.member.group.changes"));
-				objects.add(groupChanges);
-				
 				List<Long> businessGroupKeys = changeEvent.getGroups().stream().map(group -> group.getKey()).collect(Collectors.toList());
 				
 				Map<BusinessGroupShort, List<EditMembershipReviewTableRow>> changedGroupTableRows = new HashMap<>();
@@ -219,7 +215,7 @@ public class EditMembershipStep2 extends BasicStep {
 				// Init helper lists and maps
 				changeEvent.getGroups().forEach(group -> {
 						List<EditMembershipReviewTableRow> rows = new ArrayList<>();
-						EditMembershipReviewTableRow groupRow = new EditMembershipReviewTableRow(groupChanges, 1, true);
+						EditMembershipReviewTableRow groupRow = new EditMembershipReviewTableRow(null, 1, true);
 						groupRow.setNameOrIdentifier(group.getName());
 						rows.add(groupRow);
 						changedGroupTableRows.put(group, rows);
@@ -290,10 +286,6 @@ public class EditMembershipStep2 extends BasicStep {
 			
 			// Curriculum changes
 			if (changeEvent.getCurriculumChanges().size() > 0) {
-				EditMembershipReviewTableRow curriculumChanges = new EditMembershipReviewTableRow(null, 1, true);
-				curriculumChanges.setNameOrIdentifier(translate("review.member.curriculum.changes"));
-				objects.add(curriculumChanges);
-				
 				Map<CurriculumElement, List<EditMembershipReviewTableRow>> changedCurriculumTableRows = new HashMap<>();
 				
 				// Init helper map				
@@ -302,7 +294,7 @@ public class EditMembershipStep2 extends BasicStep {
 					
 					if (!changedCurriculumTableRows.containsKey(change.getElement())) {
 						List<EditMembershipReviewTableRow> curriculumRows = new ArrayList<>();
-						parentRow = new EditMembershipReviewTableRow(curriculumChanges, 1, true);
+						parentRow = new EditMembershipReviewTableRow(null, 1, true);
 						parentRow.setNameOrIdentifier(change.getElement().getDisplayName());
 						curriculumRows.add(parentRow);
 						changedCurriculumTableRows.put(change.getElement(), curriculumRows);
