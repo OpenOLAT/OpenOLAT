@@ -98,7 +98,7 @@ public class KeycloakProvider implements OAuthSPI {
 	
 	@Override
 	public String getIconCSS() {
-		return "o_icon o_icon_provider_openid";
+		return "o_icon o_icon_provider_keycloak";
 	}
 	
 	@Override
