@@ -90,14 +90,13 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 	private FormLayoutContainer stateLayout;
 	private FileElement attachmentFileName;
 
-	private TextElement projectLeaders;
 	private CourseEnvironment courseEnv;
 	private CourseNode courseNode;
 	private ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration;
 
-	private List<FormItem> customfieldElementList;
-	private Map<Project.EventType, DateChooser> eventStartElementList;
-	private Map<Project.EventType, DateChooser> eventEndElementList;
+	private final List<FormItem> customfieldElementList;
+	private final Map<Project.EventType, DateChooser> eventStartElementList;
+	private final Map<Project.EventType, DateChooser> eventEndElementList;
 
 	private MultipleSelectionElement selectionMaxMembers;
 	private MultipleSelectionElement allowDeselection;
@@ -137,6 +136,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		initForm(ureq);
 	}
 
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		// validate event dates
 		for (Project.EventType eventType : eventStartElementList.keySet()) {
@@ -188,7 +188,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			projectLeaderString.append(" ");
 			projectLeaderString.append(last);
 		}
-		projectLeaders = uifactory.addTextElement("projectleaders", "detailsform.projectleaders.label", 100, projectLeaderString.toString(), formLayout);
+		TextElement projectLeaders = uifactory.addTextElement("projectleaders", "detailsform.projectleaders.label", 100, projectLeaderString.toString(), formLayout);
 		projectLeaders.setEnabled(false);
 		
 		// add the learning objectives rich text input element
@@ -229,9 +229,8 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		// customfields
 		List<CustomField> customFields = projectBrokerModuleConfiguration.getCustomFields();
 		int customFieldIndex = 0;
-		for (Iterator<CustomField> iterator = customFields.iterator(); iterator.hasNext();) {
-			CustomField customField = iterator.next();
-			getLogger().debug("customField: " + customField.getName() + "=" + customField.getValue());
+		for (CustomField customField:customFields) {
+			getLogger().debug("customField: {}={}", customField.getName(), customField.getValue());
 			StringTokenizer tok = new StringTokenizer(customField.getValue(),ProjectBrokerManager.CUSTOMFIELD_LIST_DELIMITER);
 			if (customField.getValue() == null || customField.getValue().equals("") || !tok.hasMoreTokens()) {
 				// no value define => Text-input
@@ -247,7 +246,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 				while (tok.hasMoreTokens()) {
 					String value = tok.nextToken();
 					valueList.add(value);
-					getLogger().debug("valueList add: " + value);
+					getLogger().debug("valueList add: {}", value);
 				}
 				String[] theValues = new String[valueList.size() + 1];
 				String[] theKeys   = new String[valueList.size() + 1];
@@ -355,8 +354,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		}
 		// store customfields
 		int index = 0;
-		for (Iterator<FormItem> iterator = customfieldElementList.iterator(); iterator.hasNext();) {
-			FormItem element = iterator.next();
+		for (FormItem element : customfieldElementList) {
 			String value = "";
 			if (element instanceof TextElement) {
 				TextElement textElement = (TextElement)element;
@@ -369,8 +367,9 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 					value = "";
 				}
 			}
-			getLogger().debug("customfield index=" + index + " value=" + value + " project.getCustomFieldValue(index)=" + project.getCustomFieldValue(index));
-			if (!project.getCustomFieldValue(index).equals(value)) {
+			String currentValue = project.getCustomFieldValue(index);
+			getLogger().debug("customfield index={} value={} project.getCustomFieldValue(index)={}", index, value, currentValue);
+			if (!currentValue.equals(value)) {
 				project.setCustomFieldValue(index, value);
 				projectChanged = true;
 			}			
@@ -392,7 +391,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			projectChanged = true;	
 		}
 		if (projectChanged) {
-			if ( projectBrokerManager.existsProject( project.getKey() ) ) {		
+			if (projectBrokerManager.existsProject( project.getKey())) {		
 				projectBrokerManager.updateProject(project);
 				projectBrokerMailer.sendProjectChangedEmailToParticipants(ureq.getIdentity(), project, this.getTranslator());
 			} else {
@@ -419,10 +418,12 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		}
 	}
 
+	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == selectionMaxMembers) {
 			if (selectionMaxMembers.isSelected(0)) {

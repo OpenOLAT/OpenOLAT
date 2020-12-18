@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.manager;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
@@ -100,15 +99,15 @@ public class ExportQItemsZipResource implements MediaResource {
 		String encodedFileName = StringHelper.urlEncodeUTF8(file);
 		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedFileName);			
 		hres.setHeader("Content-Description", encodedFileName);
-		
+
+		QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			Set<String> names = new HashSet<>();
-			QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 			for(QuestionItemFull item:items) {
 				qpoolService.exportItem(item, zout, locale, names);
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("", e);
 		}
 	}

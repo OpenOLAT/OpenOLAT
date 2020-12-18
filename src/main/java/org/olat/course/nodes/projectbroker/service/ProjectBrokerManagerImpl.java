@@ -673,7 +673,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	private void updateProjectAndInvalidateCache(final Project project) {
 		// avoid hibernate exception : object with same identifier already exist in session.
 		// reload object from db, because project is a detached object but could be already in hibernate session
-		Project reloadedProject = (Project) dbInstance.loadObject(project, true);
+		ProjectImpl reloadedProject = (ProjectImpl) dbInstance.loadObject(project, true);
 		// set all value on reloadedProject with values from updated project
 		reloadedProject.setTitle(project.getTitle());
 		reloadedProject.setState(project.getState());
@@ -683,9 +683,8 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		reloadedProject.setMaxMembers(project.getMaxMembers());
 		reloadedProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
 		reloadedProject.setDescription(project.getDescription());
-		for (int index = 0; index < project.getCustomFieldSize(); index++) {
-			reloadedProject.setCustomFieldValue(index, project.getCustomFieldValue(index));
-		}
+		reloadedProject.getCustomfields().clear();
+		reloadedProject.getCustomfields().putAll(((ProjectImpl)project).getCustomfields());
 		reloadedProject.setAttachedFileName(project.getAttachmentFileName());
 		dbInstance.updateObject(reloadedProject);
 		// invalide with removing from cache

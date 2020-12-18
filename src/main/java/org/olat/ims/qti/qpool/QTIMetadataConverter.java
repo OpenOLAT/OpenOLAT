@@ -281,7 +281,9 @@ public class QTIMetadataConverter {
 		addMetadataField("title", fullItem.getTitle(), qtimetadata);
 		addMetadataField("oo_topic", fullItem.getTopic(), qtimetadata);
 		addMetadataField("oo_usage", fullItem.getUsage(), qtimetadata);
-		addMetadataField("oo_correction_time", fullItem.getCorrectionTime(), qtimetadata);
+		if(fullItem.getCorrectionTime() != null) {
+			addMetadataField("oo_correction_time", fullItem.getCorrectionTime(), qtimetadata);
+		}
 	}
 	
 	private void addMetadataField(String label, int entry, Element metadata) {
