@@ -174,7 +174,6 @@ public class InfoRunController extends BasicController {
 		groupRolesToSend.add(GroupRoles.participant);
 		groupRolesToSend.add(GroupRoles.coach);
 		groupRolesToSend.add(GroupRoles.owner);
-		groupRolesToSend.add(GroupRoles.invitee);
 		
 		for (BusinessGroup group : cgm.getAllBusinessGroups()) {
 			infoDisplayController.addGroupMailOption(new SendMailGroupOption(group, groupRolesToSend));
