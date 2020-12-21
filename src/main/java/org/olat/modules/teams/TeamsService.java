@@ -74,9 +74,9 @@ public interface TeamsService {
 	
 	public User lookupUser(Identity identity);
 	
-	public ConnectionInfos checkConnection();
+	public ConnectionInfos checkConnection(TeamsErrors errors);
 	
 	public ConnectionInfos checkConnection(String clientId, String clientSecret, String tenantGuid,
-			String applicationId, String producerId, String onBehalfId);
+			String applicationId, String producerId, String onBehalfId, TeamsErrors errors);
 
 }

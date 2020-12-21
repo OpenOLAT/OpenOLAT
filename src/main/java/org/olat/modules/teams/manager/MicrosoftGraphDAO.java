@@ -340,7 +340,7 @@ public class MicrosoftGraphDAO {
 		return users.isEmpty() ? null : users.get(0);
 	}
 	
-	public User searchUserById(String id, IGraphServiceClient client) {
+	public User searchUserById(String id, IGraphServiceClient client, TeamsErrors errors) {
 		try {
 			return client
 					.users(id)
@@ -348,6 +348,7 @@ public class MicrosoftGraphDAO {
 					.select("displayName,id,mail,otherMails")
 					.get();
 		} catch (ClientException e) {
+			errors.append(new TeamsError(e.getMessage(), ""));
 			log.error("Cannot find user with id: {}", id, e);
 			return null;
 		}
@@ -375,7 +376,7 @@ public class MicrosoftGraphDAO {
 		}
 	}
 	
-	public Application getApplication(String id, IGraphServiceClient client) {
+	public Application getApplication(String id, IGraphServiceClient client, TeamsErrors errors) {
 		try {
 			IApplicationCollectionPage appsPage = client
 				.applications()
@@ -387,13 +388,14 @@ public class MicrosoftGraphDAO {
 			List<Application> apps = appsPage.getCurrentPage();
 			return apps == null || apps.isEmpty() ? null : apps.get(0);
 		} catch (ClientException e) {
+			errors.append(new TeamsError(e.getMessage(), ""));
 			log.error("", e);
 			return null;
 		}
 	}
 	
 	public ConnectionInfos check(String clientId, String clientSecret, String tenantGuid,
-			String applicationId, String producerId, String onBehalfId) {
+			String applicationId, String producerId, String onBehalfId, TeamsErrors errors) {
 		
 		try {
 			MicrosoftGraphAccessTokenManager accessTokenManager = new MicrosoftGraphAccessTokenManager(clientId, clientSecret, tenantGuid);
@@ -405,19 +407,19 @@ public class MicrosoftGraphDAO {
 			
 			String onBehalfDisplayName = null;
 			if(StringHelper.containsNonWhitespace(onBehalfId)) {
-				User onbehalfUser = searchUserById(onBehalfId, client);
+				User onbehalfUser = searchUserById(onBehalfId, client, errors);
 				onBehalfDisplayName = onbehalfUser == null ? null : onbehalfUser.displayName;
 			}
 			
 			String producerDisplayName = null;
 			if(StringHelper.containsNonWhitespace(producerId)) {
-				User producer = searchUserById(producerId, client);
+				User producer = searchUserById(producerId, client, errors);
 				producerDisplayName = producer == null ? null : producer.displayName;
 			}
 			
 			String application = null;
 			if(StringHelper.containsNonWhitespace(applicationId)) {
-				Application app = getApplication(applicationId, client);
+				Application app = getApplication(applicationId, client, errors);
 				application = app == null ? null : app.displayName;
 			}
 
@@ -428,7 +430,7 @@ public class MicrosoftGraphDAO {
 		}
 	}
 	
-	public final ConnectionInfos check() {
+	public final ConnectionInfos check(TeamsErrors errors) {
 		try {
 			IGraphServiceClient client = client();
 			String tenantId = teamsModule.getTenantGuid();
@@ -438,7 +440,7 @@ public class MicrosoftGraphDAO {
 			User onbehalfUser = null;
 			String onBehalfDisplayName = null;
 			if(StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
-				onbehalfUser = searchUserById(teamsModule.getOnBehalfUserId(), client);
+				onbehalfUser = searchUserById(teamsModule.getOnBehalfUserId(), client, errors);
 				onBehalfDisplayName = onbehalfUser == null ? null : onbehalfUser.displayName;
 			}
 
@@ -447,14 +449,14 @@ public class MicrosoftGraphDAO {
 				if(onbehalfUser != null && onbehalfUser.id.equals(teamsModule.getProducerId())) {
 					producerDisplayName = onbehalfUser.displayName;
 				} else {
-					User producer = searchUserById(teamsModule.getProducerId(), client);
+					User producer = searchUserById(teamsModule.getProducerId(), client, errors);
 					producerDisplayName = producer == null ? null : producer.displayName;
 				}
 			}
 
 			String application = null;
 			if(StringHelper.containsNonWhitespace(teamsModule.getApplicationId())) {
-				Application app = getApplication(teamsModule.getApplicationId(), client);
+				Application app = getApplication(teamsModule.getApplicationId(), client, errors);
 				application = app == null ? null : app.displayName;
 			}
 

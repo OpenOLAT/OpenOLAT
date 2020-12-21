@@ -26,6 +26,9 @@ package org.olat.modules.teams.model;
  *
  */
 public enum TeamsErrorCodes {
+	applicationNotFound,
+	producerNotFound,
+	onBehalfUserNotFound,
 	organizerMissing,
 	presenterMissing,
 	meetingDeleted,

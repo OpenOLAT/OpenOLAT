@@ -37,6 +37,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.model.ConnectionInfos;
+import org.olat.modules.teams.model.TeamsError;
+import org.olat.modules.teams.model.TeamsErrorCodes;
+import org.olat.modules.teams.model.TeamsErrors;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -77,7 +80,6 @@ public class TeamsConfigurationController extends FormBasicController {
 			loadModel();
 		}
 	}
-	
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -130,7 +132,8 @@ public class TeamsConfigurationController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		ConnectionInfos infos = teamsService.checkConnection();
+		TeamsErrors errors = new TeamsErrors();
+		ConnectionInfos infos = teamsService.checkConnection(errors);
 		updateModel(infos);
 	}
 	
@@ -193,8 +196,44 @@ public class TeamsConfigurationController extends FormBasicController {
 			allOk &= validateMandatory(clientIdEl);
 			allOk &= validateMandatory(secretEl);
 			allOk &= validateMandatory(tenantEl);
+			allOk &= validateConnection();
 		}
 		
+		return allOk;
+	}
+	
+	private boolean validateConnection() {
+		boolean allOk = true;
+
+		TeamsErrors errors = new TeamsErrors();
+		ConnectionInfos infos = teamsService.checkConnection(clientIdEl.getValue(), secretEl.getValue(), tenantEl.getValue(),
+				applicationIdEl.getValue(), producerIdEl.getValue(), onBehalfUserIdEl.getValue(), errors);
+		
+		producerIdEl.clearError();
+		applicationIdEl.clearError();
+		onBehalfUserIdEl.clearError();
+		if(infos != null) {
+			if(StringHelper.containsNonWhitespace(producerIdEl.getValue())
+					&& !StringHelper.containsNonWhitespace(infos.getProducerDisplayName())) {
+				producerIdEl.setErrorKey("error.producerNotFound", null);
+				allOk &= false;
+			}
+			if(StringHelper.containsNonWhitespace(onBehalfUserIdEl.getValue())
+					&& !StringHelper.containsNonWhitespace(infos.getOnBehalfDisplayName())) {
+				onBehalfUserIdEl.setErrorKey("error.onBehalfUserNotFound", null);
+				allOk &= false;
+			}
+			if(StringHelper.containsNonWhitespace(applicationIdEl.getValue())
+					&& !StringHelper.containsNonWhitespace(infos.getApplication())) {
+				applicationIdEl.setErrorKey("error.applicationNotFound", null);
+				allOk &= false;
+			}
+		}
+		
+		if(errors.hasErrors()) {
+			clientIdEl.setErrorKey("error.connection", null);
+		}
+
 		return allOk;
 	}
 	
@@ -222,6 +261,7 @@ public class TeamsConfigurationController extends FormBasicController {
 			teamsModule.setApplicationId(applicationIdEl.getValue());
 			teamsModule.setProducerId(producerIdEl.getValue());
 			teamsModule.setOnBehalfUserId(onBehalfUserIdEl.getValue());
+			showInfo("info.saved");
 		} else {
 			teamsModule.setApiKey(null);
 			teamsModule.setApiSecret(null);
@@ -230,12 +270,42 @@ public class TeamsConfigurationController extends FormBasicController {
 			teamsModule.setApplicationId(null);
 			teamsModule.setProducerId(null);
 			teamsModule.setOnBehalfUserId(null);
+			showInfo("info.saved");
 		}
 	}
 	
 	private void doCheckConnection() {
+		String applicationId = applicationIdEl.getValue();
+		String producerId = producerIdEl.getValue();
+		String onBehalfUserId = onBehalfUserIdEl.getValue();
+		
+		TeamsErrors errors = new TeamsErrors();
 		ConnectionInfos infos = teamsService.checkConnection(clientIdEl.getValue(), secretEl.getValue(), tenantEl.getValue(),
-				applicationIdEl.getValue(), producerIdEl.getValue(), onBehalfUserIdEl.getValue());
+				applicationId, producerId, onBehalfUserId, errors);
 		updateModel(infos);
+		
+		if(infos == null) {
+			showError("error.connection");
+		} else {
+			if(StringHelper.containsNonWhitespace(producerId)
+					&& !StringHelper.containsNonWhitespace(infos.getProducerDisplayName())) {
+				errors.append(new TeamsError(TeamsErrorCodes.producerNotFound));
+			}
+			if(StringHelper.containsNonWhitespace(onBehalfUserId)
+					&& !StringHelper.containsNonWhitespace(infos.getOnBehalfDisplayName())) {
+				errors.append(new TeamsError(TeamsErrorCodes.onBehalfUserNotFound));
+			}
+			if(StringHelper.containsNonWhitespace(applicationId)
+					&& !StringHelper.containsNonWhitespace(infos.getApplication())) {
+				errors.append(new TeamsError(TeamsErrorCodes.applicationNotFound));
+			}
+		
+			if(errors.getErrors().isEmpty()) {
+				showInfo("info.connection.ok");
+			} else {
+				String formattedErrors = TeamsUIHelper.formatErrors(getTranslator(), errors);
+				getWindowControl().setError(formattedErrors);
+			}
+		}
 	}
 }

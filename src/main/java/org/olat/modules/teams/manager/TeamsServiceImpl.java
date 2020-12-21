@@ -284,14 +284,14 @@ public class TeamsServiceImpl implements TeamsService {
 	}
 
 	@Override
-	public ConnectionInfos checkConnection() {
-		return graphDao.check();
+	public ConnectionInfos checkConnection(TeamsErrors errors) {
+		return graphDao.check(errors);
 	}
 
 	@Override
 	public ConnectionInfos checkConnection(String clientId, String clientSecret, String tenantGuid,
-			String applicationId, String producerId, String onBehalfId) {
-		return graphDao.check(clientId, clientSecret, tenantGuid, applicationId, producerId, onBehalfId);
+			String applicationId, String producerId, String onBehalfId, TeamsErrors errors) {
+		return graphDao.check(clientId, clientSecret, tenantGuid, applicationId, producerId, onBehalfId, errors);
 	}
 	
 	private void removeCalendarEvent(TeamsMeeting meeting) {

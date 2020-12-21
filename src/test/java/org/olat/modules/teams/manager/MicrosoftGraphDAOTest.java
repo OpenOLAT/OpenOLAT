@@ -75,9 +75,11 @@ public class MicrosoftGraphDAOTest extends OlatTestCase {
 	public void login() {
 		Assume.assumeTrue(StringHelper.containsNonWhitespace(teamsModule.getApiKey()));
 		
-		ConnectionInfos infos = microsoftGraphDao.check();
+		TeamsErrors errors = new TeamsErrors();
+		ConnectionInfos infos = microsoftGraphDao.check(errors);
 		Assert.assertNotNull(infos);
 		Assert.assertNotNull(infos.getOrganisation());
+		Assert.assertFalse(errors.hasErrors());
 		
 		if(StringHelper.containsNonWhitespace(teamsModule.getProducerId())) {
 			Assert.assertNotNull(infos.getProducerDisplayName());
