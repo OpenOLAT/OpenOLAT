@@ -522,6 +522,13 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				}
 			}
 			if(numOfRemovedOwner == 0 || numOfOwners - numOfRemovedOwner > 0) {
+				for (MemberRow member : members) {
+					if (member.getCurriculumElements() != null) {
+						showWarning("error.remove.user.from.curriculum");
+						return;
+					}
+				}
+				
 				List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
 				leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids, repoEntry != null);
 				listenTo(leaveDialogBox);
