@@ -148,6 +148,7 @@ public class TeamsServiceImpl implements TeamsService {
 		if(reloadedMeeting != null) {
 			String onlineMeetingId = reloadedMeeting.getOnlineMeetingId();
 			removeCalendarEvent(reloadedMeeting);
+			teamsAttendeeDao.deleteMeetingsAttendees(reloadedMeeting);
 			teamsMeetingDao.deleteMeeting(reloadedMeeting);
 			
 			if(StringHelper.containsNonWhitespace(onlineMeetingId)

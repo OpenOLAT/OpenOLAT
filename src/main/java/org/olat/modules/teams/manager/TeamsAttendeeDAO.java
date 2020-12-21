@@ -70,5 +70,12 @@ public class TeamsAttendeeDAO {
 		return attendeeKeys != null && !attendeeKeys.isEmpty()
 				&& attendeeKeys.get(0) != null && attendeeKeys.get(0).longValue() > 0;
 	}
+	
+	public void deleteMeetingsAttendees(TeamsMeeting meeting) {
+		String q = "delete teamsattendee where meeting.key=:meetingKey";
+		dbInstance.getCurrentEntityManager().createQuery(q)
+			.setParameter("meetingKey", meeting.getKey())
+			.executeUpdate();
+	}
 
 }

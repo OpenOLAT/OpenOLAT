@@ -102,5 +102,42 @@ public class TeamsAttendeeDAOTest extends OlatTestCase {
 		boolean hasNotAttended = teamsAttendeeDao.hasAttendee(id2, meeting);
 		Assert.assertFalse(hasNotAttended);
 	}
+	
+	@Test
+	public void deleteAttendee() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("teams-attendee-4");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("teams-attendee-5");
+		Identity idRef = JunitTestHelper.createAndPersistIdentityAsRndUser("teams-attendee-5");
+		TeamsUser user1 = teamsUserDao.createUser(id1, UUID.randomUUID().toString(), "Teams attendee 3");
+		TeamsUser user2 = teamsUserDao.createUser(id2, UUID.randomUUID().toString(), "Teams attendee 4");
+		TeamsUser userRef = teamsUserDao.createUser(idRef, UUID.randomUUID().toString(), "Teams attendee 5");
+
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		TeamsMeeting meeting = teamsMeetingDao.createMeeting("Online-Meeting - attendee - 3", new Date(), new Date(),
+				entry, subIdent, null, id1);
+		TeamsMeeting meetingRef = teamsMeetingDao.createMeeting("Online-Meeting - attendee - 4", new Date(), new Date(),
+				entry, subIdent, null, idRef);
+
+		dbInstance.commitAndCloseSession();
+		
+		TeamsAttendee attendee1 = teamsAttendeeDao.createAttendee(id1, user1, "Role", new Date(), meeting);
+		TeamsAttendee attendee2 = teamsAttendeeDao.createAttendee(id2, user2, "Role", new Date(), meeting);
+		TeamsAttendee attendeeRef = teamsAttendeeDao.createAttendee(idRef, userRef, "Role", new Date(), meetingRef);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(attendee1);
+		Assert.assertNotNull(attendee2);
+		Assert.assertNotNull(attendeeRef);
+
+		boolean hasAttended = teamsAttendeeDao.hasAttendee(id1, meeting);
+		Assert.assertTrue(hasAttended);
+		
+		teamsAttendeeDao.deleteMeetingsAttendees(meeting);
+		dbInstance.commitAndCloseSession();
+		
+		
+		boolean stillAttended = teamsAttendeeDao.hasAttendee(idRef, meetingRef);
+		Assert.assertTrue(stillAttended);
+	}
 
 }
