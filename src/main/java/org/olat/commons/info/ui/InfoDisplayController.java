@@ -124,6 +124,8 @@ public class InfoDisplayController extends FormBasicController {
 	private LockResult lockEntry;
 	private MailFormatter sendMailFormatter;
 	private List<SendMailOption> sendMailOptions = new ArrayList<>();
+	private List<SendMailOption> groupsMailOptions = new ArrayList<>();
+	private List<SendMailOption> curriculaMailOptions = new ArrayList<>();
 	
 	public InfoDisplayController(UserRequest ureq, WindowControl wControl, InfoSecurityCallback secCallback,
 			BusinessGroup businessGroup, String resSubPath, String businessPath) {
@@ -163,6 +165,8 @@ public class InfoDisplayController extends FormBasicController {
 			after = afterConfig = cal.getTime();
 		}
 		
+		
+		
 		initForm(ureq);
 		
 		// OLAT-6302 when a specific message is shown display the page that
@@ -191,6 +195,22 @@ public class InfoDisplayController extends FormBasicController {
 	
 	public void addSendMailOptions(SendMailOption sendMailOption) {
 		sendMailOptions.add(sendMailOption);
+	}
+	
+	public List<SendMailOption> getGroupMailOptions() {
+		return groupsMailOptions;
+	}
+	
+	public void addGroupMailOption(SendMailOption sendMailOption) {
+		groupsMailOptions.add(sendMailOption);
+	}
+	
+	public List<SendMailOption> getCurriculaSendOptions() {
+		return curriculaMailOptions;
+	}
+	
+	public void addCurriuclaMailOptions(SendMailOption sendMailOption) {
+		curriculaMailOptions.add(sendMailOption);
 	}
 	
 	public MailFormatter getSendMailFormatter() {
@@ -373,7 +393,8 @@ public class InfoDisplayController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == newInfoLink) {
 			InfoMessage msg = infoMessageManager.createInfoMessage(ores, resSubPath, businessPath, getIdentity());
-			start = new CreateInfoStep(ureq, sendMailOptions, msg);
+			
+			start = new CreateInfoStep(ureq, sendMailOptions, groupsMailOptions, curriculaMailOptions, msg);
 			newInfoWizard = new StepsMainRunController(ureq, getWindowControl(), start, new FinishedCallback(),
 					new CancelCallback(), translate("create_message"), "o_sel_info_messages_create_wizard");
 			listenTo(newInfoWizard);
@@ -466,11 +487,27 @@ public class InfoDisplayController extends FormBasicController {
 			@SuppressWarnings("unchecked")
 			Set<String> selectedOptions = (Set<String>)runContext.get(WizardConstants.SEND_MAIL);
 			@SuppressWarnings("unchecked")
+			Set<String> selectedGroupOptions = (Set<String>)runContext.get(WizardConstants.SEND_GROUPS);
+			@SuppressWarnings("unchecked")
+			Set<String> selectedCurriculumOptions = (Set<String>)runContext.get(WizardConstants.SEND_CURRICULA);
+			@SuppressWarnings("unchecked")
 			Collection<String> pathToDelete = (Set<String>)runContext.get(WizardConstants.PATH_TO_DELETE);
 
 			List<Identity> identities = new ArrayList<>();
-			for(SendMailOption option:sendMailOptions) {
-				if(selectedOptions != null && selectedOptions.contains(option.getOptionKey())) {
+			for (SendMailOption option : sendMailOptions) {
+				if (selectedOptions != null && selectedOptions.contains(option.getOptionKey())) {
+					identities.addAll(option.getSelectedIdentities());
+				}
+			}
+			
+			for (SendMailOption option : groupsMailOptions) {
+				if (selectedGroupOptions != null && selectedGroupOptions.contains(option.getOptionKey())) {
+					identities.addAll(option.getSelectedIdentities());
+				}
+			}
+			
+			for (SendMailOption option : curriculaMailOptions) {
+				if (selectedCurriculumOptions != null && selectedCurriculumOptions.contains(option.getOptionKey())) {
 					identities.addAll(option.getSelectedIdentities());
 				}
 			}

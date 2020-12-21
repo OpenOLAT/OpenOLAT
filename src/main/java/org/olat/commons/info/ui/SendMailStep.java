@@ -41,12 +41,16 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class SendMailStep extends BasicStep {
 	
-	private final List<SendMailOption> options;
+	private final List<SendMailOption> courseOptions;
+	private final List<SendMailOption> groupOptions;
+	private final List<SendMailOption> curriculaOptions;
 	
-	public SendMailStep(UserRequest ureq, List<SendMailOption> options) {
+	public SendMailStep(UserRequest ureq, List<SendMailOption> courseOptions, List<SendMailOption> groupOptions, List<SendMailOption> curriculaOptions) {
 		super(ureq);
 		setI18nTitleAndDescr("wizard.step1.title", "wizard.step1.description");
-		this.options = options;
+		this.courseOptions = courseOptions;
+		this.groupOptions = groupOptions;
+		this.curriculaOptions = curriculaOptions;
 	}
 
 	@Override
@@ -56,6 +60,6 @@ public class SendMailStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new SendMailStepController(ureq, wControl, runContext, options, form);
+		return new SendMailStepController(ureq, wControl, runContext, courseOptions, groupOptions, curriculaOptions, form);
 	}
 }

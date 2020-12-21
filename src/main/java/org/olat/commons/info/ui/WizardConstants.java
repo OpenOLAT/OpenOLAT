@@ -31,6 +31,8 @@ public class WizardConstants {
 
 	public static final String SEND_MAIL = "send";
 	public static final String SEND_MAIL_SUBSCRIBERS = "subscribers";
+	public static final String SEND_GROUPS = "groups";
+	public static final String SEND_CURRICULA = "curricula";
 	
 	public static final String MSG = "message";
 	public static final String PATH_TO_DELETE = "pathToDelete";

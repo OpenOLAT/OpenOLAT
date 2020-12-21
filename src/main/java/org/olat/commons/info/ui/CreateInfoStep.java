@@ -44,11 +44,11 @@ public class CreateInfoStep extends BasicStep {
 	
 	private final InfoMessage message;
 	
-	public CreateInfoStep(UserRequest ureq, List<SendMailOption> options, InfoMessage message) {
+	public CreateInfoStep(UserRequest ureq, List<SendMailOption> courseOptions, List<SendMailOption> groupOptions, List<SendMailOption> curriculaOptions, InfoMessage message) {
 		super(ureq);
 		this.message = message;
 		setI18nTitleAndDescr("wizard.step0.title", "wizard.step0.description");
-		setNextStep(new SendMailStep(ureq, options));
+		setNextStep(new SendMailStep(ureq, courseOptions, groupOptions, curriculaOptions));
 	}
 
 	@Override

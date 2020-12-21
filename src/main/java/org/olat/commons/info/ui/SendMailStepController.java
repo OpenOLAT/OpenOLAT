@@ -43,23 +43,51 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class SendMailStepController extends StepFormBasicController {
 	
-	private String[] sendOptionKeys;
-	private String[] sendOptionValues;
+	private String[] sendCourseRolesOptionKeys;
+	private String[] sendCourseRolesOptionValues;
+	private String[] sendGroupsOptionKeys;
+	private String[] sendGroupsOptionValues;
+	private String[] sendCurriculaOptionKeys;
+	private String[] sendCurriculaOptionValues;
 	
-	private MultipleSelectionElement sendSelection;
+	private MultipleSelectionElement sendCourseRolesSelection;
+	private MultipleSelectionElement sendGroupsSelection;
+	private MultipleSelectionElement sendCurriculaSelection;
 	
 	public SendMailStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext,
-			List<SendMailOption> options, Form rootForm) {
+			List<SendMailOption> courseRoleOptions, List<SendMailOption> groupOptions, List<SendMailOption> curriculaOptions, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 		
-		sendOptionKeys = new String[options.size()];
-		sendOptionValues = new String[options.size()];
+		sendCourseRolesOptionKeys = new String[courseRoleOptions.size()];
+		sendCourseRolesOptionValues = new String[courseRoleOptions.size()];
 		int count = 0;
-		for(SendMailOption option:options) {
-			sendOptionKeys[count] = option.getOptionKey();
-			sendOptionValues[count++] = option.getOptionName();
+		for(SendMailOption option:courseRoleOptions) {
+			sendCourseRolesOptionKeys[count] = option.getOptionKey();
+			sendCourseRolesOptionValues[count++] = option.getOptionName();
 		}
-
+		
+		if (groupOptions != null && !groupOptions.isEmpty()) {
+			sendGroupsOptionKeys = new String[groupOptions.size()];
+			sendGroupsOptionValues = new String[groupOptions.size()];
+			
+			int groupCount = 0;
+			for (SendMailOption groupOption : groupOptions) {
+				sendGroupsOptionKeys[groupCount] = groupOption.getOptionKey();
+				sendGroupsOptionValues[groupCount++] = groupOption.getOptionName();
+			}
+		}
+		
+		if (curriculaOptions != null && curriculaOptions.size() > 1) {
+			sendCurriculaOptionKeys = new String[curriculaOptions.size()];
+			sendCurriculaOptionValues = new String[curriculaOptions.size()];
+			
+			int curriculaCount = 0;
+			for (SendMailOption curriculaOption : curriculaOptions) {
+				sendCurriculaOptionKeys[curriculaCount] = curriculaOption.getOptionKey();
+				sendCurriculaOptionValues[curriculaCount++] = curriculaOption.getOptionName();
+			}
+		}
+		
 		initForm(ureq);
 	}
 
@@ -68,7 +96,15 @@ public class SendMailStepController extends StepFormBasicController {
 		formLayout.setElementCssClass("o_sel_info_contact");
 		setFormTitle("wizard.step1.title");
 		setFormDescription("wizard.step1.form_description");
-		sendSelection = uifactory.addCheckboxesVertical("wizard.step1.send_option", formLayout, sendOptionKeys, sendOptionValues, 1);
+		sendCourseRolesSelection = uifactory.addCheckboxesVertical("wizard.step1.send_option", formLayout, sendCourseRolesOptionKeys, sendCourseRolesOptionValues, 1);
+		
+		if (sendGroupsOptionKeys != null && sendGroupsOptionKeys.length > 0) {
+			sendGroupsSelection = uifactory.addCheckboxesVertical("wizard.step1.send_group_option", formLayout, sendGroupsOptionKeys, sendGroupsOptionValues, 1);
+		}
+		
+		if (sendCurriculaOptionKeys != null && sendCurriculaOptionKeys.length > 0) {
+			sendCurriculaSelection = uifactory.addCheckboxesVertical("wizard.step1.send_curricula_option", formLayout, sendCurriculaOptionKeys, sendCurriculaOptionValues, 1);
+		}
 	}
 	
 	@Override
@@ -78,8 +114,17 @@ public class SendMailStepController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Collection<String> selectedOptions = sendSelection.getSelectedKeys();
+		Collection<String> selectedOptions = sendCourseRolesSelection.getSelectedKeys();
 		addToRunContext(WizardConstants.SEND_MAIL, selectedOptions);
+		
+		if (sendGroupsSelection != null) {
+			addToRunContext(WizardConstants.SEND_GROUPS, sendGroupsSelection.getSelectedKeys());
+		}
+		
+		if (sendCurriculaSelection != null) {
+			addToRunContext(WizardConstants.SEND_CURRICULA, sendCurriculaSelection.getSelectedKeys());
+		}
+		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }
