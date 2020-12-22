@@ -382,6 +382,15 @@ public class QualityDataCollectionDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(collection)");
 		sb.append("  from qualitydatacollection as collection");
+		if (searchParams != null && (StringHelper.containsNonWhitespace(searchParams.getTopic())
+				|| StringHelper.containsNonWhitespace(searchParams.getSearchString()))) {
+			sb.append("       left join collection.topicIdentity.user as user");
+			sb.append("       left join collection.topicOrganisation as organisation");
+			sb.append("       left join collection.topicCurriculum as curriculum");
+			sb.append("       left join collection.topicCurriculumElement as curriculumElement");
+			sb.append("       left join curriculumElement.type as curriculumElementType");
+			sb.append("       left join collection.topicRepositoryEntry as repository");
+		}
 		appendWhereClause(sb, searchParams);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
@@ -490,15 +499,22 @@ public class QualityDataCollectionDAO {
 			if (StringHelper.containsNonWhitespace(searchParams.getTopic())
 					|| StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
 				sb.and().append("(");
-				sb.append("lower(collection.topicCustom) like :topic");
-				sb.append(" or lower(user.lastName) like :topic");
-				sb.append(" or lower(user.firstName) like :topic");
-				sb.append(" or lower(organisation.displayName) like :topic");
-				sb.append(" or lower(curriculum.displayName) like :topic");
-				sb.append(" or lower(curriculumElement.displayName) like :topic");
-				sb.append(" or lower(repository.displayname) like :topic");
+				PersistenceHelper.appendFuzzyLike(sb, "collection.topicCustom", "topic", dbInstance.getDbVendor());
+				sb.append(" or ");
+				PersistenceHelper.appendFuzzyLike(sb, "user.lastName", "topic", dbInstance.getDbVendor());
+				sb.append(" or ");
+				PersistenceHelper.appendFuzzyLike(sb, "user.firstName", "topic", dbInstance.getDbVendor());
+				sb.append(" or ");
+				PersistenceHelper.appendFuzzyLike(sb, "organisation.displayName", "topic", dbInstance.getDbVendor());
+				sb.append(" or ");
+				PersistenceHelper.appendFuzzyLike(sb, "curriculum.displayName", "topic", dbInstance.getDbVendor());
+				sb.append(" or ");
+				PersistenceHelper.appendFuzzyLike(sb, "curriculumElement.displayName", "topic", dbInstance.getDbVendor());
+				sb.append(" or ");
+				PersistenceHelper.appendFuzzyLike(sb, "repository.displayname", "topic", dbInstance.getDbVendor());
 				if (StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
-					sb.append(" or lower(collection.title) like :topic");
+					sb.append(" or ");
+					PersistenceHelper.appendFuzzyLike(sb, "collection.title", "topic", dbInstance.getDbVendor());
 				}
 				sb.append(")");
 			}
