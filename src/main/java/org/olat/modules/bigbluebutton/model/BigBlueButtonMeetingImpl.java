@@ -101,6 +101,8 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	private String identifier;
 	@Column(name="b_read_identifier", nullable=true, insertable=true, updatable=true)
 	private String readableIdentifier;
+	@Column(name="b_password", nullable=true, insertable=true, updatable=true)
+	private String password;
 
 	@Column(name="b_layout", nullable=false, insertable=true, updatable=true)
 	private String layout;
@@ -288,6 +290,16 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	@Override
 	public void setReadableIdentifier(String readableIdentifier) {
 		this.readableIdentifier = readableIdentifier;
+	}
+
+	@Override
+	public String getPassword() {
+		return password;
+	}
+
+	@Override
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	@Override

@@ -158,6 +158,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			if((administrator || moderator) && StringHelper.containsNonWhitespace(meeting.getReadableIdentifier())) {
 				String url = BigBlueButtonDispatcher.getMeetingUrl(meeting.getReadableIdentifier());
 				layoutCont.contextPut("externalUrl", url);
+				String password = meeting.getPassword();
+				layoutCont.contextPut("externalPassword", password);
 			}
 			
 			if(StringHelper.containsNonWhitespace(meeting.getMainPresenter())) {

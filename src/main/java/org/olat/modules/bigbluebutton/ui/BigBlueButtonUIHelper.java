@@ -24,8 +24,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.util.KeyValues;
@@ -47,6 +49,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 public class BigBlueButtonUIHelper {
 	
 	public static void updateTemplateInformations(SingleSelection templateEl, TextElement externalLinkEl,
+			MultipleSelectionElement passwordEnableEl, TextElement passwordEl,
 			SingleSelection publishingEl, SingleSelection recordEl, List<BigBlueButtonMeetingTemplate> templates) {
 		templateEl.setExampleKey(null, null);
 		if(templateEl.isOneSelected()) {
@@ -67,6 +70,18 @@ public class BigBlueButtonUIHelper {
 				externalLinkEl.setValue(Long.toString(CodeHelper.getForeverUniqueID()));
 			}
 			
+			if(passwordEnableEl != null) {
+				passwordEnableEl.setVisible(visible);
+				if(visible && passwordEnableEl.isAtLeastSelected(1)) {
+					if(!StringHelper.containsNonWhitespace(passwordEl.getValue())) {
+						passwordEl.setValue(RandomStringUtils.randomAlphanumeric(6));
+					}
+					passwordEl.setVisible(true);
+				} else {
+					passwordEl.setVisible(false);
+				}
+			}
+			
 			if(recordEl != null) {
 				boolean recordVisible = template != null && template.getRecord() != null && template.getRecord().booleanValue();
 				boolean wasVisible = recordEl.isVisible();
@@ -81,6 +96,10 @@ public class BigBlueButtonUIHelper {
 			}
 		} else {
 			externalLinkEl.setVisible(false);
+			if(passwordEnableEl != null) {
+				passwordEnableEl.setVisible(false);
+				passwordEl.setVisible(false);
+			}
 			if(recordEl != null) {
 				recordEl.setVisible(false);
 			}
@@ -122,6 +141,25 @@ public class BigBlueButtonUIHelper {
 		}
 		
 		layoutEl.setVisible(layoutEl.getKeys().length > 1);
+	}
+	
+	public static boolean validatePassword(MultipleSelectionElement passwordEnableEl, TextElement passwordEl) {
+		boolean allOk = true;
+		
+		passwordEl.clearError();
+		passwordEnableEl.clearError();
+		if(passwordEnableEl.isAtLeastSelected(1)) {
+			String val = passwordEl.getValue();
+			if(!StringHelper.containsNonWhitespace(val)) {
+				passwordEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(val.length() > 64) {
+				passwordEl.setErrorKey("form.error.toolong", new String[] { "64" });
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
 	}
 
 	public static boolean validateReadableIdentifier(TextElement externalLinkEl, BigBlueButtonMeeting meeting) {
