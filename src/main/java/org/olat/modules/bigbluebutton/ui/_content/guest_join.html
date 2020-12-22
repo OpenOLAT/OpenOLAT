@@ -20,7 +20,7 @@
 	
 	#if($r.visible("meeting.join.button"))
 		<div class="o_info">$r.translate("meeting.guest.pseudo.explain")</div>
-		<div class="cleafix">
+		<div class="clearfix">
 			#if ($f.hasLabel("meeting.guest.pseudo"))
 				$r.render("meeting.guest.pseudo_LABEL", "meeting.guest.pseudo")
 			#end
@@ -31,7 +31,17 @@
 			</div>
 			#end
 		</div>
-		
+		<div class="clearfix">
+			#if ($f.hasLabel("meeting.guest.password"))
+				$r.render("meeting.guest.password_LABEL", "meeting.guest.password")
+			#end
+			$r.render("meeting.guest.password")
+			#if($f.hasError("meeting.guest.password"))
+			<div class="">
+				$r.render("meeting.guest.password_ERROR")
+			</div>
+			#end
+		</div>
 		#if($r.visible("meeting.acknowledge.recording"))
 		<div class="o_warning">
 			<h4>$r.translate("meeting.acknowledge.recording.explain.title")</h4>

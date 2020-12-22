@@ -74,9 +74,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BigBlueButtonGuestJoinController extends FormBasicController implements GenericEventListener {
 
-	public static final String PARTICIPATION_IDENTIFIER = "evaluation-form-participation-identifier";
-	
 	private TextElement nameEl;
+	private TextElement passwordEl;
 	private FormLink joinButton;
 	private MultipleSelectionElement acknowledgeRecordingEl;
 
@@ -143,8 +142,11 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		}
 		
 		nameEl = uifactory.addTextElement("meeting.guest.pseudo", 128, "", formLayout);
-		
+
 		boolean end = isEnded();
+		passwordEl = uifactory.addTextElement("meeting.guest.password", 64, "", formLayout);
+		passwordEl.setVisible(!end && meeting != null && StringHelper.containsNonWhitespace(meeting.getPassword()));
+		
 		joinButton = uifactory.addFormLink("meeting.join.button", formLayout, Link.BUTTON_LARGE);
 		joinButton.setElementCssClass("o_sel_bbb_guest_join");
 		joinButton.setVisible(!end);
@@ -285,6 +287,17 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		} else if(nameEl.getValue().length() > 64) {
 			nameEl.setErrorKey("form.error.toolong", new String[] { "64" });
 			allOk &= false;
+		}
+		
+		passwordEl.clearError();
+		if(passwordEl.isVisible()) {
+			if(!StringHelper.containsNonWhitespace(passwordEl.getValue())) {
+				passwordEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(!passwordEl.getValue().equals(meeting.getPassword())) {
+				passwordEl.setErrorKey("error.password", null);
+				allOk &= false;
+			}
 		}
 		
 		acknowledgeRecordingEl.clearError();

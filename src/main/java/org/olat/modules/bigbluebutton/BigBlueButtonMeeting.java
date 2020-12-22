@@ -125,6 +125,15 @@ public interface BigBlueButtonMeeting extends ModifiedInfo, CreateInfo {
 
 	public void setReadableIdentifier(String readableIdentifier);
 	
+	/**
+	 * Password for external users.
+	 * 
+	 * @return the password
+	 */
+	public String getPassword();
+
+	public void setPassword(String password);
+	
 	
 	/**
 	 * If not a permanent meeting, the meetings starts at this date. Participants

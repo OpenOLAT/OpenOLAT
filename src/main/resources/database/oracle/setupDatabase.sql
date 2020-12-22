@@ -1281,6 +1281,7 @@ create table o_bbb_meeting (
    b_guest number default 0 not null,
    b_identifier varchar2(64),
    b_read_identifier varchar2(64),
+   b_password varchar2(64),
    b_start_date timestamp default null,
    b_leadtime number(20) default 0 not null,
    b_start_with_leadtime timestamp,

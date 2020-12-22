@@ -17,6 +17,11 @@
 <div class="o_block_large">
 	<label forid="externalusersmeetingurl">$r.translate("meeting.url.external.users")</label>
 	<div class="o_copy_code o_nowrap form-control-static"><a href="javascript:;" id="o_extmeetingurl"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"> </i></a><input id="externalusersmeetingurl" type="text" value="$externalUrl" onclick="this.select()"/></div>
+	
+	#if($r.isNotEmpty($externalPassword))
+		<label forid="externalpassword">$r.translate("meeting.password")</label>
+		<div class="o_copy_code o_nowrap form-control-static"><input id="externalpassword" type="text" value="$externalPassword" onclick="this.select()"/></div>
+	#end
 	<script>
 	jQuery(function() {
 		o_QRCodePopup('o_extmeetingurl', '$externalUrl', 'right');
