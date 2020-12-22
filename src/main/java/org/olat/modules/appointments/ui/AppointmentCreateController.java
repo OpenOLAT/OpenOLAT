@@ -937,22 +937,24 @@ public class AppointmentCreateController extends FormBasicController {
 		}
 		return appointment;
 	}
-
 	
 	private void doCreateStartDurationWrapper(AppointmentWrapper after) {
 		AppointmentWrapper wrapper = new AppointmentWrapper();
 		
-		StartDuration previous = none();
-		StartDuration previous2 = none();
+		StartDuration next;
 		if (after != null) {
+			StartDuration previous = none();
+			StartDuration previous2 = none();
 			previous = ofString(after.getStartEl().getDate(), after.getDurationEl().getValue());
 			int index = startDurationWrappers.indexOf(after);
 			if (index >= 1) {
 				AppointmentWrapper after2 = startDurationWrappers.get(index - 1);
 				previous2 = ofString(after2.getStartEl().getDate(), after2.getDurationEl().getValue());
 			}
+			next = StartDuration.next(previous, previous2);
+		} else {
+			next = StartDuration.of(new Date(), 60);
 		}
-		StartDuration next = StartDuration.next(previous, previous2);
 		
 		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, null, next.getStart(), startDurationCont);
 		startEl.setDateChooserTimeEnabled(true);
@@ -961,7 +963,7 @@ public class AppointmentCreateController extends FormBasicController {
 		wrapper.setStartEl(startEl);
 		
 		String duration = next.getDuration() != null? next.getDuration().toString(): null;
-		TextElement durationEl = uifactory.addTextElement(CMD_DURATION + counter++, 2, duration, startDurationCont);
+		TextElement durationEl = uifactory.addTextElement(CMD_DURATION + counter++, 4, duration, startDurationCont);
 		durationEl.setDisplaySize(1);
 		durationEl.addActionListener(FormEvent.ONCHANGE);
 		durationEl.setUserObject(wrapper);
@@ -1016,6 +1018,10 @@ public class AppointmentCreateController extends FormBasicController {
 		wrapper.setRemoveEl(removeEl);
 		
 		if (after == null) {
+			Date start = new Date();
+			startEl.setDate(start);
+			Date end = DateUtils.addHours(start, 1);
+			endEl.setDate(end);
 			startEndWrappers.add(wrapper);
 		} else {
 			Date start = after.getStartEl().getDate();
