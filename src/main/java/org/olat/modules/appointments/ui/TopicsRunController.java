@@ -52,11 +52,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Appointment.Status;
 import org.olat.modules.appointments.AppointmentSearchParams;
@@ -73,6 +76,10 @@ import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.model.TeamsErrors;
+import org.olat.modules.teams.ui.TeamsMeetingEvent;
+import org.olat.modules.teams.ui.TeamsUIHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -335,20 +342,25 @@ public class TopicsRunController extends FormBasicController implements Activate
 		wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 		
 		if (appointmentsService.isBigBlueButtonEnabled()) {
-			if (secCallback.canJoinMeeting(appointment, wrapper.getOrganizers(), appointmentParticipations)) {
-				wrapMeeting(wrapper, appointment);
+			if (secCallback.canJoinBBBMeeting(appointment, wrapper.getOrganizers(), appointmentParticipations)) {
+				wrapBBBMeeting(wrapper, appointment);
 			}
 			if (secCallback.canWatchRecording(wrapper.getOrganizers(), appointmentParticipations)) {
 				List<BigBlueButtonRecordingReference> recordingReferences = appointmentsService
-						.getRecordingReferences(Collections.singletonList(appointment))
+						.getBBBRecordingReferences(Collections.singletonList(appointment))
 						.getOrDefault(appointment.getKey(), Collections.emptyList());
 				wrapRecordings(wrapper, recordingReferences);
 			}
 		}
+		
+		if (appointmentsService.isTeamsEnabled()
+				&& secCallback.canJoinTeamsMeeting(appointment, wrapper.getOrganizers(), appointmentParticipations)) {
+			wrapTeamsMeeting(wrapper);
+		}
 	}
 
-	private void wrapMeeting(TopicWrapper wrapper, Appointment appointment) {
-		BigBlueButtonMeeting meeting = appointment.getMeeting();
+	private void wrapBBBMeeting(TopicWrapper wrapper, Appointment appointment) {
+		BigBlueButtonMeeting meeting = appointment.getBBBMeeting();
 		boolean disabled = isDisabled(meeting);
 		if (disabled) {
 			wrapper.setServerWarning(translate("error.serverDisabled"));
@@ -395,6 +407,15 @@ public class TopicsRunController extends FormBasicController implements Activate
 			recordingLinkNames.add(link.getName());
 		}
 		wrapper.setRecordingLinkNames(recordingLinkNames);
+	}
+	
+	private void wrapTeamsMeeting(TopicWrapper wrapper) {
+		FormLink joinButton = uifactory.addFormLink("join" + counter++, CMD_JOIN, "meeting.join.button", null, flc, Link.BUTTON_LARGE);
+		joinButton.setNewWindow(true, true, true);
+		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
+		joinButton.setPrimary(joinButton.isEnabled());
+		joinButton.setUserObject(wrapper);
+		wrapper.setJoinLinkName(joinButton.getName());
 	}
 
 	private boolean isDisabled(BigBlueButtonMeeting meeting) {
@@ -586,12 +607,20 @@ public class TopicsRunController extends FormBasicController implements Activate
 			appointment = appointments.get(0);
 		}
 		
-		if (appointment == null || appointment.getMeeting() == null) {
+		if (appointment == null || (appointment.getBBBMeeting() == null && appointment.getTeamsMeeting() == null)) {
 			showWarning("warning.no.meeting");
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			return;
 		}
-		if (BigBlueButtonUIHelper.isRecord(appointment.getMeeting()) && !acknowlededRecordings.contains(appointment.getTopic())) {
+		if (appointment.getBBBMeeting() != null) {
+			doJoinBBBMeeting(wrapper, appointment);
+		} else if (appointment.getTeamsMeeting() != null) {
+			doJoinTeamsMeeting(appointment);
+		}
+	}
+
+	private void doJoinBBBMeeting(TopicWrapper wrapper, Appointment appointment) {
+		if (BigBlueButtonUIHelper.isRecord(appointment.getBBBMeeting()) && !acknowlededRecordings.contains(appointment.getTopic())) {
 			wrapper.getAcknowledgeRecordingEl().setErrorKey("form.legende.mandatory", null);
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			return;
@@ -600,7 +629,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 		}
 		
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
-		String meetingUrl = appointmentsService.joinMeeting(appointment, getIdentity(), errors);
+		String meetingUrl = appointmentsService.joinBBBMeeting(appointment, getIdentity(), errors);
 		redirectTo(meetingUrl, errors);
 	}
 	
@@ -616,12 +645,38 @@ public class TopicsRunController extends FormBasicController implements Activate
 	}
 
 	private void doOpenRecording(UserRequest ureq, BigBlueButtonRecordingReference recordingReference) {
-		String url = appointmentsService.getRecordingUrl(ureq.getUserSession(), recordingReference);
+		String url = appointmentsService.getBBBRecordingUrl(ureq.getUserSession(), recordingReference);
 		if(StringHelper.containsNonWhitespace(url)) {
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		} else {
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			showWarning("warning.recording.not.found");
+		}
+	}
+
+	private void doJoinTeamsMeeting(Appointment appointment) {
+		TeamsErrors errors = new TeamsErrors();
+		TeamsMeeting meeting = appointmentsService.joinTeamsMeeting(appointment, getIdentity(), errors);
+		
+		if(meeting == null) {
+			showWarning("warning.no.meeting");
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			return;
+		} else if(errors.hasErrors()) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			getWindowControl().setError(TeamsUIHelper.formatErrors(getTranslator(), errors));
+			return;
+		}
+		
+		String joinUrl = meeting.getOnlineMeetingJoinUrl();
+		if(StringHelper.containsNonWhitespace(joinUrl)) {
+			TeamsMeetingEvent event = new TeamsMeetingEvent(meeting.getKey(), getIdentity().getKey());
+			OLATResourceable meetingOres = OresHelper.createOLATResourceableInstance(TeamsMeeting.class.getSimpleName(), meeting.getKey());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, meetingOres);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(joinUrl));
+		} else {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			showWarning("warning.no.access");
 		}
 	}
 

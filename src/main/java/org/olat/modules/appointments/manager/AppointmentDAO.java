@@ -40,6 +40,7 @@ import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.appointments.model.AppointmentImpl;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.teams.TeamsMeeting;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -76,14 +77,15 @@ class AppointmentDAO {
 	}
 	
 	Appointment saveAppointment(Appointment appointment) {
-		return saveAppointment(appointment, appointment.getMeeting());
+		return saveAppointment(appointment, appointment.getBBBMeeting(), appointment.getTeamsMeeting());
 	}
 	
-	Appointment saveAppointment(Appointment appointment, BigBlueButtonMeeting meeting) {
+	Appointment saveAppointment(Appointment appointment, BigBlueButtonMeeting bbbMeeting, TeamsMeeting teamsMeeting) {
 		if (appointment instanceof AppointmentImpl) {
 			AppointmentImpl impl = (AppointmentImpl)appointment;
 			impl.setLastModified(new Date());
-			impl.setMeeting(meeting);
+			impl.setBbbMeeting(bbbMeeting);
+			impl.setTeamsMeeting(teamsMeeting);
 		}
 		if (appointment.getKey() == null) {
 			dbInstance.getCurrentEntityManager().persist(appointment);
@@ -224,10 +226,14 @@ class AppointmentDAO {
 	private void appendQuery(QueryBuilder sb, AppointmentSearchParams params) {
 		sb.append("  from appointment appointment");
 		sb.append("      join").append(" fetch", params.isFetchTopic()).append(" appointment.topic topic");
+		if (params.isFetchEntry()) {
+			sb.append("  left join fetch topic.entry entry");
+		}
 		if (params.isFetchMeetings()) {
-			sb.append("  left join fetch appointment.meeting meeting");
-			sb.append("  left join fetch meeting.template as template");
-			sb.append("  left join fetch meeting.server as server");
+			sb.append("  left join fetch appointment.bbbMeeting bbbMeeting");
+			sb.append("  left join fetch bbbMeeting.template as template");
+			sb.append("  left join fetch bbbMeeting.server as server");
+			sb.append("  left join fetch appointment.teamsMeeting teamsMeeting");
 		}
 		if (params.getOrganizer() != null) {
 			sb.append("  join appointmentorganizer organizer");
@@ -254,11 +260,14 @@ class AppointmentDAO {
 		if (params.getStatus() != null) {
 			sb.and().append("appointment.status = :status");
 		}
-		if (params.getMeeting() != null) {
-			sb.and().append("appointment.meeting.key = :meetingKey");
+		if (params.getBBBMeeting() != null) {
+			sb.and().append("appointment.bbbMeeting.key = :bbbMeetingKey");
+		}
+		if (params.getTeamsMeeting() != null) {
+			sb.and().append("appointment.teamsMeeting.key = :teamsMeetingKey");
 		}
 		if (params.hasMeeting()) {
-			sb.and().append("appointment.meeting.key is not null");
+			sb.and().append("(appointment.bbbMeeting.key is not null or appointment.teamsMeeting.key is not null)");
 		}
 	}
 
@@ -284,8 +293,12 @@ class AppointmentDAO {
 		if (params.getStatus() != null) {
 			query.setParameter("status", params.getStatus());
 		}
-		if (params.getMeeting() != null) {
-			query.setParameter("meetingKey", params.getMeeting().getKey());
+		if (params.getBBBMeeting() != null) {
+			query.setParameter("bbbMeetingKey", params.getBBBMeeting().getKey());
+		}
+		if (params.getTeamsMeeting() != null) 
+			query.setParameter("teamsMeetingKey", params.getTeamsMeeting().getKey());{
+			
 		}
 	}
 

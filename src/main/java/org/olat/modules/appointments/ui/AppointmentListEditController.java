@@ -101,7 +101,7 @@ public class AppointmentListEditController extends AppointmentListController {
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
 		
 		Map<Long, List<BigBlueButtonRecordingReference>> appointmentKeyToRecordingReferences = appointmentsService.isBigBlueButtonEnabled()
-				? appointmentsService.getRecordingReferences(appointments)
+				? appointmentsService.getBBBRecordingReferences(appointments)
 				: Collections.emptyMap();
 		
 		boolean anyConfirmed = appointments.stream()

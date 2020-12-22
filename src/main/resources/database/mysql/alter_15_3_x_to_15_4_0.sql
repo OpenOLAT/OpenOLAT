@@ -79,5 +79,6 @@ alter table o_teams_attendee add constraint teams_att_user_idx foreign key (fk_t
 alter table o_teams_attendee add constraint teams_att_meet_idx foreign key (fk_meeting_id) references o_teams_meeting (id);
 
 
-
+alter table o_ap_appointment add column fk_teams_id bigint;
+alter table o_ap_appointment add constraint ap_appointment_teams_idx foreign key (fk_teams_id) references o_teams_meeting (id);
 

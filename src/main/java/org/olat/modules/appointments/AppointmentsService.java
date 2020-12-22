@@ -34,6 +34,8 @@ import org.olat.core.util.UserSession;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -70,6 +72,8 @@ public interface AppointmentsService {
 	public List<Organizer> getOrganizers(TopicRef topic);
 
 	public List<Organizer> getOrganizers(RepositoryEntry entry, String subIdent);
+
+	public String getFormattedOrganizers(Topic topic);
 	
 	public void restrictTopic(Topic topic, List<Group> groups);
 
@@ -153,19 +157,29 @@ public interface AppointmentsService {
 	public List<BigBlueButtonMeetingTemplate> getBigBlueButtonTemplates(RepositoryEntryRef entryRef, Identity identity, Roles roles,
 			Long selectedTemplateKey);
 	
-	public Appointment addMeeting(Appointment appointment, Identity identity);
+	public Appointment addBBBMeeting(Appointment appointment, Identity identity);
 
-	public Appointment removeMeeting(Appointment appointment);
+	public Appointment removeBBBMeeting(Appointment appointment);
 
-	public String joinMeeting(Appointment appointment, Identity identity, BigBlueButtonErrors errors);
+	public String joinBBBMeeting(Appointment appointment, Identity identity, BigBlueButtonErrors errors);
 
-	public String getMainPresenters(Topic topic);
+	public void syncBBBRecorings(Topic topic);
 
-	public void syncRecorings(Topic topic);
+	public Map<Long, List<BigBlueButtonRecordingReference>> getBBBRecordingReferences(List<Appointment> appointments);
 
-	public Map<Long, List<BigBlueButtonRecordingReference>> getRecordingReferences(List<Appointment> appointments);
+	public String getBBBRecordingUrl(UserSession userSession, BigBlueButtonRecordingReference recordingReference);
+	
+	public boolean isTeamsEnabled();
 
-	public String getRecordingUrl(UserSession userSession, BigBlueButtonRecordingReference recordingReference);
+	public String getTeamsTenantOrganisation();
+	
+	public boolean isTeamsOnlineMeetingExtendedOptionsEnabled();
+
+	public Appointment addTeamsMeeting(Appointment appointment, Identity identity);
+
+	public Appointment removeTeamsMeeting(Appointment appointment);
+
+	public TeamsMeeting joinTeamsMeeting(Appointment appointment, Identity identity, TeamsErrors errors);
 
 }
 

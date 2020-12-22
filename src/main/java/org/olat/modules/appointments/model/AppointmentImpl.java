@@ -41,6 +41,8 @@ import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.model.TeamsMeetingImpl;
 
 /**
  * 
@@ -88,7 +90,10 @@ public class AppointmentImpl implements Persistable, Appointment {
 	private Topic topic;
 	@OneToOne(targetEntity=BigBlueButtonMeetingImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_meeting_id", nullable=true, insertable=true, updatable=true)
-	private BigBlueButtonMeeting meeting;
+	private BigBlueButtonMeeting bbbMeeting;
+	@OneToOne(targetEntity=TeamsMeetingImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_teams_id", nullable=true, insertable=true, updatable=true)
+	private TeamsMeeting teamsMeeting;
 
 	@Override
 	public Long getKey() {
@@ -196,12 +201,21 @@ public class AppointmentImpl implements Persistable, Appointment {
 	}
 
 	@Override
-	public BigBlueButtonMeeting getMeeting() {
-		return meeting;
+	public BigBlueButtonMeeting getBBBMeeting() {
+		return bbbMeeting;
 	}
 
-	public void setMeeting(BigBlueButtonMeeting meeting) {
-		this.meeting = meeting;
+	public void setBbbMeeting(BigBlueButtonMeeting bbbMeeting) {
+		this.bbbMeeting = bbbMeeting;
+	}
+
+	@Override
+	public TeamsMeeting getTeamsMeeting() {
+		return teamsMeeting;
+	}
+
+	public void setTeamsMeeting(TeamsMeeting teamsMeeting) {
+		this.teamsMeeting = teamsMeeting;
 	}
 
 	@Override

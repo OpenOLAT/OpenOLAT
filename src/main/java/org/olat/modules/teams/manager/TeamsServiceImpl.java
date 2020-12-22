@@ -44,6 +44,7 @@ import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.login.oauth.spi.MicrosoftAzureADFSProvider;
 import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsMeetingDeletionHandler;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.TeamsUser;
@@ -73,6 +74,8 @@ public class TeamsServiceImpl implements TeamsService {
 	
 	private static final Logger log = Tracing.createLoggerFor(TeamsServiceImpl.class);
 
+	private static final Iterable<TeamsMeetingDeletionHandler> teamdMeetingDeletionHandlers = null;
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -93,6 +96,8 @@ public class TeamsServiceImpl implements TeamsService {
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private TeamsMeetingQueries teamsMeetingQueries;
+	@Autowired
+	private List<TeamsMeetingDeletionHandler> teamsMeetingDeletionHandlers;
 
 	@Override
 	public TeamsMeeting createMeeting(String subject, Date startDate, Date endDate, RepositoryEntry entry, String subIdent,
@@ -146,11 +151,12 @@ public class TeamsServiceImpl implements TeamsService {
 		
 		TeamsMeeting reloadedMeeting = teamsMeetingDao.loadByKey(meeting.getKey());
 		if(reloadedMeeting != null) {
-			String onlineMeetingId = reloadedMeeting.getOnlineMeetingId();
+			teamsMeetingDeletionHandlers.forEach(h -> h.onBeforeDelete(reloadedMeeting));
 			removeCalendarEvent(reloadedMeeting);
 			teamsAttendeeDao.deleteMeetingsAttendees(reloadedMeeting);
 			teamsMeetingDao.deleteMeeting(reloadedMeeting);
 			
+			String onlineMeetingId = reloadedMeeting.getOnlineMeetingId();
 			if(StringHelper.containsNonWhitespace(onlineMeetingId)
 					&& StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
 				try {

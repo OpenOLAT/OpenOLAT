@@ -103,7 +103,7 @@ public class FindingConfirmationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormInfo("finding.confirmation.info");
 		
-		if (appointment.getMeeting() != null) {
+		if (appointment.getBBBMeeting() != null) {
 			flc.contextPut("meeting", Boolean.TRUE);
 		}
 		
@@ -179,13 +179,13 @@ public class FindingConfirmationController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		usersTableEl.clearError();
-		if (appointment.getMeeting() != null) {
+		if (appointment.getBBBMeeting() != null) {
 			AppointmentSearchParams params = new AppointmentSearchParams();
 			params.setAppointment(appointment);
 			params.setFetchMeetings(true);
 			List<Appointment> appointments = appointmentsService.getAppointments(params);
 			if (!appointments.isEmpty()) {
-				Integer maxMeetingParticipants = appointments.get(0).getMeeting().getTemplate().getMaxParticipants();
+				Integer maxMeetingParticipants = appointments.get(0).getBBBMeeting().getTemplate().getMaxParticipants();
 				if (maxMeetingParticipants.intValue() < usersTableEl.getMultiSelectedIndex().size()) {
 					usersTableEl.setErrorKey("error.selected.identities.greater.room", new String[] {maxMeetingParticipants.toString()});
 					allOk &= false;

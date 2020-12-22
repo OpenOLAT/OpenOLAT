@@ -24,6 +24,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Random;
@@ -34,6 +35,8 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.appointments.ParticipationResult.Status;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.teams.TeamsMeeting;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -74,6 +77,128 @@ public class AppointmentsServiceTest extends OlatTestCase {
 						organizerNew2)
 				.doesNotContain(
 						organizerDelete);
+	}
+	
+	@Test
+	public void shouldAddBBBMeetings() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Topic topic = createRandomTopic();
+		String title = random();
+		topic.setTitle(title);
+		String description = random();
+		topic.setDescription(description);
+		topic = sut.updateTopic(topic);
+		dbInstance.commitAndCloseSession();
+		Appointment appointment = sut.createUnsavedAppointment(topic);
+		Date start = new GregorianCalendar(2020, 10, 4, 10, 15, 00).getTime();
+		appointment.setStart(start);
+		Date end = new GregorianCalendar(2020, 10, 4, 11, 30, 00).getTime();
+		appointment.setEnd(end);
+		appointment = sut.saveAppointment(appointment);
+		appointment = sut.addBBBMeeting(appointment, identity);
+		dbInstance.commitAndCloseSession();
+		
+		SoftAssertions softly = new SoftAssertions();
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setAppointment(appointment);
+		BigBlueButtonMeeting bbbMeeting = sut.getAppointments(params).get(0).getBBBMeeting();
+		softly.assertThat(bbbMeeting.getName()).as("Name").isEqualTo(title);
+		softly.assertThat(bbbMeeting.getDescription()).as("Description").isEqualTo(description);
+		softly.assertThat(bbbMeeting.getStartDate()).as("Start").isCloseTo(start, 1000);
+		softly.assertThat(bbbMeeting.getEndDate()).as("End").isCloseTo(end, 1000);
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldAddTeamsMeetings() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Topic topic = createRandomTopic();
+		String title = random();
+		topic.setTitle(title);
+		String description = random();
+		topic.setDescription(description);
+		topic = sut.updateTopic(topic);
+		dbInstance.commitAndCloseSession();
+		Appointment appointment = sut.createUnsavedAppointment(topic);
+		Date start = new GregorianCalendar(2020, 10, 4, 10, 15, 00).getTime();
+		appointment.setStart(start);
+		Date end = new GregorianCalendar(2020, 10, 4, 11, 30, 00).getTime();
+		appointment.setEnd(end);
+		appointment = sut.saveAppointment(appointment);
+		appointment = sut.addTeamsMeeting(appointment, identity);
+		dbInstance.commitAndCloseSession();
+		
+		SoftAssertions softly = new SoftAssertions();
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setAppointment(appointment);
+		TeamsMeeting teamsMeeting = sut.getAppointments(params).get(0).getTeamsMeeting();
+		softly.assertThat(teamsMeeting.getSubject()).as("Subject").isEqualTo(title);
+		softly.assertThat(teamsMeeting.getDescription()).as("Description").isEqualTo(description);
+		softly.assertThat(teamsMeeting.getStartDate()).as("Start").isCloseTo(start, 1000);
+		softly.assertThat(teamsMeeting.getEndDate()).as("End").isCloseTo(end, 1000);
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldSyncTopicToBBBMeetings() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Topic topic = createRandomTopic();
+		topic.setTitle(random());
+		topic.setDescription(random());
+		topic = sut.updateTopic(topic);
+		dbInstance.commitAndCloseSession();
+		Appointment appointment = sut.createUnsavedAppointment(topic);
+		appointment.setStart(new Date());
+		appointment.setEnd(new Date());
+		appointment = sut.saveAppointment(appointment);
+		appointment = sut.addBBBMeeting(appointment, identity);
+		dbInstance.commitAndCloseSession();
+		
+		String title = random();
+		topic.setTitle(title);
+		String description = random();
+		topic.setDescription(description);
+		topic = sut.updateTopic(topic);
+		dbInstance.commitAndCloseSession();
+		
+		SoftAssertions softly = new SoftAssertions();
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setAppointment(appointment);
+		BigBlueButtonMeeting bbbMeeting = sut.getAppointments(params).get(0).getBBBMeeting();
+		softly.assertThat(bbbMeeting.getName()).as("Name").isEqualTo(title);
+		softly.assertThat(bbbMeeting.getDescription()).as("Description").isEqualTo(description);
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldSyncTopicToTeamsMeetings() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Topic topic = createRandomTopic();
+		topic.setTitle(random());
+		topic.setDescription(random());
+		topic = sut.updateTopic(topic);
+		dbInstance.commitAndCloseSession();
+		Appointment appointment = sut.createUnsavedAppointment(topic);
+		appointment.setStart(new Date());
+		appointment.setEnd(new Date());
+		appointment = sut.saveAppointment(appointment);
+		appointment = sut.addTeamsMeeting(appointment, identity);
+		dbInstance.commitAndCloseSession();
+		
+		String title = random();
+		topic.setTitle(title);
+		String description = random();
+		topic.setDescription(description);
+		topic = sut.updateTopic(topic);
+		dbInstance.commitAndCloseSession();
+		
+		SoftAssertions softly = new SoftAssertions();
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setAppointment(appointment);
+		TeamsMeeting teamsMeeting = sut.getAppointments(params).get(0).getTeamsMeeting();
+		softly.assertThat(teamsMeeting.getSubject()).as("Name").isEqualTo(title);
+		softly.assertThat(teamsMeeting.getDescription()).as("Description").isEqualTo(description);
+		softly.assertAll();
 	}
 	
 	@Test

@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -55,9 +56,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.id.Identity;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -65,18 +64,25 @@ import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight.Type;
-import org.olat.modules.bigbluebutton.BigBlueButtonDispatcher;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingsCalendarController;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.ui.EditTeamsMeetingController;
+import org.olat.modules.teams.ui.TeamsMeetingsCalendarController;
+import org.olat.modules.teams.ui.TeamsUIHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.microsoft.graph.models.generated.AccessLevel;
+import com.microsoft.graph.models.generated.LobbyBypassScope;
+import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
 
 /**
  * 
@@ -87,9 +93,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AppointmentCreateController extends FormBasicController {
 	
 	private static final String CMD_DURATION = "dur_";
-	private static final String KEY_ON = "on";
-	private static final String[] KEYS_ON = new String[] { KEY_ON };
+	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] KEYS_YES_NO = new String[] { "yes", "no" };
+	private static final String KEY_NO = "no";
+	private static final String KEY_BIGBLUEBUTTON = "bbb";
+	private static final String KEY_TEAMS = "teams";
 	private static final String KEY_MULTI_PARTICIPATION = "multi.participation";
 	private static final String KEY_COACH_CONFIRMATION = "coach.confirmation";
 	private static final String KEY_PARTICIPATION_VISIBLE = "participation.visible";
@@ -114,18 +122,28 @@ public class AppointmentCreateController extends FormBasicController {
 	private FormLayoutContainer startEndCont;
 	private MultipleSelectionElement recurringDaysOfWeekEl;
 	private DateChooser recurringLastEl;
-	private SpacerElement bbbSpacer;
-	private MultipleSelectionElement bbbRoomEl;
-	private TextElement externalLinkEl;
-	private FormLink openCalLink;
-	private TextElement leadTimeEl;
-	private TextElement followupTimeEl;
+	private SpacerElement meetingSpacer;
+	private SingleSelection meetingEl;
+	// BigBlueButton
+	private FormLink bbbOpenCalLink;
+	private TextElement bbbLeadTimeEl;
+	private TextElement bbbFollowupTimeEl;
 	private TextElement welcomeEl;
 	private SingleSelection templateEl;
 	private SingleSelection recordEl;
 	private SingleSelection layoutEl;
+	// Teams
+	private StaticTextElement teamsCreatorEl;
+	private FormLink teamsOpenCalLink;
+	private TextElement teamsLeadTimeEl;
+	private TextElement teamsFollowupTimeEl;
+	private SingleSelection accessLevelEl;
+	private SingleSelection presentersEl;
+	private MultipleSelectionElement annoncementEl;
+	private SingleSelection lobbyEl;
 	
-	private BigBlueButtonMeetingsCalendarController calCtr;
+	private BigBlueButtonMeetingsCalendarController bbbCalendarCtr;
+	private TeamsMeetingsCalendarController teamsCalendarCtr;
 	private CloseableModalController cmc;
 	
 	private RepositoryEntry entry;
@@ -134,6 +152,7 @@ public class AppointmentCreateController extends FormBasicController {
 	private List<Identity> coaches;
 	private AppointmentInputType appointmentInputType;
 	private List<BigBlueButtonMeetingTemplate> templates;
+	private final boolean teamsMeetingExtendedOptionsEnabled;
 	private List<AppointmentWrapper> startDurationWrappers = new ArrayList<>();
 	private List<AppointmentWrapper> startEndWrappers = new ArrayList<>();
 	private boolean multiParticipationsSelected = true;
@@ -152,9 +171,11 @@ public class AppointmentCreateController extends FormBasicController {
 			String subIdent) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(EditTeamsMeetingController.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.appointmentInputType = AppointmentInputType.startDuration;
+		this.teamsMeetingExtendedOptionsEnabled = appointmentsService.isTeamsOnlineMeetingExtendedOptionsEnabled();
 		
 		coaches = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.coach.name());
 		
@@ -165,10 +186,12 @@ public class AppointmentCreateController extends FormBasicController {
 	public AppointmentCreateController(UserRequest ureq, WindowControl wControl, Topic topic, AppointmentInputType appointmentInputType) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(EditTeamsMeetingController.class, getLocale(), getTranslator()));
 		this.entry = topic.getEntry();
 		this.subIdent = topic.getSubIdent();
 		this.topic = topic;
 		this.appointmentInputType  = appointmentInputType;
+		this.teamsMeetingExtendedOptionsEnabled = appointmentsService.isTeamsOnlineMeetingExtendedOptionsEnabled();
 		
 		initForm(ureq);
 		updateUI();
@@ -280,13 +303,24 @@ public class AppointmentCreateController extends FormBasicController {
 		recurringLastEl = uifactory.addDateChooser("appointments.recurring.last", null, formLayout);
 		recurringLastEl.setMandatory(true);
 		
+		if (appointmentsService.isBigBlueButtonEnabled() || appointmentsService.isTeamsEnabled()) {
+			meetingSpacer = uifactory.addSpacerElement("meeting.spacer", formLayout, false);
+			
+			KeyValues meetingKV = new KeyValues();
+			meetingKV.add(entry(KEY_NO, translate("appointment.meeting.no")));
+			if (appointmentsService.isBigBlueButtonEnabled()) {
+				meetingKV.add(entry(KEY_BIGBLUEBUTTON, translate("appointment.meeting.bigbluebutton")));
+			}
+			if (appointmentsService.isTeamsEnabled()) {
+				meetingKV.add(entry(KEY_TEAMS, translate("appointment.meeting.teams")));
+			}
+			meetingEl = uifactory.addRadiosHorizontal("appointment.meeting", "appointment.meeting", formLayout,
+					meetingKV.keys(), meetingKV.values());
+			meetingEl.addActionListener(FormEvent.ONCHANGE);
+			meetingEl.select(KEY_NO, true);
+		}
+		
 		if (appointmentsService.isBigBlueButtonEnabled()) {
-			bbbSpacer = uifactory.addSpacerElement("bbb.spacer", formLayout, false);
-			
-			String[] onValues = TranslatorHelper.translateAll(getTranslator(), KEYS_ON);
-			bbbRoomEl = uifactory.addCheckboxesHorizontal("appointment.bbb.room", "appointment.bbb.room", formLayout, KEYS_ON, onValues);
-			bbbRoomEl.addActionListener(FormEvent.ONCHANGE);
-			
 			welcomeEl = uifactory.addRichTextElementForStringDataMinimalistic("meeting.welcome", "meeting.welcome", "", 8, 60, formLayout, getWindowControl());
 			
 			KeyValues templatesKV = new KeyValues();
@@ -317,21 +351,59 @@ public class AppointmentCreateController extends FormBasicController {
 			}
 			layoutEl.setVisible(layoutEl.getKeys().length > 1);
 			
-			String externalLink = CodeHelper.getForeverUniqueID() + "";
-			externalLinkEl = uifactory.addTextElement("meeting.external.users", 64, externalLink, formLayout);
-			externalLinkEl.setPlaceholderKey("meeting.external.users.empty", null);
-			externalLinkEl.setHelpTextKey("meeting.external.users.help", null);
-			externalLinkEl.addActionListener(FormEvent.ONCHANGE);
-			externalLinkEl.setExampleKey("noTransOnlyParam", new String[] {BigBlueButtonDispatcher.getMeetingUrl(externalLink)});
+			bbbOpenCalLink = uifactory.addFormLink("calendar.open", formLayout);
+			bbbOpenCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, null, null, recordEl, templates);
 			
-			openCalLink = uifactory.addFormLink("calendar.open", formLayout);
-			openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, null, recordEl, templates);
+			bbbLeadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, null, formLayout);
+			bbbLeadTimeEl.setExampleKey("meeting.leadTime.explain", null);
 			
-			leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, null, formLayout);
-			leadTimeEl.setExampleKey("meeting.leadTime.explain", null);
+			bbbFollowupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, null, formLayout);
+		}
+		
+		if (appointmentsService.isTeamsEnabled()) {
+			String creatorFullName = userManager.getUserDisplayName(getIdentity());
+			teamsCreatorEl = uifactory.addStaticTextElement("meeting.creator.teams", "meeting.creator", creatorFullName, formLayout);
 			
-			followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, null, formLayout);
+			teamsOpenCalLink = uifactory.addFormLink("calendar.open.teams", "calendar.open", null, formLayout, Link.LINK);
+			teamsOpenCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
+			
+			teamsLeadTimeEl = uifactory.addTextElement("meeting.leadTime.teams", "meeting.leadTime", 8, null, formLayout);
+			teamsLeadTimeEl.setExampleKey("meeting.leadTime.explain", null);
+			
+			teamsFollowupTimeEl = uifactory.addTextElement("meeting.followupTime.teams", "meeting.followupTime", 8, null, formLayout);
+			
+			KeyValues accessKeyValues = new KeyValues();
+			String organisation = appointmentsService.getTeamsTenantOrganisation();
+			accessKeyValues.add(KeyValues.entry(AccessLevel.EVERYONE.name(), translate("meeting.accesslevel.everyone")));
+			accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE.name(),
+					translate("meeting.accesslevel.same.enterprise", new String[] { organisation })));
+			accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE_AND_FEDERATED.name(),
+					translate("meeting.accesslevel.same.enterprise.federated", new String[] { organisation })));
+			accessLevelEl = uifactory.addDropdownSingleselect("meeting.accesslevel", formLayout, accessKeyValues.keys(), accessKeyValues.values());
+			accessLevelEl.setMandatory(true);
+
+			KeyValues presentersKeyValues = new KeyValues();
+			presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), translate("meeting.presenters.role")));
+			presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.ORGANIZATION.name(), translate("meeting.presenters.organization")));
+			presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.EVERYONE.name(), translate("meeting.presenters.everyone")));
+			presentersEl = uifactory.addDropdownSingleselect("meeting.presenters", formLayout, presentersKeyValues.keys(), presentersKeyValues.values());
+			presentersEl.setMandatory(true);
+			
+			String[] onValues = new String[] { translate("meeting.annoncement.on") };
+			annoncementEl = uifactory.addCheckboxesHorizontal("meeting.annoncement", formLayout, onKeys, onValues);
+			
+			KeyValues lobbyKeyValues = new KeyValues();
+			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.EVERYONE.name(), translate("meeting.lobby.bypass.everyone")));
+			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZATION.name(),
+					translate("meeting.lobby.bypass.organization", new String[] { organisation })));
+			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZATION_AND_FEDERATED.name(),
+					translate("meeting.lobby.bypass.same.enterprise.federated", new String[] { organisation })));
+			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZER.name(), translate("meeting.lobby.bypass.organizer")));
+			lobbyEl = uifactory.addDropdownSingleselect("meeting.lobby.bypass", formLayout, lobbyKeyValues.keys(), lobbyKeyValues.values());
+			lobbyEl.setMandatory(true);
+
+			TeamsUIHelper.setDefaults(accessLevelEl, presentersEl, lobbyEl, null, teamsMeetingExtendedOptionsEnabled);
 		}
 		
 		// Buttons
@@ -369,18 +441,29 @@ public class AppointmentCreateController extends FormBasicController {
 		recurringDaysOfWeekEl.setVisible(recurring);
 		recurringLastEl.setVisible(recurring);
 		
-		if (bbbRoomEl != null) {
-			boolean bbbRoom = bbbRoomEl.isAtLeastSelected(1);
-			bbbSpacer.setVisible(bbbRoom);
+		if (templateEl != null) {
+			boolean bbbRoom = meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_BIGBLUEBUTTON);
+			meetingSpacer.setVisible(bbbRoom);
 			templateEl.setVisible(bbbRoom);
-			externalLinkEl.setVisible(bbbRoom);
-			openCalLink.setVisible(bbbRoom);
-			leadTimeEl.setVisible(bbbRoom);
-			followupTimeEl.setVisible(bbbRoom);
+			bbbOpenCalLink.setVisible(bbbRoom);
+			bbbLeadTimeEl.setVisible(bbbRoom);
+			bbbFollowupTimeEl.setVisible(bbbRoom);
 			welcomeEl.setVisible(bbbRoom);
 			templateEl.setVisible(bbbRoom);
 			recordEl.setVisible(bbbRoom && BigBlueButtonUIHelper.isRecord(getSelectedTemplate(templateEl, templates)));
 			layoutEl.setVisible(bbbRoom);
+		}
+		
+		if (accessLevelEl != null) {
+			boolean teamsMeeting = meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_TEAMS);
+			teamsCreatorEl.setVisible(teamsMeeting);
+			teamsOpenCalLink.setVisible(teamsMeeting);
+			teamsLeadTimeEl.setVisible(teamsMeeting);
+			teamsFollowupTimeEl.setVisible(teamsMeeting);
+			accessLevelEl.setVisible(teamsMeeting);
+			presentersEl.setVisible(teamsMeeting);
+			annoncementEl.setVisible(teamsMeeting && teamsMeetingExtendedOptionsEnabled);
+			lobbyEl.setVisible(teamsMeeting);
 		}
 	}
 
@@ -392,7 +475,10 @@ public class AppointmentCreateController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (calCtr == source) {
+		if (bbbCalendarCtr == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if (teamsCalendarCtr == source) {
 			cmc.deactivate();
 			cleanUp();
 		} else if (cmc == source) {
@@ -402,9 +488,11 @@ public class AppointmentCreateController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(calCtr);
+		removeAsListenerAndDispose(teamsCalendarCtr);
+		removeAsListenerAndDispose(bbbCalendarCtr);
 		removeAsListenerAndDispose(cmc);
-		calCtr = null;
+		teamsCalendarCtr = null;
+		bbbCalendarCtr = null;
 		cmc = null;
 	}
 
@@ -422,16 +510,16 @@ public class AppointmentCreateController extends FormBasicController {
 				appointmentInputType = AppointmentInputType.valueOf(appointmentInputTypeEl.getSelectedKey());
 			}
 			updateUI();
-		} else if (source == bbbRoomEl) {
+		} else if (source == meetingEl) {
 			updateUI();
 		} else if (templateEl == source) {
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, null, recordEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, null, null, recordEl, templates);
 			boolean webcamAvailable = isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
-		} else if (openCalLink == source) {
-			doOpenCalendar(ureq);
-		} else if (externalLinkEl == source) {
-			BigBlueButtonUIHelper.validateReadableIdentifier(externalLinkEl, null);
+		} else if (bbbOpenCalLink == source) {
+			doOpenBBBCalendar(ureq);
+		} else if (teamsOpenCalLink == source) {
+			doOpenTeamsCalendar(ureq);
 		} else if (source instanceof DateChooser) {
 			DateChooser dateChooser = (DateChooser)source;
 			AppointmentWrapper wrapper = (AppointmentWrapper)dateChooser.getUserObject();
@@ -569,10 +657,8 @@ public class AppointmentCreateController extends FormBasicController {
 		
 		boolean bbbOk = true;
 		if (templateEl != null && templateEl.isVisible()) {
-			bbbOk &= BigBlueButtonUIHelper.validateReadableIdentifier(externalLinkEl, null);
-			
-			bbbOk &= BigBlueButtonUIHelper.validateTime(leadTimeEl, 15l);
-			bbbOk &= BigBlueButtonUIHelper.validateTime(followupTimeEl, 15l);
+			bbbOk &= BigBlueButtonUIHelper.validateTime(bbbLeadTimeEl, 15l);
+			bbbOk &= BigBlueButtonUIHelper.validateTime(bbbFollowupTimeEl, 15l);
 			
 			templateEl.clearError();
 			if(!templateEl.isOneSelected()) {
@@ -597,7 +683,7 @@ public class AppointmentCreateController extends FormBasicController {
 				}
 				
 				if (AppointmentInputType.recurring == appointmentInputType) {
-					allOk &= BigBlueButtonUIHelper.validateDuration(recurringFirstEl, leadTimeEl, followupTimeEl, template);
+					allOk &= BigBlueButtonUIHelper.validateDuration(recurringFirstEl, bbbLeadTimeEl, bbbFollowupTimeEl, template);
 					if (!recurringFirstEl.hasError() && !validateRecurringSlot(template)) {
 						recurringFirstEl.setErrorKey("server.overloaded", new String[] { null });
 						bbbOk &= false;
@@ -610,10 +696,10 @@ public class AppointmentCreateController extends FormBasicController {
 						startEl.clearError();
 						endEl.clearError();
 						if (startEl.getDate() != null && endEl.getDate() != null) {
-							if (!BigBlueButtonUIHelper.validateDuration(startEl, leadTimeEl, endEl, followupTimeEl, template)) {
+							if (!BigBlueButtonUIHelper.validateDuration(startEl, bbbLeadTimeEl, endEl, bbbFollowupTimeEl, template)) {
 								bbbOk &= false;
 							}
-							if (!BigBlueButtonUIHelper.validateSlot(startEl, leadTimeEl, endEl, followupTimeEl, null, template)) {
+							if (!BigBlueButtonUIHelper.validateSlot(startEl, bbbLeadTimeEl, endEl, bbbFollowupTimeEl, null, template)) {
 								bbbOk &= false;
 							}
 						}
@@ -629,8 +715,8 @@ public class AppointmentCreateController extends FormBasicController {
 	}
 	
 	private boolean validateRecurringSlot(BigBlueButtonMeetingTemplate template) {
-		long leadTime = BigBlueButtonUIHelper.getLongOrZero(leadTimeEl);
-		long followupTime = BigBlueButtonUIHelper.getLongOrZero(followupTimeEl);
+		long leadTime = BigBlueButtonUIHelper.getLongOrZero(bbbLeadTimeEl);
+		long followupTime = BigBlueButtonUIHelper.getLongOrZero(bbbFollowupTimeEl);
 		
 		Date firstStart = recurringFirstEl.getDate();
 		Date firstEnd = recurringFirstEl.getSecondDate();
@@ -749,7 +835,8 @@ public class AppointmentCreateController extends FormBasicController {
 					appointment.setMaxParticipations(maxParticipations);
 				}
 				
-				appointment = addMeeting(appointment);
+				appointment = addBBBMeeting(appointment);
+				appointment = addTeamsMeeting(appointment);
 				appointmentsService.saveAppointment(appointment);
 			}
 		}
@@ -790,39 +877,29 @@ public class AppointmentCreateController extends FormBasicController {
 				appointment.setMaxParticipations(maxParticipations);
 			}
 			
-			appointment = addMeeting(appointment);
+			appointment = addBBBMeeting(appointment);
+			appointment = addTeamsMeeting(appointment);
 			appointmentsService.saveAppointment(appointment);
 		}
 	}
 
-	private Appointment addMeeting(Appointment appointment) {
-		if (bbbRoomEl != null && bbbRoomEl.isAtLeastSelected(1)) {
-			appointment = appointmentsService.addMeeting(appointment, getIdentity());
-			BigBlueButtonMeeting meeting = appointment.getMeeting();
+	private Appointment addBBBMeeting(Appointment appointment) {
+		if (meetingEl != null && meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_BIGBLUEBUTTON)) {
+			appointment = appointmentsService.addBBBMeeting(appointment, getIdentity());
+			BigBlueButtonMeeting meeting = appointment.getBBBMeeting();
 			
-			String mainPresenters = appointmentsService.getMainPresenters(topic);
+			String mainPresenters = appointmentsService.getFormattedOrganizers(topic);
 			meeting.setMainPresenter(mainPresenters);
 			
-			meeting.setName(topic.getTitle());
-			meeting.setDescription(topic.getDescription());
 			meeting.setWelcome(welcomeEl.getValue());
 			BigBlueButtonMeetingTemplate template = getSelectedTemplate(templateEl, templates);
 			meeting.setTemplate(template);
 			
-			if(template != null && template.isExternalUsersAllowed()
-					&& externalLinkEl.isVisible() && StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
-				meeting.setReadableIdentifier(externalLinkEl.getValue());
-			} else {
-				meeting.setReadableIdentifier(null);
-			}
-			
 			meeting.setPermanent(false);
 		
-			meeting.setStartDate(appointment.getStart());
-			meeting.setEndDate(appointment.getEnd());
-			long leadTime = BigBlueButtonUIHelper.getLongOrZero(leadTimeEl);
+			long leadTime = BigBlueButtonUIHelper.getLongOrZero(bbbLeadTimeEl);
 			meeting.setLeadTime(leadTime);
-			long followupTime = BigBlueButtonUIHelper.getLongOrZero(followupTimeEl);
+			long followupTime = BigBlueButtonUIHelper.getLongOrZero(bbbFollowupTimeEl);
 			meeting.setFollowupTime(followupTime);
 			
 			if(layoutEl.isVisible() && layoutEl.isOneSelected()) {
@@ -840,6 +917,27 @@ public class AppointmentCreateController extends FormBasicController {
 		}
 		return appointment;
 	}
+	
+	private Appointment addTeamsMeeting(Appointment appointment) {
+		if (meetingEl != null && meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_TEAMS)) {
+			appointment = appointmentsService.addTeamsMeeting(appointment, getIdentity());
+			TeamsMeeting teamsMeeting = appointment.getTeamsMeeting();
+			
+			long leadTime = TeamsUIHelper.getLongOrZero(teamsLeadTimeEl);
+			teamsMeeting.setLeadTime(leadTime);
+			long followupTime = TeamsUIHelper.getLongOrZero(teamsFollowupTimeEl);
+			teamsMeeting.setFollowupTime(followupTime);
+			
+			teamsMeeting.setPermanent(false);
+			teamsMeeting.setMainPresenter(appointmentsService.getFormattedOrganizers(topic));
+			teamsMeeting.setAccessLevel(accessLevelEl.getSelectedKey());
+			teamsMeeting.setAllowedPresenters(presentersEl.getSelectedKey());
+			teamsMeeting.setEntryExitAnnouncement(annoncementEl.isAtLeastSelected(1));
+			teamsMeeting.setLobbyBypassScope(lobbyEl.getSelectedKey());
+		}
+		return appointment;
+	}
+
 	
 	private void doCreateStartDurationWrapper(AppointmentWrapper after) {
 		AppointmentWrapper wrapper = new AppointmentWrapper();
@@ -955,18 +1053,30 @@ public class AppointmentCreateController extends FormBasicController {
 		}
 	}
 	
-	private void doOpenCalendar(UserRequest ureq) {
-		removeAsListenerAndDispose(calCtr);
+	private void doOpenBBBCalendar(UserRequest ureq) {
+		removeAsListenerAndDispose(bbbCalendarCtr);
 		removeAsListenerAndDispose(cmc);
 
-		calCtr = new BigBlueButtonMeetingsCalendarController(ureq, getWindowControl());
-		listenTo(calCtr);
-		cmc = new CloseableModalController(getWindowControl(), "close", calCtr.getInitialComponent(), true,
+		bbbCalendarCtr = new BigBlueButtonMeetingsCalendarController(ureq, getWindowControl());
+		listenTo(bbbCalendarCtr);
+		cmc = new CloseableModalController(getWindowControl(), "close", bbbCalendarCtr.getInitialComponent(), true,
 				translate("calendar.open"));
 		cmc.activate();
 		listenTo(cmc);
 	}
 
+	private void doOpenTeamsCalendar(UserRequest ureq) {
+		removeAsListenerAndDispose(teamsCalendarCtr);
+		removeAsListenerAndDispose(cmc);
+
+		teamsCalendarCtr = new TeamsMeetingsCalendarController(ureq, getWindowControl());
+		listenTo(teamsCalendarCtr);
+		cmc = new CloseableModalController(getWindowControl(), "close", teamsCalendarCtr.getInitialComponent(), true,
+				translate("calendar.open"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
 	@Override
 	protected void doDispose() {
 		//

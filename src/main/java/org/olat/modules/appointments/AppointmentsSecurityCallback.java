@@ -20,6 +20,7 @@
 package org.olat.modules.appointments;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * 
@@ -41,10 +42,13 @@ public interface AppointmentsSecurityCallback {
 	
 	public boolean canSelectAppointments();
 	
-	public boolean canJoinMeeting(Appointment appointment, Collection<Organizer> organizers, Collection<Participation> participations);
+	public boolean canJoinBBBMeeting(Appointment appointment, Collection<Organizer> organizers, Collection<Participation> participations);
 	
 	public boolean canWatchRecording(Collection<Organizer> organizers, Collection<Participation> participations);
 
+	public boolean canJoinTeamsMeeting(Appointment appointment, Collection<Organizer> organizers, List<Participation> participations);
+	
 	public boolean canSubscribe();
+
 	
 }

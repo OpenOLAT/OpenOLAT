@@ -84,4 +84,6 @@ alter table o_teams_attendee add constraint teams_att_meet_idx foreign key (fk_m
 create index idx_teams_att_meet_idx on o_teams_attendee(fk_meeting_id);
 
 
-
+alter table o_ap_appointment add fk_teams_id bigint;
+alter table o_ap_appointment add constraint ap_appointment_teams_idx foreign key (fk_teams_id) references o_teams_meeting (id);
+create index idx_ap_appointment_teams_idx on o_ap_appointment(fk_teams_id);

@@ -121,21 +121,11 @@ public class EditTeamsMeetingController extends FormBasicController {
 		this.subIdent = meeting.getSubIdent();
 		this.group = meeting.getBusinessGroup();
 		this.meeting = meeting;
-		editable = isEditable(meeting, ureq);
-		editableGraph = isEditableGraph(meeting);
+		editable = TeamsUIHelper.isEditable(meeting, ureq);
+		editableGraph = TeamsUIHelper.isEditableGraph(meeting);
 		meetingExtendedOptionsEnabled = teamsModule.isOnlineMeetingExtendedOptionsEnabled();
 		
 		initForm(ureq);
-	}
-	
-	private boolean isEditable(TeamsMeeting m, UserRequest ureq) {
-		Date now = ureq.getRequestTimestamp();
-		return m == null || m.isPermanent()
-				|| (m.getEndWithFollowupTime() != null && m.getEndWithFollowupTime().compareTo(now) > 0);
-	}
-	
-	private boolean isEditableGraph(TeamsMeeting m) {
-		return m == null || !StringHelper.containsNonWhitespace(m.getOnlineMeetingId());
 	}
 
 	@Override

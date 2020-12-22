@@ -78,6 +78,13 @@ import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsMeetingDeletionHandler;
+import org.olat.modules.teams.TeamsModule;
+import org.olat.modules.teams.TeamsService;
+import org.olat.modules.teams.model.TeamsError;
+import org.olat.modules.teams.model.TeamsErrorCodes;
+import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
@@ -92,7 +99,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButtonMeetingDeletionHandler {
+public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButtonMeetingDeletionHandler, TeamsMeetingDeletionHandler {
 	
 	private static final String TOPIC_USER_RESTRICTION_ROLE = GroupRoles.participant.name();
 
@@ -124,6 +131,10 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
+	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
+	private TeamsService teamsService;
 
 	@Override
 	public Topic createTopic(RepositoryEntry entry, String subIdent) {
@@ -132,6 +143,13 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 
 	@Override
 	public Topic updateTopic(Topic topic) {
+		Topic updated = topicDao.updateTopic(topic);
+		syncCalendar(updated);
+		syncMeetings(updated);
+		return updated;
+	}
+
+	private void syncCalendar(Topic topic) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setTopic(topic);
 		params.setFetchTopic(true);
@@ -143,8 +161,6 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		if (!appointments.isEmpty()) {
 			calendarSyncher.syncCalendars(topic, appointments);
 		}
-		
-		return topicDao.updateTopic(topic);
 	}
 
 	@Override
@@ -268,7 +284,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			deleteOrganizers(topic, organizersToDelete);
 		}
 		
-		syncMeetingPresenters(topic, identities);
+		syncMeetings(topic, identities);
 	}
 
 	private List<Organizer> createOrganizers(Topic topic, Collection<Identity> identities) {
@@ -307,17 +323,40 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			
 		organizerDao.deleteOrganizers(organizers);
 	}
-
-	private void syncMeetingPresenters(Topic topic, Collection<Identity> identities) {
+	
+	private void syncMeetings(Topic topic) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setTopic(topic);
 		params.setHasMeeting(true);
 		List<Appointment> appointments = appointmentDao.loadAppointments(params);
 		if (!appointments.isEmpty()) {
-			List<Long> identityKeys = identities.stream().map(Identity::getKey).collect(Collectors.toList());
-			String mainPresenters = getMainPresenters(identityKeys);
 			for (Appointment appointment : appointments) {
-				appointment.getMeeting().setMainPresenter(mainPresenters);
+				if (appointment.getBBBMeeting() != null) {
+					appointment.getBBBMeeting().setName(topic.getTitle());
+					appointment.getBBBMeeting().setDescription(topic.getDescription());
+				} else if (appointment.getTeamsMeeting() != null) {
+					appointment.getTeamsMeeting().setSubject(topic.getTitle());
+					appointment.getTeamsMeeting().setDescription(topic.getDescription());
+				}
+				saveAppointment(appointment);
+			}
+		}
+	}
+
+	private void syncMeetings(TopicRef topicRef, Collection<Identity> organizers) {
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setTopic(topicRef);
+		params.setHasMeeting(true);
+		List<Appointment> appointments = appointmentDao.loadAppointments(params);
+		if (!appointments.isEmpty()) {
+			List<Long> identityKeys = organizers.stream().map(Identity::getKey).collect(Collectors.toList());
+			String mainPresenters = getFormattedOrganizers(identityKeys);
+			for (Appointment appointment : appointments) {
+				if (appointment.getBBBMeeting() != null) {
+					appointment.getBBBMeeting().setMainPresenter(mainPresenters);
+				} else if (appointment.getTeamsMeeting() != null) {
+					appointment.getTeamsMeeting().setMainPresenter(mainPresenters);
+				}
 				saveAppointment(appointment);
 			}
 		}
@@ -331,6 +370,21 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	@Override
 	public List<Organizer> getOrganizers(RepositoryEntry entry, String subIdent) {
 		return organizerDao.loadOrganizers(entry, subIdent);
+	}
+
+	@Override
+	public String getFormattedOrganizers(Topic topic) {
+		List<Long> identityKeys = getOrganizers(topic).stream()
+				.map(organizer -> organizer.getIdentity().getKey())
+				.collect(Collectors.toList());
+		return getFormattedOrganizers(identityKeys);
+	}
+	
+	private String getFormattedOrganizers(Collection<Long> identityKeys) {
+		return identityKeys.stream()
+				.map(key -> userManager.getUserDisplayName(key))
+				.sorted(String.CASE_INSENSITIVE_ORDER)
+				.collect(Collectors.joining(" / "));
 	}
 
 	@Override
@@ -420,11 +474,15 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		if (Status.confirmed == appointment.getStatus() || Type.finding != appointment.getTopic().getType()) {
 			calendarSyncher.syncCalendars(appointment.getTopic(), singletonList(appointment));
 		}
-		BigBlueButtonMeeting meeting = appointment.getMeeting();
-		if (meeting != null) {
-			meeting = bigBlueButtonManager.updateMeeting(meeting);
+		BigBlueButtonMeeting bbbMeeting = appointment.getBBBMeeting();
+		if (bbbMeeting != null) {
+			bbbMeeting = bigBlueButtonManager.updateMeeting(bbbMeeting);
 		}
-		return appointmentDao.saveAppointment(appointment, meeting);
+		TeamsMeeting teamsMeeting = appointment.getTeamsMeeting();
+		if (teamsMeeting != null) {
+			teamsMeeting = teamsService.updateMeeting(teamsMeeting);
+		}
+		return appointmentDao.saveAppointment(appointment, bbbMeeting, teamsMeeting);
 	}
 	
 	@Override
@@ -733,22 +791,26 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	}
 
 	@Override
-	public Appointment addMeeting(Appointment appointment, Identity identity) {
+	public Appointment addBBBMeeting(Appointment appointment, Identity identity) {
 		Topic topic = appointment.getTopic();
 		RepositoryEntry entry = repositoryService.loadByKey(topic.getEntry().getKey());
 		String name = topic.getTitle();
 		String subIdent = topic.getSubIdent();
 		BigBlueButtonMeeting meeting = bigBlueButtonManager.createAndPersistMeeting(name, entry, subIdent, null, identity);
 		meeting.setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum.auto);
-		return appointmentDao.saveAppointment(appointment, meeting);
+		meeting.setDescription(topic.getDescription());
+		meeting.setStartDate(appointment.getStart());
+		meeting.setEndDate(appointment.getEnd());
+		meeting = bigBlueButtonManager.updateMeeting(meeting);
+		return appointmentDao.saveAppointment(appointment, meeting, null);
 	}
 
 	@Override
-	public Appointment removeMeeting(Appointment appointment) {
+	public Appointment removeBBBMeeting(Appointment appointment) {
 		Appointment updated = appointment;
-		BigBlueButtonMeeting meeting = appointment.getMeeting();
+		BigBlueButtonMeeting meeting = appointment.getBBBMeeting();
 		if (meeting != null) {
-			updated = appointmentDao.saveAppointment(appointment, null);
+			updated = appointmentDao.saveAppointment(appointment, null, appointment.getTeamsMeeting());
 			BigBlueButtonErrors errors = new BigBlueButtonErrors();
 			bigBlueButtonManager.deleteMeeting(meeting, errors);
 		}
@@ -758,16 +820,21 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	@Override
 	public void onBeforeDelete(BigBlueButtonMeeting meeting) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
-		params.setMeeting(meeting);
+		params.setBBBMeeting(meeting);
 		List<Appointment> appointments = appointmentDao.loadAppointments(params);
 		if (!appointments.isEmpty()) {
 			Appointment appointment = appointments.get(0);
-			appointmentDao.saveAppointment(appointment, null);
+			appointmentDao.saveAppointment(appointment, null, appointment.getTeamsMeeting());
 		}
 	}
 	
 	private void deleteMeeting(Appointment appointment) {
-		BigBlueButtonMeeting meeting = appointment.getMeeting();
+		deleteBBBMeeting(appointment);
+		deleteTeamsMeeting(appointment);
+	}
+
+	private void deleteBBBMeeting(Appointment appointment) {
+		BigBlueButtonMeeting meeting = appointment.getBBBMeeting();
 		if (meeting != null) {
 			BigBlueButtonErrors errors = new BigBlueButtonErrors();
 			bigBlueButtonManager.deleteMeeting(meeting, errors);
@@ -775,15 +842,20 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	}
 	
 	private void deleteMeetings(Collection<Appointment> appointments) {
+		deleteBBBMeetings(appointments);
+		deleteTeamsMeetings(appointments);
+	}
+
+	private void deleteBBBMeetings(Collection<Appointment> appointments) {
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		appointments.stream()
-				.map(Appointment::getMeeting)
+				.map(Appointment::getBBBMeeting)
 				.filter(Objects::nonNull)
 				.forEach(meeting -> bigBlueButtonManager.deleteMeeting(meeting, errors));
 	}
 
 	@Override
-	public String joinMeeting(Appointment appointment, Identity identity, BigBlueButtonErrors errors) {
+	public String joinBBBMeeting(Appointment appointment, Identity identity, BigBlueButtonErrors errors) {
 		// Check server
 		if (!isBigBlueButtonEnabled()) {
 			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.serverDisabled));
@@ -806,45 +878,30 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		}
 		
 		BigBlueButtonAttendeeRoles role = organizer? BigBlueButtonAttendeeRoles.moderator: BigBlueButtonAttendeeRoles.viewer;
-		return bigBlueButtonManager.join(appointment.getMeeting(), identity, null, role, null, errors);
+		return bigBlueButtonManager.join(appointment.getBBBMeeting(), identity, null, role, null, errors);
 	}
 
 	@Override
-	public String getMainPresenters(Topic topic) {
-		List<Long> identityKeys = getOrganizers(topic).stream()
-				.map(organizer -> organizer.getIdentity().getKey())
-				.collect(Collectors.toList());
-		return getMainPresenters(identityKeys);
-	}
-	
-	private String getMainPresenters(Collection<Long> identityKeys) {
-		return identityKeys.stream()
-				.map(key -> userManager.getUserDisplayName(key))
-				.sorted(String.CASE_INSENSITIVE_ORDER)
-				.collect(Collectors.joining(" / "));
-	}
-
-	@Override
-	public void syncRecorings(Topic topic) {
+	public void syncBBBRecorings(Topic topic) {
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setTopic(topic);
 		appointmentDao.loadAppointments(params).stream()
-				.map(Appointment::getMeeting)
+				.map(Appointment::getBBBMeeting)
 				.filter(Objects::nonNull)
 				.forEach(meeting -> bigBlueButtonManager.getRecordingAndReferences(meeting, errors));
 	}
 
 	@Override
-	public Map<Long, List<BigBlueButtonRecordingReference>> getRecordingReferences(List<Appointment> appointments) {
+	public Map<Long, List<BigBlueButtonRecordingReference>> getBBBRecordingReferences(List<Appointment> appointments) {
 		List<BigBlueButtonMeeting> meetings = appointments.stream()
-				.map(Appointment::getMeeting)
+				.map(Appointment::getBBBMeeting)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 		
 		// Sync recording of running and of just finished meetings
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
-		Predicate<BigBlueButtonMeeting> isRecordingSyncNeeded = getIsRecordingSyncNeeded();
+		Predicate<BigBlueButtonMeeting> isRecordingSyncNeeded = getIsBBBRecordingSyncNeeded();
 		meetings.stream()
 				.filter(isRecordingSyncNeeded)
 				.forEach(meeting -> bigBlueButtonManager.getRecordingAndReferences(meeting, errors));
@@ -858,8 +915,8 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		
 		Map<Long, List<BigBlueButtonRecordingReference>> appointmentKeyToRecordings = new HashMap<>();
 		for (Appointment appointment : appointments) {
-			if (appointment.getMeeting() != null) {
-				List<BigBlueButtonRecordingReference> recordings = meetingKeyToRecordings.get(appointment.getMeeting().getKey());
+			if (appointment.getBBBMeeting() != null) {
+				List<BigBlueButtonRecordingReference> recordings = meetingKeyToRecordings.get(appointment.getBBBMeeting().getKey());
 				if (recordings != null) {
 					appointmentKeyToRecordings.put(appointment.getKey(), recordings);
 				}
@@ -869,7 +926,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		return appointmentKeyToRecordings;
 	}
 
-	private Predicate<BigBlueButtonMeeting> getIsRecordingSyncNeeded() {
+	private Predicate<BigBlueButtonMeeting> getIsBBBRecordingSyncNeeded() {
 		Date now = new Date();
 		Date oneHourInPast = DateUtils.addHours(now, -1);
 		// The meeting has started and has not yet or recently (not more than one hour ago) ended.
@@ -877,13 +934,97 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	}
 
 	@Override
-	public String getRecordingUrl(UserSession usess, BigBlueButtonRecordingReference recordingReference) {
+	public String getBBBRecordingUrl(UserSession usess, BigBlueButtonRecordingReference recordingReference) {
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		Optional<BigBlueButtonRecording> recording = bigBlueButtonManager.getRecordingAndReferences(recordingReference.getMeeting(), errors).stream()
 				.filter(rr -> recordingReference.getRecordingId().equals(rr.getRecording().getRecordId()))
 				.map(BigBlueButtonRecordingWithReference::getRecording)
 				.findFirst();
 		return recording.isPresent()? bigBlueButtonManager.getRecordingUrl(usess, recording.get()): null;
+	}
+
+	@Override
+	public boolean isTeamsEnabled() {
+		return teamsModule.isEnabled();
+	}
+
+	@Override
+	public String getTeamsTenantOrganisation() {
+		return teamsModule.getTenantOrganisation();
+	}
+
+	@Override
+	public boolean isTeamsOnlineMeetingExtendedOptionsEnabled() {
+		return teamsModule.isOnlineMeetingExtendedOptionsEnabled();
+	}
+
+	@Override
+	public Appointment addTeamsMeeting(Appointment appointment, Identity identity) {
+		Topic topic = appointment.getTopic();
+		RepositoryEntry entry = repositoryService.loadByKey(topic.getEntry().getKey());
+		String name = topic.getTitle();
+		String subIdent = topic.getSubIdent();
+		TeamsMeeting meeting = teamsService.createMeeting(name, appointment.getStart(), appointment.getEnd(), entry,
+				subIdent, null, identity);
+		meeting.setDescription(topic.getDescription());
+		meeting.setStartDate(appointment.getStart());
+		meeting.setEndDate(appointment.getEnd());
+		meeting = teamsService.updateMeeting(meeting);
+		return appointmentDao.saveAppointment(appointment, null, meeting);
+	}
+
+	@Override
+	public Appointment removeTeamsMeeting(Appointment appointment) {
+		Appointment updated = appointment;
+		TeamsMeeting meeting = appointment.getTeamsMeeting();
+		if (meeting != null) {
+			updated = appointmentDao.saveAppointment(appointment, appointment.getBBBMeeting(), null);
+			teamsService.deleteMeeting(meeting);
+		}
+		return updated;
+	}
+
+	@Override
+	public void onBeforeDelete(TeamsMeeting meeting) {
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setTeamsMeeting(meeting);
+		List<Appointment> appointments = appointmentDao.loadAppointments(params);
+		if (!appointments.isEmpty()) {
+			Appointment appointment = appointments.get(0);
+			appointmentDao.saveAppointment(appointment, appointment.getBBBMeeting(), null);
+		}
+	}
+	
+	private void deleteTeamsMeeting(Appointment appointment) {
+		TeamsMeeting meeting = appointment.getTeamsMeeting();
+		if (meeting != null) {
+			teamsService.deleteMeeting(meeting);
+		}
+	}
+	
+	private void deleteTeamsMeetings(Collection<Appointment> appointments) {
+		appointments.stream()
+				.map(Appointment::getTeamsMeeting)
+				.filter(Objects::nonNull)
+				.forEach(meeting -> teamsService.deleteMeeting(meeting));
+	}
+
+	@Override
+	public TeamsMeeting joinTeamsMeeting(Appointment appointment, Identity identity, TeamsErrors errors) {
+		boolean organizer = organizerDao.loadOrganizers(appointment.getTopic()).stream()
+				.anyMatch(o -> o.getIdentity().getKey().equals(identity.getKey()));
+		boolean participation = false;
+		if (!organizer) {
+			ParticipationSearchParams params = new ParticipationSearchParams();
+			params.setAppointment(appointment);
+			params.setIdentity(identity);
+			participation = participationDao.loadParticipationCount(params).longValue() > 0;
+		}
+		if (!organizer && !participation) {
+			errors.append(new TeamsError(TeamsErrorCodes.unkown));
+			return null;
+		}
+		return teamsService.joinMeeting(appointment.getTeamsMeeting(), identity, organizer, false, errors);
 	}
 
 }

@@ -61,10 +61,12 @@ public class BigBlueButtonUIHelper {
 					templateEl.setExampleKey("template.explain.max.participants", args);
 				}
 			}
-			boolean visible = template != null && template.isExternalUsersAllowed();
-			externalLinkEl.setVisible(visible);
-			if(visible && !StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
-				externalLinkEl.setValue(Long.toString(CodeHelper.getForeverUniqueID()));
+			if (externalLinkEl != null) {
+				boolean visible = template != null && template.isExternalUsersAllowed();
+				externalLinkEl.setVisible(visible);
+				if(visible && !StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
+					externalLinkEl.setValue(Long.toString(CodeHelper.getForeverUniqueID()));
+				}
 			}
 			
 			if(recordEl != null) {
@@ -80,7 +82,9 @@ public class BigBlueButtonUIHelper {
 				}
 			}
 		} else {
-			externalLinkEl.setVisible(false);
+			if (externalLinkEl != null) {
+				externalLinkEl.setVisible(false);
+			}
 			if(recordEl != null) {
 				recordEl.setVisible(false);
 			}

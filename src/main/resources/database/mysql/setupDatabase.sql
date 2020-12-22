@@ -3220,6 +3220,7 @@ create table o_ap_appointment (
    a_max_participations integer,
    fk_topic_id bigint not null,
    fk_meeting_id bigint,
+   fk_teams_id bigint,
    primary key (id)
 );
 
@@ -4373,6 +4374,7 @@ alter table o_ap_topic_to_group add constraint ap_tg_topic_idx foreign key (fk_t
 create index idx_ap_tg_group_idx on o_ap_topic_to_group(fk_group_id);
 alter table o_ap_appointment add constraint ap_appointment_topic_idx foreign key (fk_topic_id) references o_ap_topic (id);
 alter table o_ap_appointment add constraint ap_appointment_meeting_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
+alter table o_ap_appointment add constraint ap_appointment_teams_idx foreign key (fk_teams_id) references o_teams_meeting (id);
 alter table o_ap_participation add constraint ap_part_appointment_idx foreign key (fk_appointment_id) references o_ap_appointment (id);
 alter table o_ap_participation add constraint ap_part_identity_idx foreign key (fk_identity_id) references o_bs_identity (id);
 

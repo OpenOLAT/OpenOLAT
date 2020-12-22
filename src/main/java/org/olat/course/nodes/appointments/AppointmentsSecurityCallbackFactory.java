@@ -21,6 +21,7 @@ package org.olat.course.nodes.appointments;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.AppointmentsCourseNode;
@@ -31,6 +32,7 @@ import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.Organizer;
 import org.olat.modules.appointments.Participation;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.teams.TeamsMeeting;
 
 /**
  * 
@@ -103,15 +105,15 @@ public class AppointmentsSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canJoinMeeting(Appointment appointment, Collection<Organizer> organizers, Collection<Participation> participations) {
+		public boolean canJoinBBBMeeting(Appointment appointment, Collection<Organizer> organizers, Collection<Participation> participations) {
 			if (readOnly 
 					|| appointment == null
-					|| appointment.getMeeting() == null
+					|| appointment.getBBBMeeting() == null
 					|| Appointment.Status.confirmed != appointment.getStatus()) {
 				return false;
 			}
 			
-			BigBlueButtonMeeting meeting = appointment.getMeeting();
+			BigBlueButtonMeeting meeting = appointment.getBBBMeeting();
 			boolean participation = isParticipation(participations);
 			boolean organizer = isOrganizer(organizers);
 			if (participation || organizer) {
@@ -126,6 +128,27 @@ public class AppointmentsSecurityCallbackFactory {
 		@Override
 		public boolean canWatchRecording(Collection<Organizer> organizers, Collection<Participation> participations) {
 			return isOrganizer(organizers) || isParticipation(participations);
+		}
+
+		@Override
+		public boolean canJoinTeamsMeeting(Appointment appointment, Collection<Organizer> organizers, List<Participation> participations) {
+			if (readOnly 
+					|| appointment == null
+					|| appointment.getTeamsMeeting() == null
+					|| Appointment.Status.confirmed != appointment.getStatus()) {
+				return false;
+			}
+			
+			TeamsMeeting meeting = appointment.getTeamsMeeting();
+			boolean participation = isParticipation(participations);
+			boolean organizer = isOrganizer(organizers);
+			if (participation || organizer) {
+				Date now = new Date();
+				Date start = organizer ? meeting.getStartWithLeadTime() : meeting.getStartDate();
+				Date end = meeting.getEndWithFollowupTime();
+				return !((start != null && start.compareTo(now) >= 0) || (end != null && end.compareTo(now) <= 0));
+			}
+			return false;
 		}
 		
 		private boolean isOrganizer(Collection<Organizer> organizers) {

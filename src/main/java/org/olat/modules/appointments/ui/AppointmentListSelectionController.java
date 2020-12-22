@@ -122,7 +122,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		}
 		
 		Map<Long, List<BigBlueButtonRecordingReference>> appointmentKeyToRecordingReferences = appointmentsService.isBigBlueButtonEnabled()
-				? appointmentsService.getRecordingReferences(appointments)
+				? appointmentsService.getBBBRecordingReferences(appointments)
 				: Collections.emptyMap();
 		
 		Date now = new Date();

@@ -805,7 +805,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 
 	private void doOpenRecording(UserRequest ureq, BigBlueButtonRecordingReference recordingReference) {
-		String url = appointmentsService.getRecordingUrl(ureq.getUserSession(), recordingReference);
+		String url = appointmentsService.getBBBRecordingUrl(ureq.getUserSession(), recordingReference);
 		if(StringHelper.containsNonWhitespace(url)) {
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		} else {

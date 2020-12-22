@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.teams.TeamsMeeting;
 
 /**
  * 
@@ -64,6 +65,8 @@ public interface Appointment extends AppointmentRef, ModifiedInfo, CreateInfo {
 	
 	public Topic getTopic();
 	
-	public BigBlueButtonMeeting getMeeting();
+	public BigBlueButtonMeeting getBBBMeeting();
+	
+	public TeamsMeeting getTeamsMeeting();
 	
 }

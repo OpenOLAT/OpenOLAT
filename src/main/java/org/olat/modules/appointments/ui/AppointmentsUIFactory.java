@@ -38,7 +38,7 @@ public class AppointmentsUIFactory {
 		StringBuilder sb = new StringBuilder();
 		
 		boolean hasLocation = StringHelper.containsNonWhitespace(appointement.getLocation());
-		boolean hasMeeting = appointement.getMeeting() != null;
+		boolean hasMeeting = appointement.getBBBMeeting() != null || appointement.getTeamsMeeting() != null;
 		if (hasLocation) {
 			sb.append(appointement.getLocation());
 		}

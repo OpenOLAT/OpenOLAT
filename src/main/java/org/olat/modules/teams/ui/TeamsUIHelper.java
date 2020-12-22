@@ -23,6 +23,7 @@ import java.net.URI;
 import java.util.Date;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -160,6 +161,16 @@ public class TeamsUIHelper {
 			sb.append("</li>");
 		}
 		return sb.append("</ul>").toString();
+	}
+	
+	public static boolean isEditable(TeamsMeeting m, UserRequest ureq) {
+		Date now = ureq.getRequestTimestamp();
+		return m == null || m.isPermanent()
+				|| (m.getEndWithFollowupTime() != null && m.getEndWithFollowupTime().compareTo(now) > 0);
+	}
+	
+	public static  boolean isEditableGraph(TeamsMeeting m) {
+		return m == null || !StringHelper.containsNonWhitespace(m.getOnlineMeetingId());
 	}
 	
 	private static TeamsService getTeamsService() {
