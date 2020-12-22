@@ -57,6 +57,18 @@ public class STFullyAssessedEvaluatorTest {
 	}
 	
 	@Test
+	public void shouldReturnTrueIfAllMandatoryChildrenAreFullyAssessedEvenIfItIsBlocked() {
+		Blocker blocker = new SequentialBlocker();
+		blocker.block();
+		AssessmentEvaluation childMandatoryAssessed = createAssessmentEvaluation(Boolean.TRUE, AssessmentObligation.mandatory);
+		List<AssessmentEvaluation> children = Arrays.asList(childMandatoryAssessed);
+		
+		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
+		
+		assertThat(fullyAssessed).isTrue();
+	}
+	
+	@Test
 	public void shouldReturnTrueIfItHasNoChildren() {
 		Blocker blocker = new SequentialBlocker();
 		
@@ -91,7 +103,30 @@ public class STFullyAssessedEvaluatorTest {
 		assertThat(blocker.isBlocked()).isTrue();
 	}
 	
-
+	@Test
+	public void shouldReturnTrueIfItHasOnlyOptionalChildren() {
+		Blocker blocker = new SequentialBlocker();
+		AssessmentEvaluation childOptoinalNotAssessed = createAssessmentEvaluation(Boolean.FALSE, AssessmentObligation.optional);
+		List<AssessmentEvaluation> children = Arrays.asList(childOptoinalNotAssessed);
+		
+		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
+		
+		assertThat(fullyAssessed).isTrue();
+	}
+	
+	@Test
+	public void shouldReturnFalseIfItHasOnlyOptionalChildrenButItIsBlocked() {
+		Blocker blocker = new SequentialBlocker();
+		blocker.block();
+		AssessmentEvaluation childOptoinalNotAssessed1 = createAssessmentEvaluation(Boolean.FALSE, AssessmentObligation.optional);
+		AssessmentEvaluation childOptoinalNotAssessed2 = createAssessmentEvaluation(null, AssessmentObligation.optional);
+		List<AssessmentEvaluation> children = Arrays.asList(childOptoinalNotAssessed1, childOptoinalNotAssessed2);
+		
+		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
+		
+		assertThat(fullyAssessed).isFalse();
+	}
+	
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean fullyAssessd, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, fullyAssessd, null, null, null,
 				null, null, null, null, 0, null, null, null, null, null, null, Overridable.of(obligation), null, null, null);

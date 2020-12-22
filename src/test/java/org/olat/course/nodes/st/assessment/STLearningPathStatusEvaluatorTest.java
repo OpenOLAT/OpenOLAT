@@ -163,6 +163,34 @@ public class STLearningPathStatusEvaluatorTest {
 		
 		assertThat(status).isEqualTo(AssessmentEntryStatus.done);
 	}
+	
+	@Test
+	public void shouldReturnNotReadyIfItHasOnlyOptionalChildrenButWasNotReady() {
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.notReady, null);
+		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.notReady,
+				AssessmentObligation.optional);
+		AssessmentEvaluation child2 = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.notStarted,
+				AssessmentObligation.optional);
+		List<AssessmentEvaluation> children = Arrays.asList(child1, child2);
+		
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, children);
+		
+		assertThat(status).isEqualTo(AssessmentEntryStatus.notReady);
+	}
+	
+	@Test
+	public void shouldReturnDoneIfItHasOnlyOptionalChildrenButWasNotStarted() {
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.notStarted, null);
+		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.notReady,
+				AssessmentObligation.optional);
+		AssessmentEvaluation child2 = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.notStarted,
+				AssessmentObligation.optional);
+		List<AssessmentEvaluation> children = Arrays.asList(child1, child2);
+		
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, children);
+		
+		assertThat(status).isEqualTo(AssessmentEntryStatus.done);
+	}
 
 	private AssessmentEvaluation getAssessmentEvaluation(Boolean fullyAssessd, AssessmentEntryStatus assessmentStatus, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, assessmentStatus, null, fullyAssessd, null,
