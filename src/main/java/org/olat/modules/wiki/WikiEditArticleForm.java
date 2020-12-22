@@ -50,18 +50,18 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class WikiEditArticleForm extends FormBasicController {
 
+	private FormLink deleteButton;
 	private TextElement wikiContent;
 	private TextElement updateComment;
 
-	private final WikiPage page;
 	private final WikiSecurityCallback securityCallback;
 	
 	public WikiEditArticleForm(UserRequest ureq, WindowControl wControl,
 			WikiPage page, WikiSecurityCallback securityCallback) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
-		this.page = page;
 		this.securityCallback = securityCallback;
 		initForm(ureq);
+		setPage(page);
 	}
 
 	protected String getWikiContent(){
@@ -76,12 +76,21 @@ public class WikiEditArticleForm extends FormBasicController {
 		updateComment.setValue("");
 	}
 	
-	protected void setPage(WikiPage page){
+	protected void setPage(WikiPage page) {
 		wikiContent.setValue(page.getContent());
 		wikiContent.getRootForm().setDirtyMarking(false);
+		
+		try {
+			boolean canDelete = getIdentity().getKey().equals(Long.valueOf(page.getInitalAuthor()))
+					|| securityCallback.mayEditWikiMenu();
+			deleteButton.setVisible(canDelete);
+		} catch (Exception e) {
+			logError("", e);
+			deleteButton.setVisible(false);
+		}
 	}
 	
-	protected void setDirty (boolean dirt) {
+	protected void setDirty(boolean dirt) {
 		wikiContent.getRootForm().setDirtyMarking(dirt);
 	}
 
@@ -103,7 +112,7 @@ public class WikiEditArticleForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		wikiContent = uifactory.addTextAreaElement("wikiContentElement", 20, 110, page.getContent() , formLayout);
+		wikiContent = uifactory.addTextAreaElement("wikiContentElement", 20, 110, "", formLayout);
 		wikiContent.setElementCssClass("o_sel_wiki_content");
 		wikiContent.setLabel(null, null);
 		wikiContent.preventValueTrim(true);//OO-31 prevent trimming, so first line can be with inset (wiki pre-formatted)
@@ -118,9 +127,8 @@ public class WikiEditArticleForm extends FormBasicController {
 		submit.setElementCssClass("o_sel_wiki_save");
 		FormLink saveAndClose =uifactory.addFormLink("save.and.close", buttonLayout, Link.BUTTON);
 		saveAndClose.setElementCssClass("o_sel_wiki_save_and_close");
-		if(getIdentity().getKey().equals(Long.valueOf(page.getInitalAuthor())) || securityCallback.mayEditWikiMenu()) {
-			uifactory.addFormLink("delete.page", buttonLayout, Link.BUTTON);
-		}
+		
+		deleteButton = uifactory.addFormLink("delete.page", buttonLayout, Link.BUTTON);
 		uifactory.addFormLink("preview", buttonLayout, Link.BUTTON);
 		uifactory.addFormLink("media.upload", buttonLayout, Link.BUTTON);
 		uifactory.addFormLink("manage.media", buttonLayout, Link.BUTTON);
