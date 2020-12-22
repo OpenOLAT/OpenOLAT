@@ -30,10 +30,11 @@ import java.util.List;
  */
 public class PaellaFactory {
 	
-	public static Streams createStreams(String[] urls) {
+	public static Streams createStreams(String[] urls, PlayerProfile playerProfile) {
 		Streams streams = new Streams();
 		if (urls.length > 0) {
-			addStreams(streams, urls);
+			String[] filteredUrls = playerProfile.filterUrls(urls);
+			addStreams(streams, filteredUrls);
 		}
 		return streams;
 	}

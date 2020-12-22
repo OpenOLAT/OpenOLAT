@@ -45,6 +45,11 @@ public enum PlayerProfile {
 			sb.append("        ]");
 			sb.append("      },");
 		}
+
+		@Override
+		public String[] filterUrls(String[] urls) {
+			return urls;
+		}
 	},
 	stream1("player.profile.stream1") {
 		@Override
@@ -56,6 +61,11 @@ public enum PlayerProfile {
 			sb.append("          ]");
 			sb.append("      },");
 		}
+
+		@Override
+		public String[] filterUrls(String[] urls) {
+			return new String[] { urls[0] };
+		}
 	},
 	stream2("player.profile.stream2") {
 		@Override
@@ -63,9 +73,16 @@ public enum PlayerProfile {
 			sb.append("      'es.upv.paella.singleStreamProfilePlugin': {");
 			sb.append("          'enabled': true,");
 			sb.append("          'videoSets': [");
-			sb.append("            { 'icon':'slide_icon.svg', 'id':'slide', 'content':['stream2']}");
+			sb.append("            { 'icon':'slide_icon.svg', 'id':'slide', 'content':['stream1']}");
 			sb.append("          ]");
 			sb.append("      },");
+		}
+
+		@Override
+		public String[] filterUrls(String[] urls) {
+			return urls.length >=1
+					? new String[] { urls[1] }
+					: new String[] { urls[0] };
 		}
 	};
 	
@@ -80,5 +97,7 @@ public enum PlayerProfile {
 	}
 
 	public abstract void appendPlayerConfig(StringOutput sb);
+
+	public abstract String[] filterUrls(String[] urls);
 
 }

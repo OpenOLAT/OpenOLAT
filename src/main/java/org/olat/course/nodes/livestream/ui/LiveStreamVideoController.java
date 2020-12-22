@@ -91,7 +91,7 @@ public class LiveStreamVideoController extends BasicController {
 			if (streamingUrls.length > 0) {
 				mainVC.contextRemove("error");
 				mainVC.contextPut("id", CodeHelper.getRAMUniqueID());
-				Streams streams = PaellaFactory.createStreams(streamingUrls);
+				Streams streams = PaellaFactory.createStreams(streamingUrls, playerProfile);
 				PaellaMapper paellaMapper = new PaellaMapper(streams, playerProfile);
 				MapperKey mapperKey = mapperService.register(usess, paellaMapper);
 				mappers.add(mapperKey);
