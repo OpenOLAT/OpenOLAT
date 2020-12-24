@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -42,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsHandler;
@@ -65,6 +67,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	private MultipleSelectionElement enabledForEl;
 	private MultipleSelectionElement permanentForEl;
 	private SingleSelection recordingsHandlerEl;
+	private TextElement slidesUploadLimitEl;
 	
 	private FormLink addServerButton;
 	private FlexiTableElement serversTableEl;
@@ -140,6 +143,11 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		} else {
 			recordingsHandlerEl.select(BigBlueButtonNativeRecordingsHandler.NATIVE_RECORDING_HANDLER_ID, true);
 		}
+		
+		Integer maxSize = bigBlueButtonModule.getMaxUploadSize();
+		String maxSizeStr = maxSize == null ? null : maxSize.toString();
+		slidesUploadLimitEl = uifactory.addTextElement("slides.upload.limit", 8, maxSizeStr, formLayout);
+		slidesUploadLimitEl.setMandatory(true);
 
 		//buttons save - check
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
@@ -183,6 +191,19 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 				recordingsHandlerEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}
+		}
+		
+		slidesUploadLimitEl.clearError();
+		if(StringHelper.containsNonWhitespace(slidesUploadLimitEl.getValue())) {
+			try {
+				Integer.parseInt(slidesUploadLimitEl.getValue());
+			} catch (NumberFormatException e) {
+				slidesUploadLimitEl.setErrorKey("form.error.nointeger", null);
+				allOk &= false;
+			}
+		} else {
+			slidesUploadLimitEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
 		}
 		
 		return allOk;
@@ -241,6 +262,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 			bigBlueButtonModule.setGroupsEnabled(enabledForEl.isSelected(2));
 			bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
 			bigBlueButtonModule.setRecordingHandlerId(recordingsHandlerEl.getSelectedKey());
+			bigBlueButtonModule.setMaxUploadSize(Integer.valueOf(slidesUploadLimitEl.getValue()));
 		}
 		CollaborationToolsFactory.getInstance().initAvailableTools();
 	}

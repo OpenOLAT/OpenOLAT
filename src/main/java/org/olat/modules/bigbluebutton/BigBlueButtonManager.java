@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.manager.BigBlueButtonUriBuilder;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
@@ -102,6 +103,18 @@ public interface BigBlueButtonManager {
 	public boolean isSlotAvailable(BigBlueButtonMeeting meeting, BigBlueButtonMeetingTemplate template, Date start, long leadTime, Date end, long followupTime);
 
 	public BigBlueButtonMeeting getMeeting(BigBlueButtonMeeting meeting);
+	
+	public VFSContainer getSlidesContainer(BigBlueButtonMeeting meeting);
+	
+	/**
+	 * The method will create a meeting and uploaded the slides to the
+	 * BigBlueButton server but it will only doing it during the leading
+	 * time.
+	 * 
+	 * @param meetingKey The meeting primary key
+	 * @return true if slides were effectively uploaded
+	 */
+	public boolean preloadSlides(Long meetingKey);
 	
 	/**
 	 * Return the first meeting which matches the specified identifier

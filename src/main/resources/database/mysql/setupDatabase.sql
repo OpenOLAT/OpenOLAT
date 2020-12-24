@@ -1225,6 +1225,7 @@ create table o_bbb_meeting (
    b_followuptime bigint default 0 not null,
    b_end_with_followuptime datetime,
    b_main_presenter varchar(255),
+   b_directory varchar(64) default null,
    b_recordings_publishing varchar(16) default 'auto',
    b_record bool default null,
    fk_creator_id bigint default null,
@@ -3884,6 +3885,7 @@ alter table o_bbb_meeting add constraint bbb_meet_grp_idx foreign key (fk_group_
 alter table o_bbb_meeting add constraint bbb_meet_template_idx foreign key (fk_template_id) references o_bbb_template (id);
 alter table o_bbb_meeting add constraint bbb_meet_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
 alter table o_bbb_meeting add constraint bbb_meet_serv_idx foreign key (fk_server_id) references o_bbb_server (id);
+alter table o_bbb_meeting add constraint bbb_dir_idx unique (b_directory);
 
 alter table o_bbb_attendee add constraint bbb_attend_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 alter table o_bbb_attendee add constraint bbb_attend_meet_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);

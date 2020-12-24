@@ -79,6 +79,7 @@ public class BigBlueButtonMeetingDAO {
 		meeting.setCreator(creator);
 		
 		dbInstance.getCurrentEntityManager().persist(meeting);
+		
 		return meeting;
 	}
 	

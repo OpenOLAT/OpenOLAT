@@ -1289,6 +1289,7 @@ create table o_bbb_meeting (
    b_followuptime number(20) default 0 not null,
    b_end_with_followuptime timestamp,
    b_main_presenter varchar2(255),
+   b_directory varchar2(64) default null,
    b_recordings_publishing varchar2(16) default 'auto',
    b_record number default null,
    fk_creator_id number(20),
@@ -3900,6 +3901,7 @@ alter table o_bbb_meeting add constraint bbb_meet_serv_idx foreign key (fk_serve
 create index idx_bbb_meet_serv_idx on o_bbb_meeting(fk_server_id);
 alter table o_bbb_meeting add constraint bbb_meet_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
 create index idx_bbb_meet_creator_idx on o_bbb_meeting(fk_creator_id);
+alter table o_bbb_meeting add constraint bbb_dir_idx unique (b_directory);
 
 alter table o_bbb_attendee add constraint bbb_attend_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_bbb_attend_ident_idx on o_bbb_attendee(fk_identity_id);

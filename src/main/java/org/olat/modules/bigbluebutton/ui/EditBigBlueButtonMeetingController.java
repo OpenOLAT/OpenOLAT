@@ -22,14 +22,19 @@ package org.olat.modules.bigbluebutton.ui;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.getSelectedTemplate;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.isWebcamLayoutAvailable;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -37,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -45,6 +51,14 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.ValidationStatus;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonDispatcher;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
@@ -55,6 +69,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
+import org.olat.modules.bigbluebutton.manager.SlidesContainerMapper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +103,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private TextElement externalLinkEl;
 	private MultipleSelectionElement passwordEnableEl;
 	private TextElement passwordEl;
+	private FileElement uploadSlidesEl;
+	private FormLayoutContainer slidesCont;
 
 	private final Mode mode;
 	private final String subIdent;
@@ -97,6 +114,12 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private BigBlueButtonMeeting meeting;
 	private final List<BigBlueButtonTemplatePermissions> permissions;
 	private List<BigBlueButtonMeetingTemplate> templates;
+	private SlidesContainerMapper slidesMapper;
+	private final String mapperUri;
+	private VFSContainer slidesContainer;
+	private VFSContainer temporaryContainer;
+	private List<SlideWrapper> documentWrappers = new ArrayList<>();
+	private int count = 0;
 	
 	private final boolean running;
 	private final boolean editable;
@@ -129,8 +152,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		this.businessGroup = businessGroup;
 		this.permissions = permissions;
 		templates = bigBlueButtonManager.getTemplates();
+
+		temporaryContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID()));
+		slidesMapper = new SlidesContainerMapper(temporaryContainer);
+		mapperUri = registerCacheableMapper(null, null, slidesMapper);
 		
 		initForm(ureq);
+		reloadSlides();
 	}
 	
 	public EditBigBlueButtonMeetingController(UserRequest ureq, WindowControl wControl,
@@ -149,8 +177,14 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		editable = isEditable(meeting, ureq);
 		editableInternal = isEditableInternal(meeting, ureq);
 		administrator = ureq.getUserSession().getRoles().isAdministrator();
+
+		slidesContainer = bigBlueButtonManager.getSlidesContainer(meeting);
+		temporaryContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID()));
+		slidesMapper = new SlidesContainerMapper(temporaryContainer, slidesContainer);
+		mapperUri = registerCacheableMapper(null, null, slidesMapper);
 		
 		initForm(ureq);
+		reloadSlides();
 	}
 	
 	private boolean isEditable(BigBlueButtonMeeting m, UserRequest ureq) {
@@ -208,6 +242,18 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		mainPresenterEl = uifactory.addTextElement("meeting.main.presenter", "meeting.main.presenter", 128, presenter, formLayout);
 		mainPresenterEl.setElementCssClass("o_sel_bbb_edit_meeting_presenter");
 		mainPresenterEl.setEnabled(editable || editableInternal);
+		
+		// slides
+		String page = velocity_root + "/meeting_slides.html"; 
+		slidesCont = FormLayoutContainer.createCustomFormLayout("meeting.slides.container", getTranslator(), page);
+		slidesCont.setLabel("meeting.slides", null);
+		slidesCont.contextPut("mapperUri", mapperUri);
+		formLayout.add(slidesCont);
+		
+		uploadSlidesEl = uifactory.addFileElement(getWindowControl(), "meeting.slides.upload", "meeting.slides", formLayout);
+		uploadSlidesEl.addActionListener(FormEvent.ONCHANGE);
+		uploadSlidesEl.setVisible(editable || editableInternal);
+		uploadSlidesEl.limitToMimeType(BigBlueButtonModule.SLIDES_MIME_TYPES, "error.slides.type", null);
 		
 		Long selectedTemplateKey = meeting == null || meeting.getTemplate() == null
 				? null : meeting.getTemplate().getKey();
@@ -385,9 +431,58 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		listenTo(cmc);
 	}
 	
+	private void reloadSlides() {
+		Map<String,SlideWrapper> docsMap = documentWrappers.stream()
+				.collect(Collectors.toMap(SlideWrapper::getFilename, doc -> doc));
+		
+		List<SlideWrapper> wrappers = new ArrayList<>();
+		if(temporaryContainer != null && temporaryContainer.exists()) {
+			reloadSlides(temporaryContainer, true, wrappers, docsMap);
+		}
+		if(slidesContainer != null && slidesContainer.exists()) {
+			reloadSlides(slidesContainer, false, wrappers, docsMap);
+		}
+		
+		slidesCont.contextPut("documents", wrappers);
+		slidesCont.setVisible(!wrappers.isEmpty());
+
+		if(uploadSlidesEl != null && uploadSlidesEl.isVisible()) {
+			if(wrappers.isEmpty()) {
+				uploadSlidesEl.setLabel("meeting.slides.upload", null);
+				slidesCont.setDirty(true);
+			} else {
+				uploadSlidesEl.setLabel(null, null);
+			}
+		}
+	}
+	
+	private void reloadSlides(VFSContainer container, boolean temporary, List<SlideWrapper> wrappers, Map<String,SlideWrapper> docsMap) {
+		List<VFSItem>  documents = container.getItems(new VFSSystemItemFilter());
+		for (VFSItem document : documents) {
+			if(document instanceof VFSLeaf) {
+				SlideWrapper wrapper = docsMap.get(document.getName());
+				if(wrapper == null) {
+					wrapper = new SlideWrapper((VFSLeaf)document, temporary);
+					documentWrappers.add(wrapper);
+					if(editable || editableInternal) {
+						FormLink deleteButton = uifactory
+								.addFormLink("delete_" + (++count), "delete", "delete", null, slidesCont, Link.BUTTON_XSMALL);
+						deleteButton.setUserObject(wrapper);
+						wrapper.setDeleteButton(deleteButton);
+					}
+				}
+				if(!wrapper.isDeleted()) {
+					wrappers.add(wrapper);
+				}
+			}
+		}
+	}
+	
 	@Override
 	protected void doDispose() {
-		//
+		if(temporaryContainer != null) {
+			temporaryContainer.deleteSilently();
+		}
 	}
 
 	@Override
@@ -465,10 +560,31 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		allOk &= validateSlidesSize();
+
 		return allOk;
 	}
 	
-	
+	private boolean validateSlidesSize() {
+		boolean allOk = true;
+		
+		Integer maxSizeInMb = bigBlueButtonModule.getMaxUploadSize();
+		slidesCont.clearError();
+		if(maxSizeInMb != null && maxSizeInMb.intValue() > 0) {
+			long total = 0l;
+			for(SlideWrapper doc:documentWrappers) {
+				if(!doc.isDeleted()) {
+					total += doc.getDocument().getSize();
+				}
+			}
+			if(total > (maxSizeInMb.intValue() * 1000 * 1000)) {
+				slidesCont.setErrorKey("error.slides.size", new String[] { maxSizeInMb.toString() });
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
+	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -502,6 +618,19 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			BigBlueButtonUIHelper.validateReadableIdentifier(externalLinkEl, meeting);
 		} else if (serverEl == source) {
 			serverChangeWarning();
+		} else if(uploadSlidesEl == source) {
+			if(uploadSlidesEl.getUploadFile() != null && StringHelper.containsNonWhitespace(uploadSlidesEl.getUploadFileName())) {
+				doUploadSlide(uploadSlidesEl.getUploadFile(), uploadSlidesEl.getUploadFileName());
+				reloadSlides();
+				validateSlidesSize();
+				uploadSlidesEl.reset();
+			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("delete".equals(link.getCmd()) && link.getUserObject() instanceof SlideWrapper) {
+				doDeleteSlide((SlideWrapper)link.getUserObject());
+				reloadSlides();
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -587,10 +716,47 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			BigBlueButtonServer server = bigBlueButtonManager.getServer(Long.valueOf(selectedServerKey));
 			meeting.setServer(server);
 		}
+		
+		// copy the slides, eventually update the directory field
+		doCopySlides();
 
 		meeting = bigBlueButtonManager.updateMeeting(meeting);
 
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private void doCopySlides() {
+		if(documentWrappers.isEmpty()) return;
+
+		VFSContainer storage = bigBlueButtonManager.getSlidesContainer(meeting);
+		for(SlideWrapper doc:documentWrappers) {
+			if(doc.isDeleted()) {
+				doc.getDocument().deleteSilently();
+			} else if(doc.isTemporary()) {
+				VFSLeaf target = storage.createChildLeaf(doc.getFilename());
+				VFSManager.copyContent(doc.getDocument(), target, true);
+			}
+		}
+	}
+	
+	private void doUploadSlide(File file, String filename) {
+		List<ValidationStatus> validationResults = new ArrayList<>();
+		uploadSlidesEl.validate(validationResults);
+		if(validationResults.isEmpty()) {
+			VFSLeaf newSlide = VFSManager.resolveOrCreateLeafFromPath(temporaryContainer, filename);
+			VFSManager.copyContent(file, newSlide);
+			
+			for(SlideWrapper doc:documentWrappers) {
+				if(filename.equals(doc.getFilename())) {
+					doc.setDeleted(false);
+				}
+			}
+		}
+	}
+	
+	private void doDeleteSlide(SlideWrapper slide) {
+		slide.setDeleted(true);
+		slidesCont.setDirty(true);
 	}
 
 	@Override

@@ -134,6 +134,14 @@ public interface BigBlueButtonMeeting extends ModifiedInfo, CreateInfo {
 
 	public void setPassword(String password);
 	
+	/**
+	 * This is the relative path to the container for the slides. Generated
+	 * only if needed.
+	 * 
+	 * @return
+	 */
+	public String getDirectory();
+	
 	
 	/**
 	 * If not a permanent meeting, the meetings starts at this date. Participants
