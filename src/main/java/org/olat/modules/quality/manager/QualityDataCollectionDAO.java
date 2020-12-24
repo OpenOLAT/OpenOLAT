@@ -382,14 +382,19 @@ public class QualityDataCollectionDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(collection)");
 		sb.append("  from qualitydatacollection as collection");
-		if (searchParams != null && (StringHelper.containsNonWhitespace(searchParams.getTopic())
-				|| StringHelper.containsNonWhitespace(searchParams.getSearchString()))) {
-			sb.append("       left join collection.topicIdentity.user as user");
-			sb.append("       left join collection.topicOrganisation as organisation");
-			sb.append("       left join collection.topicCurriculum as curriculum");
-			sb.append("       left join collection.topicCurriculumElement as curriculumElement");
-			sb.append("       left join curriculumElement.type as curriculumElementType");
-			sb.append("       left join collection.topicRepositoryEntry as repository");
+		if (searchParams != null) {
+			if (searchParams.getFormEntryRefs() != null) {
+				sb.append("       join survey.formEntry as form");
+			}
+			if (StringHelper.containsNonWhitespace(searchParams.getTopic())
+					|| StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+				sb.append("       left join collection.topicIdentity.user as user");
+				sb.append("       left join collection.topicOrganisation as organisation");
+				sb.append("       left join collection.topicCurriculum as curriculum");
+				sb.append("       left join collection.topicCurriculumElement as curriculumElement");
+				sb.append("       left join curriculumElement.type as curriculumElementType");
+				sb.append("       left join collection.topicRepositoryEntry as repository");
+			}
 		}
 		appendWhereClause(sb, searchParams);
 		

@@ -42,6 +42,7 @@ public class BigBlueButtonUriBuilder {
 	private String scheme;
 	private int port;
 	private String startPath;
+	private String xmlPayload;
 
 	private final String sharedSecret;
 	
@@ -62,6 +63,11 @@ public class BigBlueButtonUriBuilder {
 
     public static BigBlueButtonUriBuilder fromUri(URI uri, String sharedSecret) {
     	return new BigBlueButtonUriBuilder(uri, sharedSecret);
+    }
+    
+    public BigBlueButtonUriBuilder xmlPayload(String xml) {
+    	xmlPayload = xml;
+    	return this;
     }
     
     public BigBlueButtonUriBuilder operation(String operation) {
@@ -131,6 +137,10 @@ public class BigBlueButtonUriBuilder {
 			log.error("Cannot build URI: {} {} {}", scheme, host, port, e);
 			return null;
 		}
+    }
+    
+    public String getXmlPayload() {
+    	return xmlPayload;
     }
     
     public static String urlEncode(String s) {

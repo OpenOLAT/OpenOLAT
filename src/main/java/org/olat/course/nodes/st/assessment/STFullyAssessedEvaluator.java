@@ -37,13 +37,23 @@ public class STFullyAssessedEvaluator implements FullyAssessedEvaluator {
 	@Override
 	public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children,
 			Blocker blocker) {
+		boolean hasMandatory = false;
 		for (AssessmentEvaluation evaluation : children) {
-			if (isMandatory(evaluation) && isNotFullyAssessedYet(evaluation)) {
-				blocker.block();
-				return Boolean.FALSE;
+			if (isMandatory(evaluation)) {
+				hasMandatory = true;
+				if (isNotFullyAssessedYet(evaluation)) {
+					blocker.block();
+					return Boolean.FALSE;
+				}
 			}
 		}
-		return Boolean.TRUE;
+		// If the participant has fully assessed all mandatory elements,
+		// he should be able to continue from that element. In that case
+		// he has fully assessed the nodes earlier. So don't stop him afterwards!
+		if (hasMandatory) {
+			return Boolean.TRUE;
+		}
+		return Boolean.valueOf(!blocker.isBlocked());
 	}
 
 	private boolean isNotFullyAssessedYet(AssessmentEvaluation evaluation) {

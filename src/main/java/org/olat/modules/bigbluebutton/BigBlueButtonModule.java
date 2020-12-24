@@ -20,6 +20,7 @@
 package org.olat.modules.bigbluebutton;
 
 import java.net.URI;
+import java.util.Set;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -55,7 +56,13 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_ADHOC_MEETING = "vc.bigbluebutton.adhoc.meeting";
 	private static final String PROP_USER_BANDWIDTH_REQUIREMENT = "vc.bigbluebutton.user.bandwidth.requirement";
 	private static final String PROP_RECORDING_HANDLER_ID = "vc.bigbluebutton.recording.handler.id";
+	private static final String PROP_MAX_UPLOAD_SIZE = "vc.bigbluebutton.max.upload.size";
 	
+	public static final Set<String> SLIDES_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png", "application/pdf",
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+			"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
 	@Value("${vc.bigbluebutton.enabled}")
 	private boolean enabled;
 	
@@ -78,6 +85,9 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private String secret;
 	@Value("${vc.bigbluebutton.shared.secret}")
 	private String sharedSecret;
+
+	@Value("${vc.bigbluebutton.max.upload.size:100}")
+	private Integer maxUploadSize;
 	
 	@Value("${vc.bigbluebutton.permanent.meeting:false}")
 	private String permanentMeetingEnabled;
@@ -123,6 +133,11 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		groupsEnabled = getStringPropertyValue(PROP_GROUP_ENABLED, groupsEnabled);
 		coursesEnabled = getStringPropertyValue(PROP_COURSE_ENABLED, coursesEnabled);
 		appointmentsEnabled = getStringPropertyValue(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled);
+
+		String maxUploadSizeObj = getStringPropertyValue(PROP_MAX_UPLOAD_SIZE, maxUploadSize.toString());
+		if(StringHelper.containsNonWhitespace(maxUploadSizeObj)) {
+			maxUploadSize = Integer.valueOf(maxUploadSizeObj);
+		}
 		
 		String bandwidthReqObj = getStringPropertyValue(PROP_USER_BANDWIDTH_REQUIREMENT, true);
 		if(StringHelper.containsNonWhitespace(bandwidthReqObj)) {
@@ -281,6 +296,20 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	public void setSharedSecret(String sharedSecret) {
 		this.sharedSecret = sharedSecret;
 		setStringProperty(PROP_SHARED_SECRET, sharedSecret, true);
+	}
+
+	/**
+	 * 
+	 * @return The max. size of the slides to upload to BigBlueButton servers
+	 * 		in MB.
+	 */
+	public Integer getMaxUploadSize() {
+		return maxUploadSize;
+	}
+
+	public void setMaxUploadSize(Integer maxUploadSize) {
+		this.maxUploadSize = maxUploadSize;
+		setStringProperty(PROP_MAX_UPLOAD_SIZE, maxUploadSize.toString(), true);
 	}
 
 	public Double getUserBandwidhtRequirement() {

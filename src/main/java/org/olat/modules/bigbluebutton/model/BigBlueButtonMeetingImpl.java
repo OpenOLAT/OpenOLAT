@@ -107,6 +107,9 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	@Column(name="b_layout", nullable=false, insertable=true, updatable=true)
 	private String layout;
 
+	@Column(name="b_directory", nullable=true, insertable=true, updatable=true)
+	private String directory;
+
 	@Column(name="b_meeting_id", nullable=false, insertable=true, updatable=false)
 	private String meetingId;
 	@Column(name="b_attendee_pw", nullable=false, insertable=true, updatable=false)
@@ -228,8 +231,14 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	public void setWelcome(String welcome) {
 		this.welcome = welcome;
 	}
-	
-	
+
+	public String getDirectory() {
+		return directory;
+	}
+
+	public void setDirectory(String directory) {
+		this.directory = directory;
+	}
 
 	public String getLayout() {
 		return layout;

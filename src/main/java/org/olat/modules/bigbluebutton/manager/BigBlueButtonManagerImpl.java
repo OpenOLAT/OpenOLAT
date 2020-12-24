@@ -20,6 +20,7 @@
 package org.olat.modules.bigbluebutton.manager;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -34,9 +35,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Logger;
@@ -47,7 +52,13 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.taskexecutor.Task;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -56,6 +67,11 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
@@ -92,6 +108,8 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,11 +128,18 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	DeletableGroupData, RepositoryEntryDataDeletable, UserDataDeletable, InitializingBean {
 	
 	private static final Logger log = Tracing.createLoggerFor(BigBlueButtonManagerImpl.class);
+	private static final String TASK_MEETING_RESNAME = BigBlueButtonMeeting.class.getSimpleName();
 
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private MapperService mapperService;
+	@Autowired
 	private CalendarManager calendarManager;
+	@Autowired
+	private TaskExecutorManager taskManager;
+	@Autowired
+	private OLATResourceManager resourceManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -131,6 +156,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private BigBlueButtonAttendeeDAO bigBlueButtonAttendeeDao;
 	@Autowired
 	private BigBlueButtonMeetingQueries bigBlueButtonMeetingQueries;
+	@Autowired
+	private BigBlueButtonSlidesStorage bigBlueButtonSlidesStorage;
 	@Autowired
 	private BigBlueButtonMeetingTemplateDAO bigBlueButtonMeetingTemplateDao;
 	@Autowired
@@ -391,6 +418,41 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 
 	@Override
+	public VFSContainer getSlidesContainer(BigBlueButtonMeeting meeting) {
+		VFSContainer container;
+		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
+			container = bigBlueButtonSlidesStorage.getStorage(meeting);
+		} else {
+			container = bigBlueButtonSlidesStorage.createStorage(meeting);
+		}
+		return container;
+	}
+
+	@Override
+	public boolean preloadSlides(Long meetingKey) {
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.loadByKey(meetingKey);
+		if(meeting == null) {
+			return false;
+		}
+
+		boolean loaded = false;
+		Date now = new Date();
+		Date start = meeting.getStartDate();
+		Date startWithLeadingTime = meeting.getStartWithLeadTime();
+		if(startWithLeadingTime.compareTo(now) <= 0 && start.compareTo(now) >= 0) {
+			List<VFSLeaf> slides = getSlides(meeting);
+			if(!slides.isEmpty()) {
+				BigBlueButtonErrors errors = new BigBlueButtonErrors();
+				meeting = getMeetingWithServer(meeting);
+				createBigBlueButtonMeeting(meeting, errors);
+				loaded = !errors.hasErrors();
+				log.info(Tracing.M_AUDIT, "Slides preloaded: {}", meeting);
+			}
+		}
+		return loaded;
+	}
+
+	@Override
 	public boolean isIdentifierInUse(String identifier, BigBlueButtonMeeting reference) {
 		if(StringHelper.containsNonWhitespace(identifier)) {
 			return bigBlueButtonMeetingDao.isIdentifierInUse(identifier, reference);
@@ -401,7 +463,23 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	@Override
 	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting) {
 		updateCalendarEvent(meeting);
-		return bigBlueButtonMeetingDao.updateMeeting(meeting);
+		meeting = bigBlueButtonMeetingDao.updateMeeting(meeting);
+		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
+			OLATResource resource = resourceManager.findResourceable(meeting.getKey(), TASK_MEETING_RESNAME);
+			if(resource == null) {
+				OLATResourceable res = OresHelper.createOLATResourceableInstance(TASK_MEETING_RESNAME, meeting.getKey());
+				resource = resourceManager.createAndPersistOLATResourceInstance(res);
+				SlidesPreloaderTask loader = new SlidesPreloaderTask(meeting.getKey());
+				taskManager.execute(loader, null, resource, null, meeting.getStartWithLeadTime());
+			} else {
+				List<Task> currentTasks = taskManager.getTasks(resource);
+				if(!currentTasks.isEmpty()) {
+					SlidesPreloaderTask loader = new SlidesPreloaderTask(meeting.getKey());
+					taskManager.updateAndReturn(currentTasks.get(0), loader, null, meeting.getStartWithLeadTime());
+				}
+			}
+		}
+		return meeting;
 	}	
 
 	@Override
@@ -475,10 +553,26 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			bigBlueButtonMeetingDeletionHandlers.forEach(h -> h.onBeforeDelete(reloadedMeeting));
 			removeCalendarEvent(reloadedMeeting);
 			deleteRecordings(meeting, errors);
+			deleteSlides(meeting);
 			bigBlueButtonAttendeeDao.deleteAttendee(reloadedMeeting);
 			bigBlueButtonMeetingDao.deleteMeeting(reloadedMeeting);
 		}
 		return false;
+	}
+	
+	private void deleteSlides(BigBlueButtonMeeting meeting) {
+		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
+			VFSContainer slidesContainer = bigBlueButtonSlidesStorage.getStorage(meeting);
+			if(slidesContainer != null && slidesContainer.exists()) {
+				slidesContainer.deleteSilently();
+			}
+			
+			OLATResource resource = resourceManager.findResourceable(meeting.getKey(), TASK_MEETING_RESNAME);
+			if(resource != null) {
+				taskManager.delete(resource);
+				resourceManager.deleteOLATResource(resource);
+			}
+		}
 	}
 	
 	public BigBlueButtonServer getAvailableServer() {
@@ -963,8 +1057,50 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		// metadata
 		getRecordingsHandler().appendMetadata(uriBuilder, meeting);
 		
+		// slides
+		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
+			VFSContainer slidesContainer = bigBlueButtonSlidesStorage.getStorage(meeting);
+			List<VFSLeaf> slides = getSlides(meeting);
+			if(!slides.isEmpty()) {
+				MapperKey mapperKey = mapperService.register(null,  meeting.getMeetingId(), new SlidesContainerMapper(slidesContainer), 360);
+				String url = Settings.createServerURI() + mapperKey.getUrl() + "/slides/";
+				String slidesXml = slidesDocument(url, slides);
+				uriBuilder.xmlPayload(slidesXml);
+			}
+		}
+
 		Document doc = sendRequest(uriBuilder, errors);
 		return BigBlueButtonUtils.checkSuccess(doc, errors);
+	}
+	
+	private String slidesDocument(String url, List<VFSLeaf> slides) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<?xml version='1.0' encoding='UTF-8'?>")
+		  .append("<modules><module name='presentation'>");
+		
+		for(VFSLeaf slide:slides) {
+			sb.append("<document url='").append(url).append(slide.getName()).append("' />");
+		}
+		sb.append("</module></modules>");
+		return sb.toString();
+	}
+	
+	private List<VFSLeaf> getSlides(BigBlueButtonMeeting meeting) {
+		List<VFSLeaf> slides = new ArrayList<>();
+		
+		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
+			VFSContainer slidesContainer = bigBlueButtonSlidesStorage.getStorage(meeting);
+			if(slidesContainer != null && slidesContainer.exists()) {
+				List<VFSItem> items = slidesContainer.getItems(new VFSLeafButSystemFilter());
+				for(VFSItem item:items) {
+					if(item instanceof VFSLeaf) {
+						slides.add((VFSLeaf)item);
+					}
+				}
+			}
+		}
+		
+		return slides;
 	}
 	
 	@Override
@@ -1047,14 +1183,41 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	@Override
 	public Document sendRequest(BigBlueButtonUriBuilder builder, BigBlueButtonErrors errors) {
 		dbInstance.commit();
+		if(StringHelper.containsNonWhitespace(builder.getXmlPayload())) {
+			return sendPostRequest(builder, errors);
+		}
+		return sendGetRequest(builder, errors);
+	}
+
+	private Document sendPostRequest(BigBlueButtonUriBuilder builder, BigBlueButtonErrors errors) {
+		URI uri = builder.build();
+		HttpPost post = new HttpPost(uri);
+		String payload = builder.getXmlPayload();
+		post.addHeader("Content-Language", "en-US");
+		ContentType cType = ContentType.create("text/xml", StandardCharsets.UTF_8);
+		HttpEntity myEntity = new StringEntity(payload, cType);
+		post.setEntity(myEntity);
 		
+		RequestConfig requestConfig = getRequestConfiguration();
+		try(CloseableHttpClient httpClient = HttpClientBuilder.create()
+				.setDefaultRequestConfig(requestConfig)
+				.disableAutomaticRetries()
+				.build();
+				CloseableHttpResponse response = httpClient.execute(post)) {
+			int statusCode = response.getStatusLine().getStatusCode();
+			log.debug("Status code of: {} {}", uri, statusCode);
+			return BigBlueButtonUtils.getDocumentFromEntity(response.getEntity());
+		} catch(Exception e) {
+			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.unkown));
+			log.error("Cannot send: {}", uri, e);
+			return null;
+		}
+	}
+	
+	private Document sendGetRequest(BigBlueButtonUriBuilder builder, BigBlueButtonErrors errors) {
 		URI uri = builder.build();
 		HttpGet get = new HttpGet(uri);
-		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
-				.setConnectTimeout(bigBlueButtonModule.getHttpConnectTimeout())
-				.setConnectionRequestTimeout(bigBlueButtonModule.getHttpConnectRequestTimeout())
-				.setSocketTimeout(bigBlueButtonModule.getHttpSocketTimeout())
-				.build();
+		RequestConfig requestConfig = getRequestConfiguration();
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create()
 				.setDefaultRequestConfig(requestConfig)
 				.disableAutomaticRetries()
@@ -1068,6 +1231,14 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			log.error("Cannot send: {}", uri, e);
 			return null;
 		}
+	}
+	
+	private RequestConfig getRequestConfiguration() {
+		return RequestConfig.copy(RequestConfig.DEFAULT)
+				.setConnectTimeout(bigBlueButtonModule.getHttpConnectTimeout())
+				.setConnectionRequestTimeout(bigBlueButtonModule.getHttpConnectRequestTimeout())
+				.setSocketTimeout(bigBlueButtonModule.getHttpSocketTimeout())
+				.build();
 	}
 	
 	private static class ServerLoadComparator implements Comparator<BigBlueButtonServerInfos> {

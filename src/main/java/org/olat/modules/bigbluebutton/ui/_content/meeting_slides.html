@@ -1,0 +1,9 @@
+#if($r.isNotEmpty($documents))
+<ul class="form-static list-unstyled o_slides">
+	#foreach($document in $documents)
+		#if($r.isFalse($document.deleted))
+			<li><a href="$mapperUri/slides/$r.encodeUrl($document.filename)" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($document.filename)"> </i> $r.escapeHtml($document.label)</a> #if($r.visible($document.deleteButton))$r.render($document.deleteButton)#end</li>
+		#end
+	#end
+</ul>
+#end

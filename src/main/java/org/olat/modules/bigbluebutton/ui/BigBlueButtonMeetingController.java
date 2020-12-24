@@ -46,6 +46,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.winmgr.CommandFactory;
@@ -57,6 +58,10 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.modules.bigbluebutton.BigBlueButtonAttendee;
 import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonDispatcher;
@@ -66,6 +71,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
+import org.olat.modules.bigbluebutton.manager.SlidesContainerMapper;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRecordingTableModel.BRecordingsCols;
@@ -84,16 +90,22 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private final boolean administrator;
 	private BigBlueButtonMeeting meeting;
 	
+	private int count = 0;
 	private final boolean guest;
 	private final boolean moderatorStartMeeting;
 	private final OLATResourceable meetingOres;
 
 	private FormLink joinButton;
+	private FormLink uploadButton;
 	private FormLink guestJoinButton;
 	private MultipleSelectionElement acknowledgeRecordingEl;
 	private FlexiTableElement tableEl;
 	private BigBlueButtonRecordingTableModel recordingTableModel;
+	
+	private SlidesContainerMapper slidesMapper; 
 
+	private CloseableModalController cmc;
+	private SlideUploadController uploadSlideCtrl;
 	private PublishRecordingController publishCtrl;
 	private DialogBoxController confirmDeleteRecordingDialog;
 	private CloseableCalloutWindowController publishCalloutCtrl;
@@ -162,6 +174,11 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				layoutCont.contextPut("externalPassword", password);
 			}
 			
+			if(administrator || moderator) {
+				loadSlides(layoutCont);
+				uploadButton = uifactory.addFormLink("meeting.slides.upload", formLayout, Link.BUTTON_SMALL);
+			}
+			
 			if(StringHelper.containsNonWhitespace(meeting.getMainPresenter())) {
 				layoutCont.contextPut("mainPresenter", meeting.getMainPresenter());
 			}
@@ -183,6 +200,38 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		acknowledgeKeyValue.add(KeyValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
 		acknowledgeRecordingEl = uifactory.addCheckboxesHorizontal("meeting.acknowledge.recording", null, formLayout,
 				acknowledgeKeyValue.keys(), acknowledgeKeyValue.values());
+	}
+	
+	private void loadSlides(FormLayoutContainer layoutCont) {
+		List<SlideWrapper> documentWrappers = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
+			VFSContainer slidesContainer = bigBlueButtonManager.getSlidesContainer(meeting);
+			if(slidesMapper == null) {
+				slidesMapper = new SlidesContainerMapper(slidesContainer);
+				String mapperUri = registerCacheableMapper(null, "BigBlueButtonSlides::" + meeting.getKey(), slidesMapper);
+				layoutCont.contextPut("mapperUri", mapperUri);
+			}
+			
+			if(slidesContainer != null && slidesContainer.exists()) {
+				boolean slidesEditable = isSlidesEditable();
+				List<VFSItem> items = slidesContainer.getItems(new VFSLeafButSystemFilter());
+				for(VFSItem item:items) {
+					if(item instanceof VFSLeaf) {
+						VFSLeaf slide = (VFSLeaf)item;
+						SlideWrapper wrapper = new SlideWrapper(slide, false);
+						if(slidesEditable) {
+							FormLink deleteButton = uifactory
+									.addFormLink("delete_" + (++count), "delete", "delete", null, layoutCont, Link.BUTTON_XSMALL);
+							deleteButton.setUserObject(wrapper);
+							wrapper.setDeleteButton(deleteButton);
+						}
+						documentWrappers.add(wrapper);
+					}
+				}
+			}
+		}
+		
+		layoutCont.contextPut("documents", documentWrappers);
 	}
 	
 	private void initRecordings(FormItemContainer formLayout) {
@@ -273,6 +322,17 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		return !((start != null && start.compareTo(now) >= 0) || (end != null && end.compareTo(now) <= 0));
 	}
 	
+	private boolean isSlidesEditable() {
+		if(meeting == null) return false;
+		if(meeting.isPermanent()) {
+			return true;
+		}
+
+		Date now = new Date();
+		Date start = meeting.getStartDate();
+		return start != null && start.compareTo(now) > 0;
+	}
+	
 	private void reloadButtonsAndStatus() {
 		meeting = bigBlueButtonManager.getMeeting(meeting);
 		updateButtonsAndStatus();
@@ -300,6 +360,11 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			guestJoinButton.setVisible(accessible && !disabled && guest);
 		}
 		guestJoinButton.setEnabled(!readOnly && accessible && !disabled && guest);
+		
+		if(uploadButton != null) {
+			boolean slidesEditable = isSlidesEditable();
+			uploadButton.setVisible(slidesEditable);
+		}
 			
 		if(accessible && !disabled) {
 			boolean running = bigBlueButtonManager.isMeetingRunning(meeting);
@@ -364,7 +429,14 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			}
 			publishCalloutCtrl.deactivate();
 			cleanUp();
-		} else if(publishCalloutCtrl == source) {
+		} else if(uploadSlideCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				meeting = bigBlueButtonManager.getMeeting(meeting);
+				loadSlides(flc);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(publishCalloutCtrl == source || cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -373,10 +445,14 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteRecordingDialog);
 		removeAsListenerAndDispose(publishCalloutCtrl);
+		removeAsListenerAndDispose(uploadSlideCtrl);
 		removeAsListenerAndDispose(publishCtrl);
+		removeAsListenerAndDispose(cmc);
 		confirmDeleteRecordingDialog = null;
 		publishCalloutCtrl = null;
+		uploadSlideCtrl = null;
 		publishCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -401,6 +477,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			doJoin(ureq);
 		} else if(this.guestJoinButton == source) {
 			doGuestJoin(ureq);
+		} else if(uploadButton == source) {
+			doUploadSlides(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -414,6 +492,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			FormLink link = (FormLink)source;
 			if("publish".equals(link.getCmd()) && link.getUserObject() instanceof BigBlueButtonRecordingRow) {
 				doPublish(ureq, link, (BigBlueButtonRecordingRow)link.getUserObject());
+			} else if("delete".equals(link.getCmd()) && link.getUserObject() instanceof SlideWrapper) {
+				doDeleteSlide((SlideWrapper)link.getUserObject());
+				loadSlides(flc);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -422,6 +503,25 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doUploadSlides(UserRequest ureq) {
+		uploadSlideCtrl = new SlideUploadController(ureq, getWindowControl(), meeting);
+		listenTo(uploadSlideCtrl);
+		
+		String title = translate("meeting.slides.upload");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), uploadSlideCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doDeleteSlide(SlideWrapper slide) {
+		VFSLeaf document = slide.getDocument();
+		VFSContainer slidesContainer = bigBlueButtonManager.getSlidesContainer(meeting);
+		VFSItem reloadedDocument = slidesContainer.resolve(document.getName());
+		if(reloadedDocument != null && reloadedDocument.exists()) {
+			reloadedDocument.delete();
+		}
 	}
 	
 	private void doPublish(UserRequest ureq, FormLink link, BigBlueButtonRecordingRow row) {

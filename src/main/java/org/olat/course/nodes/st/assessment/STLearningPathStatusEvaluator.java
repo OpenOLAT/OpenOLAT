@@ -42,8 +42,7 @@ public class STLearningPathStatusEvaluator implements StatusEvaluator {
 	@Override
 	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
 			Blocker blocker) {
-		AssessmentEntryStatus currentStatus = currentEvaluation.getAssessmentStatus();
-		AssessmentEntryStatus status = currentStatus;
+		AssessmentEntryStatus status = currentEvaluation.getAssessmentStatus();
 		if (isBlocked(blocker)) {
 			status = AssessmentEntryStatus.notReady;
 		} else {
@@ -69,6 +68,7 @@ public class STLearningPathStatusEvaluator implements StatusEvaluator {
 			List<AssessmentEvaluation> children) {
 		boolean notStarted = false;
 		boolean inProgress = false;
+		boolean hasMandatory = false;
 		boolean done = true;
 		for (AssessmentEvaluation child : children) {
 			if (isNotStarted(child)) {
@@ -77,9 +77,17 @@ public class STLearningPathStatusEvaluator implements StatusEvaluator {
 			if (isInProgess(child)) {
 				inProgress = true;
 			}
-			if (isMandatory(child) && isNotFullyAssessed(child)) {
-				done = false;
+			if (isMandatory(child)) {
+				hasMandatory = true;
+				if (isNotFullyAssessed(child)) {
+					done = false;
+				}
 			}
+		}
+		
+		// Only optional, but no one is started.
+		if (!hasMandatory && !inProgress && done && AssessmentEntryStatus.notReady == currentEvaluation.getAssessmentStatus()) {
+			return AssessmentEntryStatus.notReady;
 		}
 		
 		if (done)        return AssessmentEntryStatus.done;

@@ -30,6 +30,18 @@
 </div>
 #end
 
+#if($r.isNotEmpty($documents))
+<label forid="meeting-slides"><i class="o_icon o_filetype_file"> </i> $r.translate("meeting.slides")</label>
+<ul id="meeting-slides" class="list-unstyled o_slides">
+	#foreach($document in $documents)
+		<li><a href="$mapperUri/slides/$r.encodeUrl($document.filename)" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($document.filename)"> </i> $r.escapeHtml($document.label)</a> #if($r.visible($document.deleteButton))$r.render($document.deleteButton)#end</li>
+	#end
+</ul>
+#end
+#if($r.available("meeting.slides.upload"))
+	$r.render("meeting.slides.upload")
+#end
+
 #if($r.isTrue($ended))
 	<div class="o_block_large o_warning">$r.translate("meeting.ended")</div>
 #end

@@ -23,10 +23,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
@@ -402,12 +405,10 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 				statusVisibilitySet = true;
 			}
 			
-			boolean identityHasReturnFile = false;
 			if(hasReturnFiles && row.getReturnFiles() != null && !row.getReturnFiles().isEmpty()) {
-				File assessedFolder = getAssessedFolder(row, identity);
-				identityHasReturnFile = assessedFolder.exists();
-				if(identityHasReturnFile) {
-					processReturnFile(courseNode, row, uce, assessedFolder, coachIdentity);
+				Optional<Path> assessedFolder = getAssessedFolder(row, identity);
+				if(assessedFolder.isPresent()) {
+					processReturnFile(courseNode, row, uce, assessedFolder.get().toFile(), coachIdentity);
 				}
 			}
 			
@@ -444,16 +445,27 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		}
 	}
 	
-	private File getAssessedFolder(BulkAssessmentRow row, Identity identity) {
-		String assessedId = row.getAssessedId();
-		File assessedFolder = new File(unzipped, assessedId);
-		if(!assessedFolder.exists()) {
-			String username = identity.getUser().getProperty(UserConstants.NICKNAME, null);
-			if(StringHelper.containsNonWhitespace(username)) {
-				assessedFolder = new File(unzipped, username);
+	private Optional<Path> getAssessedFolder(BulkAssessmentRow row, Identity identity) {
+		try {
+			String assessedId = row.getAssessedId();
+			Optional<Path> assessedFolder = Files.walk(unzipped.toPath())
+					.filter(Files::isDirectory)
+					.filter(path -> path.getFileName().toString().equals(assessedId))
+					.findAny();
+			if (assessedFolder.isEmpty()) {
+				String username = identity.getUser().getProperty(UserConstants.NICKNAME, null);
+				if (StringHelper.containsNonWhitespace(username)) {
+					assessedFolder = Files.walk(unzipped.toPath())
+							.filter(Files::isDirectory)
+							.filter(path -> path.getFileName().toString().equals(username))
+							.findAny();
+				}
 			}
+			return assessedFolder;
+		} catch (IOException e) {
+			// not found
 		}
-		return assessedFolder;
+		return Optional.empty();
 	}
 	
 	private void updateTasksState(GTACourseNode courseNode, UserCourseEnvironment uce, TaskProcess status, boolean acceptSubmission) {
