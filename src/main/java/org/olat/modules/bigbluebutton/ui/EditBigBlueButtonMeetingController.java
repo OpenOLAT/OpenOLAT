@@ -25,6 +25,7 @@ import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.isWebcamLa
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -443,6 +444,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			reloadSlides(slidesContainer, false, wrappers, docsMap);
 		}
 		
+		Collections.sort(wrappers);
 		slidesCont.contextPut("documents", wrappers);
 		slidesCont.setVisible(!wrappers.isEmpty());
 
@@ -582,6 +584,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				allOk &= false;
 			}
 		}
+		slidesCont.setDirty(true);
 		
 		return allOk;
 	}

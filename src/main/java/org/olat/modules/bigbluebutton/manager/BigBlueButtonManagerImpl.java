@@ -51,6 +51,7 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.modules.bc.comparators.LastModificationComparator;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -435,7 +436,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		Date now = new Date();
 		Date start = meeting.getStartDate();
 		Date startWithLeadingTime = meeting.getStartWithLeadTime();
-		if(startWithLeadingTime != null && startWithLeadingTime.compareTo(now) <= 0 && start.compareTo(now) >= 0) {
+		if((startWithLeadingTime == null && meeting.isPermanent())
+				|| (startWithLeadingTime != null && startWithLeadingTime.compareTo(now) <= 0 && start.compareTo(now) >= 0)) {
 			List<VFSLeaf> slides = getSlides(meeting);
 			if(!slides.isEmpty()) {
 				BigBlueButtonErrors errors = new BigBlueButtonErrors();
@@ -476,7 +478,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			}
 		}
 		return meeting;
-	}	
+	}
 
 	@Override
 	public BigBlueButtonMeetingTemplate createAndPersistTemplate(String name) {
@@ -1049,6 +1051,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			if(!slides.isEmpty()) {
 				MapperKey mapperKey = mapperService.register(null,  meeting.getMeetingId(), new SlidesContainerMapper(slidesContainer), 360);
 				String url = Settings.createServerURI() + mapperKey.getUrl() + "/slides/";
+				Collections.sort(slides, new LastModificationComparator());
 				String slidesXml = slidesDocument(url, slides);
 				uriBuilder.xmlPayload(slidesXml);
 			}

@@ -34,9 +34,10 @@
 <label forid="meeting-slides"><i class="o_icon o_filetype_file"> </i> $r.translate("meeting.slides")</label>
 <ul id="meeting-slides" class="list-unstyled o_slides">
 	#foreach($document in $documents)
-		<li><a href="$mapperUri/slides/$r.encodeUrl($document.filename)" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($document.filename)"> </i> $r.escapeHtml($document.label)</a> #if($r.visible($document.deleteButton))$r.render($document.deleteButton)#end</li>
+		<li><a href="$mapperUri/slides/$r.encodeUrl($document.filename)" target="_blank"><i class="o_icon $r.getFiletypeIconCss($document.filename)"> </i> $r.escapeHtml($document.label)</a> #if($r.visible($document.deleteButton))$r.render($document.deleteButton)#end</li>
 	#end
 </ul>
+<div class="o_warning">$r.translate("warning.slides.meeting.running")</div>
 #end
 #if($r.available("meeting.slides.upload"))
 	$r.render("meeting.slides.upload")

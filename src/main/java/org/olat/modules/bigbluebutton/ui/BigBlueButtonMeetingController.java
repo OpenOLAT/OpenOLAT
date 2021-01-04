@@ -20,6 +20,7 @@
 package org.olat.modules.bigbluebutton.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimerTask;
@@ -230,8 +231,11 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				}
 			}
 		}
-		
+		Collections.sort(documentWrappers);
 		layoutCont.contextPut("documents", documentWrappers);
+		
+		boolean showWarning = meeting.isPermanent() && !documentWrappers.isEmpty();
+		layoutCont.contextPut("uploadWarning", Boolean.valueOf(showWarning));
 	}
 	
 	private void initRecordings(FormItemContainer formLayout) {

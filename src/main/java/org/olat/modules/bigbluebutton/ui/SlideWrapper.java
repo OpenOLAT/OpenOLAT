@@ -29,7 +29,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SlideWrapper {
+public class SlideWrapper implements Comparable<SlideWrapper> {
 	
 	private final VFSLeaf document;
 	private FormLink deleteButton;
@@ -73,5 +73,20 @@ public class SlideWrapper {
 		this.deleteButton = deleteButton;
 		deleteButton.setUserObject(this);
 	}
+
+	@Override
+	public int compareTo(SlideWrapper o) {
+		if(o == null || o.getDocument() == null) {
+			return 1;
+		}
+		if(document == null) {
+			return -1;
+		}
+		
+		long oModified = o.getDocument().getLastModified();
+		return Long.compare(document.getLastModified(), oModified);
+	}
+	
+	
 
 }

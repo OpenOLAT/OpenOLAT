@@ -21,10 +21,12 @@ package org.olat.modules.bigbluebutton.manager;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -38,6 +40,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
  */
 public class SlidesContainerMapper implements Mapper {
 	
+	private static final Logger log = Tracing.createLoggerFor(SlidesContainerMapper.class);
 	public static final String DOWNLOAD_PREFIX = "/slides/";
 	
 	private final VFSContainer container;
@@ -67,9 +70,11 @@ public class SlidesContainerMapper implements Mapper {
 			if(slide instanceof VFSLeaf) {
 				resource = new VFSMediaResource((VFSLeaf)slide);
 			} else {
+				log.warn("Slides not found: {}", relPath);
 				resource = new NotFoundMediaResource();
 			}	
 		} else {
+			log.warn("Slides path forbidden: {}", relPath);
 			resource = new ForbiddenMediaResource();
 		}
 		return resource;

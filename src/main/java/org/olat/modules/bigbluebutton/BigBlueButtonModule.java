@@ -58,7 +58,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_RECORDING_HANDLER_ID = "vc.bigbluebutton.recording.handler.id";
 	private static final String PROP_MAX_UPLOAD_SIZE = "vc.bigbluebutton.max.upload.size";
 	
-	public static final Set<String> SLIDES_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png", "application/pdf",
+	public static final Set<String> SLIDES_MIME_TYPES = Set.of("image/jpg", "image/jpeg", "image/png", "application/pdf",
 			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 			"application/vnd.openxmlformats-officedocument.presentationml.presentation",
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
