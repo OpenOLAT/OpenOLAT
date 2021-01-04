@@ -435,7 +435,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		Date now = new Date();
 		Date start = meeting.getStartDate();
 		Date startWithLeadingTime = meeting.getStartWithLeadTime();
-		if(startWithLeadingTime.compareTo(now) <= 0 && start.compareTo(now) >= 0) {
+		if(startWithLeadingTime != null && startWithLeadingTime.compareTo(now) <= 0 && start.compareTo(now) >= 0) {
 			List<VFSLeaf> slides = getSlides(meeting);
 			if(!slides.isEmpty()) {
 				BigBlueButtonErrors errors = new BigBlueButtonErrors();
