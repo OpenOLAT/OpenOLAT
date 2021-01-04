@@ -74,7 +74,6 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -266,12 +265,8 @@ public class GroupController extends BasicController {
 		this.removeUserMailDefaultTempl = removeUserMailTempl;
 		this.showSenderInRemovMailFooter = showSenderInRemoveFooter;
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == addUserButton) {
 			if (!mayModifyMembers) throw new AssertException("not allowed to add a member!");
@@ -282,10 +277,6 @@ public class GroupController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller sourceController, Event event) {
 		if (sourceController == tableCtr) {
@@ -480,23 +471,20 @@ public class GroupController extends BasicController {
 		cmc.activate();
 	}
 	
-	private void doImportUsers(UserRequest ureq) {
+	private void doImportUsers(final UserRequest ureq) {
 		removeAsListenerAndDispose(userToGroupWizard);
 
 		Step start = new UsersToGroupWizardStep00(ureq, addUserMailDefaultTempl, mandatoryEmail);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				@SuppressWarnings("unchecked")
-				List<Identity> choosenIdentities = (List<Identity>)runContext.get("members");
-				MailTemplate customTemplate = (MailTemplate)runContext.get("mailTemplate");
-				if (choosenIdentities == null || choosenIdentities.size() == 0) {
-					showError("msg.selectionempty");
-				} else {
-					doAddIdentitiesToGroup(ureq, choosenIdentities, customTemplate);
-				}
-				return StepsMainRunController.DONE_MODIFIED;
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			@SuppressWarnings("unchecked")
+			List<Identity> choosenIdentities = (List<Identity>)runContext.get("members");
+			MailTemplate customTemplate = (MailTemplate)runContext.get("mailTemplate");
+			if (choosenIdentities == null || choosenIdentities.isEmpty()) {
+				showError("msg.selectionempty");
+			} else {
+				doAddIdentitiesToGroup(uureq, choosenIdentities, customTemplate);
 			}
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		userToGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
