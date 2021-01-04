@@ -63,9 +63,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.3.2</org.springframework.version>
-		<org.hibernate.version>5.4.26.Final</org.hibernate.version>
-		<apache.cxf>3.4.1</apache.cxf>
-		<apache.pdfbox>2.0.21</apache.pdfbox>
+		<org.hibernate.version>5.4.27.Final</org.hibernate.version>
+		<apache.cxf>3.4.2</apache.cxf>
+		<apache.pdfbox>2.0.22</apache.pdfbox>
 		<apache.poi>4.1.2</apache.poi>
 		<apache.log4j>2.14.0</apache.log4j>
 		<org.slf4j>1.7.30</org.slf4j>
@@ -1901,17 +1901,17 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcmail-jdk15on</artifactId>
-			<version>1.67</version>
+			<version>1.68</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.67</version>
+			<version>1.68</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.github.scribejava</groupId>
 		    <artifactId>scribejava-apis</artifactId>
-		    <version>8.0.0</version>
+		    <version>8.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -2480,7 +2480,7 @@
 		<dependency>
 			<groupId>com.paypal.sdk</groupId>
 			<artifactId>checkout-sdk</artifactId>
-			<version>1.0.2</version>
+			<version>1.0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.paypal.sdk</groupId>
