@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.help.ui.HelpAdminController;
+import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
@@ -81,7 +82,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -94,6 +98,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
@@ -112,6 +117,7 @@ import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -160,6 +166,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected CloseableModalController cmc;
 	private SendMailController sendMailCtrl;
 	private StepsMainRunController wizardCtrl;
+	private StepsMainRunController modifyOwnersWizardCtrl;
 	private AuthorSearchController searchCtrl;
 	private UserSearchController userSearchCtr;
 	private DialogBoxController copyDialogCtrl;
@@ -181,7 +188,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FormLink copyButton;
 	private FormLink deleteButton;
 	private FormLink sendMailButton;
-	private FormLink addOwnersButton;
+	private FormLink modifyOwnersButton;
 
 	private LockResult lockResult;
 	private final boolean taxonomyEnabled;
@@ -454,7 +461,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected void initBatchButtons(FormItemContainer formLayout) {
 		if(hasAuthorRight) {
 			sendMailButton = uifactory.addFormLink("tools.send.mail", formLayout, Link.BUTTON);
-			addOwnersButton = uifactory.addFormLink("tools.add.owners", formLayout, Link.BUTTON);
+			modifyOwnersButton = uifactory.addFormLink("tools.modify.owners", formLayout, Link.BUTTON);
 			copyButton = uifactory.addFormLink("details.copy", formLayout, Link.BUTTON);
 			deleteButton = uifactory.addFormLink("details.delete", formLayout, Link.BUTTON);
 		}
@@ -585,6 +592,13 @@ public class AuthorListController extends FormBasicController implements Activat
 				cleanUp();
 				launchEditDescription(ureq, newEntry);
 			}
+		} else if(modifyOwnersWizardCtrl == source) {
+			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
+				getWindowControl().pop();
+				
+				reloadRows();
+				cleanUp();
+			}
 		} else if(searchCtrl == source) {
 			if(event instanceof SearchEvent) {
 				SearchEvent se = (SearchEvent)event;
@@ -648,6 +662,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	protected void cleanUp() {
+		removeAsListenerAndDispose(modifyOwnersWizardCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(userSearchCtr);
@@ -659,6 +674,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(closeCtrl);
 		removeAsListenerAndDispose(cmc);
+		modifyOwnersWizardCtrl = null;
 		confirmDeleteCtrl = null;
 		toolsCalloutCtrl = null;
 		userSearchCtr = null;
@@ -679,10 +695,10 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addOwnersButton == source) {
+		if(modifyOwnersButton == source) {
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
-				doAddOwners(ureq, rows);
+				doModifyOwners(ureq, rows);
 			} else {
 				showWarning("bulk.update.nothing.selected");
 			}
@@ -1001,8 +1017,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		cmc.activate();
 	}
 	
-	private void doAddOwners(UserRequest ureq, List<AuthoringEntryRow> rows) {
-		if(guardModalController(userSearchCtr)) return;
+	private void doModifyOwners(UserRequest ureq, List<AuthoringEntryRow> rows) {
+		if(guardModalController(modifyOwnersWizardCtrl)) return;
 		
 		List<AuthoringEntryRow> manageableRows = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {
@@ -1015,16 +1031,40 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(manageableRows.isEmpty()) {
 			showWarning("bulk.update.nothing.applicable.selected");
 		} else {
-			removeAsListenerAndDispose(userSearchCtr);
-			userSearchCtr = new UserSearchController(ureq, getWindowControl(), false, true, UserSearchController.ACTION_KEY_CHOOSE_FINISH);
-			userSearchCtr.setUserObject(manageableRows);
-			listenTo(userSearchCtr);
+			// Global context for wizard
+			ModifyOwnersContext context = new ModifyOwnersContext();
 			
-			String title = translate("tools.add.owners");
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtr.getInitialComponent(),
-					true, title);
-			listenTo(cmc);
-			cmc.activate();
+			// List of owners of selected and manageable resources
+			for (AuthoringEntryRow row : manageableRows) {
+				List<Identity> owners = repositoryService.getMembers(row, RepositoryEntryRelationType.all, GroupRoles.owner.name());
+				context.addOwnersAndResource(owners, row);
+			}
+			
+			// Save them in the context for the wizard
+			context.setAuthoringEntryRows(manageableRows);
+			
+			// Open new wizard
+			CancelCallback cancelCallback = new CancelCallback();
+			FinishedCallback finishedCallback = new FinishedCallback();
+			ModifyOwnersStep1 step1 = new ModifyOwnersStep1(ureq, context);
+			
+			modifyOwnersWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), step1, finishedCallback, cancelCallback, translate("tools.modify.owners"), null);
+			listenTo(modifyOwnersWizardCtrl);
+	        getWindowControl().pushAsModalDialog(modifyOwnersWizardCtrl.getInitialComponent());
+			
+			
+			
+			
+//			removeAsListenerAndDispose(userSearchCtr);
+//			userSearchCtr = new UserSearchController(ureq, getWindowControl(), false, true, UserSearchController.ACTION_KEY_CHOOSE_FINISH);
+//			userSearchCtr.setUserObject(manageableRows);
+//			listenTo(userSearchCtr);
+//			
+//			String title = translate("tools.add.owners");
+//			cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtr.getInitialComponent(),
+//					true, title);
+//			listenTo(cmc);
+//			cmc.activate();
 		}
 	}
 	
@@ -1321,6 +1361,39 @@ public class AuthorListController extends FormBasicController implements Activat
 		void run();
 		
 	}
+	
+	private class FinishedCallback implements StepRunnerCallback {
+        @Override
+        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+            ModifyOwnersContext context = (ModifyOwnersContext) runContext.get(ModifyOwnersContext.CONTEXT_KEY);
+            	
+            List<Identity> removeOwnersList = context.getOwnersToRemove();
+            removeOwnersList.removeAll(context.getOwnersToAdd());
+            
+            List<Identity> addOwnersList = context.getOwnersToAdd();
+            addOwnersList.removeAll(context.getOwnersToRemove());
+            
+            MailPackage mailing = new MailPackage(context.isSendMail());
+            
+            for (AuthoringEntryRow resource : context.getAuthoringEntryRows()) {
+            	RepositoryEntry repoEntry = repositoryService.loadByKey(resource.getKey());
+            	
+		        repositoryManager.removeOwners(getIdentity(), removeOwnersList, repoEntry, mailing);
+		        
+		        IdentitiesAddEvent addEvent = new IdentitiesAddEvent(addOwnersList);
+		        repositoryManager.addOwners(getIdentity(), addEvent, repoEntry, mailing);
+            }
+            // Fire event
+            return StepsMainRunController.DONE_MODIFIED;
+        }
+    }
+
+    private static class CancelCallback implements StepRunnerCallback {
+        @Override
+        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+            return Step.NOSTEP;
+        }
+    }
 	
 	private class ReferencesController extends BasicController {
 
