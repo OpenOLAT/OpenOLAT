@@ -46,6 +46,7 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 	private final Translator translator;
 	private final QualityDataCollectionViewSearchParams defaultSearchParams;
 	private QualityDataCollectionViewSearchParams searchParams;
+	private Integer count;
 	
 	@Autowired
 	private QualityService qualityService;
@@ -63,11 +64,19 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 		this.searchParams.setReportAccessIdentity(defaultSearchParams.getReportAccessIdentity());
 		this.searchParams.setLearnResourceManagerOrganisationRefs(defaultSearchParams.getLearnResourceManagerOrganisationRefs());
 		this.searchParams.setIgnoreReportAccessRelationRole(defaultSearchParams.isIgnoreReportAccessRelationRole());
+		count = null;
+	}
+	
+	public void resetCount() {
+		count = null;
 	}
 
 	@Override
 	public int getRowCount() {
-		return qualityService.getDataCollectionCount(searchParams);
+		if (count == null) {
+			count = qualityService.getDataCollectionCount(searchParams);
+		}
+		return count.intValue();
 	}
 
 	@Override
@@ -78,6 +87,7 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 	@Override
 	public ResultInfos<DataCollectionRow> getRows(String query, List<FlexiTableFilter> filters,
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+		searchParams.setSearchString(query);
 
 		List<QualityDataCollectionView> dataCollections = qualityService.loadDataCollections(translator, searchParams,
 				firstResult, maxResults, orderBy);
