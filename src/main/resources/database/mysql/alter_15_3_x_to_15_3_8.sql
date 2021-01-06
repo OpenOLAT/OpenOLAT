@@ -8,8 +8,8 @@ create table o_livestream_url_template (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
-   l_name varchar2(64) not null,
-   l_url1 varchar2(2048),
-   l_url2 varchar2(2048),
+   l_name varchar(64) not null,
+   l_url1 varchar(2048),
+   l_url2 varchar(2048),
    primary key (id)
 );
