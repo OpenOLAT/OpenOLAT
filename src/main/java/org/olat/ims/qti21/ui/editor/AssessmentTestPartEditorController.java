@@ -56,7 +56,7 @@ public class AssessmentTestPartEditorController extends ItemSessionControlContro
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("assessment.testpart.config");
-		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_test");
+		setFormContextHelp("Configure tests#_config_expert");
 		if(!editable) {
 			setFormWarning("warning.alien.assessment.test");
 		}
@@ -69,13 +69,8 @@ public class AssessmentTestPartEditorController extends ItemSessionControlContro
 		navigationModeEl.select(mode, true);
 		navigationModeEl.setEnabled(!restrictedEdit);
 		navigationModeEl.setHelpText(translate("form.testPart.navigationMode.hint"));
-		navigationModeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test");
 		
 		super.initForm(formLayout, listener, ureq);
-		allowSkippingEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test");
-		allowCommentEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test");
-		allowReviewEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test");
-		showSolutionEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test");
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

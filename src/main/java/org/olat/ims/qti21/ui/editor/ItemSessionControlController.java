@@ -64,14 +64,14 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	private static final String[] yesNoInheritKeys = new String[] { YES, NO, INHERIT };
 
 	private TextElement maxAttemptsEl;
-	protected SingleSelection limitAttemptsEl;
+	private SingleSelection limitAttemptsEl;
 	private FormLink inheritMaxAttemptsButton;
 	private FormLayoutContainer maxAttemptsWarningLayout;
 	
-	protected SingleSelection allowReviewEl;
-	protected SingleSelection showSolutionEl;
-	protected SingleSelection allowSkippingEl;
-	protected SingleSelection allowCommentEl;
+	private SingleSelection allowReviewEl;
+	private SingleSelection showSolutionEl;
+	private SingleSelection allowSkippingEl;
+	private SingleSelection allowCommentEl;
 	
 	private DialogBoxController attemptsWarningCtrl;
 	

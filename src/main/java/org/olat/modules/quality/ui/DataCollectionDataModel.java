@@ -82,6 +82,17 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 	public DefaultFlexiTableDataSourceModel<DataCollectionRow> createCopyWithEmptyList() {
 		return new DataCollectionDataModel(getSourceDelegate(), getTableColumnModel(), translator);
 	}
+	
+	@Override
+	public DataCollectionDataSource getSourceDelegate() {
+		return (DataCollectionDataSource)super.getSourceDelegate();
+	}
+	
+	@Override
+	public void clear() {
+		super.clear();
+		getSourceDelegate().resetCount();
+	}
 
 	public enum DataCollectionCols implements FlexiSortableColumnDef {
 		key("data.collection.id"),

@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -107,6 +106,7 @@ public class DataCollectionListController extends FormBasicController implements
 		defaultSearchParams.setLearnResourceManagerOrganisationRefs(secCallback.getLearnResourceManagerOrganisationRefs());
 		defaultSearchParams.setIgnoreReportAccessRelationRole(!securityModule.isRelationRoleEnabled());
 		dataSource = new DataCollectionDataSource(getTranslator(), defaultSearchParams);
+		dataSource.setSearchParams(new QualityDataCollectionViewSearchParams());
 		
 		searchCtrl = new DataCollectionSearchController(ureq, getWindowControl(), mainForm, defaultSearchParams);
 		searchCtrl.setEnabled(false);
@@ -201,9 +201,6 @@ public class DataCollectionListController extends FormBasicController implements
 			if (CMD_EDIT.equals(cmd)) {
 				doEditDataCollection(ureq, row.getDataCollection());
 			}
-		} else if(event instanceof FlexiTableSearchEvent) {
-			FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
-			doSearch(ftse.getSearch());
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -227,7 +224,7 @@ public class DataCollectionListController extends FormBasicController implements
 				QualityDataCollection dataCollectionToDelete = dccEvent.getDataCollection();
 				doConfirmDeleteDataCollection(ureq, dataCollectionToDelete);
 			}
-		}else if (searchCtrl == source) {
+		} else if (searchCtrl == source) {
 			if (event instanceof SearchEvent) {
 				SearchEvent se = (SearchEvent)event;
 				doExtendedSearch(se);
@@ -305,11 +302,6 @@ public class DataCollectionListController extends FormBasicController implements
 		tableEl.reset(true, false, true);
 		stackPanel.popUpToController(this);
 	}
-	private void doSearch(String search) {
-		QualityDataCollectionViewSearchParams params = new QualityDataCollectionViewSearchParams();
-		params.setSearchString(search);
-		doSearch(params);
-	}
 
 	private void doExtendedSearch(SearchEvent se) {
 		QualityDataCollectionViewSearchParams params = new QualityDataCollectionViewSearchParams();
@@ -324,10 +316,7 @@ public class DataCollectionListController extends FormBasicController implements
 		params.setFormEntryRefs(se.getFormEntryRefs());
 		params.setTopicTypes(se.getTopicTypes());
 		params.setStatus(se.getStatus());
-		doSearch(params);
-	}
-
-	private void doSearch(QualityDataCollectionViewSearchParams params) {
+		
 		dataSource.setSearchParams(params);
 		tableEl.reset(true, true, true);
 	}
