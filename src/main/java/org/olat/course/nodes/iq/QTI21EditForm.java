@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -112,6 +113,7 @@ public class QTI21EditForm extends FormBasicController {
 	private final ModuleConfiguration modConfig;
 	private final boolean ignoreInCourseAssessmentAvailable;
 	private final QTI21DeliveryOptions deliveryOptions;
+	private final boolean wizard;
 	
 	private DialogBoxController confirmTestDateCtrl;
 
@@ -125,23 +127,40 @@ public class QTI21EditForm extends FormBasicController {
 	public QTI21EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig,
 			NodeAccessType nodeAccessType, QTI21DeliveryOptions deliveryOptions, boolean needManualCorrection) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
-		
 		this.modConfig = modConfig;
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		this.deliveryOptions = (deliveryOptions == null ? new QTI21DeliveryOptions() : deliveryOptions);
 		this.needManualCorrection = needManualCorrection;
-		
+		this.wizard = false;
+		initDateValues();
+		initForm(ureq);
+	}
+
+	public QTI21EditForm(UserRequest ureq, WindowControl wControl, Form rootForm, ModuleConfiguration moduleConfig,
+			NodeAccessType nodeAccessType, boolean needManualCorrection) {
+		super(ureq, wControl, LAYOUT_BAREBONE, null, rootForm);
+		this.modConfig = moduleConfig;
+		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
+		this.deliveryOptions = new QTI21DeliveryOptions();
+		this.needManualCorrection = needManualCorrection;
+		this.wizard = true;
+		initDateValues();
+		initForm(ureq);
+	}
+
+	private void initDateValues() {
 		for (int i = 0; i < dateKeys.length; i++) {
 			dateValues[i] = translate(dateBase + dateKeys[i]);
 		}
-		
-		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		testLayout = FormLayoutContainer.createDefaultFormLayout("testInfos", getTranslator());
 		testLayout.setRootForm(mainForm);
+		if (wizard) {
+			testLayout.setFormTitle(translate("execution"));
+		}
 		formLayout.add(testLayout);
 		initFormAssessmentInfos(testLayout);
 
@@ -166,12 +185,13 @@ public class QTI21EditForm extends FormBasicController {
 		maxScoreEl = uifactory.addStaticTextElement("score.max", "", formLayout);
 		maxScoreEl.setVisible(false);
 		passedTypeEl = uifactory.addStaticTextElement("score.passed", "", formLayout);
+		passedTypeEl.setVisible(!wizard);
 		
 		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
 				new String[] { "xx" }, new String[] { null });
 		boolean ignoreInCourseAssessment = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
 		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
-		ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable);
+		ignoreInCourseAssessmentEl.setVisible(!wizard && ignoreInCourseAssessmentAvailable);
 		
 		boolean testDateDependent = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST);
 		testDateDependentEl = uifactory.addCheckboxesHorizontal("qti_datetest", "qti.form.test.date", formLayout, new String[]{"xx"}, new String[]{null});
@@ -313,7 +333,9 @@ public class QTI21EditForm extends FormBasicController {
 		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
 		assessmentResultsOnFinishEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#overview_results");
 		
-		uifactory.addFormSubmitButton("submit", formLayout);
+		if (!wizard) {
+			uifactory.addFormSubmitButton("submit", formLayout);
+		}
 		
 		//setup the values
 		update();
@@ -340,7 +362,7 @@ public class QTI21EditForm extends FormBasicController {
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		startTestDateElement.clearError();
@@ -424,7 +446,7 @@ public class QTI21EditForm extends FormBasicController {
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source) {
 			update();
 		} else if(testDateDependentEl == source) {
@@ -578,9 +600,9 @@ public class QTI21EditForm extends FormBasicController {
 		}
 
 		minScoreEl.setValue(minValue == null ? "" : AssessmentHelper.getRoundedScore(minValue));
-		minScoreEl.setVisible(minValue != null);
+		minScoreEl.setVisible(!wizard && minValue != null);
 		maxScoreEl.setValue(maxValue == null ? "" : AssessmentHelper.getRoundedScore(maxValue));
-		maxScoreEl.setVisible(maxValue != null);
+		maxScoreEl.setVisible(!wizard && maxValue != null);
 		
 		PassedType passedType = deliveryOptions.getPassedType(cutValue);
 		String passedTypeValue;
@@ -608,6 +630,12 @@ public class QTI21EditForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		updateModuleConfig();
+		
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	public void updateModuleConfig() {
 		boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && ignoreInCourseAssessmentEl.isAtLeastSelected(1);
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 		
@@ -691,7 +719,5 @@ public class QTI21EditForm extends FormBasicController {
 		} else {
 			modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_NONE);
 		}
-		
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

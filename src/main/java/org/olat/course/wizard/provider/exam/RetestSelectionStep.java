@@ -47,7 +47,7 @@ public class RetestSelectionStep extends BasicStep {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.retest", null);
-		setNextStep(new CertificateStep(ureq, entry));
+		setNextStep(new RetestConfigStep(ureq, entry));
 	}
 
 	@Override

@@ -29,11 +29,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
 import org.olat.course.wizard.CourseWizardCallback;
 import org.olat.course.wizard.CourseWizardService;
-import org.olat.course.wizard.IQTESTCourseNodeDefaults;
-import org.olat.course.wizard.ui.TitleAndEntryController;
-import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.course.wizard.ui.IQTESTNodeController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.wizard.ui.QTI21Figures;
 
 /**
  * 
@@ -41,13 +38,16 @@ import org.olat.repository.wizard.ui.QTI21Figures;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TestSelectionStep extends BasicStep {
+public class TestConfigStep extends BasicStep {
 	
-	public TestSelectionStep(UserRequest ureq, RepositoryEntry entry) {
+	private final RepositoryEntry entry;
+
+	public TestConfigStep(UserRequest ureq, RepositoryEntry entry) {
 		super(ureq);
+		this.entry = entry;
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.test", null);
-		setNextStep(new TestConfigStep(ureq, entry));
+		setNextStep(new ReexamStep(ureq, entry));
 	}
 
 	@Override
@@ -58,9 +58,7 @@ public class TestSelectionStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,
 			StepsRunContext stepsRunContext, Form form) {
-		return new TitleAndEntryController(ureq, windowControl, form, stepsRunContext,
-				CourseWizardCallback.RUN_CONTEXT_TEST, IQTESTCourseNodeDefaults::new, "wizard.title.test",
-				ImsQTI21Resource.TYPE_NAME, new QTI21Figures());
+		return new IQTESTNodeController(ureq, windowControl, form, stepsRunContext, CourseWizardCallback.RUN_CONTEXT_TEST, entry);
 	}
 
 }

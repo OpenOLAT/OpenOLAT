@@ -19,6 +19,7 @@
  */
 package org.olat.course.wizard;
 
+import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.wizard.ui.ReferencableEntryContext;
 
@@ -34,6 +35,7 @@ public class IQTESTCourseNodeDefaults implements CourseNodeTitleContext, Referen
 	private String shortTitle;
 	private String objectives;
 	private RepositoryEntry referencedEntry;
+	private ModuleConfiguration moduleConfig;
 
 	@Override
 	public String getLongTitle() {
@@ -73,6 +75,14 @@ public class IQTESTCourseNodeDefaults implements CourseNodeTitleContext, Referen
 	@Override
 	public void setReferencedEntry(RepositoryEntry referencedEntry ) {
 		this.referencedEntry = referencedEntry ;
+	}
+
+	public ModuleConfiguration getModuleConfig() {
+		return moduleConfig;
+	}
+
+	public void setModuleConfig(ModuleConfiguration moduleConfig) {
+		this.moduleConfig = moduleConfig;
 	}
 
 }

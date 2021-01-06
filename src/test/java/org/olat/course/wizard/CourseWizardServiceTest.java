@@ -25,6 +25,9 @@ import static org.olat.test.JunitTestHelper.random;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
@@ -34,6 +37,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesManagerTest;
@@ -63,9 +68,11 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private CertificatesManager certificatesManager;
 	@Autowired
-	private RepositoryService repositoryService;
+	private AssessmentModeManager assessmentModeManager;
 	
 	@Autowired
 	private CourseWizardService sut;
@@ -181,6 +188,10 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		defaults.setLongTitle(longTitle);
 		String objectives = random();
 		defaults.setObjectives(objectives);
+		ModuleConfiguration defaultModuleConfig = new ModuleConfiguration();
+		String modulConfigValue = random();
+		defaultModuleConfig.setStringValue("configKey", modulConfigValue);
+		defaults.setModuleConfig(defaultModuleConfig);
 
 		ICourse course = sut.startCourseEditSession(entry);
 		sut.createIQTESTCourseNode(course, defaults);
@@ -195,7 +206,56 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		softly.assertThat(courseNode.getLearningObjectives()).isEqualTo(objectives);
 		softly.assertThat(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_TYPE_QTI)).isEqualTo(IQEditController.CONFIG_VALUE_QTI21);
 		softly.assertThat(IQEditController.getIQReference(moduleConfig, true)).isEqualTo(testEntry);
+		softly.assertThat(moduleConfig.getStringValue("configKey")).isEqualTo(modulConfigValue);
 		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldCreateAssessmentModeForTestIfDateDependent() {
+		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
+		dbInstance.commitAndCloseSession();
+		IQTESTCourseNodeDefaults defaults = new IQTESTCourseNodeDefaults();
+		String shortTitle = random();
+		defaults.setShortTitle(shortTitle);
+		ModuleConfiguration defaultModuleConfig = new ModuleConfiguration();
+		defaultModuleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, true);
+		Date start = new GregorianCalendar(2020, 12, 10, 10, 0, 0).getTime();
+		defaultModuleConfig.setDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE, start);
+		Date end = new GregorianCalendar(2020, 12, 10, 11, 13, 15).getTime();
+		defaultModuleConfig.setDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE, end);
+		defaults.setModuleConfig(defaultModuleConfig);
+		
+		ICourse course = sut.startCourseEditSession(entry);
+		sut.createIQTESTCourseNode(course, defaults);
+		sut.finishCourseEditSession(course);
+		
+		List<AssessmentMode> assessmentModes = assessmentModeManager.getAssessmentModeFor(entry);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(assessmentModes).hasSize(1);
+		if (!assessmentModes.isEmpty()) {
+			AssessmentMode assessmentMode = assessmentModes.get(0);
+			softly.assertThat(assessmentMode.getName()).isEqualTo(shortTitle);
+			softly.assertThat(assessmentMode.getBegin()).isCloseTo(start, 2000);
+			softly.assertThat(assessmentMode.getEnd()).isCloseTo(end, 2000);
+		}
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldNotCreateAssessmentModeForTestIfNotDateDependent() {
+		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
+		dbInstance.commitAndCloseSession();
+		IQTESTCourseNodeDefaults defaults = new IQTESTCourseNodeDefaults();
+		ModuleConfiguration defaultModuleConfig = new ModuleConfiguration();
+		defaultModuleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, false);
+		defaults.setModuleConfig(defaultModuleConfig);
+		
+		ICourse course = sut.startCourseEditSession(entry);
+		sut.createIQTESTCourseNode(course, defaults);
+		sut.finishCourseEditSession(course);
+		
+		List<AssessmentMode> assessmentModes = assessmentModeManager.getAssessmentModeFor(entry);
+		assertThat(assessmentModes).isEmpty();
 	}
 
 }

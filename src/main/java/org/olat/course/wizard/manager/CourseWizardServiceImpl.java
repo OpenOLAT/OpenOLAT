@@ -21,6 +21,7 @@ package org.olat.course.wizard.manager;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +38,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.INodeFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.PublishProcess;
@@ -82,6 +85,8 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 	private RepositoryWizardService repositoryEntryWizardService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private AssessmentModeManager assessmentModeManager;
 
 	@Override
 	public void updateRepositoryEntry(RepositoryEntryRef entryRef, InfoMetadata infoMetadata) {
@@ -202,9 +207,29 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		CourseNode node = createCourseNode(course, IQTESTCourseNode.TYPE, defaults);
 		ModuleConfiguration moduleConfig = node.getModuleConfiguration();
 		
+		if (defaults.getModuleConfig() != null) {
+			moduleConfig.putAll(defaults.getModuleConfig());
+		}
+		
 		if (defaults.getReferencedEntry() != null) {
 			moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
 			IQEditController.setIQReference(defaults.getReferencedEntry(), moduleConfig);
+		}
+		
+		// Assessment mode
+		if (moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST)) {
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			AssessmentMode assessmentMode = assessmentModeManager.createAssessmentMode(courseEntry);
+			assessmentMode.setName(defaults.getShortTitle());
+			if (moduleConfig.has(IQEditController.CONFIG_KEY_START_TEST_DATE)) {
+				Date start = moduleConfig.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
+				assessmentMode.setBegin(start);
+			}
+			if (moduleConfig.has(IQEditController.CONFIG_KEY_END_TEST_DATE)) {
+				Date end = moduleConfig.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
+				assessmentMode.setEnd(end);
+			}
+			assessmentModeManager.merge(assessmentMode, false);
 		}
 	}
 	
