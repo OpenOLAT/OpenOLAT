@@ -116,6 +116,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriUtils;
 import org.w3c.dom.Document;
 
 /**
@@ -1083,12 +1084,13 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 	
 	private String slidesDocument(String url, List<VFSLeaf> slides) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(512);
 		sb.append("<?xml version='1.0' encoding='UTF-8'?>")
 		  .append("<modules><module name='presentation'>");
 		
 		for(VFSLeaf slide:slides) {
-			sb.append("<document url='").append(url).append(slide.getName()).append("' />");
+			String encodedFilename = UriUtils.encodePath(slide.getName(), StandardCharsets.UTF_8);
+			sb.append("<document url='").append(url).append(encodedFilename).append("' filename='").append(slide.getName()).append("' />");
 		}
 		sb.append("</module></modules>");
 		return sb.toString();
