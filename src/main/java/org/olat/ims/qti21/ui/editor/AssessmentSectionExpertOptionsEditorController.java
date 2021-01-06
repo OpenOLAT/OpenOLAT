@@ -61,11 +61,6 @@ public class AssessmentSectionExpertOptionsEditorController extends ItemSessionC
 		}
 		
 		super.initForm(formLayout, listener, ureq);
-		limitAttemptsEl.setHelpUrlForManualPage("Configure tests#_config_expert");
-		allowSkippingEl.setHelpUrlForManualPage("Configure tests#_config_expert");
-		allowCommentEl.setHelpUrlForManualPage("Configure tests#_config_expert");
-		allowReviewEl.setHelpUrlForManualPage("Configure tests#_config_expert");
-		showSolutionEl.setHelpUrlForManualPage("Configure tests#_config_expert");
 		
 		//visible
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
