@@ -197,6 +197,8 @@ public interface BigBlueButtonManager {
 	 * @return
 	 */
 	public List<BigBlueButtonRecordingReference> getRecordingReferences(Collection<BigBlueButtonMeeting> meetings);
+
+	public BigBlueButtonRecordingReference getRecordingReference(BigBlueButtonRecordingReference reference);
 	
 	public BigBlueButtonRecordingReference updateRecordingReference(BigBlueButtonRecordingReference reference);
 	

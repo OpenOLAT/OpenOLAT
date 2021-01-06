@@ -77,12 +77,15 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 
 	@Override
 	public Iterable<Component> getComponents() {
-		List<Component> cmp = new ArrayList<>();
+		List<Component> cmps = new ArrayList<>();
 		for(FormItem item:element.getFormItems()) {
-			cmp.add(item.getComponent());
+			Component cmp = item.getComponent();
+			if(cmp != null) {// it's possible that not used form links as a null component
+				cmps.add(cmp);
+			}
 		}
-		cmp.addAll(components.values());
-		return cmp;
+		cmps.addAll(components.values());
+		return cmps;
 	}
 
 	@Override

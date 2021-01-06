@@ -17,41 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.bigbluebutton;
-
-import java.util.Date;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+package org.olat.course.nodes.livestream.model;
 
 /**
  * 
- * Initial date: 7 août 2020<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 4 Jan 2021<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface BigBlueButtonRecordingReference extends ModifiedInfo, CreateInfo {
-	
-	public Long getKey();
-	
-	public String getRecordingId();
-	
-	public Date getStartDate();
+public interface UrlTemplate {
 
-	public Date getEndDate();
+	Long getKey();
 
-	public String getUrl();
+	String getName();
 
-	public String getType();
-	
-	public Boolean getPermanent();
-	
-	public void setPermanent(Boolean permanent);
-	
-	public BigBlueButtonRecordingsPublishedRoles[] getPublishToEnum();
-	
-	public void setPublishToEnum(BigBlueButtonRecordingsPublishedRoles[] publishTo);
-	
-	public BigBlueButtonMeeting getMeeting();
+	void setName(String name);
+
+	String getUrl1();
+
+	void setUrl1(String url1);
+
+	String getUrl2();
+
+	void setUrl2(String url2);
 
 }

@@ -20,12 +20,14 @@
 package org.olat.modules.bigbluebutton.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimerTask;
 
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -41,10 +43,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -70,6 +75,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsHandler;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
 import org.olat.modules.bigbluebutton.manager.SlidesContainerMapper;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
@@ -104,10 +110,12 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	
 	private SlidesContainerMapper slidesMapper; 
 
+	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private SlideUploadController uploadSlideCtrl;
 	private PublishRecordingController publishCtrl;
 	private DialogBoxController confirmDeleteRecordingDialog;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CloseableCalloutWindowController publishCalloutCtrl;
 
 	@Autowired
@@ -230,26 +238,39 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				}
 			}
 		}
-		
+		Collections.sort(documentWrappers);
 		layoutCont.contextPut("documents", documentWrappers);
+		
+		boolean showWarning = meeting.isPermanent() && !documentWrappers.isEmpty();
+		layoutCont.contextPut("uploadWarning", Boolean.valueOf(showWarning));
 	}
 	
 	private void initRecordings(FormItemContainer formLayout) {
+		BigBlueButtonRecordingsHandler recordingsHandler = bigBlueButtonManager.getRecordingsHandler();
+			
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.type, new RecordingTypeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.end));
+		if(administrator && recordingsHandler.canDeleteRecordings() && recordingsHandler.allowPermanentRecordings()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.permanent));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.recording.open", BRecordingsCols.open.ordinal(), "open-recording",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.recording.open"), "open-recording", true, true), null)));
+		
 		if(administrator) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.publish));
-			if(bigBlueButtonManager.getRecordingsHandler().canDeleteRecordings()) {
+			if(recordingsHandler.canDeleteRecordings() && recordingsHandler.allowPermanentRecordings()) {
+				DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(BRecordingsCols.tools);
+				toolsCol.setIconHeader("o_icon o_icon_actions o_icon-lg");
+				columnsModel.addFlexiColumnModel(toolsCol);
+			} else if(recordingsHandler.canDeleteRecordings()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 			}
 		}
 		
-		recordingTableModel = new BigBlueButtonRecordingTableModel(columnsModel, getLocale());
+		recordingTableModel = new BigBlueButtonRecordingTableModel(columnsModel, bigBlueButtonModule.isRecordingsPermanent(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "recordings", recordingTableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setEmtpyTableMessageKey("no.recordings");
 		tableEl.setNumOfRowsEnabled(false);
@@ -263,10 +284,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		List<BigBlueButtonRecordingWithReference> recordings = bigBlueButtonManager.getRecordingAndReferences(meeting, errors);
 		List<BigBlueButtonRecordingRow> rows = new ArrayList<>(recordings.size());
 		for(BigBlueButtonRecordingWithReference recording:recordings) {
-			BigBlueButtonRecordingRow row = forgeRow(recording, attendee);
-			if(row != null) {
-				rows.add(row);
-			}
+			rows.add(forgeRow(recording, attendee));
 		}
 		recordingTableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -279,10 +297,18 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		boolean pusblished = isPublishedForMe(recording.getReference(), attendee);
 		BigBlueButtonRecordingRow row = new BigBlueButtonRecordingRow(recording, pusblished);
 		if(administrator || moderator) {
-			FormLink publishLink = uifactory.addFormLink("publish-" + recording.getRecording().getRecordId(),
+			String recId = recording.getRecording().getRecordId().toString();
+			FormLink publishLink = uifactory.addFormLink("publish-".concat(recId),
 					"publish", "publish.recording", tableEl);
 			row.setPublishLink(publishLink);
 			publishLink.setUserObject(row);
+			
+			FormLink toolsLink = uifactory.addFormLink("tools-".concat(recId),
+					"tools", "", tableEl, Link.LINK | Link.NONTRANSLATED);
+			toolsLink.setAriaLabel(translate("table.header.actions"));
+			toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
+			toolsLink.setUserObject(row);
+			row.setToolsLink(toolsLink);
 		}
 		return row;
 	}
@@ -436,7 +462,10 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(publishCalloutCtrl == source || cmc == source) {
+		} else if(toolsCtrl == source) {
+			toolsCalloutCtrl.deactivate();
+			cleanUp();
+		} else if(publishCalloutCtrl == source || toolsCalloutCtrl == source || cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -445,11 +474,13 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteRecordingDialog);
 		removeAsListenerAndDispose(publishCalloutCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(uploadSlideCtrl);
 		removeAsListenerAndDispose(publishCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteRecordingDialog = null;
 		publishCalloutCtrl = null;
+		toolsCalloutCtrl = null;
 		uploadSlideCtrl = null;
 		publishCtrl = null;
 		cmc = null;
@@ -492,6 +523,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			FormLink link = (FormLink)source;
 			if("publish".equals(link.getCmd()) && link.getUserObject() instanceof BigBlueButtonRecordingRow) {
 				doPublish(ureq, link, (BigBlueButtonRecordingRow)link.getUserObject());
+			} else if("tools".equals(link.getCmd()) && link.getUserObject() instanceof BigBlueButtonRecordingRow) {
+				doOpenTools(ureq, link, (BigBlueButtonRecordingRow)link.getUserObject());
 			} else if("delete".equals(link.getCmd()) && link.getUserObject() instanceof SlideWrapper) {
 				doDeleteSlide((SlideWrapper)link.getUserObject());
 				loadSlides(flc);
@@ -532,6 +565,26 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				publishCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
 		listenTo(publishCalloutCtrl);
 		publishCalloutCtrl.activate();
+	}
+	
+	private void doOpenTools(UserRequest ureq, FormLink link, BigBlueButtonRecordingRow row) {
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl); 
+
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
+	private void doTogglePermanent(BigBlueButtonRecordingRow row) {
+		BigBlueButtonRecordingReference ref = bigBlueButtonManager.getRecordingReference(row.getReference());
+		if(ref != null) {
+			boolean flag = ref.getPermanent() == null || !ref.getPermanent().booleanValue();
+			ref.setPermanent(Boolean.valueOf(flag));
+			bigBlueButtonManager.updateRecordingReference(ref);
+		}
+		loadRecordingsModel();
 	}
 	
 	private void doGuestJoin(UserRequest ureq) {
@@ -628,6 +681,47 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		@Override
 		public void run() {
         	CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, ores);
+		}
+	}
+	
+	private class ToolsController extends BasicController {
+		
+		private final Link deleteLink;
+		private final Link permanentLink;
+		
+		private final BigBlueButtonRecordingRow recordingRow;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, BigBlueButtonRecordingRow recordingRow) {
+			super(ureq, wControl);
+			this.recordingRow = recordingRow;
+			
+			VelocityContainer mainVC = createVelocityContainer("recording_tools");
+			
+			Boolean permanent = recordingRow.getReference().getPermanent();
+			boolean flagged = permanent == null || !permanent.booleanValue();
+			String permanentI18nKey = flagged ? "mark.as.permanent" : "mark.as.not.permanent";
+			permanentLink = LinkFactory.createLink(permanentI18nKey, "permanent", getTranslator(), mainVC, this, Link.LINK);
+			permanentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+			
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void doDispose() {
+			//
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(permanentLink == source) {
+				doTogglePermanent(recordingRow);
+			} else if(deleteLink == source) {
+				doConfirmDeleteRecording(ureq, recordingRow.getRecording());
+			}
 		}
 	}
 }

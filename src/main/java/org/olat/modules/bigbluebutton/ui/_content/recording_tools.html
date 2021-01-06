@@ -1,0 +1,11 @@
+<ul class="o_dropdown list-unstyled">
+#if($r.available("mark.as.permanent"))
+	<li>$r.render("mark.as.permanent")</li>
+#end
+#if($r.available("mark.as.not.permanent"))
+	<li>$r.render("mark.as.not.permanent")</li>
+#end
+#if($r.available("delete"))
+	<li>$r.render("delete")</li>
+#end
+</ul>

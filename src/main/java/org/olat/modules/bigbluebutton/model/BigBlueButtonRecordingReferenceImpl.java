@@ -75,6 +75,9 @@ public class BigBlueButtonRecordingReferenceImpl implements Persistable, BigBlue
 	@Column(name="b_type", nullable=true, insertable=true, updatable=true)
 	private String type;
 	
+	@Column(name="b_permanent", nullable=true, insertable=true, updatable=true)
+	private Boolean permanent;
+	
 	@Column(name="b_publish_to", nullable=true, insertable=true, updatable=true)
 	private String publishTo;
 	
@@ -125,6 +128,16 @@ public class BigBlueButtonRecordingReferenceImpl implements Persistable, BigBlue
 	
 	public void setPublishTo(String publishTo) {
 		this.publishTo = publishTo;
+	}
+	
+	@Override
+	public Boolean getPermanent() {
+		return permanent;
+	}
+
+	@Override
+	public void setPermanent(Boolean permanent) {
+		this.permanent = permanent;
 	}
 
 	@Override

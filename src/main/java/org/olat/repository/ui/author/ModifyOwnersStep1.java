@@ -118,7 +118,7 @@ public class ModifyOwnersStep1 extends BasicStep {
 			
 			for (Identity owner : context.getOwners()) {
 				ModifyOwnersRemoveTableRow row = new ModifyOwnersRemoveTableRow(owner, context.getOwnersResourcesMap().get(owner));
-				FormLink detailsLink = uifactory.addFormLink("details_" + owner.getKey().toString(), "modify.owners.remove.resource.details", null, null, Link.LINK);
+				FormLink detailsLink = uifactory.addFormLink("details_" + owner.getKey().toString(), "modify.owners.remove.resource.details", null, (FormItemContainer)null, Link.LINK);
 				detailsLink.setUserObject(row);
 				row.setDetailsLink(detailsLink);
 				tableRows.add(row);

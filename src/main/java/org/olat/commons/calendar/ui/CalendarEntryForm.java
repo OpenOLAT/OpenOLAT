@@ -25,7 +25,10 @@
 
 package org.olat.commons.calendar.ui;
 
+import static org.olat.core.util.ArrayHelper.emptyStrings;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -41,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -49,12 +53,15 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.nodes.livestream.LiveStreamService;
+import org.olat.course.nodes.livestream.model.UrlTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -68,6 +75,8 @@ public class CalendarEntryForm extends FormBasicController {
 	private StaticTextElement calendarName;
 	private SingleSelection chooseCalendar;
 	private TextElement subjectEl, descriptionEl, locationEl, liveStreamUrlEl;
+	private MultipleSelectionElement liveStreamUrlTypeEl;
+	private SingleSelection liveStreamUrlTemplateEl;
 	private SelectionElement allDayEvent;
 	
 	private DateChooser begin, end;
@@ -88,6 +97,8 @@ public class CalendarEntryForm extends FormBasicController {
 	
 	@Autowired
 	private CalendarManager calendarManager;
+	@Autowired
+	private LiveStreamService liveStreamService;
 	
 	/**
 	 * Display an event for modification or to add a new event.
@@ -200,7 +211,7 @@ public class CalendarEntryForm extends FormBasicController {
 			}
 		}
 		
-		liveStreamUrlEl.setValue(kalendarEvent.getLiveStreamUrl());
+		updateLiveStreamUI(kalendarEvent);
 	}
 	
 	@Override
@@ -277,7 +288,12 @@ public class CalendarEntryForm extends FormBasicController {
 			event.setRecurrenceRule(rrule);
 		}
 		
-		// live Stream
+		// Live Stream
+		event.setLiveStreamUrlTemplateKey(null);
+		if (liveStreamUrlTemplateEl.isVisible() && liveStreamUrlTemplateEl.isEnabled() && liveStreamUrlTemplateEl.isOneSelected()) {
+			event.setLiveStreamUrlTemplateKey(Long.valueOf(liveStreamUrlTemplateEl.getSelectedKey()));
+			event.setLiveStreamUrl(getLiveStreamUrlFromSelection());
+		}
 		if (liveStreamUrlEl.isVisible() && liveStreamUrlEl.isEnabled()) {
 			String liveStreamUrl = StringHelper.containsNonWhitespace(liveStreamUrlEl.getValue())
 					? liveStreamUrlEl.getValue()
@@ -395,9 +411,14 @@ public class CalendarEntryForm extends FormBasicController {
 		recurrenceEnd.setEnabled(!managedDates);
 		recurrenceEnd.setVisible(!chooseRecurrence.getSelectedKey().equals(RECURRENCE_NONE));
 		
+		liveStreamUrlTypeEl = uifactory.addCheckboxesHorizontal("cal.live.stream.url.type", formLayout, emptyStrings(), emptyStrings());
+		liveStreamUrlTypeEl.addActionListener(FormEvent.ONCHANGE);
+		
+		liveStreamUrlTemplateEl = uifactory.addDropdownSingleselect("cal.live.stream.url.template", formLayout, emptyStrings(), emptyStrings());
+		liveStreamUrlTemplateEl.addActionListener(FormEvent.ONCHANGE);
+		
 		liveStreamUrlEl = uifactory.addTextElement("cal.live.stream.url", 2000, event.getLiveStreamUrl(), formLayout);
-		liveStreamUrlEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.liveStreamUrl));
-		liveStreamUrlEl.setVisible(CalendarController.CALLER_LIVE_STREAM.equals(caller));
+		updateLiveStreamUI(event);
 		
 		classification = uifactory.addRadiosVertical("classification", "cal.form.class", formLayout, classKeys, classValues);
 		classification.setHelpUrlForManualPage("Calendar#_visibility");
@@ -436,6 +457,59 @@ public class CalendarEntryForm extends FormBasicController {
 			deleteEventButton.setElementCssClass("o_sel_cal_delete");
 		}
 	}
+	
+	private void updateLiveStreamUI(KalendarEvent kalendarEvent) {
+		boolean isLiveStream = CalendarController.CALLER_LIVE_STREAM.equals(caller);
+		boolean liveStreamNotManaged = !CalendarManagedFlag.isManaged(kalendarEvent, CalendarManagedFlag.liveStreamUrl);
+		
+		liveStreamUrlTypeEl.setVisible(isLiveStream && liveStreamNotManaged);
+		liveStreamUrlTemplateEl.setVisible(isLiveStream && liveStreamNotManaged);
+		liveStreamUrlEl.setVisible(isLiveStream);
+		liveStreamUrlEl.setEnabled(liveStreamNotManaged);
+		
+		liveStreamUrlEl.setValue(kalendarEvent.getLiveStreamUrl());
+
+		boolean liveStreamUrlManually = true;
+		if (liveStreamUrlTypeEl.isVisible()) {
+			List<UrlTemplate> urlTemplates = liveStreamService.getAllUrlTemplates();
+			if (urlTemplates.isEmpty()) {
+				liveStreamUrlTypeEl.setVisible(false);
+				liveStreamUrlTemplateEl.setVisible(false);
+				return;
+			}
+			
+			KeyValues typeKV = new KeyValues();
+			typeKV.add(KeyValues.entry("key", translate("cal.live.stream.url.type.manually")));
+			KeyValues urlTemplateKV = new KeyValues();
+			liveStreamUrlTypeEl.setKeysAndValues(typeKV.keys(), typeKV.values());
+			
+			urlTemplates.forEach(urlTemplate -> urlTemplateKV.add(KeyValues.entry(urlTemplate.getKey().toString(), urlTemplate.getName())));
+			urlTemplateKV.sort(KeyValues.VALUE_ASC);
+			liveStreamUrlTemplateEl.setKeysAndValues(urlTemplateKV.keys(), urlTemplateKV.values(), null);
+			liveStreamUrlTemplateEl.select(liveStreamUrlTemplateEl.getKey(0), true);
+			
+			Long urlTemplateKey = kalendarEvent.getLiveStreamUrlTemplateKey();
+			if (isValidUrlTemplateKey(urlTemplateKey)) {
+				liveStreamUrlTemplateEl.select(urlTemplateKey.toString(), true);
+				liveStreamUrlManually = false;
+			} else if (!StringHelper.containsNonWhitespace(kalendarEvent.getLiveStreamUrl())) {
+				liveStreamUrlTemplateEl.select(liveStreamUrlTemplateEl.getKey(0), true);
+				liveStreamUrlManually = false;
+			}
+			liveStreamUrlTypeEl.select(liveStreamUrlTypeEl.getKey(0), liveStreamUrlManually);
+		}
+		updateLiveStreamUI(liveStreamUrlManually);
+	}
+
+	private boolean isValidUrlTemplateKey(Long urlTemplateKey) {
+		return urlTemplateKey != null 
+				&& Arrays.stream(liveStreamUrlTemplateEl.getKeys()).anyMatch(key -> key.equals(urlTemplateKey.toString()));
+	}
+	
+	private void updateLiveStreamUI(boolean manually) {
+		liveStreamUrlTemplateEl.setVisible(!manually);
+		liveStreamUrlEl.setVisible(manually);
+	}
 
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent e) {
@@ -445,11 +519,28 @@ public class CalendarEntryForm extends FormBasicController {
 			boolean allDay = allDayEvent.isSelected(0);
 			begin.setDateChooserTimeEnabled(!allDay);
 			end.setDateChooserTimeEnabled(!allDay);
+		} else if (source == liveStreamUrlTypeEl) {
+			boolean manually = liveStreamUrlTypeEl.isAtLeastSelected(1);
+			updateLiveStreamUI(manually);
+		} else if (source == liveStreamUrlTemplateEl) {
+			doSyncLiveStreamUrl();
 		} else if(deleteEventButton == source) {
 			fireEvent(ureq, new Event("delete"));
 		}
 	}
-	
+
+	private void doSyncLiveStreamUrl() {
+		String liveStreamUrl = getLiveStreamUrlFromSelection();
+		liveStreamUrlEl.setValue(liveStreamUrl);
+	}
+
+	private String getLiveStreamUrlFromSelection() {
+		Long key = Long.valueOf(liveStreamUrlTemplateEl.getSelectedKey());
+		UrlTemplate urlTemplate = liveStreamService.getUrlTemplate(key);
+		String url = liveStreamService.concatUrls(urlTemplate);
+		return StringHelper.containsNonWhitespace(url) ? url : null;
+	}
+
 	@Override
 	protected void doDispose() {
 		//

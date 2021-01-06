@@ -701,6 +701,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		if(StringHelper.containsNonWhitespace(kEvent.getLiveStreamUrl())) {
 			vEventProperties.add(new XProperty(ICAL_X_OLAT_VIDEO_STREAM_URL, kEvent.getLiveStreamUrl()));
 		}
+		if (kEvent.getLiveStreamUrlTemplateKey() != null) {
+			vEventProperties.add(new XProperty(ICAL_X_OLAT_VIDEO_STREAM_URL_TEMPLATE_KEY, kEvent.getLiveStreamUrlTemplateKey().toString()));
+		}
 		
 		return vEvent;
 	}
@@ -888,6 +891,10 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		if(liveStreamUrl != null) {
 			calEvent.setLiveStreamUrl(liveStreamUrl.getValue());
 		}
+		
+		Property liveStreamUrlTemplateKey = event.getProperty(ICAL_X_OLAT_VIDEO_STREAM_URL_TEMPLATE_KEY);
+		if (liveStreamUrlTemplateKey != null)
+			calEvent.setLiveStreamUrlTemplateKey(Long.parseLong(liveStreamUrlTemplateKey.getValue()));
 		
 		return calEvent;
 	}
@@ -1130,9 +1137,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	@Override
 	public boolean updateEventFrom(final Kalendar cal, final KalendarEvent kalendarEvent) {
 		OLATResourceable calOres = getOresHelperFor(cal);
-		Boolean updatedSuccessful = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, () -> {
-			return updateEventAlreadyInSync(cal, kalendarEvent);
-		});
+		Boolean updatedSuccessful = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, () -> updateEventAlreadyInSync(cal, kalendarEvent));
 		return updatedSuccessful.booleanValue();
     }
 

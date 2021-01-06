@@ -33,6 +33,7 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingImpl;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -131,5 +132,48 @@ public class BigBlueButtonRecordingReferenceDAOTest extends OlatTestCase {
 		Assert.assertTrue(recordingReferences.contains(reference12));
 		Assert.assertTrue(recordingReferences.contains(reference21));
 		Assert.assertFalse(recordingReferences.contains(reference31));
+	}
+	
+	@Test
+	public void loadRecordingReferenceByKey() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-record-4");
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 4", "A description", -1, -1, false, false, true, true, false);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording - 4", null, null, group, id);
+
+		BigBlueButtonRecording recording = BigBlueButtonRecordingImpl.valueOf(UUID.randomUUID().toString(), "Recorded always", UUID.randomUUID().toString(),
+				new Date(), new Date(), "http://button.openolat.com/2", "presentation");
+		BigBlueButtonRecordingReference reference = bigBlueButtonRecordingReferenceDao.createReference(recording, meeting,
+				new BigBlueButtonRecordingsPublishedRoles[] { BigBlueButtonRecordingsPublishedRoles.all });
+		dbInstance.commitAndCloseSession();
+		
+		BigBlueButtonRecordingReference reloadReference = bigBlueButtonRecordingReferenceDao.loadRecordingReferenceByKey(reference.getKey());
+		Assert.assertEquals(reference, reloadReference);
+	}
+	
+	@Test
+	public void deleteRecordingReferences() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-record-5");
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 5", "Several recordings", -1, -1, false, false, false, false, false);
+		BigBlueButtonMeeting meeting1 = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording - 5.1", null, null, group, id);
+		BigBlueButtonMeeting meeting2 = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording - 5.2", null, null, group, id);
+		
+		BigBlueButtonRecording recording11 = BigBlueButtonRecordingImpl.valueOf(UUID.randomUUID().toString(), "Recorded A", UUID.randomUUID().toString(),
+				new Date(), new Date(), "http://button.openolat.com/5", "presentation");
+		BigBlueButtonRecordingReference reference11 = bigBlueButtonRecordingReferenceDao.createReference(recording11, meeting1, null);
+		BigBlueButtonRecording recording12 = BigBlueButtonRecordingImpl.valueOf(UUID.randomUUID().toString(), "Recorded B", UUID.randomUUID().toString(),
+				new Date(), new Date(), "http://button.openolat.com/6", "presentation");
+		BigBlueButtonRecordingReference reference12 = bigBlueButtonRecordingReferenceDao.createReference(recording12, meeting1, null);
+		BigBlueButtonRecording recording21 = BigBlueButtonRecordingImpl.valueOf(UUID.randomUUID().toString(), "Recorded C", UUID.randomUUID().toString(),
+				new Date(), new Date(), "http://button.openolat.com/7", "presentation");
+		BigBlueButtonRecordingReference reference21 = bigBlueButtonRecordingReferenceDao.createReference(recording21, meeting2, null);
+		dbInstance.commitAndCloseSession();
+		
+		bigBlueButtonRecordingReferenceDao.deleteRecordingReferences(meeting1);
+		dbInstance.commitAndCloseSession();
+		
+		List<BigBlueButtonRecordingReference> recordingReferences = bigBlueButtonRecordingReferenceDao.getRecordingReferences(Arrays.asList(meeting1, meeting2));
+		Assert.assertFalse(recordingReferences.contains(reference11));
+		Assert.assertFalse(recordingReferences.contains(reference12));
+		Assert.assertTrue(recordingReferences.contains(reference21));
 	}
 }

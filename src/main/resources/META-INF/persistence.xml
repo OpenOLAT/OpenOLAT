@@ -108,6 +108,7 @@
 		<class>org.olat.course.nodes.gta.model.TaskRevisionImpl</class>
 		<class>org.olat.course.nodes.gta.model.TaskRevisionDateImpl</class>
 		<class>org.olat.course.nodes.livestream.model.LaunchImpl</class>
+		<class>org.olat.course.nodes.livestream.model.UrlTemplateImpl</class>
 		<class>org.olat.course.certificate.model.CertificateImpl</class>
 		<class>org.olat.course.certificate.model.CertificateStandalone</class>
 		<class>org.olat.course.certificate.model.CertificateLightImpl</class>

@@ -42,7 +42,7 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class LiveStreamLaunchDAO {
+public class LaunchDAO {
 
 	@Autowired
 	private DB dbInstance;

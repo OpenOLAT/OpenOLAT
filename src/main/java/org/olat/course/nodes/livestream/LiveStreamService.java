@@ -25,6 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.cal.CourseCalendars;
+import org.olat.course.nodes.livestream.model.UrlTemplate;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -64,6 +65,24 @@ public interface LiveStreamService {
 	 * @return
 	 */
 	Long getLaunchers(RepositoryEntryRef courseEntry, String subIdent, Date from, Date to);
+	
+	UrlTemplate createUrlTemplate(String name);
+	
+	UrlTemplate updateUrlTemplate(UrlTemplate urlTemplate);
+
+	List<UrlTemplate> getAllUrlTemplates();
+
+	UrlTemplate getUrlTemplate(Long key);
+	
+	void deleteUrlTemplate(UrlTemplate urlTemplate);
+	
+	/**
+	 * Concatenate the urls of the template
+	 *
+	 * @param urlTemplate
+	 * @return
+	 */
+	String concatUrls(UrlTemplate urlTemplate);
 
 	/**
 	 * Split the url to separate urls
@@ -80,5 +99,5 @@ public interface LiveStreamService {
 	 * @return
 	 */
 	String[] getStreamingUrls(String[] urls);
-
+	
 }

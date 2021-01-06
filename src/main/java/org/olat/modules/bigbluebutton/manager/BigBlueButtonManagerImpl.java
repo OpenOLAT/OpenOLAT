@@ -51,6 +51,7 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.modules.bc.comparators.LastModificationComparator;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -439,7 +440,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		Date now = new Date();
 		Date start = meeting.getStartDate();
 		Date startWithLeadingTime = meeting.getStartWithLeadTime();
-		if(startWithLeadingTime.compareTo(now) <= 0 && start.compareTo(now) >= 0) {
+		if((startWithLeadingTime == null && meeting.isPermanent())
+				|| (startWithLeadingTime != null && startWithLeadingTime.compareTo(now) <= 0 && start.compareTo(now) >= 0)) {
 			List<VFSLeaf> slides = getSlides(meeting);
 			if(!slides.isEmpty()) {
 				BigBlueButtonErrors errors = new BigBlueButtonErrors();
@@ -480,7 +482,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			}
 		}
 		return meeting;
-	}	
+	}
 
 	@Override
 	public BigBlueButtonMeetingTemplate createAndPersistTemplate(String name) {
@@ -704,7 +706,13 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private void deleteRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
 		List<BigBlueButtonRecordingWithReference> recordingsAndRefs = getRecordingAndReferences(meeting, errors);
 		if(recordingsAndRefs != null && !recordingsAndRefs.isEmpty()) {
+			BigBlueButtonRecordingsHandler recordingsHanlder = getRecordingsHandler();
+			boolean defaultPermanent = recordingsHanlder.allowPermanentRecordings()
+					&& bigBlueButtonModule.isRecordingsPermanent();
+			
 			List<BigBlueButtonRecording> recordings = recordingsAndRefs.stream()
+					.filter(r -> (r.getReference().getPermanent() == null && !defaultPermanent)
+							|| (r.getReference().getPermanent() != null && !r.getReference().getPermanent().booleanValue()))
 					.map(BigBlueButtonRecordingWithReference::getRecording)
 					.collect(Collectors.toList());
 			getRecordingsHandler().deleteRecordings(recordings, meeting, errors);
@@ -1064,6 +1072,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			if(!slides.isEmpty()) {
 				MapperKey mapperKey = mapperService.register(null,  meeting.getMeetingId(), new SlidesContainerMapper(slidesContainer), 360);
 				String url = Settings.createServerURI() + mapperKey.getUrl() + "/slides/";
+				Collections.sort(slides, new LastModificationComparator());
 				String slidesXml = slidesDocument(url, slides);
 				uriBuilder.xmlPayload(slidesXml);
 			}
@@ -1158,6 +1167,14 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		return bigBlueButtonRecordingReferenceDao.getRecordingReferences(meetings);
 	}
 	
+	@Override
+	public BigBlueButtonRecordingReference getRecordingReference(BigBlueButtonRecordingReference reference) {
+		if(reference == null || reference.getKey() == null) {
+			return null;
+		}
+		return bigBlueButtonRecordingReferenceDao.loadRecordingReferenceByKey(reference.getKey());
+	}
+
 	@Override
 	public BigBlueButtonRecordingReference updateRecordingReference(BigBlueButtonRecordingReference reference) {
 		return bigBlueButtonRecordingReferenceDao.updateRecordingReference(reference);

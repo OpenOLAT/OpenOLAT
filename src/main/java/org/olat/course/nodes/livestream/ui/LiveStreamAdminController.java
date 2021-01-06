@@ -19,168 +19,90 @@
  */
 package org.olat.course.nodes.livestream.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
-import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
-import static org.olat.course.nodes.livestream.ui.LiveStreamUIFactory.validateInteger;
-import static org.olat.course.nodes.livestream.ui.LiveStreamUIFactory.validateMandatory;
-
-import java.util.Arrays;
-
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.course.nodes.livestream.LiveStreamModule;
-import org.olat.course.nodes.livestream.paella.PlayerProfile;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
- * Initial date: 5 Jun 2019<br>
+ * Initial date: 4 Jan 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LiveStreamAdminController extends FormBasicController {
+public class LiveStreamAdminController extends BasicController {
 	
-	private static final String[] ENABLED_KEYS = new String[]{"on"};
+	private static final String SETTINGS_RES_TYPE = "Settings";
+	private static final String URL_TEMPLATES_RES_TYPE = "UrlTemplates";
 	
-	private MultipleSelectionElement enabledEl;
-	private MultipleSelectionElement multiStreamEnabledEl;
-	private TextElement urlSeparatorEl;
-	private TextElement bufferBeforeMinEl;
-	private TextElement bufferAfterMinEl;
-	private MultipleSelectionElement coachCanEditEl;
-	private SingleSelection playerProfileEl;
+	private VelocityContainer mainVC;
+	private SegmentViewComponent segmentView;
+	private Link settingsLink;
+	private Link urlTemplatesLink;
 	
-	@Autowired
-	private LiveStreamModule liveStreamModule;
+	private LiveStreamAdminSettingsController settingsCtrl;
+	private UrlTemplateListController urlTemplatesCtrl;
 
 	public LiveStreamAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
-		initForm(ureq);
+		super(ureq, wControl);
+		mainVC = createVelocityContainer("admin");
+		
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		settingsLink = LinkFactory.createLink("admin.settings", mainVC, this);
+		segmentView.addSegment(settingsLink, true);
+		urlTemplatesLink = LinkFactory.createLink("admin.url.templates", mainVC, this);
+		segmentView.addSegment(urlTemplatesLink, false);
+
+		doOpenSettings(ureq);
+		putInitialPanel(mainVC);
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
-		generalCont.setFormTitle(translate("admin.general.title"));
-		generalCont.setRootForm(mainForm);
-		formLayout.add("genearl", generalCont);
-		
-		enabledEl = uifactory.addCheckboxesHorizontal("admin.module.enabled", generalCont, ENABLED_KEYS,
-				translateAll(getTranslator(), ENABLED_KEYS));
-		enabledEl.select(ENABLED_KEYS[0], liveStreamModule.isEnabled());
-		
-		multiStreamEnabledEl = uifactory.addCheckboxesHorizontal("admin.multi.stream.enabled", generalCont,
-				ENABLED_KEYS, translateAll(getTranslator(), ENABLED_KEYS));
-		multiStreamEnabledEl.addActionListener(FormEvent.ONCHANGE);
-		multiStreamEnabledEl.select(ENABLED_KEYS[0], liveStreamModule.isMultiStreamEnabled());
-		
-		urlSeparatorEl = uifactory.addTextElement("admin.url.separator", 10, liveStreamModule.getUrlSeparator(), generalCont);
-		urlSeparatorEl.setMandatory(true);
-		urlSeparatorEl.setHelpTextKey("admin.url.separator.help", null);
-		
-		FormLayoutContainer defaultValuesCont = FormLayoutContainer.createDefaultFormLayout("default_values", getTranslator());
-		defaultValuesCont.setFormTitle(translate("admin.default.values.title"));
-		defaultValuesCont.setFormDescription(translate("admin.default.values.desc"));
-		defaultValuesCont.setRootForm(mainForm);
-		formLayout.add("defaultValues", defaultValuesCont);
-
-		int bufferBeforeMin = liveStreamModule.getBufferBeforeMin();
-		bufferBeforeMinEl = uifactory.addTextElement("admin.buffer.before.min", 4, String.valueOf(bufferBeforeMin),
-				defaultValuesCont);
-		bufferBeforeMinEl.setMandatory(true);
-
-		int bufferAfterMin = liveStreamModule.getBufferAfterMin();
-		bufferAfterMinEl = uifactory.addTextElement("admin.buffer.after.min", 4, String.valueOf(bufferAfterMin),
-				defaultValuesCont);
-		bufferAfterMinEl.setMandatory(true);
-		
-		coachCanEditEl = uifactory.addCheckboxesHorizontal("admin.coach.edit", defaultValuesCont, ENABLED_KEYS,
-				translateAll(getTranslator(), ENABLED_KEYS));
-		boolean coachCanEdit = liveStreamModule.isEditCoach();
-		coachCanEditEl.select(ENABLED_KEYS[0], coachCanEdit);
-		
-		KeyValues playerProfileKV = new KeyValues();
-		for (PlayerProfile playerProfile : PlayerProfile.values()) {
-			playerProfileKV.add(entry(playerProfile.name(), translate(playerProfile.getI18nKey())));
-		}
-		playerProfileEl = uifactory.addDropdownSingleselect("admin.player.profile", defaultValuesCont, playerProfileKV.keys(),
-				playerProfileKV.values());
-		String playerProfile = liveStreamModule.getPlayerProfile();
-		if (Arrays.asList(playerProfileEl.getKeys()).contains(playerProfile)) {
-			playerProfileEl.select(playerProfile, true);
-		}
-
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		formLayout.add("buttons", buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
-		
-		updateUI();
-	}
-
-	private void updateUI() {
-		boolean multiStream = multiStreamEnabledEl.isAtLeastSelected(1);
-		urlSeparatorEl.setVisible(multiStream);
-		playerProfileEl.setVisible(multiStream);
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == multiStreamEnabledEl) {
-			updateUI();
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-
-		allOk &= validateMandatory(urlSeparatorEl);
-		allOk &= validateInteger(bufferBeforeMinEl, true);
-		allOk &= validateInteger(bufferAfterMinEl, true);
-
-		return allOk;
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		boolean enabled = enabledEl.isAtLeastSelected(1);
-		liveStreamModule.setEnabled(enabled);
-		
-		boolean multiStreamEnabled = multiStreamEnabledEl.isAtLeastSelected(1);
-		liveStreamModule.setMultiStreamEnabled(multiStreamEnabled);
-		
-		if (urlSeparatorEl.isVisible()) {
-			String urlSeparator = urlSeparatorEl.getValue();
-			liveStreamModule.setUrlSeparator(urlSeparator);
-		}
-		
-		int bufferBeforeMin = Integer.parseInt(bufferBeforeMinEl.getValue());
-		liveStreamModule.setBufferBeforeMin(bufferBeforeMin);
-		
-		int bufferAfterMin = Integer.parseInt(bufferAfterMinEl.getValue());
-		liveStreamModule.setBufferAfterMin(bufferAfterMin);
-		
-		boolean coachCanEdit = coachCanEditEl.isAtLeastSelected(1);
-		liveStreamModule.setEditCoach(coachCanEdit);
-		
-		if (playerProfileEl.isVisible()) {
-			String playerProfile = playerProfileEl.getSelectedKey();
-			liveStreamModule.setPlayerProfile(playerProfile);
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if (source == segmentView) {
+			if(event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = mainVC.getComponent(segmentCName);
+				if (clickedLink == settingsLink) {
+					doOpenSettings(ureq);
+				} else if (clickedLink == urlTemplatesLink){
+					doOpenUrlTemplates(ureq);
+				}
+			}
 		}
 	}
 	
+	private void doOpenSettings(UserRequest ureq) {
+		if (settingsCtrl != null) {
+			removeAsListenerAndDispose(settingsCtrl);
+		}
+		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(SETTINGS_RES_TYPE), null);
+		settingsCtrl = new LiveStreamAdminSettingsController(ureq, swControl);
+		listenTo(settingsCtrl);
+		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
+	}
+	
+	private void doOpenUrlTemplates(UserRequest ureq) {
+		if (urlTemplatesCtrl != null) {
+			removeAsListenerAndDispose(urlTemplatesCtrl);
+		}
+		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(URL_TEMPLATES_RES_TYPE), null);
+		urlTemplatesCtrl = new UrlTemplateListController(ureq, swControl);
+		listenTo(urlTemplatesCtrl);
+		mainVC.put("segmentCmp", urlTemplatesCtrl.getInitialComponent());
+	}
+
 	@Override
 	protected void doDispose() {
 		//

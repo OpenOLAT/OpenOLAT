@@ -41,10 +41,12 @@ implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow> {
 	private static final BRecordingsCols[] COLS = BRecordingsCols.values();
 	
 	private final Locale locale;
+	private final Boolean defaultPermanentRecording;
 	
-	public BigBlueButtonRecordingTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public BigBlueButtonRecordingTableModel(FlexiTableColumnModel columnsModel, Boolean defaultPermanentRecording, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+		this.defaultPermanentRecording = defaultPermanentRecording;
 	}
 
 	@Override
@@ -68,15 +70,25 @@ implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow> {
 			case type: return row.getType();
 			case start: return row.getStart();
 			case end: return row.getEnd();
+			case permanent: return getPermanent(row);
 			case open: return row.isPublished();
 			case publish: return row.getPublishLink();
+			case tools: return row.getToolsLink();
 			default: return "ERROR";
 		}
+	}
+	
+	private Boolean getPermanent(BigBlueButtonRecordingRow row) {
+		Boolean permanent = row.getReference().getPermanent();
+		if(permanent == null) {
+			permanent = defaultPermanentRecording;
+		}
+		return permanent;
 	}
 
 	@Override
 	public DefaultFlexiTableDataModel<BigBlueButtonRecordingRow> createCopyWithEmptyList() {
-		return new BigBlueButtonRecordingTableModel(getTableColumnModel(), locale);
+		return new BigBlueButtonRecordingTableModel(getTableColumnModel(), defaultPermanentRecording, locale);
 	}
 	
 	public enum BRecordingsCols implements FlexiSortableColumnDef {
@@ -86,7 +98,9 @@ implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow> {
 		start("table.header.recording.start"),
 		end("table.header.recording.end"),
 		open("table.header.recording.open"),
-		publish("table.header.publish");
+		publish("table.header.publish"),
+		permanent("table.header.recording.permanent"),
+		tools("table.header.actions");
 		
 		private final String i18nHeaderKey;
 		

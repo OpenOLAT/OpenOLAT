@@ -53,7 +53,6 @@ public class LiveStreamStatisticController extends FormBasicController {
 	private LiveStreamEventDataModel dataModel;
 	
 	private RepositoryEntry courseEntry;
-	private String courseNodeIdent;
 	private final CourseCalendars calendars;
 	private final int bufferBeforeMin;
 	
@@ -61,10 +60,9 @@ public class LiveStreamStatisticController extends FormBasicController {
 	private LiveStreamService liveStreamService;
 
 	public LiveStreamStatisticController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
-			String courseNodeIdent, ModuleConfiguration moduleConfiguration, CourseCalendars calendars) {
+			ModuleConfiguration moduleConfiguration, CourseCalendars calendars) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.courseEntry = courseEntry;
-		this.courseNodeIdent = courseNodeIdent;
 		this.calendars = calendars;
 		
 		bufferBeforeMin = moduleConfiguration.getIntegerSafe(LiveStreamCourseNode.CONFIG_BUFFER_BEFORE_MIN, 0);
@@ -101,6 +99,8 @@ public class LiveStreamStatisticController extends FormBasicController {
 		List<LiveStreamEventRow> rows = new ArrayList<>(upcomingEvents.size());
 		for (LiveStreamEvent liveStreamEvent : upcomingEvents) {
 			LiveStreamEventRow row = new LiveStreamEventRow(liveStreamEvent);
+			// Do not filter the launches by course node, because only the total number of launches is 
+			// important, regardless of the course node.
 			Long viewers = liveStreamService.getLaunchers(courseEntry, null, liveStreamEvent.getBegin(),
 					liveStreamEvent.getEnd());
 			row.setViewers(viewers);

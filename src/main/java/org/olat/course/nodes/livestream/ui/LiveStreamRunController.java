@@ -140,8 +140,8 @@ public class LiveStreamRunController extends BasicController {
 		if (statisticCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(STATISTIC_RES_TYPE), null);
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			statisticCtrl = new LiveStreamStatisticController(ureq, swControl, courseEntry , courseNodeIdent,
-					moduleConfiguration, calendars);
+			statisticCtrl = new LiveStreamStatisticController(ureq, swControl, courseEntry , moduleConfiguration,
+					calendars);
 			listenTo(statisticCtrl);
 		} else {
 			statisticCtrl.refreshData();

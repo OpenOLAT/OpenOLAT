@@ -1277,6 +1277,7 @@ create table o_bbb_recording (
    lastmodified timestamp not null,
    b_recording_id varchar(255) not null,
    b_publish_to varchar(128),
+   b_permanent bool default null,
    b_start_date timestamp default null,
    b_end_date timestamp default null,
    b_url varchar(1024),
@@ -3121,6 +3122,16 @@ create table o_livestream_launch (
    fk_entry int8 not null,
    l_subident varchar(128) not null,
    fk_identity int8 not null,
+   primary key (id)
+);
+
+create table o_livestream_url_template (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   l_name varchar(64) not null,
+   l_url1 varchar(2048),
+   l_url2 varchar(2048),
    primary key (id)
 );
 

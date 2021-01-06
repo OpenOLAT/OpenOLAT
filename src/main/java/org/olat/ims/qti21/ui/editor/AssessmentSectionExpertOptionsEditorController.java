@@ -55,16 +55,17 @@ public class AssessmentSectionExpertOptionsEditorController extends ItemSessionC
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_assessment_section_expert_options");
-		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_section");
+		setFormContextHelp("Configure tests#_config_expert");
 		if(!editable) {
 			setFormWarning("warning.alien.assessment.test");
 		}
 		
 		super.initForm(formLayout, listener, ureq);
-		allowSkippingEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_section");
-		allowCommentEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_section");
-		allowReviewEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_section");
-		showSolutionEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_section");
+		limitAttemptsEl.setHelpUrlForManualPage("Configure tests#_config_expert");
+		allowSkippingEl.setHelpUrlForManualPage("Configure tests#_config_expert");
+		allowCommentEl.setHelpUrlForManualPage("Configure tests#_config_expert");
+		allowReviewEl.setHelpUrlForManualPage("Configure tests#_config_expert");
+		showSolutionEl.setHelpUrlForManualPage("Configure tests#_config_expert");
 		
 		//visible
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };

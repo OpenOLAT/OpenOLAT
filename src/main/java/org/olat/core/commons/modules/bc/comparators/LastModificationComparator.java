@@ -17,41 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.bigbluebutton;
+package org.olat.core.commons.modules.bc.comparators;
 
-import java.util.Date;
+import java.util.Comparator;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.util.vfs.VFSItem;
 
 /**
  * 
- * Initial date: 7 août 2020<br>
+ * Initial date: 4 janv. 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface BigBlueButtonRecordingReference extends ModifiedInfo, CreateInfo {
-	
-	public Long getKey();
-	
-	public String getRecordingId();
-	
-	public Date getStartDate();
+public class LastModificationComparator implements Comparator<VFSItem> {
 
-	public Date getEndDate();
-
-	public String getUrl();
-
-	public String getType();
-	
-	public Boolean getPermanent();
-	
-	public void setPermanent(Boolean permanent);
-	
-	public BigBlueButtonRecordingsPublishedRoles[] getPublishToEnum();
-	
-	public void setPublishToEnum(BigBlueButtonRecordingsPublishedRoles[] publishTo);
-	
-	public BigBlueButtonMeeting getMeeting();
-
+	@Override
+	public int compare(VFSItem m1, VFSItem m2) {
+		if(m1 == null) return -1;
+		if(m2 == null) return 1;
+		
+		long t1 = m1.getLastModified();
+		long t2 = m2.getLastModified();
+		return Long.compare(t1, t2);
+	}
 }

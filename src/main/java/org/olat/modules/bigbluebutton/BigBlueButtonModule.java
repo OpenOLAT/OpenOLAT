@@ -57,8 +57,9 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_USER_BANDWIDTH_REQUIREMENT = "vc.bigbluebutton.user.bandwidth.requirement";
 	private static final String PROP_RECORDING_HANDLER_ID = "vc.bigbluebutton.recording.handler.id";
 	private static final String PROP_MAX_UPLOAD_SIZE = "vc.bigbluebutton.max.upload.size";
+	private static final String PROP_RECORDINGS_DEF_PERMANENT = "vc.bigbluebutton.recordings.permanent";
 	
-	public static final Set<String> SLIDES_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png", "application/pdf",
+	public static final Set<String> SLIDES_MIME_TYPES = Set.of("image/jpg", "image/jpeg", "image/png", "application/pdf",
 			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 			"application/vnd.openxmlformats-officedocument.presentationml.presentation",
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -105,6 +106,8 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	
 	@Value("${vc.bigbluebutton.recording.handler.id:native}")
 	private String recordingHandlerId;
+	@Value("${vc.bigbluebutton.recordings.permanent:false}")
+	private String recordingsPermanent;
 	
 	@Autowired
 	public BigBlueButtonModule(CoordinatorManager coordinatorManager) {
@@ -145,6 +148,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		}
 
 		recordingHandlerId = getStringPropertyValue(PROP_RECORDING_HANDLER_ID, recordingHandlerId);
+		recordingsPermanent = getStringPropertyValue(PROP_RECORDINGS_DEF_PERMANENT, recordingsPermanent);
 	}
 	
 	@Override
@@ -347,6 +351,20 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	public void setRecordingHandlerId(String recordingHandlerId) {
 		this.recordingHandlerId = recordingHandlerId;
 		setStringProperty(PROP_RECORDING_HANDLER_ID, recordingHandlerId, true);
+	}
+
+	/**
+	 * Default value for the recordings references.
+	 * 
+	 * @return true if the recordings must be held indefinitely
+	 */
+	public boolean isRecordingsPermanent() {
+		return "true".equals(recordingsPermanent);
+	}
+
+	public void setRecordingsPermanent(boolean permanent) {
+		recordingsPermanent = permanent ? "true" : "false";
+		setStringProperty(PROP_RECORDINGS_DEF_PERMANENT, recordingsPermanent, true);
 	}
 
 	public int getHttpConnectTimeout() {
