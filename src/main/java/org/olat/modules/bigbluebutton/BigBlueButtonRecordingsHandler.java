@@ -40,6 +40,12 @@ public interface BigBlueButtonRecordingsHandler {
 	
 	public boolean canDeleteRecordings();
 	
+	/**
+	 * 
+	 * @return true if the back-end can held the recordings indefinitely.
+	 */
+	public boolean allowPermanentRecordings();
+	
 	public String getRecordingInfo(Locale locale);
 
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);

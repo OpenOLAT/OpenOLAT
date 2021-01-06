@@ -67,6 +67,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	private MultipleSelectionElement enabledForEl;
 	private MultipleSelectionElement permanentForEl;
 	private SingleSelection recordingsHandlerEl;
+	private MultipleSelectionElement recordingPermanentEl;
 	private TextElement slidesUploadLimitEl;
 	
 	private FormLink addServerButton;
@@ -137,11 +138,18 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		}
 		recordingsHandlerEl = uifactory.addDropdownSingleselect("bigbluebutton.recording.handler", formLayout,
 				handlersKeyPairs.keys(), handlersKeyPairs.values());
+		recordingsHandlerEl.addActionListener(FormEvent.ONCHANGE);
 		String selectedHandlerId = bigBlueButtonModule.getRecordingHandlerId();
 		if(handlersKeyPairs.containsKey(selectedHandlerId)) {
 			recordingsHandlerEl.select(selectedHandlerId, true);
 		} else {
 			recordingsHandlerEl.select(BigBlueButtonNativeRecordingsHandler.NATIVE_RECORDING_HANDLER_ID, true);
+		}
+		
+		recordingPermanentEl = uifactory.addCheckboxesHorizontal("permanent.rec", "bigbluebutton.recording.permanent", formLayout,
+				ENABLED_KEY, new String[] { "" });
+		if(bigBlueButtonModule.isRecordingsPermanent()) {
+			recordingPermanentEl.select(ENABLED_KEY[0], true);
 		}
 		
 		Integer maxSize = bigBlueButtonModule.getMaxUploadSize();
@@ -166,6 +174,16 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		enabledForEl.setVisible(enabled);
 		serversTableEl.setVisible(enabled);
 		addServerButton.setVisible(enabled);
+		recordingsHandlerEl.setVisible(enabled);
+		slidesUploadLimitEl.setVisible(enabled);
+		
+		boolean allowPermanentRecordings = false;
+		for(BigBlueButtonRecordingsHandler recordingsHandler:recordingsHandlers) {
+			if(recordingsHandler.getId().equals(recordingsHandlerEl.getSelectedKey())) {
+				allowPermanentRecordings = recordingsHandler.allowPermanentRecordings();
+			}
+		}
+		recordingPermanentEl.setVisible(enabled && allowPermanentRecordings);
 	}
 	
 	private void loadModel() {
@@ -234,7 +252,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == moduleEnabled) {
+		if(source == moduleEnabled || recordingsHandlerEl == source) {
 			updateUI();
 		} else if(addServerButton == source) {
 			addServer(ureq);
@@ -263,6 +281,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 			bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
 			bigBlueButtonModule.setRecordingHandlerId(recordingsHandlerEl.getSelectedKey());
 			bigBlueButtonModule.setMaxUploadSize(Integer.valueOf(slidesUploadLimitEl.getValue()));
+			bigBlueButtonModule.setRecordingsPermanent(recordingPermanentEl.isVisible() && recordingPermanentEl.isAtLeastSelected(1));
 		}
 		CollaborationToolsFactory.getInstance().initAvailableTools();
 	}

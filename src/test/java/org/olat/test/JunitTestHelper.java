@@ -108,7 +108,7 @@ public class JunitTestHelper {
 	public static final OLATResource createRandomResource() {
 		String resName = UUID.randomUUID().toString().replace("-", "");
 		long resId = randomResId.nextInt(Integer.MAX_VALUE - 10) + 1;
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, new Long(resId));
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, Long.valueOf(resId));
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(ores);
 		OLATResourceManager.getInstance().saveOLATResource(resource);
 		return resource;

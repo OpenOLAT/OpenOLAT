@@ -1093,7 +1093,11 @@ public class FormUIFactory {
 	}
 	
 	public FormLink addFormLink(String name, String cmd, String i18nLink, FlexiTableElement table) {
-		FormLinkImpl fte = new FormLinkImpl(name, cmd, i18nLink, Link.LINK);
+		return addFormLink(name, cmd, i18nLink, table, Link.LINK);
+	}
+	
+	public FormLink addFormLink(String name, String cmd, String i18nLink, FlexiTableElement table, int presentation) {
+		FormLinkImpl fte = new FormLinkImpl(name, cmd, i18nLink, presentation);
 		fte.setI18nKey(i18nLink);
 		setLabelIfNotNull(null, fte);
 		

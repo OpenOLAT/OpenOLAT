@@ -96,6 +96,11 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 	public boolean canDeleteRecordings() {
 		return true;
 	}
+	
+	@Override
+	public boolean allowPermanentRecordings() {
+		return true;
+	}
 
 	@Override
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {

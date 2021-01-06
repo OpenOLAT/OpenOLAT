@@ -1319,6 +1319,7 @@ create table o_bbb_recording (
    lastmodified date not null,
    b_recording_id varchar(255) not null,
    b_publish_to varchar(128),
+   b_permanent number default null,
    b_start_date date default null,
    b_end_date date default null,
    b_url varchar(1024),

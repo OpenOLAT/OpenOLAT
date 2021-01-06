@@ -67,7 +67,7 @@ public class BigBlueButtonRecordingReferenceDAO {
 	}
 	
 	public List<BigBlueButtonRecordingReference> getRecordingReferences(BigBlueButtonMeeting meeting) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select record from bigbluebuttonrecording as record")
 		  .append(" where record.meeting.key=:meetingKey");
 		
@@ -75,6 +75,18 @@ public class BigBlueButtonRecordingReferenceDAO {
 				.createQuery(sb.toString(), BigBlueButtonRecordingReference.class)
 				.setParameter("meetingKey", meeting.getKey())
 				.getResultList();
+	}
+	
+	public BigBlueButtonRecordingReference loadRecordingReferenceByKey(Long referenceKey) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select record from bigbluebuttonrecording as record")
+		  .append(" where record.key=:referenceKey");
+		
+		List<BigBlueButtonRecordingReference> refs = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BigBlueButtonRecordingReference.class)
+				.setParameter("referenceKey", referenceKey)
+				.getResultList();
+		return refs == null || refs.isEmpty() ? null : refs.get(0);
 	}
 	
 	public List<BigBlueButtonRecordingReference> getRecordingReferences(Collection<BigBlueButtonMeeting> meetings) {

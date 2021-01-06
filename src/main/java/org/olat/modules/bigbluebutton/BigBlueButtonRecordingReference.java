@@ -32,6 +32,8 @@ import org.olat.core.id.ModifiedInfo;
  */
 public interface BigBlueButtonRecordingReference extends ModifiedInfo, CreateInfo {
 	
+	public Long getKey();
+	
 	public String getRecordingId();
 	
 	public Date getStartDate();
@@ -41,6 +43,10 @@ public interface BigBlueButtonRecordingReference extends ModifiedInfo, CreateInf
 	public String getUrl();
 
 	public String getType();
+	
+	public Boolean getPermanent();
+	
+	public void setPermanent(Boolean permanent);
 	
 	public BigBlueButtonRecordingsPublishedRoles[] getPublishToEnum();
 	

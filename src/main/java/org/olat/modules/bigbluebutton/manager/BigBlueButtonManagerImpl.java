@@ -691,7 +691,13 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private void deleteRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
 		List<BigBlueButtonRecordingWithReference> recordingsAndRefs = getRecordingAndReferences(meeting, errors);
 		if(recordingsAndRefs != null && !recordingsAndRefs.isEmpty()) {
+			BigBlueButtonRecordingsHandler recordingsHanlder = getRecordingsHandler();
+			boolean defaultPermanent = recordingsHanlder.allowPermanentRecordings()
+					&& bigBlueButtonModule.isRecordingsPermanent();
+			
 			List<BigBlueButtonRecording> recordings = recordingsAndRefs.stream()
+					.filter(r -> (r.getReference().getPermanent() == null && !defaultPermanent)
+							|| (r.getReference().getPermanent() != null && !r.getReference().getPermanent().booleanValue()))
 					.map(BigBlueButtonRecordingWithReference::getRecording)
 					.collect(Collectors.toList());
 			getRecordingsHandler().deleteRecordings(recordings, meeting, errors);
@@ -1146,6 +1152,14 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		return bigBlueButtonRecordingReferenceDao.getRecordingReferences(meetings);
 	}
 	
+	@Override
+	public BigBlueButtonRecordingReference getRecordingReference(BigBlueButtonRecordingReference reference) {
+		if(reference == null || reference.getKey() == null) {
+			return null;
+		}
+		return bigBlueButtonRecordingReferenceDao.loadRecordingReferenceByKey(reference.getKey());
+	}
+
 	@Override
 	public BigBlueButtonRecordingReference updateRecordingReference(BigBlueButtonRecordingReference reference) {
 		return bigBlueButtonRecordingReferenceDao.updateRecordingReference(reference);

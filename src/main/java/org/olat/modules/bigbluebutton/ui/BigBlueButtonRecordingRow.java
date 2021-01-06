@@ -34,6 +34,7 @@ import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
  */
 public class BigBlueButtonRecordingRow {
 	
+	private FormLink toolsLink;
 	private FormLink publishLink;
 	private final boolean published;
 	private BigBlueButtonRecordingWithReference recordingReference;
@@ -77,5 +78,13 @@ public class BigBlueButtonRecordingRow {
 
 	public void setPublishLink(FormLink publishLink) {
 		this.publishLink = publishLink;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 }

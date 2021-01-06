@@ -88,6 +88,11 @@ public class BigBlueButtonNativeRecordingsHandler implements BigBlueButtonRecord
 	}
 
 	@Override
+	public boolean allowPermanentRecordings() {
+		return false;
+	}
+
+	@Override
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
 		if(meeting == null || meeting.getServer() == null || !meeting.getServer().isEnabled()) {
 			return new ArrayList<>();

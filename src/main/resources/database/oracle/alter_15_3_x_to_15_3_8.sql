@@ -3,6 +3,8 @@ alter table o_bbb_meeting add b_password varchar2(64) default null;
 alter table o_bbb_meeting add b_directory varchar2(64) default null;
 alter table o_bbb_meeting add constraint bbb_dir_idx unique (b_directory);
 
+alter table o_bbb_recording add b_permanent number default null;
+
 -- Livestream
 create table o_livestream_url_template (
    id bigserial,
