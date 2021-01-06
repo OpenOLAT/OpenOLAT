@@ -42,10 +42,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LiveStreamLaunchDAOTest extends OlatTestCase {
+public class LaunchDAOTest extends OlatTestCase {
 	
 	@Autowired
-	private LiveStreamLaunchDAO sut;
+	private LaunchDAO sut;
 	@Autowired
 	private DB dbInstance;
 	

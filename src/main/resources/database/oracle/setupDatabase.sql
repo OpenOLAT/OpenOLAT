@@ -3124,6 +3124,15 @@ create table o_livestream_launch (
    fk_identity  number(20) not null,
    primary key (id)
 );
+create table o_livestream_url_template (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   l_name varchar2(64) not null,
+   l_url1 varchar2(2048),
+   l_url2 varchar2(2048),
+   primary key (id)
+);
 
 -- grading
 create table o_grad_to_identity (

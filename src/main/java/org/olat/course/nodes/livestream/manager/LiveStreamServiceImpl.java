@@ -49,6 +49,7 @@ import org.olat.course.nodes.livestream.LiveStreamEvent;
 import org.olat.course.nodes.livestream.LiveStreamModule;
 import org.olat.course.nodes.livestream.LiveStreamService;
 import org.olat.course.nodes.livestream.model.LiveStreamEventImpl;
+import org.olat.course.nodes.livestream.model.UrlTemplate;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.DisposableBean;
@@ -74,7 +75,9 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
-	private LiveStreamLaunchDAO launchDao;
+	private UrlTemplateDAO urlTemplateDao;
+	@Autowired
+	private LaunchDAO launchDao;
 
 	@Override
 	public ScheduledExecutorService getScheduler() {
@@ -107,7 +110,7 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 		cTo.add(Calendar.MINUTE, bufferBeforeMin);
 		Date to = cTo.getTime();
 		
-		return getLiveStreamEvents(calendars, from, to);
+		return getLiveStreamEvents(calendars, from, to, true);
 	}
 
 	@Override
@@ -121,7 +124,7 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 		cTo.add(Calendar.MINUTE, bufferBeforeMin);
 		Date to = cTo.getTime();
 		
-		return getLiveStreamEvents(calendars, from, to);
+		return getLiveStreamEvents(calendars, from, to, false);
 	}
 	
 	@Override
@@ -136,18 +139,16 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 		cTo.add(Calendar.YEAR, 10);
 		Date to = cTo.getTime();
 		
-		return getLiveStreamEvents(calendars, from, to).stream()
+		return getLiveStreamEvents(calendars, from, to, false).stream()
 				.filter(notStartedFilter(from))
 				.collect(Collectors.toList());
 	}
 
 	private Predicate<LiveStreamEvent> notStartedFilter(Date from) {
-		return (LiveStreamEvent e) -> {
-			return !e.getBegin().before(from);
-			};
+		return (LiveStreamEvent e) -> !e.getBegin().before(from);
 	}
 
-	private List<? extends LiveStreamEvent> getLiveStreamEvents(CourseCalendars calendars, Date from, Date to) {
+	private List<? extends LiveStreamEvent> getLiveStreamEvents(CourseCalendars calendars, Date from, Date to, boolean syncUrl) {
 		List<LiveStreamEvent> liveStreamEvents = new ArrayList<>();
 		for (KalendarRenderWrapper cal : calendars.getCalendars()) {
 			if(cal != null) {
@@ -160,9 +161,9 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 					
 					if (isLiveStream(event)) {
 						boolean timeOnly = !privateEventsVisible && event.getClassification() == KalendarEvent.CLASS_X_FREEBUSY;
-						LiveStreamEventImpl liveStreamEvent = toLiveStreamEvent(event, timeOnly);
+						LiveStreamEventImpl liveStreamEvent = toLiveStreamEvent(event, timeOnly, syncUrl);
 						liveStreamEvents.add(liveStreamEvent);
-					};
+					}
 				}
 			}
 		}
@@ -174,7 +175,7 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 		return event.getLiveStreamUrl() != null;
 	}
 
-	private LiveStreamEventImpl toLiveStreamEvent(KalendarEvent event, boolean timeOnly) {
+	private LiveStreamEventImpl toLiveStreamEvent(KalendarEvent event, boolean timeOnly, boolean syncUrl) {
 		LiveStreamEventImpl liveStreamEvent = new LiveStreamEventImpl();
 		liveStreamEvent.setId(event.getID());
 		liveStreamEvent.setAllDayEvent(event.isAllDayEvent());
@@ -182,6 +183,14 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 		Date end = CalendarUtils.endOf(event);
 		liveStreamEvent.setEnd(end);
 		liveStreamEvent.setLiveStreamUrl(event.getLiveStreamUrl());
+		if (syncUrl && event.getLiveStreamUrlTemplateKey() != null) {
+			Long key = Long.valueOf(event.getLiveStreamUrlTemplateKey());
+			UrlTemplate urlTemplate = urlTemplateDao.loadByKey(key);
+			String concatUrls = concatUrls(urlTemplate);
+			if (StringHelper.containsNonWhitespace(concatUrls)) {
+				liveStreamEvent.setLiveStreamUrl(concatUrls);
+			}
+		}
 		if (!timeOnly) {
 			liveStreamEvent.setSubject(event.getSubject());
 			liveStreamEvent.setDescription(event.getDescription());
@@ -200,6 +209,41 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 		return launchDao.getLaunchers(courseEntry, subIdent, from, to);
 	}
 
+	@Override
+	public UrlTemplate createUrlTemplate(String name) {
+		return urlTemplateDao.create(name);
+	}
+
+	@Override
+	public UrlTemplate updateUrlTemplate(UrlTemplate urlTemplate) {
+		return urlTemplateDao.update(urlTemplate);
+	}
+
+	@Override
+	public List<UrlTemplate> getAllUrlTemplates() {
+		return urlTemplateDao.loadAll();
+	}
+
+	@Override
+	public UrlTemplate getUrlTemplate(Long key) {
+		return urlTemplateDao.loadByKey(key);
+	}
+
+	@Override
+	public void deleteUrlTemplate(UrlTemplate urlTemplate) {
+		urlTemplateDao.delete(urlTemplate);
+	}
+
+	@Override
+	public String concatUrls(UrlTemplate urlTemplate) {
+		if (urlTemplate == null) return null;
+		
+		String urls = List.of(urlTemplate.getUrl1(), urlTemplate.getUrl2()).stream()
+				.filter(StringHelper::containsNonWhitespace)
+				.collect(Collectors.joining(liveStreamModule.getUrlSeparator()));
+		return StringHelper.containsNonWhitespace(urls)? urls: null;
+	}
+	
 	@Override
 	public String[] splitUrl(String url) {
 		if (!StringHelper.containsNonWhitespace(url)) return new String[0];
@@ -239,7 +283,7 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 				}
 			}
 		} catch(Exception e) {
-			log.error("", e);
+			log.debug("LiveStream not available.", e);
 		}
 		
 		return false;

@@ -1,0 +1,9 @@
+<div class="clearfix">
+	#if($r.visible("segments"))
+		$r.render("segments")<br/>
+	#end
+		
+	#if($r.available("segmentCmp"))
+		$r.render("segmentCmp")
+	#end
+</div>

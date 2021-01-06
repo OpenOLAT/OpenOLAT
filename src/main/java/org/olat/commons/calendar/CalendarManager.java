@@ -63,6 +63,7 @@ public interface CalendarManager {
 	public static final String ICAL_X_OLAT_EXTERNAL_ID = "X-OLAT-EXTERNAL-ID";
 	public static final String ICAL_X_OLAT_EXTERNAL_SOURCE = "X-OLAT-EXTERNAL-SOURCE";
 	public static final String ICAL_X_OLAT_VIDEO_STREAM_URL = "X-OLAT-VIDEO-STREAM-URL";
+	public static final String ICAL_X_OLAT_VIDEO_STREAM_URL_TEMPLATE_KEY = "X-OLAT-VIDEO-STREAM-URL_TEMPLATE_KEY";
 
 	/** path prefix for personal iCal feed **/
 	public static final String ICAL_PREFIX_AGGREGATED = "/paggregated/";

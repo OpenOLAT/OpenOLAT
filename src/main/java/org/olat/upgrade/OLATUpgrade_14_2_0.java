@@ -42,7 +42,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LoggingObject;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.db.DbStorage;
-import org.olat.course.nodes.livestream.manager.LiveStreamLaunchDAO;
+import org.olat.course.nodes.livestream.manager.LaunchDAO;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
 import org.olat.properties.Property;
@@ -82,7 +82,7 @@ public class OLATUpgrade_14_2_0 extends OLATUpgrade {
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
-	private LiveStreamLaunchDAO liveStreamLaunchDao;
+	private LaunchDAO liveStreamLaunchDao;
 	@Autowired
 	private BaseSecurity securityManager;
 	

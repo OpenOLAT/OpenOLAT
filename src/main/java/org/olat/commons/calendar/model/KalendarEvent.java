@@ -76,6 +76,7 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	private String recurrenceRule;
 	private String recurrenceExc;
 	
+	private Long liveStreamUrlTemplateKey;
 	private String liveStreamUrl;
 	
 	private String externalId;
@@ -388,6 +389,14 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		this.recurrenceExc = recurrenceExc;
 	}
 	
+	public Long getLiveStreamUrlTemplateKey() {
+		return liveStreamUrlTemplateKey;
+	}
+
+	public void setLiveStreamUrlTemplateKey(Long liveStreamUrlTemplateKey) {
+		this.liveStreamUrlTemplateKey = liveStreamUrlTemplateKey;
+	}
+
 	public String getLiveStreamUrl() {
 		return liveStreamUrl;
 	}
