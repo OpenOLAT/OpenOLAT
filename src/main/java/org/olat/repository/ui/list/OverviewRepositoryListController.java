@@ -181,18 +181,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
 			if(currentCtrl == null) {
-				if(isGuestOnly) {
-					doOpenMyCourses(ureq);
-					segmentView.select(myCourseLink);
-				} else {
-					boolean markEmpty = doOpenMark(ureq).isEmpty();
-					if(markEmpty) {
-						doOpenMyCourses(ureq);
-						segmentView.select(myCourseLink);
-					} else {
-						segmentView.select(favoriteLink);
-					}
-				}
+				activateDefault(ureq);
 			}
 			
 			if(favoritDirty && markedCtrl != null) {
@@ -223,12 +212,16 @@ public class OverviewRepositoryListController extends BasicController implements
 				if(ctrl != null) {
 					ctrl.activate(ureq, entries, entry.getTransientState());
 					segmentView.select(catalogLink);
+				} else if(currentCtrl == null) {
+					activateDefault(ureq);
 				}
 			} else if("Curriculum".equalsIgnoreCase(segment)) {
 				CurriculumListController ctrl = doOpenCurriculum(ureq);
 				if(ctrl != null) {
 					ctrl.activate(ureq, subEntries, entry.getTransientState());
 					segmentView.select(curriculumLink);
+				} else if(currentCtrl == null) {
+					activateDefault(ureq);
 				}
 			} else if("Search".equalsIgnoreCase(segment) && searchCourseLink != null) {
 				doOpenSearchCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
@@ -237,9 +230,22 @@ public class OverviewRepositoryListController extends BasicController implements
 				doOpenClosedCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(closedCourseLink);
 			} else {
-				//default if the others fail
-				doOpenMyCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
+				activateDefault(ureq);
+			}
+		}
+	}
+	
+	private void activateDefault(UserRequest ureq) {
+		if(isGuestOnly) {
+			doOpenMyCourses(ureq);
+			segmentView.select(myCourseLink);
+		} else {
+			boolean markEmpty = doOpenMark(ureq).isEmpty();
+			if(markEmpty) {
+				doOpenMyCourses(ureq);
 				segmentView.select(myCourseLink);
+			} else {
+				segmentView.select(favoriteLink);
 			}
 		}
 	}
