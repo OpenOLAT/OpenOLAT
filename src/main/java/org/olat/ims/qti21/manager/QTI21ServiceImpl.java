@@ -1115,6 +1115,10 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 				RetrieveAssessmentTestSessionEvent event = new RetrieveAssessmentTestSessionEvent(session.getKey());
 				OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
 				coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, sessionOres);
+				
+				// remove session controllers from multi-window cache
+				testSessionControllersCache.remove(reloadedSession);
+				
 				return reloadedSession;
 			}
 		}
