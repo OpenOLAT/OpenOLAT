@@ -127,7 +127,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	private final AppointmentsSecurityCallback secCallback;
 	private Set<Long> acknowlededRecordings = new HashSet<>();
 	private int counter;
-	private Set<Topic> showAllParticipations = new HashSet<>();
+	private Set<Long> showAllParticipationsTopicKeys = new HashSet<>();
 	
 	@Autowired
 	private AppointmentsService appointmentsService;
@@ -318,7 +318,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	}
 	
 	private void wrapParticipants(TopicWrapper wrapper, List<Participation> participations) {
-		long limit = showAllParticipations.contains(wrapper.getTopic())? Long.MAX_VALUE: PARTICIPANTS_RENDER_LIMIT;
+		long limit = showAllParticipationsTopicKeys.contains(wrapper.getTopic().getKey())? Long.MAX_VALUE: PARTICIPANTS_RENDER_LIMIT;
 		List<String> participants = participations.stream()
 				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
 				.sorted(String.CASE_INSENSITIVE_ORDER)
@@ -331,7 +331,7 @@ public class TopicsRunCoachController extends FormBasicController {
 			FormLink showMoreLink = uifactory.addFormLink(name, CMD_MORE, "", null, flc, Link.LINK + Link.NONTRANSLATED);
 			
 			long hiddenParticipations = participations.size() - PARTICIPANTS_RENDER_LIMIT;
-			String displayText = showAllParticipations.contains(wrapper.getTopic())
+			String displayText = showAllParticipationsTopicKeys.contains(wrapper.getTopic().getKey())
 					? translate("show.less")
 					: translate("show.more", new String[] { String.valueOf(hiddenParticipations)} );
 			showMoreLink.setI18nKey(displayText);
@@ -703,10 +703,10 @@ public class TopicsRunCoachController extends FormBasicController {
 	}
 
 	private void doToggleShowMoreParticipations(Topic topic) {
-		if (showAllParticipations.contains(topic)) {
-			showAllParticipations.remove(topic);
+		if (showAllParticipationsTopicKeys.contains(topic.getKey())) {
+			showAllParticipationsTopicKeys.remove(topic.getKey());
 		} else {
-			showAllParticipations.add(topic);
+			showAllParticipationsTopicKeys.add(topic.getKey());
 		}
 		refresh();
 	}
