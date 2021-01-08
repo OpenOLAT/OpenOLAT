@@ -202,7 +202,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			boolean unselectable = selected && Appointment.Status.planned == appointment.getStatus();
 			if (selectable || unselectable) {
 				forgeSelectionLink(row, selected);
-				if (Appointment.Status.confirmed != appointment.getStatus()) {
+				if (Appointment.Status.confirmed != appointment.getStatus() || topic.isAutoConfirmation()) {
 					row.setFreeParticipations(freeParticipations);
 				}
 			}
