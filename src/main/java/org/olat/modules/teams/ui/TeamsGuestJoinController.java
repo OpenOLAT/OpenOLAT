@@ -247,9 +247,13 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 	private void doJoin(UserRequest ureq) {
 		if(!allowedToMeet) return;
 		
-		TeamsErrors errors = new TeamsErrors();
-		boolean guest = ureq.getUserSession().getRoles().isGuestOnly();
+		boolean guest = false;
+		UserSession usess = ureq.getUserSession();
+		if(getIdentity() == null || usess.getRoles() == null || usess.getRoles().isGuestOnly()) {
+			guest = true;
+		}	
 		Identity id = guest ? null : getIdentity();
+		TeamsErrors errors = new TeamsErrors();
 		meeting = teamsService.joinMeeting(meeting, id, false, guest, errors);
 		
 		if(StringHelper.containsNonWhitespace(meeting.getOnlineMeetingJoinUrl())) {
