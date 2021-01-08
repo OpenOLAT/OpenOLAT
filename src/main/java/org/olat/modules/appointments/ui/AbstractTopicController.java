@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.KeyValues;
@@ -83,6 +84,11 @@ public abstract class AbstractTopicController extends FormBasicController {
 
 	public AbstractTopicController(UserRequest ureq, WindowControl wControl, TopicLight initialTopic) {
 		super(ureq, wControl);
+		this.initialTopic = initialTopic;
+	}
+	
+	public AbstractTopicController(UserRequest ureq, WindowControl wControl, Form rootForm, TopicLight initialTopic) {
+		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		this.initialTopic = initialTopic;
 	}
 

@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.appointments.Organizer;
 import org.olat.modules.appointments.Topic;
@@ -39,8 +40,8 @@ public class DuplicateTopicEditController extends AbstractTopicController {
 
 	private final Topic sourceTopic;
 
-	public DuplicateTopicEditController(UserRequest ureq, WindowControl wControl, TopicLight topic, Topic sourceTopic) {
-		super(ureq, wControl, topic);
+	public DuplicateTopicEditController(UserRequest ureq, WindowControl wControl, Form rootForm, TopicLight topic, Topic sourceTopic) {
+		super(ureq, wControl, rootForm, topic);
 		this.sourceTopic = sourceTopic;
 		init(ureq);
 	}

@@ -53,7 +53,7 @@ public class DuplicateTopic1StepController extends StepFormBasicController {
 		topic = DuplicateTopicCallback.toTransientTopic(sourceTopic);
 		context.setTopic(topic);
 		
-		editCtrl = new DuplicateTopicEditController(ureq, wControl, topic, sourceTopic);
+		editCtrl = new DuplicateTopicEditController(ureq, wControl, rootForm, topic, sourceTopic);
 		listenTo(editCtrl);
 		
 		initForm(ureq);
