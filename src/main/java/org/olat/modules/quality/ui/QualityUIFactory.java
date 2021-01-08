@@ -71,6 +71,7 @@ import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryRefImpl;
+import org.olat.user.IdentityComporatorFactory;
 import org.olat.user.ui.organisation.OrganisationTreeModel;
 
 /**
@@ -86,7 +87,6 @@ public class QualityUIFactory {
 	private static final String INTENDING = "\u00a0"; // &nbsp; non-breaking space
 	private static final Comparator<? super Curriculum> DISPLAY_NAME_COMPARATOR = 
 			(c1, c2) -> c1.getDisplayName().compareTo(c2.getDisplayName());
-	private static final Comparator<IdentityShort> IDENTITY_LAST_FIRST_COMPARATOR = new LastFirstNameComporator();
 	
 	public static String[] emptyArray() {
 		return EMPTY_ARRAY;
@@ -131,7 +131,7 @@ public class QualityUIFactory {
 		return Arrays.stream(QualityDataCollectionTopicType.values())
 				.filter(organisationDisabled(actual))
 				.filter(curriculumDisabled(actual))
-				.map(type -> type.getI18nKey())
+				.map(QualityDataCollectionTopicType::getI18nKey)
 				.map(i18n -> translator.translate(i18n))
 				.toArray(String[]::new);
 	}
@@ -419,7 +419,7 @@ public class QualityUIFactory {
 	
 	public static List<OrganisationRef> getSelectedOrganisationRefs(MultipleSelectionElement organisationsEl) {
 		return organisationsEl.getSelectedKeys().stream()
-				.map(key -> getOrganisationRef(key))
+				.map(ref -> getOrganisationRef(ref))
 				.collect(Collectors.toList());
 	}
 	
@@ -451,7 +451,7 @@ public class QualityUIFactory {
 	
 	public static KeysValues getIdentityKeysValues(List<IdentityShort> identities) {
 		List<IdentityShort> idents = new ArrayList<>(identities);
-		idents.sort(IDENTITY_LAST_FIRST_COMPARATOR);
+		idents.sort(IdentityComporatorFactory.createLastnameFirstnameShortComporator());
 		String[] keys = new String[idents.size()];
 		String[] values = new String[idents.size()];
 		for (int i = idents.size(); i-->0; ) {
@@ -712,30 +712,4 @@ public class QualityUIFactory {
 		
 	}
 	
-	private static final class LastFirstNameComporator implements Comparator<IdentityShort> {
-		
-		@Override
-		public int compare(IdentityShort i1, IdentityShort i2) {
-			// Compare last name...
-			String lastName1 = i1.getLastName();
-			String lastName2 = i2.getLastName();
-			// nulls last
-			if (lastName1 == null) return 1;
-			if (lastName2 == null) return -1;
-			
-			int lastNameComp = lastName1.toLowerCase().compareTo(lastName2.toLowerCase());
-			if (lastNameComp != 0) return lastNameComp;
-			
-			// ...and then the fist name
-			String firstName1 = i1.getFirstName();
-			String firstName2 = i2.getFirstName();
-			// nulls last
-			if (firstName1 == null) return 1;
-			if (firstName2 == null) return -1;
-			
-			return firstName1.toLowerCase().compareTo(firstName2.toLowerCase());
-		}
-		
-	}
-
 }

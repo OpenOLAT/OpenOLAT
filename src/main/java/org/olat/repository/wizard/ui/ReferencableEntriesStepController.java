@@ -34,6 +34,7 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.wizard.ReferencableEntryContext;
 import org.olat.repository.wizard.ui.RepositoryEntryOverviewController.MoreFigures;
 
 /**

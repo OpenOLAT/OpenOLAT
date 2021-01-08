@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
@@ -74,8 +76,10 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.member.wizard.ImportMemberByUsernamesController;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
+import org.olat.course.member.wizard.MembersByNameContext;
 import org.olat.course.member.wizard.MembersContext;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.curriculum.Curriculum;
@@ -623,8 +627,11 @@ public class CurriculumComposerController extends FormBasicController implements
 		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
-			if(runContext.containsKey("notFounds")) {
-				showWarning("user.notfound", runContext.get("notFounds").toString());
+			MembersByNameContext membersByNameContext = (MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY);
+			if(!membersByNameContext.getNotFoundNames().isEmpty()) {
+				String notFoundNames = membersByNameContext.getNotFoundNames().stream()
+						.collect(Collectors.joining(", "));
+				showWarning("user.notfound", notFoundNames);
 			}
 			return StepsMainRunController.DONE_MODIFIED;
 		};
@@ -638,8 +645,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void addMembers(UserRequest ureq, StepsRunContext runContext) {
 		Roles roles = ureq.getUserSession().getRoles();
 
-		@SuppressWarnings("unchecked")
-		List<Identity> members = (List<Identity>)runContext.get("members");
+		Set<Identity> members = ((MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY)).getIdentities();
 		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
 		MailPackage mailing = new MailPackage(template, getWindowControl().getBusinessControl().getAsString(), template != null);
 		MemberPermissionChangeEvent changes = (MemberPermissionChangeEvent)runContext.get("permissions");

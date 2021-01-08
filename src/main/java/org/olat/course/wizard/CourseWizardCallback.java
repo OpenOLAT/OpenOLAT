@@ -19,6 +19,9 @@
  */
 package org.olat.course.wizard;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -28,6 +31,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
+import org.olat.course.member.wizard.MembersByNameContext;
 import org.olat.course.wizard.ui.CertificateController;
 import org.olat.course.wizard.ui.PublicationController;
 import org.olat.repository.RepositoryEntry;
@@ -44,6 +48,8 @@ public class CourseWizardCallback implements StepRunnerCallback {
 	
 	public static final String RUN_CONTEXT_TEST = "test";
 	public static final String RUN_CONTEXT_RETEST = "retest";
+	public static final String RUN_CONTEXT_COACHES = "coaches";
+	public static final String RUN_CONTEXT_PARTICIPANTS = "participants";
 	
 	private final Identity executor;
 	
@@ -74,6 +80,16 @@ public class CourseWizardCallback implements StepRunnerCallback {
 		if (runContext.containsKey(RUN_CONTEXT_RETEST)) {
 			IQTESTCourseNodeDefaults defaults = (IQTESTCourseNodeDefaults) runContext.get(RUN_CONTEXT_RETEST);
 			courseWizardService.createIQTESTCourseNode(course, defaults);
+		}
+		
+		if (runContext.containsKey(RUN_CONTEXT_COACHES) || runContext.containsKey(RUN_CONTEXT_PARTICIPANTS)) {
+			Collection<Identity> coaches = runContext.containsKey(RUN_CONTEXT_COACHES)
+					? ((MembersByNameContext)runContext.get(RUN_CONTEXT_COACHES)).getIdentities()
+					: Collections.emptyList();
+			Collection<Identity> participants = runContext.containsKey(RUN_CONTEXT_PARTICIPANTS)
+					? ((MembersByNameContext)runContext.get(RUN_CONTEXT_PARTICIPANTS)).getIdentities()
+					: Collections.emptyList();
+			courseWizardService.addRepositoryMembers(executor, ureq.getUserSession().getRoles(), entry, coaches, participants);
 		}
 		
 		if (runContext.containsKey(CertificateController.RUN_CONTEXT_KEY)) {

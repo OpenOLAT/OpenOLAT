@@ -22,6 +22,7 @@ package org.olat.user.ui.identity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRelationshipService;
@@ -53,6 +54,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
+import org.olat.course.member.wizard.ImportMemberByUsernamesController;
+import org.olat.course.member.wizard.MembersByNameContext;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -299,8 +302,11 @@ public class UserRelationsController extends FormBasicController {
 		Step start = new ImportRelation_1a_Step(ureq, editedIdentity);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			doAddRelations(runContext);
-			if(runContext.containsKey("notFounds")) {
-				showWarning("user.notfound", runContext.get("notFounds").toString());
+			MembersByNameContext membersByNameContext = (MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY);
+			if(!membersByNameContext.getNotFoundNames().isEmpty()) {
+				String notFoundNames = membersByNameContext.getNotFoundNames().stream()
+						.collect(Collectors.joining(", "));
+				showWarning("user.notfound", notFoundNames);
 			}
 			return StepsMainRunController.DONE_MODIFIED;
 		};
@@ -312,8 +318,7 @@ public class UserRelationsController extends FormBasicController {
 	}
 	
 	private void doAddRelations(StepsRunContext runContext) {
-		@SuppressWarnings("unchecked")
-		List<Identity> relations = (List<Identity>)runContext.get("members");
+		Set<Identity> relations = ((MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY)).getIdentities();
 		UserRelationRoles relationRoles = (UserRelationRoles)runContext.get("relationRoles");
 		for(Identity relation:relations) {
 			identityRelationsService.addRelations(relation, editedIdentity, relationRoles.getSelectedRoles());

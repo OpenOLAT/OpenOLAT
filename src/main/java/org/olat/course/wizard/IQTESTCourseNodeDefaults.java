@@ -21,7 +21,7 @@ package org.olat.course.wizard;
 
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.wizard.ui.ReferencableEntryContext;
+import org.olat.repository.wizard.ReferencableEntryContext;
 
 /**
  * 

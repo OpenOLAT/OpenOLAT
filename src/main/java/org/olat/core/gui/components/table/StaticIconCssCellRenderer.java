@@ -17,20 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.wizard.ui;
-
-import org.olat.repository.RepositoryEntry;
+package org.olat.core.gui.components.table;
 
 /**
  * 
- * Initial date: 11 Dec 2020<br>
+ * Initial date: 7 Jan 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ReferencableEntryContext {
+public class StaticIconCssCellRenderer extends IconCssCellRenderer {
 	
-	public RepositoryEntry getReferencedEntry();
+	private final String cssClass;
+	private final String value;
+	private final String hoverText;
 	
-	public void setReferencedEntry(RepositoryEntry referencedEntry);
+	public StaticIconCssCellRenderer(String cssClass) {
+		this(cssClass, null, null);
+	}
+
+	public StaticIconCssCellRenderer(String cssClass, String value, String hoverText) {
+		this.cssClass = cssClass;
+		this.value = value;
+		this.hoverText = hoverText;
+	}
+
+	@Override
+	protected String getCssClass(Object val) {
+		return cssClass;
+	}
+
+	@Override
+	protected String getCellValue(Object val) {
+		return value;
+	}
+
+	@Override
+	protected String getHoverText(Object val) {
+		return hoverText;
+	}
 
 }

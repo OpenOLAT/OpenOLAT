@@ -19,18 +19,28 @@
  */
 package org.olat.repository.wizard;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.util.List;
 import java.util.Set;
 
 import org.assertj.core.api.SoftAssertions;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.course.member.PermissionHelper;
+import org.olat.course.member.PermissionHelper.RepoPermission;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +53,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryWizardServiceTest extends OlatTestCase {
 	
+	private Identity executor;
+	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -52,6 +66,11 @@ public class RepositoryWizardServiceTest extends OlatTestCase {
 	
 	@Autowired
 	private RepositoryWizardService sut;
+	
+	@Before
+	public void setUp() {
+		executor = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+	}
 	
 	@Test
 	public void shouldUpdateEntryByMetaInfo() {
@@ -113,6 +132,90 @@ public class RepositoryWizardServiceTest extends OlatTestCase {
 		softly.assertThat(entry.getAuthors()).as("Update authors").isEqualTo(authors);
 		softly.assertThat(repositoryService.getTaxonomy(entry)).as("Update taxonomyLevels").containsExactlyInAnyOrder(level2, level3);
 		
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldAddMemberAsCoach() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		
+		sut.addRepositoryMembers(executor, null, entry, singletonList(identity), emptyList());
+		
+		List<RepositoryEntryMembership> memberships = repositoryManager.getRepositoryEntryMembership(entry, identity);
+		RepoPermission permission = PermissionHelper.getPermission(entry, identity, memberships);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(permission.isOwner()).isFalse();
+		softly.assertThat(permission.isTutor()).isTrue();
+		softly.assertThat(permission.isParticipant()).isFalse();
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldNotChangeMemberAsCoach() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		IdentitiesAddEvent addEvent = new IdentitiesAddEvent(identity);
+		repositoryManager.addTutors(executor, null, addEvent, entry, null);
+		
+		sut.addRepositoryMembers(executor, null, entry, singletonList(identity), emptyList());
+		
+		List<RepositoryEntryMembership> memberships = repositoryManager.getRepositoryEntryMembership(entry, identity);
+		RepoPermission permission = PermissionHelper.getPermission(entry, identity, memberships);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(permission.isOwner()).isFalse();
+		softly.assertThat(permission.isTutor()).isTrue();
+		softly.assertThat(permission.isParticipant()).isFalse();
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldAddMemberAsParticipant() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		
+		sut.addRepositoryMembers(executor, null, entry, emptyList(), singletonList(identity));
+		
+		List<RepositoryEntryMembership> memberships = repositoryManager.getRepositoryEntryMembership(entry, identity);
+		RepoPermission permission = PermissionHelper.getPermission(entry, identity, memberships);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(permission.isOwner()).isFalse();
+		softly.assertThat(permission.isTutor()).isFalse();
+		softly.assertThat(permission.isParticipant()).isTrue();
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldNotChangeMemberAsParticipant() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		IdentitiesAddEvent addEvent = new IdentitiesAddEvent(identity);
+		repositoryManager.addParticipants(executor, null, addEvent, entry, null);
+		
+		sut.addRepositoryMembers(executor, null, entry, emptyList(), singletonList(identity));
+		
+		List<RepositoryEntryMembership> memberships = repositoryManager.getRepositoryEntryMembership(entry, identity);
+		RepoPermission permission = PermissionHelper.getPermission(entry, identity, memberships);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(permission.isOwner()).isFalse();
+		softly.assertThat(permission.isTutor()).isFalse();
+		softly.assertThat(permission.isParticipant()).isTrue();
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldAddMemberAsCoachAndParticipant() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		
+		sut.addRepositoryMembers(executor, null, entry, singletonList(identity), singletonList(identity));
+		
+		List<RepositoryEntryMembership> memberships = repositoryManager.getRepositoryEntryMembership(entry, identity);
+		RepoPermission permission = PermissionHelper.getPermission(entry, identity, memberships);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(permission.isOwner()).isFalse();
+		softly.assertThat(permission.isTutor()).isTrue();
+		softly.assertThat(permission.isParticipant()).isTrue();
 		softly.assertAll();
 	}
 

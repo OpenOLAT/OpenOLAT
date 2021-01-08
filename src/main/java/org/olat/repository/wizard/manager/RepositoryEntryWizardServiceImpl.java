@@ -19,13 +19,18 @@
  */
 package org.olat.repository.wizard.manager;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
@@ -38,6 +43,8 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.model.RepositoryEntryMembership;
+import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.repository.wizard.AccessAndProperties;
 import org.olat.repository.wizard.InfoMetadata;
 import org.olat.repository.wizard.RepositoryWizardProvider;
@@ -56,7 +63,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService {
-	
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -115,6 +121,37 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 				entry.getCredits(), entry.getMainLanguage(), entry.getLocation(), entry.getExpenditureOfWork(),
 				entry.getLifecycle(), null, taxonomyLevels);
 		
+	}
+
+	@Override
+	public void addRepositoryMembers(Identity executor, Roles roles, RepositoryEntry entry,
+			Collection<Identity> coaches, Collection<Identity> participants) {
+		Map<Long, RepositoryEntryMembership> identityKeyToMembership = repositoryManager.getRepositoryEntryMembership(entry).stream()
+				.collect(Collectors.toMap(RepositoryEntryMembership::getIdentityKey, Function.identity()));
+		Map<Long ,RepositoryEntryPermissionChangeEvent> identityKeyToEvent = new HashMap<>();
+		for (Identity coach : coaches) {
+			RepositoryEntryMembership membership = identityKeyToMembership.get(coach.getKey());
+			if (membership == null) {
+				RepositoryEntryPermissionChangeEvent event = identityKeyToEvent.computeIfAbsent(coach.getKey(), key -> new RepositoryEntryPermissionChangeEvent(coach));
+				event.setRepoTutor(Boolean.TRUE);
+			} else if (!membership.isCoach()) {
+				RepositoryEntryPermissionChangeEvent event = identityKeyToEvent.computeIfAbsent(coach.getKey(), key -> new RepositoryEntryPermissionChangeEvent(coach));
+				event.setRepoTutor(Boolean.TRUE);
+			}
+		}
+		for (Identity participant : participants) {
+			RepositoryEntryMembership membership = identityKeyToMembership.get(participant.getKey());
+			if (membership == null) {
+				RepositoryEntryPermissionChangeEvent event = identityKeyToEvent.computeIfAbsent(participant.getKey(), key -> new RepositoryEntryPermissionChangeEvent(participant));
+				event.setRepoParticipant(Boolean.TRUE);
+			} else if (!membership.isCoach()) {
+				RepositoryEntryPermissionChangeEvent event = identityKeyToEvent.computeIfAbsent(participant.getKey(), key -> new RepositoryEntryPermissionChangeEvent(participant));
+				event.setRepoParticipant(Boolean.TRUE);
+			}
+		}
+		
+		List<RepositoryEntryPermissionChangeEvent> changeEvents = new ArrayList<>(identityKeyToEvent.values());
+		repositoryManager.updateRepositoryEntryMemberships(executor, roles, entry, changeEvents, null);
 	}
 	
 	@Override

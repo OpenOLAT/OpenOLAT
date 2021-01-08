@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -42,6 +43,8 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
+import org.olat.user.IdentityComporatorFactory;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,8 +57,8 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 	
-	private List<Identity> oks;
-	private List<String> notFounds;
+	private final String formTitle;
+	private MembersByNameContext membersByNameContext;
 	private boolean isAdministrativeUser;
 	private final List<Identity> anonymousUsers;
 	
@@ -66,19 +69,16 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	@Autowired
 	private OrganisationService organisationService;
 
-	public ImportMemberOverviewIdentitiesController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public ImportMemberOverviewIdentitiesController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			StepsRunContext runContext, String runContextKey, String formTitle) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
+		this.formTitle = formTitle;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		anonymousUsers = organisationService.getIdentitiesWithRole(OrganisationRoles.guest);
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
-		oks = null;
-		notFounds = getListFromRunContext("notFounds", String.class);
-		if(notFounds == null) {
-			notFounds = new ArrayList<>();
-		}
-		List<Identity> keys = getListFromRunContext("keyIdentities", Identity.class);
-		loadModelByIdentities(keys);
+		membersByNameContext = (MembersByNameContext)getOrCreateFromRunContext(runContextKey, MembersByNameContext::new);
+		loadModelByIdentities();
 
 		initForm (ureq);
 	}
@@ -86,19 +86,20 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_user_import_overview");
-		if(notFounds != null && !notFounds.isEmpty()) {
+		
+		if (StringHelper.containsNonWhitespace(formTitle)) {
+			setFormTranslatedTitle(formTitle);
+		}
+
+		if(!membersByNameContext.getNotFoundNames().isEmpty()) {
 			String page = velocity_root + "/warn_notfound.html";
 			FormLayoutContainer warnLayout = FormLayoutContainer.createCustomFormLayout("warnNotFounds", getTranslator(), page);
 			warnLayout.setRootForm(mainForm);
 			formLayout.add(warnLayout);
 			
-			StringBuilder sb = new StringBuilder();
-			for(String notfound:notFounds) {
-				if(sb.length() > 0) sb.append(", ");
-				sb.append(notfound);
-			}
-			String msg = translate("user.notfound", new String[]{sb.toString()});
-			addToRunContext("notFounds", sb.toString());
+			String notFoundNames = membersByNameContext.getNotFoundNames().stream()
+					.collect(Collectors.joining(", "));
+			String msg = translate("user.notfound", new String[]{notFoundNames});
 			warnLayout.contextPut("notFounds", msg);
 		}
 		
@@ -117,24 +118,27 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			}
 		}
 		
-		ImportMemberOverviewDataModel userTableModel = new ImportMemberOverviewDataModel(oks, resultingPropertyHandlers, getLocale(), tableColumnModel);
+		ArrayList<Identity> identities = new ArrayList<>(membersByNameContext.getIdentities());
+		identities.sort(IdentityComporatorFactory.createLastnameFirstnameComporator());
+		ImportMemberOverviewDataModel userTableModel = new ImportMemberOverviewDataModel(identities,
+				resultingPropertyHandlers, getLocale(), tableColumnModel);
 		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 	}
 	
-	private void loadModelByIdentities(List<Identity> identities) {
+	private void loadModelByIdentities() {
 		Set<Identity> okSet = new HashSet<>();
-		for (Identity ident : identities) {
+		for (Identity ident : membersByNameContext.getIdentities()) {
 			if (!validIdentity(ident)) {
 				String fullname = userManager.getUserDisplayName(ident);
 				if(fullname != null) {
-					notFounds.add(fullname);
+					membersByNameContext.getNotFoundNames().add(fullname);
 				}
 			} else if (!okSet.contains(ident)) {
 				okSet.add(ident);
 			}
 		}
-		oks = new ArrayList<>(okSet);
+		membersByNameContext.setIdentities(okSet);
 	}
 	
 	private boolean validIdentity(Identity ident) {
@@ -143,18 +147,8 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 				&& !anonymousUsers.contains(ident);
 	}
 
-	public boolean validate() {
-		return true;
-	}
-	
 	@Override
 	protected void formNext(UserRequest ureq) {
-		if(notFounds == null || notFounds.isEmpty()) {
-			removeFromRunContext("notFounds");
-		} else {
-			addToRunContext("notFounds", notFounds);
-		}
-		addToRunContext("members", oks);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 

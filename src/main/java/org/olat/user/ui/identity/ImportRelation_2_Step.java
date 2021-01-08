@@ -27,6 +27,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.course.member.wizard.ImportMemberByUsernamesController;
 import org.olat.course.member.wizard.ImportMemberOverviewIdentitiesController;
 
 /**
@@ -51,6 +52,6 @@ public class ImportRelation_2_Step extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new ImportMemberOverviewIdentitiesController(ureq, wControl, form, runContext);
+		return new ImportMemberOverviewIdentitiesController(ureq, wControl, form, runContext, ImportMemberByUsernamesController.RUN_CONTEXT_KEY, null);
 	}
 }

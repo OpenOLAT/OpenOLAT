@@ -19,7 +19,10 @@
  */
 package org.olat.course.wizard;
 
+import java.util.Collection;
+
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -38,6 +41,9 @@ public interface CourseWizardService {
 	public void updateRepositoryEntry(RepositoryEntryRef entryRef, InfoMetadata infoMetadata);
 	
 	public void updateEntryStatus(Identity executor, RepositoryEntry entry, RepositoryEntryStatusEnum status);
+	
+	public void addRepositoryMembers(Identity executor, Roles roles, RepositoryEntry entry,
+			Collection<Identity> coaches, Collection<Identity> participants);
 	
 	public void changeAccessAndProperties(Identity executor, AccessAndProperties accessAndProps, boolean fireEvents);
 	

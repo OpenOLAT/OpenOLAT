@@ -894,7 +894,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		cleanUp();
 		
 		LockedRun run = () -> {
-			wizardCtrl = wizardProvider.createWizardController(ureq, getWindowControl(), newEntry, null);
+			wizardCtrl = wizardProvider.createWizardController(ureq, getWindowControl(), newEntry, getIdentity());
 			wizardCtrl.getRunContext().put("authoringNewEntry", newEntry);
 			wizardCtrl.getRunContext().put("repoHandler", handler);
 			listenTo(wizardCtrl);

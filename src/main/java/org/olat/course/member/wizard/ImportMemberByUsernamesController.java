@@ -20,19 +20,15 @@
 package org.olat.course.member.wizard;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.FindNamedIdentity;
+import org.olat.basesecurity.model.FindNamedIdentityCollection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -51,6 +47,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,9 +58,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ImportMemberByUsernamesController extends StepFormBasicController {
 	
+	public static final String RUN_CONTEXT_KEY = "import.member.by.username";
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 
-	private TextElement idata;
+	private TextElement namesEl;
 	private FlexiTableElement tableEl;
 	private ImportMemberOverviewDataModel userTableModel;
 	
@@ -72,10 +70,11 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 	private FormLayoutContainer tableContainer;
 
 	private boolean isAdministrativeUser;
-	private final List<Identity> anonymousUsers;
 
+	private final String formTitle;
+	private final MembersByNameContext context;
 	private List<String> notFoundNames;
-	private List<Identity> identitiesList;
+	private Set<Identity> identitiesList;
 	
 	@Autowired
 	private UserManager userManager;
@@ -83,27 +82,30 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
-	@Autowired
-	private OrganisationService organisationService;
 
 	public ImportMemberByUsernamesController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			StepsRunContext runContext) {
-		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
+			StepsRunContext runContext, String runContextKey, String formTitle) {
+		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		anonymousUsers = organisationService.getIdentitiesWithRole(OrganisationRoles.guest);
+		this.formTitle = formTitle;
+		context = (MembersByNameContext)getOrCreateFromRunContext(runContextKey, MembersByNameContext::new);
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		initForm (ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (StringHelper.containsNonWhitespace(formTitle)) {
+			setFormTranslatedTitle(formTitle);
+		}
+		
 		// input field
 		inputContainer = FormLayoutContainer.createDefaultFormLayout("input", getTranslator());
 		formLayout.add(inputContainer);
 		
-		idata = uifactory.addTextAreaElement("addusers", "form.addusers", -1, 15, 40, true, false, " ", inputContainer);
-		idata.setElementCssClass("o_sel_user_import");
-		idata.setExampleKey ("form.names.example", null);
+		namesEl = uifactory.addTextAreaElement("addusers", "form.addusers", -1, 15, 40, true, false, context.getRawNames(), inputContainer);
+		namesEl.setElementCssClass("o_sel_user_import");
+		namesEl.setExampleKey ("form.names.example", null);
 		
 		// table for duplicates
 		String page = velocity_root + "/warn_duplicates.html";
@@ -159,19 +161,21 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 
 	@Override
 	protected void formNext(UserRequest ureq) {
-		String logins = idata.getValue();
+		String logins = namesEl.getValue();
 		if(tableContainer.isVisible()) {
-			List<Identity> all = new ArrayList<>(identitiesList);
+			Set<Identity> all = new HashSet<>(identitiesList);
 			all.addAll(selectDuplicates());
-			addToRunContext("keyIdentities", all);
-			addToRunContext("notFounds", notFoundNames);
+			context.setIdentities(all);
+			context.setNotFoundNames(notFoundNames);
+			context.setRawNames(namesEl.getValue());
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else if(processInput(logins)) {
 			tableContainer.setVisible(true);
 			inputContainer.setVisible(false);
 		} else {
-			addToRunContext("keyIdentities", new ArrayList<>(identitiesList));
-			addToRunContext("notFounds", notFoundNames);
+			context.setIdentities(identitiesList);
+			context.setNotFoundNames(notFoundNames);
+			context.setRawNames(namesEl.getValue());
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 	}
@@ -200,56 +204,30 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 	 */
 	private boolean processInput(String inp) {
 		List<String> identList = getLines(inp);
-		Set<String> identListLowercase = identList.stream()
-				.map(String::toLowerCase)
-				.collect(Collectors.toSet());
-
-		notFoundNames = new ArrayList<>();
-		Map<String, Set<Identity>> duplicates = new HashMap<>();
-		Set<Identity> okSet = new HashSet<>();
-
-		// search by names, institutional identifier, first + last names, authentication user names
-		List<FindNamedIdentity> identities = securityManager.findIdentitiesBy(identList);
-		for(FindNamedIdentity identity:identities) {
-			identListLowercase.removeAll(identity.getNamesLowerCase());
-			if(!validIdentity(identity.getIdentity())) {
-				notFoundNames.add(identity.getFirstFoundName());
-			} else if (!okSet.contains(identity.getIdentity())) {
-				okSet.add(identity.getIdentity());
-			}
-			
-			for(String name:identity.getNamesLowerCase()) {
-				Set<Identity> ids = duplicates.computeIfAbsent(name, n -> new HashSet<>());
-				ids.add(identity.getIdentity());
-			}
-		}
-
-		notFoundNames.addAll(identListLowercase);
-		return processDuplicates(okSet, duplicates);
-	}
-	
-	private boolean processDuplicates(Set<Identity> okSet, Map<String, Set<Identity>> duplicates) {
-		Set<Identity> duplicatesSet = new HashSet<>();
-		StringBuilder sb = new StringBuilder();
-		for(Map.Entry<String,Set<Identity>> entry:duplicates.entrySet()) {
-			if(entry.getValue().size() > 1) {
-				if(sb.length() > 0) sb.append(", ");
-				sb.append(entry.getKey());
-				duplicatesSet.addAll(entry.getValue());
-			}	
-		}
+		FindNamedIdentityCollection identityCollection = securityManager.findAndCollectIdentitiesBy(identList);
 		
-		okSet.removeAll(duplicatesSet);
-		
-		identitiesList = new ArrayList<>(okSet);
-
-		if(sb.length() > 0) {
-			tableContainer.contextPut("duplicatesMsg", translate("warn.duplicates.names", sb.toString()));
+		identitiesList = identityCollection.getUnique();
+		notFoundNames = identityCollection.getNotFoundNames();
+		if (!identityCollection.getAmbiguousNames().isEmpty()) {
+			String duplicateNames = identityCollection.getAmbiguousNames().stream()
+					.collect(Collectors.joining(", "));
+			tableContainer.contextPut("duplicatesMsg", translate("warn.duplicates.names", duplicateNames));
 			tableContainer.setVisible(true);
 			inputContainer.setVisible(false);
 			
-			userTableModel.setObjects(new ArrayList<>(duplicatesSet));
+			userTableModel.setObjects(new ArrayList<>(identityCollection.getAmbiguous()));
 			tableEl.reset(true, true, true);
+			
+			// Select previously selected identities
+			Set<Integer> selectedRows = new HashSet<>();
+			for(int i=userTableModel.getRowCount(); i--> 0; ) {
+				Identity identity = userTableModel.getObject(i);
+				if(context.getIdentities().contains(identity)) {
+					selectedRows.add(Integer.valueOf(i));
+				}
+			}
+			tableEl.setMultiSelectedIndex(selectedRows);
+			
 			return true;
 		}
 		return false;
@@ -267,9 +245,4 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 		return identList;
 	}
 	
-	private boolean validIdentity(Identity ident) {
-		return ident != null
-				&& ident.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) < 0
-				&& !anonymousUsers.contains(ident);
-	}
 }

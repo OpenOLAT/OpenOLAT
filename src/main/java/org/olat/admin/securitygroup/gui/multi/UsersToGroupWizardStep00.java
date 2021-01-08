@@ -56,6 +56,6 @@ public class UsersToGroupWizardStep00 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext stepsRunContext, Form form) {
-		return new ImportMemberByUsernamesController(ureq, wControl, form, stepsRunContext);
+		return new ImportMemberByUsernamesController(ureq, wControl, form, stepsRunContext, ImportMemberByUsernamesController.RUN_CONTEXT_KEY, null);
 	}
 }

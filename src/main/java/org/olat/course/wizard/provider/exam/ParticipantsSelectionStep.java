@@ -27,26 +27,23 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
+import org.olat.course.member.wizard.ImportMemberByUsernamesController;
+import org.olat.course.wizard.CourseWizardCallback;
 import org.olat.course.wizard.CourseWizardService;
-import org.olat.course.wizard.ui.CertificateController;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 11 Dec 2020<br>
+ * Initial date: 7 Jan 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CertificateStep extends BasicStep {
+public class ParticipantsSelectionStep extends BasicStep {
 	
-	private final RepositoryEntry entry;
-
-	public CertificateStep(UserRequest ureq, RepositoryEntry entry) {
+	public ParticipantsSelectionStep(UserRequest ureq) {
 		super(ureq);
-		this.entry = entry;
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("wizard.title.certificate", null);
-		setNextStep(new CoachesSelectionStep(ureq));
+		setI18nTitleAndDescr("wizard.title.participants.selection", null);
+		setNextStep(new ParticipantsOverviewStep(ureq));
 	}
 
 	@Override
@@ -57,7 +54,9 @@ public class CertificateStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,
 			StepsRunContext stepsRunContext, Form form) {
-		return new CertificateController(ureq, windowControl, form, stepsRunContext, entry);
+		String formTitle = getTranslator().translate("wizard.title.participants.selection");
+		return new ImportMemberByUsernamesController(ureq, windowControl, form, stepsRunContext,
+				CourseWizardCallback.RUN_CONTEXT_PARTICIPANTS, formTitle);
 	}
 
 }

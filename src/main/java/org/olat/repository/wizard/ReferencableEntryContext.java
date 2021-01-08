@@ -19,39 +19,18 @@
  */
 package org.olat.repository.wizard;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
- * Initial date: 4 Dec 2020<br>
+ * Initial date: 11 Dec 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface RepositoryWizardService {
+public interface ReferencableEntryContext {
 	
-	public RepositoryWizardProvider getProvider(String providerType);
+	public RepositoryEntry getReferencedEntry();
 	
-	public List<RepositoryWizardProvider> getProviders(String resourceType);
-	
-	/**
-	 * Update attributes of the repository entry.
-	 * This method updates only non null values.
-	 *
-	 * @param entryRef
-	 * @param infoMetadata
-	 * @return 
-	 */
-	public RepositoryEntry updateRepositoryEntry(RepositoryEntryRef entryRef, InfoMetadata infoMetadata);
-	
-	public void addRepositoryMembers(Identity executor, Roles roles, RepositoryEntry entry,
-			Collection<Identity> coaches, Collection<Identity> participants);
+	public void setReferencedEntry(RepositoryEntry referencedEntry);
 
-	public void changeAccessAndProperties(Identity executor, AccessAndProperties accessAndProps, boolean fireEvents);
-	
 }

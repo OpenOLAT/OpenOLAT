@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.model.FindNamedIdentity;
+import org.olat.basesecurity.model.FindNamedIdentityCollection;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -115,6 +116,15 @@ public interface BaseSecurity {
 	 */
 	public List<FindNamedIdentity> findIdentitiesBy(Collection<String> names);
 	
+	/**
+	 * Find the identities by
+	 * {@link #findIdentityByNameCaseInsensitive(Collection<String>)} and separate
+	 * them in unique identities, duplicate identities and not found identity names.
+	 *
+	 * @param names
+	 * @return
+	 */
+	public FindNamedIdentityCollection findAndCollectIdentitiesBy(Collection<String> names);
 	
 	/**
 	 * Find an identity by its user

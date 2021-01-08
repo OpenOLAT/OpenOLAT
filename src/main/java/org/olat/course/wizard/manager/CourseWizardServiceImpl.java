@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
@@ -101,6 +102,12 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, updatedEntry);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 		log.debug("Status of RepositoryEntry changed to '{}'.", status);
+	}
+	
+	@Override
+	public void addRepositoryMembers(Identity executor, Roles roles, RepositoryEntry entry,
+			Collection<Identity> coaches, Collection<Identity> participants) {
+		repositoryEntryWizardService.addRepositoryMembers(executor, roles, entry, coaches, participants);
 	}
 	
 	@Override

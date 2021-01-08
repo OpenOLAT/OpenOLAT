@@ -50,6 +50,7 @@ import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
 import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.basesecurity.model.FindNamedIdentity;
+import org.olat.basesecurity.model.FindNamedIdentityCollection;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -458,7 +459,60 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	public List<FindNamedIdentity> findIdentitiesBy(Collection<String> names) {
 		return identityDao.findByNames(names);
 	}
-
+	
+	@Override
+	public FindNamedIdentityCollection findAndCollectIdentitiesBy(Collection<String> names) {
+		List<FindNamedIdentity> identities  = identityDao.findByNames(names);
+		Set<String> identListLowercase = names.stream()
+				.map(String::toLowerCase)
+				.collect(Collectors.toSet());
+		
+		Set<Identity> okSet = new HashSet<>();
+		Map<String, Set<Identity>> nameToIdentities = new HashMap<>();
+		List<String> notFoundNames = new ArrayList<>();
+		List<Identity> anonymousUsers = organisationService.getIdentitiesWithRole(OrganisationRoles.guest);
+		
+		for(FindNamedIdentity identity:identities) {
+			identListLowercase.removeAll(identity.getNamesLowerCase());
+			if(!validIdentity(identity.getIdentity(), anonymousUsers)) {
+				notFoundNames.add(identity.getFirstFoundName());
+			} else if (!okSet.contains(identity.getIdentity())) {
+				okSet.add(identity.getIdentity());
+			}
+			
+			for(String name:identity.getNamesLowerCase()) {
+				Set<Identity> ids = nameToIdentities.computeIfAbsent(name, n -> new HashSet<>());
+				ids.add(identity.getIdentity());
+			}
+		}
+		
+		notFoundNames.addAll(identListLowercase);
+		
+		Set<String> ambiguousNames = new HashSet<>();
+		Set<Identity> ambiguous = new HashSet<>();
+		for(Map.Entry<String,Set<Identity>> entry:nameToIdentities.entrySet()) {
+			if(entry.getValue().size() > 1) {
+				ambiguousNames.add(entry.getKey());
+				ambiguous.addAll(entry.getValue());
+			}
+		}
+		okSet.removeAll(ambiguous);
+		
+		FindNamedIdentityCollection collection = new FindNamedIdentityCollection();
+		collection.setNameToIdentities(nameToIdentities);
+		collection.setUnique(okSet);
+		collection.setAmbiguous(ambiguous);
+		collection.setAmbiguousNames(ambiguousNames);
+		collection.setNotFoundNames(notFoundNames);
+		return collection;
+	}
+	
+	private boolean validIdentity(Identity ident, List<Identity> anonymousUsers) {
+		return ident != null
+				&& ident.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) < 0
+				&& !anonymousUsers.contains(ident);
+	}
+	
 	@Override
 	public Identity findIdentityByUser(User user) {
 		if (user == null) return null;

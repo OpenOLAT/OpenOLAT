@@ -20,6 +20,7 @@
 package org.olat.group.ui.main;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -91,7 +92,7 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 				+ super.size();
 	}
 	
-	public List<RepositoryEntryPermissionChangeEvent> generateRepositoryChanges(List<Identity> members) {
+	public List<RepositoryEntryPermissionChangeEvent> generateRepositoryChanges(Collection<Identity> members) {
 		if(members == null || members.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -117,7 +118,7 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 		return allModifications;
 	}
 	
-	public List<BusinessGroupMembershipChange> generateBusinessGroupMembershipChange(List<Identity> members) {
+	public List<BusinessGroupMembershipChange> generateBusinessGroupMembershipChange(Collection<Identity> members) {
 		if(members == null || members.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -135,7 +136,7 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 		return allModifications;
 	}
 	
-	public List<CurriculumElementMembershipChange> generateCurriculumElementMembershipChange(List<Identity> members) {
+	public List<CurriculumElementMembershipChange> generateCurriculumElementMembershipChange(Collection<Identity> members) {
 		if(members == null || members.isEmpty()) {
 			return Collections.emptyList();
 		}

@@ -17,41 +17,49 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.wizard;
+package org.olat.course.member.wizard;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
- * Initial date: 4 Dec 2020<br>
+ * Initial date: 7 Jan 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface RepositoryWizardService {
+public class MembersByNameContext {
 	
-	public RepositoryWizardProvider getProvider(String providerType);
+	private String rawNames;
+	private Set<Identity> identities = new HashSet<>();
+	private List<String> notFoundNames = new ArrayList<>();
 	
-	public List<RepositoryWizardProvider> getProviders(String resourceType);
+	public String getRawNames() {
+		return rawNames;
+	}
 	
-	/**
-	 * Update attributes of the repository entry.
-	 * This method updates only non null values.
-	 *
-	 * @param entryRef
-	 * @param infoMetadata
-	 * @return 
-	 */
-	public RepositoryEntry updateRepositoryEntry(RepositoryEntryRef entryRef, InfoMetadata infoMetadata);
+	public void setRawNames(String rawNames) {
+		this.rawNames = rawNames;
+	}
 	
-	public void addRepositoryMembers(Identity executor, Roles roles, RepositoryEntry entry,
-			Collection<Identity> coaches, Collection<Identity> participants);
-
-	public void changeAccessAndProperties(Identity executor, AccessAndProperties accessAndProps, boolean fireEvents);
+	public Set<Identity> getIdentities() {
+		return identities;
+	}
+	
+	public void setIdentities(Set<Identity> identities) {
+		this.identities = identities;
+	}
+	
+	public List<String> getNotFoundNames() {
+		return notFoundNames;
+	}
+	
+	public void setNotFoundNames(List<String> notFoundNames) {
+		this.notFoundNames = notFoundNames;
+	}
 	
 }
