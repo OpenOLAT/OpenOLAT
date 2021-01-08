@@ -20,6 +20,7 @@
 package org.olat.course.member.wizard;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import org.olat.admin.user.UserSearchFlexiController;
@@ -43,10 +44,14 @@ import org.olat.core.id.Identity;
  */
 public class ImportMemberBySearchController extends StepFormBasicController {
 
-	private final UserSearchFlexiController searchController; 
+	private final UserSearchFlexiController searchController;
+	
+	private final MembersByNameContext context;
 
 	public ImportMemberBySearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
+		
+		context = (MembersByNameContext)getOrCreateFromRunContext(ImportMemberByUsernamesController.RUN_CONTEXT_KEY, MembersByNameContext::new);
 
 		searchController = new UserSearchFlexiController(ureq, wControl, rootForm);
 		listenTo(searchController);
@@ -57,11 +62,11 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(event instanceof SingleIdentityChosenEvent) {
 			SingleIdentityChosenEvent e = (SingleIdentityChosenEvent)event;
-			addToRunContext("keyIdentities", Collections.singletonList(e.getChosenIdentity()));
+			context.setIdentities(Collections.singleton(e.getChosenIdentity()));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else if(event instanceof MultiIdentityChosenEvent) {
 			MultiIdentityChosenEvent e = (MultiIdentityChosenEvent)event;
-			addToRunContext("keyIdentities", e.getChosenIdentities());
+			context.setIdentities(new HashSet<>(e.getChosenIdentities()));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
 			super.event(ureq, source, event);
@@ -74,7 +79,7 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 		if(identities.isEmpty()) {
 			searchController.doSearch();
 		} else {
-			addToRunContext("keyIdentities", identities);
+			context.setIdentities(new HashSet<>(identities));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 	}
