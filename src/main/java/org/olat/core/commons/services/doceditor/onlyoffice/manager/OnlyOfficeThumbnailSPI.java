@@ -49,7 +49,7 @@ public class OnlyOfficeThumbnailSPI implements ThumbnailSPI {
 			"rtf", "txt",
 			// Spreadsheet file formats
 			"xps", "csv", "fods", "ods", "ots", "xls", "xlsm", "xlsx", "xlt", "xltm", "xltx",
-			// https://api.onlyoffice.com/editors/conversionapi#presentation-matrix
+			// Presentation file formats
 			"fodp", "odp", "otp", "pot", "potm", "potx", "pps", "ppsm", "ppsx", "ppt", "pptm", "pptx");
 	
 	@Autowired
