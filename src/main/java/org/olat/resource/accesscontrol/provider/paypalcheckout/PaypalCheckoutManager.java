@@ -20,6 +20,7 @@
 package org.olat.resource.accesscontrol.provider.paypalcheckout;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.id.Identity;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -90,5 +91,8 @@ public interface PaypalCheckoutManager {
 	public Order getOrder(PaypalCheckoutTransaction trx);
 	
 	public List<PaypalCheckoutTransaction> searchTransactions(String id);
+	
+	
+	public String getPreferredLocale(Locale locale);
 	
 }

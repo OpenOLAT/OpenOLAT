@@ -19,7 +19,10 @@
  */
 package org.olat.resource.accesscontrol.provider.paypalcheckout.ui;
 
+import java.text.Collator;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -34,6 +37,7 @@ import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,9 +60,12 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 	private SingleSelection smartButtonsEl;
 	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement pendingReviewEl;
+	private MultipleSelectionElement preferredCountriesEl;
 	
 	private final List<String> paypalCurrencies;
 
+	@Autowired
+	private I18nModule i18nModule;
 	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
@@ -111,6 +118,17 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 			currencyEl.select("CHF", true);
 		}
 		
+		KeyValues countries = getCountries();
+		preferredCountriesEl = uifactory.addCheckboxesDropdown("countries", "paypal.preferred.countries", formLayout,
+				countries.keys(), countries.values());
+		preferredCountriesEl.setHelpTextKey("paypal.preferred.countries.hint", null);
+		List<String> preferredCountries = paypalModule.getPreferredCountriesList();
+		for(String country:preferredCountries) {
+			if(countries.containsKey(country)) {
+				preferredCountriesEl.select(country, true);
+			}
+		}
+		
 		String clientId = paypalModule.getClientId();
 		clientIdEl = uifactory.addTextElement("checkout.client.id", 128, clientId, formLayout);
 		String clientSecret = paypalModule.getClientSecret();
@@ -119,6 +137,27 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
+	}
+	
+	private KeyValues getCountries() {
+		KeyValues keyValues = new KeyValues();
+		Collection<Locale> languages = i18nModule.getAllLocales().values();
+		Locale[] locales = Locale.getAvailableLocales();
+		for(Locale language:languages) {
+			for(Locale locale:locales) {
+				if(language.getLanguage().equals(locale.getLanguage())) {
+					String country = locale.getCountry();
+					String displayCountry = locale.getDisplayCountry(getLocale());
+					if(!keyValues.containsKey(country) && StringHelper.containsNonWhitespace(displayCountry)) {
+						keyValues.add(KeyValues.entry(country, displayCountry));
+					}
+				}
+			}
+		}
+		
+		final Collator collator = Collator.getInstance(getLocale());
+		keyValues.sort((k1, k2) -> collator.compare(k1.getValue(), k2.getValue()));
+		return keyValues;
 	}
 	
 	private void updateUI() {
@@ -164,6 +203,15 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+	
+	private String getPreferredCountries() {
+		StringBuilder sb = new StringBuilder();
+		for(String country:preferredCountriesEl.getSelectedKeys()) {
+			if(sb.length() > 0) sb.append(",");
+			sb.append(country);
+		}
+		return sb.toString();
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -177,6 +225,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 			}
 			paypalModule.setSmartButtons(smartButtonsEl.isOneSelected() && smartButtonsEl.isSelected(0));
 			paypalModule.setAcceptPendingReview(pendingReviewEl.isAtLeastSelected(1));
+			paypalModule.setPreferredCountries(getPreferredCountries());
 			doUpdateWebhook();
 		} else {
 			paypalModule.setClientId(null);

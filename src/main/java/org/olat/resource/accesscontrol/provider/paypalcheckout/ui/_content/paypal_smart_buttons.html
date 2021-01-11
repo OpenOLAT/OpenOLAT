@@ -21,7 +21,7 @@
 				<script defer data-csp-nonce="${csrfToken}">
 				jQuery(function() {
 					jQuery.ajax({
-						url: 'https://www.paypal.com/sdk/js?client-id=$clientId&currency=${currency}&intent=authorize&commit=true&disable-funding=${excludeFundings}',
+						url: 'https://www.paypal.com/sdk/js?client-id=$clientId&locale=$plocale&currency=${currency}&intent=authorize&commit=true&disable-funding=${excludeFundings}',
 						cache: true,//paypal don't like the anti-cache parameter
 						dataType: "script",
 						success: loadButtons,

@@ -24,7 +24,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -32,6 +31,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutManager;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutModule;
 import org.olat.resource.accesscontrol.ui.FormController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
@@ -49,6 +49,8 @@ public class PaypalSmartButtonAccessController extends FormBasicController imple
 	
 	@Autowired
 	private PaypalCheckoutModule paypalModule;
+	@Autowired
+	private PaypalCheckoutManager paypalCheckoutManager;
 	
 	public PaypalSmartButtonAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
 		super(ureq, wControl, "paypal_smart_buttons");
@@ -74,6 +76,9 @@ public class PaypalSmartButtonAccessController extends FormBasicController imple
 			layoutCont.contextPut("excludeFundings", excludeFundings == null ? "" : excludeFundings);
 			layoutCont.contextPut("csrfToken", ureq.getUserSession().getCsrfToken());
 			
+			String preferedLocale = paypalCheckoutManager.getPreferredLocale(getLocale());
+			layoutCont.contextPut("plocale", preferedLocale);
+			
 			String description = link.getOffer().getDescription();
 			if(StringHelper.containsNonWhitespace(description)) {
 				if(!StringHelper.isHtml(description)) {
@@ -90,9 +95,6 @@ public class PaypalSmartButtonAccessController extends FormBasicController imple
 			String mapperUri = registerMapper(ureq, new PaypalSmartButtonMapper(getIdentity(), link, this));
 			layoutCont.contextPut("mapperUri", mapperUri);
 		}
-		
-		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "https://www.paypal.com/sdk/js?client-id=" + paypalModule.getClientId() + "&currency=CHF&intent=authorize" });
-		formLayout.add(js);
 	}
 	
 	@Override
