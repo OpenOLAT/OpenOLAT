@@ -157,14 +157,21 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 	@Override
 	public void approveAuthorization(String paypalAuthorizationId, Capture capture) {
 		PaypalCheckoutTransaction trx = transactionDao.loadTransactionByAuthorizationId(paypalAuthorizationId);
-		if(trx != null && PaypalCheckoutStatus.PENDING.name().equals(trx.getPaypalOrderStatus())) {
-			// transfer data from capture to our transaction
-			checkoutProvider.captureToTransaction(capture, trx);
-			trx = transactionDao.update(trx);
-			dbInstance.commit();
-			
-			log.info(Tracing.M_AUDIT, "Paypal Checkout transaction approved: {}", trx);
-			completeTransactionSucessfully(trx);
+		if(trx != null) {
+			if(PaypalCheckoutStatus.PENDING.name().equals(trx.getPaypalOrderStatus())) {
+				// transfer data from capture to our transaction
+				checkoutProvider.captureToTransaction(capture, trx);
+				trx = transactionDao.update(trx);
+				dbInstance.commit();
+				
+				log.info(Tracing.M_AUDIT, "Paypal Checkout transaction approved: {}", trx);
+				completeTransactionSucessfully(trx);
+			} else if(PaypalCheckoutStatus.COMPLETED.name().equals(trx.getPaypalOrderStatus())) {
+				log.info(Tracing.M_AUDIT, "Paypal Checkout transaction already completed: {}", trx);
+			} else {
+				String status = trx.getPaypalOrderStatus();
+				log.error(Tracing.M_AUDIT, "Paypal Checkout transaction with status {} cannot be completed: {}", status, trx);
+			}
 		} else {
 			log.error("Paypal Checkout transaction not found for approval: {} (Paypal authorization id)", paypalAuthorizationId);
 		}

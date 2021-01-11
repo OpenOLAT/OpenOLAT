@@ -24,7 +24,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -90,9 +89,6 @@ public class PaypalSmartButtonAccessController extends FormBasicController imple
 			String mapperUri = registerMapper(ureq, new PaypalSmartButtonMapper(getIdentity(), link, this));
 			layoutCont.contextPut("mapperUri", mapperUri);
 		}
-		
-		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "https://www.paypal.com/sdk/js?client-id=" + paypalModule.getClientId() + "&currency=CHF&intent=authorize" });
-		formLayout.add(js);
 	}
 	
 	@Override
