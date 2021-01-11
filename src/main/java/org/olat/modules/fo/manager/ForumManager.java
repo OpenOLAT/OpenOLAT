@@ -772,7 +772,12 @@ public class ForumManager {
 					.getResultList();
 		for(Message threadToDelete:threadsToDelete) {
 			deleteMessageTree(forumKey, threadToDelete);
-			dbInstance.getCurrentEntityManager().remove(threadToDelete);
+			
+			Message reloadedMessage = dbInstance.getCurrentEntityManager()
+					.find(MessageImpl.class, threadToDelete.getKey());
+			if(reloadedMessage != null) {
+				dbInstance.getCurrentEntityManager().remove(threadToDelete);
+			}
 		}
 		dbInstance.commit();
 		

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -54,6 +55,7 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.filter.impl.HtmlScanner;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.user.UserManager;
+import org.springframework.web.util.UriUtils;
 
 import com.thoughtworks.xstream.core.util.Base64Encoder;
 
@@ -455,6 +457,10 @@ public class StringHelper {
 		} catch (IOException e) {
 			log.error("Error escaping JavaScript", e);
 		}
+	}
+	
+	public static final String encodeUrlPathSegment(String path) {
+		return UriUtils.encodePathSegment(path, StandardCharsets.UTF_8);
 	}
 
 	/**

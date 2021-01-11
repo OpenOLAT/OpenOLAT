@@ -168,7 +168,7 @@
 			#foreach($attachment in $message.attachments)
 				#set($fname = $attachment.getName())
 				<li class="o_attachment">
-					<a href="$r.commandURI("attachment_${foreach.count}_${message.key}")$fname" target="_blank">
+					<a href="$r.commandURI("attachment_${foreach.count}_${message.key}")$r.encodeUrlPathSegment($fname)" target="_blank">
 						<div class="o_filename">$r.escapeHtml($fname)</div>
 						<div class="o_size">
 							<i class="o_icon o_icon-fw $r.getFiletypeIconCss($fname)"></i>
