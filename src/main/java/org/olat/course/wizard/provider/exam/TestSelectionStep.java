@@ -43,11 +43,11 @@ import org.olat.repository.wizard.ui.QTI21Figures;
  */
 public class TestSelectionStep extends BasicStep {
 	
-	public TestSelectionStep(UserRequest ureq, RepositoryEntry entry) {
+	public TestSelectionStep(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.test", null);
-		setNextStep(new TestConfigStep(ureq, entry));
+		setNextStep(new TestConfigStep(ureq, entry, examCourseSteps));
 	}
 
 	@Override

@@ -39,11 +39,11 @@ import org.olat.course.wizard.CourseWizardService;
  */
 public class CoachesOverviewStep extends BasicStep {
 	
-	public CoachesOverviewStep(UserRequest ureq) {
+	public CoachesOverviewStep(UserRequest ureq, ExamCourseSteps examCourseSteps) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.coaches.selection", null);
-		setNextStep(new ParticipantsSelectionStep(ureq));
+		setNextStep(ParticipantsSelectionStep.create(ureq, examCourseSteps));
 	}
 
 	@Override

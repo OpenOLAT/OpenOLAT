@@ -39,11 +39,18 @@ import org.olat.course.wizard.CourseWizardService;
  */
 public class CoachesSelectionStep extends BasicStep {
 	
-	public CoachesSelectionStep(UserRequest ureq) {
+	public static BasicStep create(UserRequest ureq, ExamCourseSteps examCourseSteps) {
+		if (examCourseSteps.isCoaches()) {
+			return new CoachesSelectionStep(ureq, examCourseSteps);
+		}
+		return ParticipantsSelectionStep.create(ureq, examCourseSteps);
+	}
+	
+	private CoachesSelectionStep(UserRequest ureq, ExamCourseSteps examCourseSteps) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.coaches.selection", null);
-		setNextStep(new CoachesOverviewStep(ureq));
+		setNextStep(new CoachesOverviewStep(ureq, examCourseSteps));
 	}
 
 	@Override

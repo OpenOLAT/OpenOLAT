@@ -42,12 +42,12 @@ public class RetestConfigStep extends BasicStep {
 	
 	private final RepositoryEntry entry;
 
-	public RetestConfigStep(UserRequest ureq, RepositoryEntry entry) {
+	public RetestConfigStep(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps) {
 		super(ureq);
 		this.entry = entry;
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.retest", null);
-		setNextStep(new CertificateStep(ureq, entry));
+		setNextStep(CertificateStep.create(ureq, entry, examCourseSteps));
 	}
 
 	@Override

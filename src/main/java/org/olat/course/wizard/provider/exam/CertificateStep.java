@@ -40,15 +40,22 @@ import org.olat.repository.RepositoryEntry;
 public class CertificateStep extends BasicStep {
 	
 	private final RepositoryEntry entry;
+	
+	public static BasicStep create(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps) {
+		if (examCourseSteps.isCertificate()) {
+			return new CertificateStep(ureq, entry, examCourseSteps);
+		}
+		return CoachesSelectionStep.create(ureq, examCourseSteps);
+	}
 
-	public CertificateStep(UserRequest ureq, RepositoryEntry entry) {
+	private CertificateStep(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps) {
 		super(ureq);
 		this.entry = entry;
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.certificate", null);
-		setNextStep(new CoachesSelectionStep(ureq));
+		setNextStep(CoachesSelectionStep.create(ureq, examCourseSteps));
 	}
-
+	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return PrevNextFinishConfig.BACK_NEXT;

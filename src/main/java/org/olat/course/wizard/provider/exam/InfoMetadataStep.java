@@ -41,12 +41,12 @@ public class InfoMetadataStep extends BasicStep {
 
 	private final RepositoryEntry entry;
 
-	public InfoMetadataStep(UserRequest ureq, RepositoryEntry entry) {
+	public InfoMetadataStep(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps) {
 		super(ureq);
 		this.entry = entry;
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.informations", null);
-		setNextStep(new TestSelectionStep(ureq, entry));
+		setNextStep(new TestSelectionStep(ureq, entry, examCourseSteps));
 	}
 
 	@Override

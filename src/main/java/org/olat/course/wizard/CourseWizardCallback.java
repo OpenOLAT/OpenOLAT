@@ -52,13 +52,22 @@ public class CourseWizardCallback implements StepRunnerCallback {
 	public static final String RUN_CONTEXT_PARTICIPANTS = "participants";
 	
 	private final Identity executor;
+	private BeforeExecution beforeExecution;
 	
 	public CourseWizardCallback(Identity executor) {
 		this.executor = executor;
 	}
 
+	public void setBeforeExecution(BeforeExecution beforeExecution) {
+		this.beforeExecution = beforeExecution;
+	}
+
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+		if (beforeExecution != null) {
+			beforeExecution.obBeforeExecution(runContext);
+		}
+		
 		CourseWizardService courseWizardService = CoreSpringFactory.getImpl(CourseWizardService.class);
 		
 		RepositoryEntry entry = (RepositoryEntry) runContext.get("repoEntry");
@@ -108,6 +117,12 @@ public class CourseWizardCallback implements StepRunnerCallback {
 		courseWizardService.finishCourseEditSession(course);
 		
 		return StepsMainRunController.DONE_MODIFIED;
+	}
+	
+	public interface BeforeExecution {
+		
+		void obBeforeExecution(StepsRunContext runContext);
+		
 	}
 
 }

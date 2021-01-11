@@ -27,38 +27,31 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
-import org.olat.course.wizard.CourseWizardCallback;
 import org.olat.course.wizard.CourseWizardService;
-import org.olat.course.wizard.ui.ReexamController;
-import org.olat.course.wizard.ui.ReexamController.ReexamSwitchListener;
+import org.olat.course.wizard.ui.ExamCourseStepsController;
+import org.olat.course.wizard.ui.ExamCourseStepsController.ExamCourseStepsListener;
 import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 18 Dec 2020<br>
+ * Initial date: 11 Jan 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ReexamStep extends BasicStep {
+public class ExamCourseSetpsStep extends BasicStep {
 	
 	private final RepositoryEntry entry;
+	private final ExamCourseSteps examCourseSteps;
 
-	public ReexamStep(UserRequest ureq, RepositoryEntry entry) {
+	public ExamCourseSetpsStep(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps) {
 		super(ureq);
 		this.entry = entry;
+		this.examCourseSteps = examCourseSteps;
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("wizard.title.reexam", null);
-		setNextStep(ureq, false);
+		setI18nTitleAndDescr("wizard.title.exam.steps", null);
+		setNextStep(new InfoMetadataStep(ureq, entry, examCourseSteps));
 	}
 	
-	private void setNextStep(UserRequest ureq, boolean reexam) {
-		if (reexam) {
-			setNextStep(new RetestSelectionStep(ureq, entry));
-		} else {
-			setNextStep(new CertificateStep(ureq, entry));
-		}
-	}
-
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return PrevNextFinishConfig.BACK_NEXT;
@@ -67,15 +60,15 @@ public class ReexamStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,
 			StepsRunContext stepsRunContext, Form form) {
-		return new ReexamController(ureq, windowControl, form, stepsRunContext,
-				CourseWizardCallback.RUN_CONTEXT_RETEST, new ReexamStepListener());
+		return new ExamCourseStepsController(ureq, windowControl, form, stepsRunContext, examCourseSteps,
+				new ExamCourseStepsistenerImpl());
 	}
 	
-	private final class ReexamStepListener implements ReexamSwitchListener {
+	private final class ExamCourseStepsistenerImpl implements ExamCourseStepsListener {
 		
 		@Override
-		public void onSwitchSelected(UserRequest ureq, boolean reexam) {
-			setNextStep(ureq, reexam);
+		public void onStepsChanged(UserRequest ureq) {
+			setNextStep(new InfoMetadataStep(ureq, entry, examCourseSteps));
 		}
 		
 	}

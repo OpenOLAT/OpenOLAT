@@ -43,11 +43,18 @@ import org.olat.repository.wizard.ui.QTI21Figures;
  */
 public class RetestSelectionStep extends BasicStep {
 	
-	public RetestSelectionStep(UserRequest ureq, RepositoryEntry entry) {
+	public static BasicStep create(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps) {
+		if (examCourseSteps.isRetest()) {
+			return new RetestSelectionStep(ureq, entry, examCourseSteps);
+		}
+		return CertificateStep.create(ureq, entry, examCourseSteps);
+	}
+	
+	private RetestSelectionStep(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.retest", null);
-		setNextStep(new RetestConfigStep(ureq, entry));
+		setNextStep(new RetestConfigStep(ureq, entry, examCourseSteps));
 	}
 
 	@Override

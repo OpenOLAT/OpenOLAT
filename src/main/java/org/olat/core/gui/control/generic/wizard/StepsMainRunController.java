@@ -278,11 +278,9 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	}
 	
 	private void updateTitleItems() {
-		if (stepTitleLinks == null || stepTitleLinks.size() != getNumberOfSteps()) {
-			List<FormItem> items = createTitleItems();
-			stepTitleLinks.clear();
-			stepTitleLinks.addAll(items);
-		}
+		List<FormItem> items = createTitleItems();
+		stepTitleLinks.clear();
+		stepTitleLinks.addAll(items);
 	}
 	
 	private List<FormItem> createTitleItems() {
@@ -298,16 +296,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		return items;
 	}
 	
-	private int getNumberOfSteps() {
-		int index = 0;
-		Step tmp = startStep;
-		do {
-			index++;
-			tmp = tmp.nextStep();
-		} while (tmp != Step.NOSTEP);
-		return index;
-	}
-
 	private void addNextStep(StepFormController child, Step nextStep) {
 
 		currentStepIndex++;
@@ -351,7 +339,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 					//next but no more step -> finish
 					finishWizard(ureq);
 				} else {
-					updateTitleItems();
 					nextChildCreator = new ControllerCreator() {
 						private final UserRequest ureqForAfterDispatch = ureq;
 						@Override
@@ -377,6 +364,8 @@ public class StepsMainRunController extends FormBasicController implements Gener
 				// all relevant data for finishing the wizards work must now be
 				// present in the stepsContext
 				finishWizard(ureq);
+			} else if (event == StepsEvent.STEPS_CHANGED) {
+				updateTitleItems();
 			}
 
 		}

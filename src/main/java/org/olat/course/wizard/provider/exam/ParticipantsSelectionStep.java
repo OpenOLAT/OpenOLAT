@@ -39,7 +39,14 @@ import org.olat.course.wizard.CourseWizardService;
  */
 public class ParticipantsSelectionStep extends BasicStep {
 	
-	public ParticipantsSelectionStep(UserRequest ureq) {
+	public static BasicStep create(UserRequest ureq, ExamCourseSteps examCourseSteps) {
+		if (examCourseSteps.isParticipants()) {
+			return new ParticipantsSelectionStep(ureq);
+		}
+		return new PublicationStep(ureq);
+	}
+	
+	private ParticipantsSelectionStep(UserRequest ureq) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.participants.selection", null);
