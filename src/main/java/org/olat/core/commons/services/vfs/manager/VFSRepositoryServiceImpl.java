@@ -470,6 +470,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			getMetadataFor(leaf);
 		}
 		metadataDao.updateMetadata(leaf.getSize(), lastModified, savedBy, relativePath, leaf.getName());
+		dbInstance.commitAndCloseSession();
 	}
 
 	@Override

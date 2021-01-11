@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.services.license.License;
@@ -38,7 +39,6 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.Quota;
@@ -231,6 +231,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 				metadata = vfsRepositoryService.getMetadataFor(childLeaf);
 				metadata.setAuthor(identity);
 				metadata = vfsRepositoryService.updateMetadata(metadata);
+				vfsRepositoryService.itemSaved(childLeaf, identity);
 			}
 			addLicense(metadata, identity);
 			vfsRepositoryService.resetThumbnails(childLeaf);
