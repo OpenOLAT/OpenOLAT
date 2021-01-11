@@ -32,8 +32,10 @@
 				#if($height)
 					contentHeight = '$height';
 				#else
+					## reset height to a small value
+					jQuery('#cndContent').height('100px');
 					b_resizeIframeToMainMaxHeight("cndContent");
-					contentHeight = jQuery('#o_main_center_content').height()
+					contentHeight = jQuery('#cndContent').height()
 				#end
 				document.documentElement.style.setProperty('--cndcontentheight', `${contentHeight}px`);
 			}

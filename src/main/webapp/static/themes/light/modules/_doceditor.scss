@@ -48,7 +48,7 @@ body.o_doceditor_body {
 			iframe {
 				width: 100%;
 				height: 800px;        // Fallback if css variable not supported
-				height: calc(var(--cndcontentheight) - 90px);
+				height: calc(var(--cndcontentheight));
 				margin-top: 0px;
 				margin-bottom: 0px;
 				border-width: 1px;

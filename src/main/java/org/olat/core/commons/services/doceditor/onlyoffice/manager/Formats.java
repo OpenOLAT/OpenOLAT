@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.doceditor.onlyoffice.manager;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
@@ -37,16 +38,14 @@ public class Formats {
 	// see https://helpcenter.onlyoffice.com/ONLYOFFICE-Editors/ONLYOFFICE-Spreadsheet-Editor/HelpfulHints/SupportedFormats.aspx
 	// see https://helpcenter.onlyoffice.com/ONLYOFFICE-Editors/ONLYOFFICE-Presentation-Editor/HelpfulHints/SupportedFormats.aspx
 	
-	private static List<String> TEXT_EDIT = Arrays.asList(
+	private static List<String> TEXT_EDIT = Collections.singletonList("docx");
+	private static List<String> TEXT_VIEW = Arrays.asList(
 			"docm",
-			"docx",
 			"dotx",
 			"odt",
 			"ott",
 			"rtf",
-			"txt"
-		);
-	private static List<String> TEXT_VIEW = Arrays.asList(
+			"txt",
 			"doc",
 			"dot",
 			"dotm",
@@ -57,21 +56,20 @@ public class Formats {
 			"djvu",
 			"xps"
 		);
-	private static List<String> SPREADSHEET_EDIT = Arrays.asList(
+	private static List<String> SPREADSHEET_EDIT = Collections.singletonList("xlsx");
+	private static List<String> SPREADSHEET_VIEW = Arrays.asList(
 			"csv",
 			"ods",
 			"ots",
-			"xlsx",
-			"xltx"
-		);
-	private static List<String> SPREADSHEET_VIEW = Arrays.asList(
+			"xltx",
 			"fods",
 			"xls",
 			"xlsm",
 			"xlt",
 			"xltm"
 		);
-	private static List<String> PRESENTATION_EDIT = Arrays.asList(
+	private static List<String> PRESENTATION_EDIT = Collections.singletonList("pptx");
+	private static List<String> PRESENTATION_VIEW = Arrays.asList(
 			"fodp",
 			"odp",
 			"otp",
@@ -79,9 +77,6 @@ public class Formats {
 			"potm",
 			"potx",
 			"ppsx",
-			"pptx"
-		);
-	private static List<String> PRESENTATION_VIEW = Arrays.asList(
 			"pps",
 			"ppsm",
 			"ppt",
