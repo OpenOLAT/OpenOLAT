@@ -76,7 +76,9 @@ public class PaypalSmartButtonAccessController extends FormBasicController imple
 			
 			String description = link.getOffer().getDescription();
 			if(StringHelper.containsNonWhitespace(description)) {
-				description = Formatter.escWithBR(description).toString();
+				if(!StringHelper.isHtml(description)) {
+					description = Formatter.escWithBR(description).toString();
+				}
 				description = StringHelper.xssScan(description);
 				layoutCont.contextPut("description", description);
 			}
