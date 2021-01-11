@@ -1468,7 +1468,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 	//public CandidateSession endCurrentTestPart(final CandidateSessionContext candidateSessionContext)
 	private void processEndTestPart(UserRequest ureq) {
-		 /* Update state */
+		if(testSessionController.getCurrentTestPart() == null && testSessionController.getTestSessionState().isEnded()) {
+        	// try to end an already ended test
+			return;
+        }
+		
+		/* Update state */
         final Date requestTimestamp = ureq.getRequestTimestamp();
         testSessionController.endCurrentTestPart(requestTimestamp);
         
