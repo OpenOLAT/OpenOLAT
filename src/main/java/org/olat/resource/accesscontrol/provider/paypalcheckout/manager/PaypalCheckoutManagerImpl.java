@@ -22,12 +22,15 @@ package org.olat.resource.accesscontrol.provider.paypalcheckout.manager;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessTransaction;
@@ -74,6 +77,8 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 	@Autowired
 	private ACOrderDAO orderManager;
 	@Autowired
+	private I18nManager i18nManager;
+	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private CheckoutV2Provider checkoutProvider;
@@ -84,6 +89,50 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 	@Autowired
 	private PaypalCheckoutTransactionDAO transactionDao;
 	
+
+	@Override
+	public String getPreferredLocale(Locale locale) {
+		String val;
+		List<String> preferredCountries = checkoutModule.getPreferredCountriesList();
+		if(preferredCountries.isEmpty()) {
+			Locale regionalizedLocale = i18nManager.getRegionalizedLocale(locale);
+			val = regionalizedLocale.toString();
+		} else {
+			String language = locale.getLanguage();
+			String country = locale.getCountry();
+			if(!StringHelper.containsNonWhitespace(country)) {
+				Locale[] allLocales = Locale.getAvailableLocales();
+				for(String preferredCountry:preferredCountries) {
+					if(exists(language, preferredCountry, allLocales)) {
+						country = preferredCountry;
+						break;
+					}
+				}
+			}
+
+			if(StringHelper.containsNonWhitespace(country)) {
+				val = language + "_" + country.toUpperCase();
+			} else {
+				Locale regionalizedLocale = i18nManager.getRegionalizedLocale(locale);
+				val = regionalizedLocale.toString();
+			}
+		}
+		
+		if(!StringHelper.containsNonWhitespace(val)) {
+			val = "de_CH";
+		}
+		return val;
+	}
+	
+	private boolean exists(String language, String country, Locale[] allLocales) {
+		for(Locale locale:allLocales) {
+			if(locale.getCountry().equals(country) && locale.getLanguage().equals(language)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public CheckoutRequest request(Identity delivery, OfferAccess offerAccess, String mapperUri, String sessionId) {
 		StringBuilder url = new StringBuilder();

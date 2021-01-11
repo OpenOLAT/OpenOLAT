@@ -51,6 +51,7 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 	private static final String PAYPAL_SMART_BUTTONS = "paypal.checkout.v2.smart.buttons";
 	private static final String PAYPAL_WEBHOOK_ID = "paypal.webhhok.id";
 	private static final String PAYPAL_ACCEPT_PENDING_REVIEW = "paypal.checkout.v2.accept.pending.review";
+	private static final String PAYPAL_PREFERRED_COUNTRIES = "paypal.preferRed.countries";
 	
 	private static final String[] currencies = new String[] {
 			"AUD",
@@ -93,6 +94,8 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 	private boolean acceptPendingReview;
 	@Value("${paypal.webhhok.id:#{null}}")
 	private String webhookId;
+	@Value("${paypal.preferred.countries:CH}")
+	private String preferredCountries;
 	
 	@Autowired
 	private PaypalRESTWebhookProvider webhookProvider;
@@ -193,6 +196,29 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 		setStringProperty(PAYPAL_ACCEPT_PENDING_REVIEW, Boolean.toString(accept), true);
 	}
 	
+	/**
+	 * @return An immutable list of countries to prefer
+	 */
+	public List<String> getPreferredCountriesList() {
+		List<String> countries;
+		if(StringHelper.containsNonWhitespace(preferredCountries)) {
+			String[] countriesArr = preferredCountries.split("[,]");
+			countries = List.of(countriesArr);
+		} else {
+			countries = List.of();
+		}
+		return countries;
+	}
+	
+	public String getPreferredCountries() {
+		return preferredCountries;
+	}
+
+	public void setPreferredCountries(String preferredCountries) {
+		this.preferredCountries = preferredCountries;
+		setStringProperty(PAYPAL_PREFERRED_COUNTRIES, preferredCountries, true);
+	}
+
 	public String getExcludeFundings() {
 		return excludeFundings;
 	}

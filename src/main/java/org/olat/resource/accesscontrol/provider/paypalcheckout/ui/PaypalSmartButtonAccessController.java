@@ -31,6 +31,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutManager;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutModule;
 import org.olat.resource.accesscontrol.ui.FormController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
@@ -48,6 +49,8 @@ public class PaypalSmartButtonAccessController extends FormBasicController imple
 	
 	@Autowired
 	private PaypalCheckoutModule paypalModule;
+	@Autowired
+	private PaypalCheckoutManager paypalCheckoutManager;
 	
 	public PaypalSmartButtonAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
 		super(ureq, wControl, "paypal_smart_buttons");
@@ -72,6 +75,9 @@ public class PaypalSmartButtonAccessController extends FormBasicController imple
 			String excludeFundings = paypalModule.getExcludeFundings();
 			layoutCont.contextPut("excludeFundings", excludeFundings == null ? "" : excludeFundings);
 			layoutCont.contextPut("csrfToken", ureq.getUserSession().getCsrfToken());
+			
+			String preferedLocale = paypalCheckoutManager.getPreferredLocale(getLocale());
+			layoutCont.contextPut("plocale", preferedLocale);
 			
 			String description = link.getOffer().getDescription();
 			if(StringHelper.containsNonWhitespace(description)) {
