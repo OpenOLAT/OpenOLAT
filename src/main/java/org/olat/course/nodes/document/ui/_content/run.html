@@ -26,11 +26,13 @@
 		<script>
 		/* <![CDATA[ */
 			b_resizeIframeToMainMaxHeight("cndContent");
-			var contentHeight = jQuery('#o_main_center_content').height();
+			var contentHeight = jQuery('#cndContent').height();
 			document.documentElement.style.setProperty('--cndcontentheight', `${contentHeight}px`);
 			jQuery(document).on("oo.window.resize.after", () => {
+				## reset height to a small value
+				jQuery('#cndContent').height('100px');
 				b_resizeIframeToMainMaxHeight("cndContent");
-				var contentHeight = jQuery('#o_main_center_content').height();
+				var contentHeight = jQuery('#cndContent').height();
 				document.documentElement.style.setProperty('--cndcontentheight', `${contentHeight}px`);
 			});
 		/* ]]> */
