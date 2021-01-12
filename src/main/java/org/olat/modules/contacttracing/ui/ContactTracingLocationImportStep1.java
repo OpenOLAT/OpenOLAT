@@ -125,13 +125,12 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 			
 			
 			// Add input element for locations
-			excelTextElement = uifactory.addTextAreaElement("importElement", "contact.tracing.locations", -1, 10, -1, true, true, true, null, formLayout);
+			excelTextElement = uifactory.addTextAreaElement("importElement", "contact.tracing.locations", -1, 10, -1, false, true, true, null, formLayout);
 			excelTextElement.setNotEmptyCheck("contact.tracing.locations.import.mandatory");
 			excelTextElement.setMandatory(true);
 			excelTextElement.setLineNumbersEnbaled(true);
 			excelTextElement.setStripedBackgroundEnabled(true);
 			excelTextElement.setFixedFontWidth(true);
-			excelTextElement.setElementCssClass("o_textarea_line_numbers");
 		}
 		
 		@Override
