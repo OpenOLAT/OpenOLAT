@@ -232,6 +232,7 @@
 												<include>${basedir}/target/jquery/functions.min.js</include>
 												<include>${basedir}/target/jquery/jquery/transit/jquery.transit.min.js</include>
 												<include>${basedir}/target/bootstrap/bootstrap-openolat.min.js</include>
+												<include>${basedir}/target/jquery/openolat/textarea.min.js</include>
 											</includes>
 										</aggregation>
 										<aggregation>

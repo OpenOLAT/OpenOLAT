@@ -93,7 +93,7 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			}
 			*/
 			if (rows != -1) {
-				sb.append(" height:").append(rows * 1.5).append("em;"); // line-height is about 1.5
+				sb.append(" height:").append(rows * 1.45).append("em;"); // line-height is about 1.5
 			}
 			sb.append("'>")
 			  .append(value)
@@ -101,6 +101,10 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 	
 		} else {
 			//read write view
+			if (teC.isLineNumbersEnabled()) {
+				sb.append("<div class=\"o_textarea_line_numbers_container\" style='height:").append(rows * 1.45).append("em'>");
+			}
+			
 			sb.append("<textarea id=\"")
 			  .append(id)
 			  .append("\" name=\"")
@@ -112,7 +116,13 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			if (teC.isOriginalLineBreaks()) {
 				sb.append(" o_original_line_breaks");
 			}
+			if (teC.isStripedBackgroundEnabled()) {
+				sb.append(" o_striped_background");
+			}
 			sb.append("'");
+			if (teC.isLineNumbersEnabled()) {
+				sb.append(" onresize=\"O_TEXTAREA.update_after_resize()\"");
+			}
 			if (teC.getCols() != -1) {
 				sb.append(" cols=\"").append(teC.getCols()).append("\"");
 			}
@@ -133,6 +143,14 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
 			  .append(id+".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
 			  .append(FormJSHelper.getJSEnd());
+			
+			if (teC.isLineNumbersEnabled()) {
+				sb.append("<script>O_TEXTAREA.append_line_numbers('").append(id).append("')</script>");
+				sb.append("</div>");
+			}
+			if (teC.getErrors() != null) {
+				sb.append("<script>O_TEXTAREA.set_errors('").append(id).append("',").append(teC.getErrorsAsString()).append(")</script>");
+			}
 		}
 
 		// resize element to fit content

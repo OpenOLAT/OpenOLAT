@@ -97,7 +97,7 @@
 	}
 	
 	.form-control.textarea.o_fixed_font_with {
-		resize: vertical !important;
+		resize: vertical;
 		font-family: $font-family-monospace;
 	}
 	
@@ -121,6 +121,57 @@
 		overflow: auto;	
 		white-space: pre-wrap;
 		background: $input-bg-disabled;
+	}
+	
+	/*
+	currently not working in Safari and Firefox, therefore deactivated
+	.form-control.textarea.o_striped_background {
+		background-image: linear-gradient(#F1F1F1 50%, #F9F9F9 50%);
+ 		background-size: 100% #{2*$line-height-base}em;
+		background-attachment: local;
+	}*/
+	
+	.o_textarea_line_numbers_container {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+	}
+	
+	.o_textarea_line_numbers_input, .o_textarea_line_numbers_wrapper, .o_textarea_line_numbers_row {
+		box-sizing: border-box;
+		vertical-align: middle;
+	}
+	
+	.o_textarea_line_numbers_input {
+		display: inline-block;
+		padding: 0 0.3em;
+		width: 100%;
+		height: 100%;
+		overflow-x: scroll;
+		resize: none !important;
+	}
+	
+	.o_textarea_line_numbers_wrapper {
+		padding: 1px 0.3em 0 0;
+		height: 100%;
+		overflow: hidden;
+	}	
+	
+	.o_textarea_line_numbers_row {
+		width: 100%;
+		display: flex;		
+		align-items: center;
+	}
+	
+	.o_textarea_line_numbers_row span {
+		font-family: $font-family-monospace;
+		text-align: right;
+		margin-left: auto;
+	}
+	
+	.o_textarea_line_numbers_row i {
+		text-align: left;
+		margin-right: 0.2em;
 	}
 }
 

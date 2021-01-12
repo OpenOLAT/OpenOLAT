@@ -40,7 +40,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -84,7 +84,7 @@ class ImportStep00 extends BasicStep {
 	private static final String usageIdentifyer = UserImportController.class.getCanonicalName();
 	private boolean canCreateOLATPassword;
 	private Mapper excelMapper;
-	private TextElement textAreaElement;
+	private TextAreaElement textAreaElement;
 
 	public ImportStep00(UserRequest ureq, boolean canCreateOLATPassword) {
 		super(ureq);
@@ -476,6 +476,9 @@ class ImportStep00 extends BasicStep {
 			
 			textAreaElement = uifactory.addTextAreaElement("importform", "form.importdata", -1, 10, 100, false, false, true, "", formLayout);
 			textAreaElement.setMandatory(true);
+			textAreaElement.setLineNumbersEnbaled(true);
+			textAreaElement.setStripedBackgroundEnabled(true);
+			textAreaElement.setFixedFontWidth(true);
 			textAreaElement.setNotEmptyCheck("error.emptyform");
 		}
 

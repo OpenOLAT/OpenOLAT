@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.form.flexible.elements;
 
+import java.util.List;
+
 /**
  * 
  * Initial date: 13 déc. 2016<br>
@@ -30,5 +32,26 @@ public interface TextAreaElement extends TextElement {
 	public int getRows();
 	
 	public void setRows(int rows);
-
+	
+	public void setStripedBackgroundEnabled(boolean stripedBackgroundEnabled);
+	
+	public void setLineNumbersEnbaled(boolean lineNumbersEnabled);
+	
+	public void setOriginalLineBreaks(boolean originalLineBreaks);
+	
+	public void setFixedFontWidth(boolean fixedFontWidth);
+	
+	public boolean isStripedBackgroundEnabled();
+	
+	public boolean isLineNumbersEnabled();
+	
+	public boolean isOriginalLineBreaks();
+	
+	public boolean isFixedFontWidth();
+	
+	public void setErrors(List<Integer> rows);
+	
+	public List<Integer> getErrors();
+	
+	public String getErrorsAsString();
 }

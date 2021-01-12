@@ -34,7 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -61,7 +61,7 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 	public static final String RUN_CONTEXT_KEY = "import.member.by.username";
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 
-	private TextElement namesEl;
+	private TextAreaElement namesEl;
 	private FlexiTableElement tableEl;
 	private ImportMemberOverviewDataModel userTableModel;
 	
@@ -106,6 +106,9 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 		namesEl = uifactory.addTextAreaElement("addusers", "form.addusers", -1, 15, 40, true, false, context.getRawNames(), inputContainer);
 		namesEl.setElementCssClass("o_sel_user_import");
 		namesEl.setExampleKey ("form.names.example", null);
+		namesEl.setLineNumbersEnbaled(true);
+		namesEl.setStripedBackgroundEnabled(true);
+		namesEl.setFixedFontWidth(true);
 		
 		// table for duplicates
 		String page = velocity_root + "/warn_duplicates.html";
