@@ -748,25 +748,26 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @return
 	 */
 	public StringOutput renderForce(String componentName) {
-		Component source = renderer.findComponent(componentName);
-		StringOutput sb;
+		final Component source = renderer.findComponent(componentName);
+		final StringOutput sb;
 		if (source == null) {
 			sb = new StringOutput(1);
 		} else if (target == null) {
 			sb = new StringOutput(10000);
 			renderer.render(source, sb, null);
 		} else {
+			sb = new StringOutput(1);
 			renderer.render(source, target, null);
 		}
-		return new StringOutput(1);
+		return sb;
 	}
 	
 	private StringOutput doRender(String componentName, String[] args) {
-		Component source = renderer.findComponent(componentName);
-		StringOutput sb;
+		final Component source = renderer.findComponent(componentName);
+		final StringOutput sb;
 		if (source == null) {
 			sb = new StringOutput(128);
-			sb.append(">>>>>>>>>>>>>>>>>>>>>>>>>> component " + componentName + " could not be found to be rendered!");
+			sb.append(">>>>>>>>>>>>>>>>>>>>>>>>>> component ").append(componentName).append(" could not be found to be rendered!");
 		} else if (target == null) {
 			sb = new StringOutput(10000);
 			renderer.render(source, sb, args);

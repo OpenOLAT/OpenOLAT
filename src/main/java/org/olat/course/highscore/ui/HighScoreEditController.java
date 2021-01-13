@@ -43,7 +43,7 @@ import org.olat.modules.ModuleConfiguration;
 
 public class HighScoreEditController extends FormBasicController {
 	
-	private final static String[] yesOrNoKeys = new String[] { "highscore.all", "highscore.bestonly" };
+	private static final String[] yesOrNoKeys = new String[] { "highscore.all", "highscore.bestonly" };
 	
 	/** configuration: boolean has a podium */
 	public static final String CONFIG_KEY_HIGHSCORE= "allowHighscore";	
@@ -243,7 +243,7 @@ public class HighScoreEditController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOK = true;
+		boolean allOK = super.validateFormLogic(ureq);
 		if (allowHighScore.isSelected(0)) {
 			allOK &= showHistogram.isSelected(0) || showListing.isSelected(0) 
 					|| showPodium.isSelected(0) || showPosition.isSelected(0);
@@ -252,7 +252,7 @@ public class HighScoreEditController extends FormBasicController {
 			dateStart.setErrorKey("datestart.toearly", null);
 			allOK &= false;
 		}		
-		return allOK & super.validateFormLogic(ureq);
+		return allOK;
 	}
 
 	

@@ -247,12 +247,12 @@ public class CourseScoreController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		allOk &= validateInteger(passedNumberCutEl, 1, Integer.MAX_VALUE, true, "error.positiv.int");
 		allOk &= validateInteger(passedPointsCutEl, 1, Integer.MAX_VALUE, true, "error.positiv.int");
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	private boolean validateInteger(TextElement el, int min, int max, boolean mandatory, String i18nKey) {

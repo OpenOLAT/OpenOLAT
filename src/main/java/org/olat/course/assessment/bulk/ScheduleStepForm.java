@@ -100,7 +100,7 @@ public class ScheduleStepForm extends StepFormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		scheduleTypeEl.clearError();
 		if(!scheduleTypeEl.isOneSelected()) {
@@ -118,7 +118,7 @@ public class ScheduleStepForm extends StepFormBasicController {
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

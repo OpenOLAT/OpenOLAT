@@ -96,7 +96,7 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		bccEl.clearError();
 		if(enableBccEl.isAtLeastSelected(1)) {
@@ -115,7 +115,7 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

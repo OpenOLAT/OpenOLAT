@@ -276,7 +276,7 @@ public class AssessmentForm extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (hasScore && score.isEnabled()) {
 			Float fscore = null;
@@ -315,7 +315,7 @@ public class AssessmentForm extends FormBasicController {
 			attempts.clearError();
 			allOk &= attempts.validateIntValue();
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private Float parseFloat(TextElement textEl) throws NumberFormatException {

@@ -88,7 +88,7 @@ public class ErrorSearchController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		errorNumberEl.clearError();
 		if(!StringHelper.containsNonWhitespace(errorNumberEl.getValue())) {
@@ -96,6 +96,6 @@ public class ErrorSearchController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 }

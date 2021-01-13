@@ -86,7 +86,7 @@ public class ImportCalendarByUrlController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		calendarName.clearError();
 		if (calendarName.isEmpty()) {
@@ -106,7 +106,7 @@ public class ImportCalendarByUrlController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

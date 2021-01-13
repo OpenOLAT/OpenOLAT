@@ -74,8 +74,6 @@ public class TeamsServiceImpl implements TeamsService {
 	
 	private static final Logger log = Tracing.createLoggerFor(TeamsServiceImpl.class);
 
-	private static final Iterable<TeamsMeetingDeletionHandler> teamdMeetingDeletionHandlers = null;
-
 	@Autowired
 	private DB dbInstance;
 	@Autowired

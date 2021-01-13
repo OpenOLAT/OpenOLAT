@@ -216,7 +216,7 @@ public class CalendarEntryForm extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		begin.clearError();
 		if (begin.getDate() == null) {
@@ -246,7 +246,7 @@ public class CalendarEntryForm extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	/**

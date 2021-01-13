@@ -391,7 +391,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		String subject = subjectElement.getValue();
 		subjectElement.clearError();
@@ -422,7 +422,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	/**

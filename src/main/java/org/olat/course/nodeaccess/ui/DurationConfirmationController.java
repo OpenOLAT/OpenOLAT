@@ -62,11 +62,11 @@ public class DurationConfirmationController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		allOk = validateInteger(durationEl, 1, 10000, "error.positiv.int");
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateInteger(TextElement el, int min, int max, String i18nKey) {

@@ -200,13 +200,13 @@ public class BulkChangeController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (learningPath) {
 			allOk = validateInteger(durationEl, 1, 10000, true, "error.positiv.int");
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	public static boolean validateInteger(TextElement el, int min, int max, boolean mandatory, String i18nKey) {

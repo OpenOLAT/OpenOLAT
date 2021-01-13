@@ -31,8 +31,8 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Enumeration;
 
-import org.olat.core.configuration.AbstractSpringModule;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -161,9 +161,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		super(coordinatorManager);
 	}
 
-	/**
-	 * @see org.olat.core.configuration.Initializable#init()
-	 */
 	@Override
 	public void init() {
 		// Check if LDAP is enabled
@@ -231,7 +228,7 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		}
 		
 		// check SSL certifications, throws Startup Exception if certificate is not found
-		if(isSslEnabled()){
+		if(isSslEnabled()) {
 			if (!checkServerCertValidity(0)) {
 				log.error("LDAP enabled but no valid server certificate found. Please fix!");
 			} else if (!checkServerCertValidity(30)) {
@@ -274,10 +271,8 @@ public class LDAPLoginModule extends AbstractSpringModule {
 			log.info("LDAP cron syncer is enabled with expression::{}", ldapSyncCronSyncExpression);
 		} catch (Exception e) {
 			setLdapSyncCronSync(false);
-			log.error("LDAP configuration in attribute 'ldapSyncCronSyncExpression' is not valid ("
-				+ ldapSyncCronSyncExpression
-				+ "). See http://quartz.sourceforge.net/javadoc/org/quartz/CronTrigger.html to learn more about the cron syntax. Disabling LDAP cron syncing",
-				e);
+			log.error("LDAP configuration in attribute 'ldapSyncCronSyncExpression' is not valid ({}). See http://quartz.sourceforge.net/javadoc/org/quartz/CronTrigger.html to learn more about the cron syntax. Disabling LDAP cron syncing",
+				ldapSyncCronSyncExpression, e);
 		}
 	}
 
@@ -294,9 +289,9 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	 */
 	private boolean checkServerCertValidity(int daysFromNow) {
 		KeyStore keyStore;
-		try {
+		try(FileInputStream in=new FileInputStream(getTrustStoreLocation())) {
 			keyStore = KeyStore.getInstance(getTrustStoreType());
-			keyStore.load(new FileInputStream(getTrustStoreLocation()), (getTrustStorePwd() != null) ? getTrustStorePwd().toCharArray() : null);
+			keyStore.load(in, (getTrustStorePwd() != null) ? getTrustStorePwd().toCharArray() : null);
 			Enumeration<String> aliases = keyStore.aliases();
 			while (aliases.hasMoreElements()) {
 				String alias = aliases.nextElement();
@@ -305,7 +300,7 @@ public class LDAPLoginModule extends AbstractSpringModule {
 					return isCertificateValid((X509Certificate)cert, daysFromNow);
 				}
 			}
-		}	catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 		return false;
