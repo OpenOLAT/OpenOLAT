@@ -39,6 +39,13 @@ public interface UserLifecycleManager {
 	public long getDaysUntilDeletion(IdentityLifecycle identity, Date referenceDate);
 	
 	/**
+	 * Check if there are identities which expiration dates are .
+	 * 
+	 * @param vetoed Build a list to ignore.
+	 */
+	public void expiredIdentities(Set<Identity> vetoed);
+	
+	/**
 	 * Check if there are identities to deactivate.
 	 * 
 	 * @param vetoed Build a list to ignore.

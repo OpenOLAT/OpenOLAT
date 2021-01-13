@@ -61,6 +61,7 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 				case creationDate: return userRow.getCreationDate();
 				case lastLogin: return userRow.getLastLogin();
 				case status: return userRow.getStatus();
+				case expirationDate: return userRow.getExpirationDate();
 				case inactivationDate: return userRow.getInactivationDate();
 				case daysToInactivation: return getDaysToInactivation(userRow);
 				case daysToDeletion: return getDaysToDeletion(userRow);
@@ -103,7 +104,8 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		status("table.identity.status"),
 		inactivationDate("table.identity.inactivation.date"),
 		daysToInactivation("table.identity.days.inactivation"),
-		daysToDeletion("table.identity.days.deletion");
+		daysToDeletion("table.identity.days.deletion"),
+		expirationDate("table.identity.expiration.date");
 		
 		private final String i18nKey;
 		

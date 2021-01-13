@@ -43,6 +43,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -96,6 +97,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	private SpacerElement rolesSep;
 	private SingleSelection statusEl;
 	private SingleSelection anonymousEl;
+	private DateChooser expirationDateEl;
 	private FormLayoutContainer rolesCont;
 	private FormLink addToOrganisationButton;
 	private MultipleSelectionElement sendLoginDeniedEmailEl;
@@ -228,6 +230,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		sendLoginDeniedEmailEl.setVisible(false);
 		
 		// life cycle information
+		expirationDateEl = uifactory.addDateChooser("rightsForm.expiration.date", null, statusCont);
 		lastLoginEl = uifactory.addStaticTextElement("rightsForm.last.login", "", statusCont);
 		inactivationDateEl = uifactory.addStaticTextElement("rightsForm.inactivation.date", "", statusCont);
 		reactivationDateEl = uifactory.addStaticTextElement("rightsForm.reactivation.date", "", statusCont);
@@ -383,6 +386,9 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		setStatus(editedIdentity.getStatus());
 		wrapper.getRolesEl().setVisible(!isAnonymous());
 		rolesSep.setVisible(!isAnonymous());
+		
+		expirationDateEl.setDate(editedIdentity.getExpirationDate());
+		expirationDateEl.setVisible(!editedRoles.isSystemAdmin() && !editedRoles.isAdministrator());
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		lastLoginEl.setValue(formatter.formatDateAndTime(editedIdentity.getLastLogin()));
@@ -576,6 +582,10 @@ public class SystemRolesAndRightsController extends FormBasicController {
 			}
 			editedIdentity = securityManager.saveIdentityStatus(editedIdentity, newStatus, getIdentity());
 			logAudit("User::" + getIdentity().getKey() + " changed account status for user::" + editedIdentity.getKey() + " from::" + oldStatusText + " to::" + newStatusText);
+		}
+		
+		if(expirationDateEl.isVisible()) {
+			editedIdentity = securityManager.saveIdentityExpirationDate(editedIdentity, expirationDateEl.getDate(), getIdentity());
 		}
 	}
 	

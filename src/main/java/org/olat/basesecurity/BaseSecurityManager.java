@@ -357,7 +357,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 */
 	@Override
 	public Identity createAndPersistIdentityAndUser(String legacyName, String nickName, String externalId,
-			User user, String provider, String authusername, String credential) {
+			User user, String provider, String authusername, String credential, Date expirationDate) {
 		IdentityImpl iimpl = new IdentityImpl();
 		iimpl.setUser(user);
 		iimpl.setExternalId(externalId);
@@ -365,6 +365,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		if(StringHelper.containsNonWhitespace(nickName) && !StringHelper.containsNonWhitespace(user.getProperty(UserConstants.NICKNAME, null))) {
 			user.setProperty(UserConstants.NICKNAME, nickName);
 		}
+		iimpl.setExpirationDate(expirationDate);
 		dbInstance.getCurrentEntityManager().persist(user);
 		if(StringHelper.containsNonWhitespace(legacyName)) {
 			iimpl.setName(legacyName);
@@ -394,13 +395,13 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 */
 	@Override
 	public Identity createAndPersistIdentityAndUserWithOrganisation(String legacyName, String nickName, String externalId, User newUser,
-			String provider, String authusername, String pwd, Organisation organisation) {
+			String provider, String authusername, String pwd, Organisation organisation, Date expirationDate) {
 		Identity ident;
 		if (pwd == null) {
-			ident = createAndPersistIdentityAndUser(legacyName, nickName, externalId, newUser, provider, authusername, null);
+			ident = createAndPersistIdentityAndUser(legacyName, nickName, externalId, newUser, provider, authusername, null, expirationDate);
 			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={},authusername={}) but no password", provider, authusername, nickName);
  		} else {
-			ident = createAndPersistIdentityAndUser(legacyName, nickName, externalId, newUser, provider, authusername, pwd);
+			ident = createAndPersistIdentityAndUser(legacyName, nickName, externalId, newUser, provider, authusername, pwd, expirationDate);
 			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={},authusername={})", provider, authusername, nickName);
 		}
 		
@@ -1157,6 +1158,17 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 	
 	@Override
+	public Identity saveIdentityExpirationDate(Identity identity, Date expirationDate, Identity doer) {
+		IdentityImpl reloadedIdentity = loadForUpdate(identity);
+		if(reloadedIdentity != null) {
+			reloadedIdentity.setExpirationDate(expirationDate);
+			reloadedIdentity = (IdentityImpl)identityDao.saveIdentity(reloadedIdentity);
+		}
+		dbInstance.commit();
+		return reloadedIdentity;
+	}
+	
+	@Override
 	public Identity reactivatedIdentity(Identity identity) {
 		IdentityImpl reloadedIdentity = loadForUpdate(identity);
 		if(reloadedIdentity != null) {
@@ -1269,7 +1281,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			// Create it lazy on demand
 			User guestUser = UserManager.getInstance().createUser(trans.translate("user.guest"), null, null);
 			guestUser.getPreferences().setLanguage(locale.toString());
-			guestIdentity = createAndPersistIdentityAndUser(guestUsername, guestUsername, null, guestUser, null, null, null);
+			guestIdentity = createAndPersistIdentityAndUser(guestUsername, guestUsername, null, guestUser, null, null, null, null);
 			organisationService.addMember(guestIdentity, OrganisationRoles.guest);
 		} else if (!guestIdentity.getUser().getProperty(UserConstants.FIRSTNAME, locale).equals(trans.translate("user.guest"))) {
 			//Check if guest name has been updated in the i18n tool

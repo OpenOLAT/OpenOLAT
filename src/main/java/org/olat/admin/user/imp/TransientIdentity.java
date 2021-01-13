@@ -43,6 +43,7 @@ public class TransientIdentity implements Identity, User {
 	private String login;
 	private String password;
 	private String language;
+	private Date expirationDate;
 	
 	private Map<String, String> properties = new HashMap<>();
 
@@ -139,6 +140,15 @@ public class TransientIdentity implements Identity, User {
 	@Override
 	public Date getReactivationDate() {
 		return null;
+	}
+	
+	@Override
+	public Date getExpirationDate() {
+		return expirationDate;
+	}
+	
+	public void setExpirationDate(Date expirationDate) {
+		this.expirationDate = expirationDate;
 	}
 
 	@Override

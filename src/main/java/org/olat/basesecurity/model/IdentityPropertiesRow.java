@@ -41,6 +41,7 @@ public class IdentityPropertiesRow extends UserPropertiesRow implements Identity
 	private final Date creationDate;
 	private final Date inactivationDate;
 	private final Date reactivationDate;
+	private final Date expirationDate;
 	
 	public IdentityPropertiesRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
@@ -49,17 +50,19 @@ public class IdentityPropertiesRow extends UserPropertiesRow implements Identity
 		creationDate = identity.getCreationDate();
 		inactivationDate = identity.getInactivationDate();
 		reactivationDate = identity.getReactivationDate();
+		expirationDate = identity.getExpirationDate();
 	}
 	
 	public IdentityPropertiesRow(Long identityKey, Date creationDate, Date lastLogin, Integer status,
-			Date inactivationDate, Date reactivationDate, List<UserPropertyHandler> userPropertyHandlers,
-			String[] identityProps, Locale locale) {
+			Date inactivationDate, Date reactivationDate, Date expirationDate,
+			List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale) {
 		super(identityKey, userPropertyHandlers, identityProps, locale);
 		this.status = status;
 		this.creationDate = creationDate;
 		this.lastLogin = lastLogin;	
 		this.inactivationDate = inactivationDate;
 		this.reactivationDate = reactivationDate;
+		this.expirationDate = expirationDate;
 	}
 	
 	@Override
@@ -85,5 +88,10 @@ public class IdentityPropertiesRow extends UserPropertiesRow implements Identity
 	@Override
 	public Date getReactivationDate() {
 		return reactivationDate;
+	}
+
+	@Override
+	public Date getExpirationDate() {
+		return expirationDate;
 	}
 }

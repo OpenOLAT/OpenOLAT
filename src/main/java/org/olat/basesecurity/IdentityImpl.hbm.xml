@@ -29,6 +29,8 @@
     <property name="inactivationDate" column="inactivationdate" type="timestamp" />
     <property name="inactivationEmailDate" column="inactivationemaildate" type="timestamp" />
     <property name="reactivationDate" column="reactivationdate" type="timestamp" />
+    <property name="expirationDate" column="expirationdate" type="timestamp" />
+    <property name="expirationEmailDate" column="expirationemaildate" type="timestamp" />
     
     <one-to-one name="user" property-ref="identity" class="org.olat.user.UserImpl" cascade="persist"/>
   </class>

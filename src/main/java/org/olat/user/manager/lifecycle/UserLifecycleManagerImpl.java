@@ -103,6 +103,13 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			}
 			days = userModule.getNumberOfInactiveDayBeforeDeactivation() - CalendarUtils.numOfDays(referenceDate, lastLogin);
 		}
+		
+		if(identity.getExpirationDate() != null) {
+			long expirationDays = CalendarUtils.numOfDays(referenceDate, identity.getExpirationDate());
+			if(days > expirationDays) {
+				days = expirationDays;
+			}
+		}
 		return days > 0l ? days : 1l;
 	}
 
@@ -113,6 +120,35 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		Date inactivationDate = identity.getInactivationDate();
 		long days = userModule.getNumberOfInactiveDayBeforeDeletion() - CalendarUtils.numOfDays(referenceDate, inactivationDate);
 		return days > 0l ? days : 1l;
+	}
+	
+	public List<Identity> getIdentitiesByExpirationDateToEmail(Date referenceDate) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user as user")
+		  .append(" where ident.status in (:statusList) and ident.expirationDate < :referenceDate")
+		  .append(" and ident.expirationEmailDate is null");
+
+		List<Integer> statusList = Arrays.asList(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("statusList", statusList)
+				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP)
+				.getResultList();
+	}
+	
+	public List<Identity> getExpiredIdentities(Date referenceDate) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user as user")
+		  .append(" where ident.status in (:statusList) and ident.expirationDate < :referenceDate");
+
+		List<Integer> statusList = Arrays.asList(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("statusList", statusList)
+				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP)
+				.getResultList();
 	}
 	
 	public List<Identity> getReadyToInactivateIdentities(Date loginDate, Date reactivationDateLimit) {
@@ -199,6 +235,43 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		((IdentityImpl)identity).setDeletionEmailDate(new Date());
 		return identityDao.saveIdentity(identity);
 	}
+	
+	public Identity setIdentityExpirationMail(Identity identity) {
+		((IdentityImpl)identity).setExpirationEmailDate(new Date());
+		return identityDao.saveIdentity(identity);
+	}
+
+	@Override
+	public void expiredIdentities(Set<Identity> vetoed) {
+		int numOfDaysBeforeDeactivation = userModule.getNumberOfDayBeforeExpirationMail();
+		if(numOfDaysBeforeDeactivation > 0 && userModule.isMailBeforeExpiration()) {
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.DATE, numOfDaysBeforeDeactivation);
+			Date lastExpirationDate = CalendarUtils.startOfDay(cal.getTime());
+			List<Identity> warnedIdentities = getIdentitiesByExpirationDateToEmail(lastExpirationDate);
+			for(Identity identity:warnedIdentities) {
+				if(identity.getLastLogin() != null && (vetoed.isEmpty() || !vetoed.contains(identity))) {
+					sendEmail(identity, "mail.before.expiration.subject", "mail.before.expiration.body", "before expiration");
+					identity = setIdentityExpirationMail(identity);
+					vetoed.add(identity);
+				}
+			}
+		}
+
+		Date now = new Date();
+		List<Identity> expiredIdentities = getExpiredIdentities(now);
+		for(Identity identity:expiredIdentities) {
+			if(vetoed.isEmpty() || !vetoed.contains(identity)) {
+				identity = setIdentityAsInactive(identity);
+				if(identity.getLastLogin() != null && userModule.isMailAfterExpiration()) {
+					sendEmail(identity, "mail.after.expiration.subject", "mail.after.expiration.body", "after expiration");
+				}
+				vetoed.add(identity);
+			}
+		}
+		
+		dbInstance.commitAndCloseSession();
+	}
 
 	@Override
 	public void inactivateIdentities(Set<Identity> vetoed) {
@@ -213,7 +286,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			List<Identity> identities = getReadyToInactivateIdentities(lastLoginDate, reactivationDatebefore);
 			if(!identities.isEmpty()) {
 				for(Identity identity:identities) {
-					if(identity.getLastLogin() != null) {
+					if(identity.getLastLogin() != null && (vetoed.isEmpty() || !vetoed.contains(identity))) {
 						sendEmail(identity, "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactiviation");
 						identity = setIdentityInactivationMail(identity);
 						vetoed.add(identity);

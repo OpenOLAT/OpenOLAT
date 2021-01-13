@@ -189,7 +189,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void loadBusinessGroup_forUpdate_notFound() {
 		//load and lock an inexistent group
-		BusinessGroup groupForUpdate = businessGroupDao.loadForUpdate(new Long(0l));
+		BusinessGroup groupForUpdate = businessGroupDao.loadForUpdate(Long.valueOf(0l));
 		Assert.assertNull(groupForUpdate);
 		dbInstance.commit();//release lock
 	}

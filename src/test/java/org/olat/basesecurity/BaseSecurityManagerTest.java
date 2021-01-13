@@ -79,7 +79,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String name = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + name, "last" + name, name + "@frentix.com");
 		Identity identity = securityManager.createAndPersistIdentityAndUser(null, name, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret");
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret", null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -100,7 +100,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String name = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + name, "last" + name, name + "@openolat.com");
 		Identity identity = securityManager.createAndPersistIdentityAndUser(name, name, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret");
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret", null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -120,7 +120,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String name = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + name, "last" + name, name + "@openolat.com");
 		Identity identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(name, name, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret", null, null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -146,7 +146,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		user.setProperty(UserConstants.COUNTRY, "");
 		user.setProperty(UserConstants.CITY, "Basel");
 		Identity identity = securityManager.createAndPersistIdentityAndUser(null, nickName, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), authusername, "secret");
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), authusername, "secret", null);
 		dbInstance.commitAndCloseSession();
 		
 		//reload and update

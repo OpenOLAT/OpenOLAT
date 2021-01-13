@@ -93,6 +93,8 @@ public class PreferencesFormController extends FormBasicController {
 	private NotificationsManager notificiationMgr;
 	@Autowired
 	private DocEditorService docEditorService;
+	@Autowired
+	private UserLifecycleManager userLifecycleManager;
 
 	/**
 	 * Constructor for the user preferences form
@@ -178,6 +180,11 @@ public class PreferencesFormController extends FormBasicController {
 		uifactory.addStaticTextElement("rightsForm.roles", userRoles, formLayout);
 		username.setElementCssClass("o_sel_home_settings_username");
 		username.setEnabled(false);
+		
+		long days = userLifecycleManager.getDaysUntilDeactivation(tobeChangedIdentity, ureq.getRequestTimestamp());
+		StaticTextElement expirationDateEl = uifactory.addStaticTextElement("rightsForm.expiration.date", Long.toString(days), formLayout);
+		expirationDateEl.setVisible(tobeChangedIdentity.getExpirationDate() != null
+				|| tobeChangedIdentity.getInactivationDate() != null || tobeChangedIdentity.getReactivationDate() != null);
 
 		// Language
 		Map<String, String> languages = i18nManager.getEnabledLanguagesTranslated();

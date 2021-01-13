@@ -93,6 +93,11 @@ public class EMailIdentity implements Identity {
 	public Date getReactivationDate() {
 		return null;
 	}
+	
+	@Override
+	public Date getExpirationDate() {
+		return null;
+	}
 
 	private class EMailUser implements User, ModifiedInfo {
 

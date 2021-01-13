@@ -862,7 +862,7 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		
 		// Create the user without OLAT login
 		User user = userManager.createUser("Leyla", "Salathe", "lsalathe@openolat.com");
-		Identity identity = securityManager.createAndPersistIdentityAndUser("lsalathe", null, null, user, null, null, null);
+		Identity identity = securityManager.createAndPersistIdentityAndUser("lsalathe", null, null, user, null, null, null, null);
 		
 		// convert users to LDAP
 		boolean currentConvertExistingLocalUsers = ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers();

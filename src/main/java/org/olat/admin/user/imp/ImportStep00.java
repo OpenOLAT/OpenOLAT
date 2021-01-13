@@ -28,10 +28,9 @@ import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -52,10 +51,10 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.ExcelMediaResource;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.ldap.LDAPLoginModule;
@@ -171,8 +170,6 @@ class ImportStep00 extends BasicStep {
 			List<String> importedEmails = new ArrayList<>();
 			List<String> importedInstitutionalEmails = new ArrayList<>();
 
-			boolean importDataError = false;
-
 			idents = new ArrayList<>();
 			newIdents = new ArrayList<>();
 			updateIdents = new ArrayList<>();
@@ -187,21 +184,24 @@ class ImportStep00 extends BasicStep {
 			// - pwd can be enabled / disabled by configuration
 			Collection<String> languages = i18nModule.getEnabledLanguageKeys();
 			String[] lines = inp.split("\r?\n");
+			List<ErrorLine> errors = new ArrayList<>();
 			for (int i = 0; i < lines.length; i++) {
 				if(i % 25 == 0) {
 					DBFactory.getInstance().commitAndCloseSession();
 				}
-				
 				
 				String line = lines[i];
 				if (line.equals("")) continue;
 				
 				String delimiter = "\t";
 				// use comma as fallback delimiter, e.g. for better testing
-				if (line.indexOf(delimiter) == -1) delimiter = ",";
+				if (line.indexOf(delimiter) == -1) {
+					delimiter = ",";
+				}
+				
 				String[] parts = line.split(delimiter);
 				String login;
-				String pwd;
+				String pwd = null;
 				String lang;
 
 				int columnId = 0;
@@ -210,14 +210,12 @@ class ImportStep00 extends BasicStep {
 				if (parts.length > columnId) {
 					login = parts[columnId].trim();
 				} else {
-					textAreaElement.setErrorKey("error.columncount", new String[] { String.valueOf(i + 1) });
-					importDataError = true;
-					break;
+					errors.add(errorLine(i, "error.columncount", new String[] { String.valueOf(i + 1) }));
+					continue;
 				}
 				columnId++;
 
 				// pwd row
-				pwd = null;
 				if (canCreateOLATPassword) {
 					if (parts.length > columnId) {
 						String trimmedPwd = parts[columnId].trim();
@@ -228,12 +226,10 @@ class ImportStep00 extends BasicStep {
 							pwd = trimmedPwd;
 						}
 					} else {
-						textAreaElement.setErrorKey("error.columncount", new String[] { String.valueOf(i + 1) });
-						importDataError = true;
-						break;
+						errors.add(errorLine(i, "error.columncount", new String[] { String.valueOf(i + 1) }));
+						continue;
 					}
 				}
-
 				columnId++;
 
 				// optional language fields
@@ -242,35 +238,36 @@ class ImportStep00 extends BasicStep {
 					if (lang.equals("")) {
 						lang = defaultlang;
 					} else if (!languages.contains(lang)) {
-						textAreaElement.setErrorKey("error.lang", new String[] { String.valueOf(i + 1), lang });
-						importDataError = true;
-						break;
+						errors.add(errorLine(i, "error.lang", new String[] { String.valueOf(i + 1), lang }));
+						continue;
 					}
 				} else {
 					lang = defaultlang;
 				}
 				columnId++;
-
+				
+				Date expirationDate = expirationDate(parts, columnId);
 				Identity ident = findByLogin(login, pwd);
 				if (ident != null) {
 					// update existing accounts, add info message
 					
-					UpdateIdentity uIdentity = new UpdateIdentity(ident, pwd, lang);
-					
-					importDataError |= updateUserProperties(uIdentity, ident.getUser(), parts, i, columnId, importedEmails, importedInstitutionalEmails);
-					if(importDataError) break;
-					importDataError |= !validatePassword(pwd, uIdentity, i);
-					if(importDataError) break;
+					UpdateIdentity uIdentity = new UpdateIdentity(ident, pwd, lang, expirationDate);
+					boolean error = updateUserProperties(uIdentity, ident.getUser(), parts, i, columnId, importedEmails, importedInstitutionalEmails, errors);
+					error |= !validatePassword(pwd, uIdentity, i, errors);
+					if(error) {
+						continue;
+					}
 
 					idents.add(uIdentity);
 					updateIdents.add(uIdentity);
 				} else {
 					// no identity/user yet, create
 					// check that no user with same login name is already in list
+					boolean error = false;
 					for (TransientIdentity singleUser:newIdents) {
 						if (singleUser.getName().equalsIgnoreCase(login)) {
-							textAreaElement.setErrorKey("error.login.douplicate", new String[] { String.valueOf(i + 1), login });
-							importDataError = true;
+							errors.add(errorLine(i, "error.login.douplicate", new String[] { String.valueOf(i + 1), login }));
+							error = true;
 							break;
 						}
 					}
@@ -280,20 +277,47 @@ class ImportStep00 extends BasicStep {
 					uIdentity.setName(login);
 					uIdentity.setPassword(pwd);
 					uIdentity.setLanguage(lang);
+					uIdentity.setExpirationDate(expirationDate);
 					
-					importDataError |= updateUserProperties(uIdentity, null, parts, i, columnId, importedEmails, importedInstitutionalEmails);
-					if(importDataError) break;
-					importDataError |= !validateUsername(login, uIdentity, i);
-					if(importDataError) break;
-					importDataError |= !validatePassword(pwd, uIdentity, i);
-					if(importDataError) break;
+					error |= updateUserProperties(uIdentity, null, parts, i, columnId, importedEmails, importedInstitutionalEmails, errors);
+					error |= !validateUsername(login, uIdentity, i, errors);
+					error |= !validatePassword(pwd, uIdentity, i, errors);
+					if(error) {
+						errors.add(errorLine(i, "error.columncount", new String[] { String.valueOf(i + 1) }));
+						continue;
+					}
 					
 					idents.add(uIdentity);
 					newIdents.add(uIdentity);
 				}
 			}
-
-			return !importDataError;
+			
+			if(!errors.isEmpty()) {
+				List<Integer> errorLines = errors.stream().map(ErrorLine::getLine).collect(Collectors.toList());
+				textAreaElement.setErrors(errorLines);
+				String errorsMsg = errors.stream().map(ErrorLine::getErrorMsg).collect(Collectors.joining(", "));
+				textAreaElement.setErrorKey("noTransOnlyParam", new String[] { errorsMsg });
+			}
+			return errors.isEmpty();
+		}
+		
+		private ErrorLine errorLine(int line, String i18nErrorKey, String[] args) {
+			return new ErrorLine(line, translate(i18nErrorKey, args));
+		}
+		
+		private Date expirationDate(String[] parts, int columnId) {
+			Date expirationDate = null;
+			if(parts.length > columnId + userPropertyHandlers.size()) {
+				try {
+					String expirationPart = parts[columnId + userPropertyHandlers.size()];
+					if(StringHelper.containsNonWhitespace(expirationPart)) {
+						expirationDate = Formatter.getInstance(getLocale()).parseDate(expirationPart);
+					}
+				} catch (Exception e) {
+					logError("", e);
+				}
+			}
+			return expirationDate;
 		}
 		
 		private Identity findByLogin(String login, String pwd) {
@@ -316,7 +340,7 @@ class ImportStep00 extends BasicStep {
 		}
 		
 		private boolean updateUserProperties(Identity ud, User originalUser, String[] parts, int i, int columnId,
-				List<String> importedEmails, List<String> importedInstitutionalEmails) {
+				List<String> importedEmails, List<String> importedInstitutionalEmails, List<ErrorLine> errors) {
 			
 			boolean importDataError = false;
 			for (int j = 0; j < userPropertyHandlers.size(); j++) {
@@ -338,7 +362,7 @@ class ImportStep00 extends BasicStep {
 					if(userPropertyHandler.i18nFormElementLabelKey() != null) {
 						label = translate(userPropertyHandler.i18nFormElementLabelKey());
 					}
-					textAreaElement.setErrorKey("error.mandatory", new String[] { String.valueOf(i + 1), label });
+					errors.add(errorLine(i, "error.mandatory", new String[] { String.valueOf(i + 1), label }));
 					importDataError = true;
 					break;
 				}
@@ -355,14 +379,14 @@ class ImportStep00 extends BasicStep {
 					if(validationError.getErrorKey() != null) {
 						error = translate(validationError.getErrorKey(), validationError.getArgs());
 					}
-					textAreaElement.setErrorKey("error.lengthorformat", new String[] { String.valueOf(i + 1), label, error});
+					errors.add(errorLine(i, "error.lengthorformat", new String[] { String.valueOf(i + 1), label, error}));
 					importDataError = true;
 					break;
 				}
 				// check that no user with same (institutional) e-mail is already in OLAT
 				if ( (thisKey.equals(UserConstants.INSTITUTIONALEMAIL) && !thisValue.isEmpty()) || thisKey.equals(UserConstants.EMAIL)) {
 					if (!um.isEmailAllowed(thisValue, originalUser)) {
-						textAreaElement.setErrorKey("error.email.exists", new String[] { String.valueOf(i + 1), thisValue });
+						errors.add(errorLine(i, "error.email.exists", new String[] { String.valueOf(i + 1), thisValue }));
 						importDataError = true;
 						break;
 					}
@@ -381,7 +405,7 @@ class ImportStep00 extends BasicStep {
 						boolean duplicate = mailPos > -1;
 						if (duplicate) {
 							mailPos++;
-							textAreaElement.setErrorKey("error.email.douplicate", new String[] { String.valueOf(i + 1), thisValue, Integer.toString(mailPos) });
+							errors.add(errorLine(i, "error.email.douplicate", new String[] { String.valueOf(i + 1), thisValue, Integer.toString(mailPos) }));
 							importDataError = true;
 							break;
 						} else {
@@ -399,7 +423,7 @@ class ImportStep00 extends BasicStep {
 						boolean duplicate = mailPos > -1;
 						if (duplicate) {
 							mailPos++;
-							textAreaElement.setErrorKey("error.email.douplicate", new String[] { String.valueOf(i + 1), thisValue, Integer.toString(mailPos) });
+							errors.add(errorLine(i, "error.email.douplicate", new String[] { String.valueOf(i + 1), thisValue, Integer.toString(mailPos) }));
 							importDataError = true;
 							break;
 						} else {
@@ -414,26 +438,26 @@ class ImportStep00 extends BasicStep {
 			return importDataError;
 		}
 		
-		private boolean validatePassword(String password, Identity userIdentity, int column) {
+		private boolean validatePassword(String password, Identity userIdentity, int i, List<ErrorLine> errors) {
 			if (StringHelper.containsNonWhitespace(password)
 					&& !password.startsWith(UserImportController.SHIBBOLETH_MARKER)
 					&& !password.startsWith(UserImportController.LDAP_MARKER)) {
 				ValidationResult validationResult = passwordSyntaxValidator.validate(password, userIdentity);
 				if (!validationResult.isValid()) {
 					String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
-					textAreaElement.setErrorKey("error.pwd", new String[] { String.valueOf(column + 1), descriptions });
+					errors.add(errorLine(i, "error.pwd", new String[] { String.valueOf(i + 1), descriptions }));
 					return false;
 				}
 			}
 			return true;
 		}
 		
-		private boolean validateUsername(String username, Identity userIdentity, int column) {
+		private boolean validateUsername(String username, Identity userIdentity, int i, List<ErrorLine> errors) {
 			if (StringHelper.containsNonWhitespace(username)) {
 				ValidationResult validationResult = usernameSyntaxValidator.validate(username, userIdentity);
 				if (!validationResult.isValid()) {
 					String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
-					textAreaElement.setErrorKey("error.login", new String[] { String.valueOf(column + 1), descriptions });
+					errors.add(errorLine(i, "error.login", new String[] { String.valueOf(i + 1), descriptions }));
 					return false;
 				}
 			}
@@ -488,36 +512,57 @@ class ImportStep00 extends BasicStep {
 		 * @return
 		 */
 		private Mapper createMapper(UserRequest ureq) {
-			final String charset = UserManager.getInstance().getUserCharset(ureq.getIdentity());
-			return new Mapper() {
-				@Override
-				public MediaResource handle(String relPath, HttpServletRequest request) {
-					setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
-					String headerLine = translate("table.user.login") + " *";
-					String dataLine = "demo";
-					if (canCreateOLATPassword) {
-						headerLine += "\t" + translate("table.user.pwd");
-						dataLine += "\t" + "olat4you";
-					}
-					headerLine += "\t" + translate("table.user.lang");
-					dataLine += "\t" + i18nModule.getLocaleKey(getLocale());
-					UserPropertyHandler userPropertyHandler;
-					for (int i = 0; i < userPropertyHandlers.size(); i++) {
-						userPropertyHandler = userPropertyHandlers.get(i);
-						String mandatoryChar = "";
-						if (um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler)) {
-							mandatoryChar = " *";
-						}
-						headerLine += "\t" + translate(userPropertyHandler.i18nColumnDescriptorLabelKey()) + mandatoryChar;
-						dataLine += "\t" + translate("import.example." + userPropertyHandler.getName());
-					}
-					String writeToFile = headerLine + "\n" + dataLine;
-					
-					ExcelMediaResource emr = new ExcelMediaResource(writeToFile, charset);
-					emr.setFilename("UserImportExample");
-					return emr;
+			final String charset = um.getUserCharset(ureq.getIdentity());
+			return (relPath, request) -> {
+				setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
+				StringBuilder headerLine = new StringBuilder(1024);
+				headerLine.append(translate("table.user.login")).append(" *");
+				StringBuilder dataLine = new StringBuilder();
+				dataLine.append("demo");
+				if (canCreateOLATPassword) {
+					headerLine.append("\t").append(translate("table.user.pwd"));
+					dataLine.append("\t").append("olat4you");
 				}
+				headerLine.append("\t").append(translate("table.user.lang"));
+				dataLine.append("\t").append(i18nModule.getLocaleKey(getLocale()));
+				for (int i = 0; i < userPropertyHandlers.size(); i++) {
+					UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
+					headerLine.append("\t").append(translate(userPropertyHandler.i18nColumnDescriptorLabelKey()));
+					if (um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler)) {
+						headerLine.append(" *");
+					}
+					dataLine.append("\t").append(translate("import.example.".concat(userPropertyHandler.getName())));
+				}
+				
+				headerLine.append("\t").append(translate("table.user.expiration"));
+				String dateExample = Formatter.getInstance(getLocale()).formatDate(ureq.getRequestTimestamp());
+				dataLine.append("\t").append(dateExample);
+				
+				String writeToFile = headerLine
+						.append("\n").append(dataLine)
+						.toString();
+				ExcelMediaResource emr = new ExcelMediaResource(writeToFile, charset);
+				emr.setFilename("UserImportExample");
+				return emr;
 			};
+		}
+		
+		private class ErrorLine {
+			private final int line;
+			private final String errorMsg;
+			
+			public ErrorLine(int line, String errorMsg) {
+				this.line = line;
+				this.errorMsg = errorMsg;
+			}
+
+			public int getLine() {
+				return line;
+			}
+
+			public String getErrorMsg() {
+				return errorMsg;
+			}
 		}
 	}
 }

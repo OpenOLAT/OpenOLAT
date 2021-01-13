@@ -59,6 +59,12 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	private TranslationBundles mailBeforeDeactivationBundles;
 	private TranslationBundles mailAfterDeactivationBundles;
 	
+	private TextElement numberOfDayBeforeExpirationMailEl;
+	private MultipleSelectionElement enableMailBeforeExpirationEl;
+	private MultipleSelectionElement enableMailAfterExpirationEl;
+	private TranslationBundles mailBeforeExpirationBundles;
+	private TranslationBundles mailAfterExpirationBundles;
+	
 	private MultipleSelectionElement enableDeletionEl;
 	private TextElement numberOfInactiveDayDeletionEl;
 	private TextElement numberOfDayBeforeDeletionMailEl;
@@ -86,6 +92,8 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.configuration.title");
 		
+		initExpirationForm(formLayout);
+		uifactory.addSpacerElement("del-exp", formLayout, false);
 		initDeactivationForm(formLayout);
 		uifactory.addSpacerElement("del-deac", formLayout, false);
 		initDeletionForm(formLayout);
@@ -93,6 +101,34 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
 		formLayout.add(buttonsLayout);
 		uifactory.addFormSubmitButton("save", buttonsLayout);
+	}
+	
+
+	protected void initExpirationForm(FormItemContainer formLayout) {
+		String[] onValues = new String[] { translate("enabled") };
+		enableMailBeforeExpirationEl = uifactory.addCheckboxesHorizontal("enable.mail.before.expiration", "enable.mail.before.expiration", formLayout, onKeys, onValues);
+		enableMailBeforeExpirationEl.addActionListener(FormEvent.ONCHANGE);
+		enableMailBeforeExpirationEl.select(onKeys[0], userModule.isMailBeforeExpiration());
+		
+		// day before expiration
+		String daysBefore = Integer.toString(userModule.getNumberOfDayBeforeExpirationMail());
+		numberOfDayBeforeExpirationMailEl = uifactory.addTextElement("num.day.before.mail.expiration", "num.day.before.mail.expiration", 4, daysBefore, formLayout);
+		initDays(numberOfDayBeforeExpirationMailEl);
+		
+		// subject + content mail
+		TranslationBundle beforeBundleSubject = initForm("mail.before.expiration.subject.label", "mail.before.expiration.subject", false, formLayout);
+		TranslationBundle beforeBundle = initForm("mail.before.expiration.body.label", "mail.before.expiration.body", true, formLayout);
+		mailBeforeExpirationBundles = new TranslationBundles(beforeBundleSubject, beforeBundle);
+		
+		// enable mail after
+		enableMailAfterExpirationEl = uifactory.addCheckboxesHorizontal("enable.mail.after.expiration", "enable.mail.after.expiration", formLayout, onKeys, onValues);
+		enableMailAfterExpirationEl.addActionListener(FormEvent.ONCHANGE);
+		enableMailAfterExpirationEl.select(onKeys[0], userModule.isMailAfterExpiration());
+
+		// subject + content mail
+		TranslationBundle afterBundleSubject = initForm("mail.after.expiration.subject.label", "mail.after.expiration.subject", false, formLayout);
+		TranslationBundle afterBundle = initForm("mail.after.expiration.body.label", "mail.after.expiration.body", true, formLayout);
+		mailAfterExpirationBundles = new TranslationBundles(afterBundleSubject, afterBundle);
 	}
 
 	protected void initDeactivationForm(FormItemContainer formLayout) {
@@ -186,6 +222,12 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	}
 	
 	private void updateUI() {
+		// expiration
+		boolean enableMailBeforeExpiration = enableMailBeforeExpirationEl.isAtLeastSelected(1);
+		numberOfDayBeforeExpirationMailEl.setVisible(enableMailBeforeExpiration);
+		mailBeforeExpirationBundles.setVisible(enableMailBeforeExpiration);
+		mailAfterExpirationBundles.setVisible(enableMailAfterExpirationEl.isAtLeastSelected(1)); 
+
 		// deactivation
 		boolean enableDeactivation = enableDeactivationEl.isAtLeastSelected(1);
 		enableMailBeforeDeactivationEl.setVisible(enableDeactivation);
@@ -233,7 +275,8 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enableDeactivationEl == source || enableDeletionEl == source
 				|| enableMailBeforeDeactivationEl == source || enableMailAfterDeactivationEl == source
-				|| enableMailBeforeDeletionEl == source || enableMailAfterDeletionEl == source) {
+				|| enableMailBeforeDeletionEl == source || enableMailAfterDeletionEl == source
+				|| enableMailBeforeExpirationEl == source || enableMailAfterExpirationEl == source) {
 			updateUI();
 		} else if(source instanceof FormLink) {
 			if(source.getUserObject() instanceof TranslationBundle) {
@@ -246,6 +289,7 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
+		allOk &= validateInteger(numberOfDayBeforeExpirationMailEl);
 		allOk &= validateInteger(numberOfInactiveDayDeactivationEl);
 		allOk &= validateInteger(numberOfDayBeforeDeactivationMailEl);
 		allOk &= validateInteger(numberOfInactiveDayDeletionEl);
@@ -280,6 +324,16 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		// expiration
+		boolean enableMailBeforeExpiration = enableMailBeforeExpirationEl.isAtLeastSelected(1);
+		userModule.setMailBeforeExpiration(enableMailBeforeExpiration);
+		if(enableMailBeforeExpiration) {
+			int daysBeforeExpiration = Integer.parseInt(numberOfDayBeforeExpirationMailEl.getValue());
+			userModule.setNumberOfDayBeforeExpirationMail(daysBeforeExpiration);
+		}
+		userModule.setMailAfterExpiration(enableMailAfterExpirationEl.isAtLeastSelected(1)); 
+		
+		// deactivation
 		boolean automaticDeactivation = enableDeactivationEl.isAtLeastSelected(1);
 		userModule.setUserAutomaticDeactivation(automaticDeactivation);
 		int daysBeforeInactivation = Integer.parseInt(numberOfInactiveDayDeactivationEl.getValue());
@@ -293,6 +347,7 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 			userModule.setMailAfterDeactivation(enableMailAfterDeactivationEl.isAtLeastSelected(1));
 		}
 		
+		// deletion
 		boolean automaticDeletion = enableDeletionEl.isAtLeastSelected(1);
 		userModule.setUserAutomaticDeletion(automaticDeletion);
 		int daysBeforeDeletion = Integer.parseInt(numberOfInactiveDayDeletionEl.getValue());

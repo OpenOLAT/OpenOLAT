@@ -230,7 +230,7 @@ public class OAuthRegistrationController extends FormBasicController {
 			id = username;
 		}
 		authenticatedIdentity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, username, null, newUser,
-				registration.getAuthProvider(), id, null, null);
+				registration.getAuthProvider(), id, null, null, null);
 
 		//open disclaimer
 		removeAsListenerAndDispose(disclaimerController);

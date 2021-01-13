@@ -29,10 +29,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.admin.user.imp.ImportStep01.ImportStepForm01;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.id.Identity;
-import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -43,53 +44,81 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * Description: Table model for user mass import.
  */
 public class Model extends DefaultFlexiTableDataModel<Identity> {
+	
+	private static final ModelCols[] COLS = ModelCols.values();
 
 	private final Locale locale;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private static final String usageIdentifyer = UserImportController.class.getCanonicalName();
 
-	public Model(List<Identity> objects, FlexiTableColumnModel columnModel, Locale locale) {
+	public Model(List<Identity> objects, FlexiTableColumnModel columnModel,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
-		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
+		this.userPropertyHandlers = userPropertyHandlers;
 		setObjects(objects);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		Identity ident = getObject(row);
-		boolean userExists = !(ident instanceof TransientIdentity);
+		if(col < COLS.length) {
+			boolean newUser = (ident instanceof TransientIdentity);
+			switch(COLS[col]) {
+				case newUser: return Boolean.valueOf(newUser);
+				case login: return ident.getName();
+				case cred: return newUser ? previewCred((TransientIdentity)ident) : "-";
+				case lang: return newUser ? ((TransientIdentity)ident).getLanguage() : ident.getUser().getPreferences().getLanguage(); 
+				case expiration: return ident.getExpirationDate();
+				default: return "ERROR";
+			}
+		}
 		
-		if (col == 0) { // existing
-			return (userExists ? Boolean.FALSE : Boolean.TRUE);
-		}
-		if (col == 1) {
-			return ident.getName();
-		}
-
-		if (col == 2) {// pwd
-			if (userExists) {
-				return "-";
-			} else {
-				return (((TransientIdentity)ident).getPassword() == null ? "-" : "***");
-			}
-		} else if (col == 3) {// lang
-			if (userExists) {
-				return ident.getUser().getPreferences().getLanguage();
-			} else {
-				return ((TransientIdentity)ident).getLanguage();
-			}
-		} else if (col > 3 && col < getColumnCount()) {
+		int propCol = col - ImportStepForm01.USER_PROPS_OFFSET;
+		if (propCol >= 0 && propCol < userPropertyHandlers.size()) {
 			// get user property for this column for an already existing user
-			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - 4);
+			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(propCol);
 			String value = userPropertyHandler.getUserProperty(ident.getUser(), locale);
 			return (value == null ? "n/a" : value);
 		}
 		return "ERROR";
 	}
+	
+	private String previewCred(TransientIdentity ident) {
+		return ident.getPassword() == null ? "-" : "***";
+	}
 
 	@Override
 	public DefaultFlexiTableDataModel<Identity> createCopyWithEmptyList() {
-		return new Model(new ArrayList<>(), getTableColumnModel(), locale);
+		return new Model(new ArrayList<>(), getTableColumnModel(), userPropertyHandlers, locale);
+	}
+	
+	
+	public enum ModelCols implements FlexiSortableColumnDef {
+		newUser("table.user.existing"),
+		login("table.user.login"),
+		cred("table.user.pwd"),
+		lang("table.user.lang"),
+		expiration("table.user.expiration");
+		
+		private final String i18nKey;
+		
+		private ModelCols(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+		
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return false;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
+		}
 	}
 }

@@ -46,6 +46,7 @@ public class UserLifecycleJob extends JobWithDB {
 		UserLifecycleManager userLifecycleManager = CoreSpringFactory.getImpl(UserLifecycleManager.class);
 		
 		Set<Identity> vetoed = new HashSet<>();// only one action at once
+		userLifecycleManager.expiredIdentities(vetoed);
 		if(userModule.isUserAutomaticDeactivation()) {
 			userLifecycleManager.inactivateIdentities(vetoed);
 		}

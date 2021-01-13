@@ -81,6 +81,10 @@ public class UserModule extends AbstractSpringModule {
 	private static final String USER_MAIL_AFTER_AUTOMATIC_DEACTIVATION = "user.mail.after.automatic.deactivation";
 	private static final String USER_NUM_OF_DAYS_BEFORE_MAIL_AUTOMATIC_DEACTIVATION = "user.days.before.mail.automatic.deactivation";
 	
+	private static final String USER_NUM_OF_DAYS_BEFORE_MAIL_EXPIRATION = "user.days.before.mail.expiration";
+	private static final String USER_MAIL_BEFORE_EXPIRATION = "user.mail.before.expiration";
+	private static final String USER_MAIL_AFTER_EXPIRATION = "user.mail.after.expiration";
+	
 	private static final String USER_NUM_OF_DAYS_BEFORE_AUTOMATIC_DELETION = "user.days.before.deletion";
 	private static final String USER_MAIL_BEFORE_AUTOMATIC_DELETION = "user.mail.before.automatic.deletion";
 	private static final String USER_MAIL_AFTER_AUTOMATIC_DELETION = "user.mail.after.automatic.deletion";
@@ -130,6 +134,13 @@ public class UserModule extends AbstractSpringModule {
 	private int numberOfDayBeforeDeactivationMail;
 	@Value("${user.days.reactivation.period:30}")
 	private int numberOfDayReactivationPeriod;
+	
+	@Value("${user.days.before.mail.expiration:0}")
+	private int numberOfDayBeforeExpirationMail;
+	@Value("${user.mail.before.expiration:false}")
+	private boolean mailBeforeExpiration;
+	@Value("${user.mail.after.expiration:false}")
+	private boolean mailAfterExpiration;
 	
 	@Value("${user.automatic.deletion:false}")
 	private boolean userAutomaticDeletion;
@@ -244,6 +255,19 @@ public class UserModule extends AbstractSpringModule {
 		String mailAfterDeactivationObj = getStringPropertyValue(USER_MAIL_AFTER_AUTOMATIC_DEACTIVATION, false);
 		if(StringHelper.containsNonWhitespace(mailAfterDeactivationObj)) {
 			mailAfterDeactivation = "true".equalsIgnoreCase(mailAfterDeactivationObj);
+		}
+		
+		// expiration
+		numberOfDayBeforeExpirationMail = getIntPropertyValue(USER_NUM_OF_DAYS_BEFORE_MAIL_EXPIRATION, numberOfDayBeforeExpirationMail);
+		
+		String mailBeforeExpirationObj = getStringPropertyValue(USER_MAIL_BEFORE_EXPIRATION, false);
+		if(StringHelper.containsNonWhitespace(mailBeforeExpirationObj)) {
+			mailBeforeExpiration = "true".equalsIgnoreCase(mailBeforeExpirationObj);
+		}
+		
+		String mailAfterExpirationObj = getStringPropertyValue(USER_MAIL_AFTER_EXPIRATION, false);
+		if(StringHelper.containsNonWhitespace(mailAfterExpirationObj)) {
+			mailAfterExpiration = "true".equalsIgnoreCase(mailAfterExpirationObj);
 		}
 		
 		// deletion
@@ -479,6 +503,33 @@ public class UserModule extends AbstractSpringModule {
 	public void setNumberOfDayBeforeDeactivationMail(int days) {
 		this.numberOfDayBeforeDeactivationMail = days;
 		setIntProperty(USER_NUM_OF_DAYS_BEFORE_MAIL_AUTOMATIC_DEACTIVATION, days, true);
+	}
+	
+	public boolean isMailBeforeExpiration() {
+		return mailBeforeExpiration;
+	}
+
+	public void setMailBeforeExpiration(boolean enabled) {
+		this.mailBeforeExpiration = enabled;
+		setStringProperty(USER_MAIL_BEFORE_EXPIRATION, Boolean.toString(enabled), true);
+	}
+	
+	public int getNumberOfDayBeforeExpirationMail() {
+		return numberOfDayBeforeExpirationMail;
+	}
+
+	public void setNumberOfDayBeforeExpirationMail(int days) {
+		this.numberOfDayBeforeExpirationMail = days;
+		setIntProperty(USER_NUM_OF_DAYS_BEFORE_MAIL_EXPIRATION, days, true);
+	}
+	
+	public boolean isMailAfterExpiration() {
+		return mailAfterExpiration;
+	}
+
+	public void setMailAfterExpiration(boolean enabled) {
+		this.mailAfterExpiration = enabled;
+		setStringProperty(USER_MAIL_AFTER_EXPIRATION, Boolean.toString(enabled), true);
 	}
 	
 	public int getNumberOfDayReactivationPeriod() {

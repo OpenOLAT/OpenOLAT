@@ -45,5 +45,7 @@ public interface IdentityLifecycle {
 	public Date getInactivationDate();
 	
 	public Date getReactivationDate();
+	
+	public Date getExpirationDate();
 
 }

@@ -52,7 +52,7 @@ public class UserTableDataModel extends DefaultTableDataModel<Identity> {
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 	
 	private UserTableDataModel(Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
-		super(new ArrayList<Identity>());
+		super(new ArrayList<>());
 		setLocale(locale);
 		this.userPropertyHandlers = userPropertyHandlers;
 	}

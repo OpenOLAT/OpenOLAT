@@ -121,7 +121,7 @@ public class InvitationDAO {
 		String tempUsername = UUID.randomUUID().toString();
 		User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
 		user.getPreferences().setLanguage(locale.toString());
-		Identity invitee = securityManager.createAndPersistIdentityAndUser(null, tempUsername, null, user, null, null, null);
+		Identity invitee = securityManager.createAndPersistIdentityAndUser(null, tempUsername, null, user, null, null, null, null);
 		groupDao.addMembershipTwoWay(invitation.getBaseGroup(), invitee, GroupRoles.invitee.name());
 		organisationService.addMember(invitee, OrganisationRoles.invitee);
 		return invitee;
@@ -138,7 +138,7 @@ public class InvitationDAO {
 			if (invitee == null) {
 				User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
 				user.getPreferences().setLanguage(locale.toString());
-				invitee = securityManager.createAndPersistIdentityAndUser(null, null, null, user, null, null, null);
+				invitee = securityManager.createAndPersistIdentityAndUser(null, null, null, user, null, null, null, null);
 			}
 		}
 		

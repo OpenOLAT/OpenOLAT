@@ -50,6 +50,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -59,6 +60,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -209,10 +211,17 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	 * @return the newly created subject or null
 	 */
 	public Identity createNewUserAndIdentityFromTemporaryKey(String login, String pwd, User user, TemporaryKey tk) {
+		Date expirationDate = null;
+		Integer expiration = registrationModule.getAccountExpirationInDays();
+		if(expiration != null && expiration.intValue() > 0) {
+			expirationDate = DateUtils.addDays(new Date(), expiration.intValue());
+			expirationDate = CalendarUtils.endOfDay(expirationDate);
+		}
+		
 		Organisation organisation = getOrganisationForRegistration();
 		Identity identity = securityManager
 				.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
-						BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, pwd,  organisation);
+						BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, pwd,  organisation, expirationDate);
 		if(!OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(organisation.getIdentifier())) {
 			Organisation defOrganisation = organisationService.getDefaultOrganisation();
 			organisationService.addMember(defOrganisation, identity, OrganisationRoles.user);
@@ -222,6 +231,8 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		} else if(pending(identity)) {
 			identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_PENDING, identity);
 		}
+		
+		
 		deleteTemporaryKey(tk);
 		return identity;
 	}

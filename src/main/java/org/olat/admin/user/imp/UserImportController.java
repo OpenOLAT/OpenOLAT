@@ -119,7 +119,6 @@ public class UserImportController extends BasicController {
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private ShibbolethModule shibbolethModule;
-	
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
@@ -198,19 +197,19 @@ public class UserImportController extends BasicController {
 		if(pwd != null && pwd.startsWith(SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
 			String uniqueID = pwd.substring(SHIBBOLETH_MARKER.length());
 			ident = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, login, null, newUser,
-					ShibbolethDispatcher.PROVIDER_SHIB, uniqueID, null, preselectedOrganisation);
+					ShibbolethDispatcher.PROVIDER_SHIB, uniqueID, null, preselectedOrganisation, singleUser.getExpirationDate());
 			report.incrementCreatedUser();
 			report.incrementUpdatedShibboletAuthentication();
 		} else if(pwd != null && pwd.startsWith(LDAP_MARKER) && ldapModule.isLDAPEnabled()) {
 			String uniqueID = pwd.substring(LDAP_MARKER.length());
 			ident = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, login, null, newUser,
-					LDAPAuthenticationController.PROVIDER_LDAP, uniqueID, null,  preselectedOrganisation);
+					LDAPAuthenticationController.PROVIDER_LDAP, uniqueID, null,  preselectedOrganisation, singleUser.getExpirationDate());
 			report.incrementCreatedUser();
 			report.incrementUpdatedLdapAuthentication();
 		} else {
 			String provider = StringHelper.containsNonWhitespace(pwd) ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : null;
 			ident = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, login, null, newUser,
-					provider, login, pwd,  preselectedOrganisation);
+					provider, login, pwd,  preselectedOrganisation, singleUser.getExpirationDate());
 			report.incrementCreatedUser();
 		}
 		return ident;
@@ -247,7 +246,11 @@ public class UserImportController extends BasicController {
 				}
 			}
 		}
-		return userToUpdate.getIdentity();
+		identity = userToUpdate.getIdentity();
+		if(userToUpdate.getExpirationDate() != null) {
+			identity = securityManager.saveIdentityExpirationDate(identity, userToUpdate.getExpirationDate(), getIdentity());
+		}
+		return identity;
 	}
 	
 	private boolean doUpdateExternalProvider(Identity identity, String password, String marker, String provider) {

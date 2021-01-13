@@ -74,6 +74,7 @@ public class RegistrationAdminController extends FormBasicController {
 	private TextElement domainListElement;
 	private TextElement validUntilGuiEl;
 	private TextElement validUntilRestEl;
+	private TextElement expirationDateDaysEl;
 	private FormLayoutContainer domainsContainer;
 	private FormLayoutContainer pendingPropContainer;
 	private FormLayoutContainer staticPropContainer;
@@ -172,6 +173,10 @@ public class RegistrationAdminController extends FormBasicController {
 		validUntilRestEl = uifactory.addTextElement("admin.registration.valid.until.rest", 20, registrationModule.getValidUntilHoursRest().toString(), settingsContainer);
 		validUntilRestEl.setMandatory(true);
 		
+		Integer expirationInDays = registrationModule.getAccountExpirationInDays();
+		expirationDateDaysEl = uifactory.addTextElement("admin.registration.account.expiration.days", 20,
+				expirationInDays == null ? "" : expirationInDays.toString(), settingsContainer);
+
 		String example = generateExampleCode();
 		exampleElement = uifactory.addTextAreaElement("registration.link.example", "admin.registrationLinkExample", 64000, 4, 65, true, false, example, settingsContainer);
 		
@@ -374,6 +379,7 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		allOk &= validateInteger(validUntilGuiEl, 1);
 		allOk &= validateInteger(validUntilRestEl, 1);
+		allOk &= validateInteger(this.expirationDateDaysEl, 1);
 		
 		allOk &= validatePropertyNameValuePair(pendingProperty1Els);
 		allOk &= validatePropertyNameValuePair(pendingProperty2Els);
@@ -468,7 +474,7 @@ public class RegistrationAdminController extends FormBasicController {
 		String val = el.getValue();
 		if(StringHelper.containsNonWhitespace(val)) {	
 			try {
-				double value = Integer.parseInt(val);
+				int value = Integer.parseInt(val);
 				if(min > value) {
 					el.setErrorKey("error.wrong.int", null);
 					allOk = false;
@@ -477,8 +483,8 @@ public class RegistrationAdminController extends FormBasicController {
 				el.setErrorKey("error.wrong.int", null);
 				allOk = false;
 			}
-		} else {
-			el.setErrorKey("error.wrong.int", null);
+		} else if(el.isMandatory()) {
+			el.setErrorKey("form.legende.mandatory", null);
 			allOk = false;
 		}
 		return allOk;	
@@ -515,6 +521,11 @@ public class RegistrationAdminController extends FormBasicController {
 		registrationModule.setValidUntilHoursGui(validUntilHoursGui);
 		Integer validUntilHoursRest = Integer.parseInt(validUntilRestEl.getValue());
 		registrationModule.setValidUntilHoursRest(validUntilHoursRest);
+		if(StringHelper.isLong(expirationDateDaysEl.getValue())) {
+			registrationModule.setAccountExpirationInDays(Integer.valueOf(expirationDateDaysEl.getValue()));
+		} else {
+			registrationModule.setAccountExpirationInDays(null);
+		}
 		
 		String domains = domainListElement.getValue();
 		registrationModule.setDomainListRaw(domains);

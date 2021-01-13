@@ -243,7 +243,7 @@ public interface BaseSecurity {
 	 * @return The new persisted identity
 	 */
 	public Identity createAndPersistIdentityAndUser(String identityName, String nickName, String externalId,
-			User user, String provider, String authusername, String password);
+			User user, String provider, String authusername, String password, Date expirationDate);
 	
 	/**
 	 * Persists the given user, creates an identity for it and adds the user to
@@ -263,7 +263,7 @@ public interface BaseSecurity {
 	 * @return The new persisted identity
 	 */
 	public Identity createAndPersistIdentityAndUserWithOrganisation(String identityName, String nickName, String externalId,
-			User user, String provider, String authusername, String password, Organisation organisation);
+			User user, String provider, String authusername, String password, Organisation organisation, Date expirationDate);
 	
 
 	/**
@@ -484,6 +484,8 @@ public interface BaseSecurity {
 	 * @return
 	 */
 	public Identity saveIdentityStatus(Identity identity, Integer status, Identity doer);
+	
+	public Identity saveIdentityExpirationDate(Identity identity, Date expirationDate, Identity doer);
 	
 	/**
 	 * Set the status of the identity to active and reset all inactivation dates:

@@ -63,9 +63,9 @@ public class SendMailConfirmationController extends StepFormBasicController {
 		
 		String[] values = new String[] { translate("step3.send.mail") };
 		typEl = uifactory.addCheckboxesVertical("typ", "step3.send.label", formLayout, keys, values, 1);
-		typEl.setEnabled((ownGroups != null && ownGroups.size() > 0)
-				|| (partGroups != null && partGroups.size() > 0)
-				|| (newIdents != null && newIdents.size() > 0));
+		typEl.setEnabled((ownGroups != null && !ownGroups.isEmpty())
+				|| (partGroups != null && !partGroups.isEmpty())
+				|| (newIdents != null && !newIdents.isEmpty()));
 	}
 	
 	@Override
@@ -75,7 +75,7 @@ public class SendMailConfirmationController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		addToRunContext("sendMail", new Boolean(typEl.isSelected(0)));
+		addToRunContext("sendMail", Boolean.valueOf(typEl.isSelected(0)));
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

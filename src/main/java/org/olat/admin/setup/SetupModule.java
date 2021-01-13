@@ -145,7 +145,7 @@ public class SetupModule extends AbstractSpringModule {
 				legacyName = user.getUserName();
 			}
 			identity = securityManager.createAndPersistIdentityAndUser(legacyName, user.getUserName(), null, newUser, authenticationProviderConstant,
-					user.getUserName(), user.getPassword());
+					user.getUserName(), user.getPassword(), null);
 
 			if (identity == null) {
 				throw new OLATRuntimeException(this.getClass(), "Error, could not create  user and subject with name " + user.getUserName(), null);

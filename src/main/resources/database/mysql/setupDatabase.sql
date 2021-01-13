@@ -177,6 +177,8 @@ create table if not exists o_bs_identity (
    deletedby varchar(128),
    inactivationdate datetime,
    inactivationemaildate datetime,
+   expirationdate datetime,
+   expirationemaildate datetime,
    reactivationdate datetime,
    deletionemaildate datetime,
    primary key (id)

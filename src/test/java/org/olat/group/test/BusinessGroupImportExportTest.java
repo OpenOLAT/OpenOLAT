@@ -113,7 +113,7 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 		Assert.assertEquals("<p>Export group 2</p>", group3.getDescription());
 		Assert.assertFalse(group3.getAutoCloseRanksEnabled().booleanValue());
 		Assert.assertTrue(group3.getWaitingListEnabled().booleanValue());
-		Assert.assertEquals(new Integer(25), group3.getMaxParticipants());
+		Assert.assertEquals(Integer.valueOf(25), group3.getMaxParticipants());
 		//check display members settings
 		Assert.assertTrue(group3.isOwnersVisibleIntern());
 		Assert.assertTrue(group3.isParticipantsVisibleIntern());

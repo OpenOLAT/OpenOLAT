@@ -63,6 +63,7 @@ public class RegistrationModule extends AbstractSpringModule {
 	private static final Logger log = Tracing.createLoggerFor(RegistrationModule.class);
 	
 	private static final String EMAIL_VLIDATION_ENABLED = "email.validation.enabled";
+	private static final String ACCOUNT_EXPIRATION = "registration.account.expiration";
 	
 	@Value("${registration.enableSelfRegistration}")
 	private boolean selfRegistrationEnabled;
@@ -71,13 +72,15 @@ public class RegistrationModule extends AbstractSpringModule {
 	@Value("${registration.enableSelfRegistration.login}")
 	private boolean selfRegistrationLoginEnabled;
 	@Value("${registration.email.validation}")
-	private boolean emailValidationEnabled;;
+	private boolean emailValidationEnabled;
 	@Value("${registration.valid.hours.gui}")
 	private Integer validUntilHoursGui;
 	@Value("${registration.valid.hours.rest}")
 	private Integer validUntilHoursRest;
 	@Value("${registration.organisation.key:default}")
 	private String selfRegistrationOrganisationKey;
+	@Value("${registration.account.expiration}")
+	private String accountExpirationInDays;
 	
 	@Value("${registration.enableNotificationEmail}")
 	private boolean registrationNotificationEmailEnabled;
@@ -119,7 +122,7 @@ public class RegistrationModule extends AbstractSpringModule {
 	private boolean additionalCheckbox;
 	@Value("${registration.disclaimerAdditionalCheckbox2}")
 	private boolean additionalCheckbox2;
-	@Value("${registration.disclaimerAdditionaLinkText}	")
+	@Value("${registration.disclaimerAdditionaLinkText}")
 	private boolean additionaLinkText;
 	
 	@Autowired @Qualifier("usernamePresetBean")
@@ -416,6 +419,21 @@ public class RegistrationModule extends AbstractSpringModule {
 	public String getRegistrationPendingPropertyValue5() {
 		return registrationPendingPropertyValue5;
 	}
+	
+	/**
+	 * @return
+	 */
+	public Integer getAccountExpirationInDays() {
+		if(StringHelper.containsNonWhitespace(accountExpirationInDays)) {
+			return Integer.valueOf(accountExpirationInDays);
+		}
+		return null;
+	}
+
+	public void setAccountExpirationInDays(Integer days) {
+		accountExpirationInDays = days == null ? null : Integer.toString(days.intValue());
+		setStringProperty(ACCOUNT_EXPIRATION, accountExpirationInDays, true);
+	}
 
 	@Override
 	public void init() {
@@ -534,6 +552,8 @@ public class RegistrationModule extends AbstractSpringModule {
 		} else {
 			staticPropertyMappingValue = null; // reset
 		}
+		
+		accountExpirationInDays = getStringPropertyValue(ACCOUNT_EXPIRATION, accountExpirationInDays);		
 	}
 
 	@Override
@@ -548,10 +568,10 @@ public class RegistrationModule extends AbstractSpringModule {
 
 		// Check for registration email notification configuration
 		if (EmailAddressValidator.isValidEmailAddress(registrationNotificationEmail) || !registrationNotificationEmailEnabled) {
-			log.info("Registration notification email is turned OFF by configuration or because given email::" + registrationNotificationEmail + "  is not valid.");
+			log.info("Registration notification email is turned OFF by configuration or because given email::{}  is not valid.", registrationNotificationEmail);
 			registrationNotificationEmail = null;
 		} else {				
-			log.info("Registration notification email is turned ON, email used is '" + registrationNotificationEmail + "'");								
+			log.info("Registration notification email is turned ON, email used is '{}'", registrationNotificationEmail);								
 		}
 		
 		// disclaimer configuration

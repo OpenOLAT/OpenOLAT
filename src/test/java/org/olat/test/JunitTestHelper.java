@@ -164,7 +164,8 @@ public class JunitTestHelper {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		User user = userManager.createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, pwd);
+		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, pwd, null);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
@@ -224,7 +225,8 @@ public class JunitTestHelper {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		User user = CoreSpringFactory.getImpl(UserManager.class)
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, password);
+		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, password, null);
 		addToDefaultOrganisation(identity, OrganisationRoles.author);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
@@ -258,7 +260,8 @@ public class JunitTestHelper {
 
 		User user = CoreSpringFactory.getImpl(UserManager.class)
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, password);
+		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, password, null);
 		addToDefaultOrganisation(identity, OrganisationRoles.administrator);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
@@ -284,7 +287,8 @@ public class JunitTestHelper {
 
 		User user = CoreSpringFactory.getImpl(UserManager.class)
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
+		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD, null);
 		addToDefaultOrganisation(identity, OrganisationRoles.learnresourcemanager);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();

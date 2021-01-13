@@ -6,6 +6,9 @@ alter table o_vfs_metadata add column fk_lastmodified_by bigint default null;
 
 alter table o_vfs_metadata add constraint fmeta_modified_by_idx foreign key (fk_lastmodified_by) references o_bs_identity (id);
 
+-- Identity
+alter table o_bs_identity add column expirationdate datetime default null;
+alter table o_bs_identity add column expirationemaildate datetime default null;
 
 -- Teams
 create table o_teams_meeting (

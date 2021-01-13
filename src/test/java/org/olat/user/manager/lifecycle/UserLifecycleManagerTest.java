@@ -209,6 +209,92 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getExpiredIdentities() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-20");
+		((IdentityImpl)id1).setExpirationDate( DateUtils.addDays(new Date(), -10));
+		id1 = identityDao.saveIdentity(id1);
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-21");
+		((IdentityImpl)id2).setExpirationDate( DateUtils.addDays(new Date(), 1));
+		id2 = identityDao.saveIdentity(id2);
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-22");
+		((IdentityImpl)id3).setExpirationDate( DateUtils.addDays(new Date(), -5));
+		((IdentityImpl)id3).setExpirationEmailDate( DateUtils.addDays(new Date(), -15));
+		id3 = identityDao.saveIdentity(id3);
+		dbInstance.commitAndCloseSession();
+		
+		Date date = new Date();
+		List<Identity> expiredIdentities = lifecycleManager.getExpiredIdentities(date);
+		assertThat(expiredIdentities)
+			.contains(id1, id3)
+			.doesNotContain(id2);
+	}
+	
+	@Test
+	public void getIdentitiesByExpirationDateToEmail() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-23");
+		((IdentityImpl)id1).setExpirationDate( DateUtils.addDays(new Date(), -10));
+		id1 = identityDao.saveIdentity(id1);
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-24");
+		((IdentityImpl)id2).setExpirationDate( DateUtils.addDays(new Date(), 1));
+		id2 = identityDao.saveIdentity(id2);
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-25");
+		((IdentityImpl)id3).setExpirationDate( DateUtils.addDays(new Date(), -5));
+		((IdentityImpl)id3).setExpirationEmailDate( DateUtils.addDays(new Date(), -15));
+		id3 = identityDao.saveIdentity(id3);
+		dbInstance.commitAndCloseSession();
+		
+		Date date = new Date();
+		List<Identity> expiredIdentities = lifecycleManager.getIdentitiesByExpirationDateToEmail(date);
+		assertThat(expiredIdentities)
+			.contains(id1)
+			.doesNotContain(id2, id3);
+	}
+	
+	@Test
+	public void expiration() {
+		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+		userModule.setMailBeforeExpiration(true);
+		userModule.setMailAfterExpiration(true);
+		userModule.setNumberOfDayBeforeExpirationMail(10);
+		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-26");
+		((IdentityImpl)id1).setExpirationDate( DateUtils.addDays(new Date(), -25));
+		id1 = identityDao.saveIdentity(id1);
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -25));
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-27");
+		((IdentityImpl)id2).setExpirationDate( DateUtils.addDays(new Date(), 1));
+		id2 = identityDao.saveIdentity(id2);
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-28");
+		((IdentityImpl)id3).setExpirationDate( DateUtils.addDays(new Date(), -5));
+		((IdentityImpl)id3).setExpirationEmailDate( DateUtils.addDays(new Date(), -15));
+		identityDao.setIdentityLastLogin(id3, DateUtils.addDays(new Date(), -1));
+		id3 = identityDao.saveIdentity(id3);
+		dbInstance.commitAndCloseSession();
+		
+		Set<Identity> vetoed = new HashSet<>();
+		lifecycleManager.expiredIdentities(vetoed);
+		
+		// check status
+		Identity reloadedId1 = securityManager.loadIdentityByKey(id1.getKey());
+		Assert.assertNotNull(((IdentityImpl)reloadedId1).getExpirationEmailDate());
+		Assert.assertEquals(Identity.STATUS_ACTIV, reloadedId1.getStatus());
+		
+		Identity reloadedId2 = securityManager.loadIdentityByKey(id2.getKey());
+		Assert.assertNull(((IdentityImpl)reloadedId2).getExpirationEmailDate());
+		Assert.assertEquals(Identity.STATUS_ACTIV, reloadedId2.getStatus());
+		
+		Identity reloadedId3 = securityManager.loadIdentityByKey(id3.getKey());
+		Assert.assertNotNull(((IdentityImpl)reloadedId3).getExpirationEmailDate());
+		Assert.assertEquals(Identity.STATUS_INACTIVE, reloadedId3.getStatus());
+		
+		// sent E-mails
+		List<SmtpMessage> expiredMessages = getSmtpServer().getReceivedEmails();
+		Assert.assertTrue(hasTo(id1.getUser().getEmail(), expiredMessages));
+		Assert.assertTrue(hasTo(id3.getUser().getEmail(), expiredMessages));
+		getSmtpServer().reset();
+	}
+	
+	@Test
 	public void inactivateASingleInformedIdentity() {
 		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
 		userModule.setMailBeforeDeactivation(true);
@@ -630,7 +716,8 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		user.setProperty(UserConstants.CITY, "Basel");
 		user.setProperty(UserConstants.INSTITUTIONALNAME, "Del-23");
 		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "Del-24");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(null, username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(null, username, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret", null);
 		Roles roles = securityManager.getRoles(identity);
 		dbInstance.commitAndCloseSession();
 		// add some stuff
@@ -705,7 +792,8 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		user.setProperty(UserConstants.CITY, "Basel");
 		user.setProperty(UserConstants.INSTITUTIONALNAME, "Del-23");
 		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "Del-24");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(null, username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(null, username, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret", null);
 		dbInstance.commitAndCloseSession();
 
 		//a group

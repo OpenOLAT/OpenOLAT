@@ -26,12 +26,14 @@ package org.olat.admin.user.imp;
 
 import java.util.List;
 
+import org.olat.admin.user.imp.Model.ModelCols;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.AbstractCSSIconFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -75,7 +77,9 @@ class ImportStep01 extends BasicStep {
 		return new ImportStepForm01(ureq, windowControl, form, stepsRunContext);
 	}
 
-	private final class ImportStepForm01 extends StepFormBasicController {
+	protected final class ImportStepForm01 extends StepFormBasicController {
+		
+		public static final int USER_PROPS_OFFSET = 500;
 		
 		private SingleSelection updateEl;
 		private SingleSelection updatePasswordEl;
@@ -162,29 +166,30 @@ class ImportStep01 extends BasicStep {
 			}
 
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-			int colPos = 0;
+
 			// add special column with information about whether this user
 			// exists already or not
-			FlexiColumnModel newUserCustomColumnModel = new DefaultFlexiColumnModel("table.user.existing", colPos++);
+			FlexiColumnModel newUserCustomColumnModel = new DefaultFlexiColumnModel(ModelCols.newUser);
 			newUserCustomColumnModel.setCellRenderer(new UserNewOldCustomFlexiCellRenderer());
 			newUserCustomColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_CENTER);
 			tableColumnModel.addFlexiColumnModel(newUserCustomColumnModel);
 			
 			// fixed fields:
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colPos++));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ModelCols.login));
 			if (canCreateOLATPassword) {
-				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.pwd", colPos++));
+				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ModelCols.cred));
 			}
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.lang", colPos++));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ModelCols.lang));
 
 			// followed by all properties configured
+			int colPos = USER_PROPS_OFFSET;
 			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, true);
-			for (int i = 0; i < userPropertyHandlers.size(); i++) {
-				UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
+			for (UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
 				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++));
 			}
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ModelCols.expiration, new DateFlexiCellRenderer(getLocale())));
 
-			Model tableDataModel = new Model(idents, tableColumnModel, getLocale());
+			Model tableDataModel = new Model(idents, tableColumnModel, userPropertyHandlers, getLocale());
 			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
 		}
 	}

@@ -376,7 +376,7 @@
 	<!-- Inactivate / delete user -->
 	<bean id="lifecycleUserTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
     	<property name="jobDetail" ref="lifecycleUserJob.${cluster.singleton.services}" />
-    	<property name="cronExpression" value="0 25 1 * * ?"/>
+    	<property name="cronExpression" value="25 * * * * ?"/>
     	<property name="startDelay" value="45000" />
 	</bean>
 	

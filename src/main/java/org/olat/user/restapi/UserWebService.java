@@ -354,7 +354,7 @@ public class UserWebService {
 			String provider = StringHelper.containsNonWhitespace(user.getPassword()) ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : null;
 			Identity id = securityManager
 					.createAndPersistIdentityAndUserWithOrganisation(identityName, user.getLogin(), user.getExternalId(), newUser,
-							provider, user.getLogin(), user.getPassword(), null);
+							provider, user.getLogin(), user.getPassword(), null, null);
 			post(newUser, user, getLocale(request));
 			userManager.updateUser(newUser);
 			return Response.ok(get(id)).build();
