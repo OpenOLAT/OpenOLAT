@@ -29,6 +29,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Topic;
@@ -58,6 +59,9 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 
 	void create(DuplicationContext context) {
 		Topic topic = createTopic(context.getEntry(), context.getSubIdent(), context.getTopic());
+		if (context.getOrganizers() != null) {
+			getAppointmentsService().updateOrganizers(topic, context.getOrganizers());
+		}
 		if (context.getAppointments() != null) {
 			context.getAppointments().forEach(input -> createAppointment(topic, input));
 		}
@@ -106,6 +110,7 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 		private RepositoryEntry entry;
 		private String subIdent;
 		private TopicLight topic;
+		private Collection<Identity> organizers;
 		private Collection<AppointmentInput> appointments;
 		
 		public RepositoryEntry getEntry() {
@@ -130,6 +135,14 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 		
 		public void setTopic(TopicLight topic) {
 			this.topic = topic;
+		}
+
+		public Collection<Identity> getOrganizers() {
+			return organizers;
+		}
+
+		public void setOrganizers(Collection<Identity> organizers) {
+			this.organizers = organizers;
 		}
 
 		public Collection<AppointmentInput> getAppointments() {

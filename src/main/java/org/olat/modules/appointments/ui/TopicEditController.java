@@ -21,14 +21,12 @@ package org.olat.modules.appointments.ui;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
 import org.olat.modules.appointments.Organizer;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
@@ -88,11 +86,7 @@ public class TopicEditController extends AbstractTopicController {
 	}
 	
 	private void doSaveOrgianzers() {
-		Collection<String> selectedOrganizerKeys = organizerEl.getSelectedKeys();
-		List<Identity> selectedOrganizers = coaches.stream()
-				.filter(i -> selectedOrganizerKeys.contains(i.getKey().toString()))
-				.collect(Collectors.toList());
-		appointmentsService.updateOrganizers(topic, selectedOrganizers);
+		appointmentsService.updateOrganizers(topic, getOrganizers());
 	}
 	
 	@Override

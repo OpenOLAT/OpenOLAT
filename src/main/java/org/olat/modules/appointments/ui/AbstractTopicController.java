@@ -25,6 +25,7 @@ import static org.olat.core.util.ArrayHelper.emptyStrings;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
@@ -237,6 +238,13 @@ public abstract class AbstractTopicController extends FormBasicController {
 		
 		boolean participationVisible = configKeys.contains(KEY_PARTICIPATION_VISIBLE);
 		topic.setParticipationVisible(participationVisible);
+	}
+	
+	public Collection<Identity> getOrganizers() {
+		Collection<String> selectedOrganizerKeys = organizerEl.getSelectedKeys();
+		return coaches.stream()
+				.filter(i -> selectedOrganizerKeys.contains(i.getKey().toString()))
+				.collect(Collectors.toList());
 	}
 
 	@Override

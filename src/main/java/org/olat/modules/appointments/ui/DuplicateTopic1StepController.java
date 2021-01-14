@@ -41,16 +41,16 @@ public class DuplicateTopic1StepController extends StepFormBasicController {
 
 	private final DuplicateTopicEditController editCtrl;
 
-	private final TopicLight topic;
-	
+	private final DuplicationContext context;
+
 	public DuplicateTopic1StepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, Topic sourceTopic) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		
-		DuplicationContext context = DuplicateTopicCallback.getDuplicationContext(runContext);
+		context = DuplicateTopicCallback.getDuplicationContext(runContext);
 		context.setEntry(sourceTopic.getEntry());
 		context.setSubIdent(sourceTopic.getSubIdent());
 		
-		topic = DuplicateTopicCallback.toTransientTopic(sourceTopic);
+		TopicLight topic = DuplicateTopicCallback.toTransientTopic(sourceTopic);
 		context.setTopic(topic);
 		
 		editCtrl = new DuplicateTopicEditController(ureq, wControl, rootForm, topic, sourceTopic);
@@ -71,7 +71,8 @@ public class DuplicateTopic1StepController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		editCtrl.updatedAttributes(topic);
+		editCtrl.updatedAttributes(context.getTopic());
+		context.setOrganizers(editCtrl.getOrganizers());
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }
