@@ -68,14 +68,12 @@ public class GuiDemoTextareaController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 }

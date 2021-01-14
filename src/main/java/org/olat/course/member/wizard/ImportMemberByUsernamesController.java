@@ -103,12 +103,13 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 		inputContainer = FormLayoutContainer.createDefaultFormLayout("input", getTranslator());
 		formLayout.add(inputContainer);
 		
-		namesEl = uifactory.addTextAreaElement("addusers", "form.addusers", -1, 15, 40, true, false, context.getRawNames(), inputContainer);
+		namesEl = uifactory.addTextAreaElement("addusers", "form.addusers", -1, 15, 40, false, false, context.getRawNames(), inputContainer);
 		namesEl.setElementCssClass("o_sel_user_import");
 		namesEl.setExampleKey ("form.names.example", null);
 		namesEl.setLineNumbersEnbaled(true);
 		namesEl.setStripedBackgroundEnabled(true);
 		namesEl.setFixedFontWidth(true);
+		namesEl.setOriginalLineBreaks(true);
 		
 		// table for duplicates
 		String page = velocity_root + "/warn_duplicates.html";
