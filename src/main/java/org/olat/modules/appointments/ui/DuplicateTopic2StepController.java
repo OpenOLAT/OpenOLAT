@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -75,7 +76,7 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 	
 	private static final Comparator<Appointment> START_END_COMPARATOR = 
 			Comparator.comparing(Appointment::getStart)
-			.thenComparing(Appointment::getStart)
+			.thenComparing(Appointment::getEnd)
 			.thenComparing(Appointment::getKey);
 	
 	private SingleSelection moveEl;
@@ -114,6 +115,7 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		initForm(ureq);
 		loadModel();
 		updateUI();
+		tableEl.selectAll();
 	}
 
 	@Override
@@ -170,6 +172,8 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "appointments-duplicate");
 		tableEl.setEmtpyTableMessageKey("table.empty.appointments");
+		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 	}
 	
 	private void loadModel() {
@@ -186,6 +190,7 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 	}
 	
 	private void updateUI() {
+		Set<Integer> multiSelectedIndex = tableEl.getMultiSelectedIndex();
 		periodCont.clearError();
 
 		boolean none = moveEl.isOneSelected() && moveEl.getSelectedKey().equals(KEY_NONE);
@@ -216,6 +221,7 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		}
 		
 		loadModel();
+		tableEl.setMultiSelectedIndex(multiSelectedIndex);
 	}
 	
 	private boolean validatePeriod() {
@@ -278,7 +284,11 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		context.setAppointments(dataModel.getObjects());
+		List<AppointmentInput> selectedAppointments = tableEl.getMultiSelectedIndex().stream()
+					.map(index -> dataModel.getObject(index.intValue()))
+					.collect(Collectors.toList());
+		context.setAppointments(selectedAppointments);
+		
 		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 
