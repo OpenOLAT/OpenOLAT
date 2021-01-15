@@ -22,7 +22,6 @@ package org.olat.modules.appointments.ui;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -122,7 +121,6 @@ public class DuplicateTopicCallbackTest extends OlatTestCase {
 		SoftAssertions softly = new SoftAssertions();
 		Topic createdTopic = appointmentsService.getTopics(entry, subIdent).stream()
 				.sorted((t1, t2) -> t2.getKey().compareTo(t1.getKey()))
-				.limit(1)
 				.findFirst()
 				.get();
 		softly.assertThat(createdTopic).isNotNull();
@@ -215,7 +213,7 @@ public class DuplicateTopicCallbackTest extends OlatTestCase {
 		params.setEntry(entry);
 		params.setSubIdent(subIdent);
 		BigBlueButtonMeeting meeting = appointmentsService.getAppointments(params).stream()
-				.sorted(Comparator.comparing(Appointment::getCreationDate).reversed())
+				.sorted((t1, t2) -> t2.getKey().compareTo(t1.getKey()))
 				.findFirst()
 				.get()
 				.getBBBMeeting();
@@ -297,7 +295,7 @@ public class DuplicateTopicCallbackTest extends OlatTestCase {
 		params.setEntry(entry);
 		params.setSubIdent(subIdent);
 		TeamsMeeting meeting = appointmentsService.getAppointments(params).stream()
-				.sorted(Comparator.comparing(Appointment::getCreationDate).reversed())
+				.sorted((t1, t2) -> t2.getKey().compareTo(t1.getKey()))
 				.findFirst()
 				.get()
 				.getTeamsMeeting();
