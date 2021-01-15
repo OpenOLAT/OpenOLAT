@@ -84,11 +84,11 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
-		if (log.isDebugEnabled()) log.debug("Analyse Course... repositoryEntry=" + repositoryEntry);
+		if (log.isDebugEnabled()) log.debug("Analyse Course... repositoryEntry={}", repositoryEntry);
 		try {
 			RepositoryEntryStatusEnum status = repositoryEntry.getEntryStatus();
 			if(status.decommissioned()) {
-				if(log.isDebugEnabled()) log.debug("Course not indexed because it's " + status + ": repositoryEntry=" + repositoryEntry);
+				if(log.isDebugEnabled()) log.debug("Course not indexed because it's {}: repositoryEntry={}", status, repositoryEntry);
 				return;
 			}
 
@@ -98,9 +98,9 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 			parentResourceContext.setParentContextName(course.getCourseTitle());
 			doIndexCourse( parentResourceContext, course,  course.getRunStructure().getRootNode(), indexWriter);			
 		} catch(CorruptedCourseException ex) {
-			log.warn("Can not index repositoryEntry (" + repositoryEntry.getKey() + ")", ex);
+			log.warn("Can not index repositoryEntry ({})", repositoryEntry.getKey(), ex);
 		} catch (Exception ex) {
-			log.warn("Can not index repositoryEntry=" + repositoryEntry,ex);
+			log.warn("Can not index repositoryEntry={}", repositoryEntry,ex);
 		}
 	}
 
@@ -117,19 +117,19 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 	throws IOException,InterruptedException  {
 		//try to index the course node
 		if(node instanceof CourseNode) {
-			if (log.isDebugEnabled()) log.debug("Analyse CourseNode child ... childCourseNode=" + node);
+			if (log.isDebugEnabled()) log.debug("Analyse CourseNode child ... childCourseNode={}", node);
 			// go further with resource
 			CourseNode childCourseNode = (CourseNode)node;
 			CourseNodeIndexer courseNodeIndexer = getCourseNodeIndexer(childCourseNode);
 			if (courseNodeIndexer != null) {
 				if (log.isDebugEnabled()) {
-					log.debug("courseNodeIndexer=" + courseNodeIndexer);
+					log.debug("courseNodeIndexer={}", courseNodeIndexer);
 				}
 				
  				try {
 					courseNodeIndexer.doIndex(repositoryResourceContext, course, childCourseNode, indexWriter);
 				} catch (Exception e) {
-					log.warn("Can not index course node=" + childCourseNode.getIdent(), e);
+					log.warn("Can not index course node={}", childCourseNode.getIdent(), e);
 				}
 			}
 		}
@@ -164,28 +164,30 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 			// not a course node of course we have access to the course metadata
 			return true;
 		}
-		if (log.isDebugEnabled()) log.debug("Start identity=" + identity + "  roles=" + roles);
+		
+		boolean debug = log.isDebugEnabled();
+		if (debug) log.debug("Start identity={} roles={}", identity, roles);
 		Long repositoryKey = contextEntry.getOLATResourceable().getResourceableId();
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryKey);
-		if (log.isDebugEnabled()) log.debug("repositoryEntry=" + repositoryEntry );
+		if (debug) log.debug("repositoryEntry={}", repositoryEntry);
 
 		if(roles.isGuestOnly() && repositoryEntry.isGuests()) {
 			return false;
 		}
 		
 		Long nodeId = bcContextEntry.getOLATResourceable().getResourceableId();
-		if (log.isDebugEnabled()) log.debug("nodeId=" + nodeId );
+		if (debug) log.debug("nodeId={}", nodeId);
 		ICourse course = CourseFactory.loadCourse(repositoryEntry);
 		
 		IdentityEnvironment ienv = new IdentityEnvironment();
 		ienv.setIdentity(identity);
 		ienv.setRoles(roles);
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-		if (log.isDebugEnabled()) log.debug("userCourseEnv=" + userCourseEnv + "ienv=" + ienv );
+		if (debug) log.debug("userCourseEnv={} ienv={}", userCourseEnv, ienv );
 		
 		String nodeIdS = nodeId.toString();
 		CourseNode courseNode = course.getRunStructure().getNode(nodeIdS);
-		if (log.isDebugEnabled()) log.debug("courseNode=" + courseNode );
+		if (debug) log.debug("courseNode={}", courseNode);
 		
 		TreeNode treeNode = CoreSpringFactory.getImpl(NodeAccessService.class)
 				.getCourseTreeModelBuilder(userCourseEnv)
