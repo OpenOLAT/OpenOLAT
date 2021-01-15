@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.StepCollection;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
@@ -39,18 +40,19 @@ import org.olat.course.wizard.CourseWizardService;
  */
 public class ParticipantsSelectionStep extends BasicStep {
 	
-	public static BasicStep create(UserRequest ureq, ExamCourseSteps examCourseSteps) {
+	public static BasicStep create(UserRequest ureq, ExamCourseSteps examCourseSteps, StepCollection stepCollection) {
 		if (examCourseSteps.isParticipants()) {
-			return new ParticipantsSelectionStep(ureq);
+			return new ParticipantsSelectionStep(ureq, stepCollection);
 		}
 		return new PublicationStep(ureq);
 	}
 	
-	private ParticipantsSelectionStep(UserRequest ureq) {
+	private ParticipantsSelectionStep(UserRequest ureq, StepCollection retestSteps) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.participants.selection", null);
-		setNextStep(new ParticipantsOverviewStep(ureq));
+		setStepCollection(retestSteps);
+		setNextStep(new ParticipantsOverviewStep(ureq, retestSteps));
 	}
 
 	@Override

@@ -65,6 +65,11 @@ public interface Step {
 		public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,StepsRunContext stepsRunContext, Form form) {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
+
+		@Override
+		public StepCollection getStepCollection() {
+			return null;
+		}
 	
 	};
 	
@@ -79,6 +84,8 @@ public interface Step {
 	 * @return
 	 */
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig();
+	
+	public StepCollection getStepCollection();
 	
 	/**
 	 * descriptive and short title of input mask or info mask presented by this step.

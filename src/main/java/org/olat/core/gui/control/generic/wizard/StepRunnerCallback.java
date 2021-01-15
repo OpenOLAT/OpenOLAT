@@ -34,7 +34,6 @@ import org.olat.core.gui.control.WindowControl;
  */
 public interface StepRunnerCallback {
 	
-	//
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext);
 	
 }

@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
+import org.olat.core.gui.control.generic.wizard.BasicStepCollection;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
@@ -42,11 +43,12 @@ public class TestConfigStep extends BasicStep {
 	
 	private final RepositoryEntry entry;
 
-	public TestConfigStep(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps) {
+	public TestConfigStep(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps, BasicStepCollection stepCollection) {
 		super(ureq);
 		this.entry = entry;
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("wizard.title.test", null);
+		setI18nTitleAndDescr("wizard.title.test.config", null);
+		setStepCollection(stepCollection);
 		setNextStep(RetestSelectionStep.create(ureq, entry, examCourseSteps));
 	}
 

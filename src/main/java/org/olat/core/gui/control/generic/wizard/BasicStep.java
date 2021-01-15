@@ -36,6 +36,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -51,6 +52,7 @@ public abstract class BasicStep implements Step {
 	private String i18nStepTitle;
 	private String i18nStepDescription;
 	private String[] i18nArguments;
+	private StepCollection stepCollection;
 
 	public BasicStep(UserRequest ureq){
 		this.locale = ureq.getLocale();
@@ -81,6 +83,7 @@ public abstract class BasicStep implements Step {
 	 * your own FormItem here.
 	 * @see org.olat.core.gui.control.generic.wizard.Step#getStepTitle()
 	 */
+	@Override
 	public FormItem getStepTitle(){
 		if(i18nStepTitle == null){
 			throw new AssertException("no i18n key set for step title, or getStepTitle() not overridden.");
@@ -88,15 +91,16 @@ public abstract class BasicStep implements Step {
 		FormLink fl;
 		if(i18nArguments != null && i18nArguments.length > 0) {
 			String title = this.getTranslator().translate(i18nStepTitle, i18nArguments);
-			fl = new FormLinkImpl(i18nStepTitle, null, title, Link.FLEXIBLEFORMLNK + Link.NONTRANSLATED);
+			fl = new FormLinkImpl(CodeHelper.getUniqueID(), null, title, Link.FLEXIBLEFORMLNK + Link.NONTRANSLATED);
 		} else {
-			fl = new FormLinkImpl(i18nStepTitle, i18nStepTitle);
+			fl = new FormLinkImpl(CodeHelper.getUniqueID(), i18nStepTitle);
 		}
 		
 		fl.setTranslator(getTranslator());
 		return fl;
 	}
 	
+	@Override
 	public Step nextStep(){
 		return nextStep;
 	}
@@ -125,5 +129,14 @@ public abstract class BasicStep implements Step {
 	protected void setI18nTitleAndDescr(String i18nKeyTitle, String i18nKeyDescription, String[] i18nArguments){
 		setI18nTitleAndDescr(i18nKeyTitle, i18nKeyDescription);
 		this.i18nArguments = i18nArguments;
+	}
+
+	@Override
+	public StepCollection getStepCollection() {
+		return stepCollection;
+	}
+
+	public void setStepCollection(StepCollection stepCollection) {
+		this.stepCollection = stepCollection;
 	}
 }

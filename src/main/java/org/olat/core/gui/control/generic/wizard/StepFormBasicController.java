@@ -65,45 +65,24 @@ public abstract class StepFormBasicController extends FormBasicController implem
 		this.runContext = runContext;
 	}
 	
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param pageName
-	 */
 	public StepFormBasicController(UserRequest ureq, WindowControl wControl, String pageName) {
 		super(ureq, wControl, pageName);
 		usedInStepWizzard = false;
 		runContext = null;
 	}
 	
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param pageName
-	 */
 	public StepFormBasicController(UserRequest ureq, WindowControl wControl, int layout) {
 		super(ureq, wControl, layout);
 		usedInStepWizzard = false;
 		runContext = null;
 	}
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 */
 	public StepFormBasicController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		usedInStepWizzard = false;
 		runContext = null;
 	}
 	
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param layoutCustom
-	 * @param customLayoutPageName
-	 * @param rootForm
-	 */
 	public StepFormBasicController(UserRequest ureq, WindowControl wControl, int layoutCustom, String customLayoutPageName,
 			Form rootForm) {
 		super(ureq, wControl, layoutCustom, customLayoutPageName, rootForm);
@@ -187,9 +166,6 @@ public abstract class StepFormBasicController extends FormBasicController implem
 	@Override
 	abstract protected void formOK(UserRequest ureq);
 
-	/**
-	 * @return Returns the usedInStepWizzard.
-	 */
 	public boolean isUsedInStepWizzard() {
 		return usedInStepWizzard;
 	}
@@ -198,13 +174,9 @@ public abstract class StepFormBasicController extends FormBasicController implem
 	abstract protected void initForm(FormItemContainer formLayout, Controller listener,
 			UserRequest ureq);
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.generic.wizard.StepFormController#getStepFormItem()
-	 */
 	@Override
 	public FormItem getStepFormItem() {
 		return flc;
 	}
-
 
 }

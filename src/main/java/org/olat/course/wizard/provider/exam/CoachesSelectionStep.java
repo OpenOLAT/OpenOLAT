@@ -23,9 +23,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
+import org.olat.core.gui.control.generic.wizard.BasicStepCollection;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.StepCollection;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.member.wizard.ImportMemberByUsernamesController;
 import org.olat.course.wizard.CourseWizardCallback;
@@ -40,17 +43,21 @@ import org.olat.course.wizard.CourseWizardService;
 public class CoachesSelectionStep extends BasicStep {
 	
 	public static BasicStep create(UserRequest ureq, ExamCourseSteps examCourseSteps) {
+		Translator translator = Util.createPackageTranslator(CourseWizardService.class, ureq.getLocale());
+		BasicStepCollection retestSteps = new BasicStepCollection();
+		retestSteps.setTitle(translator, "wizard.title.members");
 		if (examCourseSteps.isCoaches()) {
-			return new CoachesSelectionStep(ureq, examCourseSteps);
+			return new CoachesSelectionStep(ureq, examCourseSteps, retestSteps);
 		}
-		return ParticipantsSelectionStep.create(ureq, examCourseSteps);
+		return ParticipantsSelectionStep.create(ureq, examCourseSteps, retestSteps);
 	}
 	
-	private CoachesSelectionStep(UserRequest ureq, ExamCourseSteps examCourseSteps) {
+	private CoachesSelectionStep(UserRequest ureq, ExamCourseSteps examCourseSteps, StepCollection stepCollection) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.coaches.selection", null);
-		setNextStep(new CoachesOverviewStep(ureq, examCourseSteps));
+		setStepCollection(stepCollection);
+		setNextStep(new CoachesOverviewStep(ureq, examCourseSteps, stepCollection));
 	}
 
 	@Override

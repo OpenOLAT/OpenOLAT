@@ -25,9 +25,12 @@
 */
 package org.olat.core.gui.control.generic.wizard;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Stack;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Window;
@@ -81,6 +84,11 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,StepsRunContext stepsRunContext, Form form) {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
+
+		@Override
+		public StepCollection getStepCollection() {
+			return null;
+		}
 	
 	};
 	public final static Step DONE_MODIFIED = new Step(){
@@ -109,6 +117,11 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,StepsRunContext stepsRunContext, Form form) {
 			throw new IllegalAccessError("not to be called on NOSTEP");
 		}
+
+		@Override
+		public StepCollection getStepCollection() {
+			return null;
+		}
 	
 	};
 	
@@ -118,19 +131,23 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	private FormLink finishButton;
 	private FormLink cancelButton;
 	private FormLink closeLink;
-	private Step startStep;
-	private List<FormItem> stepTitleLinks;
-	private int currentStepIndex = 0;
-	private Stack<FormItem> stepPages;
-	private StepsRunContext stepsContext;
-	private Stack<StepFormController> stepPagesController;
-	private Stack<Step> steps;
+	
+	private final StepsRunContext stepsContext = new DefaultStepsRunContext();
+	private final StepRunnerCallback cancel;
+	private final StepRunnerCallback finish;
+	private final List<FormItem> stepTitleLinks = new ArrayList<>();
+	private final List<FormItem> mainStepTitles = new ArrayList<>();
+	private final Map<FormItem, FormItem> stepToParentTitle = new HashMap<>();
+	private final Map<FormItem, List<FormItem>> parentToChildrenTitle = new HashMap<>();
+	private final Deque<FormItem> stepPages = new ArrayDeque<>();
+	private final Deque<StepFormController> stepPagesController = new ArrayDeque<>();
+	private final Deque<Step> steps = new ArrayDeque<>();
+	private final Step startStep;
+	private Step nextStep;
+	private int currentStepIndex = -1;
 	private Event lastEvent;
 	private boolean doAfterDispatch;
-	private Step nextStep;
 	private ControllerCreator nextChildCreator;
-	private StepRunnerCallback cancel;
-	private StepRunnerCallback finish;
 	private boolean finishCycle = false;
 
 
@@ -142,24 +159,19 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	public StepsMainRunController(UserRequest ureq, WindowControl control, Step startStep, StepRunnerCallback finish,
 			StepRunnerCallback cancel, String wizardTitle, String elementCssClass, String contextHelpPage) {
 		super(ureq, control, "stepslayout");
-
 		this.finish = finish;
 		this.cancel = cancel;
+		this.startStep = startStep;
+		
 		flc.contextPut("wizardTitle", wizardTitle);
 		flc.contextPut("elementCssClass", elementCssClass);
 		if (StringHelper.containsNonWhitespace(contextHelpPage)) {
-			flc.contextPut("helpPage", contextHelpPage);			
+			flc.contextPut("helpPage", contextHelpPage);
 		}
-
-		this.startStep = startStep;
-		steps = new Stack<>();
-		stepTitleLinks = new ArrayList<>();
-		stepPages = new Stack<>();
-		stepPagesController = new Stack<>();
-		stepsContext = new DefaultStepsRunContext();
+		
 		initForm(ureq);
-		// add current step index to velocity
-		flc.contextPut("currentStepPos", currentStepIndex + 1);
+		updateTitleItems();
+		addNextStep(startStep.getStepController(ureq, getWindowControl(), this.stepsContext, this.mainForm), startStep);
 		
 		getWindowControl().getWindowBackOffice().addCycleListener(this);
 	}
@@ -180,7 +192,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		int whichTitleClickedIndex = stepTitleLinks.indexOf(source);
 		if (source == cancelButton || source == closeLink) {
 			if (cancel != null) {
 				// execute some cancel / rollback code
@@ -216,33 +227,36 @@ public class StepsMainRunController extends FormBasicController implements Gener
 			doAfterDispatch = true;
 			getWindowControl().getWindowBackOffice()
 				.sendCommandTo(new JSCommand("try { o_scrollToElement('.o_wizard.modal.show.in'); } catch(e){ }"));
-		} else if (whichTitleClickedIndex >= 0) {
-			// handle a step title link
-			// remove all steps until the clicked one
-			for (int from = currentStepIndex; from > whichTitleClickedIndex; from--) {
-				stepPages.pop();
-				steps.pop();
-				currentStepIndex--;
-				stepTitleLinks.get(currentStepIndex).setEnabled(false);// disable
-				// "previous"
-				// step.
-				StepFormController controller = stepPagesController.pop();
-				controller.back();
-				removeAsListenerAndDispose(controller);
-				// update current step index to velocity
-				flc.contextPut("currentStepPos", currentStepIndex + 1);
+		} else {
+			int whichTitleClickedIndex = stepTitleLinks.indexOf(source);
+			if (whichTitleClickedIndex < 0) {
+				if (parentToChildrenTitle.containsKey(source)) {
+					FormItem firstSubTitle = parentToChildrenTitle.get(source).get(0);
+					whichTitleClickedIndex = stepTitleLinks.indexOf(firstSubTitle);
+				}
 			}
-			flc.add("FFO_CURRENTSTEPPAGE", stepPages.peek());
-			PrevNextFinishConfig pnfConf = steps.peek().getInitialPrevNextFinishConfig();
-			prevButton.setEnabled(pnfConf.isBackIsEnabled());
-			nextButton.setEnabled(pnfConf.isNextIsEnabled());
-			finishButton.setEnabled(pnfConf.isFinishIsEnabled());
+			if (whichTitleClickedIndex >= 0) {
+				// remove all steps until the clicked one
+				for (int from = currentStepIndex; from > whichTitleClickedIndex; from--) {
+					stepPages.pop();
+					steps.pop();
+					currentStepIndex--;
+					StepFormController controller = stepPagesController.pop();
+					controller.back();
+					removeAsListenerAndDispose(controller);
+				}
+				activateTitle(currentStepIndex);
+				flc.add("FFO_CURRENTSTEPPAGE", stepPages.peek());
+				PrevNextFinishConfig pnfConf = steps.peek().getInitialPrevNextFinishConfig();
+				prevButton.setEnabled(pnfConf.isBackIsEnabled());
+				nextButton.setEnabled(pnfConf.isNextIsEnabled());
+				finishButton.setEnabled(pnfConf.isFinishIsEnabled());
+			}
 		}
 	}
-
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.add("stepLinks", stepTitleLinks);
 		// steps/wizard navigation .. as start most of buttons are disabled
 		// they must be enabled by the first step according to its rules
 		// cancel button is not possible to disable
@@ -267,47 +281,40 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		formLayout.add(finishButton);
 		formLayout.add(cancelButton);
 		formLayout.add(closeLink);
-		
-		updateTitleItems();
-		
-		currentStepIndex = -1;// start with -1 to be on zero after calling
-		// update current step index to velocity
-		flc.contextPut("currentStep", currentStepIndex + 1);
-		// next step the first time
-		addNextStep(startStep.getStepController(ureq, getWindowControl(), this.stepsContext, this.mainForm), startStep);
 	}
 	
 	private void updateTitleItems() {
-		List<FormItem> items = createTitleItems();
 		stepTitleLinks.clear();
-		stepTitleLinks.addAll(items);
-	}
-	
-	private List<FormItem> createTitleItems() {
-		List<FormItem> items = new ArrayList<>();
-		int index = 0;
+		mainStepTitles.clear();
+		stepToParentTitle.clear();
+		parentToChildrenTitle.clear();
 		Step tmp = startStep;
 		do {
 			FormItem title = tmp.getStepTitle();
-			title.setEnabled(currentStepIndex >= index++);
-			items.add(title);
+			stepTitleLinks.add(title);
+			StepCollection stepCollection = tmp.getStepCollection();
+			if (stepCollection == null) {
+				mainStepTitles.add(title);
+			} else {
+				FormItem collectionTitle = stepCollection.getTitle();
+				stepToParentTitle.put(title, collectionTitle);
+				List<FormItem> childrenTitles = parentToChildrenTitle.get(collectionTitle);
+				if (childrenTitles == null) {
+					childrenTitles = new ArrayList<>();
+					parentToChildrenTitle.put(collectionTitle, childrenTitles);
+					mainStepTitles.add(collectionTitle);
+				}
+				childrenTitles.add(title);
+			}
 			tmp = tmp.nextStep();
 		} while (tmp != Step.NOSTEP);
-		return items;
+		
+		flc.add("stepLinks", stepTitleLinks);
+		flc.add("parentLinks", mainStepTitles);
 	}
 	
 	private void addNextStep(StepFormController child, Step nextStep) {
-
-		currentStepIndex++;
-
-		if (!stepTitleLinks.isEmpty() && currentStepIndex > 0) {
-			// enable previous step
-			stepTitleLinks.get(currentStepIndex - 1).setEnabled(true);
-		}
-		// update current step index to velocity
-		flc.contextPut("currentStepPos", currentStepIndex + 1);
-
-		flc.add("stepLinks", stepTitleLinks);
+		activateTitle(++currentStepIndex);
 
 		listenTo(child);
 		steps.push(nextStep);
@@ -320,14 +327,43 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		nextButton.setEnabled(pnfConf.isNextIsEnabled());//
 		finishButton.setEnabled(pnfConf.isFinishIsEnabled());
 	}
+	
+	private void activateTitle(int stepIndex) {
+		// Enable titles of previous steps
+		for (int titlesIndex = 0; titlesIndex < stepTitleLinks.size(); titlesIndex++) {
+			boolean enabled = titlesIndex < stepIndex;
+			FormItem titleLink = stepTitleLinks.get(titlesIndex);
+			titleLink.setEnabled(enabled);
+			if (stepToParentTitle.containsKey(titleLink)) {
+				stepToParentTitle.get(titleLink).setEnabled(enabled);
+			}
+		}
+		
+		// Reset sub step titles
+		flc.contextRemove("subStepPos");
+		flc.contextRemove("subStepTitles");
+		FormItem currentTitle = stepTitleLinks.get(stepIndex);
+		FormItem mainTitle = currentTitle;
+		if (stepToParentTitle.containsKey(currentTitle)) {
+			FormItem parentTitle = stepToParentTitle.get(currentTitle);
+			List<FormItem> subStepTitles = parentToChildrenTitle.get(parentTitle);
+			int subStepPos = subStepTitles.indexOf(currentTitle);
+			if (subStepPos >= 0) {
+				mainTitle = parentTitle;
+				flc.contextPut("subStepTitles", subStepTitles);
+				flc.contextPut("subStepPos", subStepPos);
+			}
+		}
+		
+		// Reset main titles
+		int mainStepPos = mainStepTitles.indexOf(mainTitle);
+		flc.contextPut("mainStepTitles", mainStepTitles);
+		flc.contextPut("mainStepPos", mainStepPos);
+	}
 
 	@Override
 	protected void event(final UserRequest ureq, Controller source, Event event) {
-		/*
-		 * FIXME:pb: 
-		 */
 		if (source == stepPagesController.peek()) {
-
 			if (event == StepsEvent.ACTIVATE_NEXT && !finishCycle) {
 				// intermediate steps wants to proceed - and next link was clicked
 				lastEvent = event;
@@ -367,9 +403,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 			} else if (event == StepsEvent.STEPS_CHANGED) {
 				updateTitleItems();
 			}
-
 		}
-
 	}
 
 	private void finishWizard(final UserRequest ureq) {
@@ -379,10 +413,10 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		if(returnStep == DONE_MODIFIED){
 			//finish tells that really some data was changed in this wizard
 			fireEvent(ureq, Event.CHANGED_EVENT);
-		}else if(returnStep == DONE_UNCHANGED){
+		} else if(returnStep == DONE_UNCHANGED){
 			//finish called but nothing was modified
 			fireEvent(ureq, Event.DONE_EVENT);
-		}else{
+		} else {
 			//special step comes back
 			throw new AssertException("FIXME:pb treat special error steps");
 		}
@@ -416,11 +450,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 				
 				stepPages.pop();
 				steps.pop();
-				currentStepIndex--;
-				// update current step index to velocity
-				flc.contextPut("currentStepPos", currentStepIndex + 1);
-				// disable "previous" step.
-				stepTitleLinks.get(currentStepIndex).setEnabled(false);
+				activateTitle(--currentStepIndex);
 				StepFormController controller = stepPagesController.pop();
 				controller.back();
 				removeAsListenerAndDispose(controller);

@@ -9,13 +9,24 @@
 	<div class="modal-body">
 		<div class="wizard clearfix">
 			<ul class="steps">
-			#foreach($item in $stepLinks)
-				<li class="	#if($currentStepPos == $foreach.count) active #end	#if(!${item.isEnabled()}) o_enabled #end ">
-					$r.render(${item})<span class="chevron"></span>
+			#foreach($mainTitle in $mainStepTitles)
+				<li #if($mainStepPos == $foreach.index) class="active"#end>
+					$r.render($mainTitle)<span class="chevron"></span>
 				</li>
 			#end
 			</ul>
-		</div>	
+		</div>
+		#if($r.isNotNull($subStepPos))
+			<div class="wizard clearfix">
+				<ul class="steps">
+				#foreach($subTitle in $subStepTitles)
+					<li #if($subStepPos == $foreach.index) class="active"#end>
+						$r.render($subTitle)<span class="chevron"></span>
+					</li>
+				#end
+				</ul>
+			</div>
+		#end
 			
 		<!-- wizard step content -->
 		<div class="o_wizard_steps_current">
