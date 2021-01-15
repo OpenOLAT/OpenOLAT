@@ -34,6 +34,8 @@ import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.teams.TeamsMeeting;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -46,10 +48,12 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 
 	private static final String DUPLICATION_CONTEXT = "duplicationContext";
 	
+	private Identity executor;
 	private AppointmentsService appointmentsService;
 
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+		executor = ureq.getIdentity();
 		DuplicationContext context = getDuplicationContext(runContext);
 		
 		create(context);
@@ -86,6 +90,40 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 		appointment.setMaxParticipations(appointmentInput.getAppointment().getMaxParticipations());
 		appointment.setStart(appointmentInput.getStart());
 		getAppointmentsService().saveAppointment(appointment);
+		
+		if (appointmentInput.getAppointment().getBBBMeeting() != null) {
+			addBBBMeeting(appointment, appointmentInput.getAppointment().getBBBMeeting());
+		} else if (appointmentInput.getAppointment().getTeamsMeeting() != null) {
+			addTeamsMeeting(appointment, appointmentInput.getAppointment().getTeamsMeeting());
+		}
+	}
+	
+	private void addBBBMeeting(Appointment appointment, BigBlueButtonMeeting meetingTemplate) {
+		appointment = appointmentsService.addBBBMeeting(appointment, executor);
+		BigBlueButtonMeeting meeting = appointment.getBBBMeeting();
+		
+		meeting.setMainPresenter(appointmentsService.getFormattedOrganizers(appointment.getTopic()));
+		meeting.setWelcome(meetingTemplate.getWelcome());
+		meeting.setTemplate(meetingTemplate.getTemplate());
+		meeting.setPermanent(meetingTemplate.isPermanent());
+		meeting.setLeadTime(meetingTemplate.getLeadTime());
+		meeting.setFollowupTime(meetingTemplate.getFollowupTime());
+		meeting.setMeetingLayout(meetingTemplate.getMeetingLayout());
+		meeting.setRecord(meetingTemplate.getRecord());
+	}
+	
+	private void addTeamsMeeting(Appointment appointment, TeamsMeeting meetingTemplate) {
+		appointment = appointmentsService.addTeamsMeeting(appointment, executor);
+		TeamsMeeting meeting = appointment.getTeamsMeeting();
+		
+		meeting.setLeadTime(meetingTemplate.getLeadTime());
+		meeting.setFollowupTime(meetingTemplate.getFollowupTime());
+		meeting.setPermanent(meetingTemplate.isPermanent());
+		meeting.setMainPresenter(appointmentsService.getFormattedOrganizers(appointment.getTopic()));
+		meeting.setAccessLevel(meetingTemplate.getAccessLevel());
+		meeting.setAllowedPresenters(meetingTemplate.getAllowedPresenters());
+		meeting.setEntryExitAnnouncement(meetingTemplate.isEntryExitAnnouncement());
+		meeting.setLobbyBypassScope(meetingTemplate.getLobbyBypassScope());
 	}
 	
 	private AppointmentsService getAppointmentsService() {
@@ -242,11 +280,13 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 		private final Appointment appointment;
 		private final Date start;
 		private final Date end;
+		private final Boolean meetingValidation;
 		
-		public AppointmentInput(Appointment appointment, Date start, Date end) {
+		public AppointmentInput(Appointment appointment, Date start, Date end, Boolean meetingValidation) {
 			this.appointment = appointment;
 			this.start = start;
 			this.end = end;
+			this.meetingValidation = meetingValidation;
 		}
 
 		public Appointment getAppointment() {
@@ -259,6 +299,10 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 
 		public Date getEnd() {
 			return end;
+		}
+
+		public Boolean getMeetingValidation() {
+			return meetingValidation;
 		}
 		
 	}

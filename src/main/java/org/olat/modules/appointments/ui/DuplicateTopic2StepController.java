@@ -60,6 +60,8 @@ import org.olat.modules.appointments.TopicLight;
 import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.appointments.ui.DuplicateTopicCallback.AppointmentInput;
 import org.olat.modules.appointments.ui.DuplicateTopicCallback.DuplicationContext;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,17 +82,19 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 			.thenComparing(Appointment::getKey);
 	
 	private SingleSelection moveEl;
-	private FlexiTableElement tableEl;
 	private FormLayoutContainer periodCont;
 	private TextElement periodDaysEl;
 	private TextElement periodHoursEl;
 	private TextElement periodMinutesEl;
 	private DateChooser firstEl;
+	private FormLayoutContainer meetingValidationCont;
+	private FlexiTableElement tableEl;
 	private AppointmentInputDataModel dataModel;
 
 	private final DuplicationContext context;
 	private final TopicLight topic;
 	private final List<Appointment> sourceAppointments;
+	private final boolean meetings;
 	private final Date currentFirstStart;
 	private long moveMillis;
 	
@@ -110,12 +114,23 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 				.sorted(START_END_COMPARATOR)
 				.collect(Collectors.toList());
 		
+		meetings = appointmentsService.isBigBlueButtonEnabled() && hasBBBMeeting(sourceAppointments)
+				|| (appointmentsService.isTeamsEnabled() && hasTeamsMeetings(sourceAppointments));
+		
 		currentFirstStart = sourceAppointments.isEmpty() ? new Date(): sourceAppointments.get(0).getStart();
 		
 		initForm(ureq);
 		loadModel();
 		updateUI();
 		tableEl.selectAll();
+	}
+
+	private boolean hasBBBMeeting(List<Appointment> appointments) {
+		return appointments.stream().anyMatch(a -> a.getBBBMeeting() != null);
+	}
+
+	private boolean hasTeamsMeetings(List<Appointment> appointments) {
+		return appointments.stream().anyMatch(a -> a.getTeamsMeeting() != null);
 	}
 
 	@Override
@@ -157,6 +172,12 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		firstEl.setDateChooserTimeEnabled(true);
 		firstEl.addActionListener(FormEvent.ONCHANGE);
 		
+		meetingValidationCont = FormLayoutContainer.createHorizontalFormLayout("meeting.validation.error", getTranslator());
+		meetingValidationCont.setElementCssClass("o_appointments_duplicate");
+		meetingValidationCont.setFormWarning(translate("error.meetings.validation"));
+		meetingValidationCont.setRootForm(mainForm);
+		formLayout.add(meetingValidationCont);
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end));
@@ -166,6 +187,9 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		columnsModel.addFlexiColumnModel(detailsModel);
 		if (Type.finding != topic.getType()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.maxParticipations));
+		}
+		if (meetings) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.meeting, new MeetingValidationRenderer(getTranslator())));
 		}
 		
 		dataModel = new AppointmentInputDataModel(columnsModel, getTranslator());
@@ -177,16 +201,38 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 	}
 	
 	private void loadModel() {
+		boolean meetingValidationFailures = false;
 		List<AppointmentInput> rows = new ArrayList<>(sourceAppointments.size());
 		for (Appointment appointment : sourceAppointments) {
 			Date start = new Date(appointment.getStart().getTime() + moveMillis);
 			Date end = new Date(appointment.getEnd().getTime() + moveMillis);
-			AppointmentInput row = new AppointmentInput(appointment, start, end);
+			Boolean meetingValidation = validateMeeting(appointment, start, end);
+			AppointmentInput row = new AppointmentInput(appointment, start, end, meetingValidation);
 			rows.add(row);
+			
+			if (meetingValidation != null && !meetingValidation.booleanValue()) {
+				meetingValidationFailures = true;
+			}
 		}
+		meetingValidationCont.setVisible(meetingValidationFailures);
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	private Boolean validateMeeting(Appointment appointment, Date start, Date end) {
+		if (appointment.getBBBMeeting() != null) {
+			return validateBBBMeeting(appointment.getBBBMeeting(), start, end);
+		} else if (appointment.getTeamsMeeting() != null) {
+			return Boolean.TRUE;
+		}
+		return null;
+	}
+
+	private Boolean validateBBBMeeting(BigBlueButtonMeeting meeting, Date start, Date end) {
+		// Only validation of the slot. All other restrictions should still be ok.
+		boolean valid = BigBlueButtonUIHelper.validateSlot(meeting, meeting.getTemplate(), start, end, meeting.getLeadTime(), meeting.getFollowupTime());
+		return Boolean.valueOf(valid);
 	}
 	
 	private void updateUI() {
@@ -319,6 +365,7 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 				case location: return AppointmentsUIFactory.getDisplayLocation(translator, row.getAppointment());
 				case details: return row.getAppointment().getDetails();
 				case maxParticipations: return row.getAppointment().getMaxParticipations();
+				case meeting: return row;
 				default: return null;
 			}
 		}
@@ -334,7 +381,8 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		end("appointment.end"),
 		location("appointment.location"),
 		details("appointment.details"),
-		maxParticipations("appointment.max.participations");
+		maxParticipations("appointment.max.participations"),
+		meeting("appointment.meeting");
 		
 		private final String i18nKey;
 		

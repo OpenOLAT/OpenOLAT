@@ -440,6 +440,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formLayoutContainer.contextPut("off_desc", description);
 	}
 	
+	public void setFormWarning(String warning) {
+		formLayoutContainer.contextPut("off_warn", warning);
+	}
+	
 	/**
 	 * Set an optional context help link for this form. If you use a custom
 	 * template this will have no effect
