@@ -186,6 +186,10 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		}
 	}
 	
+	public void reloadTable() {
+		tableCtr.reloadTable();
+	}
+	
 	public WindowControl getTableControl() {
 		return tableCtr == null ? null : tableCtr.getWindowControlForDebug();
 	}

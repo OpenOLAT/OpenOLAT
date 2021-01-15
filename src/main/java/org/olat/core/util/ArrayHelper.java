@@ -67,7 +67,7 @@ public class ArrayHelper {
 			pairs[i] = new Object[] { first[i], second[i] };
 		}
 		// sort the pairs
-		Arrays.sort(pairs, new Comparator<Object>() {
+		Arrays.sort(pairs, new Comparator<>() {
 			@Override
 			public int compare(Object o1, Object o2) {
 				Object[] pair1 = (Object[]) o1;

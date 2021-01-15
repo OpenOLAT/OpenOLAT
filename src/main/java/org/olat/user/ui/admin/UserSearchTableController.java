@@ -718,7 +718,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		getWindowControl().pushAsModalDialog(userBulkMoveController.getInitialComponent());
 	}
 	
-	private void reloadTable() {
+	public void reloadTable() {
 		tableEl.reset(true, true, true);
 	}
 	

@@ -157,7 +157,7 @@ public class EditOrganisationTypeController extends FormBasicController {
 		Collection<String> selectedAllowedSubTypeKeys = allowedSubTypesEl.getSelectedKeys();
 		List<OrganisationType> allowedSubTypes = new ArrayList<>();
 		for(String selectedAllowedSubTypeKey:selectedAllowedSubTypeKeys) {
-			allowedSubTypes.add(organisationService.getOrganisationType(new OrganisationTypeRefImpl(new Long(selectedAllowedSubTypeKey))));
+			allowedSubTypes.add(organisationService.getOrganisationType(new OrganisationTypeRefImpl(Long.valueOf(selectedAllowedSubTypeKey))));
 		}
 		organisationType = organisationService.updateOrganisationType(organisationType, allowedSubTypes);
 		

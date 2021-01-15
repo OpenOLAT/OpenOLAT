@@ -25,7 +25,6 @@ import java.util.List;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.RelationRole;
-import org.olat.basesecurity.RightProvider;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -211,7 +210,6 @@ public class RelationRolesAdminController extends FormBasicController {
 	private void doAddRole(UserRequest ureq) {
 		if(guardModalController(editRoleCtrl)) return;
 
-		List<RightProvider> userRelationRights = identityRelationsService.getAvailableRightProviders();
 		editRoleCtrl = new EditRelationRoleController(ureq, getWindowControl(), null);
 		listenTo(editRoleCtrl);
 		

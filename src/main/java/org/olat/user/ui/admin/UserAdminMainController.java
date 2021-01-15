@@ -68,6 +68,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -87,6 +90,9 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.quality.QualityModule;
 import org.olat.user.UserManager;
+import org.olat.user.ui.admin.bulk.tempuser.CreateTemporaryUsers;
+import org.olat.user.ui.admin.bulk.tempuser.CreateTemporaryUsers1Step;
+import org.olat.user.ui.admin.bulk.tempuser.CreateTemporaryUsersCallback;
 import org.olat.user.ui.admin.lifecycle.DeletedUsersController;
 import org.olat.user.ui.admin.lifecycle.NewUsersNotificationsController;
 import org.olat.user.ui.admin.lifecycle.UserLifecycleOverviewController;
@@ -112,6 +118,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private Link createLink;
 	private Link importLink;
 	private Link userLifecycleLink;
+	private Link createTempUsersLink;
 	private MenuTree menuTree;
 	private TooledStackedPanel content;
 	
@@ -120,6 +127,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private UserCreateController createCtrl;
 	private UserImportController importCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
+	private StepsMainRunController createTemporaryUsersController;
 
 	private final Roles identityRoles;
 	private GenericTreeNode organisationsNode;
@@ -186,12 +194,14 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			createLink = LinkFactory.createToolLink("ucreate", translate("menu.ucreate"), this, "o_icon_add_member");
 			createLink.setElementCssClass("o_sel_useradmin_create");
 			content.addTool(createLink, Align.right);
-		}
 
-		if (identityRoles.isAdministrator() || identityRoles.isUserManager() || identityRoles.isRolesManager()) {
 			importLink = LinkFactory.createToolLink("usersimport", translate("menu.usersimport"), this, "o_icon_import");
 			importLink.setElementCssClass("o_sel_useradmin_import");
 			content.addTool(importLink, Align.right);
+			
+			createTempUsersLink = LinkFactory.createToolLink("utmpcreate", translate("menu.ucreate.tmp"), this, "o_icon_add_member");
+			createTempUsersLink.setElementCssClass("o_sel_useradmin_tmp_users");
+			content.addTool(createTempUsersLink, Align.right);
 		}
 
 		if (identityRoles.isAdministrator() || ((identityRoles.isUserManager() || identityRoles.isRolesManager()) && BaseSecurityModule.USERMANAGER_CAN_DELETE_USER.booleanValue())) {
@@ -221,6 +231,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			}
 		} else if(createLink == source) {
 			doCreateUser(ureq);
+		} else if(createTempUsersLink == source) {
+			doCreateTemporaryUsers(ureq);
 		} else if(importLink == source) {
 			doImportUser(ureq);
 		} else if(userLifecycleLink == source) {
@@ -235,8 +247,25 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				content.popController(createCtrl);
 				doEditCreatedUser(ureq, ((SingleIdentityChosenEvent)event).getChosenIdentity());
 			}
+		} else if(createTemporaryUsersController == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				cleanUp();
+				reloadTable();
+			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void reloadTable() {
+		if(contentCtr instanceof UsermanagerUserSearchController) {
+			((UsermanagerUserSearchController)contentCtr).reloadTable();
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(createTemporaryUsersController);
+		createTemporaryUsersController = null;
 	}
 	
 	private void doCreateUser(UserRequest ureq) {
@@ -253,6 +282,17 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		createCtrl = new UserCreateController(ureq, bwControl, preselectedOrganisation, canCreateOLATPassword);
 		listenTo(createCtrl);
 		content.pushController(translate("menu.ucreate"), createCtrl);
+	}
+	
+	private void doCreateTemporaryUsers(UserRequest ureq) {
+		Organisation preselectedOrganisation = getPreselectedOrganisation();
+		final CreateTemporaryUsers temporaryUsers = new CreateTemporaryUsers(preselectedOrganisation);
+		Step start = new CreateTemporaryUsers1Step(ureq, temporaryUsers);
+		StepRunnerCallback finish = new CreateTemporaryUsersCallback(temporaryUsers, getTranslator());
+		createTemporaryUsersController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("ucreate.tmp.title"), "o_sel_create_temp_users_wizard");
+		listenTo(createTemporaryUsersController);
+		getWindowControl().pushAsModalDialog(createTemporaryUsersController.getInitialComponent());
 	}
 	
 	private Organisation getPreselectedOrganisation() {
@@ -741,7 +781,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			String entryPoint = entry.getOLATResourceable().getResourceableTypeName();
 			if(entryPoint.startsWith("notifications") || entryPoint.startsWith("NewIdentityCreated")) {
 				TreeNode node = tm.findNodeByUserObject("created.newUsersNotification");
-				selectNode(ureq, node);
+				contentCtr = selectNode(ureq, node);
 			} else if(entryPoint.startsWith("AE")) {
 				TreeNode node = tm.findNodeByUserObject("menuqueries");
 				int pos = entries.get(0).getOLATResourceable().getResourceableId().intValue();
