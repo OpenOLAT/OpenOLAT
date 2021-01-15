@@ -295,6 +295,72 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void untilDeactivation() {
+		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
+		
+		Date now = new Date();
+		// inactivation long due
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-41");
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -910));
+		dbInstance.commitAndCloseSession();
+		// last login within limit
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-42");
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -510));
+		dbInstance.commitAndCloseSession();
+		
+		id1 = securityManager.loadIdentityByKey(id1.getKey());
+		long daysUntilId1 = lifecycleManager.getDaysUntilDeactivation(id1, now);
+		Assert.assertEquals(1, daysUntilId1);
+		
+		id2 = securityManager.loadIdentityByKey(id2.getKey());
+		long daysUntilId2 = lifecycleManager.getDaysUntilDeactivation(id2, now);
+		Assert.assertEquals(210, daysUntilId2);
+	}
+	
+	/**
+	 * Check the grace period after reactivation
+	 */
+	@Test
+	public void untilDeactivationWithReactivation() {
+		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
+		
+		// someone play
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-43");
+		identityDao.setIdentityLastLogin(id, DateUtils.addDays(new Date(), -910));
+		dbInstance.commitAndCloseSession();
+		id = securityManager.saveIdentityStatus(id, Identity.STATUS_INACTIVE, null);
+		id = securityManager.saveIdentityStatus(id, Identity.STATUS_ACTIV, null);
+		
+		// grace period after reactivation
+		id = securityManager.loadIdentityByKey(id.getKey());
+		long daysUntil = lifecycleManager.getDaysUntilDeactivation(id, new Date());
+		Assert.assertEquals(30, daysUntil);
+	}
+	
+	/**
+	 * Check the login date has a high priority than the reactivation date.
+	 */
+	@Test
+	public void untilDeactivationWithManualInactivationReactivation() {
+		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
+		
+		// someone play
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-44");
+		identityDao.setIdentityLastLogin(id, DateUtils.addDays(new Date(), -410));
+		dbInstance.commitAndCloseSession();
+		id = securityManager.saveIdentityStatus(id, Identity.STATUS_INACTIVE, null);
+		id = securityManager.saveIdentityStatus(id, Identity.STATUS_ACTIV, null);
+		
+		// grace period after reactivation
+		id = securityManager.loadIdentityByKey(id.getKey());
+		long daysUntil = lifecycleManager.getDaysUntilDeactivation(id, new Date());
+		Assert.assertEquals(310, daysUntil);
+	}
+	
+	@Test
 	public void inactivateASingleInformedIdentity() {
 		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
 		userModule.setMailBeforeDeactivation(true);
@@ -498,6 +564,41 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		Assert.assertFalse(hasTo(id1.getUser().getEmail(), inactivedMessages));
 		Assert.assertFalse(hasTo(id2.getUser().getEmail(), inactivedMessages));
 		getSmtpServer().reset();	
+	}
+	
+	/**
+	 * Test the case of an administrator which play activate/inactivate. The
+	 * login date has a higher priority and win against the reactivation grace
+	 * period of 30 days.
+	 */
+	@Test
+	public void manuallyReactivatedIdentity() {
+		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+		userModule.setMailBeforeDeactivation(true);
+		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
+		userModule.setNumberOfDayBeforeDeactivationMail(30);
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-31");
+		identityDao.setIdentityLastLogin(id, DateUtils.addDays(new Date(), -180));
+		id = securityManager.saveIdentityStatus(id, Identity.STATUS_INACTIVE, null);
+		id = securityManager.saveIdentityStatus(id, Identity.STATUS_ACTIV, null);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(id.getLastLogin());
+		Assert.assertNotNull(id.getReactivationDate());
+		// set reactivation date before the limit of 30 days
+		((IdentityImpl)id).setReactivationDate(DateUtils.addDays(new Date(), -40));
+		id = identityDao.saveIdentity(id);
+		
+		Set<Identity> vetoed = new HashSet<>();
+		lifecycleManager.inactivateIdentities(vetoed);
+		dbInstance.commitAndCloseSession();
+
+		// the login date has a higher priority, the identity will not be inactivated again
+		Identity reloadedId = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertEquals(Identity.STATUS_ACTIV, reloadedId.getStatus());
+		Assert.assertNotNull(reloadedId.getLastLogin());
+		Assert.assertNotNull(reloadedId.getReactivationDate());	
 	}
 	
 	@Test
