@@ -50,9 +50,9 @@ public class CPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
-	public final static String TYPE = "type.course.node.cp";
+	public static final String TYPE = "type.course.node.cp";
 
-	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.CPCourseNode";
+	private static final String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.CPCourseNode";
 	
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)
