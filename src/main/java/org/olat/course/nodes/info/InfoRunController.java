@@ -185,7 +185,7 @@ public class InfoRunController extends BasicController {
 		curriculumRolesToSend.add(CurriculumRoles.owner);
 		
 		for (CurriculumElement curriculumElement : curriculumService.getCurriculumElements(courseEntry)) {
-			infoDisplayController.addCurriuclaMailOptions(new SendMailCurriculumOption(curriculumElement, null));
+			infoDisplayController.addCurriuclaMailOptions(new SendMailCurriculumOption(curriculumElement, curriculumRolesToSend));
 		}
 
 		MailFormatter mailFormatter = new SendInfoMailFormatter(infoMailTitle, businessPath, getTranslator());
