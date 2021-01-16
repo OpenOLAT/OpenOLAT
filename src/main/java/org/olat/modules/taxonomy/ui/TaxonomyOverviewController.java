@@ -169,6 +169,8 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Types"), null);
 			typeListCtrl = new TaxonomyLevelTypesEditController(ureq, bwControl, taxonomy);
 			listenTo(typeListCtrl);
+		} else {
+			typeListCtrl.loadModel();
 		}
 		mainVC.put("segmentCmp", typeListCtrl.getInitialComponent());
 		return typeListCtrl;

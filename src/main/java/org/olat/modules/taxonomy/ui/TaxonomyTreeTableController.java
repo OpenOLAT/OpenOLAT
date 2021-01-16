@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -56,6 +57,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -81,7 +86,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TaxonomyTreeTableController extends FormBasicController implements BreadcrumbPanelAware, Activateable2 {
 	
 	private FormLink newLevelButton;
-	private FormLink deleteButton, mergeButton, typeButton, moveButton;
+	private FormLink deleteButton;
+	private FormLink mergeButton;
+	private FormLink typeButton;
+	private FormLink moveButton;
+	private FormLink importButton;
 	private FlexiTableElement tableEl;
 	private TaxonomyTreeTableModel model;
 	private BreadcrumbPanel stackPanel;
@@ -94,6 +103,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private DeleteTaxonomyLevelController confirmDeleteCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditTaxonomyLevelController createTaxonomyLevelCtrl;
+	private StepsMainRunController importWizardCtrl;
 	
 	private int counter = 0;
 	private Taxonomy taxonomy;
@@ -121,6 +131,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 
 		newLevelButton = uifactory.addFormLink("add.taxonomy.level", formLayout, Link.BUTTON);
 		newLevelButton.setElementCssClass("o_sel_taxonomy_new_level");
+		importButton = uifactory.addFormLink("import.taxonomy.levels", formLayout, Link.BUTTON);
 		deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		mergeButton = uifactory.addFormLink("merge.taxonomy.level", formLayout, Link.BUTTON);
 		typeButton = uifactory.addFormLink("type.taxonomy.level", formLayout, Link.BUTTON);
@@ -253,6 +264,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			doAssignType(ureq);
 		} else if(moveButton == source) {
 			doMove(ureq);
+		} else if(importButton == source) {
+			doOpenImportWizard(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -327,6 +340,17 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(importWizardCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+	            // Close the dialog
+	            getWindowControl().pop();
+
+	            // Remove steps controller
+	            cleanUp();
+
+	            // Reload data
+	            loadModel(true, true);
+	        }
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -336,16 +360,34 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private void cleanUp() {
 		removeAsListenerAndDispose(createTaxonomyLevelCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
+		removeAsListenerAndDispose(importWizardCtrl);
 		removeAsListenerAndDispose(moveLevelCtrl);
 		removeAsListenerAndDispose(typeLevelCtrl);
 		removeAsListenerAndDispose(mergeCtrl);
 		removeAsListenerAndDispose(cmc);
 		createTaxonomyLevelCtrl = null;
 		confirmDeleteCtrl = null;
+		importWizardCtrl = null;
 		moveLevelCtrl = null;
 		typeLevelCtrl = null;
 		mergeCtrl = null;
 		cmc = null;
+	}
+	
+	private void doOpenImportWizard(UserRequest ureq) {
+		// Create context wrapper (used to transfer data from step to step)
+        TaxonomyImportContext context = new TaxonomyImportContext();
+        context.setTaxonomy(taxonomy);
+
+        // Create first step and finish callback
+        Step importStep = new TaxonomyImportStep1(ureq, context);
+        FinishedCallback finish = new FinishedCallback();
+        CancelCallback cancel = new CancelCallback();
+
+        // Create step controller
+        importWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), importStep, finish, cancel, translate("import.taxonomy"), null);
+        listenTo(importWizardCtrl);
+        getWindowControl().pushAsModalDialog(importWizardCtrl.getInitialComponent());
 	}
 	
 	private void doAssignType(UserRequest ureq) {
@@ -381,6 +423,81 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			cmc.activate();
 		}
 	}
+	
+	private class FinishedCallback implements StepRunnerCallback {
+	    @Override
+	    public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+	        TaxonomyImportContext context = (TaxonomyImportContext) runContext.get(TaxonomyImportContext.CONTEXT_KEY);
+	         
+	        // Collect the created types for the next step
+	        List<TaxonomyLevelType> createdTypes = new ArrayList<>();
+	        for (TaxonomyLevelType newLevelType : context.getTaxonomyLevelTypeCreateList()) {
+	        	createdTypes.add(taxonomyService.createTaxonomyLevelType(newLevelType.getIdentifier(), newLevelType.getIdentifier(), null, null, context.getTaxonomy()));
+	        }
+	        
+	        // Collect created levels to find parents 
+	        List<TaxonomyLevel> createdLevels = new ArrayList<>();
+	        for (TaxonomyLevel newLevel : context.getTaxonomyLevelCreateList()) {
+	        	TaxonomyLevel parent = null;
+	        	if (newLevel.getParent() != null) {
+		        	// Check whether already existing
+		        	if (newLevel.getParent().getKey() != null) {
+		        		// Take existing Level
+		        		parent = newLevel.getParent();
+		        	} else {
+		        		// Parent cannot throw exception because it must have been created already
+		        		parent = createdLevels.stream().filter(level -> level.getIdentifier().equals(newLevel.getParent().getIdentifier())).collect(Collectors.toList()).get(0);
+		        	}
+	        	}
+	        	TaxonomyLevel createdLevel = taxonomyService.createTaxonomyLevel(newLevel.getIdentifier(), newLevel.getDisplayName(), newLevel.getDescription(), null, null, parent, context.getTaxonomy());
+	        	createdLevel.setSortOrder(newLevel.getSortOrder());
+	        	
+	        	if (newLevel.getType() != null) {
+	        		TaxonomyLevelType levelType = null;
+	        		
+	        		if (newLevel.getType().getKey() == null) {
+	        			levelType = createdTypes.stream().filter(type -> type.getIdentifier().equals(newLevel.getType().getIdentifier())).findFirst().orElse(null);
+	        		} else {
+	        			levelType = newLevel.getType();
+	        		}
+	        		
+	        		createdLevel.setType(levelType);
+	        	}	        	
+	        	
+	        	createdLevel = taxonomyService.updateTaxonomyLevel(createdLevel);
+	        	createdLevels.add(createdLevel);
+	        }
+	        
+	        // Update existing taxonomies if needed
+	        if (context.isUpdatateExistingTaxonomies()) {
+		        for (TaxonomyLevel updateLevel : context.getTaxonomyLevelUpdateList()) {		        	
+		        	if (updateLevel.getType() != null) {
+		        		TaxonomyLevelType levelType = null;
+		        		
+		        		if (updateLevel.getType().getKey() == null) {
+		        			levelType = createdTypes.stream().filter(type -> type.getIdentifier().equals(updateLevel.getType().getIdentifier())).findFirst().orElse(null);
+		        		} else {
+		        			levelType = updateLevel.getType();
+		        		}
+		        		
+		        		updateLevel.setType(levelType);
+		        	}
+		        	
+		        	TaxonomyLevel savedUpdateLevel = updateLevel;
+		        	taxonomyService.updateTaxonomyLevel(savedUpdateLevel);
+		        }
+	        }
+	    	
+	    	return StepsMainRunController.DONE_MODIFIED;
+	    }
+	}
+	    
+    private static class CancelCallback implements StepRunnerCallback {
+        @Override
+        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+            return Step.NOSTEP;
+        }
+    }
 
 	private TaxonomyLevelOverviewController doSelectTaxonomyLevel(UserRequest ureq, TaxonomyLevelRow row) {
 		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(row);

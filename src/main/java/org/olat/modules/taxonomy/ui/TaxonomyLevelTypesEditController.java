@@ -113,7 +113,7 @@ public class TaxonomyLevelTypesEditController extends FormBasicController implem
 		tableEl.setAndLoadPersistedPreferences(ureq, "tax-level-types-competences");
 	}
 	
-	private void loadModel() {
+	public void loadModel() {
 		List<TaxonomyLevelType> types = taxonomyService.getTaxonomyLevelTypes(taxonomy);
 		List<TaxonomyLevelTypeRow> rows = types
 				.stream().map(t -> forgeRow(t))

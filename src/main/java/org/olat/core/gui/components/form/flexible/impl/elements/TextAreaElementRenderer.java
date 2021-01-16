@@ -120,9 +120,6 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 				sb.append(" o_striped_background");
 			}
 			sb.append("'");
-			if (teC.isLineNumbersEnabled()) {
-				sb.append(" onresize=\"O_TEXTAREA.update_after_resize()\"");
-			}
 			if (teC.getCols() != -1) {
 				sb.append(" cols=\"").append(teC.getCols()).append("\"");
 			}

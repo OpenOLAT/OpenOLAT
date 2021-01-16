@@ -120,6 +120,10 @@ implements FilterableFlexiTableModel  {
 			case typeIdentifier: return level.getTypeIdentifier();
 			case numOfChildren: return level.getNumberOfChildren();
 			case tools: return level.getToolsLink();
+			case updateWarning: return level.isUpdated();
+			case description: return level.getDescription();
+			case order: return level.getOrder();
+			case path: return level.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash();
 			default: return "ERROR";
 		}
 	}
@@ -131,17 +135,33 @@ implements FilterableFlexiTableModel  {
 		externalId("table.header.taxonomy.level.externalId"),
 		typeIdentifier("table.header.taxonomy.level.type.identifier"),
 		numOfChildren("table.header.taxonomy.level.num.children"),
-		tools("table.header.actions");
+		tools("table.header.actions"),
+		order("table.header.taxonomy.level.order"),
+		description("table.header.taxonomy.level.description"),
+		updateWarning("table.header.taxonomy.update.warning", "o_icon o_icon_fw o_icon_warn"),
+		path("table.header.taxonomy.level.path");
 		
 		private final String i18nKey;
+		private final String iconHeader;
+		
 		
 		private TaxonomyLevelCols(String i18nKey) {
+			this(i18nKey, null);
+		}
+		
+		private TaxonomyLevelCols(String i18nKey, String iconHeader) {
 			this.i18nKey = i18nKey;
+			this.iconHeader = iconHeader;
 		}
 		
 		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+		
+		@Override
+		public String iconHeader() {
+			return iconHeader;
 		}
 
 		@Override

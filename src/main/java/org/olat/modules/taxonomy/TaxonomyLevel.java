@@ -61,6 +61,8 @@ public interface TaxonomyLevel extends TaxonomyLevelRef, CreateInfo, ModifiedInf
 	
 	public String getMaterializedPathIdentifiers();
 	
+	public String getMaterializedPathIdentifiersWithoutSlash();
+	
 	public Taxonomy getTaxonomy();
 	
 	public TaxonomyLevel getParent();

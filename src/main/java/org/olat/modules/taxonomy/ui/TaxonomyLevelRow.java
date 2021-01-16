@@ -38,15 +38,27 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	private final TaxonomyLevel taxonomyLevel;
 	private final Long parentLevelKey;
 	
+	// Only used in import wizard
+	private final boolean isUpdated;
+	
 	private int numOfChildren = 0;
 	private FormLink toolsLink;
 	private TaxonomyLevelRow parent;
 	
 	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, FormLink toolsLink) {
-		type = taxonomyLevel.getType();
+		this(taxonomyLevel, toolsLink, false);
+	}
+	
+	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, boolean isUpdated) {
+		this(taxonomyLevel, null, isUpdated);
+	}
+	
+	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, FormLink toolsLink, boolean isUpdated) {
 		this.taxonomyLevel = taxonomyLevel;
 		this.toolsLink = toolsLink;
+		this.isUpdated = isUpdated;
 		parentLevelKey = taxonomyLevel.getParent() == null ? null : taxonomyLevel.getParent().getKey();
+		type = taxonomyLevel.getType();
 	}
 	
 	@Override
@@ -62,6 +74,14 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	@Override
 	public String getCrump() {
 		return taxonomyLevel.getDisplayName();
+	}
+	
+	public TaxonomyLevel getTaxonomyLevel() {
+		return taxonomyLevel;
+	}
+	
+	public TaxonomyLevelType getTaxonomyLevelType() {
+		return type;
 	}
 	
 	public TaxonomyLevelManagedFlag[] getManagedFlags() {
@@ -100,12 +120,24 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 		return numOfChildren;
 	}
 	
+	public Integer getOrder() {
+		return taxonomyLevel.getSortOrder();
+	}
+	
+	public String getDescription() {
+		return taxonomyLevel.getDescription();
+	}
+	
 	public void incrementNumberOfChildren() {
 		numOfChildren++;
 	}
 
 	public FormLink getToolsLink() {
 		return toolsLink;
+	}
+	
+	public boolean isUpdated() {
+		return isUpdated;
 	}
 	
 	@Override

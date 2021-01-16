@@ -38,8 +38,8 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
+import org.olat.modules.taxonomy.TaxonomyLevelType;
 
 /**
  * 
@@ -179,10 +179,12 @@ public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLev
 		this.externalId = externalId;
 	}
 
+	@Override
 	public Integer getSortOrder() {
 		return sortOrder;
 	}
 
+	@Override
 	public void setSortOrder(Integer sortOrder) {
 		this.sortOrder = sortOrder;
 	}
@@ -211,6 +213,15 @@ public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLev
 
 	public void setMaterializedPathIdentifiers(String materializedPathIdentifiers) {
 		this.materializedPathIdentifiers = materializedPathIdentifiers;
+	}
+	
+	@Override
+	public String getMaterializedPathIdentifiersWithoutSlash() {
+		if (materializedPathIdentifiers.endsWith("/") && materializedPathIdentifiers.length() > 1) {
+			return materializedPathIdentifiers.substring(0, materializedPathIdentifiers.length() - 1);
+		}
+		
+		return materializedPathIdentifiers;
 	}
 
 	public boolean isEnabled() {
