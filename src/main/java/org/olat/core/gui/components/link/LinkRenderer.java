@@ -80,7 +80,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		StringBuilder cssSb = new StringBuilder(64);
 		cssSb.append("class=\"");
 		if (!link.isEnabled()) {
-			cssSb.append(" o_disabled ");
+			cssSb.append(" o_disabled disabled ");
 		}
 		if (link.isActive()) {
 			cssSb.append(" active ");
