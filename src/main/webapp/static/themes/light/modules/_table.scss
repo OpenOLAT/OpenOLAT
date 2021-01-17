@@ -139,6 +139,7 @@ a.o_orderby, a.o_orderby:hover {
 	
 	&.o_orderby_asc::before {
 		content: '\f0de';
+		color: $brand-primary;
 	}
 	
 	&.o_orderby_asc::after {
@@ -153,6 +154,7 @@ a.o_orderby, a.o_orderby:hover {
 	
 	&.o_orderby_desc::after {
 		content: '\f0dd';
+		color: $brand-primary;
 	}
 }
 
