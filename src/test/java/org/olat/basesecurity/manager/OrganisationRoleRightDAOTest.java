@@ -45,8 +45,6 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
     private DB dbInstance;
     @Autowired
     private OrganisationService organisationService;
-    @Autowired
-    private OrganisationRoleRightDAO organisationRoleRightDAO;
 
     private Organisation root1;
     private Organisation root2;
@@ -105,7 +103,7 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
         List<RightProvider> rightsFromOrgRole = organisationService.getGrantedOrganisationRights(root2, OrganisationRoles.linemanager);
 
         Assert.assertNotNull(rightsFromOrgRole);
-        Assert.assertEquals(rightsFromOrgRole.size(), 0);
+        Assert.assertEquals(0, rightsFromOrgRole.size());
     }
 
     @Test
@@ -120,6 +118,6 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
         List<RightProvider> rightsFromOrgRole = organisationService.getGrantedOrganisationRights(root1, OrganisationRoles.linemanager);
 
         Assert.assertNotNull(rightsFromOrgRole);
-        Assert.assertEquals(rightsFromOrgRole.size(), 0);
+        Assert.assertEquals(0, rightsFromOrgRole.size());
     }
 }

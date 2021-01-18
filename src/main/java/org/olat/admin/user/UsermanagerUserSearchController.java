@@ -33,6 +33,12 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewRendererType;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -72,6 +78,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private TooledStackedPanel stackedPanel;
 
 	private UsermanagerUserSearchForm searchFormCtrl;
+	private UsermanagerUserBulkSearchForm listFormCtrl;
 	private UserSearchTableController tableCtr;
 
 	private final boolean showDelete;
@@ -89,6 +96,11 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	@Autowired
 	private BaseSecurityModule securityModule;
 
+	private Link listSearchLink;
+	private Link fieldsSearchLink;
+	private VelocityContainer userSearchVC;
+	private SegmentViewComponent segmentView;
+	
 	/**
 	 * Constructor to trigger the user search workflow using a generic search form
 	 * 
@@ -107,13 +119,24 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		showDelete = true;
 		showOrganisationMove = false;
 		showTableSearch = true;
+
+		userSearchVC = createVelocityContainer("usermanagerUsersearchTabs");
+		
+		segmentView = SegmentViewFactory.createSegmentView("segments", userSearchVC, this);
+		segmentView.setRendererType(SegmentViewRendererType.linked);
+		fieldsSearchLink = LinkFactory.createLink("search.fields", userSearchVC, this);
+		segmentView.addSegment(fieldsSearchLink, true);
+		listSearchLink = LinkFactory.createLink("search.list", userSearchVC, this);
+		segmentView.addSegment(listSearchLink, false);
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		searchFormCtrl = new UsermanagerUserSearchForm(ureq, wControl, isAdministrativeUser, manageableOrganisations);
 		listenTo(searchFormCtrl);
 		
-		VelocityContainer userSearchVC = createVelocityContainer("usermanagerUsersearch");
-		userSearchVC.put("usersearch", searchFormCtrl.getInitialComponent());
+		listFormCtrl = new UsermanagerUserBulkSearchForm(ureq, wControl, manageableOrganisations);
+		listenTo(listFormCtrl);
+		doOpenFieldsSearch();
+		
 		putInitialPanel(userSearchVC);
 	}
 	
@@ -178,7 +201,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		tableCtr.loadModel(identitiesList);
 		
 		if(showTitle) {
-			VelocityContainer userSearchVC = createVelocityContainer("usermanagerUsersearch");
+			userSearchVC = createVelocityContainer("usermanagerUsersearch");
 			userSearchVC.put("usersearch", tableCtr.getInitialComponent());
 			putInitialPanel(userSearchVC);
 		} else {
@@ -222,7 +245,30 @@ public class UsermanagerUserSearchController extends BasicController implements 
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(source == segmentView) {
+			if(event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = userSearchVC.getComponent(segmentCName);
+				if (clickedLink == fieldsSearchLink) {
+					doOpenFieldsSearch();
+				} else if (clickedLink == listSearchLink) {
+					doOpenListSearch();
+				}
+			}
+		}
+	}
+	
+	private void doOpenFieldsSearch() {
+		userSearchVC.put("usersearch", searchFormCtrl.getInitialComponent());
+		fieldsSearchLink.setCustomDisplayText(translate("search.fields.selected"));
+		listSearchLink.setCustomDisplayText(translate("search.list"));
+	}
+	
+	private void doOpenListSearch() {
+		userSearchVC.put("usersearch", listFormCtrl.getInitialComponent());
+		fieldsSearchLink.setCustomDisplayText(translate("search.fields"));
+		listSearchLink.setCustomDisplayText(translate("search.list.selected"));
 	}
 	
 	private void doActivateUser(UserRequest ureq, List<ContextEntry> entries) {
@@ -239,12 +285,27 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		tableCtr.activate(ureq, entries, null);
 	}
 	
+	private void doPushList(UserRequest ureq) {
+		List<Identity> identities = listFormCtrl.getUserList();
+
+		removeAsListenerAndDispose(tableCtr);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		tableCtr = new UserSearchTableController(ureq, bwControl, stackedPanel,
+				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters, true));
+		listenTo(tableCtr);
+		tableCtr.loadModel(identities);
+		stackedPanel.pushController("Results", tableCtr);
+	}
+	
 	private void doPushSearch(UserRequest ureq, boolean withTableSearch) {
 		identityQueryParams = searchFormCtrl.getSearchIdentityParams();
 		if(identityQueryParams.getOrganisations() == null || identityQueryParams.getOrganisations().isEmpty()) {
 			identityQueryParams.setOrganisations(manageableOrganisations);
 		}
-		
+
+		removeAsListenerAndDispose(tableCtr);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
@@ -268,6 +329,12 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		if (source == searchFormCtrl) {
 			if (event == Event.DONE_EVENT) {
 				doPushSearch(ureq, false);
+			} else if (event == Event.CANCELLED_EVENT) {
+				fireEvent(ureq, Event.CANCELLED_EVENT);
+			}
+		} else if (source == listFormCtrl) {
+			if (event == Event.DONE_EVENT) {
+				doPushList(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}

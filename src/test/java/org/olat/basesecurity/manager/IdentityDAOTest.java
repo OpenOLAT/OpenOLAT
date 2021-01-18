@@ -20,14 +20,17 @@
 package org.olat.basesecurity.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.UserConstants;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
@@ -44,6 +47,8 @@ public class IdentityDAOTest extends OlatTestCase {
 
 	@Autowired
 	private IdentityDAO identityDao;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Test
 	public void findByNamesLogin() {
@@ -51,7 +56,7 @@ public class IdentityDAOTest extends OlatTestCase {
 		String login = identity.getLogin();
 		
 		List<String> names = Arrays.asList(login);
-		List<FindNamedIdentity> namedIdentities = identityDao.findByNames(names);
+		List<FindNamedIdentity> namedIdentities = identityDao.findByNames(names, null);
 		Assert.assertNotNull(namedIdentities);
 		Assert.assertEquals(1, namedIdentities.size());
 		Assert.assertEquals(identity.getIdentity(), namedIdentities.get(0).getIdentity());
@@ -63,7 +68,7 @@ public class IdentityDAOTest extends OlatTestCase {
 		String name = identity.getIdentity().getName();
 		
 		List<String> names = Arrays.asList(name);
-		List<FindNamedIdentity> namedIdentities = identityDao.findByNames(names);
+		List<FindNamedIdentity> namedIdentities = identityDao.findByNames(names, null);
 		Assert.assertNotNull(namedIdentities);
 		Assert.assertEquals(1, namedIdentities.size());
 		Assert.assertEquals(identity.getIdentity(), namedIdentities.get(0).getIdentity());
@@ -75,7 +80,7 @@ public class IdentityDAOTest extends OlatTestCase {
 		String fullname = identity.getUser().getFirstName() + " " + identity.getUser().getLastName();
 		
 		List<String> names = Arrays.asList(fullname);
-		List<FindNamedIdentity> namedIdentities = identityDao.findByNames(names);
+		List<FindNamedIdentity> namedIdentities = identityDao.findByNames(names, null);
 		Assert.assertNotNull(namedIdentities);
 		Assert.assertEquals(1, namedIdentities.size());
 		Assert.assertEquals(identity.getIdentity(), namedIdentities.get(0).getIdentity());
@@ -92,7 +97,7 @@ public class IdentityDAOTest extends OlatTestCase {
 		}
 		lofOfNames.add(nickName);
 		
-		List<FindNamedIdentity> loadedIdentities = identityDao.findByNames(lofOfNames);
+		List<FindNamedIdentity> loadedIdentities = identityDao.findByNames(lofOfNames, null);
 		assertThat(loadedIdentities)
 			.isNotNull()
 			.extracting(namedId -> namedId.getIdentity())
@@ -101,7 +106,7 @@ public class IdentityDAOTest extends OlatTestCase {
 	
 	@Test
 	public void findIdentityByName() {
-		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("id-dao-3");
+		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("id-dao-8");
 		String legacyName = identity.getIdentity().getName();
 		
 		Identity loadedIdentity = identityDao.findIdentityByName(legacyName);
@@ -111,13 +116,28 @@ public class IdentityDAOTest extends OlatTestCase {
 	
 	@Test
 	public void findIdentityByNickName() {
-		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("id-dao-3");
+		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("id-dao-9");
 		String nickName = identity.getIdentity().getUser().getProperty(UserConstants.NICKNAME, null);
 		
 		List<Identity> loadedIdentities = identityDao.findIdentitiesByNickName(nickName);
 		Assert.assertNotNull(loadedIdentities);
 		Assert.assertEquals(1, loadedIdentities.size());
 		Assert.assertEquals(identity.getIdentity(), loadedIdentities.get(0));
+	}
+	
+	@Test
+	public void findByNamesWithOrganisations() {
+		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("id-dao-10");
+		String fullname = identity.getUser().getFirstName() + " " + identity.getUser().getLastName();
+		
+		Organisation defaultOrg = organisationService.getDefaultOrganisation();
+		List<Organisation> orgs = List.of(defaultOrg);
+		
+		List<String> names = Arrays.asList(fullname);
+		List<FindNamedIdentity> namedIdentities = identityDao.findByNames(names, orgs);
+		Assert.assertNotNull(namedIdentities);
+		Assert.assertEquals(1, namedIdentities.size());
+		Assert.assertEquals(identity.getIdentity(), namedIdentities.get(0).getIdentity());
 	}
 
 }

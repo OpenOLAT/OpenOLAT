@@ -127,6 +127,17 @@ public interface BaseSecurity {
 	public FindNamedIdentityCollection findAndCollectIdentitiesBy(Collection<String> names);
 	
 	/**
+	 * Find the identities by
+	 * {@link #findIdentityByNameCaseInsensitive(Collection<String>)} and separate
+	 * them in unique identities, duplicate identities and not found identity names.
+	 *
+	 * @param names The list of strings to search for
+	 * @param organisations Limit to the specified list of organizations
+	 * @return
+	 */
+	public FindNamedIdentityCollection findAndCollectIdentitiesBy(Collection<String> names, List<Organisation> organisations);
+	
+	/**
 	 * Find an identity by its user
 	 * @param user
 	 * @return The identity or null if not found

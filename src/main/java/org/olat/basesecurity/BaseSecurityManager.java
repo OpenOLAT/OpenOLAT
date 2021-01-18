@@ -458,12 +458,17 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public List<FindNamedIdentity> findIdentitiesBy(Collection<String> names) {
-		return identityDao.findByNames(names);
+		return identityDao.findByNames(names, null);
 	}
 	
 	@Override
 	public FindNamedIdentityCollection findAndCollectIdentitiesBy(Collection<String> names) {
-		List<FindNamedIdentity> identities  = identityDao.findByNames(names);
+		return findAndCollectIdentitiesBy(names, null);
+	}
+
+	@Override
+	public FindNamedIdentityCollection findAndCollectIdentitiesBy(Collection<String> names, List<Organisation> organisations) {
+		List<FindNamedIdentity> identities  = identityDao.findByNames(names, organisations);
 		Set<String> identListLowercase = names.stream()
 				.map(String::toLowerCase)
 				.collect(Collectors.toSet());

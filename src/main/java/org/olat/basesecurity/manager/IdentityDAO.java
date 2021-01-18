@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.IdentityImpl;
@@ -37,6 +39,7 @@ import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
@@ -89,18 +92,29 @@ public class IdentityDAO {
 				.getResultList();
 	}
 	
-	public List<FindNamedIdentity> findByNames(Collection<String> names) {
+	public List<FindNamedIdentity> findByNames(Collection<String> names, List<Organisation> organisations) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident, auth from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" left join ").append(AuthenticationImpl.class.getName()).append(" as auth on (auth.identity.key=ident.key)")
 		  .append(" inner join fetch ident.user user")
-		  .append(" where lower(ident.name) in (:names)")
+		  .append(" where (lower(ident.name) in (:names)")
 		  .append(" or lower(auth.authusername) in (:names)")
 		  .append(" or lower(concat(user.firstName,' ', user.lastName)) in (:names)")
 		  .append(" or lower(user.nickName) in (:names)")
 		  .append(" or lower(user.email) in (:names)")
-		 .append(" or lower(user.institutionalEmail) in (:names)")
-		  .append(" or lower(user.institutionalUserIdentifier) in (:names)");
+		  .append(" or lower(user.institutionalEmail) in (:names)")
+		  .append(" or lower(user.institutionalUserIdentifier) in (:names))");
+		
+		List<Long> organisationKeys = null;
+		if(organisations != null && !organisations.isEmpty()) {
+			sb.append(" and exists (select orgtomember.key from bgroupmember as orgtomember ")
+			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
+			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey))");
+			
+			organisationKeys = organisations.stream()
+					.map(Organisation::getKey)
+					.collect(Collectors.toList());
+		}
 
 		List<String> loweredIdentityNames = names.stream()
 				.map(String::toLowerCase).collect(Collectors.toList());
@@ -108,11 +122,14 @@ public class IdentityDAO {
 		Set<String> loweredIdentityNamesSet = new HashSet<>(loweredIdentityNames);
 		Map<Identity, FindNamedIdentity> namedIdentities = new HashMap<>();
 		for (List<String> chunkOfIdentityNames : PersistenceHelper.collectionOfChunks(new ArrayList<>(loweredIdentityNames), 7)) {
-			List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+			TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), Object[].class)
-					.setParameter("names", chunkOfIdentityNames)
-					.getResultList();
-			
+					.setParameter("names", chunkOfIdentityNames);
+			if(organisations != null && !organisations.isEmpty()) {
+				rawQuery.setParameter("organisationKey", organisationKeys);
+			}
+
+			List<Object[]> rawObjects =	rawQuery.getResultList();
 			for(Object[] rawObject:rawObjects) {
 				Identity identity = (Identity)rawObject[0];
 				Authentication authentication = (Authentication)rawObject[1];
