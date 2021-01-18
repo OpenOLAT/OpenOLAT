@@ -142,7 +142,9 @@ public class FileEditorController extends BasicController implements Activateabl
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(event == Window.CLOSE_WINDOW) {
-			editCtrl.dispatchEvent(ureq, source, event);
+			if(editCtrl != null) {
+				editCtrl.dispatchEvent(ureq, source, event);
+			}
 			doUnlock();
 		}
 	}
