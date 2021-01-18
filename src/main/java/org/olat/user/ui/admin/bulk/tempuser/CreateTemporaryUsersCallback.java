@@ -34,12 +34,14 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.control.winmgr.ShowInfoCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
@@ -66,7 +68,7 @@ public class CreateTemporaryUsersCallback implements StepRunnerCallback {
 	private OrganisationService organisationService;
 	
 	public CreateTemporaryUsersCallback(CreateTemporaryUsers temporaryUsers, Translator translator) {
-		this.translator = translator;
+		this.translator = Util.createPackageTranslator(CreateTemporaryUsersCallback.class, translator.getLocale(), translator);
 		this.temporaryUsers = temporaryUsers;
 		CoreSpringFactory.autowireObject(this);
 	}
@@ -87,13 +89,18 @@ public class CreateTemporaryUsersCallback implements StepRunnerCallback {
 			ureq.getDispatchResult().setResultingMediaResource(report);
 			
 			if(identities.size() == 1) {
-				wControl.setInfo(translator.translate("info.user.created", new String[] { "1" }));
+				showInfo(wControl, "info.user.created", 1);
 			} else if(identities.size() > 1) {
-				wControl.setInfo(translator.translate("info.users.created",
-						new String[] { Integer.toString(identities.size()) }));
+				showInfo(wControl, "info.users.created", identities.size());
 			}
 		}
 		return StepsMainRunController.DONE_MODIFIED;
+	}
+	
+	private void showInfo(WindowControl wControl, String i18nKey, int numOfUsers) {
+		String title = translator.translate("info.header", null);
+		String msg = translator.translate(i18nKey, new String[] { Integer.toString(numOfUsers) });
+		wControl.getWindowBackOffice().sendCommandTo(new ShowInfoCommand(title, msg));
 	}
 	
 	private Identity doCreateAndPersistIdentity(TransientIdentity identity, Organisation organisation) {
