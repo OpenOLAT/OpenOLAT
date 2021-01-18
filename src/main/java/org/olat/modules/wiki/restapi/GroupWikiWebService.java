@@ -60,7 +60,7 @@ public class GroupWikiWebService {
 	 */
 	@GET
 	@Operation(summary = "will export the wiki", description = "will export the wiki from the current group to a CP and serve as\n" + 
-			"	  zip-file.<br />")
+			" zip-file.<br>")
 	@ApiResponse(responseCode = "200", description = "wiki expoted")
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response exportWiki(@Context HttpServletRequest request, @Context HttpServletResponse response) {

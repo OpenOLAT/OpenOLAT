@@ -102,19 +102,19 @@ public class AuthenticationWebService {
 	@GET
 	@Path("{username}")
 	@Operation(summary = "Authenticates against OLAT Provider", description = "Authenticates against OLAT Provider and provides a security token if\n" + 
-			"	  authentication is successful. The security token is returned as a header\n" + 
-			"	  named X-OLAT-TOKEN. Given that the password is sent in clear text and not\n" + 
-			"	  encrypted, it is not advisable to use this service over a none secure\n" + 
-			"	  connection (https).\n" + 
-			"	  \n" + 
-			"	  This authentication method should only be used if basic authentication is\n" + 
-			"	  not possible.\n" + 
-			"	  \n" + 
-			"	  When using the REST API, best-practice is to use basic authentication and\n" + 
-			"	  activate cookies in your HTTP client for automatic session management.", deprecated=true)
+			" authentication is successful. The security token is returned as a header\n" + 
+			" named X-OLAT-TOKEN. Given that the password is sent in clear text and not\n" + 
+			" encrypted, it is not advisable to use this service over a none secure\n" + 
+			" connection (https).\n" + 
+			" \n" + 
+			" This authentication method should only be used if basic authentication is\n" + 
+			" not possible.\n" + 
+			" \n" + 
+			" When using the REST API, best-practice is to use basic authentication and\n" + 
+			" activate cookies in your HTTP client for automatic session management.", deprecated=true)
 	@ApiResponse(responseCode = "200", description = "Say hello to the authenticated user, and\n" + 
-			"	 *                                  give it a security token\n" + 
-			"	 *                                  &lt;hello&gt;Hello john&lt;/hello&gt;")
+			" *                                  give it a security token\n" + 
+			" *                                  &lt;hello&gt;Hello john&lt;/hello&gt;")
 	@ApiResponse(responseCode = "401", description = "The authentication has failed")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_XML})

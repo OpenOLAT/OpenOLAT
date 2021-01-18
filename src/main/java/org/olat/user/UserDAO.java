@@ -43,8 +43,8 @@ public class UserDAO {
 
 	public Identity findUniqueIdentityByEmail(String email) {
 		StringBuilder query = new StringBuilder(255)
-				.append("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
-				.append(" inner join fetch identity.user user ")
+				.append("select identity from ").append(IdentityImpl.class.getName()).append(" identity")
+				.append(" inner join fetch identity.user user")
 				.append(" where");
 		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
 		if(mysql) {
@@ -106,7 +106,7 @@ public class UserDAO {
 				.append(" where identity.status<:status")
 				.append("   and user.email in (")
 				.append("       select dupUser.email from ").append(IdentityImpl.class.getName()).append(" dupIdentity ") 
-				.append("		 inner join dupIdentity.user dupUser")
+				.append("        inner join dupIdentity.user dupUser")
 				.append("        where dupIdentity.status<:status")
 				.append("          and dupUser.email is not null")
 				.append("     group by dupUser.email")

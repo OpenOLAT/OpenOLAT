@@ -115,7 +115,7 @@ public class IndexerWebService {
 	@POST
 	@Path("status")
 	@Operation(summary = "Update the status of the indexer", description = "Update the status of the indexer: running, stopped.\n" + 
-			"	  Running start the indexer, stopped, stop it.")
+			" Running start the indexer, stopped, stop it.")
 	@ApiResponse(responseCode = "200", description = "The status has changed")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	public Response setStatus(@FormParam("status") String status) {
@@ -136,14 +136,14 @@ public class IndexerWebService {
 			FullIndexerStatus fStatus = statusImpl.getFullIndexerStatus();
 			FullIndexerStatus lStatus = statusImpl.getLifeIndexerStatus();
 
-			stats.setIndexedDocumentCount(fStatus.getDocumentCount() + lStatus.getDocumentCount());
-			stats.setExcludedDocumentCount(fStatus.getExcludedDocumentCount() + lStatus.getExcludedDocumentCount());
-			stats.setIndexSize(fStatus.getIndexSize() + lStatus.getIndexSize());
+			stats.setIndexedDocumentCount(fStatus.getDocumentCount() + (long)lStatus.getDocumentCount());
+			stats.setExcludedDocumentCount(fStatus.getExcludedDocumentCount() + (long)lStatus.getExcludedDocumentCount());
+			stats.setIndexSize(fStatus.getIndexSize() + (long)lStatus.getIndexSize());
 			stats.setIndexingTime(fStatus.getIndexingTime() + lStatus.getIndexingTime());
 			stats.setFullIndexStartedAt(fStatus.getFullIndexStartedAt());
-			stats.setDocumentQueueSize(fStatus.getDocumentQueueSize() + lStatus.getDocumentQueueSize());
-			stats.setRunningFolderIndexerCount(fStatus.getNumberRunningFolderIndexer() + lStatus.getNumberRunningFolderIndexer());
-			stats.setAvailableFolderIndexerCount(fStatus.getNumberAvailableFolderIndexer() + lStatus.getNumberAvailableFolderIndexer());
+			stats.setDocumentQueueSize(fStatus.getDocumentQueueSize() + (long)lStatus.getDocumentQueueSize());
+			stats.setRunningFolderIndexerCount(fStatus.getNumberRunningFolderIndexer() + (long)lStatus.getNumberRunningFolderIndexer());
+			stats.setAvailableFolderIndexerCount(fStatus.getNumberAvailableFolderIndexer() + (long)lStatus.getNumberAvailableFolderIndexer());
 			stats.setLastFullIndexTime(fStatus.getLastFullIndexDateString());
 			stats.setStatus(status.getStatus());
 		} else {

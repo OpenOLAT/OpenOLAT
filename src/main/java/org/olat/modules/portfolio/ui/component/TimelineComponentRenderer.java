@@ -47,7 +47,7 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 		sb.append("<script>\n")
 		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function() {\n")
-		  .append("	jQuery('#timeline_").append(dispatchId).append("').timeline({")
+		  .append(" jQuery('#timeline_").append(dispatchId).append("').timeline({")
 		  .append("   parentContainerId: '").append(cmp.getContainerId()).append("',\n");
 		if(cmp.getStartTime() != null && cmp.getEndTime() != null) {
 			sb.append(" startTime: ").append(cmp.getStartTime().getTime()).append(",\n")

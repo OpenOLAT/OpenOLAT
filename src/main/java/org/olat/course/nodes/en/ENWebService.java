@@ -99,7 +99,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Operation(summary = "attach an enrollment element onto a given course",
 		description = "This attaches a contact element onto a given course, the element will be\n" + 
-			"	  inserted underneath the supplied parentNodeId")
+			" inserted underneath the supplied parentNodeId")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas",
 			content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
@@ -141,7 +141,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Operation(summary = "attach an enrollment element onto a given course",
 		description = "This attaches a contact element onto a given course, the element will be\n" + 
-			"	  inserted underneath the supplied parentNodeId")
+			" inserted underneath the supplied parentNodeId")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas",
 			content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),

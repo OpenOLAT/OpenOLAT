@@ -236,7 +236,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				jsSb.append(elementId).append(".click(function(event) {")
 			       .append(" jQuery('#").append(elementId).append("').each(function(index, el) {;")
 			       .append("  var href = jQuery(el).attr('href');")
-			       .append(" 	if(href.indexOf('x') == -1) jQuery(el).attr('href',href+'x'+event.pageX+'y'+event.pageY+'');")
+			       .append("    if(href.indexOf('x') == -1) jQuery(el).attr('href',href+'x'+event.pageX+'y'+event.pageY+'');")
 			       .append(" });});");
 			}
 			/**

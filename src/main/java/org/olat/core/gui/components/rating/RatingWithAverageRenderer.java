@@ -64,7 +64,7 @@ public class RatingWithAverageRenderer extends DefaultComponentRenderer {
 		  .append("    .hover(\n")
 		  .append("      function(){ jQuery('#o_rating_").append(viewIdent).append("').show(); jQuery('#o_rating_avg_").append(viewIdent).append("').hide(); }, \n")
 		  .append("      function(){ jQuery('#o_rating_").append(viewIdent).append("').hide(); jQuery('#o_rating_avg_").append(viewIdent).append("').show(); }\n")  
-		  .append("	   );\n")
+		  .append("    );\n")
 		  .append("});\n")
 		  .append("</script>\n");
 	}

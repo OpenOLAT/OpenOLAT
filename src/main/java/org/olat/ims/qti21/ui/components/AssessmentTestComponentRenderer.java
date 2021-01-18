@@ -384,7 +384,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		  .append("       jQuery('a#").append(linkKey).append(".translated i').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');\n")
 		  .append("       jQuery('a#").append(linkKey).append(".translated span').html('").append(translator.translate("hide.rubric")).append("');")
 		  .append("     } else {\n")
-		  .append("   	  jQuery(el).removeClass('o_show').addClass('o_hide');\n")
+		  .append("       jQuery(el).removeClass('o_show').addClass('o_hide');\n")
 		  .append("       jQuery('a#").append(linkKey).append(".translated i').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');\n")
 		  .append("       jQuery('a#").append(linkKey).append(".translated span').html('").append(showLinkLabel).append("');")
 		  .append("     }\n")
@@ -400,14 +400,14 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		AssessmentItemRef itemRef = component.getResolvedAssessmentTest()
 				.getItemRefsByIdentifierMap().get(itemNode.getKey().getIdentifier());
 		if(itemRef == null) {
-			log.error("Missing assessment item ref: " + itemNode.getKey());
+			log.error("Missing assessment item ref: {}", itemNode.getKey());
 			renderMissingItem(sb, translator);
 			return;
 		}
 		ResolvedAssessmentItem resolvedAssessmentItem = component.getResolvedAssessmentTest()
 				.getResolvedAssessmentItem(itemRef);
 		if(resolvedAssessmentItem == null) {
-			log.error("Missing assessment item: " + itemNode.getKey());
+			log.error("Missing assessment item: {}", itemNode.getKey());
 			renderMissingItem(sb, translator);
 			return;
 		}
@@ -518,13 +518,13 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 					}
 				} else {
 					renderStartHtmlTag(out, component, resolvedAssessmentItem, fElement, null);
-					fElement.getChildren().forEach((child)
+					fElement.getChildren().forEach(child
 							-> renderMath(renderer, out, component, resolvedAssessmentItem, itemSessionState, child));
 					renderEndTag(out, fElement);
 				}
 			} else {
 				renderStartHtmlTag(out, component, resolvedAssessmentItem, fElement, null);
-				fElement.getChildren().forEach((child)
+				fElement.getChildren().forEach(child
 						-> renderMath(renderer, out, component, resolvedAssessmentItem, itemSessionState, child));
 				renderEndTag(out, fElement);
 			}

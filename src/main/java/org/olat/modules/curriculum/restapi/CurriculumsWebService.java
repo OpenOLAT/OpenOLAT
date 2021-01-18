@@ -260,7 +260,7 @@ public class CurriculumsWebService {
 	@Path("{curriculumKey}")
 	@Operation(summary = "Update a curriculum entity",
 		description = "Updates a curriculum entity. The primary key is taken from\n" + 
-			"	  the URL. The curriculum object can be \"primary key free\"")
+			" the URL. The curriculum object can be \"primary key free\"")
 	@ApiResponse(responseCode = "200", description = "The merged curriculum",
 			content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumVO.class)),

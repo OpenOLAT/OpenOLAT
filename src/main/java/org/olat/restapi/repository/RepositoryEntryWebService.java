@@ -810,13 +810,13 @@ public class RepositoryEntryWebService {
 	 */
 	@POST
 	@Operation(summary = "Change the status of a course by id", description = "Change the status of a course by id. The possible status are:\n" + 
-			"	 * <ul>\n" + 
-			"	 * 	<li>closed</li>\n" + 
-			"	 * 	<li>unclosed</li>\n" + 
-			"	 * 	<li>unpublished</li>\n" + 
-			"	 * 	<li>deleted</li>\n" + 
-			"	 * 	<li>restored</li>\n" + 
-			"	 * </ul>")
+			" <ul>\n" + 
+			"  <li>closed</li>\n" + 
+			"  <li>unclosed</li>\n" + 
+			"  <li>unpublished</li>\n" + 
+			"  <li>deleted</li>\n" + 
+			"  <li>restored</li>\n" + 
+			" </ul>")
 	@ApiResponse(responseCode = "200", description = "The metadatas of the deleted resource")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
@@ -884,8 +884,8 @@ public class RepositoryEntryWebService {
 	@POST
 	@Path("access")
 	@Operation(summary = "Update the access configuration of the repository entry", description = "Update the access configuration of the repository entry. Attention! It's\n" + 
-			"	  a low level method which only change the status without the stuff\n" + 
-			"	  done by the change status methods. Use it only if you know what you do")
+			" a low level method which only change the status without the stuff\n" + 
+			" done by the change status methods. Use it only if you know what you do")
 	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryAccessVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryAccessVO.class)) })

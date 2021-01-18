@@ -188,8 +188,8 @@ public class PageDAO {
 		  .append(" left join page.section as section")
 		  .append(" left join section.binder as binder")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
-		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
-		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
+		  .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
+		  .append("   where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
 		  .append(" )");
 
 		List<Long> count = dbInstance.getCurrentEntityManager()
@@ -206,8 +206,8 @@ public class PageDAO {
 		  .append(" left join fetch page.section as section")
 		  .append(" left join fetch section.binder as binder")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
-		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
-		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
+		  .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
+		  .append("   where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
 		  .append(" )");
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			searchString = makeFuzzyQueryString(searchString);

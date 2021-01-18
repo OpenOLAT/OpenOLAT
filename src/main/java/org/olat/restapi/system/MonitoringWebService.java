@@ -115,7 +115,7 @@ public class MonitoringWebService {
 	@GET
 	@Path("configuration")
 	@Operation(summary = "Return the configuration of the monitoring", description = "Return the configuration of the monitoring, which probes are available,\n" + 
-			"	  which dependency...")
+			" which dependency...")
 	@ApiResponse(responseCode = "200", description = "he version of the instance", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = MonitoringInfosVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = MonitoringInfosVO.class)) })

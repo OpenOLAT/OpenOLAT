@@ -86,7 +86,7 @@ public class I18nWebService {
 	@GET
 	@Path("{package}/{key}")
 	@Operation(summary = "Return the translation of the key", description = "Return the translation of the key. If the \"locale\" parameter is not specified, the method\n" + 
-			"	  try to use the \"locale\" of the user and if it hasn't, take the default locale")
+			" try to use the \"locale\" of the user and if it hasn't, take the default locale")
 	@ApiResponse(responseCode = "200", description = "The translation of the package + key")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getTranslation(@PathParam("package") String packageName, @PathParam("key") String key, @QueryParam("locale") String localeKey, @Context HttpServletRequest request) {

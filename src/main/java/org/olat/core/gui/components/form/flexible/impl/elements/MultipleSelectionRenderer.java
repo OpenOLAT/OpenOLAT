@@ -171,7 +171,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append("jQuery('#").append(buttonTitleId).append("').text(function() {");
 		sb.append("  var $buttonText = jQuery.makeArray(");
 		sb.append("    jQuery('#").append(listId).append(" li a input').filter(':checked').map(function() {");
-		sb.append("		 return jQuery(this).data('value');");
+		sb.append("      return jQuery(this).data('value');");
 		sb.append("    })");
 		sb.append("  ).join(', ');");
 		sb.append("  if ($buttonText == '') {");

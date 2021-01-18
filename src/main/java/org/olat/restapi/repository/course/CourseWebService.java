@@ -490,14 +490,13 @@ public class CourseWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Path("status")
 	@Operation(summary = "Change the status of a course by id", description = "Change the status of a course by id. The possible status are:\n" + 
-			"	  <ul>\n" + 
-			"	  	<li>closed</li>\n" + 
-			"	  	<li>unclosed</li>\n" + 
-			"	  	<li>unpublished</li>\n" + 
-			"	  	<li>deleted</li>\n" + 
-			"	  	<li>restored</li>\n" + 
-			"	  </ul>\n" + 
-			"	 ")
+			" <ul>\n" + 
+			"  <li>closed</li>\n" + 
+			"  <li>unclosed</li>\n" + 
+			"  <li>unpublished</li>\n" + 
+			"  <li>deleted</li>\n" + 
+			"  <li>restored</li>\n" + 
+			" </ul>\n")
 	@ApiResponse(responseCode = "200", description = "The metadatas of the deleted course")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")

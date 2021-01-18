@@ -272,8 +272,8 @@ public class ViteroBookingWebService {
 	 */
 	@POST
 	@Path("{bookingId}/members")
-	@Operation(summary = "Update the lsit of members", description = "Update the list of members of the booking, it add and mutates the\n" + 
-			"	  members and delete the missing members.")
+	@Operation(summary = "Update the lsit of members", description = "Update the list of members of the booking, it add and mutates the" + 
+			" members and delete the missing members.")
 	@ApiResponse(responseCode = "200", description = "This is the list of all bookings of a resource",
 			content = {
 					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ViteroGroupMemberVO.class))),

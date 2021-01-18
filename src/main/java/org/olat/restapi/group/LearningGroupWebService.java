@@ -140,7 +140,7 @@ public class LearningGroupWebService {
 	 */
 	@GET
 	@Operation(summary = "Return the list of all groups ", description = "Return the list of all groups if you have group manager permission, or all\n" + 
-			"	  learning group that you particip with or owne")
+			" learning group that you particip with or owne")
 	@ApiResponse(responseCode = "200", description = "This is the list of all groups in OLAT system", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) })

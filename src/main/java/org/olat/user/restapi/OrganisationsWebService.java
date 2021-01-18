@@ -269,7 +269,7 @@ public class OrganisationsWebService {
 	@POST
 	@Path("{organisationKey}")
 	@Operation(summary = "Updates a new organization entity", description = "Updates a new organization entity. the primary key is taken from\n" + 
-			"	  the url. The organization object can be \"primary key free\"")
+			" the url. The organization object can be \"primary key free\"")
 	@ApiResponse(responseCode = "200", description = "The merged organization", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) })
@@ -348,7 +348,7 @@ public class OrganisationsWebService {
 	@GET
 	@Path("{organisationKey}/{role}")
 	@Operation(summary = "Updates a new organization entity", description = "Updates a new organization entity. the primary key is taken from\n" + 
-			"	  the url. The organization object can be \"primary key free\"")
+			" the url. The organization object can be \"primary key free\"")
 	@ApiResponse(responseCode = "200", description = "The merged organization", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) })
@@ -391,7 +391,7 @@ public class OrganisationsWebService {
 	@PUT
 	@Path("{organisationKey}/{role}/{identityKey}")
 	@Operation(summary = "Make the specified user a member of the specified organization", description = "Make the specified user a member of the specified organization\n" + 
-			"	  with the specified role")
+			" with the specified role")
 	@ApiResponse(responseCode = "200", description = "The membership was added")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The organization or the identity was not found")

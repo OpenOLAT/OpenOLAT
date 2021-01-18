@@ -161,8 +161,8 @@ public class UserFoldersWebService {
 	 */
 	@GET
 	@Operation(summary = "Retrieves a list of folders on a user base", description = "Retrieves a list of folders on a user base. All folders of groups \n" + 
-			"	  where the user is participant/tutor + all folders in course where\n" + 
-			"	  the user is a participant (owner, tutor or participant)")
+			" where the user is participant/tutor + all folders in course where\n" + 
+			" the user is a participant (owner, tutor or participant)")
 	@ApiResponse(responseCode = "200", description = "The folders", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = FolderVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = FolderVO.class))) })
@@ -199,7 +199,7 @@ public class UserFoldersWebService {
 				} else if("CourseModule".equals(resName)) {
 					Long courseKey = sub.getPublisher().getResId();
 					if(!courseNotified.containsKey(courseKey)) {
-						courseNotified.put(courseKey,new ArrayList<String>());
+						courseNotified.put(courseKey,new ArrayList<>());
 					}
 					courseNotified.get(courseKey).add(sub.getPublisher().getSubidentifier());
 				}

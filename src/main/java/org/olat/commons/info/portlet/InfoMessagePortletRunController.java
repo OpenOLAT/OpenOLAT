@@ -191,7 +191,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	protected PortletToolSortingControllerImpl<InfoSubscriptionItem> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {
 			final List<PortletEntry<InfoSubscriptionItem>> empty = Collections.<PortletEntry<InfoSubscriptionItem>>emptyList();
-			final PortletDefaultTableDataModel<InfoSubscriptionItem> defaultModel = new PortletDefaultTableDataModel<InfoSubscriptionItem>(empty, 2) {
+			final PortletDefaultTableDataModel<InfoSubscriptionItem> defaultModel = new PortletDefaultTableDataModel<>(empty, 2) {
 				@Override
 				public Object getValueAt(int row, int col) {
 					return null;
@@ -287,14 +287,14 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 				
 				if(tooltip) {
 					sb.append("<div id='o_sel_info_tooltip_").append(key).append("' style='display:none'>").append(tipSb.toString()).append("</div>");
-				  sb.append("<script>/* <![CDATA[ */")
+				  sb.append("<script>")
 				    .append("jQuery(function() {")
 					  .append("  jQuery('#o_sel_info_msg_title_").append(key).append(",#o_sel_info_msg_link_").append(key).append("').tooltip({")
-					  .append("	  html: true,")
+					  .append("   html: true,")
 					  .append("   title: function(){ return jQuery('#o_sel_info_tooltip_").append(key).append("').html(); }")
 					  .append("  });")
 					  .append("});")
-					  .append("/* ]]> */</script>");
+					  .append("</script>");
 				}
 			} else {
 				sb.append("-");

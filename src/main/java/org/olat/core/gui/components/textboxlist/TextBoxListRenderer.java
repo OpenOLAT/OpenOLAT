@@ -91,7 +91,7 @@ public class TextBoxListRenderer extends DefaultComponentRenderer {
 		if (tblComponent.getProvider() != null) {
 			sb.append("    typeahead: {\n")
 			  .append("      source: function() {")
-			  .append("      	return jQuery.getJSON('").append(tblComponent.getMapperUri()).append("');")
+			  .append("        return jQuery.getJSON('").append(tblComponent.getMapperUri()).append("');")
 			  .append("      }")
 			  .append("    }\n");
 		}

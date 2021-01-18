@@ -152,7 +152,7 @@ public class CurriculumElementTypesWebService {
 	@Path("{curriculumElementTypeKey}")
 	@Operation(summary = "Update a new curriculum element type entity",
 		description = "Updates a new curriculum element type entity. The primary key is taken from\n" + 
-			"	  the URL. The curriculum element type object can be \"primary key free\"")
+			" the URL. The curriculum element type object can be \"primary key free\"")
 	@ApiResponse(responseCode = "200", description = "The merged type curriculum element",
 			content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementTypeVO.class)),

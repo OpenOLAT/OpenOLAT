@@ -131,7 +131,7 @@ public class SharedFolderWebService {
 	 */
 	@Path("{repoEntryKey}/files")
 	@Operation(summary = "This retrieves the files in the shared folder", description = "This retrieves the files in the shared folder and give full access to\n" + 
-			"	  the folder, read, write, delete.")
+			" the folder, read, write, delete.")
 	@ApiResponse(responseCode = "200", description = "The files", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))) })

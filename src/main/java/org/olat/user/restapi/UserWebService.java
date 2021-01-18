@@ -175,17 +175,17 @@ public class UserWebService {
 	 */
 	@GET
 	@Operation(summary = "Search users and return them in a simple form ", description = "Search users and return them in a simple form (without user properties). User properties\n" + 
-			"	  can be added two the query parameters. If the authUsername and the authProvider are set,\n" + 
-			"	  the search is made only with these two parameters because they are sufficient to return\n" + 
-			"	  a single user.<br>\n" + 
-			"	  The search with login and user properties are made default with wild cards. If an exact\n" + 
-			"	  match is needed, the parameter msut be quoted:<br>\n" + 
-			"	  users?login=\"username\"<br>\n" + 
-			"	  Don't forget the right escaping in the URL!<br>\n" + 
-			"	  You can make a search with the user properties like this:<br>\n" + 
-			"	  users?telMobile=39847592&login=test\n" + 
-			"	  <br >/ The lookup is possible for authors, usermanagers and system administrators. Normal\n" + 
-			"	  users are not allowed to use the lookup service.")
+			" can be added two the query parameters. If the authUsername and the authProvider are set,\n" + 
+			" the search is made only with these two parameters because they are sufficient to return\n" + 
+			" a single user.<br>\n" + 
+			" The search with login and user properties are made default with wild cards. If an exact\n" + 
+			" match is needed, the parameter msut be quoted:<br>\n" + 
+			" users?login=\"username\"<br>\n" + 
+			" Don't forget the right escaping in the URL!<br>\n" + 
+			" You can make a search with the user properties like this:<br>\n" + 
+			" users?telMobile=39847592&login=test\n" + 
+			" <br> The lookup is possible for authors, usermanagers and system administrators. Normal\n" + 
+			" users are not allowed to use the lookup service.")
 	@ApiResponse(responseCode = "200", description = "The list of all users in the OLAT system", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
@@ -512,13 +512,12 @@ public class UserWebService {
 	@POST
 	@Path("{identityKey}/status")
 	@Operation(summary = "Update the roles of a user", description = "Update the roles of a user given its unique key identifier:\n" + 
-			"	  <ul>\n" + 
-			"	  	<li>1: Permanent user</li> \n" + 
-			"	  	<li>2: activ</li> \n" + 
-			"	   <li>101: login denied</li> \n" + 
-			"	   <li>199: deleted</li> \n" + 
-			"	  </ul>\n" + 
-			"	  ")
+			" <ul>\n" + 
+			"  <li>1: Permanent user</li> \n" + 
+			"  <li>2: activ</li> \n" + 
+			"  <li>101: login denied</li> \n" + 
+			"  <li>199: deleted</li> \n" + 
+			" </ul>\n")
 	@ApiResponse(responseCode = "200", description = "The user", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = StatusVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = StatusVO.class)) })

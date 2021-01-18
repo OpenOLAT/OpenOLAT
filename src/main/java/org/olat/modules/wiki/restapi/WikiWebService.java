@@ -73,7 +73,7 @@ public class WikiWebService {
 	 */
 	@GET
 	@Operation(summary = "will export the specified wiki ", description = "will export the specified wiki (which must be a repo-entry-wiki) to a CP\n" + 
-			"	  and serve as zip-file.<br />")
+			" and serve as zip-file.<br>")
 		
 	@Produces({"application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response exportWiki(@PathParam("wikiKey") String wikiKey, @Context HttpServletRequest request, @Context HttpServletResponse response) {

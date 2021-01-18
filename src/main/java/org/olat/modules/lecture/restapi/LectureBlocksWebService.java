@@ -149,8 +149,8 @@ public class LectureBlocksWebService {
 	 */
 	@POST
 	@Operation(summary = "Create or update a lecture block", description = "Create or update a lecture block. The status of the blocks will be set to\n" + 
-			"	  autoclose only for newly created blocks. By update, the states of the\n" + 
-			"	  block and the roll call will not be updated")
+			" autoclose only for newly created blocks. By update, the states of the\n" + 
+			" block and the roll call will not be updated")
 	@ApiResponse(responseCode = "200", description = "The updated configuration",
 			content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockVO.class)),

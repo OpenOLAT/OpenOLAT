@@ -167,7 +167,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Operation(summary = "attach a Forum Element onto a given course",
 		description = "This attaches a Forum Element onto a given course. The element will be\n" + 
-			"	 inserted underneath the supplied parentNodeId")
+			" inserted underneath the supplied parentNodeId")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas",
 			content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
@@ -206,7 +206,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Operation(summary = "attach a Forum Element onto a given course",
 		description = "This attaches a Forum Element onto a given course. The element will be\n" + 
-			"	 inserted underneath the supplied parentNodeId")
+			" inserted underneath the supplied parentNodeId")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas",
 			content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),

@@ -66,7 +66,7 @@ public class RuntimeWebService {
 	 */
 	@GET
 	@Operation(summary = "Return the statistics about runtime", description = "Return the statistics about runtime: uptime, classes loaded, memory\n" + 
-			"	  summary, threads count...")
+			" summary, threads count...")
 	@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RuntimeStatisticsVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RuntimeStatisticsVO.class)) })

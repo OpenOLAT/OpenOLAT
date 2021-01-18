@@ -150,7 +150,7 @@ public class OrganisationTypesWebService {
 	@POST
 	@Path("{organisationTypeKey}")
 	@Operation(summary = "Updates a new organization type entity", description = "Updates a new organization type entity. The primary key is taken from\n" + 
-			"	  the URL. The organization type object can be \"primary key free\"")
+			" the URL. The organization type object can be \"primary key free\"")
 	@ApiResponse(responseCode = "200", description = "The merged type organization", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationTypeVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationTypeVO.class)) })

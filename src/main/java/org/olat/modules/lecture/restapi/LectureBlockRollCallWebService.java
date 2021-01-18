@@ -178,8 +178,8 @@ public class LectureBlockRollCallWebService {
 	@Path("/")
 	@Operation(summary = "Update a roll call", description = "Return the lecture block roll call specified by the primary key" + 
 			"Update a roll call. The absence are not updated by this method! Only the\n" + 
-			"	  supervisor notification date, the comment and the reason. The method doesn't\n" + 
-			"	  create a new roll call")
+			" supervisor notification date, the comment and the reason. The method doesn't\n" + 
+			" create a new roll call")
 	@ApiResponse(responseCode = "200", description = "A lecture block roll call",
 			content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockRollCallVO.class)),
@@ -206,8 +206,8 @@ public class LectureBlockRollCallWebService {
 	@Path("/")
 	@Operation(summary = "Update a roll call", description = "Return the lecture block roll call specified by the primary key" + 
 			"Update a roll call. The absence are not updated by this method! Only the\n" + 
-			"	  supervisor notification date, the comment and the reason. The method doesn't\n" + 
-			"	  create a new roll call")
+			" supervisor notification date, the comment and the reason. The method doesn't\n" + 
+			" create a new roll call")
 	@ApiResponse(responseCode = "200", description = "A lecture block roll call",
 			content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockRollCallVO.class)),

@@ -218,7 +218,7 @@ public class CurriculumElementsWebService {
 	@Path("{curriculumElementKey}")
 	@Operation(summary = "Updates a curriculum element entity",
 		description = "Updates a curriculum element entity. The primary key is taken from\n" + 
-			"	  the URL. The curriculum element object can be \"primary key free\"")
+			" the URL. The curriculum element object can be \"primary key free\"")
 	@ApiResponse(responseCode = "200", description = "The curriculum element to update",
 			content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementVO.class)),
@@ -569,7 +569,7 @@ public class CurriculumElementsWebService {
 	@Path("{curriculumElementKey}/users")
 	@Operation(summary = "Get all members",
 		description = "Get all members of the specified curriculum element. A query parameter can\n" + 
-			"	  specify the role of them")
+			" specify the role of them")
 	@ApiResponse(responseCode = "200", description = "The array of authors",
 			content = {
 					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),

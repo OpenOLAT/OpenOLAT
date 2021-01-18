@@ -163,7 +163,7 @@ public class VFSWebservice {
 	@Path("metadata/{path:.*}")
 	@Operation(summary = "Retrieve metadata",
 	description = "This retrieves some metadata of a specific file in a folder.\n" + 
-			"	  The metadata are: filename, size, date of last modification, MIME-type and file href for downloading via REST")
+			" The metadata are: filename, size, date of last modification, MIME-type and file href for downloading via REST")
 	@ApiResponse(responseCode = "200", description = "The list of files or the file", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = FileMetadataVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = FileMetadataVO.class))

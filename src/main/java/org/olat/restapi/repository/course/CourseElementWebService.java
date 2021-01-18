@@ -228,7 +228,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("structure")
 	@Operation(summary = "Attach structure element to course", description = "This attaches a Structure Element onto a given course. The element will be\n" + 
-			"	  inserted underneath the supplied parentNodeId")
+			" inserted underneath the supplied parentNodeId")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
@@ -285,7 +285,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("structure")
 	@Operation(summary = "Attach structure element to course", description = "This attaches a Structure Element onto a given course. The element will be\n" + 
-			"	  inserted underneath the supplied parentNodeId")
+			" inserted underneath the supplied parentNodeId")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
@@ -375,7 +375,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("singlepage")
 	@Operation(summary = "Attach a Single Page Element on course", description = "This attaches a Single Page Element onto a given course. The element will\n" + 
-			"	  be inserted underneath the supplied parentNodeId")
+			" be inserted underneath the supplied parentNodeId")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
@@ -408,7 +408,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("singlepage")
 	@Operation(summary = "Attach a Single Page Element on course", description = "This attaches a Single Page Element onto a given course. The element will\n" + 
-			"	  be inserted underneath the supplied parentNodeId")
+			" be inserted underneath the supplied parentNodeId")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
@@ -463,7 +463,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("singlepage")
 	@Operation(summary = "Attach a Single Page Element on course", description = "This attaches a Single Page Element onto a given course. The element will\n" + 
-			"	  be inserted underneath the supplied parentNodeId")
+			" be inserted underneath the supplied parentNodeId")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
@@ -501,8 +501,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("singlepage")
 	@Operation(summary = "Attach a Single Page Element on course", description = "This attaches a Single Page Element onto a given course. The element will\n" + 
-			"	 be inserted underneath the supplied parentNodeId. The page is found in the\n" + 
-			"	 resource folder of the course.")
+			" be inserted underneath the supplied parentNodeId. The page is found in the\n" + 
+			" resource folder of the course.")
 	@ApiResponse(responseCode = "200", description = "The content of the single page", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
@@ -574,7 +574,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("task")
 	@Operation(summary = "Attach Task Element on course", description = "This attaches a Task Element onto a given course. The element will be\n" + 
-			"	  inserted underneath the supplied parentNodeId.")
+			" inserted underneath the supplied parentNodeId.")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
@@ -611,7 +611,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("task")
 	@Operation(summary = "Attach Task Element on course", description = "This attaches a Task Element onto a given course. The element will be\n" + 
-			"	  inserted underneath the supplied parentNodeId.")
+			" inserted underneath the supplied parentNodeId.")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
@@ -690,7 +690,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("test")
 	@Operation(summary = "Update a Test Element onto a given course", description = "This attaches a Test Element onto a given course. The element will be\n" + 
-			"	  inserted underneath the supplied parentNodeId")
+			" inserted underneath the supplied parentNodeId")
 	@ApiResponse(responseCode = "200", description = "The test node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
@@ -726,7 +726,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("test")
 	@Operation(summary = "Update a Test Element onto a given course", description = "This attaches a Test Element onto a given course. The element will be\n" + 
-			"	  inserted underneath the supplied parentNodeId")
+			" inserted underneath the supplied parentNodeId")
 	@ApiResponse(responseCode = "200", description = "The test node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })

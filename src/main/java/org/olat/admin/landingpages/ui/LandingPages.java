@@ -38,7 +38,7 @@ public enum LandingPages {
 	infoPage2("page.infoPage2", "/CourseSite/2"),
 	learnResources("page.learnResources", "/RepositorySite/0"),
 	catalog("page.catalog", "/CatalogEntry/0"),
-	portal("page.portal", "	/Portal/0");
+	portal("page.portal", "/Portal/0");
 	
 	private String i18nKey;
 	private String businessPath;

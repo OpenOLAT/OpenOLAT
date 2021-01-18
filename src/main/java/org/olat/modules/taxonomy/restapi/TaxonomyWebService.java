@@ -137,8 +137,8 @@ public class TaxonomyWebService {
 	@PUT
 	@Path("levels")
 	@Operation(summary = "Create or update a taxonomy level", description = "Create or update a taxonomy level. The method changes to tree structure, a\n" + 
-			"	  null parent key will make the level a root one, a new parent key will move\n" + 
-			"	 the level")
+			" null parent key will make the level a root one, a new parent key will move\n" + 
+			" the level")
 	@ApiResponse(responseCode = "200", description = "A taxonomy level", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyLevelVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyLevelVO.class)) })
@@ -215,7 +215,7 @@ public class TaxonomyWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The level was not found OR The level taxonomy doesn't match the taxonomy of the web service")
 	public Response deleteTaxonomyLevel(@PathParam("taxonomyLevelKey") String taxonomyLevelKey) {
-		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(new Long(taxonomyLevelKey)));
+		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(Long.valueOf(taxonomyLevelKey)));
 		if(level == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -248,7 +248,7 @@ public class TaxonomyWebService {
 	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getTaxonomyLevelComptences(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
-		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(new Long(taxonomyLevelKey)));
+		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(Long.valueOf(taxonomyLevelKey)));
 		if(level == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -305,7 +305,7 @@ public class TaxonomyWebService {
 	@GET
 	@Path("levels/{taxonomyLevelKey}/competences/{identityKey}")
 	@Operation(summary = "Return the competences", description = "Return the competences of a specific user on the taxonomy level\n" + 
-			"	  specified in the key in path")
+			" specified in the key in path")
 	@ApiResponse(responseCode = "200", description = "An array of competences", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))) })
@@ -314,7 +314,7 @@ public class TaxonomyWebService {
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getTaxonomyLevelComptencesByIdentity(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey,
 			@PathParam("identityKey") Long identityKey) {
-		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(new Long(taxonomyLevelKey)));
+		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(Long.valueOf(taxonomyLevelKey)));
 		if(level == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -363,7 +363,7 @@ public class TaxonomyWebService {
 			taxonomyLevelKey = comptenceVo.getTaxonomyLevelKey();
 		}
 
-		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(new Long(taxonomyLevelKey)));
+		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(Long.valueOf(taxonomyLevelKey)));
 		if(level == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
