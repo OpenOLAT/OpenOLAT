@@ -231,7 +231,7 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 
 	private Boolean validateBBBMeeting(BigBlueButtonMeeting meeting, Date start, Date end) {
 		// Only validation of the slot. All other restrictions should still be ok.
-		boolean valid = BigBlueButtonUIHelper.validateSlot(meeting, meeting.getTemplate(), start, end, meeting.getLeadTime(), meeting.getFollowupTime());
+		boolean valid = BigBlueButtonUIHelper.validateSlot(null, meeting.getTemplate(), start, end, meeting.getLeadTime(), meeting.getFollowupTime());
 		return Boolean.valueOf(valid);
 	}
 	
