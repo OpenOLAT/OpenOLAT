@@ -160,20 +160,9 @@ public class AuthenticatedDispatcher implements Dispatcher {
 
 		// authenticated!
 		try {
-			
 			//kill session if not secured via SSL
 			if (forceSecureAccessOnly && !request.isSecure()) {
-				SessionInfo sessionInfo = usess.getSessionInfo();
-				if (sessionInfo!=null) {
-					HttpSession session = sessionInfo.getSession();
-					if (session!=null) {
-						try{
-							session.invalidate();
-						} catch(IllegalStateException ise) {
-							// thrown when session already invalidated. fine. ignore.
-						}
-					}
-				}
+				invalidateSession(usess);
 				redirectToDefaultDispatcher(request, response);
 				return;
 			}
@@ -267,7 +256,14 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	}
 	
 	private void processValidDispatchURI(UserRequest ureq, UserSession usess, HttpServletRequest request, HttpServletResponse response) {
-		Windows ws = Windows.getWindows(ureq);
+		Windows ws;
+		try {
+			ws = Windows.getWindows(ureq);
+		} catch (IllegalStateException e) {
+			log.error("", e);// session was invalidate, return to login screen
+			redirectToDefaultDispatcher(request, response);
+			return;
+		}
 		ws.disposeClosedWindows(ureq);
 		Window window = ws.getWindow(ureq);
 		if (window == null) {
@@ -280,6 +276,20 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			}
 		} else {
 			window.dispatchRequest(ureq);
+		}
+	}
+	
+	private void invalidateSession(UserSession usess) {
+		SessionInfo sessionInfo = usess.getSessionInfo();
+		if (sessionInfo!=null) {
+			HttpSession session = sessionInfo.getSession();
+			if (session!=null) {
+				try{
+					session.invalidate();
+				} catch(IllegalStateException ise) {
+					// thrown when session already invalidated. fine. ignore.
+				}
+			}
 		}
 	}
 	
