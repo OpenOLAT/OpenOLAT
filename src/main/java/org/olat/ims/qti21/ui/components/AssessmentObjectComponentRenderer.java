@@ -1425,7 +1425,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				math.getAttributes().add(xmlnsAttribute);
 			}
 			renderStartHtmlTag(mathOutput, component, resolvedAssessmentItem, math, null);
-			math.getContent().forEach((foreignElement)
+			math.getContent().forEach(foreignElement
 					-> renderMath(renderer, mathOutput, component, resolvedAssessmentItem, itemSessionState, foreignElement));
 			renderEndTag(mathOutput, math);
 			String enrichedMathML = StringOutputPool.freePop(mathOutput);
@@ -1617,7 +1617,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
             InputSource assessmentSaxSource = new InputSource(mathStream);
             xmlReader.parse(assessmentSaxSource);
         } catch (final Exception e) {
-            log.error("Rendering XSLT pipeline failed for request {}", e);
+            log.error("Rendering XSLT pipeline failed for request", e);
             sb.append("<span class='o_error'>ERROR MATHML</span>");
         }
 	}

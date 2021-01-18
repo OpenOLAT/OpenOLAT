@@ -58,7 +58,7 @@ public class IMSMetadataDocument extends OlatDocument {
 	public static Document createDocument(SearchResourceContext searchResourceContext, VFSLeaf fManifest) {
 		IMSMetadataDocument document = new IMSMetadataDocument();
 		document.setResourceUrl(searchResourceContext.getResourceUrl());
-		if (log.isDebugEnabled()) log.debug("MM: URL=" + document.getResourceUrl());
+		if (log.isDebugEnabled()) log.debug("MM: URL={}", document.getResourceUrl());
 		document.setLastChange(new Date(fManifest.getLastModified()));
 		document.setDocumentType(searchResourceContext.getDocumentType());
 		if (StringHelper.containsNonWhitespace(searchResourceContext.getTitle())) {

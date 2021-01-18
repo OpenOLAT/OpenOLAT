@@ -55,7 +55,7 @@ public class WordDocument extends FileDocument {
 	private static final long serialVersionUID = 1827194935338994490L;
 	private static final Logger log = Tracing.createLoggerFor(WordDocument.class);
 
-	public final static String FILE_TYPE = "type.file.word";
+	public static final String FILE_TYPE = "type.file.word";
 
 	public WordDocument() {
 		//
@@ -73,10 +73,10 @@ public class WordDocument extends FileDocument {
 	}
 
 	@Override
-	protected FileContent readContent(VFSLeaf leaf) throws IOException,
-			DocumentException {
-		LimitedContentWriter sb = new LimitedContentWriter((int)leaf.getSize(), FileDocumentFactory.getMaxFileSize());
-		try(InputStream bis = new BufferedInputStream(leaf.getInputStream())) {
+	protected FileContent readContent(VFSLeaf leaf)
+	throws IOException, DocumentException {
+		try(LimitedContentWriter sb = new LimitedContentWriter((int)leaf.getSize(), FileDocumentFactory.getMaxFileSize());
+				InputStream bis = new BufferedInputStream(leaf.getInputStream())) {
 			POIFSFileSystem filesystem = new POIFSFileSystem(bis);
 			Iterator<?> entries = filesystem.getRoot().getEntries();
 			while (entries.hasNext()) {
@@ -90,8 +90,7 @@ public class WordDocument extends FileDocument {
 			}
 			return new FileContent(sb.toString());
 		} catch (Exception e) {
-			log.warn("could not read in word document: " + leaf
-					+ " please check, that this is not an docx/rtf/html file!");
+			log.warn("could not read in word document: {} please check, that this is not an docx/rtf/html file!", leaf);
 			throw new DocumentException(e.getMessage());
 		}
 	}
@@ -102,7 +101,7 @@ public class WordDocument extends FileDocument {
 		} catch(OldWordFileFormatException ex) {
 			collectOldWordDocument(leaf, sb);
 		} catch(Exception e) {
-			log.error("Cannot read word document: " + leaf, e);
+			log.error("Cannot read word document: {}", leaf, e);
 		}
 	}
 	
@@ -113,7 +112,7 @@ public class WordDocument extends FileDocument {
             Word6Extractor docExtractor = new Word6Extractor(doc);
             addTextIfAny(sb, docExtractor.getText());
 		} catch(Exception e) {
-			log.error("Cannot read old word document: " + leaf, e);
+			log.error("Cannot read old word document: {}", leaf, e);
 		}
 	}
 

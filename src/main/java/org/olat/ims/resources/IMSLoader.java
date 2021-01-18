@@ -29,8 +29,6 @@
 package org.olat.ims.resources;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,48 +53,14 @@ public class IMSLoader {
 	 * @return document
 	 */
 	public static Document loadIMSDocument(VFSLeaf documentF) {
-		InputStream in = null;
-		BufferedInputStream bis = null;
 		Document doc = null;
-		try {
-			in = documentF.getInputStream();
-			bis = new BufferedInputStream(in);
+		try(InputStream in = documentF.getInputStream();
+				BufferedInputStream bis = new BufferedInputStream(in)) {
 			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
 			doc = xmlParser.parse(bis, false);
-		}	catch (Exception e) { return null; }
-		finally {
-			try {
-				if (in != null)	in.close();
-				if (bis != null) bis.close();
-			}	catch (Exception e) {
-				// we did our best to close the inputStream
-			}
 		}
-		return doc;
-	}
-	
-	/**
-	 * Reads an IMS XML Document if supported by /org/olat/ims/resources.
-	 * @param documentF
-	 * @return document
-	 */
-	public static Document loadIMSDocument(File documentF) {
-		FileInputStream in = null;
-		BufferedInputStream bis = null;
-		Document doc = null;
-		try {
-			in = new FileInputStream(documentF);
-			bis = new BufferedInputStream(in);
-			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
-			doc = xmlParser.parse(bis, false);
-		}	catch (Exception e) { return null; }
-		finally {
-			try {
-				if (in != null)	in.close();
-				if (bis != null) bis.close();
-			}	catch (Exception e) {
-				// we did our best to close the inputStream
-			}
+		catch (Exception e) {
+			return null;
 		}
 		return doc;
 	}

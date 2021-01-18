@@ -76,22 +76,17 @@ public class WordOOXMLDocument extends FileDocument {
 
 	@Override
 	public FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException {
-		
 		File file = ((JavaIOItem)leaf).getBasefile();
-
-		LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize());
-	
-		try(ZipFile wordFile = new ZipFile(file)) {
+		try(LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize());
+				ZipFile wordFile = new ZipFile(file)) {
 			
 			List<String> contents = new ArrayList<>();
 			for(Enumeration<? extends ZipEntry> entriesEnumeration=wordFile.entries(); entriesEnumeration.hasMoreElements(); ) {
 				ZipEntry entry = entriesEnumeration.nextElement();
 				String name = entry.getName();
-				if(name.endsWith("word/document.xml")) {
-					contents.add(name);
-				} else if(name.startsWith(HEADER) && name.endsWith(".xml")) {
-					contents.add(name);
-				} else if(name.startsWith(FOOTER) && name.endsWith(".xml")) {
+				if(name.endsWith("word/document.xml")
+						|| (name.startsWith(HEADER) && name.endsWith(".xml"))
+						|| (name.startsWith(FOOTER) && name.endsWith(".xml"))) {
 					contents.add(name);
 				}
 			}
@@ -109,14 +104,13 @@ public class WordOOXMLDocument extends FileDocument {
 					zip.close();
 				}
 			}
-			
+
+			return new FileContent(writer.toString());
 		} catch (DocumentException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new DocumentException(e.getMessage());
 		}
-		
-		return new FileContent(writer.toString());
 	}
 	
 	private void parse(InputStream stream, DefaultHandler handler) throws DocumentException {

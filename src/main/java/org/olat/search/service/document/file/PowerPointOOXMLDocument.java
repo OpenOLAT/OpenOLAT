@@ -56,7 +56,7 @@ public class PowerPointOOXMLDocument extends FileDocument {
 	private static final long serialVersionUID = 2322994231200065526L;
 	private static final Logger log = Tracing.createLoggerFor(PowerPointOOXMLDocument.class);
 
-	public final static String POWERPOINT_FILE_TYPE = "type.file.ppt";
+	public static final String POWERPOINT_FILE_TYPE = "type.file.ppt";
 	private static final String SLIDE = "ppt/slides/slide";
 
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
@@ -73,12 +73,9 @@ public class PowerPointOOXMLDocument extends FileDocument {
 
 	@Override
 	public FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException {
-		
 		File file = ((JavaIOItem)leaf).getBasefile();
-		
-		LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize());
-	
-		try(ZipFile wordFile = new ZipFile(file)) {
+		try(LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize());
+				ZipFile wordFile = new ZipFile(file)) {
 			List<String> contents = new ArrayList<>();
 			for(Enumeration<? extends ZipEntry> entriesEnumeration=wordFile.entries(); entriesEnumeration.hasMoreElements(); ) {
 				ZipEntry entry = entriesEnumeration.nextElement();
@@ -101,13 +98,13 @@ public class PowerPointOOXMLDocument extends FileDocument {
 					zip.close();
 				}
 			}
-			
+
+			return new FileContent(writer.toString());
 		} catch (DocumentException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new DocumentException(e.getMessage());
 		}
-		return new FileContent(writer.toString());
 	}
 	
 	private void parse(InputStream stream, DefaultHandler handler) throws DocumentException {

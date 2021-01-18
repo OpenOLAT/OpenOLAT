@@ -53,7 +53,7 @@ public class PowerPointDocument extends FileDocument {
 	private static final long serialVersionUID = -6107766953370631805L;
 	private static final Logger log = Tracing.createLoggerFor(PowerPointDocument.class);
 
-	public final static String FILE_TYPE = "type.file.ppt";
+	public static final String FILE_TYPE = "type.file.ppt";
 
 	public PowerPointDocument() {
 		super();
@@ -70,7 +70,7 @@ public class PowerPointDocument extends FileDocument {
 
 	@Override
 	public FileContent readContent(VFSLeaf leaf) throws IOException,DocumentException {
-		if (log.isDebugEnabled()) log.debug("read PPT Content of leaf=" + leaf.getName());
+		if (log.isDebugEnabled()) log.debug("read PPT Content of leaf={}", leaf.getName());
 		try (BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
 				LimitedContentWriter oStream = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize())) {
 			extractText(bis, oStream);
@@ -118,7 +118,7 @@ public class PowerPointDocument extends FileDocument {
 				log.warn("Can not read PPT content.", ex);
 			}
 			if (errorCounter > 0 && log.isDebugEnabled()) {
-				log.debug("Could not parse ppt properly. There were " + errorCounter + " IndexOutOfBoundsException");
+				log.debug("Could not parse ppt properly. There were {} IndexOutOfBoundsException", errorCounter);
 			}
 		}
 		
