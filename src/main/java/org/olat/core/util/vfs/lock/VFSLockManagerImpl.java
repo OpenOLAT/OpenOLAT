@@ -20,6 +20,7 @@
 package org.olat.core.util.vfs.lock;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ import java.util.UUID;
 import java.util.Vector;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -293,12 +295,41 @@ public class VFSLockManagerImpl implements VFSLockManager {
 		return lock;
 	}
 	
-    @Override
-	public LockResult lock(VFSItem item, Identity identity, VFSLockApplicationType type, String appName) {
-		if (item == null || item.canMeta() != VFSConstants.YES) {
-			return LockResult.LOCK_FAILED;
+	/**
+	 * Determine if the file can be locked or not. It's almost the same as the canMeta()
+	 * implementation but some extra permission for specific WebDAV help files used by
+	 * MacOS, Word...
+	 * 
+	 * @param item The file
+	 * @param type The type of application which want the lock
+	 * @return true if it can locked
+	 */
+	public final boolean canLock(VFSItem item, VFSLockApplicationType type) {
+		if (item == null) return false;
+		
+		if(item.canMeta() == VFSConstants.YES) {
+			return true;
 		}
 		
+		if(type == VFSLockApplicationType.webdav) {
+			File file = extractFile(item);
+			if(file != null) {
+				Path bFile = ((LocalImpl)item).getBasefile().toPath();
+				if(bFile.startsWith(FolderConfig.getCanonicalRootPath())) {
+					String filename = item.getName();
+					return filename.startsWith(".~") || (filename.startsWith("._") && !filename.startsWith("._oo_"));
+				}
+			}
+		}
+		return false;
+	}
+	
+    @Override
+	public LockResult lock(VFSItem item, Identity identity, VFSLockApplicationType type, String appName) {
+		if (!canLock(item, type)) {
+			return LockResult.LOCK_FAILED;
+		}
+
 		final File file = extractFile(item);	
 		final TokenWrapper generatedToken = new TokenWrapper();
 		LockInfo lockInfo = fileLocks.computeIfAbsent(file, f -> {

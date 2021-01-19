@@ -86,7 +86,7 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 		try {
 			bis = new BufferedInputStream( new FileInputStream(getBasefile()) );
 		} catch (FileNotFoundException e) {
-			log.warn("Could not create input stream for file::" + getBasefile().getAbsolutePath(), e);
+			log.warn("Could not create input stream for file::{}", getBasefile().getAbsolutePath(), e);
 		}
 		return bis;
 	}
@@ -118,7 +118,7 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 		try {
 			os = new FileOutputStream(getBasefile(), append);
 		} catch (FileNotFoundException e) {
-			log.warn("Could not create output stream for file::" + getBasefile().getAbsolutePath(), e);
+			log.warn("Could not create output stream for file::{}", getBasefile().getAbsolutePath(), e);
 		}
 		return os;
 	}
