@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -98,6 +99,68 @@ public class VFSLockManagerTest extends OlatTestCase {
 		VFSMetadata metadata = metadataDao.getMetadata(relativePath, "lock.txt", false);
 		boolean lockedAlt = lockManager.isLockedForMe(file, metadata, id, null, null);
 		Assert.assertFalse(lockedAlt);
+	}
+	
+	@Test
+	public void canLockStandardFiles() {
+    	Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-lock-10");
+		VFSContainer homeFolder = VFSManager.olatRootContainer(FolderConfig.getUserHome(id), null);
+		VFSContainer publicContainer = VFSManager.getOrCreateContainer(homeFolder, "public");
+		
+		// Some files
+		VFSLeaf docLeaf = publicContainer.createChildLeaf("Bonjour.docx");
+		Assert.assertTrue(lockManager.canLock(docLeaf, null));
+		VFSLeaf docHelpLeaf = publicContainer.createChildLeaf("~$Bonjour.docx");
+		Assert.assertTrue(lockManager.canLock(docHelpLeaf, null));
+	}
+		
+	@Test
+	public void canLockOpenOlatSystemFiles() {
+    	Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-lock-11");
+		VFSContainer homeFolder = VFSManager.olatRootContainer(FolderConfig.getUserHome(id), null);
+		VFSContainer publicContainer = VFSManager.getOrCreateContainer(homeFolder, "public");
+		
+		// OpenOlat system files
+		VFSLeaf openolatMetadataLeaf = publicContainer.createChildLeaf("._oo_meta_Bonjour.docx");
+		Assert.assertFalse(lockManager.canLock(openolatMetadataLeaf, null));
+		VFSLeaf openolatThumbnailLeaf = publicContainer.createChildLeaf("._oo_th_Bonjour.docx");
+		Assert.assertFalse(lockManager.canLock(openolatThumbnailLeaf, null));
+		VFSLeaf openolatVersionLeaf = publicContainer.createChildLeaf("._oo_vr_Bonjour.docx");
+		Assert.assertFalse(lockManager.canLock(openolatVersionLeaf, null));
+	}
+	
+	@Test
+	public void canLockHiddenFiles() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-lock-12");
+		VFSContainer homeFolder = VFSManager.olatRootContainer(FolderConfig.getUserHome(id), null);
+		VFSContainer publicContainer = VFSManager.getOrCreateContainer(homeFolder, "public");
+		
+		// macos hidden files
+		VFSLeaf dsStoreLeaf = publicContainer.createChildLeaf(".DS_Store");
+		Assert.assertFalse(lockManager.canLock(dsStoreLeaf, null));
+		VFSLeaf macLeaf = publicContainer.createChildLeaf("__MACOSX");
+		Assert.assertFalse(lockManager.canLock(macLeaf, null));
+		VFSLeaf hiddenLeaf = publicContainer.createChildLeaf(".somefile");
+		Assert.assertFalse(lockManager.canLock(hiddenLeaf, null));
+	}
+
+	@Test
+	public void canLockWebDAVHelpFiles() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-lock-14");
+		VFSContainer homeFolder = VFSManager.olatRootContainer(FolderConfig.getUserHome(id), null);
+		VFSContainer publicContainer = VFSManager.getOrCreateContainer(homeFolder, "public");
+		
+		// help files
+		VFSLeaf wordLeaf = publicContainer.createChildLeaf(".~WRD0000");
+		Assert.assertFalse(lockManager.canLock(wordLeaf, null));
+		VFSLeaf macLockLeaf = publicContainer.createChildLeaf("._file");
+		Assert.assertFalse(lockManager.canLock(macLockLeaf, null));
+		
+		// help files used by WebDAV
+		VFSLeaf webDAVWordLeaf = publicContainer.createChildLeaf(".~WRD0001");
+		Assert.assertTrue(lockManager.canLock(webDAVWordLeaf, VFSLockApplicationType.webdav));
+		VFSLeaf webDAVMacLockLeaf = publicContainer.createChildLeaf("._leaf");
+		Assert.assertTrue(lockManager.canLock(webDAVMacLockLeaf, VFSLockApplicationType.webdav));
 	}
 	
 	/**
@@ -312,7 +375,7 @@ public class VFSLockManagerTest extends OlatTestCase {
 	}
 
 	/**
-	 * A shared lock for collaboration wwith myself
+	 * A shared lock for collaboration with myself
 	 */
 	@Test
 	public void lockVfsAgainstCollaborationAndMe() {
