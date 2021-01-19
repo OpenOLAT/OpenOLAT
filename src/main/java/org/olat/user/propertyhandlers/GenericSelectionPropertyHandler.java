@@ -299,12 +299,20 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 			if (isMultiSelect()) {
 				for (String value : val.split(KEY_DELIMITER)) {
 					if(StringHelper.containsNonWhitespace(value)) {
-						if(htmlValue.length() > 0) htmlValue.append(" ");
-						htmlValue.append(trans.translate(value));
+						if(htmlValue.length() > 0) {
+							htmlValue.append(" ");
+						}
+						if(locale != null) {
+							htmlValue.append(trans.translate(value));
+						} else  {
+							htmlValue.append(value);
+						}
 					}
 				}
 			} else if(locale != null) {
 				htmlValue.append(trans.translate(val));
+			} else  {
+				htmlValue.append(val);
 			}
 		}
 		return htmlValue.toString();
