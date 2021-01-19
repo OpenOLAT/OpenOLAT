@@ -122,39 +122,19 @@ div.o_table_flexi div.o_table_flexi_leaf  {
 a.o_orderby, a.o_orderby:hover {
 	color: $o-table-header-color;
 	text-decoration: none;
-	position: relative;
 
-	&.o_orderby_asc, &.o_orderby_desc {
-		font-family: FontAwesome;
-	}
-	
-	&.o_orderby_asc::before, &.o_orderby_desc::before {
-		position: absolute;
-		right: 0;
-	}
-	
 	&.o_orderby_asc::after, &.o_orderby_desc::after {
+		font-family: FontAwesome;
+		color: $brand-primary;
 		margin-left: 5px;
 	}
 	
-	&.o_orderby_asc::before {
-		content: '\f0de';
-		color: $brand-primary;
-	}
-	
 	&.o_orderby_asc::after {
-		content: '\f0dd';
-		color: $text-muted;
-	}
-	
-	&.o_orderby_desc::before {		
-		content: '\f0de';
-		color: $text-muted;
+		content: '\f0d8';
 	}
 	
 	&.o_orderby_desc::after {
-		content: '\f0dd';
-		color: $brand-primary;
+		content: '\f0d7';
 	}
 }
 
