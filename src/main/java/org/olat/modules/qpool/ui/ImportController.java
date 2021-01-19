@@ -92,14 +92,14 @@ public class ImportController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		fileEl.clearError();
 		if(fileEl.getUploadFile() == null) {
 			fileEl.setErrorKey("form.mandatory.hover", null);
 			allOk = false;
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

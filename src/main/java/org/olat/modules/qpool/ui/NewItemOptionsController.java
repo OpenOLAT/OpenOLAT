@@ -140,7 +140,7 @@ public class NewItemOptionsController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		allOk &= MetaUIFactory.validateElementLogic(titleEl, titleEl.getMaxLength(), true, true);
 		
@@ -149,7 +149,7 @@ public class NewItemOptionsController extends FormBasicController {
 			typeEl.setErrorKey("form.mandatory.hover", null);
 			allOk = false;
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

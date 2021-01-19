@@ -88,7 +88,7 @@ public class QualityAdminSuggestionController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		boolean enabled = enableEl.isAtLeastSelected(1);
 		
@@ -106,7 +106,7 @@ public class QualityAdminSuggestionController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

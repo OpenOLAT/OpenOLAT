@@ -93,7 +93,7 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		agreementEl.clearError();
 		if (!agreementEl.isAtLeastSelected(1)) {
@@ -101,7 +101,7 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 			allOk = false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

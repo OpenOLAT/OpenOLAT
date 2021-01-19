@@ -81,7 +81,7 @@ public class GeneratorCreationController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		providerEl.clearError();
 		if (!providerEl.isOneSelected()) {
@@ -89,7 +89,7 @@ public class GeneratorCreationController extends FormBasicController {
 			allOk = false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

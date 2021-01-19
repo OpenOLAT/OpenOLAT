@@ -144,7 +144,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		rowsEl.clearError();
 		if(rowsEl.isVisible() && StringHelper.containsNonWhitespace(rowsEl.getValue())) {
@@ -155,7 +155,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 				allOk &= false;
 			}
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

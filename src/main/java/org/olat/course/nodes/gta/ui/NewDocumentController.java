@@ -129,7 +129,7 @@ public class NewDocumentController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		filenameEl.clearError();
 		String val = filenameEl.getValue();
@@ -147,7 +147,7 @@ public class NewDocumentController extends FormBasicController {
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

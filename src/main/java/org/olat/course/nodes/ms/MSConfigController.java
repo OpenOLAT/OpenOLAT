@@ -370,7 +370,7 @@ public class MSConfigController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		evaluationFormNotChoosen.clearError();
 		if (evaluationFormNotChoosen.isVisible() && formEntry == null) {
@@ -440,7 +440,7 @@ public class MSConfigController extends FormBasicController {
 			allOk = false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	private boolean isFloat(String val) {

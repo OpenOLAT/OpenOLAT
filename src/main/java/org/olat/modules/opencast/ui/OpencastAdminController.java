@@ -219,7 +219,7 @@ public class OpencastAdminController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		//validate only if the module is enabled
 		if(enabledEl.isAtLeastSelected(1)) {
@@ -235,7 +235,7 @@ public class OpencastAdminController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	private boolean validateIsMandatory(TextElement textElement) {

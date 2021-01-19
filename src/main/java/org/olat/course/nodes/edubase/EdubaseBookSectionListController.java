@@ -126,7 +126,7 @@ public class EdubaseBookSectionListController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		for (BookSectionWrapper bookSectionWrapper: bookSectionWrappers) {
 			String bookId = bookSectionWrapper.getBookIdEl().getValue();
@@ -145,7 +145,7 @@ public class EdubaseBookSectionListController extends FormBasicController {
 			allOk &= validateToHigherFrom(bookSectionWrapper.getPageFromEl(), bookSectionWrapper.getPageToEl());
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	private boolean validatePositiveInt(TextElement el) {

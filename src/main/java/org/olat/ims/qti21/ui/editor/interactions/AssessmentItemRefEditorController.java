@@ -91,7 +91,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(limitAttemptsEl != null && limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0) && maxAttemptsEl != null) {
 			maxAttemptsEl.clearError();
@@ -104,7 +104,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 				}
 			}
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	/**
@@ -164,7 +164,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 				&& maxAttemptsEl != null && maxAttemptsEl.isVisible()
 				&& StringHelper.isLong(maxAttemptsEl.getValue())) {
 			try {
-				getOrCreateItemSessionControl().setMaxAttempts(new Integer(maxAttemptsEl.getValue()));
+				getOrCreateItemSessionControl().setMaxAttempts(Integer.valueOf(maxAttemptsEl.getValue()));
 			} catch(NumberFormatException e) {
 				//do nothing
 			}

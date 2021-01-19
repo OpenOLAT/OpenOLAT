@@ -228,7 +228,7 @@ public class OnlyOfficeAdminController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (enabledEl.isAtLeastSelected(1)) {
 			allOk &= validateIsMandatory(baseUrlEl);
@@ -247,7 +247,7 @@ public class OnlyOfficeAdminController extends FormBasicController {
 			allOk &= validatePositiveInteger(licenseEditEl);
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

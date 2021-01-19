@@ -116,14 +116,14 @@ public class Archive_2_UserSelectionStep extends BasicStep {
 		
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
-			boolean allOk = true;
+			boolean allOk = super.validateFormLogic(ureq);
 			
 			if(!restrictionEl.isAtLeastSelected(1)) {
 				restrictionEl.setErrorKey("error.select.type.users", null);
 				allOk &= false;
 			}
 			
-			return allOk & super.validateFormLogic(ureq);
+			return allOk;
 		}
 
 		@Override

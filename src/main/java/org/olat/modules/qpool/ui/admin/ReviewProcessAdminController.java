@@ -143,12 +143,12 @@ public class ReviewProcessAdminController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		allOk &= validateInt(numberOfRatingsEl);
 		allOk &= validateInt(lowerLimitEl);
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateInt(TextElement el) {

@@ -121,7 +121,7 @@ public class StructureNodeStepController extends StepFormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		shortTitleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(shortTitleEl.getValue())) {
@@ -146,7 +146,7 @@ public class StructureNodeStepController extends StepFormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

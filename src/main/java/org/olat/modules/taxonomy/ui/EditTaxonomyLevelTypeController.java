@@ -135,7 +135,7 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		displayNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
@@ -149,7 +149,7 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -169,7 +169,7 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 		Collection<String> selectedAllowedSubTypeKeys = allowedSubTypesEl.getSelectedKeys();
 		List<TaxonomyLevelType> allowedSubTypes = new ArrayList<>();
 		for(String selectedAllowedSubTypeKey:selectedAllowedSubTypeKeys) {
-			allowedSubTypes.add(taxonomyService.getTaxonomyLevelType(new TaxonomyLevelTypeRefImpl(new Long(selectedAllowedSubTypeKey))));
+			allowedSubTypes.add(taxonomyService.getTaxonomyLevelType(new TaxonomyLevelTypeRefImpl(Long.valueOf(selectedAllowedSubTypeKey))));
 		}
 		levelType = taxonomyService.updateTaxonomyLevelType(levelType, allowedSubTypes);
 		

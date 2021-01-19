@@ -307,7 +307,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		configEl.clearError();
 		if(!configEl.isOneSelected()) {
@@ -339,7 +339,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 			allOk &= validateTime(maxTimeMinuteEl);
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateTime(TextElement timeEl) {

@@ -195,7 +195,7 @@ public class CheckboxEditController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		pointsEl.clearError();
 		if(awardPointEl.isAtLeastSelected(1)) {
@@ -207,7 +207,7 @@ public class CheckboxEditController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

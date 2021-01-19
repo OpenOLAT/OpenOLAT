@@ -82,7 +82,7 @@ public class DeleteConfirmationController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		confirmationEl.clearError();
 		if(!confirmationEl.isAtLeastSelected(1)) {
@@ -90,7 +90,7 @@ public class DeleteConfirmationController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

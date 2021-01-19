@@ -277,7 +277,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(limitAttemptsEl.isAtLeastSelected(1)) {
 			maxAttemptsEl.clearError();
@@ -294,7 +294,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

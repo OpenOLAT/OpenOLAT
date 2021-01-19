@@ -475,7 +475,7 @@ public class GroupAssessmentController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		if(withScore) {
 			if(applyToAllEl.isAtLeastSelected(1)) {
@@ -488,7 +488,7 @@ public class GroupAssessmentController extends FormBasicController {
 			}
 		}
 	
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateScore(TextElement scoreEl) {

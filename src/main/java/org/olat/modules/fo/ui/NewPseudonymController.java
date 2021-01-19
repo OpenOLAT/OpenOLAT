@@ -83,7 +83,7 @@ public class NewPseudonymController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		pseudonymEl.clearError();
 		passwordEl.clearError();
@@ -117,7 +117,7 @@ public class NewPseudonymController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

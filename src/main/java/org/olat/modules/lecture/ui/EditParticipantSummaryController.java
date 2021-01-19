@@ -109,7 +109,7 @@ public class EditParticipantSummaryController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		rateEl.clearError();
 		if(StringHelper.containsNonWhitespace(rateEl.getValue())) {
@@ -125,7 +125,7 @@ public class EditParticipantSummaryController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

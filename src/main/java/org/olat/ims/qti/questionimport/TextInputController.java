@@ -83,7 +83,7 @@ public class TextInputController extends StepFormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		String inp = inputElement.getValue();
 		if(validatedInp == null || !validatedInp.equals(inp)) {
@@ -91,7 +91,7 @@ public class TextInputController extends StepFormBasicController {
 			allOk &= !errors;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

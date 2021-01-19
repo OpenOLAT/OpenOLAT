@@ -263,7 +263,7 @@ public class MatchEditorController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		//clear errors
 		for(MatchWrapper sourceWrapper:sourceWrappers) {
@@ -279,7 +279,7 @@ public class MatchEditorController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

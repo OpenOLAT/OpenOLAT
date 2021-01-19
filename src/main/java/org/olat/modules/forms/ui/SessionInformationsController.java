@@ -129,7 +129,7 @@ public class SessionInformationsController extends FormBasicController implement
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (isMandatory()) {
 			for (SessionInformationWrapper sessionInformationWrapper : sessionInformationWrappers) {
@@ -142,7 +142,7 @@ public class SessionInformationsController extends FormBasicController implement
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

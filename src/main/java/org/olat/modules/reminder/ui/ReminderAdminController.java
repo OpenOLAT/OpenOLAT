@@ -184,7 +184,7 @@ public class ReminderAdminController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		hoursEl.clearError();
 		minutesEl.clearError();
@@ -194,7 +194,7 @@ public class ReminderAdminController extends FormBasicController {
 			allOk &= validate(minutesEl, 59);
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validate(TextElement textEl, int max) {

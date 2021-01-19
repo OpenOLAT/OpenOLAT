@@ -65,7 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class ItemFormController extends FormBasicController {
 
-	private final String ALLOWED_MIME_TYPES = ".*[.](flv|mp3|mp4|m4v|m4a|aac)";
+	private static final String ALLOWED_MIME_TYPES = ".*[.](flv|mp3|mp4|m4v|m4a|aac)";
 
 	private Item item;
 
@@ -234,7 +234,7 @@ public abstract class ItemFormController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		String name = file.getUploadFileName();
 		if (name != null) {
@@ -277,7 +277,7 @@ public abstract class ItemFormController extends FormBasicController {
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	private boolean validateFilename(String filename) {

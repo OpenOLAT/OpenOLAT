@@ -138,7 +138,7 @@ public class HottextEditorController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		String questionText = textEl.getRawValue();
 		if(!StringHelper.containsNonWhitespace(questionText)) {
@@ -149,7 +149,7 @@ public class HottextEditorController extends FormBasicController {
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

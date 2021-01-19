@@ -124,7 +124,7 @@ public class AddCurriculumElementUserSelectionController extends StepFormBasicCo
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		curriculumElementEl.clearError();
 		if (!curriculumElementEl.isOneSelected()) {
@@ -132,7 +132,7 @@ public class AddCurriculumElementUserSelectionController extends StepFormBasicCo
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

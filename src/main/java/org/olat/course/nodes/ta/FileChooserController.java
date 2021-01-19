@@ -70,7 +70,7 @@ public class FileChooserController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		fileEl.clearError();
 		if(fileEl.getInitialFile() == null && fileEl.getUploadFile() == null) {
@@ -78,7 +78,7 @@ public class FileChooserController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	public String getUploadFileName() {

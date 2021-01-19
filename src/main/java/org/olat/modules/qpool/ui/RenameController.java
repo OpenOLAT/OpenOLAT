@@ -78,7 +78,7 @@ public class RenameController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		nameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
@@ -86,6 +86,6 @@ public class RenameController extends FormBasicController {
 			allOk = false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 }

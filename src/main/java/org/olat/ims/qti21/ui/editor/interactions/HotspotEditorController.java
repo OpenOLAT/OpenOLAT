@@ -290,7 +290,7 @@ public class HotspotEditorController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		backgroundEl.clearError();
 		if(backgroundImage == null && initialBackgroundImage == null) {
@@ -316,7 +316,7 @@ public class HotspotEditorController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

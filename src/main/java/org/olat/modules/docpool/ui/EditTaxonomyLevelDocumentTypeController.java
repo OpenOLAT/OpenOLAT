@@ -146,7 +146,7 @@ public class EditTaxonomyLevelDocumentTypeController extends FormBasicController
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		teachCanReadParentLevelsEl.clearError();
 		if(teachCanReadParentLevelsEl.isVisible()
@@ -159,7 +159,7 @@ public class EditTaxonomyLevelDocumentTypeController extends FormBasicController
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

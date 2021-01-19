@@ -67,7 +67,7 @@ class MultiSelectColumnDescriptor implements ColumnDescriptor {
 			}
 			sb.append(CLOSE_HTML_TAG);
 			// workaround: value of disabled checkboxes will not be returned on submit
-			if (readonly & checked) {
+			if (readonly && checked) {
 				sb.append("<input type=\"hidden\" name=\"" + TableRenderer.TABLE_MULTISELECT_GROUP + VALUE).append(currentPosInModel).append(DOUBLE_QUOTE);
 				sb.append(CLOSE_HTML_TAG);
 			}

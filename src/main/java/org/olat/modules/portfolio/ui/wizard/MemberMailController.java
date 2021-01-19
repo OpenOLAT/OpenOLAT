@@ -112,8 +112,9 @@ public class MemberMailController extends StepFormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;// mailTemplateForm.validateFormLogic(ureq);
-		return allOk & super.validateFormLogic(ureq);
+		boolean allOk = super.validateFormLogic(ureq);
+		// mailTemplateForm.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

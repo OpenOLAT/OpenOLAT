@@ -218,7 +218,7 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateMinMaxScores(minScoreEl, maxScoreEl);
 
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
@@ -241,7 +241,7 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

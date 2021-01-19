@@ -109,39 +109,38 @@ public class IQ12LayoutEditForm extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic (UserRequest ureq) {
-		boolean allOk = true;
-		return allOk & true;
+		return true;
 	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		modConfig.set(IQEditController.CONFIG_KEY_DISPLAYMENU, new Boolean(isDisplayMenu()));
-		modConfig.set(IQEditController.CONFIG_FULLWINDOW, new Boolean(isFullWindow()));
+		modConfig.set(IQEditController.CONFIG_KEY_DISPLAYMENU, Boolean.valueOf(isDisplayMenu()));
+		modConfig.set(IQEditController.CONFIG_FULLWINDOW, Boolean.valueOf(isFullWindow()));
 		
 		if (isDisplayMenu()) {
 			modConfig.set(IQEditController.CONFIG_KEY_RENDERMENUOPTION, isMenuRenderSectionsOnly());
-			modConfig.set(IQEditController.CONFIG_KEY_ENABLEMENU, new Boolean(isEnableMenu()));
+			modConfig.set(IQEditController.CONFIG_KEY_ENABLEMENU, Boolean.valueOf(isEnableMenu()));
 		} else {
 			// set default values when menu is not displayed
 			modConfig.set(IQEditController.CONFIG_KEY_RENDERMENUOPTION, Boolean.FALSE);
 			modConfig.set(IQEditController.CONFIG_KEY_ENABLEMENU, Boolean.FALSE); 
 		}
 		
-		modConfig.set(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, new Boolean(isDisplayQuestionProgress()));
+		modConfig.set(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, Boolean.valueOf(isDisplayQuestionProgress()));
 		modConfig.set(IQEditController.CONFIG_KEY_SEQUENCE, getSequence());
-		modConfig.set(IQEditController.CONFIG_KEY_ENABLECANCEL, new Boolean(isEnableCancel()));
-		modConfig.set(IQEditController.CONFIG_KEY_ENABLESUSPEND, new Boolean(isEnableSuspend()));
-		modConfig.set(IQEditController.CONFIG_KEY_QUESTIONTITLE, new Boolean(isDisplayQuestionTitle()));
-		modConfig.set(IQEditController.CONFIG_KEY_AUTOENUM_CHOICES, new Boolean(isAutoEnumChoices()));
-		modConfig.set(IQEditController.CONFIG_KEY_MEMO, new Boolean(isProvideMemoField()));
+		modConfig.set(IQEditController.CONFIG_KEY_ENABLECANCEL, Boolean.valueOf(isEnableCancel()));
+		modConfig.set(IQEditController.CONFIG_KEY_ENABLESUSPEND, Boolean.valueOf(isEnableSuspend()));
+		modConfig.set(IQEditController.CONFIG_KEY_QUESTIONTITLE, Boolean.valueOf(isDisplayQuestionTitle()));
+		modConfig.set(IQEditController.CONFIG_KEY_AUTOENUM_CHOICES, Boolean.valueOf(isAutoEnumChoices()));
+		modConfig.set(IQEditController.CONFIG_KEY_MEMO, Boolean.valueOf(isProvideMemoField()));
 		// Only tests and selftests have summaries and score progress
 		if (!isSurvey) {
-			modConfig.set(IQEditController.CONFIG_KEY_SCOREPROGRESS, new Boolean(isDisplayScoreProgress()));
+			modConfig.set(IQEditController.CONFIG_KEY_SCOREPROGRESS, Boolean.valueOf(isDisplayScoreProgress()));
 		}
 		// Only tests have a limitation on number of attempts
 		if (isAssessment) {
 			modConfig.set(IQEditController.CONFIG_KEY_ATTEMPTS, getAttempts());
-			modConfig.set(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS, new Boolean(isBlockAfterSuccess()));
+			modConfig.set(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS, Boolean.valueOf(isBlockAfterSuccess()));
 		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
@@ -153,7 +152,7 @@ public class IQ12LayoutEditForm extends FormBasicController {
 		limitAttempts = uifactory.addCheckboxesHorizontal("limitAttempts", "qti.form.limit.attempts", formLayout, new String[]{"xx"}, new String[]{null});
 		
 		Integer confAttempts = (Integer) modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS);
-		if (confAttempts == null) confAttempts = new Integer(0);
+		if (confAttempts == null) confAttempts = Integer.valueOf(0);
 		attempts = uifactory.addIntegerElement("qti.form.attempts", confAttempts, formLayout);	
 		attempts.setDisplaySize(2);
 		attempts.setMinValueCheck(1, null);

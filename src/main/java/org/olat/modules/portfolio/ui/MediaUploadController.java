@@ -144,7 +144,7 @@ public class MediaUploadController extends FormBasicController implements PageEl
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		fileEl.clearError();
 		if(fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1) {
@@ -161,7 +161,7 @@ public class MediaUploadController extends FormBasicController implements PageEl
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

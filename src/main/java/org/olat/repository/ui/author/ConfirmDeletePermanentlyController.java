@@ -183,7 +183,7 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
@@ -199,7 +199,7 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

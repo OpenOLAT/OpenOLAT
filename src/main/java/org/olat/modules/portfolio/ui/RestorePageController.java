@@ -144,7 +144,7 @@ public class RestorePageController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(sectionsEl != null && sectionsEl.isEnabled() && sectionsEl.isVisible()) {
 			sectionsEl.clearError();
@@ -154,7 +154,7 @@ public class RestorePageController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

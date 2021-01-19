@@ -382,7 +382,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 				&& (sliderTypeEl.isSelected(0) || sliderTypeEl.isSelected(1))) {
 			int steps = Integer.parseInt(stepsEl.getSelectedKey());
 			for(int i=0; i<steps; i++) {
-				Integer step = new Integer(i);
+				Integer step = Integer.valueOf(i);
 				StepLabelColumn col = stepLabels.size() > step? stepLabels.get(step): null;
 				if(col == null) {
 					String label = "";
@@ -691,7 +691,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		boolean surveyConfigOk = true;
 		
 		// slider type
@@ -766,7 +766,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean isOnlyOnePresent(TextElement element1, TextElement element2) {

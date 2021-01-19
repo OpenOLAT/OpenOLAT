@@ -131,7 +131,7 @@ public class EdubaseAdminController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		// Validate Edubase fields only if enabled
 		if((edubaseEnabledEl.isAtLeastSelected(1))) {
@@ -143,7 +143,7 @@ public class EdubaseAdminController extends FormBasicController {
 			allOk &= validateIsMandatory(edubaseCoverUrlEl);
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	private boolean validateIsMandatory(TextElement textElement) {

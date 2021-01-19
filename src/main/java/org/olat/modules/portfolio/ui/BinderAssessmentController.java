@@ -305,7 +305,7 @@ public class BinderAssessmentController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		flc.contextRemove("scoreError");
 		if(withScore && (maxScore != null || minScore != null)) {
@@ -344,7 +344,7 @@ public class BinderAssessmentController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

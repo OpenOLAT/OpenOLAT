@@ -99,7 +99,7 @@ public class AddOpenIDConnectIFFullConfigurableController extends FormBasicContr
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validate(openIdConnectIFName);
 		List<ValidationStatus> nameValidation = new ArrayList<>();
 		openIdConnectIFName.validate(nameValidation);
@@ -119,7 +119,7 @@ public class AddOpenIDConnectIFFullConfigurableController extends FormBasicContr
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validate(TextElement el) {

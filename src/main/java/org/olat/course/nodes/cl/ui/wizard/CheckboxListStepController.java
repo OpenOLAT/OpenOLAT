@@ -121,7 +121,7 @@ public class CheckboxListStepController extends StepFormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		setFormWarning(null);
 		if(data.getCheckboxList().isEmpty()) {
@@ -129,7 +129,7 @@ public class CheckboxListStepController extends StepFormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

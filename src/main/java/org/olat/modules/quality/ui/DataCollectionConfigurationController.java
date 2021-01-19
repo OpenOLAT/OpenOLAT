@@ -417,7 +417,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		deadlineEl.clearError();
 		organisationsEl.clearError();
@@ -444,7 +444,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 			allOk = false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	boolean validateExtendedFormLogic(boolean validateStart) {

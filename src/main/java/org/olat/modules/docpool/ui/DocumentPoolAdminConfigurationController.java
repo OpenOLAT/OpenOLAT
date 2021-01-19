@@ -131,7 +131,7 @@ public class DocumentPoolAdminConfigurationController extends  FormBasicControll
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		taxonomyTreeEl.clearError();
 		if(enableEl.isAtLeastSelected(1) && (!taxonomyTreeEl.isOneSelected() || !StringHelper.isLong(taxonomyTreeEl.getSelectedKey()))) {
@@ -147,7 +147,7 @@ public class DocumentPoolAdminConfigurationController extends  FormBasicControll
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

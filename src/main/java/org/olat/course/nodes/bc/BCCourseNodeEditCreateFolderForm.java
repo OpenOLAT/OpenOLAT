@@ -69,7 +69,7 @@ public class BCCourseNodeEditCreateFolderForm extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		createPath.clearError();
 		if(!StringHelper.containsNonWhitespace(createPath.getValue())) {
@@ -77,7 +77,7 @@ public class BCCourseNodeEditCreateFolderForm extends FormBasicController {
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

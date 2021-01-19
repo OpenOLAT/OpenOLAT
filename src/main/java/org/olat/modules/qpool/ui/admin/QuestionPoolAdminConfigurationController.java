@@ -249,7 +249,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		taxonomyTreeEl.clearError();
 		if(!taxonomyTreeEl.isOneSelected()) {
@@ -257,7 +257,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
