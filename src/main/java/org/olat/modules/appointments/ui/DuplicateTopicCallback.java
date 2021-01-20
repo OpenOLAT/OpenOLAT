@@ -35,6 +35,7 @@ import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.repository.RepositoryEntry;
 
@@ -99,6 +100,10 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 	}
 	
 	private void addBBBMeeting(Appointment appointment, BigBlueButtonMeeting meetingTemplate) {
+		if (!isSlotAvailable(appointment, meetingTemplate)) {
+			return;
+		}
+		
 		appointment = getAppointmentsService().addBBBMeeting(appointment, executor);
 		BigBlueButtonMeeting meeting = appointment.getBBBMeeting();
 		
@@ -112,6 +117,11 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 		meeting.setRecord(meetingTemplate.getRecord());
 	}
 	
+	private boolean isSlotAvailable(Appointment appointment, BigBlueButtonMeeting meeting) {
+		return BigBlueButtonUIHelper.validateSlot(null, meeting.getTemplate(), appointment.getStart(),
+				appointment.getEnd(), meeting.getLeadTime(), meeting.getFollowupTime());
+	}
+
 	private void addTeamsMeeting(Appointment appointment, TeamsMeeting meetingTemplate) {
 		appointment = getAppointmentsService().addTeamsMeeting(appointment, executor);
 		TeamsMeeting meeting = appointment.getTeamsMeeting();
