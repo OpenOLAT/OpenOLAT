@@ -89,7 +89,7 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 		appointment.setLocation(appointmentInput.getAppointment().getLocation());
 		appointment.setMaxParticipations(appointmentInput.getAppointment().getMaxParticipations());
 		appointment.setStart(appointmentInput.getStart());
-		getAppointmentsService().saveAppointment(appointment);
+		appointment = getAppointmentsService().saveAppointment(appointment);
 		
 		if (appointmentInput.getAppointment().getBBBMeeting() != null) {
 			addBBBMeeting(appointment, appointmentInput.getAppointment().getBBBMeeting());
@@ -99,10 +99,10 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 	}
 	
 	private void addBBBMeeting(Appointment appointment, BigBlueButtonMeeting meetingTemplate) {
-		appointment = appointmentsService.addBBBMeeting(appointment, executor);
+		appointment = getAppointmentsService().addBBBMeeting(appointment, executor);
 		BigBlueButtonMeeting meeting = appointment.getBBBMeeting();
 		
-		meeting.setMainPresenter(appointmentsService.getFormattedOrganizers(appointment.getTopic()));
+		meeting.setMainPresenter(getAppointmentsService().getFormattedOrganizers(appointment.getTopic()));
 		meeting.setWelcome(meetingTemplate.getWelcome());
 		meeting.setTemplate(meetingTemplate.getTemplate());
 		meeting.setPermanent(meetingTemplate.isPermanent());
@@ -113,13 +113,13 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 	}
 	
 	private void addTeamsMeeting(Appointment appointment, TeamsMeeting meetingTemplate) {
-		appointment = appointmentsService.addTeamsMeeting(appointment, executor);
+		appointment = getAppointmentsService().addTeamsMeeting(appointment, executor);
 		TeamsMeeting meeting = appointment.getTeamsMeeting();
 		
 		meeting.setLeadTime(meetingTemplate.getLeadTime());
 		meeting.setFollowupTime(meetingTemplate.getFollowupTime());
 		meeting.setPermanent(meetingTemplate.isPermanent());
-		meeting.setMainPresenter(appointmentsService.getFormattedOrganizers(appointment.getTopic()));
+		meeting.setMainPresenter(getAppointmentsService().getFormattedOrganizers(appointment.getTopic()));
 		meeting.setAccessLevel(meetingTemplate.getAccessLevel());
 		meeting.setAllowedPresenters(meetingTemplate.getAllowedPresenters());
 		meeting.setEntryExitAnnouncement(meetingTemplate.isEntryExitAnnouncement());

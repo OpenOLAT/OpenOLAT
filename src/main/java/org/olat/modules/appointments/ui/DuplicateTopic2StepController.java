@@ -110,6 +110,7 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		
 		AppointmentSearchParams aParams = new AppointmentSearchParams();
 		aParams.setTopic(sourceTopic);
+		aParams.setFetchMeetings(true);
 		sourceAppointments = appointmentsService.getAppointments(aParams).stream()
 				.sorted(START_END_COMPARATOR)
 				.collect(Collectors.toList());
@@ -153,17 +154,17 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		periodCont.setRootForm(mainForm);
 		configCont.add(periodCont);
 		
-		periodDaysEl = uifactory.addTextElement("days", 3, "", periodCont);
+		periodDaysEl = uifactory.addTextElement("duplicate.period.d", 3, "", periodCont);
 		periodDaysEl.setDisplaySize(3);
 		((AbstractComponent)periodDaysEl.getComponent()).setDomReplacementWrapperRequired(false);
 		periodDaysEl.addActionListener(FormEvent.ONCHANGE);
 		
-		periodHoursEl = uifactory.addTextElement("hours", 3, "", periodCont);
+		periodHoursEl = uifactory.addTextElement("duplicate.period.h", 3, "", periodCont);
 		((AbstractComponent)periodHoursEl.getComponent()).setDomReplacementWrapperRequired(false);
 		periodHoursEl.setDisplaySize(3);
 		periodHoursEl.addActionListener(FormEvent.ONCHANGE);
 		
-		periodMinutesEl = uifactory.addTextElement("minutes", 3, "", periodCont);
+		periodMinutesEl = uifactory.addTextElement("duplicate.period.m", 3, "", periodCont);
 		((AbstractComponent)periodMinutesEl.getComponent()).setDomReplacementWrapperRequired(false);
 		periodMinutesEl.setDisplaySize(3);
 		periodMinutesEl.addActionListener(FormEvent.ONCHANGE);
