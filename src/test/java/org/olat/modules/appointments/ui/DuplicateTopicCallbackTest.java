@@ -156,6 +156,8 @@ public class DuplicateTopicCallbackTest extends OlatTestCase {
 	public void shouldDuplicateBBBMeeting() {
 		DuplicationContext context = new DuplicationContext();
 		
+		BigBlueButtonMeetingTemplate template = bigBlueButtonManager.createAndPersistTemplate(random());
+		
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		String subIdent = random();
@@ -182,7 +184,6 @@ public class DuplicateTopicCallbackTest extends OlatTestCase {
 		appointment = appointmentsService.addBBBMeeting(appointment, orginizer);
 		String welcome = random();
 		appointment.getBBBMeeting().setWelcome(welcome);
-		BigBlueButtonMeetingTemplate template = bigBlueButtonManager.getTemplates().get(0);
 		appointment.getBBBMeeting().setTemplate(template);
 		boolean permanent = true;
 		appointment.getBBBMeeting().setPermanent(permanent);
@@ -200,7 +201,7 @@ public class DuplicateTopicCallbackTest extends OlatTestCase {
 		Date end = DateUtils.addDays(new Date(), 5);
 		AppointmentInput appointmentInput = new AppointmentInput(appointment, start, end, null);
 		context.setAppointments(Collections.singletonList(appointmentInput));
-		dbInstance.commitAndCloseSession();		
+		dbInstance.commitAndCloseSession();
 		
 		
 		DuplicateTopicCallback sut = new DuplicateTopicCallback();
@@ -231,6 +232,61 @@ public class DuplicateTopicCallbackTest extends OlatTestCase {
 		softly.assertThat(meeting.getMeetingLayout()).as("MeetingLayout").isEqualTo(layout);
 		softly.assertThat(meeting.getRecord()).as("Record").isEqualTo(record);
 		softly.assertThat(meeting.getReadableIdentifier()).as("ReadeableIdentifier").isNull();
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldNotDuplicateBBBMeetingIfNoSlotAvailable() {
+		DuplicationContext context = new DuplicationContext();
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		String subIdent = random();
+		
+		Topic topic = appointmentsService.createTopic(entry, subIdent);
+		String title = random();
+		topic.setTitle(title);
+		String description = random();
+		topic.setDescription(description);
+		TopicLight transientTopic = DuplicateTopicCallback.toTransientTopic(topic);
+		
+		context.setEntry(entry);
+		context.setSubIdent(subIdent);
+		context.setTopic(transientTopic);
+		
+		Identity orginizer = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		context.setOrganizers(List.of(orginizer));
+		
+		Appointment appointment = appointmentsService.createUnsavedAppointment(topic);
+		appointment.setEnd(new Date());
+		appointment.setStart(new Date());
+		appointment = appointmentsService.saveAppointment(appointment);
+		
+		appointment = appointmentsService.addBBBMeeting(appointment, orginizer);
+		appointment.getBBBMeeting().setTemplate(null); // no template => no slot available
+		
+		Date start = DateUtils.addDays(new Date(), 3);
+		Date end = DateUtils.addDays(new Date(), 5);
+		AppointmentInput appointmentInput = new AppointmentInput(appointment, start, end, null);
+		context.setAppointments(Collections.singletonList(appointmentInput));
+		dbInstance.commitAndCloseSession();
+		
+		
+		DuplicateTopicCallback sut = new DuplicateTopicCallback();
+		sut.create(context);
+		dbInstance.commitAndCloseSession();
+		
+		
+		SoftAssertions softly = new SoftAssertions();
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setEntry(entry);
+		params.setSubIdent(subIdent);
+		Appointment reloadedAppointment = appointmentsService.getAppointments(params).stream()
+				.sorted((t1, t2) -> t2.getKey().compareTo(t1.getKey()))
+				.findFirst()
+				.get();
+		softly.assertThat(reloadedAppointment).isNotNull();
+		softly.assertThat(reloadedAppointment.getBBBMeeting()).isNull();
 		softly.assertAll();
 	}
 	
