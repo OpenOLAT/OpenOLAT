@@ -7,26 +7,30 @@
 		<h4>$wizardTitle</h4>
 	</div>
 	<div class="modal-body">
-		<div class="wizard clearfix">
-			<ul class="steps">
-			#foreach($mainTitle in $mainStepTitles)
-				<li #if($mainStepPos == $foreach.index) class="active"#end>
-					$r.render($mainTitle)<span class="chevron"></span>
-				</li>
-			#end
-			</ul>
-		</div>
-		#if($r.isNotNull($subStepPos))
-			<div class="wizard clearfix">
-				<ul class="steps">
-				#foreach($subTitle in $subStepTitles)
-					<li #if($subStepPos == $foreach.index) class="active"#end>
-						$r.render($subTitle)<span class="chevron"></span>
+		<div class="o_steps">
+			## Main steps
+			<div class="o_steps_main clearfix">
+				<ul>
+				#foreach($mainTitle in $mainStepTitles)
+					<li #if($mainStepPos == $foreach.index) class="active"#end>
+						$r.render($mainTitle)<span class="chevron"></span>
 					</li>
 				#end
 				</ul>
 			</div>
-		#end
+			## Substeps
+			#if($r.isNotNull($subStepPos))
+				<div class="o_steps_sub clearfix">
+					<ul>
+					#foreach($subTitle in $subStepTitles)
+						<li #if($subStepPos == $foreach.index) class="active"#end>
+							$r.render($subTitle)
+						</li>
+					#end
+					</ul>
+				</div>
+			#end
+		</div>
 			
 		<!-- wizard step content -->
 		<div class="o_wizard_steps_current">
@@ -36,7 +40,7 @@
 						$r.render("FFO_CURRENTSTEPPAGE")
 					</div>
 				</div>
-				<div style="clear:both; height: 1px">&nbsp;</div>	   	
+				<div style="clear:both; height: 1px">&nbsp;</div>
 			</div>
 		</div>
 	</div>

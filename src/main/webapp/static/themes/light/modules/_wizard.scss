@@ -1,75 +1,103 @@
 /*
- * Based on the very good Fuel UX (http://exacttarget.github.io/fuelux) wizard style
+ * Based on the very good Fuel UX (https://github.com/ExactTarget/fuelux/) wizard style
  */
 
-$grayLight : $o-content-text-color;
-$navbarBorder : #d4d4d4;
-$infoText : $o-content-text-color;
-
-.wizard {
-	border: 1px solid $navbarBorder;
-	border-radius: 2px;
-	background-color: #f9f9f9;
-	position: relative;
-	overflow: hidden;
-	margin-bottom: $modal-inner-padding;
-
-	ul {
-		list-style: none outside none;
-		padding: 0;
-		margin: 0;
-		width: 4000px;
-		
-		li {
-			float: left;
+.o_wizard {
+	.o_steps {
+		margin-bottom: $modal-inner-padding;
+		ul {
+			list-style: none outside none;
+			padding: 0;
 			margin: 0;
-			padding: 0 20px 0 30px;
-			height: 46px;
-			line-height: 46px;
-			position: relative;
-			background: #ededed;
-			color: $grayLight;
-			font-size: 16px;
-			cursor: default;
-
-			.chevron {
-				border: 24px solid transparent;
-				border-left: 14px solid $navbarBorder;
-				border-right: 0;
-				display: block;
-				position: absolute;
-				right: -14px;
-				top: 0;
-				z-index: 1;
-			}
-
-			.chevron:before {
-				border: 24px solid transparent;
-				border-left: 14px solid #ededed;
-				border-right: 0;
-				content: "";
-				display: block;
-				position: absolute;
-				right: 1px;
-				top: -24px;
-			}
-
-			&.active {
-				background: #f1f6fc;
-				color: $infoText;
-
+			width: 4000px;
+			
+			li {
+				position: relative;
+				float: left;
+				cursor: default;
+				margin: 0;
+				height: 46px;
+				line-height: 46px;
+				
+				.chevron {
+					border: 24px solid transparent;
+					border-left: 14px solid $o-wizard-steps-border-color;
+					border-right: 0;
+					display: block;
+					position: absolute;
+					right: -14px;
+					top: 0;
+					z-index: 1;
+				}
 				.chevron:before {
-					border-left: 14px solid #f1f6fc;
+					border: 24px solid transparent;
+					border-left: 14px solid $o-wizard-step-bg-color;
+					border-right: 0;
+					content: "";
+					display: block;
+					position: absolute;
+					right: 1px;
+					top: -24px;
 				}
 			}
-			.badge {
-				margin-right: 8px;
+		}
+		.o_steps_main {
+			border: 1px solid $o-wizard-steps-border-color;
+			border-radius: 2px;
+			background-color: $o-wizard-steps-bg-color;
+			position: relative;
+			overflow: hidden;
+			
+			ul {
+				li {
+					background: $o-wizard-step-bg-color;
+					font-size: 16px;
+					padding: 0 15px 0 30px;
+					
+					&.active {
+						background: $o-wizard-step-main-active-bg-color;
+						a {
+							span {
+								color: $o-wizard-step-main-active-color;
+							}
+						}
+						
+						.chevron:before {
+							border-left: 14px solid $o-wizard-step-main-active-bg-color;
+						}
+					}
+					.badge {
+						margin-right: 8px;
+					}
+				}
+				li:first-child {
+					border-radius: 4px 0 0 4px;
+					padding-left: 20px;
+				}
 			}
 		}
-
-		li:first-child {
-			border-radius: 4px 0 0 4px;
-			padding-left: 20px;
+		.o_steps_sub {
+			counter-reset: sub-step-counter;
+			ul {
+				li {
+					font-size: 14px;
+					padding: 0 15px 0 15px;
+					border-bottom: 1px solid $o-wizard-steps-border-color;
+				
+					&.active {
+						border-bottom: 2px solid $o-wizard-step-sub-activ-bottom-color;
+						a {
+							span {
+								color: $o-wizard-step-sub-active-color;
+							}
+						}
+					}
+					span::before {
+						content: counter(sub-step-counter) ". ";
+						counter-increment: sub-step-counter;
+					}
+				}
+			}
 		}
 	}
 }

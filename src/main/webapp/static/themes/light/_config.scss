@@ -261,6 +261,15 @@ $o-tree-dnd-hover				: $brand-warning;
 /* Tabbed pane component */
 $o-tabbed-pane-padding			: ($padding-large-vertical * 2) 0 $padding-base-vertical 0;
 
+/* Wizard */
+$o-wizard-steps-bg-color				: #f9f9f9 !default;
+$o-wizard-steps-border-color			: #d4d4d4 !default;
+$o-wizard-step-bg-color					: #ededed !default;
+$o-wizard-step-main-active-color		: $btn-primary-color !default;
+$o-wizard-step-main-active-bg-color		: $btn-primary-bg !default;
+$o-wizard-step-sub-active-color			: $text-color !default;
+$o-wizard-step-sub-activ-bottom-color	: $brand-primary !default;
+
 /* Auto completer input field */
 $o-autocomplete-width				: 400px !default;
 $o-autocomplete-font-size			: $font-size-base !default;
