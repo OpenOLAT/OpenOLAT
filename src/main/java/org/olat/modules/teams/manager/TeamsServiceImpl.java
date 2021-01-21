@@ -215,6 +215,21 @@ public class TeamsServiceImpl implements TeamsService {
 		return meeting;
 	}
 	
+	/**
+	 * The create meeting only use the communications API. To set all
+	 * settings, an update with the "On behalf" user is needed.<br>
+	 * If the create is done with the "On behalf" user, only this user
+	 * can make the group rooms and configure the meeting in the Microsoft
+	 * Teams application. The process create with /communications and update
+	 * with "On behalf" user is a workaround to allow the user to configure
+	 * the meeting in Teams App. and OpenOlat to set a maximum of settings.
+	 * 
+	 * @param meeting The meeting
+	 * @param user The user if found
+	 * @param role The role, PRESENTER can be elevated to PRODUCER
+	 * @param errors The errors object, mandatory
+	 * @return The update meeting.
+	 */
 	private TeamsMeeting createOnlineMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, TeamsErrors errors) {
 		TeamsMeeting lockedMeeting = null;
 		try {
@@ -229,6 +244,11 @@ public class TeamsServiceImpl implements TeamsService {
 					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingId(onlineMeeting.id);
 					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingJoinUrl(onlineMeeting.joinUrl);
 					lockedMeeting = teamsMeetingDao.updateMeeting(lockedMeeting);
+				}
+				// Try to configure more settings
+				if(user != null && StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
+					dbInstance.commitAndCloseSession();
+					graphDao.updateOnlineMeeting(lockedMeeting, user, role);
 				}
 			}
 		} catch (Exception e) {

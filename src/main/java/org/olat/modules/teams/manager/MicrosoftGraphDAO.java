@@ -144,16 +144,38 @@ public class MicrosoftGraphDAO {
 		
 	}
 	
+	/**
+	 * The create meeting only use the communications API. To set all
+	 * settings, an update with the "On behalf" user is needed.<br>
+	 * If the create is done with the "On behalf" user, only this user
+	 * can make the group rooms and configure the meeting in the Microsoft
+	 * Teams application. The process create with /communications and update
+	 * with "On behalf" user is a workaround to allow the user to configure
+	 * the meeting in Teams App. and OpenOlat to set a maximum of settings.
+	 * 
+	 * @param meeting The meeting
+	 * @param user The user if found
+	 * @param role The role (PRESENTER can be promoted to PRODUCER)
+	 * @param errors Mandatory errors object
+	 * @return An online meeting if successful
+	 */
 	public OnlineMeeting createMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, TeamsErrors errors) {
 		MeetingParticipants participants = new MeetingParticipants();
 		if(user != null) {
 			if(role == OnlineMeetingRole.PRESENTER) {
+				// Add all possible roles
 				IdentitySet identitySet = createIdentitySetById(user);
 				participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
 				IdentitySet identityAsPresenterSet = createIdentitySetById(user);
 				participants.attendees = new ArrayList<>();
-				MeetingParticipantInfo  infos = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.PRESENTER);
+				MeetingParticipantInfo infos = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.PRODUCER);
 				participants.attendees.add(infos);
+				MeetingParticipantInfo presenter = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.PRESENTER);
+				participants.attendees.add(presenter);
+				participants.producers = new ArrayList<>();
+				MeetingParticipantInfo producer = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.PRODUCER);
+				participants.producers.add(producer);
+				log.info("Create Teams Meeting on MS for {}, for role {} and MS user as organizer and presenter {} {}", meeting.getKey(), role, user.id, user.displayName);
 			} else if(StringHelper.containsNonWhitespace(teamsModule.getProducerId()) && canAttendeeOpenMeeting(meeting)) {
 				// Attendee can create an online meeting only if they have a chance to enter it
 				IdentitySet identitySet = createIdentitySetById(teamsModule.getProducerId());
@@ -162,6 +184,7 @@ public class MicrosoftGraphDAO {
 				participants.attendees = new ArrayList<>();
 				MeetingParticipantInfo  infos = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.ATTENDEE);
 				participants.attendees.add(infos);
+				log.info("Create Teams Meeting on MS for {}, for role {} and MS user as attendee {} {}", meeting.getKey(), role, user.id, user.displayName);
 			} else {
 				errors.append(new TeamsError(TeamsErrorCodes.organizerMissing));
 				return null;
@@ -170,6 +193,7 @@ public class MicrosoftGraphDAO {
 			if(canAttendeeOpenMeeting(meeting)) {
 				IdentitySet identitySet = createIdentitySetById(teamsModule.getProducerId());
 				participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
+				log.info("Create Teams Meeting on MS for {} without MS user", meeting.getKey());
 			} else {
 				errors.append(new TeamsError(TeamsErrorCodes.organizerMissing));
 				return null;
@@ -207,19 +231,11 @@ public class MicrosoftGraphDAO {
 			onlineMeeting.joinInformation = body;
 		}
 		
-		if(StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
-			onlineMeeting = client()
-					.users(teamsModule.getOnBehalfUserId())
-					.onlineMeetings()
-					.buildRequest()
-					.post(onlineMeeting);
-		} else {
-			onlineMeeting = client()
-					.communications()
-					.onlineMeetings()
-					.buildRequest()
-					.post(onlineMeeting);
-		}
+		onlineMeeting = client()
+				.communications()
+				.onlineMeetings()
+				.buildRequest()
+				.post(onlineMeeting);
 		
 		log.info(Tracing.M_AUDIT, "Online-Meeting created with id: {}", onlineMeeting.id);
 		return onlineMeeting;
