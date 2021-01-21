@@ -26,11 +26,13 @@ package org.olat.admin.user.imp;
 
 import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.Authentication;
@@ -57,6 +59,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.ui.LDAPAuthenticationController;
@@ -119,6 +122,8 @@ class ImportStep00 extends BasicStep {
 		private UserModule userModule;
 		@Autowired
 		private I18nModule i18nModule;
+		@Autowired
+		private I18nManager i18nManager;
 		@Autowired
 		private OLATAuthManager olatAuthManager;
 		@Autowired
@@ -312,21 +317,41 @@ class ImportStep00 extends BasicStep {
 				try {
 					String expirationPart = parts[columnId + userPropertyHandlers.size()];
 					if(StringHelper.containsNonWhitespace(expirationPart)) {
-						expirationDate = Formatter.getInstance(getLocale()).parseDate(expirationPart);
+						expirationDate = parseDate(expirationPart, getLocale());
+						if(expirationDate == null) {
+							for(String languageKey:i18nModule.getEnabledLanguageKeys()) {
+								Locale locale = i18nManager.getLocaleOrDefault(languageKey);
+								expirationDate = parseDate(expirationPart, locale);
+								if(expirationDate != null) {
+									break;
+								}
+							}
+						}
 					}
 				} catch (Exception e) {
 					logError("", e);
 				}
 			}
 			
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(expirationDate);
-			// Excel will cut 2021 to 21
-			if(cal.get(Calendar.YEAR) < 100) {
-				cal.add(Calendar.YEAR, 2000);
-				expirationDate = cal.getTime();
+			if(expirationDate != null) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(expirationDate);
+				// Excel will cut 2021 to 21
+				if(cal.get(Calendar.YEAR) < 100) {
+					cal.add(Calendar.YEAR, 2000);
+					expirationDate = cal.getTime();
+				}
 			}
 			return expirationDate;
+		}
+		
+		private Date parseDate(String val, Locale locale) {
+			try {
+				return Formatter.getInstance(locale).parseDate(val);
+			} catch (ParseException e) {
+				getLogger().error("Cannot parse date {} with locale {}", val, locale);
+				return null;
+			}
 		}
 		
 		private Identity findByLogin(String login, String pwd) {
