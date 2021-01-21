@@ -58,7 +58,7 @@ public class InfoMetadataStep extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,
 			StepsRunContext stepsRunContext, Form form) {
 		stepsRunContext.put("repoEntry", entry);
-		return new InfoMetadataController(ureq, windowControl, form, stepsRunContext);
+		return new InfoMetadataController(ureq, windowControl, form, stepsRunContext, "exam.course");
 	}
 
 }

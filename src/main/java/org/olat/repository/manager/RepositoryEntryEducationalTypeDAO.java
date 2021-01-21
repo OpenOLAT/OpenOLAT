@@ -72,6 +72,8 @@ public class RepositoryEntryEducationalTypeDAO {
 	}
 
 	public RepositoryEntryEducationalType loadByKey(Long key) {
+		if (key == null) return null;
+		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select educationalType");
 		sb.append("  from repositoryentryeducationaltype educationalType");

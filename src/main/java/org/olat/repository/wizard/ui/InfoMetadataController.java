@@ -19,6 +19,9 @@
  */
 package org.olat.repository.wizard.ui;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
@@ -28,6 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.util.KeyValues;
@@ -38,6 +42,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.CourseModule;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyRef;
@@ -45,6 +50,8 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -69,6 +76,7 @@ public class InfoMetadataController extends StepFormBasicController {
 	private RichTextElement descriptionEl;
 	private TextElement authorsEl;
 	private MultipleSelectionElement taxonomyLevelEl;
+	private SingleSelection educationalTypeEl;
 	
 	private final RepositoryEntry entry;
 	private final InfoMetadata context;
@@ -77,23 +85,31 @@ public class InfoMetadataController extends StepFormBasicController {
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
 	private TaxonomyService taxonomyService;
 
-	public InfoMetadataController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public InfoMetadataController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
+			String educationalTypeIdentifier) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 		setBasePackage(RepositoryService.class);
 		entry = (RepositoryEntry) getFromRunContext("repoEntry");
-		context = (InfoMetadata)getOrCreateFromRunContext(RUN_CONTEXT_KEY, getInfoMetaSupplier());
+		
+		RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(educationalTypeIdentifier);
+		Long educationalTypeKey = educationalType != null? educationalType.getKey(): null;
+		
+		context = (InfoMetadata)getOrCreateFromRunContext(RUN_CONTEXT_KEY, getInfoMetaSupplier(educationalTypeKey));
 		
 		initForm(ureq);
 	}
 	
-	private Supplier<Object> getInfoMetaSupplier() {
+	private Supplier<Object> getInfoMetaSupplier(Long educationalTypeKey) {
 		return () -> {
 			InfoMetadata infoMetadata = new InfoMetadata();
 			infoMetadata.setDisplayName(entry.getDisplayname());
+			infoMetadata.setEducationalTypeKey(educationalTypeKey);
 			return infoMetadata;
 		};
 	}
@@ -128,6 +144,21 @@ public class InfoMetadataController extends StepFormBasicController {
 		if(StringHelper.isLong(taxonomyTreeKey)) {
 			TaxonomyRef taxonomyRef = new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey));
 			initFormTaxonomy(formLayout, taxonomyRef);
+		}
+		
+		if (CourseModule.ORES_TYPE_COURSE.equals(entry.getOlatResource().getResourceableTypeName())) {
+			KeyValues educationalTypeKV = new KeyValues();
+			repositoryManager.getAllEducationalTypes()
+					.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
+			educationalTypeKV.sort(KeyValues.VALUE_ASC);
+			educationalTypeEl = uifactory.addDropdownSingleselect("cif.educational.type", formLayout, educationalTypeKV.keys(), educationalTypeKV.values());
+			educationalTypeEl.enableNoneSelection();
+			if (context.getEducationalTypeKey() != null) {
+				String key = context.getEducationalTypeKey().toString();
+				if (Arrays.asList(educationalTypeEl.getKeys()).contains(key)) {
+					educationalTypeEl.select(key, true);
+				}
+			}
 		}
 	}
 	
@@ -177,6 +208,13 @@ public class InfoMetadataController extends StepFormBasicController {
 						.collect(Collectors.toList())
 				: null;
 		context.setTaxonomyLevelRefs(taxonomyLevelRefs);
+		
+		if (educationalTypeEl != null) {
+			Long educationalTypeKey = educationalTypeEl.isOneSelected()
+					? Long.parseLong(educationalTypeEl.getSelectedKey())
+					: null;
+			context.setEducationalTypeKey(educationalTypeKey);
+		}
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

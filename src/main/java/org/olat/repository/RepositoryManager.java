@@ -2152,6 +2152,10 @@ public class RepositoryManager {
 		return repositoryEntryEducationalTypeDao.loadAll();
 	}
 
+	public RepositoryEntryEducationalType getEducationalType(Long key) {
+		return repositoryEntryEducationalTypeDao.loadByKey(key);
+	}
+	
 	public RepositoryEntryEducationalType getEducationalType(String identifier) {
 		return repositoryEntryEducationalTypeDao.loadByIdentifier(identifier);
 	}

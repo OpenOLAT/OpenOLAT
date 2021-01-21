@@ -38,6 +38,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryMembership;
@@ -91,6 +92,8 @@ public class RepositoryWizardServiceTest extends OlatTestCase {
 		String authors = random();
 		infoMetadata.setAuthors(authors);
 		infoMetadata.setTaxonomyLevelRefs(Set.of(level1));
+		RepositoryEntryEducationalType educationalType = repositoryManager.createEducationalType(random());
+		infoMetadata.setEducationalTypeKey(educationalType.getKey());
 		entry = sut.updateRepositoryEntry(entry, infoMetadata);
 		dbInstance.commitAndCloseSession();
 		
@@ -100,6 +103,7 @@ public class RepositoryWizardServiceTest extends OlatTestCase {
 		softly.assertThat(entry.getDescription()).as("Init description").isEqualTo(description);
 		softly.assertThat(entry.getAuthors()).as("Init authors").isEqualTo(authors);
 		softly.assertThat(repositoryService.getTaxonomy(entry)).as("Init taxonomyLevels").containsExactlyInAnyOrder(level1);
+		softly.assertThat(entry.getEducationalType().getKey()).as("Init educational type").isEqualTo(educationalType.getKey());
 		
 		// Update nulls -> no change
 		infoMetadata = new InfoMetadata();
@@ -111,6 +115,7 @@ public class RepositoryWizardServiceTest extends OlatTestCase {
 		softly.assertThat(entry.getDescription()).as("Null description").isEqualTo(description);
 		softly.assertThat(entry.getAuthors()).as("Null authors").isEqualTo(authors);
 		softly.assertThat(repositoryService.getTaxonomy(entry)).as("Null taxonomyLevels").containsExactlyInAnyOrder(level1);
+		softly.assertThat(entry.getEducationalType().getKey()).as("Null educational type").isEqualTo(educationalType.getKey());
 		
 		// Update values
 		infoMetadata = new InfoMetadata();
@@ -123,6 +128,8 @@ public class RepositoryWizardServiceTest extends OlatTestCase {
 		authors = random();
 		infoMetadata.setAuthors(authors);
 		infoMetadata.setTaxonomyLevelRefs(Set.of(level2, level3));
+		educationalType = repositoryManager.createEducationalType(random());
+		infoMetadata.setEducationalTypeKey(educationalType.getKey());
 		entry = sut.updateRepositoryEntry(entry, infoMetadata);
 		dbInstance.commitAndCloseSession();
 		
@@ -131,12 +138,13 @@ public class RepositoryWizardServiceTest extends OlatTestCase {
 		softly.assertThat(entry.getDescription()).as("Update description").isEqualTo(description);
 		softly.assertThat(entry.getAuthors()).as("Update authors").isEqualTo(authors);
 		softly.assertThat(repositoryService.getTaxonomy(entry)).as("Update taxonomyLevels").containsExactlyInAnyOrder(level2, level3);
+		softly.assertThat(entry.getEducationalType().getKey()).as("Update educational type").isEqualTo(educationalType.getKey());
 		
 		softly.assertAll();
 	}
 	
 	@Test
-	public void shouldAddMemberAsCoach() {
+	public void shouldAddMembersAsCoach() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		
@@ -152,7 +160,7 @@ public class RepositoryWizardServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldNotChangeMemberAsCoach() {
+	public void shouldNotChangeExistingMembersAsCoach() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		IdentitiesAddEvent addEvent = new IdentitiesAddEvent(identity);
@@ -170,7 +178,7 @@ public class RepositoryWizardServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldAddMemberAsParticipant() {
+	public void shouldAddMembersAsParticipant() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		
@@ -186,7 +194,7 @@ public class RepositoryWizardServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldNotChangeMemberAsParticipant() {
+	public void shouldNotChangeExistingMembersAsParticipant() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		IdentitiesAddEvent addEvent = new IdentitiesAddEvent(identity);

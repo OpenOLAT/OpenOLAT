@@ -38,6 +38,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -116,11 +117,19 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 				? new HashSet<>(taxonomyService.getTaxonomyLevelsByKeys(taxonomyLevelRefs))
 				: null;
 		
+		RepositoryEntryEducationalType educationalType = entry.getEducationalType();
+		if (infoMetadata.getEducationalTypeKey() != null) {
+			RepositoryEntryEducationalType loadedEducationalType = repositoryManager
+					.getEducationalType(infoMetadata.getEducationalTypeKey());
+			if (loadedEducationalType != null) {
+				educationalType = loadedEducationalType;
+			}
+		}
+		
 		return repositoryManager.setDescriptionAndName(entry, entry.getDisplayname(), entry.getExternalRef(),
 				entry.getAuthors(), entry.getDescription(), entry.getObjectives(), entry.getRequirements(),
 				entry.getCredits(), entry.getMainLanguage(), entry.getLocation(), entry.getExpenditureOfWork(),
-				entry.getLifecycle(), null, taxonomyLevels, entry.getEducationalType());
-		
+				entry.getLifecycle(), null, taxonomyLevels, educationalType);
 	}
 
 	@Override

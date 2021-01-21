@@ -36,6 +36,7 @@ public class InfoMetadata {
 	private String description;
 	private String authors;
 	private Collection<TaxonomyLevelRef> taxonomyLevelRefs;
+	private Long educationalTypeKey;
 	
 	public String getDisplayName() {
 		return displayName;
@@ -75,6 +76,14 @@ public class InfoMetadata {
 
 	public void setTaxonomyLevelRefs(Collection<TaxonomyLevelRef> taxonomyLevelRefs) {
 		this.taxonomyLevelRefs = taxonomyLevelRefs;
+	}
+
+	public Long getEducationalTypeKey() {
+		return educationalTypeKey;
+	}
+
+	public void setEducationalTypeKey(Long educationalTypeKey) {
+		this.educationalTypeKey = educationalTypeKey;
 	}
 
 }
