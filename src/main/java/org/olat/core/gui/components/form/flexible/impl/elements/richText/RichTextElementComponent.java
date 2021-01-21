@@ -189,8 +189,9 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 			escapedUrl = escapeUrl(url);
 		}
 		
-		StringBuilder cmd = new StringBuilder();
-		cmd.append("BTinyHelper.writeLinkSelectionToTiny('").append(escapedUrl).append("'");
+		StringBuilder cmd = new StringBuilder(128);
+		String apo = escapedUrl.contains("'") ? "\"" : "'";
+		cmd.append("BTinyHelper.writeLinkSelectionToTiny(").append(apo).append(escapedUrl).append(apo);
 		if(urlChoosenEvent.getWidth() > 0) {
 			cmd.append(",").append(urlChoosenEvent.getWidth());
 		}
@@ -200,7 +201,7 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 		cmd.append(");");
 		
 		JSCommand writeLinkSelectionToTiny = new JSCommand(cmd.toString());
-		 Windows.getWindows(ureq).getWindow(ureq).getWindowBackOffice().sendCommandTo(writeLinkSelectionToTiny);
+		Windows.getWindows(ureq).getWindow(ureq).getWindowBackOffice().sendCommandTo(writeLinkSelectionToTiny);
 	}
 	
 	private String escapeUrl(String url) {
