@@ -36,6 +36,8 @@ public interface UserLifecycleManager {
 
 	public long getDaysUntilDeactivation(IdentityLifecycle identity, Date referenceDate);
 	
+	public Date getDateUntilDeactivation(IdentityLifecycle identity);
+	
 	public long getDaysUntilDeletion(IdentityLifecycle identity, Date referenceDate);
 	
 	/**

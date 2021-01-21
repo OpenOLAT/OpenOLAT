@@ -21,6 +21,7 @@ package org.olat.user;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.util.ArrayHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -181,10 +183,18 @@ public class PreferencesFormController extends FormBasicController {
 		username.setElementCssClass("o_sel_home_settings_username");
 		username.setEnabled(false);
 		
+		// Expiration
+		boolean expirationDateVisible = tobeChangedIdentity.getExpirationDate() != null
+				|| tobeChangedIdentity.getInactivationDate() != null || tobeChangedIdentity.getReactivationDate() != null;
+		
+		Date expirationDate = userLifecycleManager.getDateUntilDeactivation(tobeChangedIdentity);
+		String expDate = Formatter.getInstance(getLocale()).formatDate(expirationDate);
+		StaticTextElement expirationDateEl = uifactory.addStaticTextElement("rightsForm.expiration.date", expDate, formLayout);
+		expirationDateEl.setVisible(expirationDateVisible);
+
 		long days = userLifecycleManager.getDaysUntilDeactivation(tobeChangedIdentity, ureq.getRequestTimestamp());
-		StaticTextElement expirationDateEl = uifactory.addStaticTextElement("rightsForm.expiration.date", Long.toString(days), formLayout);
-		expirationDateEl.setVisible(tobeChangedIdentity.getExpirationDate() != null
-				|| tobeChangedIdentity.getInactivationDate() != null || tobeChangedIdentity.getReactivationDate() != null);
+		StaticTextElement expirationDaysEl = uifactory.addStaticTextElement("rightsForm.days.inactivation", Long.toString(days), formLayout);
+		expirationDaysEl.setVisible(expirationDateVisible);
 
 		// Language
 		Map<String, String> languages = i18nManager.getEnabledLanguagesTranslated();

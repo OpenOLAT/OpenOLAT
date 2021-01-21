@@ -391,7 +391,8 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		expirationDateEl.setVisible(!editedRoles.isSystemAdmin() && !editedRoles.isAdministrator());
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
-		lastLoginEl.setValue(formatter.formatDateAndTime(editedIdentity.getLastLogin()));
+		String lastLogin = formatter.formatDateAndTime(editedIdentity.getLastLogin());
+		lastLoginEl.setValue(lastLogin == null ? "" : lastLogin);
 		
 		Date inactivationDate = editedIdentity.getInactivationDate();
 		inactivationDateEl.setValue(formatter.formatDate(inactivationDate));

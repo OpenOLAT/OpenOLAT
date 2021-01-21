@@ -118,6 +118,33 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	}
 
 	@Override
+	public Date getDateUntilDeactivation(IdentityLifecycle identity) {
+		Date lastLogin = identity.getLastLogin();
+		if(lastLogin == null) {
+			lastLogin = identity.getCreationDate();
+		}
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, userModule.getNumberOfInactiveDayBeforeDeactivation());
+		Date deactivationDate = cal.getTime();
+		
+		Date reactivationDate = identity.getReactivationDate();
+		if(reactivationDate != null ) {
+			cal.setTime(reactivationDate);
+			cal.add(Calendar.DATE, userModule.getNumberOfInactiveDayBeforeDeactivation());
+			Date reDeactivationDate = cal.getTime();
+			if(reDeactivationDate.before(deactivationDate)) {
+				deactivationDate = reDeactivationDate;
+			}
+		}
+
+		if(identity.getExpirationDate() != null && identity.getExpirationDate().before(deactivationDate)) {
+			deactivationDate = identity.getExpirationDate();
+		}
+		return deactivationDate;
+	}
+
+	@Override
 	public long getDaysUntilDeletion(IdentityLifecycle identity, Date referenceDate) {
 		if(identity == null || identity.getInactivationDate() == null) return -1;
 		

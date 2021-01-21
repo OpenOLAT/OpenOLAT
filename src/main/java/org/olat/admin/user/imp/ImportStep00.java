@@ -27,6 +27,7 @@ package org.olat.admin.user.imp;
 import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -316,6 +317,14 @@ class ImportStep00 extends BasicStep {
 				} catch (Exception e) {
 					logError("", e);
 				}
+			}
+			
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(expirationDate);
+			// Excel will cut 2021 to 21
+			if(cal.get(Calendar.YEAR) < 100) {
+				cal.add(Calendar.YEAR, 2000);
+				expirationDate = cal.getTime();
 			}
 			return expirationDate;
 		}
