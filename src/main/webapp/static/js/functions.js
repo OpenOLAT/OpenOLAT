@@ -1844,7 +1844,9 @@ function o_pushState(historyPointId, title, url) {
 		data['businessPath'] = url;
 		data['historyPointId'] = historyPointId;
 		
+		var pUrl = url;// allow 2 domain like frentix.com and www.frentix.com
 		if(url != null && !(url.lastIndexOf("http", 0) === 0) && !(url.lastIndexOf("https", 0) === 0)) {
+			pUrl = window.location.protocol + "//" + window.location.host + url;
 			url = o_info.serverUri + url;
 		}
 		o_info.businessPath = url;
@@ -1852,7 +1854,7 @@ function o_pushState(historyPointId, title, url) {
 			o_shareActiveSocialUrl();	
 		}
 		if(window.history && !(typeof window.history === "undefined") && window.history.pushState) {
-			window.history.pushState(data, title, url);
+			window.history.pushState(data, title, pUrl);
 		} else {
 			window.location.hash = historyPointId;
 		}
