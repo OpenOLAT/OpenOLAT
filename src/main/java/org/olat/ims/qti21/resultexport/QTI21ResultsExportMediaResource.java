@@ -63,7 +63,6 @@ import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -300,12 +299,24 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			if(identity == null || identity.getStatus() == null || identity.getStatus().equals(Identity.STATUS_DELETED)) {
 				continue;
 			}
-			String lastNameOrAnoymous = identity.getUser().getLastName();
-			if(!StringHelper.containsNonWhitespace(lastNameOrAnoymous)) {
-				lastNameOrAnoymous = "anonym";
+			String nickname = identity.getUser().getNickName();
+			String firstName = identity.getUser().getFirstName();
+			String lastNameOrAnonymous = identity.getUser().getLastName();
+			if(!StringHelper.containsNonWhitespace(lastNameOrAnonymous)) {
+				lastNameOrAnonymous = "anonym";
 			}
-			String lastname = StringHelper.transformDisplayNameToFileSystemName(lastNameOrAnoymous);
-			String idDir = exportFolderName + "/" + DATA + lastname + "_" + identity.getKey();
+			String nameOrAnonymous = lastNameOrAnonymous;
+			if(StringHelper.containsNonWhitespace(firstName)) {
+				nameOrAnonymous += "_" + firstName;
+			}
+			if(StringHelper.containsNonWhitespace(nickname)) {
+				nameOrAnonymous += "_" + nickname;
+			} else {
+				nameOrAnonymous += "_" + identity.getKey();
+			}
+			
+			String names = StringHelper.transformDisplayNameToFileSystemName(nameOrAnonymous);
+			String idDir = exportFolderName + "/" + DATA + names;
 			idDir = idDir.endsWith(SEP) ? idDir : idDir + SEP;
 			createZipDirectory(zout, idDir);				
 			
@@ -323,8 +334,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			
 			String linkToUser = idDir.replace(exportFolderName + "/", "") + "index.html";
 			String memberEmail = userManager.getUserDisplayEmail(identity, ureq.getLocale());
-			AssessedMember member = new AssessedMember(identity.getUser().getProperty(UserConstants.NICKNAME, null),
-					lastNameOrAnoymous, identity.getUser().getFirstName(),
+			AssessedMember member = new AssessedMember(nickname, lastNameOrAnonymous, firstName,
 					memberEmail, assessments.size(), passed, score, linkToUser);
 			
 			String singleUserInfoHTML = createResultListingHTML(assessments, assessmentDocuments, member);

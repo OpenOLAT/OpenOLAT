@@ -22,12 +22,14 @@ package org.olat.course.nodes.pf.manager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -44,12 +46,15 @@ import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.ui.PFParticipantController;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 /**
 *
@@ -107,6 +112,14 @@ public class FileSystemExport implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
+		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
+		String label = StringHelper.transformDisplayNameToFileSystemName(pfNode.getShortName() + "_" + entry.getDisplayname())
+				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())
+				+ ".zip";
+		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
+		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + urlEncodedLabel);
+		hres.setHeader("Content-Description", urlEncodedLabel);
+		
 		try (ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			Path relPath = Paths.get(courseEnv.getCourseBaseContainer().getBasefile().getAbsolutePath(),
@@ -132,8 +145,8 @@ public class FileSystemExport implements MediaResource {
 	 * @param translator
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static boolean fsToZip(ZipOutputStream zout, String zipPath, final Path sourceFolder, PFCourseNode pfNode,
-			List<Identity> identities, Translator translator) {
+	public static boolean fsToZip(final ZipOutputStream zout, String zipPath, final Path sourceFolder, PFCourseNode pfNode,
+			List<Identity> identities, final Translator translator) {
 		
 		if(StringHelper.containsNonWhitespace(zipPath)) {
 			if(!zipPath.endsWith("/")) {
@@ -143,7 +156,7 @@ public class FileSystemExport implements MediaResource {
 			zipPath = "";
 		}
 		
-		final String targetPath = zipPath + translator.translate("participant.folder") + "/";
+		final String targetPath = zipPath;
 		final UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		Set<String> idKeys = new HashSet<>();
 		if (identities != null) {
@@ -188,7 +201,7 @@ public class FileSystemExport implements MediaResource {
 					String relPath = sourceFolder.relativize(file).toString();
 					if ((relPath = containsID(relPath)) != null && (relPath = boxesEnabled(relPath)) != null) {
 						zout.putNextEntry(new ZipEntry(targetPath + relPath));
-						Files.copy(file, zout);
+						copyFile(file, zout);
 						zout.closeEntry();
 					}
 					return FileVisitResult.CONTINUE;
@@ -204,11 +217,18 @@ public class FileSystemExport implements MediaResource {
 					return FileVisitResult.CONTINUE;
 				}
 			});
-			zout.close();
 			return true;
 		} catch (IOException e) {
 			log.error("Unable to export zip",e);
 			return false;
+		}
+	}
+	
+	private static void copyFile(Path file, ZipOutputStream zout) {
+		try(OutputStream out= new ShieldOutputStream(zout)) {
+			Files.copy(file, zout);
+		} catch(Exception e) {
+			log.error("Cannot zip {}", file, e);
 		}
 	}
 	
