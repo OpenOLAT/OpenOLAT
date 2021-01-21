@@ -118,9 +118,6 @@ public class MicrosoftGraphDAOTest extends OlatTestCase {
 		Assert.assertNotNull(onlineMeeting.id);
 		Assert.assertNotNull(onlineMeeting.joinUrl);
 		Assert.assertEquals(name, onlineMeeting.subject);
-		Assert.assertEquals(OnlineMeetingPresenters.ROLE_IS_PRESENTER, onlineMeeting.allowedPresenters);
-		Assert.assertEquals(LobbyBypassScope.ORGANIZER, onlineMeeting.lobbyBypassSettings.scope);
-		Assert.assertEquals(Boolean.FALSE, onlineMeeting.lobbyBypassSettings.isDialInBypassEnabled);
 		
 		// update the meeting
 		String updateName = "Update-Online-Meeting - 1";
@@ -136,6 +133,9 @@ public class MicrosoftGraphDAOTest extends OlatTestCase {
 		Assert.assertNotNull(updatedOnlineMeeting.id);
 		Assert.assertNotNull(updatedOnlineMeeting.joinUrl);
 		Assert.assertEquals(updateName, updatedOnlineMeeting.subject);
+		Assert.assertEquals(OnlineMeetingPresenters.ROLE_IS_PRESENTER, updatedOnlineMeeting.allowedPresenters);
+		Assert.assertEquals(LobbyBypassScope.ORGANIZER, updatedOnlineMeeting.lobbyBypassSettings.scope);
+		Assert.assertEquals(Boolean.FALSE, updatedOnlineMeeting.lobbyBypassSettings.isDialInBypassEnabled);
 		
 		// delete the online meeting
 		microsoftGraphDao.delete(updatedOnlineMeeting.id);
