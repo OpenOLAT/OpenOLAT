@@ -498,6 +498,9 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			case "inactivationDate":
 				sb.append(" order by ident.inactivationDate ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
 				break;
+			case "expirationDate":
+				sb.append(" order by ident.expirationDate ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
+				break;
 			case "name":
 			case "username":
 				sb.append(" order by lower(ident.name) ").append(orderBy.isAsc() ? "asc" : "desc");
