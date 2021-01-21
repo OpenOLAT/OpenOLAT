@@ -595,6 +595,8 @@ public class CoursesWebService {
 			preparedEntry.setAllUsers(allUsers);
 			preparedEntry.setGuests(guests);
 			preparedEntry.setAllowToLeaveOption(src.getAllowToLeaveOption());
+			preparedEntry.setTechnicalType(src.getTechnicalType());
+			preparedEntry.setEducationalType(src.getEducationalType());
 			preparedEntry = repositoryService.update(preparedEntry);
 
 			// copy image if available

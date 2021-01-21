@@ -633,7 +633,8 @@ public class CoursesTest extends OlatRestTestCase {
 		Assert.assertEquals("English", courseEntry.getMainLanguage());
 		Assert.assertEquals("Bienne", courseEntry.getLocation());
 		Assert.assertEquals("Expedited in 2 hours", courseEntry.getExpenditureOfWork());
-		Assert.assertEquals(educationalType, courseEntry.getEducationalType());
+		Assert.assertEquals(entry.getTechnicalType(), courseEntry.getTechnicalType());
+		Assert.assertEquals(educationalType.getKey(), courseEntry.getEducationalType().getKey());
 	}
 
 	@Test
