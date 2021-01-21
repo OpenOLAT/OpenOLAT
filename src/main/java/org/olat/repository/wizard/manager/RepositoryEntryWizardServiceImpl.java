@@ -41,6 +41,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
@@ -66,6 +67,8 @@ import org.springframework.stereotype.Service;
 public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService {
 	
 	@Autowired
+	private RepositoryModule repositoryModule;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private TaxonomyService taxonomyService;
@@ -77,6 +80,7 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 	@Override
 	public RepositoryWizardProvider getProvider(String providerType) {
 		return providers.stream()
+				.filter(provider -> repositoryModule.getEnabledWizardTypes().contains(provider.getType()))
 				.filter(provider -> providerType.equals(provider.getType()))
 				.findFirst().get();
 	}
@@ -84,6 +88,7 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 	@Override
 	public List<RepositoryWizardProvider> getProviders(String resourceType) {
 		return providers.stream()
+				.filter(provider -> repositoryModule.getEnabledWizardTypes().contains(provider.getType()))
 				.filter(provider -> resourceType.equals(provider.getSupportedResourceType()))
 				.collect(Collectors.toList());
 	}

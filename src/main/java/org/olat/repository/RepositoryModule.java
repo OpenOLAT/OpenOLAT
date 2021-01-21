@@ -19,6 +19,11 @@
  */
 package org.olat.repository;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -71,6 +76,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	private static final String LIFECYCLE_AUTO_DEFINITIVELY_DELETE = "repo.lifecycle.auto.definitively.delete";
 	private static final String LIFECYCLE_NOTIFICATION_CLOSE_DELETE = "rrepo.lifecylce.notification.close.delete";
 	
+	private static final String WIZARD_TYPES_ENABLED = "wizard.types.enabled";
 	private static final String TAXONOMY_TREE_KEY = "taxonomy.tree.key";
 
 	@Value("${site.catalog.enable:true}")
@@ -109,6 +115,10 @@ public class RepositoryModule extends AbstractSpringModule {
 	@Value("${repo.allow.to.leave:atAnyTime}")
 	private String defaultAllowToLeaveOption;
 	
+	@Value("${repo.wizards.enabled}")
+	private String wizardTypesEnabledConfig;
+	private Set<String> wizardTypesEnabled;
+	
 	private String taxonomyTreeKey;
 	
 	@Autowired
@@ -119,9 +129,6 @@ public class RepositoryModule extends AbstractSpringModule {
 		super(coordinatorManager);
 	}
 	
-	/**
-	 * @see org.olat.core.configuration.AbstractOLATModule#init()
-	 */
 	@Override
 	public void init() {
 		// Add controller factory extension point to launch groups
@@ -227,6 +234,12 @@ public class RepositoryModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(taxonomyTreeKeyObj)) {
 			taxonomyTreeKey = taxonomyTreeKeyObj;
 		}
+		
+		String wizardTypeEnabledObj = getStringPropertyValue(WIZARD_TYPES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(wizardTypeEnabledObj)) {
+			wizardTypesEnabledConfig = wizardTypeEnabledObj;
+			wizardTypesEnabled = null;
+		}
 
 		// 0 -> Alphabetical
 		// 1 -> Add on top
@@ -235,9 +248,6 @@ public class RepositoryModule extends AbstractSpringModule {
 		catalogAddCategoryPosition = getIntPropertyValue(CATALOG_ADD_CATEGORY_POSITION, catalogAddCategoryPosition);
 	}
 
-	/**
-	 * @see org.olat.core.configuration.AbstractOLATModule#initFromChangedProperties()
-	 */
 	@Override
 	protected void initFromChangedProperties() {
 		updateProperties();
@@ -428,5 +438,20 @@ public class RepositoryModule extends AbstractSpringModule {
 	public void setTaxonomyTreeKey(String taxonomyTreeKey) {
 		this.taxonomyTreeKey = taxonomyTreeKey;
 		setStringProperty(TAXONOMY_TREE_KEY, taxonomyTreeKey, true);
+	}
+	
+	public Set<String> getEnabledWizardTypes() {
+		if (wizardTypesEnabled == null) {
+			wizardTypesEnabled = StringHelper.containsNonWhitespace(wizardTypesEnabledConfig)
+					? Arrays.stream(wizardTypesEnabledConfig.replace(" ", "").split(",")).collect(Collectors.toSet())
+					: Collections.emptySet();
+		}
+		return wizardTypesEnabled;
+	}
+	
+	public void setEnabledWizardTypes(Set<String> types) {
+		this.wizardTypesEnabledConfig = types.stream().collect(Collectors.joining(","));
+		this.wizardTypesEnabled = null;
+		setStringProperty(WIZARD_TYPES_ENABLED, wizardTypesEnabledConfig, true);
 	}
 }
