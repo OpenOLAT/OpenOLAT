@@ -29,6 +29,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -52,6 +53,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private final String name;
 	private final String authors;
 	private final String location;
+	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
 	private String thumbnailRelPath;
 	private final String shortenedDescription;
@@ -99,6 +101,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
 		authors = entry.getAuthors();
 		location = entry.getLocation();
+		educationalType = entry.getEducationalType();
 		expenditureOfWork = entry.getExpenditureOfWork();
 		launchCounter = entry.getLaunchCounter();
 		status = entry.getEntryStatus();
@@ -369,6 +372,10 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public String getLocation() {
 		return location;
+	}
+
+	public RepositoryEntryEducationalType getEducationalType() {
+		return educationalType;
 	}
 
 	public String getExpenditureOfWork() {

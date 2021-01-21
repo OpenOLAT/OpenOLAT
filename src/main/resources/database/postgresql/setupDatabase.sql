@@ -495,6 +495,7 @@ create table o_repositoryentry (
    external_id varchar(64),
    external_ref varchar(255),
    managed_flags varchar(255),
+   technical_type varchar(128),
    displayname varchar(110) not null,
    resourcename varchar(100) not null,
    authors varchar(2048),
@@ -519,6 +520,7 @@ create table o_repositoryentry (
    bookable boolean default false not null,
    deletiondate timestamp default null,
    fk_deleted_by int8 default null,
+   fk_educational_type bigint default null,
    primary key (repositoryentry_id)
 );
 create table o_re_to_group (
@@ -568,6 +570,15 @@ create table o_bs_membership (
    identity_id int8 not null,
    primary key (id),
    unique (secgroup_id, identity_id)
+);
+create table o_re_educational_type (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   r_identifier varchar(128) not null,
+   r_predefined bool not null default false,
+   r_css_class varchar(128),
+   primary key (id)
 );
 
 create table o_plock (
@@ -3686,6 +3697,9 @@ alter table o_re_to_tax_level add constraint re_to_lev_re_idx foreign key (fk_en
 create index idx_re_to_lev_re_idx on o_re_to_tax_level (fk_entry);
 alter table o_re_to_tax_level add constraint re_to_lev_tax_lev_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
 create index idx_re_to_lev_tax_lev_idx on o_re_to_tax_level (fk_taxonomy_level);
+
+alter table o_repositoryentry add constraint idx_re_edu_type_fk foreign key (fk_educational_type) references o_re_educational_type(id);
+create unique index idc_re_edu_type_ident on o_re_educational_type (r_identifier);
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);

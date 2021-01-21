@@ -553,6 +553,7 @@ CREATE TABLE o_repositoryentry (
   external_id varchar2(64 char),
   external_ref varchar2(255 char),
   managed_flags varchar2(255 char),
+  technical_type varchar2(128 char),
   displayname varchar2(110 char) NOT NULL,
   resourcename varchar2(100 char) NOT NULL,
   authors varchar2(2048 char),
@@ -577,6 +578,7 @@ CREATE TABLE o_repositoryentry (
   canreference number NOT NULL,
   deletiondate date default null,
   fk_deleted_by number(20) default null,
+  fk_educational_type number(20) default null,
   CONSTRAINT u_o_repositoryentry UNIQUE (softkey),
   CONSTRAINT u_o_repositoryentry01 UNIQUE (fk_olatresource),
   CONSTRAINT u_o_repositoryentry02 UNIQUE (fk_stats),
@@ -630,7 +632,15 @@ CREATE TABLE o_bs_membership (
   PRIMARY KEY (id),
   CONSTRAINT u_o_bs_membership UNIQUE (secgroup_id, identity_id)
 );
-
+create table o_re_educational_type (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  r_identifier varchar2(128) not null,
+  r_predefined number not null,
+  r_css_class varchar(128),
+  primary key (id)
+);
 
 CREATE TABLE o_plock (
   plock_id number(20) NOT NULL,
@@ -3789,6 +3799,9 @@ alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk
 
 alter table o_repositoryentry add constraint re_deleted_to_identity_idx foreign key (fk_deleted_by) references o_bs_identity (id);
 create index idx_re_deleted_to_identity_idx on o_repositoryentry (fk_deleted_by);
+
+alter table o_repositoryentry add constraint idx_re_edu_type_fk foreign key (fk_educational_type) references o_re_educational_type(id);
+create unique index idc_re_edu_type_ident on o_re_educational_type (r_identifier);
 
 alter table o_re_to_tax_level add constraint re_to_lev_re_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_re_to_lev_re_idx on o_re_to_tax_level (fk_entry);

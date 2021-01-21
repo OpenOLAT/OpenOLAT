@@ -30,6 +30,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -47,6 +48,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	private boolean selected;
 	
 	private final Long key;
+	private final String technicalType;
 	private final String name;
 	private final String author;
 	private final String authors;
@@ -81,6 +83,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	
 	private List<PriceMethod> accessTypes;
 	private List<TaxonomyLevel> taxonomyLevels;
+	private final RepositoryEntryEducationalType educationalType;
 
 	private OLATResourceable olatResource;
 	
@@ -94,11 +97,13 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	
 	public AuthoringEntryRow(RepositoryEntryAuthorView view, String fullnameAuthor) {
 		key = view.getKey();
+		technicalType = view.getTechnicalType();
 		name = view.getDisplayname();
 		author = fullnameAuthor;
 		authors = view.getAuthors();
 		location = view.getLocation();
 		shortenedDescription = StringHelper.truncateText(view.getDescription());
+		educationalType = view.getEducationalType();
 		
 		String path = "[RepositoryEntry:" + key + "]";
 		url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
@@ -175,6 +180,10 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 
 	public Date getLastUsage() {
 		return lastUsage;
+	}
+
+	public String getTechnicalType() {
+		return technicalType;
 	}
 
 	@Override
@@ -257,6 +266,10 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 
 	public void setTaxonomyLevels(List<TaxonomyLevel> taxonomyLevels) {
 		this.taxonomyLevels = taxonomyLevels;
+	}
+	
+	public RepositoryEntryEducationalType getEducationalType() {
+		return educationalType;
 	}
 
 	public OLATResourceable getRepositoryEntryResourceable() {

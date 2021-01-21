@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
@@ -48,6 +49,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final String description;
 	private final String authors;
 	private final String location;
+	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
 	private final RepositoryEntryStatusEnum status;
 	private final boolean allUsers;
@@ -83,6 +85,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		description = re.getDescription();
 		authors = re.getAuthors();
 		location = re.getLocation();
+		educationalType = re.getEducationalType();
 		expenditureOfWork = re.getExpenditureOfWork();
 		status = re.getEntryStatus();
 		allUsers = re.isAllUsers();
@@ -189,6 +192,11 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public String getLocation() {
 		return location;
+	}
+
+	@Override
+	public RepositoryEntryEducationalType getEducationalType() {
+		return educationalType;
 	}
 
 	@Override

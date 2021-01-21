@@ -280,12 +280,14 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, null);
 
 		//copy all fields
+		copyEntry.setTechnicalType(sourceEntry.getTechnicalType());
 		copyEntry.setAuthors(sourceEntry.getAuthors());
 		copyEntry.setCredits(sourceEntry.getCredits());
 		copyEntry.setExpenditureOfWork(sourceEntry.getExpenditureOfWork());
 		copyEntry.setMainLanguage(sourceEntry.getMainLanguage());
 		copyEntry.setObjectives(sourceEntry.getObjectives());
 		copyEntry.setRequirements(sourceEntry.getRequirements());
+		copyEntry.setEducationalType(sourceEntry.getEducationalType());
 		
 		List<TaxonomyLevel> taxonomyLevels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(sourceEntry);
 		for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {

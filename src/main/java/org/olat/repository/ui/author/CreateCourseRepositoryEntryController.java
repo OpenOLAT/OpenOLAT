@@ -75,6 +75,7 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 	protected void afterEntryCreated() {
 		String type = nodeAccessEl.getSelectedKey();
 		CourseFactory.initNodeAccessType(getAddedEntry(), NodeAccessType.of(type));
+		addedEntry = repositoryManager.setTechnicalType(addedEntry, type);
 	}
 	
 }

@@ -137,6 +137,7 @@
 		<class>org.olat.repository.model.RepositoryEntryMembership</class>
 		<class>org.olat.repository.model.RepositoryEntryToOrganisationImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryToTaxonomyLevelImpl</class>
+		<class>org.olat.repository.model.RepositoryEntryEducationalTypeImpl</class>
 		<class>org.olat.resource.references.ReferenceImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OfferImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OrderImpl</class>

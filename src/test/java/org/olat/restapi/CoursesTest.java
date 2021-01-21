@@ -68,6 +68,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -596,9 +597,10 @@ public class CoursesTest extends OlatRestTestCase {
 		Assert.assertNotNull(entry);
 		
 		// set some metadata
+		RepositoryEntryEducationalType educationalType = repositoryManager.getAllEducationalTypes().get(0);
 		repositoryManager.setDescriptionAndName(entry, "REST Course copy", "external-ref", "Prof.Dr. Mueller",
 				"A very descriptive course", "With high objectives", "Lots of requirements", "But credited", "English", "Bienne",
-				"Expedited in 2 hours", null, null, null);
+				"Expedited in 2 hours", null, null, null, educationalType);
 		dbInstance.commitAndCloseSession();
 		
 		conn = new RestConnection();
@@ -631,6 +633,7 @@ public class CoursesTest extends OlatRestTestCase {
 		Assert.assertEquals("English", courseEntry.getMainLanguage());
 		Assert.assertEquals("Bienne", courseEntry.getLocation());
 		Assert.assertEquals("Expedited in 2 hours", courseEntry.getExpenditureOfWork());
+		Assert.assertEquals(educationalType, courseEntry.getEducationalType());
 	}
 
 	@Test

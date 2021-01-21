@@ -76,7 +76,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private FormLayoutContainer exampleHelpEl;
 	private SingleSelection wizardEl;
 	
-	private RepositoryEntry addedEntry;
+	protected RepositoryEntry addedEntry;
 	private final RepositoryHandler handler;
 	private final boolean wizardsEnabled;
 	private final List<Organisation> manageableOrganisations;
@@ -87,7 +87,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private RepositoryManager repositoryManager;
+	protected RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryWizardService wizardService;
 	@Autowired

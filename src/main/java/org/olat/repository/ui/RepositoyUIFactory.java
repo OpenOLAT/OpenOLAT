@@ -49,6 +49,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
@@ -157,6 +158,10 @@ public class RepositoyUIFactory {
 				taxonomyLevelEl.select(key, true);
 			}
 		}
+	}
+	
+	public static String getI18nKey(RepositoryEntryEducationalType type) {
+		return "educational.type.id." + type.getIdentifier();
 	}
 	
 	public static boolean validateTextElement(TextElement el, boolean mandatory, int maxLength) {

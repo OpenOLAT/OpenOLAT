@@ -78,6 +78,8 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.run.RunMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -176,6 +178,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private CurriculumService curriculumService;
 	@Autowired
 	private CurriculumModule curriculumModule;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 
 	
 	private String baseUrl;
@@ -245,7 +249,15 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			setText(entry.getRequirements(), "requirements", layoutCont);
 			setText(entry.getObjectives(), "objectives", layoutCont);
 			setText(entry.getCredits(), "credits", layoutCont);
-
+			if (StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
+				String technicalType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(entry.getTechnicalType()), getLocale());
+				setText(technicalType, "technicalType", layoutCont);
+			}
+			if (entry.getEducationalType() != null) {
+				String educationalType = translate(RepositoyUIFactory.getI18nKey(entry.getEducationalType()));
+				setText(educationalType, "educationalType", layoutCont);
+			}
+			
 			//thumbnail and movie
 			VFSLeaf movie = repositoryService.getIntroductionMovie(entry);
 			VFSLeaf image = repositoryService.getIntroductionImage(entry);

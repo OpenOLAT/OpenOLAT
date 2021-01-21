@@ -344,7 +344,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 						? null : Formatter.formatTimecode(evaluation.getDuration().longValue() * 1000l);
 				importedEntry = repositoryManager.setDescriptionAndName(importedEntry, displayname, null,
 						evaluation.getAuthors(), evaluation.getDescription(), null, null, null, null,
-						null, expenditureOfWork, null, null, null);
+						null, expenditureOfWork, null, null, null, null);
 				if(StringHelper.containsNonWhitespace(evaluation.getLicense())) {
 					updateLicense(importedEntry, evaluation.getLicensor(), evaluation.getLicense());
 				}

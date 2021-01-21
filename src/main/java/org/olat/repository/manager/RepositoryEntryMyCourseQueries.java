@@ -204,6 +204,7 @@ public class RepositoryEntryMyCourseQueries {
 				sb.append(" inner join fetch v.statistics as stats");
 			}
 			sb.append(" left join fetch v.lifecycle as lifecycle ");
+			sb.append(" left join fetch v.educationalType as educationalType ");
 		}
 		
 		if(params.getParentEntry() != null) {

@@ -949,7 +949,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		
 		String newName = "Brand new name";
 		String newDesc = "Brand new description";
-		re = repositoryManager.setDescriptionAndName(re, newName, null, null, newDesc, null, null, null, null, null, null, publicCycle, null, null);
+		re = repositoryManager.setDescriptionAndName(re, newName, null, null, newDesc, null, null, null, null, null, null, publicCycle, null, null, null);
 		Assert.assertNotNull(re);
 		
 		dbInstance.commitAndCloseSession();
@@ -974,7 +974,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		String newName = "Organized name";
 		String newDesc = "Organized description";
 		re = repositoryManager.setDescriptionAndName(re, newName, null, null, newDesc, null, null, null, null, null, null,
-				publicCycle, Collections.singletonList(organisation), null);
+				publicCycle, Collections.singletonList(organisation), null, null);
 		Assert.assertNotNull(re);
 		Assert.assertEquals(2, re.getGroups().size());// check repository entry to group relations
 		
@@ -1160,7 +1160,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntryLifecycle cycle = lifecycleDao.create("New cycle 1", "New cycle soft 1", false, new Date(), new Date());
-		re = repositoryManager.setDescriptionAndName(re, "Updated repo entry", null, null, "", null, null, null, null, null, null, cycle, null, null);
+		re = repositoryManager.setDescriptionAndName(re, "Updated repo entry", null, null, "", null, null, null, null, null, null, cycle, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntry lazyRe = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.review, false, false);

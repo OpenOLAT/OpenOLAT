@@ -57,6 +57,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.model.RepositoryEntryEducationalTypeImpl;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
@@ -125,6 +126,12 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	@OneToMany(targetEntity=RepositoryEntryToTaxonomyLevelImpl.class, fetch=FetchType.LAZY)
 	@JoinColumn(name="fk_entry")
 	private Set<RepositoryEntryToTaxonomyLevel> taxonomyLevels;
+	
+	@Column(name="technical_type", nullable=true, insertable=true, updatable=true)
+	private String technicalType;
+	@ManyToOne(targetEntity=RepositoryEntryEducationalTypeImpl.class,fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_educational_type", nullable=true, insertable=true, updatable=true)
+	private RepositoryEntryEducationalType educationalType;
 	
 	@Column(name="resourcename", nullable=false, insertable=true, updatable=true)
 	private String resourcename; // mandatory
@@ -318,6 +325,22 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		this.authors = authors;
 	}
 	
+	public String getTechnicalType() {
+		return technicalType;
+	}
+
+	public void setTechnicalType(String technicalType) {
+		this.technicalType = technicalType;
+	}
+
+	public RepositoryEntryEducationalType getEducationalType() {
+		return educationalType;
+	}
+
+	public void setEducationalType(RepositoryEntryEducationalType educationalType) {
+		this.educationalType = educationalType;
+	}
+
 	/**
 	 * @return Returns the name.
 	 */

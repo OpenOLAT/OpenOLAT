@@ -298,7 +298,8 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 				repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
 				repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
 				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
-				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, null);
+				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, null,
+				repositoryEntry.getEducationalType());
 		if(repositoryEntry == null) {
 			showWarning("repositoryentry.not.existing");
 			fireEvent(ureq, Event.CLOSE_EVENT);

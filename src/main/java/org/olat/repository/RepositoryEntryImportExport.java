@@ -96,6 +96,7 @@ public class RepositoryEntryImportExport {
 		xstream.aliasField(PROP_DECRIPTION, RepositoryEntryImport.class, "description");
 		xstream.aliasField(PROP_INITIALAUTHOR, RepositoryEntryImport.class, "initialAuthor");
 		xstream.omitField(RepositoryEntryImport.class, "outer-class");
+		xstream.omitField(RepositoryEntry.class, "educationalType");
 		xstream.ignoreUnknownElements();
 	}
 	
@@ -153,6 +154,12 @@ public class RepositoryEntryImportExport {
 		// save repository entry properties
 		RepositoryEntryImport imp = new RepositoryEntryImport(re);
 		RepositoryManager rm = RepositoryManager.getInstance();
+		
+		if (re.getEducationalType() != null) {
+			String educationalTypeIdentifier = re.getEducationalType().getIdentifier();
+			imp.setEducationalTypeIdentifier(educationalTypeIdentifier);
+		}
+		
 		VFSLeaf image = rm.getImage(re);
 		if(image instanceof LocalFileImpl) {
 			imp.setImageName(image.getName());
@@ -304,14 +311,19 @@ public class RepositoryEntryImportExport {
 			loadConfiguration();
 		}
 		
+		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		
 		importLicense(newEntry);
 		
-		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		String educationalTypeIdentifier = repositoryProperties.getEducationalTypeIdentifier();
+		RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(educationalTypeIdentifier);
+		
 		return repositoryManager.setDescriptionAndName(newEntry, newEntry.getDisplayname(), null,
 				repositoryProperties.getAuthors(), repositoryProperties.getDescription(),
 				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),
 				repositoryProperties.getCredits(), repositoryProperties.getMainLanguage(),
-				repositoryProperties.getLocation(), repositoryProperties.getExpenditureOfWork(), null, null, null);
+				repositoryProperties.getLocation(), repositoryProperties.getExpenditureOfWork(), null, null, null,
+				educationalType);
 	}
 
 	private void importLicense(RepositoryEntry newEntry) {
@@ -481,6 +493,7 @@ public class RepositoryEntryImportExport {
 		private String credits;
 		private String expenditureOfWork;
 		private String location;
+		private String educationalTypeIdentifier;
 		
 		private String movieName;
 		private String imageName;
@@ -596,6 +609,14 @@ public class RepositoryEntryImportExport {
 
 		public void setLocation(String location) {
 			this.location = location;
+		}
+
+		public String getEducationalTypeIdentifier() {
+			return educationalTypeIdentifier;
+		}
+
+		public void setEducationalTypeIdentifier(String educationalTypeIdentifier) {
+			this.educationalTypeIdentifier = educationalTypeIdentifier;
 		}
 
 		public String getObjectives() {

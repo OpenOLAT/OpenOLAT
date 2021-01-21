@@ -347,7 +347,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
 		
 		entry = repositoryManager.setDescriptionAndName(entry, "Repo. entry", null, null, null, null, null, null, null, null, null,
-				null, Collections.singletonList(organisationRepositoreyOnly), null);
+				null, Collections.singletonList(organisationRepositoreyOnly), null, null);
 		dbInstance.commitAndCloseSession();
 		
 		QualityContext context = RepositoryEntryQualityContextBuilder
@@ -395,7 +395,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
 		
 		entry = repositoryManager.setDescriptionAndName(entry, "Repo. entry", null, null, null, null, null, null, null, null, null, null,
-				Arrays.asList(organisationUserAndRepository, organisationUserAndRepositoryButManager, organisationRepositoreyOnly), null);
+				Arrays.asList(organisationUserAndRepository, organisationUserAndRepositoryButManager, organisationRepositoreyOnly), null, null);
 		dbInstance.commitAndCloseSession();
 		
 		QualityContext context = RepositoryEntryQualityContextBuilder
@@ -431,7 +431,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		Organisation organisationRepositoreyOnly = qualityTestHelper.createOrganisation();
 
 		entry = repositoryManager.setDescriptionAndName(entry, "Repo. entry", null, null, null, null, null, null, null, null, null, null,
-				Arrays.asList(organisationUserAndRepositoryButManager, organisationRepositoreyOnly), null);
+				Arrays.asList(organisationUserAndRepositoryButManager, organisationRepositoreyOnly), null, null);
 		dbInstance.commitAndCloseSession();
 		
 		QualityContext context = RepositoryEntryQualityContextBuilder

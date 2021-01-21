@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
@@ -40,11 +41,13 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	
 	private final Date creationDate;
 	
+	private final String technicalType;
 	private final String displayname;
 	private final String description;
 	private final String author;
 	private final String authors;
 	private final String location;
+	private final RepositoryEntryEducationalType educationalType;
 	
 	private final String softkey;
 	private final String externalId;
@@ -78,11 +81,13 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		key = re.getKey();
 		creationDate = re.getCreationDate();
 		
+		technicalType = re.getTechnicalType();
 		displayname = re.getDisplayname();
 		description = re.getDescription();
 		author = re.getInitialAuthor();
 		authors = re.getAuthors();
 		location = re.getLocation();
+		educationalType = re.getEducationalType();
 		
 		softkey = re.getSoftkey();
 		externalId = re.getExternalId();
@@ -136,6 +141,11 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	}
 
 	@Override
+	public String getTechnicalType() {
+		return technicalType;
+	}
+
+	@Override
 	public String getDisplayname() {
 		return displayname;
 	}
@@ -145,6 +155,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		return description;
 	}
 
+	@Override
 	public String getSoftkey() {
 		return softkey;
 	}
@@ -177,6 +188,11 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	@Override
 	public String getLocation() {
 		return location;
+	}
+
+	@Override
+	public RepositoryEntryEducationalType getEducationalType() {
+		return educationalType;
 	}
 
 	@Override
@@ -244,6 +260,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		return deletedByFullName;
 	}
 
+	@Override
 	public Date getDeletionDate() {
 		return deletionDate;
 	}

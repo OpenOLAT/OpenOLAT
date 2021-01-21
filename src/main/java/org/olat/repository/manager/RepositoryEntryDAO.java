@@ -35,6 +35,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -308,5 +309,19 @@ public class RepositoryEntryDAO {
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("now", endOfDay)
 				.getResultList();
+	}
+
+	public void removeEducationalType(RepositoryEntryEducationalType educationalType) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("update repositoryentry re");
+		sb.append("   set re.educationalType = null");
+		sb.append("     , re.lastModified = :now");
+		sb.and().append("re.educationalType.key = :educationalTypeKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("now", new Date())
+				.setParameter("educationalTypeKey", educationalType.getKey())
+				.executeUpdate();
 	}
 }

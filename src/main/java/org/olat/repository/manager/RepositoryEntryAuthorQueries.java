@@ -181,6 +181,7 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" from repositoryentry as v")
 			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res")
 			  .append(" inner join fetch v.statistics as stats")
+			  .append(" left join fetch v.educationalType as educationalType")
 			  .append(" left join fetch v.lifecycle as lifecycle ");
 			if(params.isDeleted()) {
 				sb.append(" left join fetch v.deletedBy as deletedBy")
@@ -205,6 +206,12 @@ public class RepositoryEntryAuthorQueries {
 
 		if (params.isResourceTypesDefined()) {
 			sb.append(" and res.resName in (:resourcetypes)");
+		}
+		if (params.isTechnicalTypeDefined()) {
+			sb.append(" and v.technicalType in (:technicalTypes)");
+		}
+		if (params.isEducationalTypeDefined()) {
+			sb.append(" and v.educationalType.key in (:educationalTypeKeys)");
 		}
 		if(params.getMarked() != null && params.getMarked().booleanValue()) {
 			needIdentity = true;
@@ -334,6 +341,12 @@ public class RepositoryEntryAuthorQueries {
 			dbQuery.setParameter("quickText", quickText);
 		}
 		
+		if (params.isTechnicalTypeDefined()) {
+			dbQuery.setParameter("technicalTypes", params.getTechncialTypes());
+		}
+		if (params.isEducationalTypeDefined()) {
+			dbQuery.setParameter("educationalTypeKeys", params.getEducationalTypeKeys());
+		}
 		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
 			dbQuery.setParameter("author", author);
 		}
@@ -475,6 +488,10 @@ public class RepositoryEntryAuthorQueries {
 				case type:
 					sb.append(" order by res.resName");
 					appendAsc(sb, asc);
+					break;
+				case technicalType:
+					sb.append(" order by lower(v.technicalType)");
+					appendAsc(sb, asc);	
 					break;
 				case displayname:
 					sb.append(" order by lower(v.displayname)");

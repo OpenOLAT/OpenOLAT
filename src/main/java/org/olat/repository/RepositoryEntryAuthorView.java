@@ -42,12 +42,16 @@ public interface RepositoryEntryAuthorView extends OLATResourceable, RepositoryE
 	public String getExternalRef();
 	
 	public RepositoryEntryManagedFlag[] getManagedFlags();
+	
+	public String getTechnicalType();
 
 	public String getAuthor();
 	
 	public String getAuthors();
 	
 	public String getLocation();
+	
+	public RepositoryEntryEducationalType getEducationalType();
 	
 	public OLATResource getOlatResource();
 	

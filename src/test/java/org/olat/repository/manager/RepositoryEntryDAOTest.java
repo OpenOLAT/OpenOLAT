@@ -19,6 +19,9 @@
  */
 package org.olat.repository.manager;
 
+import static org.olat.test.JunitTestHelper.createAndPersistRepositoryEntry;
+import static org.olat.test.JunitTestHelper.random;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +37,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -62,6 +66,8 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	private OrganisationService organisationService;
 	@Autowired
 	private OLATResourceManager resourceManager;
+	@Autowired
+	private RepositoryEntryEducationalTypeDAO repositoryEntryEducationalTypeDAO;
 
 	@Test
 	public void loadByKey() {
@@ -426,5 +432,37 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(lastUsed);
 		Assert.assertTrue(lastUsed.size() <= 100);
 		Assert.assertTrue(lastUsed.contains(re));
+	}
+	
+	@Test
+	public void removeEducationalType() {
+		RepositoryEntryEducationalType educationalType1 = repositoryEntryEducationalTypeDAO.create(random());
+		RepositoryEntry entry11 = repositoryManager.setDescriptionAndName(createAndPersistRepositoryEntry(), random(),
+				null, random(), random(), null, null, null, null, null, null, null, null, null, educationalType1);
+		RepositoryEntry entry12 = repositoryManager.setDescriptionAndName(createAndPersistRepositoryEntry(), random(),
+				null, random(), random(), null, null, null, null, null, null, null, null, null, educationalType1);
+		RepositoryEntryEducationalType educationalType2 = repositoryEntryEducationalTypeDAO.create(random());
+		RepositoryEntry entry2 = repositoryManager.setDescriptionAndName(createAndPersistRepositoryEntry(), random(),
+				null, random(), random(), null, null, null, null, null, null, null, null, null, educationalType2);
+		dbInstance.commitAndCloseSession();
+		
+		entry11 = repositoryEntryDao.loadByKey(entry11.getKey());
+		entry12 = repositoryEntryDao.loadByKey(entry12.getKey());
+		entry2 = repositoryEntryDao.loadByKey(entry2.getKey());
+		
+		Assert.assertTrue(entry11.getEducationalType().getKey() == educationalType1.getKey());
+		Assert.assertTrue(entry12.getEducationalType().getKey() == educationalType1.getKey());
+		Assert.assertTrue(entry2.getEducationalType().getKey() == educationalType2.getKey());
+		
+		repositoryEntryDao.removeEducationalType(educationalType1);
+		dbInstance.commitAndCloseSession();
+		
+		entry11 = repositoryEntryDao.loadByKey(entry11.getKey());
+		entry12 = repositoryEntryDao.loadByKey(entry12.getKey());
+		entry2 = repositoryEntryDao.loadByKey(entry2.getKey());
+		
+		Assert.assertNull(entry11.getEducationalType());
+		Assert.assertNull(entry12.getEducationalType());
+		Assert.assertTrue(entry2.getEducationalType().getKey() == educationalType2.getKey());
 	}
 }

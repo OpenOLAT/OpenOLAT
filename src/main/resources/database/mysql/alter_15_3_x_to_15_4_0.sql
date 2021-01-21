@@ -10,6 +10,24 @@ alter table o_vfs_metadata add constraint fmeta_modified_by_idx foreign key (fk_
 alter table o_bs_identity add column expirationdate datetime default null;
 alter table o_bs_identity add column expirationemaildate datetime default null;
 
+-- Repository
+create table o_re_educational_type (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   r_identifier varchar(128) not null,
+   r_predefined bool not null default false,
+   r_css_class varchar(128),
+   primary key (id)
+);
+alter table o_re_educational_type ENGINE = InnoDB;
+
+alter table o_repositoryentry add column technical_type varchar(128);
+alter table o_repositoryentry add column fk_educational_type bigint default null;
+alter table o_repositoryentry add constraint idx_re_edu_type_fk foreign key (fk_educational_type) references o_re_educational_type(id);
+create unique index idc_re_edu_type_ident on o_re_educational_type (r_identifier);
+
+
 -- Teams
 create table o_teams_meeting (
    id bigint not null auto_increment,

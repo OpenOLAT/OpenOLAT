@@ -11,6 +11,22 @@ create index idx_fmeta_modified_by_idx on o_vfs_metadata (fk_lastmodified_by);
 alter table o_bs_identity add expirationdate date default null;
 alter table o_bs_identity add expirationemaildate date default null;
 
+-- Repository
+create table o_re_educational_type (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  r_identifier varchar2(128) not null,
+  r_predefined number not null,
+  r_css_class varchar2(128),
+  primary key (id)
+);
+
+alter table o_repositoryentry add technical_type varchar2(128);
+alter table o_repositoryentry add fk_educational_type number(20) default null;
+alter table o_repositoryentry add constraint idx_re_edu_type_fk foreign key (fk_educational_type) references o_re_educational_type(id);
+create unique index idc_re_edu_type_ident on o_re_educational_type (r_identifier);
+
 -- Teams
 create table o_teams_meeting (
    id number(20) generated always as identity,

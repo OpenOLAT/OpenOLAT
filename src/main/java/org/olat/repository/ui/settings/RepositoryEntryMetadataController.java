@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.settings;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -51,11 +54,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.course.CourseModule;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -84,6 +89,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 
 	private TextElement authors;
 	private TextElement language;
+	private SingleSelection educationalTypeEl;
 	private TextElement licensorEl;
 	private TextElement expenditureOfWork;
 	private TextAreaElement licenseFreetextEl;
@@ -174,6 +180,19 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		if(StringHelper.isLong(taxonomyTreeKey)) {
 			TaxonomyRef taxonomyRef = new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey));
 			initFormTaxonomy(formLayout, taxonomyRef);
+		}
+		
+		if (CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+			KeyValues educationalTypeKV = new KeyValues();
+			repositoryManager.getAllEducationalTypes()
+					.forEach(type -> educationalTypeKV.add(entry(type.getIdentifier(), translate(RepositoyUIFactory.getI18nKey(type)))));
+			educationalTypeKV.sort(KeyValues.VALUE_ASC);
+			educationalTypeEl = uifactory.addDropdownSingleselect("cif.educational.type", formLayout, educationalTypeKV.keys(), educationalTypeKV.values());
+			educationalTypeEl.enableNoneSelection();
+			RepositoryEntryEducationalType educationalType = repositoryEntry.getEducationalType();
+			if (educationalType != null && Arrays.asList(educationalTypeEl.getKeys()).contains(educationalType.getIdentifier())) {
+				educationalTypeEl.select(educationalType.getIdentifier(), true);
+			}
 		}
 		
 		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), formLayout);
@@ -305,6 +324,12 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			licensorEl.setValue(license.getLicensor());
 			licenseFreetextEl.setValue(license.getFreetext());
 		}
+		
+		if (educationalTypeEl != null) {
+			String identifier = educationalTypeEl.isOneSelected()? educationalTypeEl.getSelectedKey(): null;
+			RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(identifier);
+			repositoryEntry.setEducationalType(educationalType);
+		}
 
 		String mainLanguage = language.getValue();
 		if(StringHelper.containsNonWhitespace(mainLanguage)) {
@@ -347,7 +372,8 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 				repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
 				repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
 				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
-				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, taxonomyLevels);
+				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, taxonomyLevels,
+				repositoryEntry.getEducationalType());
 		if(repositoryEntry == null) {
 			showWarning("repositoryentry.not.existing");
 			fireEvent(ureq, Event.CLOSE_EVENT);

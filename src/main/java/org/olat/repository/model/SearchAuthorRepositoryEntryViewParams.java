@@ -20,6 +20,7 @@
 package org.olat.repository.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -53,6 +54,8 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private OrderBy orderBy;
 	private boolean orderByAsc;
 	private List<String> resourceTypes;
+	private Collection<String> techncialTypes;
+	private Collection<Long> educationalTypeKeys;
 	private Set<Long> licenseTypeKeys;
 	private List<OrganisationRef> entryOrganisations;
 	private List<TaxonomyLevelRef> taxonomyLevels;
@@ -153,6 +156,30 @@ public class SearchAuthorRepositoryEntryViewParams {
 		}
 	}
 	
+	public boolean isTechnicalTypeDefined() {
+		return techncialTypes != null && !techncialTypes.isEmpty();
+	}
+	
+	public Collection<String> getTechncialTypes() {
+		return techncialTypes;
+	}
+
+	public void setTechncialTypes(Collection<String> techncialTypes) {
+		this.techncialTypes = techncialTypes;
+	}
+
+	public boolean isEducationalTypeDefined() {
+		return educationalTypeKeys != null && !educationalTypeKeys.isEmpty();
+	}
+	
+	public Collection<Long> getEducationalTypeKeys() {
+		return educationalTypeKeys;
+	}
+
+	public void setEducationalTypeKeys(Collection<Long> educationalTypeKeys) {
+		this.educationalTypeKeys = educationalTypeKeys;
+	}
+
 	public IdentityRef getIdentity() {
 		return identity;
 	}
@@ -229,6 +256,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 		key,
 		favorit,	
 		type,
+		technicalType,
 		displayname,
 		authors,
 		author,

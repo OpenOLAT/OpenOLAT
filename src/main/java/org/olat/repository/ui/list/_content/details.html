@@ -74,6 +74,12 @@
 						$r.escapeHtml($v.mainLanguage)
 					</div>
 					#end
+					#if($educationalType)
+					<div title="$r.translateInAttribute("cif.educational.type")">
+						<i class="o_icon o_icon_educational_type"></i> 
+						$educationalType
+					</div>
+					#end
 				</div>
 				
 				#if($r.available("rating") || $r.available("comments"))
@@ -247,7 +253,10 @@
 						<tr><th>$r.translate("orderby.creationDate")</th><td>$r.formatDateAndTime($v.getCreationDate())</td></tr>
 						<tr><th>$r.translate("orderby.lastModified")</th><td>$r.formatDateAndTime($v.getLastModified())</td></tr>
 						
-						#if ($isEntryAuthor || $roles.isAdministrator() || $roles.isAuthor() || $roles.isLearnResourceManager())		
+						#if ($isEntryAuthor || $roles.isAdministrator() || $roles.isAuthor() || $roles.isLearnResourceManager())
+						#if ($r.isNotEmpty($technicalType))
+							<tr><th>$r.translate("cif.technical.type")</th><td>$technicalType</td></tr>
+						#end
 						<tr><th>$r.translate("cif.access")</th><td>$accessI18n</td></tr>
 						<tr><th>$r.translate("cif.initialAuthor")</th><td>$r.escapeHtml($v.getInitialAuthor())</td></tr>
 						<tr>

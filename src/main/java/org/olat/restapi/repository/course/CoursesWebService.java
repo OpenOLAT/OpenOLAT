@@ -641,6 +641,10 @@ public class CoursesWebService {
 			} else {
 				organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 			}
+			
+			NodeAccessType type = StringHelper.containsNonWhitespace(nodeAccessType)
+					? NodeAccessType.of(nodeAccessType)
+					: NodeAccessType.of(CourseConfig.NODE_ACCESS_TYPE_DEFAULT);
 
 			// create a repository entry
 			OLATResource resource = olatResourceManager.createOLATResourceInstance(CourseModule.class);
@@ -649,6 +653,7 @@ public class CoursesWebService {
 			if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 				addedEntry.setSoftkey(softKey);
 			}
+			addedEntry = repositoryManager.setTechnicalType(addedEntry, type.getType());
 			addedEntry.setLocation(location);
 			addedEntry.setAuthors(authors);
 			addedEntry.setExternalId(externalId);
@@ -670,9 +675,6 @@ public class CoursesWebService {
 
 			// create an empty course
 			ICourse course = CourseFactory.createCourse(addedEntry, shortTitle, longTitle, "");
-			NodeAccessType type = StringHelper.containsNonWhitespace(nodeAccessType)
-					? NodeAccessType.of(nodeAccessType)
-					: course.getCourseConfig().getNodeAccessType(); // default type
 			CourseFactory.initNodeAccessType(addedEntry, type);
 			log.info(Tracing.M_AUDIT, "Create course: {}", addedEntry);
 			return prepareCourse(addedEntry, shortTitle, longTitle, courseConfigVO);

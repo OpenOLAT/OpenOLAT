@@ -1,4 +1,4 @@
-<div #if($row.selected) class="o_selected" #end>
+<div class="#if($row.selected) o_selected #end #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
 	<div class="o_visual">
 		<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$r.escapeForHtmlAttribute($row.displayName)">
 		#if($row.isThumbnailAvailable())

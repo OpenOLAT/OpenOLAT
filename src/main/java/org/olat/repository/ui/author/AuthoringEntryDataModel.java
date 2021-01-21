@@ -118,6 +118,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case key: return item.getKey();
 			case ac: return item;
 			case type: return item;
+			case technicalType: return item.getTechnicalType();
 			case displayName: return item.getDisplayname();
 			case lifecycleLabel: return item.getLifecycleLabel();
 			case lifecycleSoftkey: return item.getLifecycleSoftKey();
@@ -125,6 +126,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case lifecycleEnd: return item.getLifecycleEnd();
 			case taxonomyLevels: return item.getTaxonomyLevels();
 			case taxonomyPaths: return item.getTaxonomyLevels();
+			case educationalType: return item.getEducationalType();
 			case externalId: return item.getExternalId();
 			case externalRef: return item.getExternalRef();
 			case author: return item.getAuthor();
@@ -174,12 +176,14 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		key("table.header.key"),
 		ac("table.header.ac"),
 		type("table.header.typeimg"),
+		technicalType("table.header.technical.type"),
 		lifecycleLabel("table.header.lifecycle.label"),
 		lifecycleSoftkey("table.header.lifecycle.softkey"),
 		lifecycleStart("table.header.lifecycle.start"),
 		lifecycleEnd("table.header.lifecycle.end"),
 		taxonomyLevels("table.header.taxonomy.levels"),
 		taxonomyPaths("table.header.taxonomy.paths"),
+		educationalType("table.header.educational.type"),
 		externalId("table.header.externalid"),
 		externalRef("table.header.externalref"),
 		displayName("cif.displayname"),

@@ -63,6 +63,8 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyRef;
@@ -95,6 +97,8 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private TextElement author;
 	private TextElement description;
 	private MultipleSelectionElement types;
+	private MultipleSelectionElement technicalTypeEl;
+	private MultipleSelectionElement educationalTypeEl;
 	private SingleSelection closedEl;
 	private SingleSelection resourceUsageEl;
 	private MultipleSelectionElement organisationsEl;
@@ -114,6 +118,8 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private LicenseService licenseService;
 	@Autowired
 	private LicenseModule licenseModule;
@@ -127,6 +133,8 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private RepositoryEntryLicenseHandler licenseHandler;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 	
 	public AuthorSearchController(UserRequest ureq, WindowControl wControl, boolean cancelAllowed) {
 		super(ureq, wControl, "search");
@@ -193,6 +201,24 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		String[] typeCSS = getResourcesCSS(typeList);
 		types = uifactory.addCheckboxesDropdown("cif.type", "cif.type", rightContainer, typeKeys, typeValues, null, typeCSS);
 		types.setNonSelectedText(translate("table.showall"));
+		
+		KeyValues technicalTypeKV = new KeyValues();
+		for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
+			String name = identifier.getDisplayName(getLocale());
+			technicalTypeKV.add(entry(identifier.getType(), name));
+		}
+		technicalTypeKV.sort(KeyValues.VALUE_ASC);
+		technicalTypeEl = uifactory.addCheckboxesDropdown("cif.technical.type", "cif.technical.type",
+				rightContainer, technicalTypeKV.keys(), technicalTypeKV.values());
+		technicalTypeEl.setNonSelectedText(translate("table.showall"));
+		
+		KeyValues educationalTypeKV = new KeyValues();
+		repositoryManager.getAllEducationalTypes()
+				.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
+		educationalTypeKV.sort(KeyValues.VALUE_ASC);
+		educationalTypeEl = uifactory.addCheckboxesDropdown("cif.educational.type", "cif.educational.type",
+				rightContainer, educationalTypeKV.keys(), educationalTypeKV.values());
+		educationalTypeEl.setNonSelectedText(translate("table.showall"));
 		
 		if (licenseModule.isEnabled(licenseHandler)) {
 			List<LicenseType> activeLicenseTypes = licenseService.loadActiveLicenseTypes(licenseHandler);
@@ -310,6 +336,26 @@ public class AuthorSearchController extends FormBasicController implements Exten
 				types.select(typeKey, true);
 			}
 		}
+		
+		Set<String> technicalTypes = se.getTechnicalTypes();
+		if (technicalTypes != null && !technicalTypes.isEmpty()) {
+			for (String technicalType : technicalTypes) {
+				if (technicalTypeEl.getKeys().contains(technicalType)) {
+					technicalTypeEl.select(technicalType, true);
+				}
+			}
+		}
+		
+		Set<Long> educationalTypeKeys = se.getEducationalTypeKeys();
+		if (educationalTypeKeys != null && !educationalTypeKeys.isEmpty()) {
+			for (Long educationalTypeKey : educationalTypeKeys) {
+				String key = educationalTypeKey.toString();
+				if (educationalTypeEl.getKeys().contains(key)) {
+					educationalTypeEl.select(key, true);
+				}
+			}
+		}
+		
 		if (licenseModule.isEnabled(licenseHandler)) {
 			for (Long licenseTypeKey: se.getLicenseTypeKeys()) {
 				String key = String.valueOf(licenseTypeKey);
@@ -362,6 +408,22 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	public Set<String> getRestrictedTypes() {
 		if(types.isAtLeastSelected(1)) {
 			return new HashSet<>(types.getSelectedKeys());
+		}
+		return null;
+	}
+	
+	public Set<String> getTechnicalTypes() {
+		if (technicalTypeEl.isAtLeastSelected(1)) {
+			return new HashSet<>(technicalTypeEl.getSelectedKeys());
+		}
+		return null;
+	}
+	
+	public Set<Long> getEducationalTypeKeys() {
+		if (educationalTypeEl.isAtLeastSelected(1)) {
+			return educationalTypeEl.getSelectedKeys().stream()
+					.map(Long::valueOf)
+					.collect(Collectors.toSet());
 		}
 		return null;
 	}
@@ -463,6 +525,8 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		e.setDisplayname(getDisplayName());
 		e.setDescription(getDescription());
 		e.setTypes(getRestrictedTypes());
+		e.setEducationalTypeKeys(getEducationalTypeKeys());
+		e.setTechnicalTypes(getTechnicalTypes());
 		e.setOwnedResourcesOnly(isOwnedResourcesOnly());
 		e.setResourceUsage(getResourceUsage());
 		e.setClosed(getClosed());

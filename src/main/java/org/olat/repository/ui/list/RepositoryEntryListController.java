@@ -93,6 +93,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
+import org.olat.repository.ui.author.EducationalTypeRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
 import org.olat.repository.ui.list.RepositoryEntryDataModel.Cols;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -208,6 +209,10 @@ public class RepositoryEntryListController extends FormBasicController
 				true, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
 				true, OrderBy.location.name()));
+		DefaultFlexiColumnModel educationalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.educationalType.i18nKey(),
+				Cols.educationalType.ordinal(), false, null);
+		educationalTypeColumnModel.setCellRenderer(new EducationalTypeRenderer());
+		columnsModel.addFlexiColumnModel(educationalTypeColumnModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.details.i18nKey(), Cols.details.ordinal(), false, null));
 		if(!guestOnly) {
 			DefaultFlexiColumnModel completionColumnModel = new DefaultFlexiColumnModel(Cols.completion.i18nKey(),

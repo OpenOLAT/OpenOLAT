@@ -361,6 +361,10 @@ public class AuthorListController extends FormBasicController implements Activat
 		columnsModel.addFlexiColumnModel(markColumn);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
 				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));
+		DefaultFlexiColumnModel technicalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.technicalType.i18nKey(), Cols.technicalType.ordinal(),
+				true, OrderBy.technicalType.name());
+		technicalTypeColumnModel.setCellRenderer(new TechnicalTypeRenderer());
+		columnsModel.addFlexiColumnModel(technicalTypeColumnModel);
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("select", new TextFlexiCellRenderer());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.displayName.ordinal(), "select",
 				true, OrderBy.displayname.name(), renderer));
@@ -392,6 +396,10 @@ public class AuthorListController extends FormBasicController implements Activat
 			taxonomyLevelPathColumnModel.setCellRenderer(new TaxonomyPathsRenderer());
 			columnsModel.addFlexiColumnModel(taxonomyLevelPathColumnModel);
 		}
+		DefaultFlexiColumnModel educationalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.educationalType.i18nKey(),
+				Cols.educationalType.ordinal(), false, null);
+		educationalTypeColumnModel.setCellRenderer(new EducationalTypeRenderer());
+		columnsModel.addFlexiColumnModel(educationalTypeColumnModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.author.i18nKey(), Cols.author.ordinal(),
 				true, OrderBy.author.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.access.i18nKey(), Cols.access.ordinal(),
@@ -937,6 +945,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private void doResetExtendedSearch(UserRequest ureq) {
 		searchParams.setResourceTypes(null);
+		searchParams.setEducationalTypeKeys(null);
 		searchParams.setIdAndRefs(null);
 		searchParams.setAuthor(null);
 		searchParams.setOwnedResourcesOnly(false);
@@ -957,6 +966,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		} else {
 			searchParams.setResourceTypes(null);
 		}
+		searchParams.setTechncialTypes(se.getTechnicalTypes());
+		searchParams.setEducationalTypeKeys(se.getEducationalTypeKeys());
 
 		searchParams.setIdAndRefs(se.getId());
 		searchParams.setAuthor(se.getAuthor());

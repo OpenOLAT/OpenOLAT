@@ -45,6 +45,8 @@ public class SearchEvent extends Event implements StateEntry {
 	private String author;
 	private String description;
 	private Set<String> types;
+	private Set<String> technicalTypes;
+	private Set<Long> educationalTypeKeys;
 	private Boolean closed;
 	private boolean ownedResourcesOnly;
 	private ResourceUsage resourceUsage;
@@ -94,6 +96,22 @@ public class SearchEvent extends Event implements StateEntry {
 
 	public void setTypes(Set<String> types) {
 		this.types = types;
+	}
+
+	public Set<String> getTechnicalTypes() {
+		return technicalTypes;
+	}
+
+	public void setTechnicalTypes(Set<String> technicalTypes) {
+		this.technicalTypes = technicalTypes;
+	}
+
+	public Set<Long> getEducationalTypeKeys() {
+		return educationalTypeKeys;
+	}
+
+	public void setEducationalTypeKeys(Set<Long> educationalTypeKeys) {
+		this.educationalTypeKeys = educationalTypeKeys;
 	}
 
 	public boolean isOwnedResourcesOnly() {

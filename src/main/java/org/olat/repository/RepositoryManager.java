@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
@@ -81,10 +82,12 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.manager.RepositoryEntryEducationalTypeDAO;
 import org.olat.repository.manager.RepositoryEntryQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.manager.RepositoryEntryToOrganisationDAO;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
+import org.olat.repository.model.RepositoryEntryEducationalTypeStat;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
@@ -135,6 +138,8 @@ public class RepositoryManager {
 	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDAO;
 	@Autowired
+	private RepositoryEntryEducationalTypeDAO repositoryEntryEducationalTypeDao;
+	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -142,6 +147,18 @@ public class RepositoryManager {
 	private AutoAccessManager autoAccessManager;
 	@Autowired
 	private RepositoryEntryQueries repositoryEntryQueries;
+	
+	@PostConstruct
+	public void init() {
+		initEducationalType("exam.course", "o_exam_course");
+	}
+
+	private void initEducationalType(String identifier, String cssClass) {
+		RepositoryEntryEducationalType type = repositoryEntryEducationalTypeDao.loadByIdentifier(identifier);
+		if (type == null) {
+			repositoryEntryEducationalTypeDao.createPredefined(identifier, cssClass);
+		}
+	}
 
 	/**
 	 * @return Singleton.
@@ -787,6 +804,25 @@ public class RepositoryManager {
 		dbInstance.commit();
 		return updatedRe;
 	}
+	
+	public RepositoryEntry setTechnicalType(RepositoryEntry re, String technicalType) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		reloadedRe.setTechnicalType(technicalType);
+
+		reloadedRe.setLastModified(new Date());
+		//properties
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		//fetch the values
+		updatedRe.getStatistics().getLaunchCounter();
+		if(updatedRe.getLifecycle() != null) {
+			updatedRe.getLifecycle().getCreationDate();
+		}
+		dbInstance.commit();
+		return updatedRe;
+	}
 
 	public RepositoryEntry setLeaveSetting(final RepositoryEntry re,
 			RepositoryEntryAllowToLeaveOptions setting) {
@@ -921,13 +957,15 @@ public class RepositoryManager {
 	 * @param expenditureOfWork
 	 * @param cycle
 	 * @param taxonomyLevels 
+	 * @param educationalType 
 	 * @return
 	 */
 	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re,
 			String displayName, String externalRef, String authors, String description,
 			String objectives, String requirements, String credits, String mainLanguage,
 			String location, String expenditureOfWork, RepositoryEntryLifecycle cycle,
-			List<Organisation> organisations, Set<TaxonomyLevel> taxonomyLevels) {
+			List<Organisation> organisations, Set<TaxonomyLevel> taxonomyLevels, 
+			RepositoryEntryEducationalType educationalType) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
@@ -942,6 +980,7 @@ public class RepositoryManager {
 		reloadedRe.setMainLanguage(mainLanguage);
 		reloadedRe.setExpenditureOfWork(expenditureOfWork);
 		reloadedRe.setLocation(location);
+		reloadedRe.setEducationalType(educationalType);
 
 		RepositoryEntryLifecycle cycleToDelete = null;
 		RepositoryEntryLifecycle currentCycle = reloadedRe.getLifecycle();
@@ -2104,4 +2143,30 @@ public class RepositoryManager {
 			sb.append(var).append(".key asc");
 		}
 	}
+
+	public RepositoryEntryEducationalType createEducationalType(String identifier) {
+		return repositoryEntryEducationalTypeDao.create(identifier);
+	}
+	
+	public List<RepositoryEntryEducationalType> getAllEducationalTypes() {
+		return repositoryEntryEducationalTypeDao.loadAll();
+	}
+
+	public RepositoryEntryEducationalType getEducationalType(String identifier) {
+		return repositoryEntryEducationalTypeDao.loadByIdentifier(identifier);
+	}
+
+	public boolean isEducationalTypeIdentifierAvailable(String identifier) {
+		return repositoryEntryEducationalTypeDao.loadByIdentifier(identifier) == null;
+	}
+
+	public List<RepositoryEntryEducationalTypeStat> getEducationalTypeStats() {
+		return repositoryEntryEducationalTypeDao.loadStats();
+	}
+
+	public void deleteEducationalType(RepositoryEntryEducationalType educationalType) {
+		repositoryEntryDao.removeEducationalType(educationalType);
+		repositoryEntryEducationalTypeDao.delete(educationalType);
+	}
+
 }
