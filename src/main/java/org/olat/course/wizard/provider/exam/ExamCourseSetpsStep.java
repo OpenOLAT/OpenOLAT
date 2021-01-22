@@ -54,7 +54,7 @@ public class ExamCourseSetpsStep extends BasicStep {
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return PrevNextFinishConfig.BACK_NEXT;
+		return PrevNextFinishConfig.NEXT;
 	}
 
 	@Override
