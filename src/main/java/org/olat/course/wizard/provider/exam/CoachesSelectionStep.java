@@ -55,7 +55,7 @@ public class CoachesSelectionStep extends BasicStep {
 	private CoachesSelectionStep(UserRequest ureq, ExamCourseSteps examCourseSteps, StepCollection stepCollection) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("wizard.title.coaches.selection", null);
+		setI18nTitleAndDescr("wizard.title.coaches.search", null);
 		setStepCollection(stepCollection);
 		setNextStep(new CoachesOverviewStep(ureq, examCourseSteps, stepCollection));
 	}
@@ -68,7 +68,7 @@ public class CoachesSelectionStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext stepsRunContext, Form form) {
-		String formTitle = getTranslator().translate("wizard.title.coaches.selection");
+		String formTitle = getTranslator().translate("wizard.title.coaches.search");
 		return new ImportMemberByUsernamesController(ureq, wControl, form, stepsRunContext,
 				CourseWizardCallback.RUN_CONTEXT_COACHES, formTitle);
 	}

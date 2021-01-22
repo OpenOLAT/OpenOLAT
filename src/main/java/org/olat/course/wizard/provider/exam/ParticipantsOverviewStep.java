@@ -43,7 +43,7 @@ public class ParticipantsOverviewStep extends BasicStep {
 	public ParticipantsOverviewStep(UserRequest ureq, StepCollection stepCollection) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("wizard.title.participants.selection", null);
+		setI18nTitleAndDescr("wizard.title.participants.overview", null);
 		setStepCollection(stepCollection);
 		setNextStep(new PublicationStep(ureq));
 	}
@@ -56,7 +56,7 @@ public class ParticipantsOverviewStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,
 			StepsRunContext stepsRunContext, Form form) {
-		String formTitle = getTranslator().translate("wizard.title.participants.selection");
+		String formTitle = getTranslator().translate("wizard.title.participants.overview");
 		return new ImportMemberOverviewIdentitiesController(ureq, windowControl, form, stepsRunContext,
 				CourseWizardCallback.RUN_CONTEXT_PARTICIPANTS, formTitle);
 	}
