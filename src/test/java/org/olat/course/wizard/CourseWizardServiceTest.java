@@ -257,5 +257,25 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		List<AssessmentMode> assessmentModes = assessmentModeManager.getAssessmentModeFor(entry);
 		assertThat(assessmentModes).isEmpty();
 	}
+	
+	@Test
+	public void shouldNotCreateAssessmentModeForTestIfNoEndDate() {
+		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
+		dbInstance.commitAndCloseSession();
+		IQTESTCourseNodeDefaults defaults = new IQTESTCourseNodeDefaults();
+		defaults.setShortTitle(random());
+		ModuleConfiguration defaultModuleConfig = new ModuleConfiguration();
+		defaultModuleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, true);
+		Date start = new GregorianCalendar(2020, 12, 10, 10, 0, 0).getTime();
+		defaultModuleConfig.setDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE, start);
+		defaults.setModuleConfig(defaultModuleConfig);
+		
+		ICourse course = sut.startCourseEditSession(entry);
+		sut.createIQTESTCourseNode(course, defaults);
+		sut.finishCourseEditSession(course);
+		
+		List<AssessmentMode> assessmentModes = assessmentModeManager.getAssessmentModeFor(entry);
+		assertThat(assessmentModes).isEmpty();
+	}
 
 }

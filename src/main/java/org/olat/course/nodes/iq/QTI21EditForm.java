@@ -210,6 +210,7 @@ public class QTI21EditForm extends FormBasicController {
 		endTestDateElement = uifactory.addDateChooser("qti_form_end_test_date", "qti.form.date.end", endTestDate, formLayout);
 		endTestDateElement.setElementCssClass("o_qti_21_datetest_end");
 		endTestDateElement.setDateChooserTimeEnabled(true);
+		endTestDateElement.setMandatory(wizard);
 	}
 	
 	protected void initFormCorrection(FormItemContainer formLayout) {
@@ -374,6 +375,11 @@ public class QTI21EditForm extends FormBasicController {
 				startTestDateElement.setErrorKey("error.begin.after.end", null);
 				allOk &= false;
 			}
+		}
+		endTestDateElement.clearError();
+		if (wizard && testDateDependentEl.isSelected(0) && endTestDateElement.getDate() == null) {
+			endTestDateElement.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
 		}
 
 		generalStartDateElement.clearError();

@@ -224,18 +224,16 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		}
 		
 		// Assessment mode
-		if (moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST)) {
+		if (moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST)
+				&& moduleConfig.has(IQEditController.CONFIG_KEY_START_TEST_DATE)
+				&& moduleConfig.has(IQEditController.CONFIG_KEY_END_TEST_DATE)) {
 			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			AssessmentMode assessmentMode = assessmentModeManager.createAssessmentMode(courseEntry);
 			assessmentMode.setName(defaults.getShortTitle());
-			if (moduleConfig.has(IQEditController.CONFIG_KEY_START_TEST_DATE)) {
-				Date start = moduleConfig.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
-				assessmentMode.setBegin(start);
-			}
-			if (moduleConfig.has(IQEditController.CONFIG_KEY_END_TEST_DATE)) {
-				Date end = moduleConfig.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
-				assessmentMode.setEnd(end);
-			}
+			Date start = moduleConfig.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
+			assessmentMode.setBegin(start);
+			Date end = moduleConfig.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
+			assessmentMode.setEnd(end);
 			assessmentModeManager.merge(assessmentMode, false);
 		}
 	}
