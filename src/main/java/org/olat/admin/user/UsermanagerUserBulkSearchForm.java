@@ -48,7 +48,7 @@ public class UsermanagerUserBulkSearchForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		searchEl = uifactory.addTextAreaElement("users.list", 12, 60, "", formLayout);
+		searchEl = uifactory.addTextAreaElement("users.list", "users.list", -1, 12, 60, false, false, "", formLayout);
 		searchEl.setLineNumbersEnbaled(true);
 		// Don't use submit button, form should not be marked as dirty since this is
 		// not a configuration form but only a search form (OLAT-5626)
