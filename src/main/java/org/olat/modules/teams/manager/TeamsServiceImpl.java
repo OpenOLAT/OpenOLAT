@@ -280,6 +280,9 @@ public class TeamsServiceImpl implements TeamsService {
 		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
 		String institutionalEmail = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
 		List<User> users = graphDao.searchUsersByMail(email, institutionalEmail);
+		if(users.size() > 1) {
+			users = reduceToPrefered(email, users);
+		}
 		if(users.size() == 1) {
 			User user = users.get(0);
 			teamsUserDao.createUser(identity, user.id, user.displayName);
@@ -305,7 +308,35 @@ public class TeamsServiceImpl implements TeamsService {
 			teamsUserDao.createUser(identity, user.id, user.displayName);
 			dbInstance.commit();
 		}
-		return null;
+		return user;
+	}
+	
+	private List<User> reduceToPrefered(String email, List<User> users) {
+		List<User> preferedUsers = new ArrayList<>();
+		// First mail
+		for(User user:users) {
+			if(user.mail != null && user.mail.equalsIgnoreCase(email)) {
+				preferedUsers.add(user);
+			}
+		}
+		
+		// Fallback other mails
+		if(preferedUsers.isEmpty()) {
+			for(User user:users) {
+				if(user.otherMails != null) {
+					for(String otherMail:user.otherMails) {
+						if(otherMail != null && otherMail.equalsIgnoreCase(email)) {
+							preferedUsers.add(user);
+						}
+					}
+				}
+			}
+		}
+		
+		if(!preferedUsers.isEmpty()) {
+			return preferedUsers;
+		}
+		return users;
 	}
 
 	@Override
