@@ -19,12 +19,20 @@
  */
 package org.olat.modules.portfolio;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.modules.portfolio.handler.BinderTemplateHandler;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,6 +66,10 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	private static final String PORTFOLIO_ENTRIES_TIMELINE_ENABLED = "portfoliov2.entries.timeline.enabled";
 	private static final String PORTFOLIO_HISTORY_ENABLED = "portfoliov2.history.enabled";
 	
+	private static final String PORTFOLIO_ENABLED_TAXONOMIES = "portfoliov2.enabled.taxonomies";
+	
+	private static final Logger log = Tracing.createLoggerFor(PortfolioV2Module.class);
+	
 	
 	@Value("${portfoliov2.enabled:true}")
 	private boolean enabled;
@@ -89,6 +101,11 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	@Value("${portfoliov2.history.enabled:true}")
 	private boolean historyEnabled;
 	
+	@Value("${portfoliov2.enabled.taxonomies}")
+	private String enabledTaxonomies;
+	
+	@Autowired
+	private TaxonomyDAO taxonomyDAO;
 	
 	@Autowired
 	public PortfolioV2Module(CoordinatorManager coordinatorManager) {
@@ -150,6 +167,11 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 		String historyEnabledObj = getStringPropertyValue(PORTFOLIO_HISTORY_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(historyEnabledObj)) {
 			historyEnabled = "true".equals(historyEnabledObj);
+		}
+		
+		String enabledTaxonomiesObj = getStringPropertyValue(PORTFOLIO_ENABLED_TAXONOMIES, true);
+		if (StringHelper.containsNonWhitespace(enabledTaxonomiesObj)) {
+			enabledTaxonomies = enabledTaxonomiesObj;
 		}
 		
 		RepositoryHandlerFactory.registerHandler(new BinderTemplateHandler(), 40);
@@ -291,5 +313,50 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	public void setHistoryEnabled(boolean historyEnabled) {
 		this.historyEnabled = historyEnabled;
 		setStringProperty(PORTFOLIO_HISTORY_ENABLED, Boolean.toString(historyEnabled), true);
+	}
+	
+	public List<Taxonomy> getEnabledTaxonomies() {
+		if (!StringHelper.containsNonWhitespace(enabledTaxonomies)) {
+			return null;
+		}
+		
+		String[] taxonomies = enabledTaxonomies.replaceAll(" ", "").split(",");
+		List<Taxonomy> taxonomyList = new ArrayList<>();
+		
+		for (String taxonomyString : taxonomies) {
+			try {
+				Long taxonomyKey = Long.valueOf(taxonomyString);
+				Taxonomy taxonomy = taxonomyDAO.loadByKey(taxonomyKey);
+				
+				if (taxonomy != null) {
+					if (taxonomyList.contains(taxonomy)) {
+						log.warn("Misconfigured taxonomies detected: " + taxonomyString + " was added multiple times and should be removed from portfoliov2.enabled.taxonomies");
+					} else {
+						taxonomyList.add(taxonomy);
+					}
+				} else {
+					log.warn("Misconfigured taxonomies detected: " + taxonomyString + " does not exist and should be removed from portfoliov2.enabled.taxonomies");
+				}
+			} catch (Exception e) {
+				log.warn("Misconfigured taxonomies detected: " + taxonomyString + " needs to be removed from portfoliov2.enabled.taxonomies");
+			}
+		}
+		
+		return taxonomyList;
+	}
+	
+	public void setEnabledTaxonomies(List<Taxonomy> taxonomies) {
+		if (taxonomies == null || taxonomies.isEmpty()) {
+			return;
+		}
+		
+		String taxonomyKeys = taxonomies.stream().map(taxonomy -> String.valueOf(taxonomy.getKey())).collect(Collectors.joining(","));
+		
+		this.enabledTaxonomies = taxonomyKeys;
+		setStringProperty(PORTFOLIO_ENABLED_TAXONOMIES, taxonomyKeys, true);
+	}
+	
+	public boolean isTaxonomyEnabled(Long taxonomyKey) {
+		return enabledTaxonomies.contains(taxonomyKey.toString());
 	}
 }
