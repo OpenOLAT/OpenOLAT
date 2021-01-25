@@ -77,6 +77,7 @@
 			}
 		}
 		.o_steps_sub {
+			overflow: hidden;
 			counter-reset: sub-step-counter;
 			ul {
 				li {

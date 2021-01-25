@@ -117,11 +117,14 @@ public class AssessedIdentityOverviewController extends BasicController {
 				changes = false;
 				fireEvent(ureq, event);
 			}
-
 		} else if(assessmentForm == source) {
 			if(event instanceof AssessmentFormEvent) {
 				changes = true;
-				fireEvent(ureq, event);
+				if (event.getCommand() == AssessmentFormEvent.ASSESSMENT_DONE) {
+					fireEvent(ureq, Event.DONE_EVENT);
+				} else {
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				}
 			} else if(Event.CANCELLED_EVENT == event) {
 				changes = false;
 				fireEvent(ureq, event);

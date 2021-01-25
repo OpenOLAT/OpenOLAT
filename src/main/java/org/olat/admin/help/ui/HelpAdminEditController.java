@@ -19,7 +19,9 @@
  */
 package org.olat.admin.help.ui;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -28,7 +30,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -50,13 +51,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class HelpAdminEditController extends FormBasicController {
 
+	private static final String TRANSLATOR_PACKAGE = HelpAdminController.class.getPackage().getName();
 	private final static String[] onKeys = new String[]{ "enabled" }; 
 
-	private Map<String, TextElement> labelElementsMap;
+	private List<TextElement> localeElements;
 	private TextElement iconEl;
 	private TextElement inputEl;
 	private MultipleSelectionElement displayEl;
-	private StaticTextElement typEl;
 	private MultipleSelectionElement newWindowEl;
 
 	private String[] displayKeys = new String[3];
@@ -74,35 +75,30 @@ public class HelpAdminEditController extends FormBasicController {
 
 	public HelpAdminEditController(UserRequest ureq, WindowControl wControl, String helpPluginToAdd) {
 		super(ureq, wControl);
+		this.helpPlugin = helpPluginToAdd;
 
 		init();
 		initForm(ureq);
 		
-		this.helpPlugin = helpPluginToAdd;
-		typEl.setValue(translate("help.admin." + helpPluginToAdd));
 		setInputLabel(helpPlugin);
 	}
 
 	public HelpAdminEditController(UserRequest ureq, WindowControl wControl, HelpAdminTableContentRow row) {
 		super(ureq, wControl);
+		this.helpPlugin = row.getHelpPlugin();
 		
 		init();
 		initForm(ureq);
 
-		this.helpPlugin = row.getHelpPlugin();
 		setInputLabel(helpPlugin);
 		
 		iconEl.setValue(StringHelper.containsNonWhitespace(row.getIcon()) ? row.getIcon() : HelpModule.DEFAULT_ICON);
-		typEl.setValue(translate("help.admin." + helpPlugin));
-		typEl.setEnabled(false);
 		displayEl.select(displayKeys[0], row.isAuthoringSet());
 		displayEl.select(displayKeys[1], row.isUsertoolSet());
 		displayEl.select(displayKeys[2], row.isLoginSet());
 	}
 	
 	private void init() {
-		labelElementsMap = new HashMap<>();
-
 		for (int i = 0; i < onKeys.length; i++) {
 			onValues[i] = translate(onKeys[i]);
 		}
@@ -186,19 +182,6 @@ public class HelpAdminEditController extends FormBasicController {
 		default:
 			break;
 		}
-		
-		for (String locale : i18nModule.getEnabledLanguageKeys()) {
-			String translation = i18nManager.getLocalizedString(HelpAdminController.class.getPackage().getName(), "help." + helpPlugin, null, Locale.forLanguageTag(locale), false, false, false, false, 0);
-			String overlayTranslation = i18nManager.getLocalizedString(HelpAdminController.class.getPackage().getName(), "help." + helpPlugin, null, Locale.forLanguageTag(locale), true, false, false, false, 0);
-			
-			// Value must be placed before placeholder
-			// If not, placeholder is not visible when removing content in GUI
-			if (translation != null && overlayTranslation != null && !translation.equals(overlayTranslation)) {
-				labelElementsMap.get(locale).setValue(overlayTranslation);
-			}
-			
-			labelElementsMap.get(locale).setPlaceholderText(translation);
-		}
 	}
 
 	private void setElementVisible(FormItem formItem, boolean visible, boolean enabled, boolean mandatory) {
@@ -212,25 +195,52 @@ public class HelpAdminEditController extends FormBasicController {
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonLayout.setRootForm(mainForm);
 
-		typEl = uifactory.addStaticTextElement("help.admin.type", "", formLayout);
-		for (String language : i18nModule.getEnabledLanguageKeys()) {
-			TextElement languageEl = uifactory.addTextElement("help.admin.label." + language, 255, "", formLayout);
-			languageEl.setLabel(translate("help.admin.label") + " " + language.toUpperCase(), null, false);
-			labelElementsMap.put(language, languageEl);
+		String type = translate("help.admin." + helpPlugin);
+		uifactory.addStaticTextElement("help.admin.type", type, formLayout);
+
+		Collection<String> enabledLanguageKeys = i18nModule.getEnabledLanguageKeys();
+		localeElements = new ArrayList<>(enabledLanguageKeys.size());
+		for (String languageKey : enabledLanguageKeys) {
+			TextElement localeEl = uifactory.addTextElement("locale." + languageKey, 255, null, formLayout);
+			localeEl.setLabel(translate("help.admin.label") + " " + languageKey.toUpperCase(), null, false);
+			Locale locale = i18nManager.getLocaleOrNull(languageKey);
+			localeEl.setUserObject(locale);
+			setTranslatedValue(localeEl, locale);
+			localeElements.add(localeEl);
 		}
+		
 		iconEl = uifactory.addTextElement("help.admin.icon", 255, "", formLayout);
 		iconEl.setValue(HelpModule.DEFAULT_ICON);
 		iconEl.setExampleKey("help.admin.icon.examples", new String[] {"o_icon_help, o_icon_manual, o_icon_mail, o_icon_video, o_icon_wiki, o_course_icon, o_icon_external_link, o_icon_link, ..."});
 		iconEl.setMandatory(true);
+		
 		inputEl = uifactory.addTextElement("help.admin.input.support", 255, "", formLayout);
 		inputEl.setMandatory(true);
+		
 		newWindowEl = uifactory.addCheckboxesVertical("help.admin.new.window", formLayout, onKeys, onValues, 1);
 		setElementVisible(newWindowEl, false, false, false);
+		
 		displayEl = uifactory.addCheckboxesVertical("help.admin.display", formLayout, displayKeys, displayValues, 1);
 
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		formLayout.add(buttonLayout);
+	}
+	
+	private void setTranslatedValue(TextElement localeEl, Locale locale) {
+		String i18nKey = getPluginI18nKey();
+		String translation = i18nManager.getLocalizedString(TRANSLATOR_PACKAGE, i18nKey, null, locale, false, false, false, false, 0);
+		String overlayTranslation = i18nManager.getLocalizedString(TRANSLATOR_PACKAGE, i18nKey, null, locale, true, false, false, false, 0);
+		if (StringHelper.containsNonWhitespace(overlayTranslation)) {
+			localeEl.setValue(overlayTranslation);
+		} else {
+			localeEl.setValue(translation);
+		}
+		localeEl.setPlaceholderText(translation);
+	}
+
+	private String getPluginI18nKey() {
+		return "help." + helpPlugin;
 	}
 
 	@Override
@@ -251,12 +261,13 @@ public class HelpAdminEditController extends FormBasicController {
 				displayEl.getSelectedKeys().contains("help.admin.display.login"),
 				newWindowEl.getSelectedKeys().contains(onKeys[0]));
 		
-		// save new values
 		Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
-		for (String locale : i18nModule.getEnabledLanguageKeys()) {
-			String newValue = labelElementsMap.get(locale).getValue();
-			I18nItem item = i18nManager.getI18nItem(HelpAdminController.class.getPackage().getName(), "help." + helpPlugin, allOverlays.get(Locale.forLanguageTag(locale)));
-			i18nManager.saveOrUpdateI18nItem(item, newValue);
+		String i18nKey = getPluginI18nKey();
+		for (TextElement localeEl : localeElements) {
+			String translation = localeEl.getValue();
+			Locale locale = (Locale)localeEl.getUserObject();
+			I18nItem item = i18nManager.getI18nItem(TRANSLATOR_PACKAGE, i18nKey, allOverlays.get(locale));
+			i18nManager.saveOrUpdateI18nItem(item, translation);
 		}
 
 		fireEvent(ureq, FormEvent.DONE_EVENT);
@@ -271,9 +282,11 @@ public class HelpAdminEditController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOK = super.validateFormLogic(ureq);
 
-		for (String language : i18nModule.getEnabledLanguageKeys()) {
-			allOK &= validateTextInput(labelElementsMap.get(language), 255, false);
+		for (TextElement localeEl : localeElements) {
+			allOK &= validateTextInput(localeEl, 255, false);
+			
 		}
+		
 		allOK &= validateTextInput(iconEl, 255, false);
 		
 		switch (helpPlugin) {
@@ -320,35 +333,6 @@ public class HelpAdminEditController extends FormBasicController {
 		}
 
 		return true;
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == typEl) {
-			if (event.wasTriggerdBy(FormEvent.ONCHANGE)) {
-				if (typEl.getValue().contains(HelpModule.ACADEMY)) {
-					helpPlugin = HelpModule.ACADEMY;
-				} else if (typEl.getValue().contains(HelpModule.OOTEACH)) {
-					helpPlugin = HelpModule.OOTEACH;
-				} else if (typEl.getValue().contains(HelpModule.CONFLUENCE)) {
-					helpPlugin = HelpModule.CONFLUENCE;
-				} else if (typEl.getValue().contains(HelpModule.COURSE)) {
-					helpPlugin = HelpModule.COURSE;
-				} else if (typEl.getValue().contains(HelpModule.CUSTOM_1)) {
-					helpPlugin = HelpModule.CUSTOM_1;
-				} else if (typEl.getValue().contains(HelpModule.CUSTOM_2)) {
-					helpPlugin = HelpModule.CUSTOM_2;
-				} else if (typEl.getValue().contains(HelpModule.CUSTOM_3)) {
-					helpPlugin = HelpModule.CUSTOM_3;
-				} else if (typEl.getValue().contains(HelpModule.SUPPORT)) {
-					helpPlugin = HelpModule.SUPPORT;
-				}
-
-				setInputLabel(helpPlugin);
-			}
-		}
-
-		super.formInnerEvent(ureq, source, event);
 	}
 
 }
