@@ -162,7 +162,7 @@ public class MicrosoftGraphDAO {
 	public OnlineMeeting createMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, TeamsErrors errors) {
 		MeetingParticipants participants = new MeetingParticipants();
 		if(user != null) {
-			if(role == OnlineMeetingRole.PRESENTER) {
+			if(role == OnlineMeetingRole.PRESENTER || role == OnlineMeetingRole.PRODUCER) {
 				// Add all possible roles
 				IdentitySet identitySet = createIdentitySetById(user);
 				participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
@@ -231,11 +231,20 @@ public class MicrosoftGraphDAO {
 			onlineMeeting.joinInformation = body;
 		}
 		
-		onlineMeeting = client()
-				.communications()
-				.onlineMeetings()
-				.buildRequest()
-				.post(onlineMeeting);
+		if((user != null && role == OnlineMeetingRole.PRESENTER)
+				|| !StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
+			onlineMeeting = client()
+					.communications()
+					.onlineMeetings()
+					.buildRequest()
+					.post(onlineMeeting);
+		} else {
+			onlineMeeting = client()
+					.users(teamsModule.getOnBehalfUserId())
+					.onlineMeetings()
+					.buildRequest()
+					.post(onlineMeeting);
+		}
 		
 		log.info(Tracing.M_AUDIT, "Online-Meeting created with id: {}", onlineMeeting.id);
 		return onlineMeeting;
@@ -261,11 +270,22 @@ public class MicrosoftGraphDAO {
 		onlineMeeting.subject = meeting.getSubject();
 		
 		if(user != null) {
-			MeetingParticipants participants = new MeetingParticipants();
 			IdentitySet identitySet = createIdentitySetById(user);
-			participants.attendees = new ArrayList<>();
-			participants.attendees.add(createParticipantInfo(identitySet, role));
-			onlineMeeting.participants = participants;
+			MeetingParticipants participants = new MeetingParticipants();
+			if(role == OnlineMeetingRole.PRESENTER || role == OnlineMeetingRole.PRODUCER) {
+				participants.attendees = new ArrayList<>();
+				participants.attendees.add(createParticipantInfo(identitySet, OnlineMeetingRole.PRESENTER));
+				participants.attendees.add(createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER));
+				onlineMeeting.participants = participants;
+				
+				MeetingParticipantInfo producer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
+				participants.producers = new ArrayList<>();
+				participants.producers.add(producer);
+			} else {
+				participants.attendees = new ArrayList<>();
+				participants.attendees.add(createParticipantInfo(identitySet, OnlineMeetingRole.ATTENDEE));
+				onlineMeeting.participants = participants;
+			}
 		}
 		
 		// access, body informations cannot be updatet
