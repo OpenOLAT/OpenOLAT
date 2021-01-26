@@ -172,11 +172,10 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				loc, ColumnDescriptor.ALIGNMENT_LEFT));
 		
 		String selectAction = selectTitle ? TABLE_ACTION_SELECT_LINK : null;
-		if(repositoryModule.isManagedRepositoryEntries()) {
-			tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.externalid", RepoCols.externalId.ordinal(), selectAction, loc));
-			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.externalref", RepoCols.externalRef.ordinal(), selectAction, loc));
-		}
-		boolean lfVisible = lifecycleDao.countPublicLifecycle() > 0;
+		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.externalid", RepoCols.externalId.ordinal(), selectAction, loc));
+		tableCtr.addColumnDescriptor(repositoryModule.isManagedRepositoryEntries(), new DefaultColumnDescriptor("table.header.externalref", RepoCols.externalRef.ordinal(), selectAction, loc));
+
+			boolean lfVisible = lifecycleDao.countPublicLifecycle() > 0;
 		tableCtr.addColumnDescriptor(lfVisible, new DefaultColumnDescriptor("table.header.lifecycle.label", RepoCols.lifecycleLabel.ordinal(), null, loc));
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lifecycle.softkey", RepoCols.lifecycleSoftKey.ordinal(), null, loc));
 		ColumnDescriptor nameColDesc = new DefaultColumnDescriptor("table.header.displayname", RepoCols.displayname.ordinal(), selectAction, loc) {
