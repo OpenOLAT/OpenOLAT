@@ -185,7 +185,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
 	}
 	
-	protected void addMembers(UserRequest ureq, StepsRunContext runContext) {
+	protected final void addMembers(UserRequest ureq, StepsRunContext runContext) {
 		Roles roles = ureq.getUserSession().getRoles();
 		
 		Set<Identity> members = ((MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY)).getIdentities();
@@ -195,11 +195,11 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		//commit changes to the repository entry
 		MailerResult result = new MailerResult();
 		MailPackage reMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
-		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.getRepoChanges();
+		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
 		repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, repoEntry, repoChanges, reMailing);
 
 		//commit all changes to the group memberships
-		List<BusinessGroupMembershipChange> allModifications = changes.getGroupChanges();
+		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
 		MailPackage bgMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		businessGroupService.updateMemberships(getIdentity(), allModifications, bgMailing);
 		boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();

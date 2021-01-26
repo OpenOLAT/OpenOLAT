@@ -636,13 +636,16 @@ public class Form {
 			 * check if this is the FormItem to be dispatched
 			 */
 			Component tmp = fi.getComponent();
-			String tmpD = FormBaseComponentIdProvider.DISPPREFIX + tmp.getDispatchID();
-
-			if (!foundDispatchItem && tmpD.equals(dispatchId)) {
-				dispatchFormItem = fi;
-				foundDispatchItem = true;
+			if(tmp != null) {
+				String tmpD = FormBaseComponentIdProvider.DISPPREFIX.concat(tmp.getDispatchID());
+				if (!foundDispatchItem && tmpD.equals(dispatchId)) {
+					dispatchFormItem = fi;
+					foundDispatchItem = true;
+				}
+			} else {
+				log.warn("Null component: {}", fi);
 			}
-			
+
 			/*
 			 * let the form item evaluate the form request, e.g. get out its data
 			 */
