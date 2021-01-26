@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.olat.collaboration.CollaborationToolsFactory;
@@ -33,6 +34,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
@@ -91,9 +94,13 @@ public class PortfolioAdminController extends FormBasicController  {
 	private MultipleSelectionElement entryElementsVisibilityEl;
 	private MultipleSelectionElement commentsVisibilityEl;
 	private SingleSelection entriesViewEl;
+	private MultipleSelectionElement taxonomyLinkingEnbaledEl;
+	private MultipleSelectionElement linkedTaxonomiesEl;
 
 	@Autowired
 	private PortfolioV2Module portfolioV2Module;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	
 	public PortfolioAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -154,6 +161,22 @@ public class PortfolioAdminController extends FormBasicController  {
 		entriesViewEl.select(selectedKey, true);
 		entriesViewEl.addActionListener(FormEvent.ONCHANGE);
 		
+		taxonomyLinkingEnbaledEl = uifactory.addCheckboxesVertical("taxonomy.linking.enabled", formLayout, enabledKeys, enabledValues, 1);
+		if(portfolioV2Module.isTaxonomyLinkingEnabled()) {
+			taxonomyLinkingEnbaledEl.select(enabledKeys[0], true);
+		}
+		taxonomyLinkingEnbaledEl.addActionListener(FormEvent.ONCHANGE);
+		
+		List<Taxonomy> taxonomies = taxonomyService.getTaxonomyList();
+		String[] taxonomyKeys = taxonomies.stream().map(taxonomy -> taxonomy.getKey().toString()).toArray(String[]::new);
+		String[] taxonomyNames = taxonomies.stream().map(taxonomy -> taxonomy.getDisplayName()).toArray(String[]::new);
+		
+		linkedTaxonomiesEl = uifactory.addCheckboxesVertical("taxonomy.linked.elements", formLayout, taxonomyKeys, taxonomyNames, 1);
+		if (portfolioV2Module.getLinkedTaxonomies() != null) {
+			portfolioV2Module.getLinkedTaxonomies().stream().forEach(taxonomy -> linkedTaxonomiesEl.select(taxonomy.getKey().toString(), true));
+		}
+		linkedTaxonomiesEl.addActionListener(FormEvent.ONCHANGE);
+		
 		updateV2UI();
 	}
 
@@ -165,6 +188,9 @@ public class PortfolioAdminController extends FormBasicController  {
 		entryElementsVisibilityEl.setVisible(enabled);
 		commentsVisibilityEl.setVisible(enabled);
 		entriesViewEl.setVisible(enabled);
+		taxonomyLinkingEnbaledEl.setVisible(enabled);
+		linkedTaxonomiesEl.setVisible(enabled && portfolioV2Module.isTaxonomyLinkingEnabled());
+		
 		if (enabled) {
 			createBinderEl.select(BINDER_CREATE_LEARNER, portfolioV2Module.isLearnerCanCreateBinders());
 			createBinderEl.select(BINDER_CREATE_TEMPLATE, portfolioV2Module.isCanCreateBindersFromTemplate());
@@ -176,6 +202,11 @@ public class PortfolioAdminController extends FormBasicController  {
 			entryElementsVisibilityEl.select(ENTRIES_TIMELINE_ENABLED, portfolioV2Module.isEntriesTimelineEnabled());
 			commentsVisibilityEl.select(COMMENTS_OVERVIEW_ENABLED, portfolioV2Module.isOverviewCommentsEnabled());
 			commentsVisibilityEl.select(COMMENTS_ENTRIES_ENABLED, portfolioV2Module.isEntriesCommentsEnabled());
+			taxonomyLinkingEnbaledEl.select(enabledKeys[0], portfolioV2Module.isTaxonomyLinkingEnabled());
+			
+			if (portfolioV2Module.isTaxonomyLinkingEnabled() && portfolioV2Module.getLinkedTaxonomies() != null) {
+				portfolioV2Module.getLinkedTaxonomies().stream().forEach(taxonomy -> linkedTaxonomiesEl.select(taxonomy.getKey().toString(), true));
+			}
 		}
 	}
 	
@@ -251,6 +282,12 @@ public class PortfolioAdminController extends FormBasicController  {
 			}
 			portfolioV2Module.setEntriesTableEnabled(entriesTableEnabled);
 			portfolioV2Module.setEntriesListEnabled(entriesListEnabled);
+		} else if (taxonomyLinkingEnbaledEl == source) {
+			boolean enabled = taxonomyLinkingEnbaledEl.isSelected(0);
+			portfolioV2Module.setTaxonomyLinkingEnabled(enabled);
+			updateV2UI();
+		} else if (linkedTaxonomiesEl == source) {
+			portfolioV2Module.setLinkedTaxonomies(linkedTaxonomiesEl.getSelectedKeys());
 		}
 	}
 

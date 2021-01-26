@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,7 +67,8 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	private static final String PORTFOLIO_ENTRIES_TIMELINE_ENABLED = "portfoliov2.entries.timeline.enabled";
 	private static final String PORTFOLIO_HISTORY_ENABLED = "portfoliov2.history.enabled";
 	
-	private static final String PORTFOLIO_ENABLED_TAXONOMIES = "portfoliov2.enabled.taxonomies";
+	private static final String PORTFOLIO_TAXONOMY_LINKING_ENABLED = "portfoliov2.taxonomy.linking.enabled"; 
+	private static final String PORTFOLIO_LINKED_TAXONOMIES = "portfoliov2.linked.taxonomies";
 	
 	private static final Logger log = Tracing.createLoggerFor(PortfolioV2Module.class);
 	
@@ -101,8 +103,10 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	@Value("${portfoliov2.history.enabled:true}")
 	private boolean historyEnabled;
 	
-	@Value("${portfoliov2.enabled.taxonomies}")
-	private String enabledTaxonomies;
+	@Value("${portfoliov2.taxonomy.linking.enabled:false}")
+	private boolean taxonomyLinkingEnabled;
+	@Value("${portfoliov2.linked.taxonomies}")
+	private String linkedTaxonomies;
 	
 	@Autowired
 	private TaxonomyDAO taxonomyDAO;
@@ -169,9 +173,14 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 			historyEnabled = "true".equals(historyEnabledObj);
 		}
 		
-		String enabledTaxonomiesObj = getStringPropertyValue(PORTFOLIO_ENABLED_TAXONOMIES, true);
+		String taxonomyLinkingEnabledObj = getStringPropertyValue(PORTFOLIO_TAXONOMY_LINKING_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(taxonomyLinkingEnabledObj)) {
+			taxonomyLinkingEnabled = "true".equals(taxonomyLinkingEnabledObj);
+		}
+		
+		String enabledTaxonomiesObj = getStringPropertyValue(PORTFOLIO_LINKED_TAXONOMIES, true);
 		if (StringHelper.containsNonWhitespace(enabledTaxonomiesObj)) {
-			enabledTaxonomies = enabledTaxonomiesObj;
+			linkedTaxonomies = enabledTaxonomiesObj;
 		}
 		
 		RepositoryHandlerFactory.registerHandler(new BinderTemplateHandler(), 40);
@@ -315,12 +324,21 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 		setStringProperty(PORTFOLIO_HISTORY_ENABLED, Boolean.toString(historyEnabled), true);
 	}
 	
-	public List<Taxonomy> getEnabledTaxonomies() {
-		if (!StringHelper.containsNonWhitespace(enabledTaxonomies)) {
+	public boolean isTaxonomyLinkingEnabled() {
+		return taxonomyLinkingEnabled;
+	}
+	
+	public void setTaxonomyLinkingEnabled(boolean taxonomyLinkingEnabled) {
+		this.taxonomyLinkingEnabled = taxonomyLinkingEnabled;
+		setStringProperty(PORTFOLIO_TAXONOMY_LINKING_ENABLED, Boolean.toString(taxonomyLinkingEnabled), true);
+	}
+	
+	public List<Taxonomy> getLinkedTaxonomies() {
+		if (!StringHelper.containsNonWhitespace(linkedTaxonomies)) {
 			return null;
 		}
 		
-		String[] taxonomies = enabledTaxonomies.replaceAll(" ", "").split(",");
+		String[] taxonomies = linkedTaxonomies.replaceAll(" ", "").split(",");
 		List<Taxonomy> taxonomyList = new ArrayList<>();
 		
 		for (String taxonomyString : taxonomies) {
@@ -345,18 +363,18 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 		return taxonomyList;
 	}
 	
-	public void setEnabledTaxonomies(List<Taxonomy> taxonomies) {
-		if (taxonomies == null || taxonomies.isEmpty()) {
+	public void setLinkedTaxonomies(Collection<String> collection) {
+		if (collection == null) {
 			return;
 		}
 		
-		String taxonomyKeys = taxonomies.stream().map(taxonomy -> String.valueOf(taxonomy.getKey())).collect(Collectors.joining(","));
+		String linkedTaxonomies = collection.stream().collect(Collectors.joining(","));
 		
-		this.enabledTaxonomies = taxonomyKeys;
-		setStringProperty(PORTFOLIO_ENABLED_TAXONOMIES, taxonomyKeys, true);
+		this.linkedTaxonomies = linkedTaxonomies;
+		setStringProperty(PORTFOLIO_LINKED_TAXONOMIES, linkedTaxonomies, true);
 	}
 	
-	public boolean isTaxonomyEnabled(Long taxonomyKey) {
-		return enabledTaxonomies.contains(taxonomyKey.toString());
+	public boolean isTaxonomyLinked(Long taxonomyKey) {
+		return linkedTaxonomies.contains(taxonomyKey.toString());
 	}
 }
