@@ -1024,6 +1024,74 @@ public class GTAManagerTest extends OlatTestCase {
 			Assert.assertEquals(50, count.get());
 		}
 	}
+	
+	@Test
+	public void assignTaskAutomaticallyHighloadPreload() {
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_SAMPLING, GTACourseNode.GTASK_SAMPLING_REUSE);
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+
+		CourseEnvironment courseEnv = CourseFactory.loadCourse(re).getCourseEnvironment();
+		File tasksDirectory = gtaManager.getTasksDirectory(courseEnv, node);
+		FileUtils.deleteDirsAndFiles(tasksDirectory, true, false);
+		copyTestFile(tasksDirectory, "File00O.pdf");
+		copyTestFile(tasksDirectory, "File0O0.pdf");
+		copyTestFile(tasksDirectory, "FileO00.pdf");
+		dbInstance.commit();
+
+		final int numThreads = 30;
+		final int batchSize = 10;
+		final int numOfPersons = batchSize * numThreads;
+		List<Identity> participants = new ArrayList<>(numOfPersons);
+		for(int i=0; i<numOfPersons; i++) {
+			Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-high-load-" + i);
+			participants.add(participant);
+			gtaManager.createAndPersistTask(null, tasks, TaskProcess.assignment, null, participant, node);
+			if(i % 10 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+		dbInstance.commitAndCloseSession();
+		
+		CountDownLatch latch = new CountDownLatch(numThreads);
+		AssignThread[] threads = new AssignThread[numThreads];
+		for(int i=0; i<threads.length;i++) {
+			List<Identity> batch = participants.subList(i * batchSize, (i + 1) * batchSize);
+			threads[i] = new AssignThread(batch, tasks, node, courseEnv, gtaManager, latch);
+		}
+
+		for(int i=0; i<threads.length;i++) {
+			threads[i].start();
+		}
+		
+		try {
+			latch.await(60, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			Assert.fail("Takes too long (more than 120sec)");
+		}
+		
+		int countErrors = 0;
+		for(int i=0; i<threads.length;i++) {
+			countErrors += threads[i].getErrors();
+		}
+		Assert.assertEquals(0, countErrors);
+		
+		List<Task> taskList = gtaManager.getTasks(tasks, node);
+		Map<String, AtomicInteger> maps = Map.of("File00O.pdf", new AtomicInteger(0), "File0O0.pdf", new AtomicInteger(0), "FileO00.pdf", new AtomicInteger(0));
+		for(Task task:taskList) {
+			maps.get(task.getTaskName()).incrementAndGet();
+		}
+
+		Assert.assertEquals(3, maps.size());
+		for(AtomicInteger count:maps.values()) {
+			log.info("Counter: {}", count.get());
+		}
+		for(AtomicInteger count:maps.values()) {
+			Assert.assertEquals(100, count.get());
+		}
+	}
 
 	private static class AssignThread extends Thread {
 
