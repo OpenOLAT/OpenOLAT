@@ -50,6 +50,7 @@ public class TeamsRecurringMeetingsContext {
 	private String allowedPresenters;
 	private boolean entryExitAnnouncement;
 	private String lobbyBypassScope;
+	private boolean participantsCanOpen;
 	
 	private List<TeamsRecurringMeeting> meetings = new ArrayList<>();
 	
@@ -184,6 +185,14 @@ public class TeamsRecurringMeetingsContext {
 
 	public void setLobbyBypassScope(String lobbyBypassScope) {
 		this.lobbyBypassScope = lobbyBypassScope;
+	}
+
+	public boolean isParticipantsCanOpen() {
+		return participantsCanOpen;
+	}
+
+	public void setParticipantsCanOpen(boolean participantsCanOpen) {
+		this.participantsCanOpen = participantsCanOpen;
 	}
 
 	public List<TeamsRecurringMeeting> getMeetings() {

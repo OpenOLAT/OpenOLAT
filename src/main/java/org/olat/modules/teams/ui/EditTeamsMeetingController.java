@@ -72,6 +72,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 	private DateChooser endDateEl;
 	private TextElement leadTimeEl;
 	private TextElement followupTimeEl;
+	private MultipleSelectionElement participantsOpenEl;
 	private SingleSelection accessLevelEl;
 	private SingleSelection presentersEl;
 	private MultipleSelectionElement annoncementEl;
@@ -201,6 +202,13 @@ public class EditTeamsMeetingController extends FormBasicController {
 			String followup = meeting == null ? null : Long.toString(meeting.getFollowupTime());
 			followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
 			followupTimeEl.setEnabled(editable);
+		}
+
+		String[] onOpenValues = new String[] { "" };
+		participantsOpenEl = uifactory.addCheckboxesHorizontal("meeting.participants.open", formLayout, onKeys, onOpenValues);
+		participantsOpenEl.setHelpTextKey("meeting.participants.open.hint", null);
+		if(meeting != null && meeting.isParticipantsCanOpen()) {
+			participantsOpenEl.select("on", true);
 		}
 		
 		KeyValues accessKeyValues = new KeyValues();
@@ -356,6 +364,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 		meeting.setAllowedPresenters(presentersEl.getSelectedKey());
 		meeting.setEntryExitAnnouncement(annoncementEl.isAtLeastSelected(1));
 		meeting.setLobbyBypassScope(lobbyEl.getSelectedKey());
+		meeting.setParticipantsCanOpen(participantsOpenEl.isAtLeastSelected(1));
 		
 		meeting = teamsService.updateMeeting(meeting);
 		

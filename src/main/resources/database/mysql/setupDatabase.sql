@@ -1299,6 +1299,7 @@ create table o_teams_meeting (
    t_read_identifier varchar(64),
    t_online_meeting_id varchar(128),
    t_online_meeting_join_url varchar(2000),
+   t_open_participants bool not null default false,
    t_allowed_presenters varchar(32) default 'EVERYONE',
    t_access_level varchar(32) default 'EVERYONE',
    t_entry_exit_announcement bool default true,

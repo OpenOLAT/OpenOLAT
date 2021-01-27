@@ -139,6 +139,10 @@ public interface TeamsMeeting extends ModifiedInfo, CreateInfo {
 	
 	public void setJoinInformation(String text);
 	
+	public boolean isParticipantsCanOpen();
+
+	public void setParticipantsCanOpen(boolean participantsCanOpen);
+	
 	public String getOnlineMeetingId();
 	
 	public String getOnlineMeetingJoinUrl();
