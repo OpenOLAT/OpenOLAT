@@ -488,7 +488,7 @@ public class FileUtils {
 				deleteFile(sourceFile);
 			}
 		} catch (IOException e) {
-			log.error("Could not copy file::" + sourceFile.getAbsolutePath() + " to file::" + targetFile.getAbsolutePath(), e);
+			log.error("Could not copy file::{} to file::{}", sourceFile.getAbsolutePath(), targetFile.getAbsolutePath(), e);
 			return false;
 		}
 		return true;

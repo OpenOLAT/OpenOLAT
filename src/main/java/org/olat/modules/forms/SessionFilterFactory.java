@@ -51,6 +51,10 @@ public class SessionFilterFactory {
 			EvaluationFormSessionStatus status) {
 		return new SurveysFilter(surveyIdentitfier, status);
 	}
+	
+	public static SessionFilter create(EvaluationFormSurveyRef survey) {
+		return new SurveysFilter(Collections.singletonList(survey));
+	}
 
 	public static SessionFilter createSelectDone(EvaluationFormSurveyRef survey) {
 		return createSelectDone(Collections.singletonList(survey));

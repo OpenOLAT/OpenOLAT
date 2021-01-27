@@ -30,6 +30,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.repository.RepositoryEntry;
 
@@ -69,8 +70,8 @@ public interface SurveyManager {
 
 	public void onExecutionFinished(SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
-	public long getCountOfSessions(EvaluationFormSurvey survey);
-
+	public Long getSessionsCount(SessionFilter filter);
+	
 	public void deleteAllData(EvaluationFormSurvey survey, SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
 }
