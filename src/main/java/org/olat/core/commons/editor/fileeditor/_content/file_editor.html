@@ -1,4 +1,7 @@
 <div class="o_file_editor">
+	#if($editInOtherWindow)
+		<p class="o_warning">$r.translate("error.edit.other.window", $fileName)</p>
+	#end
 	#if($r.available("editor"))
 		$r.render("editor")
 	#end

@@ -48,6 +48,7 @@ public class LockInfo {
     private String appName;
     private boolean vfsLock;
     private boolean webdavLock;
+    private boolean exclusiveLock;
     private boolean collaborationLock;
     
     private boolean locked;
@@ -65,6 +66,7 @@ public class LockInfo {
     	this.appName = appName;
     	vfsLock = type == VFSLockApplicationType.vfs;
     	webdavLock = type == VFSLockApplicationType.webdav;
+    	exclusiveLock = type == VFSLockApplicationType.exclusive;
     	collaborationLock = type == VFSLockApplicationType.collaboration;
     }
     
@@ -154,6 +156,14 @@ public class LockInfo {
 
 	public void setVfsLock(boolean vfsLock) {
 		this.vfsLock = vfsLock;
+	}
+
+	public boolean isExclusiveLock() {
+		return exclusiveLock;
+	}
+
+	public void setExclusiveLock(boolean exclusiveLock) {
+		this.exclusiveLock = exclusiveLock;
 	}
 
 	public boolean isCollaborationLock() {

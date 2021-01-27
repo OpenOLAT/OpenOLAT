@@ -48,7 +48,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class FileEditor implements DocEditor {
 	
-	public static final String TYPE = "OpenOLAT";
+	public static final String TYPE = "OpenOlat";
 	public static final List<String> HTML_EDITOR_SUFFIX = List.of("html", "htm");
 	private static final List<String> TEXT_EDITOR_SUFFIX = List.of("txt", "css", "csv", "xml");
 	
@@ -115,7 +115,7 @@ public class FileEditor implements DocEditor {
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity, Mode mode) {
 		if (Mode.EDIT.equals(mode)) {
-			return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.vfs, null);
+			return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.exclusive, FileEditor.TYPE);
 		}
 		return false;
 	}
@@ -123,7 +123,7 @@ public class FileEditor implements DocEditor {
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity, Mode mode) {
 		if (Mode.EDIT.equals(mode)) {
-			return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.vfs, null);
+			return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.exclusive, FileEditor.TYPE);
 		}
 		return false;
 	}
@@ -131,7 +131,7 @@ public class FileEditor implements DocEditor {
 	@Override
 	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
 			DocEditorConfigs configs, Access access) {
-		return new FileEditorController(ureq, wControl, vfsLeaf, configs);
+		return new FileEditorController(ureq, wControl, vfsLeaf, configs, access);
 	}
 
 }

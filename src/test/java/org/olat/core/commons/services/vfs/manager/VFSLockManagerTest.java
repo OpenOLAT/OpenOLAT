@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -404,5 +406,45 @@ public class VFSLockManagerTest extends OlatTestCase {
 		Assert.assertFalse(lockedOther.isAcquired());
 	}
 	
+
+	@Test
+	public void lockUnlockExclusive() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-8");
+		Identity otherId = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-9");
+		
+		//create a file
+		String relativePath = "lock" + random();
+		VFSContainer rootTest = VFSManager.olatRootContainer("/" + relativePath, null);
+		String filename = random() + "_lock.txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		
+		// lock the file
+		LockResult locked = lockManager.lock(file, id, VFSLockApplicationType.exclusive, null);
+		Assert.assertTrue(locked.isAcquired());
+		
+		// I can not lock it a second time
+		boolean lockedMe = lockManager.isLockedForMe(file, id, null, null);
+		Assert.assertTrue(lockedMe);
+		
+		// even with the same app
+		boolean lockedMeApp = lockManager.isLockedForMe(file, id, VFSLockApplicationType.exclusive, null);
+		Assert.assertTrue(lockedMeApp);
+		
+		// Others cannot as well
+		boolean lockedOther = lockManager.isLockedForMe(file, otherId, null, null);
+		Assert.assertTrue(lockedOther);
+		
+		// first unlock it
+		boolean unlocked = lockManager.unlock(file, VFSLockApplicationType.exclusive);
+		Assert.assertTrue(unlocked);
+		
+		// I can now
+		boolean unlockedMe = lockManager.isLockedForMe(file, id, null, null);
+		Assert.assertFalse(unlockedMe);
+		
+		// other can now
+		boolean unlockedOther = lockManager.isLockedForMe(file, otherId, null, null);
+		Assert.assertFalse(unlockedOther);
+	}
 	
 }

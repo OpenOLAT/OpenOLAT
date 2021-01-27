@@ -433,7 +433,7 @@ public class ListRenderer {
 				String msg = translator.translate("Locked", new String[]{fullname, date});
 				if(lock.isWebDAVLock()) {
 					msg += " (WebDAV)";
-				} else if(lock.isCollaborationLock()) {
+				} else if(lock.isExclusiveLock() || lock.isCollaborationLock()) {
 					msg += " (" + lock.getAppName() + ")";
 					
 				}

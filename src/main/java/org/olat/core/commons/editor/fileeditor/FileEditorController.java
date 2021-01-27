@@ -35,9 +35,11 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.HTMLReadOnlyController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs.Config;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
@@ -60,33 +62,38 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class FileEditorController extends BasicController implements Activateable2 {
 
 	private static final Logger log = Tracing.createLoggerFor(FileEditorController.class);
-
+	
 	private Controller editCtrl;
 
-	private VFSLeaf vfsLeaf;
+	private final VFSLeaf vfsLeaf;
+	private final Access access;
 	private boolean temporaryLock;
 	
 	@Autowired
 	private VFSLockManager vfsLockManager;
+	@Autowired
+	private DocEditorService docEditorService;
 
 	protected FileEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			DocEditorConfigs configs) {
+			DocEditorConfigs configs, Access access) {
 		super(ureq, wControl);
 		this.vfsLeaf = vfsLeaf;
+		this.access = access;
 		
 		wControl.getWindowBackOffice().getWindow().addListener(this);
 		
+		VelocityContainer mainVC = createVelocityContainer("file_editor");
+
 		boolean isEdit = Mode.EDIT.equals(configs.getMode());
 		if (isEdit) {
-			if(vfsLockManager.isLockedForMe(vfsLeaf, ureq.getIdentity(), VFSLockApplicationType.vfs, null)) {
-				// It the file is locked by someone other, show it in preview mode
+			if(vfsLockManager.isLockedForMe(vfsLeaf, ureq.getIdentity(), VFSLockApplicationType.exclusive, FileEditor.TYPE)) {
 				isEdit = false;
+				access = docEditorService.updateMode(access, Mode.VIEW);
+				mainVC.contextPut("editInOtherWindow", Boolean.TRUE);
+				mainVC.contextPut("fileName", vfsLeaf.getName());
 			} else {
-				boolean notLocked = !vfsLockManager.isLocked(vfsLeaf, VFSLockApplicationType.vfs, null);
-				if (notLocked) {
-					vfsLockManager.lock(vfsLeaf, getIdentity(), VFSLockApplicationType.vfs, null);
-					temporaryLock = true;
-				}
+				vfsLockManager.lock(vfsLeaf, getIdentity(), VFSLockApplicationType.exclusive, FileEditor.TYPE);
+				temporaryLock = true;
 			}
 		}
 		
@@ -127,7 +134,6 @@ public class FileEditorController extends BasicController implements Activateabl
 		}
 		listenTo(editCtrl);
 		
-		VelocityContainer mainVC = createVelocityContainer("file_editor");
 		mainVC.put("editor", editCtrl.getInitialComponent());
 		putInitialPanel(mainVC);
 	}
@@ -173,8 +179,11 @@ public class FileEditorController extends BasicController implements Activateabl
 	private void doUnlock() {
 		if (temporaryLock) {
 			log.info("Unlock HTML editor: {}", vfsLeaf);
-			vfsLockManager.unlock(vfsLeaf, VFSLockApplicationType.vfs);
+			vfsLockManager.unlock(vfsLeaf, VFSLockApplicationType.exclusive);
 			temporaryLock = false;
+		}
+		if (access != null) {
+			docEditorService.deleteAccess(access);
 		}
 	}
 }

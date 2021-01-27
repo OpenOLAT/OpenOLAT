@@ -29,6 +29,7 @@ public enum VFSLockApplicationType {
 	
 	vfs,
 	webdav,
+	exclusive,
 	collaboration
 
 }

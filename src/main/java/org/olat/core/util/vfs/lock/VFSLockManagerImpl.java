@@ -55,8 +55,9 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	
 	private static final Logger log = Tracing.createLoggerFor(VFSLockManagerImpl.class);
 	
-	//one year is enough for a long loc
+	//one year is enough for a long lock
     private static final long vfsExpireAt = (System.currentTimeMillis() + (365 * 24 * 60 * 60 * 1000));
+    private static final long exclusiveExpireAt = (System.currentTimeMillis() + (24 * 60 * 60 * 1000));
     private static final long collaborationExpireAt = (System.currentTimeMillis() + (24 * 60 * 60 * 1000));
 	
 	@Autowired
@@ -140,16 +141,18 @@ public class VFSLockManagerImpl implements VFSLockManager {
 		boolean locked;
 		if(me != null && me.getKey().equals(lock.getLockedBy())) {
 			if(lock.isWebDAVLock()) {
-				locked = (type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.collaboration);
+				locked = (type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.exclusive || type == VFSLockApplicationType.collaboration);
 			} else if(lock.isCollaborationLock()) {
-				locked = (type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.webdav
+				locked = (type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.exclusive || type == VFSLockApplicationType.webdav
 						|| (type == VFSLockApplicationType.collaboration && !lock.getAppName().equals(appName)));
 			} else if(lock.isVfsLock()) {
-				locked = (type == VFSLockApplicationType.webdav || type == VFSLockApplicationType.collaboration);
+				locked = (type == VFSLockApplicationType.webdav || type == VFSLockApplicationType.exclusive || type == VFSLockApplicationType.collaboration);
+			} else if(lock.isExclusiveLock()) {
+				locked = true; // Lock only once, even if it was myself.
 			} else {
 				locked = false;
 			}
-		} else if(lock.isVfsLock() || lock.isWebDAVLock()) {
+		} else if(lock.isVfsLock() || lock.isWebDAVLock() || lock.isExclusiveLock()) {
 			locked = true;// I can only if me is the user who locks
 		} else if(lock.isCollaborationLock() && type == VFSLockApplicationType.collaboration) {
 			locked = lock.getAppName() != null && !lock.getAppName().equals(appName);
@@ -180,6 +183,9 @@ public class VFSLockManagerImpl implements VFSLockManager {
     	LockInfo lock = getLock(resource);
     	if(lock == null) {
     		return false;
+    	}
+    	if(lock.isExclusiveLock()) {
+    		return true;
     	}
     	if(lock.isCollaborationLock()) {
     		return true;
@@ -270,7 +276,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 					theMetadata = metadata;
 				}
 				if(theMetadata != null && theMetadata.isLocked()) {
-					LockInfo lockInfo = new LockInfo(theMetadata.getLockedBy(), VFSLockApplicationType.vfs, null);
+					LockInfo lockInfo = new LockInfo(theMetadata.getLockedBy(), VFSLockApplicationType.vfs);
 					lockInfo.setCreationDate(theMetadata.getLockedDate());
 					lockInfo.setOwner(Settings.getServerContextPathURI() + "/Identity/" + theMetadata.getLockedBy().getKey());
 					lockInfo.setDepth(1);
@@ -283,6 +289,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 		if(lock != null && lock.hasExpired()) {
 			if(lock.isVfsLock()) {
 				lock.setWebDAVLock(false);
+				lock.setExclusiveLock(false);
 				lock.setCollaborationLock(false);
 				lock.setExpiresAt(0l);
 				lock.clearTokens();
@@ -336,7 +343,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 			String relativePath = getMetadataRelativePath(f);
 			VFSMetadata metadata = metadataDao.getMetadata(relativePath, f.getName(), f.isDirectory());
 			if(metadata != null && metadata.isLocked()) {
-				LockInfo mLockInfo = new LockInfo(metadata.getLockedBy(), VFSLockApplicationType.vfs, null);
+				LockInfo mLockInfo = new LockInfo(metadata.getLockedBy(), VFSLockApplicationType.vfs);
 				mLockInfo.setCreationDate(metadata.getLockedDate());
 				mLockInfo.setOwner(Settings.getServerContextPathURI() + "/Identity/" + metadata.getLockedBy().getKey());
 				mLockInfo.setDepth(1);
@@ -359,12 +366,14 @@ public class VFSLockManagerImpl implements VFSLockManager {
 				vfsRepositoryService.updateMetadata(metadata);
 				dbInstance.commit();
 			}
-			if(type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.collaboration) {
+			if(type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.exclusive || type == VFSLockApplicationType.collaboration) {
 				loc.setCreationDate(new Date());
 				loc.setOwner(Settings.getServerContextPathURI() + "/Identity/" + loc.getLockedBy());
 				loc.setDepth(1);
 				if(type == VFSLockApplicationType.vfs) {
 					loc.setExpiresAt(vfsExpireAt);
+				} else if (type == VFSLockApplicationType.exclusive) {
+					loc.setExpiresAt(exclusiveExpireAt);
 				} else if (type == VFSLockApplicationType.collaboration) {
 					loc.setExpiresAt(collaborationExpireAt);
 				}
@@ -378,6 +387,8 @@ public class VFSLockManagerImpl implements VFSLockManager {
 		boolean lockAcquired;
 		if(lockInfo == null) {
 			lockAcquired = false;
+		} else if(lockInfo.isExclusiveLock()) {
+			lockAcquired = true;
 		} else if(lockInfo.isLocked()) {
 			lockAcquired = !isLockedForMe(lockInfo, identity, type, appName);
 			// add a new token 
@@ -460,9 +471,11 @@ public class VFSLockManagerImpl implements VFSLockManager {
 				
 				if(lock.isWebDAVLock()) {// WebDAV make it alone
 					lock.setVfsLock(false);
+					lock.setExclusiveLock(false);
 					lock.setCollaborationLock(false);
 				} else if(lock.isCollaborationLock()) {
 					lock.setVfsLock(false);
+					lock.setExclusiveLock(false);
 					lock.setWebDAVLock(false);
 					if(lock.getTokensSize() == 0) {
 						fileLocks.remove(file);
@@ -534,6 +547,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	    	if(lock != null) {
 	    		if(lock.isVfsLock()) {
 	    			lock.setWebDAVLock(false);
+	    			lock.setExclusiveLock(false);
 	    			lock.setCollaborationLock(false);
 	    		} else {
 					fileLocks.remove(file);
