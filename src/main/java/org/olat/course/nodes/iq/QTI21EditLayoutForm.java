@@ -244,7 +244,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 			displayScoreProgressEl.select(onKeys[0], true);
 		}
 		
-		boolean questionMaxScore = configRef ? deliveryOptions.isDisplayScoreProgress() :
+		boolean questionMaxScore = configRef ? deliveryOptions.isDisplayMaxScoreItem() :
 			modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTION_MAX_SCORE, deliveryOptions.isDisplayMaxScoreItem());
 		displayMaxScoreItemEl = uifactory.addCheckboxesHorizontal("scoreMaxItem", "qti.form.max.score.item", formLayout, onKeys, onValues);
 		displayMaxScoreItemEl.setEnabled(!configRef);
