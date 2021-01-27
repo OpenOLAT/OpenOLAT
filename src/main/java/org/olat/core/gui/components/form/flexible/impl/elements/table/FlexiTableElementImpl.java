@@ -1923,11 +1923,17 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		rootFormAvailable(extendedSearchButton);
 		rootFormAvailable(customTypeButton);
 		rootFormAvailable(classicTypeButton);
+		if(components != null) {
+			for(FormItem item:components.values()) {
+				rootFormAvailable(item);
+			}
+		}
 	}
 	
 	private final void rootFormAvailable(FormItem item) {
-		if(item != null && item.getRootForm() != getRootForm())
+		if(item != null && item.getRootForm() != getRootForm()) {
 			item.setRootForm(getRootForm());
+		}
 	}
 
 	@Override

@@ -101,6 +101,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private final boolean moderatorStartMeeting;
 	private final OLATResourceable meetingOres;
 
+	private boolean withTools = false;
+	private boolean withPublish = false;
+
 	private FormLink joinButton;
 	private FormLink uploadButton;
 	private FormLink guestJoinButton;
@@ -261,10 +264,12 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		
 		if(administrator) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.publish));
+			withPublish = true;
 			if(recordingsHandler.canDeleteRecordings() && recordingsHandler.allowPermanentRecordings()) {
 				DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(BRecordingsCols.tools);
 				toolsCol.setIconHeader("o_icon o_icon_actions o_icon-lg");
 				columnsModel.addFlexiColumnModel(toolsCol);
+				withTools = true;
 			} else if(recordingsHandler.canDeleteRecordings()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 			}
@@ -297,18 +302,22 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		boolean pusblished = isPublishedForMe(recording.getReference(), attendee);
 		BigBlueButtonRecordingRow row = new BigBlueButtonRecordingRow(recording, pusblished);
 		if(administrator || moderator) {
-			String recId = recording.getRecording().getRecordId().toString();
-			FormLink publishLink = uifactory.addFormLink("publish-".concat(recId),
-					"publish", "publish.recording", tableEl);
-			row.setPublishLink(publishLink);
-			publishLink.setUserObject(row);
+			String recId = recording.getRecording().getRecordId();
+			if(withPublish) {
+				FormLink publishLink = uifactory.addFormLink("publish-".concat(recId),
+						"publish", "publish.recording", tableEl);
+				row.setPublishLink(publishLink);
+				publishLink.setUserObject(row);
+			}
 			
-			FormLink toolsLink = uifactory.addFormLink("tools-".concat(recId),
-					"tools", "", tableEl, Link.LINK | Link.NONTRANSLATED);
-			toolsLink.setAriaLabel(translate("table.header.actions"));
-			toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
-			toolsLink.setUserObject(row);
-			row.setToolsLink(toolsLink);
+			if(withTools) {
+				FormLink toolsLink = uifactory.addFormLink("tools-".concat(recId),
+						"tools", "", tableEl, Link.LINK | Link.NONTRANSLATED);
+				toolsLink.setAriaLabel(translate("table.header.actions"));
+				toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
+				toolsLink.setUserObject(row);
+				row.setToolsLink(toolsLink);
+			}
 		}
 		return row;
 	}
