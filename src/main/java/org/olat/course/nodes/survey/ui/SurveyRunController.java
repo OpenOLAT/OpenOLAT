@@ -42,6 +42,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.ProgressEvent;
 import org.olat.repository.RepositoryEntry;
@@ -180,8 +181,9 @@ public class SurveyRunController extends BasicController {
 	}
 
 	private void doConfirmDeleteAllData(UserRequest ureq) {
-		long countOfSessions = surveyManager.getCountOfSessions(survey);
-		deleteDataConfirmationCtrl = new SurveyDeleteDataConfirmationController(ureq, getWindowControl(), countOfSessions);
+		Long allSessions = surveyManager.getSessionsCount(SessionFilterFactory.create(survey));
+		Long doneSessions = surveyManager.getSessionsCount(SessionFilterFactory.createSelectDone(survey));
+		deleteDataConfirmationCtrl = new SurveyDeleteDataConfirmationController(ureq, getWindowControl(), allSessions, doneSessions);
 		listenTo(deleteDataConfirmationCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				deleteDataConfirmationCtrl.getInitialComponent(), true, translate("run.command.delete.data.all.title"), true);

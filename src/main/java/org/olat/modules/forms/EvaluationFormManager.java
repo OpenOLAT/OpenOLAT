@@ -176,8 +176,6 @@ public interface EvaluationFormManager {
 	 */
 	public EvaluationFormSession reopenSession(EvaluationFormSession session);
 	
-	public long getCountOfSessions(EvaluationFormSurveyRef surveyRef);
-	
 	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, SessionFilter filter, Limit limit);
 
 	public EvaluationFormResponse createStringResponse(String responseIdentifier, EvaluationFormSession session,

@@ -362,11 +362,6 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public long getCountOfSessions(EvaluationFormSurveyRef surveyRef) {
-		return evaluationFormSessionDao.getCountOfSessions(surveyRef);
-	}
-
-	@Override
 	public EvaluationFormResponse createFileResponse(String responseIdentifier, EvaluationFormSession session,
 			File file, String filename) throws IOException {
 		Path relativePath = evaluationFormStorage.save(file, filename);
