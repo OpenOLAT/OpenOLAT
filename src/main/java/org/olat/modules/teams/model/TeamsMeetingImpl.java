@@ -110,6 +110,8 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	private boolean entryExitAnnouncement;
 	@Column(name="t_join_information", nullable=true, insertable=true, updatable=true)
 	private String joinInformation;
+	@Column(name="t_open_participant", nullable=true, insertable=true, updatable=true)
+	private boolean participantsCanOpen;
 
 	@Column(name="t_guest", nullable=false, insertable=true, updatable=true)
 	private boolean guest;
@@ -291,6 +293,16 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	@Override
 	public void setJoinInformation(String text) {
 		this.joinInformation = text;
+	}
+
+	@Override
+	public boolean isParticipantsCanOpen() {
+		return participantsCanOpen;
+	}
+
+	@Override
+	public void setParticipantsCanOpen(boolean participantsCanOpen) {
+		this.participantsCanOpen = participantsCanOpen;
 	}
 
 	@Override

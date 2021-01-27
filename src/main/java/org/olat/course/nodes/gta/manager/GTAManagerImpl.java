@@ -35,6 +35,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import javax.persistence.CacheRetrieveMode;
+import javax.persistence.CacheStoreMode;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 
@@ -1032,10 +1034,10 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 		AssignmentResponse response;
 		if(currentTask == null || !StringHelper.containsNonWhitespace(currentTask.getTaskName())) {
-			TaskList reloadedTasks = loadForUpdate(tasks);
-
 			File tasksFolder = getTasksDirectory(courseEnv, cNode);
 			String[] taskFiles = tasksFolder.list(SystemFilenameFilter.FILES_ONLY);
+			
+			TaskList reloadedTasks = loadForUpdate(tasks);
 			List<String> assignedFilenames = getAssignedTasks(reloadedTasks);
 			
 			String taskName;
@@ -1150,10 +1152,15 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	
 	@Override
 	public List<String> getAssignedTasks(TaskList taskList) {
-		return dbInstance.getCurrentEntityManager()
+		List<String> taskNames = dbInstance.getCurrentEntityManager()
 			.createNamedQuery("tasksByTaskList", String.class)
 			.setParameter("taskListKey", taskList.getKey())
+			.setHint("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS)
+			.setHint("javax.persistence.cache.storeMode", CacheStoreMode.BYPASS)
 			.getResultList();
+		return taskNames.stream()
+			.filter(name -> (StringHelper.containsNonWhitespace(name)))
+			.collect(Collectors.toList());
 	}
 
 	@Override

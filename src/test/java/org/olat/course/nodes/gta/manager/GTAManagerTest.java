@@ -19,21 +19,29 @@
  */
 package org.olat.course.nodes.gta.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -41,12 +49,14 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.AssignmentResponse.Status;
+import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskRevisionDate;
 import org.olat.course.nodes.gta.model.TaskListImpl;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
@@ -912,6 +922,232 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertEquals(task, loadedTaskRevision.getTask());
 		Assert.assertEquals(2, loadedTaskRevision.getRevisionLoop());
 		Assert.assertEquals(TaskProcess.correction, loadedTaskRevision.getTaskStatus());
+	}
+	
+	@Test
+	public void assignTaskAutomatically() {
+		//prepare
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-1");
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_SAMPLING, GTACourseNode.GTASK_SAMPLING_REUSE);
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+
+		CourseEnvironment courseEnv = CourseFactory.loadCourse(re).getCourseEnvironment();
+		File tasksDirectory = gtaManager.getTasksDirectory(courseEnv, node);
+		FileUtils.deleteDirsAndFiles(tasksDirectory, true, false);
+		copyTestFile(tasksDirectory, "File00O.pdf");
+		copyTestFile(tasksDirectory, "File0O0.pdf");
+		copyTestFile(tasksDirectory, "FileO00.pdf");
+		dbInstance.commit();
+		
+		//select
+		AssignmentResponse response = gtaManager.assignTaskAutomatically(tasks, participant, courseEnv, node);
+		dbInstance.commitAndCloseSession();
+		//check
+		Assert.assertNotNull(response);
+		Assert.assertNotNull(response.getTask());
+		Assert.assertEquals(AssignmentResponse.Status.ok, response.getStatus());
+		
+		Task task = response.getTask();
+		Assert.assertNotNull(task.getKey());
+		Assert.assertNull(task.getBusinessGroup());
+		Assert.assertNotNull(task.getCreationDate());
+		Assert.assertNotNull(task.getLastModified());
+		Assert.assertEquals(tasks, task.getTaskList());
+		Assert.assertEquals(participant, task.getIdentity());
+		assertThat(task.getTaskName())
+			.isIn("File00O.pdf", "File0O0.pdf", "FileO00.pdf");
+	}
+	
+	@Test
+	public void assignTaskAutomaticallyHighload() {
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_SAMPLING, GTACourseNode.GTASK_SAMPLING_REUSE);
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+
+		CourseEnvironment courseEnv = CourseFactory.loadCourse(re).getCourseEnvironment();
+		File tasksDirectory = gtaManager.getTasksDirectory(courseEnv, node);
+		FileUtils.deleteDirsAndFiles(tasksDirectory, true, false);
+		copyTestFile(tasksDirectory, "File00O.pdf");
+		copyTestFile(tasksDirectory, "File0O0.pdf");
+		copyTestFile(tasksDirectory, "FileO00.pdf");
+		copyTestFile(tasksDirectory, "FileOO0.pdf");
+		copyTestFile(tasksDirectory, "FileO0O.pdf");
+		dbInstance.commit();
+
+		final int numThreads = 25;
+		final int batchSize = 10;
+		final int numOfPersons = batchSize * numThreads;
+		List<Identity> participants = new ArrayList<>(numOfPersons);
+		for(int i=0; i<numOfPersons; i++) {
+			Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-high-load-" + i);
+			participants.add(participant);
+		}
+		
+		CountDownLatch latch = new CountDownLatch(numThreads);
+		AssignThread[] threads = new AssignThread[numThreads];
+		for(int i=0; i<threads.length;i++) {
+			List<Identity> batch = participants.subList(i * batchSize, (i + 1) * batchSize);
+			threads[i] = new AssignThread(batch, tasks, node, courseEnv, gtaManager, latch);
+		}
+
+		for(int i=0; i<threads.length;i++) {
+			threads[i].start();
+		}
+		
+		try {
+			latch.await(60, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			Assert.fail("Takes too long (more than 120sec)");
+		}
+		
+		int countErrors = 0;
+		for(int i=0; i<threads.length;i++) {
+			countErrors += threads[i].getErrors();
+		}
+		Assert.assertEquals(0, countErrors);
+		
+		List<Task> taskList = gtaManager.getTasks(tasks, node);
+		Map<String, AtomicInteger> maps = Map.of("File00O.pdf", new AtomicInteger(0), "File0O0.pdf", new AtomicInteger(0), "FileO00.pdf", new AtomicInteger(0),
+				"FileOO0.pdf", new AtomicInteger(0), "FileO0O.pdf", new AtomicInteger(0));
+		for(Task task:taskList) {
+			maps.get(task.getTaskName()).incrementAndGet();
+		}
+
+		Assert.assertEquals(5, maps.size());
+		for(AtomicInteger count:maps.values()) {
+			log.info("Counter: {}", count.get());
+			Assert.assertEquals(50, count.get());
+		}
+	}
+	
+	@Test
+	public void assignTaskAutomaticallyHighloadPreload() {
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_SAMPLING, GTACourseNode.GTASK_SAMPLING_REUSE);
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+
+		CourseEnvironment courseEnv = CourseFactory.loadCourse(re).getCourseEnvironment();
+		File tasksDirectory = gtaManager.getTasksDirectory(courseEnv, node);
+		FileUtils.deleteDirsAndFiles(tasksDirectory, true, false);
+		copyTestFile(tasksDirectory, "File00O.pdf");
+		copyTestFile(tasksDirectory, "File0O0.pdf");
+		copyTestFile(tasksDirectory, "FileO00.pdf");
+		dbInstance.commit();
+
+		final int numThreads = 30;
+		final int batchSize = 10;
+		final int numOfPersons = batchSize * numThreads;
+		List<Identity> participants = new ArrayList<>(numOfPersons);
+		for(int i=0; i<numOfPersons; i++) {
+			Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-high-load-" + i);
+			participants.add(participant);
+			gtaManager.createAndPersistTask(null, tasks, TaskProcess.assignment, null, participant, node);
+			if(i % 10 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+		dbInstance.commitAndCloseSession();
+		
+		CountDownLatch latch = new CountDownLatch(numThreads);
+		AssignThread[] threads = new AssignThread[numThreads];
+		for(int i=0; i<threads.length;i++) {
+			List<Identity> batch = participants.subList(i * batchSize, (i + 1) * batchSize);
+			threads[i] = new AssignThread(batch, tasks, node, courseEnv, gtaManager, latch);
+		}
+
+		for(int i=0; i<threads.length;i++) {
+			threads[i].start();
+		}
+		
+		try {
+			latch.await(60, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			Assert.fail("Takes too long (more than 120sec)");
+		}
+		
+		int countErrors = 0;
+		for(int i=0; i<threads.length;i++) {
+			countErrors += threads[i].getErrors();
+		}
+		Assert.assertEquals(0, countErrors);
+		
+		List<Task> taskList = gtaManager.getTasks(tasks, node);
+		Map<String, AtomicInteger> maps = Map.of("File00O.pdf", new AtomicInteger(0), "File0O0.pdf", new AtomicInteger(0), "FileO00.pdf", new AtomicInteger(0));
+		for(Task task:taskList) {
+			maps.get(task.getTaskName()).incrementAndGet();
+		}
+
+		Assert.assertEquals(3, maps.size());
+		for(AtomicInteger count:maps.values()) {
+			log.info("Counter: {}", count.get());
+		}
+		for(AtomicInteger count:maps.values()) {
+			Assert.assertEquals(100, count.get());
+		}
+	}
+
+	private static class AssignThread extends Thread {
+
+		private final TaskList tasks;
+		private final GTACourseNode node;
+		private final GTAManager gtaManager;
+		private final List<Identity> batch;
+		private final CourseEnvironment courseEnv;
+		
+		private int errors;
+		private final CountDownLatch latch;
+		
+		public AssignThread(List<Identity> batch, TaskList tasks, GTACourseNode node,
+				CourseEnvironment courseEnv, GTAManager gtaManager, CountDownLatch latch) {
+			this.batch = new ArrayList<>(batch);
+			this.latch = latch;
+			this.tasks = tasks;
+			this.node = node;
+			this.courseEnv = courseEnv;
+			this.gtaManager = gtaManager;
+		}
+		
+		public int getErrors() {
+			return errors;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				for(Identity participant:batch) {
+					AssignmentResponse response = gtaManager.assignTaskAutomatically(tasks, participant, courseEnv, node);
+					if(response == null || response.getTask() == null || response.getStatus() != Status.ok) {
+						errors++;
+					}
+					DBFactory.getInstance().commitAndCloseSession();
+					log.info("Assigned: {} {}", response.getStatus(), participant);
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				errors++;
+			} finally {
+				DBFactory.getInstance().commitAndCloseSession();
+				latch.countDown();
+			}
+		}
+	}
+	
+	private void copyTestFile(File dir, String name) {
+		try {
+			URL url = JunitTestHelper.class.getResource("file_resources/task_1_a.txt");
+			File courseFile = new File(url.toURI());
+			File targetFile = new File(dir, name);
+			FileUtils.copyFileToFile(courseFile, targetFile, false);
+		} catch (URISyntaxException e) {
+			log.error("", e);
+		}
 	}
 	
 	@Test

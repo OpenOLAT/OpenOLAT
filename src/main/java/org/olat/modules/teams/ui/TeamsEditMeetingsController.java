@@ -346,6 +346,7 @@ public class TeamsEditMeetingsController extends FormBasicController {
 			tMeeting.setAllowedPresenters(context.getAllowedPresenters());
 			tMeeting.setEntryExitAnnouncement(context.isEntryExitAnnouncement());
 			tMeeting.setLobbyBypassScope(context.getLobbyBypassScope());
+			tMeeting.setParticipantsCanOpen(context.isParticipantsCanOpen());
 			teamsService.updateMeeting(tMeeting);
 		}
 	}

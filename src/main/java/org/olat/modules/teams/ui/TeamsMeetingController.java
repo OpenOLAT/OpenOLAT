@@ -167,7 +167,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		joinButton.setEnabled(!readOnly && accessible);
 		
 		boolean running = teamsService.isMeetingRunning(meeting);
-		if(moderator || administrator) {
+		if(moderator || administrator || meeting.isParticipantsCanOpen()) {
 			flc.contextPut("notStarted", Boolean.FALSE);
 			if(!running) {
 				joinButton.setI18nKey(translate("meeting.start.button"));

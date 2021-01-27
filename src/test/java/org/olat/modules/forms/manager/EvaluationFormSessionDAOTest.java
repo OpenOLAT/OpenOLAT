@@ -235,23 +235,6 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldGetCountOfSessionsForSurvey() {
-		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
-		dbInstance.commit();
-		
-		long countOfSessions = sut.getCountOfSessions(survey);
-		assertThat(countOfSessions).isEqualTo(0);
-		
-		evaTestHelper.createSession(survey);
-		evaTestHelper.createSession(survey);
-		dbInstance.commit();
-		
-		countOfSessions = sut.getCountOfSessions(survey);
-		assertThat(countOfSessions).isEqualTo(2);
-		
-	}
-	
-	@Test
 	public void shouldDeleteSessionsOfSurvey() {
 		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
 		EvaluationFormSession session1 = evaTestHelper.createSession(survey);

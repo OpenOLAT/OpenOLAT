@@ -68,6 +68,7 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 	private SingleSelection presentersEl;
 	private MultipleSelectionElement annoncementEl;
 	private SingleSelection lobbyEl;
+	private MultipleSelectionElement participantsOpenEl;
 	
 	private final boolean meetingExtendedOptionsEnabled;
 	private TeamsRecurringMeetingsContext meetingsContext;
@@ -130,6 +131,10 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		
 		String followup = Long.toString(meetingsContext.getFollowupTime());
 		followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
+		
+		String[] onOpenValues = new String[] { "" };
+		participantsOpenEl = uifactory.addCheckboxesHorizontal("meeting.participants.open", formLayout, onKeys, onOpenValues);
+		participantsOpenEl.setHelpTextKey("meeting.participants.open.hint", null);
 		
 		KeyValues accessKeyValues = new KeyValues();
 		String organisation = teamsModule.getTenantOrganisation();
@@ -315,6 +320,7 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		meetingsContext.setAllowedPresenters(presentersEl.getSelectedKey());
 		meetingsContext.setEntryExitAnnouncement(this.annoncementEl.isAtLeastSelected(1));
 		meetingsContext.setLobbyBypassScope(lobbyEl.getSelectedKey());
+		meetingsContext.setParticipantsCanOpen(participantsOpenEl.isAtLeastSelected(1));
 		
 		meetingsContext.generateMeetings();
 

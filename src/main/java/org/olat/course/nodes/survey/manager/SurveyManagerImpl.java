@@ -43,6 +43,7 @@ import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,8 +177,8 @@ public class SurveyManagerImpl implements SurveyManager {
 	}
 
 	@Override
-	public long getCountOfSessions(EvaluationFormSurvey survey) {
-		return evaluationFormManager.getCountOfSessions(survey);
+	public Long getSessionsCount(SessionFilter filter) {
+		return evaluationFormManager.loadSessionsCount(filter);
 	}
 
 	@Override

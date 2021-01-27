@@ -40,11 +40,13 @@ public class SurveyDeleteDataConfirmationController extends FormBasicController 
 
 	private MultipleSelectionElement confirmationEl;
 	
-	private final long numberOfSessions;
+	private final Long allSessions;
+	private final Long doneSessions;
 	
-	public SurveyDeleteDataConfirmationController(UserRequest ureq, WindowControl wControl, long numberOfSessions) {
+	public SurveyDeleteDataConfirmationController(UserRequest ureq, WindowControl wControl, Long allSessions, Long doneSessions) {
 		super(ureq, wControl, "delete_data_confirmation");
-		this.numberOfSessions = numberOfSessions;
+		this.allSessions = allSessions;
+		this.doneSessions = doneSessions;
 		initForm(ureq);
 	}
 
@@ -54,7 +56,8 @@ public class SurveyDeleteDataConfirmationController extends FormBasicController 
 		formLayout.add("confirm", confirmCont);
 		confirmCont.setRootForm(mainForm);
 		
-		flc.contextPut("numSessions", String.valueOf(numberOfSessions));
+		String message = translate("run.command.delete.data.all.message", new String[] {String.valueOf(allSessions), String.valueOf(doneSessions)} );
+		flc.contextPut("message", message);
 		
 		String[] conformationValues = new String[] { translate("run.command.delete.data.all.check") };
 		confirmationEl = uifactory.addCheckboxesHorizontal("confirm.delete", "", confirmCont, confirmationKeys, conformationValues);

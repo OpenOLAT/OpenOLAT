@@ -68,6 +68,7 @@ public class TeamsMeetingDAO {
 		// ID for OO internal dispatcher (guest access). BBB does not now this ID. 
 		meeting.setIdentifier(UUID.randomUUID().toString());
 		
+		meeting.setParticipantsCanOpen(false);
 		meeting.setAllowedPresenters(OnlineMeetingPresenters.EVERYONE.name());
 		meeting.setAccessLevel(AccessLevel.EVERYONE.name());
 		meeting.setEntryExitAnnouncement(true);
