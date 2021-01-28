@@ -183,6 +183,9 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 			linkedTaxonomies = enabledTaxonomiesObj;
 		}
 		
+		// To verify taxonomy keys are set correctly and contain no non-existing or wrong formatted values
+		getLinkedTaxonomies();
+		
 		RepositoryHandlerFactory.registerHandler(new BinderTemplateHandler(), 40);
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("BinderInvitation",
 				new BinderInvitationContextEntryControllerCreator());	
@@ -375,6 +378,18 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	}
 	
 	public boolean isTaxonomyLinked(Long taxonomyKey) {
-		return linkedTaxonomies.contains(taxonomyKey.toString());
+		if (!StringHelper.containsNonWhitespace(linkedTaxonomies)) {
+			return false;
+		}
+		
+		String[] taxonomies = linkedTaxonomies.replaceAll(" ", "").split(",");
+		
+		for (String taxonomy : taxonomies) {
+			if (taxonomy.equals(taxonomyKey.toString())) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }
