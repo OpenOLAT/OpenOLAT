@@ -906,6 +906,15 @@ public class CollaborationTools implements Serializable {
 		}
 	}
 	
+	public Long getToolAccess(String tool) {
+		if (TOOL_FOLDER.equals(tool) ) {
+			return lookupFolderAccess();			
+		} else if (TOOL_CALENDAR.equals(tool)) {
+			return lookupCalendarAccess();					
+		}
+		return null;
+	}
+	
 	public void setToolAccess(String tool, Integer access) {
 		if (TOOL_FOLDER.equals(tool) && access != null) {
 			if (FOLDER_ACCESS_ALL == access.intValue()) {

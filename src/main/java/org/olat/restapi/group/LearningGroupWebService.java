@@ -23,8 +23,10 @@ import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isGroupManager;
 import static org.olat.restapi.support.ObjectFactory.getInformation;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +50,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
@@ -83,6 +85,7 @@ import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -114,6 +117,19 @@ public class LearningGroupWebService {
 	static {
 		cc.setMaxAge(-1);
 	}
+	
+	@Autowired
+	private BusinessGroupService bgs;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private CalendarModule calendarModule;
+	@Autowired
+	private QuotaManager qm;
+	@Autowired
+	private CollaborationManager collaborationManager;
+	@Autowired
+	private CollaborationToolsFactory collaborationToolsFactory;
 	
 	/**
 	 * Retrieves the version of the Group Web Service.
@@ -147,7 +163,6 @@ public class LearningGroupWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroupList(@QueryParam("externalId") @Parameter(description = "Search with an external ID") String externalId, @QueryParam("managed") @Parameter(description = "(true / false) Search only managed / not managed groups") Boolean managed,
 			@Context HttpServletRequest request) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		List<BusinessGroup> groups;
 		SearchBusinessGroupParams params;
 		if(isGroupManager(request)) {
@@ -187,8 +202,7 @@ public class LearningGroupWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response findById(@PathParam("groupKey") Long groupKey, @Context Request request,
 			@Context HttpServletRequest httpRequest) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -229,7 +243,6 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		if(group.getKey() != null && group.getKey().longValue() > 0) {
 			return postGroup(group.getKey(), group, request);
 		}
@@ -270,7 +283,6 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		final BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -304,8 +316,7 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled")
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getNews(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -317,7 +328,7 @@ public class LearningGroupWebService {
 			}
 		}
 
-		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		CollaborationTools tools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
 		if(tools.isToolEnabled(CollaborationTools.TOOL_NEWS)) {
 			String news = tools.lookupNews();
 			if(news == null) {
@@ -347,7 +358,7 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response postNews(@PathParam("groupKey") Long groupKey, @FormParam("news") String news, @Context HttpServletRequest request) {
-		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -355,7 +366,7 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		CollaborationTools tools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
 		if(tools.isToolEnabled(CollaborationTools.TOOL_NEWS)) {
 			tools.saveNews(news);
 			return Response.ok(news).build();
@@ -378,7 +389,7 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled")
 	public Response deleteNews(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -386,7 +397,7 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		CollaborationTools tools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
 		if(tools.isToolEnabled(CollaborationTools.TOOL_NEWS)) {
 			tools.saveNews(null);
 			return Response.ok().build();
@@ -395,18 +406,66 @@ public class LearningGroupWebService {
 		}
 	}
 	
+	@GET
+	@Path("{groupKey}/configuration")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Operation(summary = "Get configuration", description = "Get configuration")
+	@ApiResponse(responseCode = "200", description = "Configuration")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Group not found")
+	public Response getGroupConfiguration(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
+		if(!isGroupManager(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
+		if(bg == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		GroupConfigurationVO configuration = new GroupConfigurationVO();
+		configuration.setOwnersPublic(bg.isOwnersVisiblePublic());
+		configuration.setOwnersVisible(bg.isOwnersVisibleIntern());
+		configuration.setParticipantsPublic(bg.isParticipantsVisiblePublic());
+		configuration.setParticipantsVisible(bg.isParticipantsVisibleIntern());
+		configuration.setWaitingListPublic(bg.isWaitingListVisiblePublic());
+		configuration.setWaitingListVisible(bg.isWaitingListVisibleIntern());
+		
+		String[] availableTools = collaborationToolsFactory.getAvailableTools().clone();
+		CollaborationTools tools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
+		
+		String news = tools.lookupNews();
+		configuration.setNews(news);
+		
+		List<String> toolsList = new ArrayList<>();
+		Map<String, Integer> toolsAccess = new HashMap<>();
+		for (int i=availableTools.length; i-->0; ) {
+			String tool = availableTools[i];
+			if(tools.isToolEnabled(tool)) {
+				toolsList.add(tool);
+				Long access = tools.getToolAccess(tool);
+				if(access != null) {
+					toolsAccess.put(tool, Integer.valueOf(access.intValue()));
+				}
+			}
+		}
+		configuration.setTools(toolsList.toArray(new String[toolsList.size()]));
+		configuration.setToolsAccess(toolsAccess);
+		
+		return Response.ok(configuration).build();
+	}
+	
 	@POST
 	@Path("{groupKey}/configuration")
 	@Operation(summary = "Post configuration", description = "Post configuration")
 	@ApiResponse(responseCode = "200", description = "Configuration posted")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Group not found")
 	public Response postGroupConfiguration(@PathParam("groupKey") Long groupKey, final GroupConfigurationVO group, @Context HttpServletRequest request) {
 		if(!isGroupManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -416,8 +475,8 @@ public class LearningGroupWebService {
 		if(selectedTools == null) {
 			selectedTools = new String[0];
 		}
-		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
-		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		String[] availableTools = collaborationToolsFactory.getAvailableTools().clone();
+		CollaborationTools tools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
 		for (int i=availableTools.length; i-->0; ) {
 			boolean enable = false;
 			String tool = availableTools[i];
@@ -465,11 +524,10 @@ public class LearningGroupWebService {
 		if(group.getWaitingListPublic() != null) {
 			waitingListPublic = group.getWaitingListPublic().booleanValue();
 		}
-		bg = bgs.updateDisplayMembers(bg,
+		bgs.updateDisplayMembers(bg,
 				ownersIntern, participantsIntern, waitingListIntern,
 				ownersPublic, participantsPublic, waitingListPublic,
 				bg.isDownloadMembersLists());
-
 		return Response.ok().build();
 	}
 	
@@ -491,7 +549,6 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -516,7 +573,6 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getInformations(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -542,33 +598,6 @@ public class LearningGroupWebService {
 	@Path("{groupKey}/forum")
 	@Operation(summary = "Return the Forum web service", description = "Return the Forum web service")
 	public ForumWebService getForum(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
-		if(bg == null) {
-			return null;
-		}
-		
-		if(!isGroupManager(request)) {
-			Identity identity = RestSecurityHelper.getIdentity(request);
-			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
-				return null;
-			}
-		}
-		
-		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
-		if(collabTools.isToolEnabled(CollaborationTools.TOOL_FORUM)) {
-			Forum forum = collabTools.getForum();
-			ForumWebService ws = new ForumWebService(forum);
-			CoreSpringFactory.autowireObject(ws);
-			return ws;
-		}
-		return null;
-	}
-	
-	@Path("{groupKey}/folder")
-	@Operation(summary = "Return the folder", description = "Return the folder")
-	public VFSWebservice getFolder(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return null;
@@ -581,13 +610,37 @@ public class LearningGroupWebService {
 			}
 		}
 		
-		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		CollaborationTools collabTools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
+		if(collabTools.isToolEnabled(CollaborationTools.TOOL_FORUM)) {
+			Forum forum = collabTools.getForum();
+			ForumWebService ws = new ForumWebService(forum);
+			CoreSpringFactory.autowireObject(ws);
+			return ws;
+		}
+		return null;
+	}
+	
+	@Path("{groupKey}/folder")
+	@Operation(summary = "Return the folder", description = "Return the folder")
+	public VFSWebservice getFolder(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
+		if(bg == null) {
+			return null;
+		}
+		
+		if(!isGroupManager(request)) {
+			Identity identity = RestSecurityHelper.getIdentity(request);
+			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
+				return null;
+			}
+		}
+		
+		CollaborationTools collabTools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
 		if(!collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
 			return null;
 		}
 		
 		String relPath = collabTools.getFolderRelPath();
-		QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
 		Quota folderQuota = qm.getCustomQuota(relPath);
 		if (folderQuota == null) {
 			Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS);
@@ -610,7 +663,6 @@ public class LearningGroupWebService {
 	@Path("{groupKey}/wiki")
 	@Operation(summary = "Return the Forum web service", description = "Return the Forum web service")
 	public GroupWikiWebService getWiki(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return null;
@@ -623,7 +675,7 @@ public class LearningGroupWebService {
 			}
 		}
 		
-		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		CollaborationTools collabTools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
 		if(collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI)) {
 			return new GroupWikiWebService(bg);
 		}
@@ -639,12 +691,10 @@ public class LearningGroupWebService {
 	@Path("{groupKey}/calendar")
 	@Operation(summary = "Return the calendar web service", description = "Return the calendar web service")
 	public CalWebService getCalendarWebService(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
 		if(!calendarModule.isEnabled() || !calendarModule.isEnableGroupCalendar()) {
 			return null;
 		}
 		
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return null;
@@ -657,9 +707,8 @@ public class LearningGroupWebService {
 			}
 		}
 		
-		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		CollaborationTools collabTools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
 		if(collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) {
-			CollaborationManager collaborationManager = CoreSpringFactory.getImpl(CollaborationManager.class);
 			UserRequest ureq = getUserRequest(request);
 			KalendarRenderWrapper calendar = collaborationManager.getCalendar(bg, ureq, true);
 			return new CalWebService(calendar);
@@ -684,7 +733,6 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTutors(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -700,8 +748,7 @@ public class LearningGroupWebService {
 			}
 		}
 		
-		List<Identity> coaches = CoreSpringFactory.getImpl(BusinessGroupService.class)
-				.getMembers(bg, GroupRoles.coach.name());
+		List<Identity> coaches = bgs.getMembers(bg, GroupRoles.coach.name());
 		return getIdentityInGroup(coaches);
 	}
 	
@@ -721,7 +768,6 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -737,8 +783,7 @@ public class LearningGroupWebService {
 			}
 		}
 
-		List<Identity> participants = CoreSpringFactory.getImpl(BusinessGroupService.class)
-				.getMembers(bg, GroupRoles.participant.name());
+		List<Identity> participants = bgs.getMembers(bg, GroupRoles.participant.name());
 		return getIdentityInGroup(participants);
 	}
 	
@@ -772,9 +817,8 @@ public class LearningGroupWebService {
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
-			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			final Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
@@ -808,9 +852,8 @@ public class LearningGroupWebService {
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
-			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			final Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
@@ -844,9 +887,8 @@ public class LearningGroupWebService {
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
-			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			final Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
@@ -885,9 +927,8 @@ public class LearningGroupWebService {
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
-			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			final Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
