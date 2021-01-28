@@ -69,6 +69,12 @@ public class MicrosoftGraphDAO {
 	private static final Logger log = Tracing.createLoggerFor(MicrosoftGraphDAO.class);
 	
 	private static final String SERVICE_ROOT = "https://graph.microsoft.com/beta";
+	
+	public static final List<OnlineMeetingPresenters> ALLOWED_PRESENTERS_FOR_ATTENDEE = List
+			.of(OnlineMeetingPresenters.EVERYONE, OnlineMeetingPresenters.ORGANIZATION);
+	public static final List<LobbyBypassScope> ALLOWED_LOBBY_BYPASS_FOR_ATTENDEE = List
+			.of(LobbyBypassScope.EVERYONE, LobbyBypassScope.ORGANIZATION, LobbyBypassScope.ORGANIZATION_AND_FEDERATED);
+	
 
 	@Autowired
 	private TeamsModule teamsModule;
@@ -136,12 +142,11 @@ public class MicrosoftGraphDAO {
 	}
 	
 	public static boolean canAttendeeOpenMeeting(TeamsMeeting meeting) {
-		return (meeting.getAllowedPresentersEnum() == OnlineMeetingPresenters.EVERYONE
-				|| meeting.getAllowedPresentersEnum() == OnlineMeetingPresenters.ORGANIZATION)
-			&& (meeting.getLobbyBypassScopeEnum() == LobbyBypassScope.EVERYONE
-					|| meeting.getLobbyBypassScopeEnum() == LobbyBypassScope.ORGANIZATION
-					|| meeting.getLobbyBypassScopeEnum() == LobbyBypassScope.ORGANIZATION_AND_FEDERATED);
-		
+		if(meeting == null || meeting.getAllowedPresentersEnum() == null || meeting.getLobbyBypassScopeEnum() == null) {
+			return false;
+		}
+		return ALLOWED_PRESENTERS_FOR_ATTENDEE.contains(meeting.getAllowedPresentersEnum())
+			&& ALLOWED_LOBBY_BYPASS_FOR_ATTENDEE.contains(meeting.getLobbyBypassScopeEnum());
 	}
 	
 	/**

@@ -90,6 +90,31 @@ public class MicrosoftGraphDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void canAttendeeOpenMeeting() {
+		TeamsMeetingImpl test = new TeamsMeetingImpl();
+		// everyone
+		test.setAllowedPresenters(OnlineMeetingPresenters.EVERYONE.name());
+		test.setLobbyBypassScope(LobbyBypassScope.EVERYONE.name());
+		Assert.assertTrue(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
+		
+		test.setAllowedPresenters(OnlineMeetingPresenters.ORGANIZATION.name());
+		test.setLobbyBypassScope(LobbyBypassScope.ORGANIZER.name());
+		Assert.assertFalse(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
+	}
+	
+	@Test
+	public void canAttendeeOpenMeetingCheckNulls() {
+		Assert.assertFalse(MicrosoftGraphDAO.canAttendeeOpenMeeting(null));
+		
+		TeamsMeetingImpl test = new TeamsMeetingImpl();
+		Assert.assertFalse(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
+		test.setAllowedPresenters(OnlineMeetingPresenters.EVERYONE.name());
+		Assert.assertFalse(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
+		test.setLobbyBypassScope(LobbyBypassScope.EVERYONE.name());
+		Assert.assertTrue(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
+	}
+	
+	@Test
 	public void createUpdateDeleteOnBehalf() {
 		Assume.assumeTrue(StringHelper.containsNonWhitespace(teamsModule.getApiKey()));
 		Assume.assumeTrue(StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId()));

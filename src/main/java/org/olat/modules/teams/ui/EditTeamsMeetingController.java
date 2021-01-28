@@ -46,6 +46,7 @@ import org.olat.modules.teams.TeamsDispatcher;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
+import org.olat.modules.teams.manager.MicrosoftGraphDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 	private final boolean editableGraph;
 	private final boolean meetingExtendedOptionsEnabled;
 	private TeamsMeeting meeting;
+	private final String organisation;
 
 	private CloseableModalController cmc;
 	private TeamsMeetingsCalendarController calendarCtr;
@@ -110,6 +112,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 		editable = true;
 		editableGraph = true;
 		meetingExtendedOptionsEnabled = teamsModule.isOnlineMeetingExtendedOptionsEnabled();
+		organisation = teamsModule.getTenantOrganisation();
 		
 		initForm(ureq);
 	}
@@ -125,6 +128,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 		editable = TeamsUIHelper.isEditable(meeting, ureq);
 		editableGraph = TeamsUIHelper.isEditableGraph(meeting);
 		meetingExtendedOptionsEnabled = teamsModule.isOnlineMeetingExtendedOptionsEnabled();
+		organisation = teamsModule.getTenantOrganisation();
 		
 		initForm(ureq);
 	}
@@ -207,12 +211,12 @@ public class EditTeamsMeetingController extends FormBasicController {
 		String[] onOpenValues = new String[] { "" };
 		participantsOpenEl = uifactory.addCheckboxesHorizontal("meeting.participants.open", formLayout, onKeys, onOpenValues);
 		participantsOpenEl.setHelpTextKey("meeting.participants.open.hint", null);
+		participantsOpenEl.addActionListener(FormEvent.ONCHANGE);
 		if(meeting != null && meeting.isParticipantsCanOpen()) {
 			participantsOpenEl.select("on", true);
 		}
 		
 		KeyValues accessKeyValues = new KeyValues();
-		String organisation = teamsModule.getTenantOrganisation();
 		accessKeyValues.add(KeyValues.entry(AccessLevel.EVERYONE.name(), translate("meeting.accesslevel.everyone")));
 		accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE.name(),
 				translate("meeting.accesslevel.same.enterprise", new String[] { organisation })));
@@ -222,10 +226,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 		accessLevelEl.setMandatory(true);
 		accessLevelEl.setEnabled(editable && editableGraph);
 
-		KeyValues presentersKeyValues = new KeyValues();
-		presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), translate("meeting.presenters.role")));
-		presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.ORGANIZATION.name(), translate("meeting.presenters.organization")));
-		presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.EVERYONE.name(), translate("meeting.presenters.everyone")));
+		KeyValues presentersKeyValues = this.getPresenters(participantsOpenEl.isAtLeastSelected(1));
 		presentersEl = uifactory.addDropdownSingleselect("meeting.presenters", formLayout, presentersKeyValues.keys(), presentersKeyValues.values());
 		presentersEl.setMandatory(true);
 		presentersEl.setEnabled(editable);
@@ -238,13 +239,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 			annoncementEl.select(onKeys[0], true);
 		}
 		
-		KeyValues lobbyKeyValues = new KeyValues();
-		lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.EVERYONE.name(), translate("meeting.lobby.bypass.everyone")));
-		lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZATION.name(),
-				translate("meeting.lobby.bypass.organization", new String[] { organisation })));
-		lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZATION_AND_FEDERATED.name(),
-				translate("meeting.lobby.bypass.same.enterprise.federated", new String[] { organisation })));
-		lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZER.name(), translate("meeting.lobby.bypass.organizer")));
+		KeyValues lobbyKeyValues = getLobbyByPass(participantsOpenEl.isAtLeastSelected(1));
 		lobbyEl = uifactory.addDropdownSingleselect("meeting.lobby.bypass", formLayout, lobbyKeyValues.keys(), lobbyKeyValues.values());
 		lobbyEl.setMandatory(true);
 		lobbyEl.setEnabled(editable);
@@ -256,6 +251,61 @@ public class EditTeamsMeetingController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		if(editable) {
 			uifactory.addFormSubmitButton("save", buttonLayout);
+		}
+	}
+	
+	private KeyValues getPresenters(boolean attendee) {
+		KeyValues presentersKeyValues = new KeyValues();
+		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.ROLE_IS_PRESENTER, "meeting.presenters.role");
+		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.ORGANIZATION, "meeting.presenters.organization");
+		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.EVERYONE, "meeting.presenters.everyone");
+		return presentersKeyValues;
+	}
+	
+	private void addPresenter(KeyValues presentersKeyValues, boolean attendee, OnlineMeetingPresenters presenter, String i18nKey) {
+		if(!attendee || MicrosoftGraphDAO.ALLOWED_PRESENTERS_FOR_ATTENDEE.contains(presenter)) {
+			presentersKeyValues.add(KeyValues.entry(presenter.name(), translate(i18nKey)));	
+		}
+	}
+	
+	private KeyValues getLobbyByPass(boolean attendee) {
+		KeyValues lobbyKeyValues = new KeyValues();
+		addLobbyByPass(lobbyKeyValues, attendee, LobbyBypassScope.EVERYONE, "meeting.lobby.bypass.everyone");
+		addLobbyByPass(lobbyKeyValues, attendee, LobbyBypassScope.ORGANIZATION, "meeting.lobby.bypass.organization");
+		addLobbyByPass(lobbyKeyValues, attendee, LobbyBypassScope.ORGANIZATION_AND_FEDERATED, "meeting.lobby.bypass.same.enterprise.federated");
+		addLobbyByPass(lobbyKeyValues, attendee, LobbyBypassScope.ORGANIZER, "meeting.lobby.bypass.organizer");
+		return lobbyKeyValues;
+	}
+	
+	private void addLobbyByPass(KeyValues presentersKeyValues, boolean attendee, LobbyBypassScope lobbyByPass, String i18nKey) {
+		if(!attendee || MicrosoftGraphDAO.ALLOWED_LOBBY_BYPASS_FOR_ATTENDEE.contains(lobbyByPass)) {
+			presentersKeyValues.add(KeyValues.entry(lobbyByPass.name(), translate(i18nKey, new String[] { organisation })));	
+		}
+	}
+
+	private void updateAccessOption() {
+		boolean attendeeMode = participantsOpenEl.isAtLeastSelected(1);
+		
+		String presentersKey = presentersEl.getSelectedKey();
+		KeyValues presentersKeyValues = getPresenters(attendeeMode);
+		presentersEl.setKeysAndValues(presentersKeyValues.keys(), presentersKeyValues.values(), null);
+		if(presentersKeyValues.containsKey(presentersKey)) {
+			presentersEl.select(presentersKey, true);
+		} else if(attendeeMode && presentersKeyValues.containsKey(OnlineMeetingPresenters.EVERYONE.name())) {
+			presentersEl.select(OnlineMeetingPresenters.EVERYONE.name(), true);
+		} else {
+			presentersEl.select(presentersKeyValues.keys()[0], true);
+		}
+		
+		String selectedLobbyKey = lobbyEl.getSelectedKey();
+		KeyValues lobbyKeyValues = getLobbyByPass(attendeeMode);
+		lobbyEl.setKeysAndValues(lobbyKeyValues.keys(), lobbyKeyValues.values(), null);
+		if(lobbyKeyValues.containsKey(selectedLobbyKey)) {
+			lobbyEl.select(selectedLobbyKey, true);
+		} else if (attendeeMode && lobbyKeyValues.containsKey(LobbyBypassScope.EVERYONE.name())) {
+			lobbyEl.select(LobbyBypassScope.EVERYONE.name(), true);
+		} else {
+			lobbyEl.select(lobbyKeyValues.keys()[0], true);
 		}
 	}
 
@@ -317,6 +367,8 @@ public class EditTeamsMeetingController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (openCalLink == source) {
 			doOpenCalendar(ureq);
+		} else if(participantsOpenEl == source) {
+			updateAccessOption();
 		}
 	}
 
