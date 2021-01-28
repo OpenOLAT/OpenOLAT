@@ -1039,6 +1039,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			
 			TaskList reloadedTasks = loadForUpdate(tasks);
 			List<String> assignedFilenames = getAssignedTasks(reloadedTasks);
+			assignedFilenames.retainAll(List.of(taskFiles));
 			
 			String taskName;
 			if(GTACourseNode.GTASK_SAMPLING_UNIQUE.equals(cNode.getModuleConfiguration().get(GTACourseNode.GTASK_SAMPLING))) {
