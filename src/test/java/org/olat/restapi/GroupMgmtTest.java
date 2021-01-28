@@ -56,6 +56,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
@@ -461,7 +462,7 @@ public class GroupMgmtTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testCreateCourseGroupWithConfiguration() throws IOException, URISyntaxException {
+	public void createCourseGroupWithConfiguration() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create the group
@@ -482,7 +483,7 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		GroupConfigurationVO configVo = new GroupConfigurationVO();
 		configVo.setTools(new String[]{ "hasFolder", "hasNews" });
 		HashMap<String, Integer> toolsAccess = new HashMap<>();
-		toolsAccess.put("hasFolder", new Integer(CollaborationTools.FOLDER_ACCESS_OWNERS));
+		toolsAccess.put("hasFolder", Integer.valueOf(CollaborationTools.FOLDER_ACCESS_OWNERS));
 		configVo.setToolsAccess(toolsAccess);
 		configVo.setOwnersVisible(Boolean.TRUE);
 		configVo.setParticipantsVisible(Boolean.FALSE);
@@ -521,7 +522,7 @@ public class GroupMgmtTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testCreateCourseGroupWithNewsAndContact() throws IOException, URISyntaxException {
+	public void createCourseGroupWithNewsAndContact() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create the group
@@ -568,6 +569,78 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_WIKI));
 		// Check news tools access configuration
 		assertEquals("<p>News!</p>", tools.lookupNews());
+	}
+	
+	@Test
+	public void getGroupConfiguration() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1");
+		BusinessGroup group = businessGroupService.createBusinessGroup(owner, "Configuration", "REST configuration",
+				null, null, false, false, null);
+		dbInstance.commitAndCloseSession();
+		
+		URI configRequest = UriBuilder.fromUri(getContextURI()).path("groups").path(group.getKey().toString()).path("configuration").build();
+		HttpGet configMethod = conn.createGet(configRequest, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(configMethod);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		GroupConfigurationVO config = conn.parse(response.getEntity(), GroupConfigurationVO.class);
+		Assert.assertNotNull(config);
+		Assert.assertEquals(Boolean.FALSE, config.getOwnersPublic());
+		Assert.assertEquals(Boolean.FALSE, config.getOwnersVisible());
+		Assert.assertEquals(Boolean.FALSE, config.getParticipantsPublic());
+		Assert.assertEquals(Boolean.FALSE, config.getParticipantsVisible());
+		Assert.assertEquals(Boolean.FALSE, config.getWaitingListPublic());
+		Assert.assertEquals(Boolean.FALSE, config.getWaitingListVisible());
+		
+		Assert.assertNotNull(config.getTools());
+		Assert.assertEquals(0, config.getTools().length);
+		Assert.assertNotNull(config.getToolsAccess());
+		Assert.assertTrue(config.getToolsAccess().isEmpty());	
+	}
+		
+	@Test
+	public void getConfiguredGroupConfiguration() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-2");
+		BusinessGroup group = businessGroupService.createBusinessGroup(owner, "Configuration", "REST configuration",
+				null, null, false, false, null);
+		dbInstance.commit();
+		group = businessGroupService.updateDisplayMembers(group, true, false, false, true, true, false, false);
+		dbInstance.commit();
+	
+		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
+		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools();
+		for(String tool:availableTools) {
+			tools.setToolEnabled(tool, true);
+		}
+		tools.setToolAccess(CollaborationTools.TOOL_FOLDER, CollaborationTools.FOLDER_ACCESS_ALL);
+		tools.setToolAccess(CollaborationTools.TOOL_CALENDAR, CollaborationTools.CALENDAR_ACCESS_OWNERS);
+		dbInstance.commitAndCloseSession();
+		
+		URI configRequest = UriBuilder.fromUri(getContextURI()).path("groups").path(group.getKey().toString()).path("configuration").build();
+		HttpGet configMethod = conn.createGet(configRequest, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(configMethod);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		GroupConfigurationVO config = conn.parse(response.getEntity(), GroupConfigurationVO.class);
+		Assert.assertNotNull(config);
+		Assert.assertEquals(Boolean.TRUE, config.getOwnersPublic());
+		Assert.assertEquals(Boolean.TRUE, config.getOwnersVisible());
+		Assert.assertEquals(Boolean.TRUE, config.getParticipantsPublic());
+		Assert.assertEquals(Boolean.FALSE, config.getParticipantsVisible());
+		Assert.assertEquals(Boolean.FALSE, config.getWaitingListPublic());
+		Assert.assertEquals(Boolean.FALSE, config.getWaitingListVisible());
+		
+		Assert.assertNotNull(config.getTools());
+		Assert.assertEquals(availableTools.length, config.getTools().length);
+		Assert.assertNotNull(config.getToolsAccess());
+		Assert.assertEquals(2, config.getToolsAccess().size());	
+		Assert.assertEquals(Integer.valueOf(CollaborationTools.FOLDER_ACCESS_ALL), config.getToolsAccess().get(CollaborationTools.TOOL_FOLDER));	
+		Assert.assertEquals(Integer.valueOf(CollaborationTools.CALENDAR_ACCESS_OWNERS), config.getToolsAccess().get(CollaborationTools.TOOL_CALENDAR));	
+		
 	}
 	
 	@Test

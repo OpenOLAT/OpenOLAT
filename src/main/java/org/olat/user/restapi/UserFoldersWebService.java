@@ -127,7 +127,10 @@ public class UserFoldersWebService {
 		if(groupKey == null) {
 			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
 		}
-		return new LearningGroupWebService().getFolder(groupKey, request);
+		
+		LearningGroupWebService groupWebService = new LearningGroupWebService();
+		CoreSpringFactory.autowireObject(groupWebService);
+		return groupWebService.getFolder(groupKey, request);
 	}
 	
 	/**

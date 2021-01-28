@@ -264,7 +264,7 @@ public class CourseGroupWebService {
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	public Response getGroup(@PathParam("groupKey") Long groupKey, @Context Request request, @Context HttpServletRequest httpRequest) {
 		//further security check: group is in the course
-		return new LearningGroupWebService().findById(groupKey, request, httpRequest);
+		return getGroupWebService().findById(groupKey, request, httpRequest);
 	}
 
 	/**
@@ -287,7 +287,7 @@ public class CourseGroupWebService {
 		if(!isGroupManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return new LearningGroupWebService().postGroup(groupKey, group, request);
+		return getGroupWebService().postGroup(groupKey, group, request);
 	}
 	
 	/**
@@ -307,7 +307,13 @@ public class CourseGroupWebService {
 		if(!isGroupManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return new LearningGroupWebService().deleteGroup(groupKey, request);
+		return getGroupWebService().deleteGroup(groupKey, request);
+	}
+	
+	private LearningGroupWebService getGroupWebService() {
+		LearningGroupWebService groupWebService = new LearningGroupWebService();
+		CoreSpringFactory.autowireObject(groupWebService);
+		return groupWebService;
 	}
 	
 	/**

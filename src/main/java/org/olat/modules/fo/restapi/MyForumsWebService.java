@@ -47,6 +47,7 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.collaboration.CollaborationTools;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.id.Identity;
@@ -120,7 +121,9 @@ public class MyForumsWebService {
 		if(groupKey == null) {
 			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
 		}
-		return new LearningGroupWebService().getForum(groupKey, request);
+		LearningGroupWebService groupWebService = new LearningGroupWebService();
+		CoreSpringFactory.autowireObject(groupWebService);
+		return groupWebService.getForum(groupKey, request);
 	}
 	
 	/**
