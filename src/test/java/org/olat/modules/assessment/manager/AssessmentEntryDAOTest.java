@@ -21,11 +21,10 @@ package org.olat.modules.assessment.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
-import static org.assertj.core.api.Assertions.within;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.math.BigDecimal;
-import java.time.temporal.ChronoUnit;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -259,7 +258,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertNull(reloadedAssessmentRef.getPassedOverridable().getOriginal());
 		Assert.assertNull(reloadedAssessmentRef.getPassedOverridable().getModBy());
 		Assert.assertNull(reloadedAssessmentRef.getPassedOverridable().getModDate());
-		Assert.assertEquals(new Integer(0), reloadedAssessmentRef.getAttempts());
+		Assert.assertEquals(Integer.valueOf(0), reloadedAssessmentRef.getAttempts());
 		Assert.assertNull(reloadedAssessmentRef.getCompletion());
 	}
 	
@@ -294,10 +293,10 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		
 		AssessmentEntry reloaded = assessmentEntryDao.loadAssessmentEntryById(ae.getKey());
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(reloaded.getLastCoachModified()).isCloseTo(lastCoachModified, within(2, ChronoUnit.SECONDS).getValue());
-		softly.assertThat(reloaded.getLastUserModified()).isCloseTo(lastUserModified, within(2, ChronoUnit.SECONDS).getValue());
+		softly.assertThat(reloaded.getLastCoachModified()).isCloseTo(lastCoachModified, Duration.ofSeconds(2).toMillis());
+		softly.assertThat(reloaded.getLastUserModified()).isCloseTo(lastUserModified, Duration.ofSeconds(2).toMillis());
 		softly.assertThat(reloaded.getAttempts()).isEqualTo(3);
-		softly.assertThat(reloaded.getLastAttempt()).isCloseTo(lastAttempt, within(2, ChronoUnit.SECONDS).getValue());
+		softly.assertThat(reloaded.getLastAttempt()).isCloseTo(lastAttempt, Duration.ofSeconds(2).toMillis());
 		softly.assertThat(reloaded.getScore()).isEqualByComparingTo(BigDecimal.valueOf(2.0));
 		softly.assertThat(reloaded.getPassed()).isTrue();
 		softly.assertThat(reloaded.getUserVisibility()).isTrue();
@@ -410,16 +409,16 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		
 		AssessmentEntry reloadedEntry = assessmentEntryDao.loadAssessmentEntryById(nodeAssessment.getKey());
 		
-		assertThat(reloadedEntry.getStartDate()).isCloseTo(startDate, within(2, ChronoUnit.MINUTES).getValue());
-		assertThat(reloadedEntry.getEndDate().getCurrent()).isCloseTo(endDate, within(2, ChronoUnit.MINUTES).getValue());
-		assertThat(reloadedEntry.getEndDate().getOriginal()).isCloseTo(endDateOriginal, within(2, ChronoUnit.MINUTES).getValue());
-		assertThat(reloadedEntry.getEndDate().getModDate()).isCloseTo(endDateModifiactionDate, within(2, ChronoUnit.MINUTES).getValue());
+		assertThat(reloadedEntry.getStartDate()).isCloseTo(startDate, Duration.ofMinutes(2).toMillis());
+		assertThat(reloadedEntry.getEndDate().getCurrent()).isCloseTo(endDate, Duration.ofMinutes(2).toMillis());
+		assertThat(reloadedEntry.getEndDate().getOriginal()).isCloseTo(endDateOriginal, Duration.ofMinutes(2).toMillis());
+		assertThat(reloadedEntry.getEndDate().getModDate()).isCloseTo(endDateModifiactionDate, Duration.ofMinutes(2).toMillis());
 		assertThat(reloadedEntry.getEndDate().getModBy()).isEqualTo(modIdentity);
 		assertThat(reloadedEntry.getDuration()).isEqualTo(duration);
 		assertThat(reloadedEntry.getObligation().getCurrent()).isEqualTo(obligation);
 		assertThat(reloadedEntry.getObligation().getOriginal()).isEqualTo(obligationOriginal);
 		assertThat(reloadedEntry.getObligation().getModBy()).isEqualTo(modIdentity);
-		assertThat(reloadedEntry.getObligation().getModDate()).isCloseTo(obligationModDate, within(2, ChronoUnit.MINUTES).getValue());
+		assertThat(reloadedEntry.getObligation().getModDate()).isCloseTo(obligationModDate, Duration.ofMinutes(2).toMillis());
 	}
 	
 	@Test

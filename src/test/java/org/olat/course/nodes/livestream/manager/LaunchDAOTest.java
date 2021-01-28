@@ -20,10 +20,9 @@
 package org.olat.course.nodes.livestream.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 import static org.olat.test.JunitTestHelper.random;
 
-import java.time.temporal.ChronoUnit;
+import java.time.Duration;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -61,7 +60,7 @@ public class LaunchDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(launch.getCreationDate()).isNotNull();
-		assertThat(launch.getLaunchDate()).isCloseTo(launchDate, within(1000, ChronoUnit.MILLIS).getValue());
+		assertThat(launch.getLaunchDate()).isCloseTo(launchDate, Duration.ofMillis(1000).toMillis());
 		assertThat(launch.getCourseEntry()).isEqualTo(entry);
 		assertThat(launch.getSubIdent()).isEqualTo(subIdent);
 		assertThat(launch.getIdentity()).isEqualTo(identity);
