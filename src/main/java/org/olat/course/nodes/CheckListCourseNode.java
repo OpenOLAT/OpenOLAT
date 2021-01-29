@@ -457,7 +457,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			}
 		}
 
-		ScoreEvaluation sceval = new ScoreEvaluation(score, new Boolean(passed));
+		ScoreEvaluation sceval = new ScoreEvaluation(score, Boolean.valueOf(passed));
 		
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
@@ -475,7 +475,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, assessedUserCourseEnv);
-		ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), currentEval.getPassed());
+		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), currentEval.getPassed());
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
 	}
 	
@@ -558,10 +558,15 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	private void updateScorePassedOnPublish(Identity assessedIdentity, Identity coachIdentity, CheckboxManager checkboxManager, ICourse course) {
 		AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 		
-		Float currentScore = am.getNodeScore(this, assessedIdentity);
-		Boolean currentPassed = am.getNodePassed(this, assessedIdentity);
+		Float currentScore = null;
+		Boolean currentPassed = null;
+		AssessmentEntry ae = am.getAssessmentEntry(this, assessedIdentity);
+		if(ae != null) {
+			currentScore = ae.getScore() == null ? null : ae.getScore().floatValue();
+			currentPassed = ae.getPassed();
+		}
 		
-		Float updatedScore = null;
+		Float updatedScore;
 		Boolean updatedPassed = null;
 
 		ModuleConfiguration config = getModuleConfiguration();
@@ -616,7 +621,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 				|| (currentScore != null && updatedScore == null)
 				|| (currentScore != null && !currentScore.equals(updatedScore))) {
 			needUpdate = true;	
-		}	
+		}
 		
 		if(needUpdate) {
 			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);

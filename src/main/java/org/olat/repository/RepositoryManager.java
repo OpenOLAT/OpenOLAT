@@ -70,7 +70,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -1436,11 +1435,10 @@ public class RepositoryManager {
 		sendDeferredEvents(deferredEvents, re);
 	}
 
-	private void sendDeferredEvents(List<? extends MultiUserEvent> events, OLATResourceable ores) {
+	private void sendDeferredEvents(List<? extends MultiUserEvent> events, RepositoryEntry ores) {
 		EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
 		for(MultiUserEvent event:events) {
 			eventBus.fireEventToListenersOf(event, ores);
-			eventBus.fireEventToListenersOf(event, OresHelper.lookupType(RepositoryEntry.class));
 		}
 	}
 
@@ -1458,8 +1456,8 @@ public class RepositoryManager {
 				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 			}
 	
-			log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
-					+ "' as owner from repositoryentry with key " + re.getKey());
+			log.info(Tracing.M_AUDIT, "Identity(.key):{} removed identity '{}' as owner from repositoryentry with key {}",
+					ureqIdentity.getKey(), identity.getKey(), re.getKey());
 		}
 	}
 
@@ -1648,8 +1646,8 @@ public class RepositoryManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
-				+ "' to repositoryentry with key " + re.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to repositoryentry with key {}",
+				ureqIdentity.getKey(), identity.getKey(), re.getKey());
 	}
 
 	/**
@@ -2123,7 +2121,6 @@ public class RepositoryManager {
 		if(changes.getRepoParticipant() != null) {
 			if(changes.getRepoParticipant().booleanValue()) {
 				addParticipants(ureqIdentity, ureqRoles, new IdentitiesAddEvent(changes.getMember()), re, mailing);
-				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.roleParticipantAdded(changes.getMember(), re));
 			} else {
 				removeParticipant(ureqIdentity, changes.getMember(), re, mailing, true);
 				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(changes.getMember(), re));
