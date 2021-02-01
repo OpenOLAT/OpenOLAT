@@ -447,7 +447,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		} else if (source == groupCreateController) {
 			BusinessGroup group = null;
 			if(event == Event.DONE_EVENT) {
-				Set<BusinessGroup> groups = groupCreateController.getCreatedGroups();
+				List<BusinessGroup> groups = groupCreateController.getCreatedGroups();
 				if(groups.size() == 1) {
 					group = groups.iterator().next();
 				}
