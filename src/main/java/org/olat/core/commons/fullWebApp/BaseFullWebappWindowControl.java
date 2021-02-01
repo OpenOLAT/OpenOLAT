@@ -20,6 +20,7 @@
 package org.olat.core.commons.fullWebApp;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ScreenMode.Mode;
@@ -105,7 +106,9 @@ class BaseFullWebappWindowControl implements WindowControl {
 	@Override
 	public void setInfo(String info) {
 		webappCtrl.getGUIMessage().setInfo(info);
-		webappCtrl.getGUIMsgPanel().setContent(webappCtrl.getGUIMsgVc());
+		VelocityContainer msgVc = webappCtrl.getGUIMsgVc();
+		msgVc.setDirty(true);
+		webappCtrl.getGUIMsgPanel().setContent(msgVc);
 
 		// setInfo is called input guimsgPanel into the correct place
 	}
@@ -113,13 +116,17 @@ class BaseFullWebappWindowControl implements WindowControl {
 	@Override
 	public void setError(String error) {
 		webappCtrl.getGUIMessage().setError(error);
-		webappCtrl.getGUIMsgPanel().setContent(webappCtrl.getGUIMsgVc());
+		VelocityContainer msgVc = webappCtrl.getGUIMsgVc();
+		msgVc.setDirty(true);
+		webappCtrl.getGUIMsgPanel().setContent(msgVc);
 	}
 
 	@Override
 	public void setWarning(String warning) {
 		webappCtrl.getGUIMessage().setWarn(warning);
-		webappCtrl.getGUIMsgPanel().setContent(webappCtrl.getGUIMsgVc());
+		VelocityContainer msgVc = webappCtrl.getGUIMsgVc();
+		msgVc.setDirty(true);
+		webappCtrl.getGUIMsgPanel().setContent(msgVc);
 	}
 
 	@Override

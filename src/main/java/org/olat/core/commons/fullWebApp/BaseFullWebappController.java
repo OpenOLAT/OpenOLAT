@@ -157,10 +157,13 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private Panel main;
 	private Panel modalPanel;
 	private Panel topModalPanel;
-	private GUIMessage guiMessage;
-	private OncePanel guimsgPanel;
+	private final GUIMessage guiMessage;
+	private final OncePanel guimsgPanel;
 	private Panel cssHolder, guimsgHolder, currentMsgHolder;
-	private VelocityContainer guimsgVc, mainVc, navSitesVc, navTabsVc;
+	private VelocityContainer guimsgVc;
+	private VelocityContainer mainVc;
+	private VelocityContainer navSitesVc;
+	private VelocityContainer navTabsVc;
 	private StickyMessageComponent stickyMessageCmp;
 
 	private LockStatus lockStatus;
@@ -309,8 +312,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 		
 		// Register for course and group added events
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), OresHelper.lookupType(RepositoryEntry.class));
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), OresHelper.lookupType(BusinessGroup.class));
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), OresHelper.lookupType(RepositoryEntry.class));
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), OresHelper.lookupType(BusinessGroup.class));
 		
 		// register for global sticky message changed events
 		GlobalStickyMessage.registerForGlobalStickyMessage(this, getIdentity());	
@@ -1453,20 +1458,34 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		} 
 		// Check for group or course updates
 		else if (event instanceof BusinessGroupModifiedEvent) {
-			// Only check if not in assessment mode and not in fullscreen mode
-			if (lockResource == null && !getScreenMode().isWishFullScreen()) {
-				if (((BusinessGroupModifiedEvent) event).wasMyselfAdded(getIdentity())) {
-					showPendingEnrolmentsInfo();
-				}
+			try {
+				processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
+			} catch (Exception e) {
+				logError("", e);
 			}
 		} else if (event instanceof RepositoryEntryMembershipModifiedEvent) {
-			// Only check if not in assessment mode and not in fullscreen mode
-			if (lockResource == null && !getScreenMode().isWishFullScreen()) {
-				RepositoryEntryMembershipModifiedEvent repoEvent = (RepositoryEntryMembershipModifiedEvent) event;
-				if (repoEvent.getIdentityKey().equals(getIdentity().getKey()) && repoEvent.getCommand().equals(RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADDED)) {
-					showPendingEnrolmentsInfo();
-				}
+			try {
+				processRepositoryEntryMembershipModifiedEvent((RepositoryEntryMembershipModifiedEvent)event);
+			} catch (Exception e) {
+				logError("", e);
 			}
+		}
+	}
+	
+	private void processBusinessGroupModifiedEvent(BusinessGroupModifiedEvent event) {
+		// Only check if not in assessment mode and not in fullscreen mode
+		if (lockResource == null && (getScreenMode() == null || !getScreenMode().isWishFullScreen())
+				&& getIdentity() != null && event.wasMyselfAddPending(getIdentity())) {
+			showPendingEnrolmentsInfo();
+		}
+	}
+	
+	private void processRepositoryEntryMembershipModifiedEvent(RepositoryEntryMembershipModifiedEvent event) {
+		// Only check if not in assessment mode and not in full screen mode
+		if (lockResource == null && (getScreenMode() == null || !getScreenMode().isWishFullScreen())
+				&& getIdentity() != null && getIdentity().getKey().equals(event.getIdentityKey())
+				&&  RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADDED.equals(event.getCommand())) {
+			showPendingEnrolmentsInfo();
 		}
 	}
 	
@@ -1475,7 +1494,14 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			String businessPath = "[MyCoursesSite:0][My:0]";
 			List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
 			String url = BusinessControlFactory.getInstance().getAsAuthURIString(ces, true);
-			showInfo("pending.enrolments", new String[] {url});
+			String[] args = new String[] {url};
+			String msg = StringHelper.escapeJavaScript(translate("pending.enrolments", args)); 
+			getWindowControl().setInfo(msg);
+			
+			// replace by our message holder
+			currentMsgHolder = guimsgHolder;
+			currentMsgHolder.setContent(guimsgPanel);
+			currentMsgHolder.setDirty(guimsgPanel.isDirty());
 		}
 	}
 	

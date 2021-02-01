@@ -58,6 +58,8 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	public static final String IDENTITY_ADDED_EVENT = "identity.added.event";
 	/** event: an identity has been removed from the group */
 	public static final String IDENTITY_REMOVED_EVENT = "identity.removed.event";
+	/** event: an identity has been added to the group but needs a user confirmation */
+	public static final String IDENTITY_ADD_PENDING_EVENT = "identity.add.pending.event";
 	/** event: the associated group rights have been changed */
 	public static final String GROUPRIGHTS_MODIFIED_EVENT = "grouprights.modified.event";
 	/** event: an identity has been removed from the owner-group by himself */
@@ -115,7 +117,22 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	 * @see updateBusinessGroupList(List businessGroups, Identity identity)
 	 */
 	public boolean wasMyselfAdded(Identity identity) {
-		return (getCommand().equals(IDENTITY_ADDED_EVENT) && getAffectedIdentityKey().equals(identity.getKey()));
+		if(identity == null || identity.getKey() == null) {
+			return false;
+		}
+		return getCommand().equals(IDENTITY_ADDED_EVENT) && getAffectedIdentityKey().equals(identity.getKey());
+	}
+	
+	/**
+	 * 
+	 * @param identity The identity
+	 * @return true if the specified identity wait to be added
+	 */
+	public boolean wasMyselfAddPending(Identity identity) {
+		if(identity == null || identity.getKey() == null) {
+			return false;
+		}
+		return getCommand().equals(IDENTITY_ADD_PENDING_EVENT) && getAffectedIdentityKey().equals(identity.getKey());
 	}
 
 	/**
@@ -124,11 +141,13 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	 * @see updateBusinessGroupList(List businessGroups, Identity identity)
 	 */
 	public boolean wasMyselfRemoved(Identity identity) {
-		if (isTutor) {
-			return (getCommand().equals(MYSELF_ASOWNER_REMOVED_EVENT) && getAffectedIdentityKey().equals(identity.getKey()));
-		} else {
-		  return (getCommand().equals(IDENTITY_REMOVED_EVENT) && getAffectedIdentityKey().equals(identity.getKey()));
+		if(identity == null || identity.getKey() == null) {
+			return false;
 		}
+		if (isTutor) {
+			return getCommand().equals(MYSELF_ASOWNER_REMOVED_EVENT) && getAffectedIdentityKey().equals(identity.getKey());
+		}
+		return getCommand().equals(IDENTITY_REMOVED_EVENT) && getAffectedIdentityKey().equals(identity.getKey());
 	}
 
 	/**

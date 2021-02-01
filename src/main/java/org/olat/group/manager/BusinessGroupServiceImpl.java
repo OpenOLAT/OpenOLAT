@@ -933,6 +933,10 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					if(reservation != null) {
 						BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addParticipant, mailing);
 					}
+
+					BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent
+							.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADD_PENDING_EVENT, group, identityToAdd);
+					events.add(event);
 				}
 			} else {
 				internalAddParticipant(ureqIdentity, identityToAdd, group, events);
