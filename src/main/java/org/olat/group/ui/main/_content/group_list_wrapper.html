@@ -1,0 +1,8 @@
+#if($enrollmentsAvailable)
+	<div class="o_warning">
+		$r.translate("pending.enrolments")
+		$r.render("pendingEnrollments")
+	</div>
+#end
+
+$r.render("myGroups")

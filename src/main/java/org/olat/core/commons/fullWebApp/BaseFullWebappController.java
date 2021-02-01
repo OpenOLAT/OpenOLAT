@@ -114,11 +114,16 @@ import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.mode.AssessmentModeGuardController;
 import org.olat.course.assessment.ui.mode.ChooseAssessmentModeEvent;
+import org.olat.group.BusinessGroup;
+import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.edusharing.EdusharingModule;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryRefImpl;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -207,6 +212,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private AnalyticsModule analyticsModule;
 	@Autowired
 	private EdusharingModule edusharingModule;
+	@Autowired
+	private ACService acService;
 	
 	public BaseFullWebappController(UserRequest ureq, BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
@@ -300,6 +307,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		//register for assessment mode
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+		
+		// Register for course and group added events
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), OresHelper.lookupType(RepositoryEntry.class));
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), OresHelper.lookupType(BusinessGroup.class));
+		
 		// register for global sticky message changed events
 		GlobalStickyMessage.registerForGlobalStickyMessage(this, getIdentity());	
 	}
@@ -1438,6 +1450,32 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			} catch (Exception e) {
 				logError("", e);
 			}
+		} 
+		// Check for group or course updates
+		else if (event instanceof BusinessGroupModifiedEvent) {
+			// Only check if not in assessment mode and not in fullscreen mode
+			if (lockResource == null && !getScreenMode().isWishFullScreen()) {
+				if (((BusinessGroupModifiedEvent) event).wasMyselfAdded(getIdentity())) {
+					showPendingEnrolmentsInfo();
+				}
+			}
+		} else if (event instanceof RepositoryEntryMembershipModifiedEvent) {
+			// Only check if not in assessment mode and not in fullscreen mode
+			if (lockResource == null && !getScreenMode().isWishFullScreen()) {
+				RepositoryEntryMembershipModifiedEvent repoEvent = (RepositoryEntryMembershipModifiedEvent) event;
+				if (repoEvent.getIdentityKey().equals(getIdentity().getKey()) && repoEvent.getCommand().equals(RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADDED)) {
+					showPendingEnrolmentsInfo();
+				}
+			}
+		}
+	}
+	
+	private void showPendingEnrolmentsInfo() {
+		if (!acService.getReservations(getIdentity()).isEmpty()) {
+			String businessPath = "[MyCoursesSite:0][My:0]";
+			List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
+			String url = BusinessControlFactory.getInstance().getAsAuthURIString(ces, true);
+			showInfo("pending.enrolments", new String[] {url});
 		}
 	}
 	

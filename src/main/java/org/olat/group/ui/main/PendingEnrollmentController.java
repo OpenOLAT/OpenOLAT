@@ -58,14 +58,27 @@ public class PendingEnrollmentController extends FormBasicController implements 
 
 	private final ACService acService;
 	private final BusinessGroupService businessGroupService;
-	private final List<ReservationWrapper> reservations;
+	
+	private List<ReservationWrapper> reservations;
+	private boolean showFormOK;
 
-	public PendingEnrollmentController(UserRequest ureq, WindowControl wControl) {
+	public PendingEnrollmentController(UserRequest ureq, WindowControl wControl) { 
+		this(ureq, wControl, true);
+	}
+	
+	public PendingEnrollmentController(UserRequest ureq, WindowControl wControl, boolean showFormOK) {
 		super(ureq, wControl, "accept_reservations");
 		
-		acService = CoreSpringFactory.getImpl(ACService.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		this.showFormOK = showFormOK;
+		this.acService = CoreSpringFactory.getImpl(ACService.class);
+		this.businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
+		
+		getAndShowEnrolments();
+		initForm(ureq);
+	}
+
+	private void getAndShowEnrolments() {
 		List<ResourceReservation> resourceReservations = acService.getReservations(getIdentity());
 		reservations = new ArrayList<>(resourceReservations.size());
 
@@ -109,11 +122,9 @@ public class PendingEnrollmentController extends FormBasicController implements 
 					}
 				}
 			}
-			
-			initForm(ureq);
 		}
 	}
-
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
@@ -132,11 +143,15 @@ public class PendingEnrollmentController extends FormBasicController implements 
 			formLayout.add(rejectLink.getName(), rejectLink);
 		}
 
+		
 		// Button layout
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("submit", "ok", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		
+		if (showFormOK) {
+			uifactory.addFormSubmitButton("submit", "ok", buttonLayout);
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		}
 	}
 	
 	@Override
@@ -158,12 +173,24 @@ public class PendingEnrollmentController extends FormBasicController implements 
 			} else if (source.getName().startsWith("reject_")) {
 				reservation.setAccept(Boolean.FALSE);
 			}
+			
+			if (!showFormOK) {
+				answerReservations(ureq);
+				updateReservations(ureq, reservation);
+				initForm(ureq);
+			}
 		}
+		
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		answerReservations(ureq);
+		fireEvent (ureq, Event.DONE_EVENT);
+	}
+	
+	private void answerReservations(UserRequest ureq) {		
 		for(ReservationWrapper reservation:reservations) {
 			if(reservation.getAccept() != null) {
 				if(reservation.getAccept().booleanValue()) {
@@ -173,12 +200,23 @@ public class PendingEnrollmentController extends FormBasicController implements 
 				}
 			}
 		}
-		fireEvent (ureq, Event.DONE_EVENT);
+	}
+	
+	private void updateReservations(UserRequest ureq, ReservationWrapper reservation) {
+		reservations.remove(reservation);
+		
+		if (reservations.isEmpty()) {
+			fireEvent (ureq, Event.DONE_EVENT);
+		}
 	}
 	
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent (ureq, Event.CANCELLED_EVENT);
+	}
+	
+	public boolean isEnrollmentAvailable() {
+		return reservations != null && !reservations.isEmpty();
 	}
 	
 	public static final class ReservationWrapper {
@@ -257,9 +295,5 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		public void setAccept(Boolean accept) {
 			this.accept = accept;
 		}
-		
-		
-		
-		
 	}
 }

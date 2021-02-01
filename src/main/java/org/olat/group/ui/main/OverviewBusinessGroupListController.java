@@ -60,7 +60,8 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 
 	private Controller currentCtrl;
 	private FavoritBusinessGroupListController favoritGroupsCtrl;
-	private BusinessGroupListController myGroupsCtrl;
+	//private BusinessGroupListController myGroupsCtrl;
+	private BusinessGroupListWrapperController myGroupsCtrl;
 	private OpenBusinessGroupListController openGroupsCtrl;
 	private SearchBusinessGroupListController searchGroupsCtrl;
 	
@@ -175,7 +176,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 					updateOpenGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
 					segmentView.select(openGroupsLink);
 				} else {
-					updateMyGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+					updateMyGroups(ureq);
 					segmentView.select(myGroupsLink);
 				}
 			} else if("OwnedGroups".equals(segment)) {
@@ -189,7 +190,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 					updateOpenGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
 					segmentView.select(openGroupsLink);
 				} else {
-					updateMyGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+					updateMyGroups(ureq);
 					segmentView.select(myGroupsLink);
 				}
 			}
@@ -212,17 +213,16 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		return favoritGroupsCtrl;
 	}
 	
-	private BusinessGroupListController updateMyGroups(UserRequest ureq) {
+	private BusinessGroupListWrapperController updateMyGroups(UserRequest ureq) {
 		cleanUp();
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("AllGroups", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		myGroupsCtrl = new BusinessGroupListController(ureq, bwControl, "my");
+		myGroupsCtrl = new BusinessGroupListWrapperController(ureq, bwControl);
 		listenTo(myGroupsCtrl);
 		currentCtrl = myGroupsCtrl;
 
-		myGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", myGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, myGroupsCtrl);
 		return myGroupsCtrl;
