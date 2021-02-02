@@ -597,9 +597,8 @@ public class AssessmentTest extends Deployments {
 			.stop(assessmentName)
 			.confirmStop();
 		
-		By continueBy = By.className("o_sel_assessment_continue");
-		OOGraphene.waitElementSlowly(continueBy, 20, ryomouBrowser);
-		OOGraphene.waitElementSlowly(continueBy, 20, kanuBrowser);
+		kanuAssessment.waitBackToOpenOlat();
+		ryomouAssessment.waitBackToOpenOlat();
 		kanuAssessment.backToOpenOLAT();
 		ryomouAssessment.backToOpenOLAT();
 		
@@ -1689,7 +1688,7 @@ public class AssessmentTest extends Deployments {
 			.clickToolbarBack();
 		coursePage
 			.clickTree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		
 		//Participant log in
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
@@ -1707,7 +1706,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
 			.clickTree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		OOGraphene.waitAndCloseBlueMessageWindow(ryomouBrowser);
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
@@ -1728,7 +1727,7 @@ public class AssessmentTest extends Deployments {
 		//back to author
 		coursePage
 			.clickTree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
 		participantToCoach
@@ -1742,7 +1741,7 @@ public class AssessmentTest extends Deployments {
 		//participant checks she passed the task
 		ryomouTestCourse
 			.clickTree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		ryomouTask
 			.assertPassed();
 	}

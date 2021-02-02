@@ -307,12 +307,21 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 			allOk &= false;
 		}
 		
+		if(!joinButton.isEnabled()) {
+			if(!nameEl.hasError()) {// don't overwrite the validation error of name
+				nameEl.setErrorKey("meeting.create.intro", null);
+			}
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doJoin(ureq);
+		if(joinButton.isEnabled()) {
+			doJoin(ureq);
+		}
 	}
 
 	@Override

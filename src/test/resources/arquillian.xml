@@ -28,9 +28,9 @@
 		<property name="chromeDriverBinary">target/drone/675a673c111fdcc9678d11df0e69b334/chromedriver</property>
 		<property name="firefoxDriverBinary">target/drone/ce03addb1fc8c24900011f90fc80f3c1/geckodriver</property>
 		-->
-		<property name="firefoxDriverVersion">${webdriver.firefox.version:v0.28.0}</property>
+		<property name="firefoxDriverVersion">${webdriver.firefox.version:v0.29.0}</property>
 		<property name="firefoxUserPreferences">src/test/profile/firefox/prefs.js</property>
-		<property name="chromeDriverVersion">${webdriver.chrome.version:87.0.4280.88}</property>
+		<property name="chromeDriverVersion">${webdriver.chrome.version:88.0.4324.96}</property>
 		<property name="chromeArguments">${webdriver.chrome.arguments}</property>
 		<property name="chromeExperimentalOption">{
 			"prefs":{"credentials_enable_service": false, "profile.password_manager_enabled": false }
