@@ -99,8 +99,8 @@
 	    <test.env.db.oracle.host.port>1521</test.env.db.oracle.host.port>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
-	    <test.env.webdriver.firefox.version>v0.27.0</test.env.webdriver.firefox.version>
-	    <test.env.webdriver.chrome.version>86.0.4240.22</test.env.webdriver.chrome.version>
+	    <test.env.webdriver.firefox.version>v0.29.0</test.env.webdriver.firefox.version>
+	    <test.env.webdriver.chrome.version>88.0.4324.96</test.env.webdriver.chrome.version>
 	    <test.env.webdriver.chrome.arguments></test.env.webdriver.chrome.arguments>
 	    <skipTests>true</skipTests>
 		<skipSeleniumTests>false</skipSeleniumTests>
