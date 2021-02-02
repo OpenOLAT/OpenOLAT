@@ -164,6 +164,12 @@ public class AssessmentModePage {
 		return this;
 	}
 	
+	public AssessmentModePage waitBackToOpenOlat() {
+		By continueBy = By.xpath("//div[@class='modal-content']//a[contains(@class,'o_sel_assessment_continue')]");
+		OOGraphene.waitElementSlowly(continueBy, 20, browser);
+		return this;
+	}
+	
 	/**
 	 * After an assessment, go back to OpenOLAT.
 	 */
