@@ -342,6 +342,7 @@ public class AssessmentHtmlBuilder {
 						String parameters = content.substring(start + startScript.length(), end);
 						translateToObject(parameters);
 					}
+					scriptBuffer = new StringBuilder();
 					video = false;
 				}
 				return;
