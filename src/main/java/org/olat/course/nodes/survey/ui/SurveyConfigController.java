@@ -237,10 +237,11 @@ public class SurveyConfigController extends FormBasicController {
 					showError("error.repo.entry.not.replaceable");
 				}
 			}
+			updateUI();
+			
 			SurveyCourseNode.setEvaluationFormReference(formEntry, moduleConfiguration);
 			// fire event so the updated config is saved
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			updateUI();
 		}
 	}
 
