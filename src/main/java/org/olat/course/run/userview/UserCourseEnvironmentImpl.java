@@ -50,7 +50,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 
 /**
@@ -81,7 +80,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment) {
 		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null, null);
 		if(courseEnvironment != null) {
-			courseReadOnly = courseEnvironment.getCourseGroupManager().getCourseEntry().getEntryStatus() == RepositoryEntryStatusEnum.closed;
+			courseReadOnly = courseEnvironment.getCourseGroupManager().getCourseEntry().getEntryStatus().decommissioned();
 		}
 	}
 
