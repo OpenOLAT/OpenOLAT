@@ -79,7 +79,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	
 	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment) {
 		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null, null);
-		if(courseEnvironment != null) {
+		if(courseEnvironment != null && courseEnvironment.getCourseGroupManager().getCourseEntry().getEntryStatus() != null) {
 			courseReadOnly = courseEnvironment.getCourseGroupManager().getCourseEntry().getEntryStatus().decommissioned();
 		}
 	}
