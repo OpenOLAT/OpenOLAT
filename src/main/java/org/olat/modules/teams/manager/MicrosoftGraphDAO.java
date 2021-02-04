@@ -114,33 +114,6 @@ public class MicrosoftGraphDAO {
 		return graphClient;
 	}
 	
-	public User getUser(String id) {
-		return client().users()
-				.byId(id)
-				.buildRequest()
-				.get();
-	}
-	
-	/**
-	 * 
-	 * @param mail
-	 * @param issuer
-	 * @return
-	 */
-	public List<User> searchUsersByAssignedId(String mail, String issuer) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("identities/any(c:c/issuerAssignedId eq '").append(mail).append("'")
-		  .append(" and c/issuer eq '").append(issuer).append("')");
-		
-		IUserCollectionPage user = client().users()
-				.buildRequest()
-				.filter(sb.toString())
-				.select("displayName,id")
-				.get();
-		
-		return user.getCurrentPage();
-	}
-	
 	public static boolean canAttendeeOpenMeeting(TeamsMeeting meeting) {
 		if(meeting == null || meeting.getAllowedPresentersEnum() == null || meeting.getLobbyBypassScopeEnum() == null) {
 			return false;
@@ -164,7 +137,8 @@ public class MicrosoftGraphDAO {
 	 * @param errors Mandatory errors object
 	 * @return An online meeting if successful
 	 */
-	public OnlineMeeting createMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, TeamsErrors errors) {
+	public OnlineMeeting createMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, TeamsErrors errors)
+	throws ClientException {
 		MeetingParticipants participants = new MeetingParticipants();
 		if(user != null) {
 			if(role == OnlineMeetingRole.PRESENTER || role == OnlineMeetingRole.PRODUCER) {
@@ -311,21 +285,12 @@ public class MicrosoftGraphDAO {
 		return updatedOnlineMeeting;
 	}
 	
-	public OnlineMeeting searchOnlineMeeting(String externalId) {
-		return client()
-				.users(teamsModule.getOnBehalfUserId())
-				.onlineMeetings(externalId)
-				.buildRequest()
-				.get();
-	}
-	
 	public void delete(String meetingId) {
 		client()
 				.users(teamsModule.getOnBehalfUserId())
 				.onlineMeetings(meetingId)
 				.buildRequest()
 				.delete();
-		
 	}
 
 	/**
@@ -335,7 +300,7 @@ public class MicrosoftGraphDAO {
 	 * @param institutionalEmail The institutional E-mail (optional)
 	 * @return The first users found
 	 */
-	public List<User> searchUsersByMail(String email, String institutionalEmail) {
+	public List<User> searchUsersByMail(String email, String institutionalEmail, TeamsErrors errors) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("mail eq '").append(email).append("'")
 		  .append(" or otherMails/any(x:x eq '").append(email).append("')");
@@ -344,13 +309,18 @@ public class MicrosoftGraphDAO {
 			  .append(" or otherMails/any(x:x eq '").append(institutionalEmail).append("')");
 		}
 
-		IUserCollectionPage user = client()
-				.users()
-				.buildRequest()
-				.filter(sb.toString())
-				.select("displayName,id,mail,otherMails")
-				.get();
-		return user.getCurrentPage();
+		try {
+			IUserCollectionPage user = client()
+					.users()
+					.buildRequest()
+					.filter(sb.toString())
+					.select("displayName,id,mail,otherMails")
+					.get();
+			return user.getCurrentPage();
+		} catch (ClientException e) {
+			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
+			return new ArrayList<>();
+		}
 	}
 	
 	/**
@@ -359,7 +329,7 @@ public class MicrosoftGraphDAO {
 	 * @param issuer
 	 * @return
 	 */
-	public User searchUserByUserPrincipalName(List<String> principals) {
+	public User searchUserByUserPrincipalName(List<String> principals, TeamsErrors errors) {
 		if(principals == null || principals.isEmpty()) return null;
 		
 		StringBuilder sb = new StringBuilder();
@@ -370,15 +340,20 @@ public class MicrosoftGraphDAO {
 			sb.append("userPrincipalName eq '").append(principal).append("'");
 		}
 
-		IUserCollectionPage user = client().users()
-				.buildRequest()
-				.filter(sb.toString())
-				.select("displayName,id,mail,otherMails")
-				.top(1)
-				.get();
-		
-		List<User> users = user.getCurrentPage();
-		return users.isEmpty() ? null : users.get(0);
+		try {
+			IUserCollectionPage user = client().users()
+					.buildRequest()
+					.filter(sb.toString())
+					.select("displayName,id,mail,otherMails")
+					.top(1)
+					.get();
+			
+			List<User> users = user.getCurrentPage();
+			return users.isEmpty() ? null : users.get(0);
+		} catch (ClientException e) {
+			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
+			return null;
+		}
 	}
 	
 	public User searchUserById(String id, IGraphServiceClient client, TeamsErrors errors) {
@@ -465,7 +440,12 @@ public class MicrosoftGraphDAO {
 			}
 
 			return new ConnectionInfos(organisation, onBehalfDisplayName, producerDisplayName, application);
+		} catch (ClientException e) {
+			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
+			log.error("", e);
+			return null;
 		} catch (Exception e) {
+			errors.append(new TeamsError(e.getMessage(), ""));
 			log.error("", e);
 			return null;
 		}
@@ -502,7 +482,12 @@ public class MicrosoftGraphDAO {
 			}
 
 			return new ConnectionInfos(organisation, onBehalfDisplayName, producerDisplayName, application);
+		} catch (ClientException e) {
+			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
+			log.error("", e);
+			return null;
 		} catch (Exception e) {
+			errors.append(new TeamsError(e.getMessage(), ""));
 			log.error("", e);
 			return null;
 		}

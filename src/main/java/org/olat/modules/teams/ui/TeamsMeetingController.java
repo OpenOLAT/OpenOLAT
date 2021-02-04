@@ -77,12 +77,16 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		this.moderator = moderator;
 		this.administrator = administrator;
 		guest = ureq.getUserSession().getRoles().isGuestOnly();
-		graphUser = teamsService.lookupUser(getIdentity());
+		TeamsErrors errors = new TeamsErrors();
+		graphUser = teamsService.lookupUser(getIdentity(), errors);
 		meetingOres = OresHelper.createOLATResourceableInstance(TeamsMeeting.class.getSimpleName(), meeting.getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), meetingOres);
 		
 		initForm(ureq);
 		updateButtonsAndStatus();
+		if(errors.hasErrors()) {
+			getWindowControl().setError(TeamsUIHelper.formatErrors(getTranslator(), errors));
+		}
 	}
 
 	@Override

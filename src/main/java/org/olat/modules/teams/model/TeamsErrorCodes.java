@@ -32,6 +32,7 @@ public enum TeamsErrorCodes {
 	organizerMissing,
 	presenterMissing,
 	meetingDeleted,
+	httpClientError,// Error by request (SocketTimeout...)
 	unkown
 	;
 
