@@ -72,7 +72,7 @@ public interface TeamsService {
 	
 	public List<TeamsMeeting> searchMeetings(TeamsMeetingsSearchParameters searchParams, int firstResult, int maxResults);
 	
-	public User lookupUser(Identity identity);
+	public User lookupUser(Identity identity, TeamsErrors errors);
 	
 	public ConnectionInfos checkConnection(TeamsErrors errors);
 	

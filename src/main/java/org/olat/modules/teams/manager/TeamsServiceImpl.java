@@ -59,6 +59,7 @@ import org.olat.repository.manager.RepositoryEntryDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.microsoft.graph.core.ClientException;
 import com.microsoft.graph.models.extensions.OnlineMeeting;
 import com.microsoft.graph.models.extensions.User;
 import com.microsoft.graph.models.generated.OnlineMeetingRole;
@@ -196,14 +197,14 @@ public class TeamsServiceImpl implements TeamsService {
 		} else if(!StringHelper.containsNonWhitespace(meeting.getOnlineMeetingId())) {
 			if(presenter || (!guest)) {
 				dbInstance.commitAndCloseSession();
-				User user = lookupUser(identity);
+				User user = lookupUser(identity, errors);
 				meeting = createOnlineMeeting(meeting, user, role, errors);
 			} else {
 				errors.append(new TeamsError(TeamsErrorCodes.presenterMissing));
 			}
 		} else if(identity != null && !guest && StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
 			dbInstance.commitAndCloseSession();
-			User user = lookupUser(identity);
+			User user = lookupUser(identity, errors);
 			updateOnlineMeeting(meeting, user, role);
 		}
 		
@@ -251,6 +252,9 @@ public class TeamsServiceImpl implements TeamsService {
 					graphDao.updateOnlineMeeting(lockedMeeting, user, role);
 				}
 			}
+		}catch (ClientException e) {
+			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
+			log.error("Cannot create teams meeting", e);
 		} catch (Exception e) {
 			errors.append(new TeamsError(TeamsErrorCodes.unkown));
 			log.error("Cannot create teams meeting", e);
@@ -267,7 +271,7 @@ public class TeamsServiceImpl implements TeamsService {
 	}
 	
 	@Override
-	public User lookupUser(Identity identity) {
+	public User lookupUser(Identity identity, TeamsErrors errors) {
 		TeamsUser teamsUser = teamsUserDao.getUser(identity);
 		if(teamsUser != null) {
 			User user = new User();
@@ -279,7 +283,7 @@ public class TeamsServiceImpl implements TeamsService {
 		
 		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
 		String institutionalEmail = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
-		List<User> users = graphDao.searchUsersByMail(email, institutionalEmail);
+		List<User> users = graphDao.searchUsersByMail(email, institutionalEmail, errors);
 		if(users.size() > 1) {
 			users = reduceToPrefered(email, users);
 		}
@@ -301,7 +305,7 @@ public class TeamsServiceImpl implements TeamsService {
 		if(authentication != null && StringHelper.containsNonWhitespace(authentication.getAuthusername())) {
 			principals.add(authentication.getAuthusername());
 		}
-		User user = graphDao.searchUserByUserPrincipalName(principals);
+		User user = graphDao.searchUserByUserPrincipalName(principals, errors);
 		if(user == null) {
 			log.debug("Cannot find user with email: {} or institutional email: {} (users found {})", email, institutionalEmail, users.size());
 		} else {
