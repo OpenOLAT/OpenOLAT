@@ -293,7 +293,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		if (licenseEdit.intValue() <= 0) return false;
 		
 		Long accessCount = documentEditorServie.getAccessCount(OnlyOfficeEditor.TYPE, Mode.EDIT);
-		return accessCount < licenseEdit.intValue();
+		return accessCount <= licenseEdit.intValue();
 	}
 
 	@Override
