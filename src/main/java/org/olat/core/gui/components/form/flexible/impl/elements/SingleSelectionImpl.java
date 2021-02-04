@@ -109,7 +109,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 
 	@Override
 	public boolean isOneSelected() {
-		return getSelected() != -1;
+		return getSelected() > -1;
 	}
 
 	@Override
