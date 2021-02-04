@@ -81,9 +81,21 @@ public class OnlyOfficeServiceImplTest {
 	}
 	
 	@Test
-	public void shouldNotAllowEditIfAllLicensesInUse() {
+	public void shouldAllowEditIfAlmostAllLicensesInUse() {
+		// Because the access is created before the license check is done,
+		// the access is demanding for the last license.
 		when(onlyOfficeModuleMock.getLicenseEdit()).thenReturn(10);
 		when(documentEditorServiceMock.getAccessCount(any(), any())).thenReturn(Long.valueOf(10));
+		
+		boolean editLicenseAvailable = sut.isEditLicenseAvailable();
+		
+		assertThat(editLicenseAvailable).isTrue();
+	}
+	
+	@Test
+	public void shouldNotAllowEditIfAllLicensesInUse() {
+		when(onlyOfficeModuleMock.getLicenseEdit()).thenReturn(10);
+		when(documentEditorServiceMock.getAccessCount(any(), any())).thenReturn(Long.valueOf(11));
 		
 		boolean editLicenseAvailable = sut.isEditLicenseAvailable();
 		
