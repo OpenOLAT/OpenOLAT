@@ -289,7 +289,6 @@ class ImportStep00 extends BasicStep {
 					error |= !validateUsername(login, uIdentity, i, errors);
 					error |= !validatePassword(pwd, uIdentity, i, errors);
 					if(error) {
-						errors.add(errorLine(i, "error.columncount", new String[] { String.valueOf(i + 1) }));
 						continue;
 					}
 					
@@ -301,7 +300,7 @@ class ImportStep00 extends BasicStep {
 			if(!errors.isEmpty()) {
 				List<Integer> errorLines = errors.stream().map(ErrorLine::getLine).collect(Collectors.toList());
 				textAreaElement.setErrors(errorLines);
-				String errorsMsg = errors.stream().map(ErrorLine::getErrorMsg).collect(Collectors.joining(", "));
+				String errorsMsg = errors.stream().map(ErrorLine::getErrorMsg).collect(Collectors.joining("<br>"));
 				textAreaElement.setErrorKey("noTransOnlyParam", new String[] { errorsMsg });
 			}
 			return errors.isEmpty();
@@ -368,7 +367,7 @@ class ImportStep00 extends BasicStep {
 				Authentication authentication = securityManager.findAuthenticationByAuthusername(login, "OLAT");
 				identity = authentication == null ? null : authentication.getIdentity();
 			} else {
-				identity = securityManager.findIdentityByNickName(login);
+				identity = securityManager.findIdentityByUsernames(login);
 			}
 			return identity;
 		}
