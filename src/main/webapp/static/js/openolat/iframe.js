@@ -205,23 +205,7 @@ function b_changeLinkTargets() {
 		var anchor = anchors[i];
 		if (anchor.getAttribute('href')) {
 			var target = anchor.getAttribute('target');
-			var href = anchor.getAttribute("href");
-			if ((href.indexOf("/url/") != -1 || href.indexOf("/auth/") != -1) && 
-					(
-						href.indexOf("/repo/go?rid=") != -1 
-						|| href.indexOf("/RepositoryEntry/") != -1 
-						|| href.indexOf("/BusinessGroup/") != -1 
-						|| href.indexOf("Site/") != -1
-						|| href.indexOf("/CatalogEntry/") != -1										
-						|| href.indexOf("/Portal/") != -1
-						|| href.indexOf("/CatalogAdmin/") != -1
-						|| href.indexOf("/GMCMenuTree/") != -1
-					)
-			) {
-				// absolute links to repository entries have to by opened in the parent frame
-				// /auth/repo/ is legacy format, /url/RepositoryEntry/ is new format
-				anchor.target = "_parent";
-			} else if (target != null && target != undefined && (target == '_top' || target == '_parent')) {
+			if (target != null && target != undefined && (target == '_top' || target == '_parent')) {
 				// fix broken legacy links that try to open content in top window
 				// iframe content must always stay within iframe 
 				var mainwindow = b_getMainWindow(window.parent);

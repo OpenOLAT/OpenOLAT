@@ -92,6 +92,23 @@ public class IdentityDAO {
 				.getResultList();
 	}
 	
+	public List<Identity> findByUsernames(String username) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" left join ").append(AuthenticationImpl.class.getName()).append(" as auth on (auth.identity.key=ident.key)")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where lower(ident.name) = :username")
+		  .append(" or lower(auth.authusername) = :username")
+		  .append(" or lower(user.nickName) = :username");
+		
+		List<Identity> identities = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("username", username)
+				.getResultList();
+		// deduplicate in Java, quicker than a distinct
+		return new ArrayList<>(new HashSet<>(identities));
+	}
+	
 	public List<FindNamedIdentity> findByNames(Collection<String> names, List<Organisation> organisations) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident, auth from ").append(IdentityImpl.class.getName()).append(" as ident")

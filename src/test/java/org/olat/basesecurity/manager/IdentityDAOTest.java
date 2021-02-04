@@ -140,4 +140,14 @@ public class IdentityDAOTest extends OlatTestCase {
 		Assert.assertEquals(identity.getIdentity(), namedIdentities.get(0).getIdentity());
 	}
 
+	@Test
+	public void findByUsernames() {
+		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("id-dao-11");
+
+		List<Identity> foundIdentities = identityDao.findByUsernames(identity.getLogin());
+		Assert.assertNotNull(foundIdentities);
+		Assert.assertEquals(1, foundIdentities.size());
+		Assert.assertEquals(identity.getIdentity(), foundIdentities.get(0));
+	}
+	
 }
