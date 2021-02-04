@@ -234,6 +234,12 @@ class SubmitDocumentsController extends FormBasicController {
 	private void updateWarnings() {
 		if(minDocs > 0 && model.getRowCount() < minDocs) {
 			String msg = translate("error.min.documents", new String[]{ Integer.toString(minDocs) });
+			if(uploadDocButton != null) {
+				uploadDocButton.setEnabled(true);
+			}
+			if(createDocButton != null) {
+				createDocButton.setEnabled(true);
+			}
 			flc.contextPut("minDocsWarning", msg);
 			flc.contextRemove("maxDocsWarning");
 		} else if(maxDocs > 0 && model.getRowCount() >= maxDocs) {

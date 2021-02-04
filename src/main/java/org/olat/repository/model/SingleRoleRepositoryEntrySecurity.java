@@ -58,7 +58,7 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 			return iconCssClass;
 		}
 		
-	};
+	}
 	
 	private Role currentRole;
 	private RepositoryEntrySecurity wrappedSecurity;

@@ -486,9 +486,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void setCourseClosedMessage() {
 		UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
-		if(userCourseEnv != null &&  getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.closed) {
-			toolbarPanel.setMessage(translate("course.closed"));
-			toolbarPanel.setMessageCssClass("o_warning");
+		if(userCourseEnv != null) {
+			if(getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.closed) {
+				toolbarPanel.setMessage(translate("course.closed"));
+				toolbarPanel.setMessageCssClass("o_warning");
+			} else if(getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.deleted
+					|| getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.trash) {
+				toolbarPanel.setMessage(translate("course.deleted"));
+				toolbarPanel.setMessageCssClass("o_warning");
+			}
 		} else {
 			toolbarPanel.setMessage(null);
 			toolbarPanel.setMessageComponent(null);

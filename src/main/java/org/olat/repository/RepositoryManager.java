@@ -657,7 +657,7 @@ public class RepositoryManager {
 			}
 		}
 
-		boolean readOnly = re.getEntryStatus() == RepositoryEntryStatusEnum.closed;
+		boolean readOnly = re.getEntryStatus().decommissioned();
 
 		return new RepositoryEntrySecurityImpl(isEntryAdmin, isOwner,
 				isCourseParticipant, isCourseCoach,
