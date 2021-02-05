@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -52,6 +53,7 @@ import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
 import org.olat.modules.portfolio.ui.event.RestoreBinderEvent;
 import org.olat.modules.portfolio.ui.model.BinderRow;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -65,6 +67,9 @@ public class DeletedBinderController extends BinderListController {
 	
 	private DialogBoxController confirmRestoreBinderCtrl;
 	private ConfirmDeleteBinderController deleteBinderCtrl;
+	
+	@Autowired
+	private DB dbInstance;
 	
 	public DeletedBinderController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, stackPanel);
@@ -225,7 +230,8 @@ public class DeletedBinderController extends BinderListController {
 	private void doRestore(BinderRow row) {
 		Binder binder = portfolioService.getBinderByKey(row.getKey());
 		binder.setBinderStatus(BinderStatus.open);
-		binder = portfolioService.updateBinder(binder);
+		portfolioService.updateBinder(binder);
+		dbInstance.commit();
 		showInfo("restore.binder.success");
 	}
 }

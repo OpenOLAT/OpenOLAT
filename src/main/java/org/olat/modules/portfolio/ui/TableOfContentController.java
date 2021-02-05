@@ -27,6 +27,7 @@ import java.util.Map;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
@@ -151,6 +152,8 @@ public class TableOfContentController extends BasicController implements TooledC
 	private final BinderConfiguration config;
 	private final BinderSecurityCallback secCallback;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private PdfModule pdfModule;
 	@Autowired
@@ -955,8 +958,10 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doMoveBinderToTrash() {
+		binder = portfolioService.getBinderByKey(binder.getKey());
 		binder.setBinderStatus(BinderStatus.deleted);
 		binder = portfolioService.updateBinder(binder);
+		dbInstance.commit();
 		showInfo("delete.binder.success");
 	}
 	
@@ -967,8 +972,10 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doRestore() {
+		binder = portfolioService.getBinderByKey(binder.getKey());
 		binder.setBinderStatus(BinderStatus.open);
 		binder = portfolioService.updateBinder(binder);
+		dbInstance.commit();
 		showInfo("restore.binder.success");
 	}
 	
