@@ -49,6 +49,11 @@ public class OnlyOfficeEditor implements DocEditor {
 	
 	public static final String TYPE = "onlyoffice";
 	
+	// Like collaborationExpireAt in VFSLockManagerImpl
+	private static final int DURATION_EDIT = 60 * 24;
+	// The access is only used to open the editor, but not in the web service.
+	private static final int DURATION_VIEW = 60 * 4;
+	
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
 	@Autowired
@@ -139,9 +144,14 @@ public class OnlyOfficeEditor implements DocEditor {
 	}
 
 	@Override
-	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
-			DocEditorConfigs configs, Access access) {
-		return new OnlyOfficeEditorController(ureq, wControl, vfsLeaf, configs, access);
+	public int getAccessDurationMinutes(Mode mode) {
+		return Mode.EDIT == mode? DURATION_EDIT: DURATION_VIEW;
 	}
+	@Override
+	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, DocEditorConfigs configs,
+			Access access) {
+		return new OnlyOfficeEditorController(ureq, wControl, configs, access);
+	}
+
 
 }

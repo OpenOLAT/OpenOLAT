@@ -116,8 +116,7 @@ public class DocEditorController extends BasicController implements Activateable
 		}
 
 		if (isDataTransferConfirmed(editor)) {
-			editorCtrl = editor.getRunController(ureq, getWindowControl(), getIdentity(), vfsLeaf, configs,
-					access);
+			editorCtrl = editor.getRunController(ureq, getWindowControl(), getIdentity(), configs, access);
 			listenTo(editorCtrl);
 			mainVC.put("editor", editorCtrl.getInitialComponent());
 		} else {

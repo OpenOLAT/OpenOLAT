@@ -27,6 +27,10 @@ package org.olat.core.commons.services.doceditor.onlyoffice;
  */
 public interface Action {
 	
+	/* Defines the object received if the new user connected to the document co-editing or disconnected from it.
+	 * In the first case the type field value is 1, in the other case - 0. 
+	 * The userid field value is the identifier of the user who connected to or disconnected from the document co-editing. 
+	 */
 	int getType();
 	
 	String getUserid();

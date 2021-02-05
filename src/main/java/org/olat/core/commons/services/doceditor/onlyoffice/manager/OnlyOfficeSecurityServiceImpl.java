@@ -25,12 +25,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.commons.services.doceditor.onlyoffice.Callback;
 import org.olat.core.commons.services.doceditor.onlyoffice.Document;
 import org.olat.core.commons.services.doceditor.onlyoffice.EditorConfig;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
-import org.olat.core.commons.services.doceditor.onlyoffice.model.CallbackImpl;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,33 +71,33 @@ public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService 
 	}
 
 	@Override
-	public Callback getCallback(String jwtToken) {
+	public <T> T getPayload(String jwtToken, Class<T> toValueObject) {
 		try {
-			return tryGetCallback(jwtToken);
+			return tryGetPayload(jwtToken, toValueObject);
 		} catch (Exception e) {
 			log.error("Error while converting JWT token to Callback", e);
 		}
 		return null;
 	}
 
-	private Callback tryGetCallback(String jwtToken) throws IOException, JsonParseException, JsonMappingException {
+	private <T> T tryGetPayload(String jwtToken, Class<T> toValueObject) throws IOException, JsonParseException, JsonMappingException {
 		Claims body = Jwts.parser()
 				.setSigningKey(onlyOfficeModule.getJwtSignKey())
 				.parseClaimsJws(jwtToken)
 				.getBody();
 		
 		if (log.isDebugEnabled()) {
-			log.debug("JWT claims for ONLYOFFICE callback:");
+			log.debug("JWT claims for ONLYOFFICE token:");
 			for (Entry<String, Object> entry : body.entrySet()) {
 				log.debug("  JWT claim " + entry.getKey() + ": " + entry.getValue());
 			}
 		}
 		
 		Object payload = body.get("payload");
-		Callback callback = mapper.convertValue(payload, CallbackImpl.class);
+		T valueObject = mapper.convertValue(payload, toValueObject);
 		
-		if (log.isDebugEnabled()) log.debug("Converted callback: " + callback);
-		return callback;
+		if (log.isDebugEnabled()) log.debug("Converted payload: " + valueObject);
+		return valueObject;
 	}
 
 	@Override

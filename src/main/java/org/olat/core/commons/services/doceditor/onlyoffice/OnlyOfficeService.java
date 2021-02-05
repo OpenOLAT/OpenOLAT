@@ -44,10 +44,15 @@ public interface OnlyOfficeService {
 	ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, Mode mode, boolean isDownloadEnabled, boolean versionControlled, String downloadUrl);
 
 	String toJson(ApiConfig apiConfig);
-	
-	boolean canUpdateContent(VFSLeaf vfsLeaf, Identity identity, String documentKey);
 
-	boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url, boolean versionControlled);
+	boolean editorOpened(VFSLeaf vfsLeaf, Identity identity, String documentKey);
+
+	boolean editorClosed(VFSLeaf vfsLeaf, Identity identity, boolean stillEditing);
+	
+	void editorFinishedContentUnchanged(VFSLeaf vfsLeaf);
+
+	boolean editorFinishedContentChanged(VFSLeaf vfsLeaf, Identity identity, String documentKey, String editedDocumentUrl,
+			boolean versionControlled);
 
 	boolean isEditLicenseAvailable();
 	

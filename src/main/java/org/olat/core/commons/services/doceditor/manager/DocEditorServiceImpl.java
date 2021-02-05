@@ -34,6 +34,7 @@ import org.olat.NewControllerFactory;
 import org.olat.core.commons.editor.fileeditor.FileEditor;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.AccessRef;
+import org.olat.core.commons.services.doceditor.AccessSearchParams;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -192,9 +193,12 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 
 	@Override
 	public Access createAccess(Identity identity, Roles roles, DocEditorConfigs configs) {
-		Date expiresAt = Date.from(Instant.now().plus(Duration.ofHours(10)));
 		DocEditor editor = getPreferredEditor(identity, roles, configs);
 		String editorType = editor != null? editor.getType(): "no-editor-found";
+		
+		int minutes = editor != null? editor.getAccessDurationMinutes(configs.getMode()): 0;
+		Date expiresAt = Date.from(Instant.now().plus(Duration.ofMinutes(minutes)));
+		
 		return accessDao.createAccess(configs.getVfsLeaf().getMetaInfo(), identity, editorType, configs.getMode(),
 				configs.isVersionControlled(), configs.isDownloadEnabled(), expiresAt);
 	}
@@ -271,8 +275,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	}
 
 	@Override
-	public List<Access> getAccesses(Mode mode) {
-		return accessDao.getAccesses(mode);
+	public List<Access> getAccesses(AccessSearchParams params) {
+		return accessDao.getAccesses(params);
 	}
 
 	@Override

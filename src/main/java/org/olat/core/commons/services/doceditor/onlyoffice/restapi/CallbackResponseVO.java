@@ -30,7 +30,7 @@ public class CallbackResponseVO {
 	private static final CallbackResponseVO SUCCESS = new CallbackResponseVO(0);
 	private static final CallbackResponseVO ERROR = new CallbackResponseVO(1);
 	
-	private final int error;
+	private int error;
 	
 	static CallbackResponseVO success() {
 		return SUCCESS;
@@ -40,12 +40,17 @@ public class CallbackResponseVO {
 		return ERROR;
 	}
 	
-	private CallbackResponseVO(int error) {
+	@SuppressWarnings("unused")
+	private CallbackResponseVO() {
+		// Used by Jackson in tests
+	}
+	
+	public CallbackResponseVO(int error) {
 		this.error = error;
 	}
 
 	public int getError() {
 		return error;
 	}
-
+	
 }

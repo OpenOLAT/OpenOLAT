@@ -31,6 +31,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.doceditor.Access;
+import org.olat.core.commons.services.doceditor.AccessSearchParams;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
 import org.olat.core.commons.services.doceditor.DocEditorService;
@@ -79,8 +81,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	private static final Logger log = Tracing.createLoggerFor(OnlyOfficeServiceImpl.class);
 	
 	private static final DateFormat LAST_MODIFIED = new SimpleDateFormat("yyyyMMddHHmmss");
-	
-	private static ObjectMapper mapper = new ObjectMapper();
+	private static final ObjectMapper mapper = new ObjectMapper();
 
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
@@ -237,15 +238,90 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	}
 
 	@Override
-	public boolean canUpdateContent(VFSLeaf vfsLeaf, Identity identity, String documentKey) {
+	public boolean editorOpened(VFSLeaf vfsLeaf, Identity identity, String documentKey) {
+		boolean canUpdate = canUpdateContent(vfsLeaf, identity, documentKey);
+		if (!canUpdate) {
+			log.debug("ONLYOFFICE has no right to update file. Metadata ID: {}, identity: {}"
+					, vfsLeaf.getMetaInfo().getKey(), identity.getKey());
+			return false;
+		}
+		
+		LockResult lock = lock(vfsLeaf, identity);
+		
+		return lock != null;
+	}
+	
+	@Override
+	public boolean editorClosed(VFSLeaf vfsLeaf, Identity identity, boolean stillEditing) {
+		// We should delete the lock token, but we do not know which one. Does not mater.
+		
+		if (!stillEditing) {
+			// This user is finished. Delete his access.
+			AccessSearchParams params = new AccessSearchParams();
+			params.setEditorType(OnlyOfficeEditor.TYPE);
+			params.setMetadataKey(vfsLeaf.getMetaInfo().getKey());
+			params.setIdentityKey(identity.getKey());
+			documentEditorServie.getAccesses(params).forEach(this::deleteAccess);
+		}
+		return true;
+	}
+	
+	@Override
+	public void editorFinishedContentUnchanged(VFSLeaf vfsLeaf) {
+		editorFinished(vfsLeaf);
+	}
+	
+	@Override
+	public boolean editorFinishedContentChanged(VFSLeaf vfsLeaf, Identity identity, String documentKey, String editedDocumentUrl,
+			boolean versionControlled) {
+		boolean canUpdate = canUpdateContent(vfsLeaf, identity, documentKey);
+		if (!canUpdate) {
+			log.warn("ONLYOFFICE has no right to update file. Metadata ID: {}, identity: {}"
+					, vfsLeaf.getMetaInfo().getKey(), identity.getKey());
+			return false;
+		}
+		
+		boolean updated = updateContent(vfsLeaf, identity, editedDocumentUrl, versionControlled);
+		if (!updated) {
+			log.warn("ONLYOFFICE failed to update file. Metadata ID: {}, identity: {}",
+					vfsLeaf.getMetaInfo().getKey(), identity.getKey());
+		} else {
+			log.debug("ONLYOFFICE updated file. Metadata ID: {}, identity: {})",
+					vfsLeaf.getMetaInfo().getKey(), identity.getKey());
+			
+		}
+		
+		// The access and lock are removed even if the file was not saved back.
+		// OnlyOffice does not try a second time to init the save action.
+		editorFinished(vfsLeaf);
+		
+		return updated;
+	}
+
+	private void editorFinished(VFSLeaf vfsLeaf) {
+		// Edit is finished. Delete access of all users (maybe on access was not deleted properly).
+		AccessSearchParams params = new AccessSearchParams();
+		params.setEditorType(OnlyOfficeEditor.TYPE);
+		params.setMetadataKey(vfsLeaf.getMetaInfo().getKey());
+		documentEditorServie.getAccesses(params).forEach(this::deleteAccess);
+		
+		unlock(vfsLeaf);
+	}
+
+	private void deleteAccess(Access access) {
+		log.info("ONLYOFFICE closed: Access (key={}), VFSMetadata (key={}), Mode: ({}), Identity: ({})", 
+				access.getKey(), access.getMetadata().getKey(), access.getMode(), access.getIdentity().getKey());
+		documentEditorServie.deleteAccess(access);
+	}
+
+	private boolean canUpdateContent(VFSLeaf vfsLeaf, Identity identity, String documentKey) {
 		String currentDocumentKey = getDocumentKey(vfsLeaf.getMetaInfo());
 		log.debug("ONLYOFFICE currentDokumentKey: {}", currentDocumentKey);
 		log.debug("ONLYOFFICE documentKey:        {}", documentKey);
 		return currentDocumentKey.equals(documentKey) && !isLockedForMe(vfsLeaf, identity);
 	}
 
-	@Override
-	public boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url, boolean versionControlled) {
+	private boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url, boolean versionControlled) {
 		log.debug("Update content from ONLYOFICE: " + url);
 		boolean updated = false;
 		
@@ -266,24 +342,15 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 				log.warn("Update content from ONLYOFICE failed. URL: " + url);
 			}
 		} catch (Exception e) {
+			log.warn("Update content from ONLYOFICE failed. URL: " + url);
 			log.error("", e);
 		}
 		
 		if (updated) {
-			log.debug("File updated. File name: " + vfsLeaf.getName());
-			refreshLock(vfsLeaf);
 			vfsRepositoryService.resetThumbnails(vfsLeaf);
 		}
 		
 		return updated;
-	}
-	
-	private void refreshLock(VFSLeaf vfsLeaf) {
-		LockInfo lock = lockManager.getLock(vfsLeaf);
-		if (lock != null) {
-			long inADay = System.currentTimeMillis() + (24 * 60 * 60 * 1000);
-			lock.setExpiresAt(inADay);
-		}
 	}
 
 	@Override

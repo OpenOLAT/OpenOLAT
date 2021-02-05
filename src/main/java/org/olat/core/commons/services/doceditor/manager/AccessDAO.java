@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.AccessRef;
+import org.olat.core.commons.services.doceditor.AccessSearchParams;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.model.AccessImpl;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -108,21 +109,39 @@ public class AccessDAO {
 		return accesses.isEmpty() ? null : accesses.get(0);
 	}
 
-	public List<Access> getAccesses(Mode mode) {
+	public List<Access> getAccesses(AccessSearchParams params) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select access");
 		sb.append("  from doceditoraccess access");
-		sb.append("       join fetch access.metadata metadata");
-		sb.append("       join fetch access.identity identity");
-		sb.append("       join fetch identity.user user");
-		if (mode != null) {
+		sb.append("       join").append(" fetch", params.isFetch()).append(" access.metadata metadata");
+		sb.append("       join").append(" fetch", params.isFetch()).append(" access.identity identity");
+		sb.append("       join").append(" fetch", params.isFetch()).append(" identity.user user");
+		if (params.getIdentityKey() != null) {
+			sb.and().append("access.identity.key = :identityKey");
+		}
+		if (params.getMetadataKeys() != null) {
+			sb.and().append("access.metadata.key in (:metadataKeys)");
+		}
+		if (StringHelper.containsNonWhitespace(params.getEditorType())) {
+			sb.and().append("access.editorType = :editorType");
+		}
+		if (params.getMode() != null) {
 			sb.and().append("access.mode = :mode");
 		}
 		
 		TypedQuery<Access> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Access.class);
-		if (mode != null) {
-			query.setParameter("mode", mode);
+		if (params.getIdentityKey() != null) {
+			query.setParameter("identityKey", params.getIdentityKey());
+		}
+		if (params.getMetadataKeys() != null) {
+			query.setParameter("metadataKeys", params.getMetadataKeys());
+		}
+		if (StringHelper.containsNonWhitespace(params.getEditorType())) {
+			query.setParameter("editorType", params.getEditorType());
+		}
+		if (params.getMode() != null) {
+			query.setParameter("mode", params.getMode());
 		}
 		return query.getResultList();
 	}

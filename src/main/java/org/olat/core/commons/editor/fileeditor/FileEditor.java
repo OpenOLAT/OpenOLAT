@@ -129,9 +129,14 @@ public class FileEditor implements DocEditor {
 	}
 
 	@Override
-	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
-			DocEditorConfigs configs, Access access) {
-		return new FileEditorController(ureq, wControl, vfsLeaf, configs, access);
+	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, DocEditorConfigs configs,
+			Access access) {
+		return new FileEditorController(ureq, wControl, configs, access);
+	}
+
+	@Override
+	public int getAccessDurationMinutes(Mode mode) {
+		return 1440; // Like collaborationExpireAt in VFSLockManagerImpl
 	}
 
 }

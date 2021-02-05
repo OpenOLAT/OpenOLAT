@@ -74,10 +74,9 @@ public class FileEditorController extends BasicController implements Activateabl
 	@Autowired
 	private DocEditorService docEditorService;
 
-	protected FileEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			DocEditorConfigs configs, Access access) {
+	protected FileEditorController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access) {
 		super(ureq, wControl);
-		this.vfsLeaf = vfsLeaf;
+		this.vfsLeaf = configs.getVfsLeaf();
 		this.access = access;
 		
 		wControl.getWindowBackOffice().getWindow().addListener(this);

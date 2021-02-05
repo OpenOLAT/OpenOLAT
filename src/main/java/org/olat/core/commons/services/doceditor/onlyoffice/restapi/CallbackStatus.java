@@ -49,5 +49,9 @@ enum CallbackStatus {
 		}
 		return null;
 	}
+	
+	int getValue() {
+		return value;
+	}
 
 }

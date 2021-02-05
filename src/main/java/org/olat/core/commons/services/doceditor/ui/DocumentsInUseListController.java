@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.services.doceditor.Access;
+import org.olat.core.commons.services.doceditor.AccessSearchParams;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocumentsInUseDataModel.DocumentsInUseCols;
@@ -105,7 +106,9 @@ public class DocumentsInUseListController extends FormBasicController {
 	}
 	
 	void loadModel() {
-		List<Access> accesses = docEditorService.getAccesses(null);
+		AccessSearchParams params = new AccessSearchParams();
+		params.setFetch(true);
+		List<Access> accesses = docEditorService.getAccesses(params);
 		
 		List<DocumentsInUseRow> rows = new ArrayList<>(accesses.size());
 		for (Access access : accesses) {

@@ -103,6 +103,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.csp.manager.CSPManagerTest.class,
 	org.olat.core.commons.services.doceditor.manager.DocEditorIdentityServiceTest.class,
 	org.olat.core.commons.services.doceditor.manager.AccessDAOTest.class,
+	org.olat.core.commons.services.doceditor.onlyoffice.restapi.OnlyOfficeWebServiceTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSXStreamTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSMetadataDAOTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSRevisionDAOTest.class,

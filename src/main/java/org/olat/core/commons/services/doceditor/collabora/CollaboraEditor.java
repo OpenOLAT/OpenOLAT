@@ -136,9 +136,14 @@ public class CollaboraEditor implements DocEditor {
 	}
 
 	@Override
-	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
-			DocEditorConfigs configs, Access access) {
-		return new CollaboraEditorController(ureq, wControl, vfsLeaf, access);
+	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, DocEditorConfigs configs,
+			Access access) {
+		return new CollaboraEditorController(ureq, wControl, configs.getVfsLeaf(), access);
+	}
+
+	@Override
+	public int getAccessDurationMinutes(Mode mode) {
+		return 1440; // Like collaborationExpireAt in VFSLockManagerImpl
 	}
 
 }

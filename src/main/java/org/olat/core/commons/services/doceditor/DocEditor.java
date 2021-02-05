@@ -93,7 +93,15 @@ public interface DocEditor {
 	
 	boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity, Mode mode);
 
-	Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
-			DocEditorConfigs configs, Access access);
+	/**
+	 * Gets the default access duration in Minutes
+	 *
+	 * @param mode
+	 * @return
+	 */
+	int getAccessDurationMinutes(Mode mode);
+
+	Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, DocEditorConfigs configs,
+			Access access);
 
 }

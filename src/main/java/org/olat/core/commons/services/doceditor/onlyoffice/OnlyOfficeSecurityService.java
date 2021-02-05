@@ -37,10 +37,11 @@ public interface OnlyOfficeSecurityService {
 	 * @see <a href="https://api.onlyoffice.com/editors/signature/request">https://api.onlyoffice.com/editors/signature/request</a>
 	 *
 	 * @param jwtToken
+	 * @param toValueObject 
 	 * @return
 	 */
-	Callback getCallback(String jwtToken);
-
+	public <T> T getPayload(String jwtToken, Class<T> toValueObject);
+	
 	/**
 	 * Creates the JWT token to open a document in the ONLYOFFICE editor.
 	 * 

@@ -26,13 +26,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.doceditor.Access;
+import org.olat.core.commons.services.doceditor.AccessSearchParams;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
@@ -115,22 +115,75 @@ public class AccessDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadAccessByToken() {
+	public void shouldLoadAccessByKey() {
 		createRandomAccess();
 		createRandomAccess();
 		Access createdAccess = createRandomAccess();
 		dbInstance.commitAndCloseSession();
 		
-		Access reloadedAccess = reload(createdAccess);
+		Access reloadedAccess = sut.loadAccess(createdAccess);
 		
 		assertThat(reloadedAccess).isEqualTo(createdAccess);
 	}
-
+	
 	@Test
-	public void shouldLoadNoAccessIfInvalidToken() {
-		Access access = sut.loadAccess(() -> new Random().nextLong());
+	public void shouldGetAccessesByIdentity() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor");
+		Identity identityOther = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor2");
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
+		Access access1 = sut.createAccess(vfsMetadata, identity1, "app1", Mode.EDIT, true, true, new Date());
+		Access access2 = sut.createAccess(vfsMetadata, identity1, "app2", Mode.VIEW, true, true, new Date());
+		Access accessOther = sut.createAccess(vfsMetadata, identityOther, "app1", Mode.EDIT, true, true, new Date());
+		dbInstance.commitAndCloseSession();
 		
-		assertThat(access).isNull();
+		AccessSearchParams params = new AccessSearchParams();
+		params.setIdentityKey(identity1.getKey());
+		List<Access> accesses = sut.getAccesses(params);
+		
+		assertThat(accesses)
+				.containsExactlyInAnyOrder(access1, access2)
+				.doesNotContain(accessOther);
+	}
+	
+	@Test
+	public void shouldGetAccessesByMetadats() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor");
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor2");
+		VFSMetadata vfsMetadata1 = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
+		VFSMetadata vfsMetadata2 = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
+		VFSMetadata vfsMetadataOther = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
+		Access access1 = sut.createAccess(vfsMetadata1, identity1, "app1", Mode.EDIT, true, true, new Date());
+		Access access2 = sut.createAccess(vfsMetadata2, identity2, "app2", Mode.EDIT, true, true, new Date());
+		Access access3 = sut.createAccess(vfsMetadata2, identity1, "app2", Mode.EDIT, true, true, new Date());
+		Access accessOther = sut.createAccess(vfsMetadataOther, identity1, "app1", Mode.EDIT, true, true, new Date());
+		dbInstance.commitAndCloseSession();
+		
+		AccessSearchParams params = new AccessSearchParams();
+		params.setMatadatas(List.of(vfsMetadata1, vfsMetadata2));
+		List<Access> accesses = sut.getAccesses(params);
+		
+		assertThat(accesses)
+				.containsExactlyInAnyOrder(access1, access2, access3)
+				.doesNotContain(accessOther);
+	}
+	
+	@Test
+	public void shouldGetAccessesByApp() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor");
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
+		VFSMetadata vfsMetadataOther = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
+		Access access1 = sut.createAccess(vfsMetadata, identity, "app1", Mode.EDIT, true, true, new Date());
+		Access access2 = sut.createAccess(vfsMetadata, identity, "app1", Mode.EDIT, true, true, new Date());
+		Access accessOther = sut.createAccess(vfsMetadataOther, identity, "app2", Mode.EDIT, true, true, new Date());
+		dbInstance.commitAndCloseSession();
+		
+		AccessSearchParams params = new AccessSearchParams();
+		params.setEditorType("app1");
+		List<Access> accesses = sut.getAccesses(params);
+		
+		assertThat(accesses)
+				.containsExactlyInAnyOrder(access1, access2)
+				.doesNotContain(accessOther);
 	}
 	
 	@Test
@@ -145,7 +198,9 @@ public class AccessDAOTest extends OlatTestCase {
 		Access accessView = sut.createAccess(vfsMetadata, identity3, "app1", Mode.VIEW, true, true, new Date());
 		dbInstance.commitAndCloseSession();
 		
-		List<Access> accesses = sut.getAccesses(Mode.EDIT);
+		AccessSearchParams params = new AccessSearchParams();
+		params.setMode(Mode.EDIT);
+		List<Access> accesses = sut.getAccesses(params);
 		
 		assertThat(accesses)
 				.containsExactlyInAnyOrder(accessEdit1, accessEdit2, accessEdit3)
@@ -196,7 +251,7 @@ public class AccessDAOTest extends OlatTestCase {
 		sut.delete(createdAccess);
 		dbInstance.commitAndCloseSession();
 		
-		Access reloadedAccess = reload(createdAccess);
+		Access reloadedAccess = sut.loadAccess(createdAccess);
 		assertThat(reloadedAccess).isNull();
 	}
 	
@@ -207,7 +262,7 @@ public class AccessDAOTest extends OlatTestCase {
 		sut.deleteByIdentity(access.getIdentity());
 		dbInstance.commitAndCloseSession();
 		
-		Access reloadedAccess = reload(access);
+		Access reloadedAccess = sut.loadAccess(access);
 		assertThat(reloadedAccess).isNull();
 	}
 	
@@ -228,14 +283,10 @@ public class AccessDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(reload(expiredOneDayAgo)).isNull();
-		softly.assertThat(reload(expiredTwoDaysAgo)).isNull();
-		softly.assertThat(reload(expiresInOneDay)).isNotNull();
+		softly.assertThat(sut.loadAccess(expiredOneDayAgo)).isNull();
+		softly.assertThat(sut.loadAccess(expiredTwoDaysAgo)).isNull();
+		softly.assertThat(sut.loadAccess(expiresInOneDay)).isNotNull();
 		softly.assertAll();
-	}
-
-	private Access reload(Access access) {
-		return sut.loadAccess(access);
 	}
 	
 	private Access createRandomAccess() {

@@ -121,8 +121,8 @@ public interface DocEditorService {
 
 	public Access getAccess(AccessRef accessRef);
 
-	public List<Access> getAccesses(Mode mode);
-	
+	public List<Access> getAccesses(AccessSearchParams params);
+
 	public Long getAccessCount(String editorType, VFSMetadata metadata, Identity identity);
 
 	public Long getAccessCount(String editorType, Mode mode);
