@@ -78,6 +78,7 @@ public class CheckListExcelExport {
 	private final CheckListCourseNode courseNode;
 	private final boolean hasScore;
 	private final boolean hasPassed;
+	private final boolean hasComment;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private final UserManager userManager;
@@ -91,6 +92,7 @@ public class CheckListExcelExport {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		this.hasScore = Mode.none != assessmentConfig.getScoreMode();
 		this.hasPassed = Mode.none != assessmentConfig.getPassedMode();
+		this.hasComment = assessmentConfig.hasComment();
 		
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
@@ -149,6 +151,9 @@ public class CheckListExcelExport {
 		}
 		if(hasPassed) {
 			header2Row.addCell(col++, translator.translate("column.header.node.passed"), headerStyle);
+		}
+		if(hasComment) {
+			header2Row.addCell(col++, translator.translate("column.header.usercomment"), headerStyle);
 		}
 
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
@@ -210,6 +215,14 @@ public class CheckListExcelExport {
 		if(hasPassed) {
 			if(entry != null && entry.getPassed() != null) {
 				dataRow.addCell(col++, entry.getPassed().toString(), null);
+			} else {
+				col++;
+			}
+		}
+
+		if(hasComment) {
+			if(entry != null) {
+				dataRow.addCell(col++, entry.getComment(), null);
 			} else {
 				col++;
 			}
