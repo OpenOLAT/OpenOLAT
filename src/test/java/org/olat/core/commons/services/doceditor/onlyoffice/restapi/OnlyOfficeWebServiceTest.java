@@ -271,7 +271,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		softly.assertAll();
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testEditSessionNoChanges() throws Exception {
 		SoftAssertions softly = new SoftAssertions();
 		
