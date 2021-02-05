@@ -30,6 +30,7 @@ import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,21 +65,6 @@ public class InvitationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void findInvitation_group() {
-		Invitation invitation = invitationDao.createAndPersistInvitation();
-		Group baseGroup = invitation.getBaseGroup();
-		Assert.assertNotNull(invitation);
-		dbInstance.commitAndCloseSession();
-		
-		Invitation reloadedInvitation = invitationDao.findInvitation(baseGroup);
-		Assert.assertNotNull(reloadedInvitation);
-		Assert.assertNotNull(reloadedInvitation.getKey());
-		Assert.assertEquals(baseGroup, reloadedInvitation.getBaseGroup());
-		Assert.assertEquals(invitation, reloadedInvitation);
-		Assert.assertEquals(invitation.getToken(), reloadedInvitation.getToken());
-	}
-	
-	@Test
 	public void findInvitation_token() {
 		Invitation invitation = invitationDao.createAndPersistInvitation();
 		Assert.assertNotNull(invitation);
@@ -93,10 +79,29 @@ public class InvitationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void hasInvitationPolicies_testHQL() {
+	public void hasInvitationTestHQL() {
 		String token = UUID.randomUUID().toString();
 		boolean hasInvitation = invitationDao.hasInvitations(token);
 		Assert.assertFalse(hasInvitation);
+	}
+	
+	@Test
+	public void isInvitee() {
+		Invitation invitation = invitationDao.createInvitation();
+		String uuid = UUID.randomUUID().toString().replace("-", "");
+		invitation.setFirstName("Fiona");
+		invitation.setLastName("Laurence".concat(uuid));
+		invitation.setMail(uuid.concat("@frentix.com"));
+
+		Group group = groupDao.createGroup();
+		Identity id2 = invitationDao.loadOrCreateIdentityAndPersistInvitation(invitation, group, Locale.ENGLISH);
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Invitee-2");
+		dbInstance.commitAndCloseSession();
+		
+		boolean invitee = invitationDao.isInvitee(id2);
+		Assert.assertTrue(invitee);
+		boolean notInvitee = invitationDao.isInvitee(id1);
+		Assert.assertFalse(notInvitee);
 	}
 	
 	@Test
@@ -174,12 +179,16 @@ public class InvitationDAOTest extends OlatTestCase {
 		Assert.assertTrue(numOfInvitations > 0l);
 	}
 	
-	/**
-	 * Only check if the query is valid.
-	 */
 	@Test
-	public void cleanUpInvitations() {
-		invitationDao.cleanUpInvitations();
+	public void deleteInvitationByGroup() {
+		Invitation invitation = invitationDao.createAndPersistInvitation();
+		dbInstance.commit();
+		Assert.assertNotNull(invitation);
+		
+		invitationDao.deleteInvitation(invitation.getBaseGroup());
+		dbInstance.commit();
+		
+		Invitation deletedInvitation = invitationDao.findInvitation(invitation.getToken());
+		Assert.assertNull(deletedInvitation);
 	}
-
 }
