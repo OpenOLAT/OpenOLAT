@@ -39,7 +39,9 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.AccessSearchParams;
@@ -72,6 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 	
 	private RestConnection conn;
