@@ -19,6 +19,7 @@
  */
 package org.olat.core.util;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -95,6 +96,22 @@ public class FileUtilsTest {
 
 		Assert.assertTrue(FileUtils.isMetaFilename("._"));
 		Assert.assertTrue(FileUtils.isMetaFilename("._gugus"));
+	}
+	
+	@Test
+	public void testInsertBeforeSuffix() {
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(FileUtils.insertBeforeSuffix("test.second.html", "_copy")).isEqualTo("test.second_copy.html");
+		softly.assertThat(FileUtils.insertBeforeSuffix("test.html", "_copy")).isEqualTo("test_copy.html");
+		softly.assertThat(FileUtils.insertBeforeSuffix("test.html", "")).isEqualTo("test.html");
+		softly.assertThat(FileUtils.insertBeforeSuffix("test.html", null)).isEqualTo("test.html");
+		softly.assertThat(FileUtils.insertBeforeSuffix("test", "_copy")).isEqualTo("test_copy");
+		softly.assertThat(FileUtils.insertBeforeSuffix("", "_copy")).isEqualTo("_copy");
+		softly.assertThat(FileUtils.insertBeforeSuffix(null, "_copy")).isEqualTo("_copy");
+		softly.assertThat(FileUtils.insertBeforeSuffix("", "")).isEqualTo("");
+		softly.assertThat(FileUtils.insertBeforeSuffix("test.", "_copy")).isEqualTo("test_copy.");
+		softly.assertThat(FileUtils.insertBeforeSuffix(null, null)).isEqualTo(null);
+		softly.assertAll();
 	}
 
 }

@@ -262,18 +262,22 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	private void setUploadCorrections(UserRequest ureq, Task task, int iteration, List<TaskRevision> revisions) {
 		File documentsDir;
 		VFSContainer documentsContainer;
+		VFSContainer revisedContainer;
 		if(businessGroupTask) {
 			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
 			documentsContainer = gtaManager.getRevisedDocumentsCorrectionsContainer(courseEnv, gtaNode, iteration, assessedGroup);
+			revisedContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, assessedIdentity);
 			documentsContainer = gtaManager.getRevisedDocumentsCorrectionsContainer(courseEnv, gtaNode, iteration, assessedIdentity);
+			revisedContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, assessedIdentity);
 		}
 		
 		TaskRevision taskRevision = GTAAbstractController.getTaskRevision(revisions, TaskProcess.revision, iteration);// next iteration
 		uploadCorrectionsCtrl = new CoachSubmitRevisionsController(ureq, getWindowControl(), task, taskRevision, iteration,
 				assessedIdentity, assessedGroup, documentsDir, documentsContainer, gtaNode, courseEnv,
-				coachCourseEnv.isCourseReadOnly(), null, "coach.document");
+				coachCourseEnv.isCourseReadOnly(), null, "coach.document", revisedContainer,
+				translate("copy.ending.review"), "copy.revision");
 		listenTo(uploadCorrectionsCtrl);
 		mainVC.put("uploadCorrections", uploadCorrectionsCtrl.getInitialComponent());
 	}

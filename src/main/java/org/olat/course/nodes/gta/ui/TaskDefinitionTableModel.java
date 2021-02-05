@@ -55,8 +55,7 @@ public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDef
 	public enum TDCols {
 		title("task.title"),
 		file("task.file"),
-		mode("edit"),
-		uploadedBy("table.header.uploaded.by");
+		mode("edit");
 		
 		private final String i18nKey;
 	

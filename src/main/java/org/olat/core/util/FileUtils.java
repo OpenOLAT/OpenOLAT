@@ -782,6 +782,24 @@ public class FileUtils {
 	}
 	
 	/**
+	 * Inserts the ending before the suffix.
+	 * E.g.: test.html => test_copy.html
+	 *
+	 * @param filename
+	 * @param ending
+	 * @return
+	 */
+	public static String insertBeforeSuffix(String filename, String ending) {
+		if (!StringHelper.containsNonWhitespace(filename)) return ending;
+		if (!StringHelper.containsNonWhitespace(ending)) return filename;
+		
+		int lastDot = filename.lastIndexOf('.');
+		return lastDot > 0
+				? filename.substring(0, lastDot) + ending + filename.substring(lastDot)
+				: filename + ending;
+	}
+	
+	/**
 	 * Simple check for filename validity. 
 	 * It compares each character if it is accepted, forbidden or in a certain (Latin-1) range. <p>
 	 * Characters < 33 --> control characters and space

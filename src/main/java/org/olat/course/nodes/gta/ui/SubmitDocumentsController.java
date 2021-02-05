@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -87,9 +88,11 @@ class SubmitDocumentsController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private FormLink uploadDocButton;
 	private FormLink createDocButton;
+	private FormLink copyDocButton;
 
 	private CloseableModalController cmc;
 	private NewDocumentController newDocCtrl;
+	private CopyDocumentController copyDocCtrl;
 	private DocumentUploadController uploadCtrl;
 	private DocumentUploadController replaceCtrl;
 	private DialogBoxController confirmDeleteCtrl;
@@ -101,6 +104,9 @@ class SubmitDocumentsController extends FormBasicController {
 	protected Task assignedTask;
 	private final File documentsDir;
 	private final VFSContainer documentsContainer;
+	private final VFSContainer copySourceContainer;
+	private final String copyEnding;
+	private final String copyI18nKey;
 	protected final ModuleConfiguration config;
 	protected final GTACourseNode gtaNode;
 	protected final CourseEnvironment courseEnv;
@@ -118,18 +124,22 @@ class SubmitDocumentsController extends FormBasicController {
 	@Autowired
 	private DocEditorService docEditorService;
 	
-	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
-			File documentsDir, VFSContainer documentsContainer, int minDocs, int maxDocs, GTACourseNode cNode,
-			CourseEnvironment courseEnv, boolean readOnly, Date deadline, String docI18nKey) {
+	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask, File documentsDir,
+			VFSContainer documentsContainer, int minDocs, int maxDocs, GTACourseNode cNode, CourseEnvironment courseEnv,
+			boolean readOnly, Date deadline, String docI18nKey, VFSContainer copySourceContainer, String copyEnding,
+			String copyI18nKey) {
 		super(ureq, wControl, "documents");
 		this.assignedTask = assignedTask;
 		this.documentsDir = documentsDir;
 		this.documentsContainer = documentsContainer;
+		this.copySourceContainer = copySourceContainer;
 		this.minDocs = minDocs;
 		this.maxDocs = maxDocs;
 		this.docI18nKey = docI18nKey;
 		this.deadline = deadline;
 		this.readOnly = readOnly;
+		this.copyEnding = copyEnding;
+		this.copyI18nKey = copyI18nKey;
 		this.config = cNode.getModuleConfiguration();
 		this.gtaNode = cNode;
 		this.courseEnv = courseEnv;
@@ -152,7 +162,7 @@ class SubmitDocumentsController extends FormBasicController {
 	protected boolean isReadOnly() {
 		return readOnly;
 	}
-
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(config.getBooleanSafe(GTACourseNode.GTASK_EXTERNAL_EDITOR)) {
@@ -167,12 +177,18 @@ class SubmitDocumentsController extends FormBasicController {
 			createDocButton.setElementCssClass("o_sel_course_gta_create_doc");
 			createDocButton.setI18nKey(docI18nKey + ".open.editor");
 			createDocButton.setVisible(!readOnly);
+			
+			copyDocButton = uifactory.addFormLink("copy.document", formLayout, Link.BUTTON);
+			copyDocButton.setIconLeftCSS("o_icon o_icon_copy");
+			copyDocButton.setElementCssClass("o_sel_course_gta_copy_file");
+			copyDocButton.setI18nKey(copyI18nKey);
+			copyDocButton.setVisible(!readOnly && canCopy(ureq));
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(docI18nKey, DocCols.document.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.date.i18nKey(), DocCols.date.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.uploadedBy.i18nKey(), DocCols.uploadedBy.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.createdBy.i18nKey(), DocCols.createdBy.ordinal()));
 		
 		String openI18n = readOnly? "table.header.view": "table.header.edit";
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(openI18n, DocCols.mode.ordinal(), "open", new ModeCellRenderer("open")));
@@ -190,6 +206,22 @@ class SubmitDocumentsController extends FormBasicController {
 		tableEl.setElementCssClass("o_table_no_margin");
 	}
 	
+	private boolean canCopy(UserRequest ureq) {
+		if (copySourceContainer == null) return false;
+		
+		Collection<String> copySuffixes = GTAUIFactory.getCopySuffix(getIdentity(), ureq.getUserSession().getRoles());
+		if (copySuffixes.isEmpty()) return false;
+		
+		for (VFSItem vfsItem : copySourceContainer.getItems()) {
+			String suffix = FileUtils.getFileSuffix(vfsItem.getName()).toLowerCase();
+			if (copySuffixes.contains(suffix) && vfsItem instanceof VFSLeaf) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
 	private void updateModel(UserRequest ureq) {
 		File[] documents = documentsDir.listFiles(SystemFileFilter.FILES_ONLY);
 		if(documents == null) {
@@ -198,14 +230,14 @@ class SubmitDocumentsController extends FormBasicController {
 		List<SubmittedSolution> docList = new ArrayList<>(documents.length);
 		for(File document:documents) {
 			String filename = document.getName();
-			String uploadedBy = null;
+			String createdBy = null;
 			Mode openMode = null;
 			
 			VFSItem item = documentsContainer.resolve(filename);
 			if(item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
 				if(metaInfo != null) {
-					uploadedBy = userManager.getUserDisplayName(metaInfo.getAuthor());
+					createdBy = userManager.getUserDisplayName(metaInfo.getAuthor());
 				}
 			}
 			
@@ -221,7 +253,7 @@ class SubmitDocumentsController extends FormBasicController {
 				VFSLeaf vfsLeaf = (VFSLeaf)item;
 				openMode = getOpenMode(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, readOnly);
 			}
-			docList.add(new SubmittedSolution(document, uploadedBy, download, openMode));
+			docList.add(new SubmittedSolution(document, createdBy, download, openMode));
 		}
 		model.setObjects(docList);
 		tableEl.reset();
@@ -249,6 +281,9 @@ class SubmitDocumentsController extends FormBasicController {
 			if(createDocButton != null) {
 				createDocButton.setEnabled(false);
 			}
+			if(copyDocButton != null) {
+				copyDocButton.setEnabled(false);
+			}
 			String msg = translate("error.max.documents", new String[]{ Integer.toString(maxDocs)});
 			flc.contextPut("maxDocsWarning", msg);
 			flc.contextRemove("minDocsWarning");
@@ -258,6 +293,9 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 			if(createDocButton != null) {
 				createDocButton.setEnabled(true);
+			}
+			if(copyDocButton != null) {
+				copyDocButton.setEnabled(true);
 			}
 			flc.contextRemove("maxDocsWarning");
 			flc.contextRemove("minDocsWarning");
@@ -314,6 +352,17 @@ class SubmitDocumentsController extends FormBasicController {
 				updateWarnings();
 			} 
 			checkDeadline(ureq);
+		} else if(copyDocCtrl == source) {
+			String filename = copyDocCtrl.getFilename();
+			cmc.deactivate();
+			cleanUp();
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, new SubmitEvent(SubmitEvent.CREATE, filename));
+				gtaManager.markNews(courseEnv, gtaNode);
+				updateModel(ureq);
+				updateWarnings();
+			} 
+			checkDeadline(ureq);
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -323,11 +372,13 @@ class SubmitDocumentsController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(viewDocCtrl);
+		removeAsListenerAndDispose(copyDocCtrl);
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(newDocCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
 		viewDocCtrl = null;
+		copyDocCtrl = null;
 		uploadCtrl = null;
 		newDocCtrl = null;
 		cmc = null;
@@ -347,6 +398,10 @@ class SubmitDocumentsController extends FormBasicController {
 		} else if(createDocButton == source) {
 			if(checkOpen(ureq) && checkDeadline(ureq)) {
 				doCreateDocument(ureq);
+			}
+		} else if(copyDocButton == source) {
+			if(checkOpen(ureq) && checkDeadline(ureq)) {
+				doCopyDocument(ureq);
 			}
 		} else if(tableEl == source) {
 			if(checkOpen(ureq) && checkDeadline(ureq) && event instanceof SelectionEvent) {
@@ -487,7 +542,25 @@ class SubmitDocumentsController extends FormBasicController {
 					htmlOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
 			listenTo(newDocCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", newDocCtrl.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), "close", newDocCtrl.getInitialComponent(),
+					translate(createDocButton.getI18nKey()));
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
+	private void doCopyDocument(UserRequest ureq) {
+		if(copyDocCtrl != null) return;
+		
+		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
+			showWarning("error.max.documents");
+		} else {
+			copyDocCtrl = new CopyDocumentController(ureq, getWindowControl(), copySourceContainer, documentsContainer,
+					copyEnding);
+			listenTo(copyDocCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), "close", copyDocCtrl.getInitialComponent(),
+					translate(copyDocButton.getI18nKey()));
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -496,7 +569,7 @@ class SubmitDocumentsController extends FormBasicController {
 	public enum DocCols {
 		document("document"),
 		date("document.date"),
-		uploadedBy("table.header.uploaded.by"),
+		createdBy("table.header.created.by"),
 		mode("edit");
 		
 		private final String i18nKey;
@@ -513,13 +586,13 @@ class SubmitDocumentsController extends FormBasicController {
 	public static class SubmittedSolution {
 		
 		private final File file;
-		private final String uploadedBy;
+		private final String createdBy;
 		private final FormItem downloadLink;
 		private final Mode mode;
 		
-		public SubmittedSolution(File file, String uploadedBy, FormItem downloadLink, Mode mode) {
+		public SubmittedSolution(File file, String createdBy, FormItem downloadLink, Mode mode) {
 			this.file = file;
-			this.uploadedBy = uploadedBy;
+			this.createdBy = createdBy;
 			this.downloadLink = downloadLink;
 			this.mode = mode;
 		}
@@ -528,8 +601,8 @@ class SubmitDocumentsController extends FormBasicController {
 			return file;
 		}
 
-		public String getUploadedBy() {
-			return uploadedBy;
+		public String getCreatedBy() {
+			return createdBy;
 		}
 
 		public FormItem getDownloadLink() {
@@ -563,7 +636,7 @@ class SubmitDocumentsController extends FormBasicController {
 					cal.setTimeInMillis(solution.getFile().lastModified());
 					return cal.getTime();
 				}
-				case uploadedBy: return solution.getUploadedBy();
+				case createdBy: return solution.getCreatedBy();
 				case mode: return solution.getMode();
 				default: return "ERROR";
 			}

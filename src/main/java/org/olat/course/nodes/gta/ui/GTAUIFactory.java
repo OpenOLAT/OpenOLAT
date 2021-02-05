@@ -21,6 +21,8 @@ package org.olat.course.nodes.gta.ui;
 
 import static org.olat.core.commons.services.doceditor.DocEditor.Mode.EDIT;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
@@ -87,6 +89,21 @@ class GTAUIFactory {
 			builder.addPptx();
 		}
 		return builder.build();
+	}
+	
+	static List<String> getCopySuffix(Identity identity, Roles roles) {
+		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
+		List<String> suffix = new ArrayList<>(3);
+		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, true, false)) {
+			suffix.add("docx");
+		}
+		if (docEditorService.hasEditor(identity, roles, "xlsx", EDIT, true, false)) {
+			suffix.add("xlsx");
+		}
+		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, true, false)) {
+			suffix.add("pptx");
+		}
+		return suffix;
 	}
 
 }

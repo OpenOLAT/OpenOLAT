@@ -124,7 +124,7 @@ public class DirectoryController extends BasicController implements Activateable
 				link.setTarget("_blank");
 			}
 			
-			String uploadedBy = null;
+			String createdBy = null;
 			String lastModified = null;
 			if(documentsContainer != null) {
 				VFSItem item = documentsContainer.resolve(document.getName());
@@ -132,12 +132,12 @@ public class DirectoryController extends BasicController implements Activateable
 				if(item.canMeta() == VFSConstants.YES) {
 					VFSMetadata metaInfo = item.getMetaInfo();
 					if(metaInfo != null && metaInfo.getAuthor() != null) {
-						uploadedBy = userManager.getUserDisplayName(metaInfo.getAuthor());
+						createdBy = userManager.getUserDisplayName(metaInfo.getAuthor());
 					}
 				}
 			}
 
-			linkNames.add(new DocumentInfos(link.getComponentName(), uploadedBy, lastModified));
+			linkNames.add(new DocumentInfos(link.getComponentName(), createdBy, lastModified));
 		}
 		mainVC.contextPut("linkNames", linkNames);
 		if(bulkReviewLink != null) {
@@ -211,16 +211,12 @@ public class DirectoryController extends BasicController implements Activateable
 	public static final class DocumentInfos {
 		
 		private final String linkName;
-		private final String uploadedBy;
+		private final String createdBy;
 		private final String lastModified;
 		
-		public DocumentInfos(String linkName, String uploadedBy) {
-			this(linkName, uploadedBy, null);
-		}
-
-		public DocumentInfos(String linkName, String uploadedBy, String lastModified) {
+		public DocumentInfos(String linkName, String createdBy, String lastModified) {
 			this.linkName = linkName;
-			this.uploadedBy = uploadedBy;
+			this.createdBy = createdBy;
 			this.lastModified = lastModified;
 		}
 
@@ -228,8 +224,8 @@ public class DirectoryController extends BasicController implements Activateable
 			return linkName;
 		}
 
-		public String getUploadedBy() {
-			return uploadedBy;
+		public String getCreatedBy() {
+			return createdBy;
 		}
 
 		public String getLastModified() {

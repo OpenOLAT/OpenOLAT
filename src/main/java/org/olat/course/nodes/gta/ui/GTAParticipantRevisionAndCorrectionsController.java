@@ -209,7 +209,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			maxDocs = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
 		}
 		uploadRevisionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer,
-				minDocs, maxDocs, gtaNode, courseEnv, assessedUserCourseEnv.isCourseReadOnly(), deadline, "document");
+				minDocs, maxDocs, gtaNode, courseEnv, assessedUserCourseEnv.isCourseReadOnly(), deadline, "document", null, null, null);
 		listenTo(uploadRevisionsCtrl);
 		mainVC.put("uploadRevisions", uploadRevisionsCtrl.getInitialComponent());
 		

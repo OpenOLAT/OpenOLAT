@@ -12,20 +12,35 @@
 #if($hasDocuments)
 	$r.render("table")
 #end
-#if($r.visible("upload.document") || $r.visible("open.editor"))
+#if($r.visible("upload.document") || $r.visible("open.editor") || $r.visible("copy.document") )
 <div class="panel panel-placeholder">
 	<div class="panel-body">
 		<h5>$r.translate("submission.add.title")</h5>
-		<div class="o_button_group">	
-		#if($r.visible("upload.document") && $r.visible("open.editor"))
+		<div class="o_button_group">
+		#set( $buttons = 0 )
+		#if($r.visible("upload.document"))
+			#set( $buttons = $buttons + 1 )
+		#end
+		#if($r.visible("open.editor"))
+			#set( $buttons = $buttons + 1 )
+		#end
+		#if($r.visible("copy.document"))
+			#set( $buttons = $buttons + 1 )
+		#end
+		#if($buttons > 1)
 			<div class="btn-group">
-				$r.render("upload.document")
-				$r.render("open.editor")
-			</div>
-		#elseif($r.visible("upload.document"))
+		#end
+		#if($r.visible("upload.document"))
 			$r.render("upload.document")
-		#elseif($r.visible("open.editor"))
+		#end
+		#if($r.visible("open.editor"))
 			$r.render("open.editor")
+		#end
+		#if($r.visible("copy.document"))
+			$r.render("copy.document")
+		#end
+		#if($buttons > 1)
+			</div>
 		#end
 		</div>
 	</div>

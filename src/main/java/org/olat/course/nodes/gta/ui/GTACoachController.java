@@ -300,18 +300,23 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	private void setUploadCorrections(UserRequest ureq, Task task, List<TaskRevision> taskRevisions) {
 		File documentsDir;
-		VFSContainer documentsContainer;
+		VFSContainer correctionsContainer;
+		VFSContainer submitContainer;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, assessedGroup);
-			documentsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedGroup);
+			correctionsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedGroup);
+			submitContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, assessedIdentity);
-			documentsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedIdentity);
+			correctionsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedIdentity);
+			submitContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedIdentity);
 		}
 		
 		TaskRevision taskRevision = getTaskRevision(taskRevisions, TaskProcess.review, 0);
-		submitCorrectionsCtrl = new CoachSubmitCorrectionsController(ureq, getWindowControl(), task,taskRevision, assessedIdentity, assessedGroup,
-				documentsDir, documentsContainer, gtaNode, courseEnv, coachCourseEnv.isCourseReadOnly(), null, "coach.document");
+		submitCorrectionsCtrl = new CoachSubmitCorrectionsController(ureq, getWindowControl(), task, taskRevision,
+				assessedIdentity, assessedGroup, documentsDir, correctionsContainer, gtaNode, courseEnv,
+				coachCourseEnv.isCourseReadOnly(), null, "coach.document", submitContainer,
+				translate("copy.ending.review"), "copy.submission");
 		listenTo(submitCorrectionsCtrl);
 		mainVC.put("corrections", submitCorrectionsCtrl.getInitialComponent());	
 	}
