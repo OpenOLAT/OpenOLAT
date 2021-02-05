@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -79,6 +80,8 @@ public class BinderMetadataEditController extends FormBasicController {
 	private Map<String,String> categories = new HashMap<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -229,6 +232,7 @@ public class BinderMetadataEditController extends FormBasicController {
 		
 		List<String> updatedCategories = categoriesEl.getValueList();
 		portfolioService.updateCategories(binder, updatedCategories);
+		dbInstance.commit();
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

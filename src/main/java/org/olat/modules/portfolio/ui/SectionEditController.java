@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.PortfolioService;
@@ -95,6 +96,9 @@ public class SectionEditController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "title", 255, title, formLayout);
 		titleEl.setElementCssClass("o_sel_pf_edit_section_title");
 		titleEl.setMandatory(true);
+		if(!StringHelper.containsNonWhitespace(title)) {
+			titleEl.setFocus(true);
+		}
 		
 		String description = section == null ? null : section.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("summary", "page.summary", description, 8, 60, formLayout, getWindowControl());

@@ -84,6 +84,8 @@ public class BinderDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
+	private InvitationDAO invitationDao;
+	@Autowired
 	private AssignmentDAO assignmentDao;
 	@Autowired
 	private PageUserInfosDAO pageUserInfosDao;
@@ -459,8 +461,8 @@ public class BinderDAO {
 		
 		binder.getSections().clear();
 		
-		
 		Group baseGroup = binder.getBaseGroup();
+		invitationDao.deleteInvitation(baseGroup);
 		rows += groupDao.removeMemberships(baseGroup);
 		dbInstance.getCurrentEntityManager().remove(binder);
 		dbInstance.getCurrentEntityManager().remove(baseGroup);
@@ -495,22 +497,20 @@ public class BinderDAO {
 	public int detachBinderFromRepositoryEntry(RepositoryEntry entry) {
 		//remove reference to the course and the course node
 		String sb = "update pfbinder binder set binder.entry=null,binder.subIdent=null where binder.entry.key=:entryKey";
-		int rows = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb)
 			.setParameter("entryKey", entry.getKey())
 			.executeUpdate();
-		return rows;
 	}
 	
 	public int detachBinderFromRepositoryEntry(RepositoryEntry entry, PortfolioCourseNode node) {
 		//remove reference to the course and the course node
 		String sb = "update pfbinder binder set binder.entry=null,binder.subIdent=null where binder.entry.key=:entryKey and binder.subIdent=:nodeIdent";
-		int rows = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb)
 			.setParameter("entryKey", entry.getKey())
 			.setParameter("nodeIdent", node.getIdent())
 			.executeUpdate();
-		return rows;
 	}
 	
 	/**

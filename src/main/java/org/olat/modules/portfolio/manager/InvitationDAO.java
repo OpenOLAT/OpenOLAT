@@ -19,7 +19,6 @@
  */
 package org.olat.modules.portfolio.manager;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -35,13 +34,11 @@ import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
-import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.modules.portfolio.model.InvitationImpl;
-import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,11 +66,7 @@ public class InvitationDAO {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private OrganisationDAO organisationDao;
-	@Autowired
 	private OrganisationService organisationService;
-	@Autowired
-	private UserLifecycleManager userLifecycleManager;
 	
 	public Invitation createInvitation() {
 		InvitationImpl invitation = new InvitationImpl();
@@ -164,10 +157,10 @@ public class InvitationDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select invitation.key from binvitation as invitation")
 		  .append(" inner join invitation.baseGroup as baseGroup")
-		  .append(" where invitation.token=:token ")
-		  .append("   and exists(select binder from pfbinder as binder")
-		  .append("        where binder.baseGroup.key=baseGroup.key")
-		  .append("        )");
+		  .append(" where invitation.token=:token")
+		  .append(" and exists(select binder from pfbinder as binder")
+		  .append("   where binder.baseGroup.key=baseGroup.key")
+		  .append(" )");
 
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
@@ -177,7 +170,7 @@ public class InvitationDAO {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return keys == null || keys.isEmpty() || keys.get(0) == null ? false : keys.get(0).longValue() > 0;
+		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0;
 	}
 	
 	/**
@@ -196,25 +189,6 @@ public class InvitationDAO {
 			.setParameter("key", key)
 			.getResultList();
 	    return invitations.isEmpty() ? null : invitations.get(0);
-	}
-	
-	/**
-	 * Find an invitation by its security group
-	 * @param secGroup
-	 * @return The invitation or null if not found
-	 */
-	public Invitation findInvitation(Group group) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select invitation from binvitation as invitation ")
-		  .append(" inner join fetch invitation.baseGroup bGroup")
-		  .append(" where bGroup=:group");
-
-		List<Invitation> invitations = dbInstance.getCurrentEntityManager()
-				  .createQuery(sb.toString(), Invitation.class)
-				  .setParameter("group", group)
-				  .getResultList();
-		if(invitations.isEmpty()) return null;
-		return invitations.get(0);
 	}
 	
 	/**
@@ -295,7 +269,7 @@ public class InvitationDAO {
 			.createQuery(sb.toString(), Number.class)
 			.setParameter("identityKey", identity.getKey())
 			.getSingleResult();
-	    return invitations == null ? false : invitations.intValue() > 0;
+	    return invitations != null && invitations.intValue() > 0;
 	}
 	
 	/**
@@ -310,46 +284,13 @@ public class InvitationDAO {
 		dbInstance.getCurrentEntityManager().remove(refInvitation);
 	}
 	
-	/**
-	 * Clean up old invitation and set to deleted temporary users
-	 */
-	public void cleanUpInvitations() {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(new Date());
-		cal.add(Calendar.HOUR, -6);
-		Date dateLimit = cal.getTime();
-
-		StringBuilder sb = new StringBuilder(512);
-		sb.append("select invitation from ").append(InvitationImpl.class.getName()).append(" as invitation ")
-		  .append(" inner join invitation.baseGroup baseGroup ")
-		  .append(" where invitation.creationDate<:dateLimit");
+	public int deleteInvitation(Group group) {
+		if(group == null || group.getKey() == null) return 0;
 		
-		List<Invitation> oldInvitations = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Invitation.class)
-				.setParameter("dateLimit", dateLimit)
-				.getResultList();
-		
-		if(oldInvitations.isEmpty()) {
-			return;
-		}
-	  
-		for(Invitation invitation:oldInvitations) {
-			List<Identity> identities = groupDao.getMembers(invitation.getBaseGroup(), GroupRoles.invitee.name());
-			//normally only one identity
-			for(Identity identity:identities) {
-				if(identity.getStatus().equals(Identity.STATUS_DELETED)) {
-					//already deleted
-				} else if(organisationDao.hasAnyRole(identity, OrganisationRoles.invitee.name())) {
-					//out of scope
-				} else {
-					//delete user
-					userLifecycleManager.deleteIdentity(identity, null);
-				}
-			}
-			Invitation invitationRef = dbInstance.getCurrentEntityManager()
-				.getReference(InvitationImpl.class, invitation.getKey());
-			dbInstance.getCurrentEntityManager().remove(invitationRef);
-			dbInstance.commit();
-		}
+		String delete = "delete from binvitation as invitation where invitation.baseGroup.key=:groupKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(delete)
+				.setParameter("groupKey", group.getKey())
+				.executeUpdate();
 	}
 }

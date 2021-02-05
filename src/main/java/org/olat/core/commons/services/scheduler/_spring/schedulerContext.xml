@@ -37,7 +37,6 @@ How to add a new job:
             <ref bean="sendNotificationsEmailTrigger" />
             <ref bean="updateStatisticsTrigger"/>
             <ref bean="searchIndexingTrigger"/>
-            <ref bean="invitationCleanupTrigger" />
             <ref bean="restTokenTrigger" />
             <ref bean="taskExecutorTrigger" />
             <ref bean="procSamplerTrigger"/>

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -133,6 +134,8 @@ public class BinderListController extends FormBasicController
 	private ConfirmMoveBinderToTrashController moveBinderToTrashCtrl;
 	private DialogBoxController confirmRestoreBinderCtrl;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private PortfolioV2Module portfolioModule;
 	@Autowired
@@ -736,7 +739,8 @@ public class BinderListController extends FormBasicController
 	private void doMoveBinderToTrash(BinderRow row) {
 		Binder binder = portfolioService.getBinderByKey(row.getKey());
 		binder.setBinderStatus(BinderStatus.deleted);
-		binder = portfolioService.updateBinder(binder);
+		portfolioService.updateBinder(binder);
+		dbInstance.commit();
 		showInfo("delete.binder.success");
 	}
 	
@@ -756,6 +760,7 @@ public class BinderListController extends FormBasicController
 	
 	private void doDeleteBinder(BinderRef binder) {
 		portfolioService.deleteBinder(binder);
+		dbInstance.commit();
 		showInfo("delete.binder.success");
 	}
 	
@@ -769,7 +774,7 @@ public class BinderListController extends FormBasicController
 	private void doRestore(BinderRef row) {
 		Binder binder = portfolioService.getBinderByKey(row.getKey());
 		binder.setBinderStatus(BinderStatus.open);
-		binder = portfolioService.updateBinder(binder);
+		portfolioService.updateBinder(binder);
 		showInfo("restore.binder.success");
 	}
 	
