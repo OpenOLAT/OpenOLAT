@@ -945,9 +945,9 @@ public class PortfolioV2Test extends Deployments {
 		
 		trash
 			.switchTableView()
-			.assertOnPageTableView(pageToDelete)
+			.assertOnPageTableFlatView(pageToDelete)
 			.switchTableView()
-			.selectPageInTableView(pageToDelete)
+			.selectPageInTableFlatView(pageToDelete)
 			.deleteEntry()
 			.assertEmptyTableView();
 	}

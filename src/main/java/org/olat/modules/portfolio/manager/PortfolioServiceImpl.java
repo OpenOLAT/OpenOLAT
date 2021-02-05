@@ -504,7 +504,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				reloadedAssignment = assignmentDao.startEssayAssignment(reloadedAssignment, page, author);
 			} else if (reloadedAssignment.getAssignmentType() == AssignmentType.form) {
 				RepositoryEntry formEntry = reloadedAssignment.getFormEntry();
-				Page page = appendNewPage(author, reloadedAssignment.getTitle(), reloadedAssignment.getSummary(), null, false, null, section);
+				Page page = appendNewPage(author, reloadedAssignment.getTitle(), reloadedAssignment.getSummary(), null, false, null, section, null);
 				reloadedAssignment = assignmentDao.startFormAssignment(reloadedAssignment, page, author);
 				// create the session for the assignee
 				EvaluationFormSurvey survey = loadOrCreateSurvey(page.getBody(), formEntry);
@@ -537,7 +537,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				if(!StringHelper.containsNonWhitespace(title)) {
 					title = instanciatedAssignment.getTitle();
 				}
-				page = appendNewPage(author, title, instanciatedAssignment.getSummary(), null, false, null, section);
+				page = appendNewPage(author, title, instanciatedAssignment.getSummary(), null, false, null, section, null);
 				instanciatedAssignment = assignmentDao.startFormAssignment(instanciatedAssignment, page, author);
 				// create the session for the assignee
 				EvaluationFormSurvey survey = loadOrCreateSurvey(page.getBody(), formEntry);
@@ -980,7 +980,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			if(file.exists()) {
 				boolean deleted = file.delete();
 				if(!deleted) {
-					log.warn("Cannot delete: " + file);
+					log.warn("Cannot delete: {}", file);
 				}
 			}
 		}
@@ -1007,16 +1007,24 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align, SectionRef section) {
-		return appendNewPage(owner, title, summary, imagePath, true, align, section);
+	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align,
+			SectionRef section) {
+		return appendNewPage(owner, title, summary, imagePath, true, align, section, null);
 	}
 	
-	private Page appendNewPage(Identity owner, String title, String summary, String imagePath, boolean editable, PageImageAlign align, SectionRef section) {
+	@Override
+	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align,
+			SectionRef section, Page pageDelegate) {
+		return appendNewPage(owner, title, summary, imagePath, true, align, section, pageDelegate);
+	}
+
+	private Page appendNewPage(Identity owner, String title, String summary, String imagePath, boolean editable, PageImageAlign align,
+			SectionRef section, Page pageDelegate) {
 		Section reloadedSection = section == null ? null : binderDao.loadSectionByKey(section.getKey());
 		if(reloadedSection != null && reloadedSection.getSectionStatus() == SectionStatus.notStarted) {
 			((SectionImpl)reloadedSection).setSectionStatus(SectionStatus.inProgress);
 		}
-		Page page = pageDao.createAndPersist(title, summary, imagePath, align, editable, reloadedSection, null);
+		Page page = pageDao.createAndPersist(title, summary, imagePath, align, editable, reloadedSection, pageDelegate);
 		groupDao.addMembershipTwoWay(page.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		return page;
 	}
@@ -1149,6 +1157,16 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public int countSharedPageBody(Page page) {
+		return pageDao.getCountSharedPageBody(page);
+	}
+	
+	@Override
+	public List<Page> getPagesSharingSameBody(Page page) {
+		return pageDao.getPagesBySharedBody(page);
+	}
+
+	@Override
 	@SuppressWarnings("unchecked")
 	public <U extends PagePart> U updatePart(U part) {
 		return (U)pageDao.merge(part);
@@ -1214,6 +1232,17 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public boolean isPageBodyClosed(Page page) {
+		List<Page> allPages = pageDao.getPagesBySharedBody(page);
+		for(Page p:allPages) {
+			if(PageStatus.isClosed(p)) {
+				return true;
+			}	
+		}
+		return false;
+	}
+
+	@Override
 	public Page changePageStatus(Page page, PageStatus status, Identity identity, Role by) {
 		PageStatus currentStatus = page.getPageStatus();
 		Page reloadedPage = pageDao.loadByKey(page.getKey());
@@ -1272,7 +1301,28 @@ public class PortfolioServiceImpl implements PortfolioService {
 			updateAssessmentEntryLastModification(binder, identity, by);
 		}
 		
+		PageStatus sharedStatus = calculateSharedStatus(reloadedPage);
+		if(sharedStatus != reloadedPage.getBody().getSyntheticStatusEnum()) {
+			pageDao.updateSharedStatus(reloadedPage, sharedStatus);
+		}
 		return pageDao.updatePage(reloadedPage);
+	}
+	
+	private PageStatus calculateSharedStatus(Page page) {
+		List<String> status = pageDao.getSharedPageStatus(page);
+		status.add(page.getPageStatus().name());
+		
+		int max = -1;
+		for(String ps:status) {
+			if(ps != null && !PageStatus.deleted.name().equals(ps)) {// trash is ignored
+				int ord = PageStatus.valueOf(ps).ordinal();
+				if(max < ord) {
+					max = ord;
+				}
+			}
+		}
+		
+		return max == -1 ? null : PageStatus.values()[max];
 	}
 	
 	private List<Identity> getOwners(Page page, Section section) {
@@ -1323,6 +1373,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 		for(Page page:pages) {
 			if(page != null) {
 				((PageImpl)page).setPageStatus(newPageStatus);
+				PageStatus sharedStatus = calculateSharedStatus(page);
+				if(sharedStatus != page.getBody().getSyntheticStatusEnum()) {
+					pageDao.updateSharedStatus(page, sharedStatus);
+				}
 				pageDao.updatePage(page);
 				if(newPageStatus == PageStatus.closed) {
 					//set user informations to done

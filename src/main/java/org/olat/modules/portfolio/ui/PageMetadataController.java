@@ -174,7 +174,16 @@ public class PageMetadataController extends BasicController {
 		mainVC.contextPut("status", page.getPageStatus());
 		mainVC.contextPut("statusCss", page.getPageStatus() == null ? PageStatus.draft.cssClass() : page.getPageStatus().cssClass());
 		
-		mainVC.contextPut("lastPublicationDate", page.getLastPublicationDate());
+		int sharedWith = portfolioService.countSharedPageBody(page);
+		if(sharedWith > 1) {
+			mainVC.contextPut("sharedWith", String.valueOf(sharedWith));
+			PageStatus syntheticStatus = page.getBody().getSyntheticStatusEnum();
+			if(syntheticStatus == PageStatus.published || syntheticStatus == PageStatus.closed) {
+				mainVC.contextPut("syntheticStatusCss", syntheticStatus.cssClass());
+				mainVC.contextPut("syntheticStatusTooltip", translate("status." + syntheticStatus.name()));
+				mainVC.contextPut("syntheticStatus", translate("synthetic.status." + syntheticStatus.name()));
+			}
+		}
 
 		List<Category> categories = portfolioService.getCategories(page);
 		if (secCallback.canEditCategories(page)) {

@@ -73,11 +73,13 @@ public class PortfolioElementRow {
 	private ImageComponent poster;
 	
 	private boolean newEntry;
+	private final boolean shared;
 	private RowType type;
 	
 	public PortfolioElementRow(Section section, AssessmentSection assessmentSection,
 			boolean assessable, boolean assignments) {
 		this.page = null;
+		shared = false;
 		type = RowType.section;
 		this.section = section;
 		this.assessable = assessable;
@@ -89,6 +91,7 @@ public class PortfolioElementRow {
 			boolean assessable) {
 		this.page = page;
 		this.section = page.getSection();
+		shared = page.getBody().getUsage() > 1;
 		type = RowType.page;
 		this.assessable = assessable;
 		this.assignments = false;
@@ -107,6 +110,7 @@ public class PortfolioElementRow {
 		assignments = false;
 		assessmentSection = null;
 		type = RowType.pendingAssignment;
+		shared = false;
 	}
 	
 	public boolean isPage() {
@@ -119,6 +123,10 @@ public class PortfolioElementRow {
 	
 	public boolean isPendingAssignment() {
 		return type == RowType.pendingAssignment;
+	}
+	
+	public boolean isShared() {
+		return shared;
 	}
 	
 	public boolean isNewEntry() {

@@ -39,8 +39,10 @@ import javax.persistence.TemporalType;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PagePart;
+import org.olat.modules.portfolio.PageStatus;
 
 /**
  * 
@@ -65,6 +67,11 @@ public class PageBodyImpl implements Persistable, ModifiedInfo, CreateInfo, Page
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+	
+	@Column(name="p_usage", nullable=false, insertable=true, updatable=true)
+	private int usage;
+	@Column(name="p_synthetic_status", nullable=true, insertable=true, updatable=true)
+	private String syntheticStatus;
 	
 	@OneToMany(targetEntity=AbstractPart.class, fetch=FetchType.LAZY, mappedBy="body",
 			orphanRemoval=true, cascade={CascadeType.REMOVE})
@@ -97,6 +104,35 @@ public class PageBodyImpl implements Persistable, ModifiedInfo, CreateInfo, Page
 	@Override
 	public void setLastModified(Date date) {
 		this.lastModified = date;
+	}
+
+	@Override
+	public int getUsage() {
+		return usage;
+	}
+
+	public void setUsage(int usage) {
+		this.usage = usage;
+	}
+
+	public String getSyntheticStatus() {
+		return syntheticStatus;
+	}
+
+	public void setSyntheticStatus(String syntheticStatus) {
+		this.syntheticStatus = syntheticStatus;
+	}
+
+	@Override
+	public PageStatus getSyntheticStatusEnum() {
+		if(StringHelper.containsNonWhitespace(syntheticStatus)) {
+			return PageStatus.valueOf(syntheticStatus);
+		}
+		return null;
+	}
+	
+	public void setSyntheticStatusEnum(PageStatus status) {
+		syntheticStatus = status == null ? null : status.name();
 	}
 
 	@Override

@@ -134,7 +134,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	private DialogBoxController confirmDeleteAssignmentCtrl;
 	
 	protected int counter;
+	protected final boolean flatList;
 	protected final boolean withSections;
+	protected final boolean withComments;
 	protected final BinderConfiguration config;
 	protected final BinderSecurityCallback secCallback;
 	
@@ -145,12 +147,14 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	public AbstractPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, BinderConfiguration config, String vTemplate,
-			boolean withSections) {
+			boolean withSections, boolean withComments, boolean flatList) {
 		super(ureq, wControl, vTemplate);
 		this.config = config;
+		this.flatList = flatList;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		this.withSections = withSections;
+		this.withComments = withComments;
 		rowVC = createVelocityContainer("portfolio_element_row");
 	}
 	
@@ -191,6 +195,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		formLayout.add("timeline", timelineEl);
 		initTimeline();
 		
+		String preferencesName = getTimelineSwitchPreferencesName();
 		if(portfolioV2Module.isEntriesTimelineEnabled() && config.isTimeline()) {
 			timelineSwitchOnButton = uifactory.addFormLink("timeline.switch.on", formLayout, Link.BUTTON_SMALL);
 			timelineSwitchOnButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_on");
@@ -200,7 +205,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			timelineSwitchOffButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_off");
 			timelineSwitchOffButton.setElementCssClass("o_sel_timeline_off");
 			
-			Object prefs = ureq.getUserSession().getGuiPreferences().get(this.getClass(), getTimelineSwitchPreferencesName(), "on");
+			Object prefs = ureq.getUserSession().getGuiPreferences().get(this.getClass(), preferencesName, "on");
 			if("on".equals(prefs)) {
 				doSwitchTimelineOn(ureq, false);
 			} else {
@@ -211,8 +216,48 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		initColumns(columnsModel);
+	
+		model = new PageListDataModel(columnsModel, getLocale());
+		String mapperThumbnailUrl = registerCacheableMapper(ureq, "page-list", new PageImageMapper(model, portfolioService));
+		
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+		if (portfolioV2Module.isEntriesListEnabled() && portfolioV2Module.isEntriesTableEnabled()) {
+			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
+		} else if (portfolioV2Module.isEntriesTableEnabled()) {
+			tableEl.setAvailableRendererTypes(FlexiTableRendererType.classic);
+		} else {
+			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
+		}
+		tableEl.setSearchEnabled(portfolioV2Module.isEntriesSearchEnabled());
+		tableEl.setCustomizeColumns(true);
+		String cssClass = "o_binder_page_listing " + (flatList ? "o_binder_page_flat_listing" : "o_binder_page_tree_listing");
+		tableEl.setElementCssClass(cssClass);
+		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		tableEl.setPageSize(24);
+		rowVC.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		rowVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
+		tableEl.setRowRenderer(rowVC, this);
+		tableEl.setCssDelegate(new DefaultFlexiTableCssDelegate());
+		FlexiTableRendererType renderType = portfolioV2Module.isEntriesListEnabled() ? FlexiTableRendererType.custom: FlexiTableRendererType.classic;
+		tableEl.setRendererType(renderType);
+		tableEl.setAndLoadPersistedPreferences(ureq, "page-list-v2-".concat(preferencesName));
+	}
+	
+	protected void initColumns(FlexiTableColumnModel columnsModel) {
+		if(flatList) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.type,
+				new PortfolioElementCellRenderer(getTranslator())));
+		}
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.key, "select-page"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.title, "select-page", new PortfolioElementCellRenderer()));
+		if(flatList) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.title, "select-page"));
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.title, "select-page",
+				new PortfolioElementCellRenderer(getTranslator())));
+		}
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.date, "select-page"));
 		if(secCallback.canPageUserInfosStatus()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.viewerStatus, new SharedPageStatusCellRenderer(getTranslator())));
@@ -231,33 +276,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 					new BooleanCellRenderer(
 							new StaticFlexiCellRenderer(translate("down"), "down"), null)));
 		}
-		if(!secCallback.canNewAssignment()) {
+		if(!secCallback.canNewAssignment() && withComments) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.comment));
 		}
-	
-		model = new PageListDataModel(columnsModel, getLocale());
-		String mapperThumbnailUrl = registerCacheableMapper(ureq, "page-list", new PageImageMapper(model, portfolioService));
-		
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
-		if (portfolioV2Module.isEntriesListEnabled() && portfolioV2Module.isEntriesTableEnabled()) {
-			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
-		} else if (portfolioV2Module.isEntriesTableEnabled()) {
-			tableEl.setAvailableRendererTypes(FlexiTableRendererType.classic);
-		} else {
-			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
-		}
-		tableEl.setSearchEnabled(portfolioV2Module.isEntriesSearchEnabled());
-		tableEl.setCustomizeColumns(true);
-		tableEl.setElementCssClass("o_binder_page_listing");
-		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
-		tableEl.setPageSize(24);
-		rowVC.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
-		rowVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
-		tableEl.setRowRenderer(rowVC, this);
-		tableEl.setCssDelegate(new DefaultFlexiTableCssDelegate());
-		tableEl.setAndLoadPersistedPreferences(ureq, "page-list");
-		FlexiTableRendererType renderType = portfolioV2Module.isEntriesListEnabled()? FlexiTableRendererType.custom: FlexiTableRendererType.classic;
-		tableEl.setRendererType(renderType);
 	}
 	
 	@Override
@@ -347,7 +368,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			List<Assignment> assignments, Map<OLATResourceable, List<Category>> categorizedElementMap) {
 		
 		PortfolioElementRow row = new PortfolioElementRow(section, assessmentSection,
-				config.isAssessable(), (assignments != null && assignments.size() > 0));
+				config.isAssessable(), (assignments != null && !assignments.isEmpty()));
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
 		openLink.setIconRightCSS("o_icon o_icon_start");

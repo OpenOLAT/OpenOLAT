@@ -107,7 +107,7 @@ public class PortfolioUserDataManager implements DeletableGroupData, UserDataDel
 					portfolioService.deleteBinder(ownedBinder);
 					dbInstance.commit();
 				} catch (Exception e) {
-					log.error("Cannot delete binder: " + ownedBinder.getKey());
+					log.error("Cannot delete binder: {}", ownedBinder.getKey());
 					dbInstance.rollbackAndCloseSession();
 				}
 			}

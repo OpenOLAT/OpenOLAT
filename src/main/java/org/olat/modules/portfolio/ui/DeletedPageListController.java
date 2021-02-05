@@ -66,7 +66,8 @@ public class DeletedPageListController extends AbstractPageListController {
 	
 	public DeletedPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback) {
-		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createDeletedPagesConfig(), "deleted_pages", false);
+		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createDeletedPagesConfig(), "deleted_pages",
+				false, true, true);
 
 		initForm(ureq);
 		loadModel(ureq, null);

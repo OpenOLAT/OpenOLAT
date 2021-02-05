@@ -27,6 +27,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.repository.RepositoryEntrySecurity;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -350,7 +351,11 @@ public class BinderSecurityCallbackFactory {
 		private final List<AccessRights> rights;
 		private final BinderDeliveryOptions deliveryOptions;
 		
+		@Autowired
+		private PortfolioService portfolioService;
+		
 		public BinderSecurityCallbackImpl(boolean owner, boolean task, boolean binderAssignments, BinderDeliveryOptions deliveryOptions) {
+			CoreSpringFactory.autowireObject(this);
 			this.task = task;
 			this.owner = owner;
 			this.rights = Collections.emptyList();
@@ -359,6 +364,7 @@ public class BinderSecurityCallbackFactory {
 		}
 		
 		public BinderSecurityCallbackImpl(List<AccessRights> rights, boolean task, boolean binderAssignments, BinderDeliveryOptions deliveryOptions) {
+			CoreSpringFactory.autowireObject(this);
 			this.owner = false;
 			this.task = task;
 			this.rights = rights;
@@ -482,7 +488,8 @@ public class BinderSecurityCallbackFactory {
 							(task && (page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft || page.getPageStatus() == PageStatus.inRevision))
 							||
 							(!task && !PageStatus.isClosed(page))
-					);
+					)
+					&& !portfolioService.isPageBodyClosed(page);
 		}
 
 		@Override

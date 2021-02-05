@@ -1980,6 +1980,8 @@ create table o_pf_page_body (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   p_usage int8 default 0,
+   p_synthetic_status varchar(32),
    primary key (id)
 );
 

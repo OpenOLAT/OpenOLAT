@@ -60,7 +60,8 @@ public class LastPageListController extends AbstractPageListController {
 	
 	public LastPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, int numOfPages) {
-		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createMyPagesConfig(), "last_pages", false);
+		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createMyPagesConfig(), "last_pages",
+				false, true, true);
 		this.numOfPages = numOfPages;
 
 		initForm(ureq);

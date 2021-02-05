@@ -112,6 +112,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private Binder currentBinder;
 	private Section currentSection;
 	private final BinderSecurityCallback secCallback;
+	private Page pageDelegate;
 
 	private int counter;
 	private File tempFolder;
@@ -130,11 +131,12 @@ public class PageMetadataEditController extends FormBasicController {
 	private PortfolioFileStorage portfolioFileStorage;
 	
 	public PageMetadataEditController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
-			Binder currentBinder, boolean chooseBinder, Section currentSection, boolean chooseSection) {
+			Binder currentBinder, boolean chooseBinder, Section currentSection, boolean chooseSection, Page pageDelegate) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.currentBinder = currentBinder;
 		this.currentSection = currentSection;
+		this.pageDelegate = pageDelegate;
 		
 		this.chooseBinder = chooseBinder;
 		this.chooseSection = chooseSection;
@@ -153,6 +155,10 @@ public class PageMetadataEditController extends FormBasicController {
 				assignmentTemplate = assignmentTemplatesMap.get(assignmentsTemplatesEl.getSelectedKey());
 			}
 			updateForAssignmentTemplate(assignmentTemplate);
+		}
+		
+		if(pageDelegate != null) {
+			initDelegate();
 		}
 	}
 	
@@ -209,9 +215,34 @@ public class PageMetadataEditController extends FormBasicController {
 		}
 	}
 	
+	private void initDelegate() {
+		titleEl.setValue(pageDelegate.getTitle());
+		titleEl.setFocus(false);
+		summaryEl.setValue(pageDelegate.getSummary());
+		
+		PageImageAlign alignment = pageDelegate.getImageAlignment();
+		if(alignment != null) {
+			for(int i=alignKeys.length; i-->0; ) {
+				if(alignKeys[i].equals(alignment.name())) {
+					imageAlignEl.select(alignKeys[i], true);
+				}
+			}
+		}
+		
+		imageUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
+		File posterImg = portfolioService.getPosterImage(pageDelegate);
+		if(posterImg != null) {
+			imageUpload.setInitialFile(posterImg);
+		}
+	}
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_pf_edit_entry_form");
+		
+		if(pageDelegate != null) {
+			setFormInfo("page.sharing.infos");
+		}
 		
 		String title = page == null ? null : page.getTitle();
 		titleEl = uifactory.addTextElement("title", "page.title", 255, title, formLayout);
@@ -400,7 +431,9 @@ public class PageMetadataEditController extends FormBasicController {
 	}
 	
 	private void updateAssignmentTemplates() {
-		if(currentBinder == null || (page != null && page.getKey() != null)) return;
+		if(currentBinder == null || (page != null && page.getKey() != null) || pageDelegate != null) {
+			return;
+		}
 		
 		List<Assignment> assignments = portfolioService.getBindersAssignmentsTemplates(currentBinder);
 		if(assignments.isEmpty()) return;
@@ -511,19 +544,23 @@ public class PageMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String imagePath = null;
+		PageImageAlign imageAlign = null;
+		if(imageAlignEl.isOneSelected()) {
+			imageAlign = PageImageAlign.valueOf(imageAlignEl.getSelectedKey());
+		}
+		
 		if (page == null) {
 			String title = titleEl.getValue();
 			String summary = summaryEl.getValue();
 			SectionRef selectSection = getSelectedSection();
-			String imagePath = null;
 			if (imageUpload.getUploadFile() != null) {
 				imagePath = portfolioService.addPosterImageForPage(imageUpload.getUploadFile(),
 						imageUpload.getUploadFileName());
+			} else if(pageDelegate != null && imageUpload.getInitialFile() != null) {
+				imagePath = pageDelegate.getImagePath();// reuse
 			}
-			PageImageAlign align = null;
-			if(imageAlignEl.isOneSelected()) {
-				align = PageImageAlign.valueOf(imageAlignEl.getSelectedKey());
-			}
+			
 			
 			Boolean onlyAutoEvaluation = null;
 			Boolean reviewerCanSeeAutoEvaluation = null;
@@ -533,21 +570,24 @@ public class PageMetadataEditController extends FormBasicController {
 					reviewerCanSeeAutoEvaluation = reviewerSeeAutoEvaEl.isAtLeastSelected(1);
 				}
 			}
-			if(assignmentsTemplatesEl != null && assignmentsTemplatesEl.isVisible() && assignmentsTemplatesEl.isOneSelected()
+			
+			if(pageDelegate != null) {
+				page = portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, imageAlign, selectSection, pageDelegate);
+			} else if(assignmentsTemplatesEl != null && assignmentsTemplatesEl.isVisible() && assignmentsTemplatesEl.isOneSelected()
 					&& StringHelper.containsNonWhitespace(assignmentsTemplatesEl.getSelectedKey())) {
 				Assignment assignmentTemplate = assignmentTemplatesMap.get(assignmentsTemplatesEl.getSelectedKey());
-				page = portfolioService.startAssignmentFromTemplate(assignmentTemplate.getKey(), getIdentity(), title, summary, imagePath, align,
+				page = portfolioService.startAssignmentFromTemplate(assignmentTemplate.getKey(), getIdentity(), title, summary, imagePath, imageAlign,
 						selectSection, onlyAutoEvaluation, reviewerCanSeeAutoEvaluation);
 				saveDocuments(page, assignmentTemplate);
 			} else {
-				page = portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, align, selectSection);
+				page = portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, imageAlign, selectSection);
 			}
 		} else {
 			page.setTitle(titleEl.getValue());
 			page.setSummary(summaryEl.getValue());
 
 			if (imageUpload.getUploadFile() != null) {
-				String imagePath = portfolioService.addPosterImageForPage(imageUpload.getUploadFile(),
+				imagePath = portfolioService.addPosterImageForPage(imageUpload.getUploadFile(),
 						imageUpload.getUploadFileName());
 				page.setImagePath(imagePath);
 			} else if (imageUpload.getInitialFile() == null) {
@@ -561,14 +601,24 @@ public class PageMetadataEditController extends FormBasicController {
 					(page.getSection() != null && selectSection != null && !page.getSection().getKey().equals(selectSection.getKey()))) {
 				newParent = selectSection;
 			}
-			if(imageAlignEl.isOneSelected()) {
-				page.setImageAlignment(PageImageAlign.valueOf(imageAlignEl.getSelectedKey()));
-			}
+			
+			page.setImageAlignment(imageAlign);
 			page = portfolioService.updatePage(page, newParent);
 		}
 		
 		List<String> updatedCategories = categoriesEl.getValueList();
 		portfolioService.updateCategories(page, updatedCategories);
+		
+		List<Page> sharingTheBody = portfolioService.getPagesSharingSameBody(page);
+		for(Page sharing:sharingTheBody) {
+			if(!sharing.equals(page)) {
+				sharing.setTitle(titleEl.getValue());
+				sharing.setSummary(summaryEl.getValue());
+				sharing.setImageAlignment(imageAlign);
+				sharing.setImagePath(imagePath);
+				portfolioService.updatePage(sharing, null);
+			}
+		}
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

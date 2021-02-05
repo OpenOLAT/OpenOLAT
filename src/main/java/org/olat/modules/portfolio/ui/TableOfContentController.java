@@ -89,6 +89,7 @@ import org.olat.modules.portfolio.model.SectionRefImpl;
 import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
+import org.olat.modules.portfolio.ui.event.PageSelectionEvent;
 import org.olat.modules.portfolio.ui.event.RestoreBinderEvent;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
 import org.olat.modules.portfolio.ui.event.SelectPageEvent;
@@ -121,6 +122,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private Link moveToTrashBinderLink;
 	private Link exportBinderAsCpLink;
 	private Link exportBinderAsPdfLink;
+	private Link importExistingEntryLink;
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -132,6 +134,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private SectionEditController newSectionCtrl;
 	private SectionEditController editSectionCtrl;
 	private AssignmentEditController newAssignmentCtrl;
+	private SelectPageListController selectPageListCtrl;
 	private DialogBoxController confirmCloseSectionCtrl;
 	private DialogBoxController confirmReopenSectionCtrl;
 	private DialogBoxController confirmDeleteSectionCtrl;
@@ -282,6 +285,15 @@ public class TableOfContentController extends BasicController implements TooledC
 			stackPanel.addTool(newEntryLink, Align.right);
 		}
 		
+		if(secCallback.canAddPage(null)) {
+			importExistingEntryLink = LinkFactory.createToolLink("import.page", translate("import.page"), this);
+			importExistingEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_new_portfolio");
+			importExistingEntryLink.setElementCssClass("o_sel_pf_existing_entry");
+			importExistingEntryLink.setVisible(sectionList != null && !sectionList.isEmpty());
+			stackPanel.addTool(importExistingEntryLink, Align.right);
+		}
+		
+		
 		if(secCallback.canNewAssignment()) {
 			newAssignmentLink = LinkFactory.createToolLink("new.assignment", translate("create.new.assignment"), this);
 			newAssignmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_new_portfolio");
@@ -359,6 +371,10 @@ public class TableOfContentController extends BasicController implements TooledC
 		boolean hasSection = (sectionList != null && !sectionList.isEmpty());
 		if(newEntryLink != null && newEntryLink.isVisible() != hasSection) {
 			newEntryLink.setVisible(hasSection);
+			stackPanel.setDirty(true);
+		}
+		if(importExistingEntryLink != null && importExistingEntryLink.isVisible() != hasSection) {
+			importExistingEntryLink.setVisible(hasSection);
 			stackPanel.setDirty(true);
 		}
 		
@@ -623,6 +639,12 @@ public class TableOfContentController extends BasicController implements TooledC
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(selectPageListCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+			if(event instanceof PageSelectionEvent) {
+				doCreateNewEntryFrom(ureq, ((PageSelectionEvent)event).getPage());
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -657,6 +679,8 @@ public class TableOfContentController extends BasicController implements TooledC
 			doCreateNewSection(ureq);
 		} else if(newEntryLink == source) {
 			doCreateNewEntry(ureq);
+		} else if(importExistingEntryLink == source) {
+			doImportExistingEntry(ureq);
 		} else if(newAssignmentLink == source) {
 			doCreateNewAssignment(ureq);
 		} else if(editBinderMetadataLink == source) {
@@ -867,7 +891,31 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doCreateNewEntry(UserRequest ureq) {
 		if(guardModalController(newPageCtrl)) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, (Section)null, true);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, (Section)null, true, null);
+		listenTo(newPageCtrl);
+		
+		String title = translate("create.new.page");
+		cmc = new CloseableModalController(getWindowControl(), null, newPageCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doImportExistingEntry(UserRequest ureq) {
+		if(guardModalController(selectPageListCtrl)) return;
+
+		selectPageListCtrl = new SelectPageListController(ureq, getWindowControl(), null, secCallback);
+		listenTo(selectPageListCtrl);
+		
+		String title = translate("select.page");
+		cmc = new CloseableModalController(getWindowControl(), null, selectPageListCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateNewEntryFrom(UserRequest ureq, Page page) {
+		if(guardModalController(newPageCtrl)) return;
+		
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, (Section)null, true, page);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");

@@ -35,28 +35,47 @@ import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
  *
  */
 public class PortfolioElementCellRenderer implements FlexiCellRenderer {
+	
+	private final Translator translator;
+	
+	public PortfolioElementCellRenderer(Translator translator) {
+		this.translator = translator;
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof String) {
+			URLBuilder ubu, Translator transl) {
+		if(cellValue instanceof PortfolioElementRow) {
+			render(target, (PortfolioElementRow)cellValue, null);
+		} else if(cellValue instanceof String) {
 			Object objRow = source.getFlexiTableElement().getTableDataModel().getObject(row);
-			target.append("<span class='");
 			if(objRow instanceof PortfolioElementRow) {
-				PortfolioElementRow elRow = (PortfolioElementRow)objRow;
-				if(elRow.isSection()) {
-					target.append("o_pf_section'><i class='o_icon o_icon-fw o_icon_pf_section'> </i> ");
-				} else if(elRow.isPage()) {
-					target.append("o_pf_page'><i class='o_icon o_icon-fw o_icon_pf_page'> </i> ");
-				} else if(elRow.isPendingAssignment()) {
-					target.append("o_pf_assignment'><i class='o_icon o_icon-fw o_icon_assignment'> </i> ");
-				} else {
-					target.append("'>");
-				}
+				render(target, (PortfolioElementRow)objRow, (String)cellValue);
 			} else {
-				target.append("'>");
+				target.appendHtmlEscaped((String)cellValue);
 			}
-			target.append(StringHelper.escapeHtml((String)cellValue)).append("</span>");
 		}
+	}
+	
+	private void render(StringOutput target, PortfolioElementRow elRow, String title) {
+		target.append("<span class='");
+		if(elRow.isSection()) {
+			target.append("o_pf_section'><i class='o_icon o_icon-fw o_icon_pf_section'> </i> ");
+		} else if(elRow.isPage()) {
+			target.append("o_pf_page'><i class='o_icon o_icon-fw o_icon_pf_page'> </i> ");
+			if(elRow.isShared()) {
+				target
+					.append("<span title='").append(translator.translate("page.shared.tooltip")).append("'>")
+					.append("<i class='o_icon o_icon-fw o_icon_pf_page_shared'> </i></span> ");
+			}
+		} else if(elRow.isPendingAssignment()) {
+			target.append("o_pf_assignment'><i class='o_icon o_icon-fw o_icon_assignment'> </i> ");
+		} else {
+			target.append("'>");
+		}
+		if(StringHelper.containsNonWhitespace(title)) {
+			target.appendHtmlEscaped(title);
+		}
+		target.append("</span>");
 	}
 }

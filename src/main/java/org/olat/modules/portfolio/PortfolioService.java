@@ -533,6 +533,8 @@ public interface PortfolioService {
 	 */
 	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align, SectionRef section);
 	
+	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align, SectionRef section, Page pageDelegate);
+	
 	/**
 	 * Load a page with its primary key.
 	 * 
@@ -558,6 +560,19 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public Page updatePage(Page page, SectionRef newParentSection);
+	
+	/**
+	 * @param page the page
+	 * @return The number of pages sharing the same body
+	 */
+	public int countSharedPageBody(Page page);
+	
+	/**
+	 * 
+	 * @param page
+	 * @return
+	 */
+	public List<Page> getPagesSharingSameBody(Page page);
 	
 	/**
 	 * Get or create the personal informations about a page. The default
@@ -671,6 +686,14 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public Page changePageStatus(Page page, PageStatus status, Identity identity, Role by);
+	
+	/**
+	 * Return the list of page status
+	 * 
+	 * @param page
+	 * @return
+	 */
+	public boolean isPageBodyClosed(Page page);
 	
 	/**
 	 * Close the section

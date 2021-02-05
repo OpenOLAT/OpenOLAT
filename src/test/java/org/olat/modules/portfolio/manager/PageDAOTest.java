@@ -19,16 +19,20 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PagePart;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -230,6 +234,30 @@ public class PageDAOTest extends OlatTestCase {
 		Assert.assertFalse(searchedPages.contains(page2));
 		Assert.assertTrue(searchedPages.contains(page3));
 		Assert.assertFalse(sectionPages.contains(pageAlt));
+	}
+	
+	@Test
+	public void getSharedPageStatus() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-1");
+		//an owned binder
+		Page reusedPage = portfolioService.appendNewPage(author, "Page reused 1", "A page with content.", null, null, null);
+		dbInstance.commit();
+		Page page = portfolioService.appendNewPage(author, "Page reused 1", "A page with content.", null, null, null, reusedPage);
+		dbInstance.commit();
+
+		// default status
+		List<String> status = pageDao.getSharedPageStatus(page);
+		assertThat(status)
+			.containsExactlyInAnyOrder(null, null);
+
+		portfolioService.changePageStatus(reusedPage, PageStatus.draft, author, Role.user);
+		portfolioService.changePageStatus(page, PageStatus.closed, author, Role.user);
+		dbInstance.commitAndCloseSession();
+		
+		// status
+		List<String> updatetStatus = pageDao.getSharedPageStatus(page);
+		assertThat(updatetStatus)
+			.containsExactlyInAnyOrder(PageStatus.draft.name(), PageStatus.closed.name());
 	}
 	
 	@Test

@@ -126,6 +126,10 @@ public class BinderConfiguration {
 		return new BinderConfiguration(false, false, null, null, false, true, true, false, null);
 	}
 	
+	public static BinderConfiguration createSelectPagesConfig() {
+		return new BinderConfiguration(false, false, null, null, false, false, false, false, null);
+	}
+	
 	public static BinderConfiguration createDeletedPagesConfig() {
 		return new BinderConfiguration(false, false, null, null, false, false, false, false, null);
 	}

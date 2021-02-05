@@ -15,21 +15,27 @@
 			 $r.translate("meta.last.modified", $r.formatDateAndTime($lastModified))
 		</span>
 		
-	#if($r.isNotEmpty($pageCategories) || $r.available("pageCategoriesCtr"))
-		<span class="o_portfolio_categories text-muted o_small">
-		#if ($r.available("pageCategoriesCtr"))
-			$r.render("pageCategoriesCtr")
-		#else
-			<i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
-			 #foreach($category in $pageCategories)
-			 	<span class="tag label label-info">
-				 	$category
-			 	</span>
-			 #end
+		#if($r.isNotEmpty($pageCategories) || $r.available("pageCategoriesCtr"))
+			<span class="o_portfolio_categories text-muted o_small">
+			#if ($r.available("pageCategoriesCtr"))
+				$r.render("pageCategoriesCtr")
+			#else
+				<i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
+				 #foreach($category in $pageCategories)
+				 	<span class="tag label label-info">
+					 	$category
+				 	</span>
+				 #end
+			#end
+			</span>
 		#end
-		</span>
-	#end
 		
+		#if($r.isNotNull($sharedWith))
+			<br><span class="text-muted o_small">$r.translate("page.body.shared.with", $sharedWith)</span>
+			#if($r.isNotNull($syntheticStatus))
+				<span class="text-muted o_small"><i class="o_icon o_icon-fw $syntheticStatusCss" title="$syntheticStatusTooltip"> </i> $syntheticStatus</span>
+			#end
+		#end
 	</div>
 	#if($r.available("poster") || $r.isNotEmpty($pageSummary))
 	<div class="o_page_summary clearfix">
@@ -46,6 +52,7 @@
 	#if($statusEnabled)
 	<div class="o_portfolio_status_block o_block_top o_small clearfix">
 		<div class="o_portfolio_status"><strong>$r.translate("page.status")</strong>: <i class="o_icon o_icon-fw $statusCss"> </i> $pageStatus</div>
+		
 		#if($r.available("edit.page.meta"))
 			<span class="o_edit_page_meta">$r.render("edit.page.meta")</span>
 		#end

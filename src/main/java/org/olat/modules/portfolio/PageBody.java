@@ -31,6 +31,10 @@ public interface PageBody {
 	
 	public Long getKey();
 	
+	public int getUsage();
+
+	public PageStatus getSyntheticStatusEnum();
+	
 	public List<PagePart> getParts();
 
 }

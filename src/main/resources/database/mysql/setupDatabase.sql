@@ -2091,6 +2091,8 @@ create table o_pf_page_body (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
+   p_usage bigint default 0,
+   p_synthetic_status varchar(32),
    primary key (id)
 );
 

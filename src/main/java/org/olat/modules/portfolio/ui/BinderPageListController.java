@@ -116,7 +116,7 @@ public class BinderPageListController extends AbstractPageListController {
 	
 	public BinderPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
-		super(ureq, wControl, stackPanel, secCallback, config, "binder_pages", true);
+		super(ureq, wControl, stackPanel, secCallback, config, "binder_pages", true, true, false);
 		this.binder = binder;
 		stackPanel.addListener(this);
 		owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
@@ -643,7 +643,8 @@ public class BinderPageListController extends AbstractPageListController {
 	private void doCreateNewPage(UserRequest ureq, Section preSelectedSection) {
 		if(guardModalController(newPageCtrl)) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, preSelectedSection, true);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback,
+				binder, false, preSelectedSection, true, null);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");

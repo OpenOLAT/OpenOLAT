@@ -2044,6 +2044,8 @@ create table o_pf_page_body (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
+   p_usage number(20) default 0,
+   p_synthetic_status varchar(32),
    primary key (id)
 );
 

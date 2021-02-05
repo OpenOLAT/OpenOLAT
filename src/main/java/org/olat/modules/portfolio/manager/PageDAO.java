@@ -87,7 +87,8 @@ public class PageDAO {
 	 * @param body If the body is null, a new one is create.
 	 * @return
 	 */
-	public Page createAndPersist(String title, String summary, String imagePath, PageImageAlign align, boolean editable, Section section, PageBody body) {
+	public Page createAndPersist(String title, String summary, String imagePath, PageImageAlign align, boolean editable,
+			Section section, Page pageDelegate) {
 		PageImpl page = new PageImpl();
 		page.setCreationDate(new Date());
 		page.setLastModified(page.getCreationDate());
@@ -97,10 +98,14 @@ public class PageDAO {
 		page.setImageAlignment(align);
 		page.setEditable(editable);
 		page.setBaseGroup(groupDao.createGroup());
-		if(body == null) {
-			page.setBody(createAndPersistPageBody());
-		} else {
+		if(pageDelegate != null) {
+			PageBody body = pageDelegate.getBody();
+			int count = getCountSharedPageBody(pageDelegate);
+			((PageBodyImpl)body).setUsage(count + 1);
+			body = dbInstance.getCurrentEntityManager().merge(body);
 			page.setBody(body);
+		} else {
+			page.setBody(createAndPersistPageBody(1, null));
 		}
 		if(section != null) {
 			page.setSection(section);
@@ -118,12 +123,24 @@ public class PageDAO {
 		return dbInstance.getCurrentEntityManager().merge(page);
 	}
 	
-	public PageBody createAndPersistPageBody() {
+	private PageBody createAndPersistPageBody(int usage, PageStatus syntheticStatus) {
 		PageBodyImpl body = new PageBodyImpl();
 		body.setCreationDate(new Date());
 		body.setLastModified(body.getCreationDate());
+		body.setUsage(usage);
+		if(syntheticStatus != null) {
+			body.setSyntheticStatus(syntheticStatus.name());
+		}
 		dbInstance.getCurrentEntityManager().persist(body);
 		return body;
+	}
+	
+	public void updateSharedStatus(Page page, PageStatus sharedStatus) {
+		PageBody body = page.getBody();
+		// don't update last modified for this statistic value
+		((PageBodyImpl)body).setSyntheticStatusEnum(sharedStatus);
+		body = dbInstance.getCurrentEntityManager().merge(body);
+		((PageImpl)page).setBody(body);
 	}
 	
 	public Group getGroup(Page page) {
@@ -230,6 +247,47 @@ public class PageDAO {
 			query.setParameter("searchString", searchString.toLowerCase());
 		}
 		return query.getResultList();
+	}
+	
+	public List<String> getSharedPageStatus(Page page) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select page.status from pfpage as page")
+		  .append(" inner join page.body as pageBody")
+		  .append(" inner join pfpage as delegatePage on (delegatePage.body.key=pageBody.key)")
+		  .append(" where delegatePage.key=:pageKey");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), String.class)
+			.setParameter("pageKey", page.getKey())
+			.getResultList();
+	}
+	
+	public int getCountSharedPageBody(Page page) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(distinct page.key) from pfpage as page")
+		  .append(" inner join page.body as pageBody")
+		  .append(" inner join pfpage as sharedPage on (sharedPage.body.key=pageBody.key)")
+		  .append(" where sharedPage.key=:pageKey");
+		
+		List<Number> count = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Number.class)
+			.setParameter("pageKey", page.getKey())
+			.getResultList();
+		return count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue(); 
+	}
+	
+	public List<Page> getPagesBySharedBody(Page page) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select page from pfpage as page")
+		  .append(" inner join page.body as pageBody")
+		  .append(" inner join pfpage as delegatePage on (delegatePage.body.key=pageBody.key)")
+		  .append(" left join fetch page.section as section")
+		  .append(" where delegatePage.key=:pageKey");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Page.class)
+			.setParameter("pageKey", page.getKey())
+			.getResultList();
 	}
 	
 	public List<Page> getDeletedPages(IdentityRef owner, String searchString) {
@@ -368,8 +426,8 @@ public class PageDAO {
 		  .append(" left join section.binder as binder")
 		  .append(" left join body.parts as part")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
-		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
-		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
+		  .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
+		  .append("   where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
 		  .append(" )");
 		
 		List<Object[]> rawLastModifieds = dbInstance.getCurrentEntityManager()
@@ -610,12 +668,16 @@ public class PageDAO {
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
 		
+		int parts = 0;
 		PageBody body = page.getBody();
-		String partQ = "delete from pfpagepart part where part.body.key=:bodyKey";
-		int parts = dbInstance.getCurrentEntityManager()
-				.createQuery(partQ)
-				.setParameter("bodyKey", body.getKey())
-				.executeUpdate();
+		boolean deleteBody = body.getUsage() <= 1;
+		if(deleteBody) {
+			String partQ = "delete from pfpagepart part where part.body.key=:bodyKey";
+			parts = dbInstance.getCurrentEntityManager()
+					.createQuery(partQ)
+					.setParameter("bodyKey", body.getKey())
+					.executeUpdate();
+		}
 		
 		String assignmentQ = "delete from pfassignment assignment where assignment.page.key=:pageKey";
 		int assignments = dbInstance.getCurrentEntityManager()
@@ -623,10 +685,13 @@ public class PageDAO {
 				.setParameter("pageKey", page.getKey())
 				.executeUpdate();
 		
-		portfolioService.deleteSurvey(body);
-		
+		if(deleteBody) {
+			portfolioService.deleteSurvey(body);
+		}
 		dbInstance.getCurrentEntityManager().remove(page);
-		dbInstance.getCurrentEntityManager().remove(body);
+		if(deleteBody) {
+			dbInstance.getCurrentEntityManager().remove(body);
+		}
 		
 		int comments = userCommentsDAO.deleteAllComments(ores, null);
 

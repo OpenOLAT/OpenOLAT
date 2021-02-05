@@ -147,6 +147,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 	public Object getValueAt(PortfolioElementRow page, int col) {
 		switch(PageCols.values()[col]) {
 			case key: return page.getKey();
+			case type: return page;
 			case title: {
 				String title = null;
 				if(page.isPage()) {
@@ -210,6 +211,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 	}
 
 	public enum PageCols implements FlexiSortableColumnDef {
+		type("table.header.type", false),
 		key("table.header.key", true),
 		title("table.header.title", true),
 		status("table.header.status", true),

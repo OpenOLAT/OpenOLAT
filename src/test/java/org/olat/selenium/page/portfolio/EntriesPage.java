@@ -64,8 +64,8 @@ public class EntriesPage {
 		return new EntryPage(browser);
 	}
 	
-	public EntryPage selectPageInTableView(String title) {
-		By selectBy = By.xpath("//div[contains(@class,'o_binder_page_listing')]/table//a/span[contains(@class,'o_pf_page')][contains(text(),'" + title + "')]");
+	public EntryPage selectPageInTableFlatView(String title) {
+		By selectBy = By.xpath("//div[contains(@class,'o_binder_page_listing')]/table//td/a[contains(text(),'" + title + "')]");
 		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
 		return new EntryPage(browser);
@@ -78,8 +78,15 @@ public class EntriesPage {
 		return this;
 	}
 	
-	public EntriesPage assertOnPageTableView(String title) {
-		By pageTitleBy = By.xpath("//div[contains(@class,'o_binder_page_listing')]/table//a/span[contains(text(),'" + title + "')]");
+	/**
+	 * Select an entry if the table is in flat mode (without the
+	 * tree structure for sections).
+	 * 
+	 * @param title The title
+	 * @return Itself
+	 */
+	public EntriesPage assertOnPageTableFlatView(String title) {
+		By pageTitleBy = By.xpath("//div[contains(@class,'o_binder_page_listing')]/table//a[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(pageTitleBy, browser);
 		List<WebElement> pageTitleEls = browser.findElements(pageTitleBy);
 		Assert.assertEquals(1, pageTitleEls.size());
@@ -103,7 +110,7 @@ public class EntriesPage {
 	}
 	
 	public EntriesPage restore(String title, String binder, String section) {
-		By restoreBy = By.xpath("//table//tr[td/a/span[contains(text(),'" + title + "')]]/td/a[contains(@onclick,'restore')]");
+		By restoreBy = By.xpath("//table//tr[td/a[contains(text(),'" + title + "')]]/td/a[contains(@onclick,'restore')]");
 		browser.findElement(restoreBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
