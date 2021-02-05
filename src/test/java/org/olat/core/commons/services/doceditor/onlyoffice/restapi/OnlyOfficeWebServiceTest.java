@@ -40,6 +40,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.olat.core.commons.persistence.DB;
@@ -106,6 +107,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 	}
 
 	@Test
+	@Ignore
 	public void testEditSession() throws Exception {
 		SoftAssertions softly = new SoftAssertions();
 		
