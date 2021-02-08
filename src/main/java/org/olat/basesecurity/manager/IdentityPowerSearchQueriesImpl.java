@@ -47,6 +47,9 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesConfig;
+import org.olat.user.propertyhandlers.GenericSelectionPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,6 +65,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	
 	@Override
 	public int countIdentitiesByPowerSearch(SearchIdentityParams params) {
@@ -419,14 +424,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				boolean needsOr = false;
 				for (String key : emailProperties.keySet()) {
 					if (needsOr) sb.append(" or ");
-					if(dbInstance.isMySQL()) {
-						sb.append(" user.").append(key).append(" like :").append(key).append("_value ");
-					} else {
-						sb.append(" lower(user.").append(key).append(") like :").append(key).append("_value ");
-					}
-					if(dbInstance.isOracle()) {
-						sb.append(" escape '\\'");
-					}
+					appendUserLike(sb, key, null);
 					needsOr = true;
 				}
 				if (moreThanOne) sb.append(")");
@@ -435,16 +433,26 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			}
 
 			// add other fields
-			for (String key : otherProperties.keySet()) {
-				needsUserPropertiesJoin = checkIntersectionInUserProperties(sb, needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
-				
-				if(dbInstance.isMySQL()) {
-					sb.append(" user.").append(key).append(" like :").append(key).append("_value ");
+			for (Map.Entry<String, String> entry : otherProperties.entrySet()) {
+				String key = entry.getKey();
+				UserPropertyHandler handler = userManager.getUserPropertiesConfig().getPropertyHandler(key);
+				if(handler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)handler).isMultiSelect()) {
+					List<String> valueList = splitMultipleValues(entry.getValue());
+					if(!valueList.isEmpty()) {
+						needsUserPropertiesJoin = checkIntersectionInUserProperties(sb, needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
+						
+						sb.append("(");
+						for(int i=0; i<valueList.size(); i++) {
+							if(i > 0) {
+								sb.append(" or ");
+							}
+							appendUserLike(sb, key, String.valueOf(i));
+						}
+						sb.append(")");
+					}
 				} else {
-					sb.append(" lower(user.").append(key).append(") like :").append(key).append("_value ");
-				}
-				if(dbInstance.isOracle()) {
-					sb.append(" escape '\\'");
+					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb, needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
+					appendUserLike(sb, key, null);
 				}
 				needsAnd = true;
 			}
@@ -458,6 +466,21 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			sb.append(" ) ");
 		}
 		return needsAnd;
+	}
+	
+	private void appendUserLike(QueryBuilder sb, String key, String valueKey) {
+		if(dbInstance.isMySQL()) {
+			sb.append(" user.").append(key).append(" like :").append(key).append("_value");
+		} else {
+			sb.append(" lower(user.").append(key).append(") like :").append(key).append("_value");
+		}
+		if(valueKey != null) {
+			sb.append("_").append(valueKey);
+		}
+		if(dbInstance.isOracle()) {
+			sb.append(" escape '\\'");
+		}
+		sb.append(" ");
 	}
 	
 	private boolean createDatesQueryPart(SearchIdentityParams params, QueryBuilder sb, boolean needsAnd) {		
@@ -532,10 +555,21 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 
 		//	 add user properties attributes
 		if (params.getUserProperties() != null && !params.getUserProperties().isEmpty()) {
+			UserPropertiesConfig userPropertiesConfig = userManager.getUserPropertiesConfig();
 			for (Map.Entry<String, String> entry : params.getUserProperties().entrySet()) {
+				String key = entry.getKey();
 				String value = entry.getValue();
-				value = makeFuzzyQueryString(value);
-				dbq.setParameter(entry.getKey() + "_value", value.toLowerCase());
+				UserPropertyHandler handler = userPropertiesConfig.getPropertyHandler(key);
+				if(handler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)handler).isMultiSelect()) {
+					List<String> valueList = splitMultipleValues(value);
+					for(int i=valueList.size(); i-->0; ) {
+						String val = makeFuzzyQueryString(valueList.get(i));
+						dbq.setParameter(entry.getKey() + "_value_" + i, val.toLowerCase());
+					}
+				} else {
+					value = makeFuzzyQueryString(value);
+					dbq.setParameter(entry.getKey() + "_value", value.toLowerCase());
+				}
 			}
 		}
 		
@@ -629,6 +663,17 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		if(params.getExternalId() != null) {
 			dbq.setParameter("externalId", params.getExternalId());
 		}
+	}
+	
+	private List<String> splitMultipleValues(String value) {
+		String[] valueArr = value.split("[,]");
+		List<String> values = new ArrayList<>(valueArr.length);
+		for(String val:valueArr) {
+			if(StringHelper.containsNonWhitespace(val)) {
+				values.add(val);
+			}
+		}
+		return values;
 	}
 	
 	private boolean checkAnd(QueryBuilder sb, boolean needsAnd) {

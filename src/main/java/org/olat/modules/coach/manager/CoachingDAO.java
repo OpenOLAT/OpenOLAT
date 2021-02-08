@@ -60,6 +60,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.GenericSelectionPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -1155,32 +1156,30 @@ public class CoachingDAO {
 			Map<String,String> searchParams = new HashMap<>(params.getUserProperties());
 	
 			int count = 0;
+	
 			for(Map.Entry<String, String> entry:searchParams.entrySet()) {
 				String propName = entry.getKey();
 				String propValue = entry.getValue();
 				String qName = "p_" + ++count;
 				
 				UserPropertyHandler handler = userManager.getUserPropertiesConfig().getPropertyHandler(propName);
-				if(dbInstance.isMySQL()) {
-					sb.append(" and user_participant.").append(handler.getDatabaseColumnName()).append(" like :").append(qName);
-				} else {
-					sb.append(" and lower(user_participant.").append(handler.getDatabaseColumnName()).append(") like :").append(qName);
-					if(dbInstance.isOracle()) {
-						sb.append(" escape '\\'");
+				if(handler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)handler).isMultiSelect()) {
+					List<String> propValueList = GenericSelectionPropertyHandler.splitMultipleValues(propValue);
+					if(!propValueList.isEmpty()) {
+						sb.append(" and (");
+						for(int i=0; i<propValueList.size(); i++) {
+							String val = propValueList.get(i);
+							String operand = (i > 0) ? "or" : "";
+							appendUsersStatisticsSearchParams(handler, qName + "_" + i, val, operand, queryParams, sb);
+						}
+						sb.append(") ");
 					}
+					
+				} else {
+					appendUsersStatisticsSearchParams(handler, qName, propValue, "and", queryParams, sb);
 				}
-				queryParams.put(qName, PersistenceHelper.makeFuzzyQueryString(propValue));
 			}
 		}
-		
-		/*if(params.hasOrganisations()) {
-		sb.append(" and exists (select org_group.id from o_re_to_group as org_group ")
-		  .append("  inner join o_org_organisation as org on (org.fk_group=org_group.fk_group_id)")
-		  .append("  where org_group.fk_entry_id = sg_re.repositoryentry_id and org.id in (:organisationKey))");
-		
-		Set<Long> organisationKeys = params.getOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toSet());
-		queryParams.put("organisationKey", organisationKeys);
-	}*/
 		
 		if(params.hasOrganisations()) {
 			sb.append(" and exists (select orgtomember.id from o_bs_group_member as orgtomember ")
@@ -1192,6 +1191,21 @@ public class CoachingDAO {
 		}
 
 		return sb;
+	}
+	
+	private void appendUsersStatisticsSearchParams(UserPropertyHandler handler, String qName, String propValue, String operand,
+			Map<String,Object> queryParams, NativeQueryBuilder sb) {
+		
+		sb.append(" ").append(operand).append(" ");
+		if(dbInstance.isMySQL()) {
+			sb.append("user_participant.").append(handler.getDatabaseColumnName()).append(" like :").append(qName);
+		} else {
+			sb.append("lower(user_participant.").append(handler.getDatabaseColumnName()).append(") like :").append(qName);
+			if(dbInstance.isOracle()) {
+				sb.append(" escape '\\'");
+			}
+		}
+		queryParams.put(qName, PersistenceHelper.makeFuzzyQueryString(propValue));
 	}
 	
 	public List<Identity> getStudents(Identity coach) {
@@ -1406,7 +1420,7 @@ public class CoachingDAO {
 			int pos = 0;
 
 			Long identityKey = ((Number)rawStat[pos++]).longValue();
-			String identityName = (String)rawStat[pos++];
+			pos++;
 			((Number)rawStat[pos++]).longValue();//user key
 
 			String[] userProperties = new String[numOfProperties];
@@ -1416,7 +1430,7 @@ public class CoachingDAO {
 
 			StudentStatEntry entry = new StudentStatEntry(identityKey, userPropertyHandlers, userProperties, locale);
 			appendArrayToSet(rawStat[pos++], entry.getRepoIds());
-			appendArrayToSet(rawStat[pos++], entry.getLaunchIds());
+			appendArrayToSet(rawStat[pos], entry.getLaunchIds());
 			map.put(entry.getIdentityKey(), entry);
 		}
 

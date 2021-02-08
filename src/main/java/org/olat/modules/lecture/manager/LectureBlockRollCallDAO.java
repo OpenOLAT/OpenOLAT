@@ -65,6 +65,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.GenericSelectionPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -927,10 +928,25 @@ public class LectureBlockRollCallDAO {
 						}
 					}
 				}
-				
-				sb.append(" and ");
-				PersistenceHelper.appendFuzzyLike(sb, "user.".concat(handler.getName()), qName, dbInstance.getDbVendor());
-				queryParams.put(qName, PersistenceHelper.makeFuzzyQueryString(propValue));
+
+				if(handler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)handler).isMultiSelect()) {
+					List<String> propValueList = GenericSelectionPropertyHandler.splitMultipleValues(propValue);
+					if(!propValueList.isEmpty()) {
+						sb.append(" and (");
+						for(int i=0; i<propValueList.size(); i++) {
+							if(i > 0) sb.append(" or ");
+							String val = propValueList.get(i);
+							String qNameMulti = qName + "_" + i;
+							PersistenceHelper.appendFuzzyLike(sb, "user.".concat(handler.getName()), qNameMulti, dbInstance.getDbVendor());
+							queryParams.put(qNameMulti, PersistenceHelper.makeFuzzyQueryString(val));
+						}
+						sb.append(") ");
+					}
+				} else {
+					sb.append(" and ");
+					PersistenceHelper.appendFuzzyLike(sb, "user.".concat(handler.getName()), qName, dbInstance.getDbVendor());
+					queryParams.put(qName, PersistenceHelper.makeFuzzyQueryString(propValue));
+				}
 			}
 		}
 		
@@ -944,6 +960,7 @@ public class LectureBlockRollCallDAO {
 		}
 	}
 	
+
 
 	public List<LectureBlockStatistics> getStatistics(RepositoryEntry entry,
 			RepositoryEntryLectureConfiguration config, boolean authorizedAbsenceEnabled,
