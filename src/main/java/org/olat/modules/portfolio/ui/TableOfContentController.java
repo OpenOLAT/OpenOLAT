@@ -87,6 +87,7 @@ import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.model.SectionRefImpl;
+import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
@@ -569,7 +570,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			cmc.deactivate();
 			cleanUp();
 		} else if(pageCtrl == source) {
-			if(event == Event.CHANGED_EVENT) {
+			if(event == Event.CHANGED_EVENT || event instanceof ClosePageEvent) {
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event instanceof PageRemovedEvent || event instanceof PageDeletedEvent) {

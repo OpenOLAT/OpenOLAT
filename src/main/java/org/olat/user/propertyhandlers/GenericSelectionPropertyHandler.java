@@ -19,8 +19,10 @@
  */
 package org.olat.user.propertyhandlers;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -238,14 +240,47 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 
 	@Override
 	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
-		if (value != null) {
-			for (int i = 0; i < selectionKeys.length; i++) {
-				String key = selectionKeys[i];
-				if (key.equals(value)) { return true; }
+		if (StringHelper.containsNonWhitespace(value)) {
+			if(isMultiselect) {
+				List<String> valuesList = splitMultipleValues(value);
+				for(String val:valuesList) {
+					if(StringHelper.containsNonWhitespace(val) && !isValueValid(val)) {
+						validationError.setErrorKey("form.name.genericSelectionProperty.error");
+						return false;
+					}
+				}
+				return true;
+			} else if(isValueValid(value)) {
+				return true;
 			}
+			validationError.setErrorKey("form.name.genericSelectionProperty.error");
 			return false;
 		}
 		// null values are ok
+		return true;
+	}
+	
+	public static List<String> splitMultipleValues(String value) {
+		String[] valueArr = value.split("[,]");
+		List<String> values = new ArrayList<>(valueArr.length);
+		for(String val:valueArr) {
+			if(StringHelper.containsNonWhitespace(val)) {
+				values.add(val);
+			}
+		}
+		return values;
+	}
+	
+	private boolean isValueValid(String value) {
+		if(StringHelper.containsNonWhitespace(value)) {
+			for (int i = 0; i<selectionKeys.length; i++) {
+				String key = selectionKeys[i];
+				if (key.equals(value)) {
+					return true;
+				}
+			}
+			return false;
+		}
 		return true;
 	}
 
