@@ -93,6 +93,7 @@ import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.component.CategoriesCellRenderer;
 import org.olat.modules.portfolio.ui.component.TimelineElement;
+import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.SelectPageEvent;
@@ -558,7 +559,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(pageCtrl == source) {
-			if(event == Event.CHANGED_EVENT) {
+			if(event == Event.CHANGED_EVENT || event instanceof ClosePageEvent) {
 				loadModel(ureq, null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event instanceof PageRemovedEvent) {
