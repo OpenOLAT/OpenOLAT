@@ -124,36 +124,36 @@ public class ExternalLinksController extends FormBasicController {
 		String id = link.getId();
 		String uri = link.getLink().getURI();
 		if(!StringHelper.containsNonWhitespace(uri)) {
-			uri = "http://";
+			uri = "https://";
 		}
-		TextElement url = uifactory.addTextElement("url_" + id, null, -1, uri, layoutContainer);
+		TextElement url = uifactory.addTextElement("url_".concat(id), null, -1, uri, layoutContainer);
 		url.clearError();
 		url.setDisplaySize(60);
 		url.setMandatory(true);
 		link.setUrl(url);
 		
 		// add link description
-		TextElement name = uifactory.addTextElement("displayName_" + id, null, -1, link.getLink().getDisplayName(), layoutContainer);
+		TextElement name = uifactory.addTextElement("displayName_".concat(id), null, -1, link.getLink().getDisplayName(), layoutContainer);
 		name.clearError();
 		name.setDisplaySize(40);
 		name.setMandatory(true);
 		link.setName(name);
 		
 		// add link add action button
-		FormLink addButton = uifactory.addFormLink("add_" + id, "table.add", "table.add", layoutContainer, Link.BUTTON);
+		FormLink addButton = uifactory.addFormLink("add_".concat(id), "table.add", "table.add", layoutContainer, Link.BUTTON);
 		addButton.setUserObject(link);
 		link.setAddButton(addButton);
 
 		// add link deletion action button
-		FormLink delButton = uifactory.addFormLink("del_" + id, "table.delete", "table.delete", layoutContainer, Link.BUTTON);
+		FormLink delButton = uifactory.addFormLink("del_".concat(id), "table.delete", "table.delete", layoutContainer, Link.BUTTON);
 		delButton.setUserObject(link);
 		link.setDelButton(delButton);
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
 		
-		boolean allOk = true;
 		for(LinkWrapper link:externalLinks) {
 			link.getUrl().clearError();
 			link.getName().clearError();
@@ -182,13 +182,13 @@ public class ExternalLinksController extends FormBasicController {
 			}
 		}
 		
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == newButton) {
-			String id = UUID.randomUUID().toString().replaceAll("-", "");
+			String id = UUID.randomUUID().toString().replace("-", "");
 			KalendarEventLink link = new KalendarEventLink(EXTERNAL_LINKS_PROVIDER, id, "", "", "");
 			LinkWrapper linkWrapper = new LinkWrapper(link);
 			externalLinks.add(linkWrapper);
@@ -246,7 +246,7 @@ public class ExternalLinksController extends FormBasicController {
 		//remove deleted links
 		for(Iterator<KalendarEventLink> it=links.iterator(); it.hasNext(); ) {
 			KalendarEventLink link = it.next();
-			if(EXTERNAL_LINKS_PROVIDER.equals(link.getId()) && !usedUuids.contains(link.getId())) {
+			if(EXTERNAL_LINKS_PROVIDER.equals(link.getProvider()) && !usedUuids.contains(link.getId())) {
 				it.remove();
 			}
 		}
@@ -261,10 +261,9 @@ public class ExternalLinksController extends FormBasicController {
 
 
 	private LinkWrapper createLinkWrapper() {
-		String id = UUID.randomUUID().toString().replaceAll("-", "");
+		String id = UUID.randomUUID().toString().replace("-", "");
 		KalendarEventLink newLink = new KalendarEventLink(EXTERNAL_LINKS_PROVIDER, id, "", "", "");
-		LinkWrapper newLinkWrapper = new LinkWrapper(newLink);
-		return newLinkWrapper;
+		return new LinkWrapper(newLink);
 	}
 
 	public class LinkWrapper {
