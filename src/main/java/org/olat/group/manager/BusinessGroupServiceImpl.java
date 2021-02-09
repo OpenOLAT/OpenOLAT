@@ -356,7 +356,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 
 	@Override
 	public void copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup,
-			Set<String> targetNames, String targetDescription, Integer targetMin, Integer targetMax, boolean copyAreas,
+			List<String> targetNames, String targetDescription, Integer targetMin, Integer targetMax, boolean copyAreas,
 			boolean copyCollabToolConfig, boolean copyRights, boolean copyOwners, boolean copyParticipants,
 			boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations) {
 		for(String targetName:targetNames) {
