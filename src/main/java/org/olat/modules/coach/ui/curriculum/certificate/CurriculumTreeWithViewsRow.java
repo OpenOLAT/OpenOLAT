@@ -279,6 +279,22 @@ public class CurriculumTreeWithViewsRow implements CurriculumTreeWithView, Flexi
 		}
 	}
 	
+	public Long getId() {
+		if ((repositoryEntry == null || singleEntry) && element != null) {
+			return element.getKey();
+		}
+		if (isCurriculum()) {
+			return curriculum.getKey();
+		}
+		if (repositoryEntry != null) {
+			return repositoryEntry.getKey();
+		}
+		if (element != null) {
+			return element.getKey();
+		}
+		return null;
+	}
+	
 	public String getCurriculumElementExternalId() {
 		return element == null ? null : element.getExternalId();
 	}

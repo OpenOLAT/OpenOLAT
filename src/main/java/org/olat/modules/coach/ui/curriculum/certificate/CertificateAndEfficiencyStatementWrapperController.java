@@ -51,10 +51,8 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
 
     private final TooledStackedPanel stackPanel;
     private final Identity mentee;
-    private final StudentStatEntry statEntry;
     private final CurriculumSecurityCallback curriculumSecurityCallback;
     private final RoleSecurityCallback roleSecurityCallback;
-    private final List<CurriculumRef> curriculumRefs;
 
     private CertificateAndEfficiencyStatementCurriculumListController certificateCurriculumListController;
     private CertificateAndEfficiencyStatementListController certificateListController;
@@ -69,15 +67,15 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
     @Autowired
     CurriculumModule curriculumModule;
 
-    public CertificateAndEfficiencyStatementWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity mentee, CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback, List<CurriculumRef> curriculumRefs, StudentStatEntry statEntry) {
+    public CertificateAndEfficiencyStatementWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity mentee,
+    		CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback,
+    		List<CurriculumRef> curriculumRefs, StudentStatEntry statEntry) {
         super(ureq, wControl);
 
         this.stackPanel = stackPanel;
         this.mentee = mentee;
         this.curriculumSecurityCallback = curriculumSecurityCallback;
         this.roleSecurityCallback = roleSecurityCallback;
-        this.curriculumRefs = curriculumRefs;
-        this.statEntry = statEntry;
 
         content = createVelocityContainer("certificate_list_wrapper");
         showCurriculum = curriculumModule.isEnabled() && roleSecurityCallback.canViewCoursesAndCurriculum();
