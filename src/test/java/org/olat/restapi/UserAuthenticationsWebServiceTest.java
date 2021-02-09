@@ -55,6 +55,7 @@ import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.support.vo.AuthenticationVO;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -219,6 +220,122 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		assertNull(refAuth);
 		
 		conn.shutdown();
+	}
+	
+	@Test
+	public void updateAuthentication() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//create an authentication token
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("rest-auth-1");
+		Authentication authentication = securityManager
+				.createAndPersistAuthentication(ident.getIdentity(), "REST-A-*", ident.getLogin(), "credentials", Encoder.Algorithm.sha512);
+		dbInstance.commitAndCloseSession();
+		
+		//update an authentication token
+		String newUsername = ident.getLogin() + "-v2";
+		// set the second which duplicates the first
+		AuthenticationVO vo = new AuthenticationVO();
+		vo.setKey(authentication.getKey());
+		vo.setAuthUsername(newUsername);
+		vo.setIdentityKey(ident.getKey());
+		vo.setProvider("REST-A-*");
+		vo.setCredential("my-credentials");
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(ident.getKey().toString()).path("authentications").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(method, vo);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		AuthenticationVO updatedAuthentication = conn.parse(response, AuthenticationVO.class);
+		Assert.assertEquals(authentication.getKey(), updatedAuthentication.getKey());
+		Assert.assertEquals(ident.getKey(), updatedAuthentication.getIdentityKey());
+		Assert.assertEquals("REST-A-*", updatedAuthentication.getProvider());
+		Assert.assertEquals(newUsername, updatedAuthentication.getAuthUsername());
+		// credentials are not updated, only the authentication user name
+		Assert.assertNotEquals("my-credentials", updatedAuthentication.getCredential());
+
+		conn.shutdown();
+		
+		// check database
+		Authentication refAuth = securityManager.findAuthenticationByKey(updatedAuthentication.getKey());
+		Assert.assertEquals(authentication.getKey(), refAuth.getKey());
+		Assert.assertEquals(ident.getKey(), refAuth.getIdentity().getKey());
+		Assert.assertEquals(newUsername, refAuth.getAuthusername());
+		Assert.assertEquals("REST-A-*", refAuth.getProvider());
+	}
+	
+	@Test
+	public void updateAuthenticationConflictProvider() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//create an authentication token
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("rest-auth-2");
+		Authentication authentication = securityManager
+				.createAndPersistAuthentication(ident.getIdentity(), "REST-A-*", ident.getLogin(), "credentials", Encoder.Algorithm.sha512);
+		dbInstance.commitAndCloseSession();
+		
+		//update an authentication token
+		// set the second which duplicates the first
+		AuthenticationVO vo = new AuthenticationVO();
+		vo.setKey(authentication.getKey());
+		vo.setAuthUsername(ident.getLogin() + "-v2");
+		vo.setIdentityKey(ident.getKey());
+		vo.setProvider("REST-B-*");
+		vo.setCredential("my-credentials");
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(ident.getKey().toString()).path("authentications").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(method, vo);
+		HttpResponse response = conn.execute(method);
+		assertEquals(409, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		conn.shutdown();
+		
+		// check database
+		Authentication refAuth = securityManager.findAuthenticationByKey(authentication.getKey());
+		Assert.assertEquals(authentication.getKey(), refAuth.getKey());
+		Assert.assertEquals(ident.getKey(), refAuth.getIdentity().getKey());
+		Assert.assertEquals(ident.getLogin(), refAuth.getAuthusername());
+		Assert.assertEquals("REST-A-*", refAuth.getProvider());
+	}
+	
+	@Test
+	public void updateAuthenticationConflictIdentity() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//create an authentication token
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("rest-auth-3");
+		IdentityWithLogin otherIdent = JunitTestHelper.createAndPersistRndUser("rest-auth-3");
+		Authentication authentication = securityManager
+				.createAndPersistAuthentication(ident.getIdentity(), "REST-A-*", ident.getLogin(), "credentials", Encoder.Algorithm.sha512);
+		dbInstance.commitAndCloseSession();
+		
+		//update an authentication token
+		// set the second which duplicates the first
+		AuthenticationVO vo = new AuthenticationVO();
+		vo.setKey(authentication.getKey());
+		vo.setAuthUsername(otherIdent.getLogin() + "-v2");
+		vo.setIdentityKey(otherIdent.getKey());
+		vo.setProvider("REST-A-*");
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(ident.getKey().toString()).path("authentications").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(method, vo);
+		HttpResponse response = conn.execute(method);
+		assertEquals(409, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		conn.shutdown();
+		
+		// check database
+		Authentication refAuth = securityManager.findAuthenticationByKey(authentication.getKey());
+		Assert.assertEquals(authentication.getKey(), refAuth.getKey());
+		Assert.assertEquals(ident.getKey(), refAuth.getIdentity().getKey());
+		Assert.assertEquals(ident.getLogin(), refAuth.getAuthusername());
+		Assert.assertEquals("REST-A-*", refAuth.getProvider());
 	}
 	
 	@Test

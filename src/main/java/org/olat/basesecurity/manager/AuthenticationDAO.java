@@ -155,6 +155,22 @@ public class AuthenticationDAO {
 				.setParameter("provider", provider)
 				.getResultList();
 	}
+	
+	public Authentication loadByKey(Long authenticationKey) {
+		if (authenticationKey == null) return null;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join auth.identity as ident")
+		  .append(" inner join ident.user as user")
+		  .append(" where auth.key=:authenticationKey");
+		
+		List<Authentication> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("authenticationKey", authenticationKey)
+				.getResultList();
+		return results != null && !results.isEmpty() ? results.get(0) : null;
+	}
 
 	public Authentication getAuthentication(IdentityRef identity, String provider) {
 		if (identity == null || !StringHelper.containsNonWhitespace(provider)) {

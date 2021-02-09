@@ -23,10 +23,25 @@
 	@include btn-styles($o-button-dirty-bg);
 }
 
+
+/* remove text-shadow on default buttons in conjunction with other button styles */
+.btn-default {
+	&.btn-success,
+	&.btn-info,
+	&.btn-warning,
+	&.btn-danger,
+	&.btn-primary,
+	&.o_button_dirty {
+		text-shadow: none;
+	}
+}
+
 .o_login {
 	.o_login_social {
 		.btn-default {
 			text-shadow: none;
+			background-image: none;
+			
 			&.o_sel_auth_facebook {
 				@include btn-styles(#4568b2);
 			}		
@@ -42,22 +57,15 @@
 			&.o_sel_auth_adfs {
 				@include btn-styles(#1a1a1a);
 			}
+			&.o_sel_auth_azureAdfs {
+				@include btn-styles(#016ab4);
+			}
+			&.o_sel_auth_keycloak {
+				@include btn-styles(#e46e87);
+			}
 		}
 	}
 }
-
-/* remove text-shadow on default buttons in conjunction with other button styles */
-.btn-default {
-	&.btn-success,
-	&.btn-info,
-	&.btn-warning,
-	&.btn-danger,
-	&.btn-primary,
-	&.o_button_dirty {
-		text-shadow: none;
-	}
-}
-
 
 /* Top navbar */
 .o_navbar.o_navbar-default {

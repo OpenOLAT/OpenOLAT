@@ -1423,7 +1423,7 @@ function o_TableMultiActionEvent(formNam, action){
 }
 
 function o_XHRSubmit(formNam) {
-	if(o_info.submit="submit" && jQuery('#' + formNam + " button.btn.o_new_window").length >= 1) {
+	if(o_info.submit == "submit" && jQuery('#' + formNam + " button.btn.o_new_window").length >= 1) {
 		if(typeof o_info.newWindow === "undefined" || o_info.newWindow == null) {
 			o_info.newWindow = window.open("","_blank");
 			o_info.newWindow.blur();

@@ -859,7 +859,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	public Authentication findAuthentication(IdentityRef identity, String provider) {
 		return authenticationDao.getAuthentication(identity, provider);
 	}
-	
+
+	@Override
+	public Authentication findAuthenticationByKey(Long authenticationKey) {
+		return authenticationDao.loadByKey(authenticationKey);
+	}
+
 	@Override
 	public List<Authentication> findAuthentications(IdentityRef identity, List<String> providers) {
 		StringBuilder sb = new StringBuilder();

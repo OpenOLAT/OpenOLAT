@@ -128,7 +128,7 @@ public class UserAuthenticationsWebService {
 	}
 	
 	/**
-	 * Creates and persists an authentication
+	 * Creates and persists an authentication, or update it.
 	 *
 	 * @param identityKey The identity key of the user
 	 * @param authenticationVO The authentication object to persist
@@ -136,7 +136,8 @@ public class UserAuthenticationsWebService {
 	 * @return the saved authentication
 	 */
 	@PUT
-	@Operation(summary = "Creates and persists an authentication", description = "Creates and persists an authentication")
+	@Operation(summary = "Creates and persists an authentication, or update it if it already exists.",
+			description = "Creates and persists an authentication, or update it if it already exists.")
 	@ApiResponse(responseCode = "200", description = "The saved authentication", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = AuthenticationVO.class)) })
@@ -147,6 +148,34 @@ public class UserAuthenticationsWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response create(@PathParam("identityKey") Long identityKey, AuthenticationVO authenticationVO, @Context HttpServletRequest request) {
+		return createOrUpdate(identityKey, authenticationVO, request);
+	}
+	
+	/**
+	 * Creates and persists an authentication, or update it.
+	 *
+	 * @param identityKey The identity key of the user
+	 * @param authenticationVO The authentication object to persist
+	 * @param request The HTTP request
+	 * @return the saved authentication
+	 */
+	@POST
+	@Operation(summary = "Creates and persists an authentication, or update it if it already exists.",
+			description = "Creates and persists an authentication, or update it if it already exists.")
+	@ApiResponse(responseCode = "200", description = "The saved authentication", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = AuthenticationVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found") 
+	@ApiResponse(responseCode = "406", description = "Cannot create the authentication for an unkown reason")
+	@ApiResponse(responseCode = "409", description = "Cannot create the authentication because the authentication username is already used by someone else within the same provider")	
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response update(@PathParam("identityKey") Long identityKey, AuthenticationVO authenticationVO, @Context HttpServletRequest request) {
+		return createOrUpdate(identityKey, authenticationVO, request);
+	}
+
+	private Response createOrUpdate(Long identityKey, AuthenticationVO authenticationVO, HttpServletRequest request) {
 		Identity identity = securityManager.loadIdentityByKey(authenticationVO.getIdentityKey(), false);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -154,26 +183,51 @@ public class UserAuthenticationsWebService {
 		if(!isManager(identity, request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+		if(!identity.getKey().equals(identityKey)) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
 		
 		String provider = authenticationVO.getProvider();
 		String authUsername = authenticationVO.getAuthUsername();
 		String credentials = authenticationVO.getCredential();
 		
-		Authentication currentAuthentication = securityManager.findAuthenticationByAuthusername(authUsername, provider);
-		if(currentAuthentication != null && !currentAuthentication.getIdentity().equals(identity)) {
-			ErrorVO error = new ErrorVO();
-			error.setCode("unkown:409");
-			error.setTranslation("Authentication name used by: " + currentAuthentication.getIdentity().getUser().getEmail());
-			return Response.serverError().status(Status.CONFLICT).entity(error).build();
-		}
+		Authentication authentication;
+		if(authenticationVO.getKey() != null) {
+			Authentication currentAuthentication = securityManager.findAuthenticationByKey(authenticationVO.getKey());
+			if(currentAuthentication == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+			if(!currentAuthentication.getIdentity().equals(identity)) {
+				return notSameIdentity(currentAuthentication);
+			}
+			if(!currentAuthentication.getProvider().equals(provider)) {
+				return Response.serverError().status(Status.CONFLICT).build();
+			}
+			
+			currentAuthentication.setAuthusername(authUsername);
+			authentication = securityManager.updateAuthentication(currentAuthentication);
+			log.info(Tracing.M_AUDIT, "Authentication created for {} with provider {}", authUsername, provider);
+		} else {
+			Authentication currentAuthentication = securityManager.findAuthenticationByAuthusername(authUsername, provider);
+			if(currentAuthentication != null && !currentAuthentication.getIdentity().equals(identity)) {
+				return notSameIdentity(currentAuthentication);
+			}
 		
-		Authentication authentication = securityManager.createAndPersistAuthentication(identity, provider, authUsername, credentials, null);
-		if(authentication == null) {
-			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+			authentication = securityManager.createAndPersistAuthentication(identity, provider, authUsername, credentials, null);
+			if(authentication == null) {
+				return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+			}
+			log.info(Tracing.M_AUDIT, "New authentication created for {} with provider {}", authUsername, provider);
 		}
-		log.info(Tracing.M_AUDIT, "New authentication created for {} with provider {}", authUsername, provider);
 		AuthenticationVO savedAuth = ObjectFactory.get(authentication, true);
 		return Response.ok(savedAuth).build();
+	}
+	
+	private Response notSameIdentity(Authentication currentAuthentication) {
+		ErrorVO error = new ErrorVO();
+		error.setCode("unkown:409");
+		error.setTranslation("Authentication name used by: " + currentAuthentication.getIdentity().getUser().getEmail());
+		return Response.serverError().status(Status.CONFLICT).entity(error).build();
 	}
 
 	/**
