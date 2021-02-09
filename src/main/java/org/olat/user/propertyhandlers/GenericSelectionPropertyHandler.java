@@ -245,7 +245,9 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 				List<String> valuesList = splitMultipleValues(value);
 				for(String val:valuesList) {
 					if(StringHelper.containsNonWhitespace(val) && !isValueValid(val)) {
-						validationError.setErrorKey("form.name.genericSelectionProperty.error");
+						if(validationError != null) {
+							validationError.setErrorKey("form.name.genericSelectionProperty.error");
+						}
 						return false;
 					}
 				}
@@ -253,7 +255,9 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 			} else if(isValueValid(value)) {
 				return true;
 			}
-			validationError.setErrorKey("form.name.genericSelectionProperty.error");
+			if(validationError != null) {
+				validationError.setErrorKey("form.name.genericSelectionProperty.error");
+			}
 			return false;
 		}
 		// null values are ok
