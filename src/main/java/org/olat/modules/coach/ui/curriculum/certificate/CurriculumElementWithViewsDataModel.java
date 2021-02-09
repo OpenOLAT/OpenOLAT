@@ -45,6 +45,8 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
  */
 public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDataModel<CurriculumTreeWithViewsRow> implements FlexiBusinessPathModel {
 
+	private static final ElementViewCols[] COLS = ElementViewCols.values();
+	
 	private ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap;
 	private ConcurrentMap<IdentityRepositoryEntryKey, LectureBlockStatistics> lecturesStatisticsMap;
 
@@ -106,8 +108,8 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 	@Override
 	public Object getValueAt(int row, int col) {
 		CurriculumTreeWithViewsRow curriculum = getObject(row);
-		switch(ElementViewCols.values()[col]) {
-			case key: return curriculum.getKey();
+		switch(COLS[col]) {
+			case key: return curriculum.getId();
 			case displayName:
 				return curriculum.getDisplayName();
 			case hasStatement:

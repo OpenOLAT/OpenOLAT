@@ -24,15 +24,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.helpers.Settings;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -72,8 +71,8 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	 * @param form The dispatch ID of the root form that deals with the submit button
 	 * @param windowBackOffice The window back office used to properly cleanup code in browser window
 	 */
-	public RichTextElementImpl(String name, String predefinedValue, int rows, int cols, Form form, Locale locale) {
-		this(name, rows, cols, form, locale);
+	public RichTextElementImpl(String name, String predefinedValue, int rows, int cols, Locale locale) {
+		this(name, rows, cols, locale);
 		setValue(predefinedValue);
 	}
 
@@ -89,14 +88,14 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	 * @param form The dispatch ID of the root form that deals with the submit button
 	 * @param windowBackOffice The window back office used to properly cleanup code in browser window
 	 */
-	protected RichTextElementImpl(String name, int rows, int cols, Form rootForm, Locale locale) {
+	protected RichTextElementImpl(String name, int rows, int cols, Locale locale) {
 		super(name);
 		// initialize the component
 		component = new RichTextElementComponent(this, rows, cols);
 		component.setTranslator(Util.createPackageTranslator(RichTextElementImpl.class, locale));
 		// configure tiny (must be after component initialization)
 		// init editor on our form element
-		configuration = new RichTextConfiguration(getFormDispatchId(), rootForm.getDispatchFieldId(), locale);
+		configuration = new RichTextConfiguration(getFormDispatchId(), locale);
 	}
 	
 	@Override

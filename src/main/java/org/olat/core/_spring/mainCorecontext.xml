@@ -8,7 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
   
-	<context:component-scan base-package="org.olat.core.dispatcher.mapper,org.olat.core.id.context,org.olat.core.commons.controllers.impressum,org.olat.core.commons.editor,org.olat.core.helpers,org.olat.core.commons.modules,org.olat.core.gui.render.velocity,org.olat.core.gui.control.generic.textmarker" />
+	<context:component-scan base-package="org.olat.core.dispatcher.mapper,org.olat.core.id.context,org.olat.core.commons.controllers.impressum,org.olat.core.commons.editor,org.olat.core.helpers,org.olat.core.commons.modules,org.olat.core.gui.render.velocity,org.olat.core.gui.control.generic.textmarker,org.olat.core.gui.components.form.flexible.impl.elements.richText" />
 
 	<bean id="coreSpringFactory" class="org.olat.core.CoreSpringFactory" />
 	

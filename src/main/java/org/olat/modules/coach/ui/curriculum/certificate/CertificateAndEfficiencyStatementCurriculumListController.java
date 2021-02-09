@@ -193,7 +193,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
 
     @Override
     public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-
+    	//
     }
 
     @Override
@@ -210,9 +210,6 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         DefaultFlexiColumnModel elementIdentifierCol = new DefaultFlexiColumnModel(ElementViewCols.identifier, "select");
         elementIdentifierCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new TextFlexiCellRenderer()));
         columnsModel.addFlexiColumnModel(elementIdentifierCol);
-
-        // Name column
-        // columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
 
         if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.passed));
@@ -476,14 +473,6 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         params.setMembershipMandatory(true);
         List<RepositoryEntryMyView> courses = repositoryService.searchMyView(params, 0, 0);
 
-//        // Filter for entries which have a efficiency statement
-//        Set<Long> alreadyAdded = new HashSet<>();
-//        for (CurriculumTreeWithViewsRow row : allRows) {
-//            for (RepositoryEntryMyView entry : row.getEntries()) {
-//                alreadyAdded.add(entry.getOlatResource().getKey());
-//            }
-//        }
-
         courses.removeIf(course -> alreadyAdded.contains(course.getOlatResource().getKey()));
 
         // Filter for entries which are without curriculum
@@ -653,13 +642,14 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
     }
 
     private void forgeCurriculumCompletions(List<CurriculumTreeWithViewsRow> rows) {
-        Map<Long, Double> completions = loadCurriculumElementCompletions(rows);
-
-        for (CurriculumTreeWithViewsRow row : rows) {
-            if (row.getCompletionItem() == null) { // does not show completion of the child entry
-                forgeCompletion(row, completions.get(row.getKey()));
-            }
-        }
+    	Map<Long, Double> completions = loadCurriculumElementCompletions(rows);
+    	if(!completions.isEmpty()) {
+    		for (CurriculumTreeWithViewsRow row : rows) {
+    			if (row.getCompletionItem() == null && row.getCurriculumElementKey() != null) { // does not show completion of the child entry
+    				forgeCompletion(row, completions.get(row.getCurriculumElementKey()));
+    			}
+    		}
+    	}
     }
 
     private void forgeCompletion(CurriculumTreeWithViewsRow row, Double completion) {
@@ -872,30 +862,5 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
             ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
             return true;
         }
-    }
-
-    private List<CurriculumTreeWithViewsRow> sortCurriculumRows(List<CurriculumTreeWithViewsRow> rows) {
-        List<CurriculumTreeWithViewsRow> sortedRows = rows.stream().filter(row -> row.   getLevel() == 0).collect(Collectors.toList());
-
-        for (CurriculumTreeWithViewsRow parent : sortedRows) {
-            if (parent.hasChildren()) {
-                sortedRows.addAll(sortedRows.indexOf(parent) + 1, sortCurriculumRows(rows, parent));
-            }
-        }
-
-        return sortedRows;
-    }
-
-    private List<CurriculumTreeWithViewsRow> sortCurriculumRows(List<CurriculumTreeWithViewsRow> rows, CurriculumTreeWithViewsRow parent) {
-        List<CurriculumTreeWithViewsRow> filteredRows = rows.stream().filter(row -> row.getParent() != null && row.getParent().equals(parent)).collect(Collectors.toList());
-        List<CurriculumTreeWithViewsRow> sortedRows = new ArrayList<>(filteredRows);
-
-        for (CurriculumTreeWithViewsRow child : filteredRows) {
-            if (child.hasChildren()) {
-                sortedRows.addAll(filteredRows.indexOf(child) + 1, sortCurriculumRows(rows, parent));
-            }
-        }
-
-        return filteredRows;
     }
 }

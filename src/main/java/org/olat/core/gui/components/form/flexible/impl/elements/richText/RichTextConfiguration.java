@@ -36,6 +36,7 @@ import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextElementModule.Font;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPluginFactory;
 import org.olat.core.gui.control.Disposable;
@@ -190,7 +191,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param rootFormDispatchId The dispatch ID of the root form that deals with
 	 *                           the submit button
 	 */
-	public RichTextConfiguration(String domID, String rootFormDispatchId2, Locale locale) {
+	public RichTextConfiguration(String domID, Locale locale) {
 		this.domID = domID;
 		this.locale = locale;
 		// use exact mode that only applies to this DOM element
@@ -1062,7 +1063,7 @@ public class RichTextConfiguration implements Disposable {
 		if (contentCss != null) {
 			// add styles from content css and add them to format menu
 			copyNonValues.put(IMPORTCSS_APPEND, "true");
-			copyValues.put("content_css", contentCss);
+			copyValues.put(CONTENT_CSS, contentCss);
 			// filter emoticons classes from content css
 			copyNonValues.put(IMPORT_SELECTOR_CONVERTER, IMPORT_SELECTOR_CONVERTER_VALUE_REMOVE_EMOTICONS);
 			// group imported css classes to paragraph, div, table and style menu
@@ -1079,16 +1080,34 @@ public class RichTextConfiguration implements Disposable {
 				}
 			}
 		}
+		
+		RichTextElementModule tinyMceConfig = CoreSpringFactory.getImpl(RichTextElementModule.class);
 
 		// new with menu
 		StringOutput tinyMenuSb = new StringOutput();
-		tinyMenuSb.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n").append("image_advtab:true,\n")
-				.append("image_caption:").append(figCaption).append(",\n").append("image_title:true,\n")
-				.append("relative_urls:").append(isRelativeUrls()).append(",\n").append("remove_script_host:")
-				.append(isRemoveScriptHost()).append(",\n").append("statusbar:").append(true).append(",\n")
-				.append("resize:").append(true).append(",\n").append("menubar:").append(tinyConfig.hasMenu())
-				.append(",\n").append("font_formats:")
-				.append("'Andale Mono=andale mono,times;Arial=arial,helvetica,sans-serif;Arial Black=arial black,avant garde;Book Antiqua=book antiqua,palatino;Comic Sans MS=comic sans ms,sans-serif;Courier New=courier new,courier;Georgia=georgia,palatino;Helvetica=helvetica;Impact=impact,chicago;Symbol=symbol;Tahoma=tahoma,arial,helvetica,sans-serif;Terminal=terminal,monaco;Times New Roman=times new roman,times;Trebuchet MS=trebuchet ms,geneva;Verdana=verdana,geneva',\n");
+		tinyMenuSb
+			.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n")
+			.append("image_advtab:true,\n")
+			.append("image_caption:").append(figCaption).append(",\n")
+			.append("image_title:true,\n")
+			.append("relative_urls:").append(isRelativeUrls()).append(",\n")
+			.append("remove_script_host:").append(isRemoveScriptHost()).append(",\n")
+			.append("statusbar:").append(true).append(",\n")
+			.append("resize:").append(true).append(",\n")
+			.append("menubar:").append(tinyConfig.hasMenu()).append(",\n")
+			.append("fontsize_formats:").append("'").append(tinyMceConfig.getFontSizes()).append("',\n")
+			.append("font_formats:").append("'");
+
+		List<Font> fonts = tinyMceConfig.getFontList();
+		for(int i=0; i<fonts.size(); i++) {
+			if(i > 0) {
+				tinyMenuSb.append(";");
+			}
+			Font font = fonts.get(i);
+			tinyMenuSb.append(font.getName()).append("=").append(font.getAlternative());
+		}
+		tinyMenuSb
+				.append("',\n");
 		if (isReadOnly()) {
 			tinyMenuSb.append("readonly: 1,\n");
 		}

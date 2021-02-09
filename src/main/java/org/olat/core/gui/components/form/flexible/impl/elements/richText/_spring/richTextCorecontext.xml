@@ -22,7 +22,7 @@
  				<bean class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.OlatMovieViewerPlugin">
  					<property name="pluginParameters">		
 			 			<map>
-			 				<!-- The place horizontaly and vertically that the player uses for navigation -->
+			 				<!-- The place horizontally and vertically that the player uses for navigation -->
 			 				<entry key="playerOffsetHeight" value="0" />
 			 				<entry key="playerOffsetWidth" value="0" />
 			  			</map>	  			
