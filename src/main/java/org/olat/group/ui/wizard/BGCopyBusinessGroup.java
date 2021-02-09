@@ -19,7 +19,7 @@
  */
 package org.olat.group.ui.wizard;
 
-import java.util.Set;
+import java.util.List;
 
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -32,7 +32,7 @@ import org.olat.group.BusinessGroupShort;
 public class BGCopyBusinessGroup implements BusinessGroupShort {
 
 	private String name;
-	private Set<String> names;
+	private List<String> names;
 	private String description;
 	private Integer minParticipants;
 	private Integer maxParticipants;
@@ -72,11 +72,11 @@ public class BGCopyBusinessGroup implements BusinessGroupShort {
 		this.name = name;
 	}
 	
-	public Set<String> getNames() {
+	public List<String> getNames() {
 		return names;
 	}
 
-	public void setNames(Set<String> names) {
+	public void setNames(List<String> names) {
 		this.names = names;
 	}
 

@@ -20,9 +20,8 @@
 
 package org.olat.group.ui;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.basesecurity.GroupRoles;
@@ -91,7 +90,7 @@ public class BusinessGroupFormController extends FormBasicController {
 	private boolean bulkMode = false;
 	private boolean embbeded = false;
 
-	private Set<String> validNames;
+	private List<String> validNames;
 
 	/** The key for the waiting list checkbox. */
 	private final String[] waitingListKeys = new String[] { "create.form.enableWaitinglist" };
@@ -302,8 +301,8 @@ public class BusinessGroupFormController extends FormBasicController {
 			// e.g. find "," | " , " | ",,," errors => no group entered
 			String selectionAsCsvStr = businessGroupName.getValue();
 			String[] activeSelection = selectionAsCsvStr != null ? selectionAsCsvStr.split(",") : new String[] {};
-			validNames = new HashSet<>();
-			Set<String> wrongNames = new HashSet<>();
+			validNames = new ArrayList<>();
+			List<String> wrongNames = new ArrayList<>();
 			boolean nameTooLong = false;
 			for (int i = 0; i < activeSelection.length; i++) {
 				String currentName = activeSelection[i].trim();
@@ -426,7 +425,7 @@ public class BusinessGroupFormController extends FormBasicController {
 	/**
 	 * @return
 	 */
-	public Set<String> getGroupNames() {
+	public List<String> getGroupNames() {
 		return validNames;
 	}
 
