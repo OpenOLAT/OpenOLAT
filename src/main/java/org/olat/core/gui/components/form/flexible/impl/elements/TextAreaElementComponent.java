@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -34,7 +35,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.render.ValidationResult;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * Description:<br>
