@@ -402,6 +402,7 @@ public interface BaseSecurity {
 	 */
 	public Authentication findAuthenticationByAuthusername(String authusername, String provider);
 	
+	public Authentication findAuthenticationByKey(Long authenticationKey);
 
 	public List<Authentication> findAuthenticationsByAuthusername(String authusername, List<String> providers);
 
