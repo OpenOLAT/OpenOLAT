@@ -23,8 +23,13 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
+import org.olat.core.commons.fullWebApp.NotificationEvent;
+import org.olat.core.commons.fullWebApp.NotificationsCenter;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.control.Event;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -34,6 +39,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,6 +55,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class RepositoryEntryMembershipProcessor implements InitializingBean, GenericEventListener {
 	
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
@@ -69,7 +77,21 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 			RepositoryEntryMembershipModifiedEvent e = (RepositoryEntryMembershipModifiedEvent)event;
 			if(RepositoryEntryMembershipModifiedEvent.IDENTITY_REMOVED.equals(e.getCommand())) {
 				processIdentityRemoved(e.getRepositoryEntryKey(), e.getIdentityKey());
+			} else if(RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADD_PENDING.equals(e.getCommand())) {
+				sendNotificationsToIdentities(e.getIdentityKey());
 			}
+		}
+	}
+	
+	private void sendNotificationsToIdentities(Long identityKey) {
+		OLATResourceable target = OresHelper.createOLATResourceableInstance(NotificationsCenter.class, identityKey);
+		if (identityKey != null && !acService.getReservations(new IdentityRefImpl(identityKey)).isEmpty()) {
+			String businessPath = "[GroupsSite:0][AllGroups:0]";
+			List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
+			String url = BusinessControlFactory.getInstance().getAsAuthURIString(ces, true);
+			String[] args = new String[] {url};
+			NotificationEvent event = new NotificationEvent(RepositoryManager.class, "pending.enrolments.info", args);
+			coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, target);
 		}
 	}
 	

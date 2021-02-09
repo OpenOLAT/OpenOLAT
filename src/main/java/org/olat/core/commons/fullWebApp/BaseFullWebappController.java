@@ -114,16 +114,11 @@ import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.mode.AssessmentModeGuardController;
 import org.olat.course.assessment.ui.mode.ChooseAssessmentModeEvent;
-import org.olat.group.BusinessGroup;
-import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.edusharing.EdusharingModule;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryRefImpl;
-import org.olat.resource.accesscontrol.ACService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -215,8 +210,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private AnalyticsModule analyticsModule;
 	@Autowired
 	private EdusharingModule edusharingModule;
-	@Autowired
-	private ACService acService;
 	
 	public BaseFullWebappController(UserRequest ureq, BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
@@ -312,10 +305,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 		
 		// Register for course and group added events
-		CoordinatorManager.getInstance().getCoordinator().getEventBus()
-			.registerFor(this, getIdentity(), OresHelper.lookupType(RepositoryEntry.class));
-		CoordinatorManager.getInstance().getCoordinator().getEventBus()
-			.registerFor(this, getIdentity(), OresHelper.lookupType(BusinessGroup.class));
+		if(getIdentity() != null && getIdentity().getKey() != null) {
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.registerFor(this, getIdentity(), OresHelper.createOLATResourceableInstance(NotificationsCenter.class, getIdentity().getKey()));
+		}
 		
 		// register for global sticky message changed events
 		GlobalStickyMessage.registerForGlobalStickyMessage(this, getIdentity());	
@@ -1457,46 +1450,22 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			}
 		} 
 		// Check for group or course updates
-		else if (event instanceof BusinessGroupModifiedEvent) {
+		else if (event instanceof NotificationEvent) {
 			try {
-				processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
-			} catch (Exception e) {
-				logError("", e);
-			}
-		} else if (event instanceof RepositoryEntryMembershipModifiedEvent) {
-			try {
-				processRepositoryEntryMembershipModifiedEvent((RepositoryEntryMembershipModifiedEvent)event);
+				processNotificationEvent((NotificationEvent)event);
 			} catch (Exception e) {
 				logError("", e);
 			}
 		}
 	}
 	
-	private void processBusinessGroupModifiedEvent(BusinessGroupModifiedEvent event) {
+	private void processNotificationEvent(NotificationEvent event) {
 		// Only check if not in assessment mode and not in fullscreen mode
 		if (lockResource == null && (getScreenMode() == null || !getScreenMode().isWishFullScreen())
-				&& getIdentity() != null && event.wasMyselfAddPending(getIdentity())) {
-			showPendingEnrolmentsInfo();
-		}
-	}
-	
-	private void processRepositoryEntryMembershipModifiedEvent(RepositoryEntryMembershipModifiedEvent event) {
-		// Only check if not in assessment mode and not in full screen mode
-		if (lockResource == null && (getScreenMode() == null || !getScreenMode().isWishFullScreen())
-				&& getIdentity() != null && getIdentity().getKey().equals(event.getIdentityKey())
-				&&  RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADDED.equals(event.getCommand())) {
-			showPendingEnrolmentsInfo();
-		}
-	}
-	
-	private void showPendingEnrolmentsInfo() {
-		if (!acService.getReservations(getIdentity()).isEmpty()) {
-			String businessPath = "[MyCoursesSite:0][My:0]";
-			List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
-			String url = BusinessControlFactory.getInstance().getAsAuthURIString(ces, true);
-			String[] args = new String[] {url};
-			String msg = StringHelper.escapeJavaScript(translate("pending.enrolments", args)); 
-			getWindowControl().setInfo(msg);
+				&& getIdentity() != null) {
+			Translator translator = Util.createPackageTranslator(event.getI18nPackage(), getLocale());
+			String message = translator.translate(event.getI18nKey(), event.getArguments());
+			getWindowControl().setInfo(message);
 			
 			// replace by our message holder
 			currentMsgHolder = guimsgHolder;

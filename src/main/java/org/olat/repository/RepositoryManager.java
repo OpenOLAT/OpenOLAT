@@ -1376,11 +1376,10 @@ public class RepositoryManager {
 		if(RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.membersmanagement)) {
 			status.setWarningManagedCourse(true);
 		} else {
-			List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
 			removeParticipant(identity, identity, re, mailing, true);
-			deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(identity, re));
+			RepositoryEntryMembershipModifiedEvent deferredEvent = RepositoryEntryMembershipModifiedEvent.removed(identity, re);
 			dbInstance.commit();
-			sendDeferredEvents(deferredEvents, re);
+			sendDeferredEvent(deferredEvent, re);
 		}
 	}
 
@@ -1433,6 +1432,10 @@ public class RepositoryManager {
 
 		dbInstance.commit();
 		sendDeferredEvents(deferredEvents, re);
+	}
+	
+	private void sendDeferredEvent(MultiUserEvent event, RepositoryEntry ores) {
+		sendDeferredEvents(List.of(event), ores);
 	}
 
 	private void sendDeferredEvents(List<? extends MultiUserEvent> events, RepositoryEntry ores) {
@@ -1613,6 +1616,10 @@ public class RepositoryManager {
 						if(reservation != null) {
 							RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addParticipant, mailing);
 						}
+						
+						dbInstance.commit();
+						RepositoryEntryMembershipModifiedEvent event = RepositoryEntryMembershipModifiedEvent.roleParticipantAddPending(identityToAdd, re);
+						sendDeferredEvent(event, re);
 					}
 				} else {
 					addInternalParticipant(ureqIdentity, identityToAdd, re);
@@ -1633,10 +1640,9 @@ public class RepositoryManager {
 	private void addInternalParticipant(Identity ureqIdentity, Identity identity, RepositoryEntry re) {
 		repositoryEntryRelationDao.addRole(identity, re, GroupRoles.participant.name());
 		
-		List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
-		deferredEvents.add(RepositoryEntryMembershipModifiedEvent.roleParticipantAdded(identity, re));
+		RepositoryEntryMembershipModifiedEvent deferredEvent = RepositoryEntryMembershipModifiedEvent.roleParticipantAdded(identity, re);
 		dbInstance.commit();
-		sendDeferredEvents(deferredEvents, re);
+		sendDeferredEvent(deferredEvent, re);
 
 		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);

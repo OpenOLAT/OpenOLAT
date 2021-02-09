@@ -131,7 +131,7 @@ public interface ACService {
 	 * @param resource
 	 * @return
 	 */
-	public ResourceReservation getReservation(Identity identity, OLATResource resource);
+	public ResourceReservation getReservation(IdentityRef identity, OLATResource resource);
 
 	/**
 	 * Get the reservations pending a list of resources.
@@ -145,7 +145,7 @@ public interface ACService {
 	 * @param identity
 	 * @return
 	 */
-	public List<ResourceReservation> getReservations(Identity identity);
+	public List<ResourceReservation> getReservations(IdentityRef identity);
 
 	/**
 	 * Reserve a resource

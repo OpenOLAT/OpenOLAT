@@ -422,7 +422,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public ResourceReservation getReservation(Identity identity, OLATResource resource) {
+	public ResourceReservation getReservation(IdentityRef identity, OLATResource resource) {
 		return reservationDao.loadReservation(identity, resource);
 	}
 
@@ -432,7 +432,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public List<ResourceReservation> getReservations(Identity identity) {
+	public List<ResourceReservation> getReservations(IdentityRef identity) {
 		return reservationDao.loadReservations(identity);
 	}
 

@@ -26,8 +26,13 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.commons.info.InfoMessageFrontendManager;
+import org.olat.core.commons.fullWebApp.NotificationEvent;
+import org.olat.core.commons.fullWebApp.NotificationsCenter;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.control.Event;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -38,11 +43,13 @@ import org.olat.group.model.BusinessGroupDeletedEvent;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.group.model.BusinessGroupRelationModified;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.group.ui.main.BusinessGroupListController;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,6 +65,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class BusinessGroupMembershipProcessor implements InitializingBean, GenericEventListener {
 	
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
@@ -83,6 +92,8 @@ public class BusinessGroupMembershipProcessor implements InitializingBean, Gener
 			BusinessGroupModifiedEvent e = (BusinessGroupModifiedEvent)event;
 			if(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(e.getCommand())) {
 				processIdentityRemoved(e.getModifiedGroupKey(), e.getAffectedIdentityKey());
+			} else if(BusinessGroupModifiedEvent.IDENTITY_ADD_PENDING_EVENT.equals(e.getCommand())) {
+				sendNotificationsToIdentities(e.getAffectedIdentityKey());
 			}
 		} else if(event instanceof BusinessGroupRelationModified) {
 			BusinessGroupRelationModified e = (BusinessGroupRelationModified)event;
@@ -94,6 +105,18 @@ public class BusinessGroupMembershipProcessor implements InitializingBean, Gener
 			if(BusinessGroupDeletedEvent.RESOURCE_DELETED_EVENT.equals(e.getCommand())) {
 				processBusinessGroupDeleted(e.getMemberKeys(), e.getRepositoryEntryKeys());
 			}
+		}
+	}
+	
+	private void sendNotificationsToIdentities(Long identityKey) {
+		OLATResourceable target = OresHelper.createOLATResourceableInstance(NotificationsCenter.class, identityKey);
+		if (identityKey != null && !acService.getReservations(new IdentityRefImpl(identityKey)).isEmpty()) {
+			String businessPath = "[GroupsSite:0][AllGroups:0]";
+			List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
+			String url = BusinessControlFactory.getInstance().getAsAuthURIString(ces, true);
+			String[] args = new String[] {url};
+			NotificationEvent event = new NotificationEvent(BusinessGroupListController.class, "pending.enrolments.info", args);
+			coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, target);
 		}
 	}
 	

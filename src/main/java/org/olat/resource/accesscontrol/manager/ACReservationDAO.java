@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.persistence.TemporalType;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
@@ -54,7 +55,7 @@ public class ACReservationDAO {
 		return reservation;
 	}
 	
-	public ResourceReservation loadReservation(Identity identity, OLATResource resource) {
+	public ResourceReservation loadReservation(IdentityRef identity, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select reservation from resourcereservation as reservation ")
 		  .append(" where reservation.resource.key=:resourceKey and reservation.identity.key=:identityKey");
@@ -74,18 +75,16 @@ public class ACReservationDAO {
 		
 		List<Long> resourceKeys = PersistenceHelper.toKeys(resources);
 		
-		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
 				.setParameter("resourceKey", resourceKeys)
 				.getResultList();
-		return reservations;
 	}
 	
-	public List<ResourceReservation> loadReservations(Identity identity) {
-		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager()
+	public List<ResourceReservation> loadReservations(IdentityRef identity) {
+		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadReservationsByIdentity", ResourceReservation.class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
-		return reservations;
 	}
 	
 	public ResourceReservation loadReservation(Long reservationKey) {
@@ -97,10 +96,9 @@ public class ACReservationDAO {
 		sb.append("select reservation from resourcereservation as reservation ")
 		  .append(" where reservation.creationDate<:date");
 		
-		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
 				.setParameter("date", date)
 				.getResultList();
-		return reservations;
 		
 	}
 	
@@ -110,11 +108,10 @@ public class ACReservationDAO {
 		  .append(" where (reservation.expirationDate is null and reservation.creationDate<:date)")
 		  .append(" or (reservation.expirationDate<:nowDate)");
 		
-		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
 				.setParameter("date", defaultDate, TemporalType.TIMESTAMP)
 				.setParameter("nowDate", new Date(), TemporalType.TIMESTAMP)
 				.getResultList();
-		return reservations;
 		
 	}
 	
