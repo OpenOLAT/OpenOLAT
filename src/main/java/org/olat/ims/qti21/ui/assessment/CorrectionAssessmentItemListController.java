@@ -65,6 +65,7 @@ import org.olat.ims.qti21.QTI21Module.CorrectionWorkflow;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.ui.assessment.BulkScoreController.Mode;
 import org.olat.ims.qti21.ui.assessment.CorrectionAssessmentItemTableModel.ItemCols;
 import org.olat.ims.qti21.ui.assessment.components.AutoCorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.CorrectedFlexiCellRenderer;
@@ -112,6 +113,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private BulkScoreController bulkPointsCtrl;
 	private ConfirmSaveTestsController confirmSaveTestCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CorrectionIdentityAssessmentItemNavigationController identityItemCtrl;
@@ -318,6 +320,12 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(bulkPointsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel(false, false);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(toolsCalloutCtrl == source || toolsCtrl == source) {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
@@ -330,10 +338,12 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmSaveTestCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(bulkPointsCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmSaveTestCtrl = null;
 		toolsCalloutCtrl = null;
+		bulkPointsCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
 	}
@@ -395,6 +405,17 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		String itemRefId = row.getItemRef().getIdentifier().toString();
 		qtiService.setAssessmentItemSessionReviewFlag(model.getCourseEntry(), model.getSubIdent(), model.getTestEntry(), itemRefId, toReview);
 		loadModel(false, false);
+	}
+	
+	private void doBulkPoints(UserRequest ureq, CorrectionAssessmentItemRow row, Mode mode) {
+		if(guardModalController(bulkPointsCtrl)) return;
+		bulkPointsCtrl = new BulkScoreController(ureq, getWindowControl(), model, row, mode);
+		listenTo(bulkPointsCtrl);
+		
+		String title = mode == Mode.ADD ? translate("point.add.title") : translate("point.set.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", bulkPointsCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doSelect(UserRequest ureq, CorrectionAssessmentItemRow row, Predicate<AssessmentItemListEntry> filter) {
@@ -567,6 +588,8 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		
 		private final Link reviewAllLink;
 		private final Link unreviewAllLink;
+		private final Link addPointsLink;
+		private final Link setScoreLink;
 		private final CorrectionAssessmentItemRow row;
 		
 		public ToolsController(UserRequest ureq, WindowControl wControl, CorrectionAssessmentItemRow row) {
@@ -576,6 +599,8 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			VelocityContainer mainVC = createVelocityContainer("tools");
 			reviewAllLink = LinkFactory.createLink("tool.review.all", "review", getTranslator(), mainVC, this, Link.LINK);
 			unreviewAllLink = LinkFactory.createLink("tool.unreview.all", "unreview", getTranslator(), mainVC, this, Link.LINK);
+			addPointsLink = LinkFactory.createLink("tool.add.point", "add.points", getTranslator(), mainVC, this, Link.LINK);
+			setScoreLink = LinkFactory.createLink("tool.set.score", "set.score", getTranslator(), mainVC, this, Link.LINK);
 			putInitialPanel(mainVC);
 		}
 
@@ -587,6 +612,12 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			} else if(unreviewAllLink == source) {
 				doSetReviewFlag(row, false);
 				fireEvent(ureq, Event.DONE_EVENT);
+			} else if(addPointsLink == source) {
+				fireEvent(ureq, Event.DONE_EVENT);
+				doBulkPoints(ureq, row, Mode.ADD);
+			} else if(setScoreLink == source) {
+				fireEvent(ureq, Event.DONE_EVENT);
+				doBulkPoints(ureq, row, Mode.SET);
 			}
 		}
 

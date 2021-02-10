@@ -21,7 +21,6 @@ package org.olat.ims.qti21.ui.assessment;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -41,25 +40,18 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.session.UserSessionModule;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.CorrectionManager;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
-import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.assessment.event.NextAssessmentItemEvent;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemListEntry;
-import org.olat.modules.assessment.Role;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.GradingTimeRecordRef;
 import org.olat.repository.RepositoryEntry;
@@ -109,7 +101,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	@Autowired
 	private UserSessionModule sessionModule;
 	@Autowired
-	private CourseAssessmentService courseAssessmentService;
+	private CorrectionManager correctionManager;
 	
 	public CorrectionIdentityAssessmentItemController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
@@ -296,36 +288,12 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 			model.updateLastSession(itemCorrection.getAssessedIdentity(), candidateSession);
 			
 			if(model.getCourseNode() != null && model.getCourseEnvironment() != null) {
-				doUpdateCourseNode(candidateSession, model.getCourseNode(), model.getCourseEnvironment());
+				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+				correctionManager.updateCourseNode(candidateSession, assessmentTest,
+						model.getCourseNode(), model.getCourseEnvironment(), getIdentity());
 			}
 		} catch(IOException e) {
 			logError("", e);
 		}
-	}
-	
-	private void doUpdateCourseNode(AssessmentTestSession testSession, IQTESTCourseNode courseNode, CourseEnvironment courseEnv) {
-		if(testSession == null) return;
-		
-		AssessmentTest assessmentTest = model.getResolvedAssessmentTest().getRootNodeLookup().extractIfSuccessful();
-		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-
-		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
-				.createAndInitUserCourseEnvironment(testSession.getIdentity(), courseEnv);
-		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		
-		BigDecimal finalScore = testSession.getFinalScore();
-		Float score = finalScore == null ? null : finalScore.floatValue();
-		Boolean passed = scoreEval.getPassed();
-		if(testSession.getManualScore() != null && finalScore != null && cutValue != null) {
-			boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
-			passed = Boolean.valueOf(calculated);
-		}
-		
-		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-				scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-				scoreEval.getCurrentRunStatus(), testSession.getKey());
-		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
-				getIdentity(), false, Role.coach);
 	}
 }
