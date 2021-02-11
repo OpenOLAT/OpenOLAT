@@ -54,6 +54,7 @@ import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.PublishTreeModel;
 import org.olat.course.wizard.CertificateDefaults;
+import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.course.wizard.CourseNodeTitleContext;
 import org.olat.course.wizard.CourseWizardService;
 import org.olat.course.wizard.IQTESTCourseNodeDefaults;
@@ -102,6 +103,37 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, updatedEntry);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 		log.debug("Status of RepositoryEntry changed to '{}'.", status);
+	}
+	
+	@Override
+	public void updateRepositoryEntryDisclaimer(CourseDisclaimerContext disclaimerContext) {
+		OLATResourceable courseOres = disclaimerContext.getEntry().getOlatResource();
+		if (CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
+			return;
+		}
+
+		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+
+		courseConfig.setDisclaimerEnabled(1, disclaimerContext.isTermsOfUseEnabled());
+		if (disclaimerContext.isTermsOfUseEnabled()) {
+			courseConfig.setDisclaimerTitle(1, disclaimerContext.getTermsOfUseTitle());
+			courseConfig.setDisclaimerTerms(1, disclaimerContext.getTermsOfUseContent());
+			courseConfig.setDisclaimerLabel(1, 1, disclaimerContext.getTermsOfUseLabel1());
+			courseConfig.setDisclaimerLabel(1, 2, disclaimerContext.getTermsOfUseLabel2());
+		}
+
+		courseConfig.setDisclaimerEnabled(2, disclaimerContext.isDataProtectionEnabled());
+		if (disclaimerContext.isDataProtectionEnabled()) {
+			courseConfig.setDisclaimerTitle(2, disclaimerContext.getDataProtectionTitle());
+			courseConfig.setDisclaimerTerms(2, disclaimerContext.getDataProtectionContent());
+			courseConfig.setDisclaimerLabel(2, 1, disclaimerContext.getDataProtectionLabel1());
+			courseConfig.setDisclaimerLabel(2, 2, disclaimerContext.getDataProtectionLabel2());
+		}
+
+		CourseFactory.setCourseConfig(courseOres.getResourceableId(), courseConfig);
+		CourseFactory.saveCourse(courseOres.getResourceableId());
+		CourseFactory.closeCourseEditSession(courseOres.getResourceableId(), true);
 	}
 	
 	@Override

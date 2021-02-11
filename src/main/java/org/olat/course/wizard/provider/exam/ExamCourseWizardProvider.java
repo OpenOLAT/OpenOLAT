@@ -65,7 +65,7 @@ public class ExamCourseWizardProvider implements RepositoryWizardProvider {
 			RepositoryEntry entry, Identity executor) {
 		Translator translator = Util.createPackageTranslator(CourseWizardService.class, ureq.getLocale());
 		ExamCourseSteps examCourseSteps = new ExamCourseSteps();
-		Step start = new ExamCourseSetpsStep(ureq, entry, examCourseSteps);
+		Step start = new ExamCourseStepsStep(ureq, entry, examCourseSteps);
 		CourseWizardCallback finish = new CourseWizardCallback(executor);
 		finish.setBeforeExecution(new ExamCourseBeforeExecution(examCourseSteps));
 		return new StepsMainRunController(ureq, wControl, start, finish, null, translator.translate("exam.course.name"), null);

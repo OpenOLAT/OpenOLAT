@@ -46,7 +46,7 @@ public class InfoMetadataStep extends BasicStep {
 		this.entry = entry;
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.title.informations", null);
-		setNextStep(new TestSelectionStep(ureq, entry, examCourseSteps));
+		setNextStep(CourseDisclaimerStep.create(ureq, entry, examCourseSteps));
 	}
 
 	@Override

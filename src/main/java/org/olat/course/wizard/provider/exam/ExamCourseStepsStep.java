@@ -38,12 +38,12 @@ import org.olat.repository.RepositoryEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ExamCourseSetpsStep extends BasicStep {
+public class ExamCourseStepsStep extends BasicStep {
 	
 	private final RepositoryEntry entry;
 	private final ExamCourseSteps examCourseSteps;
 
-	public ExamCourseSetpsStep(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps) {
+	public ExamCourseStepsStep(UserRequest ureq, RepositoryEntry entry, ExamCourseSteps examCourseSteps) {
 		super(ureq);
 		this.entry = entry;
 		this.examCourseSteps = examCourseSteps;
