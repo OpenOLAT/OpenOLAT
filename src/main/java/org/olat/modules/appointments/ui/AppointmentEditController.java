@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -73,8 +72,6 @@ import org.olat.modules.teams.ui.TeamsUIHelper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.microsoft.graph.models.generated.AccessLevel;
-import com.microsoft.graph.models.generated.LobbyBypassScope;
 import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
@@ -87,7 +84,6 @@ import edu.emory.mathcs.backport.java.util.Arrays;
  */
 public class AppointmentEditController extends FormBasicController {
 	
-	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] KEYS_YES_NO = new String[] { "yes", "no" };
 	private static final String KEY_NO = "no";
 	private static final String KEY_BIGBLUEBUTTON = "bbb";
@@ -114,10 +110,7 @@ public class AppointmentEditController extends FormBasicController {
 	private FormLink teamsOpenCalLink;
 	private TextElement teamsLeadTimeEl;
 	private TextElement teamsFollowupTimeEl;
-	private SingleSelection accessLevelEl;
 	private SingleSelection presentersEl;
-	private MultipleSelectionElement annoncementEl;
-	private SingleSelection lobbyEl;
 	private TextElement teamsExternalLinkEl;
 	
 	private BigBlueButtonMeetingsCalendarController bbbCalendarCtr;
@@ -132,8 +125,6 @@ public class AppointmentEditController extends FormBasicController {
 	private List<BigBlueButtonMeetingTemplate> templates;
 	private TeamsMeeting teamsMeeting;
 	private final boolean teamsEditable;
-	private final boolean editableGraph;
-	private final boolean teamsMeetingExtendedOptionsEnabled;
 	
 	@Autowired
 	private AppointmentsService appointmentsService;
@@ -150,8 +141,6 @@ public class AppointmentEditController extends FormBasicController {
 		this.bbbMeeting = null;
 		this.teamsMeeting = null;
 		this.teamsEditable = true;
-		this.editableGraph = true;
-		this.teamsMeetingExtendedOptionsEnabled = appointmentsService.isTeamsOnlineMeetingExtendedOptionsEnabled();
 		initForm(ureq);
 		updateUI();
 	}
@@ -173,9 +162,7 @@ public class AppointmentEditController extends FormBasicController {
 		this.bbbEditable = bbbMeeting == null || bbbMeeting.getServer() == null;
 		
 		this.teamsMeeting = appointment.getTeamsMeeting();
-		this.teamsEditable = TeamsUIHelper.isEditable(teamsMeeting, ureq);
-		this.editableGraph = TeamsUIHelper.isEditableGraph(teamsMeeting);
-		this.teamsMeetingExtendedOptionsEnabled = appointmentsService.isTeamsOnlineMeetingExtendedOptionsEnabled();
+		teamsEditable = TeamsUIHelper.isEditable(teamsMeeting);
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();
 		params.setAppointment(appointmentRef);
@@ -342,17 +329,6 @@ public class AppointmentEditController extends FormBasicController {
 			String followup = teamsMeeting == null ? null : Long.toString(teamsMeeting.getFollowupTime());
 			teamsFollowupTimeEl = uifactory.addTextElement("meeting.followupTime.teams", "meeting.followupTime", 8, followup, formLayout);
 			teamsFollowupTimeEl.setEnabled(teamsEditable);
-			
-			KeyValues accessKeyValues = new KeyValues();
-			String organisation = appointmentsService.getTeamsTenantOrganisation();
-			accessKeyValues.add(KeyValues.entry(AccessLevel.EVERYONE.name(), translate("meeting.accesslevel.everyone")));
-			accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE.name(),
-					translate("meeting.accesslevel.same.enterprise", new String[] { organisation })));
-			accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE_AND_FEDERATED.name(),
-					translate("meeting.accesslevel.same.enterprise.federated", new String[] { organisation })));
-			accessLevelEl = uifactory.addDropdownSingleselect("meeting.accesslevel", formLayout, accessKeyValues.keys(), accessKeyValues.values());
-			accessLevelEl.setMandatory(true);
-			accessLevelEl.setEnabled(teamsEditable && editableGraph);
 
 			KeyValues presentersKeyValues = new KeyValues();
 			presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), translate("meeting.presenters.role")));
@@ -361,26 +337,8 @@ public class AppointmentEditController extends FormBasicController {
 			presentersEl = uifactory.addDropdownSingleselect("meeting.presenters", formLayout, presentersKeyValues.keys(), presentersKeyValues.values());
 			presentersEl.setMandatory(true);
 			presentersEl.setEnabled(teamsEditable);
-			
-			String[] onValues = new String[] { translate("meeting.annoncement.on") };
-			annoncementEl = uifactory.addCheckboxesHorizontal("meeting.annoncement", formLayout, onKeys, onValues);
-			annoncementEl.setEnabled(teamsEditable && editableGraph);
-			if(teamsMeeting != null && teamsMeeting.isEntryExitAnnouncement()) {
-				annoncementEl.select(onKeys[0], true);
-			}
-			
-			KeyValues lobbyKeyValues = new KeyValues();
-			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.EVERYONE.name(), translate("meeting.lobby.bypass.everyone")));
-			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZATION.name(),
-					translate("meeting.lobby.bypass.organization", new String[] { organisation })));
-			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZATION_AND_FEDERATED.name(),
-					translate("meeting.lobby.bypass.same.enterprise.federated", new String[] { organisation })));
-			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZER.name(), translate("meeting.lobby.bypass.organizer")));
-			lobbyEl = uifactory.addDropdownSingleselect("meeting.lobby.bypass", formLayout, lobbyKeyValues.keys(), lobbyKeyValues.values());
-			lobbyEl.setMandatory(true);
-			lobbyEl.setEnabled(teamsEditable);
 
-			TeamsUIHelper.setDefaults(accessLevelEl, presentersEl, lobbyEl, teamsMeeting, teamsMeetingExtendedOptionsEnabled);
+			TeamsUIHelper.setDefaults(presentersEl, teamsMeeting);
 		}
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -406,17 +364,14 @@ public class AppointmentEditController extends FormBasicController {
 			layoutEl.setVisible(bbbMeeting);
 		}
 		
-		if (accessLevelEl != null) {
+		if (presentersEl != null) {
 			boolean teamsMeeting = meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_TEAMS);
 			teamsCreatorEl.setVisible(teamsMeeting);
 			teamsExternalLinkEl.setVisible(teamsMeeting);
 			teamsOpenCalLink.setVisible(teamsMeeting);
 			teamsLeadTimeEl.setVisible(teamsMeeting);
 			teamsFollowupTimeEl.setVisible(teamsMeeting);
-			accessLevelEl.setVisible(teamsMeeting);
 			presentersEl.setVisible(teamsMeeting);
-			annoncementEl.setVisible(teamsMeeting && teamsMeetingExtendedOptionsEnabled);
-			lobbyEl.setVisible(teamsMeeting);
 		}
 	}
 	
@@ -666,10 +621,7 @@ public class AppointmentEditController extends FormBasicController {
 			}
 			
 			teamsMeeting.setPermanent(false);
-			teamsMeeting.setAccessLevel(accessLevelEl.getSelectedKey());
 			teamsMeeting.setAllowedPresenters(presentersEl.getSelectedKey());
-			teamsMeeting.setEntryExitAnnouncement(annoncementEl.isAtLeastSelected(1));
-			teamsMeeting.setLobbyBypassScope(lobbyEl.getSelectedKey());
 			
 			appointment = appointmentsService.removeBBBMeeting(appointment);
 		} else {

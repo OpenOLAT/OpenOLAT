@@ -57,15 +57,10 @@ public class TeamsConfigurationController extends FormBasicController {
 	private TextElement secretEl;
 	private TextElement tenantEl;
 	private StaticTextElement organisationEl;
-	private TextElement applicationIdEl;
-	private StaticTextElement applicationEl;
 	private TextElement producerIdEl;
 	private StaticTextElement producerEl;
-	private TextElement onBehalfUserIdEl;
-	private StaticTextElement onBehalfUserEl;
 	private FormLink checkConnectionButton;
 	private SpacerElement appSpacer;
-	private SpacerElement onBehlafSpacer;
 	
 	@Autowired
 	private TeamsModule teamsModule;
@@ -107,22 +102,10 @@ public class TeamsConfigurationController extends FormBasicController {
 		
 		appSpacer = uifactory.addSpacerElement("spacer1", formLayout, false);
 		
-		String applicationId = teamsModule.getApplicationId();
-		applicationIdEl = uifactory.addTextElement("appId", "graph.application.id", 255, applicationId, formLayout);
-		applicationEl = uifactory.addStaticTextElement("application", "graph.application.displayname", organisation, formLayout);
-		applicationEl.setVisible(false);
-		
 		String producerId = teamsModule.getProducerId();
 		producerIdEl = uifactory.addTextElement("producer.id", "graph.producer.id", 255, producerId, formLayout);
 		producerEl = uifactory.addStaticTextElement("producer", "graph.producer.displayname", organisation, formLayout);
 		producerEl.setVisible(false);
-		
-		onBehlafSpacer = uifactory.addSpacerElement("spacer2", formLayout, false);
-		
-		String onBehalfUserId = teamsModule.getOnBehalfUserId();
-		onBehalfUserIdEl = uifactory.addTextElement("onbehalf.id", "graph.onbehalf.user", 255, onBehalfUserId, formLayout);
-		onBehalfUserEl = uifactory.addStaticTextElement("onbehalf", "graph.onbehalf.displayname", organisation, formLayout);
-		onBehalfUserEl.setVisible(false);
 		
 		//buttons save - check
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
@@ -142,17 +125,9 @@ public class TeamsConfigurationController extends FormBasicController {
 		organisationEl.setValue(organisation);
 		organisationEl.setVisible(StringHelper.containsNonWhitespace(organisation));
 		
-		String application = infos == null ? "" : infos.getApplication();
-		applicationEl.setValue(application);
-		applicationEl.setVisible(StringHelper.containsNonWhitespace(application));
-		
 		String producer = infos == null ? "" : infos.getProducerDisplayName();
 		producerEl.setValue(producer);
 		producerEl.setVisible(StringHelper.containsNonWhitespace(producer));
-		
-		String onBehalf = infos == null ? "" : infos.getOnBehalfDisplayName();
-		onBehalfUserEl.setValue(onBehalf);
-		onBehalfUserEl.setVisible(StringHelper.containsNonWhitespace(onBehalf));
 	}
 
 	@Override
@@ -176,15 +151,10 @@ public class TeamsConfigurationController extends FormBasicController {
 		secretEl.setVisible(enabled);
 		tenantEl.setVisible(enabled);
 		producerIdEl.setVisible(enabled);
-		applicationIdEl.setVisible(enabled);
-		onBehalfUserIdEl.setVisible(enabled);
 		checkConnectionButton.setVisible(enabled);
 		organisationEl.setVisible(enabled && StringHelper.containsNonWhitespace(organisationEl.getValue()));
-		applicationEl.setVisible(enabled && StringHelper.containsNonWhitespace(applicationEl.getValue()));
 		producerEl.setVisible(enabled && StringHelper.containsNonWhitespace(producerEl.getValue()));
-		onBehalfUserEl.setVisible(enabled && StringHelper.containsNonWhitespace(onBehalfUserEl.getValue()));
 		appSpacer.setVisible(enabled);
-		onBehlafSpacer.setVisible(enabled);
 	}
 
 	@Override
@@ -207,25 +177,13 @@ public class TeamsConfigurationController extends FormBasicController {
 
 		TeamsErrors errors = new TeamsErrors();
 		ConnectionInfos infos = teamsService.checkConnection(clientIdEl.getValue(), secretEl.getValue(), tenantEl.getValue(),
-				applicationIdEl.getValue(), producerIdEl.getValue(), onBehalfUserIdEl.getValue(), errors);
+				producerIdEl.getValue(), errors);
 		
 		producerIdEl.clearError();
-		applicationIdEl.clearError();
-		onBehalfUserIdEl.clearError();
 		if(infos != null) {
 			if(StringHelper.containsNonWhitespace(producerIdEl.getValue())
 					&& !StringHelper.containsNonWhitespace(infos.getProducerDisplayName())) {
 				producerIdEl.setErrorKey("error.producerNotFound", null);
-				allOk &= false;
-			}
-			if(StringHelper.containsNonWhitespace(onBehalfUserIdEl.getValue())
-					&& !StringHelper.containsNonWhitespace(infos.getOnBehalfDisplayName())) {
-				onBehalfUserIdEl.setErrorKey("error.onBehalfUserNotFound", null);
-				allOk &= false;
-			}
-			if(StringHelper.containsNonWhitespace(applicationIdEl.getValue())
-					&& !StringHelper.containsNonWhitespace(infos.getApplication())) {
-				applicationIdEl.setErrorKey("error.applicationNotFound", null);
 				allOk &= false;
 			}
 		}
@@ -258,30 +216,24 @@ public class TeamsConfigurationController extends FormBasicController {
 			teamsModule.setApiSecret(secretEl.getValue());
 			teamsModule.setTenantGuid(tenantEl.getValue());
 			teamsModule.setTenantOrganisation(organisationEl.getValue());
-			teamsModule.setApplicationId(applicationIdEl.getValue());
 			teamsModule.setProducerId(producerIdEl.getValue());
-			teamsModule.setOnBehalfUserId(onBehalfUserIdEl.getValue());
 			showInfo("info.saved");
 		} else {
 			teamsModule.setApiKey(null);
 			teamsModule.setApiSecret(null);
 			teamsModule.setTenantGuid(null);
 			teamsModule.setTenantOrganisation(null);
-			teamsModule.setApplicationId(null);
 			teamsModule.setProducerId(null);
-			teamsModule.setOnBehalfUserId(null);
 			showInfo("info.saved");
 		}
 	}
 	
 	private void doCheckConnection() {
-		String applicationId = applicationIdEl.getValue();
 		String producerId = producerIdEl.getValue();
-		String onBehalfUserId = onBehalfUserIdEl.getValue();
 		
 		TeamsErrors errors = new TeamsErrors();
 		ConnectionInfos infos = teamsService.checkConnection(clientIdEl.getValue(), secretEl.getValue(), tenantEl.getValue(),
-				applicationId, producerId, onBehalfUserId, errors);
+				producerId, errors);
 		updateModel(infos);
 		
 		if(infos == null) {
@@ -291,15 +243,7 @@ public class TeamsConfigurationController extends FormBasicController {
 					&& !StringHelper.containsNonWhitespace(infos.getProducerDisplayName())) {
 				errors.append(new TeamsError(TeamsErrorCodes.producerNotFound));
 			}
-			if(StringHelper.containsNonWhitespace(onBehalfUserId)
-					&& !StringHelper.containsNonWhitespace(infos.getOnBehalfDisplayName())) {
-				errors.append(new TeamsError(TeamsErrorCodes.onBehalfUserNotFound));
-			}
-			if(StringHelper.containsNonWhitespace(applicationId)
-					&& !StringHelper.containsNonWhitespace(infos.getApplication())) {
-				errors.append(new TeamsError(TeamsErrorCodes.applicationNotFound));
-			}
-		
+
 			if(errors.getErrors().isEmpty()) {
 				showInfo("info.connection.ok");
 			} else {

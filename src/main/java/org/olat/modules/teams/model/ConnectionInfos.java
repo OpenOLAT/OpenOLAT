@@ -28,30 +28,18 @@ package org.olat.modules.teams.model;
 public class ConnectionInfos {
 	
 	private final String organisation;
-	private final String onBehalfDisplayName;
 	private final String producerDisplayName;
-	private final String application;
 	
-	public ConnectionInfos(String organisation, String onBehalfDisplayName, String producerDisplayName, String application) {
+	public ConnectionInfos(String organisation, String producerDisplayName) {
 		this.organisation = organisation;
-		this.onBehalfDisplayName = onBehalfDisplayName;
 		this.producerDisplayName = producerDisplayName;
-		this.application = application;
 	}
 
 	public String getOrganisation() {
 		return organisation;
 	}
 
-	public String getOnBehalfDisplayName() {
-		return onBehalfDisplayName;
-	}
-
 	public String getProducerDisplayName() {
 		return producerDisplayName;
-	}
-
-	public String getApplication() {
-		return application;
 	}
 }
