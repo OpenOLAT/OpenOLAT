@@ -80,8 +80,6 @@ public class CourseDisclaimerStep extends BasicStep {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
 			disclaimerController = new CourseDisclaimerController(ureq, wControl, rootForm, entry);
-			
-			listenTo(disclaimerController);
 			initForm (ureq);
 		}
 
@@ -99,6 +97,11 @@ public class CourseDisclaimerStep extends BasicStep {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			formLayout.add("courseDisclaimer", disclaimerController.getInitialFormItem());
+		}
+
+		@Override
+		public void dispose() {
+			// prevent dispose because rich text
 		}
 
 		@Override
