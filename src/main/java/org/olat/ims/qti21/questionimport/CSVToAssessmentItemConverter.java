@@ -448,7 +448,7 @@ public class CSVToAssessmentItemConverter {
 			if(itemBuilder != null) {
 				currentItem = new AssessmentItemAndMetadata(itemBuilder);
 			} else {
-				log.warn("Question type not supported: " + type);
+				log.warn("Question type not supported: {}", type);
 				currentItem = null;
 			}
 		}
@@ -647,7 +647,7 @@ public class CSVToAssessmentItemConverter {
 	private void processPoints(String[] parts) {
 		if(currentItem == null) return;
 		
-		double points = parseFloat(parts[1], 1.0f);
+		double points = parseDouble(parts[1], 1.0d);
 		AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
 		if (itemBuilder instanceof SimpleChoiceAssessmentItemBuilder
 				|| itemBuilder instanceof FIBAssessmentItemBuilder
@@ -687,22 +687,22 @@ public class CSVToAssessmentItemConverter {
 		try {
 			AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
 			if (itemBuilder instanceof SimpleChoiceAssessmentItemBuilder) {
-				processChoice_smc(parts, (SimpleChoiceAssessmentItemBuilder)itemBuilder);
+				processChoiceSmc(parts, (SimpleChoiceAssessmentItemBuilder)itemBuilder);
 			} else if(itemBuilder instanceof FIBAssessmentItemBuilder) {
-				processChoice_fib(parts, (FIBAssessmentItemBuilder)itemBuilder);
+				processChoiceFib(parts, (FIBAssessmentItemBuilder)itemBuilder);
 			} else if(itemBuilder instanceof KPrimAssessmentItemBuilder) {
-				processChoice_kprim(parts, (KPrimAssessmentItemBuilder)itemBuilder);
+				processChoiceKprim(parts, (KPrimAssessmentItemBuilder)itemBuilder);
 			} else if(itemBuilder instanceof MatchAssessmentItemBuilder) {
-				processChoice_match(parts, (MatchAssessmentItemBuilder)itemBuilder);
+				processChoiceMatch(parts, (MatchAssessmentItemBuilder)itemBuilder);
 			}
 		} catch (NumberFormatException e) {
-			log.warn("Cannot parse point for: " + parts[0] + " / " + parts[1], e);
+			log.warn("Cannot parse point for: {} / {}", parts[0], parts[1], e);
 		}
 	}
 
-	private void processChoice_smc(String[] parts, SimpleChoiceAssessmentItemBuilder choiceBuilder) {
+	private void processChoiceSmc(String[] parts, SimpleChoiceAssessmentItemBuilder choiceBuilder) {
 		if(StringHelper.containsNonWhitespace(parts[0])) {
-			double point = parseFloat(parts[0], 1.0f);
+			double point = parseDouble(parts[0], 1.0d);
 			String content = parts[1];
 	
 			ChoiceInteraction interaction = choiceBuilder.getChoiceInteraction();
@@ -721,7 +721,7 @@ public class CSVToAssessmentItemConverter {
 		}
 	}
 	
-	private void processChoice_match(String[] parts, MatchAssessmentItemBuilder matchBuilder) {
+	private void processChoiceMatch(String[] parts, MatchAssessmentItemBuilder matchBuilder) {
 		List<SimpleAssociableChoice> targetChoices = matchBuilder.getTargetChoices();
 		if(targetChoices == null || targetChoices.isEmpty()) {
 			for(int i=1;i<parts.length; i++) {
@@ -739,7 +739,7 @@ public class CSVToAssessmentItemConverter {
 				
 				//correct answer and points
 				for(int i=1; i<parts.length && i<(targetChoices.size() + 1); i++) {
-					double point = parseFloat(parts[i], 0.0f);
+					double point = parseDouble(parts[i], 0.0d);
 					SimpleAssociableChoice targetChoice = targetChoices.get(i - 1);
 					DirectedPairValue directedPair = new DirectedPairValue(sourceChoice.getIdentifier(), targetChoice.getIdentifier());
 					matchBuilder.addScore(directedPair, Double.valueOf(point));
@@ -751,7 +751,7 @@ public class CSVToAssessmentItemConverter {
 		}
 	}
 
-	private void processChoice_fib(String[] parts, FIBAssessmentItemBuilder fibBuilder) {
+	private void processChoiceFib(String[] parts, FIBAssessmentItemBuilder fibBuilder) {
 		String firstPart = parts[0].toLowerCase();
 		if("text".equals(firstPart) || "texte".equals(firstPart)) {
 			String text = parts[1];
@@ -760,7 +760,7 @@ public class CSVToAssessmentItemConverter {
 			}
 			questionFragements.add(text);	
 		} else if(StringHelper.containsNonWhitespace(parts[0])) {
-			double score = parseFloat(parts[0], 1.0f);
+			double score = parseDouble(parts[0], 1.0d);
 			String correctBlank = parts[1];
 			String responseId = fibBuilder.generateResponseIdentifier();
 			TextEntry textEntry = fibBuilder.createTextEntry(responseId);
@@ -782,7 +782,7 @@ public class CSVToAssessmentItemConverter {
 		}
 	}
 	
-	private void processChoice_kprim(String[] parts, KPrimAssessmentItemBuilder kprimBuilder) {
+	private void processChoiceKprim(String[] parts, KPrimAssessmentItemBuilder kprimBuilder) {
 		String firstPart = parts[0].toLowerCase();
 		String answer = parts[1];
 		
@@ -816,16 +816,15 @@ public class CSVToAssessmentItemConverter {
 		}
 	}
 	
-	private float parseFloat(String value, float defaultValue) {
-		float floatValue = defaultValue;
-		
-		if(value != null) {
+	private double parseDouble(String value, double defaultValue) {
+		BigDecimal bigValue = BigDecimal.valueOf(defaultValue);
+		if(StringHelper.containsNonWhitespace(value)) {
 			if(value.indexOf(',') >= 0) {
 				value = value.replace(",", ".");
 			}
-			floatValue = Float.parseFloat(value);
+			bigValue = new BigDecimal(value);
 		}
-		return floatValue;
+		return bigValue.doubleValue();
 	}
 	
 	private int parseInteger(String value, int defaultValue) {
@@ -834,7 +833,7 @@ public class CSVToAssessmentItemConverter {
 			try {
 				integerValue = Integer.parseInt(value);
 			} catch (NumberFormatException e) {
-				log.error("Cannot parse: " + value, e);
+				log.error("Cannot parse: {}", value, e);
 			}
 		}
 		return integerValue;
