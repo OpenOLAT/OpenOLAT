@@ -217,15 +217,16 @@ public class MicrosoftGraphDAO {
 					.onlineMeetings()
 					.buildRequest()
 					.post(onlineMeeting);
+			log.info(Tracing.M_AUDIT, "Online-Meeting created (/communications) with id: {}", onlineMeeting.id);
 		} else {
 			onlineMeeting = client()
 					.users(teamsModule.getOnBehalfUserId())
 					.onlineMeetings()
 					.buildRequest()
 					.post(onlineMeeting);
+			log.info(Tracing.M_AUDIT, "Online-Meeting created (/users) with id: {}", onlineMeeting.id);
 		}
 		
-		log.info(Tracing.M_AUDIT, "Online-Meeting created with id: {}", onlineMeeting.id);
 		return onlineMeeting;
 	}
 	
