@@ -77,6 +77,6 @@ public interface TeamsService {
 	public ConnectionInfos checkConnection(TeamsErrors errors);
 	
 	public ConnectionInfos checkConnection(String clientId, String clientSecret, String tenantGuid,
-			String applicationId, String producerId, String onBehalfId, TeamsErrors errors);
+			String producerId, TeamsErrors errors);
 
 }

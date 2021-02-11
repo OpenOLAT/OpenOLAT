@@ -41,8 +41,6 @@ import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.ui.EditTeamsMeetingController;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.microsoft.graph.models.generated.AccessLevel;
-import com.microsoft.graph.models.generated.LobbyBypassScope;
 import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
 
 /**
@@ -64,13 +62,9 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 	private DateChooser endTimeEl;
 	private DateChooser endRecurringDateEl;
 	private DateChooser startRecurringDateEl;
-	private SingleSelection accessLevelEl;
 	private SingleSelection presentersEl;
-	private MultipleSelectionElement annoncementEl;
-	private SingleSelection lobbyEl;
 	private MultipleSelectionElement participantsOpenEl;
 	
-	private final boolean meetingExtendedOptionsEnabled;
 	private TeamsRecurringMeetingsContext meetingsContext;
 	
 	@Autowired
@@ -82,7 +76,6 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		setTranslator(Util.createPackageTranslator(EditTeamsMeetingController.class, getLocale()));
 
 		this.meetingsContext = meetingsContext;
-		meetingExtendedOptionsEnabled = teamsModule.isOnlineMeetingExtendedOptionsEnabled();
 		
 		initForm(ureq);
 	}
@@ -132,25 +125,11 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		String followup = Long.toString(meetingsContext.getFollowupTime());
 		followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
 		
-		String[] onOpenValues = new String[] { "" };
+		String[] onOpenValues = new String[] { translate("meeting.participants.open.on",
+				new String[] {teamsModule.getTenantOrganisation() }) };
 		participantsOpenEl = uifactory.addCheckboxesHorizontal("meeting.participants.open", formLayout, onKeys, onOpenValues);
 		participantsOpenEl.setHelpTextKey("meeting.participants.open.hint", null);
-		
-		KeyValues accessKeyValues = new KeyValues();
-		String organisation = teamsModule.getTenantOrganisation();
-		accessKeyValues.add(KeyValues.entry(AccessLevel.EVERYONE.name(), translate("meeting.accesslevel.everyone")));
-		accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE.name(),
-				translate("meeting.accesslevel.same.enterprise", new String[] { organisation })));
-		accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE_AND_FEDERATED.name(),
-				translate("meeting.accesslevel.same.enterprise.federated", new String[] { organisation })));
-		accessLevelEl = uifactory.addDropdownSingleselect("meeting.accesslevel", formLayout, accessKeyValues.keys(), accessKeyValues.values());
-		accessLevelEl.setMandatory(true);
-		accessLevelEl.setVisible(meetingExtendedOptionsEnabled);
-		if(meetingsContext.getAccessLevel() != null && accessKeyValues.containsKey(meetingsContext.getAccessLevel())) {
-			accessLevelEl.select(meetingsContext.getAccessLevel(), true);
-		} else {
-			accessLevelEl.select(AccessLevel.SAME_ENTERPRISE_AND_FEDERATED.name(), true);
-		}
+		participantsOpenEl.setVisible(StringHelper.containsNonWhitespace(teamsModule.getProducerId()));
 		
 		KeyValues presentersKeyValues = new KeyValues();
 		presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), translate("meeting.presenters.role")));
@@ -158,34 +137,10 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.EVERYONE.name(), translate("meeting.presenters.everyone")));
 		presentersEl = uifactory.addDropdownSingleselect("meeting.presenters", formLayout, presentersKeyValues.keys(), presentersKeyValues.values());
 		presentersEl.setMandatory(true);
-		presentersEl.setVisible(meetingExtendedOptionsEnabled);
 		if(meetingsContext.getAllowedPresenters() != null && presentersKeyValues.containsKey(meetingsContext.getAllowedPresenters())) {
 			presentersEl.select(meetingsContext.getAllowedPresenters(), true);
 		} else {
 			presentersEl.select(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), true);
-		}
-		
-		String[] onValues = new String[] { translate("meeting.annoncement.on") };
-		annoncementEl = uifactory.addCheckboxesHorizontal("meeting.annoncement", formLayout, onKeys, onValues);
-		annoncementEl.setVisible(meetingExtendedOptionsEnabled);
-		if(meetingsContext.isEntryExitAnnouncement()) {
-			annoncementEl.select(onKeys[0], true);
-		}
-		
-		KeyValues lobbyKeyValues = new KeyValues();
-		lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.EVERYONE.name(), translate("meeting.lobby.bypass.everyone")));
-		lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZATION.name(),
-				translate("meeting.lobby.bypass.organization", new String[] { organisation })));
-		lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZATION_AND_FEDERATED.name(),
-				translate("meeting.lobby.bypass.same.enterprise.federated", new String[] { organisation })));
-		lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZER.name(), translate("meeting.lobby.bypass.organizer")));
-		lobbyEl = uifactory.addDropdownSingleselect("meeting.lobby.bypass", formLayout, lobbyKeyValues.keys(), lobbyKeyValues.values());
-		lobbyEl.setMandatory(true);
-		lobbyEl.setVisible(meetingExtendedOptionsEnabled);
-		if(meetingsContext.getLobbyBypassScope() != null && lobbyKeyValues.containsKey(meetingsContext.getLobbyBypassScope())) {
-			lobbyEl.select(meetingsContext.getLobbyBypassScope(), true);
-		} else {
-			lobbyEl.select(LobbyBypassScope.ORGANIZATION_AND_FEDERATED.name(), true);
 		}
 	}
 	
@@ -316,10 +271,7 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		meetingsContext.setStartRecurringDate(startRecurringDateEl.getDate());
 		meetingsContext.setEndRecurringDate(endRecurringDateEl.getDate());
 		
-		meetingsContext.setAccessLevel(accessLevelEl.getSelectedKey());
 		meetingsContext.setAllowedPresenters(presentersEl.getSelectedKey());
-		meetingsContext.setEntryExitAnnouncement(this.annoncementEl.isAtLeastSelected(1));
-		meetingsContext.setLobbyBypassScope(lobbyEl.getSelectedKey());
 		meetingsContext.setParticipantsCanOpen(participantsOpenEl.isAtLeastSelected(1));
 		
 		meetingsContext.generateMeetings();

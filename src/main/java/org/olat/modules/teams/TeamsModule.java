@@ -40,8 +40,6 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String PROP_GROUP_ENABLED = "vc.teams.groups";
 	private static final String PROP_COURSE_ENABLED = "vc.teams.courses";
 	private static final String PROP_PRODUCER_ID = "vc.teams.producer.id";
-	private static final String PROP_APPLICATION_ID = "vc.teams.application.id";
-	private static final String PROP_ONBEHALF_ID = "vc.teams.on.behalf.user.id";
 	
 	private static final String MSGRAPH_API_KEY = "vc.teams.api.key";
 	private static final String MSGRAPH_API_SECRET = "vc.teams.api.secret";
@@ -61,10 +59,6 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	private String organisation;
 	@Value("${vc.teams.producer.id}")
 	private String producerId;
-	@Value("${vc.teams.application.id}")
-	private String applicationId;
-	@Value("${vc.teams.on.behalf.user.id}")
-	private String onBehalfUserId;
 	
 	@Value("${vc.teams.groups:true}")
 	private String groupsEnabled;
@@ -88,10 +82,7 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 		apiSecret = getStringPropertyValue(MSGRAPH_API_SECRET, apiSecret);
 		tenantGuid = getStringPropertyValue(MSGRAPH_TENANT_GUID, tenantGuid);
 		organisation = getStringPropertyValue(MSGRAPH_TENANT_ORG, organisation);
-		onBehalfUserId = getStringPropertyValue(PROP_ONBEHALF_ID, onBehalfUserId);
-		
 		producerId = getStringPropertyValue(PROP_PRODUCER_ID, producerId);
-		applicationId = getStringPropertyValue(PROP_APPLICATION_ID, applicationId);
 		
 		groupsEnabled = getStringPropertyValue(PROP_GROUP_ENABLED, groupsEnabled);
 		coursesEnabled = getStringPropertyValue(PROP_COURSE_ENABLED, coursesEnabled);
@@ -148,15 +139,6 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(MSGRAPH_TENANT_ORG, organisation, true);
 	}
 	
-	public String getOnBehalfUserId() {
-		return onBehalfUserId;
-	}
-	
-	public void setOnBehalfUserId(String userId) {
-		this.onBehalfUserId = userId;
-		setStringProperty(PROP_ONBEHALF_ID, userId, true);
-	}
-	
 	public String getProducerId() {
 		return producerId;
 	}
@@ -164,15 +146,6 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setProducerId(String producerId) {
 		this.producerId = producerId;
 		setStringProperty(PROP_PRODUCER_ID, producerId, true);
-	}
-
-	public String getApplicationId() {
-		return applicationId;
-	}
-
-	public void setApplicationId(String applicationId) {
-		this.applicationId = applicationId;
-		setStringProperty(PROP_APPLICATION_ID, applicationId, true);
 	}
 
 	public boolean isGroupsEnabled() {
@@ -191,9 +164,5 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setCoursesEnabled(boolean enabled) {
 		coursesEnabled = enabled ? "true" : "false";
 		setStringProperty(PROP_COURSE_ENABLED, coursesEnabled, true);
-	}
-	
-	public boolean isOnlineMeetingExtendedOptionsEnabled() {
-		return StringHelper.containsNonWhitespace(onBehalfUserId);
 	}
 }

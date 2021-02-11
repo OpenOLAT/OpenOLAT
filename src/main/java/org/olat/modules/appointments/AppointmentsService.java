@@ -172,8 +172,6 @@ public interface AppointmentsService {
 	public boolean isTeamsEnabled();
 
 	public String getTeamsTenantOrganisation();
-	
-	public boolean isTeamsOnlineMeetingExtendedOptionsEnabled();
 
 	public Appointment addTeamsMeeting(Appointment appointment, Identity identity);
 

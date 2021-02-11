@@ -954,11 +954,6 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	}
 
 	@Override
-	public boolean isTeamsOnlineMeetingExtendedOptionsEnabled() {
-		return teamsModule.isOnlineMeetingExtendedOptionsEnabled();
-	}
-
-	@Override
 	public Appointment addTeamsMeeting(Appointment appointment, Identity identity) {
 		Topic topic = appointment.getTopic();
 		RepositoryEntry entry = repositoryService.loadByKey(topic.getEntry().getKey());

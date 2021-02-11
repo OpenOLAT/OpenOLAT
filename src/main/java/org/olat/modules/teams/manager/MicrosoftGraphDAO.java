@@ -140,43 +140,23 @@ public class MicrosoftGraphDAO {
 	public OnlineMeeting createMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, TeamsErrors errors)
 	throws ClientException {
 		MeetingParticipants participants = new MeetingParticipants();
+		participants.attendees = new ArrayList<>();
 		if(user != null) {
-			if(role == OnlineMeetingRole.PRESENTER || role == OnlineMeetingRole.PRODUCER) {
+			if(role == OnlineMeetingRole.PRESENTER) {
 				// Add all possible roles
-				IdentitySet identitySet = createIdentitySetById(user);
-				participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
-				IdentitySet identityAsPresenterSet = createIdentitySetById(user);
-				participants.attendees = new ArrayList<>();
-				MeetingParticipantInfo infos = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.PRODUCER);
-				participants.attendees.add(infos);
-				MeetingParticipantInfo presenter = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.PRESENTER);
-				participants.attendees.add(presenter);
-				participants.producers = new ArrayList<>();
-				MeetingParticipantInfo producer = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.PRODUCER);
-				participants.producers.add(producer);
+				participants.organizer = createParticipantInfo(user, OnlineMeetingRole.PRESENTER);
+				participants.attendees.add(createParticipantInfo(user, OnlineMeetingRole.PRESENTER));
 				log.info("Create Teams Meeting on MS for {}, for role {} and MS user as organizer and presenter {} {}", meeting.getKey(), role, user.id, user.displayName);
 			} else if(StringHelper.containsNonWhitespace(teamsModule.getProducerId()) && canAttendeeOpenMeeting(meeting)) {
 				// Attendee can create an online meeting only if they have a chance to enter it
-				IdentitySet identitySet = createIdentitySetById(teamsModule.getProducerId());
-				participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
-				IdentitySet identityAsPresenterSet = createIdentitySetById(user);
-				participants.attendees = new ArrayList<>();
-				MeetingParticipantInfo  infos = createParticipantInfo(identityAsPresenterSet, OnlineMeetingRole.ATTENDEE);
+				participants.organizer = createParticipantInfo(teamsModule.getProducerId(), OnlineMeetingRole.PRESENTER);
+				MeetingParticipantInfo  infos = createParticipantInfo(user, OnlineMeetingRole.ATTENDEE);
 				participants.attendees.add(infos);
 				log.info("Create Teams Meeting on MS for {}, for role {} and MS user as attendee {} {}", meeting.getKey(), role, user.id, user.displayName);
 			} else {
 				errors.append(new TeamsError(TeamsErrorCodes.organizerMissing));
 				return null;
 			}	
-		} else if(StringHelper.containsNonWhitespace(teamsModule.getProducerId())) {
-			if(canAttendeeOpenMeeting(meeting)) {
-				IdentitySet identitySet = createIdentitySetById(teamsModule.getProducerId());
-				participants.organizer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
-				log.info("Create Teams Meeting on MS for {} without MS user", meeting.getKey());
-			} else {
-				errors.append(new TeamsError(TeamsErrorCodes.organizerMissing));
-				return null;
-			}
 		} else {
 			errors.append(new TeamsError(TeamsErrorCodes.organizerMissing));
 			return null;
@@ -190,14 +170,12 @@ public class MicrosoftGraphDAO {
 		onlineMeeting.subject = meeting.getSubject();
 		onlineMeeting.participants = participants;
 		onlineMeeting.allowedPresenters = toOnlineMeetingPresenters(meeting.getAllowedPresenters());
-		onlineMeeting.accessLevel = toAccessLevel(meeting.getAccessLevel());
-		onlineMeeting.entryExitAnnouncement = Boolean.valueOf(meeting.isEntryExitAnnouncement());
-		
+
 		LobbyBypassSettings lobbyBypassSettings = new LobbyBypassSettings();
-		lobbyBypassSettings.isDialInBypassEnabled = Boolean.FALSE;
+		lobbyBypassSettings.isDialInBypassEnabled = Boolean.TRUE;
 		lobbyBypassSettings.scope = toLobbyBypassScope(meeting.getLobbyBypassScope());
 		onlineMeeting.lobbyBypassSettings = lobbyBypassSettings;
-
+	
 		String joinInformations = meeting.getJoinInformation();
 		if(StringHelper.containsNonWhitespace(joinInformations)) {
 			ItemBody body = new ItemBody();
@@ -209,89 +187,15 @@ public class MicrosoftGraphDAO {
 			body.content = "<html><body>" + joinInformations + "</body></html>";
 			onlineMeeting.joinInformation = body;
 		}
-		
-		if((user != null && role == OnlineMeetingRole.PRESENTER)
-				|| !StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
-			onlineMeeting = client()
-					.communications()
-					.onlineMeetings()
-					.buildRequest()
-					.post(onlineMeeting);
-			log.info(Tracing.M_AUDIT, "Online-Meeting created (/communications) with id: {}", onlineMeeting.id);
-		} else {
-			onlineMeeting = client()
-					.users(teamsModule.getOnBehalfUserId())
-					.onlineMeetings()
-					.buildRequest()
-					.post(onlineMeeting);
-			log.info(Tracing.M_AUDIT, "Online-Meeting created (/users) with id: {}", onlineMeeting.id);
-		}
-		
-		return onlineMeeting;
-	}
-	
-	/**
-	 * This method is only supported if the application is allowed to
-	 * operate on behalf of a real user.
-	 * 
-	 * @param meeting The meeting
-	 * @param user The user
-	 * @param role The role of the user
-	 * @return The updated meeting
-	 */
-	public OnlineMeeting updateOnlineMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role) {
-		String id =  meeting.getOnlineMeetingId();
-		
-		OnlineMeeting onlineMeeting = new OnlineMeeting();
-		if(meeting.getStartDate() != null && meeting.getEndDate() != null) {
-			onlineMeeting.startDateTime = toCalendar(meeting.getStartDate());
-			onlineMeeting.endDateTime = toCalendar(meeting.getEndDate());
-		}
-		onlineMeeting.subject = meeting.getSubject();
-		
-		if(user != null) {
-			IdentitySet identitySet = createIdentitySetById(user);
-			MeetingParticipants participants = new MeetingParticipants();
-			if(role == OnlineMeetingRole.PRESENTER || role == OnlineMeetingRole.PRODUCER) {
-				participants.attendees = new ArrayList<>();
-				participants.attendees.add(createParticipantInfo(identitySet, OnlineMeetingRole.PRESENTER));
-				participants.attendees.add(createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER));
-				onlineMeeting.participants = participants;
-				
-				MeetingParticipantInfo producer = createParticipantInfo(identitySet, OnlineMeetingRole.PRODUCER);
-				participants.producers = new ArrayList<>();
-				participants.producers.add(producer);
-			} else {
-				participants.attendees = new ArrayList<>();
-				participants.attendees.add(createParticipantInfo(identitySet, OnlineMeetingRole.ATTENDEE));
-				onlineMeeting.participants = participants;
-			}
-		}
-		
-		// access, body informations cannot be updatet
-		onlineMeeting.allowedPresenters = toOnlineMeetingPresenters(meeting.getAllowedPresenters());
-		
-		LobbyBypassSettings lobbyBypassSettings = new LobbyBypassSettings();
-		lobbyBypassSettings.isDialInBypassEnabled = Boolean.FALSE;
-		lobbyBypassSettings.scope = toLobbyBypassScope(meeting.getLobbyBypassScope());
-		onlineMeeting.lobbyBypassSettings = lobbyBypassSettings;
 
-		OnlineMeeting updatedOnlineMeeting = client()
-				.users(teamsModule.getOnBehalfUserId())
-				.onlineMeetings(id)
+		onlineMeeting = client()
+				.communications()
+				.onlineMeetings()
 				.buildRequest()
-				.patch(onlineMeeting);
-		
-		log.info(Tracing.M_AUDIT, "Online-Meeting updated with id: {}", id);
-		return updatedOnlineMeeting;
-	}
-	
-	public void delete(String meetingId) {
-		client()
-				.users(teamsModule.getOnBehalfUserId())
-				.onlineMeetings(meetingId)
-				.buildRequest()
-				.delete();
+				.post(onlineMeeting);
+		log.info(Tracing.M_AUDIT, "Online-Meeting created (/communications) with id: {}", onlineMeeting.id);
+
+		return onlineMeeting;
 	}
 
 	/**
@@ -412,7 +316,7 @@ public class MicrosoftGraphDAO {
 	}
 	
 	public ConnectionInfos check(String clientId, String clientSecret, String tenantGuid,
-			String applicationId, String producerId, String onBehalfId, TeamsErrors errors) {
+			String producerId, TeamsErrors errors) {
 		
 		try {
 			MicrosoftGraphAccessTokenManager accessTokenManager = new MicrosoftGraphAccessTokenManager(clientId, clientSecret, tenantGuid);
@@ -421,26 +325,14 @@ public class MicrosoftGraphDAO {
 			
 			Organization org = getOrganisation(tenantGuid, client);
 			String organisation = org == null ? null : org.displayName;
-			
-			String onBehalfDisplayName = null;
-			if(StringHelper.containsNonWhitespace(onBehalfId)) {
-				User onbehalfUser = searchUserById(onBehalfId, client, errors);
-				onBehalfDisplayName = onbehalfUser == null ? null : onbehalfUser.displayName;
-			}
-			
+
 			String producerDisplayName = null;
 			if(StringHelper.containsNonWhitespace(producerId)) {
 				User producer = searchUserById(producerId, client, errors);
 				producerDisplayName = producer == null ? null : producer.displayName;
 			}
-			
-			String application = null;
-			if(StringHelper.containsNonWhitespace(applicationId)) {
-				Application app = getApplication(applicationId, client, errors);
-				application = app == null ? null : app.displayName;
-			}
 
-			return new ConnectionInfos(organisation, onBehalfDisplayName, producerDisplayName, application);
+			return new ConnectionInfos(organisation, producerDisplayName);
 		} catch (ClientException e) {
 			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
 			log.error("", e);
@@ -458,31 +350,14 @@ public class MicrosoftGraphDAO {
 			String tenantId = teamsModule.getTenantGuid();
 			Organization org = getOrganisation(tenantId, client);
 			String organisation = org == null ? null : org.displayName;
-			
-			User onbehalfUser = null;
-			String onBehalfDisplayName = null;
-			if(StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
-				onbehalfUser = searchUserById(teamsModule.getOnBehalfUserId(), client, errors);
-				onBehalfDisplayName = onbehalfUser == null ? null : onbehalfUser.displayName;
-			}
-
+		
 			String producerDisplayName = null;
 			if(StringHelper.containsNonWhitespace(teamsModule.getProducerId())) {
-				if(onbehalfUser != null && onbehalfUser.id.equals(teamsModule.getProducerId())) {
-					producerDisplayName = onbehalfUser.displayName;
-				} else {
-					User producer = searchUserById(teamsModule.getProducerId(), client, errors);
-					producerDisplayName = producer == null ? null : producer.displayName;
-				}
+				User producer = searchUserById(teamsModule.getProducerId(), client, errors);
+				producerDisplayName = producer == null ? null : producer.displayName;
 			}
 
-			String application = null;
-			if(StringHelper.containsNonWhitespace(teamsModule.getApplicationId())) {
-				Application app = getApplication(teamsModule.getApplicationId(), client, errors);
-				application = app == null ? null : app.displayName;
-			}
-
-			return new ConnectionInfos(organisation, onBehalfDisplayName, producerDisplayName, application);
+			return new ConnectionInfos(organisation, producerDisplayName);
 		} catch (ClientException e) {
 			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
 			log.error("", e);
@@ -539,12 +414,6 @@ public class MicrosoftGraphDAO {
 		Identity user = new Identity();
 		user.id = id;
 		identitySet.user = user;
-
-		if(StringHelper.containsNonWhitespace(teamsModule.getApplicationId())) {
-			Identity app = new Identity();
-			app.id = teamsModule.getApplicationId();
-			identitySet.application = app;
-		}
 		return identitySet;
 	}
 	
@@ -553,6 +422,14 @@ public class MicrosoftGraphDAO {
 		participantInfo.identity = identity;
 		participantInfo.role = role;
 		return participantInfo;
+	}
+	
+	private MeetingParticipantInfo createParticipantInfo(User user, OnlineMeetingRole role) {
+		return createParticipantInfo(createIdentitySetById(user), role) ;
+	}
+	
+	private MeetingParticipantInfo createParticipantInfo(String id, OnlineMeetingRole role) {
+		return createParticipantInfo(createIdentitySetById(id), role) ;
 	}
 	
 	private static final Calendar toCalendar(Date date) {

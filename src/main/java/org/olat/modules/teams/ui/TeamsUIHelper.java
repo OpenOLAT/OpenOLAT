@@ -23,7 +23,6 @@ import java.net.URI;
 import java.util.Date;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -35,8 +34,6 @@ import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.model.TeamsError;
 import org.olat.modules.teams.model.TeamsErrors;
 
-import com.microsoft.graph.models.generated.AccessLevel;
-import com.microsoft.graph.models.generated.LobbyBypassScope;
 import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
 
 /**
@@ -55,34 +52,13 @@ public class TeamsUIHelper {
 		return followupTime;
 	}
 	
-	public static void setDefaults(SingleSelection accessLevelEl, SingleSelection presentersEl, SingleSelection lobbyEl,
-			TeamsMeeting meeting, boolean meetingExtendedOptionsEnabled) {
-		
-		accessLevelEl.setVisible(meetingExtendedOptionsEnabled);
-		if(meeting != null && meeting.getAccessLevel() != null && accessLevelEl.containsKey(meeting.getAccessLevel())) {
-			accessLevelEl.select(meeting.getAccessLevel(), true);
-		} else if(meetingExtendedOptionsEnabled) {
-			accessLevelEl.select(AccessLevel.SAME_ENTERPRISE_AND_FEDERATED.name(), true);
-		} else {
-			accessLevelEl.select(AccessLevel.EVERYONE.name(), true);
-		}
-		
-		presentersEl.setVisible(meetingExtendedOptionsEnabled);
+	public static void setDefaults(SingleSelection presentersEl, TeamsMeeting meeting) {	
 		if(meeting != null && meeting.getAllowedPresenters() != null && presentersEl.containsKey(meeting.getAllowedPresenters())) {
 			presentersEl.select(meeting.getAllowedPresenters(), true);
-		} else if(meetingExtendedOptionsEnabled) {
+		} else if(presentersEl.containsKey(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name())) {
 			presentersEl.select(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), true);
 		} else {
 			presentersEl.select(OnlineMeetingPresenters.EVERYONE.name(), true);
-		}
-		
-		lobbyEl.setVisible(meetingExtendedOptionsEnabled);
-		if(meeting != null && meeting.getLobbyBypassScope() != null && lobbyEl.containsKey(meeting.getLobbyBypassScope())) {
-			lobbyEl.select(meeting.getLobbyBypassScope(), true);
-		} else if(meetingExtendedOptionsEnabled) {
-			lobbyEl.select(LobbyBypassScope.ORGANIZATION_AND_FEDERATED.name(), true);
-		} else {
-			lobbyEl.select(LobbyBypassScope.ORGANIZATION.name(), true);
 		}
 	}
 	
@@ -163,13 +139,7 @@ public class TeamsUIHelper {
 		return sb.append("</ul>").toString();
 	}
 	
-	public static boolean isEditable(TeamsMeeting m, UserRequest ureq) {
-		Date now = ureq.getRequestTimestamp();
-		return m == null || m.isPermanent()
-				|| (m.getEndWithFollowupTime() != null && m.getEndWithFollowupTime().compareTo(now) > 0);
-	}
-	
-	public static  boolean isEditableGraph(TeamsMeeting m) {
+	public static boolean isEditable(TeamsMeeting m) {
 		return m == null || !StringHelper.containsNonWhitespace(m.getOnlineMeetingId());
 	}
 	

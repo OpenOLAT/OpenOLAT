@@ -45,7 +45,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.login.oauth.spi.MicrosoftAzureADFSProvider;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsMeetingDeletionHandler;
-import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.TeamsUser;
 import org.olat.modules.teams.model.ConnectionInfos;
@@ -77,8 +76,6 @@ public class TeamsServiceImpl implements TeamsService {
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private TeamsModule teamsModule;
 	@Autowired
 	private TeamsUserDAO teamsUserDao;
 	@Autowired
@@ -154,16 +151,6 @@ public class TeamsServiceImpl implements TeamsService {
 			removeCalendarEvent(reloadedMeeting);
 			teamsAttendeeDao.deleteMeetingsAttendees(reloadedMeeting);
 			teamsMeetingDao.deleteMeeting(reloadedMeeting);
-			
-			String onlineMeetingId = reloadedMeeting.getOnlineMeetingId();
-			if(StringHelper.containsNonWhitespace(onlineMeetingId)
-					&& StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
-				try {
-					graphDao.delete(onlineMeetingId);
-				} catch (Exception e) {
-					log.error("Cannot delete meeting with id: {}", onlineMeetingId, e);
-				}
-			}
 		}
 	}
 	
@@ -202,10 +189,6 @@ public class TeamsServiceImpl implements TeamsService {
 			} else {
 				errors.append(new TeamsError(TeamsErrorCodes.presenterMissing));
 			}
-		} else if(identity != null && !guest && StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
-			dbInstance.commitAndCloseSession();
-			User user = lookupUser(identity, errors);
-			updateOnlineMeeting(meeting, user, role);
 		}
 		
 		if(identity != null && meeting != null && !guest
@@ -237,19 +220,12 @@ public class TeamsServiceImpl implements TeamsService {
 			lockedMeeting = teamsMeetingDao.loadForUpdate(meeting);
 			if(lockedMeeting == null) {
 				errors.append(new TeamsError(TeamsErrorCodes.meetingDeleted));
-			} else if(StringHelper.containsNonWhitespace(lockedMeeting.getOnlineMeetingId())) {
-				updateOnlineMeeting(lockedMeeting, user, role);
-			} else {
+			} else if(!StringHelper.containsNonWhitespace(lockedMeeting.getOnlineMeetingId())) {
 				OnlineMeeting onlineMeeting = graphDao.createMeeting(lockedMeeting, user, role, errors);
 				if(onlineMeeting != null) {
 					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingId(onlineMeeting.id);
 					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingJoinUrl(onlineMeeting.joinUrl);
 					lockedMeeting = teamsMeetingDao.updateMeeting(lockedMeeting);
-				}
-				// Try to configure more settings
-				if(user != null && StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
-					dbInstance.commitAndCloseSession();
-					graphDao.updateOnlineMeeting(lockedMeeting, user, role);
 				}
 			}
 		}catch (ClientException e) {
@@ -262,12 +238,6 @@ public class TeamsServiceImpl implements TeamsService {
 			dbInstance.commit();
 		}
 		return lockedMeeting;
-	}
-	
-	private void updateOnlineMeeting(TeamsMeeting meeting, User graphUser, OnlineMeetingRole role) {
-		if(graphUser != null && StringHelper.containsNonWhitespace(teamsModule.getOnBehalfUserId())) {
-			graphDao.updateOnlineMeeting(meeting, graphUser, role);
-		}
 	}
 	
 	@Override
@@ -350,8 +320,8 @@ public class TeamsServiceImpl implements TeamsService {
 
 	@Override
 	public ConnectionInfos checkConnection(String clientId, String clientSecret, String tenantGuid,
-			String applicationId, String producerId, String onBehalfId, TeamsErrors errors) {
-		return graphDao.check(clientId, clientSecret, tenantGuid, applicationId, producerId, onBehalfId, errors);
+			String producerId, TeamsErrors errors) {
+		return graphDao.check(clientId, clientSecret, tenantGuid, producerId, errors);
 	}
 	
 	private void removeCalendarEvent(TeamsMeeting meeting) {

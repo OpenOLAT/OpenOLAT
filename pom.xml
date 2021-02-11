@@ -102,7 +102,6 @@
 	    <test.env.msgraph.app.secret></test.env.msgraph.app.secret>
 	    <test.env.msgraph.app.tenant></test.env.msgraph.app.tenant>
 	    <test.env.msgraph.teams.producer></test.env.msgraph.teams.producer>
-	    <test.env.msgraph.teams.onbehalf></test.env.msgraph.teams.onbehalf>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
 	    <test.env.webdriver.firefox.version>v0.29.0</test.env.webdriver.firefox.version>
@@ -1527,7 +1526,6 @@
 						<test.env.msgraph.app.secret>${test.env.msgraph.app.secret}</test.env.msgraph.app.secret>
 						<test.env.msgraph.app.tenant>${test.env.msgraph.app.tenant}</test.env.msgraph.app.tenant>
 						<test.env.msgraph.teams.producer>${test.env.msgraph.teams.producer}</test.env.msgraph.teams.producer>
-						<test.env.msgraph.teams.onbehalf>${test.env.msgraph.teams.onbehalf}</test.env.msgraph.teams.onbehalf>
 						<arquillian.launch>tomcat-7-managed</arquillian.launch>
 						<webdriver.browser>${test.env.webdriver.browser}</webdriver.browser>
 						<webdriver.firefox.version>${test.env.webdriver.firefox.version}</webdriver.firefox.version>
@@ -2352,7 +2350,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph-beta</artifactId>
-			<version>0.3.0-SNAPSHOT</version>
+			<version>0.4.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>

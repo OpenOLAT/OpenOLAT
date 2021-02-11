@@ -80,8 +80,6 @@ import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.microsoft.graph.models.generated.AccessLevel;
-import com.microsoft.graph.models.generated.LobbyBypassScope;
 import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
 
 /**
@@ -93,7 +91,6 @@ import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
 public class AppointmentCreateController extends FormBasicController {
 	
 	private static final String CMD_DURATION = "dur_";
-	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] KEYS_YES_NO = new String[] { "yes", "no" };
 	private static final String KEY_NO = "no";
 	private static final String KEY_BIGBLUEBUTTON = "bbb";
@@ -137,10 +134,7 @@ public class AppointmentCreateController extends FormBasicController {
 	private FormLink teamsOpenCalLink;
 	private TextElement teamsLeadTimeEl;
 	private TextElement teamsFollowupTimeEl;
-	private SingleSelection accessLevelEl;
 	private SingleSelection presentersEl;
-	private MultipleSelectionElement annoncementEl;
-	private SingleSelection lobbyEl;
 	
 	private BigBlueButtonMeetingsCalendarController bbbCalendarCtr;
 	private TeamsMeetingsCalendarController teamsCalendarCtr;
@@ -152,7 +146,6 @@ public class AppointmentCreateController extends FormBasicController {
 	private List<Identity> coaches;
 	private AppointmentInputType appointmentInputType;
 	private List<BigBlueButtonMeetingTemplate> templates;
-	private final boolean teamsMeetingExtendedOptionsEnabled;
 	private List<AppointmentWrapper> startDurationWrappers = new ArrayList<>();
 	private List<AppointmentWrapper> startEndWrappers = new ArrayList<>();
 	private boolean multiParticipationsSelected = true;
@@ -175,7 +168,6 @@ public class AppointmentCreateController extends FormBasicController {
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.appointmentInputType = AppointmentInputType.startDuration;
-		this.teamsMeetingExtendedOptionsEnabled = appointmentsService.isTeamsOnlineMeetingExtendedOptionsEnabled();
 		
 		coaches = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.coach.name());
 		
@@ -191,7 +183,6 @@ public class AppointmentCreateController extends FormBasicController {
 		this.subIdent = topic.getSubIdent();
 		this.topic = topic;
 		this.appointmentInputType  = appointmentInputType;
-		this.teamsMeetingExtendedOptionsEnabled = appointmentsService.isTeamsOnlineMeetingExtendedOptionsEnabled();
 		
 		initForm(ureq);
 		updateUI();
@@ -373,15 +364,6 @@ public class AppointmentCreateController extends FormBasicController {
 			
 			teamsFollowupTimeEl = uifactory.addTextElement("meeting.followupTime.teams", "meeting.followupTime", 8, null, formLayout);
 			
-			KeyValues accessKeyValues = new KeyValues();
-			String organisation = appointmentsService.getTeamsTenantOrganisation();
-			accessKeyValues.add(KeyValues.entry(AccessLevel.EVERYONE.name(), translate("meeting.accesslevel.everyone")));
-			accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE.name(),
-					translate("meeting.accesslevel.same.enterprise", new String[] { organisation })));
-			accessKeyValues.add(KeyValues.entry(AccessLevel.SAME_ENTERPRISE_AND_FEDERATED.name(),
-					translate("meeting.accesslevel.same.enterprise.federated", new String[] { organisation })));
-			accessLevelEl = uifactory.addDropdownSingleselect("meeting.accesslevel", formLayout, accessKeyValues.keys(), accessKeyValues.values());
-			accessLevelEl.setMandatory(true);
 
 			KeyValues presentersKeyValues = new KeyValues();
 			presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), translate("meeting.presenters.role")));
@@ -389,21 +371,8 @@ public class AppointmentCreateController extends FormBasicController {
 			presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.EVERYONE.name(), translate("meeting.presenters.everyone")));
 			presentersEl = uifactory.addDropdownSingleselect("meeting.presenters", formLayout, presentersKeyValues.keys(), presentersKeyValues.values());
 			presentersEl.setMandatory(true);
-			
-			String[] onValues = new String[] { translate("meeting.annoncement.on") };
-			annoncementEl = uifactory.addCheckboxesHorizontal("meeting.annoncement", formLayout, onKeys, onValues);
-			
-			KeyValues lobbyKeyValues = new KeyValues();
-			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.EVERYONE.name(), translate("meeting.lobby.bypass.everyone")));
-			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZATION.name(),
-					translate("meeting.lobby.bypass.organization", new String[] { organisation })));
-			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZATION_AND_FEDERATED.name(),
-					translate("meeting.lobby.bypass.same.enterprise.federated", new String[] { organisation })));
-			lobbyKeyValues.add(KeyValues.entry(LobbyBypassScope.ORGANIZER.name(), translate("meeting.lobby.bypass.organizer")));
-			lobbyEl = uifactory.addDropdownSingleselect("meeting.lobby.bypass", formLayout, lobbyKeyValues.keys(), lobbyKeyValues.values());
-			lobbyEl.setMandatory(true);
 
-			TeamsUIHelper.setDefaults(accessLevelEl, presentersEl, lobbyEl, null, teamsMeetingExtendedOptionsEnabled);
+			TeamsUIHelper.setDefaults(presentersEl, null);
 		}
 		
 		// Buttons
@@ -454,16 +423,13 @@ public class AppointmentCreateController extends FormBasicController {
 			layoutEl.setVisible(bbbRoom);
 		}
 		
-		if (accessLevelEl != null) {
+		if (presentersEl != null) {
 			boolean teamsMeeting = meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_TEAMS);
 			teamsCreatorEl.setVisible(teamsMeeting);
 			teamsOpenCalLink.setVisible(teamsMeeting);
 			teamsLeadTimeEl.setVisible(teamsMeeting);
 			teamsFollowupTimeEl.setVisible(teamsMeeting);
-			accessLevelEl.setVisible(teamsMeeting);
 			presentersEl.setVisible(teamsMeeting);
-			annoncementEl.setVisible(teamsMeeting && teamsMeetingExtendedOptionsEnabled);
-			lobbyEl.setVisible(teamsMeeting);
 		}
 	}
 
@@ -930,10 +896,7 @@ public class AppointmentCreateController extends FormBasicController {
 			
 			teamsMeeting.setPermanent(false);
 			teamsMeeting.setMainPresenter(appointmentsService.getFormattedOrganizers(topic));
-			teamsMeeting.setAccessLevel(accessLevelEl.getSelectedKey());
 			teamsMeeting.setAllowedPresenters(presentersEl.getSelectedKey());
-			teamsMeeting.setEntryExitAnnouncement(annoncementEl.isAtLeastSelected(1));
-			teamsMeeting.setLobbyBypassScope(lobbyEl.getSelectedKey());
 		}
 		return appointment;
 	}
