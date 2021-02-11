@@ -25,10 +25,8 @@
 package org.olat.group.ui;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -187,8 +185,8 @@ public class NewBGController extends BasicController {
 	 * 
 	 * @return the new groups.
 	 */
-	public Set<BusinessGroup> getCreatedGroups(){
-		Set<BusinessGroup> groupSet = new HashSet<>();
+	public List<BusinessGroup> getCreatedGroups(){
+		List<BusinessGroup> groupSet = new ArrayList<>();
 		if(newGroups != null) {
 			groupSet.addAll(newGroups); 
 		}
@@ -200,8 +198,8 @@ public class NewBGController extends BasicController {
 	 * 
 	 * @return the new group names.
 	 */
-	public Set<String> getCreatedGroupNames(){
-		Set<String> groupNames = new HashSet<>();
+	public List<String> getCreatedGroupNames(){
+		List<String> groupNames = new ArrayList<>();
 		if(newGroups != null) {
 			for (Iterator<BusinessGroup> iterator = newGroups.iterator(); iterator.hasNext();) {
 				 groupNames.add( iterator.next().getName());
@@ -210,8 +208,8 @@ public class NewBGController extends BasicController {
 		return groupNames;
 	}
 	
-	public Set<Long> getCreatedGroupKeys(){
-		Set<Long> groupKeys = new HashSet<>();
+	public List<Long> getCreatedGroupKeys(){
+		List<Long> groupKeys = new ArrayList<>();
 		if(newGroups != null) {
 			for (BusinessGroup group:newGroups) {
 				 groupKeys.add(group.getKey());
