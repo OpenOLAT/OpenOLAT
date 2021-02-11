@@ -40,6 +40,8 @@ public interface CourseWizardService {
 	
 	public void updateRepositoryEntry(RepositoryEntryRef entryRef, InfoMetadata infoMetadata);
 	
+	public void updateRepositoryEntryDisclaimer(CourseDisclaimerContext disclaimerContext);
+	
 	public void updateEntryStatus(Identity executor, RepositoryEntry entry, RepositoryEntryStatusEnum status);
 	
 	public void addRepositoryMembers(Identity executor, Roles roles, RepositoryEntry entry,
@@ -56,5 +58,4 @@ public interface CourseWizardService {
 	public void setCertificateConfigs(ICourse course, CertificateDefaults defaults);
 
 	public void createIQTESTCourseNode(ICourse course, IQTESTCourseNodeDefaults defaults);
-
 }

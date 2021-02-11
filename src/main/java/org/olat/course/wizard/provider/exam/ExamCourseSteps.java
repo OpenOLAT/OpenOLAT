@@ -29,6 +29,7 @@ public class ExamCourseSteps {
 	
 	private boolean retest;
 	private boolean certificate;
+	private boolean disclaimer;
 	private boolean coaches;
 	private boolean participants;
 
@@ -46,6 +47,14 @@ public class ExamCourseSteps {
 
 	public void setCertificate(boolean certificate) {
 		this.certificate = certificate;
+	}
+	
+	public boolean isDisclaimer() {
+		return disclaimer;
+	}
+	
+	public void setDisclaimer(boolean disclaimer) {
+		this.disclaimer = disclaimer;
 	}
 
 	public boolean isCoaches() {

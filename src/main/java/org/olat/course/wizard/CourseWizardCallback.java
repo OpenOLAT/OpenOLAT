@@ -32,6 +32,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
 import org.olat.course.member.wizard.MembersByNameContext;
+import org.olat.course.wizard.provider.exam.CourseDisclaimerStep;
 import org.olat.course.wizard.ui.CertificateController;
 import org.olat.course.wizard.ui.PublicationController;
 import org.olat.repository.RepositoryEntry;
@@ -84,6 +85,11 @@ public class CourseWizardCallback implements StepRunnerCallback {
 		if (runContext.containsKey(RUN_CONTEXT_TEST)) {
 			IQTESTCourseNodeDefaults defaults = (IQTESTCourseNodeDefaults) runContext.get(RUN_CONTEXT_TEST);
 			courseWizardService.createIQTESTCourseNode(course, defaults);
+		}
+		
+		if (runContext.containsKey(CourseDisclaimerStep.RUN_CONTEXT_KEY)) {
+			CourseDisclaimerContext disclaimerContext = (CourseDisclaimerContext) runContext.get(CourseDisclaimerStep.RUN_CONTEXT_KEY);
+			courseWizardService.updateRepositoryEntryDisclaimer(disclaimerContext);
 		}
 		
 		if (runContext.containsKey(RUN_CONTEXT_RETEST)) {

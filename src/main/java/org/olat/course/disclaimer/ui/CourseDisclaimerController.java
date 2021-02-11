@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
@@ -41,6 +42,7 @@ import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.course.run.RunMainController;
+import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,10 +70,12 @@ public class CourseDisclaimerController extends FormBasicController {
 	private StaticTextElement disclaimer1HeaderEl;
 	private StaticTextElement disclaimer2HeaderEl;
 
+	private SpacerElement enableAndContentSpacer;
 	private SpacerElement spacer;
 
 	private boolean disclaimer1Enabled = false;
 	private boolean disclaimer2Enabled = false;
+	private boolean showSaveButton;
 
 	private RepositoryEntry repositoryEntry;
 
@@ -82,23 +86,57 @@ public class CourseDisclaimerController extends FormBasicController {
 	@Autowired
 	private CourseDisclaimerManager disclaimerManager;
 
+	/**
+	 * Can be used in regular places
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param entry
+	 */
 	public CourseDisclaimerController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
-
+		
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 
 		this.repositoryEntry = entry;
-		onValues = new String[]{ translate("enabled") };
+		this.showSaveButton = true;
+		this.onValues = new String[]{ translate("enabled") };
 
 		initForm(ureq);
 		loadData();
 		showElements();
 	}
+	
+	/**
+	 * Only for wizards
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param externalForm
+	 * @param entry
+	 * @param showSaveButton
+	 */
+	public CourseDisclaimerController(UserRequest ureq, WindowControl wControl, Form externalForm, RepositoryEntry entry) {
+		super(ureq, wControl, LAYOUT_DEFAULT, null, externalForm);
+
+		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
+
+		this.repositoryEntry = entry;
+		this.showSaveButton = false;
+		this.onValues = new String[]{ translate("enabled") };
+
+		initForm(ureq);
+		loadData();
+		showElements();
+	}
+	
+	
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("course.disclaimer.headline");
 		setFormContextHelp("Course Settings#_course_disclaimer");
+		
 		// Enable and disable the disclaimers
 		disclaimer1CheckBoxEl = uifactory.addCheckboxesHorizontal("course.disclaimer.1", formLayout, onKeys, onValues);
 		disclaimer1CheckBoxEl.select(onKeys[0], disclaimer1Enabled);
@@ -107,7 +145,7 @@ public class CourseDisclaimerController extends FormBasicController {
 		disclaimer2CheckBoxEl.select(onKeys[0], disclaimer2Enabled);
 		disclaimer2CheckBoxEl.addActionListener(FormEvent.ONCHANGE);
 
-		uifactory.addSpacerElement("course.disclaimer.spacer.1", formLayout, false);
+		enableAndContentSpacer = uifactory.addSpacerElement("course.disclaimer.spacer.1", formLayout, false);
 
 		// Disclaimer 1
 		disclaimer1HeaderEl = uifactory.addStaticTextElement("course.disclaimer.1.section", null, translate("course.disclaimer.1"), formLayout);
@@ -145,9 +183,10 @@ public class CourseDisclaimerController extends FormBasicController {
 		disclaimer2Label2El = uifactory.addTextElement("course.disclaimer.2.label.2", "course.disclaimer.label.2", 255, "", formLayout);
 
 		// Spacer and Submit
-		uifactory.addFormSubmitButton("submit", formLayout);
-
-		uifactory.addSpacerElement("course.disclaimer.spacer.bottom", formLayout, true);
+		if (showSaveButton) {
+			uifactory.addFormSubmitButton("submit", formLayout);
+			uifactory.addSpacerElement("course.disclaimer.spacer.bottom", formLayout, true);
+		}	
 	}
 
 	@Override
@@ -180,7 +219,11 @@ public class CourseDisclaimerController extends FormBasicController {
 		return allOk;
 	}
 
-	private boolean validateTextInput(TextElement textElement, int lenght) {		
+	private boolean validateTextInput(TextElement textElement, int lenght) {	
+		if (textElement == null) {
+			return false;
+		}
+		
 		textElement.clearError();
 		if(StringHelper.containsNonWhitespace(textElement.getValue())) {
 			if(lenght != -1 && textElement.getValue().length() > lenght) {
@@ -298,6 +341,8 @@ public class CourseDisclaimerController extends FormBasicController {
 		} else {
 			spacer.setVisible(false);
 		}
+		
+		enableAndContentSpacer.setVisible(showSaveButton || disclaimer1Enabled || disclaimer2Enabled);
 	}
 
 	private void loadData() {
@@ -393,5 +438,25 @@ public class CourseDisclaimerController extends FormBasicController {
 		CourseFactory.setCourseConfig(courseOres.getResourceableId(), courseConfig);
 		CourseFactory.saveCourse(courseOres.getResourceableId());
 		CourseFactory.closeCourseEditSession(courseOres.getResourceableId(), true);
+	}
+	
+	public CourseDisclaimerContext getSummary() {
+		CourseDisclaimerContext context = new CourseDisclaimerContext();
+		
+		context.setEntry(repositoryEntry);
+		
+		context.setTermsOfUseEnabled(disclaimer1Enabled);
+		context.setTermsOfUseTitle(disclaimer1TitleEl.getValue());
+		context.setTermsOfUseContent(disclaimer1TermsEl.getValue());
+		context.setTermsOfUseLabel1(disclaimer1Label1El.getValue());
+		context.setTermsOfUseLabel2(disclaimer1Label2El.getValue());
+		
+		context.setDataProtectionEnabled(disclaimer2Enabled);
+		context.setDataProtectionTitle(disclaimer2TitleEl.getValue());
+		context.setDataProtectionContent(disclaimer2TermsEl.getValue());
+		context.setDataProtectionLabel1(disclaimer2Label1El.getValue());
+		context.setDataProtectionLabel2(disclaimer2Label2El.getValue());
+		
+		return context;
 	}
 }

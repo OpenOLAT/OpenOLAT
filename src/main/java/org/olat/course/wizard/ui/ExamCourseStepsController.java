@@ -45,6 +45,7 @@ public class ExamCourseStepsController extends StepFormBasicController {
 	
 	private static final String KEY_RETEST = "retest";
 	private static final String KEY_CERTIFICATE = "cert";
+	private static final String KEY_DISCLAIMER = "disclaimer";
 	private static final String KEY_COACHES = "coach";
 	private static final String KEY_PARTICIPANTS = "paeticipants";
 	
@@ -71,6 +72,7 @@ public class ExamCourseStepsController extends StepFormBasicController {
 		KeyValues configKV = new KeyValues();
 		configKV.add(KeyValues.entry(KEY_RETEST, translate("exam.retest")));
 		configKV.add(KeyValues.entry(KEY_CERTIFICATE, translate("exam.certificate")));
+		configKV.add(KeyValues.entry(KEY_DISCLAIMER, translate("exam.disclaimer")));
 		configEl = uifactory.addCheckboxesVertical("exam.config", formLayout, configKV.keys(), configKV.values(), 1);
 		configEl.select(KEY_RETEST, parts.isRetest());
 		configEl.select(KEY_CERTIFICATE, parts.isCertificate());
@@ -88,6 +90,7 @@ public class ExamCourseStepsController extends StepFormBasicController {
 		Collection<String> configKeys = configEl.getSelectedKeys();
 		parts.setRetest(configKeys.contains(KEY_RETEST));
 		parts.setCertificate(configKeys.contains(KEY_CERTIFICATE));
+		parts.setDisclaimer(configKeys.contains(KEY_DISCLAIMER));
 		
 		Collection<String> memberKeys = membersEl.getSelectedKeys();
 		parts.setCoaches(memberKeys.contains(KEY_COACHES));
