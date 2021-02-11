@@ -121,6 +121,7 @@ public class SlideUploadController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		meeting = bigBlueButtonManager.getMeeting(meeting);
 		VFSContainer slidesContainer = bigBlueButtonManager.getSlidesContainer(meeting);
 		fileEl.moveUploadFileTo(slidesContainer);
 		meeting = bigBlueButtonManager.updateMeeting(meeting);
