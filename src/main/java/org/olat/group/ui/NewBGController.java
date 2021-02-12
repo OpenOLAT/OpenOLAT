@@ -186,11 +186,12 @@ public class NewBGController extends BasicController {
 	 * @return the new groups.
 	 */
 	public List<BusinessGroup> getCreatedGroups(){
-		List<BusinessGroup> groupSet = new ArrayList<>();
+		List<BusinessGroup> groupList = new ArrayList<>();
 		if(newGroups != null) {
-			groupSet.addAll(newGroups); 
+			newGroups.sort((g1, g2) -> g1.getCreationDate().compareTo(g2.getCreationDate()));
+			groupList.addAll(newGroups); 
 		}
-		return groupSet;
+		return groupList;
 	}
 	
 	/**
@@ -201,6 +202,7 @@ public class NewBGController extends BasicController {
 	public List<String> getCreatedGroupNames(){
 		List<String> groupNames = new ArrayList<>();
 		if(newGroups != null) {
+			newGroups.sort((g1, g2) -> g1.getCreationDate().compareTo(g2.getCreationDate()));
 			for (Iterator<BusinessGroup> iterator = newGroups.iterator(); iterator.hasNext();) {
 				 groupNames.add( iterator.next().getName());
 			}
@@ -211,6 +213,7 @@ public class NewBGController extends BasicController {
 	public List<Long> getCreatedGroupKeys(){
 		List<Long> groupKeys = new ArrayList<>();
 		if(newGroups != null) {
+			newGroups.sort((g1, g2) -> g1.getCreationDate().compareTo(g2.getCreationDate()));
 			for (BusinessGroup group:newGroups) {
 				 groupKeys.add(group.getKey());
 			}
