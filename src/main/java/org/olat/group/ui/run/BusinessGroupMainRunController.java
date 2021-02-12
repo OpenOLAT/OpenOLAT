@@ -1011,7 +1011,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				doOpenMeetings(ureq);
 				bgTree.setSelectedNode(nodeOpenMeetings);
 			} else if(mainPanel != null) { // not enabled
-				String text = translate("warn.portfolionotavailable");
+				String text = translate("warn.openmeetingnotavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 				listenTo(mc); // cleanup on dispose
 				mainPanel.setContent(mc.getInitialComponent());
@@ -1021,7 +1021,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				doAdobeConnect(ureq);
 				bgTree.setSelectedNode(nodeAdobeConnect);
 			} else if(mainPanel != null) { // not enabled
-				String text = translate("warn.portfolionotavailable");
+				String text = translate("warn.adobeconnectnotavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 				listenTo(mc); // cleanup on dispose
 				mainPanel.setContent(mc.getInitialComponent());
@@ -1031,7 +1031,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				doBigBlueButton(ureq).activate(ureq, entries, ce.getTransientState());
 				bgTree.setSelectedNode(nodeBigBlueButton);
 			} else if(mainPanel != null) { // not enabled
-				String text = translate("warn.portfolionotavailable");
+				String text = translate("warn.bigbluebuttonnotavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 				listenTo(mc); // cleanup on dispose
 				mainPanel.setContent(mc.getInitialComponent());
@@ -1041,7 +1041,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				doTeams(ureq).activate(ureq, entries, ce.getTransientState());
 				bgTree.setSelectedNode(nodeTeams);
 			} else if(mainPanel != null) { // not enabled
-				String text = translate("warn.portfolionotavailable");
+				String text = translate("warn.teamsavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 				listenTo(mc); // cleanup on dispose
 				mainPanel.setContent(mc.getInitialComponent());

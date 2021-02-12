@@ -19,6 +19,7 @@
  */
 package org.olat.modules.teams.ui;
 
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -49,10 +50,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TeamsConfigurationController extends FormBasicController {
-	
+
+	private static final String[] FOR_KEYS = { "courses", "appointments", "groups" };
 	private static final String[] ENABLED_KEY = new String[]{ "on" };
 
 	private MultipleSelectionElement moduleEnabled;
+	private MultipleSelectionElement enabledForEl;
 	private TextElement clientIdEl;
 	private TextElement secretEl;
 	private TextElement tenantEl;
@@ -86,6 +89,15 @@ public class TeamsConfigurationController extends FormBasicController {
 		moduleEnabled = uifactory.addCheckboxesHorizontal("teams.module.enabled", formLayout, ENABLED_KEY, enabledValues);
 		moduleEnabled.select(ENABLED_KEY[0], teamsModule.isEnabled());
 		moduleEnabled.addActionListener(FormEvent.ONCHANGE);
+		
+		String[] forValues = new String[] {
+			translate("teams.module.enabled.for.courses"), translate("teams.module.enabled.for.appointments"),
+			translate("teams.module.enabled.for.groups")
+		};
+		enabledForEl = uifactory.addCheckboxesVertical("teams.module.enabled.for", formLayout, FOR_KEYS, forValues, 1);
+		enabledForEl.select(FOR_KEYS[0], teamsModule.isCoursesEnabled());
+		enabledForEl.select(FOR_KEYS[1], teamsModule.isAppointmentsEnabled());
+		enabledForEl.select(FOR_KEYS[2], teamsModule.isGroupsEnabled());
 		
 		String clientId = teamsModule.getApiKey();
 		clientIdEl = uifactory.addTextElement("client.id", "azure.adfs.id", 255, clientId, formLayout);
@@ -155,6 +167,7 @@ public class TeamsConfigurationController extends FormBasicController {
 		organisationEl.setVisible(enabled && StringHelper.containsNonWhitespace(organisationEl.getValue()));
 		producerEl.setVisible(enabled && StringHelper.containsNonWhitespace(producerEl.getValue()));
 		appSpacer.setVisible(enabled);
+		enabledForEl.setVisible(enabled);
 	}
 
 	@Override
@@ -217,6 +230,9 @@ public class TeamsConfigurationController extends FormBasicController {
 			teamsModule.setTenantGuid(tenantEl.getValue());
 			teamsModule.setTenantOrganisation(organisationEl.getValue());
 			teamsModule.setProducerId(producerIdEl.getValue());
+			teamsModule.setCoursesEnabled(enabledForEl.isSelected(0));
+			teamsModule.setAppointmentsEnabled(enabledForEl.isSelected(1));
+			teamsModule.setGroupsEnabled(enabledForEl.isSelected(2));
 			showInfo("info.saved");
 		} else {
 			teamsModule.setApiKey(null);
@@ -226,6 +242,8 @@ public class TeamsConfigurationController extends FormBasicController {
 			teamsModule.setProducerId(null);
 			showInfo("info.saved");
 		}
+
+		CollaborationToolsFactory.getInstance().initAvailableTools();
 	}
 	
 	private void doCheckConnection() {

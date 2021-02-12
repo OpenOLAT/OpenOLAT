@@ -39,6 +39,7 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String PROP_ENABLED = "vc.teams.enabled";
 	private static final String PROP_GROUP_ENABLED = "vc.teams.groups";
 	private static final String PROP_COURSE_ENABLED = "vc.teams.courses";
+	private static final String PROP_APPOINTMENTS_ENABLED = "vc.teams.appointments";
 	private static final String PROP_PRODUCER_ID = "vc.teams.producer.id";
 	
 	private static final String MSGRAPH_API_KEY = "vc.teams.api.key";
@@ -64,7 +65,8 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	private String groupsEnabled;
 	@Value("${vc.teams.courses:true}")
 	private String coursesEnabled;
-	
+	@Value("${vc.teams.appointments:true}")
+	private String appointmentsEnabled;
 	
 	@Autowired
 	public TeamsModule(CoordinatorManager coordinatorManager) {
@@ -86,6 +88,7 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 		
 		groupsEnabled = getStringPropertyValue(PROP_GROUP_ENABLED, groupsEnabled);
 		coursesEnabled = getStringPropertyValue(PROP_COURSE_ENABLED, coursesEnabled);
+		appointmentsEnabled = getStringPropertyValue(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled);
 	}
 
 	@Override
@@ -164,5 +167,14 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setCoursesEnabled(boolean enabled) {
 		coursesEnabled = enabled ? "true" : "false";
 		setStringProperty(PROP_COURSE_ENABLED, coursesEnabled, true);
+	}
+	
+	public boolean isAppointmentsEnabled() {
+		return "true".equals(appointmentsEnabled);
+	}
+
+	public void setAppointmentsEnabled(boolean enabled) {
+		appointmentsEnabled = enabled ? "true" : "false";
+		setStringProperty(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled, true);
 	}
 }
