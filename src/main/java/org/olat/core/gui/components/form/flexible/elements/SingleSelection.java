@@ -60,10 +60,26 @@ public interface SingleSelection extends SelectionElement {
 	
 	public boolean isAllowNoSelection();
 	
+	/**
+	 * If true, it disables the validation and exception sent if the element
+	 * is not selected.
+	 * 
+	 * @param allowNoSelection
+	 */
+	public void setAllowNoSelection(boolean allowNoSelection);
+	
 	public void enableNoneSelection();
 	
+	/**
+	 * Enable the no selection element.
+	 * 
+	 * @param translatedValue The label for the not selected element.
+	 */
 	public void enableNoneSelection(String translatedValue);
 	
+	/**
+	 * Remove the no selection element.
+	 */
 	public void disableNoneSelection();
 	
 	public boolean isEscapeHtml();

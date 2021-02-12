@@ -159,7 +159,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		SingleSelection noResponseEl = createNoResponseEl(element);
 		
 		SingleSelection radioEl = uifactory.addRadiosVertical("slider_" + CodeHelper.getRAMUniqueID(), null, flc, theKeys, theValues);
-		radioEl.enableNoneSelection();
+		radioEl.setAllowNoSelection(true);
 		radioEl.setDomReplacementWrapperRequired(false);
 		radioEl.addActionListener(FormEvent.ONCHANGE);
 		int widthInPercent = RubricWrapper.getWidthInPercent(element);
@@ -178,7 +178,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		if (element.isNoResponseEnabled()) {
 			noResponseEl = uifactory.addRadiosVertical(NO_RESPONSE_EL_PREFIX + CodeHelper.getRAMUniqueID(), null, flc,
 					NO_RESPONSE_KEYS, getNoResponseValue());
-			noResponseEl.enableNoneSelection();
+			noResponseEl.setAllowNoSelection(true);
 			noResponseEl.setEscapeHtml(false);
 			noResponseEl.setDomReplacementWrapperRequired(false);
 			noResponseEl.addActionListener(FormEvent.ONCHANGE);
@@ -369,7 +369,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		return Progress.of(current, max);
 	}
 	
-	public final static class RubricWrapper {
+	public static final class RubricWrapper {
 
 		private final Rubric rubric;
 		private List<SliderWrapper> sliders;

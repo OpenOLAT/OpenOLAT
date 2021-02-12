@@ -563,7 +563,9 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				if(handler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)handler).isMultiSelect()) {
 					List<String> valueList = splitMultipleValues(value);
 					for(int i=valueList.size(); i-->0; ) {
-						String val = makeFuzzyQueryString(valueList.get(i));
+						String val = valueList.get(i) + GenericSelectionPropertyHandler.KEY_DELIMITER;
+						val = makeFuzzyQueryString(val);
+						val = "%" + val;
 						dbq.setParameter(entry.getKey() + "_value_" + i, val.toLowerCase());
 					}
 				} else {

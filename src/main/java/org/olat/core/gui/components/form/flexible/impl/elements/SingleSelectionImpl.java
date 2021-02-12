@@ -51,6 +51,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	private boolean originalSelect = false;
 	private int selectedIndex = -1;
 	private boolean allowNoSelection = false;
+	private boolean noSelectionElement = false;
 	private String translatedNoSelectionValue;
 
 	private final Layout layout;
@@ -123,7 +124,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		this.selectedIndex = -1;
 		this.original = null;
 		this.originalSelect = false;
-		if (isAllowNoSelection()) {
+		if (noSelectionElement) {
 			addNoSelectionEntry();
 		}
 		initSelectionElements();
@@ -184,6 +185,11 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	}
 
 	@Override
+	public void setAllowNoSelection(boolean allowNoSelection) {
+		this.allowNoSelection = allowNoSelection;
+	}
+
+	@Override
 	public void enableNoneSelection() {
 		enableNoneSelection(null);
 	}
@@ -191,9 +197,12 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	@Override
 	public void enableNoneSelection(String translatedValue) {
 		translatedNoSelectionValue = translatedValue;
-		if (!allowNoSelection) {
+		if (!noSelectionElement) {
 			allowNoSelection = true;
+			noSelectionElement = true;
 			addNoSelectionEntry();
+		} else {
+			noSelectionElement = false;
 		}
 		if (keys != null) {
 			initSelectionElements();
@@ -203,9 +212,10 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	@Override
 	public void disableNoneSelection() {
 		translatedNoSelectionValue = null;
-		if (allowNoSelection) {
+		if (noSelectionElement) {
 			removeNoSelectionEntry();
 			allowNoSelection = false;
+			noSelectionElement = false;
 		}
 		initSelectionElements();
 	}
@@ -305,9 +315,6 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		clearError();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#setEnabled(boolean)
-	 */
 	@Override
 	public void setEnabled(boolean isEnabled) {
 		super.setEnabled(isEnabled);
@@ -356,7 +363,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	}
 
 	private int getNoValueOffset() {
-		return isAllowNoSelection()? 1: 0;
+		return noSelectionElement ? 1: 0;
 	}
 	
 	private void addNoSelectionEntry() {

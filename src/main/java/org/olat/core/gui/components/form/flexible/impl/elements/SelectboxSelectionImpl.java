@@ -51,6 +51,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	private boolean originalSelect = false;
 	private int selectedIndex = -1;
 	private boolean allowNoSelection = false;
+	private boolean noSelectionElement = false;
 	private String translatedNoSelectionValue;
 
 	private final SelectboxComponent component;
@@ -134,7 +135,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 		this.selectedIndex = -1;
 		this.original = null;
 		this.originalSelect = false;
-		if (isAllowNoSelection()) {
+		if (noSelectionElement) {
 			addNoSelectionEntry();
 		}
 		component.setOptionsAndValues(this.keys, this.values, this.cssClasses);
@@ -171,6 +172,11 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	}
 
 	@Override
+	public void setAllowNoSelection(boolean allowNoSelection) {
+		this.allowNoSelection = allowNoSelection;
+	}
+
+	@Override
 	public void enableNoneSelection() {
 		enableNoneSelection(null);
 	}
@@ -178,8 +184,9 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	@Override
 	public void enableNoneSelection(String translatedValue) {
 		translatedNoSelectionValue = translatedValue;
-		if (!allowNoSelection) {
+		if (!noSelectionElement) {
 			allowNoSelection = true;
+			noSelectionElement = true;
 			addNoSelectionEntry();
 		}
 		component.setOptionsAndValues(this.keys, this.values, this.cssClasses);
@@ -188,9 +195,10 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	@Override
 	public void disableNoneSelection() {
 		translatedNoSelectionValue = null;
-		if (allowNoSelection) {
+		if (noSelectionElement) {
 			removeNoSelectionEntry();
 			allowNoSelection = false;
+			noSelectionElement = false;
 		}
 		component.setOptionsAndValues(this.keys, this.values, this.cssClasses);
 	}
@@ -313,7 +321,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	}
 
 	private int getNoValueOffset() {
-		return isAllowNoSelection()? 1: 0;
+		return noSelectionElement ? 1: 0;
 	}
 	
 	private void addNoSelectionEntry() {

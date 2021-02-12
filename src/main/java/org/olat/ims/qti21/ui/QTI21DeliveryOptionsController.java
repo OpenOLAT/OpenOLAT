@@ -57,7 +57,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
-	private static final String[] settingTypeKeys = new String[]{ "choose", TestType.summative.name(), TestType.formative.name() };
+	private static final String[] settingTypeKeys = new String[]{ TestType.summative.name(), TestType.formative.name() };
 	private static final String[] resultsOptionsKeys = new String[] { 
 			QTI21AssessmentResultsOptions.METADATA, QTI21AssessmentResultsOptions.SECTION_SUMMARY,
 			QTI21AssessmentResultsOptions.QUESTION_SUMMARY,
@@ -116,11 +116,11 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		formLayout.add(profileCont);
 		
 		String[] settingTypeValues = new String[]{ 
-				translate("qti.form.setting.choose"), translate("qti.form.setting.summative"), translate("qti.form.setting.formative")
+				translate("qti.form.setting.summative"), translate("qti.form.setting.formative")
 		};
 		settingTypeEl = uifactory.addDropdownSingleselect("settings.type", "settings.type", null, profileCont, settingTypeKeys, settingTypeValues, null);
 		settingTypeEl.setDomReplacementWrapperRequired(false);
-		settingTypeEl.enableNoneSelection();
+		settingTypeEl.enableNoneSelection(translate("qti.form.setting.choose"));
 		
 		chooseProfileButton = uifactory.addFormLink("settings.choose.profile", profileCont, Link.BUTTON);
 		
@@ -314,7 +314,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 					applyDeliveryOptions(QTI21DeliveryOptions.summativeSettings());
 				}
 			}
-			settingTypeEl.select("choose", true);
+			settingTypeEl.select(SingleSelection.NO_SELECTION_KEY, true);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
