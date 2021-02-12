@@ -945,7 +945,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 
 	@Override
 	public boolean isTeamsEnabled() {
-		return teamsModule.isEnabled();
+		return teamsModule.isEnabled() && teamsModule.isAppointmentsEnabled();
 	}
 
 	@Override
