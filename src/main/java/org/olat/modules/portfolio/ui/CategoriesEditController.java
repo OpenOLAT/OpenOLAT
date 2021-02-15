@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
+import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,19 +57,19 @@ public class CategoriesEditController extends FormBasicController {
 
 	List<Category> categories;
 	
-	private Map<String,String> categoriesNames = new HashMap<>();
+	private List<TextBoxItem> categoriesNames = new ArrayList<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
 	
 	public CategoriesEditController(UserRequest ureq, WindowControl wControl, List<Category> categories) {
 		super(ureq, wControl, "categories_edit");
 		this.categories = categories;
-			for(Category category:categories) {
-				categoriesNames.put(category.getName(), category.getName());
-				categoriesMap.put(category.getName(), category);
-			}
+		for(Category category:categories) {
+			categoriesNames.add(new TextBoxItemImpl(category.getName(), category.getName()));
+			categoriesMap.put(category.getName(), category);
+		}
 		initForm(ureq);
 		/* we add domID to categories_edit.html to reduce DIV count */
-		this.flc.getFormItemComponent().setDomReplacementWrapperRequired(false);
+		flc.getFormItemComponent().setDomReplacementWrapperRequired(false);
 	}
 	
 	@Override
@@ -102,7 +105,7 @@ public class CategoriesEditController extends FormBasicController {
 		editLink.setVisible(!editable);
 		saveButton.setVisible(editable);
 		// Special label when no categories are there
-		if (categoriesEl.getValueList().size() == 0) {
+		if (categoriesEl.getValueList().isEmpty()) {
 			categoriesEl.setVisible(editable);
 			editLink.setI18nKey("categories.add");			
 		} else {
@@ -128,8 +131,7 @@ public class CategoriesEditController extends FormBasicController {
 	 * @return The list of categories as visually configured in the box
 	 */
 	public List<String> getUpdatedCategories() {
-		List<String> updatedCategories = categoriesEl.getValueList();
-		return updatedCategories;
+		return categoriesEl.getValueList();
 	}
 	
 	@Override

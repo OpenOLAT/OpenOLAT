@@ -29,7 +29,6 @@ import java.io.File;
 import java.lang.management.MemoryType;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
@@ -91,6 +90,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.control.WindowBackOffice;
@@ -621,7 +621,7 @@ public class FormUIFactory {
 	 * @param translator
 	 * @return
 	 */
-	public TextBoxListElement addTextBoxListElement(String name, final String i18nLabel, String inputHint, Map<String, String> initialItems, FormItemContainer formLayout, Translator translator){
+	public TextBoxListElement addTextBoxListElement(String name, final String i18nLabel, String inputHint, List<TextBoxItem> initialItems, FormItemContainer formLayout, Translator translator){
 		TextBoxListElement tbe = new TextBoxListElementImpl(name, inputHint, initialItems, translator);
 		setLabelIfNotNull(i18nLabel, tbe);
 		formLayout.add(tbe);

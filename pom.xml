@@ -350,8 +350,8 @@
 											<output>${basedir}/src/main/webapp/static/js/js.plugins.min.css</output>
 											<removeIncluded>false</removeIncluded>
 											<includes>
-												<include>${basedir}/target/jquery/jquery/tagsinput/bootstrap-tagsinput.min.css</include>
 												<include>${basedir}/src/main/webapp/static/js/fullcalendar/main.min.css</include>
+												<include>${basedir}/target/jquery/tagify/tagify.min.css</include>
 												<include>${basedir}/target/jquery/jquery/cropper/cropper.min.css</include>
 												<include>${basedir}/target/jquery/jquery/sliderpips/jquery-ui-slider-pips.min.css</include>
 												<include>${basedir}/target/jquery/jquery/ui/jquery-ui-1.11.4.custom.min.css</include>

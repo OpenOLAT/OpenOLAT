@@ -22,10 +22,9 @@ package org.olat.modules.portfolio.ui.media;
 import static org.olat.core.gui.components.util.KeyValues.entry;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.olat.core.commons.services.doceditor.DocTemplate;
@@ -38,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -76,7 +76,7 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 	private TextElement fileNameEl;
 
 	private Media mediaReference;
-	private Map<String,String> categories = new HashMap<>();
+	private List<TextBoxItem> categories = new ArrayList<>();
 	
 	private final List<DocTemplate> docTemplates;
 	private final String businessPath;

@@ -19,36 +19,20 @@
  */
 package org.olat.core.gui.components.textboxlist;
 
-import java.util.List;
-
-import org.olat.core.gui.control.Event;
-
 /**
- * Description:<br>
- * Event sent by TextBoxListComponent if changes occurred or submitted.
- *  
- * contains a list with all Elements -> getAllItems() 
  * 
- * <P>
- * Initial Date: 23.07.2010 <br>
- * 
- * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
+ * Initial date: 14 nov. 2019<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class TextBoxListEvent extends Event {
+public interface TextBoxItem {
+	
+	public String getValue();
+	
+	public String getLabel();
+	
+	public String getColor();
+	
+	public boolean isEditable();
 
-	private static final long serialVersionUID = -3171640979953788199L;
-	private static final String TEXTBOXLISTCHANGE = "textboxlistchange";
-	private List<TextBoxItem> allItems;
-
-	public TextBoxListEvent(List<TextBoxItem> allItems) {
-		super(TEXTBOXLISTCHANGE);
-		this.allItems = allItems;
-	}
-
-	/**
-	 * @return Returns the all items which were in the component
-	 */
-	public List<TextBoxItem> getAllItems() {
-		return allItems;
-	}
 }

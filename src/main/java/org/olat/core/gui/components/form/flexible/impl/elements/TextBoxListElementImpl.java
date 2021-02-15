@@ -20,7 +20,6 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -28,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.textboxlist.ResultMapProvider;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.textboxlist.TextBoxListComponent;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -50,7 +50,7 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	 */
 	private final TextBoxListElementComponent component;
 
-	public TextBoxListElementImpl(String name, String inputHint, Map<String, String> initialItems, Translator translator) {
+	public TextBoxListElementImpl(String name, String inputHint, List<TextBoxItem> initialItems, Translator translator) {
 		super(name,true);// we wan't to be an inline-editing element!
 		component = new TextBoxListElementComponent(this, name, inputHint, initialItems, translator);
 		setInlineEditingComponent(component);
@@ -69,6 +69,8 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
+		if(!isEnabled()) return;
+		
 		String inputId = TextBoxListComponent.INPUT_SUFFIX + getFormDispatchId();
 		String cmd = ureq.getParameter(inputId);
 		if(StringHelper.containsNonWhitespace(cmd)) {
@@ -76,8 +78,12 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 		} else {
 			//this one handle multipart/form too
 			String submitValue = getRootForm().getRequestParameter(inputId);
-			component.setCmd(ureq, submitValue);
-		}			
+			if(StringHelper.containsNonWhitespace(submitValue)) {
+				component.setCmd(ureq, submitValue);
+			} else if(submitValue != null) {
+				component.clearItems();
+			}
+		}
 	}
 
 	@Override
@@ -89,9 +95,13 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	}
 	
 	@Override
-	public String getValue(){
-	//	String paramVal = getRootForm().getRequestParameter("textboxlistinput" + getFormDispatchId());
+	public String getValue() {
 		return StringUtils.join(component.getCurrentItemValues(),", ");
+	}
+	
+	@Override
+	public List<TextBoxItem> getValueItems() {
+		return component.getCurrentItems();
 	}
 
 	@Override
@@ -105,13 +115,14 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	}
 	
 	@Override
-	public void setAutoCompleteContent(Map<String, String> tagM) {
+	public void setAutoCompleteContent(List<TextBoxItem> tagM) {
 		component.setAutoCompleteContent(tagM);		
 	}
 	
 	/**
 	 * @return Returns the allowDuplicates.
 	 */
+	@Override
 	public boolean isAllowDuplicates() {
 		return component.isAllowDuplicates();
 	}
@@ -121,13 +132,14 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	 *            if set to false (default) duplicates will be filtered
 	 *            automatically
 	 */
+	@Override
 	public void setAllowDuplicates(boolean allowDuplicates) {
 		component.setAllowDuplicates(allowDuplicates);
 	}
 
 	@Override
-	public void setMapperProvider(ResultMapProvider provider) {
-		component.setMapperProvider(provider);
+	public void setMapperProvider(ResultMapProvider provider, UserRequest ureq) {
+		component.setMapperProvider(provider, ureq);
 	}
 
 	@Override

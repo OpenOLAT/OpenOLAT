@@ -22,7 +22,6 @@ package org.olat.modules.portfolio.ui;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,6 +40,8 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
+import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -166,8 +167,9 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			
 			List<Category> categories = portfolioService.getCategories(media);
 			if(categories != null && !categories.isEmpty()) {
-				Map<String,String> categoriesMap = categories.stream()
-						.collect(Collectors.toMap(Category::getName, Category::getName));
+				List<TextBoxItem> categoriesMap = categories.stream()
+						.map(cat -> new TextBoxItemImpl(cat.getName(), cat.getName()))
+						.collect(Collectors.toList());
 				TextBoxListElement categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categoriesMap, metaCont, getTranslator());
 				categoriesEl.setHelpText(translate("categories.hint"));
 				categoriesEl.setElementCssClass("o_sel_ep_tagsinput");

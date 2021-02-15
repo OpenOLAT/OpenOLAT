@@ -20,11 +20,10 @@
 package org.olat.modules.portfolio.ui.media;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
@@ -38,6 +37,8 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
+import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -81,7 +82,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 	private TextBoxListElement categoriesEl;
 
 	private Media mediaReference;
-	private Map<String,String> categories = new HashMap<>();
+	private List<TextBoxItem> categories = new ArrayList<>();
 	
 	private final String businessPath;
 	private AddElementInfos userObject;
@@ -106,7 +107,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 		
 		List<Category> categoryList = portfolioService.getCategories(media);
 		for(Category category:categoryList) {
-			categories.put(category.getName(), category.getName());
+			categories.add(new TextBoxItemImpl(category.getName(), category.getName()));
 		}
 		initForm(ureq);
 	}

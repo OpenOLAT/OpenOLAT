@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +39,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
+import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -77,7 +80,7 @@ public class BinderMetadataEditController extends FormBasicController {
 	private static final int picUploadlimitKB = 5120;
 	
 	private Binder binder;
-	private Map<String,String> categories = new HashMap<>();
+	private List<TextBoxItem> categories = new ArrayList<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
 	
 	@Autowired
@@ -98,7 +101,7 @@ public class BinderMetadataEditController extends FormBasicController {
 		if(binder != null) {
 			List<Category> tags = portfolioService.getCategories(binder);
 			for(Category tag:tags) {
-				categories.put(tag.getName(), tag.getName());
+				categories.add(new TextBoxItemImpl(tag.getName(), tag.getName()));
 				categoriesMap.put(tag.getName(), tag);
 			}
 		}

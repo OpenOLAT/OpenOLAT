@@ -45,6 +45,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
+import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -121,7 +123,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private final boolean editTitleAndSummary;
 
 	private List<FileInfos> documents = new ArrayList<>();
-	private Map<String,String> categories = new HashMap<>();
+	private List<TextBoxItem> categories = new ArrayList<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
 	private Map<String,Assignment> assignmentTemplatesMap = new HashMap<>();
 
@@ -196,7 +198,7 @@ public class PageMetadataEditController extends FormBasicController {
 		if(page != null) {
 			List<Category> tags = portfolioService.getCategories(page);
 			for(Category tag:tags) {
-				categories.put(tag.getName(), tag.getName());
+				categories.add(new TextBoxItemImpl(tag.getName(), tag.getName()));
 				categoriesMap.put(tag.getName(), tag);
 			}
 		}

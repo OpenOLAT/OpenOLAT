@@ -19,11 +19,12 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.Map;
+import java.util.List;
 
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.textboxlist.TextBoxListComponent;
-import org.olat.core.gui.components.textboxlist.TextBoxListRenderer;
+import org.olat.core.gui.components.textboxlist.TextBoxListTagifyRenderer;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -36,10 +37,10 @@ import org.olat.core.gui.translator.Translator;
  */
 public class TextBoxListElementComponent extends TextBoxListComponent  {
 
-	private ComponentRenderer RENDERER = new TextBoxListRenderer();
+	private static final ComponentRenderer RENDERER_TAGIFY = new TextBoxListTagifyRenderer();
 	private TextBoxListElementImpl element;
 	
-	public TextBoxListElementComponent(TextBoxListElementImpl element, String name, String inputHint, Map<String, String> initialItems, Translator translator) {
+	public TextBoxListElementComponent(TextBoxListElementImpl element, String name, String inputHint, List<TextBoxItem> initialItems, Translator translator) {
 		super(name, inputHint, initialItems, translator);
 		this.element = element;
 	}
@@ -48,13 +49,8 @@ public class TextBoxListElementComponent extends TextBoxListComponent  {
 		return element;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
+		return RENDERER_TAGIFY;
 	}
-
-
 }

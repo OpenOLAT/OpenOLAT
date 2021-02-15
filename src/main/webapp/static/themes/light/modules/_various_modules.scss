@@ -901,3 +901,64 @@ a.o_labeled_light {
 .o_files_size_large {
 	color: $o-files-size-large;
 }
+
+/* Tagify */
+.o_tag_admin {
+	background: repeating-linear-gradient(135deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
+}
+
+.o_tag_admin:before {
+	@include o-make-icon();
+	padding-right: 0.5em;
+	content: $fa-var-eye-slash;
+}
+
+body {
+	.tagify {
+
+		.tagify__tag-text {
+			font-size: 75%;
+			font-weight: bold;
+			color: $label-color;
+		}
+		
+		&.o_textbox {
+			border: 1px solid $input-border;
+			border-radius: $input-border-radius;
+			background-color: white;
+			@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075));
+			@include transition(border-color ease-in-out .15s, box-shadow ease-in-out .15s);
+		}
+		
+		.tagify__tag {
+			line-height: 1;
+			color: $label-color;
+			text-align: center;
+			white-space: nowrap;
+			vertical-align: baseline;
+			border-radius: .25em;
+			@include label-variant($label-info-bg);
+		}
+		
+		.tagify__tag>div {
+			padding: 0.3em 0.5em 0.2em 0.5em;
+			border-radius: .25em;
+		}
+		
+		.tagify__tag.o_tag_admin>div::before {
+			box-shadow: none;
+			background: var(--tag-bg) repeating-linear-gradient(135deg, var(--tag-bg), var(--tag-bg) 3px, rgba(0, 0, 0, 0.2) 3px, rgba(0, 0, 0, 0.2) 6px);
+		}
+		
+		.tagify__tag.o_tag_admin:before {
+			padding-right: 0em;
+			padding-left: 0.5em;
+		}
+	}
+	
+	div.tagify__dropdown__item {
+		color: $label-color;
+		font-weight: bold;
+		@include label-variant($label-info-bg);
+	}
+}

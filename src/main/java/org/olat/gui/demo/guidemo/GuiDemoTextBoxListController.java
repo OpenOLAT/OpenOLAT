@@ -19,12 +19,10 @@
  */
 package org.olat.gui.demo.guidemo;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
@@ -32,8 +30,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementImpl;
 import org.olat.core.gui.components.textboxlist.ResultMapProvider;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
+import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 
 /**
@@ -47,24 +46,9 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class GuiDemoTextBoxListController extends FormBasicController {
 
-	private TextBoxListElement textBoxListEl;
-	private TextBoxListElement textBoxListEl2;
-	private TextBoxListElement textBoxListEl3;
-	private TextBoxListElement textBoxListEl4;
-
 	public GuiDemoTextBoxListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "guidemo-textboxlist");
 		initForm(ureq);
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -75,9 +59,6 @@ public class GuiDemoTextBoxListController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// nothing to dispose
@@ -86,39 +67,40 @@ public class GuiDemoTextBoxListController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// the first showcase
-		Map<String, String> initialItems = new TreeMap<>();
-		initialItems.put("Demo", "demo");
-		initialItems.put("You can delete me!", "delete");
-		textBoxListEl = uifactory.addTextBoxListElement("testTextbox", null, "textboxlist.hint", initialItems, formLayout, getTranslator());
-		ResultMapProvider provider = new ResultMapProvider() {
-			@Override
-			public void getAutoCompleteContent(String searchValue, Map<String, String> resMap) {
-				// put some dummy values as result. For real-world do your
-				// search-magic here!
-				resMap.put("Haus", "haus");
-				resMap.put("Clown", "clown");
-				resMap.put("Dog", "dog");
-			}
-		};
-		textBoxListEl.setMapperProvider(provider);
+		List<TextBoxItem> initialItems = new ArrayList<>();
+		initialItems.add(new TextBoxItemImpl("Demo", "demo"));
+		TextBoxListElement textBoxListEl = uifactory.addTextBoxListElement("testTextbox", null, "textboxlist.hint", initialItems, formLayout, getTranslator());
+		
 		textBoxListEl.setAllowDuplicates(false);
 		textBoxListEl.setAllowNewValues(false);
+		
+		ResultMapProvider provider = (searchValue, resMap) -> {
+			resMap.put("Haus", "haus");
+			resMap.put("Clown", "clown");
+			resMap.put("Dog", "dog");
+		};
+		textBoxListEl.setMapperProvider(provider, ureq);
 
 		// the second showcase
-		textBoxListEl2 = uifactory.addTextBoxListElement("testTextbox2", null, "textboxlist.hint", null, formLayout, getTranslator());
+		TextBoxListElement textBoxListEl2 = uifactory.addTextBoxListElement("testTextbox2", null, "textboxlist.hint", null, formLayout, getTranslator());
 		textBoxListEl2.setAllowDuplicates(true);
 		textBoxListEl2.setAllowNewValues(true);
 
 		// the third showcase
-		textBoxListEl3 = uifactory.addTextBoxListElement("testTextbox3", null, "textboxlist.hint", null, formLayout, getTranslator());
+		TextBoxListElement textBoxListEl3 = uifactory.addTextBoxListElement("testTextbox3", null, "textboxlist.hint", null, formLayout, getTranslator());
 		textBoxListEl3.setAllowDuplicates(false);
 		textBoxListEl3.setAllowNewValues(true);
 
 		// the fourth showcase
-		textBoxListEl4 = uifactory.addTextBoxListElement("testTextbox4", null, "textboxlist.hint", null, formLayout, getTranslator());
+		TextBoxListElement textBoxListEl4 = uifactory.addTextBoxListElement("testTextbox4", null, "textboxlist.hint", null, formLayout, getTranslator());
 		textBoxListEl4.setAllowDuplicates(true);
 		textBoxListEl4.setAllowNewValues(true);
-		textBoxListEl4.setMapperProvider(provider);
+		
+		List<TextBoxItem> provider4 = new ArrayList<>();
+		provider4.add(new TextBoxItemImpl("haus", "Haus"));
+		provider4.add(new TextBoxItemImpl("clown", "Clown"));
+		provider4.add(new TextBoxItemImpl("dog", "Dog"));
+		textBoxListEl4.setAutoCompleteContent(provider4);
 	}
 
 	@Override

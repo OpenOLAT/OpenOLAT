@@ -19,10 +19,9 @@
  */
 package org.olat.modules.portfolio.ui.wizard;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -30,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -57,7 +57,7 @@ public class CollectArtefactController extends FormBasicController {
 	private Media mediaReference;
 	private final Object mediaObject;
 	private final MediaHandler handler;
-	private Map<String,String> categories = new HashMap<>();
+	private List<TextBoxItem> categories = new ArrayList<>();
 	
 	private final String businessPath;
 	private final MediaInformations prefillInfos;

@@ -20,11 +20,12 @@
 package org.olat.core.gui.components.form.flexible.elements;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.textboxlist.ResultMapProvider;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
 
 /**
  * Description:<br>
@@ -40,12 +41,14 @@ public interface TextBoxListElement extends FormItem {
 	public String getValue();
 
 	public List<String> getValueList();
+	
+	public List<TextBoxItem> getValueItems();
 
 	public void setAutoCompleteContent(Set<String> autoCompletionValues);
 
-	public void setMapperProvider(ResultMapProvider provider);
+	public void setMapperProvider(ResultMapProvider provider, UserRequest ureq);
 
-	public void setAutoCompleteContent(Map<String, String> autoCompletionValues);
+	public void setAutoCompleteContent(List<TextBoxItem> autoCompletionValues);
 
 	
 	/**

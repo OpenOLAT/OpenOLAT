@@ -20,10 +20,9 @@
 package org.olat.modules.portfolio.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -35,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -66,7 +66,7 @@ public class MediaUploadController extends FormBasicController implements PageEl
 	private TextBoxListElement categoriesEl;
 
 	private Media mediaReference;
-	private Map<String,String> categories = new HashMap<>();
+	private List<TextBoxItem> categories = new ArrayList<>();
 	
 	private final String businessPath;
 	private AddElementInfos userObject;
@@ -114,14 +114,10 @@ public class MediaUploadController extends FormBasicController implements PageEl
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setMandatory(true);
 		
-		
 		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
 		categoriesEl.setHelpText(translate("categories.hint"));
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
-		
-		//String source = "Forum";
-		//uifactory.addStaticTextElement("artefact.source", "artefact.source", source, formLayout);
 		
 		String date = Formatter.getInstance(getLocale()).formatDate(new Date());
 		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
