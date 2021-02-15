@@ -785,7 +785,7 @@ public class AssessmentTestSessionDAO {
 		
 		decorateTestSessionPermission(sb, searchParams);
 		//need to be anonymized
-		sb.append(" order by usr.lastName, testSession.key");
+		sb.append(" order by usr.lastName, usr.firstName, testSession.key");
 		
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class);
