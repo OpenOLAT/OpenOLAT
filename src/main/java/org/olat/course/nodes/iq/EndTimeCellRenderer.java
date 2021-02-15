@@ -58,28 +58,27 @@ public class EndTimeCellRenderer implements FlexiCellRenderer {
 			Integer compensationExtraTimeInSeconds = infos.getCompensationExtraTimeInSeconds();
 			
 			if(infos.getStart() != null) {
-				int totalTime = timeLimitInSeconds;
+				long totalTimeMs = timeLimitInSeconds * 1000l;
 				if(endDate != null) {
-					long leadingTimeInMilliSeconds = endDate.getTime() - infos.getStart().getTime();
-					int leadingTime = Math.round(leadingTimeInMilliSeconds / 1000f);
+					long leadingTimeInMs = endDate.getTime() - infos.getStart().getTime();
 					if(timeLimitInSeconds > 0) {
-						totalTime = Math.min(totalTime, leadingTime);
+						totalTimeMs = Math.min(totalTimeMs, leadingTimeInMs);
 					} else {
-						totalTime = leadingTime;
+						totalTimeMs = leadingTimeInMs;
 					}
 				}
 
 				if(extraTimeInSeconds != null) {
-					totalTime += extraTimeInSeconds;
+					totalTimeMs += (extraTimeInSeconds * 1000l);
 				}
 				if(compensationExtraTimeInSeconds != null) {
-					totalTime += compensationExtraTimeInSeconds;
+					totalTimeMs += (compensationExtraTimeInSeconds * 1000l);
 				}
 				
 				Calendar now = Calendar.getInstance();
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(infos.getStart());
-				cal.add(Calendar.SECOND, totalTime);
+				cal.add(Calendar.MILLISECOND, (int)totalTimeMs);
 				Date dueDate = cal.getTime();
 
 				boolean sameDay = now.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
