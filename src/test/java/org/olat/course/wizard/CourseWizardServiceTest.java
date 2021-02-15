@@ -137,12 +137,12 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		
 		SoftAssertions softly = new SoftAssertions();
 		CourseConfig courseConfig = course.getCourseConfig();
-		assertThat(courseConfig.isAutomaticCertificationEnabled()).isTrue();
-		assertThat(courseConfig.isManualCertificationEnabled()).isFalse();
-		assertThat(courseConfig.getCertificateCustom1()).isEqualTo(certificateCustom1);
-		assertThat(courseConfig.getCertificateCustom2()).isEqualTo(certificateCustom2);
-		assertThat(courseConfig.getCertificateCustom3()).isEqualTo(certificateCustom3);
-		assertThat(courseConfig.getCertificateTemplate()).isEqualTo(template.getKey());
+		softly.assertThat(courseConfig.isAutomaticCertificationEnabled()).isTrue();
+		softly.assertThat(courseConfig.isManualCertificationEnabled()).isFalse();
+		softly.assertThat(courseConfig.getCertificateCustom1()).isEqualTo(certificateCustom1);
+		softly.assertThat(courseConfig.getCertificateCustom2()).isEqualTo(certificateCustom2);
+		softly.assertThat(courseConfig.getCertificateCustom3()).isEqualTo(certificateCustom3);
+		softly.assertThat(courseConfig.getCertificateTemplate()).isEqualTo(template.getKey());
 		softly.assertAll();
 	}
 	
