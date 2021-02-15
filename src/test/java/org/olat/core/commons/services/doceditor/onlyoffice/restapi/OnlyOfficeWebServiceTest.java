@@ -39,10 +39,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.AccessSearchParams;
@@ -56,6 +53,7 @@ import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecuritySer
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.ActionImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.CallbackImpl;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSContainer;
@@ -75,7 +73,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 	
 	private RestConnection conn;
@@ -94,6 +91,8 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 	private DocEditorService docEditorService;
 	@Autowired
 	private VFSLockManager vfsLockManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	@Before
 	public void setUp() {
@@ -104,10 +103,11 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		conn = new RestConnection();
 		vfsContainer = VFSManager.olatRootContainer("/" + "onlyoffice_" + random(), null);
 		vfsLeaf = vfsContainer.createChildLeaf(random() + ".docx");
+		vfsRepositoryService.getMetadataFor(vfsLeaf);
+		dbInstance.commitAndCloseSession();
 	}
 
 	@Test
-	@Ignore
 	public void testEditSession() throws Exception {
 		SoftAssertions softly = new SoftAssertions();
 		
@@ -149,7 +149,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		softly.assertThat(getCallbackError(response)).as("Response error code").isEqualTo(0);
 		
 		softly.assertThat(vfsLockManager.getLock(vfsLeaf).getTokens())
-				.as("User 1 started editing: the lock should have one tokens")
+				.as("User 1 started editing: the lock should have one token")
 				.hasSize(1);
 		softly.assertThat(vfsLockManager.isLockedForMe(vfsLeaf, user1, VFSLockApplicationType.vfs, null))
 				.as("User 1 started editing: the file should be locked for other lock types")
@@ -181,6 +181,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		softly.assertThat(docEditorService.getAccesses(accessSearchParams))
 				.as("User 2 started editing in 1st window: still two accesses should exist.")
 				.hasSize(2);
+		
 		
 		// Second user opens same file in OnlyOffice for editing in a second browser window
 		// Callback: CallbackImpl [actions=[ActionImpl [type=1, userid=openolat.limmat.user1]], forcesavetype=null, key=9228803b-cfb6-423b-973a-f90228a6bda5-20210128133145, status=1, url=null, users=[openolat.limmat.administrator, openolat.limmat.user1]]
@@ -271,7 +272,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		softly.assertAll();
 	}
 	
-	@Test @Ignore
+	@Test
 	public void testEditSessionNoChanges() throws Exception {
 		SoftAssertions softly = new SoftAssertions();
 		
@@ -389,7 +390,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		HttpUriRequest request = new HttpGet(createContentUri());
 		decorateAuthorisation(request, "something");
 		HttpResponse response = conn.execute(request);
-
+		
 		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(Status.OK.getStatusCode());
 	}
 	
@@ -437,7 +438,6 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 	private String getFileId() {
 		return vfsLeaf.getMetaInfo().getUuid();
 	}
-
 	
 	private void decorateAuthorisation(HttpRequest request, Object object) {
 		String autorisation = createAuthorisation(object);
