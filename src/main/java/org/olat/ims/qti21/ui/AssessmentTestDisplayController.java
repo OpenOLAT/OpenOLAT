@@ -1588,6 +1588,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
         
         boolean terminated = isTerminated();
+        
+        /* Enter first assessment item if possible */
+        enterFirstAssessmentItemOfAdvancedTestPart(nextTestPart, ureq);
 
         /* Record current result state */
         computeAndRecordTestAssessmentResult(currentTimestamp, testSessionState, terminated);
@@ -1602,6 +1605,22 @@ public class AssessmentTestDisplayController extends BasicController implements 
         	qtiWorksCtrl.updateStatusAndResults(ureq);
         	doExitTest(ureq);
         }
+	}
+	
+	private void enterFirstAssessmentItemOfAdvancedTestPart(TestPlanNode nextTestPart, UserRequest ureq) {
+		try {
+			if(!isTerminated() && nextTestPart != null) {
+			    TestPart currentTestPart = testSessionController.getCurrentTestPart();
+				if(currentTestPart != null && currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR) {
+			    	//go to the first assessment item
+			    	if(testSessionController.hasFollowingNonLinearItem()) {
+			    		testSessionController.selectFollowingItemNonLinear(ureq.getRequestTimestamp());
+			    	}
+				}
+			}
+		} catch (Exception e) {
+			logError("", e);
+		}
 	}
 	
 	private void processReviewTestPart() {
