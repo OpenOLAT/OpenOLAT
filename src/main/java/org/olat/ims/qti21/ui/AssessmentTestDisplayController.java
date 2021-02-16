@@ -707,7 +707,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private boolean timeLimitBarrier(UserRequest ureq) {
 		Long assessmentTestMaxTimeLimits = getAssessmentTestMaxTimeLimit();
 		if(assessmentTestMaxTimeLimits != null) {
-			long maximumAssessmentTestDuration = assessmentTestMaxTimeLimits.longValue() * 1000;//convert in milliseconds
+			long maximumAssessmentTestDuration = assessmentTestMaxTimeLimits.longValue() * 1000l;//convert in milliseconds
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			if(!testSessionState.isEnded() && !testSessionState.isExited()) {
 				long durationMillis = testSessionState.getDurationAccumulated();
@@ -768,10 +768,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		if(overrideOptions != null && overrideOptions.getEndTestDate() != null) {
 			Date endTestDate = overrideOptions.getEndTestDate();
 			long diff = endTestDate.getTime() - testSessionController.getCurrentRequestTimestamp().getTime();
-			if(diff < 0l) {
-				diff = 0l;
-			}
-			return diff;
+			return Long.valueOf(diff);
 		}
 		return null;// default is a year
 	}
