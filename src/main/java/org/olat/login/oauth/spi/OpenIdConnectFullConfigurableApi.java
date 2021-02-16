@@ -100,22 +100,22 @@ public class OpenIdConnectFullConfigurableApi extends DefaultApi20 {
 				if(!provider.getIssuer().equals(idJson.get("iss"))
 						|| !provider.getIssuer().equals(accessJson.get("iss"))) {
 					allOk &= false;
-					log.error("iss don't match issuer");
+					log.info("iss don't match issuer");
 				}
 				
 				if(!provider.getAppKey().equals(idJson.get("aud"))) {
 					allOk &= false;
-					log.error("aud don't match application key");
+					log.info("aud don't match application key");
 				}
 
 				if(!oVerifier.getState().equals(oVerifier.getSessionState())) {
 					allOk &= false;
-					log.error("state doesn't match session state");
+					log.info("state doesn't match session state");
 				}
 				
 				if(!oVerifier.getSessionNonce().equals(idJson.get("nonce"))) {
 					allOk &= false;
-					log.error("session nonce don't match verifier nonce");
+					log.info("session nonce don't match verifier nonce");
 				}
 				return allOk ? new OAuth2AccessToken(idToken, oVerifier.getState()) : null;
 			} catch (JSONException e) {
