@@ -37,6 +37,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.manager.IdentityDAO;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -248,6 +249,22 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		assertThat(expiredIdentities)
 			.contains(id1)
 			.doesNotContain(id2, id3);
+	}
+	
+	@Test
+	public void getIdentitiesByExpirationDateToEmailOneDay() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-one-40");
+		
+		Date expirationDate = DateUtils.addDays(new Date(), 1);
+		expirationDate = CalendarUtils.startOfDay(expirationDate);
+		((IdentityImpl)id).setExpirationDate(expirationDate);
+		id = identityDao.saveIdentity(id);
+		dbInstance.commitAndCloseSession();
+		
+		Date referenceDate = expirationDate;
+		List<Identity> expiredIdentities = lifecycleManager.getIdentitiesByExpirationDateToEmail(referenceDate);
+		assertThat(expiredIdentities)
+			.contains(id);
 	}
 	
 	@Test

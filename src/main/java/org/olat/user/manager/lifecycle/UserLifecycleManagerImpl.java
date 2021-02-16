@@ -157,7 +157,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user as user")
-		  .append(" where ident.status in (:statusList) and ident.expirationDate < :referenceDate")
+		  .append(" where ident.status in (:statusList) and ident.expirationDate<=:referenceDate")
 		  .append(" and ident.expirationEmailDate is null");
 
 		List<Integer> statusList = Arrays.asList(Identity.STATUS_ACTIV, Identity.STATUS_PENDING, Identity.STATUS_LOGIN_DENIED);
