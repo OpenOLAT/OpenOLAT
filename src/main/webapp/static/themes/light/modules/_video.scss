@@ -348,3 +348,11 @@
 .mejs__overlay-button {
 	filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, .5));
 }
+
+/* chapters */
+.o_video .mejs__chapters-button > .mejs__chapters-selector {
+    margin-right: -55px;
+    width: 240px;
+    max-height: 360px;
+    overflow-y: auto;
+}
