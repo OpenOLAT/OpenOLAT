@@ -118,7 +118,7 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select a task
-		AssignmentResponse response = gtaManager.selectTask(participant1, tasks, node, taskFile);
+		AssignmentResponse response = gtaManager.selectTask(participant1, tasks, null, node, taskFile);
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals(AssignmentResponse.Status.ok, response.getStatus());
 		
@@ -226,7 +226,7 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		// group 1 select a task
-		AssignmentResponse response = gtaManager.selectTask(businessGroup1, tasks, node, taskFile, participant2);
+		AssignmentResponse response = gtaManager.selectTask(businessGroup1, tasks, null, node, taskFile, participant2);
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals(AssignmentResponse.Status.ok, response.getStatus());
 		
@@ -432,7 +432,7 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select a task
-		AssignmentResponse response = gtaManager.selectTask(participant1, tasks, node, taskFile);
+		AssignmentResponse response = gtaManager.selectTask(participant1, tasks, null, node, taskFile);
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals(AssignmentResponse.Status.ok, response.getStatus());
 		

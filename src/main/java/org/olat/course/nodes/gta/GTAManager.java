@@ -353,14 +353,17 @@ public interface GTAManager {
 	 * 
 	 * @param identity The assessed identity
 	 * @param taskList The course element's task
+	 * @param courseEnv The course environment
 	 * @param cNode The course node
 	 * @param task The document's task
 	 * @param doerIdentity The user which does the operation
 	 * @return
 	 */
-	public AssignmentResponse selectTask(Identity identity, TaskList taskList, GTACourseNode cNode, File task);
+	public AssignmentResponse selectTask(Identity identity, TaskList taskList, CourseEnvironment courseEnv,
+			GTACourseNode cNode, File task);
 	
-	public AssignmentResponse selectTask(BusinessGroup group, TaskList taskList, GTACourseNode cNode, File task, Identity doerIdentity);
+	public AssignmentResponse selectTask(BusinessGroup group, TaskList taskList, CourseEnvironment courseEnv,
+			GTACourseNode cNode, File task, Identity doerIdentity);
 	
 	public AssignmentResponse assignTaskAutomatically(TaskList taskList, BusinessGroup assessedGroup, CourseEnvironment courseEnv,
 			GTACourseNode cNode, Identity doerIdentity);

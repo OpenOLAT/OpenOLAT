@@ -149,6 +149,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 
 	public static final String GTASK_EXTERNAL_EDITOR = "grouptask.external.editor";
 	public static final String GTASK_EMBBEDED_EDITOR = "grouptask.embbeded.editor";
+	public static final String GTASK_SUBMISSION_TEMPLATE = "grouptask.submission.template";
 	public static final String GTASK_MIN_SUBMITTED_DOCS = "grouptask.min.submitted.docs";
 	public static final String GTASK_MAX_SUBMITTED_DOCS = "grouptask.max.submitted.docs";
 	
@@ -206,6 +207,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			//editors
 			config.setBooleanEntry(GTASK_EXTERNAL_EDITOR, true);
 			config.setBooleanEntry(GTASK_EMBBEDED_EDITOR, true);
+			config.setBooleanEntry(GTASK_SUBMISSION_TEMPLATE, false);
 			config.setIntValue(GTASK_MIN_SUBMITTED_DOCS, 1);
 			//reuse tasks
 			config.setStringValue(GTASK_SAMPLING, GTASK_SAMPLING_REUSE);

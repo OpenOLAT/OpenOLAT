@@ -155,7 +155,7 @@ public class ConvertToGTACourseNode {
 			for(Property sample:samples) {
 				File taskFile = new File(gtaskDirectory, sample.getStringValue());
 				Identity id = securityManager.loadIdentityByKey(sample.getIdentity().getKey());
-				gtaManager.selectTask(id, taskList, gtaNode, taskFile);
+				gtaManager.selectTask(id, taskList, courseEnv, gtaNode, taskFile);
 			}
 		}
 		

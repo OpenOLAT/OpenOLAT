@@ -57,6 +57,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
@@ -1165,22 +1166,25 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
-	public AssignmentResponse selectTask(Identity identity, TaskList tasks, GTACourseNode cNode, File taskFile) {
+	public AssignmentResponse selectTask(Identity identity, TaskList tasks, CourseEnvironment courseEnv,
+			GTACourseNode cNode, File taskFile) {
 		if(!GTAType.individual.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			return AssignmentResponse.ERROR;
 		}
-		return selectTask(identity, null, tasks, cNode, taskFile, identity);
+		return selectTask(identity, null, tasks, courseEnv, cNode, taskFile, identity);
 	}
 	
 	@Override
-	public AssignmentResponse selectTask(BusinessGroup businessGroup, TaskList tasks, GTACourseNode cNode, File taskFile, Identity doerIdentity) {
+	public AssignmentResponse selectTask(BusinessGroup businessGroup, TaskList tasks, CourseEnvironment courseEnv,
+			GTACourseNode cNode, File taskFile, Identity doerIdentity) {
 		if(!GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			return AssignmentResponse.ERROR;
 		}
-		return selectTask(null, businessGroup, tasks, cNode, taskFile, doerIdentity);
+		return selectTask(null, businessGroup, tasks, courseEnv, cNode, taskFile, doerIdentity);
 	}
 	
-	private AssignmentResponse selectTask(Identity identity, BusinessGroup businessGroup, TaskList tasks, GTACourseNode cNode, File taskFile, Identity doerIdentity) {
+	private AssignmentResponse selectTask(Identity identity, BusinessGroup businessGroup, TaskList tasks,
+			CourseEnvironment courseEnv, GTACourseNode cNode, File taskFile, Identity doerIdentity) {
 		Task currentTask;
 		if(businessGroup != null) {
 			currentTask = getTask(businessGroup, tasks);
@@ -1201,6 +1205,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				TaskImpl task = createTask(taskName, reloadedTasks, nextStep, businessGroup, identity, cNode);
 				task.setAssignmentDate(new Date());
 				dbInstance.getCurrentEntityManager().persist(task);
+				createSubmissionFromTask(identity, businessGroup, courseEnv, cNode, taskFile, doerIdentity, nextStep);
 				syncAssessmentEntry(task, cNode, null, false, doerIdentity, Role.user);
 				response = new AssignmentResponse(task, Status.ok);
 			}
@@ -1218,6 +1223,23 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
 		return response;
+	}
+
+	private void createSubmissionFromTask(Identity identity, BusinessGroup businessGroup, CourseEnvironment courseEnv, GTACourseNode cNode, File taskFile, Identity doerIdentity, TaskProcess nextStep) {
+		if (cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_TEMPLATE) && nextStep == TaskProcess.submit) {
+			VFSContainer submitContainer = null;
+			if (identity != null) {
+				submitContainer = getSubmitContainer(courseEnv, cNode, identity);
+			} else if (businessGroup != null) {
+				submitContainer = getSubmitContainer(courseEnv, cNode, businessGroup);
+			}
+			if (submitContainer == null || !submitContainer.getItems().isEmpty()) {
+				return;
+			}
+			
+			VFSLeaf target = submitContainer.createChildLeaf(taskFile.getName());
+			VFSManager.copyContent(taskFile, target, doerIdentity);
+		}
 	}
 
 	@Override

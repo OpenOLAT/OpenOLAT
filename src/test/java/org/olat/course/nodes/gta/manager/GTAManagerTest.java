@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
@@ -43,6 +45,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -133,7 +136,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response = gtaManager.selectTask(participant, tasks, node, taskFile);
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, null, node, taskFile);
 		dbInstance.commitAndCloseSession();
 		//check
 		Assert.assertNotNull(response);
@@ -148,6 +151,45 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertEquals(tasks, task.getTaskList());
 		Assert.assertEquals("solo.txt", task.getTaskName());
 		Assert.assertEquals(participant, task.getIdentity());
+	}
+	
+
+	
+	@Test
+	public void selectTask_copyTemplate() {
+		//prepare
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry re = deployGTACourse();
+		CourseEnvironment courseEnv = CourseFactory.loadCourse(re).getCourseEnvironment();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		node.getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_SUBMISSION_TEMPLATE, false);
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		File taskFile = new File("solo.txt");
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//select without template
+		gtaManager.selectTask(participant1, tasks, courseEnv, node, taskFile);
+		dbInstance.commitAndCloseSession();
+		
+		SoftAssertions softly = new SoftAssertions();
+		VFSContainer submitContainer1 = gtaManager.getSubmitContainer(courseEnv, node, participant1);
+		softly.assertThat(submitContainer1.getItems().size())
+				.as("Participant 1 should have no submitted documents")
+				.isEqualTo(0);
+		
+		//select wit template
+		node.getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_SUBMISSION_TEMPLATE, true);
+		gtaManager.selectTask(participant2, tasks, courseEnv, node, taskFile);
+		dbInstance.commitAndCloseSession();
+		
+		VFSContainer submitContainer2 = gtaManager.getSubmitContainer(courseEnv, node, participant2);
+		softly.assertThat(submitContainer2.getItems().size())
+				.as("Participant 2 should have one submitted document")
+				.isEqualTo(1);
+		softly.assertAll();
 	}
 	
 	@Test
@@ -165,7 +207,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, node, taskFile, null);
+		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, null, node, taskFile, null);
 		dbInstance.commitAndCloseSession();
 		//check
 		Assert.assertNotNull(response);
@@ -198,7 +240,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, node, taskFile, participant);
+		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, null, node, taskFile, participant);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response);
 		
@@ -223,7 +265,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, node, taskFile, participant);
+		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, null, node, taskFile, participant);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response);
 		
@@ -258,7 +300,7 @@ public class GTAManagerTest extends OlatTestCase {
 		
 		//select
 		File taskFile = new File("bg.txt");
-		AssignmentResponse response = gtaManager.selectTask(participant, tasks, node, taskFile);
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, null, node, taskFile);
 		Assert.assertNotNull(response);
 		Assert.assertEquals(Status.ok, response.getStatus());
 		
@@ -282,7 +324,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response = gtaManager.selectTask(participant, tasks, node, taskFile);
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, null, node, taskFile);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getTask());
@@ -309,7 +351,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response = gtaManager.selectTask(participant, tasks, node, taskFile);
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, null, node, taskFile);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getTask());
@@ -347,8 +389,8 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertNotNull(taskList);
 		
 		//select
-		gtaManager.selectTask(id1, taskList, node, new File("work_1.txt"));
-		gtaManager.selectTask(id2, taskList, node, new File("work_2.txt"));
+		gtaManager.selectTask(id1, taskList, null, node, new File("work_1.txt"));
+		gtaManager.selectTask(id2, taskList, null, node, new File("work_2.txt"));
 		
 		//get assigned tasks
 		List<String> assigned = gtaManager.getAssignedTasks(taskList);
@@ -371,8 +413,8 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertNotNull(taskList);
 		
 		//select
-		gtaManager.selectTask(id1, taskList, node, new File("work_1.txt"));
-		gtaManager.selectTask(id2, taskList, node, new File("work_2.txt"));
+		gtaManager.selectTask(id1, taskList, null, node, new File("work_1.txt"));
+		gtaManager.selectTask(id2, taskList, null, node, new File("work_2.txt"));
 		dbInstance.commit();
 		
 		//change a name
@@ -411,9 +453,9 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertNotNull(taskListRef);
 		
 		//select
-		gtaManager.selectTask(id1, taskList, node, new File("work_1.txt"));
-		gtaManager.selectTask(id1, taskListRef, nodeRef, new File("work_1.txt"));
-		gtaManager.selectTask(id2, taskList, node, new File("work_2.txt"));
+		gtaManager.selectTask(id1, taskList, null, node, new File("work_1.txt"));
+		gtaManager.selectTask(id1, taskListRef, null, nodeRef, new File("work_1.txt"));
+		gtaManager.selectTask(id2, taskList, null, node, new File("work_2.txt"));
 		dbInstance.commit();
 		
 		//change a name
@@ -472,7 +514,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, node, taskFile, participant);
+		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, null, node, taskFile, participant);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response);
 		
@@ -508,7 +550,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, node, taskFile, participant);
+		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, null, node, taskFile, participant);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response);
 		
@@ -549,7 +591,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, node, taskFile, participant);
+		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, null, node, taskFile, participant);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response);
 		
@@ -604,12 +646,12 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select node 1
-		AssignmentResponse response1 = gtaManager.selectTask(businessGroup, tasks1, node1, taskFile, participant);
+		AssignmentResponse response1 = gtaManager.selectTask(businessGroup, tasks1, null, node1, taskFile, participant);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response1);
 		
 		//select node 2
-		AssignmentResponse response2 = gtaManager.selectTask(businessGroup, tasks2, node2, taskFile, participant);
+		AssignmentResponse response2 = gtaManager.selectTask(businessGroup, tasks2, null, node2, taskFile, participant);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response2);
 		
@@ -672,7 +714,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response = gtaManager.selectTask(participant, tasks, node, taskFile);
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, null, node, taskFile);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response);
 		
@@ -728,14 +770,14 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//participant 1 and 2 select course 1
-		AssignmentResponse response1_1 = gtaManager.selectTask(participant1, tasks1, node1, taskFile);
-		AssignmentResponse response1_2 = gtaManager.selectTask(participant2, tasks1, node1, taskFile);
+		AssignmentResponse response1_1 = gtaManager.selectTask(participant1, tasks1, null, node1, taskFile);
+		AssignmentResponse response1_2 = gtaManager.selectTask(participant2, tasks1, null, node1, taskFile);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response1_1);
 		Assert.assertNotNull(response1_2);
 
 		//participant 2 select node 2
-		AssignmentResponse response2_2 = gtaManager.selectTask(participant2, tasks2, node2, taskFile);
+		AssignmentResponse response2_2 = gtaManager.selectTask(participant2, tasks2, null, node2, taskFile);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response2_2);
 		
@@ -790,7 +832,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, node, taskFile, null);
+		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, null, node, taskFile, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response);
 		
@@ -833,8 +875,8 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//select
-		AssignmentResponse response1 = gtaManager.selectTask(businessGroup1, tasks, node, taskFile, null);
-		AssignmentResponse response2 = gtaManager.selectTask(businessGroup2, tasks, node, taskFile, null);
+		AssignmentResponse response1 = gtaManager.selectTask(businessGroup1, tasks, null, node, taskFile, null);
+		AssignmentResponse response2 = gtaManager.selectTask(businessGroup2, tasks, null, node, taskFile, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(response1);
 		Assert.assertNotNull(response2);

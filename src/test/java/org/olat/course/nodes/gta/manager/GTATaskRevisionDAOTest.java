@@ -68,7 +68,7 @@ public class GTATaskRevisionDAOTest extends OlatTestCase {
 		
 		// participant select a task
 		File taskFile = new File("task.txt");
-		AssignmentResponse response = gtaManager.selectTask(participant, tasks, node, taskFile);
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, null, node, taskFile);
 		Task task = response.getTask();
 		Assert.assertNotNull(task);
 		
@@ -102,7 +102,7 @@ public class GTATaskRevisionDAOTest extends OlatTestCase {
 		
 		// participant select a task
 		File taskFile = new File("tasked.txt");
-		AssignmentResponse response = gtaManager.selectTask(participant, tasks, node, taskFile);
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, null, node, taskFile);
 		Task task = response.getTask();
 		Assert.assertNotNull(task);
 		
@@ -145,7 +145,7 @@ public class GTATaskRevisionDAOTest extends OlatTestCase {
 		
 		// participant select a task
 		File taskFile = new File("tasked.txt");
-		AssignmentResponse response = gtaManager.selectTask(participant, tasks, node, taskFile);
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, null, node, taskFile);
 		Task task = response.getTask();
 		Assert.assertNotNull(task);
 		
