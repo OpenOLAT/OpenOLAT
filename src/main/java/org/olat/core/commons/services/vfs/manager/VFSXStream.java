@@ -68,19 +68,21 @@ public class VFSXStream {
 		mystream.omitField(RevisionFileImpl.class, "current");
 		mystream.omitField(RevisionFileImpl.class, "container");
 		mystream.omitField(RevisionFileImpl.class, "file");
+		mystream.aliasAttribute(RevisionFileImpl.class, "fileInitializedBy", "author");
 		mystream.omitField(VFSMetadataImpl.class, "originFile");
 		mystream.omitField(VFSMetadataImpl.class, "metaFile");
 		mystream.omitField(VFSMetadataImpl.class, "lockedByIdentKey");
 		mystream.aliasAttribute(VFSMetadataImpl.class, "cannotGenerateThumbnails", "cannotGenerateThumbnail");
-		mystream.aliasAttribute(VFSMetadataImpl.class, "author", "authorIdentKey");
+		mystream.aliasAttribute(VFSMetadataImpl.class, "fileInitializedBy", "authorIdentKey");
+		mystream.aliasAttribute(VFSMetadataImpl.class, "fileInitializedBy", "author");
 		mystream.aliasAttribute(VFSMetadataImpl.class, "licenseType", "licenseTypeKey");
 		mystream.alias("metadata", VFSMetadataImpl.class);
 		mystream.omitField(VFSMetadataImpl.class, "thumbnail");
 		mystream.omitField(VFSMetadataImpl.class, "thumbnails");
 
 		mystream.registerLocalConverter(VFSMetadataImpl.class, "licenseType", new LicenseTypeConverter());
-		mystream.registerLocalConverter(VFSMetadataImpl.class, "author", new IdentityConverter());
-		mystream.registerLocalConverter(RevisionFileImpl.class, "author", new IdentityConverter());	
+		mystream.registerLocalConverter(VFSMetadataImpl.class, "fileInitializedBy", new IdentityConverter());
+		mystream.registerLocalConverter(RevisionFileImpl.class, "fileInitializedBy", new IdentityConverter());	
 	}
 	
 	public static final Object read(InputStream in) {
