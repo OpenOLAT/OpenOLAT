@@ -228,10 +228,8 @@ public class VFSResourceRoot implements WebResourceRoot  {
 				VFSLeaf from = (VFSLeaf)((VFSResource)movedFrom).getItem();
 				metadata = CoreSpringFactory.getImpl(VFSRepositoryService.class).move(from, childLeaf, identity);
 			} else {
-				metadata = vfsRepositoryService.getMetadataFor(childLeaf);
-				metadata.setAuthor(identity);
-				metadata = vfsRepositoryService.updateMetadata(metadata);
 				vfsRepositoryService.itemSaved(childLeaf, identity);
+				metadata = vfsRepositoryService.getMetadataFor(childLeaf);
 			}
 			addLicense(metadata, identity);
 			vfsRepositoryService.resetThumbnails(childLeaf);

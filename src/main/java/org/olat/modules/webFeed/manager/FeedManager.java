@@ -112,18 +112,20 @@ public abstract class FeedManager {
 	 *
 	 * @param feed
 	 * @param entry
+	 * @param changedBy 
 	 * @return the same Feed object with actualized attributes
 	 */
-	public abstract Feed enrichFeedByRepositoryEntry(Feed feed, RepositoryEntry entry);
+	public abstract Feed enrichFeedByRepositoryEntry(Feed feed, RepositoryEntry entry, Identity changedBy);
 
 	/**
 	 * Update the feed with the properties in the RepositoryEntry and save it
 	 * in the database.
 	 *
 	 * @param entry
+	 * @param changedBy 
 	 * @return a new updated Feed object
 	 */
-	public abstract Feed updateFeedWithRepositoryEntry(RepositoryEntry entry);
+	public abstract Feed updateFeedWithRepositoryEntry(RepositoryEntry entry, Identity changedBy);
 
 	/**
 	 * Create the given Item and saves the appropriate file (podcast, video etc.)

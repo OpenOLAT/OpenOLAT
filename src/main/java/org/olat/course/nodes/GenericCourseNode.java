@@ -517,7 +517,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void copyConfigurationTo(CourseNode courseNode, ICourse course) {
+	public void copyConfigurationTo(CourseNode courseNode, ICourse course, Identity savedBy) {
 		if(courseNode instanceof GenericCourseNode) {
 			GenericCourseNode newNode = (GenericCourseNode)courseNode;
 			newNode.setDisplayOption(getDisplayOption());

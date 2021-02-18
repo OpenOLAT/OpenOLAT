@@ -429,7 +429,7 @@ public class DocumentConfigController extends BasicController {
 				String filename = sourceLeaf.getName();
 				filename = VFSManager.rename(courseFolderCont, filename);
 				VFSLeaf targetLeaf = courseFolderCont.createChildLeaf(filename);
-				VFSManager.copyContent(sourceLeaf, targetLeaf, true);
+				VFSManager.copyContent(sourceLeaf, targetLeaf, true, ureq.getIdentity());
 				
 				VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(targetLeaf);
 				vfsMetadata.setTitle(copyEntry.getDisplayname());

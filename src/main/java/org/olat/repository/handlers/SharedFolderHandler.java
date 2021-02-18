@@ -134,7 +134,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 		OLATResource targetResource = target.getOlatResource();
 		VFSContainer sourceContainer = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource);
 		VFSContainer targetContainer = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource);
-		targetContainer.copyContentOf(sourceContainer);
+		targetContainer.copyContentOf(sourceContainer, author);
 		return target;
 	}
 

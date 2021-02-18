@@ -53,6 +53,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.manager.MetaInfoReader;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
@@ -226,31 +227,17 @@ public class ZipUtil {
 								if (!copy(oZip, newEntry)) {
 									return false;
 								}
+								vfsRepositoryService.itemSaved(newEntry, identity);
 							} else if (newEntry.canVersion() == VFSConstants.YES) {
 								vfsRepositoryService.addVersion(newEntry, identity, "", oZip);
 							}
-							if(newEntry != null && identity != null && newEntry.canMeta() == VFSConstants.YES) {
-								VFSMetadata info = newEntry.getMetaInfo();
-								if(info != null) {
-									info.setAuthor(identity);
-									vfsRepositoryService.updateMetadata(info);
-								}
-							}
-							
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
 								if (!copy(oZip, newEntry)) {
 									return false;
 								}
-					
-								if(identity != null && newEntry.canMeta() == VFSConstants.YES) {
-									VFSMetadata info = newEntry.getMetaInfo();
-									if(info != null) {
-										info.setAuthor(identity);
-										vfsRepositoryService.updateMetadata(info);
-									}
-								}
+								vfsRepositoryService.itemSaved(newEntry, identity);
 							}
 						}
 					}
@@ -361,16 +348,16 @@ public class ZipUtil {
 							} else if (newEntry.canVersion() == VFSConstants.YES) {
 								vfsRepositoryService.addVersion(newEntry, identity, "", oZip);
 							}
+							vfsRepositoryService.itemSaved(newEntry, identity);
 							lastLeaf = newEntry;
-							unzipMetadata(identity, newEntry);
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
 								if (!copyShielded(oZip, newEntry, identity)) {
 									return false;
 								}
+								vfsRepositoryService.itemSaved(newEntry, identity);
 								lastLeaf = newEntry;
-								unzipMetadata(identity, newEntry);
 							}
 						}
 					}
@@ -399,19 +386,6 @@ public class ZipUtil {
 		} catch(Exception e) {
 			handleIOException("", e);
 			return false;
-		}
-	}
-	
-	private static void unzipMetadata(Identity identity, VFSLeaf newEntry) {
-		if(newEntry.canMeta() != VFSConstants.YES || identity == null) {
-			return;
-		}
-		
-		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
-		VFSMetadata info = vfsRepositoryService.getMetadataFor(newEntry);
-		if(info != null) {
-			info.setAuthor(identity);
-			vfsRepositoryService.updateMetadata(info);
 		}
 	}
 	
@@ -526,8 +500,8 @@ public class ZipUtil {
 				if (vfsSubpath == null) return null;
 				if (identity != null && vfsSubpath.canMeta() == VFSConstants.YES) {
 					VFSMetadata info = vfsSubpath.getMetaInfo();
-					if(info != null) {
-						info.setAuthor(identity);
+					if(info instanceof VFSMetadataImpl) {
+						((VFSMetadataImpl)info).setFileInitializedBy(identity);
 						vfsRepositoryService.updateMetadata(info);
 					}
 				}

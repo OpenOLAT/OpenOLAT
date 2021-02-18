@@ -716,9 +716,10 @@ public class VFSManager {
 	 * @param source The source file
 	 * @param target The target file
 	 * @param withMetadata true if the metadata must be copied too
+	 * @param savedBy user who copied the leaf. May be null, if without metadata
 	 * @return True on success, false on failure
 	 */
-	public static boolean copyContent(VFSLeaf source, VFSLeaf target, boolean withMetadata) {
+	public static boolean copyContent(VFSLeaf source, VFSLeaf target, boolean withMetadata, Identity savedBy) {
 		boolean successful;
 		if (source != null && target != null) {
 			try(InputStream in = new BufferedInputStream(source.getInputStream());
@@ -730,11 +731,11 @@ public class VFSManager {
 				successful = false;
 			}
 			
-			if(withMetadata) {
-				if(source.canMeta() == VFSConstants.YES && target.canMeta() == VFSConstants.YES) {
-					CoreSpringFactory.getImpl(VFSRepositoryService.class).copyTo(source, target, target.getParentContainer());
-				} else if(target.canMeta() == VFSConstants.YES)  {
-					CoreSpringFactory.getImpl(VFSRepositoryService.class).getMetadataFor(target);
+			if (target.canMeta() == VFSConstants.YES) {
+				VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+				vfsRepositoryService.itemSaved(target, savedBy);
+				if (withMetadata && source.canMeta() == VFSConstants.YES) {
+					vfsRepositoryService.copyTo(source, target, target.getParentContainer(), savedBy);
 				}
 			}
 		} else {

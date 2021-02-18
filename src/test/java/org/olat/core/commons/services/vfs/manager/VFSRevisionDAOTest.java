@@ -58,7 +58,7 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision revision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
+		VFSRevision revision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(revision);
@@ -69,7 +69,7 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision revision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
+		VFSRevision revision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
 		dbInstance.commitAndCloseSession();
 		
 		List<VFSRevision> revisions = revisionDao.getRevisions(metadata);
@@ -83,7 +83,7 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision revision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
+		VFSRevision revision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
 		dbInstance.commitAndCloseSession();
 		
 		List<VFSMetadataRef> metadataRefs = new ArrayList<>();
@@ -107,10 +107,10 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision revision1 = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
-		VFSRevision revision2 = revisionDao.createRevision(author, "._oo_vr_2_text.txt", 2, 26l, new Date(), "A comment", metadata);
-		VFSRevision revision3 = revisionDao.createRevision(author, "._oo_vr_3_text.txt", 3, 27l, new Date(), "A comment", metadata);
-		VFSRevision revision4 = revisionDao.createRevision(author, "._oo_vr_4_text.txt", 4, 28l, new Date(), "A comment", metadata);
+		VFSRevision revision1 = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
+		VFSRevision revision2 = revisionDao.createRevision(author, author, "._oo_vr_2_text.txt", 2, 26l, new Date(), "A comment", metadata);
+		VFSRevision revision3 = revisionDao.createRevision(author, author, "._oo_vr_3_text.txt", 3, 27l, new Date(), "A comment", metadata);
+		VFSRevision revision4 = revisionDao.createRevision(author, author, "._oo_vr_4_text.txt", 4, 28l, new Date(), "A comment", metadata);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(revision1);
 		Assert.assertNotNull(revision2);
@@ -134,11 +134,11 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision revision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
+		VFSRevision revision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
 		
 		VFSMetadata deletedMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision deletedRevision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
+		VFSRevision deletedRevision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
 		
 		VFSMetadata withoutMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
@@ -162,7 +162,7 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata deletedMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision deletedRevision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
+		VFSRevision deletedRevision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(deletedRevision);
 		// mark as deleted
@@ -180,7 +180,7 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata deletedMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision deletedRevision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
+		VFSRevision deletedRevision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(deletedRevision);
 		// mark as deleted
@@ -198,7 +198,7 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata deletedMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision deletedRevision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
+		VFSRevision deletedRevision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(deletedRevision);
 		// mark as deleted
@@ -215,7 +215,7 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision revision1 = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
+		VFSRevision revision1 = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(revision1);
 		
@@ -230,13 +230,13 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata1 = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text1.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision revision1 = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, fiveMinutesInThePast, "A comment", metadata1);
+		VFSRevision revision1 = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, 25l, fiveMinutesInThePast, "A comment", metadata1);
 		VFSMetadata metadata2 = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text2.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision revision2 = revisionDao.createRevision(author, "._oo_vr_2_text.txt", 1, 25l, fiveMinutesInThePast, "A comment", metadata2);
+		VFSRevision revision2 = revisionDao.createRevision(author, author, "._oo_vr_2_text.txt", 1, 25l, fiveMinutesInThePast, "A comment", metadata2);
 		VFSMetadata metadata3 = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text3.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision revision3 = revisionDao.createRevision(author, "._oo_vr_3_text.txt", 1, 25l, fiveMinutesInThePast, "A comment", metadata3);
+		VFSRevision revision3 = revisionDao.createRevision(author, author, "._oo_vr_3_text.txt", 1, 25l, fiveMinutesInThePast, "A comment", metadata3);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(revision1);
 		Assert.assertNotNull(revision2);
@@ -266,13 +266,12 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 	 */
 	@Test
 	public void getLargest_allParameters() {
-
 		Date now = new Date();
 		
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text_all.txt",
 				new Date(), 10000l, false, "file:///text.tx", "file", null);
-		VFSRevision revision = revisionDao.createRevision(author, "._oo_vr_all_text.txt", 1, 25l, now, "A comment", metadata);
+		VFSRevision revision = revisionDao.createRevision(author, author, "._oo_vr_all_text.txt", 1, 25l, now, "A comment", metadata);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(revision);
 

@@ -26,8 +26,6 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -41,7 +39,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -61,8 +58,6 @@ public class NewDocumentController extends FormBasicController {
 	private final VFSContainer documentContainer;
 	private final List<DocTemplate> templates;
 	
-	@Autowired
-	private VFSRepositoryService vfsService;
 	@Autowired
 	private DocEditorService docEditorService;
 	
@@ -164,11 +159,6 @@ public class NewDocumentController extends FormBasicController {
 		DocTemplate docTemplate = getSelectedTemplate();
 		if (docTemplate != null) {
 			VFSManager.copyContent(docTemplate.getContentProvider().getContent(getLocale()), vfsLeaf, getIdentity());
-		}
-		if(vfsLeaf.canMeta() == VFSConstants.YES) {
-			VFSMetadata metaInfo = vfsLeaf.getMetaInfo();
-			metaInfo.setAuthor(getIdentity());
-			vfsService.updateMetadata(metaInfo);
 		}
 		
 		doOpen(ureq, vfsLeaf);

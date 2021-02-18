@@ -60,7 +60,7 @@ public class WikiUnitTest extends OlatTestCase {
 	@Test
 	public void testWikiStuff() {
 		WikiManager wikiMgr = WikiManager.getInstance();
-		OLATResourceable ores = wikiMgr.createWiki();
+		OLATResourceable ores = wikiMgr.createWiki(null);
 		Wiki wiki = wikiMgr.getOrLoadWiki(ores);
 		
 		// add pages
@@ -70,8 +70,8 @@ public class WikiUnitTest extends OlatTestCase {
 		page1.setContent(WIKI_CONTENT);
 		wiki.addPage(page1);
 		wiki.addPage(page2);
-		wikiMgr.saveWikiPage(ores, page1, true, wiki, true);
-		wikiMgr.saveWikiPage(ores, page2, true, wiki, true);
+		wikiMgr.saveWikiPage(ores, page1, true, wiki, true, null);
+		wikiMgr.saveWikiPage(ores, page2, true, wiki, true, null);
 		
 		// reset wiki and load again from filesysetm
 		wiki = null;
@@ -87,7 +87,7 @@ public class WikiUnitTest extends OlatTestCase {
 		assertEquals("Content of loaded wiki page is not the same after loading from filesystem", WIKI_CONTENT, page1.getContent());
 		
 		page1.setContent(WIKI_CONTENT+"\nThis is a new line");
-		wikiMgr.saveWikiPage(ores, page1, true, wiki, true);
+		wikiMgr.saveWikiPage(ores, page1, true, wiki, true, null);
 		List<ChangeInfo> diffs = wiki.getDiff(page1, page1.getVersion() -1, page1.getVersion());
 		ChangeInfo change = diffs.get(0);
 		

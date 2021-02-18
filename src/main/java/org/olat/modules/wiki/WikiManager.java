@@ -46,6 +46,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
@@ -137,13 +138,14 @@ public class WikiManager {
 	}
 
 	/**
+	 * @param createdBy 
 	 * @return the new created resource
 	 */
 	
 	
-	public WikiResource createWiki() {
+	public WikiResource createWiki(Identity createdBy) {
 		WikiResource resource = new WikiResource();
-		createFolders(resource);
+		createFolders(resource, createdBy);
 		OLATResourceManager rm = getResourceManager();
 		OLATResource ores = rm.createOLATResourceInstance(resource);
 		rm.saveOLATResource(ores);
@@ -331,7 +333,7 @@ public class WikiManager {
  * API change stop
  */
 	
-	void createFolders(OLATResourceable ores) {
+	void createFolders(OLATResourceable ores, Identity savedBy) {
 		long start = 0;
 		if (log.isDebugEnabled()) {
 			start = System.currentTimeMillis();
@@ -353,12 +355,12 @@ public class WikiManager {
 			for (Iterator<VFSItem> iter = files.iterator(); iter.hasNext();) {
 				VFSLeaf leaf = ((VFSLeaf) iter.next());
 				if (leaf.getName().endsWith(WikiManager.WIKI_FILE_SUFFIX) || leaf.getName().endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
-					wikiCtn.copyFrom(leaf);
+					wikiCtn.copyFrom(leaf, savedBy);
 				} else {
 					if (leaf.getName().contains(WikiManager.WIKI_FILE_SUFFIX+"-") || leaf.getName().contains(WikiManager.WIKI_PROPERTIES_SUFFIX+"-")) {
 						leaf.delete(); // delete version history
 					} else {
-						mediaCtn.copyFrom(leaf);
+						mediaCtn.copyFrom(leaf, savedBy);
 					}
 				}
 			}
@@ -418,7 +420,7 @@ public class WikiManager {
 			// wiki folder structure does not yet exists, but resource does. Create
 			// wiki in group context
 			if (folder == null) {
-				createFolders(ores);
+				createFolders(ores, null);
 				folder = getWikiContainer(ores, WIKI_RESOURCE_FOLDER_NAME);
 			}
 			
@@ -466,8 +468,8 @@ public class WikiManager {
 				menuPage.setCreationTime(System.currentTimeMillis());
 				menuPage.setContent("* [[Index]]\n* [[Index|Your link]]");
 				wiki.addPage(menuPage);
-				saveWikiPage(ores, indexPage, false, wiki, false);
-				saveWikiPage(ores, menuPage, false, wiki, false);
+				saveWikiPage(ores, indexPage, false, wiki, false, null);
+				saveWikiPage(ores, menuPage, false, wiki, false, null);
 			}
 			
 			// add pages internally used for displaying dynamic data, they are not persisted
@@ -498,8 +500,9 @@ public class WikiManager {
 	 * @see WikiMainController
 	 * @param ores
 	 * @param page
+	 * @param savedBy
 	 */
-	public void saveWikiPage(OLATResourceable ores, WikiPage page, boolean incrementVersion, Wiki wiki, boolean cache) {
+	public void saveWikiPage(OLATResourceable ores, WikiPage page, boolean incrementVersion, Wiki wiki, boolean cache, Identity savedBy) {
 		//cluster_OK by guido
 		VFSContainer versionsContainer = getWikiContainer(ores, VERSION_FOLDER_NAME);
 		VFSContainer wikiContentContainer = getWikiContainer(ores, WIKI_RESOURCE_FOLDER_NAME);
@@ -508,7 +511,7 @@ public class WikiManager {
 		VFSItem item = wikiContentContainer.resolve(page.getPageId() + "." + WIKI_FILE_SUFFIX);
 		if (item != null && incrementVersion) {
 			if (page.getVersion() > 0) {
-				versionsContainer.copyFrom(item);
+				versionsContainer.copyFrom(item, savedBy);
 				VFSItem copiedItem = versionsContainer.resolve(page.getPageId() + "." + WIKI_FILE_SUFFIX);
 				String fileName = page.getPageId() + "." + WIKI_FILE_SUFFIX + "-" + page.getVersion();
 				copiedItem.rename(fileName);
@@ -520,7 +523,7 @@ public class WikiManager {
 		item = wikiContentContainer.resolve(page.getPageId() + "." + WIKI_PROPERTIES_SUFFIX);
 		if (item != null && incrementVersion) {
 			if (page.getVersion() > 0) {
-				versionsContainer.copyFrom(item);
+				versionsContainer.copyFrom(item, savedBy);
 				VFSItem copiedItem = versionsContainer.resolve(page.getPageId() + "." + WIKI_PROPERTIES_SUFFIX);
 				String fileName = page.getPageId() + "." + WIKI_PROPERTIES_SUFFIX + "-" + page.getVersion();
 				copiedItem.rename(fileName);

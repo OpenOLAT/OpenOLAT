@@ -559,7 +559,7 @@ public class VideoDisplayController extends BasicController {
 		try {
 			Long durationInSeconds = Math.round(Double.parseDouble(duration));
 			if(durationInSeconds.longValue() > 0l) {
-				videoEntry = videoManager.updateVideoMetadata(videoEntry, durationInSeconds);
+				videoEntry = videoManager.updateVideoMetadata(videoEntry, durationInSeconds, getIdentity());
 				videoMetadata = videoManager.getVideoMetadata(videoEntry.getOlatResource());
 			}
 		} catch (NumberFormatException e) {

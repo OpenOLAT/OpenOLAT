@@ -131,8 +131,8 @@ public class DirectoryController extends BasicController implements Activateable
 				lastModified = format.formatDateAndTime(new Date(item.getLastModified()));
 				if(item.canMeta() == VFSConstants.YES) {
 					VFSMetadata metaInfo = item.getMetaInfo();
-					if(metaInfo != null && metaInfo.getAuthor() != null) {
-						createdBy = userManager.getUserDisplayName(metaInfo.getAuthor());
+					if(metaInfo != null && metaInfo.getFileInitializedBy() != null) {
+						createdBy = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
 					}
 				}
 			}

@@ -981,12 +981,12 @@ public class ForumManager {
 		return messageDir;
 	}
 	
-	private void moveMessageContainer(Long fromForumKey, Long fromMessageKey, Long toForumKey, Long toMessageKey) {
+	private void moveMessageContainer(Long fromForumKey, Long fromMessageKey, Long toForumKey, Long toMessageKey, Identity savedBy) {
 		// copy message container
 		VFSContainer toMessageContainer = getMessageContainer(toForumKey, toMessageKey);
 		VFSContainer fromMessageContainer = getMessageContainer(fromForumKey, fromMessageKey);
 		for (VFSItem vfsItem : fromMessageContainer.getItems()) {
-			toMessageContainer.copyFrom(vfsItem);
+			toMessageContainer.copyFrom(vfsItem, savedBy);
 		}
 	}
 
@@ -1062,9 +1062,10 @@ public class ForumManager {
 	 * 
 	 * @param msg
 	 * @param topMsg
+	 * @param movedBy 
 	 * @return the moved message
 	 */
-	public Message moveMessage(Message msg, Message topMsg) {
+	public Message moveMessage(Message msg, Message topMsg, Identity movedBy) {
 		// one has to set a new parent for all children of the moved message
 		// first message of sublist has to get the parent from the moved message
 		List<Message> children = getMessageChildren(msg);
@@ -1086,7 +1087,7 @@ public class ForumManager {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Forum.class, msg.getForum().getKey());
 		markingService.getMarkManager().moveMarks(ores, msg.getKey().toString(), message.getKey().toString());
 		
-		moveMessageContainer(oldMessage.getForum().getKey(), oldMessage.getKey(), message.getForum().getKey(), message.getKey());
+		moveMessageContainer(oldMessage.getForum().getKey(), oldMessage.getKey(), message.getForum().getKey(), message.getKey(), movedBy);
 		deleteMessageRecursion(oldMessage.getForum().getKey(), oldMessage);
 		return message;
 	}
@@ -1145,9 +1146,10 @@ public class ForumManager {
 	 * @param oldParent the OLD parent message
 	 * @param newParent the NEW parent message
 	 * @param topMsg the top message
+	 * @param movedBy 
 	 * @return the message
 	 */
-	private Message moveThreadToAnotherForumRecursively(Message oldParent, Message newParent, Message topMsg) {
+	private Message moveThreadToAnotherForumRecursively(Message oldParent, Message newParent, Message topMsg, Identity movedBy) {
 		// 1) get direct children of the old top message
 		List<Message> children = getMessageChildren(oldParent);
 		Message message = null;
@@ -1158,10 +1160,10 @@ public class ForumManager {
 			message = persistMessageInAnotherLocation(oldMessage, topMsg.getForum(), topMsg, newParent);
 			// 3) move the message container to a new destination
 			moveMessageContainer(oldMessage.getForum().getKey(), oldMessage.getKey(), 
-					message.getForum().getKey(), message.getKey());
+					message.getForum().getKey(), message.getKey(), movedBy);
 			// 4) do recursion if children are available
 			if (hasChildren(child)) {
-				moveThreadToAnotherForumRecursively(child, message, topMsg);				
+				moveThreadToAnotherForumRecursively(child, message, topMsg, movedBy);
 			}
 		}
 		return message;
@@ -1171,25 +1173,26 @@ public class ForumManager {
 	 * Creates new thread in another forum or appends selected thread to another thread in another forum.
 	 *
 	 * @param msg the OLD parent message
-	 * @param the destination forum
 	 * @param topMsg the top message
+	 * @param movedBy 
+	 * @param the destination forum
 	 * @return the message
 	 */
-	public Message createOrAppendThreadInAnotherForum(Message msg, Forum forum, Message topMsg) {
+	public Message createOrAppendThreadInAnotherForum(Message msg, Forum forum, Message topMsg, Identity movedBy) {
 		Message oldMessage = getMessageById(msg.getKey());
 		Message message = persistMessageInAnotherLocation(oldMessage, forum, topMsg, topMsg);
 		// reload message from database
 		message = getMessageById(message.getKey());
 		moveMessageContainer(oldMessage.getForum().getKey(), oldMessage.getKey(), 
-				message.getForum().getKey(), message.getKey());
+				message.getForum().getKey(), message.getKey(), movedBy);
 		
 		if (hasChildren(oldMessage)) {
 			if (topMsg != null) {
 				// if added to an existing thread choose its top message
-				message = moveThreadToAnotherForumRecursively(oldMessage, message, message.getThreadtop());
+				message = moveThreadToAnotherForumRecursively(oldMessage, message, message.getThreadtop(), movedBy);
 			} else {
 				// if a new thread is created in a forum the parent message is also the top message
-				message = moveThreadToAnotherForumRecursively(oldMessage, message, message);
+				message = moveThreadToAnotherForumRecursively(oldMessage, message, message, movedBy);
 			}
 		}
 		// deletes all children of the old top message recursively
@@ -1204,9 +1207,10 @@ public class ForumManager {
 	 *
 	 * @param msg the OLD parent message
 	 * @param topMsg the NEW top message
+	 * @param movedBy 
 	 * @return the message
 	 */
-	public Message moveMessageToAnotherForum(Message msg, Forum forum, Message topMsg) {
+	public Message moveMessageToAnotherForum(Message msg, Forum forum, Message topMsg, Identity movedBy) {
 		Message targetThread = null;
 		if (topMsg != null) {
 			targetThread = topMsg.getThreadtop();
@@ -1218,10 +1222,10 @@ public class ForumManager {
 		final Message oldParent = getMessageById(msg.getKey());
 		// one has to set a new parent for all children of the moved message
 		Message newParent = persistMessageInAnotherLocation(oldParent, forum, targetThread, topMsg);		
-		moveMessageContainer(oldParent.getForum().getKey(), oldParent.getKey(), newParent.getForum().getKey(), newParent.getKey());
+		moveMessageContainer(oldParent.getForum().getKey(), oldParent.getKey(), newParent.getForum().getKey(), newParent.getKey(), movedBy);
 		targetThread = targetThread == null ? newParent : targetThread;
 		if (hasChildren(oldParent)) {
-			moveThreadToAnotherForumRecursively(oldParent, newParent, targetThread);
+			moveThreadToAnotherForumRecursively(oldParent, newParent, targetThread, movedBy);
 		}
 		deleteMessageRecursion(oldParent.getForum().getKey(), oldParent);
 		return newParent;

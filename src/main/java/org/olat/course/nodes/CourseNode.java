@@ -375,8 +375,9 @@ public interface CourseNode extends INode, ShortName {
 	 * the one passed as parameter. Warning, the 2 nodes can
 	 * be from different types.
 	 * @param courseNode
+	 * @param savedBy 
 	 */
-	public void copyConfigurationTo(CourseNode courseNode, ICourse course);
+	public void copyConfigurationTo(CourseNode courseNode, ICourse course, Identity savedBy);
 	
 	/**
 	 * Create an instance for the copy process. The copy must have a different

@@ -179,7 +179,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 				VFSLeaf sourceLeaf = (VFSLeaf)vfsSource;
 				vfsRepositoryService.addVersion(sourceLeaf, ureq.getIdentity(), "", sourceLeaf.getInputStream());
 			} else {
-				vfsStatus = target.copyFrom(vfsSource);
+				vfsStatus = target.copyFrom(vfsSource, ureq.getIdentity());
 			}
 			if (vfsStatus != VFSConstants.SUCCESS) {
 				String errorKey = "failed";

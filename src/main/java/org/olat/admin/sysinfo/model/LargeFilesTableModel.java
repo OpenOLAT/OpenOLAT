@@ -72,7 +72,7 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 		case contextInfo: return row.getContextInfo();
 		case path: return row.getPath();
 		case showPath: return row.getShowPath();
-		case author: return row.getAuthor() != null ? row.getAuthor().getUser().getFirstName() + " " + row.getAuthor().getUser().getLastName() : null;
+		case author: return row.getFileInitializedBy() != null ? row.getFileInitializedBy().getUser().getFirstName() + " " + row.getFileInitializedBy().getUser().getLastName() : null;
 		case revision: return row.isRevision();
 		case fileCategory: return row.getFileCategory();
 		case fileType: return row.getFileType();
@@ -95,7 +95,7 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 		case lockedAt: return returnNullSafeDate(row.getLockedAt());
 		case revisionComment: return row.getRevisionComment();
 		case revisionNr: return row.getRevisionNr();
-		case sendMail: return row.getAuthor() != null ? StringHelper.containsNonWhitespace(row.getAuthor().getUser().getEmail()) ? true : false : false;
+		case sendMail: return row.getFileInitializedBy() != null ? StringHelper.containsNonWhitespace(row.getFileInitializedBy().getUser().getEmail()) ? true : false : false;
 
 		default: return "ERROR";
 		}

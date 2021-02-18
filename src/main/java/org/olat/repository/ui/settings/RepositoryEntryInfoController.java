@@ -291,7 +291,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));
 			VFSContainer tmpContainer = tmpHome.createChildContainer(UUID.randomUUID().toString());
 			VFSLeaf newFile = fileUpload.moveUploadFileTo(tmpContainer);//give it it's real name and extension
-			boolean ok = repositoryManager.setImage(newFile, repositoryEntry);
+			boolean ok = repositoryManager.setImage(newFile, repositoryEntry, getIdentity());
 			if (!ok) {
 				showWarning("cif.error.image");
 			} else {

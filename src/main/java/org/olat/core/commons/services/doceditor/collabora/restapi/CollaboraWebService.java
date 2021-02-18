@@ -119,7 +119,7 @@ public class CollaboraWebService {
 		}
 		
 		VFSMetadata metadata = access.getMetadata();
-		String ownerId = metadata.getAuthor() != null? identityService.getGlobalIdentityId(metadata.getAuthor()): null;
+		String ownerId = metadata.getFileInitializedBy() != null? identityService.getGlobalIdentityId(metadata.getFileInitializedBy()): null;
 		CheckFileInfoVO checkFileInfoVO = CheckFileInfoVO.builder()
 				.withBaseFileName(metadata.getFilename()) // suffix is mandatory
 				.withOwnerId(ownerId)

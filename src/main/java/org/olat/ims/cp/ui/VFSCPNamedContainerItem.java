@@ -21,6 +21,7 @@ package org.olat.ims.cp.ui;
 
 import java.util.List;
 
+import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.NamedLeaf;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -72,12 +73,12 @@ public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 	}
 
 	@Override
-	public VFSStatus copyFrom(VFSItem source) {
+	public VFSStatus copyFrom(VFSItem source, Identity savedBy) {
 		return VFSConstants.NO;
 	}
 
 	@Override
-	public VFSStatus copyContentOf(VFSContainer container) {
+	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
 		return VFSConstants.NO;
 	}
 

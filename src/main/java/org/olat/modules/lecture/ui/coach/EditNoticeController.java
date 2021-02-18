@@ -138,7 +138,7 @@ public class EditNoticeController extends FormBasicController {
 		if(noticeWrapper.getTempUploadFolder() != null) {
 			newFiles.addAll(noticeWrapper.getTempUploadFolder().getItems(new VFSSystemItemFilter()));
 		}
-		absenceNotice = lectureService.updateAbsenceNoticeAttachments(absenceNotice, newFiles, noticeWrapper.getAttachmentsToDelete());
+		absenceNotice = lectureService.updateAbsenceNoticeAttachments(absenceNotice, newFiles, noticeWrapper.getAttachmentsToDelete(), getIdentity());
 		fireEvent(ureq, Event.CHANGED_EVENT);
 		
 		String after = lectureService.toAuditXml(absenceNotice);

@@ -807,7 +807,7 @@ public class ForumManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//move the message
-		Message movedMessage = forumManager.moveMessage(messageToMove, targetMessage);
+		Message movedMessage = forumManager.moveMessage(messageToMove, targetMessage, null);
 		dbInstance.commitAndCloseSession();
 		
 		//check target thread
@@ -950,7 +950,7 @@ public class ForumManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//move the message
-		Message movedMessage = forumManager.moveMessageToAnotherForum(messageToMove, fo2, targetMessage);
+		Message movedMessage = forumManager.moveMessageToAnotherForum(messageToMove, fo2, targetMessage, null);
 		List<Message> children = forumManager.getMessageChildren(movedMessage);
 		
 		//check target thread
@@ -1065,13 +1065,13 @@ public class ForumManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		// move thread to forum as new thread
-		Message newthread = forumManager.createOrAppendThreadInAnotherForum(topMsg, fo2, null);
+		Message newthread = forumManager.createOrAppendThreadInAnotherForum(topMsg, fo2, null, null);
 		
 		// check if newthread is in another forum
 		Assert.assertEquals(fo2, newthread.getForum());
 
 		// move thread to another forum to append to another thread
-		Message movedthread = forumManager.createOrAppendThreadInAnotherForum(topMessage, fo2, targetThread);
+		Message movedthread = forumManager.createOrAppendThreadInAnotherForum(topMessage, fo2, targetThread, null);
 		
 		//check target thread
 		List<Message> targetMessages = forumManager.getThread(targetThread.getKey(), 0, -1, Message.OrderBy.title, true); 

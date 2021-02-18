@@ -79,6 +79,7 @@ import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.ReviewDecision;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -252,9 +253,9 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public void backupQuestion(QuestionItem item) {
+	public void backupQuestion(QuestionItem item, Identity identity) {
 		String dir = item.getDirectory();
-		qpoolFileStorage.backupDir(dir);
+		qpoolFileStorage.backupDir(dir, identity);
 	}
 
 	@Override
@@ -737,7 +738,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevel(Identity identity, TaxonomyCompetenceTypes... competenceType) {
 		return taxonomyCompetenceDao.getCompetencesByTaxonomy(getQPoolTaxonomyRef(), identity, new Date(), competenceType).stream()
-				.map(competence -> competence.getTaxonomyLevel())
+				.map(TaxonomyCompetence::getTaxonomyLevel)
 				.collect(Collectors.toList());
 	}
 	

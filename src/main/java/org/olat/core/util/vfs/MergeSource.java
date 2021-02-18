@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
@@ -203,22 +204,22 @@ public class MergeSource extends AbstractVirtualContainer {
 	}
 
 	@Override
-	public VFSStatus copyFrom(VFSItem source) {
+	public VFSStatus copyFrom(VFSItem source, Identity savedBy) {
 		if (canWrite() != VFSConstants.YES) {
 			throw new AssertException("Cannot create child container in merge source if not writable.");
 		}
-		return rootWriteContainer.copyFrom(source);
+		return rootWriteContainer.copyFrom(source, savedBy);
 	}
 
 	@Override
-	public VFSStatus copyContentOf(VFSContainer container) {
+	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
 		if (canWrite() != VFSConstants.YES) {
 			throw new AssertException("Cannot create child container in merge source if not writable.");
 		}
 		
 		VFSStatus status = null;
 		for(VFSItem item:container.getItems()) {
-			status = rootWriteContainer.copyFrom(item);
+			status = rootWriteContainer.copyFrom(item, savedBy);
 		}
 		return status;
 	}

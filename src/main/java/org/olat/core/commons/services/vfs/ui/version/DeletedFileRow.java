@@ -57,7 +57,7 @@ public class DeletedFileRow implements VFSMetadataRef {
 	}
 	
 	public Identity getDeletedBy() {
-		return lastRevision == null ? null : lastRevision.getAuthor();
+		return lastRevision == null ? null : lastRevision.getFileInitializedBy();
 	}
 	
 	public Date getDate() {

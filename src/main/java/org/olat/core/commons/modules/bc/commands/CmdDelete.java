@@ -34,6 +34,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -60,13 +61,16 @@ public class CmdDelete extends BasicController implements FolderCommand {
 	private DialogBoxController dialogCtr;
 	private DialogBoxController lockedFiledCtr;
 	
+	private final boolean versionsEnabled;
 	private final VFSLockManager lockManager;
 	
 	protected CmdDelete(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		versionsEnabled = CoreSpringFactory.getImpl(VFSVersionModule.class).isEnabled();
 		lockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 
+	@Override
 	public Controller execute(FolderComponent fc, UserRequest ureq, WindowControl wContr, Translator trans) {
 		this.translator = trans;
 		this.folderComponent = fc;
@@ -133,8 +137,12 @@ public class CmdDelete extends BasicController implements FolderCommand {
 				for (String file : files) {
 					VFSItem item = currentContainer.resolve(file);
 					if (item != null && (item.canDelete() == VFSConstants.YES)) {
-						// delete the item itself
-						item.delete();
+						if (versionsEnabled && item.canVersion() == VFSConstants.YES) {
+							// Move to pub
+							item.delete();
+						} else {
+							item.deleteSilently();
+						}
 					} else {
 						getWindowControl().setWarning(translator.translate("del.partial"));
 					}
@@ -157,6 +165,7 @@ public class CmdDelete extends BasicController implements FolderCommand {
 		// no events to catch
 	}
 
+	@Override
 	protected void doDispose() {
 		// autodisposed by basic controller
 	}

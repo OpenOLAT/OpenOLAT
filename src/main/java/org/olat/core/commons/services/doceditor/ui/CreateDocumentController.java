@@ -30,7 +30,6 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
-import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -46,7 +45,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -181,8 +179,8 @@ public class CreateDocumentController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String docName = getFileName();
 		createFile(docName);
-		createMetadata();
 		createContent();
+		vfsService.resetThumbnails(vfsLeaf);
 		
 		// Commit now to have the same data if a second process like a REST call from
 		// ONLYOFFICE accesses the metadata of the file before the OpenOlat GUI thread
@@ -204,18 +202,6 @@ public class CreateDocumentController extends FormBasicController {
 			if (docTemplate != null) {
 				VFSManager.copyContent(docTemplate.getContentProvider().getContent(getLocale()), vfsLeaf, getIdentity());
 			}
-		}
-	}
-
-	private void createMetadata() {
-		if (vfsLeaf != null && vfsLeaf.canMeta() == VFSConstants.YES) {
-			VFSMetadata meta = vfsLeaf.getMetaInfo();
-			if (metadataCtrl != null) {
-				meta = metadataCtrl.getMetaInfo(meta);
-			}
-			meta.setAuthor(getIdentity());
-			vfsService.updateMetadata(meta);
-			vfsService.resetThumbnails(vfsLeaf);
 		}
 	}
 	

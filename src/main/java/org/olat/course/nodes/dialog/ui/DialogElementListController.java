@@ -252,7 +252,7 @@ public class DialogElementListController extends FormBasicController implements 
 		DialogElement elementToDelete = dialogElementsManager.getDialogElementByKey(rowToDelete.getDialogElementKey());
 		// archive data to personal folder
 		File exportDir = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), courseNode.getShortTitle());
-		courseNode.doArchiveElement(elementToDelete, exportDir, getLocale());
+		courseNode.doArchiveElement(elementToDelete, exportDir, getLocale(), getIdentity());
 
 		dialogElementsManager.deleteDialogElement(elementToDelete);
 		//do logging

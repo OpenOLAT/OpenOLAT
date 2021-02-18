@@ -424,7 +424,7 @@ public class FeedManagerImplTest {
 		String authors = "Author";
 		entry.setAuthors(authors);
 
-		Feed enrichedFeed = sut.enrichFeedByRepositoryEntry(feed, entry);
+		Feed enrichedFeed = sut.enrichFeedByRepositoryEntry(feed, entry, null);
 
 		assertThat(enrichedFeed.getTitle()).isEqualTo(title);
 		assertThat(enrichedFeed.getDescription()).isEqualTo(description);
@@ -442,7 +442,7 @@ public class FeedManagerImplTest {
 		String authors = "Author";
 		feed.setAuthor(authors);
 
-		Feed enrichedFeed = sut.enrichFeedByRepositoryEntry(feed, null);
+		Feed enrichedFeed = sut.enrichFeedByRepositoryEntry(feed, null, null);
 
 		assertThat(enrichedFeed).isEqualTo(feed);
 		assertThat(enrichedFeed.getTitle()).isEqualTo(title);
@@ -454,7 +454,7 @@ public class FeedManagerImplTest {
 	public void enrichFeedFromRepositoryEntryShouldReturnNullIfFeedIsNull() {
 		RepositoryEntry entry = new RepositoryEntry();
 
-		Feed enrichedFeed = sut.enrichFeedByRepositoryEntry(null, entry);
+		Feed enrichedFeed = sut.enrichFeedByRepositoryEntry(null, entry, null);
 
 		assertThat(enrichedFeed).isNull();
 	}

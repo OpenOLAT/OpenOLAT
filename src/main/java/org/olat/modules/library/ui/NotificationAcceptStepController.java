@@ -139,7 +139,7 @@ public class NotificationAcceptStepController extends StepFormBasicController {
 				VFSLeaf targetFile = destinationDirectory.createChildLeaf(targetFileName);
 				
 				// ...and copy the file there.
-				if (!VFSManager.copyContent(sourceFile, targetFile, true)) {
+				if (!VFSManager.copyContent(sourceFile, targetFile, true, getIdentity())) {
 					showError("acceptstep.notification.copyerror");
 					logError("Error while copying \"" + sourceFile.getName() + "\" to \"" + destinationDirectory.getName() + "\".", null);
 				}
@@ -155,7 +155,7 @@ public class NotificationAcceptStepController extends StepFormBasicController {
 
 			// send notification e-mail
 			VFSMetadata metaInfo = sourceFile.getMetaInfo();
-			Identity uploaderIdentity = metaInfo.getAuthor();
+			Identity uploaderIdentity = metaInfo.getFileInitializedBy();
 
 			String mailto;
 			if(StringHelper.containsNonWhitespace(libraryModule.getEmailContactsToNotifyAfterFreeing())) {

@@ -455,7 +455,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		CourseNodeConfiguration newConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(selectAlternative);
 		CourseNode newNode = newConfig.getInstance(parentNode);
 		//copy configurations
-		chosenNode.copyConfigurationTo(newNode, course);
+		chosenNode.copyConfigurationTo(newNode, course, getIdentity());
 		//insert the node
 		CourseEditorTreeNode newCetn = course.getEditorTreeModel().insertCourseNodeAt(newNode, parentNode.getCourseNode(), position);
 		doInsert(ureq, newNode);

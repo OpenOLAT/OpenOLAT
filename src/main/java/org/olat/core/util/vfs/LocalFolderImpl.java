@@ -140,15 +140,15 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	}
 
 	@Override
-	public VFSStatus copyFrom(VFSItem source) {
-		return copyFrom(source, true);
+	public VFSStatus copyFrom(VFSItem source, Identity savedBy) {
+		return copyFrom(source, true, savedBy);
 	}
 	
 	@Override
-	public VFSStatus copyContentOf(VFSContainer container) {
+	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
 		VFSStatus status = VFSConstants.YES;
 		for(VFSItem item:container.getItems(new VFSSystemItemFilter())) {
-			status = copyFrom(item, true);
+			status = copyFrom(item, true, savedBy);
 		}
 		return status;
 	}
@@ -158,9 +158,10 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	 * 
 	 * @param source
 	 * @param checkQuota
+	 * @param savedBy 
 	 * @return
 	 */
-	private VFSStatus copyFrom(VFSItem source, boolean checkQuota) {
+	private VFSStatus copyFrom(VFSItem source, boolean checkQuota, Identity savedBy) {
 		if (source.canCopy() != VFSConstants.YES) {
 			log.warn("Cannot copy file {} security denied", source);
 			return VFSConstants.NO_SECURITY_DENIED;
@@ -192,7 +193,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			LocalFolderImpl rootcopyfolder = new LocalFolderImpl(new File(basefile, sourcename), this);
 			List<VFSItem> children = sourcecontainer.getItems(new VFSVersionsItemFilter());
 			for (VFSItem chd:children) {
-				VFSStatus status = rootcopyfolder.copyFrom(chd, false);
+				VFSStatus status = rootcopyfolder.copyFrom(chd, false, savedBy);
 				if (status != VFSConstants.SUCCESS) {
 					log.warn("Cannot copy file {} with status {}", chd, status);
 				}
@@ -219,7 +220,9 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			if(s.canMeta() == VFSConstants.YES || s.canVersion() == VFSConstants.YES) {
 				VFSItem target = resolve(sourcename);
 				if(target instanceof VFSLeaf && (target.canMeta() == VFSConstants.YES || s.canVersion() == VFSConstants.YES)) {
-					CoreSpringFactory.getImpl(VFSRepositoryService.class).copyTo(s, (VFSLeaf)target, this);
+					VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+					vfsRepositoryService.itemSaved( (VFSLeaf)target, savedBy);
+					vfsRepositoryService.copyTo(s, (VFSLeaf)target, this, savedBy);
 				}
 			}
 		} else {

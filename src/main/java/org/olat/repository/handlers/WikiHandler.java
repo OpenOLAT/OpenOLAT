@@ -104,7 +104,7 @@ public class WikiHandler implements RepositoryHandler {
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
 			Object createObject, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		WikiResource wikiResource = WikiManager.getInstance().createWiki();
+		WikiResource wikiResource = WikiManager.getInstance().createWiki(initialAuthor);
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(wikiResource);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description,
 				resource, RepositoryEntryStatusEnum.preparation, organisation);

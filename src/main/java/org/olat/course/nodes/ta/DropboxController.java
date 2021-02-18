@@ -25,12 +25,7 @@
 
 package org.olat.course.nodes.ta;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +39,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
-import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -60,7 +54,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
@@ -72,7 +65,6 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -273,19 +265,7 @@ public class DropboxController extends BasicController {
 					fOut = fDropbox.createChildLeaf(filename);
 				}
 				
-				try(InputStream in = new FileInputStream(fIn);
-					OutputStream out = new BufferedOutputStream(fOut.getOutputStream(false))) {
-					success = FileUtils.copy(in, out);
-				} catch (IOException e) {
-					logError("", e);
-					return;
-				}
-				
-				if(fOut.canMeta() == VFSConstants.YES) {
-					VFSMetadata info = fOut.getMetaInfo();
-					info.setAuthor(ureq.getIdentity());
-					vfsRepositoryService.updateMetadata(info);
-				}
+				success = VFSManager.copyContent(fIn, fOut, getIdentity());
 					
 				if (success) {
 					int numFiles = fDropbox.getItems(new VFSSystemItemFilter()).size();

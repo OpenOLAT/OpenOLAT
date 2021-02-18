@@ -486,12 +486,12 @@ public class CourseFactory {
 	 * Copies a course. More specifically, the run and editor structures and the
 	 * course folder will be copied to create a new course.
 	 *
-	 *
 	 * @param sourceRes
-	 * @param ureq
+	 * @param targetRes
+	 * @param author 
 	 * @return copy of the course.
 	 */
-	public static OLATResourceable copyCourse(OLATResourceable sourceRes, OLATResource targetRes) {
+	public static OLATResourceable copyCourse(OLATResourceable sourceRes, OLATResource targetRes, Identity author) {
 		PersistingCourseImpl sourceCourse = (PersistingCourseImpl)loadCourse(sourceRes);
 		PersistingCourseImpl targetCourse = new PersistingCourseImpl(targetRes);
 		LocalFolderImpl fTargetCourseBaseContainer = targetCourse.getCourseBaseContainer();
@@ -516,7 +516,7 @@ public class CourseFactory {
 			VFSContainer sourceCourseContainer = sourceCourse.getIsolatedCourseBaseContainer();
 			if (sourceCourseContainer.exists()) {
 				VFSContainer targetCourseContainer = targetCourse.getIsolatedCourseBaseContainer();
-				targetCourseContainer.copyContentOf(sourceCourseContainer);
+				targetCourseContainer.copyContentOf(sourceCourseContainer, author);
 			}
 
 			// copy folder nodes directories
@@ -525,7 +525,7 @@ public class CourseFactory {
 			if (sourceFoldernodesContainer.exists()) {
 				VFSContainer targetFoldernodesContainer = VFSManager
 						.olatRootContainer(BCCourseNode.getFoldernodesPathRelToFolderBase(targetCourse.getCourseEnvironment()));
-				targetFoldernodesContainer.copyContentOf(sourceFoldernodesContainer);
+				targetFoldernodesContainer.copyContentOf(sourceFoldernodesContainer, author);
 			}
 
 			// copy task folder directories

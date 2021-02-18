@@ -164,7 +164,7 @@ public class QTIExportProcessor {
 		for(ItemMaterial material:itemAndMaterials.getMaterials()) {
 			String exportPath = material.getExportUri();
 			VFSLeaf leaf = editorContainer.createChildLeaf(exportPath);
-			VFSManager.copyContent(material.getLeaf(), leaf, false);
+			VFSManager.copyContent(material.getLeaf(), leaf, false, null);
 		}
 		return itemEl;
 	}

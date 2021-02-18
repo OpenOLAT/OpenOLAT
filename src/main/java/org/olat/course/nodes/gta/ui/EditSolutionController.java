@@ -20,12 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -38,12 +33,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.gta.model.Solution;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -62,9 +54,6 @@ public class EditSolutionController extends FormBasicController {
 	private final File solutionDir;
 	private final VFSContainer solutionContainer;
 	private final String filenameToReplace;
-	
-	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
 
 	public EditSolutionController(UserRequest ureq, WindowControl wControl,
 			File solutionDir, VFSContainer solutionContainer) {
@@ -170,20 +159,7 @@ public class EditSolutionController extends FormBasicController {
 
 			solution.setFilename(filename);
 
-			try {
-				Path upload = fileEl.getUploadFile().toPath();
-				File newFile = new File(solutionDir, filename);
-				Files.move(upload, newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-				VFSItem uploadedItem = solutionContainer.resolve(filename);
-				if(uploadedItem.canMeta() == VFSConstants.YES) {
-					VFSMetadata metaInfo = uploadedItem.getMetaInfo();
-					metaInfo.setAuthor(ureq.getIdentity());
-					vfsRepositoryService.updateMetadata(metaInfo);
-				}
-			} catch(Exception ex) {
-				logError("", ex);
-			}
+			fileEl.moveUploadFileTo(solutionContainer);
 		}
 
 		fireEvent(ureq, Event.DONE_EVENT);

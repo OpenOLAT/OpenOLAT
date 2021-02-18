@@ -57,6 +57,8 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	
 	public Identity getFileLastModifiedBy();
 	
+	public Identity getFileInitializedBy();
+	
 	public long getFileSize();
 	
 	public boolean isDirectory();
@@ -73,10 +75,6 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	 * @return the procotole
 	 */
 	public String getProtocol();
-	
-	public Identity getAuthor();
-	
-	public void setAuthor(Identity author);
 	
 	public String getTitle();
 	

@@ -428,7 +428,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void finishQuestionEdition() {
 		if (questionEdited) {
 			QuestionItem item = metadatasCtrl.getItem();
-			qpoolService.backupQuestion(item);
+			qpoolService.backupQuestion(item, getIdentity());
 
 			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(), Action.UPDATE_QUESTION)
 					.withBefore(item)

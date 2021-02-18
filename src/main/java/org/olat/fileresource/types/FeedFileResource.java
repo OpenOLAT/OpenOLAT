@@ -69,7 +69,7 @@ public abstract class FeedFileResource extends FileResource {
 			rootContainer = rootContainer.createChildContainer(folderName);
 			VFSContainer resourceContainer = new LocalFolderImpl(resourceFolder);
 			for (VFSItem item : resourceContainer.getItems()) {
-				rootContainer.copyFrom(item);
+				rootContainer.copyFrom(item, null);
 				// Delete the item if it is located in the _unzipped_ dir.
 				// Remember that the resource folder could be a valid folder of a
 				// different resource (when copying the resource).

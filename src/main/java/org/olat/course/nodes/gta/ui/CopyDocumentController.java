@@ -186,11 +186,11 @@ public class CopyDocumentController extends FormBasicController {
 		String iconCss = CSSHelper.createFiletypeIconCssClassFor(metadata.getFilename());
 		sb.append("<i class='o_icon o_icon-fw o_filetype_file").append(iconCss).append("'></i> ");
 		sb.append(metadata.getFilename());
-		if (metadata.getAuthor() != null || metadata.getFileLastModified() != null) {
+		if (metadata.getFileInitializedBy() != null || metadata.getFileLastModified() != null) {
 			sb.append("<small><span class='text-muted'>");
-			if (metadata.getAuthor() != null) {
+			if (metadata.getFileInitializedBy() != null) {
 				sb.append(" ");
-				String userDisplayName = userManager.getUserDisplayName(metadata.getAuthor().getKey());
+				String userDisplayName = userManager.getUserDisplayName(metadata.getFileInitializedBy().getKey());
 				sb.append(translate("created.by", new String[] { userDisplayName }));
 			}
 			if (metadata.getFileLastModified() != null) {
@@ -267,12 +267,7 @@ public class CopyDocumentController extends FormBasicController {
 		VFSMetadata metadata = vfsService.getMetadata(() -> Long.valueOf(selectedKey));
 		VFSItem sourceItem = vfsService.getItemFor(metadata);
 		if (sourceItem instanceof VFSLeaf) {
-			VFSManager.copyContent((VFSLeaf)sourceItem,  targetLeaf, true);
-			VFSMetadata metaInfo = targetLeaf.getMetaInfo();
-			if (metaInfo != null) {
-				metaInfo.setAuthor(getIdentity());
-				vfsService.updateMetadata(metaInfo);
-			}
+			VFSManager.copyContent((VFSLeaf)sourceItem, targetLeaf, true, getIdentity());
 			
 			doOpen(ureq, targetLeaf);
 			fireEvent(ureq, Event.DONE_EVENT);

@@ -127,10 +127,10 @@ public class VideoPosterEditController extends FormBasicController {
 			if(event instanceof FolderEvent){
 				VFSLeaf posterFile = (VFSLeaf) ((FolderEvent) event).getItem();
 				if(source == posterUploadForm){
-					videoManager.setPosterframeResizeUploadfile(videoResource, posterFile);						
+					videoManager.setPosterframeResizeUploadfile(videoResource, posterFile, getIdentity());
 					posterFile.delete();
 				} else {					
-					videoManager.setPosterframe(videoResource, posterFile);
+					videoManager.setPosterframe(videoResource, posterFile, getIdentity());
 				}
 				updatePosterImage(ureq, videoResource);
 			}

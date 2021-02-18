@@ -87,7 +87,7 @@ public class LibraryNotificationHandler implements NotificationsHandler {
 					String iconCssClass =  null;
 					if (metaInfo != null) {
 						iconCssClass = metaInfo.getIconCssClass();
-						author = metaInfo.getAuthor();
+						author = metaInfo.getFileInitializedBy();
 						modDate = metaInfo.getFileLastModified();
 					}
 	

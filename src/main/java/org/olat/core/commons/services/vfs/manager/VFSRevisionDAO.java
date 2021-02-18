@@ -49,8 +49,8 @@ public class VFSRevisionDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public VFSRevision createRevision(Identity author, String filename, int revisionNr, long size, Date fileLastModified,
-			String revisionComment, VFSMetadata metadata) {
+	public VFSRevision createRevision(Identity fileInitializedBy, Identity fileLastModifiedBy, String filename,
+			int revisionNr, long size, Date fileLastModified, String revisionComment, VFSMetadata metadata) {
 		VFSRevisionImpl rev = new VFSRevisionImpl();
 		rev.setCreationDate(new Date());
 		rev.setLastModified(rev.getCreationDate());
@@ -64,13 +64,14 @@ public class VFSRevisionDAO {
 		rev.setSize(size);
 		rev.setRevisionComment(revisionComment);
 		rev.copyValues(metadata);
-		rev.setAuthor(author);
+		rev.setFileInitializedBy(fileInitializedBy);
+		rev.setFileLastModifiedBy(fileLastModifiedBy);
 		rev.setMetadata(metadata);
 		dbInstance.getCurrentEntityManager().persist(rev);
 		return rev;
 	}
 
-	public VFSRevision createRevisionCopy(Identity author, String revisionComment, VFSRevision revisionToCopy, VFSMetadata metadata) {
+	public VFSRevision createRevisionCopy(Identity fileInitialitedBy, Identity fileLastModifiedBy, String revisionComment, VFSMetadata metadata, VFSRevision revisionToCopy) {
 		VFSRevisionImpl rev = new VFSRevisionImpl();
 		VFSRevisionImpl revToCopy = (VFSRevisionImpl)revisionToCopy;
 		rev.setCreationDate(new Date());
@@ -80,7 +81,8 @@ public class VFSRevisionDAO {
 		rev.setFileLastModified(revToCopy.getFileLastModified());
 		rev.setSize(revToCopy.getSize());
 		rev.setRevisionComment(revisionComment);
-		rev.setAuthor(author);
+		rev.setFileInitializedBy(fileInitialitedBy);
+		rev.setFileLastModifiedBy(fileLastModifiedBy);
 		rev.copyValues(revToCopy);
 		rev.setMetadata(metadata);
 		dbInstance.getCurrentEntityManager().persist(rev);
@@ -90,8 +92,8 @@ public class VFSRevisionDAO {
 	public VFSRevision loadRevision(Long revisionKey) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rev from vfsrevision rev")
-		.append(" left join fetch rev.author as author")
-		.append(" left join fetch author.user as authorUser")
+		.append(" left join fetch rev.fileInitializedBy as fileInitializedBy")
+		.append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		.append(" inner join fetch rev.metadata meta")
 		.append(" where rev.key=:revisionKey");
 		List<VFSRevision> revisions = dbInstance.getCurrentEntityManager()
@@ -106,8 +108,8 @@ public class VFSRevisionDAO {
 
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rev from vfsrevision rev")
-		.append(" left join fetch rev.author as author")
-		.append(" left join fetch author.user as authorUser")
+		.append(" left join fetch rev.fileInitializedBy as fileInitializedBy")
+		.append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		.append(" where rev.metadata.key=:metadataKey")
 		.append(" order by rev.revisionNr");
 		return dbInstance.getCurrentEntityManager()
@@ -137,8 +139,8 @@ public class VFSRevisionDAO {
 
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rev from vfsrevision rev")
-		.append(" left join fetch rev.author as author")
-		.append(" left join fetch author.user as authorUser")
+		.append(" left join fetch rev.fileInitializedBy as fileInitializedBy")
+		.append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		.append(" where rev.metadata.key in (:metadataKeys)");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), VFSRevision.class)
@@ -242,8 +244,8 @@ public class VFSRevisionDAO {
 		QueryBuilder qb = new QueryBuilder(256);
 		qb.append("select rev from vfsrevision rev")
 		.append(" inner join fetch rev.metadata metadata")
-		.append(" left join fetch rev.author as author")
-		.append(" left join fetch author.user as authorUser");
+		.append(" left join fetch rev.fileInitializedBy as fileInitializedBy")
+		.append(" left join fetch fileInitializedBy.user as fileInitializedByUser");
 
 		if(createdAtNewer != null) {
 			qb.where().append("rev.creationDate>=:createdAtNewer");

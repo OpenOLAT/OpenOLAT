@@ -149,8 +149,8 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		apiConfig.setDocument(document);
 		
 		InfoImpl info = new InfoImpl();
-		String author = vfsMetadata.getAuthor() != null
-				? identityService.getUserDisplayName(vfsMetadata.getAuthor())
+		String author = vfsMetadata.getFileInitializedBy() != null
+				? identityService.getUserDisplayName(vfsMetadata.getFileInitializedBy())
 				: null;
 		info.setAuthor(author);
 		info.setCreated(null); // not in metadata

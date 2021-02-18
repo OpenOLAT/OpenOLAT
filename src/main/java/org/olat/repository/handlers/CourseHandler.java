@@ -443,7 +443,7 @@ public class CourseHandler implements RepositoryHandler {
 		final OLATResource sourceResource = source.getOlatResource();
 		final OLATResource targetResource = target.getOlatResource();
 		
-		CourseFactory.copyCourse(sourceResource, targetResource);
+		CourseFactory.copyCourse(sourceResource, targetResource, author);
 		 
 		//transaction copied
 		ICourse sourceCourse = CourseFactory.loadCourse(source);

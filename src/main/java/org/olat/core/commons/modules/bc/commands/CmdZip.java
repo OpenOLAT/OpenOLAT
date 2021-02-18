@@ -32,7 +32,6 @@ import java.util.List;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -121,13 +120,12 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());	
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// nothing to do
 	}
 
+	@Override
 	public int getStatus() {
 		return status;
 	}
@@ -158,8 +156,8 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 			name += ".zip";
 		}
 
-		VFSItem zipFile = currentContainer.createChildLeaf(name);
-		if (!(zipFile instanceof VFSLeaf)) {
+		VFSLeaf zipFile = currentContainer.createChildLeaf(name);
+		if (zipFile == null) {
 			fireEvent(ureq, Event.FAILED_EVENT);
 			return;				
 		}
@@ -171,17 +169,12 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 				vfsFiles.add(item);
 			}
 		}
-		if (!ZipUtil.zip(vfsFiles, (VFSLeaf)zipFile, new VFSSystemItemFilter(), false)) {
-			// cleanup zip file
+		if (!ZipUtil.zip(vfsFiles, zipFile, new VFSSystemItemFilter(), false)) {
 			zipFile.delete();				
 			status = FolderCommandStatus.STATUS_FAILED;
 			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 		} else {
-			if(zipFile.canMeta() == VFSConstants.YES) {
-				VFSMetadata info = zipFile.getMetaInfo();
-				info.setAuthor(ureq.getIdentity());
-				vfsRepositoryService.updateMetadata(info);
-			}
+			vfsRepositoryService.itemSaved(zipFile, ureq.getIdentity());
 			
 			fireEvent(ureq, new FolderEvent(FolderEvent.ZIP_EVENT, selection.renderAsHtml()));				
 			fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);								

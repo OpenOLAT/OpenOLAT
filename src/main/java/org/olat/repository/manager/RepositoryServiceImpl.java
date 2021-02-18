@@ -313,7 +313,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		dbInstance.commit();
 
 		//copy the image
-		RepositoryManager.getInstance().copyImage(sourceEntry, copyEntry);
+		RepositoryManager.getInstance().copyImage(sourceEntry, copyEntry, author);
 
 		//copy media container
 		VFSContainer sourceMediaContainer = handler.getMediaContainer(sourceEntry);

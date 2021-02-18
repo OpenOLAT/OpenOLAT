@@ -39,7 +39,8 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class RevisionFileImpl {
 
-	private Identity author;
+	private Identity fileInitializedBy;
+	private Identity fileLastModifiedBy;
 	private String comment;
 	private String name;
 	private String uuid;
@@ -84,12 +85,20 @@ public class RevisionFileImpl {
 		this.container = container;
 	}
 
-	public Identity getAuthor() {
-		return author;
+	public Identity getFileInitializedBy() {
+		return fileInitializedBy;
 	}
 
-	public void setAuthor(Identity author) {
-		this.author = author;
+	public void setFileInitializedBy(Identity fileInitializedBy) {
+		this.fileInitializedBy = fileInitializedBy;
+	}
+
+	public Identity getFileLastModifiedBy() {
+		return fileLastModifiedBy;
+	}
+
+	public void setFileLastModifiedBy(Identity fileLastModifiedBy) {
+		this.fileLastModifiedBy = fileLastModifiedBy;
 	}
 
 	public String getFilename() {

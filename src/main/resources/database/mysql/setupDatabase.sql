@@ -1955,7 +1955,7 @@ create table o_vfs_metadata (
    f_revision_nr bigint default 0 not null,
    f_revision_comment text(32000),
    fk_license_type bigint,
-   fk_author bigint,
+   fk_initialized_by bigint,
    fk_lastmodified_by bigint,
    fk_parent bigint,
    primary key (id)
@@ -2000,7 +2000,8 @@ create table o_vfs_revision (
    f_license_text mediumtext,
    f_licensor text(4000),
    fk_license_type bigint,
-   fk_author bigint,
+   fk_initialized_by bigint,
+   fk_lastmodified_by bigint,
    fk_metadata bigint not null,
    primary key (id)
 );
@@ -4164,7 +4165,7 @@ create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_respo
 -- vfs metadata
 alter table o_vfs_metadata add constraint fmeta_to_author_idx foreign key (fk_locked_identity) references o_bs_identity (id);
 alter table o_vfs_metadata add constraint fmeta_modified_by_idx foreign key (fk_lastmodified_by) references o_bs_identity (id);
-alter table o_vfs_metadata add constraint fmeta_to_lockid_idx foreign key (fk_author) references o_bs_identity (id);
+alter table o_vfs_metadata add constraint fmeta_to_lockid_idx foreign key (fk_initialized_by) references o_bs_identity (id);
 alter table o_vfs_metadata add constraint fmeta_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 alter table o_vfs_metadata add constraint fmeta_to_parent_idx foreign key (fk_parent) references o_vfs_metadata (id);
 create index f_m_rel_path_idx on o_vfs_metadata (f_relative_path(255));
@@ -4173,7 +4174,8 @@ create index f_m_uuid_idx on o_vfs_metadata (f_uuid);
 
 alter table o_vfs_thumbnail add constraint fthumb_to_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 
-alter table o_vfs_revision add constraint fvers_to_author_idx foreign key (fk_author) references o_bs_identity (id);
+alter table o_vfs_revision add constraint fvers_to_author_idx foreign key (fk_initialized_by) references o_bs_identity (id);
+alter table o_vfs_revision add constraint fvers_modified_by_idx foreign key (fk_lastmodified_by) references o_bs_identity (id);
 alter table o_vfs_revision add constraint fvers_to_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 alter table o_vfs_metadata add constraint fvers_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 

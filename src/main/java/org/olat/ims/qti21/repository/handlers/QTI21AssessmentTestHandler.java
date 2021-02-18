@@ -186,7 +186,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 				qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir, locale, options);
 				qtiService.setDeliveryOptions(re, options);
 			}
-			copyMetadata(onyxRe, re, repositoryDir);
+			copyMetadata(onyxRe, re, repositoryDir, initialAuthor);
 		} else {
 			createMinimalAssessmentTest(displayname, repositoryDir, locale);
 		}
@@ -218,7 +218,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		}
 	}
 	
-	private RepositoryEntry copyMetadata(RepositoryEntry originalRe, RepositoryEntry re, File targetDirectory) {
+	private RepositoryEntry copyMetadata(RepositoryEntry originalRe, RepositoryEntry re, File targetDirectory, Identity initialAuthor) {
 		//copy some metadata
 		re.setAuthors(originalRe.getAuthors());
 		re.setDescription(originalRe.getDescription());
@@ -229,7 +229,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		re.setLocation(originalRe.getLocation());
 		
 		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		repositoryManager.copyImage(originalRe, re);
+		repositoryManager.copyImage(originalRe, re, initialAuthor);
 
 		File resourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(originalRe.getOlatResource()).getBasefile();
 		FileUtils.copyDirToDir(new File(resourceFileroot, "media"), targetDirectory.getParentFile(), "copy media folder");

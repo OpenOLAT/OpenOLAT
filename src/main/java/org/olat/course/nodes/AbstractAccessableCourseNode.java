@@ -28,6 +28,7 @@ package org.olat.course.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
@@ -133,8 +134,8 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	}
 
 	@Override
-	public void copyConfigurationTo(CourseNode courseNode, ICourse course) {
-		super.copyConfigurationTo(courseNode, course);
+	public void copyConfigurationTo(CourseNode courseNode, ICourse course, Identity savedBy) {
+		super.copyConfigurationTo(courseNode, course, savedBy);
 		if(courseNode instanceof AbstractAccessableCourseNode) {
 			AbstractAccessableCourseNode accessableNode = (AbstractAccessableCourseNode)courseNode;
 			if(preConditionAccess != null) {

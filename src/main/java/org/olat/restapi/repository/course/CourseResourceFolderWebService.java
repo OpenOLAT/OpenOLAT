@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -50,11 +49,11 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -62,6 +61,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.ICourse;
@@ -379,25 +379,18 @@ public class CourseResourceFolderWebService {
 			} else {
 				existingVFSItem.delete();
 				newFile = container.createChildLeaf(filename);
-				OutputStream out = ((VFSLeaf)newFile).getOutputStream(false);
-				FileUtils.copy(file, out);//TODO metadata use VFSManager ?
-				FileUtils.closeSafely(out);
-				FileUtils.closeSafely(file);
+				VFSManager.copyContent(file, (VFSLeaf)newFile, ureq.getIdentity());
 			}
 		} else if (file != null) {
 			newFile = container.createChildLeaf(filename);
-			OutputStream out = ((VFSLeaf)newFile).getOutputStream(false);
-			FileUtils.copy(file, out);//TODO metadata use VFSManager ?
-			FileUtils.closeSafely(out);
-			FileUtils.closeSafely(file);
+			VFSManager.copyContent(file, (VFSLeaf)newFile, ureq.getIdentity());
 		} else {
 			newFile = container.createChildContainer(filename);
-		}
-
-		if(newFile.canMeta() == VFSConstants.YES) {
 			VFSMetadata infos = newFile.getMetaInfo();
-			infos.setAuthor(ureq.getIdentity());
-			vfsRepositoryService.updateMetadata(infos);
+			if (infos instanceof VFSMetadataImpl) {
+				((VFSMetadataImpl)infos).setFileInitializedBy(ureq.getIdentity());
+				vfsRepositoryService.updateMetadata(infos);
+			}
 		}
 
 		return Response.ok().build();

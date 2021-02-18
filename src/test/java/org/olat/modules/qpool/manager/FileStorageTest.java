@@ -74,7 +74,7 @@ public class FileStorageTest extends OlatTestCase {
 		VFSContainer container = qpoolFileStorage.getContainer(dir);
 		container.createChildLeaf("abc.txt");
 		container.createChildLeaf("xyzc.txt");
-		qpoolFileStorage.backupDir(dir);
+		qpoolFileStorage.backupDir(dir, null);
 		Assert.assertTrue(container.getItems().size() > 0);
 
 		qpoolFileStorage.deleteDir(dir);
@@ -95,14 +95,14 @@ public class FileStorageTest extends OlatTestCase {
 		String name2 = "xyzc.txt";
 		container.createChildLeaf(name2);
 
-		qpoolFileStorage.backupDir(dir);
+		qpoolFileStorage.backupDir(dir, null);
 		
 		VFSContainer backupContainer = qpoolFileStorage.getBackupContainer(dir);
 		assertThat(backupContainer).isNotNull();
 		VFSContainer backupSubContainer = (VFSContainer) backupContainer.getItems().get(0);
 		List<VFSItem> items = backupSubContainer.getItems();
 		assertThat(items).hasSize(2);
-		List<String> names = items.stream().map(item -> item.getName()).collect(Collectors.toList());
+		List<String> names = items.stream().map(VFSItem::getName).collect(Collectors.toList());
 		assertThat(names).contains(name1, name2);
 	}
 

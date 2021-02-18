@@ -868,7 +868,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			page.setCreationTime(System.currentTimeMillis());
 			page.setInitalAuthor(ureq.getIdentity().getKey().longValue());
 			wiki.addPage(page);
-			WikiManager.getInstance().saveWikiPage(ores, page, false, wiki, true);
+			WikiManager.getInstance().saveWikiPage(ores, page, false, wiki, true, getIdentity());
 			log.debug("Safe new page=" + page);
 			log.debug("Safe new pageId=" + page.getPageId());
 		}
@@ -1057,7 +1057,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 				if (page.getPageName().equals(WikiPage.WIKI_MENU_PAGE)) {
 					updateWikiMenu(wiki);
 				}
-				WikiManager.getInstance().saveWikiPage(ores, page, true, wiki, true);
+				WikiManager.getInstance().saveWikiPage(ores, page, true, wiki, true, getIdentity());
 				// inform subscription context about changes
 				notificationsManager.markPublisherNews(subsContext, ureq.getIdentity(), true);
 

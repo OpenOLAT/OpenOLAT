@@ -41,6 +41,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -255,8 +256,9 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	 * Archive a single dialog element with files and forum
 	 * @param element
 	 * @param exportDirectory
+	 * @param savedBy 
 	 */
-	public void doArchiveElement(DialogElement element, File exportDirectory, Locale locale) {
+	public void doArchiveElement(DialogElement element, File exportDirectory, Locale locale, Identity savedBy) {
 		DialogElementsManager depm = CoreSpringFactory.getImpl(DialogElementsManager.class);
 		VFSContainer dialogContainer = depm.getDialogContainer(element);
 		//there is only one file (leave) in the top forum container 
@@ -268,7 +270,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		VFSContainer diaNodeElemExportContainer = exportContainer.createChildContainer(exportDirName);
 		// don't check quota
 		diaNodeElemExportContainer.setLocalSecurityCallback(new FullAccessCallback());
-		diaNodeElemExportContainer.copyFrom(dialogFile);
+		diaNodeElemExportContainer.copyFrom(dialogFile, savedBy);
 		
 		try {
 			ForumArchive archiver = new ForumArchive(element.getForum(), null, locale, null);

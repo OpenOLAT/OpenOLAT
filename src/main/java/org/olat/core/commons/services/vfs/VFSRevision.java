@@ -35,10 +35,9 @@ import org.olat.core.id.Identity;
  */
 public interface VFSRevision {
 
-	/**
-	 * @return author of the revision
-	 */
-	public Identity getAuthor();
+	public Identity getFileLastModifiedBy();
+	
+	public Identity getFileInitializedBy();
 
 	/**
 	 * @return timestamp of the creation of this revision

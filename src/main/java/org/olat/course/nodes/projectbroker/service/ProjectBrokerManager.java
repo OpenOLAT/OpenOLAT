@@ -169,8 +169,9 @@ public interface ProjectBrokerManager {
 	 * @param uploadedItem
 	 * @param courseEnv
 	 * @param cNode
+	 * @param savedBy 
 	 */
-	public void saveAttachedFile(Project project, String fileName, VFSLeaf uploadedItem, CourseEnvironment courseEnv, CourseNode cNode);
+	public void saveAttachedFile(Project project, String fileName, VFSLeaf uploadedItem, CourseEnvironment courseEnv, CourseNode cNode, Identity savedBy);
 
 	/**
 	 * Return true when the custom-field value is one of possible-values (drop-down-mode) or when it could be any value (input field).

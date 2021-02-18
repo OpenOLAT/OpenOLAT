@@ -82,7 +82,7 @@ public class ThumbnailHelper {
 				sb.append(thumbnailMapperBaseURL).append(item.getRelativePath()).append("?thumbnail=true");
 				sb.append("'); background-repeat:no-repeat; background-position:50% 50%;'>&nbsp;</div>");
 			}
-			Identity author = metaInfo.getAuthor();
+			Identity author = metaInfo.getFileInitializedBy();
 			if (author != null) {
 				sb.append("<p>")
 					.append(Formatter.escapeDoubleQuotes(translator.translate("mf.author")))

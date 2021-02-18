@@ -133,8 +133,8 @@ public abstract class FileDocument extends OlatDocument {
 			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_SOURCE, meta.getUrl());
 			// use creator and author as olat author 
 			StringBuilder authors = new StringBuilder(64);
-			if(meta.getAuthor() != null) {
-				User user = meta.getAuthor().getUser();
+			if(meta.getFileInitializedBy() != null) {
+				User user = meta.getFileInitializedBy().getUser();
 				if(StringHelper.containsNonWhitespace(user.getFirstName())) {
 					authors.append(user.getFirstName());
 				}

@@ -138,7 +138,7 @@ public abstract class AbstractTaskNotificationHandler {
 		// remove first '/'
 		try {
 			if(info != null) {
-				return NotificationHelper.getFormatedName(info.getAuthor());
+				return NotificationHelper.getFormatedName(info.getFileInitializedBy());
 			}
 
 			String path = filePath.substring(1);

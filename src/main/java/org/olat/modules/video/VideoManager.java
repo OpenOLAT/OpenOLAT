@@ -74,16 +74,18 @@ public interface VideoManager {
 	 * set posterframe for given videoResource
 	 * @param videoResource
 	 * @param posterframe
+	 * @param changedBy 
 	 */
-	public void setPosterframe(OLATResource videoResource, VFSLeaf posterframe);
+	public void setPosterframe(OLATResource videoResource, VFSLeaf posterframe, Identity changedBy);
 	
 	/**
 	 * Sets the posterframe resize uploadfile.
 	 *
 	 * @param videoResource the video resource
 	 * @param newPosterFile the new poster file
+	 * @param changedBy 
 	 */
-	public void setPosterframeResizeUploadfile(OLATResource videoResource, VFSLeaf newPosterFile);
+	public void setPosterframeResizeUploadfile(OLATResource videoResource, VFSLeaf newPosterFile, Identity changedBy);
 	
 	public void deletePosterframe(OLATResource videoResource);
 
@@ -400,16 +402,18 @@ public interface VideoManager {
 	 * Exchange poster of the new resource.
 	 *
 	 * @param videoResource the OLATResource
+	 * @param changedBy 
 	 */
-	public void exchangePoster(OLATResource videoResource);
+	public void exchangePoster(OLATResource videoResource, Identity changedBy);
 
 	/**
 	 * Update video metadata.
 	 *
 	 * @param videoResource the OLATResource
 	 * @param uploadVideo the upload video
+	 * @param changedBy 
 	 */
-	public VideoMeta updateVideoMetadata(OLATResource videoResource, VFSLeaf uploadVideo);
+	public VideoMeta updateVideoMetadata(OLATResource videoResource, VFSLeaf uploadVideo, Identity changedBy);
 	
 	/**
 	 * This method can repair old formats like zip, mov...
@@ -420,11 +424,11 @@ public interface VideoManager {
 	
 	/**
 	 * Only for downloadable URL.
-	 * 
-	 * @param videoResource
 	 * @param url
+	 * @param changedBy
+	 * @param videoResource
 	 */
-	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, String url, VideoFormat format);
+	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, String url, VideoFormat format, Identity changedBy);
 	
 	/**
 	 * Update the duration of the video, in repository entry as expenditure of work
@@ -432,9 +436,10 @@ public interface VideoManager {
 	 * 
 	 * @param entry The resource
 	 * @param durationInSeconds The duration in seconds.
+	 * @param changedBy 
 	 * @return The updated repository entry
 	 */
-	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, Long durationInSeconds);
+	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, Long durationInSeconds, Identity changedBy);
 	
 	public VideoMeta updateVideoMetadata(VideoMeta meta);
 	

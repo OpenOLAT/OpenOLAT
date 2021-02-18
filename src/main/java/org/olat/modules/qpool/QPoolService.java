@@ -91,7 +91,7 @@ public interface QPoolService {
 	
 	public QuestionItem updateItem(QuestionItem item);
 	
-	public void backupQuestion(QuestionItem item);
+	public void backupQuestion(QuestionItem item, Identity identity);
 	
 	public void deleteItems(List<? extends QuestionItemShort> items);
 	

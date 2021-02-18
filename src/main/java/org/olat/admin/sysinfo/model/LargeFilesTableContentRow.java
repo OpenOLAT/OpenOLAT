@@ -47,7 +47,7 @@ public class LargeFilesTableContentRow {
 	private final String path;
 	private String showPath;
 	private final String context;
-	private final Identity author;
+	private final Identity fileInitializedBy;
 	private final boolean revision;
 	private final String fileType;
 	private final String fileCategory;
@@ -76,7 +76,7 @@ public class LargeFilesTableContentRow {
 		key = metadata.getKey();
 		name = metadata.getFilename();
 		size = metadata.getFileSize();
-		author = metadata.getAuthor();
+		fileInitializedBy = metadata.getFileInitializedBy();
 		path = metadata.getRelativePath();
 		context = vfsRepositoryService.getContextTypeFor(path, locale);		
 		fileType = WebappHelper.getMimeType(metadata.getFilename()) != null ? WebappHelper.getMimeType(metadata.getFilename()).split("/")[1] : "Unknown";
@@ -106,7 +106,7 @@ public class LargeFilesTableContentRow {
 		key = rev.getMetadata().getKey();
 		name = rev.getFilename();
 		size = rev.getSize();
-		author = rev.getAuthor();
+		fileInitializedBy = rev.getFileInitializedBy();
 		path = rev.getMetadata().getRelativePath();
 		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 		context = vfsRepositoryService.getContextTypeFor(path, locale);		
@@ -170,8 +170,8 @@ public class LargeFilesTableContentRow {
 		this.contextInfo = contextInfo;
 	}
 
-	public Identity getAuthor() {
-		return author;
+	public Identity getFileInitializedBy() {
+		return fileInitializedBy;
 	}
 
 	public String getPath() {

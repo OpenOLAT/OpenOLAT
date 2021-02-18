@@ -28,6 +28,7 @@ package org.olat.core.util.vfs;
 
 import java.util.List;
 
+import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
@@ -60,16 +61,18 @@ public interface VFSContainer extends VFSItem {
 	 * there is already a child with the same name, or the quota would be exceeded.
 	 * 
 	 * @param source the source (must exist)
+	 * @param savedBy The identity who copied the source
 	 * @return the status
 	 */
-	public VFSStatus copyFrom(VFSItem source);
+	public VFSStatus copyFrom(VFSItem source, Identity savedBy);
 	
 	/**
 	 * 
 	 * @param container
+	 * @param savedBy  The identity who copied the container
 	 * @return
 	 */
-	public VFSStatus copyContentOf(VFSContainer container);
+	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy);
 
 	/**
 	 * Create a new child container (of same type) if possible.

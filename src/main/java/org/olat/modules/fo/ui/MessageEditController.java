@@ -333,6 +333,7 @@ public class MessageEditController extends FormBasicController {
 		
 		Collections.sort(attachments, new Comparator<VFSItem>(){
 			final Collator c = Collator.getInstance(getLocale());
+			@Override
 			public int compare(final VFSItem o1, final VFSItem o2) {
 				return c.compare((o1).getName(), (o2).getName());
 			}});		
@@ -763,7 +764,7 @@ public class MessageEditController extends FormBasicController {
 	private void copyTempContent(VFSLeaf leaf, VFSContainer msgContainer) {
 		try {
 			VFSLeaf targetFile = msgContainer.createChildLeaf(leaf.getName());
-			VFSManager.copyContent(leaf, targetFile, false);
+			VFSManager.copyContent(leaf, targetFile, false, null);
 		} catch (Exception e) {
 			logError("Cannot move files", e);
 		}

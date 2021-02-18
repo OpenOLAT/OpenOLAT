@@ -452,6 +452,6 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 
 	private void uploadFiles(FileElement attachmentFileElement) {
 		VFSLeaf uploadedItem = new LocalFileImpl(attachmentFileElement.getUploadFile());
-		projectBrokerManager.saveAttachedFile(project, attachmentFileElement.getUploadFileName(), uploadedItem, courseEnv, courseNode );
+		projectBrokerManager.saveAttachedFile(project, attachmentFileElement.getUploadFileName(), uploadedItem, courseEnv, courseNode, getIdentity());
 	}
 }

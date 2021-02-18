@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -369,7 +370,7 @@ public class FeedMainController extends BasicController implements Activateable2
 				repositoryManager.deleteImage(re);
 			}
 		} else { // set the image
-			doUpdateImage(re);
+			doUpdateImage(re, getIdentity());
 		}
 
 		itemsCtr.resetItems(ureq, feed);	
@@ -386,14 +387,14 @@ public class FeedMainController extends BasicController implements Activateable2
 		fireEvent(ureq, new ReloadSettingsEvent(false, false, false, true));
 	}
 	
-	private void doUpdateImage(RepositoryEntry re) {
+	private void doUpdateImage(RepositoryEntry re, Identity updatedBy) {
 		FileElement image = feedFormCtr.getFile();
 		if(image != null && re != null) {
 			VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));
 			VFSContainer tmpContainer = tmpHome.createChildContainer(UUID.randomUUID().toString());
 			VFSLeaf tmpImage = tmpContainer.createChildLeaf(image.getUploadFileName());
 			VFSManager.copyContent(image.getUploadFile(), tmpImage, getIdentity());
-			repositoryManager.setImage(tmpImage, re);
+			repositoryManager.setImage(tmpImage, re, updatedBy);
 			tmpContainer.deleteSilently();
 		}
 		feed = feedManager.replaceFeedImage(feed, image);

@@ -22,6 +22,7 @@ package org.olat.modules.fo.export;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -31,7 +32,6 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
@@ -76,9 +76,9 @@ public class FinishCallback implements StepRunnerCallback {
 			parentMessage = forumManager.getMessageById(parentMessage.getKey());
 		}
 		if (msgToMove.getParentKey() == null && msgToMove.getThreadtop() == null) {
-			forumManager.createOrAppendThreadInAnotherForum(msgToMove, chosenforum, parentMessage);
+			forumManager.createOrAppendThreadInAnotherForum(msgToMove, chosenforum, parentMessage, ureq.getIdentity());
 		} else {
-			forumManager.moveMessageToAnotherForum(msgToMove, chosenforum, parentMessage);		
+			forumManager.moveMessageToAnotherForum(msgToMove, chosenforum, parentMessage, ureq.getIdentity());
 		}
 		DBFactory.getInstance().commit();//commit before sending event
 		if (((Boolean)runContext.get(SendMailStepForm.SENDMAIL)).booleanValue()) {

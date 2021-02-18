@@ -283,7 +283,7 @@ public class RepositoryEntryImportExport {
 		if(StringHelper.containsNonWhitespace(getImageName())) {
 			File newFile = new File(baseDirectory, getImageName());
 			VFSLeaf newImage = new LocalFileImpl(newFile);
-			repositoryManager.setImage(newImage, newEntry);
+			repositoryManager.setImage(newImage, newEntry, initialAuthor);
 		}
 		if(StringHelper.containsNonWhitespace(getMovieName())) {
 			String movieName = getMovieName();

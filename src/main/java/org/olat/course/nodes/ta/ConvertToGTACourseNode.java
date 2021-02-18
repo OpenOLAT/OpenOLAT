@@ -86,7 +86,7 @@ public class ConvertToGTACourseNode {
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 	}
 	
-	public void convert(TACourseNode sourceNode, GTACourseNode gtaNode, ICourse course) {
+	public void convert(TACourseNode sourceNode, GTACourseNode gtaNode, ICourse course, Identity convertedBy) {
 		ModuleConfiguration modConfig = sourceNode.getModuleConfiguration();
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		
@@ -106,12 +106,12 @@ public class ConvertToGTACourseNode {
 		}
 		
 		if(modConfig.getBooleanSafe(TACourseNode.CONF_DROPBOX_ENABLED)) {
-			convertDropbox(taskList, sourceNode, gtaNode, courseEnv);
+			convertDropbox(taskList, sourceNode, gtaNode, courseEnv, convertedBy);
 			DBFactory.getInstance().commit();
 		}
 
 		if(modConfig.getBooleanSafe(TACourseNode.CONF_RETURNBOX_ENABLED)) {
-			convertReturnbox( taskList, sourceNode, gtaNode, courseEnv);
+			convertReturnbox( taskList, sourceNode, gtaNode, courseEnv, convertedBy);
 			DBFactory.getInstance().commit();
 		}
 
@@ -123,7 +123,7 @@ public class ConvertToGTACourseNode {
 		
 		//solutions
 		if(modConfig.getBooleanSafe(TACourseNode.CONF_SOLUTION_ENABLED)) {
-			copySolutions(sourceNode, gtaNode, courseEnv);
+			copySolutions(sourceNode, gtaNode, courseEnv, convertedBy);
 		}
 	}
 	
@@ -162,7 +162,8 @@ public class ConvertToGTACourseNode {
 		gtaNode.getModuleConfiguration().set(GTACourseNode.GTASK_TASKS, taskDefs);
 	}
 	
-	private void convertDropbox(TaskList taskList, TACourseNode sourceNode, GTACourseNode gtaNode, CourseEnvironment courseEnv) {
+	private void convertDropbox(TaskList taskList, TACourseNode sourceNode, GTACourseNode gtaNode,
+			CourseEnvironment courseEnv, Identity convertedBy) {
 		String dropbox = DropboxController.getDropboxPathRelToFolderRoot(courseEnv, sourceNode);
 		VFSContainer dropboxContainer = VFSManager.olatRootContainer(dropbox, null);
 		for(VFSItem userDropbox:dropboxContainer.getItems()) {
@@ -177,7 +178,7 @@ public class ConvertToGTACourseNode {
 					for(VFSItem dropppedItem:userDropContainer.getItems(new VFSSystemItemFilter())) {
 						if(dropppedItem instanceof VFSLeaf) {
 							VFSLeaf submittedDocument = sumbitContainer.createChildLeaf(dropppedItem.getName());
-							VFSManager.copyContent((VFSLeaf)dropppedItem, submittedDocument, true);
+							VFSManager.copyContent((VFSLeaf)dropppedItem, submittedDocument, true, convertedBy);
 							convertMetada(userDropContainer, sumbitContainer, dropppedItem.getName(), null, null);
 							dropped = true;
 						}
@@ -191,7 +192,8 @@ public class ConvertToGTACourseNode {
 		}
 	}
 	
-	private void convertReturnbox(TaskList taskList, TACourseNode sourceNode, GTACourseNode gtaNode, CourseEnvironment courseEnv) {
+	private void convertReturnbox(TaskList taskList, TACourseNode sourceNode, GTACourseNode gtaNode,
+			CourseEnvironment courseEnv, Identity convertedBy) {
 		String returnbox = ReturnboxController.getReturnboxPathRelToFolderRoot(courseEnv, sourceNode);
 		VFSContainer returnContainer = VFSManager.olatRootContainer(returnbox, null);
 		for(VFSItem item:returnContainer.getItems()) {
@@ -206,7 +208,7 @@ public class ConvertToGTACourseNode {
 					for(VFSItem returnedItem:userContainer.getItems(new VFSSystemItemFilter())) {
 						if(returnedItem instanceof VFSLeaf) {
 							VFSLeaf correctionDocument = correctionContainer.createChildLeaf(returnedItem.getName());
-							VFSManager.copyContent((VFSLeaf)returnedItem, correctionDocument, true);
+							VFSManager.copyContent((VFSLeaf)returnedItem, correctionDocument, true, convertedBy);
 							convertMetada(userContainer, correctionContainer, returnedItem.getName(), null, null);
 							returned = true;
 						}
@@ -285,7 +287,8 @@ public class ConvertToGTACourseNode {
 		}	
 	}
 	
-	private void copySolutions(TACourseNode sourceNode, GTACourseNode gtaNode, CourseEnvironment courseEnv) {
+	private void copySolutions(TACourseNode sourceNode, GTACourseNode gtaNode, CourseEnvironment courseEnv,
+			Identity convertedBy) {
 		ModuleConfiguration gtaConfig = gtaNode.getModuleConfiguration();
 		String solutionPath = SolutionController.getSolutionPathRelToFolderRoot(courseEnv, sourceNode);
 		VFSContainer solutionContainer = VFSManager.olatRootContainer(solutionPath, null);
@@ -295,7 +298,7 @@ public class ConvertToGTACourseNode {
 		for(VFSItem solution:solutionContainer.getItems(new VFSSystemItemFilter())) {
 			if(solution instanceof VFSLeaf) {
 				VFSLeaf solutionDocument = solutionDirectory.createChildLeaf(solution.getName());
-				VFSManager.copyContent((VFSLeaf)solution, solutionDocument, true);
+				VFSManager.copyContent((VFSLeaf)solution, solutionDocument, true, convertedBy);
 				
 				Solution solDef = new Solution();
 				convertMetada(solutionContainer, solutionDirectory, solution.getName(), null, solDef);

@@ -934,7 +934,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		}
 	}
 	
-	public boolean setImage(VFSLeaf newImageFile, CatalogEntryRef re) {
+	public boolean setImage(VFSLeaf newImageFile, CatalogEntryRef re, Identity savedBy) {
 		VFSLeaf currentImage = getImage(re);
 		if(currentImage != null) {
 			if(currentImage.canMeta() == VFSConstants.YES) {
@@ -953,13 +953,13 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		try {
 			if("jpeg".equals(extension) || "jpg".equals(extension)) {
 				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".jpg");
-				ok = VFSManager.copyContent(newImageFile, repoImage, false);
+				ok = VFSManager.copyContent(newImageFile, repoImage, false, savedBy);
 			} else if("png".equals(extension)) {
 				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".png");
-				ok = VFSManager.copyContent(newImageFile, repoImage, false);
+				ok = VFSManager.copyContent(newImageFile, repoImage, false, savedBy);
 			} else if("gif".equals(extension)) {
 				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".gif");
-				ok = VFSManager.copyContent(newImageFile, repoImage, false);
+				ok = VFSManager.copyContent(newImageFile, repoImage, false, savedBy);
 			} else {
 				//scale to default and png
 				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".png");

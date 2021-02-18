@@ -721,14 +721,14 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 		
 		// copy the slides, eventually update the directory field
-		doCopySlides();
+		doCopySlides(ureq.getIdentity());
 
 		meeting = bigBlueButtonManager.updateMeeting(meeting);
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
-	private void doCopySlides() {
+	private void doCopySlides(Identity savedBy) {
 		if(documentWrappers.isEmpty()) return;
 
 		VFSContainer storage = bigBlueButtonManager.getSlidesContainer(meeting);
@@ -737,7 +737,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				doc.getDocument().deleteSilently();
 			} else if(doc.isTemporary()) {
 				VFSLeaf target = storage.createChildLeaf(doc.getFilename());
-				VFSManager.copyContent(doc.getDocument(), target, true);
+				VFSManager.copyContent(doc.getDocument(), target, true, savedBy);
 			}
 		}
 	}

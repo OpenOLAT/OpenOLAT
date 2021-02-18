@@ -112,8 +112,11 @@ public class VFSRevisionImpl implements Persistable, VFSRevision {
 	
 	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_author", nullable=true, insertable=true, updatable=true)
-	private Identity author;
+	@JoinColumn(name="fk_lastmodified_by", nullable=true, insertable=true, updatable=true)
+	private Identity fileLastModifiedBy;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_initialized_by", nullable=true, insertable=true, updatable=true)
+	private Identity fileInitializedBy;
 	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_metadata", nullable=false, insertable=true, updatable=false)
 	private VFSMetadata metadata;
@@ -140,16 +143,25 @@ public class VFSRevisionImpl implements Persistable, VFSRevision {
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
+	
+	@Override
+	public Identity getFileLastModifiedBy() {
+		return fileLastModifiedBy;
+	}
+
+	public void setFileLastModifiedBy(Identity fileLastModifiedBy) {
+		this.fileLastModifiedBy = fileLastModifiedBy;
+	}
 
 	@Override
-	public Identity getAuthor() {
-		return author;
+	public Identity getFileInitializedBy() {
+		return fileInitializedBy;
 	}
-	
-	public void setAuthor(Identity author) {
-		this.author = author;
+
+	public void setFileInitializedBy(Identity fileInitializedBy) {
+		this.fileInitializedBy = fileInitializedBy;
 	}
-	
+
 	@Override
 	public Date getFileLastModified() {
 		return fileLastModified;
@@ -159,6 +171,7 @@ public class VFSRevisionImpl implements Persistable, VFSRevision {
 		this.fileLastModified = date;
 	}
 	
+	@Override
 	public String getFilename() {
 		return filename;
 	}

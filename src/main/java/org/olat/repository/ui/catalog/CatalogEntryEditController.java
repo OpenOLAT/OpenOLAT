@@ -295,7 +295,7 @@ public class CatalogEntryEditController extends FormBasicController {
 			VFSContainer tmpContainer = tmpHome.createChildContainer(UUID.randomUUID().toString());
 			VFSLeaf newFile = fileUpload.moveUploadFileTo(tmpContainer, true);//give it it's real name and extension
 			if(newFile != null) {
-				boolean ok = catalogManager.setImage(newFile, catalogEntry);
+				boolean ok = catalogManager.setImage(newFile, catalogEntry, getIdentity());
 				if (!ok) {
 					showError("error.download.image");
 				}

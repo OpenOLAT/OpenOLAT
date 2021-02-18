@@ -652,7 +652,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(event.isChangedTitle()) {
 			RepositoryEntry entry = repositoryService.loadByKey(getRepositoryEntry().getKey());
 			refreshRepositoryEntry(entry);
-			handler.onDescriptionChanged(entry);
+			handler.onDescriptionChanged(entry, getIdentity());
 			// update name of root bread crumb and opened tabs in top nav in case the title has been modified
 			if (!toolbarPanel.getBreadCrumbs().isEmpty()) {					
 				String newTitle = entry.getDisplayname();

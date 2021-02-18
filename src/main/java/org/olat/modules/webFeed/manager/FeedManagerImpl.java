@@ -557,15 +557,15 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	@Override
-	public Feed updateFeedWithRepositoryEntry(RepositoryEntry entry) {
+	public Feed updateFeedWithRepositoryEntry(RepositoryEntry entry, Identity changedBy) {
 		Feed feed = loadFeed(entry.getOlatResource());
-		feed = enrichFeedByRepositoryEntry(feed, entry);
+		feed = enrichFeedByRepositoryEntry(feed, entry, changedBy);
 		feed = updateFeed(feed);
 		return feed;
 	}
 
 	@Override
-	public Feed enrichFeedByRepositoryEntry(Feed feed, RepositoryEntry entry) {
+	public Feed enrichFeedByRepositoryEntry(Feed feed, RepositoryEntry entry, Identity changedBy) {
 		if (feed == null) return null;
 		if (entry == null) return feed;
 
@@ -581,7 +581,7 @@ public class FeedManagerImpl extends FeedManager {
 
 		// copy the image
 		VFSLeaf image = repositoryManager.getImage(entry);
-		String imageName = feedFileStorage.saveFeedMedia(feed, image);
+		String imageName = feedFileStorage.saveFeedMedia(feed, image, changedBy);
 		feed.setImageName(imageName);
 
 		return feed;

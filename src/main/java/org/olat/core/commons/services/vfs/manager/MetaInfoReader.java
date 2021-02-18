@@ -169,7 +169,7 @@ public class MetaInfoReader {
 			}
 			sw.write(">");		
 			
-			Long authorIdentKey = metadata.getAuthor() == null ? null : metadata.getAuthor().getKey();
+			Long authorIdentKey = metadata.getFileInitializedBy() == null ? null : metadata.getFileInitializedBy().getKey();
 			Long lockedByIdentKey = metadata.getLockedBy() == null ? null : metadata.getLockedBy().getKey();
 			Date lockedDate = metadata.getLockedDate();
 			Long licenseTypeKey = metadata.getLicenseType() == null ? null : metadata.getLicenseType().getKey();
@@ -266,7 +266,7 @@ public class MetaInfoReader {
 			} else if ("author".equals(qName)) {
 				Long authorKey = getLong();
 				if(authorKey != null) {
-					meta.setAuthor(securityManager.loadIdentityByKey(authorKey));
+					meta.setFileInitializedBy(securityManager.loadIdentityByKey(authorKey));
 				}
 			} else if ("lock".equals(qName)) {
 				Long lockedByKey = getLong();

@@ -28,10 +28,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -508,16 +509,17 @@ public class FeedFileStorge {
 	 *
 	 * @param feed
 	 * @param media
+	 * @param changedBy 
 	 * @return the file name which is save for the file system
 	 */
-	public String saveFeedMedia(Feed feed, VFSLeaf media) {
+	public String saveFeedMedia(Feed feed, VFSLeaf media, Identity changedBy) {
 		String saveFileName = null;
 
 		VFSContainer feedMediaContainer = getOrCreateFeedMediaContainer(feed);
 		if (feedMediaContainer != null) {
 			deleteFeedMedia(feed);
 			if (media != null) {
-				VFSManager.copyContent(media, feedMediaContainer.createChildLeaf(media.getName()), true);
+				VFSManager.copyContent(media, feedMediaContainer.createChildLeaf(media.getName()), true, changedBy);
 				saveFileName = media.getName();
 			}
 		}

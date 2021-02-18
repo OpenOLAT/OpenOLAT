@@ -436,10 +436,10 @@ public class TACourseNode extends GenericCourseNode {
 	}
 
 	@Override
-	public void copyConfigurationTo(CourseNode courseNode, ICourse course) {
+	public void copyConfigurationTo(CourseNode courseNode, ICourse course, Identity savedBy) {
 		if(courseNode instanceof GTACourseNode) {
 			ConvertToGTACourseNode convert = new ConvertToGTACourseNode();
-			convert.convert(this, (GTACourseNode)courseNode, course);
+			convert.convert(this, (GTACourseNode)courseNode, course, savedBy);
 		}
 	}
 

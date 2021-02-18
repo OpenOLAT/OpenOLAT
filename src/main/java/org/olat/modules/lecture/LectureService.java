@@ -335,7 +335,7 @@ public interface LectureService {
 	 */
 	public void deleteAbsenceNotice(AbsenceNotice absenceNotice, Identity actingIdentity);
 	
-	public AbsenceNotice updateAbsenceNoticeAttachments(AbsenceNotice absenceNotice, List<VFSItem> newFiles, List<VFSItem> filesToDelete);
+	public AbsenceNotice updateAbsenceNoticeAttachments(AbsenceNotice absenceNotice, List<VFSItem> newFiles, List<VFSItem> filesToDelete, Identity updatedBy);
 	
 	public VFSContainer getAbsenceNoticeAttachmentsContainer(AbsenceNotice absenceNotice);
 	

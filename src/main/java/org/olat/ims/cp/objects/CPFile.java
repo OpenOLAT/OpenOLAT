@@ -95,7 +95,8 @@ public class CPFile extends DefaultElement implements CPNode {
 		VFSContainer parentContainer = file.getParentContainer();
 		String newName = VFSManager.similarButNonExistingName(parentContainer, file.getName());
 		VFSLeaf leafCopy = parentContainer.createChildLeaf(newName);
-		VFSManager.copyContent(file, leafCopy, true);
+		// Don't know who clones.
+		VFSManager.copyContent(file, leafCopy, true, null);
 		copy.setFile(leafCopy);
 		copy.setHref(calculateHref(leafCopy));
 		return copy;
@@ -140,6 +141,7 @@ public class CPFile extends DefaultElement implements CPNode {
 		return true;
 	}
 
+	@Override
 	public void buildDocument(Element parentEl) {
 		DefaultElement fileElement = new DefaultElement(CPCore.FILE);
 		fileElement.addAttribute(CPCore.HREF, href);
@@ -215,6 +217,7 @@ public class CPFile extends DefaultElement implements CPNode {
 		this.file = file;
 	}
 	
+	@Override
 	public void setPosition(int pos) {
 		position = pos;
 	}

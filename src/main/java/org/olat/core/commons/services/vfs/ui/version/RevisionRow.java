@@ -50,14 +50,14 @@ public class RevisionRow {
 		current = true;
 		this.metadata = metadata;
 		comment = metadata.getRevisionComment();
-		author = metadata.getAuthor();
+		author = metadata.getFileInitializedBy();
 		this.downloadLink = downloadLink;
 	}
 	
 	public RevisionRow(VFSRevision revision, DownloadLink downloadLink) {
 		current = false;
 		revisionNr = revision.getRevisionNr();
-		author = revision.getAuthor();
+		author = revision.getFileInitializedBy();
 		comment = revision.getRevisionComment();
 		revisionSize = revision.getSize();
 		this.revision = revision;

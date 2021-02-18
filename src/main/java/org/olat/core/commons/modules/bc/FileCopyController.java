@@ -291,7 +291,7 @@ public class FileCopyController extends LinkChooserController {
 	}
 	
 	private void finishUpload(UserRequest ureq) {
-		VFSManager.copyContent(sourceLeaf, newFile, true);
+		VFSManager.copyContent(sourceLeaf, newFile, true, ureq.getIdentity());
 		finishSuccessfullUpload(newFile.getName(), ureq);
 	}
 	

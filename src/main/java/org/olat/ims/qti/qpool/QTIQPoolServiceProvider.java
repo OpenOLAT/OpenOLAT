@@ -257,7 +257,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 				VFSItem sourceItem = sourceDir.resolve(material);
 				if(sourceItem instanceof VFSLeaf) {
 					VFSLeaf targetItem = baseDir.createChildLeaf(material);
-					VFSManager.copyContent((VFSLeaf)sourceItem, targetItem, false);
+					VFSManager.copyContent((VFSLeaf)sourceItem, targetItem, false, null);
 				}
 			}
 		}

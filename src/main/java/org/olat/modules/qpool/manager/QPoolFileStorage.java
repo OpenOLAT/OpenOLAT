@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.LocalImpl;
@@ -84,11 +85,11 @@ public class QPoolFileStorage {
 		}
 	}
 
-	public void backupDir(String dir) {
+	public void backupDir(String dir, Identity savedBy) {
 		VFSContainer backupContainer = createBackupSubContainer(dir);
 		List<VFSItem> origin = getContainer(dir).getItems();
 		for (VFSItem item: origin) {
-			backupContainer.copyFrom(item);
+			backupContainer.copyFrom(item, savedBy);
 		}
 	}
 

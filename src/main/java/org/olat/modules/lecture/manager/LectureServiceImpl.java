@@ -793,7 +793,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public AbsenceNotice updateAbsenceNoticeAttachments(AbsenceNotice absenceNotice, List<VFSItem> newFiles, List<VFSItem> filesToDelete) {
+	public AbsenceNotice updateAbsenceNoticeAttachments(AbsenceNotice absenceNotice, List<VFSItem> newFiles,
+			List<VFSItem> filesToDelete, Identity updatedBy) {
 		if(!filesToDelete.isEmpty()) {
 			for(VFSItem file:filesToDelete) {
 				file.delete();
@@ -820,7 +821,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			if(noticeItem instanceof VFSContainer) {
 				VFSContainer noticeContainer = (VFSContainer)noticeItem;
 				for(VFSItem file:newFiles) {
-					noticeContainer.copyFrom(file);
+					noticeContainer.copyFrom(file, updatedBy);
 				}
 			}
 		}
@@ -1286,7 +1287,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		dbInstance.commit();
 		
 		List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(lectureBlock);
-		Map<Identity,LectureBlockRollCall> rollCallMap = rollCalls.stream().collect(Collectors.toMap(r -> r.getIdentity(), r -> r));
+		Map<Identity,LectureBlockRollCall> rollCallMap = rollCalls.stream().collect(Collectors.toMap(LectureBlockRollCall::getIdentity, r -> r));
 		List<ParticipantAndLectureSummary> participantsAndSummaries = lectureParticipantSummaryDao.getLectureParticipantSummaries(lectureBlock);
 		Set<Identity> participants = new HashSet<>();
 		for(ParticipantAndLectureSummary participantAndSummary:participantsAndSummaries) {

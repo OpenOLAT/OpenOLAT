@@ -72,7 +72,7 @@ public class VFSTest extends OlatTestCase {
 		
 		VFSContainer targetContainer = VFSManager.olatRootContainer(VFS_TEST_DIR + "/vfstarger" + UUID.randomUUID(), null);
 		Assert.assertEquals(VFSConstants.YES, targetContainer.canMeta());
-		targetContainer.copyFrom(firstLeaf);
+		targetContainer.copyFrom(firstLeaf, null);
 		
 		VFSItem copiedItem = targetContainer.resolve(filename);
 		Assert.assertTrue(copiedItem instanceof VFSLeaf);

@@ -46,6 +46,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.commons.services.vfs.ui.version.RevisionListController;
 import org.olat.core.commons.services.vfs.ui.version.VersionCommentController;
 import org.olat.core.gui.UserRequest;
@@ -739,7 +740,9 @@ public class FileUploadController extends FormBasicController {
 			if (metaDataCtr != null) {
 				meta = metaDataCtr.getMetaInfo(meta);
 			}
-			meta.setAuthor(getIdentity());
+			if (meta instanceof VFSMetadataImpl) {
+				((VFSMetadataImpl)meta).setFileInitializedBy(getIdentity());
+			}
 			//clear write the meta
 			vfsRepositoryService.updateMetadata(meta);
 			vfsRepositoryService.itemSaved((VFSLeaf)item, getIdentity());

@@ -23,10 +23,6 @@ import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -38,7 +34,6 @@ import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -66,6 +61,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
@@ -119,8 +115,6 @@ class SubmitDocumentsController extends FormBasicController {
 	private GTAManager gtaManager;
 	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private DocEditorService docEditorService;
 	
@@ -237,7 +231,7 @@ class SubmitDocumentsController extends FormBasicController {
 			if(item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
 				if(metaInfo != null) {
-					createdBy = userManager.getUserDisplayName(metaInfo.getAuthor());
+					createdBy = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
 				}
 			}
 			
@@ -498,20 +492,15 @@ class SubmitDocumentsController extends FormBasicController {
 	}
 	
 	private void doUpload(UserRequest ureq, File file, String filename) {
-		try {
-			Path documentPath = documentsDir.toPath().resolve(filename);
-			Files.move(file.toPath(), documentPath, StandardCopyOption.REPLACE_EXISTING);
-			
-			VFSItem downloadedFile = documentsContainer.resolve(filename);
-			if(downloadedFile != null && downloadedFile.canMeta() == VFSConstants.YES) {
-				VFSMetadata  metadata = downloadedFile.getMetaInfo();
-				metadata.setAuthor(ureq.getIdentity());
-				vfsRepositoryService.updateMetadata(metadata);
-			}
-		} catch (IOException e) {
-			logError("", e);
-			showError("");
+		VFSItem target = documentsContainer.resolve(filename);
+		
+		if(target != null) {
+			target.deleteSilently();
 		}
+		
+		target = documentsContainer.createChildLeaf(filename);
+		VFSManager.copyContent(file, (VFSLeaf)target, getIdentity());
+		
 		updateModel(ureq);
 		updateWarnings();
 	}

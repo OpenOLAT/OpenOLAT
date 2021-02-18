@@ -29,6 +29,7 @@ import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.manager.VFSRepositoryServiceImpl;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -127,12 +128,12 @@ public class OLATUpgrade_14_2_10 extends OLATUpgrade {
 			}
 			
 			VFSMetadata vfsMetadata = masterFile.getMetaInfo();
-			if(vfsMetadata != null && vfsMetadata.getAuthor() == null) {
+			if(vfsMetadata != null && vfsMetadata.getFileInitializedBy() == null) {
 				RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(ores, false);
 				if(entry != null && StringHelper.containsNonWhitespace(entry.getInitialAuthor())) {
 					Identity author = identityDao.findIdentityByName(entry.getInitialAuthor());
-					if(author != null) {
-						vfsMetadata.setAuthor(author);
+					if(vfsMetadata instanceof VFSMetadataImpl && author != null) {
+						((VFSMetadataImpl)vfsMetadata).setFileInitializedBy(author);
 						vfsRepositoryService.updateMetadata(vfsMetadata);
 					}
 				}

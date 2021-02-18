@@ -837,7 +837,7 @@ class GTANotifications {
 		VFSItem item = container.resolve(file.getName());
 		if(item.canMeta() == VFSConstants.YES) {
 			VFSMetadata info = item.getMetaInfo();
-			Identity identityKey = info.getAuthor();
+			Identity identityKey = info.getFileInitializedBy();
 			if(identityKey != null) {
 				author = userManager.getUserDisplayName(identityKey);
 			}		

@@ -324,7 +324,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			if (StringHelper.containsNonWhitespace(url)) {
 				appendMetadata("mf.url", url, sb);
 			}
-			String author = userManager.getUserDisplayName(infos.getAuthor());
+			String author = userManager.getUserDisplayName(infos.getFileInitializedBy());
 			if (StringHelper.containsNonWhitespace(author)) {
 				appendMetadata("mf.author", author, sb);
 			}

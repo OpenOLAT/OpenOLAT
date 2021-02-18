@@ -58,6 +58,7 @@ import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -173,16 +174,16 @@ public class VideoManagerImpl implements VideoManager {
 	 * set a specific VFSLeaf as posterframe in video metadata
 	 */
 	@Override
-	public void setPosterframe(OLATResource videoResource, VFSLeaf posterframe){
+	public void setPosterframe(OLATResource videoResource, VFSLeaf posterframe, Identity changedBy){
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf newPoster = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);
-		VFSManager.copyContent(posterframe, newPoster, false);
+		VFSManager.copyContent(posterframe, newPoster, true, changedBy);
 		
 		// Update also repository entry image, use new posterframe
 		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
 		if (posterImage != null) {
 			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(videoResource, true);
-			repositoryManager.setImage(posterImage, repoEntry);
+			repositoryManager.setImage(posterImage, repoEntry, changedBy);
 		}
 	}
 	
@@ -191,9 +192,10 @@ public class VideoManagerImpl implements VideoManager {
 	 *
 	 * @param videoResource the video resource
 	 * @param posterframe the newPosterFile
+	 * @param changedBy
 	 */
 	@Override
-	public void setPosterframeResizeUploadfile(OLATResource videoResource, VFSLeaf newPosterFile) {
+	public void setPosterframeResizeUploadfile(OLATResource videoResource, VFSLeaf newPosterFile, Identity changedBy) {
 		VideoMeta videoMetadata = getVideoMetadata(videoResource);
 		Size posterRes = imageHelper.getSize(newPosterFile, FILETYPE_JPG);
 		// file size needs to be bigger than target resolution, otherwise use image as it comes
@@ -216,7 +218,7 @@ public class VideoManagerImpl implements VideoManager {
 				imageHelper.cropImage(((LocalFileImpl) newPosterFile).getBasefile(), newPoster.getBasefile(), cropSelection);
 			}
 		} else {
-			setPosterframe(videoResource, newPosterFile);
+			setPosterframe(videoResource, newPosterFile, changedBy);
 		}
 	}
 
@@ -674,7 +676,7 @@ public class VideoManagerImpl implements VideoManager {
 		// 1) copy master video to final destination with standard name
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf targetFile = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_VIDEO_MP4);
-		VFSManager.copyContent(masterVideo, targetFile, true);
+		VFSManager.copyContent(masterVideo, targetFile, true, initialAuthor);
 		masterVideo.delete();
 
 		// calculate video duration
@@ -689,20 +691,14 @@ public class VideoManagerImpl implements VideoManager {
 		// 2) Set poster image for repo entry
 		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
 		if (posterImage != null) {
-			repositoryManager.setImage(posterImage, repoEntry);
+			repositoryManager.setImage(posterImage, repoEntry, initialAuthor);
 		}
 		
 		VideoMeta meta = null;
 		if(targetFile != null) {
 			createVideoMetadata(repoEntry, targetFile.getSize(), targetFile.getName());
 			dbInstance.commit();
-			meta = updateVideoMetadata(videoResource, targetFile);
-			
-			VFSMetadata vfsMetadata = targetFile.getMetaInfo();
-			if(vfsMetadata != null) {
-				vfsMetadata.setAuthor(initialAuthor);
-				vfsRepositoryService.updateMetadata(vfsMetadata);
-			}
+			meta = updateVideoMetadata(videoResource, targetFile, initialAuthor);
 		}		
 		return meta;
 	}
@@ -736,7 +732,7 @@ public class VideoManagerImpl implements VideoManager {
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
 		if (posterImage != null) {
-			repositoryManager.setImage(posterImage, repoEntry);
+			repositoryManager.setImage(posterImage, repoEntry, initialAuthor);
 		}
 		
 		dbInstance.commit();
@@ -753,12 +749,12 @@ public class VideoManagerImpl implements VideoManager {
 			
 			// check if these are default settings
 			if(meta != null && meta.getWidth() == 800 && meta.getHeight() == 600) {
-				meta = updateVideoMetadata(videoResource, videoFile);
+				meta = updateVideoMetadata(videoResource, videoFile, initialAuthor);
 			}
 			
 			VFSMetadata vfsMetadata = videoFile.getMetaInfo();
-			if(vfsMetadata != null) {
-				vfsMetadata.setAuthor(initialAuthor);
+			if(vfsMetadata instanceof VFSMetadataImpl) {
+				((VFSMetadataImpl)vfsMetadata).setFileInitializedBy(initialAuthor);
 				vfsRepositoryService.updateMetadata(vfsMetadata);
 			}
 		}
@@ -777,7 +773,7 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	@Override
-	public void exchangePoster (OLATResource videoResource) {
+	public void exchangePoster(OLATResource videoResource, Identity changedBy) {
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf videoFile = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_VIDEO_MP4);
 		VFSLeaf posterResource = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);
@@ -786,7 +782,7 @@ public class VideoManagerImpl implements VideoManager {
 		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
 		if (posterImage != null) {
 			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(videoResource, true);
-			repositoryManager.setImage(posterImage, repoEntry);
+			repositoryManager.setImage(posterImage, repoEntry, changedBy);
 		}
 	}
 	
@@ -796,7 +792,7 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
-	public VideoMeta updateVideoMetadata(OLATResource videoResource, VFSLeaf uploadVideo) {	
+	public VideoMeta updateVideoMetadata(OLATResource videoResource, VFSLeaf uploadVideo, Identity changedBy) {	
 		VideoMeta meta = getVideoMetadata(videoResource);
 
 		Size dimensions = movieService.getSize(uploadVideo, VideoManagerImpl.FILETYPE_MP4);
@@ -830,7 +826,7 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
-	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, Long durationInSeconds) {
+	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, Long durationInSeconds, Identity changedBy) {
 		if(durationInSeconds == null) return entry;
 		
 		long durationInMillis = durationInSeconds.longValue() * 1000l;
@@ -847,7 +843,7 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
-	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, String url, VideoFormat format) {
+	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, String url, VideoFormat format, Identity changedBy) {
 		OLATResource videoResource = entry.getOlatResource();
 		VideoMeta meta = videoMetadataDao.getVideoMetadata(videoResource);
 		meta.setUrl(url);
@@ -882,7 +878,7 @@ public class VideoManagerImpl implements VideoManager {
 			YoutubeMetadata metadata = youtubeProvider.getSnippet(url);
 			if(metadata != null) {
 				if(StringHelper.containsNonWhitespace(metadata.getThumbnailUrl())) {
-					uploadPoster(entry, metadata.getThumbnailUrl());
+					uploadPoster(entry, metadata.getThumbnailUrl(), changedBy);
 				}
 				
 				
@@ -903,7 +899,7 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	
-	private void uploadPoster(RepositoryEntry entry, String url) {
+	private void uploadPoster(RepositoryEntry entry, String url, Identity changedBy) {
 		VFSLeaf oldPosterFile = getPosterframe(entry.getOlatResource());
 		if(oldPosterFile != null) {
 			oldPosterFile.delete();
@@ -927,7 +923,7 @@ public class VideoManagerImpl implements VideoManager {
 		
 		// Update also repository entry image, use new posterframe
 		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(entry.getOlatResource(), true);
-		repositoryManager.setImage(posterFile, repoEntry);
+		repositoryManager.setImage(posterFile, repoEntry, changedBy);
 	}
 	
 	@Override

@@ -68,8 +68,8 @@ public class ReviewTableDataModel extends BaseTableDataModelWithoutFilter<VFSIte
 			case filename: return item.getName();
 			case uploader: {
 				VFSMetadata metadata = item.getMetaInfo();
-				if(metadata != null && metadata.getAuthor() != null) {
-					return UserManager.getInstance().getUserDisplayName(metadata.getAuthor());
+				if(metadata != null && metadata.getFileInitializedBy() != null) {
+					return UserManager.getInstance().getUserDisplayName(metadata.getFileInitializedBy());
 				}
 				return "-";
 			}

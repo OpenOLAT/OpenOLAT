@@ -57,6 +57,9 @@ public class VFSMetadataFileSaved implements Persistable {
 	@Column(name="f_size", nullable=false, insertable=true, updatable=true)
 	private long fileSize;
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_initialized_by", nullable=true, insertable=true, updatable=true)
+	private Identity fileInitializedBy;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_lastmodified_by", nullable=true, insertable=true, updatable=true)
 	private Identity fileLastModifiedBy;
 	@Column(name="f_deleted", nullable=false, insertable=true, updatable=true)
@@ -81,6 +84,14 @@ public class VFSMetadataFileSaved implements Persistable {
 
 	public void setFileLastModified(Date fileLastModified) {
 		this.fileLastModified = fileLastModified;
+	}
+
+	public Identity getFileInitializedBy() {
+		return fileInitializedBy;
+	}
+
+	public void setFileInitializedBy(Identity fileInitializedBy) {
+		this.fileInitializedBy = fileInitializedBy;
 	}
 
 	public Identity getFileLastModifiedBy() {

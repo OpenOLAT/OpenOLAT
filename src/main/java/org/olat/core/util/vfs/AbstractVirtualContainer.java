@@ -27,6 +27,7 @@
 package org.olat.core.util.vfs;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 
@@ -71,12 +72,12 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 	}
 
 	@Override
-	public VFSStatus copyFrom(VFSItem vfsItem) {
+	public VFSStatus copyFrom(VFSItem vfsItem, Identity savedBy) {
 		return VFSConstants.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus copyContentOf(VFSContainer container) {
+	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
 		return VFSConstants.NO;
 	}
 

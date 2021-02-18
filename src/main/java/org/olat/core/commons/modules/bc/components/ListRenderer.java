@@ -345,8 +345,8 @@ public class ListRenderer {
 			if(StringHelper.containsNonWhitespace(author)) {
 				//
 			} else {
-				if(metadata.getAuthor() != null) {
-					author = userManager.getUserDisplayName(metadata.getAuthor());
+				if(metadata.getFileInitializedBy() != null) {
+					author = userManager.getUserDisplayName(metadata.getFileInitializedBy());
 				} else {
 					author = null;
 				}		

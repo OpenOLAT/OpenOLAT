@@ -446,7 +446,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	}
 
 	@Override
-	public void saveAttachedFile(Project project, String fileName, VFSLeaf uploadedItem, CourseEnvironment courseEnv, CourseNode cNode) {
+	public void saveAttachedFile(Project project, String fileName, VFSLeaf uploadedItem, CourseEnvironment courseEnv, CourseNode cNode, Identity savedBy) {
 		log.debug("saveAttachedFile file-name=" + uploadedItem.getName());
 		VFSContainer uploadVFSContainer = VFSManager.olatRootContainer(getAttamchmentRelativeRootPath(project,courseEnv,cNode), null);
 		log.debug("saveAttachedFile uploadVFSContainer.relPath=" + uploadVFSContainer.getRelPath());
@@ -462,7 +462,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		if (newFile == null) {
 			newFile = uploadVFSContainer.createChildLeaf(fileName);
 		}
-		boolean success = VFSManager.copyContent(uploadedItem, newFile, true);
+		boolean success = VFSManager.copyContent(uploadedItem, newFile, true, savedBy);
 		log.debug("saveAttachedFile success=" + success);
 	}
 

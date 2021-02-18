@@ -165,15 +165,17 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(metadata);
 		
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(JunitTestHelper.random());
-		vfsMetadataDao.updateMetadata(12345l, new GregorianCalendar(2019, 1, 1).getTime(), identity, relativePath, filename);
+		Identity initializedBy = JunitTestHelper.createAndPersistIdentityAsUser(JunitTestHelper.random());
+		Identity lastModifiedBy = JunitTestHelper.createAndPersistIdentityAsUser(JunitTestHelper.random());
+		vfsMetadataDao.updateMetadata(12345l, new GregorianCalendar(2019, 1, 1).getTime(), initializedBy, lastModifiedBy, relativePath, filename);
 		dbInstance.commitAndCloseSession();
 		
 		VFSMetadata loadedMetadata = vfsMetadataDao.loadMetadata(metadata.getKey());
 		
 		Assert.assertEquals(metadata, loadedMetadata);
 		Assert.assertEquals(12345l, loadedMetadata.getFileSize());
-		Assert.assertEquals(identity, loadedMetadata.getFileLastModifiedBy());
+		Assert.assertEquals(initializedBy, loadedMetadata.getFileInitializedBy());
+		Assert.assertEquals(lastModifiedBy, loadedMetadata.getFileLastModifiedBy());
 	}
 	
 	@Test

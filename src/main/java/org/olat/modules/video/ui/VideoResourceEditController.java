@@ -131,7 +131,7 @@ public class VideoResourceEditController extends FormBasicController {
 		}
 
 		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(videoResource, true);
-		videoManager.updateVideoMetadata(repoEntry, url, format);
+		videoManager.updateVideoMetadata(repoEntry, url, format, getIdentity());
 		dbInstance.commit();
 		meta = videoManager.getVideoMetadata(videoResource);
 	}
@@ -149,7 +149,7 @@ public class VideoResourceEditController extends FormBasicController {
 			// update video duration
 			long duration = movieService.getDuration(uploadVideo, VideoTranscoding.FORMAT_MP4);
 			// exchange poster
-			videoManager.exchangePoster(videoResource);
+			videoManager.exchangePoster(videoResource, getIdentity());
 
 			meta.setSize(uploadFile.length());
 			meta.setVideoFormat(VideoFormat.valueOfFilename(uploadVideo.getName()));

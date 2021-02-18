@@ -215,9 +215,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 			}
 		}
 
-		Collections.sort(rows, (row1,row2) -> {
-			return row2.getSize().intValue() - row1.getSize().intValue();
-		});
+		Collections.sort(rows, (row1, row2) -> (row2.getSize().intValue() - row1.getSize().intValue()));
 
 		if(maxResults != 0 && maxResults < rows.size()) {
 			rows = rows.subList(0, maxResults);
@@ -384,16 +382,16 @@ public class LargeFilesController extends FormBasicController implements Extende
 				String cmd = te.getCommand();
 				LargeFilesTableContentRow contentRow = largeFilesTableModel.getObject(te.getIndex());
 				if("selectAuthor".equals(cmd)) {
-					if (contentRow.getAuthor() != null) {
-						openUser(ureq, contentRow.getAuthor().getKey());
+					if (contentRow.getFileInitializedBy() != null) {
+						openUser(ureq, contentRow.getFileInitializedBy().getKey());
 					}
 				} else if("selectLockedBy".equals(cmd)) {
 					if (contentRow.getLockedBy() != null) {
 						openUser(ureq, contentRow.getLockedBy().getKey());
 					}
 				} else if("sendMail".equals(cmd)) {
-					if (contentRow.getAuthor() != null) {
-						contactUser(ureq, contentRow.getAuthor());
+					if (contentRow.getFileInitializedBy() != null) {
+						contactUser(ureq, contentRow.getFileInitializedBy());
 					}
 				}
 			}
@@ -519,7 +517,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 		bodyFiles.append("<ul>");
 		for(LargeFilesTableContentRow row:rows) {
-			if (row.getAuthor() != null && row.getAuthor().equals(user)) {
+			if (row.getFileInitializedBy() != null && row.getFileInitializedBy().equals(user)) {
 				bodyFiles.append("<li><strong>" + row.getName() + "</strong>")
 					.append("<ul>")
 						.append("<li>")

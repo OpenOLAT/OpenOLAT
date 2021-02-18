@@ -512,7 +512,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 				if (attachment.length > 0) {
 					VFSLeaf attachmentLeaf = new LocalFileImpl(attachment[0]);
 					projectBrokerManager.saveAttachedFile(project, projectConfig.get("attachmentFileName").toString(),
-							attachmentLeaf, course.getCourseEnvironment(), this);
+							attachmentLeaf, course.getCourseEnvironment(), this, envMapper.getAuthor());
 				}
 			}
 		} catch (Exception e) {
@@ -775,7 +775,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 				VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
 				if (item instanceof VFSLeaf) {
 					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item,
-							course.getCourseEnvironment(), this);
+							course.getCourseEnvironment(), this, envMapper.getAuthor());
 					newProject.setAttachedFileName(project.getAttachmentFileName());
 					projectBrokerManager.updateProject(newProject);
 				}
@@ -840,7 +840,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 				VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
 				if (item instanceof VFSLeaf) {
 					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item,
-							course.getCourseEnvironment(), copyInstance);
+							course.getCourseEnvironment(), copyInstance, author);
 					newProject.setAttachedFileName(project.getAttachmentFileName());
 					projectBrokerManager.updateProject(newProject);
 				}

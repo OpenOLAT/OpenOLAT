@@ -80,7 +80,7 @@ public class RejectController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String to = getIdentityName(metaInfo.getAuthor());
+		String to = getIdentityName(metaInfo.getFileInitializedBy());
 		String from = getIdentityName(ureq.getIdentity());
 		StaticTextElement toElement = uifactory.addStaticTextElement("reject.message.to", to, formLayout);
 		StaticTextElement fromElement = uifactory.addStaticTextElement("reject.message.from", from, formLayout);
@@ -132,7 +132,7 @@ public class RejectController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//send notification e-mail
-		Identity uploaderIdentity = metaInfo.getAuthor();
+		Identity uploaderIdentity = metaInfo.getFileInitializedBy();
 		try {
 			if(uploaderIdentity != null) {
 				String mailto = uploaderIdentity.getUser().getProperty(UserConstants.EMAIL, getLocale());

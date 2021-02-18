@@ -91,7 +91,7 @@ public class AbsenceNoticeFinishStepCallback implements StepRunnerCallback {
 			if(noticeWrapper.getTempUploadFolder() != null) {
 				newFiles.addAll(noticeWrapper.getTempUploadFolder().getItems(new VFSSystemItemFilter()));
 			}
-			notice = lectureService.updateAbsenceNoticeAttachments(notice, newFiles, noticeWrapper.getAttachmentsToDelete());
+			notice = lectureService.updateAbsenceNoticeAttachments(notice, newFiles, noticeWrapper.getAttachmentsToDelete(), ureq.getIdentity());
 			
 			String after = lectureService.toAuditXml(notice);
 			lectureService.auditLog(Action.createAbsenceNotice, null, after, null, notice, absentIdentity, ureq.getIdentity());

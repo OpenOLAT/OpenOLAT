@@ -202,7 +202,7 @@ public class VideoHandler extends FileHandler {
 		videoManager.createVideoMetadata(repoEntry, url, format);
 		dbInstance.commit();
 		
-		repoEntry = videoManager.updateVideoMetadata(repoEntry, url, format);
+		repoEntry = videoManager.updateVideoMetadata(repoEntry, url, format, initialAuthor);
 		return repoEntry;
 	}
 

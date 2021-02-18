@@ -36,6 +36,7 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -205,8 +206,8 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 			}
 		} else if (zipContainer.canMeta() == VFSConstants.YES) {
 			VFSMetadata info = zipContainer.getMetaInfo();
-			if(info != null && ureq.getIdentity() != null) {
-				info.setAuthor(ureq.getIdentity());
+			if(info instanceof VFSMetadataImpl) {
+				((VFSMetadataImpl)info).setFileInitializedBy(ureq.getIdentity());
 				vfsRepositoryService.updateMetadata(info);
 			}
 		}

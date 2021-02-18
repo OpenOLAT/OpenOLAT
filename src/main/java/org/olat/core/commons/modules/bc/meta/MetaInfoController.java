@@ -262,7 +262,7 @@ public class MetaInfoController extends FormBasicController {
 			uifactory.addStaticTextElement("mf.lockedBy", lockedDetails, formLayout);
 			
 			// username
-			String author = StringHelper.escapeHtml(userManager.getUserDisplayName(meta.getAuthor()));
+			String author = StringHelper.escapeHtml(userManager.getUserDisplayName(meta.getFileInitializedBy()));
 			uifactory.addStaticTextElement("mf.author", author, formLayout);
 
 			// filesize

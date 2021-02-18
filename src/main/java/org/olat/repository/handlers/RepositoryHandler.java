@@ -287,8 +287,9 @@ public interface RepositoryHandler {
 	 * Called when the repository entry of that Resourceable changed.
 	 * 
 	 * @param entry The repository entry
+	 * @param changedBy The user who changed the repository entry
 	 */
-	public default void onDescriptionChanged(RepositoryEntry entry) {
+	public default void onDescriptionChanged(RepositoryEntry entry, Identity changedBy) {
 		// nothing to do
 	}
 	

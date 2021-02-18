@@ -150,8 +150,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			VFSItem item = solutionContainer.resolve(filename);
 			if(item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
-				if(metaInfo.getAuthor() != null) {
-					author = userManager.getUserDisplayName(metaInfo.getAuthor());
+				if(metaInfo.getFileInitializedBy() != null) {
+					author = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
 				}
 			}
 			

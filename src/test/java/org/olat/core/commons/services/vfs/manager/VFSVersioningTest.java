@@ -31,6 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,7 +43,6 @@ import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -95,8 +95,8 @@ public class VFSVersioningTest extends OlatTestCase {
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
 		Assert.assertFalse(byteCopied == 0);
+		vfsRepositoryService.itemSaved(file, id);
 		VFSMetadata data = vfsRepositoryService.getMetadataFor(file);
-		data.setAuthor(id);
 		vfsRepositoryService.updateMetadata(data);
 		dbInstance.commitAndCloseSession();
 		
@@ -124,11 +124,11 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		VFSRevision revision0 = revisions.get(0);
 		//we don't set an author for the original file
-		Assert.assertEquals(id, revision0.getAuthor());
+		Assert.assertEquals(id, revision0.getFileInitializedBy());
 		VFSRevision revision1 = revisions.get(1);
-		Assert.assertEquals(id, revision1.getAuthor());
+		Assert.assertEquals(id, revision1.getFileInitializedBy());
 		VFSRevision revision2 = revisions.get(2);
-		Assert.assertEquals(id, revision2.getAuthor());
+		Assert.assertEquals(id, revision2.getFileInitializedBy());
 
 		//check the comments
 		Assert.assertNull(revision0.getRevisionComment());	
@@ -168,7 +168,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		Assert.assertEquals(5, revisions.get(2).getRevisionNr());
 
 		Assert.assertEquals("Version 5", metadata.getRevisionComment());
-		Assert.assertEquals(id2, revisions.get(2).getAuthor());
+		Assert.assertEquals(id2, revisions.get(2).getFileInitializedBy());
 	}
 	
 	@Test
@@ -298,7 +298,7 @@ public class VFSVersioningTest extends OlatTestCase {
 			inv.close();
 		}
 
-		targetRootTest.copyFrom(file);
+		targetRootTest.copyFrom(file, null);
 		dbInstance.commitAndCloseSession();
 		
 		VFSItem targetFile = targetRootTest.resolve(filename);
@@ -466,8 +466,8 @@ public class VFSVersioningTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-8");
 		
 		//set the author
+		vfsRepositoryService.itemSaved(file, id1);
 		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
-		metadata.setAuthor(id1);
 		metadata.setCreator(id1.getName());
 		metadata = vfsRepositoryService.updateMetadata(metadata);
 		dbInstance.commitAndCloseSession();
@@ -497,13 +497,13 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		VFSRevision revision0 = revisions.get(0);
 		//we don't set an author for the original file
-		Assert.assertEquals(id1, revision0.getAuthor());
+		Assert.assertEquals(id1, revision0.getFileInitializedBy());
 		VFSRevision revision1 = revisions.get(1);
-		Assert.assertEquals(id2, revision1.getAuthor());
+		Assert.assertEquals(id2, revision1.getFileInitializedBy());
 		VFSRevision revision2 = revisions.get(2);
-		Assert.assertEquals(id1, revision2.getAuthor());
+		Assert.assertEquals(id1, revision2.getFileInitializedBy());
 		//current
-		Assert.assertEquals(id2, metadata.getAuthor());
+		Assert.assertEquals(id2, metadata.getFileInitializedBy());
 	}
 	
 	@Test
@@ -592,8 +592,8 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		
 		//set the author
+		vfsRepositoryService.itemSaved(file, id1);
 		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
-		metadata.setAuthor(id1);
 		metadata.setCreator(id1.getName());
 		metadata = vfsRepositoryService.updateMetadata(metadata);
 		
@@ -628,12 +628,12 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		VFSRevision revision0 = revisions.get(0);
 		//we don't set an author for the original file
-		assertEquals(id1, revision0.getAuthor());
+		assertEquals(id1, revision0.getFileInitializedBy());
 		VFSRevision revision1 = revisions.get(1);
-		assertEquals(id2, revision1.getAuthor());
+		assertEquals(id2, revision1.getFileInitializedBy());
 		//current
 		assertEquals(id1.getName(), metadataCopy.getCreator());
-		assertEquals(id2, metadataCopy.getAuthor());
+		assertEquals(id2, metadataCopy.getFileInitializedBy());
 	}
 	
 	@Test

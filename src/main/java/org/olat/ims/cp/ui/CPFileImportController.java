@@ -188,7 +188,7 @@ public class CPFileImportController extends FormBasicController {
 			// rename to unique name in root folder
 			renameToNonExistingDesignation(root, uploadedItem);
 			// move item to root folder
-			root.copyFrom(uploadedItem);
+			root.copyFrom(uploadedItem, getIdentity());
 			pageToBeSelected = addItem(uploadedItem, currentPage.getIdentifier(), false);
 			cpManager.writeToFile(cp);
 		}

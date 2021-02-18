@@ -31,6 +31,7 @@ import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -137,9 +138,11 @@ public class CmdCreateFolder extends FormBasicController implements FolderComman
 		if (item instanceof VFSContainer && item.canMeta() == VFSConstants.YES) {
 			// update meta data
 			VFSMetadata meta = item.getMetaInfo();
-			meta.setAuthor(ureq.getIdentity());
-			vfsRepositoryService.updateMetadata(meta);
-			status = FolderCommandStatus.STATUS_FAILED;
+			if (meta instanceof VFSMetadataImpl) {
+				((VFSMetadataImpl)meta).setFileInitializedBy(ureq.getIdentity());
+				vfsRepositoryService.updateMetadata(meta);
+			}
+			status = FolderCommandStatus.STATUS_SUCCESS;
 			
 			fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FOLDER_EVENT, folderName));	
 			fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);

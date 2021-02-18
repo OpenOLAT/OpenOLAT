@@ -1461,7 +1461,7 @@ public class MessageListController extends BasicController implements GenericEve
 		if (foCallback.mayEditMessageAsModerator()) {
 			Message message = forumManager.getMessageById(messageToMove.getKey());
 			Message parentMessage = forumManager.getMessageById(parentMessageKey);
-			message = forumManager.moveMessage(message, parentMessage);
+			message = forumManager.moveMessage(message, parentMessage, getIdentity());
 			markRead(message);
 			dbInstance.commit();//commit before sending event
 			

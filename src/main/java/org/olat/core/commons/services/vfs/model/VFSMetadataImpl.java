@@ -83,6 +83,9 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_lastmodified_by", nullable=true, insertable=true, updatable=true)
 	private Identity fileLastModifiedBy;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_initialized_by", nullable=true, insertable=true, updatable=true)
+	private Identity fileInitializedBy;
 	@Column(name="f_size", nullable=false, insertable=true, updatable=true)
 	private long fileSize;
 	@Column(name="f_uri", nullable=false, insertable=true, updatable=true)
@@ -141,10 +144,6 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	private long revisionNr;
 	@Column(name="f_revision_comment", nullable=true, insertable=true, updatable=true)
 	private String revisionComment;
-	
-	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_author", nullable=true, insertable=true, updatable=true)
-	private Identity author;
 	
 	@Column(name="f_migrated", nullable=true, insertable=true, updatable=true)
 	private String migrated;
@@ -218,6 +217,15 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 
 	public void setFileLastModifiedBy(Identity fileLastModifiedBy) {
 		this.fileLastModifiedBy = fileLastModifiedBy;
+	}
+
+	@Override
+	public Identity getFileInitializedBy() {
+		return fileInitializedBy;
+	}
+	
+	public void setFileInitializedBy(Identity fileInitializedBy) {
+		this.fileInitializedBy = fileInitializedBy;
 	}
 
 	@Override
@@ -453,16 +461,6 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	}
 
 	@Override
-	public Identity getAuthor() {
-		return author;
-	}
-
-	@Override
-	public void setAuthor(Identity author) {
-		this.author = author;
-	}
-
-	@Override
 	public Date getLockedDate() {
 		return lockedDate;
 	}
@@ -549,9 +547,6 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 
 	@Override
 	public void copyValues(VFSMetadata fromMeta, boolean override) {
-		if(override || getAuthor() == null) {
-			setAuthor(fromMeta.getAuthor());
-		}
 		if(override || !StringHelper.containsNonWhitespace(getComment())) {
 			setComment(fromMeta.getComment());
 		}
@@ -591,7 +586,8 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	}
 	
 	public void copyValues(VFSRevisionImpl fromMeta) {
-		setAuthor(fromMeta.getAuthor());
+		setFileInitializedBy(fromMeta.getFileInitializedBy());
+		setFileLastModifiedBy(fromMeta.getFileLastModifiedBy());
 		setComment(fromMeta.getComment());
 		setCity(fromMeta.getCity());
 		setCreator(fromMeta.getCreator());

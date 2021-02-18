@@ -327,7 +327,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		if(copyVl == null) {
 			copyVl = (VFSLeaf)dialogContainer.resolve(vl.getName());
 		}
-		VFSManager.copyContent(vl, copyVl, true);
+		VFSManager.copyContent(vl, copyVl, true, userCourseEnv.getIdentityEnvironment().getIdentity());
 		
 		markPublisherNews();
 		filesCtrl.loadModel();

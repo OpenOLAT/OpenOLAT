@@ -111,8 +111,8 @@ public class VFSMetadataDAO {
 	public VFSMetadata getMetadata(String uuid) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")
-		  .append(" left join fetch metadata.author as author")
-		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.fileInitializedBy as fileInitializedBy")
+		  .append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		  .append(" left join fetch metadata.licenseType as licenseType")
 		  .append(" where metadata.uuid=:uuid");
   
@@ -128,8 +128,8 @@ public class VFSMetadataDAO {
 	public VFSMetadata getMetadata(String relativePath, String filename, boolean directory) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")
-		  .append(" left join fetch metadata.author as author")
-		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.fileInitializedBy as fileInitializedBy")
+		  .append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		  .append(" left join fetch metadata.licenseType as licenseType")
 		  .append(" where metadata.filename=:filename and metadata.relativePath=:relativePath and metadata.directory=:directory");
 
@@ -147,8 +147,8 @@ public class VFSMetadataDAO {
 	public VFSMetadata loadMetadata(Long metadataKey) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")
-		  .append(" left join fetch metadata.author as author")
-		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.fileInitializedBy as fileInitializedBy")
+		  .append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		  .append(" left join fetch metadata.licenseType as licenseType")
 		  .append(" where metadata.key=:metadataKey");
 
@@ -188,8 +188,8 @@ public class VFSMetadataDAO {
 	public List<VFSMetadata> getMetadatas(String relativePath) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")
-		  .append(" left join fetch metadata.author as author")
-		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.fileInitializedBy as fileInitializedBy")
+		  .append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		  .append(" left join fetch metadata.licenseType as licenseType")
 		  .append(" where metadata.relativePath=:relativePath");
 
@@ -209,8 +209,8 @@ public class VFSMetadataDAO {
 	public List<VFSMetadata> getMetadatas(VFSMetadataRef parentMetadata) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")
-		  .append(" left join fetch metadata.author as author")
-		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.fileInitializedBy as fileInitializedBy")
+		  .append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		  .append(" left join fetch metadata.licenseType as licenseType")
 		  .append(" where metadata.parent.key=:parentKey");
 
@@ -237,8 +237,8 @@ public class VFSMetadataDAO {
 	public List<VFSMetadata> getMostDownloaded(String relativePath, int maxResult) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")
-		  .append(" left join fetch metadata.author as author")
-		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.fileInitializedBy as fileInitializedBy")
+		  .append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		  .append(" left join fetch metadata.licenseType as licenseType")
 		  .append(" where metadata.relativePath like :relativePath")
 		  .append(" and metadata.directory=false")
@@ -262,8 +262,8 @@ public class VFSMetadataDAO {
 	public List<VFSMetadata> getNewest(String relativePath, int maxResult) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")
-		  .append(" left join fetch metadata.author as author")
-		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.fileInitializedBy as fileInitializedBy")
+		  .append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		  .append(" left join fetch metadata.licenseType as licenseType")
 		  .append(" where metadata.relativePath like :relativePath")
 		  .append(" and metadata.directory=false")
@@ -280,8 +280,8 @@ public class VFSMetadataDAO {
 	public List<VFSMetadata> getNewest(String relativePath, Date date) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")
-		  .append(" left join fetch metadata.author as author")
-		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.fileInitializedBy as fileInitializedBy")
+		  .append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		  .append(" left join fetch metadata.licenseType as licenseType")
 		  .append(" where metadata.relativePath like :relativePath")
 		  .append(" and metadata.fileLastModified>=:date")
@@ -319,12 +319,13 @@ public class VFSMetadataDAO {
 	 * 
 	 * @param fileSize The new file size (mandatory)
 	 * @param lastModified The modification date (mandatory)
+	 * @param initializedBy The identity who saved the file initially
 	 * @param lastModifiedBy The identity who saved the file
 	 * @param relativePath The path to the file
 	 * @param filename The name of the file
 	 */
-	public void updateMetadata(long fileSize, Date lastModified, Identity lastModifiedBy, String relativePath, String filename) {
-		String updateQuery = "update vfsmetadatafilesaved set fileLastModified=:lastModified, fileLastModifiedBy=:lastModifiedBy, fileSize=:fileSize, deleted=false where filename=:filename and relativePath=:relativePath";
+	public void updateMetadata(long fileSize, Date lastModified, Identity initializedBy, Identity lastModifiedBy, String relativePath, String filename) {
+		String updateQuery = "update vfsmetadatafilesaved set fileLastModified=:lastModified, fileInitializedBy=:initializedBy, fileLastModifiedBy=:lastModifiedBy, fileSize=:fileSize, deleted=false where filename=:filename and relativePath=:relativePath";
 		dbInstance.getCurrentEntityManager()
 			.createQuery(updateQuery)
 			.setParameter("filename", filename)
@@ -332,6 +333,7 @@ public class VFSMetadataDAO {
 			.setParameter("fileSize", fileSize)
 			.setParameter("lastModified", lastModified)
 			.setParameter("lastModifiedBy", lastModifiedBy)
+			.setParameter("initializedBy", initializedBy)
 			.executeUpdate();
 	}
 	
@@ -370,8 +372,8 @@ public class VFSMetadataDAO {
 			Integer size) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")
-		.append(" left join fetch metadata.author as author")
-		.append(" left join fetch author.user as authorUser")
+		.append(" left join fetch metadata.fileInitializedBy as fileInitializedBy")
+		.append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		.append(" left join fetch metadata.licenseType as licenseType")
 		.append(" where metadata.directory = false");
 		if(createdAtNewer != null) {

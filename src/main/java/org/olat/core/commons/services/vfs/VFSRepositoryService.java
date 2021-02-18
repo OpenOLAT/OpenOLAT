@@ -142,8 +142,9 @@ public interface VFSRepositoryService {
 	 * @param source The source file
 	 * @param target The target file
 	 * @param parentTarget The parent container of the target (useful if the target is not fully initialized)
+	 * @param savedBy 
 	 */
-	public void copyTo(VFSLeaf source, VFSLeaf target, VFSContainer parentTarget);
+	public void copyTo(VFSLeaf source, VFSLeaf target, VFSContainer parentTarget, Identity savedBy);
 	
 	/**
 	 * This rename the metadata and the versions but not the file itself.

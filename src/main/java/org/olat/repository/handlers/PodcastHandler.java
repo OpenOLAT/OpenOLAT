@@ -259,8 +259,8 @@ public class PodcastHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public void onDescriptionChanged(RepositoryEntry entry) {
-		Feed feed = FeedManager.getInstance().updateFeedWithRepositoryEntry(entry);
+	public void onDescriptionChanged(RepositoryEntry entry, Identity changedBy) {
+		Feed feed = FeedManager.getInstance().updateFeedWithRepositoryEntry(entry, changedBy);
 		DBFactory.getInstance().commitAndCloseSession();
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()

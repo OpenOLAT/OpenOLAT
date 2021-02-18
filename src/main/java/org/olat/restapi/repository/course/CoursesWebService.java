@@ -600,7 +600,7 @@ public class CoursesWebService {
 			preparedEntry = repositoryService.update(preparedEntry);
 
 			// copy image if available
-			repositoryManager.copyImage(src, preparedEntry);
+			repositoryManager.copyImage(src, preparedEntry, initialAuthor);
 			ICourse course = prepareCourse(preparedEntry, shortTitle, longTitle, courseConfigVO);
 			handlerFactory.getRepositoryHandler(src).releaseLock(lockResult);
 			

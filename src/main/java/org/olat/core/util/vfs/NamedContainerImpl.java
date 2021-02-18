@@ -29,6 +29,7 @@ package org.olat.core.util.vfs;
 import java.util.List;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
@@ -92,13 +93,13 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	}
 
 	@Override
-	public VFSStatus copyFrom(VFSItem source) {
-		return getDelegate().copyFrom(source);
+	public VFSStatus copyFrom(VFSItem source, Identity savedBy) {
+		return getDelegate().copyFrom(source, savedBy);
 	}
 
 	@Override
-	public VFSStatus copyContentOf(VFSContainer container) {
-		return getDelegate().copyContentOf(container);
+	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
+		return getDelegate().copyContentOf(container, savedBy);
 	}
 
 	@Override

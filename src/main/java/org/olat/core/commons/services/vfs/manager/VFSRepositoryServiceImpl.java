@@ -465,11 +465,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		
 		String relativePath = getContainerRelativePath(leaf);
 		Date lastModified = new Date(leaf.getLastModified());
+		boolean metadataExists = metadataDao.getMetadata(relativePath, leaf.getName(), false) != null;
 		// Ensure the existence of the matadata before the update.
-		if (metadataDao.getMetadata(relativePath, leaf.getName(), false) == null) {
-			getMetadataFor(leaf);
-		}
-		metadataDao.updateMetadata(leaf.getSize(), lastModified, savedBy, relativePath, leaf.getName());
+		VFSMetadata vfsMetadata = getMetadataFor(leaf);
+		Identity initializedBy = metadataExists? vfsMetadata.getFileInitializedBy(): savedBy;
+		metadataDao.updateMetadata(leaf.getSize(), lastModified, initializedBy, savedBy, relativePath, leaf.getName());
 		dbInstance.commitAndCloseSession();
 	}
 
@@ -583,7 +583,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
-	public void copyTo(VFSLeaf source, VFSLeaf target, VFSContainer parentTarget) {
+	public void copyTo(VFSLeaf source, VFSLeaf target, VFSContainer parentTarget, Identity savedBy) {
 		if(source.canMeta() != VFSConstants.YES || target.canMeta() != VFSConstants.YES) return;
 		
 		VFSMetadataImpl sourceMetadata = (VFSMetadataImpl)loadMetadata(toFile(source));
@@ -601,24 +601,25 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				if(source.canVersion() == VFSConstants.YES || target.canVersion() == VFSConstants.YES) {
 					targetMetadata.setRevisionComment(sourceMetadata.getRevisionComment());
 					targetMetadata.setRevisionNr(sourceMetadata.getRevisionNr());
-					copy(sourceMetadata, targetMetadata);
+					copyRevisions(sourceMetadata, targetMetadata, savedBy);
 				}
 				metadataDao.updateMetadata(targetMetadata);
 			}
 		}
 	}
 	
-	private boolean copy(VFSMetadata sourceMetadata, VFSMetadata targetMetadata) {
+	private boolean copyRevisions(VFSMetadata sourceMetadata, VFSMetadata targetMetadata, Identity savedBy) {
 		List<VFSRevision> sourceRevisions = getRevisions(sourceMetadata);
 
 		boolean allOk = true;
 		for (VFSRevision sourceRevision : sourceRevisions) {
 			VFSLeaf sourceRevFile = getRevisionLeaf(sourceMetadata, (VFSRevisionImpl)sourceRevision);
 			if(sourceRevFile != null && sourceRevFile.exists()) {
-				VFSRevision targetRevision = revisionDao.createRevisionCopy(sourceRevision.getAuthor(), sourceRevision.getRevisionComment(),
-						sourceRevision, targetMetadata);
+				VFSRevision targetRevision = revisionDao.createRevisionCopy(sourceRevision.getFileInitializedBy(),
+						sourceRevision.getFileLastModifiedBy(), sourceRevision.getRevisionComment(), targetMetadata,
+						sourceRevision);
 				VFSLeaf targetRevFile = getRevisionLeaf(targetMetadata, (VFSRevisionImpl)targetRevision);
-				VFSManager.copyContent(sourceRevFile, targetRevFile, false);
+				VFSManager.copyContent(sourceRevFile, targetRevFile, true, savedBy);
 			}
 		}
 		return allOk;
@@ -910,7 +911,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			if (addToRevisions(currentLeaf, metadata, identity, comment, false)) {
 				// copy the content of the new file to the old
 				VFSLeaf revFile = getRevisionLeaf(metadata, ((VFSRevisionImpl)revision));
-				if (VFSManager.copyContent(revFile.getInputStream(), currentLeaf, metadata.getFileLastModifiedBy())) {
+				if (VFSManager.copyContent(revFile.getInputStream(), currentLeaf, identity)) {
 					metadata = metadataDao.loadMetadata(metadata.getKey());
 					((VFSMetadataImpl)metadata).copyValues((VFSRevisionImpl)revision);
 					metadata = metadataDao.updateMetadata(metadata);
@@ -949,7 +950,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		return allOk;
 	}
 	
-	public boolean addToRevisions(VFSLeaf currentLeaf, VFSMetadata metadata, Identity identity, String comment, boolean pruneRevision) {
+	private boolean addToRevisions(VFSLeaf currentLeaf, VFSMetadata metadata, Identity identity, String comment, boolean pruneRevision) {
 		int maxNumOfVersions = versionModule.getMaxNumberOfVersions();
 		if(maxNumOfVersions == 0) {
 			return true;//deactivated, return all ok
@@ -977,8 +978,9 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			fileSize = currentFile.length();
 		}
 
-		VFSRevision newRevision = revisionDao.createRevision(metadata.getAuthor(), uuid, versionNr,
-				fileSize, lastModifiedDate, metadata.getRevisionComment(), metadata);
+		VFSRevision newRevision = revisionDao.createRevision(metadata.getFileInitializedBy(),
+				metadata.getFileLastModifiedBy(), uuid, versionNr, fileSize, lastModifiedDate,
+				metadata.getRevisionComment(), metadata);
 		revisions.add(newRevision);
 
 		if(!sameFile) {
@@ -996,7 +998,9 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			}
 			metadata.setRevisionComment(comment);
 			metadata.setRevisionNr(getNextRevisionNr(revisions));
-			metadata.setAuthor(identity);
+			if (metadata instanceof VFSMetadataImpl) {
+				((VFSMetadataImpl)metadata).setFileInitializedBy(identity);
+			}
 			updateMetadata(metadata);
 			return true;
 		} else {
@@ -1161,7 +1165,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		((VFSMetadataImpl)metadata).setUri(targetFile.toURI().toString());
 		VFSMetadata targetParent = getMetadataFor(targetFile.getParentFile());
 		((VFSMetadataImpl)metadata).setParent(targetParent);
-		((VFSMetadataImpl)metadata).setAuthor(author);
+		((VFSMetadataImpl)metadata).setFileInitializedBy(author);
 
 		List<VFSRevision> revisions = getRevisions(metadata);
 		for(VFSRevision revision:revisions) {
@@ -1516,8 +1520,9 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			if(oldOne.exists()) {
 				try {
 					String newRevisionFilename = generateFilenameForRevision(file, revision.getRevisionNr());
-					revisionDao.createRevision(revision.getAuthor(), newRevisionFilename, revision.getRevisionNr(),
-							oldOne.length(), revision.getFileLastModified(), revision.getComment(), metadata);
+					revisionDao.createRevision(revision.getFileInitializedBy(), revision.getFileLastModifiedBy(),
+							newRevisionFilename, revision.getRevisionNr(), oldOne.length(),
+							revision.getFileLastModified(), revision.getComment(), metadata);
 					File target = new File(file.getParentFile(), newRevisionFilename);
 					Files.move(oldOne.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {

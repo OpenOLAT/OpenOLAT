@@ -169,12 +169,13 @@ public class RepositoryManager {
 	/**
 	 * Copy the repo entry image from the source to the target repository entry.
 	 * If the source repo entry does not exists, nothing will happen
-	 *
-	 * @param src
 	 * @param target
+	 * @param savedBy
+	 * @param src
+	 *
 	 * @return
 	 */
-	public boolean copyImage(RepositoryEntry source, RepositoryEntry target) {
+	public boolean copyImage(RepositoryEntry source, RepositoryEntry target, Identity savedBy) {
 		VFSLeaf srcFile = getImage(source);
 		if(srcFile == null) {
 			return false;
@@ -189,7 +190,7 @@ public class RepositoryManager {
 		VFSContainer targetMediaDir = this.getMediaDirectory(target.getOlatResource());
 		VFSLeaf newImage = targetMediaDir.createChildLeaf(target.getResourceableId() + "." + sourceImageSuffix);
 		if (newImage != null) {
-			return VFSManager.copyContent(srcFile, newImage, false);
+			return VFSManager.copyContent(srcFile, newImage, false, savedBy);
 		}
 		return false;
 	}
@@ -233,7 +234,7 @@ public class RepositoryManager {
 		return new LocalFolderImpl(mediaHome);
 	}
 
-	public boolean setImage(VFSLeaf newImageFile, RepositoryEntry re) {
+	public boolean setImage(VFSLeaf newImageFile, RepositoryEntry re, Identity changedBy) {
 		VFSLeaf currentImage = getImage(re);
 		if(currentImage != null) {
 			currentImage.deleteSilently();//no versions for this
@@ -261,7 +262,7 @@ public class RepositoryManager {
 		if(targetExtension.equals(".png") || targetExtension.equals(".jpg")) {
 			Size newImageSize = imageHelper.getSize(newImageFile, extension);
 			if(newImageSize != null && newImageSize.getWidth() <= PICTURE_WIDTH && newImageSize.getHeight() <= PICTURE_HEIGHT) {
-				return VFSManager.copyContent(newImageFile, repoImage, false);
+				return VFSManager.copyContent(newImageFile, repoImage, false, changedBy);
 			}
 		}
 
