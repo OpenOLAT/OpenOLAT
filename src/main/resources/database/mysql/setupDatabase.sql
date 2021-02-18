@@ -4177,7 +4177,7 @@ alter table o_vfs_thumbnail add constraint fthumb_to_meta_idx foreign key (fk_me
 alter table o_vfs_revision add constraint fvers_to_author_idx foreign key (fk_initialized_by) references o_bs_identity (id);
 alter table o_vfs_revision add constraint fvers_modified_by_idx foreign key (fk_lastmodified_by) references o_bs_identity (id);
 alter table o_vfs_revision add constraint fvers_to_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
-alter table o_vfs_metadata add constraint fvers_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
+alter table o_vfs_revision add constraint fvers_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 
 -- Document editor
 create unique index idx_de_userinfo_ident_idx on o_de_user_info(fk_identity);

@@ -4152,8 +4152,6 @@ alter table o_vfs_revision add constraint fvers_to_author_idx foreign key (fk_in
 create index idx_fvers_to_author_idx on o_vfs_revision (fk_initialized_by);
 alter table o_vfs_revision add constraint fvers_modified_by_idx foreign key (fk_lastmodified_by) references o_bs_identity (id);
 create index idx_fvers_mod_by_idx on o_vfs_revision (fk_lastmodified_by);
-alter table o_vfs_metadata add constraint fmeta_modified_by_idx foreign key (fk_lastmodified_by) references o_bs_identity (id);
-create index idx_fmeta_modified_by_idx on o_vfs_metadata (fk_lastmodified_by);
 alter table o_vfs_revision add constraint fvers_to_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 create index idx_fvers_to_meta_idx on o_vfs_revision (fk_metadata);
 alter table o_vfs_revision add constraint fvers_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
