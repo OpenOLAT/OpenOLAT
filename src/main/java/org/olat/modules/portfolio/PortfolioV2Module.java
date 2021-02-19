@@ -331,6 +331,12 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 		return taxonomyLinkingEnabled;
 	}
 	
+	public boolean isTaxonomyLinkingReady() {
+		List<Taxonomy> linkedTaxonomies = getLinkedTaxonomies();
+		
+		return taxonomyLinkingEnabled && linkedTaxonomies != null && !linkedTaxonomies.isEmpty();
+	}
+	
 	public void setTaxonomyLinkingEnabled(boolean taxonomyLinkingEnabled) {
 		this.taxonomyLinkingEnabled = taxonomyLinkingEnabled;
 		setStringProperty(PORTFOLIO_TAXONOMY_LINKING_ENABLED, Boolean.toString(taxonomyLinkingEnabled), true);

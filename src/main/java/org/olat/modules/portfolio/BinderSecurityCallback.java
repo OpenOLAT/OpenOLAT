@@ -67,6 +67,8 @@ public interface BinderSecurityCallback {
 	public boolean canEditPageMetadata(Page page, List<Assignment> assignments);
 
 	public boolean canEditCategories(Page page);
+	
+	public boolean canEditCompetencies(Page page);
 
 	public boolean canPublish(Page page);
 	

@@ -108,7 +108,9 @@ public interface TaxonomyService {
 	 */
 	public TaxonomyLevel getTaxonomyLevel(TaxonomyLevelRef ref);
 
-	public List<TaxonomyLevel> getTaxonomyLevelsByKeys(Collection<? extends TaxonomyLevelRef> refs);
+	public List<TaxonomyLevel> getTaxonomyLevelsByRefs(Collection<? extends TaxonomyLevelRef> refs);
+	
+	public List<TaxonomyLevel> getTaxonomyLevelsByKeys(Collection<Long> keys);
 	
 	/**
 	 * 
@@ -342,5 +344,4 @@ public interface TaxonomyService {
 	 * @return A XML representation of the competence.
 	 */
 	public String toAuditXml(TaxonomyCompetence competence);
-
 }

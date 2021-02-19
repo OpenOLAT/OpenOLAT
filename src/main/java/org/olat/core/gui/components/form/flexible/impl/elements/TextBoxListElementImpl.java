@@ -156,5 +156,9 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	public void setMaxResults(int maxResults) {
 		component.setMaxResults(maxResults);
 	}
-
+	
+	@Override
+	public void setIcon(String icon) {
+		component.setIcon(icon);		
+	}
 }

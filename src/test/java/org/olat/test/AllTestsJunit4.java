@@ -281,6 +281,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.portfolio.manager.SharedByMeQueriesTest.class,
 	org.olat.modules.portfolio.manager.SharedWithMeQueriesTest.class,
 	org.olat.modules.portfolio.manager.PortfolioServiceTest.class,
+	org.olat.modules.portfolio.manager.PortfolioPageToTaxonomyCompetenceDAOTest.class,
 	org.olat.modules.portfolio.manager.BinderUserInformationsDAOTest.class,
 	org.olat.modules.portfolio.manager.InvitationDAOTest.class,
 	org.olat.modules.quality.analysis.manager.AnalysisFilterDAOTest.class,

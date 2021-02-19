@@ -12,22 +12,38 @@
 		#end
 		
 		<span class="o_portfolio_last_modified text-muted o_small">
+			<i class="o_icon o_icon_fw o_icon_time" title="$r.translateInAttribute("categories")"> </i>
 			 $r.translate("meta.last.modified", $r.formatDateAndTime($lastModified))
 		</span>
 		
 		#if($r.isNotEmpty($pageCategories) || $r.available("pageCategoriesCtr"))
-			<span class="o_portfolio_categories text-muted o_small">
+			<div class="o_portfolio_categories text-muted o_small">
 			#if ($r.available("pageCategoriesCtr"))
 				$r.render("pageCategoriesCtr")
 			#else
-				<i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
+				<i class="o_icon o_icon_fw o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 				 #foreach($category in $pageCategories)
 				 	<span class="tag label label-info">
 					 	$category
 				 	</span>
 				 #end
 			#end
-			</span>
+			</div>
+		#end
+		
+		#if($r.isNotEmpty($pageCompetencies) || $r.available("pageCompetenciesCtrl"))
+			<div class="o_portfolio_competencies text-muted o_small">
+			#if ($r.available("pageCompetenciesCtrl"))
+				$r.render("pageCompetenciesCtrl")
+			#else
+				<i class="o_icon o_icon_fw o_icon_taxonomy_level" title="$r.translateInAttribute("competencies")"> </i>
+				 #foreach($competence in $pageCompetencies)
+				 	<span class="tag label label-info">
+					 	$competence
+				 	</span>
+				 #end
+			#end
+			</div>
 		#end
 		
 		#if($r.isNotNull($sharedWith))

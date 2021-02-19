@@ -58,6 +58,7 @@ public class PortfolioElementRow {
 	private final boolean assignments;
 
 	private Collection<String> pageCategories;
+	private Collection<String> pageCompetencies;
 	private Collection<String> sectionCategories;
 
 	private long numOfComments;
@@ -259,6 +260,14 @@ public class PortfolioElementRow {
 
 	public void setPageCategories(Collection<String> pageCategories) {
 		this.pageCategories = pageCategories;
+	}
+	
+	public void setPageCompetencies(Collection<String> pageCompetencies) {
+		this.pageCompetencies = pageCompetencies;
+	}
+	
+	public Collection<String> getPageCompetencies() {
+		return pageCompetencies;
 	}
 	
 	public Collection<String> getSectionCategories() {

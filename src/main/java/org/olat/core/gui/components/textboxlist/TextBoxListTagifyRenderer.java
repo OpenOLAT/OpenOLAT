@@ -56,7 +56,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		if (tblComponent.isEnabled()) {
 			renderEnabledMode(tblComponent, sb, translator);
 		} else {
-			renderDisabledMode(tblComponent, sb);
+			renderDisabledMode(tblComponent, sb, tblComponent.getIcon());
 		}
 	}
 
@@ -223,12 +223,12 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 	 * @param tblComponent
 	 * @param output
 	 */
-	private void renderDisabledMode(TextBoxListComponent tblComponent, StringOutput output) {
+	private void renderDisabledMode(TextBoxListComponent tblComponent, StringOutput output, String icon) {
 		// read only view, we just display the initialItems as
 		// comma-separated string
 		List<TextBoxItem> items = tblComponent.getCurrentItems();
 		if (items != null && !items.isEmpty()) {
-			output.append("<span class='o_textbox_disabled'><i class='o_icon o_icon_tags'> </i> ");
+			output.append("<span class='o_textbox_disabled'><i class='o_icon o_icon_fw " + icon + "'> </i> ");
 			for (TextBoxItem item : items) {
 				output.append("<span class='tag label label-info");
 				String label = item.getLabel();

@@ -143,11 +143,17 @@ public class TaxonomyLevelDAO implements InitializingBean {
 	public List<TaxonomyLevel> loadLevels(Collection<? extends TaxonomyLevelRef> refs) {
 		if (refs == null || refs.isEmpty()) return new ArrayList<>(0);
 		
+		Collection<Long> keys = refs.stream().map(TaxonomyLevelRef::getKey).collect(Collectors.toList());
+		return loadLevelsByKeys(keys);
+	}
+	
+	public List<TaxonomyLevel> loadLevelsByKeys(Collection<Long> keys) {
+		if (keys == null || keys.isEmpty()) return new ArrayList<>(0);
+		
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select level from ctaxonomylevel as level");
 		sb.append(" where level.key in (:keys)");
 		
-		Collection<Long> keys = refs.stream().map(TaxonomyLevelRef::getKey).collect(Collectors.toList());
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), TaxonomyLevel.class)
 				.setParameter("keys", keys)

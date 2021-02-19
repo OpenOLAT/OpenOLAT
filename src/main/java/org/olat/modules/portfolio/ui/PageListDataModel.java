@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
@@ -185,6 +185,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 				return null;
 			}
 			case categories: return page.getPageCategories();
+			case competencies: return page.getPageCompetencies();
 			case section: return page.getSectionTitle();
 			case up: {
 				if(page.isPendingAssignment()) {
@@ -218,6 +219,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 		date("table.header.date", true),
 		publicationDate("table.header.publication.date", true),
 		categories("table.header.categories", false),
+		competencies("table.header.competencies", false),
 		section("table.header.section", true),
 		up("table.header.up", false),
 		down("table.header.down", false),

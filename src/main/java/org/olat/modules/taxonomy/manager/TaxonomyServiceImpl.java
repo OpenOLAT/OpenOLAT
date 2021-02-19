@@ -139,8 +139,13 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	}
 
 	@Override
-	public List<TaxonomyLevel> getTaxonomyLevelsByKeys(Collection<? extends TaxonomyLevelRef> refs) {
+	public List<TaxonomyLevel> getTaxonomyLevelsByRefs(Collection<? extends TaxonomyLevelRef> refs) {
 		return taxonomyLevelDao.loadLevels(refs);
+	}
+	
+	@Override
+	public List<TaxonomyLevel> getTaxonomyLevelsByKeys(Collection<Long> keys) {
+		return taxonomyLevelDao.loadLevelsByKeys(keys);
 	}
 
 	@Override

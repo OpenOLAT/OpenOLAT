@@ -61,6 +61,7 @@ import org.olat.modules.portfolio.PageUserInformations;
 import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.DonePageEvent;
@@ -69,6 +70,8 @@ import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
 import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
 import org.olat.modules.portfolio.ui.model.UserAssignmentInfos;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -93,6 +96,7 @@ public class PageMetadataController extends BasicController {
 	private CloseableModalController cmc;
 	private UserInfosStatusController userStatusCtrl;
 	private CategoriesEditController categoriesEditCtr;
+	private CompetenciesEditController competenciesEditCtrl;
 	private ConfirmClosePageController confirmClosePageCtrl;
 	
 	private final Page page;
@@ -100,12 +104,18 @@ public class PageMetadataController extends BasicController {
 	private final List<Assignment> assignments;
 	private final BinderSecurityCallback secCallback;
 	
+	private boolean competenciesEnabled;
+	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
 	private PortfolioFileStorage fileStorage;
+	@Autowired
+	private PortfolioV2Module portfolioV2Module;
+	@Autowired 
+	private TaxonomyService taxonomyService;
 	
 	public PageMetadataController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
 			Page page, boolean openInEditMode) {
@@ -123,6 +133,7 @@ public class PageMetadataController extends BasicController {
 		initMetadata(ureq);
 		initAssignments(ureq);
 		initStatus();
+		initTaxonomyCompetencies();
 		editLink(!openInEditMode);
 		putInitialPanel(mainVC);
 	}
@@ -140,6 +151,14 @@ public class PageMetadataController extends BasicController {
 			listenTo(userStatusCtrl);
 			mainVC.put("userStatus", userStatusCtrl.getInitialComponent());
 		}
+	}
+	
+	private void initTaxonomyCompetencies() {
+		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+			this.competenciesEnabled = true;			
+		}
+		
+		mainVC.contextPut("isCompetenciesEnabled", competenciesEnabled);
 	}
 	
 	private void syncUserInfosStatus() {
@@ -198,6 +217,21 @@ public class PageMetadataController extends BasicController {
 				categoryNames.add(category.getName());
 			}
 			mainVC.contextPut("pageCategories", categoryNames);
+		}
+		
+		List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(page, true);
+		if (secCallback.canEditCompetencies(page)) {
+			// editable categories
+			competenciesEditCtrl = new CompetenciesEditController(ureq, getWindowControl(), page);
+			listenTo(competenciesEditCtrl);
+			mainVC.put("pageCompetenciesCtrl", competenciesEditCtrl.getInitialComponent());			
+		} else {
+			// read-only categories
+			List<String> competencyNames = new ArrayList<>(competencies.size());
+			for(TaxonomyCompetence competence:competencies) {
+				competencyNames.add(competence.getTaxonomyLevel().getDisplayName());
+			}
+			mainVC.contextPut("pageCompetencies", competencyNames);
 		}
 		
 		mainVC.contextPut("lastModified", page.getLastModified());
@@ -333,6 +367,11 @@ public class PageMetadataController extends BasicController {
 		if (source == categoriesEditCtr) {
 			if (event == Event.CHANGED_EVENT) {				
 				portfolioService.updateCategories(page, categoriesEditCtr.getUpdatedCategories());
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		} else if (source == competenciesEditCtrl) {
+			if (event == Event.CHANGED_EVENT) {				
+				portfolioService.linkCompetences(page, getIdentity(), competenciesEditCtrl.getUpdatedCompetencies());
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(confirmClosePageCtrl == source) {

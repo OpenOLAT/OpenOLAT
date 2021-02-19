@@ -313,6 +313,18 @@
 	}
 }
 
+.o_portfolio_competencies {
+	.tag {
+		background-color: lightblue;
+		font-size: 80%;
+		font-weight: normal;
+	}
+	/* the categories edit form */
+	div, form {
+		display: inline-block;
+	}
+}
+
 .o_portfolio_categories {
 	.tag {
 		font-size: 80%;
@@ -324,12 +336,13 @@
 	}
 }
 
+.o_portfolio_competencies_edit .o_portfolio_competencies .tagify__input,
 .o_portfolio_categories_edit .o_portfolio_categories .tagify__input {
 	min-width: 180px;
 }
 .o_portfolio_last_modified + .o_portfolio_categories, 
 .o_portfolio_page_meta + .o_portfolio_categories  {
-	margin-left: 1em;
+	//margin-left: 1em;
 }
 
 .o_binder_page_tree_listing.o_rendertype_classic {

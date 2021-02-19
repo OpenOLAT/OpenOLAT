@@ -119,7 +119,7 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 		
 		Collection<TaxonomyLevelRef> taxonomyLevelRefs = infoMetadata.getTaxonomyLevelRefs();
 		Set<TaxonomyLevel> taxonomyLevels = taxonomyLevelRefs != null
-				? new HashSet<>(taxonomyService.getTaxonomyLevelsByKeys(taxonomyLevelRefs))
+				? new HashSet<>(taxonomyService.getTaxonomyLevelsByRefs(taxonomyLevelRefs))
 				: null;
 		
 		RepositoryEntryEducationalType educationalType = entry.getEducationalType();

@@ -238,6 +238,7 @@
 		<class>org.olat.modules.portfolio.model.AssignmentImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderUserInfosImpl</class>
 		<class>org.olat.modules.portfolio.model.InvitationImpl</class>
+		<class>org.olat.modules.portfolio.model.PortfolioPageToTaxonomyCompetenceImpl</class>
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>
 		<class>org.olat.modules.qpool.model.PoolItemShortView</class>

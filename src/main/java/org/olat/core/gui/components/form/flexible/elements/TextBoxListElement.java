@@ -84,4 +84,11 @@ public interface TextBoxListElement extends FormItem {
 	 * @param allowNewValues
 	 */
 	public void setAllowNewValues(boolean allowNewValues);
+	
+	/**
+	 * Set an icon which is displayed next to the input field
+	 * 
+	 * @param icon
+	 */
+	public void setIcon(String icon);
 }

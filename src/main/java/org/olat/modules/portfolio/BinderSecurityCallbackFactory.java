@@ -510,6 +510,11 @@ public class BinderSecurityCallbackFactory {
 		public boolean canEditCategories(Page page) {
 			return owner;
 		}
+		
+		@Override
+		public boolean canEditCompetencies(Page page) {
+			return owner;
+		}
 
 		@Override
 		public boolean canPublish(Page page) {
@@ -913,6 +918,11 @@ public class BinderSecurityCallbackFactory {
 		
 		@Override
 		public boolean canEditCategories(Page page) {
+			return false;
+		}
+		
+		@Override
+		public boolean canEditCompetencies(Page page) {
 			return false;
 		}
 		

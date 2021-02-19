@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.PortfolioCourseNode;
@@ -43,6 +44,7 @@ import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.model.SearchSharePagesParameters;
 import org.olat.modules.portfolio.model.SynchedBinder;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
@@ -721,5 +723,37 @@ public interface PortfolioService {
 	public EvaluationFormSession loadOrCreateSession(EvaluationFormSurvey survey, Identity executor);
 
 	public void deleteSurvey(PageBody body);
-
+	
+	/**
+	 * Get all related taxonomy competencies to one portfolio page
+	 * 
+	 * @param page
+	 * @param fetchTaxonomies
+	 * @return
+	 */
+	public List<TaxonomyCompetence> getRelatedCompetencies(Page page, boolean fetchTaxonomies);
+	
+	/**
+	 * Link a taxonomy competence to a portfolio page
+	 * 
+	 * @param page
+	 * @param competence
+	 */
+	public void linkCompetence(Page page, TaxonomyCompetence competence);
+	
+	/**
+	 * Link a list of competencies coming from a text box
+	 * 
+	 * @param page
+	 * @param competencies
+	 */
+	public void linkCompetences(Page page, Identity identity, List<TextBoxItem> competencies);
+	
+	/**
+	 * Unlink a taxonomy competence from a portfolio page
+	 * 
+	 * @param page
+	 * @param competence
+	 */
+	public void unlinkCompetence(Page page, TaxonomyCompetence competence);
 }

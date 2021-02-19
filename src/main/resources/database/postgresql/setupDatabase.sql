@@ -3478,6 +3478,15 @@ create or replace view o_qp_share_2_item_short_v as (
    inner join o_gp_business as bgroup on (shareditem.fk_resource_id = bgroup.fk_resource)
 );
 
+-- Taxonomy linking in portfolio
+create table o_pf_page_to_tax_competence (
+	id bigserial,
+	creationdate timestamp not null,
+	fk_tax_competence int8 not null,
+	fk_pf_page int8 not null,
+	primary key (id)
+);
+
 
 
 -- rating

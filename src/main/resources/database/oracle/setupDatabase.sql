@@ -3398,6 +3398,15 @@ create table o_ct_registration (
    primary key (id)
 );
 
+-- Taxonomy linking in portfolio
+create table o_pf_page_to_tax_competence (
+	id number(20) generated always as identity,
+	creationdate date not null,
+	fk_tax_competence number(20) not null,
+	fk_pf_page number(20) not null,
+	primary key (id)
+);
+
 
 -- user view
 create view o_bs_identity_short_v as (

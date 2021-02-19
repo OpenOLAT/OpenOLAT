@@ -65,12 +65,17 @@ import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.SectionKeyRef;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -101,6 +106,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private SingleSelection evaluationFormEl;
 	private SingleSelection assignmentsTemplatesEl;
 	private TextBoxListElement categoriesEl;
+	private TextBoxListElement competenciesEl;
 	private DownloadLink downloadAssignmentDocEl;
 	private FileElement assignmentDocUploadEl;
 	private FormLayoutContainer assignmentDocsContainer;
@@ -126,11 +132,17 @@ public class PageMetadataEditController extends FormBasicController {
 	private List<TextBoxItem> categories = new ArrayList<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
 	private Map<String,Assignment> assignmentTemplatesMap = new HashMap<>();
-
+	List<TextBoxItem> existingCompetencies;
+	List<TextBoxItem> availableTaxonomyLevels;
+	
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
 	private PortfolioFileStorage portfolioFileStorage;
+	@Autowired
+	private PortfolioV2Module portfolioV2Module;
+	@Autowired 
+	private TaxonomyService taxonomyService;
 	
 	public PageMetadataEditController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
 			Binder currentBinder, boolean chooseBinder, Section currentSection, boolean chooseSection, Page pageDelegate) {
@@ -143,6 +155,8 @@ public class PageMetadataEditController extends FormBasicController {
 		this.chooseBinder = chooseBinder;
 		this.chooseSection = chooseSection;
 		editTitleAndSummary = true;
+		
+		initTaxonomyCompetencies();
 		initForm(ureq);
 		
 		if(assignmentsTemplatesEl != null && assignmentsTemplatesEl.getKeys().length > 0) {
@@ -174,6 +188,8 @@ public class PageMetadataEditController extends FormBasicController {
 		this.chooseBinder = chooseBinder;
 		this.chooseSection = chooseSection;
 		editTitleAndSummary = true;
+		
+		initTaxonomyCompetencies();
 		initForm(ureq);
 		
 		assignmentsTemplatesEl.select(assignmentTemplate.getKey().toString(), true);
@@ -203,6 +219,7 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 		}
 		
+		initTaxonomyCompetencies();
 		initForm(ureq);
 	}
 	
@@ -291,6 +308,15 @@ public class PageMetadataEditController extends FormBasicController {
 		categoriesEl.setHelpText(translate("categories.hint"));
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
+		
+		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+			competenciesEl = uifactory.addTextBoxListElement("competencies", "competencies", "competencies.hint", existingCompetencies, formLayout, getTranslator());
+			competenciesEl.setHelpText(translate("competencies.hint"));
+			competenciesEl.setElementCssClass("o_sel_ep_tagsinput");
+			competenciesEl.setAllowDuplicates(false);
+			competenciesEl.setAllowNewValues(false);
+			competenciesEl.setAutoCompleteContent(availableTaxonomyLevels);
+		}
 		
 		bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, new String[] { "" }, new String[] { "" }, null);
 		
@@ -611,6 +637,10 @@ public class PageMetadataEditController extends FormBasicController {
 		List<String> updatedCategories = categoriesEl.getValueList();
 		portfolioService.updateCategories(page, updatedCategories);
 		
+		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+			portfolioService.linkCompetences(page, getIdentity(), competenciesEl.getValueItems());
+		}
+		
 		List<Page> sharingTheBody = portfolioService.getPagesSharingSameBody(page);
 		for(Page sharing:sharingTheBody) {
 			if(!sharing.equals(page)) {
@@ -716,6 +746,25 @@ public class PageMetadataEditController extends FormBasicController {
 			if("delete".equals(link.getCmd()) && link.getUserObject() instanceof File) {
 				doDeleteTempFile((File)link.getUserObject());
 			}
+		}
+	}
+	
+	private void initTaxonomyCompetencies() {
+		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+			List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(page, true);
+			existingCompetencies = new ArrayList<>();
+			for (TaxonomyCompetence competence : competencies) {
+				TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getKey().toString(), competence.getTaxonomyLevel().getDisplayName());
+				existingCompetencies.add(competenceTextBoxItem);
+			}
+			
+			availableTaxonomyLevels = new ArrayList<>();
+			for (Taxonomy taxonomy : portfolioV2Module.getLinkedTaxonomies()) {
+				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
+					availableTaxonomyLevels.add(new TextBoxItemImpl(taxonomyLevel.getKey().toString(), taxonomyLevel.getDisplayName()));
+				}
+			}
+
 		}
 	}
 	

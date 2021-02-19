@@ -3454,6 +3454,15 @@ create or replace view o_qp_share_2_item_short_v as (
    inner join o_gp_business as bgroup on (shareditem.fk_resource_id = bgroup.fk_resource)
 );
 
+-- Taxonomy linking in portfolio
+create table o_pf_page_to_tax_competence (
+	id bigint not null auto_increment,
+	creationdate datetime not null,
+	fk_tax_competence bigint not null,
+	fk_pf_page bigint not null,
+	primary key (id)
+);
+
 create index  ocl_asset_idx on oc_lock (asset);
 alter table oc_lock add index FK9E30F4B66115906D (identity_fk), add constraint FK9E30F4B66115906D foreign key (identity_fk) references o_bs_identity (id);
 

@@ -20,9 +20,7 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -38,50 +36,76 @@ import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.portfolio.Category;
+import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Reusable controller to show the list of categories / tags and edit them with
+ * Reusable controller to show the list of competencies and edit them with
  * a small edit button. When edited, an Event.CHANGED is fired
  * 
  * Initial date: 28.07.2017<br>
  * 
  * @author gnaegi, gnaegi@frentix.com, http://www.frentix.com
+ * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
-public class CategoriesEditController extends FormBasicController {
+public class CompetenciesEditController extends FormBasicController {
 	
-	private TextBoxListElement categoriesEl;
+	private TextBoxListElement competenciesEl;
 	private FormLink editLink;
 	private FormSubmit saveButton;
 
-	List<Category> categories;
+	List<TextBoxItem> existingCompetencies;
+	List<TextBoxItem> availableTaxonomyLevels;
 	
-	private List<TextBoxItem> categoriesNames = new ArrayList<>();
-	private Map<String,Category> categoriesMap = new HashMap<>();
+	@Autowired
+	private PortfolioService portfolioService;
+	@Autowired
+	private PortfolioV2Module portfolioModule;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	
-	public CategoriesEditController(UserRequest ureq, WindowControl wControl, List<Category> categories) {
-		super(ureq, wControl, "categories_edit");
-		this.categories = categories;
-		for(Category category:categories) {
-			categoriesNames.add(new TextBoxItemImpl(category.getName(), category.getName()));
-			categoriesMap.put(category.getName(), category);
+	public CompetenciesEditController(UserRequest ureq, WindowControl wControl, Page portfolioPage) {
+		super(ureq, wControl, "competencies_edit");
+		
+		List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(portfolioPage, true);
+		existingCompetencies = new ArrayList<>();
+		for (TaxonomyCompetence competence : competencies) {
+			TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getKey().toString(), competence.getTaxonomyLevel().getDisplayName());
+			existingCompetencies.add(competenceTextBoxItem);
 		}
+		
+		availableTaxonomyLevels = new ArrayList<>();
+		for (Taxonomy taxonomy : portfolioModule.getLinkedTaxonomies()) {
+			for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
+				availableTaxonomyLevels.add(new TextBoxItemImpl(taxonomyLevel.getKey().toString(), taxonomyLevel.getDisplayName()));
+			}
+		}
+
 		initForm(ureq);
-		/* we add domID to categories_edit.html to reduce DIV count */
-		flc.getFormItemComponent().setDomReplacementWrapperRequired(false);
+		/* we add domID to competencies_edit.html to reduce DIV count */
+		this.flc.getFormItemComponent().setDomReplacementWrapperRequired(false);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_pf_edit_entry_tags_form");
 		
-		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categoriesNames, formLayout, getTranslator());
-		categoriesEl.setHelpText(translate("categories.hint"));
-		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
-		categoriesEl.setAllowDuplicates(false);
-		categoriesEl.setElementCssClass("o_block_inline");
-		categoriesEl.getComponent().setSpanAsDomReplaceable(true);
+		competenciesEl = uifactory.addTextBoxListElement("competencies", "competencies", "competencies.hint", existingCompetencies, formLayout, getTranslator());
+		competenciesEl.setHelpText(translate("competencies.hint"));
+		competenciesEl.setAllowDuplicates(false);
+		competenciesEl.setAllowNewValues(false);
+		competenciesEl.setElementCssClass("o_block_inline");
+		competenciesEl.getComponent().setSpanAsDomReplaceable(true);
+		competenciesEl.setIcon("o_icon_taxonomy_level");
+		competenciesEl.setAutoCompleteContent(availableTaxonomyLevels);
+		
 		
 		editLink = uifactory.addFormLink("edit", "edit", "edit", null, formLayout, Link.LINK);
 		editLink.setCustomEnabledLinkCSS("o_button_textstyle");
@@ -101,18 +125,16 @@ public class CategoriesEditController extends FormBasicController {
 	 * @param editable
 	 */
 	private void initFormEditableState(boolean editable) {
-		categoriesEl.setEnabled(editable);
+		competenciesEl.setEnabled(editable);
 		editLink.setVisible(!editable);
 		saveButton.setVisible(editable);
 		// Special label when no categories are there
-		if (categoriesEl.getValueList().isEmpty()) {
-			categoriesEl.setVisible(editable);
-			editLink.setI18nKey("categories.add");			
+		if (competenciesEl.getValueList().size() == 0) {
+			competenciesEl.setVisible(editable);
+			editLink.setI18nKey("competencies.add");			
 		} else {
 			editLink.setI18nKey("edit");
 		}
-		
-		flc.setDirty(true);
 	}
 	
 	@Override
@@ -130,10 +152,10 @@ public class CategoriesEditController extends FormBasicController {
 	}
 
 	/**
-	 * @return The list of categories as visually configured in the box
+	 * @return The list of competencies as visually configured in the box
 	 */
-	public List<String> getUpdatedCategories() {
-		return categoriesEl.getValueList();
+	public List<TextBoxItem> getUpdatedCompetencies() {
+		return competenciesEl.getValueItems();
 	}
 	
 	@Override

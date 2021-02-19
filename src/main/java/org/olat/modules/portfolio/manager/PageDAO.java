@@ -171,6 +171,11 @@ public class PageDAO {
 			  .append("   inner join rel.category cat")
 			  .append("   where rel.resId=page.key and rel.resName='Page' and lower(cat.name) like :searchString")
 			  .append(" )");
+			sb.append(" or exists (select competence from pfpagetotaxonomycompetence competenceRel ")
+			  .append("   inner join competenceRel.taxonomyCompetence as competence")
+			  .append("   inner join competence.taxonomyLevel level")
+			  .append("   where competenceRel.portfolioPage.key = page.key and lower(level.displayName) like :searchString")
+			  .append(" )");
 			sb.append(")");
 		}
 		sb.append(" order by section.pos, page.pos");

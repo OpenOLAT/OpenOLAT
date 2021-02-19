@@ -33,12 +33,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -118,6 +120,11 @@ import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SectionKeyRef;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
@@ -184,6 +191,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private AssessmentService assessmentService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private PortfolioPageToTaxonomyCompetenceDAO portfolioPageToTaxonomyCompetenceDAO;
 
 	@Autowired
 	private RepositoryService repositoryService;
@@ -193,6 +202,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private BinderUserInformationsDAO binderUserInformationsDao;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private TaxonomyCompetenceDAO taxonomyCompetenceDAO;
 	
 	@Autowired
 	private List<MediaHandler> mediaHandlers;
@@ -1619,4 +1632,47 @@ public class PortfolioServiceImpl implements PortfolioService {
 		return EvaluationFormSurveyIdentifier.of(ores);
 	}
 	
+	@Override
+	public List<TaxonomyCompetence> getRelatedCompetencies(Page page, boolean fetchTaxonomies) {
+		return portfolioPageToTaxonomyCompetenceDAO.getCompetenciesToPortfolioPage(page, fetchTaxonomies);
+	}
+	
+	@Override
+	public void linkCompetence(Page page, TaxonomyCompetence competence) {
+		portfolioPageToTaxonomyCompetenceDAO.createRelation(page, competence);
+		
+	}
+	
+	@Override
+	public void unlinkCompetence(Page page, TaxonomyCompetence competence) {
+		portfolioPageToTaxonomyCompetenceDAO.deleteRelation(page, competence);
+		
+	}
+	
+	@Override
+	public void linkCompetences(Page page, Identity identity, List<TextBoxItem> competencies) {
+		List<TaxonomyCompetence> relatedCompetences = getRelatedCompetencies(page, true);
+		List<TaxonomyLevel> relatedCompetenceLevels = relatedCompetences.stream().map(competence -> competence.getTaxonomyLevel()).collect(Collectors.toList());
+		
+		List<Long> newTaxonomyLevelKeys = competencies.stream()
+				.map(textBoxItem -> Long.valueOf(textBoxItem.getLabel()))
+				.collect(Collectors.toList());
+		
+		List<TaxonomyLevel> newTaxonomyLevels = taxonomyService.getTaxonomyLevelsByKeys(newTaxonomyLevelKeys);
+		
+		// Remove old competencies
+		for (TaxonomyCompetence competence : relatedCompetences) {
+			if (!newTaxonomyLevels.contains(competence.getTaxonomyLevel())) {
+				unlinkCompetence(page, competence);
+			}
+		}
+		
+		// Create new competencies
+		for (TaxonomyLevel newLevel : newTaxonomyLevels) {
+			if (!relatedCompetenceLevels.contains(newLevel)) {
+				TaxonomyCompetence competence = taxonomyCompetenceDAO.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, newLevel, identity, null);
+				linkCompetence(page, competence);
+			}
+		}		
+	}
 }

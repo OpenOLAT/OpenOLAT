@@ -92,6 +92,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.component.CategoriesCellRenderer;
+import org.olat.modules.portfolio.ui.component.CompetencesCellRenderer;
 import org.olat.modules.portfolio.ui.component.TimelineElement;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
@@ -101,6 +102,7 @@ import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.renderer.PortfolioElementCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -268,6 +270,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select-page"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.categories, new CategoriesCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.competencies, new CompetencesCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.section/*, "select-section"*/));
 		if(secCallback.canNewAssignment()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.up", PageCols.up.ordinal(), "up",
@@ -377,6 +380,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
 		addCategoriesToRow(row, categorizedElementMap);
+		addCompetenciesToRow(row);
 
 		if (assignments != null && secCallback.canViewPendingAssignments(section)
 				&& secCallback.canInstantiateAssignment()) {
@@ -460,6 +464,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
 		addCategoriesToRow(row, categorizedElementMap);
+		addCompetenciesToRow(row);
 		if(assignments != null) {
 			for(Assignment assignment:assignments) {
 				if(page.equals(assignment.getPage())) {
@@ -535,6 +540,20 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				row.setPageCategories(getCategories(ores, categorizedElementMap));
 			}
 		}
+	}
+	
+	private void addCompetenciesToRow(PortfolioElementRow row) {
+		if (row == null || row.getPage() == null) {
+			return;
+		}
+		
+		List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(row.getPage(), true);
+		
+		if (competencies == null || competencies.isEmpty()) {
+			return;
+		}
+		
+		row.setPageCompetencies(competencies.stream().map(competence -> competence.getTaxonomyLevel().getDisplayName()).collect(Collectors.toList()));
 	}
 	
 	private List<String> getCategories(OLATResourceable ores, Map<OLATResourceable,List<Category>> categorizedElementMap) {
