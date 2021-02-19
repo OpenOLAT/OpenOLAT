@@ -78,6 +78,7 @@ public class EducationalTypeEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (type == null) {
 			identifierEl = uifactory.addTextElement("educational.type.identifier", 128, null, formLayout);
+			identifierEl.setMandatory(true);
 		} else {
 			uifactory.addStaticTextElement("educational.type.identifier", type.getIdentifier(), formLayout);
 		}
