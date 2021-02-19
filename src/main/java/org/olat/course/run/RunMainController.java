@@ -125,6 +125,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private static final Logger log = Tracing.createLoggerFor(RunMainController.class);
 
+	public static final Event COURSE_DISCLAIMER_ACCEPTED = new Event("course-disclaimer-accepted");
 	public static final String REBUILD = "rebuild";
 	public static final String ORES_TYPE_COURSE_RUN = OresHelper.calculateTypeName(RunMainController.class, CourseModule.ORES_TYPE_COURSE);
 	private final OLATResourceable courseRunOres; //course run ores for course run channel 
@@ -154,6 +155,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private boolean needsRebuildAfter = false;
 	private boolean needsRebuildAfterPublish = false;
 	private boolean needsRebuildAfterRunDone = false;
+	private boolean disclaimerAccepted = true;
 	
 	private String courseTitle;
 	private Link nextLink, previousLink;
@@ -283,13 +285,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		coursemain.contextPut("courserepokey", courseRepositoryEntry.getKey());
 		
 		// if a disclaimer is enabled, show it first
-		if (courseModule.isDisclaimerEnabled() && course.getCourseEnvironment().getCourseConfig().isDisclaimerEnabled() && 
-				!disclaimerManager.isAccessGranted(courseRepositoryEntry, getIdentity(), ureq.getUserSession().getRoles())) {
+		disclaimerAccepted = !courseModule.isDisclaimerEnabled()
+				|| !course.getCourseEnvironment().getCourseConfig().isDisclaimerEnabled() 
+				|| disclaimerManager.isAccessGranted(courseRepositoryEntry, getIdentity(), ureq.getUserSession().getRoles());
+		if (disclaimerAccepted) {
+			coursemain.put("coursemain", columnLayoutCtr.getInitialComponent());
+		} else {
 			disclaimerController = new CourseDisclaimerConsentController(ureq, getWindowControl(), courseRepositoryEntry);
 			listenTo(disclaimerController);
 			coursemain.put("coursemain", disclaimerController.getInitialComponent());
-		} else {
-			coursemain.put("coursemain", columnLayoutCtr.getInitialComponent());
 		}
 		
 		// on initial call we have to set the data-nodeid manually. later it
@@ -318,6 +322,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, identity, courseRepositoryEntry);
 	}
 	
+	public boolean isDisclaimerAccepted() {
+		return disclaimerAccepted;
+	}
+
 	protected void setTextMarkingEnabled(boolean enabled) {
 		if (glossaryMarkerCtr != null) {
 			glossaryMarkerCtr.setTextMarkingEnabled(enabled);
@@ -431,7 +439,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else {
 			List<TreeNode> flatTree = new ArrayList<>();
 			TreeHelper.makeTreeFlat(luTree.getTreeModel().getRootNode(), flatTree);
-			hasPrevious = getPreviousNonDelegatingNode(flatTree, luTree.getSelectedNode()) != null;;
+			hasPrevious = getPreviousNonDelegatingNode(flatTree, luTree.getSelectedNode()) != null;
 			int index = flatTree.indexOf(luTree.getSelectedNode());
 			hasNext = index  >= 0 && index+1 < flatTree.size();
 		}
@@ -754,8 +762,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 		} else if (source == disclaimerController) {
 			if (event == Event.DONE_EVENT) {
+				disclaimerAccepted = true;
 				coursemain.put("coursemain", columnLayoutCtr.getInitialComponent());
 				coursemain.setDirty(true);
+				fireEvent(ureq, COURSE_DISCLAIMER_ACCEPTED);
 			}
 		}
 	}

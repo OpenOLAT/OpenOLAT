@@ -42,7 +42,7 @@ public class LargeFilesTableModel extends DefaultFlexiTableDataModel<LargeFilesT
 implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 
 	private final Locale locale;
-
+	
 	public LargeFilesTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
@@ -72,7 +72,7 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 		case contextInfo: return row.getContextInfo();
 		case path: return row.getPath();
 		case showPath: return row.getShowPath();
-		case author: return row.getFileInitializedBy() != null ? row.getFileInitializedBy().getUser().getFirstName() + " " + row.getFileInitializedBy().getUser().getLastName() : null;
+		case author: return row.getFileInitializedBy();
 		case revision: return row.isRevision();
 		case fileCategory: return row.getFileCategory();
 		case fileType: return row.getFileType();
@@ -91,7 +91,7 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 		case pubDate: return returnNullSafeDate(row.getPubDate());
 		case language: return row.getLanguage();
 		case locked: return row.isLocked();
-		case lockedBy: return row.getLockedBy() != null ? row.getLockedBy().getUser().getFirstName() + " " + row.getLockedBy().getUser().getLastName() : null;
+		case lockedBy: return row.getLockedBy();
 		case lockedAt: return returnNullSafeDate(row.getLockedAt());
 		case revisionComment: return row.getRevisionComment();
 		case revisionNr: return row.getRevisionNr();
