@@ -4640,6 +4640,11 @@ create index idx_org_role_to_r_to_org_idx on o_org_role_to_right(fk_organisation
 alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
 create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
 
+-- Taxonomy ePortfolio Linking
+alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
+create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_competence);
+alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
+create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
 
 commit
 /

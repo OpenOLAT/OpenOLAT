@@ -4538,4 +4538,10 @@ alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_loca
 create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
 create index idx_qr_id_idx on o_ct_location (l_qr_id);
 
+-- Taxonomy ePortfolio Linking
+alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
+create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_competence);
+alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
+create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
+
 insert into hibernate_unique_key values ( 0 );

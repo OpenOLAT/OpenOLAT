@@ -19,3 +19,8 @@ create table o_pf_page_to_tax_competence (
 	fk_pf_page number(20) not null,
 	primary key (id)
 );
+
+alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
+create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_competence);
+alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
+create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
