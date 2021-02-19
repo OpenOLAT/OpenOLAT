@@ -79,6 +79,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.modules.co.ContactFormController;
+import org.olat.user.ui.UserDisplayNameCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -215,9 +216,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 			}
 		}
 
-		Collections.sort(rows, (row1,row2) -> {
-			return row2.getSize().intValue() - row1.getSize().intValue();
-		});
+		Collections.sort(rows, (row1, row2) -> (row2.getSize().intValue() - row1.getSize().intValue()));
 
 		if(maxResults != 0 && maxResults < rows.size()) {
 			rows = rows.subList(0, maxResults);
@@ -332,7 +331,9 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.fileType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.downloadCount));
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.author, "selectAuthor"));
+		DefaultFlexiColumnModel authorModel = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.author, "selectAuthor");
+		authorModel.setCellRenderer(UserDisplayNameCellRenderer.get());
+		columnsModel.addFlexiColumnModel(authorModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.license));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.language));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.source));
@@ -342,7 +343,9 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(column);
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.lockedAt));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.lockedBy, "selectLockedBy"));
+		DefaultFlexiColumnModel lockedByModel = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.lockedBy, "selectLockedBy");
+		lockedByModel.setCellRenderer(UserDisplayNameCellRenderer.get());
+		columnsModel.addFlexiColumnModel(lockedByModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.creator));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.publisher));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.pubDate));
