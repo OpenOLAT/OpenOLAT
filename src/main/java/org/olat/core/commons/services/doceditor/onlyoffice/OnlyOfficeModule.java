@@ -241,8 +241,9 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		if (mobileModes == null) {
 			if (StringHelper.containsNonWhitespace(mobileModesConfig)) {
 				mobileModes = Arrays.stream(mobileModesConfig.split(",")).map(Mode::valueOf).collect(Collectors.toSet());
+			} else {
+				mobileModes = Collections.emptySet();
 			}
-			mobileModes = Collections.emptySet();
 		}
 		return mobileModes;
 	}
