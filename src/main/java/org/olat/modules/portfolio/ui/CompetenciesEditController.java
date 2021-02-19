@@ -82,9 +82,11 @@ public class CompetenciesEditController extends FormBasicController {
 		}
 		
 		availableTaxonomyLevels = new ArrayList<>();
-		for (Taxonomy taxonomy : portfolioModule.getLinkedTaxonomies()) {
-			for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
-				availableTaxonomyLevels.add(new TextBoxItemImpl(taxonomyLevel.getKey().toString(), taxonomyLevel.getDisplayName()));
+		if (portfolioModule.isTaxonomyLinkingReady()) {
+			for (Taxonomy taxonomy : portfolioModule.getLinkedTaxonomies()) {
+				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
+					availableTaxonomyLevels.add(new TextBoxItemImpl(taxonomyLevel.getKey().toString(), taxonomyLevel.getDisplayName()));
+				}
 			}
 		}
 

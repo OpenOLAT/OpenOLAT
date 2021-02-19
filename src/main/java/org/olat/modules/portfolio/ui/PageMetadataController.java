@@ -219,19 +219,21 @@ public class PageMetadataController extends BasicController {
 			mainVC.contextPut("pageCategories", categoryNames);
 		}
 		
-		List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(page, true);
-		if (secCallback.canEditCompetencies(page)) {
-			// editable categories
-			competenciesEditCtrl = new CompetenciesEditController(ureq, getWindowControl(), page);
-			listenTo(competenciesEditCtrl);
-			mainVC.put("pageCompetenciesCtrl", competenciesEditCtrl.getInitialComponent());			
-		} else {
-			// read-only categories
-			List<String> competencyNames = new ArrayList<>(competencies.size());
-			for(TaxonomyCompetence competence:competencies) {
-				competencyNames.add(competence.getTaxonomyLevel().getDisplayName());
+		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+			List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(page, true);
+			if (secCallback.canEditCompetencies(page)) {
+				// editable categories
+				competenciesEditCtrl = new CompetenciesEditController(ureq, getWindowControl(), page);
+				listenTo(competenciesEditCtrl);
+				mainVC.put("pageCompetenciesCtrl", competenciesEditCtrl.getInitialComponent());			
+			} else {
+				// read-only categories
+				List<String> competencyNames = new ArrayList<>(competencies.size());
+				for(TaxonomyCompetence competence:competencies) {
+					competencyNames.add(competence.getTaxonomyLevel().getDisplayName());
+				}
+				mainVC.contextPut("pageCompetencies", competencyNames);
 			}
-			mainVC.contextPut("pageCompetencies", competencyNames);
 		}
 		
 		mainVC.contextPut("lastModified", page.getLastModified());

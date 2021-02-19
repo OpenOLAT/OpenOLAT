@@ -123,8 +123,8 @@ import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
@@ -203,7 +203,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Autowired
 	private BinderUserInformationsDAO binderUserInformationsDao;
 	@Autowired
-	private TaxonomyService taxonomyService;
+	private TaxonomyLevelDAO taxonomyLevelDAO;
 	@Autowired
 	private TaxonomyCompetenceDAO taxonomyCompetenceDAO;
 	
@@ -1658,7 +1658,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				.map(textBoxItem -> Long.valueOf(textBoxItem.getLabel()))
 				.collect(Collectors.toList());
 		
-		List<TaxonomyLevel> newTaxonomyLevels = taxonomyService.getTaxonomyLevelsByKeys(newTaxonomyLevelKeys);
+		List<TaxonomyLevel> newTaxonomyLevels = taxonomyLevelDAO.loadLevelsByKeys(newTaxonomyLevelKeys);
 		
 		// Remove old competencies
 		for (TaxonomyCompetence competence : relatedCompetences) {

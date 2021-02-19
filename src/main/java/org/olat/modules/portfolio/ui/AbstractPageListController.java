@@ -270,7 +270,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select-page"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.categories, new CategoriesCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.competencies, new CompetencesCellRenderer()));
+		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.competencies, new CompetencesCellRenderer()));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.section/*, "select-section"*/));
 		if(secCallback.canNewAssignment()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.up", PageCols.up.ordinal(), "up",
@@ -543,7 +545,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	private void addCompetenciesToRow(PortfolioElementRow row) {
-		if (row == null || row.getPage() == null) {
+		if (!portfolioV2Module.isTaxonomyLinkingReady() || row == null || row.getPage() == null) {
 			return;
 		}
 		
