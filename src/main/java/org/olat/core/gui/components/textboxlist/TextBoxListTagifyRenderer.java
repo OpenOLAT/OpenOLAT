@@ -232,6 +232,9 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 			for (TextBoxItem item : items) {
 				output.append("<span class='tag label label-info");
 				String label = item.getLabel();
+				if(!StringHelper.containsNonWhitespace(label)) {
+					label = item.getValue();
+				}
 				if(label.startsWith("a:")) {
 					output.append(" o_tag_admin");
 					label = label.substring(2, label.length());
