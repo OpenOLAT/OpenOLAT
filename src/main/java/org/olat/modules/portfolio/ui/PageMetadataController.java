@@ -71,7 +71,6 @@ import org.olat.modules.portfolio.ui.event.RevisionEvent;
 import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
 import org.olat.modules.portfolio.ui.model.UserAssignmentInfos;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -114,8 +113,6 @@ public class PageMetadataController extends BasicController {
 	private PortfolioFileStorage fileStorage;
 	@Autowired
 	private PortfolioV2Module portfolioV2Module;
-	@Autowired 
-	private TaxonomyService taxonomyService;
 	
 	public PageMetadataController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
 			Page page, boolean openInEditMode) {
@@ -220,7 +217,6 @@ public class PageMetadataController extends BasicController {
 		}
 		
 		if (portfolioV2Module.isTaxonomyLinkingReady()) {
-			List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(page, true);
 			if (secCallback.canEditCompetencies(page)) {
 				// editable categories
 				competenciesEditCtrl = new CompetenciesEditController(ureq, getWindowControl(), page);
@@ -228,6 +224,7 @@ public class PageMetadataController extends BasicController {
 				mainVC.put("pageCompetenciesCtrl", competenciesEditCtrl.getInitialComponent());			
 			} else {
 				// read-only categories
+				List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(page, true);
 				List<String> competencyNames = new ArrayList<>(competencies.size());
 				for(TaxonomyCompetence competence:competencies) {
 					competencyNames.add(competence.getTaxonomyLevel().getDisplayName());

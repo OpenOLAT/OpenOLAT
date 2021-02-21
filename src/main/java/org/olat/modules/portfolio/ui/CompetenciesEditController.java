@@ -77,7 +77,7 @@ public class CompetenciesEditController extends FormBasicController {
 		List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(portfolioPage, true);
 		existingCompetencies = new ArrayList<>();
 		for (TaxonomyCompetence competence : competencies) {
-			TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getKey().toString(), competence.getTaxonomyLevel().getDisplayName());
+			TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getDisplayName(), competence.getTaxonomyLevel().getKey().toString());
 			existingCompetencies.add(competenceTextBoxItem);
 		}
 		
@@ -85,7 +85,7 @@ public class CompetenciesEditController extends FormBasicController {
 		if (portfolioModule.isTaxonomyLinkingReady()) {
 			for (Taxonomy taxonomy : portfolioModule.getLinkedTaxonomies()) {
 				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
-					availableTaxonomyLevels.add(new TextBoxItemImpl(taxonomyLevel.getKey().toString(), taxonomyLevel.getDisplayName()));
+					availableTaxonomyLevels.add(new TextBoxItemImpl(taxonomyLevel.getDisplayName(), taxonomyLevel.getKey().toString()));
 				}
 			}
 		}
@@ -131,7 +131,7 @@ public class CompetenciesEditController extends FormBasicController {
 		editLink.setVisible(!editable);
 		saveButton.setVisible(editable);
 		// Special label when no categories are there
-		if (competenciesEl.getValueList().size() == 0) {
+		if (competenciesEl.getValueList().isEmpty()) {
 			competenciesEl.setVisible(editable);
 			editLink.setI18nKey("competencies.add");			
 		} else {

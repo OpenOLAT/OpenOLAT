@@ -112,12 +112,14 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		sb.append("   enforceWhitelist: ").append(!tblComponent.isAllowNewValues()).append(",\n")
 		  .append("   templates: {\n")
 		  .append("     tag : function(value, tagData){\n")
-		  .append("       var labelVal = (value.indexOf('a:') == 0) ? value.substring(2, value.length) : value;\n")
-		  .append("       return \"<tag title='\" + (tagData.title || value) + \"' contenteditable='false' spellcheck='false' class='tagify__tag \" + (tagData[\"class\"] ? tagData[\"class\"] : '') + \"' \" + (this.getAttributes(tagData)) + \"><x title='' class='tagify__tag__removeBtn' role='button' aria-label='remove tag'></x><div><span class='tagify__tag-text'>\" + labelVal + \"</span></div></tag>\";\n")
+		  .append("       var label = (tagData.label || value);\n")
+		  .append("       var labelVal = (label.indexOf('a:') == 0) ? label.substring(2, value.length) : label;\n")
+		  .append("       return \"<tag title='\" + label + \"' contenteditable='false' spellcheck='false' class='tagify__tag \" + (tagData[\"class\"] ? tagData[\"class\"] : '') + \"' \" + (this.getAttributes(tagData)) + \"><x title='' class='tagify__tag__removeBtn' role='button' aria-label='remove tag'></x><div><span class='tagify__tag-text'>\" + label + \"</span></div></tag>\";\n")
 		  .append("     },\n")
 		  .append("     dropdownItem: function(tagData) {\n")
 		  .append("       if(tagData.searchBy == 'zxyhideme') return \"<div class='tagify__dropdown__item ' style='display:none;'></div>\";\n")
-		  .append("       var tagValue = (tagData.value.indexOf('a:') == 0) ? tagData.value.substring(2, tagData.value.length) : tagData.value;\n")
+		  .append("       var tagValue = (tagData.label || tagData.value);\n")
+		  .append("       tagValue = (tagValue.indexOf('a:') == 0) ? tagValue.substring(2, tagValue.length) : tagValue;\n")
 		  .append("       return \"<div class='tagify__dropdown__item' \" + ((typeof tagData.color !== 'undefined') ? \"style='background-color:\" + tagData.color + \";'\" : \"\") + \"><span>\" + tagValue + \"</span></div>\";\n")
 		  .append("     }\n")
 		  .append("   },\n")
@@ -228,7 +230,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		// comma-separated string
 		List<TextBoxItem> items = tblComponent.getCurrentItems();
 		if (items != null && !items.isEmpty()) {
-			output.append("<span class='o_textbox_disabled'><i class='o_icon o_icon_fw " + icon + "'> </i> ");
+			output.append("<span class='o_textbox_disabled'><i class='o_icon o_icon_fw ").append(icon).append("'> </i> ");
 			for (TextBoxItem item : items) {
 				output.append("<span class='tag label label-info");
 				String label = item.getLabel();

@@ -1655,7 +1655,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 		List<TaxonomyLevel> relatedCompetenceLevels = relatedCompetences.stream().map(competence -> competence.getTaxonomyLevel()).collect(Collectors.toList());
 		
 		List<Long> newTaxonomyLevelKeys = competencies.stream()
-				.map(textBoxItem -> Long.valueOf(textBoxItem.getLabel()))
+				.map(textBoxItem -> Long.valueOf(textBoxItem.getValue()))
 				.collect(Collectors.toList());
 		
 		List<TaxonomyLevel> newTaxonomyLevels = taxonomyLevelDAO.loadLevelsByKeys(newTaxonomyLevelKeys);
