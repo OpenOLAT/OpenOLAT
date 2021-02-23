@@ -295,6 +295,10 @@ public class StringHelper {
 		return s != null? s: "";
 	}
 	
+	public static String toStringOrBlank(Long value) {
+		return value != null? String.valueOf(value): "";
+	}
+	
 	public static int count(String s, char character) {
 		int count = 0;
 		

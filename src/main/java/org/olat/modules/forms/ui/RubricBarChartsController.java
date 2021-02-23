@@ -132,15 +132,15 @@ public abstract class RubricBarChartsController extends FormBasicController {
 	private List<StatisticRow> getStatisticRows(SliderStatistic sliderStatistic) {
 		List<StatisticRow> rows = new ArrayList<>();
 		if (rubric.isNoResponseEnabled()) {
-			rows.add(new StatisticRow(translate("rubric.report.number.no.responses.title"), String.valueOf(sliderStatistic.getNumberOfNoResponses())));
+			rows.add(new StatisticRow(translate("rubric.report.number.no.responses.title"), StringHelper.toStringOrBlank(sliderStatistic.getNumberOfNoResponses())));
 		}
-		rows.add(new StatisticRow(translate("rubric.report.number.responses.title"), String.valueOf(sliderStatistic.getNumberOfResponses())));
+		rows.add(new StatisticRow(translate("rubric.report.number.responses.title"), StringHelper.toStringOrBlank(sliderStatistic.getNumberOfResponses())));
 		rows.add(new StatisticRow(translate("rubric.report.median.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getMedian())));
 		rows.add(new StatisticRow(translate("rubric.report.variance.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getVariance())));
 		rows.add(new StatisticRow(translate("rubric.report.sdtdev.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getStdDev())));
 		return rows;
 	}
-
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

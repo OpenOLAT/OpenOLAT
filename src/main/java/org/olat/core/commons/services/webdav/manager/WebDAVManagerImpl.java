@@ -77,8 +77,10 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	private static boolean enabled = true;
 	
 	public static final String BASIC_AUTH_REALM = "OLAT WebDAV Access";
+	private static final String DIR_CONTEXT = "_DIRCTX";
 	private CoordinatorManager coordinatorManager;
 
+	private CacheWrapper<Long,VFSResourceRoot> resourceCache;
 	private CacheWrapper<CacheKey,UserSession> timedSessionCache;
 
 	@Autowired
@@ -97,7 +99,10 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		timedSessionCache = coordinatorManager.getCoordinator().getCacher().getCache(WebDAVManager.class.getSimpleName(), "webdav");
+		resourceCache = coordinatorManager.getCoordinator().getCacher()
+				.getCache(WebDAVManager.class.getSimpleName(), "resources");
+		timedSessionCache = coordinatorManager.getCoordinator().getCacher()
+				.getCache(WebDAVManager.class.getSimpleName(), "webdav");
 	}
 	
 	@Override
@@ -108,21 +113,23 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 		}
 
 		usess.getSessionInfo().setLastClickTime();
-		VFSResourceRoot fdc = (VFSResourceRoot)usess.getEntry("_DIRCTX");
+		VFSResourceRoot fdc = (VFSResourceRoot)usess.getEntry(DIR_CONTEXT);
 		if (fdc != null) {
 			return fdc;
 		}
-		
-		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
-		VFSContainer webdavContainer = getMountableRoot(identityEnv);
-		
-		//create the / folder
-		VirtualContainer rootContainer = new VirtualContainer("");
-		rootContainer.addItem(webdavContainer);
-		rootContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 
-		fdc = new VFSResourceRoot(identityEnv.getIdentity(), rootContainer);
-		usess.putEntry("_DIRCTX", fdc);
+		final IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
+		final Identity identity = identityEnv.getIdentity();
+		
+		fdc = resourceCache.computeIfAbsent(identity.getKey(), key -> {
+			VFSContainer webdavContainer = getMountableRoot(identityEnv);
+			//create the / folder
+			VirtualContainer rootContainer = new VirtualContainer("");
+			rootContainer.addItem(webdavContainer);
+			rootContainer.setLocalSecurityCallback(new ReadOnlyCallback());
+			return new VFSResourceRoot(identity, rootContainer);
+		});
+		usess.putEntry(DIR_CONTEXT, fdc);
 		return fdc;
 	}
 	

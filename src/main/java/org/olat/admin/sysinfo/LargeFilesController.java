@@ -61,6 +61,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -332,7 +333,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.downloadCount));
 
 		DefaultFlexiColumnModel authorModel = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.author, "selectAuthor");
-		authorModel.setCellRenderer(UserDisplayNameCellRenderer.get());
+		authorModel.setCellRenderer(new StaticFlexiCellRenderer("selectAuthor", UserDisplayNameCellRenderer.get()));
 		columnsModel.addFlexiColumnModel(authorModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.license));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.language));
@@ -344,7 +345,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.lockedAt));
 		DefaultFlexiColumnModel lockedByModel = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.lockedBy, "selectLockedBy");
-		lockedByModel.setCellRenderer(UserDisplayNameCellRenderer.get());
+		lockedByModel.setCellRenderer(new StaticFlexiCellRenderer("selectAuthor", UserDisplayNameCellRenderer.get()));
 		columnsModel.addFlexiColumnModel(lockedByModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.creator));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.publisher));
