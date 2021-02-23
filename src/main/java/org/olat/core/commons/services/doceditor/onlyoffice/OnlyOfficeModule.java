@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -93,6 +95,13 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private boolean usageRestrictedToManagers;
 	@Value("${onlyoffice.thumbnails.enabled:false}")
 	private boolean thumbnailsEnabled;
+	
+	@Value("${onlyoffice.http.connect.timeout:30000}")
+	private int httpConnectTimeout;
+	@Value("${onlyoffice.http.connect.request.timeout:30000}")
+	private int httpConnectRequestTimeout;
+	@Value("${onlyoffice.http.connect.socket.timeout:30000}")
+	private int httpSocketTimeout;
 	
 	@Autowired
 	private OnlyOfficeModule(CoordinatorManager coordinateManager) {
@@ -319,6 +328,27 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	public void setThumbnailsEnabled(boolean thumbnailsEnabled) {
 		this.thumbnailsEnabled = thumbnailsEnabled;
 		setStringProperty(ONLYOFFICE_THUMBNAILS_ENABLED, Boolean.toString(thumbnailsEnabled), true);
+	}
+	
+	public int getHttpConnectTimeout() {
+		return httpConnectTimeout;
+	}
+
+	public int getHttpConnectRequestTimeout() {
+		return httpConnectRequestTimeout;
+	}
+
+	public int getHttpSocketTimeout() {
+		return httpSocketTimeout;
+	}
+	
+	public HttpClientBuilder httpClientBuilder() {
+		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
+				.setConnectTimeout(getHttpConnectTimeout())
+				.setConnectionRequestTimeout(getHttpConnectRequestTimeout())
+				.setSocketTimeout(getHttpSocketTimeout())
+				.build();
+		return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig);
 	}
 
 }
