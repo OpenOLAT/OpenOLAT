@@ -178,7 +178,10 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 					allKeys, getTranslatedValues(allKeys, locale), null);
 			// make pre-selection of the formItem
 			String internalValue = getInternalValue(user);
-			if (isValidValue(user, internalValue, null, null) && internalValue!=null) sse.select(internalValue, true);
+			
+			if (isValidValue(user, internalValue, null, null) && sse.containsKey(internalValue)) {
+				sse.select(internalValue, true);
+			}
 			newItem = sse;
 		}
 
