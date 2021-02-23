@@ -32,8 +32,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeConversionService;
@@ -77,6 +75,8 @@ public class OnlyOfficeConversionServiceImpl implements OnlyOfficeConversionServ
 	private OnlyOfficeModule onlyOfficeModule;
 	@Autowired
 	private OnlyOfficeSecurityService onlyOfficeSecurityService;
+	@Autowired
+	private OnlyOfficeHttpClientCreator httpClientCreator;
 	@Autowired
 	private MapperService mapperService;
 
@@ -172,7 +172,7 @@ public class OnlyOfficeConversionServiceImpl implements OnlyOfficeConversionServ
 		request.setEntity(requestEntity);
 
 		ConversionResult conversionResult = null;
-		try (CloseableHttpClient client = HttpClientBuilder.create().build();
+		try (CloseableHttpClient client = httpClientCreator.create();
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of create thumbnail request: {}", statusCode);
@@ -199,7 +199,7 @@ public class OnlyOfficeConversionServiceImpl implements OnlyOfficeConversionServ
 		boolean thumbnailCreated = false;
 		
 		HttpGet downLoadRequest = new HttpGet(fileUrl);
-		try (CloseableHttpClient httpClient = HttpClients.createDefault();
+		try (CloseableHttpClient httpClient = httpClientCreator.create();
 				CloseableHttpResponse httpResponse = httpClient.execute(downLoadRequest);) {
 			if (httpResponse.getStatusLine().getStatusCode() == 200) {
 				InputStream content = httpResponse.getEntity().getContent();

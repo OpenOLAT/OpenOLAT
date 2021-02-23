@@ -29,7 +29,6 @@ import java.text.SimpleDateFormat;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
@@ -86,6 +85,8 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	private OnlyOfficeModule onlyOfficeModule;
 	@Autowired
 	private OnlyOfficeSecurityService onlyOfficeSecurityService;
+	@Autowired
+	private OnlyOfficeHttpClientCreator httpClientCreator;
 	@Autowired
 	private DocEditorService documentEditorServie;
 	@Autowired
@@ -253,7 +254,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		String autorization = "Bearer " + token;
 		HttpGet request = new HttpGet(url);
 		request.addHeader("Authorization", autorization);
-		try (CloseableHttpClient httpClient = HttpClients.createDefault();
+		try (CloseableHttpClient httpClient = httpClientCreator.create();
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			if (httpResponse.getStatusLine().getStatusCode() == 200) {
 				InputStream content = httpResponse.getEntity().getContent();
