@@ -374,10 +374,10 @@ public class CourseDisclaimerController extends FormBasicController {
 		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerTerms(2))) {
 			disclaimer2TermsEl.setValue(courseConfig.getDisclaimerTerms(2));
 		}
-		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(1, 1))) {
-			disclaimer2Label1El.setValue(courseConfig.getDisclaimerLabel(1, 1));
-		}
 		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(2, 1))) {
+			disclaimer2Label1El.setValue(courseConfig.getDisclaimerLabel(2, 1));
+		}
+		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(2, 2))) {
 			disclaimer2Label2El.setValue(courseConfig.getDisclaimerLabel(2, 2));
 		}
 	}
