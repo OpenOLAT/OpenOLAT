@@ -48,6 +48,8 @@ public class RecurringMeetingsContext {
 	private long followupTime;
 	private Date startRecurringDate;
 	private Date endRecurringDate;
+	private String password;
+	private boolean generateUrl;
 	private BigBlueButtonMeetingTemplate template;
 	
 	private List<RecurringMeeting> meetings = new ArrayList<>();
@@ -117,6 +119,22 @@ public class RecurringMeetingsContext {
 
 	public void setMainPresenter(String mainPresenter) {
 		this.mainPresenter = mainPresenter;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public boolean isGenerateUrl() {
+		return generateUrl;
+	}
+
+	public void setGenerateUrl(boolean generateUrl) {
+		this.generateUrl = generateUrl;
 	}
 
 	public Date getStartTime() {
