@@ -19,14 +19,17 @@
  */
 package org.olat.course.condition.interpreter;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.GenericSelectionPropertyHandler;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * Class to collect the different possible condition functions on the value of a userproperty
@@ -81,35 +84,52 @@ public class EvalUserPropertyFunction extends AbstractFunction {
 	 *            The property value(s)
 	 * @return true if found, false otherwise
 	 */
-	private boolean checkPropertyValue(String searchValue, String userValue) {
+	private boolean checkPropertyValue(UserPropertyHandler propertyHandler, String searchValue, String userValue) {
 		switch (functionType) {
-		case FUNCTION_TYPE_HAS_PROPERTY:
-			if (userValue.equals(searchValue)) return true;
-			break;
-		case FUNCTION_TYPE_HAS_NOT_PROPERTY:
-			if (!userValue.equals(searchValue)) return true;
-			break;
-		case FUNCTION_TYPE_PROPERTY_STARTS_WITH:
-			if ((userValue.startsWith(searchValue))) return true;
-			break;
-		case FUNCTION_TYPE_PROPERTY_ENDS_WITH:
-			if (userValue.endsWith(searchValue)) return true;
-			break;
-		case FUNCTION_TYPE_IS_IN_PROPERTY:
-			if (userValue.indexOf(searchValue) > -1) return true;
-			break;
-		case FUNCTION_TYPE_IS_NOT_IN_PROPERTY:
-			if (userValue.indexOf(searchValue) == -1) return true;
-			break;
-		default:
+			case FUNCTION_TYPE_HAS_PROPERTY:
+				return checkHasProperty(propertyHandler, searchValue, userValue);
+			case FUNCTION_TYPE_HAS_NOT_PROPERTY:
+				return checkHasNotProperty(propertyHandler, searchValue, userValue);
+			case FUNCTION_TYPE_PROPERTY_STARTS_WITH:
+				return userValue.startsWith(searchValue);
+			case FUNCTION_TYPE_PROPERTY_ENDS_WITH:
+				return userValue.endsWith(searchValue);
+			case FUNCTION_TYPE_IS_IN_PROPERTY:
+				return userValue.indexOf(searchValue) > -1;
+			case FUNCTION_TYPE_IS_NOT_IN_PROPERTY:
+				return userValue.indexOf(searchValue) == -1;
+			default:
+				return false;
+		}
+	}
+	
+	private boolean checkHasProperty(UserPropertyHandler propertyHandler, String searchValue, String userValue) {
+		if(propertyHandler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)propertyHandler).isMultiSelect()) {
+			String[] userValues = userValue.split(GenericSelectionPropertyHandler.KEY_DELIMITER);
+			for(String val:userValues) {
+				if(StringHelper.containsNonWhitespace(val) && val.trim().equals(searchValue)) {
+					return true;
+				}
+			}
 			return false;
 		}
-		return false;
+		return userValue.equals(searchValue);
+	}
+	
+	private boolean checkHasNotProperty(UserPropertyHandler propertyHandler, String searchValue, String userValue) {
+		if(propertyHandler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)propertyHandler).isMultiSelect()) {
+			String[] userValues = userValue.split(GenericSelectionPropertyHandler.KEY_DELIMITER);
+			for(String val:userValues) {
+				if(StringHelper.containsNonWhitespace(val) && val.trim().equals(searchValue)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return !userValue.equals(searchValue);
 	}
 
-	/**
-	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
-	 */
+	@Override
 	public Object call(Object[] inStack) {
 		/*
 		 * argument check
@@ -165,25 +185,29 @@ public class EvalUserPropertyFunction extends AbstractFunction {
 		User user = ident.getUser();
 
 		String userValue = user.getPropertyOrIdentityEnvAttribute(propName, null);
+		
 
 		boolean match = false;
 		boolean debug = log.isDebugEnabled();
 		if (debug) {
-			log.debug("value    : " + userValue);
-			log.debug("searchValue: " + searchValue);
-			log.debug("fT       :  " + functionType);
+			log.debug("value       : {}", userValue);
+			log.debug("searchValue : {}", searchValue);
+			log.debug("fT          : {}", functionType);
 		}
 		if (StringHelper.containsNonWhitespace(userValue)) {
-			match = checkPropertyValue(searchValue, userValue);
+			UserPropertyHandler propHandler = UserManager.getInstance().getUserPropertiesConfig()
+					.getPropertyHandler(propName);
+			match = checkPropertyValue(propHandler, searchValue, userValue);
 		}
 
 		if (debug) {
-			log.debug("identity '" + ident.getKey() + "' tested on properties '" + propName + "' to have value '" +
-					searchValue + "' user's value was '" + userValue + "', match=" + match);
+			log.debug("identity '{}' tested on properties '{}' to have value '{}' user's value was '{}', match={}",
+					ident.getKey(), propName, searchValue, userValue, match);
 		}
 		return match ? ConditionInterpreter.INT_TRUE : ConditionInterpreter.INT_FALSE;
 	}
 
+	@Override
 	protected Object defaultValue() {
 		return ConditionInterpreter.INT_FALSE;
 	}

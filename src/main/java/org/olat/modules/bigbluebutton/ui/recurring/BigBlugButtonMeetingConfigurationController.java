@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -51,6 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class BigBlugButtonMeetingConfigurationController extends StepFormBasicController {
+
+	private static final String[] onKeys = new String[] { "on" };
 	
 	private TextElement nameEl;
 	private TextElement descriptionEl;
@@ -58,6 +61,9 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 	private TextElement welcomeEl;
 	private TextElement leadTimeEl;
 	private TextElement followupTimeEl;
+	private MultipleSelectionElement externalLinkEl;
+	private MultipleSelectionElement passwordEnableEl;
+	private TextElement passwordEl;
 	private DateChooser startTimeEl;
 	private DateChooser endTimeEl;
 	private DateChooser endRecurringDateEl;
@@ -126,6 +132,17 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		if(!templateSelected && templatesKeys.length > 0) {
 			templateEl.select(templatesKeys[0], true);
 		}
+		
+		String[] externalLinkValues = new String[] { translate("enable.generate.url") };
+		externalLinkEl = uifactory.addCheckboxesHorizontal("meeting.external.users", formLayout, onKeys, externalLinkValues);
+		externalLinkEl.addActionListener(FormEvent.ONCHANGE);
+		
+		String[] enableValues = new String[] { translate("meeting.password.enable.on") };
+		passwordEnableEl = uifactory.addCheckboxesHorizontal("meeting.password.enable", "meeting.password.enable", formLayout, onKeys, enableValues);
+		passwordEnableEl.addActionListener(FormEvent.ONCHANGE);
+		
+		passwordEl = uifactory.addTextElement("meeting.password", 64, "", formLayout);
+		
 		updateTemplateInformations();
 		
 		startRecurringDateEl = uifactory.addDateChooser("meeting.recurring.start", "meeting.recurring.start", null, formLayout);
@@ -172,8 +189,18 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 				} else {
 					templateEl.setExampleKey("template.explain.max.participants", args);
 				}
+				
+				externalLinkEl.setVisible(template.isExternalUsersAllowed());
+				passwordEnableEl.setVisible(template.isExternalUsersAllowed() && externalLinkEl.isAtLeastSelected(1));
+				passwordEl.setVisible(template.isExternalUsersAllowed() && passwordEnableEl.isAtLeastSelected(1));
 			}
 		}
+	}
+	
+	private void updatePasswordElement() {
+		boolean externalInkenabled = externalLinkEl.isVisible() && externalLinkEl.isAtLeastSelected(1);
+		passwordEnableEl.setVisible(externalInkenabled);
+		passwordEl.setVisible(externalInkenabled && passwordEnableEl.isAtLeastSelected(1));
 	}
 	
 	@Override
@@ -328,6 +355,8 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(templateEl == source) {
 			updateTemplateInformations();
+		} else if(externalLinkEl == source || passwordEnableEl == source) {
+			updatePasswordElement();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -349,6 +378,16 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		meetingsContext.setLeadTime(leadTime);
 		long followupTime = getFollowupTime();
 		meetingsContext.setFollowupTime(followupTime);
+		
+		if(externalLinkEl.isVisible() && externalLinkEl.isAtLeastSelected(1)) {
+			meetingsContext.setGenerateUrl(true);
+			if(passwordEnableEl.isAtLeastSelected(1)) {
+				meetingsContext.setPassword(passwordEl.getValue());
+			}
+		} else {
+			meetingsContext.setGenerateUrl(false);
+			meetingsContext.setPassword(null);
+		}
 		
 		meetingsContext.setStartRecurringDate(startRecurringDateEl.getDate());
 		meetingsContext.setEndRecurringDate(endRecurringDateEl.getDate());

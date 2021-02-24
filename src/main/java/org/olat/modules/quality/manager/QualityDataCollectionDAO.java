@@ -384,6 +384,8 @@ public class QualityDataCollectionDAO {
 		sb.append("  from qualitydatacollection as collection");
 		if (searchParams != null) {
 			if (searchParams.getFormEntryRefs() != null) {
+				sb.append("       join evaluationformsurvey survey on survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+				sb.append("                                       and survey.resId = collection.key");
 				sb.append("       join survey.formEntry as form");
 			}
 			if (StringHelper.containsNonWhitespace(searchParams.getTopic())

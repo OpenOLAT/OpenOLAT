@@ -50,6 +50,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
@@ -346,6 +347,9 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	}
 	
 	private void addRecurringMeetings(RecurringMeetingsContext context) {
+		boolean generateUrl = context.getTemplate() != null && context.getTemplate().isExternalUsersAllowed() && context.isGenerateUrl();
+		boolean setPassword = generateUrl && StringHelper.containsNonWhitespace(context.getPassword());
+				
 		for(RecurringMeeting meeting:context.getMeetings()) {
 			if(meeting.isDeleted() || !meeting.isSlotAvailable()) {
 				continue;
@@ -362,6 +366,14 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 			bMeeting.setEndDate(meeting.getEndDate());
 			bMeeting.setLeadTime(context.getLeadTime());
 			bMeeting.setFollowupTime(context.getFollowupTime());
+			if(generateUrl) {
+				String externalLink = String.valueOf(CodeHelper.getForeverUniqueID());
+				bMeeting.setReadableIdentifier(externalLink);
+				if(setPassword) {
+					bMeeting.setPassword(context.getPassword());
+				}
+			}
+			
 			bigBlueButtonManager.updateMeeting(bMeeting);
 		}
 	}

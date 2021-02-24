@@ -349,7 +349,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		externalLinkEl.setHelpTextKey("meeting.external.users.help", null);
 		externalLinkEl.addActionListener(FormEvent.ONCHANGE);
 		if (externalLink != null) {
-			externalLinkEl.setExampleKey("noTransOnlyParam", new String[] {BigBlueButtonDispatcher.getMeetingUrl(externalLink)});			
+			externalLinkEl.setExampleKey("noTransOnlyParam", new String[] {BigBlueButtonDispatcher.getMeetingUrl(externalLink)});
 		}
 
 		String password = meeting == null ? null : meeting.getPassword();
@@ -362,7 +362,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
-		BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl, templates);
+		BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
+				templates, meeting != null && meeting.getKey() != null);
 		
 		if(mode == Mode.dates) {
 			Date startDate = meeting == null ? new Date() : meeting.getStartDate();
@@ -610,11 +611,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(templateEl == source) {
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
+					templates, meeting != null && meeting.getKey() != null);
 			boolean webcamAvailable = isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
 		} else if(recordEl == source || passwordEnableEl == source) {
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
+					templates, meeting != null && meeting.getKey() != null);
 		} else if (openCalLink == source) {
 			doOpenCalendar(ureq);
 		} else if (externalLinkEl == source) {

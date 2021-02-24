@@ -344,7 +344,7 @@ public class AppointmentCreateController extends FormBasicController {
 			
 			bbbOpenCalLink = uifactory.addFormLink("calendar.open", formLayout);
 			bbbOpenCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, null, null, null, null, recordEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, null, null, null, null, recordEl, templates, false);
 			
 			bbbLeadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, null, formLayout);
 			bbbLeadTimeEl.setExampleKey("meeting.leadTime.explain", null);
@@ -479,7 +479,7 @@ public class AppointmentCreateController extends FormBasicController {
 		} else if (source == meetingEl) {
 			updateUI();
 		} else if (templateEl == source) {
-			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, null, null, null, null, recordEl, templates);
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, null, null, null, null, recordEl, templates, false);
 			boolean webcamAvailable = isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
 		} else if (bbbOpenCalLink == source) {
