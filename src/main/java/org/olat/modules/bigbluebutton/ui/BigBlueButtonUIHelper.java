@@ -50,7 +50,7 @@ public class BigBlueButtonUIHelper {
 	
 	public static void updateTemplateInformations(SingleSelection templateEl, TextElement externalLinkEl,
 			MultipleSelectionElement passwordEnableEl, TextElement passwordEl,
-			SingleSelection publishingEl, SingleSelection recordEl, List<BigBlueButtonMeetingTemplate> templates) {
+			SingleSelection publishingEl, SingleSelection recordEl, List<BigBlueButtonMeetingTemplate> templates, boolean meetingExists) {
 		templateEl.setExampleKey(null, null);
 		if(templateEl.isOneSelected()) {
 			BigBlueButtonMeetingTemplate template = getSelectedTemplate(templateEl, templates);
@@ -66,8 +66,14 @@ public class BigBlueButtonUIHelper {
 			}
 			boolean visible = template != null && template.isExternalUsersAllowed();
 			externalLinkEl.setVisible(visible);
-			if(visible && !StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
-				externalLinkEl.setValue(Long.toString(CodeHelper.getForeverUniqueID()));
+			if(visible && !meetingExists && !StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
+				String externalLink = Long.toString(CodeHelper.getForeverUniqueID());
+				externalLinkEl.setValue(externalLink);
+				if (externalLink != null) {
+					String url = BigBlueButtonDispatcher.getMeetingUrl(externalLink);
+					externalLinkEl.setExampleKey("noTransOnlyParam", new String[] { url });	
+					externalLinkEl.showExample(true);
+				}
 			}
 			
 			if(passwordEnableEl != null) {
