@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.DispatchResult;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
@@ -115,8 +116,11 @@ public class OAuthAuthenticationController extends FormBasicController implement
 	}
 	
 	private void redirect(UserRequest ureq, OAuthSPI provider) {
-		HttpSession session = ureq.getHttpReq().getSession();
-		MediaResource redirectResource = new OAuthResource(provider, session);
-		ureq.getDispatchResult().setResultingMediaResource(redirectResource);
+		DispatchResult result = ureq.getDispatchResult();
+		if(result.getResultingMediaResource() == null) {// prevent twice the redirect
+			HttpSession session = ureq.getHttpReq().getSession();
+			MediaResource redirectResource = new OAuthResource(provider, session);
+			result.setResultingMediaResource(redirectResource);
+		}
 	}
 }
