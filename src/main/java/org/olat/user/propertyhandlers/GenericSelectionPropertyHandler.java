@@ -342,7 +342,7 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 				for (String value : val.split(KEY_DELIMITER)) {
 					if(StringHelper.containsNonWhitespace(value)) {
 						if(htmlValue.length() > 0) {
-							htmlValue.append(" ");
+							htmlValue.append(KEY_DELIMITER).append(" ");
 						}
 						if(locale != null) {
 							htmlValue.append(trans.translate(value));

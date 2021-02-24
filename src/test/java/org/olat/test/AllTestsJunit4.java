@@ -178,6 +178,7 @@ import org.junit.runners.Suite;
 	org.olat.course.condition.ConditionTest.class,
 	org.olat.course.condition.GetPassedTest.class,
 	org.olat.course.condition.KeyAndNameConverterTest.class,
+	org.olat.course.condition.interpreter.EvalUserPropertyFunctionTest.class,
 	org.olat.course.disclaimer.CourseDisclaimerManagerTest.class,
 	org.olat.course.highscore.HighScoreManagerTest.class,
 	org.olat.course.learningpath.LearningPathServiceTest.class,
