@@ -9,6 +9,7 @@
 		configures DispatcherActions to be called on certain paths -->
 	<bean id="mainUrlDispatcher"
 		class="org.olat.core.dispatcher.DispatcherModule"  >
+		<property name="defaultPath" value="/${server.login.path}/" />
 		<property name="dispatchers">
 			<map>
 				<entry key="/dmz/">

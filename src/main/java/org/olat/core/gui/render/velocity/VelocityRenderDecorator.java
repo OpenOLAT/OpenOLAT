@@ -38,6 +38,7 @@ import java.util.UUID;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.help.HelpModule;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -95,6 +96,13 @@ public class VelocityRenderDecorator implements Closeable {
 		vc = null;
 		target = null;
 		renderer = null;
+	}
+	
+	/**
+	 * @return The default path /dmz/
+	 */
+	public String getPathDefault() {
+		return DispatcherModule.getPathDefault();
 	}
 
 	/**
@@ -392,6 +400,10 @@ public class VelocityRenderDecorator implements Closeable {
 		StringOutput sb = new StringOutput(100);
 		sb.append(WebappHelper.getMathJaxConfig());
 		return sb;
+	}
+	
+	public String logoutUrl() {
+		return relLink(Settings.getLoginPath() + "/") + "?logout=true";
 	}
 	
 	public StringOutput contextPath() {

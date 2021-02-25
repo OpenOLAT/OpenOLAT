@@ -267,6 +267,7 @@ public class PwChangeController extends BasicController {
 		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
 		// mailer configuration
 		String serverpath = Settings.getServerContextPathURI();
+		String serverLoginPath = Settings.getServerContextPathURI() + DispatcherModule.getPathDefault();
 		String authenticationName = securityManager.findAuthenticationName(identity, "OLAT");
 		String userName = authenticationName;
 		if((userName == null || StringHelper.isLong(authenticationName)) && loginModule.isAllowLoginUsingEmail()) {
@@ -285,8 +286,8 @@ public class PwChangeController extends BasicController {
 			.append("<div class='o_body'>")
 			.append(userTrans.translate("pwchange.headline"))
 			.append(userTrans.translate("pwchange.intro", new String[] { userName, authenticationName, emailAdress }))
-		    .append(userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()) }))
-		    .append(userTrans.translate("pwchange.body.alt", new String[] { serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()) }))
+		    .append(userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath }))
+		    .append(userTrans.translate("pwchange.body.alt", new String[] { serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath }))
 		    .append("</div>")
 		    .append("<div class='o_footer'>")
 		    .append(userTrans.translate("reg.wherefrom", new String[] { serverpath, today }))

@@ -58,6 +58,7 @@
 		<property name="serverDomainName" value="${server.domainname}" />
 		<property name="serverSecurePort" value="${server.port.ssl}" />
 		<property name="serverInsecurePort" value="${server.port}" />
+		<property name="loginPath" value="${server.login.path}" />
 		<property name="legacyContext" value="${server.legacy.context}" />		
 		<!-- true enable debug mode, not for production mode but for productive hours ;) -->
 		<property name="debug" value="${olat.debug}" />

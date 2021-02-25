@@ -26,6 +26,7 @@ import java.util.Locale;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -132,6 +133,7 @@ public class SendTokenToUserForm extends FormBasicController {
 			dummyKey = Encoder.md5hash(emailAdress);
 
 			String serverpath = Settings.getServerContextPathURI();
+			String serverLoginPath = Settings.getServerContextPathURI() + DispatcherModule.getPathDefault();
 			Translator userTrans = Util.createPackageTranslator(RegistrationManager.class, locale) ;
 			String authenticationName = securityManager.findAuthenticationName(user, "OLAT");
 			String userName = authenticationName;
@@ -139,7 +141,7 @@ public class SendTokenToUserForm extends FormBasicController {
 				userName = emailAdress;
 			}
 			return userTrans.translate("pwchange.intro", new String[] { userName, authenticationName, emailAdress })
-					+ userTrans.translate("pwchange.body", new String[] { serverpath, dummyKey, i18nModule.getLocaleKey(locale) });
+					+ userTrans.translate("pwchange.body", new String[] { serverpath, dummyKey, i18nModule.getLocaleKey(locale), serverLoginPath });
 		}
 		else return "This function is not available for users without an email-adress!";
 	}

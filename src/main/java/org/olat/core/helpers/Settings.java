@@ -76,6 +76,8 @@ public class Settings {
 	private static String domainName;
 	private static String legacyContextPath;
 	
+	private static String loginPath;
+	
 	/**
 	 * [used by spring]
 	 */
@@ -243,6 +245,14 @@ public class Settings {
 	
 	public void setServerDomainName(String domainName) {
 		Settings.domainName = domainName;
+	}
+	
+	public static String getLoginPath() {
+		return loginPath;
+	}
+	
+	public void setLoginPath(String path) {
+		Settings.loginPath = path;
 	}
 	
 	public static String getServerContextPath() {
