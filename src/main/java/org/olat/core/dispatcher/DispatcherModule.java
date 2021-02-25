@@ -49,7 +49,7 @@ public class DispatcherModule {
 	private static final Logger log = Tracing.createLoggerFor(DispatcherModule.class);
 	
 	/** Identifies requests for the DMZ  */
-	public static String PATH_DEFAULT = "/dmz/";
+	private static String pathDefault;
 	/** Identifies requests for the mapper registry */
 	public static final String PATH_MAPPED = "/m/";
 	/** Identifies requests for the global mapper registry */
@@ -67,10 +67,6 @@ public class DispatcherModule {
 	private Map<String, Dispatcher> dispatchers;
 
 	private static final String DOUBLE_SLASH = "//";
-
-	public static String getPathDefault(){
-		return PATH_DEFAULT;
-	}
 	
 	public static String getLegacyUriPrefix(HttpServletRequest request) {
 		return request.getContextPath() + getFirstPath(request);
@@ -134,7 +130,7 @@ public class DispatcherModule {
 	 * @param response
 	 */
 	public static final void redirectToDefaultDispatcher(HttpServletResponse response) {
-		redirectTo(response, WebappHelper.getServletContextPath() + PATH_DEFAULT);
+		redirectTo(response, WebappHelper.getServletContextPath() + getPathDefault());
 	}
 
 	/**
@@ -282,5 +278,18 @@ public class DispatcherModule {
 	 */
 	public void setDispatchers(Map<String, Dispatcher> dispatchers) {
 		this.dispatchers = dispatchers;
+		
+		Dispatcher dispatcher = dispatchers.get("/dmz/");
+		dispatchers.put(pathDefault, dispatcher);
 	}
+
+	public static String getPathDefault() {
+		return pathDefault;
+	}
+
+	public void setDefaultPath(String path) {
+		pathDefault = path;
+	}
+	
+	
 }
