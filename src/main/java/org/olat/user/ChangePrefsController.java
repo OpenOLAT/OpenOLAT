@@ -28,6 +28,7 @@ package org.olat.user;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
@@ -382,7 +383,7 @@ class UserPrefsResetForm extends FormBasicController {
 				//if logout, need a redirect to the login page
 				String lang = i18nModule.getLocaleKey(ureq.getLocale());
 				ureq.getDispatchResult().setResultingMediaResource(
-						new RedirectMediaResource(WebappHelper.getServletContextPath() + "/dmz/?lang=" + lang + "&logout=true"));
+						new RedirectMediaResource(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + "?lang=" + lang + "&logout=true"));
 			}
 		}
 	}

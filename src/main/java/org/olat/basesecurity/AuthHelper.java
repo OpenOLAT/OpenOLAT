@@ -392,7 +392,7 @@ public class AuthHelper {
 		// by the implementation of the AuthenticationProvider.
 		String setWarning = wasGuest ? "" : "&logout=true";
 		ureq.getDispatchResult().setResultingMediaResource(
-				new RedirectMediaResource(WebappHelper.getServletContextPath() + "/dmz/?lang=" + lang + setWarning));
+				new RedirectMediaResource(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + "?lang=" + lang + setWarning));
 	}
 
 	private static void deleteShibsessionCookie(UserRequest ureq) {

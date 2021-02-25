@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -574,7 +575,7 @@ public class ProfileFormController extends FormBasicController {
 		cal.add(Calendar.DAY_OF_WEEK, ChangeEMailController.TIME_OUT);
 		String time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(cal.getTime());
 		// create body and subject for email
-		String link = serverpath + "/dmz/emchange/index.html?key=" + tk.getRegistrationKey() + "&language=" + ureq.getLocale().getLanguage();
+		String link = serverpath + DispatcherModule.getPathDefault() + "emchange/index.html?key=" + tk.getRegistrationKey() + "&language=" + ureq.getLocale().getLanguage();
 		if(Settings.isDebuging()) {
 			logInfo(link);
 		}

@@ -373,7 +373,7 @@ public class RegistrationController extends BasicController implements Activatea
 			}
 			myContent.contextPut("regKey", tk.getRegistrationKey());
 			
-			String link = serverpath + "/dmz/registration/index.html?key=" + tk.getRegistrationKey() + "&language=" + i18nModule.getLocaleKey(ureq.getLocale());
+			String link = serverpath + DispatcherModule.getPathDefault() + "registration/index.html?key=" + tk.getRegistrationKey() + "&language=" + i18nModule.getLocaleKey(ureq.getLocale());
 			String[] bodyAttrs = new String[]{
 				serverpath,										//0
 				tk.getRegistrationKey(),						//1

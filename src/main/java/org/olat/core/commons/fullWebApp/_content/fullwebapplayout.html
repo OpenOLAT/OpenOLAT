@@ -172,7 +172,7 @@ try{
 	var closing = function(e) {
 		if(navigator.sendBeacon) {
 			var beaconUrl = '$r.formURI("close-window")';
-			if(beaconUrl.indexOf("/dmz/") == -1) {
+			if(beaconUrl.indexOf("${r.getPathDefault()}") == -1) {
 				navigator.sendBeacon(beaconUrl, null);
 			}
 		}
