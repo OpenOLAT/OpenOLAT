@@ -1153,6 +1153,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(popedController != null && popedController == assessmentToolCtr) {
 			setCourseClosedMessage();
 		}
+		if(popedController != null && popedController == editorCtrl) {
+			loadRepositoryEntry();
+			reloadStatus();
+		}
+		
 		if(popedController != getRunMainController()) {
 			toolControllerDone(ureq);
 		}
