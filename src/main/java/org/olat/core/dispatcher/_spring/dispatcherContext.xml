@@ -15,6 +15,9 @@
 				<entry key="/dmz/">
 					<ref bean="dmzbean" />
 				</entry>
+				<entry key="/${server.login.path}/">
+					<ref bean="dmzbean" />
+				</entry>
 				<entry key="/robots.txt">
 					<ref bean="robotsdispatcher" />
 				</entry>
