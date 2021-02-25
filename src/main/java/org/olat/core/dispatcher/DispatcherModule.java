@@ -278,9 +278,6 @@ public class DispatcherModule {
 	 */
 	public void setDispatchers(Map<String, Dispatcher> dispatchers) {
 		this.dispatchers = dispatchers;
-		
-		Dispatcher dispatcher = dispatchers.get("/dmz/");
-		dispatchers.put(pathDefault, dispatcher);
 	}
 
 	public static String getPathDefault() {
