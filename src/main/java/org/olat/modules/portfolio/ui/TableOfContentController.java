@@ -291,7 +291,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		
 		if(secCallback.canAddPage(null)) {
 			importExistingEntryLink = LinkFactory.createToolLink("import.page", translate("import.page"), this);
-			importExistingEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_new_portfolio");
+			importExistingEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_import");
 			importExistingEntryLink.setElementCssClass("o_sel_pf_existing_entry");
 			importExistingEntryLink.setVisible(sectionList != null && !sectionList.isEmpty());
 			stackPanel.addTool(importExistingEntryLink, Align.right);
@@ -465,6 +465,18 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		
 		if(secCallback.canEditSection()) {
+			if(secCallback.canAddPage(section)) {
+				Link createInSectionLink = LinkFactory.createLink(sectionId.concat("_create"), "create.new.page", "create_in_section", mainVC, this);
+				createInSectionLink.setIconLeftCSS("o_icon o_icon_fw o_icon_new_portfolio");
+				createInSectionLink.setUserObject(sectionRow);
+				editDropdown.addComponent(createInSectionLink);
+				
+				Link importToSectionLink = LinkFactory.createLink(sectionId.concat("_import"), "import.page", "import_to_section", mainVC, this);
+				importToSectionLink.setIconLeftCSS("o_icon o_icon_fw o_icon_import");
+				importToSectionLink.setUserObject(sectionRow);
+				editDropdown.addComponent(importToSectionLink);
+			}
+			
 			Link editSectionLink = LinkFactory.createLink(sectionId.concat("_edit"), "section.edit", "edit_section", mainVC, this);
 			editSectionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			editSectionLink.setUserObject(sectionRow);
@@ -647,7 +659,8 @@ public class TableOfContentController extends BasicController implements TooledC
 			cmc.deactivate();
 			cleanUp();
 			if(event instanceof PageSelectionEvent) {
-				doCreateNewEntryFrom(ureq, ((PageSelectionEvent)event).getPage());
+				PageSelectionEvent pageSelectionEvent = (PageSelectionEvent) event;
+				doCreateNewEntryFrom(ureq, pageSelectionEvent.getPage(), pageSelectionEvent.getSection());
 			}
 		} else if(cmc == source) {
 			cleanUp();
@@ -658,6 +671,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		removeAsListenerAndDispose(moveBinderToTrashCtrl);
 		removeAsListenerAndDispose(editSectionDatesCtrl);
 		removeAsListenerAndDispose(binderMetadataCtrl);
+		removeAsListenerAndDispose(selectPageListCtrl);
 		removeAsListenerAndDispose(newAssignmentCtrl);
 		removeAsListenerAndDispose(deleteBinderCtrl);
 		removeAsListenerAndDispose(editSectionCtrl);
@@ -668,6 +682,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		moveBinderToTrashCtrl = null;
 		editSectionDatesCtrl = null;
 		binderMetadataCtrl = null;
+		selectPageListCtrl = null;
 		newAssignmentCtrl = null;
 		deleteBinderCtrl = null;
 		editSectionCtrl = null;
@@ -682,9 +697,9 @@ public class TableOfContentController extends BasicController implements TooledC
 		if(newSectionTool == source || newSectionButton == source) {
 			doCreateNewSection(ureq);
 		} else if(newEntryLink == source) {
-			doCreateNewEntry(ureq);
+			doCreateNewEntry(ureq, null);
 		} else if(importExistingEntryLink == source) {
-			doImportExistingEntry(ureq);
+			doImportExistingEntry(ureq, null);
 		} else if(newAssignmentLink == source) {
 			doCreateNewAssignment(ureq);
 		} else if(editBinderMetadataLink == source) {
@@ -741,6 +756,12 @@ public class TableOfContentController extends BasicController implements TooledC
 			} else if("delete_section".equals(cmd)) {
 				SectionRow row = (SectionRow)link.getUserObject();
 				doConfirmDeleteSection(ureq, row);
+			} else if ("import_to_section".equals(cmd)) {
+				SectionRow row = (SectionRow)link.getUserObject();
+				doImportExistingEntry(ureq, row.getSection());
+			} else if ("create_in_section".equals(cmd)) {
+				SectionRow row = (SectionRow)link.getUserObject();
+				doCreateNewEntry(ureq, row.getSection());
 			}
 		}
 	}
@@ -892,10 +913,10 @@ public class TableOfContentController extends BasicController implements TooledC
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private void doCreateNewEntry(UserRequest ureq) {
+	private void doCreateNewEntry(UserRequest ureq, Section currentSection) {
 		if(guardModalController(newPageCtrl)) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, (Section)null, true, null);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, currentSection, true, null);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");
@@ -904,10 +925,10 @@ public class TableOfContentController extends BasicController implements TooledC
 		cmc.activate();
 	}
 	
-	private void doImportExistingEntry(UserRequest ureq) {
+	private void doImportExistingEntry(UserRequest ureq, Section currentSection) {
 		if(guardModalController(selectPageListCtrl)) return;
 
-		selectPageListCtrl = new SelectPageListController(ureq, getWindowControl(), null, secCallback);
+		selectPageListCtrl = new SelectPageListController(ureq, getWindowControl(), null, currentSection, secCallback);
 		listenTo(selectPageListCtrl);
 		
 		String title = translate("select.page");
@@ -916,10 +937,10 @@ public class TableOfContentController extends BasicController implements TooledC
 		cmc.activate();
 	}
 	
-	private void doCreateNewEntryFrom(UserRequest ureq, Page page) {
+	private void doCreateNewEntryFrom(UserRequest ureq, Page page, Section currentSection) {
 		if(guardModalController(newPageCtrl)) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, (Section)null, true, page);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, currentSection, true, page);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");

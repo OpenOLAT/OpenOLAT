@@ -21,7 +21,11 @@ package org.olat.modules.portfolio.manager;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.persistence.Tuple;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -93,6 +97,15 @@ public class CategoryDAO {
 			.createQuery(sb.toString(), Category.class)
 			.setParameter("resName", ores.getResourceableTypeName())
 			.setParameter("resId", ores.getResourceableId())
+			.getResultList();
+	}
+	
+	public List<Category> getCategories() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select category from pfcategory as category");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Category.class)
 			.getResultList();
 	}
 	
@@ -185,5 +198,30 @@ public class CategoryDAO {
 			stats.add(new CategoryLight(name, mediaKey));
 		}
 		return stats;
+	}
+	
+	public LinkedHashMap<Category, Long> getCategoriesAndUsage(SectionRef section) {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("select category as category, count(*) as categoryCount from pfcategoryrelation as rel")
+		  .append(" inner join rel.category as category")
+		  .append(" where exists (select section from pfsection as section")
+		  .append("   inner join section.pages as page")
+		  .append("   where section.key=:sectionKey")
+		  .append("   and ((rel.resId=page.key and rel.resName='Page') or (rel.resId=section.key and rel.resName='Section'))")
+		  .append(" )")
+		  .append(" group by category")
+		  .append(" order by categoryCount desc");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Tuple.class)
+				.setParameter("sectionKey", section.getKey())
+				.getResultStream()
+				.collect(
+					Collectors.toMap(
+						tuple -> ((Category) tuple.get("category")), 
+						tuple -> ((Long) tuple.get("categoryCount")),
+						(category1, category2) -> category1,
+						LinkedHashMap::new));
 	}
 }

@@ -21,6 +21,7 @@ package org.olat.modules.portfolio;
 
 import java.io.File;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -45,6 +46,7 @@ import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.model.SearchSharePagesParameters;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
@@ -756,4 +758,21 @@ public interface PortfolioService {
 	 * @param competence
 	 */
 	public void unlinkCompetence(Page page, TaxonomyCompetence competence);
+	
+	/**
+	 * Get all competences for a section and its usage count
+	 * Basically you only get the taxonomy level because of the name.
+	 * 
+	 * @param section
+	 * @return
+	 */
+	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(Section section);
+	
+	/**
+	 * Get all categories used in a section and its usage count.
+	 * 
+	 * @param section
+	 * @return
+	 */
+	public LinkedHashMap<Category, Long> getCategoriesAndUsage(Section section);
 }

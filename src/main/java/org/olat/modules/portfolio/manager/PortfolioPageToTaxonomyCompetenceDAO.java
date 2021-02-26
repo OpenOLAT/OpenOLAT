@@ -20,13 +20,19 @@
 package org.olat.modules.portfolio.manager;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.persistence.Tuple;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioPageToTaxonomyCompetence;
+import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.PortfolioPageToTaxonomyCompetenceImpl;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -105,5 +111,28 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 		for(PortfolioPageToTaxonomyCompetence relationToDelete:relationsToDelete) {
 			dbInstance.getCurrentEntityManager().remove(relationToDelete);
 		}
+	}
+	
+	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(Section section) {
+		StringBuilder sb = new StringBuilder(256);
+		
+		sb.append("select level as level, count(*) as competenceCount from pfpagetotaxonomycompetence rel")
+		  .append(" inner join rel.portfolioPage as page")
+		  .append(" inner join rel.taxonomyCompetence as competence")
+		  .append(" inner join competence.taxonomyLevel as level")
+		  .append(" where page.section.key = :sectionKey")
+		  .append(" group by level")
+		  .append(" order by competenceCount desc, level.displayName asc");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Tuple.class)
+				.setParameter("sectionKey", section.getKey())
+				.getResultStream()
+				.collect(
+					Collectors.toMap(
+						tuple -> ((TaxonomyLevel) tuple.get("level")), 
+						tuple -> ((Long) tuple.get("competenceCount")),
+						(level1, level2) -> level1, 
+						LinkedHashMap::new));
 	}
 }

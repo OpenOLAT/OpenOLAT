@@ -103,6 +103,7 @@ import org.olat.modules.portfolio.ui.renderer.PortfolioElementCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -112,8 +113,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractPageListController extends FormBasicController
-implements Activateable2, TooledController, FlexiTableComponentDelegate {
+public abstract class AbstractPageListController extends FormBasicController implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	public static final int PICTURE_WIDTH = 970 * 2;	// max width for large images: 1294 * 75% , x2 for high res displays
 	public static final int PICTURE_HEIGHT = 230 * 2 ; 	// max size for large images, see CSS, x2 for high res displays
@@ -354,6 +354,32 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			components.add(elRow.getStartSelection().getComponent());
 		}
 		return components;
+	}
+	
+	protected void loadCompetenciesFilter(Section section) {
+		List<FormLink> competencesAndUsage = new ArrayList<>();
+		portfolioService.getCompetenciesAndUsage(section).forEach((taxonomyLevel, usage) -> {
+			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
+			competency.setUserObject(taxonomyLevel);
+			competency.setCustomEnabledLinkCSS("tag label label-info");
+			
+			competencesAndUsage.add(competency);
+		});	
+		
+		flc.contextPut("competencesUsage", competencesAndUsage);
+	}
+	
+	protected void loadCategoriesFilter(Section section) {
+		List<FormLink> categoriesAndUsage = new ArrayList<>();
+		portfolioService.getCategoriesAndUsage(section).forEach((category, usage) -> {
+			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
+			categoryLink.setUserObject(category);
+			categoryLink.setCustomEnabledLinkCSS("tag label label-info");
+			
+			categoriesAndUsage.add(categoryLink);
+		});	
+		
+		flc.contextPut("categoriesUsage", categoriesAndUsage);
 	}
 	
 	protected abstract void loadModel(UserRequest ureq, String searchString);
@@ -729,6 +755,12 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			} else if("down.assignment".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doMoveDownAssignment(ureq, row);
+			} else if("competence_filter".equals(cmd)) {
+				TaxonomyLevel level = (TaxonomyLevel)link.getUserObject();
+				tableEl.quickSearch(ureq, level.getDisplayName());
+			} else if("category_filter".equals(cmd)) {
+				Category category = (Category)link.getUserObject();
+				tableEl.quickSearch(ureq, category.getName());
 			}
 		} else if(source instanceof SingleSelection) {
 			SingleSelection startAssignment = (SingleSelection) source;

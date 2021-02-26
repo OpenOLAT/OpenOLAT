@@ -21,6 +21,7 @@ package org.olat.modules.portfolio.ui.event;
 
 import org.olat.core.gui.control.Event;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.Section;
 
 /**
  * 
@@ -34,14 +35,23 @@ public class PageSelectionEvent extends Event {
 	public static final String SELECT_PAGE = "pf-select-page";
 	
 	private Page page;
+	private Section section;
 	
 	public PageSelectionEvent(Page page) {
+		this(page, null);
+	}
+	
+	public PageSelectionEvent(Page page, Section section) {
 		super(SELECT_PAGE);
 		this.page = page;
+		this.section = section;
 	}
 
 	public Page getPage() {
 		return page;
 	}
 	
+	public Section getSection() {
+		return section;
+	}
 }

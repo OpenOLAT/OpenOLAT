@@ -36,7 +36,7 @@
 			#if ($r.available("pageCompetenciesCtrl"))
 				$r.render("pageCompetenciesCtrl")
 			#else
-				<i class="o_icon o_icon_fw o_icon_taxonomy_level" title="$r.translateInAttribute("competencies")"> </i>
+				<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competencies")"> </i>
 				 #foreach($competence in $pageCompetencies)
 				 	<span class="tag label label-info">
 					 	$competence

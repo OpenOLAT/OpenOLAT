@@ -56,7 +56,15 @@
 		 	#end
 		 	</span>
 		</div>
-		#end	
+		#end
+		#if($r.isNotEmpty($row.pageCompetencies))
+				<span class="o_portfolio_competencies text-muted o_small">
+					<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competencies")"> </i>
+					#foreach($competence in $row.pageCompetencies)
+						<a class="tag label label-info" href="javascript:${f.ffXHREvent("tag_select","$competence")}">$competence</a>
+					#end
+				</span>
+				#end	
 	
 		#if($r.isNotNull($row.startSelection))
 			<div class="pull-right">$r.render($row.startSelection)</div>
@@ -139,7 +147,7 @@
 				#end
 				#if($r.isNotEmpty($row.pageCompetencies))
 				<span class="o_portfolio_competencies text-muted o_small">
-					<i class="o_icon o_icon_fw o_icon_taxonomy_level" title="$r.translateInAttribute("competencies")"> </i>
+					<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competencies")"> </i>
 					#foreach($competence in $row.pageCompetencies)
 						<a class="tag label label-info" href="javascript:${f.ffXHREvent("tag_select","$competence")}">$competence</a>
 					#end

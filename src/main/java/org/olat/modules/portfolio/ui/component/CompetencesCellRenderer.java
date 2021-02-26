@@ -44,7 +44,7 @@ public class CompetencesCellRenderer implements FlexiCellRenderer {
 			@SuppressWarnings("unchecked")
 			Collection<String> categories = (Collection<String>)cellValue;
 			if(categories.size() > 0) {
-				target.append("<i class='o_icon o_icon-fw o_icon_taxonomy_level'> </i> ");
+				target.append("<i class='o_icon o_icon-fw o_icon_competences'> </i> ");
 				
 				boolean start = true;
 				for(String category:categories) {

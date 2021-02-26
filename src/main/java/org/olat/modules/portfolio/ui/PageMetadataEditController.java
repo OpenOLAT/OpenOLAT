@@ -750,18 +750,18 @@ public class PageMetadataEditController extends FormBasicController {
 	}
 	
 	private void initTaxonomyCompetencies() {
-		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+		if (portfolioV2Module.isTaxonomyLinkingReady() && page != null) {
 			List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(page, true);
 			existingCompetencies = new ArrayList<>();
 			for (TaxonomyCompetence competence : competencies) {
-				TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getKey().toString(), competence.getTaxonomyLevel().getDisplayName());
+				TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getDisplayName(), competence.getTaxonomyLevel().getKey().toString());
 				existingCompetencies.add(competenceTextBoxItem);
 			}
 			
 			availableTaxonomyLevels = new ArrayList<>();
 			for (Taxonomy taxonomy : portfolioV2Module.getLinkedTaxonomies()) {
 				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
-					availableTaxonomyLevels.add(new TextBoxItemImpl(taxonomyLevel.getKey().toString(), taxonomyLevel.getDisplayName()));
+					availableTaxonomyLevels.add(new TextBoxItemImpl(taxonomyLevel.getDisplayName(), taxonomyLevel.getKey().toString()));
 				}
 			}
 

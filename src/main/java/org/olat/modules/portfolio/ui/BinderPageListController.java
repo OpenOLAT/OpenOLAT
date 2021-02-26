@@ -595,6 +595,8 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 	
 	protected void doFilterSection(Section section) {
+		super.loadCompetenciesFilter(section);
+		super.loadCategoriesFilter(section);
 		this.filteringSection = section;
 		List<Section> currentSections = model.filter(section);
 		tableEl.reloadData();

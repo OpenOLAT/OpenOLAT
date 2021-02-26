@@ -489,6 +489,10 @@
 		.o_section_dropdown {
 			vertical-align: middle;		
 			display: inline-block;
+			
+			ul {
+				padding-left: 0;
+			}
 		}
 	}
 	a.o_comment {

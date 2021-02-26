@@ -58,10 +58,12 @@ import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
  */
 public class SelectPageListController extends AbstractPageListController {
 
-	public SelectPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BinderSecurityCallback secCallback) {
-		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createSelectPagesConfig(), "select_pages",
-				false, false, true);
+	private Section currentSection; 
+	
+	public SelectPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Section currentSecion, BinderSecurityCallback secCallback) {
+		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createSelectPagesConfig(), "select_pages", false, false, true);
+		
+		this.currentSection = currentSecion;
 
 		initForm(ureq);
 		loadModel(ureq, null);
@@ -169,6 +171,6 @@ public class SelectPageListController extends AbstractPageListController {
 
 	@Override
 	protected void doOpenPage(UserRequest ureq, Page reloadedPage, boolean newElement) {
-		fireEvent(ureq, new PageSelectionEvent(reloadedPage));
+		fireEvent(ureq, new PageSelectionEvent(reloadedPage, currentSection));
 	}
 }

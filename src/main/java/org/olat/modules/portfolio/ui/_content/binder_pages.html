@@ -20,8 +20,28 @@
 			<div class="o_block_large_bottom">
 				$r.render("summary")
 			</div>
-		#end	
-	
+		#end			
+
+		#if($r.isNotNull($competencesUsage) && $r.isNotEmpty($competencesUsage))
+		<div class="o_block clearfix"> 
+			<div class="pull-left"><i class="o_icon o_icon_fw o_icon_competences"> </i>
+			#foreach($competenceUsage in $competencesUsage)
+				$r.render($competenceUsage.getName())
+			#end
+			</div>
+		</div>
+		#end
+		
+		#if($r.isNotNull($categoriesUsage) && $r.isNotEmpty($categoriesUsage))
+		<div class="o_block clearfix"> 
+			<div class="pull-left"><i class="o_icon o_icon_fw o_icon_tags"> </i>
+			#foreach($categoryUsage in $categoriesUsage)
+				$r.render($categoryUsage.getName())
+			#end
+			</div>
+		</div>
+		#end		
+		
 		$r.render("table")
 		
 		#if($r.available("create.new.section"))
