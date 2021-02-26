@@ -251,7 +251,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment courseRuntime = courseEditor
 			.clickToolbarBack();
 		courseRuntime
-			.publish()
+			.assertStatus(RepositoryEntryStatusEnum.published)
 			.clickTree()
 			.selectWithTitle(testNodeTitle);
 		
@@ -1182,7 +1182,7 @@ public class AssessmentTest extends Deployments {
 			.assertMembersManagement()
 			.clickToolbarBack();
 		coursePage
-			.publish()// publish the course for the participants
+			.assertStatus(RepositoryEntryStatusEnum.published)// publish the course for the participants
 			.clickTree()
 			.selectWithTitle(gtaNodeTitle);
 		
