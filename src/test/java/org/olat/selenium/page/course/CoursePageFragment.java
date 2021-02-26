@@ -344,7 +344,10 @@ public class CoursePageFragment {
 		By statusBy = By.cssSelector("ul.o_repo_tools_status>li>a.o_repo_status_" + status.name());
 		browser.findElement(statusBy).click();
 		OOGraphene.waitBusy(browser);
-		
+
+		return assertStatus(status);
+	}
+	public CoursePageFragment assertStatus(RepositoryEntryStatusEnum status) {
 		By statusViewBy = By.xpath("//li[contains(@class,'o_tool_dropdown')]/a[contains(@class,'o_repo_tools_status')]/span[contains(@class,'o_repo_status_" + status + "')]");
 		OOGraphene.waitElement(statusViewBy, browser);
 		return this;
