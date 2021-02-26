@@ -104,7 +104,7 @@ public class HelpModule extends AbstractSpringModule {
 	private int academyPos;
 	
 	// OOTeach settings
-	@Value("${help.ooteach.link:https://www.openolat.com/openolat-teach/}")
+	@Value("${help.ooteach.link:https://www.openolat.com/ooteach/}")
 	private String ooTeachLink;
 	@Value("${help.ooteach.enabled:authorsite}")
 	private String ooTeachEnabled;
