@@ -37,6 +37,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.Administrator;
 import org.olat.selenium.page.Author;
 import org.olat.selenium.page.LoginPage;
@@ -1492,7 +1493,7 @@ public class CourseTest extends Deployments {
 			.finish();
 		courseEditor
 			.clickToolbarBack()
-			.publish();// don't forget to publish the course
+			.assertStatus(RepositoryEntryStatusEnum.published);
 		
 		//add a member to the group we create above
 		MembersPage members = CoursePageFragment
