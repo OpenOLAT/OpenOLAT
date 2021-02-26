@@ -22,7 +22,6 @@ package org.olat.course.assessment.ui.tool;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -32,32 +31,28 @@ import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
-import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
+import org.olat.course.assessment.ui.tool.event.StopAssessmentEvent;
 import org.olat.course.config.ui.AssessmentResetController;
 import org.olat.course.config.ui.AssessmentResetController.AssessmentResetEvent;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -67,7 +62,6 @@ import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.UserSelectionEvent;
-import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -88,20 +82,17 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private Link overviewLink;
 	private Link bulkAssessmentLink;
 	private Link recalculateLink;
-	private Link stopAssessmentMode;
 	private final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	private final ButtonGroupComponent segmentButtonsCmp;
 
 	private CloseableModalController cmc;
-	private ConfirmStopAssessmentModeController stopCtrl;
 	private AssessmentCourseTreeController courseTreeCtrl;
 	private AssessmentCourseOverviewController overviewCtrl;
 	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
 	private AssessmentResetController assessmentResetCtrl;
+	private StopAssessmentWarningController stopAssessmentCtrl;
 	
-	@Autowired
-	private LectureService lectureService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -110,8 +101,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private AssessmentService assessmentService;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
-	@Autowired
-	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachUserEnv, AssessmentToolSecurityCallback assessmentCallback) {
@@ -132,80 +121,20 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		putInitialPanel(overviewCtrl.getInitialComponent());
 	}
 	
-	public void assessmentModeMessage() {
+	public void assessmentModeMessage(UserRequest ureq) {
 		List<AssessmentMode> modes = assessmentModeManager.getCurrentAssessmentMode(courseEntry, new Date());
 		if(!modes.isEmpty()) {
-			VelocityContainer warn = createVelocityContainer("assessment_mode_warn");
-			if(modes.size() == 1) {
-				AssessmentMode mode = modes.get(0);
-				assessmemntModeMessageFormatting("assessment.mode.now",  modes, warn);
-				if(canStopAssessmentMode(mode)) {
-					String modeName = mode.getName();
-					String label = translate("assessment.tool.stop", new String[] { StringHelper.escapeHtml(modeName) });
-					stopAssessmentMode = LinkFactory.createCustomLink("assessment.stop", "stop", label, Link.BUTTON_SMALL | Link.NONTRANSLATED, warn, this);
-					stopAssessmentMode.setIconLeftCSS("o_icon o_icon-fw o_as_mode_stop");
-					if(assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode)) {
-						stopAssessmentMode.setIconRightCSS("o_icon o_icon-fw o_icon_disadvantage_compensation");
-					}
-					stopAssessmentMode.setUserObject(mode);
-				}
-			} else {
-				assessmemntModeMessageFormatting("assessment.mode.several.now",  modes, warn);
+			// don't use listenTo as the controller must survive the assessment tool controller
+			if(stopAssessmentCtrl != null) {
+				stopAssessmentCtrl.removeControllerListener(this);
 			}
-			stackPanel.setMessageComponent(warn);
+			stopAssessmentCtrl = new StopAssessmentWarningController(ureq, getWindowControl(), stackPanel,
+					courseEntry, modes, assessmentCallback);
+			stopAssessmentCtrl.addControllerListener(this);
+			stackPanel.setMessageComponent(stopAssessmentCtrl.getInitialComponent());
 		} else {
 			stackPanel.setMessageComponent(null);
 		}
-	}
-	
-	private void assessmemntModeMessageFormatting(String i18nMessage, List<AssessmentMode> modes, VelocityContainer warn) {
-		Date begin = getBeginOfModes(modes);
-		Date end = getEndOfModes(modes);
-		
-		String start;
-		String stop;
-		Formatter formatter = Formatter.getInstance(getLocale());
-		if(CalendarUtils.isSameDay(begin, end)) {
-			start = formatter.formatTimeShort(begin);
-			stop = formatter.formatTimeShort(end);
-		} else {
-			start = formatter.formatDateAndTime(begin);
-			stop = formatter.formatDateAndTime(end);
-		}
-		warn.contextPut("message", translate(i18nMessage, new String[] { start, stop }));
-	}
-	
-	private Date getBeginOfModes(List<AssessmentMode> modes) {
-		Date start = null;
-		for(AssessmentMode mode:modes) {
-			Date begin = mode.getBegin();
-			if(start == null || (begin != null && begin.before(start))) {
-				start = begin;
-			}
-		}
-		return start;
-	}
-	
-	private Date getEndOfModes(List<AssessmentMode> modes) {
-		Date stop = null;
-		for(AssessmentMode mode:modes) {
-			Date end = mode.getEnd();
-			if(stop == null || (end != null && end.after(stop))) {
-				stop = end;
-			}
-		}
-		return stop;
-	}
-	
-	private boolean canStopAssessmentMode(AssessmentMode mode) {
-		if(assessmentCallback.canStartStopAllAssessments()) {
-			return assessmentModeCoordinationService.canStop(mode);
-		} else if(mode.getLectureBlock() != null) {
-			List<Identity> teachers = lectureService.getTeachers(mode.getLectureBlock());
-			return teachers.contains(getIdentity())
-					&& assessmentModeCoordinationService.canStop(mode);
-		}
-		return false;
 	}
 	
 	public void initToolbar() {
@@ -236,6 +165,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	protected void doDispose() {
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
+		}
+		if(stopAssessmentCtrl != null) {
+			stopAssessmentCtrl.removeControllerListener(this);
 		}
 	}
 	
@@ -271,8 +203,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		} else if(bulkAssessmentLink == source) {
 			cleanUp();
 			doBulkAssessmentView(ureq);
-		} else if(stopAssessmentMode == source) {
-			doConfirmStop(ureq, (AssessmentMode)stopAssessmentMode.getUserObject());
 		} else if(stackPanel == source) {
 			if(event instanceof PopEvent) {
 				PopEvent pe = (PopEvent)event;
@@ -319,14 +249,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 					doSelectNodeView(ureq, cne.getIdent());
 				}
 			} else if(event instanceof AssessmentModeStatusEvent) {
-				assessmentModeMessage();
+				assessmentModeMessage(ureq);
 			}
-		} else if(stopCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				doAfterStop();
-			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(source == assessmentResetCtrl) {
 			if (event instanceof AssessmentResetEvent) {
 				AssessmentResetEvent are = (AssessmentResetEvent)event;
@@ -334,6 +258,10 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(stopAssessmentCtrl == source) {
+			if(event instanceof StopAssessmentEvent) {
+				overviewCtrl.reloadAssessmentModes();
+			}
 		} else if (source == cmc) {
 			cmc.deactivate();
 			cleanUp();
@@ -344,11 +272,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private void cleanUp() {
 		removeAsListenerAndDispose(bulkAssessmentOverviewCtrl);
 		removeAsListenerAndDispose(assessmentResetCtrl);
-		removeAsListenerAndDispose(stopCtrl);
 		removeAsListenerAndDispose(cmc);
 		bulkAssessmentOverviewCtrl = null;
 		assessmentResetCtrl = null;
-		stopCtrl = null;
 		cmc = null;
 	}
 	
@@ -426,22 +352,5 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		courseTreeCtrl.switchToUsersView(ureq, null);
 		segmentButtonsCmp.setSelectedButton(usersLink);
 		return courseTreeCtrl;
-	}
-	
-	private void doConfirmStop(UserRequest ureq, AssessmentMode mode) {
-		if(guardModalController(stopCtrl)) return;
-		
-		stopCtrl = new ConfirmStopAssessmentModeController(ureq, getWindowControl(), mode);
-		listenTo(stopCtrl);
-
-		String title = translate("confirm.stop.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", stopCtrl.getInitialComponent(), true, title, true);
-		cmc.activate();
-		listenTo(cmc);
-	}
-	
-	private void doAfterStop() {
-		assessmentModeMessage();
-		overviewCtrl.reloadAssessmentModes();
 	}
 }

@@ -1891,7 +1891,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			ctrl.activate(ureq, null, null);
 			listenTo(ctrl);
 			assessmentToolCtr = pushController(ureq, translate("command.openassessment"), ctrl);
-			assessmentToolCtr.assessmentModeMessage();
+			assessmentToolCtr.assessmentModeMessage(ureq);
 			currentToolCtr = assessmentToolCtr;
 			setActiveTool(assessmentLink);
 			ctrl.initToolbar();
