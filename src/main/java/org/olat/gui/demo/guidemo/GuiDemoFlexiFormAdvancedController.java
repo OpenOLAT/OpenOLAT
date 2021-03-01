@@ -112,7 +112,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		// Separator with line
 		uifactory.addSpacerElement("spacer", formLayout, false);
 
-		// Single and multible selections (radio buttons and checkboxes)
+		// Single and multiple selections (radio buttons and checkboxes)
 		addSelections(formLayout);
 		
 		// Separator without line
@@ -212,7 +212,9 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 	 */
 	private void addSelections(FormItemContainer form) {
 		// drop-down list
-		uifactory.addDropdownSingleselect("guidemo.form.pulldown", form, keys, options, null);
+		String[] dropdownKeys = new String[] { "a", "b", SingleSelection.SEPARATOR, "c" };
+		String[] dropdownOptions = new String[] { "A", "B", SingleSelection.SEPARATOR, "C" };
+		uifactory.addDropdownSingleselect("guidemo.form.pulldown", form, dropdownKeys, dropdownOptions, null);
 
 		// vertical radio buttons
 		verticalRadioButtons = uifactory.addRadiosVertical("guidemo.form.radio1", form, keys, options);

@@ -25,8 +25,10 @@
 */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
@@ -73,6 +75,7 @@ class SelectboxRenderer extends DefaultComponentRenderer {
 			sb.append(" multiple ");
 			sb.append(" size=\"3\" ");
 		}
+		
 		//add ONCHANGE Action to select
 		if(ssec.getAction() == FormEvent.ONCHANGE){
 			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction()));
@@ -85,25 +88,29 @@ class SelectboxRenderer extends DefaultComponentRenderer {
 		int cnt = options.length;
 		boolean escapeHtml = ssec.isEscapeHtml();
 		for (int i = 0; i < cnt; i++) {
-			boolean selected = ssec.isSelected(options[i]);
-			sb.append("<option value=\"").append(StringHelper.escapeHtml(options[i])).append("\" ");
-			if (selected) sb.append("selected=\"selected\" ");
-			if(ssec.getAction() != FormEvent.ONCHANGE){
-				//all other events go to the option
-				sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction()));
-			}
-			if (cssClasses != null) {
-				sb.append(" class=\"");
-				sb.append(cssClasses[i]);
-				sb.append("\"");
-			}
-			sb.append(">");
-			if(escapeHtml) {
-				sb.appendHtmlEscaped(values[i]);
+			if(SingleSelection.SEPARATOR.equals(options[i])) {
+				sb.append("<option disabled>\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501</option>");
 			} else {
-				sb.append(values[i]);
+				boolean selected = ssec.isSelected(options[i]);
+				sb.append("<option value=\"").append(StringHelper.escapeHtml(options[i])).append("\" ");
+				if (selected) sb.append("selected=\"selected\" ");
+				if(ssec.getAction() != FormEvent.ONCHANGE){
+					//all other events go to the option
+					sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction()));
+				}
+				if (cssClasses != null) {
+					sb.append(" class=\"");
+					sb.append(cssClasses[i]);
+					sb.append("\"");
+				}
+				sb.append(">");
+				if(escapeHtml) {
+					sb.append(StringEscapeUtils.escapeHtml(values[i]));
+				} else {
+					sb.append(values[i]);
+				}
+				sb.append("</option>");
 			}
-			sb.append("</option>");
 		}
 		/*
 		 * closing </select>

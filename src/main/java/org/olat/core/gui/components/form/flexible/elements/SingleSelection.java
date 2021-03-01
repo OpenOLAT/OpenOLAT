@@ -33,6 +33,7 @@ package org.olat.core.gui.components.form.flexible.elements;
  */
 public interface SingleSelection extends SelectionElement {
 	
+	public static final String SEPARATOR = "--sep--sep--";
 	public String NO_SELECTION_KEY = "noSelectionKey";
 
 	public String[] getKeys();
