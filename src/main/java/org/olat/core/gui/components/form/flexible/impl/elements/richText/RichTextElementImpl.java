@@ -54,7 +54,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	
 	private static final Logger log = Tracing.createLoggerFor(RichTextElementImpl.class);
 	private final RichTextElementComponent component;
-	private RichTextConfiguration configuration;
+	private final RichTextConfiguration configuration;
 	private TextMode renderingMode;
 	
 	/**
@@ -254,7 +254,6 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		// cleanup stuff in the configuration (base url maper)
 		if (configuration != null) {
 			configuration.dispose();
-			configuration = null;
 		}
 	}
 	
