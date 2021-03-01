@@ -1686,7 +1686,17 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
+	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(List<Page> pages) {
+		return portfolioPageToTaxonomyCompetenceDAO.getCompetenciesAndUsage(pages);
+	}
+	
+	@Override
 	public LinkedHashMap<Category, Long> getCategoriesAndUsage(Section section) {
 		return categoryDao.getCategoriesAndUsage(section);
+	}
+	
+	@Override
+	public LinkedHashMap<Category, Long> getCategoriesAndUsage(List<Page> pages) {
+		return categoryDao.getCategoriesAndUsage(pages);
 	}
 }

@@ -268,6 +268,11 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl impleme
 	public List<TextBoxItem> getCurrentItems() {
 		return currentItems;
 	}
+	
+	public void setCurrentItems(List<TextBoxItem> currentItems) {
+		this.currentItems = currentItems;
+		setDirty(true);
+	}
 
 	/**
 	 * returns the current List of item-values (without the captions)

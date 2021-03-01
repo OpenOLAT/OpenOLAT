@@ -110,6 +110,11 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	}
 
 	@Override
+	public void setCurrentItems(List<TextBoxItem> currentItems) {
+		component.setCurrentItems(currentItems);
+	}
+	
+	@Override
 	public void setAutoCompleteContent(Set<String> autoCompletionValues) {
 		component.setAutoCompleteContent(autoCompletionValues);		
 	}

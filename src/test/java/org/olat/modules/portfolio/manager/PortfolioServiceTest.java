@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
@@ -76,6 +78,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 	private MediaDAO mediaDao;
 	@Autowired
 	private BinderDAO binderDao;
+	@Autowired
+	private CategoryDAO categoryDao;
 	@Autowired
 	private AssignmentDAO assignmentDao;
 	@Autowired
@@ -1199,6 +1203,58 @@ public class PortfolioServiceTest extends OlatTestCase {
 		// the media
 		Media reloadedPermanentMedia = portfolioService.getMediaByKey(permanentMedia.getKey());
 		Assert.assertNotNull(reloadedPermanentMedia);
+	}
+	
+	@Test
+	public void getCategoriesAndUsage() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("category-owner");
+		Binder binder = portfolioService.createNewBinder("Binder Category", "Binder with two sections.", null, owner);
+		dbInstance.commitAndCloseSession();
+		portfolioService.appendNewSection("First section", "My first section.", null, null, binder);
+		dbInstance.commitAndCloseSession();
+		portfolioService.appendNewSection("Second section", "My second section.", null, null, binder);
+		dbInstance.commitAndCloseSession();
+		
+		Category category1 = categoryDao.createAndPersistCategory("Cat1");
+		dbInstance.commitAndCloseSession();
+		Category category2 = categoryDao.createAndPersistCategory("Cat2");
+		dbInstance.commitAndCloseSession();
+		
+		List<Section> sections = portfolioService.getSections(binder);
+		List<String> categoriesList1 = new ArrayList<>();
+		categoriesList1.add(category1.getName());
+		List<String> categoriesList2 = new ArrayList<>();
+		categoriesList2.add(category1.getName());
+		categoriesList2.add(category2.getName());
+		
+		Section section1 = sections.get(0);
+		Page page11 = portfolioService.appendNewPage(owner, "Page-1-1", "", null, null, section1);
+		
+		portfolioService.updateCategories(page11, categoriesList1);
+		dbInstance.commitAndCloseSession();
+		
+		Page page12 = portfolioService.appendNewPage(owner, "Page-1-2", "", null, null, section1);
+		portfolioService.updateCategories(page12, categoriesList2);
+		
+		Section section2 = sections.get(1);
+		Page page21 = portfolioService.appendNewPage(owner, "Page-2-1", "", null, null, section2);
+		
+		portfolioService.updateCategories(page21, categoriesList1);
+		dbInstance.commitAndCloseSession();
+		
+		Page page22 = portfolioService.appendNewPage(owner, "Page-2-2", "", null, null, section2);
+		portfolioService.updateCategories(page22, categoriesList2);
+		
+		Map<Category, Long> categoryUsageSection1 = portfolioService.getCategoriesAndUsage(section1);
+		Map<Category, Long> categoryUsageSection2 = portfolioService.getCategoriesAndUsage(section2);
+		
+		Assert.assertNotNull(categoryUsageSection1);
+		Assert.assertEquals(Long.valueOf(2), categoryUsageSection1.get(category1));
+		Assert.assertEquals(Long.valueOf(1), categoryUsageSection1.get(category2));
+		
+		Assert.assertNotNull(categoryUsageSection2);
+		Assert.assertEquals(Long.valueOf(2), categoryUsageSection2.get(category1));
+		Assert.assertEquals(Long.valueOf(1), categoryUsageSection2.get(category2));
 	}
 	
 	private RepositoryEntry createTemplate(Identity initialAuthor,  String displayname, String description) {

@@ -52,6 +52,10 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackImpl(true, false, true, null);
 	}
 	
+	public static final BinderSecurityCallback getCallbackFroImportPages() {
+		return new BinderSecurityCallbackForImporPages();
+	}
+	
 	/**
 	 * The callback for the deleted pages doens't allow anything.
 	 * @return
@@ -126,6 +130,10 @@ public class BinderSecurityCallbackFactory {
 		public boolean canPageUserInfosStatus() {
 			return false;
 		}
+	}
+	
+	private static class BinderSecurityCallbackForImporPages extends DefaultBinderSecurityCallback {
+		
 	}
 
 	private static class BinderSecurityCallbackForDeletedPages extends DefaultBinderSecurityCallback {

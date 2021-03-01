@@ -61,6 +61,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -80,6 +84,7 @@ import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.model.BinderRefImpl;
 import org.olat.modules.portfolio.model.BinderStatistics;
@@ -92,6 +97,7 @@ import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
 import org.olat.modules.portfolio.ui.model.BinderListSettings;
 import org.olat.modules.portfolio.ui.model.BinderRow;
 import org.olat.modules.portfolio.ui.model.CourseTemplateRow;
+import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositorySearchController;
@@ -133,6 +139,7 @@ public class BinderListController extends FormBasicController
 	private ConfirmDeleteBinderController deleteBinderCtrl;
 	private ConfirmMoveBinderToTrashController moveBinderToTrashCtrl;
 	private DialogBoxController confirmRestoreBinderCtrl;
+	private StepsMainRunController wizardCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -360,6 +367,8 @@ public class BinderListController extends FormBasicController
 					doNewBinderFromTemplate(ureq);
 				} else if(NewBinderEvent.NEW_EMPTY_FROM_COURSE.equals(cmd)) {
 					doNewBinderFromCourse(ureq);
+				} else if(NewBinderEvent.NEW_FROM_ENTRIES.equals(cmd)) {
+					doNewBinderFromEntries(ureq);
 				}
 			}
 		} else if(searchTemplateCtrl == source) {
@@ -416,6 +425,14 @@ public class BinderListController extends FormBasicController
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
 			}
+		} else if (wizardCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+                // Close the dialog
+                getWindowControl().pop();
+
+                // Remove steps controller
+                cleanUp();
+            }
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -431,6 +448,7 @@ public class BinderListController extends FormBasicController
 		removeAsListenerAndDispose(binderMetadataCtrl);
 		removeAsListenerAndDispose(deleteBinderCtrl);
 		removeAsListenerAndDispose(newBinderCtrl);
+		removeAsListenerAndDispose(wizardCtrl);
 		removeAsListenerAndDispose(cmc);
 		searchCourseTemplateCtrl = null;
 		chooseNewBinderTypeCtrl = null;
@@ -440,6 +458,7 @@ public class BinderListController extends FormBasicController
 		searchTemplateCtrl = null;
 		deleteBinderCtrl = null;
 		newBinderCtrl = null;
+		wizardCtrl = null;
 		cmc = null;
 	}
 
@@ -620,6 +639,18 @@ public class BinderListController extends FormBasicController
 		doOpenBinder(ureq, copyBinder).activate(ureq, null, null);
 	}
 	
+	private void doNewBinderFromEntries(UserRequest ureq) {
+		PortfolioImportEntriesContext context = new PortfolioImportEntriesContext();
+		context.setBinderSecurityCallback(BinderSecurityCallbackFactory.getCallbackFroImportPages());
+		FinishCallback finish = new FinishCallback();
+		CancelCallback cancel = new CancelCallback();
+		CreateNewBinderStep createNewBinderStep = new CreateNewBinderStep(ureq, context);
+		
+		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), createNewBinderStep, finish, cancel, translate("create.binder.from.entries"), null);
+		listenTo(wizardCtrl);
+		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
+	}
+	
 	private void doOpenTools(UserRequest ureq, FormLink link, BinderRow row) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -787,6 +818,44 @@ public class BinderListController extends FormBasicController
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
 			return "o_portfolio_entry o_dragable";
+		}
+	}
+	
+	private class FinishCallback implements StepRunnerCallback {
+		@Override
+		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			// Load context
+			PortfolioImportEntriesContext context = (PortfolioImportEntriesContext) runContext.get(PortfolioImportEntriesContext.CONTEXT_KEY);
+			
+			// Create binder
+			String imagePath = null;
+			if (context.getNewBinderImage() != null) {
+				imagePath = portfolioService.addPosterImageForBinder(context.getNewBinderImage(), context.getNewBinderImageName());
+			}
+			Binder newBinder = portfolioService.createNewBinder(context.getNewBinderTitle(), context.getNewBinderDescription(), imagePath, getIdentity());
+			
+			// Create section
+			SectionRef newSectionRef = portfolioService.appendNewSection(context.getNewSectionTitle(), context.getNewSectionDescription(), null, null, newBinder);
+			
+			// Import pages
+			for (PortfolioElementRow page : context.getSelectedPortfolioEntries()) {
+				portfolioService.appendNewPage(getIdentity(), page.getTitle(), page.getSummary(), page.getImageUrl(), page.getPage().getImageAlignment(), newSectionRef, page.getPage());
+			}
+			
+			// Reload data and open new binder
+			loadModel(ureq, true);
+			doOpenBinder(ureq, newBinder).activate(ureq, null, null);
+			
+			// Fire event
+            return StepsMainRunController.DONE_MODIFIED;
+		}
+	}
+	
+	private class CancelCallback implements StepRunnerCallback {
+		@Override
+		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			// Cancel the wizard
+			return StepsMainRunController.DONE_UNCHANGED;
 		}
 	}
 	

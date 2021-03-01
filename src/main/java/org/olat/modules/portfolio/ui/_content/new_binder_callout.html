@@ -8,4 +8,7 @@
 	#if($r.available("course"))
 	<li>$r.render("course")</li>
 	#end
+	#if($r.available("entries"))
+	<li>$r.render("entries")</li>
+	#end
 </ul>

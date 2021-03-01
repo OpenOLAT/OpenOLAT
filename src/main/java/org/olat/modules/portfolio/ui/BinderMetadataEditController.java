@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -83,6 +84,9 @@ public class BinderMetadataEditController extends FormBasicController {
 	private List<TextBoxItem> categories = new ArrayList<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
 	
+	private PortfolioImportEntriesContext wizardContext;
+	private boolean usedInWizard; 
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -106,6 +110,16 @@ public class BinderMetadataEditController extends FormBasicController {
 			}
 		}
 		initForm(ureq);
+	}
+	
+	public BinderMetadataEditController(UserRequest ureq, WindowControl wControl, Form rootForm, PortfolioImportEntriesContext context) {
+		super(ureq, wControl, LAYOUT_DEFAULT_2_10, null, rootForm);
+		
+		this.wizardContext = context;
+		this.usedInWizard = true;
+		
+		initForm(ureq);		
+		loadContextData();
 	}
 
 	@Override
@@ -141,47 +155,59 @@ public class BinderMetadataEditController extends FormBasicController {
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
 		
-		// owners 		
-		StringBuilder sb = new StringBuilder();
-		if(binder == null || binder.getKey() == null) {
-			sb.append(userManager.getUserDisplayName(getIdentity()));
-		} else {
-			List<Identity> owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
-			for(Identity owner:owners) {
-				if(sb.length() > 0) sb.append(", ");
-				sb.append(userManager.getUserDisplayName(owner));
+		if (!usedInWizard) {
+			// owners 		
+			StringBuilder sb = new StringBuilder();
+			if(binder == null || binder.getKey() == null) {
+				sb.append(userManager.getUserDisplayName(getIdentity()));
+			} else {
+				List<Identity> owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+				for(Identity owner:owners) {
+					if(sb.length() > 0) sb.append(", ");
+					sb.append(userManager.getUserDisplayName(owner));
+				}
 			}
+			uifactory.addStaticTextElement("author", "author", sb.toString(), formLayout);
+			
+			// template name
+			String templateName;
+			if(binder != null && binder.getTemplate() != null) {
+				templateName = binder.getTemplate().getTitle();
+			} else {
+				templateName = translate("template.none");
+			}
+			uifactory.addStaticTextElement("template", "template", templateName, formLayout);
+			
+			// portfolio task
+			String courseName;
+			if(binder != null && binder.getEntry() != null) {
+				courseName = binder.getEntry().getDisplayname();
+			} else {
+				courseName = translate("portfoliotask.none");
+			}
+			uifactory.addStaticTextElement("portfolio-task", "portfoliotask", courseName, formLayout);
+	
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			buttonsCont.setRootForm(mainForm);
+			formLayout.add(buttonsCont);
+			
+			if(binder != null && binder.getKey() != null) {
+				uifactory.addFormSubmitButton("save", buttonsCont);
+			} else {
+				uifactory.addFormSubmitButton("create.binder", buttonsCont);
+			}
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
-		uifactory.addStaticTextElement("author", "author", sb.toString(), formLayout);
-		
-		// template name
-		String templateName;
-		if(binder != null && binder.getTemplate() != null) {
-			templateName = binder.getTemplate().getTitle();
-		} else {
-			templateName = translate("template.none");
+	}
+	
+	private void loadContextData() {
+		titleEl.setValue(wizardContext.getNewBinderTitle());
+		summaryEl.setValue(wizardContext.getNewBinderDescription());
+		fileUpload.setInitialFile(wizardContext.getNewBinderImage());
+		if (wizardContext.getNewBinderImageName() != null) {
+			fileUpload.setUploadFileName(wizardContext.getNewBinderImageName());
 		}
-		uifactory.addStaticTextElement("template", "template", templateName, formLayout);
-		
-		// portfolio task
-		String courseName;
-		if(binder != null && binder.getEntry() != null) {
-			courseName = binder.getEntry().getDisplayname();
-		} else {
-			courseName = translate("portfoliotask.none");
-		}
-		uifactory.addStaticTextElement("portfolio-task", "portfoliotask", courseName, formLayout);
-
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
-		
-		if(binder != null && binder.getKey() != null) {
-			uifactory.addFormSubmitButton("save", buttonsCont);
-		} else {
-			uifactory.addFormSubmitButton("create.binder", buttonsCont);
-		}
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		categoriesEl.setCurrentItems(wizardContext.getNewBinderCategories());
 	}
 	
 	public Binder getBinder() {
@@ -207,37 +233,45 @@ public class BinderMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(binder == null) {
-			String title = titleEl.getValue();
-			String summary = summaryEl.getValue();
-			
-			String imagePath = null;
-			if(fileUpload.getUploadFile() != null) {
-				imagePath = portfolioService.addPosterImageForBinder(fileUpload.getUploadFile(), fileUpload.getUploadFileName());
+		if (wizardContext == null) {
+			if(binder == null) {
+				String title = titleEl.getValue();
+				String summary = summaryEl.getValue();
+				
+				String imagePath = null;
+				if(fileUpload.getUploadFile() != null) {
+					imagePath = portfolioService.addPosterImageForBinder(fileUpload.getUploadFile(), fileUpload.getUploadFileName());
+				}
+				binder = portfolioService.createNewBinder(title, summary, imagePath, getIdentity());
+				
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
+				ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_BINDER_CREATED, getClass());
+			} else {
+				binder = portfolioService.getBinderByKey(binder.getKey());
+				if(fileUpload.getUploadFile() != null) {
+					String imagePath = portfolioService.addPosterImageForBinder(fileUpload.getUploadFile(), fileUpload.getUploadFileName());
+					binder.setImagePath(imagePath);
+				} else if(fileUpload.getInitialFile() == null) {
+					binder.setImagePath(null);
+					portfolioService.removePosterImage(binder);
+				}
+				binder.setTitle(titleEl.getValue());
+				binder.setSummary(summaryEl.getValue());
+				binder = portfolioService.updateBinder(binder);
 			}
-			binder = portfolioService.createNewBinder(title, summary, imagePath, getIdentity());
 			
-			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
-			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_BINDER_CREATED, getClass());
+			List<String> updatedCategories = categoriesEl.getValueList();
+			portfolioService.updateCategories(binder, updatedCategories);
+			dbInstance.commit();
+			
+			fireEvent(ureq, Event.DONE_EVENT);
 		} else {
-			binder = portfolioService.getBinderByKey(binder.getKey());
-			if(fileUpload.getUploadFile() != null) {
-				String imagePath = portfolioService.addPosterImageForBinder(fileUpload.getUploadFile(), fileUpload.getUploadFileName());
-				binder.setImagePath(imagePath);
-			} else if(fileUpload.getInitialFile() == null) {
-				binder.setImagePath(null);
-				portfolioService.removePosterImage(binder);
-			}
-			binder.setTitle(titleEl.getValue());
-			binder.setSummary(summaryEl.getValue());
-			binder = portfolioService.updateBinder(binder);
+			wizardContext.setNewBinderTitle(titleEl.getValue());
+			wizardContext.setNewBinderDescription(summaryEl.getValue());
+			wizardContext.setNewBinderImage(fileUpload.getUploadFile());
+			wizardContext.setNewBinderImageName(fileUpload.getUploadFileName());
+			wizardContext.setNewBinderCategories(categoriesEl.getValueItems());
 		}
-		
-		List<String> updatedCategories = categoriesEl.getValueList();
-		portfolioService.updateCategories(binder, updatedCategories);
-		dbInstance.commit();
-		
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override

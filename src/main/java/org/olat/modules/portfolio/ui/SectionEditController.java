@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -56,23 +57,39 @@ public class SectionEditController extends FormBasicController {
 	private Object userObject;
 	private BinderSecurityCallback secCallback;
 	
+	private boolean usedInWizard;
+	private PortfolioImportEntriesContext wizardContext;
+	
 	@Autowired
 	private PortfolioService portfolioService;
 	
-	public SectionEditController(UserRequest ureq, WindowControl wControl,
-			BinderRef binder, BinderSecurityCallback secCallback) {
+	public SectionEditController(UserRequest ureq, WindowControl wControl, BinderRef binder, BinderSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.binder = binder;
 		this.secCallback = secCallback;
+		this.usedInWizard = false;
 		initForm(ureq);
 	}
 	
-	public SectionEditController(UserRequest ureq, WindowControl wControl,
-			Section section, BinderSecurityCallback secCallback) {
+	public SectionEditController(UserRequest ureq, WindowControl wControl, Section section, BinderSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.section = section;
 		this.secCallback = secCallback;
+		this.usedInWizard = false;
 		initForm(ureq);
+	}
+	
+	public SectionEditController(UserRequest ureq, WindowControl wControl, Form rootForm, PortfolioImportEntriesContext context) {
+		super(ureq, wControl, LAYOUT_DEFAULT_2_10, null, rootForm);
+		
+		this.secCallback = context.getBinderSecurityCallback();
+		this.usedInWizard = true;
+		this.wizardContext = context;
+		
+		initForm(ureq);
+		
+		titleEl.setValue(context.getNewSectionTitle());
+		descriptionEl.setValue(context.getNewSectionDescription());
 	}
 	
 	public Section getSection() {
@@ -113,15 +130,17 @@ public class SectionEditController extends FormBasicController {
 		endDateEl = uifactory.addDateChooser("end.date", "end.date", end, formLayout);
 		endDateEl.setVisible(secCallback.canSectionBeginAndEnd());
 
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
-		if(section != null && section.getKey() != null) {
-			uifactory.addFormSubmitButton("save", buttonsCont);
-		} else {
-			uifactory.addFormSubmitButton("create.section", buttonsCont);
+		if (!usedInWizard) {
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			buttonsCont.setRootForm(mainForm);
+			formLayout.add(buttonsCont);
+			if(section != null && section.getKey() != null) {
+				uifactory.addFormSubmitButton("save", buttonsCont);
+			} else {
+				uifactory.addFormSubmitButton("create.section", buttonsCont);
+			}
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	@Override
@@ -147,25 +166,32 @@ public class SectionEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(section == null) {
-			String title = titleEl.getValue();
-			String description = descriptionEl.getValue();
-			SectionRef sectionRef = portfolioService.appendNewSection(title, description, beginDateEl.getDate(), endDateEl.getDate(), binder);
-			section = portfolioService.getSection(sectionRef);
-		} else {
-			Section reloadedSection = portfolioService.getSection(section);
-			reloadedSection.setTitle(titleEl.getValue());
-			reloadedSection.setDescription(descriptionEl.getValue());
-			reloadedSection.setBeginDate(beginDateEl.getDate());
-			reloadedSection.setEndDate(endDateEl.getDate());
-			section = portfolioService.updateSection(reloadedSection);
-		}
-		
-		fireEvent(ureq, Event.DONE_EVENT);
+		if (!usedInWizard) {
+			if(section == null) {
+				String title = titleEl.getValue();
+				String description = descriptionEl.getValue();
+				SectionRef sectionRef = portfolioService.appendNewSection(title, description, beginDateEl.getDate(), endDateEl.getDate(), binder);
+				section = portfolioService.getSection(sectionRef);
+			} else {
+				Section reloadedSection = portfolioService.getSection(section);
+				reloadedSection.setTitle(titleEl.getValue());
+				reloadedSection.setDescription(descriptionEl.getValue());
+				reloadedSection.setBeginDate(beginDateEl.getDate());
+				reloadedSection.setEndDate(endDateEl.getDate());
+				section = portfolioService.updateSection(reloadedSection);
+			}
+			
+			fireEvent(ureq, Event.DONE_EVENT);
+		} 
+	}
+	
+	public void saveDataInWizardContext() {
+		wizardContext.setNewSectionTitle(titleEl.getValue());
+		wizardContext.setNewSectionDescription(descriptionEl.getValue());
 	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-}
+ }

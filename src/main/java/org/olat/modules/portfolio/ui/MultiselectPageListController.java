@@ -29,8 +29,6 @@ import java.util.Set;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -38,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.modules.portfolio.Assignment;
@@ -59,38 +56,18 @@ import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SelectPageListController extends AbstractPageListController {
+public class MultiselectPageListController extends AbstractPageListController {
 
 	private Section currentSection; 
-	private boolean isMultiSelect;
 	
-	public SelectPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Section currentSection, BinderSecurityCallback secCallback, boolean isMultiSelect) {
+	public MultiselectPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Section currentSecion, BinderSecurityCallback secCallback) {
 		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createSelectPagesConfig(), "select_pages", false, false, true);
 		
-		initPageListController(ureq, currentSection, isMultiSelect);
-	}
-	
-	public SelectPageListController(UserRequest ureq, WindowControl wControl, Form rootForm, Section currentSection, BinderSecurityCallback secCallback, boolean isMultiSelect) {
-		super(ureq, wControl, rootForm, secCallback, BinderConfiguration.createSelectPagesConfig(), "select_pages", false, false, true);
-		
-		initPageListController(ureq, currentSection, isMultiSelect);
-	}
-	
-	public void initPageListController(UserRequest ureq, Section currentSection, boolean isMultiSelect) {
-		this.currentSection = currentSection;
-		this.isMultiSelect = isMultiSelect;
+		this.currentSection = currentSecion;
 
 		initForm(ureq);
 		loadModel(ureq, null);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
-		super.loadCompetenciesFilter();
-		super.loadCategoriesFilter();
-	}
-	
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		super.initForm(formLayout, listener, ureq);
-		tableEl.setMultiSelect(isMultiSelect);
 	}
 
 	@Override
@@ -102,11 +79,9 @@ public class SelectPageListController extends AbstractPageListController {
 	protected void initColumns(FlexiTableColumnModel columnsModel) {
 		super.initColumns(columnsModel);
 		
-		if (!isMultiSelect) {
-			DefaultFlexiColumnModel selectCol = new DefaultFlexiColumnModel("select", translate("select"), "select-page");
-			selectCol.setAlwaysVisible(true);
-			columnsModel.addFlexiColumnModel(selectCol);
-		}
+		DefaultFlexiColumnModel selectCol = new DefaultFlexiColumnModel("select", translate("select"), "select-page");
+		selectCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(selectCol);
 	}
 
 	@Override

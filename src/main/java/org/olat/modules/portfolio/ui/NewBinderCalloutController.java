@@ -39,7 +39,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NewBinderCalloutController extends BasicController {
 	
-	private Link createBinderLink, createBinderFromTemplateLink, createBinderFromCourseLink;
+	private Link createBinderLink;
+	private Link createBinderFromTemplateLink;
+	private Link createBinderFromCourseLink;
+	private Link createBinderFromEntriesLink;
 	
 	@Autowired
 	private PortfolioV2Module portfolioModule;
@@ -60,6 +63,10 @@ public class NewBinderCalloutController extends BasicController {
 			createBinderFromCourseLink = LinkFactory.createLink("course", "create.empty.binder.from.course", "new.course", mainVC, this);
 			mainVC.put("course", createBinderFromCourseLink);
 		}
+		if(portfolioModule.isLearnerCanCreateBinders()) {
+			createBinderFromEntriesLink = LinkFactory.createLink("entries", "create.binder.from.entries", "new.entries", mainVC, this);
+			mainVC.put("entries", createBinderFromEntriesLink);
+		}
 		putInitialPanel(mainVC);
 	}
 	
@@ -76,6 +83,8 @@ public class NewBinderCalloutController extends BasicController {
 			fireEvent(ureq, new NewBinderEvent(NewBinderEvent.NEW_EMPTY_FROM_TEMPLATE));
 		} else if(createBinderFromCourseLink == source) {
 			fireEvent(ureq, new NewBinderEvent(NewBinderEvent.NEW_EMPTY_FROM_COURSE));
+		} else if(createBinderFromEntriesLink == source) {
+			fireEvent(ureq, new NewBinderEvent(NewBinderEvent.NEW_FROM_ENTRIES));
 		}
 	}
 }

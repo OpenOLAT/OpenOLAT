@@ -30,9 +30,11 @@ import org.olat.core.gui.control.Event;
 public class NewBinderEvent extends Event {
 
 	private static final long serialVersionUID = -2221926645619837169L;
+	
 	public static final String NEW_EMPTY = "new-empty-binder";
 	public static final String NEW_EMPTY_FROM_TEMPLATE = "new-binder-from-template";
 	public static final String NEW_EMPTY_FROM_COURSE = "new-binder-from-course";
+	public static final String NEW_FROM_ENTRIES = "new-binder-from-entries";
 	
 	public NewBinderEvent(String command) {
 		super(command);

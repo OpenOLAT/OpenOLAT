@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -158,6 +159,19 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		this.secCallback = secCallback;
 		this.withSections = withSections;
 		this.withComments = withComments;
+		rowVC = createVelocityContainer("portfolio_element_row");
+	}
+	
+	public AbstractPageListController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			BinderSecurityCallback secCallback, BinderConfiguration config, String vTemplate,
+			boolean withSections, boolean withComments, boolean flatList) {
+		super(ureq, wControl, LAYOUT_CUSTOM, vTemplate, rootForm);
+		this.config = config;
+		this.flatList = flatList;
+		this.secCallback = secCallback;
+		this.withSections = withSections;
+		this.withComments = withComments;
+		this.stackPanel = null;
 		rowVC = createVelocityContainer("portfolio_element_row");
 	}
 	
@@ -356,6 +370,11 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		return components;
 	}
 	
+	/**
+	 * Load competencies for a specific section
+	 * 
+	 * @param section
+	 */
 	protected void loadCompetenciesFilter(Section section) {
 		List<FormLink> competencesAndUsage = new ArrayList<>();
 		portfolioService.getCompetenciesAndUsage(section).forEach((taxonomyLevel, usage) -> {
@@ -369,9 +388,50 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		flc.contextPut("competencesUsage", competencesAndUsage);
 	}
 	
+	/**
+	 * Load competences for all currently listed pages
+	 */
+	protected void loadCompetenciesFilter() {
+		List<Page> pages = model.getObjects().stream().map(row -> row.getPage()).collect(Collectors.toList());
+		List<FormLink> competencesAndUsage = new ArrayList<>();
+		
+		portfolioService.getCompetenciesAndUsage(pages).forEach((taxonomyLevel, usage) -> {
+			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
+			competency.setUserObject(taxonomyLevel);
+			competency.setCustomEnabledLinkCSS("tag label label-info");
+			
+			competencesAndUsage.add(competency);
+		});	
+		
+		flc.contextPut("competencesUsage", competencesAndUsage);
+	}
+	
+	/**
+	 * Load categories for a specific section
+	 * 
+	 * @param section
+	 */
 	protected void loadCategoriesFilter(Section section) {
 		List<FormLink> categoriesAndUsage = new ArrayList<>();
 		portfolioService.getCategoriesAndUsage(section).forEach((category, usage) -> {
+			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
+			categoryLink.setUserObject(category);
+			categoryLink.setCustomEnabledLinkCSS("tag label label-info");
+			
+			categoriesAndUsage.add(categoryLink);
+		});	
+		
+		flc.contextPut("categoriesUsage", categoriesAndUsage);
+	}
+	
+	/**
+	 * Load categories for all currently listed pages
+	 */
+	protected void loadCategoriesFilter() {
+		List<Page> pages = model.getObjects().stream().map(row -> row.getPage()).collect(Collectors.toList());
+		List<FormLink> categoriesAndUsage = new ArrayList<>();
+		
+		portfolioService.getCategoriesAndUsage(pages).forEach((category, usage) -> {
 			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
 			categoryLink.setUserObject(category);
 			categoryLink.setCustomEnabledLinkCSS("tag label label-info");
@@ -1018,7 +1078,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		}
 	}
 	
-	protected List<PortfolioElementRow> getSelectedRows() {
+	public List<PortfolioElementRow> getSelectedRows() {
 		Set<Integer> indexes = tableEl.getMultiSelectedIndex();
 		List<PortfolioElementRow> selectedRows = new ArrayList<>(indexes.size());
 		for(Integer index:indexes) {
@@ -1026,6 +1086,23 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			selectedRows.add(row);
 		}
 		return selectedRows;
+	}
+	
+	public Set<Integer> getSelectedIndexes() {
+		return tableEl.getMultiSelectedIndex();
+	}
+	
+	public void setSelectedIndexex(Set<Integer> multiSelectIndexes) {
+		tableEl.setMultiSelectedIndex(multiSelectIndexes);
+	}
+	
+	public boolean checkAndSetEmptySelectionError() {
+		if (tableEl.getMultiSelectedIndex().isEmpty()) {
+			tableEl.setErrorKey("page.list.selection.empty.error", null);
+			return false;
+		}
+		
+		return true;
 	}
 	
 	public static final class ListSection {

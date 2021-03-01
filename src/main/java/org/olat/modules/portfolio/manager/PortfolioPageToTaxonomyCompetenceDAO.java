@@ -135,4 +135,29 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 						(level1, level2) -> level1, 
 						LinkedHashMap::new));
 	}
+	
+	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(List<Page> pages) {
+		StringBuilder sb = new StringBuilder(256);
+		
+		sb.append("select level as level, count(*) as competenceCount from pfpagetotaxonomycompetence rel")
+		  .append(" inner join rel.portfolioPage as page")
+		  .append(" inner join rel.taxonomyCompetence as competence")
+		  .append(" inner join competence.taxonomyLevel as level")
+		  .append(" where page.key in :pageKeys")
+		  .append(" group by level")
+		  .append(" order by competenceCount desc, level.displayName asc");
+		
+		List<Long> pageKeys = pages.stream().map(page -> page.getKey()).collect(Collectors.toList());
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Tuple.class)
+				.setParameter("pageKeys", pageKeys)
+				.getResultStream()
+				.collect(
+					Collectors.toMap(
+						tuple -> ((TaxonomyLevel) tuple.get("level")), 
+						tuple -> ((Long) tuple.get("competenceCount")),
+						(level1, level2) -> level1, 
+						LinkedHashMap::new));
+	}
 }

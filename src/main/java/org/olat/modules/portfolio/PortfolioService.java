@@ -769,10 +769,27 @@ public interface PortfolioService {
 	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(Section section);
 	
 	/**
+	 * Get all competences for a list of pages and its usage count
+	 * Basically you only get the taxonomy level because of the name.
+	 * 
+	 * @param pages
+	 * @return
+	 */
+	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(List<Page> pages);
+	
+	/**
 	 * Get all categories used in a section and its usage count.
 	 * 
 	 * @param section
 	 * @return
 	 */
 	public LinkedHashMap<Category, Long> getCategoriesAndUsage(Section section);
+	
+	/**
+	 * Get all categories used in a list of pages and its usage count.
+	 * 
+	 * @param pages
+	 * @return
+	 */
+	public LinkedHashMap<Category, Long> getCategoriesAndUsage(List<Page> pages);
 }

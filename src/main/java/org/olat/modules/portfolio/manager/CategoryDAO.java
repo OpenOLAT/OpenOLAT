@@ -33,6 +33,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
+import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.CategoryImpl;
@@ -216,6 +217,29 @@ public class CategoryDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Tuple.class)
 				.setParameter("sectionKey", section.getKey())
+				.getResultStream()
+				.collect(
+					Collectors.toMap(
+						tuple -> ((Category) tuple.get("category")), 
+						tuple -> ((Long) tuple.get("categoryCount")),
+						(category1, category2) -> category1,
+						LinkedHashMap::new));
+	}
+	
+	public LinkedHashMap<Category, Long> getCategoriesAndUsage(List<Page> pages) {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("select category as category, count(*) as categoryCount from pfcategoryrelation as rel")
+		  .append(" inner join rel.category as category")
+		  .append(" where rel.resId in :pageKeys and rel.resName='Page'")
+		  .append(" group by category")
+		  .append(" order by categoryCount desc");
+		
+		List<Long> pageKeys = pages.stream().map(page -> page.getKey()).collect(Collectors.toList());
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Tuple.class)
+				.setParameter("pageKeys", pageKeys)
 				.getResultStream()
 				.collect(
 					Collectors.toMap(

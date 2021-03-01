@@ -91,4 +91,12 @@ public interface TextBoxListElement extends FormItem {
 	 * @param icon
 	 */
 	public void setIcon(String icon);
+	
+	/**
+	 * Set a new list of text box items as current items
+	 * 
+	 * @param currentItems
+	 */
+	public void setCurrentItems(List<TextBoxItem> currentItems);
+	
 }

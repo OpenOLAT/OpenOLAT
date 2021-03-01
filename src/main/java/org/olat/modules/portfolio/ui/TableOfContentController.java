@@ -57,6 +57,10 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.control.winmgr.ScrollTopCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
@@ -73,6 +77,7 @@ import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
@@ -97,6 +102,7 @@ import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
 import org.olat.modules.portfolio.ui.event.SelectPageEvent;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
+import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
@@ -130,6 +136,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private final TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
+	private StepsMainRunController wizardCtrl;
 	private TextComponent summaryComp;
 	private ToggleBoxController summaryCtrl;
 	private UserCommentsController commentsCtrl;
@@ -662,6 +669,17 @@ public class TableOfContentController extends BasicController implements TooledC
 				PageSelectionEvent pageSelectionEvent = (PageSelectionEvent) event;
 				doCreateNewEntryFrom(ureq, pageSelectionEvent.getPage(), pageSelectionEvent.getSection());
 			}
+		} else if (wizardCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+                // Reload data
+				loadModel();
+				
+				// Close the dialog
+                getWindowControl().pop();
+
+                // Remove steps controller
+                cleanUp();
+            }
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -678,6 +696,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		removeAsListenerAndDispose(newSectionCtrl);
 		removeAsListenerAndDispose(commentsCtrl);
 		removeAsListenerAndDispose(newPageCtrl);
+		removeAsListenerAndDispose(wizardCtrl);
 		removeAsListenerAndDispose(cmc);
 		moveBinderToTrashCtrl = null;
 		editSectionDatesCtrl = null;
@@ -689,6 +708,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		newSectionCtrl = null;
 		commentsCtrl = null;
 		newPageCtrl = null;
+		wizardCtrl = null;
 		cmc = null;
 	}
 
@@ -926,15 +946,29 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doImportExistingEntry(UserRequest ureq, Section currentSection) {
-		if(guardModalController(selectPageListCtrl)) return;
+		/*if(guardModalController(selectPageListCtrl)) return;
 
-		selectPageListCtrl = new SelectPageListController(ureq, getWindowControl(), null, currentSection, secCallback);
+		selectPageListCtrl = new SelectPageListController(ureq, getWindowControl(), (TooledStackedPanel)null, currentSection, secCallback, false);
 		listenTo(selectPageListCtrl);
 		
 		String title = translate("select.page");
 		cmc = new CloseableModalController(getWindowControl(), null, selectPageListCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
-		cmc.activate();
+		cmc.activate();*/
+		
+		PortfolioImportEntriesContext context = new PortfolioImportEntriesContext();
+		context.setBinderSecurityCallback(BinderSecurityCallbackFactory.getCallbackFroImportPages());
+		context.setCurrentSection(currentSection);
+		context.setCurrentBinder(binder);
+		
+		SelectPagesStep selectEntriesStep = new SelectPagesStep(ureq, context);
+		
+		FinishCallback finish = new FinishCallback();
+		CancelCallback cancel = new CancelCallback();
+				
+		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), selectEntriesStep, finish, cancel, translate("import.entries"), null);
+		listenTo(wizardCtrl);
+        getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
 	}
 	
 	private void doCreateNewEntryFrom(UserRequest ureq, Page page, Section currentSection) {
@@ -1260,4 +1294,27 @@ public class TableOfContentController extends BasicController implements TooledC
 			return false;
 		}
 	}
+	
+	private class FinishCallback implements StepRunnerCallback {
+        @Override
+        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+        	// Get context
+        	PortfolioImportEntriesContext context = (PortfolioImportEntriesContext) runContext.get(PortfolioImportEntriesContext.CONTEXT_KEY);
+        	
+        	// Import pages into section
+        	for (PortfolioElementRow page : context.getSelectedPortfolioEntries()) {
+        		portfolioService.appendNewPage(getIdentity(), page.getTitle(), page.getSummary(), page.getImageUrl(), page.getPage().getImageAlignment(), context.getCurrentSection(), page.getPage());
+        	}
+        	
+            // Fire event
+            return StepsMainRunController.DONE_MODIFIED;
+        }
+    }
+    
+    private static class CancelCallback implements StepRunnerCallback {
+        @Override
+        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+            return Step.NOSTEP;
+        }
+    }
 }
