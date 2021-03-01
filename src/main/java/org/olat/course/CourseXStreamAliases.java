@@ -36,6 +36,8 @@ import org.olat.course.condition.operators.IsNotInAttributeOperator;
 import org.olat.course.condition.operators.LowerThanEqualsOperator;
 import org.olat.course.condition.operators.LowerThanOperator;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.noderight.model.NodeRightGrantImpl;
+import org.olat.course.noderight.model.NodeRightImpl;
 import org.olat.course.nodes.AdobeConnectCourseNode;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.BasicLTICourseNode;
@@ -98,6 +100,8 @@ public class CourseXStreamAliases {
 		//write XStream
 		writeXstream.alias("com.frentix.olat.course.nodes.ViteroCourseNode", ViteroCourseNode.class);
 		writeXstream.alias("BookSection", BookSectionImpl.class);
+		writeXstream.alias("NodeRight", NodeRightImpl.class);
+		writeXstream.alias("NodeRightGrant", NodeRightGrantImpl.class);
 		//end write XStream
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////
@@ -137,6 +141,8 @@ public class CourseXStreamAliases {
 		readXstream.alias("WikiCourseNode", WikiCourseNode.class);
 		readXstream.alias("ExtendedCondition", ExtendedCondition.class);
 		readXstream.alias("Condition", Condition.class);
+		readXstream.alias("NodeRight", NodeRightImpl.class);
+		readXstream.alias("NodeRightGrant", NodeRightGrantImpl.class);
 		
 		// vc node to new adobe connect cours element
 		readXstream.alias("de.bps.course.nodes.VCCourseNode", AdobeConnectCourseNode.class);

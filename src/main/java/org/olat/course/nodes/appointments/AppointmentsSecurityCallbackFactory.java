@@ -23,7 +23,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.course.noderight.NodeRightService;
 import org.olat.course.nodes.AppointmentsCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -64,8 +66,9 @@ public class AppointmentsSecurityCallbackFactory {
 			this.participant = userCourseEnv.isParticipant();
 			this.readOnly = userCourseEnv.isCourseReadOnly();
 			
-			this.coachCanEditTopic = coach && config.getBooleanSafe(AppointmentsCourseNode.CONFIG_COACH_EDIT_TOPIC);
-			this.coachCanEditAppointment = coach && config.getBooleanSafe(AppointmentsCourseNode.CONFIG_COACH_EDIT_APPOINTMENT);
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			this.coachCanEditTopic = nodeRightService.isGranted(config, userCourseEnv, AppointmentsCourseNode.EDIT_TOPIC);
+			this.coachCanEditAppointment = nodeRightService.isGranted(config, userCourseEnv, AppointmentsCourseNode.EDIT_APPOINTMENT);
 		}
 
 		@Override

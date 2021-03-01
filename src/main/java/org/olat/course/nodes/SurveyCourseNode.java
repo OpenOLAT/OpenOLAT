@@ -23,6 +23,8 @@ import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
@@ -47,6 +49,11 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
+import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.NodeRightType;
+import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
 import org.olat.course.nodes.survey.ui.SurveyEditController;
 import org.olat.course.nodes.survey.ui.SurveyRunController;
@@ -90,16 +97,33 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE = "survey";
 	public static final String SURVEY_ICON = "o_survey_icon";
 
-	private static final int CURRENT_VERSION = 1;
+	private static final int CURRENT_VERSION = 2;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repository.softkey";
-	public static final String CONFIG_KEY_EXECUTION_BY_OWNER = "execution.by.owner";
-	public static final String CONFIG_KEY_EXECUTION_BY_COACH = "execution.by.coach";
-	public static final String CONFIG_KEY_EXECUTION_BY_PARTICIPANT = "execution.by.participant";
-	public static final String CONFIG_KEY_EXECUTION_BY_GUEST = "execution.by.guest";
-	public static final String CONFIG_KEY_REPORT_FOR_OWNER = "report.for.owner";
-	public static final String CONFIG_KEY_REPORT_FOR_COACH = "report.for.coach";
-	public static final String CONFIG_KEY_REPORT_FOR_PARTICIPANT = "report.for.participant";
-	public static final String CONFIG_KEY_REPORT_FOR_GUEST = "report.for.guest";
+	
+	private static final String LEGACY_KEY_EXECUTION_BY_OWNER = "execution.by.owner";
+	private static final String LEGACY_KEY_EXECUTION_BY_COACH = "execution.by.coach";
+	private static final String LEGACY_KEY_EXECUTION_BY_PARTICIPANT = "execution.by.participant";
+	private static final String LEGACY_KEY_EXECUTION_BY_GUEST = "execution.by.guest";
+	private static final String LEGACY_KEY_REPORT_FOR_OWNER = "report.for.owner";
+	private static final String LEGACY_KEY_REPORT_FOR_COACH = "report.for.coach";
+	private static final String LEGACY_KEY_REPORT_FOR_PARTICIPANT = "report.for.participant";
+	private static final String LEGACY_KEY_REPORT_FOR_GUEST = "report.for.guest";
+	
+	public static final NodeRightType EXECUTION = NodeRightTypeBuilder.ofIdentifier("execution")
+			.setLabel(SurveyEditController.class, "edit.execution")
+			.addRole(NodeRightRole.owner, false)
+			.addRole(NodeRightRole.coach, false)
+			.addRole(NodeRightRole.participant, true)
+			.addRole(NodeRightRole.guest, false)
+			.build();
+	public static final NodeRightType REPORT = NodeRightTypeBuilder.ofIdentifier("report")
+			.setLabel(SurveyEditController.class, "edit.report")
+			.addRole(NodeRightRole.owner, false)
+			.addRole(NodeRightRole.coach, true)
+			.addRole(NodeRightRole.participant, false)
+			.addRole(NodeRightRole.guest, false)
+			.build();
+	public static final List<NodeRightType> NODE_RIGHT_TYPES = List.of(EXECUTION, REPORT);
 
 	public SurveyCourseNode() {
 		this(null);
@@ -145,8 +169,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
-		RepositoryEntry courseEntry = euce.getCourseEditorEnv().getCourseGroupManager().getCourseEntry();
-		TabbableController childTabCtrl	= new SurveyEditController(ureq, wControl, this, courseEntry);
+		TabbableController childTabCtrl	= new SurveyEditController(ureq, wControl, this, course);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCtrl);
 	}
@@ -205,15 +228,53 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
-		if (isNewNode) {
-			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_OWNER, false);
-			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_COACH, false);
-			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_PARTICIPANT, true);
-			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_GUEST, false);
-			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_OWNER, false);
-			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_COACH, true);
-			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_PARTICIPANT, false);
-			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_GUEST, false);
+		int version = config.getConfigurationVersion();
+		
+		if (version < 2 && config.has(LEGACY_KEY_EXECUTION_BY_OWNER)) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			// Execution
+			NodeRight executionRight = nodeRightService.getRight(config, EXECUTION);
+			Collection<NodeRightRole> executionRoles = new ArrayList<>(4);
+			if (config.getBooleanSafe(LEGACY_KEY_EXECUTION_BY_OWNER)) {
+				executionRoles.add(NodeRightRole.owner);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_EXECUTION_BY_COACH)) {
+				executionRoles.add(NodeRightRole.coach);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_EXECUTION_BY_PARTICIPANT)) {
+				executionRoles.add(NodeRightRole.participant);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_EXECUTION_BY_GUEST)) {
+				executionRoles.add(NodeRightRole.guest);
+			}
+			nodeRightService.setRoleGrants(executionRight, executionRoles);
+			nodeRightService.setRight(config, executionRight);
+			// Report
+			NodeRight reportRight = nodeRightService.getRight(config, REPORT);
+			Collection<NodeRightRole> reportRoles = new ArrayList<>(4);
+			if (config.getBooleanSafe(LEGACY_KEY_REPORT_FOR_OWNER)) {
+				reportRoles.add(NodeRightRole.owner);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_REPORT_FOR_COACH)) {
+				reportRoles.add(NodeRightRole.coach);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_REPORT_FOR_PARTICIPANT)) {
+				reportRoles.add(NodeRightRole.participant);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_REPORT_FOR_GUEST)) {
+				reportRoles.add(NodeRightRole.guest);
+			}
+			nodeRightService.setRoleGrants(reportRight, reportRoles);
+			nodeRightService.setRight(config, reportRight);
+			// Remove legacy
+			config.remove(LEGACY_KEY_EXECUTION_BY_OWNER);
+			config.remove(LEGACY_KEY_EXECUTION_BY_COACH);
+			config.remove(LEGACY_KEY_EXECUTION_BY_PARTICIPANT);
+			config.remove(LEGACY_KEY_EXECUTION_BY_GUEST);
+			config.remove(LEGACY_KEY_REPORT_FOR_OWNER);
+			config.remove(LEGACY_KEY_REPORT_FOR_COACH);
+			config.remove(LEGACY_KEY_REPORT_FOR_PARTICIPANT);
+			config.remove(LEGACY_KEY_REPORT_FOR_GUEST);
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}

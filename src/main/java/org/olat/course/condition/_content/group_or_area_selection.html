@@ -4,6 +4,8 @@
 </div>
 #end
 $r.render("entries")
+#if($f.isVisible("cancel"))
 <div class="o_button_group o_sel_group_selection_groups">
 	$r.render("cancel") $r.render("subm")
 </div>
+#end

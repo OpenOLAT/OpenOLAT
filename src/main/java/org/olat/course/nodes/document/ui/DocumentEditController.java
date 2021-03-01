@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.ICourse;
 import org.olat.course.nodes.DocumentCourseNode;
 
 /**
@@ -45,10 +46,10 @@ public class DocumentEditController extends ActivateableTabbableDefaultControlle
 	private TabbedPane tabPane;
 
 	public DocumentEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			DocumentCourseNode documentCourseNode, VFSContainer courseFolderCont) {
+			ICourse course, DocumentCourseNode documentCourseNode, VFSContainer courseFolderCont) {
 		super(ureq, wControl);
 
-		configController = new DocumentConfigController(ureq, wControl, stackPanel, documentCourseNode, courseFolderCont);
+		configController = new DocumentConfigController(ureq, wControl, stackPanel, course, documentCourseNode, courseFolderCont);
 		listenTo(configController);
 	}
 

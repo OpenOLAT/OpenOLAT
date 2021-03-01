@@ -39,6 +39,8 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.noderight.ui.NodeRightsController;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -76,7 +78,9 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 		listenTo(elementsEditCtrl);
 		
 		if (!node.hasCustomPreConditions()) {
-			configCtrl = new DialogElementsConfigController(ureq, getWindowControl(), node);
+			CourseGroupManager courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
+			configCtrl = new NodeRightsController(ureq, getWindowControl(), courseGroupManager,
+					DialogCourseNode.NODE_RIGHT_TYPES, courseNode.getModuleConfiguration(), null);
 			listenTo(configCtrl);
 		} else {
 			accessContent = createVelocityContainer("edit_access");

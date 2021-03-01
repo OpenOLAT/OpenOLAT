@@ -19,10 +19,7 @@
  */
 package org.olat.course.nodes.bc;
 
-import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
-
 import java.io.File;
-import java.util.Collection;
 
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
@@ -37,7 +34,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -74,13 +70,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BCCourseNodeConfigController extends FormBasicController {
 	
-	private static final String UPLOAD_BY_COACH = "edit.upload.by.coach";
-	private static final String UPLOAD_BY_PARTICIPANT = "edit.upload.by.participant";
-	private static final String[] UPLOAD_KEYS = new String[] {
-			UPLOAD_BY_COACH,
-			UPLOAD_BY_PARTICIPANT
-	};
-
 	private SingleSelection folderTargetChoose;
 	private FormLink chooseFolder;
 	private StaticTextElement subPath;
@@ -88,7 +77,6 @@ public class BCCourseNodeConfigController extends FormBasicController {
 	private FormLink folderViewLink;
 	private FormItem sharedFolderWarning, sharedFolderInfo;
 	private FormItem linkedFolderWarning;
-	private MultipleSelectionElement uploadRolesEl;
 	
 	private BreadcrumbPanel stackPanel;
 	private CloseableModalController cmc;
@@ -173,17 +161,6 @@ public class BCCourseNodeConfigController extends FormBasicController {
 		transferCont.setFormTitle(translate("info.folder"));
 		
 		folderViewLink = uifactory.addFormLink("folder.view", transferCont, Link.BUTTON);
-		
-		if (!node.hasCustomPreConditions()) {
-			FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
-			formLayout.add(rightsCont);
-			rightsCont.setFormTitle(translate("info.rights"));
-			
-			uploadRolesEl = uifactory.addCheckboxesVertical("edit.upload", rightsCont, UPLOAD_KEYS, translateAll(getTranslator(), UPLOAD_KEYS), 1);
-			uploadRolesEl.select(UPLOAD_BY_COACH, moduleConfig.getBooleanSafe(BCCourseNode.CONFIG_KEY_UPLOAD_BY_COACH));
-			uploadRolesEl.select(UPLOAD_BY_PARTICIPANT, moduleConfig.getBooleanSafe(BCCourseNode.CONFIG_KEY_UPLOAD_BY_PARTICIPANT));
-			uploadRolesEl.addActionListener(FormEvent.ONCHANGE);
-		}
 	}
 
 	@Override
@@ -232,8 +209,6 @@ public class BCCourseNodeConfigController extends FormBasicController {
 			cmc.activate();
 		} else if (source == folderViewLink) {
 			doOpenFolder(ureq);
-		} else if (source == uploadRolesEl) {
-			doUpdateUploadRoles(ureq);
 		} 
 	}
 	
@@ -390,13 +365,6 @@ public class BCCourseNodeConfigController extends FormBasicController {
 		return new FullAccessWithQuotaCallback(quota);
 	}
 	
-	private void doUpdateUploadRoles(UserRequest ureq) {
-		Collection<String> selectedKeys = uploadRolesEl.getSelectedKeys();
-		moduleConfig.setBooleanEntry(BCCourseNode.CONFIG_KEY_UPLOAD_BY_COACH, selectedKeys.contains(UPLOAD_BY_COACH));
-		moduleConfig.setBooleanEntry(BCCourseNode.CONFIG_KEY_UPLOAD_BY_PARTICIPANT, selectedKeys.contains(UPLOAD_BY_PARTICIPANT));
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-	}
-
 	@Override
 	protected void doDispose() {
 		if(stackPanel != null) {

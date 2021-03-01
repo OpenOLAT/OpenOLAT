@@ -20,8 +20,6 @@
 package org.olat.course.nodes.survey.ui;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.stream.Stream;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
@@ -29,7 +27,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -60,35 +57,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class SurveyConfigController extends FormBasicController {
-	
-	public static final String EXECUTION_BY_OWNER = "edit.execution.by.owner";
-	public static final String EXECUTION_BY_COACH = "edit.execution.by.coach";
-	public static final String EXECUTION_BY_PARTICIPANT = "edit.execution.by.participant";
-	public static final String EXECUTION_BY_GUEST = "edit.execution.by.guest";
-	private static final String[] EXECUTION_KEYS = new String[] {
-			EXECUTION_BY_OWNER,
-			EXECUTION_BY_COACH,
-			EXECUTION_BY_PARTICIPANT,
-			EXECUTION_BY_GUEST
-	};
-	public static final String REPORT_FOR_OWNER = "edit.report.for.owner";
-	public static final String REPORT_FOR_COACH = "edit.report.for.coach";
-	public static final String REPORT_FOR_PARTICIPANT = "edit.report.for.participant";
-	public static final String REPORT_FOR_GUEST = "edit.report.for.guest";
-	private static final String[] REPORT_KEYS = new String[] {
-			REPORT_FOR_OWNER,
-			REPORT_FOR_COACH,
-			REPORT_FOR_PARTICIPANT,
-			REPORT_FOR_GUEST
-	};
 
 	private StaticTextElement evaluationFormNotChoosen;
 	private FormLink evaluationFormLink;
 	private FormLink chooseLink;
 	private FormLink replaceLink;
 	private FormLink editLink;
-	private MultipleSelectionElement executeRolesEl;
-	private MultipleSelectionElement reportRolesEl;
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController searchCtrl;
@@ -129,29 +103,9 @@ public class SurveyConfigController extends FormBasicController {
 		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, "btn btn-default o_xsmall");
 		editLink = uifactory.addFormLink("edit.edit", buttonsCont, "btn btn-default o_xsmall");
 		
-		executeRolesEl = uifactory.addCheckboxesVertical("edit.execution", formLayout, EXECUTION_KEYS, translateKeys(EXECUTION_KEYS), 1);
-		executeRolesEl.select(EXECUTION_BY_OWNER, moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_OWNER));
-		executeRolesEl.select(EXECUTION_BY_COACH, moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_COACH));
-		executeRolesEl.select(EXECUTION_BY_PARTICIPANT, moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_PARTICIPANT));
-		executeRolesEl.select(EXECUTION_BY_GUEST, moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_GUEST));
-		executeRolesEl.addActionListener(FormEvent.ONCHANGE);
-		
-		reportRolesEl = uifactory.addCheckboxesVertical("edit.report",formLayout, REPORT_KEYS, translateKeys(REPORT_KEYS), 1);
-		reportRolesEl.select(REPORT_FOR_OWNER, moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_OWNER));
-		reportRolesEl.select(REPORT_FOR_COACH, moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_COACH));
-		reportRolesEl.select(REPORT_FOR_PARTICIPANT, moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_PARTICIPANT));
-		reportRolesEl.select(REPORT_FOR_GUEST, moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_GUEST));
-		reportRolesEl.addActionListener(FormEvent.ONCHANGE);
-		
 		updateUI();
 	}
 	
-	private String[] translateKeys(String[] keys) {
-		return Stream.of(keys)
-				.map(key -> getTranslator().translate(key))
-				.toArray(String[]::new);
-	}
-
 	private void updateUI() {
 		boolean replacePossible = surveyManager.isFormUpdateable(survey);
 		boolean hasRepoConfig = survey != null;
@@ -182,10 +136,6 @@ public class SurveyConfigController extends FormBasicController {
 			doEditevaluationForm(ureq);
 		} else if (source == evaluationFormLink) {
 			doPreviewEvaluationForm(ureq);
-		} else if (source == executeRolesEl) {
-			doUpdateExecutionRoles(ureq);
-		} else if (source == reportRolesEl) {
-			doUpdateReportRoles(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -265,24 +215,6 @@ public class SurveyConfigController extends FormBasicController {
 		previewCtr.addDisposableChildController(controller);
 		previewCtr.activate();
 		listenTo(previewCtr);
-	}
-
-	private void doUpdateExecutionRoles(UserRequest ureq) {
-		Collection<String> selectedKeys = executeRolesEl.getSelectedKeys();
-		moduleConfiguration.setBooleanEntry(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_OWNER, selectedKeys.contains(EXECUTION_BY_OWNER));
-		moduleConfiguration.setBooleanEntry(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_COACH, selectedKeys.contains(EXECUTION_BY_COACH));
-		moduleConfiguration.setBooleanEntry(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_PARTICIPANT, selectedKeys.contains(EXECUTION_BY_PARTICIPANT));
-		moduleConfiguration.setBooleanEntry(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_GUEST, selectedKeys.contains(EXECUTION_BY_GUEST));
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-	}
-
-	private void doUpdateReportRoles(UserRequest ureq) {
-		Collection<String> selectedKeys = reportRolesEl.getSelectedKeys();
-		moduleConfiguration.setBooleanEntry(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_OWNER, selectedKeys.contains(REPORT_FOR_OWNER));
-		moduleConfiguration.setBooleanEntry(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_COACH, selectedKeys.contains(REPORT_FOR_COACH));
-		moduleConfiguration.setBooleanEntry(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_PARTICIPANT, selectedKeys.contains(REPORT_FOR_PARTICIPANT));
-		moduleConfiguration.setBooleanEntry(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_GUEST, selectedKeys.contains(REPORT_FOR_GUEST));
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 
 	@Override

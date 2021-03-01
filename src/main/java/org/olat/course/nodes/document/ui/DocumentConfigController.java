@@ -28,7 +28,9 @@ import org.olat.core.commons.controllers.filechooser.FileChooserUIFactory;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
@@ -50,6 +52,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -60,7 +63,10 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.noderight.ui.NodeRightsController;
 import org.olat.course.nodes.DocumentCourseNode;
 import org.olat.course.nodes.document.DocumentSecurityCallback;
 import org.olat.course.nodes.document.DocumentSource;
@@ -103,7 +109,7 @@ public class DocumentConfigController extends BasicController {
 	private CloseableModalController cmc;
 	private DocumentDisplayController documentDisplayCtrl;
 	private DocumentLayoutController documentLayoutCtrl;
-	private DocumentRightsController documentRightsCtrl;
+	private NodeRightsController documentRightsCtrl;
 	private DocumentSelectionController selectionCtrl;
 	private FileChooserController fileChooserCtr;
 	private ReferencableEntriesSearchController repoSearchCtrl;
@@ -118,6 +124,8 @@ public class DocumentConfigController extends BasicController {
 	private DocumentSource documentSource;
 	
 	@Autowired
+	private DocEditorService docEditorService;
+	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private LicenseModule licenseModule;
@@ -130,8 +138,8 @@ public class DocumentConfigController extends BasicController {
 	@Autowired
 	private VideoHandler videoHandler;
 
-	public DocumentConfigController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, DocumentCourseNode courseNode,
-			VFSContainer courseFolderCont) {
+	public DocumentConfigController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			ICourse course, DocumentCourseNode courseNode, VFSContainer courseFolderCont) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
@@ -147,7 +155,9 @@ public class DocumentConfigController extends BasicController {
 		listenTo(documentLayoutCtrl);
 		mainVC.put("layout", documentLayoutCtrl.getInitialComponent());
 		
-		documentRightsCtrl = new DocumentRightsController(ureq, wControl, courseNode);
+		CourseGroupManager courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
+		documentRightsCtrl = new NodeRightsController(ureq, getWindowControl(), courseGroupManager,
+				DocumentCourseNode.NODE_RIGHT_TYPES, courseNode.getModuleConfiguration(), null);
 		listenTo(documentRightsCtrl);
 		mainVC.put("rights", documentRightsCtrl.getInitialComponent());
 		
@@ -318,7 +328,12 @@ public class DocumentConfigController extends BasicController {
 		
 		documentLayoutCtrl.getInitialComponent().setVisible(documentAvailable);
 		
-		documentRightsCtrl.setVfsLeaf(ureq, documentSource.getVfsLeaf());
+		boolean hasEditor = false;
+		if (documentSource.getVfsLeaf() != null) {
+			String suffix = FileUtils.getFileSuffix(documentSource.getVfsLeaf().getName());
+			hasEditor = docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), suffix, Mode.EDIT, true, false);
+		}
+		documentRightsCtrl.setVisible(DocumentCourseNode.EDIT, hasEditor);
 		documentRightsCtrl.getInitialComponent().setVisible(documentAvailable);
 	}
 	

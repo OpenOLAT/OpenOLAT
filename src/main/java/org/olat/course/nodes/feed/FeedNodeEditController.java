@@ -60,7 +60,7 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 	private ConditionEditController readerCtr;
 	private ConditionEditController posterCtr;
 	private ConditionEditController moderatroCtr;
-	private FeedNodeConfigController configCtrl;
+	private Controller configCtrl;
 	
 	private AbstractFeedCourseNode courseNode;
 
@@ -98,7 +98,7 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 			accessVC.put("readerCondition", readerCtr.getInitialComponent());
 		}
 		
-		configCtrl = new FeedNodeConfigController(ureq, wControl, stackPanel, translatorPackage, course, courseNode,
+		configCtrl = new FeedNodeConfigsController(ureq, wControl, stackPanel, translatorPackage, course, courseNode,
 				uiFactory, resourceTypeName, helpUrl);
 		listenTo(configCtrl);
 	}

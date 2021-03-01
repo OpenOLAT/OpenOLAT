@@ -27,8 +27,8 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.ICourse;
 import org.olat.course.nodes.SurveyCourseNode;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -42,21 +42,21 @@ public class SurveyEditController extends ActivateableTabbableDefaultController 
 	public static final String PANE_TAB_CONFIG = "pane.tab.config";
 	private final static String[] paneKeys = { PANE_TAB_CONFIG };
 
-	private SurveyConfigController surveyConfigController;
+	private Controller surveyConfigsController;
 	private TabbedPane tabPane;
 	
 	public SurveyEditController(UserRequest ureq, WindowControl wControl, SurveyCourseNode surveyCourseNode,
-			RepositoryEntry courseEntry) {
+			ICourse course) {
 		super(ureq, wControl);
 		
-		surveyConfigController = new SurveyConfigController(ureq, wControl, surveyCourseNode, courseEntry);
-		listenTo(surveyConfigController);
+		surveyConfigsController = new SurveyConfigsController(ureq, wControl, surveyCourseNode, course);
+		listenTo(surveyConfigsController);
 	}
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CONFIG), surveyConfigController.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CONFIG), surveyConfigsController.getInitialComponent());
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class SurveyEditController extends ActivateableTabbableDefaultController 
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == surveyConfigController) {
+		if (source == surveyConfigsController) {
 			fireEvent(ureq, event);
 		}
 	}

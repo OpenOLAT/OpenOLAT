@@ -49,6 +49,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
 import org.olat.course.CourseFactory;
+import org.olat.course.noderight.NodeRightService;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -85,6 +86,8 @@ public class WikiRunController extends BasicController implements Activateable2 
 	
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private NodeRightService nodeRightsService;
 
 	public WikiRunController(WindowControl wControl, UserRequest ureq, WikiCourseNode wikiCourseNode,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
@@ -137,16 +140,14 @@ public class WikiRunController extends BasicController implements Activateable2 
 
 		Controller wrappedCtr = TitledWrapperHelper.getWrapper(ureq, wControl, wikiCtr, wikiCourseNode, Wiki.CSS_CLASS_WIKI_ICON);
 		
-		CloneLayoutControllerCreatorCallback clccc = (uureq, contentControllerCreator) -> {
-			return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, (lureq, lwControl)  -> {
-					// wrapp in column layout, popup window needs a layout controller
-					Controller ctr = contentControllerCreator.createController(lureq, lwControl);
-					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
-					layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), courseEnv));
-					layoutCtr.addDisposableChildController(ctr);
-					return layoutCtr;
-				});
-		};
+		CloneLayoutControllerCreatorCallback clccc = (uureq, contentControllerCreator) -> BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, (lureq, lwControl)  -> {
+				// wrapp in column layout, popup window needs a layout controller
+				Controller ctr = contentControllerCreator.createController(lureq, lwControl);
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
+				layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), courseEnv));
+				layoutCtr.addDisposableChildController(ctr);
+				return layoutCtr;
+			});
 		
 		if (wrappedCtr instanceof CloneableController) {
 			cloneCtr = new CloneController(ureq, getWindowControl(), (CloneableController)wrappedCtr, clccc);
@@ -161,14 +162,7 @@ public class WikiRunController extends BasicController implements Activateable2 
 		if (courseNode.hasCustomPreConditions()) {
 			return ne.isCapabilityAccessible(WikiCourseNode.EDIT_CONDITION);
 		}
-		
-		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
-		if ((moduleConfig.getBooleanSafe(WikiCourseNode.CONFIG_KEY_EDIT_BY_COACH) && userCourseEnv.isCoach())
-				|| (moduleConfig.getBooleanSafe(WikiCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT) && userCourseEnv.isParticipant())) {
-			return true;
-		}
-		
-		return false;
+		return nodeRightsService.isGranted(courseNode.getModuleConfiguration(), userCourseEnv, WikiCourseNode.EDIT);
 	}
 
 	@Override

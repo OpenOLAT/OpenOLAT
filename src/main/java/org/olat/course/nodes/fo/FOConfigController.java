@@ -20,8 +20,6 @@ package org.olat.course.nodes.fo;
 
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
-import java.util.Collection;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -46,22 +44,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class FOConfigController extends FormBasicController {
 	
 	private static final String[] allowKeys = new String[] { "on" };
-	private static final String MODERATOR_COACH = "edit.moderator.coach";
-	private static final String[] MODERATOR_KEYS = new String[] { MODERATOR_COACH };
-	private static final String POSTER_COACH = "edit.poster.coach";
-	private static final String POSTER_PARTICIPANT = "edit.poster.participant";
-	private static final String POSTER_GUEST = "edit.poster.guest";
-	private static final String[] POSTER_KEYS = new String[] {
-			POSTER_COACH,
-			POSTER_PARTICIPANT,
-			POSTER_GUEST
-	};
 	
 	private MultipleSelectionElement allowPseudonymEl;
 	private MultipleSelectionElement pseudonymAsDefaultEl;
 	private MultipleSelectionElement allowGuestEl;
-	private MultipleSelectionElement moderatorRolesEl;
-	private MultipleSelectionElement posterRolesEl;
 
 	private final FOCourseNode foNode;
 	private final ModuleConfiguration moduleConfig;
@@ -107,14 +93,14 @@ public class FOConfigController extends FormBasicController {
 			}
 		}
 		
-		FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
-		formLayout.add(rightsCont);
-		rightsCont.setFormTitle(translate("user.rights"));
-		if(!forumModule.isAnonymousPostingWithPseudonymEnabled()) {
-			rightsCont.setFormContextHelp("Communication and Collaboration#_forumkonfig");
-		}
-		
 		if (foNode.hasCustomPreConditions()) {
+			FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
+			formLayout.add(rightsCont);
+			rightsCont.setFormTitle(translate("user.rights"));
+			if(!forumModule.isAnonymousPostingWithPseudonymEnabled()) {
+				rightsCont.setFormContextHelp("Communication and Collaboration#_forumkonfig");
+			}
+		
 			allowGuestEl = uifactory.addCheckboxesHorizontal("allow.guest.post", rightsCont, allowKeys,
 					translateAll(getTranslator(), allowKeys));
 			allowGuestEl.setElementCssClass("o_sel_course_forum_allow_guest");
@@ -122,20 +108,6 @@ public class FOConfigController extends FormBasicController {
 			if ("true".equals(moduleConfig.getStringValue(FOCourseNode.CONFIG_GUEST_POST_ALLOWED))) {
 				allowGuestEl.select(allowKeys[0], true);
 			}
-		} else {
-			moderatorRolesEl = uifactory.addCheckboxesVertical("edit.moderator", rightsCont, MODERATOR_KEYS,
-					translateAll(getTranslator(), MODERATOR_KEYS), 1);
-			moderatorRolesEl.select(MODERATOR_COACH, moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_COACH_MODERATE_ALLOWED));
-			moderatorRolesEl.addActionListener(FormEvent.ONCHANGE);
-			
-			posterRolesEl = uifactory.addCheckboxesVertical("edit.poster", rightsCont, POSTER_KEYS,
-					translateAll(getTranslator(), POSTER_KEYS), 1);
-			posterRolesEl.setElementCssClass("o_sel_course_forum_poster");
-			posterRolesEl.select(POSTER_COACH, moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_COACH_POST_ALLOWED));
-			posterRolesEl.select(POSTER_PARTICIPANT,
-					moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_PARTICIPANT_POST_ALLOWED));
-			posterRolesEl.select(POSTER_GUEST, moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_GUEST_POST_ALLOWED));
-			posterRolesEl.addActionListener(FormEvent.ONCHANGE);
 		}
 	}
 	
@@ -153,10 +125,6 @@ public class FOConfigController extends FormBasicController {
 			updateUI();
 		} else if(allowGuestEl == source) {
 			doUpdatePosterGuest(ureq);
-		} else if (source == moderatorRolesEl) {
-			doUpdateModeratorRoles(ureq);
-		} else if (source == posterRolesEl) {
-			doUpdatePosterRoles(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -169,20 +137,6 @@ public class FOConfigController extends FormBasicController {
 
 	private void doUpdatePosterGuest(UserRequest ureq) {
 		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_GUEST_POST_ALLOWED, allowGuestEl.isAtLeastSelected(1));
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-	}
-
-	private void doUpdateModeratorRoles(UserRequest ureq) {
-		Collection<String> selectedKeys = moderatorRolesEl.getSelectedKeys();
-		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_COACH_MODERATE_ALLOWED, selectedKeys.contains(MODERATOR_COACH));
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-	}
-
-	private void doUpdatePosterRoles(UserRequest ureq) {
-		Collection<String> selectedKeys = posterRolesEl.getSelectedKeys();
-		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_COACH_POST_ALLOWED, selectedKeys.contains(POSTER_COACH));
-		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_PARTICIPANT_POST_ALLOWED, selectedKeys.contains(POSTER_PARTICIPANT));
-		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_GUEST_POST_ALLOWED, selectedKeys.contains(POSTER_GUEST));
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 

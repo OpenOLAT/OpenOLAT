@@ -19,10 +19,11 @@
  */
 package org.olat.course.nodes.cal;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.course.noderight.NodeRightService;
 import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -54,13 +55,8 @@ public class CalSecurityCallbackFactory {
 			return ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID);
 		}
 		
-		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
-		if ((moduleConfig.getBooleanSafe(CalCourseNode.CONFIG_KEY_EDIT_BY_COACH) && userCourseEnv.isCoach())
-				|| (moduleConfig.getBooleanSafe(CalCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT) && userCourseEnv.isParticipant())) {
-			return true;
-		}
-		
-		return false;
+		return CoreSpringFactory.getImpl(NodeRightService.class).isGranted(courseNode.getModuleConfiguration(),
+				userCourseEnv, CalCourseNode.EDIT);
 	}
 
 	private static class CalSecurityCallbackImpl implements CalSecurityCallback {

@@ -19,15 +19,10 @@
  */
 package org.olat.course.nodes.feed;
 
-import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
-
-import java.util.Collection;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -44,8 +39,6 @@ import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.AbstractFeedCourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.nodes.FOCourseNode;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.webFeed.FeedPreviewSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
@@ -60,24 +53,11 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
  */
 public class FeedNodeConfigController extends FormBasicController {
 	
-	private static final String MODERATOR_COACH = "edit.moderator.coach";
-	private static final String[] MODERATOR_KEYS = new String[] { MODERATOR_COACH };
-	private static final String POSTER_COACH = "edit.poster.coach";
-	private static final String POSTER_PARTICIPANT = "edit.poster.participant";
-	private static final String POSTER_GUEST = "edit.poster.guest";
-	private static final String[] POSTER_KEYS = new String[] {
-			POSTER_COACH,
-			POSTER_PARTICIPANT,
-			POSTER_GUEST
-	};
-
 	private StaticTextElement feedNotChoosenEl;
 	private FormLink previewLink;
 	private FormLink chooseLink;
 	private FormLink replaceLink;
 	private FormLink editLink;
-	private MultipleSelectionElement moderatorRolesEl;
-	private MultipleSelectionElement posterRolesEl;
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController repositorySearchCtrl;
@@ -86,7 +66,6 @@ public class FeedNodeConfigController extends FormBasicController {
 	private final BreadcrumbPanel stackPanel;
 	private final ICourse course;
 	private final AbstractFeedCourseNode courseNode;
-	private final ModuleConfiguration moduleConfig;
 	private final FeedUIFactory uiFactory;
 	private final String resourceTypeName;
 	private final String helpUrl;
@@ -94,12 +73,11 @@ public class FeedNodeConfigController extends FormBasicController {
 	
 	public FeedNodeConfigController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, String translatorPackage,
 			ICourse course, AbstractFeedCourseNode courseNode, FeedUIFactory uiFactory, String resourceTypeName, String helpUrl) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(translatorPackage, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
 		this.course = course;
 		this.courseNode = courseNode;
-		this.moduleConfig = courseNode.getModuleConfiguration();
 		this.uiFactory = uiFactory;
 		this.resourceTypeName = resourceTypeName;
 		this.feedEntry = courseNode.getReferencedRepositoryEntry();
@@ -109,44 +87,22 @@ public class FeedNodeConfigController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer resourceCont = FormLayoutContainer.createDefaultFormLayout("resource", getTranslator());
-		formLayout.add(resourceCont);
-		resourceCont.setRootForm(mainForm);
-		resourceCont.setFormTitle(translate("form.title.choose.feed"));
-		resourceCont.setFormContextHelp(helpUrl);
+		setFormTitle("form.title.choose.feed");
+		setFormContextHelp(helpUrl);
 		
 		feedNotChoosenEl = uifactory.addStaticTextElement("no.feed.chosen", "chosen.feed",
-				translate("no.feed.chosen"), resourceCont);
-		previewLink = uifactory.addFormLink("chosen.feed", "", translate("chosen.feed"), resourceCont,
+				translate("no.feed.chosen"), formLayout);
+		previewLink = uifactory.addFormLink("chosen.feed", "", translate("chosen.feed"), formLayout,
 				Link.NONTRANSLATED);
 		previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
-		resourceCont.add(buttonsCont);
+		formLayout.add(buttonsCont);
 		chooseLink = uifactory.addFormLink("button.create.feed", buttonsCont, "btn btn-default o_xsmall");
 		chooseLink.setElementCssClass("o_sel_feed_choose_repofile");
 		replaceLink = uifactory.addFormLink("button.change.feed", buttonsCont, "btn btn-default o_xsmall");
 		editLink = uifactory.addFormLink("edit", buttonsCont, "btn btn-default o_xsmall");
-		
-		if (!courseNode.hasCustomPreConditions()) {
-			FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
-			formLayout.add(rightsCont);
-			rightsCont.setFormTitle(translate("user.rights"));
-			
-			moderatorRolesEl = uifactory.addCheckboxesVertical("edit.moderator", rightsCont, MODERATOR_KEYS,
-					translateAll(getTranslator(), MODERATOR_KEYS), 1);
-			moderatorRolesEl.select(MODERATOR_COACH, moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_COACH_MODERATE_ALLOWED));
-			moderatorRolesEl.addActionListener(FormEvent.ONCHANGE);
-			
-			posterRolesEl = uifactory.addCheckboxesVertical("edit.poster", rightsCont, POSTER_KEYS,
-					translateAll(getTranslator(), POSTER_KEYS), 1);
-			posterRolesEl.select(POSTER_COACH, moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_COACH_POST_ALLOWED));
-			posterRolesEl.select(POSTER_PARTICIPANT,
-					moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_PARTICIPANT_POST_ALLOWED));
-			posterRolesEl.select(POSTER_GUEST, moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_GUEST_POST_ALLOWED));
-			posterRolesEl.addActionListener(FormEvent.ONCHANGE);
-		}
 		
 		updateUI();
 	}
@@ -173,10 +129,6 @@ public class FeedNodeConfigController extends FormBasicController {
 			doPreviewFeed(ureq);
 		} else if (source == editLink) {
 			doEditFeed(ureq);
-		} else if (source == moderatorRolesEl) {
-			doUpdateModeratorRoles(ureq);
-		} else if (source == posterRolesEl) {
-			doUpdatePosterRoles(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -240,20 +192,6 @@ public class FeedNodeConfigController extends FormBasicController {
 				showError("error.wrongtype");
 			}
 		}
-	}
-
-	private void doUpdateModeratorRoles(UserRequest ureq) {
-		Collection<String> selectedKeys = moderatorRolesEl.getSelectedKeys();
-		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_COACH_MODERATE_ALLOWED, selectedKeys.contains(MODERATOR_COACH));
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-	}
-
-	private void doUpdatePosterRoles(UserRequest ureq) {
-		Collection<String> selectedKeys = posterRolesEl.getSelectedKeys();
-		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_COACH_POST_ALLOWED, selectedKeys.contains(POSTER_COACH));
-		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_PARTICIPANT_POST_ALLOWED, selectedKeys.contains(POSTER_PARTICIPANT));
-		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_GUEST_POST_ALLOWED, selectedKeys.contains(POSTER_GUEST));
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 
 	@Override

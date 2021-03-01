@@ -21,6 +21,7 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -51,6 +52,11 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
+import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.NodeRightType;
+import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.feed.FeedNodeEditController;
 import org.olat.course.nodes.feed.FeedNodeSecurityCallback;
 import org.olat.course.nodes.feed.FeedPeekviewController;
@@ -83,12 +89,25 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	
 	private static final long serialVersionUID = -5307888583081589123L;
 	
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
-	public static final String CONFIG_COACH_MODERATE_ALLOWED = "coach.moderate.allowed";
-	public static final String CONFIG_COACH_POST_ALLOWED = "coach.post.allowed";
-	public static final String CONFIG_PARTICIPANT_POST_ALLOWED = "participant.post.allowed";
-	public static final String CONFIG_GUEST_POST_ALLOWED = "guest.post.allowed";
+	
+	private static final String LEGACY_COACH_MODERATE_ALLOWED = "coach.moderate.allowed";
+	private static final String LEGACY_COACH_POST_ALLOWED = "coach.post.allowed";
+	private static final String LEGACY_PARTICIPANT_POST_ALLOWED = "participant.post.allowed";
+	private static final String LEGACY_GUEST_POST_ALLOWED = "guest.post.allowed";
+	
+	private static final NodeRightType MODERATE = NodeRightTypeBuilder.ofIdentifier("moderate")
+			.setLabel(FeedNodeEditController.class, "edit.moderator")
+			.addRole(NodeRightRole.coach, true)
+			.build();
+	private static final NodeRightType POST = NodeRightTypeBuilder.ofIdentifier("post")
+			.setLabel(FeedNodeEditController.class, "edit.poster")
+			.addRole(NodeRightRole.coach, true)
+			.addRole(NodeRightRole.participant, true)
+			.addRole(NodeRightRole.guest, false)
+			.build();
+	public static final List<NodeRightType> NODE_RIGHT_TYPES = List.of(MODERATE, POST);
 	
 	protected Condition preConditionReader, preConditionPoster, preConditionModerator;
 
@@ -183,20 +202,15 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	private boolean isModerator(UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		if (hasCustomPreConditions()) {
 			return ne != null? ne.isCapabilityAccessible("moderator"): false;
-		} else if (getModuleConfiguration().getBooleanSafe(CONFIG_COACH_MODERATE_ALLOWED) && userCourseEnv.isCoach()) {
-			return true;
 		}
-		return false;
+		return CoreSpringFactory.getImpl(NodeRightService.class).isGranted(getModuleConfiguration(), userCourseEnv, MODERATE);
 	}
 	
 	private boolean isPoster(UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		if (hasCustomPreConditions()) {
 			return ne != null ? ne.isCapabilityAccessible("poster") : false;
-		} else if ((getModuleConfiguration().getBooleanSafe(CONFIG_COACH_POST_ALLOWED) && userCourseEnv.isCoach())
-				|| (getModuleConfiguration().getBooleanSafe(CONFIG_PARTICIPANT_POST_ALLOWED) && userCourseEnv.isParticipant())) {
-			return true;
 		}
-		return false;
+		return CoreSpringFactory.getImpl(NodeRightService.class).isGranted(getModuleConfiguration(), userCourseEnv, POST);
 	}
 
 	@Override
@@ -208,12 +222,38 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 			config.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, false);
 		}
 		if (version < 2) {
-			config.setBooleanEntry(CONFIG_COACH_MODERATE_ALLOWED, true);
-			config.setBooleanEntry(CONFIG_COACH_POST_ALLOWED, true);
-			config.setBooleanEntry(CONFIG_PARTICIPANT_POST_ALLOWED, true);
 			removeDefaultPreconditions();
 		}
-		
+		if (version < 3 && config.has(LEGACY_COACH_MODERATE_ALLOWED)) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			// Moderate
+			NodeRight moderateRight = nodeRightService.getRight(config, MODERATE);
+			Collection<NodeRightRole> moderateRoles = new ArrayList<>(1);
+			if (config.getBooleanSafe(LEGACY_COACH_MODERATE_ALLOWED)) {
+				moderateRoles.add(NodeRightRole.coach);
+			}
+			nodeRightService.setRoleGrants(moderateRight, moderateRoles);
+			nodeRightService.setRight(config, moderateRight);
+			// Post
+			NodeRight postRight = nodeRightService.getRight(config, POST);
+			Collection<NodeRightRole> postRoles = new ArrayList<>(3);
+			if (config.getBooleanSafe(LEGACY_COACH_POST_ALLOWED)) {
+				postRoles.add(NodeRightRole.coach);
+			}
+			if (config.getBooleanSafe(LEGACY_PARTICIPANT_POST_ALLOWED)) {
+				postRoles.add(NodeRightRole.participant);
+			}
+			if (config.getBooleanSafe(LEGACY_GUEST_POST_ALLOWED)) {
+				postRoles.add(NodeRightRole.guest);
+			}
+			nodeRightService.setRoleGrants(postRight, postRoles);
+			nodeRightService.setRight(config, postRight);
+			// Remove legacy
+			config.remove(LEGACY_COACH_MODERATE_ALLOWED);
+			config.remove(LEGACY_COACH_POST_ALLOWED);
+			config.remove(LEGACY_PARTICIPANT_POST_ALLOWED);
+			config.remove(LEGACY_GUEST_POST_ALLOWED);
+		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 

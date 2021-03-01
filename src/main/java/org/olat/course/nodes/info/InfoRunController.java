@@ -50,6 +50,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.noderight.NodeRightService;
 import org.olat.course.nodes.InfoCourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -74,6 +75,8 @@ public class InfoRunController extends BasicController {
 	
 	private ContextualSubscriptionController subscriptionController;
 	
+	@Autowired
+	private NodeRightService nodeRightService;
 	@Autowired
 	private InfoSubscriptionManager subscriptionManager;
 	@Autowired
@@ -112,13 +115,7 @@ public class InfoRunController extends BasicController {
 			return ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID);
 		}
 		
-		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
-		if ((moduleConfig.getBooleanSafe(InfoCourseNode.CONFIG_KEY_EDIT_BY_COACH) && userCourseEnv.isCoach())
-				|| (moduleConfig.getBooleanSafe(InfoCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT) && userCourseEnv.isParticipant())) {
-			return true;
-		}
-		
-		return false;
+		return nodeRightService.isGranted(courseNode.getModuleConfiguration(), userCourseEnv, InfoCourseNode.EDIT);
 	}
 	
 	private boolean canAdmin(InfoCourseNode courseNode, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
@@ -130,12 +127,7 @@ public class InfoRunController extends BasicController {
 			return ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID);
 		}
 		
-		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
-		if (moduleConfig.getBooleanSafe(InfoCourseNode.CONFIG_KEY_ADMIN_BY_COACH) && userCourseEnv.isCoach()) {
-			return true;
-		}
-		
-		return false;
+		return nodeRightService.isGranted(courseNode.getModuleConfiguration(), userCourseEnv, InfoCourseNode.ADMIN);
 	}
 	
 	public InfoRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,

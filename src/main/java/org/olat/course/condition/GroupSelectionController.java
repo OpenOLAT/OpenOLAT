@@ -36,6 +36,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -72,6 +73,7 @@ public class GroupSelectionController extends FormBasicController {
 	private CloseableModalController cmc;
 	
 	private boolean createEnable;
+	private boolean showSave;
 	
 	private FlexiTableElement groupTableElement;
 	private ENEditGroupTableModel groupTableModel;
@@ -86,13 +88,27 @@ public class GroupSelectionController extends FormBasicController {
 			CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
 		super(ureq, wControl, "group_or_area_selection");
 		this.courseGrpMngr = courseGrpMngr;
-
+		this.showSave = true;
+		
+		init(ureq, allowCreate, courseGrpMngr, selectionKeys);
+	}
+	
+	public GroupSelectionController(UserRequest ureq, WindowControl wControl, Form rootForm, boolean allowCreate,
+			CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "group_or_area_selection", rootForm);
+		this.courseGrpMngr = courseGrpMngr;
+		this.showSave = false;
+		
+		init(ureq, allowCreate, courseGrpMngr, selectionKeys);
+	}
+	
+	private void init(UserRequest ureq, boolean allowCreate, CourseGroupManager courseGrpMngr,
+			List<Long> selectionKeys) {
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseGrpMngr.getCourseResource(), false);
 		createEnable = allowCreate && !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
-		// unique names from list to array
+		
 		initForm(ureq);
 		loadModel(selectionKeys);
-		
 	}
 	
 	public void loadModel(List<Long> selectionKeys) {
@@ -233,8 +249,10 @@ public class GroupSelectionController extends FormBasicController {
 		groupTableElement.setSelectAllEnable(true);
 		groupTableElement.setCustomizeColumns(false);
 		
-		uifactory.addFormSubmitButton("subm", "apply", formLayout);
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		if (showSave) {
+			uifactory.addFormSubmitButton("subm", "apply", formLayout);
+			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		}
 	}
 
 	@Override

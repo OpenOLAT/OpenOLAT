@@ -58,7 +58,7 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private TabbedPane myTabbedPane;
 	private VelocityContainer accessibilityContent;
 
-	private FOConfigController configCtrl;
+	private Controller configCtrl;
 	private ConditionEditController readerCondContr, posterCondContr, moderatorCondContr;
 
 	private final FOCourseNode foNode;
@@ -95,7 +95,7 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 		}
 		
 		//Settings
-		configCtrl = new FOConfigController(ureq, getWindowControl(), forumNode);
+		configCtrl = new FOConfigsController(ureq, getWindowControl(), forumNode, course);
 		listenTo(configCtrl);
 	}
 

@@ -27,6 +27,8 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -62,6 +64,11 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
+import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.NodeRightType;
+import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.dialog.DialogElement;
 import org.olat.course.nodes.dialog.DialogElementsManager;
 import org.olat.course.nodes.dialog.DialogSecurityCallback;
@@ -90,12 +97,29 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	@SuppressWarnings("deprecation")
 	private static final String TRANSLATOR_PACKAGE = Util.getPackageName(DialogCourseNodeEditController.class);
 	
-	private static final int CURRENT_VERSION = 2;
-	public static final String CONFIG_KEY_UPLOAD_BY_COACH = "upload.by.coach";
-	public static final String CONFIG_KEY_UPLOAD_BY_PARTICIPANT = "upload.by.participant";
-	public static final String CONFIG_KEY_MODERATE_BY_COACH = "moderate.by.coach";
-	public static final String CONFIG_KEY_POST_BY_COACH = "post.by.coach";
-	public static final String CONFIG_KEY_POST_BY_PARTICIPANT = "post.by.participant";
+	private static final int CURRENT_VERSION = 3;
+	
+	private static final String LEGACY_KEY_UPLOAD_BY_COACH = "upload.by.coach";
+	private static final String LEGACY_KEY_UPLOAD_BY_PARTICIPANT = "upload.by.participant";
+	private static final String LEGACY_KEY_MODERATE_BY_COACH = "moderate.by.coach";
+	private static final String LEGACY_KEY_POST_BY_COACH = "post.by.coach";
+	private static final String LEGACY_KEY_POST_BY_PARTICIPANT = "post.by.participant";
+	
+	public static final NodeRightType MODARATE = NodeRightTypeBuilder.ofIdentifier("modarate")
+			.setLabel(DialogCourseNodeEditController.class, "edit.moderator")
+			.addRole(NodeRightRole.coach, true)
+			.build();
+	public static final NodeRightType UPLOAD = NodeRightTypeBuilder.ofIdentifier("upload")
+			.setLabel(DialogCourseNodeEditController.class, "edit.upload")
+			.addRole(NodeRightRole.coach, true)
+			.addRole(NodeRightRole.participant, true)
+			.build();
+	public static final NodeRightType POST = NodeRightTypeBuilder.ofIdentifier("post")
+			.setLabel(DialogCourseNodeEditController.class, "edit.poster")
+			.addRole(NodeRightRole.coach, true)
+			.addRole(NodeRightRole.participant, true)
+			.build();
+	public static final List<NodeRightType> NODE_RIGHT_TYPES = List.of(MODARATE, UPLOAD, POST);
 	
 	private Condition preConditionReader, preConditionPoster, preConditionModerator;
 
@@ -172,12 +196,46 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		int version = config.getConfigurationVersion();
 		
 		if (version < 2) {
-			config.setBooleanEntry(CONFIG_KEY_UPLOAD_BY_COACH, true);
-			config.setBooleanEntry(CONFIG_KEY_UPLOAD_BY_PARTICIPANT, true);
-			config.setBooleanEntry(CONFIG_KEY_MODERATE_BY_COACH, true);
-			config.setBooleanEntry(CONFIG_KEY_POST_BY_COACH, true);
-			config.setBooleanEntry(CONFIG_KEY_POST_BY_PARTICIPANT, true);
 			removeDefaultPreconditions();
+		}
+		if (version < 3 && config.has(LEGACY_KEY_MODERATE_BY_COACH)) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			// Moderate
+			NodeRight executionRight = nodeRightService.getRight(config, MODARATE);
+			Collection<NodeRightRole> moderateRoles = new ArrayList<>(1);
+			if (config.getBooleanSafe(LEGACY_KEY_MODERATE_BY_COACH)) {
+				moderateRoles.add(NodeRightRole.coach);
+			}
+			nodeRightService.setRoleGrants(executionRight, moderateRoles);
+			nodeRightService.setRight(config, executionRight);
+			// Upload
+			NodeRight uploadRight = nodeRightService.getRight(config, UPLOAD);
+			Collection<NodeRightRole> uploadRoles = new ArrayList<>(2);
+			if (config.getBooleanSafe(LEGACY_KEY_UPLOAD_BY_COACH)) {
+				uploadRoles.add(NodeRightRole.coach);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_UPLOAD_BY_PARTICIPANT)) {
+				uploadRoles.add(NodeRightRole.participant);
+			}
+			nodeRightService.setRoleGrants(uploadRight, uploadRoles);
+			nodeRightService.setRight(config, uploadRight);
+			// Post
+			NodeRight postRight = nodeRightService.getRight(config, POST);
+			Collection<NodeRightRole> postRoles = new ArrayList<>(2);
+			if (config.getBooleanSafe(LEGACY_KEY_POST_BY_COACH)) {
+				postRoles.add(NodeRightRole.coach);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_POST_BY_PARTICIPANT)) {
+				postRoles.add(NodeRightRole.participant);
+			}
+			nodeRightService.setRoleGrants(postRight, postRoles);
+			nodeRightService.setRight(config, postRight);
+			// Remove legacy
+			config.remove(LEGACY_KEY_MODERATE_BY_COACH);
+			config.remove(LEGACY_KEY_UPLOAD_BY_COACH);
+			config.remove(LEGACY_KEY_UPLOAD_BY_PARTICIPANT);
+			config.remove(LEGACY_KEY_POST_BY_COACH);
+			config.remove(LEGACY_KEY_POST_BY_PARTICIPANT);
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}

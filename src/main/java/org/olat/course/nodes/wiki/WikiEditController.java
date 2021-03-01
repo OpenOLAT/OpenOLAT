@@ -61,7 +61,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 	private static final String[] paneKeys = { PANE_TAB_WIKICONFIG, PANE_TAB_ACCESSIBILITY };
 
 	private TabbedPane tabs;
-	private WikiConfigController configCtrl;
+	private Controller configCtrl;
 	private VelocityContainer editAccessVc;
 	private ConditionEditController accessCondCtrl;
 	private ConditionEditController editCondContr;
@@ -73,7 +73,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 		super(ureq, wControl);
 		this.wikiCourseNode = wikiCourseNode;
 		
-		configCtrl = new WikiConfigController(ureq, wControl, stackPanel, wikiCourseNode, course);
+		configCtrl = new WikiConfigsController(ureq, wControl, stackPanel, wikiCourseNode, course);
 		listenTo(configCtrl);
 		
 		if (wikiCourseNode.hasCustomPreConditions()) {

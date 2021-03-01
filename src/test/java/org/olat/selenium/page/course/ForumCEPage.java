@@ -44,8 +44,7 @@ public class ForumCEPage {
 	}
 	
 	public ForumCEPage allowGuest() {
-//		By allowBy = By.cssSelector("div.o_sel_course_forum_allow_guest label input[type='checkbox']");
-		By allowBy = By.cssSelector("div.o_sel_course_forum_poster :nth-child(2) div :nth-child(3) div label input[type='checkbox']");
+		By allowBy = By.cssSelector("div.o_nr_role_post :nth-child(2) div :nth-child(3) div label input[type='checkbox']");
 		browser.findElement(allowBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

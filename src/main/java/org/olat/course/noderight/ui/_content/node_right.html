@@ -1,0 +1,21 @@
+<div class="o_node_right $!typeCssClass #if($advanced)o_advanced #else o_regular #end">
+	<div class="o_toggle o_small">
+		<div>
+		#if ($advanced)
+			<span>$r.translate("config.advanced.hide")</span>
+			$r.render("hide.advanced")
+		#else
+			<span>$r.translate("config.advanced.show")</span>
+			$r.render("show.advanced")
+		#end
+		</div>
+	</div>
+	<div class="o_config">
+		#if($advanced)
+			$r.render("buttons.top")
+			$r.render("table")
+		#else
+			$r.render($rolesName)
+		#end
+	</div>
+</div>

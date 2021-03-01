@@ -421,6 +421,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAOTest.class,
 	org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAOTest.class,
 	org.olat.course.auditing.UserNodeAuditManagerTest.class,
+	org.olat.course.noderight.manager.NodeRightServiceImplTest.class,
 	org.olat.shibboleth.handler.SpringShibbolethAttributeHandlerFactoryTest.class,
 	org.olat.core.CoreSpringFactoryTest.class,
 	org.olat.modules.openmeetings.OpenMeetingsTest.class,

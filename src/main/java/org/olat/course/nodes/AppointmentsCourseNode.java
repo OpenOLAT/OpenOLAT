@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -37,6 +39,11 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
+import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.NodeRightType;
+import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.appointments.AppointmentsSecurityCallbackFactory;
 import org.olat.course.nodes.appointments.ui.AppointmentsEditController;
 import org.olat.course.nodes.appointments.ui.AppointmentsPeekViewController;
@@ -66,10 +73,21 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	public static final String ICON_CSS = "o_appointment_icon";
 	
 	// configuration
-	private static final int CURRENT_VERSION = 1;
-	public static final String CONFIG_COACH_EDIT_TOPIC = "coach.edit.topic";
-	public static final String CONFIG_COACH_EDIT_APPOINTMENT = "coach.edit.appointment";
+	private static final int CURRENT_VERSION = 2;
+	
+	private static final String LEGACY_COACH_EDIT_TOPIC = "coach.edit.topic";
+	private static final String LEGACY_COACH_EDIT_APPOINTMENT = "coach.edit.appointment";
 
+	public static final NodeRightType EDIT_TOPIC = NodeRightTypeBuilder.ofIdentifier("edit.topic")
+			.setLabel(AppointmentsEditController.class, "config.edit.topic")
+			.addRole(NodeRightRole.coach, true)
+			.build();
+	public static final NodeRightType EDIT_APPOINTMENT = NodeRightTypeBuilder.ofIdentifier("edit.appointment")
+			.setLabel(AppointmentsEditController.class, "config.edit.appointment")
+			.addRole(NodeRightRole.coach, true)
+			.build();
+	public static final List<NodeRightType> NODE_RIGHT_TYPES = List.of(EDIT_TOPIC, EDIT_APPOINTMENT);
+	
 	
 	public AppointmentsCourseNode() {
 		this(null);
@@ -83,7 +101,7 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
-		AppointmentsEditController childTabCtrl = new AppointmentsEditController(ureq, wControl, this);
+		AppointmentsEditController childTabCtrl = new AppointmentsEditController(ureq, wControl, course, this);
 		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course, chosenNode,
 				userCourseEnv, childTabCtrl);
 		nodeEditCtr.addControllerListener(childTabCtrl);
@@ -149,10 +167,29 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
+		int version = config.getConfigurationVersion();
 		
-		if (isNewNode) {
-			config.setBooleanEntry(CONFIG_COACH_EDIT_TOPIC, true);
-			config.setBooleanEntry(CONFIG_COACH_EDIT_APPOINTMENT, true);
+		if (version < 2 && config.has(LEGACY_COACH_EDIT_TOPIC)) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			// Edit topic
+			NodeRight topicRight = nodeRightService.getRight(config, EDIT_TOPIC);
+			Collection<NodeRightRole> topicRoles = new ArrayList<>(4);
+			if (config.getBooleanSafe(LEGACY_COACH_EDIT_TOPIC)) {
+				topicRoles.add(NodeRightRole.coach);
+			}
+			nodeRightService.setRoleGrants(topicRight, topicRoles);
+			nodeRightService.setRight(config, topicRight);
+			// Edit appointment
+			NodeRight appointmentRight = nodeRightService.getRight(config, EDIT_APPOINTMENT);
+			Collection<NodeRightRole> appointmentRoles = new ArrayList<>(4);
+			if (config.getBooleanSafe(LEGACY_COACH_EDIT_APPOINTMENT)) {
+				appointmentRoles.add(NodeRightRole.coach);
+			}
+			nodeRightService.setRoleGrants(appointmentRight, appointmentRoles);
+			nodeRightService.setRight(config, appointmentRight);
+			// Remove legacy
+			config.remove(LEGACY_COACH_EDIT_TOPIC);
+			config.remove(LEGACY_COACH_EDIT_APPOINTMENT);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

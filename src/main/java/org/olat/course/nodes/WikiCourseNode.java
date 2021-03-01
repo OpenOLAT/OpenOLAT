@@ -28,6 +28,8 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -61,6 +63,11 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
+import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.NodeRightType;
+import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.wiki.WikiEditController;
 import org.olat.course.nodes.wiki.WikiRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -91,10 +98,18 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 
 	public static final String TYPE = "wiki";
 
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
-	public static final String CONFIG_KEY_EDIT_BY_COACH = "edit.by.coach";
-	public static final String CONFIG_KEY_EDIT_BY_PARTICIPANT = "edit.by.participant";
+	
+	private static final String LEGACY_KEY_EDIT_BY_COACH = "edit.by.coach";
+	private static final String LEGACY_KEY_EDIT_BY_PARTICIPANT = "edit.by.participant";
+	
+	public static final NodeRightType EDIT = NodeRightTypeBuilder.ofIdentifier("edit")
+			.setLabel(WikiEditController.class, "config.edit")
+			.addRole(NodeRightRole.coach, true)
+			.addRole(NodeRightRole.participant, true)
+			.build();
+	public static final List<NodeRightType> NODE_RIGHT_TYPES = Collections.singletonList(EDIT);
 	
 	public static final String EDIT_CONDITION = "editarticle";
 	private Condition preConditionEdit;
@@ -109,15 +124,31 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
+		int version = config.getConfigurationVersion();
+		
 		if (isNewNode) {
 			// use defaults for new course building blocks
 			config.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, false);
 			config.setConfigurationVersion(1);
 		}
-		if (config.getConfigurationVersion() < 2) {
-			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_COACH, Boolean.TRUE);
-			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_PARTICIPANT, Boolean.TRUE);
+		if (version < 2) {
 			removeDefaultPreconditions();
+		}
+		if (version < 3 && config.has(LEGACY_KEY_EDIT_BY_COACH)) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			NodeRight right = nodeRightService.getRight(config, EDIT);
+			Collection<NodeRightRole> roles = new ArrayList<>(2);
+			if (config.getBooleanSafe(LEGACY_KEY_EDIT_BY_COACH)) {
+				roles.add(NodeRightRole.coach);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_EDIT_BY_PARTICIPANT)) {
+				roles.add(NodeRightRole.participant);
+			}
+			nodeRightService.setRoleGrants(right, roles);
+			nodeRightService.setRight(config, right);
+			// Remove legacy
+			config.remove(LEGACY_KEY_EDIT_BY_COACH);
+			config.remove(LEGACY_KEY_EDIT_BY_PARTICIPANT);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

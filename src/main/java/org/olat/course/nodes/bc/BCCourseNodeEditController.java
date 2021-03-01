@@ -61,7 +61,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private TabbedPane myTabbedPane;
 	private VelocityContainer accessibilityContent;
 
-	private BCCourseNodeConfigController configCtrl;
+	private Controller configCtrl;
 	private ConditionEditController uploaderCondContr;
 	private ConditionEditController downloaderCondContr;
 	
@@ -101,7 +101,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 			accessibilityContent.put("downloadCondition", downloaderCondContr.getInitialComponent());
 		}
 
-		configCtrl = new BCCourseNodeConfigController(ureq, wControl, stackPanel, bcNode, course);
+		configCtrl = new BCCourseNodeConfigsController(ureq, wControl, stackPanel, bcNode, course);
 		listenTo(configCtrl);
 	}
 

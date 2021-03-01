@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.dialog.security;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.course.noderight.NodeRightService;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -31,38 +33,30 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class ConfigSecurityCallbackProvider implements DialogSecurityCallbackProvider {
 
-	private final UserCourseEnvironment userCourseEnv;
-	private final ModuleConfiguration moduleConfig;
-
+	private final boolean moderator;
+	private final boolean uploader;
+	private final boolean poster;
+	
 	public ConfigSecurityCallbackProvider(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfig) {
-		this.userCourseEnv = userCourseEnv;
-		this.moduleConfig = moduleConfig;
+		NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+		moderator = nodeRightService.isGranted(moduleConfig, userCourseEnv, DialogCourseNode.MODARATE);
+		uploader = nodeRightService.isGranted(moduleConfig, userCourseEnv, DialogCourseNode.UPLOAD);
+		poster = nodeRightService.isGranted(moduleConfig, userCourseEnv, DialogCourseNode.POST);
 	}
 
 	@Override
 	public boolean isUploader() {
-		if ((moduleConfig.getBooleanSafe(DialogCourseNode.CONFIG_KEY_UPLOAD_BY_COACH) && userCourseEnv.isCoach())
-				|| (moduleConfig.getBooleanSafe(DialogCourseNode.CONFIG_KEY_UPLOAD_BY_PARTICIPANT) && userCourseEnv.isParticipant())) {
-			return true;
-		}
-		return false;
+		return uploader;
 	}
 
 	@Override
 	public boolean isModerator() {
-		if (moduleConfig.getBooleanSafe(DialogCourseNode.CONFIG_KEY_MODERATE_BY_COACH) && userCourseEnv.isCoach()) {
-			return true;
-		}
-		return false;
+		return moderator;
 	}
 
 	@Override
 	public boolean isPoster() {
-		if ((moduleConfig.getBooleanSafe(DialogCourseNode.CONFIG_KEY_POST_BY_COACH) && userCourseEnv.isCoach())
-				|| (moduleConfig.getBooleanSafe(DialogCourseNode.CONFIG_KEY_POST_BY_PARTICIPANT) && userCourseEnv.isParticipant())) {
-			return true;
-		}
-		return false;
+		return poster;
 	}
 
 }

@@ -20,8 +20,11 @@
 package org.olat.course.nodes;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -39,6 +42,11 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
+import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.NodeRightType;
+import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.cal.CalEditController;
 import org.olat.course.nodes.cal.CalRunController;
 import org.olat.course.nodes.cal.CalSecurityCallback;
@@ -65,11 +73,19 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	
 	public static final String TYPE = "cal";
 	
-	private static final int CURRENT_VERSION = 3;
+	private static final int CURRENT_VERSION = 4;
 	public static final String CONFIG_START_DATE = "startDate";
 	public static final String CONFIG_AUTO_DATE = "autoDate";
-	public static final String CONFIG_KEY_EDIT_BY_COACH = "edit.by.coach";
-	public static final String CONFIG_KEY_EDIT_BY_PARTICIPANT = "edit.by.participant";
+	
+	private static final String LEGACY_KEY_EDIT_BY_COACH = "edit.by.coach";
+	private static final String LEGACY_KEY_EDIT_BY_PARTICIPANT = "edit.by.participant";
+	
+	public static final NodeRightType EDIT = NodeRightTypeBuilder.ofIdentifier("edit")
+			.setLabel(CalEditController.class, "config.edit")
+			.addRole(NodeRightRole.coach, true)
+			.addRole(NodeRightRole.participant, false)
+			.build();
+	public static final List<NodeRightType> NODE_RIGHT_TYPES = Collections.singletonList(EDIT);
 	
 	public static final String EDIT_CONDITION_ID = "editarticle";
 	private Condition preConditionEdit;
@@ -98,11 +114,24 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 				}
 			}
 		}
-		
 		if (config.getConfigurationVersion() < 3) {
-			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_COACH, Boolean.TRUE);
-			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_PARTICIPANT, Boolean.FALSE);
 			removeDefaultPreconditions();
+		}
+		if (config.getConfigurationVersion() < 4 && config.has(LEGACY_KEY_EDIT_BY_COACH)) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			NodeRight right = nodeRightService.getRight(config, EDIT);
+			Collection<NodeRightRole> roles = new ArrayList<>(2);
+			if (config.getBooleanSafe(LEGACY_KEY_EDIT_BY_COACH)) {
+				roles.add(NodeRightRole.coach);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_EDIT_BY_PARTICIPANT)) {
+				roles.add(NodeRightRole.participant);
+			}
+			nodeRightService.setRoleGrants(right, roles);
+			nodeRightService.setRight(config, right);
+			// Remove legacy
+			config.remove(LEGACY_KEY_EDIT_BY_COACH);
+			config.remove(LEGACY_KEY_EDIT_BY_PARTICIPANT);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

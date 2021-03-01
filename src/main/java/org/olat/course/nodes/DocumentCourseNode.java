@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -40,6 +42,11 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.folder.CourseContainerOptions;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
+import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.NodeRightType;
+import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.document.DocumentSecurityCallback;
 import org.olat.course.nodes.document.DocumentSecurityCallbackFactory;
 import org.olat.course.nodes.document.DocumentSource;
@@ -72,19 +79,36 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	public static final String ICON_CSS = "o_filetype_file";
 
 	// Configs
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 	public static final String CONFIG_DOC_COURSE_REL_PATH = "doc.course.folder";
 	public static final String CONFIG_DOC_REPO_SOFT_KEY = "doc.repo";
 	public static final String CONFIG_HEIGHT_AUTO = "auto";
 	public static final String CONFIG_KEY_HEIGHT = "height";
-	public static final String CONFIG_KEY_EDIT_OWNER = "edit.owner";
-	public static final String CONFIG_KEY_EDIT_COACH = "edit.coach";
-	public static final String CONFIG_KEY_EDIT_PARTICIPANT = "edit.participant";
-	public static final String CONFIG_KEY_EDIT_GUEST = "edit.guest";
-	public static final String CONFIG_KEY_DOWNLOAD_OWNER = "download.owner";
-	public static final String CONFIG_KEY_DOWNLOAD_COACH = "download.coach";
-	public static final String CONFIG_KEY_DOWNLOAD_PARTICIPANT = "download.participant";
-	public static final String CONFIG_KEY_DOWNLOAD_GUEST = "download.guest";
+	
+	private static final String LEGACY_KEY_EDIT_OWNER = "edit.owner";
+	private static final String LEGACY_KEY_EDIT_COACH = "edit.coach";
+	private static final String LEGACY_KEY_EDIT_PARTICIPANT = "edit.participant";
+	private static final String LEGACY_KEY_EDIT_GUEST = "edit.guest";
+	private static final String LEGACY_KEY_DOWNLOAD_OWNER = "download.owner";
+	private static final String LEGACY_KEY_DOWNLOAD_COACH = "download.coach";
+	private static final String LEGACY_KEY_DOWNLOAD_PARTICIPANT = "download.participant";
+	private static final String LEGACY_KEY_DOWNLOAD_GUEST = "download.guest";
+	
+	public static final NodeRightType EDIT = NodeRightTypeBuilder.ofIdentifier("edit")
+			.setLabel(DocumentEditController.class, "config.rights.edit")
+			.addRole(NodeRightRole.owner, true)
+			.addRole(NodeRightRole.coach, false)
+			.addRole(NodeRightRole.participant, false)
+			.addRole(NodeRightRole.guest, false)
+			.build();
+	public static final NodeRightType DOWNLOAD = NodeRightTypeBuilder.ofIdentifier("download")
+			.setLabel(DocumentEditController.class, "config.rights.download")
+			.addRole(NodeRightRole.owner, true)
+			.addRole(NodeRightRole.coach, true)
+			.addRole(NodeRightRole.participant, true)
+			.addRole(NodeRightRole.guest, true)
+			.build();
+	public static final List<NodeRightType> NODE_RIGHT_TYPES = List.of(EDIT, DOWNLOAD);
 	
 	public DocumentCourseNode() {
 		this(null);
@@ -98,7 +122,7 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
 		VFSContainer courseFolderCont = course.getCourseFolderContainer(CourseContainerOptions.withoutElements());
-		DocumentEditController editCtrl = new DocumentEditController(ureq, wControl, stackPanel, this, courseFolderCont);
+		DocumentEditController editCtrl = new DocumentEditController(ureq, wControl, stackPanel, course, this, courseFolderCont);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course, chosenNode, userCourseEnv, editCtrl);
 		nodeEditCtr.addControllerListener(editCtrl);
@@ -186,18 +210,56 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
-		if (isNewNode) {
-			config.setBooleanEntry(CONFIG_KEY_EDIT_OWNER, true);
-			config.setBooleanEntry(CONFIG_KEY_EDIT_COACH, false);
-			config.setBooleanEntry(CONFIG_KEY_EDIT_PARTICIPANT, false);
-			config.setBooleanEntry(CONFIG_KEY_EDIT_GUEST, false);
-			config.setBooleanEntry(CONFIG_KEY_DOWNLOAD_OWNER, true);
-			config.setBooleanEntry(CONFIG_KEY_DOWNLOAD_COACH, true);
-			config.setBooleanEntry(CONFIG_KEY_DOWNLOAD_PARTICIPANT, true);
-			config.setBooleanEntry(CONFIG_KEY_DOWNLOAD_GUEST, true);
-		}
-		if (config.getConfigurationVersion() < 2) {
+		int version = config.getConfigurationVersion();
+		
+		if (version < 2) {
 			config.set(CONFIG_KEY_HEIGHT, CONFIG_HEIGHT_AUTO);
+		}
+		if (version < 3 && config.has(LEGACY_KEY_EDIT_OWNER)) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			// Edit
+			NodeRight editRight = nodeRightService.getRight(config, EDIT);
+			Collection<NodeRightRole> editRoles = new ArrayList<>(4);
+			if (config.getBooleanSafe(LEGACY_KEY_EDIT_OWNER)) {
+				editRoles.add(NodeRightRole.owner);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_EDIT_COACH)) {
+				editRoles.add(NodeRightRole.coach);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_EDIT_PARTICIPANT)) {
+				editRoles.add(NodeRightRole.participant);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_EDIT_GUEST)) {
+				editRoles.add(NodeRightRole.guest);
+			}
+			nodeRightService.setRoleGrants(editRight, editRoles);
+			nodeRightService.setRight(config, editRight);
+			// Download
+			NodeRight downloadRight = nodeRightService.getRight(config, DOWNLOAD);
+			Collection<NodeRightRole> downloadRoles = new ArrayList<>(4);
+			if (config.getBooleanSafe(LEGACY_KEY_DOWNLOAD_OWNER)) {
+				downloadRoles.add(NodeRightRole.owner);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_DOWNLOAD_COACH)) {
+				downloadRoles.add(NodeRightRole.coach);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_DOWNLOAD_PARTICIPANT)) {
+				downloadRoles.add(NodeRightRole.participant);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_DOWNLOAD_GUEST)) {
+				downloadRoles.add(NodeRightRole.guest);
+			}
+			nodeRightService.setRoleGrants(downloadRight, downloadRoles);
+			nodeRightService.setRight(config, downloadRight);
+			// Remove legacy
+			config.remove(LEGACY_KEY_EDIT_OWNER);
+			config.remove(LEGACY_KEY_EDIT_COACH);
+			config.remove(LEGACY_KEY_EDIT_PARTICIPANT);
+			config.remove(LEGACY_KEY_EDIT_GUEST);
+			config.remove(LEGACY_KEY_DOWNLOAD_OWNER);
+			config.remove(LEGACY_KEY_DOWNLOAD_COACH);
+			config.remove(LEGACY_KEY_DOWNLOAD_PARTICIPANT);
+			config.remove(LEGACY_KEY_DOWNLOAD_GUEST);
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}

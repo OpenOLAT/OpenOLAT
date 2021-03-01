@@ -4,3 +4,38 @@
 		display: none;
 	}
 }
+
+/* Course node rights */
+.o_node_right {
+	.o_toggle {
+		color: $text-muted;
+		padding-top: 11px;
+	}
+	.o_table_toolbar {
+		display: none;
+	}
+	.o_table_wrapper.o_table_flexi {
+		.table {
+			margin-top: 0px;
+			td {
+				vertical-align: middle;
+			}
+		}
+	}
+}
+
+.o_node_right.o_regular {
+	display: flex;
+	flex-direction: row-reverse;
+	justify-content: space-between;
+}
+
+.o_node_right.o_advanced {
+	display: flex;
+	flex-direction: column;
+	
+	.o_toggle {
+		display: flex;
+		flex-direction: row-reverse;
+	}
+}

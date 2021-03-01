@@ -27,6 +27,8 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -63,6 +65,11 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
+import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.NodeRightType;
+import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.bc.BCCourseNodeEditController;
 import org.olat.course.nodes.bc.BCCourseNodeRunController;
 import org.olat.course.nodes.bc.BCPeekviewController;
@@ -80,15 +87,25 @@ import org.olat.repository.RepositoryEntry;
  * @author Felix Jost
  */
 public class BCCourseNode extends AbstractAccessableCourseNode {
+	
 	private static final long serialVersionUID = 6887400715976544402L;
+	@SuppressWarnings("deprecation")
 	private static final String PACKAGE_BC = Util.getPackageName(BCCourseNodeRunController.class);
 	public static final String TYPE = "bc";
 	
-	private static final int CURRENT_VERSION = 3;
+	private static final int CURRENT_VERSION = 4;
 	public static final String CONFIG_AUTO_FOLDER = "config.autofolder";
 	public static final String CONFIG_SUBPATH = "config.subpath";
-	public static final String CONFIG_KEY_UPLOAD_BY_COACH = "upload.by.coach";
-	public static final String CONFIG_KEY_UPLOAD_BY_PARTICIPANT = "upload.by.participant";
+	
+	private static final String LEGACY_KEY_UPLOAD_BY_COACH = "upload.by.coach";
+	private static final String LEGACY_KEY_UPLOAD_BY_PARTICIPANT = "upload.by.participant";
+	
+	private static final NodeRightType UPLOAD = NodeRightTypeBuilder.ofIdentifier("upload")
+			.setLabel(BCCourseNodeEditController.class, "edit.upload")
+			.addRole(NodeRightRole.coach, true)
+			.addRole(NodeRightRole.participant, false)
+			.build();
+	public static final List<NodeRightType> NODE_RIGHT_TYPES = Collections.singletonList(UPLOAD);
 
 	/**
 	 * Condition.getCondition() == null means no precondition, always accessible
@@ -262,13 +279,8 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	public boolean canUpload(UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		if (hasCustomPreConditions()) {
 			return ne != null? ne.isCapabilityAccessible("upload"): false;
-		} else if (
-				(getModuleConfiguration().getBooleanSafe(CONFIG_KEY_UPLOAD_BY_COACH) && userCourseEnv.isCoach())
-				|| (getModuleConfiguration().getBooleanSafe(CONFIG_KEY_UPLOAD_BY_PARTICIPANT) && userCourseEnv.isParticipant())
-				) {
-			return true;
 		}
-		return false;
+		return CoreSpringFactory.getImpl(NodeRightService.class).isGranted(getModuleConfiguration(), userCourseEnv, UPLOAD);
 	}
 	
 	/**
@@ -438,9 +450,23 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 			config.setStringValue(CONFIG_SUBPATH, "");
 		}
 		if (version < 3) {
-			config.setBooleanEntry(CONFIG_KEY_UPLOAD_BY_COACH, true);
-			config.setBooleanEntry(CONFIG_KEY_UPLOAD_BY_PARTICIPANT, false);
 			removeDefaultPreconditions();
+		}
+		if (version < 4 && config.has(LEGACY_KEY_UPLOAD_BY_COACH)) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			NodeRight right = nodeRightService.getRight(config, UPLOAD);
+			Collection<NodeRightRole> roles = new ArrayList<>(2);
+			if (config.getBooleanSafe(LEGACY_KEY_UPLOAD_BY_COACH)) {
+				roles.add(NodeRightRole.coach);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_UPLOAD_BY_PARTICIPANT)) {
+				roles.add(NodeRightRole.participant);
+			}
+			nodeRightService.setRoleGrants(right, roles);
+			nodeRightService.setRight(config, right);
+			// Remove legacy
+			config.remove(LEGACY_KEY_UPLOAD_BY_COACH);
+			config.remove(LEGACY_KEY_UPLOAD_BY_PARTICIPANT);
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}

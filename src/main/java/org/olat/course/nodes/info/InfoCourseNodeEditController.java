@@ -57,7 +57,7 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 	private final InfoCourseNode courseNode;
 
 	private TabbedPane myTabbedPane;
-	private InfoConfigController configCtrl;
+	private Controller configCtrl;
 	private VelocityContainer editAccessVc;
 	private ConditionEditController accessCondContr;
 	private ConditionEditController editCondContr;
@@ -69,7 +69,7 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 		
 		this.courseNode = courseNode;
 		
-		configCtrl = new InfoConfigController(ureq, wControl, courseNode);
+		configCtrl = new InfoConfigsController(ureq, wControl, courseNode, course);
 		listenTo(configCtrl);
 		
 		if (courseNode.hasCustomPreConditions()) {

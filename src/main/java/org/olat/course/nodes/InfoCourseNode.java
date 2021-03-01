@@ -21,6 +21,7 @@
 package org.olat.course.nodes;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.commons.info.InfoMessage;
@@ -46,6 +47,11 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
+import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.NodeRightType;
+import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.info.InfoConfigController;
 import org.olat.course.nodes.info.InfoCourseNodeConfiguration;
 import org.olat.course.nodes.info.InfoCourseNodeEditController;
@@ -77,10 +83,22 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 	public static final String ADMIN_CONDITION_ID = "admininfos";
 	
 	// Configs
-	private static final int CURRENT_VERSION = 3;
-	public static final String CONFIG_KEY_ADMIN_BY_COACH = "admin.by.coach";
-	public static final String CONFIG_KEY_EDIT_BY_COACH = "edit.by.coach";
-	public static final String CONFIG_KEY_EDIT_BY_PARTICIPANT = "edit.by.participant";
+	private static final int CURRENT_VERSION = 4;
+	
+	private static final String LEGACY_KEY_ADMIN_BY_COACH = "admin.by.coach";
+	private static final String LEGACY_KEY_EDIT_BY_COACH = "edit.by.coach";
+	private static final String LEGACY_KEY_EDIT_BY_PARTICIPANT = "edit.by.participant";
+	
+	public static final NodeRightType ADMIN = NodeRightTypeBuilder.ofIdentifier("admin")
+			.setLabel(InfoCourseNodeEditController.class, "config.admin")
+			.addRole(NodeRightRole.coach, true)
+			.build();
+	public static final NodeRightType EDIT = NodeRightTypeBuilder.ofIdentifier("edit")
+			.setLabel(InfoCourseNodeEditController.class, "config.edit")
+			.addRole(NodeRightRole.coach, true)
+			.addRole(NodeRightRole.participant, false)
+			.build();
+	public static final List<NodeRightType> NODE_RIGHT_TYPES = List.of(ADMIN, EDIT);
 	
 	private Condition preConditionEdit;
 	private Condition preConditionAdmin;
@@ -105,9 +123,6 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 		
 		int version = config.getConfigurationVersion();
 		if (version < 2) {
-			config.setBooleanEntry(CONFIG_KEY_ADMIN_BY_COACH, true);
-			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_COACH, true);
-			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_PARTICIPANT, false);
 			removeDefaultPreconditions();
 		}
 		if(version < 3) {
@@ -115,6 +130,32 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 				String validDuration = getValueAllowed(config.get("duration"));
 				config.set(InfoCourseNodeConfiguration.CONFIG_DURATION, validDuration);
 			}
+		}
+		if (version < 4 && config.has(LEGACY_KEY_ADMIN_BY_COACH)) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			// Admin
+			NodeRight adminRight = nodeRightService.getRight(config, ADMIN);
+			Collection<NodeRightRole> moderateRoles = new ArrayList<>(1);
+			if (config.getBooleanSafe(LEGACY_KEY_ADMIN_BY_COACH)) {
+				moderateRoles.add(NodeRightRole.coach);
+			}
+			nodeRightService.setRoleGrants(adminRight, moderateRoles);
+			nodeRightService.setRight(config, adminRight);
+			// Edit
+			NodeRight postRight = nodeRightService.getRight(config, EDIT);
+			Collection<NodeRightRole> postRoles = new ArrayList<>(2);
+			if (config.getBooleanSafe(LEGACY_KEY_EDIT_BY_COACH)) {
+				postRoles.add(NodeRightRole.coach);
+			}
+			if (config.getBooleanSafe(LEGACY_KEY_EDIT_BY_PARTICIPANT)) {
+				postRoles.add(NodeRightRole.participant);
+			}
+			nodeRightService.setRoleGrants(postRight, postRoles);
+			nodeRightService.setRight(config, postRight);
+			// Remove legacy
+			config.remove(LEGACY_KEY_ADMIN_BY_COACH);
+			config.remove(LEGACY_KEY_EDIT_BY_COACH);
+			config.remove(LEGACY_KEY_EDIT_BY_PARTICIPANT);
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}

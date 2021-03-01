@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.survey;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.course.noderight.NodeRightService;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -42,8 +44,9 @@ public class SurveyRunSecurityCallback {
 	public SurveyRunSecurityCallback(ModuleConfiguration moduleConfiguration, UserCourseEnvironment userCourseEnv) {
 		this.courseReadOnly = userCourseEnv.isCourseReadOnly();
 		this.guestOnly = userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly();
-		this.executor = hasExecutionRole(moduleConfiguration, userCourseEnv);
-		this.reportViewer = hasReportRole(moduleConfiguration, userCourseEnv);
+		NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+		this.executor = nodeRightService.isGranted(moduleConfiguration, userCourseEnv, SurveyCourseNode.EXECUTION);
+		this.reportViewer = nodeRightService.isGranted(moduleConfiguration, userCourseEnv, SurveyCourseNode.REPORT);
 		this.canRunCommands = userCourseEnv.isAdmin();
 	}
 
@@ -59,54 +62,6 @@ public class SurveyRunSecurityCallback {
 		return reportViewer;
 	}
 
-	private boolean hasExecutionRole(ModuleConfiguration moduleConfiguration, UserCourseEnvironment userCourseEnv) {
-		if (moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_GUEST)
-				&& guestOnly) {
-			return true;
-		}
-		
-		if (moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_PARTICIPANT)
-				&& userCourseEnv.isParticipant()) {
-			return true;
-		}
-		
-		if (moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_COACH)
-				&& userCourseEnv.isCoach()) {
-			return true;
-		}
-		
-		if (moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_EXECUTION_BY_OWNER)
-				&& userCourseEnv.isAdmin()) {
-			return true;
-		}
-		
-		return false;
-	}
-	
-	private boolean hasReportRole(ModuleConfiguration moduleConfiguration, UserCourseEnvironment userCourseEnv) {
-		if (moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_GUEST)
-				&& guestOnly) {
-			return true;
-		}
-		
-		if (moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_PARTICIPANT)
-				&& userCourseEnv.isParticipant()) {
-			return true;
-		}
-		
-		if (moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_COACH)
-				&& userCourseEnv.isCoach()) {
-			return true;
-		}
-		
-		if (moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_OWNER)
-				&& userCourseEnv.isAdmin()) {
-			return true;
-		}
-		
-		return false;
-	}
-	
 	public boolean canParticipate() {
 		return isExecutor() && !courseReadOnly;
 	}

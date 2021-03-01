@@ -19,10 +19,6 @@
  */
 package org.olat.course.nodes.wiki;
 
-import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
-
-import java.util.Collection;
-
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -30,7 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -68,19 +63,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class WikiConfigController extends FormBasicController {
 	
-	private static final String ROLE_COACH = "config.role.coach";
-	private static final String ROLE_PARTICIPANT = "config.role.participant";
-	private static final String[] EDIT_KEYS = new String[] {
-			ROLE_COACH,
-			ROLE_PARTICIPANT
-	};
-	
 	private StaticTextElement wikiNotChoosenEl;
 	private FormLink previewLink;
 	private FormLink chooseLink;
 	private FormLink replaceLink;
 	private FormLink editLink;
-	private MultipleSelectionElement editRolesEl;
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController repositorySearchCtrl;
@@ -97,7 +84,7 @@ public class WikiConfigController extends FormBasicController {
 	
 	public WikiConfigController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			WikiCourseNode courseNode, ICourse course) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
 		this.course = course;
@@ -108,40 +95,20 @@ public class WikiConfigController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
-		formLayout.add(generalCont);
-		generalCont.setRootForm(mainForm);
-		generalCont.setFormTitle(translate("header"));
-		generalCont.setFormContextHelp("Communication and Collaboration#_bb_wiki");
+		setFormTitle("header");
+		setFormContextHelp("Communication and Collaboration#_bb_wiki");
 		
-		wikiNotChoosenEl = uifactory.addStaticTextElement("chosenwiki", "chosenwiki",
-				translate("no.entry.chosen"), generalCont);
-		previewLink = uifactory.addFormLink("command.preview", "", translate("command.preview"), generalCont,
-				Link.NONTRANSLATED);
+		wikiNotChoosenEl = uifactory.addStaticTextElement("chosenwiki", "chosenwiki", translate("no.entry.chosen"), formLayout);
+		previewLink = uifactory.addFormLink("command.preview", "", translate("command.preview"), formLayout, Link.NONTRANSLATED);
 		previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
-		generalCont.add(buttonsCont);
+		formLayout.add(buttonsCont);
 		chooseLink = uifactory.addFormLink("command.create", buttonsCont, "btn btn-default o_xsmall");
 		chooseLink.setElementCssClass("o_sel_wiki_choose_repofile");
 		replaceLink = uifactory.addFormLink("command.change", buttonsCont, "btn btn-default o_xsmall");
 		editLink = uifactory.addFormLink("edit", buttonsCont, "btn btn-default o_xsmall");
-		
-		
-		if (!courseNode.hasCustomPreConditions()) {
-			FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
-			formLayout.add(rightsCont);
-			rightsCont.setFormTitle(translate("config.rights"));
-			
-			editRolesEl = uifactory.addCheckboxesVertical("config.edit", rightsCont, EDIT_KEYS,
-					translateAll(getTranslator(), EDIT_KEYS), 1);
-			editRolesEl.select(ROLE_COACH,
-					config.getBooleanSafe(WikiCourseNode.CONFIG_KEY_EDIT_BY_COACH));
-			editRolesEl.select(ROLE_PARTICIPANT,
-					config.getBooleanSafe(WikiCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT));
-			editRolesEl.addActionListener(FormEvent.ONCHANGE);
-		}
 		
 		updateUI();
 	}
@@ -168,8 +135,6 @@ public class WikiConfigController extends FormBasicController {
 			doPreviewFeed(ureq);
 		} else if (source == editLink) {
 			doEditFeed(ureq);
-		} else if (source == editRolesEl) {
-			doUpdatedEditRoles(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -238,14 +203,6 @@ public class WikiConfigController extends FormBasicController {
 		} else {
 			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, getWindowControl(), courseNode);
 		}
-	}
-
-	private void doUpdatedEditRoles(UserRequest ureq) {
-		Collection<String> selectedEditKeys = editRolesEl.getSelectedKeys();
-		config.setBooleanEntry(WikiCourseNode.CONFIG_KEY_EDIT_BY_COACH, selectedEditKeys.contains(ROLE_COACH));
-		config.setBooleanEntry(WikiCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT, selectedEditKeys.contains(ROLE_PARTICIPANT));
-		
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 
 	@Override

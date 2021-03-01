@@ -20,10 +20,7 @@
 
 package org.olat.course.nodes.info;
 
-import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
-
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -69,28 +66,14 @@ public class InfoConfigController extends FormBasicController {
 		null
 	};
 	
-	private static final String ROLE_COACH = "config.role.coach";
-	private static final String ROLE_PARTICIPANT = "config.role.participant";
-	private static final String[] ADMIN_KEYS = new String[] {
-			ROLE_COACH
-	};
-	private static final String[] EDIT_KEYS = new String[] {
-			ROLE_COACH,
-			ROLE_PARTICIPANT
-	};
-	
-	private final InfoCourseNode courseNode;
 	private final ModuleConfiguration config;
 	
 	private SingleSelection durationSelection;
 	private SingleSelection lengthSelection;
 	private MultipleSelectionElement autoSubscribeSelection;
-	private MultipleSelectionElement adminRolesEl;
-	private MultipleSelectionElement editRolesEl;
 
 	public InfoConfigController(UserRequest ureq, WindowControl wControl, InfoCourseNode courseNode) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
-		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
 		autoSubscribeValues[0] = translate("pane.tab.infos_config.auto_subscribe.on");
 		initForm(ureq);
@@ -141,24 +124,6 @@ public class InfoConfigController extends FormBasicController {
 		if("on".equals(autoSubscribeStr) || !StringHelper.containsNonWhitespace(autoSubscribeStr)) {
 			autoSubscribeSelection.select("on", true);
 		}
-		
-		if (!courseNode.hasCustomPreConditions()) {
-			FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
-			formLayout.add(rightsCont);
-			rightsCont.setFormTitle(translate("config.rights"));
-			
-			adminRolesEl = uifactory.addCheckboxesVertical("config.admin", rightsCont, ADMIN_KEYS,
-					translateAll(getTranslator(), ADMIN_KEYS), 1);
-			adminRolesEl.select(ROLE_COACH, config.getBooleanSafe(InfoCourseNode.CONFIG_KEY_ADMIN_BY_COACH));
-			adminRolesEl.addActionListener(FormEvent.ONCHANGE);
-			
-			editRolesEl = uifactory.addCheckboxesVertical("config.edit", rightsCont, EDIT_KEYS,
-					translateAll(getTranslator(), EDIT_KEYS), 1);
-			editRolesEl.select(ROLE_COACH, config.getBooleanSafe(InfoCourseNode.CONFIG_KEY_EDIT_BY_COACH));
-			editRolesEl.select(ROLE_PARTICIPANT,
-					config.getBooleanSafe(InfoCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT));
-			editRolesEl.addActionListener(FormEvent.ONCHANGE);
-		}
 	}
 	
 	@Override
@@ -168,10 +133,6 @@ public class InfoConfigController extends FormBasicController {
 		} else if (source == lengthSelection) {
 			doUpdatedConfig(ureq);
 		} else if (source == autoSubscribeSelection) {
-			doUpdatedConfig(ureq);
-		} else if (source == adminRolesEl) {
-			doUpdatedConfig(ureq);
-		} else if (source == editRolesEl) {
 			doUpdatedConfig(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -186,17 +147,6 @@ public class InfoConfigController extends FormBasicController {
 		
 		String autoSubscribeStr = autoSubscribeSelection.isSelected(0) ? "on" : "off";
 		config.set(InfoCourseNodeConfiguration.CONFIG_AUTOSUBSCRIBE, autoSubscribeStr);
-		
-		if (adminRolesEl != null) {
-			Collection<String> selectedAdminKeys = adminRolesEl.getSelectedKeys();
-			config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_ADMIN_BY_COACH, selectedAdminKeys.contains(ROLE_COACH));
-		}
-		
-		if (editRolesEl != null) {
-			Collection<String> selectedEditKeys = editRolesEl.getSelectedKeys();
-			config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_EDIT_BY_COACH, selectedEditKeys.contains(ROLE_COACH));
-			config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT, selectedEditKeys.contains(ROLE_PARTICIPANT));
-		}
 		
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}

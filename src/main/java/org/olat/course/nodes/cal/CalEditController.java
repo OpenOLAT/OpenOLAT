@@ -58,7 +58,7 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 	private static final String[] paneKeys = { PANE_TAB_CALCONFIG, PANE_TAB_ACCESSIBILITY };
 
 	private ConditionEditController accessCondContr;
-	private CalConfigController configCtrl;
+	private Controller configCtrl;
 	private TabbedPane tabs;
 	private CourseCalendarController calCtr;
 	private VelocityContainer editAccessVc;
@@ -71,7 +71,7 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 		super(ureq, wControl);
 		this.calCourseNode = calCourseNode;
 
-		configCtrl = new CalConfigController(ureq, wControl, calCourseNode);
+		configCtrl = new CalConfigsController(ureq, wControl, course, calCourseNode);
 		listenTo(configCtrl);
 
 		if (calCourseNode.hasCustomPreConditions()) {
@@ -167,7 +167,7 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 
 	public static boolean getAutoDate(ModuleConfiguration config) {
 		String autoStr = config.getStringValue(CalCourseNode.CONFIG_AUTO_DATE);
-		if (StringHelper.containsNonWhitespace(autoStr)) { return new Boolean(autoStr); }
+		if (StringHelper.containsNonWhitespace(autoStr)) { return Boolean.valueOf(autoStr); }
 		return Boolean.FALSE;
 	}
 
