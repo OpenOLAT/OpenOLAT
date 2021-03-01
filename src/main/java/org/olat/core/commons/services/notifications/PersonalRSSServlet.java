@@ -166,7 +166,7 @@ public class PersonalRSSServlet extends HttpServlet {
 			return null;
 		}
 		// check if this is a valid authentication
-		Authentication auth = securityManager.findAuthentication(identity, PersonalRSSUtil.RSS_AUTH_PROVIDER);
+		Authentication auth = securityManager.findAuthentication(identity, PersonalRSSUtil.RSS_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 		if (auth == null) {
 			// error, rss authentication not yet set. user must login first, then the
 			// auth provider will be generated on the fly

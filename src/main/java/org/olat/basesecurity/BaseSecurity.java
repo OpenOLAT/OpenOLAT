@@ -46,6 +46,8 @@ import org.olat.core.util.Encoder;
  * @author Felix Jost
  */
 public interface BaseSecurity {
+	
+	public static final String DEFAULT_ISSUER = "DEFAULT";
 
 	
 	/**
@@ -263,7 +265,7 @@ public interface BaseSecurity {
 	 * @return The new persisted identity
 	 */
 	public Identity createAndPersistIdentityAndUser(String identityName, String nickName, String externalId,
-			User user, String provider, String authusername, String password, Date expirationDate);
+			User user, String provider, String issuer, String authusername, String password, Date expirationDate);
 	
 	/**
 	 * Persists the given user, creates an identity for it and adds the user to
@@ -283,7 +285,7 @@ public interface BaseSecurity {
 	 * @return The new persisted identity
 	 */
 	public Identity createAndPersistIdentityAndUserWithOrganisation(String identityName, String nickName, String externalId,
-			User user, String provider, String authusername, String password, Organisation organisation, Date expirationDate);
+			User user, String provider, String issuer, String authusername, String password, Organisation organisation, Date expirationDate);
 	
 
 	/**
@@ -300,7 +302,7 @@ public interface BaseSecurity {
 	 * @return Authentication for this identity and provider or NULL if not
 	 *         found
 	 */
-	public Authentication findAuthentication(IdentityRef identity, String provider);
+	public Authentication findAuthentication(IdentityRef identity, String provider, String issuer);
 	
 	public List<Authentication> findAuthentications(IdentityRef identity, List<String> providers);
 	
@@ -314,7 +316,7 @@ public interface BaseSecurity {
 	 */
 	public String findAuthenticationName(IdentityRef identity);
 	
-	public String findAuthenticationName(IdentityRef identity, String provider);
+	public String findAuthenticationName(IdentityRef identity, String provider, String issuer);
 	
 	
 	/**
@@ -340,7 +342,8 @@ public interface BaseSecurity {
 	 * @param credential
 	 * @return an Authentication
 	 */
-	public Authentication createAndPersistAuthentication(Identity identity, String provider, String authUsername, String password, Encoder.Algorithm algoritm);
+	public Authentication createAndPersistAuthentication(Identity identity, String provider, String issuer,
+			String authUsername, String password, Encoder.Algorithm algoritm);
 
 	/**
 	 * @param authentication
@@ -395,12 +398,13 @@ public interface BaseSecurity {
 	public Authentication updateCredentials(Authentication authentication, String password, Encoder.Algorithm algorithm);
 
 	/**
-	 * @param authusername
-	 * @param provider
-	 * @return Authentication for this authusername and provider or NULL if not
+	 * @param authusername The authentication user name
+	 * @param provider The provider (OLAT, LDAP...)
+	 * @param issuer The issuer (DEFAULT)
+	 * @return Authentication for this authentication user name and provider or NULL if not
 	 *         found
 	 */
-	public Authentication findAuthenticationByAuthusername(String authusername, String provider);
+	public Authentication findAuthenticationByAuthusername(String authusername, String provider, String issuer);
 	
 	public Authentication findAuthenticationByKey(Long authenticationKey);
 

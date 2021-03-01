@@ -301,7 +301,7 @@ public class WebDAVPasswordController extends FormBasicController {
 		passwordEl.setVisible(visible);
 		confirmPasswordEl.setVisible(visible);
 		
-		Authentication auth = securityManager.findAuthentication(ureq.getIdentity(), WebDAVAuthManager.PROVIDER_WEBDAV);
+		Authentication auth = securityManager.findAuthentication(ureq.getIdentity(), WebDAVAuthManager.PROVIDER_WEBDAV, BaseSecurity.DEFAULT_ISSUER);
 		String passwordPlaceholderKey = auth == null ? "pwdav.password.not_set" : "pwdav.password.set";
 		String passwordPlaceholder = getTranslator().translate(passwordPlaceholderKey);
 		passwordStaticEl.setValue(passwordPlaceholder);

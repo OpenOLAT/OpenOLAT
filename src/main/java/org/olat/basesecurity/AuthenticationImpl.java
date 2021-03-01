@@ -42,6 +42,7 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	private Date lastModified;
 	private Identity identity;
 	private String provider;
+	private String issuer;
 	private String authusername;
 	private String credential;
 	private String salt;
@@ -54,7 +55,7 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	//  
 	}
 	
-	AuthenticationImpl(Identity identity, String provider, String authusername, String credentials) {
+	AuthenticationImpl(Identity identity, String provider, String issuer, String authusername, String credentials) {
 		
 		if (provider.length() > 8) {
 			// this implementation allows only 8 characters, as defined in hibernate file
@@ -62,12 +63,13 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 		}
 		this.identity = identity;
 		this.provider = provider;
+		this.issuer = issuer;
 		this.authusername = authusername;
 		this.credential = credentials;
 	}
 
-	AuthenticationImpl(Identity identity, String provider, String authusername,
-			String credential, String salt, String algorithm) {
+	AuthenticationImpl(Identity identity, String provider, String issuer,
+			String authusername, String credential, String salt, String algorithm) {
 		
 		if (provider.length() > 8) {
 			// this implementation allows only 8 characters, as defined in hibernate file
@@ -75,6 +77,7 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 		}
 		this.identity = identity;
 		this.provider = provider;
+		this.issuer = issuer;
 		this.authusername = authusername;
 		this.credential = credential;
 		this.salt = salt;
@@ -125,6 +128,15 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	@Override
 	public void setProvider(String string) {
 		provider = string;
+	}
+	
+	@Override
+	public String getIssuer() {
+		return issuer;
+	}
+
+	public void setIssuer(String issuer) {
+		this.issuer = issuer;
 	}
 
 	/**

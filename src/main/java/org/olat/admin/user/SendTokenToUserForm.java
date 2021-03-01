@@ -135,7 +135,7 @@ public class SendTokenToUserForm extends FormBasicController {
 			String serverpath = Settings.getServerContextPathURI();
 			String serverLoginPath = Settings.getServerContextPathURI() + DispatcherModule.getPathDefault();
 			Translator userTrans = Util.createPackageTranslator(RegistrationManager.class, locale) ;
-			String authenticationName = securityManager.findAuthenticationName(user, "OLAT");
+			String authenticationName = securityManager.findAuthenticationName(user, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 			String userName = authenticationName;
 			if((userName == null || StringHelper.isLong(authenticationName)) && loginModule.isAllowLoginUsingEmail()) {
 				userName = emailAdress;

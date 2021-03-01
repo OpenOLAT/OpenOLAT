@@ -208,7 +208,7 @@ public class UserWebService {
 		List<Identity> identities;
 		//make only a search by authUsername
 		if(StringHelper.containsNonWhitespace(authProvider) && StringHelper.containsNonWhitespace(authUsername)) {
-			Authentication auth = securityManager.findAuthenticationByAuthusername(authUsername, authProvider);
+			Authentication auth = securityManager.findAuthenticationByAuthusername(authUsername, authProvider, BaseSecurity.DEFAULT_ISSUER);
 			if(auth == null) {
 				identities = Collections.emptyList();
 			} else {
@@ -354,7 +354,7 @@ public class UserWebService {
 			String provider = StringHelper.containsNonWhitespace(user.getPassword()) ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : null;
 			Identity id = securityManager
 					.createAndPersistIdentityAndUserWithOrganisation(identityName, user.getLogin(), user.getExternalId(), newUser,
-							provider, user.getLogin(), user.getPassword(), null, null);
+							provider, BaseSecurity.DEFAULT_ISSUER, user.getLogin(), user.getPassword(), null, null);
 			post(newUser, user, getLocale(request));
 			userManager.updateUser(newUser);
 			return Response.ok(get(id)).build();

@@ -23,17 +23,10 @@
 		<column name="identity_fk" not-null="true"/>    	
     </many-to-one>
 
-	<property name="provider" type="string" not-null="true">
-		<column name="provider" length="8"  unique-key="providerauthusername_unique" index="provider_idx"/>
-	</property>
-
-	<property name="authusername" type="string" not-null="true">
-		<column name="authusername" length="255" unique-key="providerauthusername_unique" index="authusername_idx"/>
-	</property>
-
-	<property name="credential" type="string" not-null="false">
-		<column name="credential" length="255" index="credential_idx"/>
-	</property>
+	<property name="provider" column="provider" type="string" not-null="true" />
+	<property name="issuer" column="issuer" type="string" not-null="true" />
+	<property name="authusername" column="authusername" type="string" not-null="true" />
+	<property name="credential" column="credential" type="string" not-null="false" />
 	
 	<property name="salt" column="salt" type="string" not-null="false"/>
 	<property name="algorithm" column="hashalgorithm" type="string" not-null="false"/>

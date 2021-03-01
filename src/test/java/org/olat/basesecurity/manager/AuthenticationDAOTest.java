@@ -59,14 +59,15 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void updateCredential() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-1-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), RestSecurityBeanImpl.REST_AUTH_PROVIDER, ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), RestSecurityBeanImpl.REST_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 
 		String newToken = UUID.randomUUID().toString();
 		authenticationDao.updateCredential(auth, newToken);
 		
 		//check if the new token was saved
-		Authentication updatedAuth = securityManager.findAuthentication(ident.getIdentity(), RestSecurityBeanImpl.REST_AUTH_PROVIDER);
+		Authentication updatedAuth = securityManager.findAuthentication(ident.getIdentity(), RestSecurityBeanImpl.REST_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertEquals(newToken, updatedAuth.getCredential());
 	}
 	
@@ -76,7 +77,7 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check if the new token was saved
-		Authentication authentication = authenticationDao.getAuthentication(ident.getIdentity(), "OLAT");
+		Authentication authentication = authenticationDao.getAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertEquals(ident.getIdentity(), authentication.getIdentity());
 		Assert.assertEquals(ident.getLogin(), authentication.getAuthusername());
 	}
@@ -85,7 +86,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void getIdentitiesWithAuthentication() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-6-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "SPECAUTH", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "SPECAUTH", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
@@ -97,7 +99,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void loadByKey() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-26-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "SPECAUTH", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "SPECAUTH", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
@@ -122,7 +125,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void getIdentitiesWithLogin() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
@@ -136,7 +140,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void getIdentitiesWithCamelCaseLogin() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
@@ -155,7 +160,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void getAuthentication() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
@@ -171,11 +177,12 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void getAuthenticationByAuthusername() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
-		Authentication olatAuthentication = authenticationDao.getAuthenticationByAuthusername(ident.getLogin(), "OLAT");
+		Authentication olatAuthentication = authenticationDao.getAuthenticationByAuthusername(ident.getLogin(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(olatAuthentication);
 		Assert.assertEquals(ident.getIdentity(), olatAuthentication.getIdentity());
 		
@@ -187,15 +194,16 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void getAuthenticationByAuthusernameCamelCase() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2low-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
-		Authentication lowerAuthentication = authenticationDao.getAuthenticationByAuthusername(ident.getLogin().toLowerCase(), "OLAT");
+		Authentication lowerAuthentication = authenticationDao.getAuthenticationByAuthusername(ident.getLogin().toLowerCase(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(lowerAuthentication);
 		Assert.assertEquals(ident.getIdentity(), lowerAuthentication.getIdentity());
 		
-		Authentication upperAuthentication = authenticationDao.getAuthenticationByAuthusername(ident.getLogin().toUpperCase(), "OLAT");
+		Authentication upperAuthentication = authenticationDao.getAuthenticationByAuthusername(ident.getLogin().toUpperCase(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(upperAuthentication);
 		Assert.assertEquals(ident.getIdentity(), upperAuthentication.getIdentity());
 	}
@@ -204,7 +212,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void getAuthenticationsByAuthusername() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
@@ -218,7 +227,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void getAuthenticationsByAuthusernameCamelCase() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
@@ -250,7 +260,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void getAuthenticationsByAuthusername_providersList() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
@@ -271,7 +282,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void getAuthenticationsByAuthusername_providersCamelList() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
@@ -292,7 +304,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void getAuthentications() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
@@ -306,7 +319,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void hasAuthentication() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
@@ -320,7 +334,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void hasValidOlatAuthentication() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-3-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 		
@@ -342,7 +357,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	public void hasValidOlatAuthentication_tooOld() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-3-");
-		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", ident.getLogin(), token, null);
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 		

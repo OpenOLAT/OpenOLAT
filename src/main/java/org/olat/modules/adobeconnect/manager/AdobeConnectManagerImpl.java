@@ -395,7 +395,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 						.path(urlPath);
 	
 				BreezeSession session = null;
-				Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER);
+				Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 				if(authentication != null) {
 					session = getAdapter().commonInfo(authentication, errors);
 				}
@@ -420,7 +420,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 				.path(urlPath);
 		
 		BreezeSession session = null;
-		Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER);
+		Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 		if(authentication != null) {
 			session = getAdapter().commonInfo(authentication, error);
 		}
@@ -563,9 +563,9 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			if(aUser != null && StringHelper.containsNonWhitespace(aUser.getPrincipalId())) {
 				user = adobeConnectUserDao.createUser(aUser.getPrincipalId(), envName, identity);
 				
-				Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER);
+				Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 				if(authentication == null) {
-					securityManager.createAndPersistAuthentication(identity, ACONNECT_PROVIDER, login, creds, Encoder.Algorithm.aes);
+					securityManager.createAndPersistAuthentication(identity, ACONNECT_PROVIDER, BaseSecurity.DEFAULT_ISSUER, login, creds, Encoder.Algorithm.aes);
 				} else if(creds != null) {
 					securityManager.updateCredentials(authentication, creds, Encoder.Algorithm.aes);
 				}

@@ -70,12 +70,14 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 		webdavAuthManager.upgradePassword(id.getIdentity(), id.getLogin(), "secret");
 		
 		// check digest providers
-		Authentication ha1Authentication = securityManager.findAuthentication(id.getIdentity(), WebDAVAuthManager.PROVIDER_HA1_EMAIL);
+		Authentication ha1Authentication = securityManager.findAuthentication(id.getIdentity(),
+				WebDAVAuthManager.PROVIDER_HA1_EMAIL, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(ha1Authentication);
 		String digestEmailToken = Encoder.md5hash(id.getUser().getEmail() + ":" + WebDAVManagerImpl.BASIC_AUTH_REALM + ":secret");
 		Assert.assertEquals(digestEmailToken, ha1Authentication.getCredential());
 		
-		Authentication ha1InstAuthentication = securityManager.findAuthentication(id.getIdentity(), WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL);
+		Authentication ha1InstAuthentication = securityManager.findAuthentication(id.getIdentity(),
+				WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(ha1InstAuthentication);
 		String digestInstEmailToken = Encoder.md5hash(id.getUser().getInstitutionalEmail() + ":" + WebDAVManagerImpl.BASIC_AUTH_REALM + ":secret");
 		Assert.assertEquals(digestInstEmailToken, ha1InstAuthentication.getCredential());
@@ -109,9 +111,11 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 		
 		//check the authentication
 		//check the connection is useable
-		Authentication ha1InstAuthentication1 = securityManager.findAuthentication(id1.getIdentity(), WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL);
+		Authentication ha1InstAuthentication1 = securityManager.findAuthentication(id1.getIdentity(),
+				WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(ha1InstAuthentication1);
-		Authentication ha1InstAuthentication2 = securityManager.findAuthentication(id2.getIdentity(), WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL);
+		Authentication ha1InstAuthentication2 = securityManager.findAuthentication(id2.getIdentity(),
+				WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNull(ha1InstAuthentication2);
 		
 		//check the connection is clean

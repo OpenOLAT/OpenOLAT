@@ -223,7 +223,7 @@ public class OAuthDispatcher implements Dispatcher {
 		//has an identifier
 		Authentication auth = null;
 		if(StringHelper.containsNonWhitespace(id)) {
-			auth = securityManager.findAuthenticationByAuthusername(id, registration.getAuthProvider());
+			auth = securityManager.findAuthenticationByAuthusername(id, registration.getAuthProvider(), BaseSecurity.DEFAULT_ISSUER);
 			if(auth == null) {
 				String email = infos.getEmail();
 				if(StringHelper.containsNonWhitespace(email)) {
@@ -238,7 +238,7 @@ public class OAuthDispatcher implements Dispatcher {
 						identity = securityManager.findIdentityByNickName(id);
 					}
 					if(identity != null) {
-						securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), id, null, null);
+						securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), BaseSecurity.DEFAULT_ISSUER, id, null, null);
 						registration.setIdentity(identity);
 					} else {
 						log.error("OAuth Login failed, user with user name {} not found. OAuth user: {}", email, infos);

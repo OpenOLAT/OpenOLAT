@@ -169,7 +169,7 @@ public class UserAuthenticationWebService {
 		String authUsername = authenticationVO.getAuthUsername();
 		String credentials = authenticationVO.getCredential();
 		
-		Authentication currentAuthentication = securityManager.findAuthenticationByAuthusername(authUsername, provider);
+		Authentication currentAuthentication = securityManager.findAuthenticationByAuthusername(authUsername, provider, BaseSecurity.DEFAULT_ISSUER);
 		if(currentAuthentication != null && !currentAuthentication.getIdentity().equals(identity)) {
 			ErrorVO error = new ErrorVO();
 			error.setCode("unkown:409");
@@ -177,7 +177,7 @@ public class UserAuthenticationWebService {
 			return Response.serverError().status(Status.CONFLICT).entity(error).build();
 		}
 		
-		Authentication authentication = securityManager.createAndPersistAuthentication(identity, provider, authUsername, credentials, null);
+		Authentication authentication = securityManager.createAndPersistAuthentication(identity, provider, BaseSecurity.DEFAULT_ISSUER, authUsername, credentials, null);
 		if(authentication == null) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}

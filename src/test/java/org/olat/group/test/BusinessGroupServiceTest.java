@@ -1202,14 +1202,14 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		String adminName = "admin" + uuid;
 		User adminUser = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
 		Identity adminIdentity = securityManager.createAndPersistIdentityAndUser(null, adminName, null, adminUser,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), adminName, JunitTestHelper.PWD, null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, adminName, JunitTestHelper.PWD, null);
 		organisationService.addMember(subOrganisation, adminIdentity, OrganisationRoles.user);
 		organisationService.addMember(subOrganisation, adminIdentity, OrganisationRoles.administrator);
 		//create a user
 		String userName = "user" + uuid;
 		User user = userManager.createUser("Us", "er", uuid + "user@openolat.org");
 		Identity userIdentity = securityManager.createAndPersistIdentityAndUser(null, userName, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), userName, JunitTestHelper.PWD, null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, userName, JunitTestHelper.PWD, null);
 		organisationService.addMember(subOrganisation, userIdentity, OrganisationRoles.user);
 		dbInstance.commitAndCloseSession();
 		
@@ -1248,28 +1248,28 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		String adminName = "admin" + uuid;
 		User adminUser = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
 		Identity adminIdentity = securityManager.createAndPersistIdentityAndUser(null, adminName, null, adminUser,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), adminName, "secret-pw", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, adminName, "secret-pw", null);
 		organisationService.addMember(subOrganisation1, adminIdentity, OrganisationRoles.user);
 		organisationService.addMember(subOrganisation1, adminIdentity, OrganisationRoles.administrator);
 		// create a second administrator in the second sub organization
 		String adminName2 = "admin2" + uuid;
 		User adminUser2 = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
 		Identity adminIdentity2 = securityManager.createAndPersistIdentityAndUser(null, adminName2, null, adminUser2,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), adminName2, "secret-pw", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, adminName2, "secret-pw", null);
 		organisationService.addMember(subOrganisation2, adminIdentity2, OrganisationRoles.user);
 		organisationService.addMember(subOrganisation2, adminIdentity2, OrganisationRoles.administrator);
 		// create a third administrator in the organization under the first sub organization
 		String adminName3 = "admin3" + uuid;
 		User adminUser3 = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
 		Identity adminIdentity3 = securityManager.createAndPersistIdentityAndUser(null, adminName3, null, adminUser3,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), adminName3, "secret-pw", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, adminName3, "secret-pw", null);
 		organisationService.addMember(subOrganisation1, adminIdentity3, OrganisationRoles.user);
 		organisationService.addMember(subOrganisation1_1, adminIdentity3, OrganisationRoles.administrator);
 		//create a user
 		String userName = "user" + uuid;
 		User user = userManager.createUser("Us", "er", uuid + "user@openolat.org");
 		Identity userIdentity = securityManager.createAndPersistIdentityAndUser(null, userName, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), userName, "secret-pw", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, userName, "secret-pw", null);
 		organisationService.addMember(subOrganisation1, userIdentity, OrganisationRoles.user);
 		dbInstance.commitAndCloseSession();
 		

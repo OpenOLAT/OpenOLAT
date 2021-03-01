@@ -93,14 +93,14 @@ public class OLATUpgrade_12_4_1 extends OLATUpgrade {
 				int count = 0;
 				List<Property> properties = getPasswordChanges();
 				for(Property property:properties) {
-					Authentication authentication = securityManager.findAuthentication(property.getIdentity(), "OLAT");
+					Authentication authentication = securityManager.findAuthentication(property.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
 					if(authentication != null
 						&& (authentication.getLastModified() == null || authentication.getLastModified().before(property.getLastModified()))) {
 						authentication.setLastModified(property.getLastModified());
 						securityManager.updateAuthentication(authentication);
 						if(count++ % 50 == 0) {
 							dbInstance.commitAndCloseSession();
-							log.info("Update " + count + " password last modification dates");
+							log.info("Update {} password last modification dates", count);
 						}
 					}
 				}

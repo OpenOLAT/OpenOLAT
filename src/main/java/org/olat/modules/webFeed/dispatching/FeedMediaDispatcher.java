@@ -491,7 +491,7 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 	private boolean validAuthentication(Identity identity, String token) {
 		if(identity == null || token == null) return false;
 		
-		Authentication authentication = securityManager.findAuthenticationByAuthusername(identity.getKey().toString(), TOKEN_PROVIDER);
+		Authentication authentication = securityManager.findAuthenticationByAuthusername(identity.getKey().toString(), TOKEN_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 		return authentication != null && authentication.getCredential().equals(token);
 	}
 

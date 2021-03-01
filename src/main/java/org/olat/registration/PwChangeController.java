@@ -268,7 +268,7 @@ public class PwChangeController extends BasicController {
 		// mailer configuration
 		String serverpath = Settings.getServerContextPathURI();
 		String serverLoginPath = Settings.getServerContextPathURI() + DispatcherModule.getPathDefault();
-		String authenticationName = securityManager.findAuthenticationName(identity, "OLAT");
+		String authenticationName = securityManager.findAuthenticationName(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		String userName = authenticationName;
 		if((userName == null || StringHelper.isLong(authenticationName)) && loginModule.isAllowLoginUsingEmail()) {
 			userName = emailAdress;

@@ -703,11 +703,11 @@ public class FeedManagerImpl extends FeedManager {
 		if (identity != null) {
 			// The identity can be null for guests
 			String idKey = identity.getKey().toString();
-			Authentication authentication = securityManager.findAuthenticationByAuthusername(idKey, FeedMediaDispatcher.TOKEN_PROVIDER);
+			Authentication authentication = securityManager.findAuthenticationByAuthusername(idKey, FeedMediaDispatcher.TOKEN_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 			if (authentication == null) {
 				// Create an authentication
 				String token = RandomStringUtils.randomAlphanumeric(6);
-				authentication = securityManager.createAndPersistAuthentication(identity, FeedMediaDispatcher.TOKEN_PROVIDER, idKey, token, null);
+				authentication = securityManager.createAndPersistAuthentication(identity, FeedMediaDispatcher.TOKEN_PROVIDER, BaseSecurity.DEFAULT_ISSUER, idKey, token, null);
 			}
 			// If the repository entry allows guest access it is public, thus not
 			// private.

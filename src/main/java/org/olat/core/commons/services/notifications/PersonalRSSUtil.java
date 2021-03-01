@@ -70,11 +70,11 @@ public class PersonalRSSUtil {
 		String token = null;
 		Identity identity = ureq.getIdentity();
 		BaseSecurity secManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		Authentication auth = secManager.findAuthentication(identity, RSS_AUTH_PROVIDER);
+		Authentication auth = secManager.findAuthentication(identity, RSS_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 		if (auth == null) {
 			// no token found - create one
 			 token = RandomStringUtils.randomAlphanumeric(6);
-			 secManager.createAndPersistAuthentication(identity, RSS_AUTH_PROVIDER, identity.getName(), token, null);
+			 secManager.createAndPersistAuthentication(identity, RSS_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER, identity.getName(), token, null);
 		} else {
 			token = auth.getCredential();
 		}

@@ -152,7 +152,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 			return;
 		}
 
-		Authentication auth = securityManager.findAuthenticationByAuthusername(uid, PROVIDER_SHIB);
+		Authentication auth = securityManager.findAuthenticationByAuthusername(uid, PROVIDER_SHIB, BaseSecurity.DEFAULT_ISSUER);
 		if (auth == null) { // no matching authentication...
 			ShibbolethRegistrationController.putShibAttributes(req, shibbolethAttriutes);
 			ShibbolethRegistrationController.putShibUniqueID(req, uid);
@@ -222,7 +222,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 		try {
 			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + ShibbolethModule.PATH_DISCLAIMER_SHIBBOLETH + "/");
 		} catch (IOException e) {
-			log.error("Redirect failed: url=" + WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault(),e);
+			log.error("Redirect failed: url={}", WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault(), e);
 		}
 	}
 
@@ -230,7 +230,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 		try {
 			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + ShibbolethModule.PATH_REGISTER_SHIBBOLETH + "/");
 		} catch (IOException e) {
-			log.error("Redirect failed: url=" + WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault(),e);
+			log.error("Redirect failed: url={}", WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault(), e);
 		}
 	}
 

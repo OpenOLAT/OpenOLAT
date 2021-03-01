@@ -454,7 +454,7 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 	public void getIdentitiesDeletedInLdap() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 		Identity orphan = JunitTestHelper.createAndPersistIdentityAsRndUser("ldap-orphan");
-		securityManager.createAndPersistAuthentication(orphan, LDAPAuthenticationController.PROVIDER_LDAP,
+		securityManager.createAndPersistAuthentication(orphan, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER,
 				UUID.randomUUID().toString(), null, null);
 		dbInstance.commitAndCloseSession();
 
@@ -720,15 +720,15 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		Assert.assertNotNull(loadedIdentity);
 		
 		// check authentications
-		Authentication ha1Authentication = securityManager.findAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1);
+		Authentication ha1Authentication = securityManager.findAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(ha1Authentication);
 		Assert.assertEquals("hadigest", ha1Authentication.getAuthusername());
 		
-		Authentication ha1EAuthentication = securityManager.findAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_EMAIL);
+		Authentication ha1EAuthentication = securityManager.findAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_EMAIL, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(ha1EAuthentication);
 		Assert.assertEquals("ha1digest@openolat.com", ha1EAuthentication.getAuthusername());
 
-		Authentication ldapAuthentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication ldapAuthentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(ldapAuthentication);
 		
 		// sync user
@@ -740,14 +740,14 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		Assert.assertTrue(updateAllOk);
 		
 		// check authentications
-		Authentication validHa1Authentication = securityManager.findAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1);
+		Authentication validHa1Authentication = securityManager.findAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(validHa1Authentication);
 		Assert.assertEquals("hadigest", validHa1Authentication.getAuthusername());
 		
-		Authentication invalidHa1EAuthentication = securityManager.findAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_EMAIL);
+		Authentication invalidHa1EAuthentication = securityManager.findAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_EMAIL, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNull(invalidHa1EAuthentication);
 	
-		Authentication validLdapAuthentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication validLdapAuthentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(validLdapAuthentication);
 	}
 	
@@ -780,10 +780,10 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, foundIdentities.size());
 		
 		Identity identity = foundIdentities.get(0).getIdentity();
-		Authentication authentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication authentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(authentication);
 		securityManager.deleteAuthentication(authentication);
-		securityManager.createAndPersistAuthentication(identity, "OLAT", "cguerrera", "secret", Algorithm.sha512);
+		securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, "cguerrera", "secret", Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		
 		// convert users to LDAP
@@ -813,11 +813,11 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, foundIdentities.size());
 		
 		Identity identity = foundIdentities.get(0).getIdentity();
-		Authentication authentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication authentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(authentication);
 		Assert.assertTrue(authentication.getAuthusername().contains("chelling"));
 		securityManager.deleteAuthentication(authentication);
-		securityManager.createAndPersistAuthentication(identity, "OLAT", "uschelling", "secret", Algorithm.sha512);
+		securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, "uschelling", "secret", Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		
 		// convert users to LDAP
@@ -836,7 +836,7 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		Assert.assertEquals("Ursula", convertedIdentity.getUser().getFirstName());
 		Assert.assertEquals("Schelling", convertedIdentity.getUser().getLastName());
 
-		Authentication updatedAuthentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication updatedAuthentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(updatedAuthentication);
 		Assert.assertEquals("Schelling", updatedAuthentication.getAuthusername());
 
@@ -862,7 +862,7 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		
 		// Create the user without OLAT login
 		User user = userManager.createUser("Leyla", "Salathe", "lsalathe@openolat.com");
-		Identity identity = securityManager.createAndPersistIdentityAndUser("lsalathe", null, null, user, null, null, null, null);
+		Identity identity = securityManager.createAndPersistIdentityAndUser("lsalathe", null, null, user, null, null, null, null, null);
 		
 		// convert users to LDAP
 		boolean currentConvertExistingLocalUsers = ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers();
@@ -883,7 +883,7 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		
 		// check
 		Assert.assertEquals(identity, convertedIdentity);
-		Authentication authentication = securityManager.findAuthentication(convertedIdentity, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication authentication = securityManager.findAuthentication(convertedIdentity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(authentication);
 	}
 

@@ -271,7 +271,7 @@ public class TeamsServiceImpl implements TeamsService {
 		if(StringHelper.containsNonWhitespace(institutionalEmail)) {
 			principals.add(institutionalEmail);
 		}
-		Authentication authentication = securityManager.findAuthentication(identity, MicrosoftAzureADFSProvider.PROVIDER);
+		Authentication authentication = securityManager.findAuthentication(identity, MicrosoftAzureADFSProvider.PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 		if(authentication != null && StringHelper.containsNonWhitespace(authentication.getAuthusername())) {
 			principals.add(authentication.getAuthusername());
 		}

@@ -357,14 +357,17 @@ class ImportStep00 extends BasicStep {
 			Identity identity;
 			if(pwd != null && pwd.startsWith(UserImportController.LDAP_MARKER) && ldapModule.isLDAPEnabled()) {
 				String ldapLogin = pwd.substring(UserImportController.LDAP_MARKER.length());
-				Authentication authentication = securityManager.findAuthenticationByAuthusername(ldapLogin, LDAPAuthenticationController.PROVIDER_LDAP);
+				Authentication authentication = securityManager.findAuthenticationByAuthusername(ldapLogin,
+						LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 				identity = authentication == null ? null : authentication.getIdentity();
 			} else if(pwd != null && pwd.startsWith(UserImportController.SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
 				String shibbolethLogin = pwd.substring(UserImportController.SHIBBOLETH_MARKER.length());
-				Authentication authentication = securityManager.findAuthenticationByAuthusername(shibbolethLogin, ShibbolethDispatcher.PROVIDER_SHIB);
+				Authentication authentication = securityManager.findAuthenticationByAuthusername(shibbolethLogin,
+						ShibbolethDispatcher.PROVIDER_SHIB, BaseSecurity.DEFAULT_ISSUER);
 				identity = authentication == null ? null : authentication.getIdentity();
 			} else if(StringHelper.containsNonWhitespace(pwd)) {
-				Authentication authentication = securityManager.findAuthenticationByAuthusername(login, "OLAT");
+				Authentication authentication = securityManager.findAuthenticationByAuthusername(login,
+						"OLAT", BaseSecurity.DEFAULT_ISSUER);
 				identity = authentication == null ? null : authentication.getIdentity();
 			} else {
 				identity = securityManager.findIdentityByUsernames(login);

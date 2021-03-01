@@ -113,7 +113,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		Identity adminIdent = JunitTestHelper.findIdentityByLogin("administrator");
 		try {
-			Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API");
+			Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API", BaseSecurity.DEFAULT_ISSUER);
 			if(refAuth != null) {
 				securityManager.deleteAuthentication(refAuth);
 			}
@@ -137,7 +137,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		AuthenticationVO savedAuth = conn.parse(response, AuthenticationVO.class);
-		Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API");
+		Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API", BaseSecurity.DEFAULT_ISSUER);
 
 		assertNotNull(refAuth);
 		assertNotNull(refAuth.getKey());
@@ -182,7 +182,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		HttpResponse response1 = conn.execute(method1);
 		Assert.assertEquals(200, response1.getStatusLine().getStatusCode());
 		conn.parse(response1, AuthenticationVO.class);
-		Authentication refAuth1 = securityManager.findAuthentication(id1, "REST-API");
+		Authentication refAuth1 = securityManager.findAuthentication(id1, "REST-API", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(refAuth1);
 		Assert.assertEquals(id1, refAuth1.getIdentity());
 
@@ -211,7 +211,8 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		
 		//create an authentication token
 		Identity adminIdent = JunitTestHelper.findIdentityByLogin("administrator");
-		Authentication authentication = securityManager.createAndPersistAuthentication(adminIdent, "REST-A-2", "administrator", "credentials", Encoder.Algorithm.sha512);
+		Authentication authentication = securityManager.createAndPersistAuthentication(adminIdent, "REST-A-2", BaseSecurity.DEFAULT_ISSUER,
+				"administrator", "credentials", Encoder.Algorithm.sha512);
 		assertTrue(authentication != null && authentication.getKey() != null && authentication.getKey().longValue() > 0);
 		dbInstance.intermediateCommit();
 		
@@ -222,7 +223,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 		
-		Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-A-2");
+		Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-A-2", BaseSecurity.DEFAULT_ISSUER);
 		assertNull(refAuth);
 		
 		conn.shutdown();

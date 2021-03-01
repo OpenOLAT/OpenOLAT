@@ -24,3 +24,10 @@ alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx for
 create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_competence);
 alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
 create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
+
+
+-- Authentication
+alter table o_bs_authentication add issuer varchar(255) default 'DEFAULT' not null;
+
+alter table o_bs_authentication drop constraint u_o_bs_authentication;
+alter table o_bs_authentication add constraint unique_pro_iss_authusername UNIQUE (provider, issuer, authusername);

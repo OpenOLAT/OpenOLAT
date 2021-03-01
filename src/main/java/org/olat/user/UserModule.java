@@ -356,7 +356,7 @@ public class UserModule extends AbstractSpringModule {
 		
 		// check if the user has an OLAT provider token, otherwise a password change makes no sense
 		Authentication auth = CoreSpringFactory.getImpl(BaseSecurity.class)
-				.findAuthentication(id, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+				.findAuthentication(id, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
 		if(auth == null && !pwdChangeWithoutAuthenticationAllowed) {
 			return false;
 		}

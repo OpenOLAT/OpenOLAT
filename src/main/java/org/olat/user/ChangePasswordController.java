@@ -138,13 +138,13 @@ public class ChangePasswordController extends BasicController implements Support
 
 				String oldPwd = chPwdForm.getOldPasswordValue();
 				Identity provenIdent = null;
-				Authentication ldapAuthentication = securityManager.findAuthentication(ureq.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP);
+				Authentication ldapAuthentication = securityManager.findAuthentication(ureq.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 				if (ldapAuthentication != null) {
 					LDAPError ldapError = new LDAPError();
 					//fallback to OLAT if enabled happen automatically in LDAPAuthenticationController
 					String userName = ldapAuthentication.getAuthusername();
 					provenIdent = ldapLoginManager.authenticate(userName, oldPwd, ldapError);
-				} else if(securityManager.findAuthentication(ureq.getIdentity(), BaseSecurityModule.getDefaultAuthProviderIdentifier()) != null) {
+				} else if(securityManager.findAuthentication(ureq.getIdentity(), BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER) != null) {
 					provenIdent = olatAuthenticationSpi.authenticate(ureq.getIdentity(), ureq.getIdentity().getName(), oldPwd, new AuthenticationStatus());
 				}
 

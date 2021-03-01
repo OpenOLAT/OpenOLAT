@@ -104,7 +104,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		Identity adminIdent = JunitTestHelper.findIdentityByLogin("administrator");
 		try {
-			Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API");
+			Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API", BaseSecurity.DEFAULT_ISSUER);
 			if(refAuth != null) {
 				securityManager.deleteAuthentication(refAuth);
 			}
@@ -130,7 +130,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		HttpResponse response = conn.execute(method);
 		Assert.assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		AuthenticationVO savedAuth = conn.parse(response, AuthenticationVO.class);
-		Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API");
+		Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API", BaseSecurity.DEFAULT_ISSUER);
 
 		Assert.assertNotNull(refAuth);
 		Assert.assertNotNull(refAuth.getKey());
@@ -175,7 +175,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		HttpResponse response1 = conn.execute(method1);
 		Assert.assertEquals(200, response1.getStatusLine().getStatusCode());
 		conn.parse(response1, AuthenticationVO.class);
-		Authentication refAuth1 = securityManager.findAuthentication(id1, "REST-API");
+		Authentication refAuth1 = securityManager.findAuthentication(id1, "REST-API", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(refAuth1);
 		Assert.assertEquals(id1, refAuth1.getIdentity());
 
@@ -204,7 +204,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		
 		//create an authentication token
 		Identity adminIdent = JunitTestHelper.findIdentityByLogin("administrator");
-		Authentication authentication = securityManager.createAndPersistAuthentication(adminIdent, "REST-A-2", "administrator", "credentials", Encoder.Algorithm.sha512);
+		Authentication authentication = securityManager.createAndPersistAuthentication(adminIdent, "REST-A-2", BaseSecurity.DEFAULT_ISSUER, "administrator", "credentials", Encoder.Algorithm.sha512);
 		assertTrue(authentication != null && authentication.getKey() != null && authentication.getKey().longValue() > 0);
 		dbInstance.intermediateCommit();
 		
@@ -216,7 +216,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 		
-		Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-A-2");
+		Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-A-2", BaseSecurity.DEFAULT_ISSUER);
 		assertNull(refAuth);
 		
 		conn.shutdown();
@@ -230,7 +230,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		//create an authentication token
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("rest-auth-1");
 		Authentication authentication = securityManager
-				.createAndPersistAuthentication(ident.getIdentity(), "REST-A-*", ident.getLogin(), "credentials", Encoder.Algorithm.sha512);
+				.createAndPersistAuthentication(ident.getIdentity(), "REST-A-*", BaseSecurity.DEFAULT_ISSUER, ident.getLogin(), "credentials", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		
 		//update an authentication token
@@ -274,7 +274,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		//create an authentication token
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("rest-auth-2");
 		Authentication authentication = securityManager
-				.createAndPersistAuthentication(ident.getIdentity(), "REST-A-*", ident.getLogin(), "credentials", Encoder.Algorithm.sha512);
+				.createAndPersistAuthentication(ident.getIdentity(), "REST-A-*", BaseSecurity.DEFAULT_ISSUER, ident.getLogin(), "credentials", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		
 		//update an authentication token
@@ -311,7 +311,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("rest-auth-3");
 		IdentityWithLogin otherIdent = JunitTestHelper.createAndPersistRndUser("rest-auth-3");
 		Authentication authentication = securityManager
-				.createAndPersistAuthentication(ident.getIdentity(), "REST-A-*", ident.getLogin(), "credentials", Encoder.Algorithm.sha512);
+				.createAndPersistAuthentication(ident.getIdentity(), "REST-A-*", BaseSecurity.DEFAULT_ISSUER, ident.getLogin(), "credentials", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		
 		//update an authentication token

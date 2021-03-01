@@ -153,7 +153,8 @@ public class OLATAuthManager implements AuthenticationSPI {
 		// check first for email
 		Identity ident = findIdentityByEmail(login);
 		if(ident == null) {
-			Authentication authentication = securityManager.findAuthenticationByAuthusername(login, "OLAT");
+			Authentication authentication = securityManager.findAuthenticationByAuthusername(login,
+					"OLAT", BaseSecurity.DEFAULT_ISSUER);
 			if(authentication != null) {
 				ident = authentication.getIdentity();
 			}
@@ -190,12 +191,12 @@ public class OLATAuthManager implements AuthenticationSPI {
 			// check for email instead of username if ident is null
 			ident = findIdentityByEmail(login);
 			if(ident == null) {
-				authentication = securityManager.findAuthenticationByAuthusername(login, "OLAT");
+				authentication = securityManager.findAuthenticationByAuthusername(login, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 			} else {
-				authentication = securityManager.findAuthentication(ident, "OLAT");
+				authentication = securityManager.findAuthentication(ident, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 			}
 		} else {
-			authentication = securityManager.findAuthentication(ident,  "OLAT");
+			authentication = securityManager.findAuthentication(ident,  "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		}
 
 		if (authentication == null) {
@@ -324,7 +325,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 		
 		boolean allOk = false;
 		
-		Authentication ldapAuth = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication ldapAuth = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		if(ldapAuth != null) {
 			if(ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 				LDAPError ldapError = new LDAPError();
@@ -410,10 +411,10 @@ public class OLATAuthManager implements AuthenticationSPI {
 	 */
 	public boolean changeOlatPassword(Identity doer, Identity identity, String newPwd) {
 		String username;
-		Authentication auth = securityManager.findAuthentication(identity, "OLAT");
+		Authentication auth = securityManager.findAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		if (auth == null) { // create new authentication for provider OLAT
 			username = getOlatAuthusernameFromIdentity(identity);
-			securityManager.createAndPersistAuthentication(identity, "OLAT", username, newPwd, loginModule.getDefaultHashAlgorithm());
+			securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, username, newPwd, loginModule.getDefaultHashAlgorithm());
 			log.info(Tracing.M_AUDIT, "{} created new authentication for identity: {} with authusername: {}", doer.getKey(), identity.getKey(), username);
 		} else {
 			username = auth.getAuthusername();
@@ -429,9 +430,9 @@ public class OLATAuthManager implements AuthenticationSPI {
 	}
 	
 	public boolean synchronizeOlatPasswordAndUsername(Identity doer, Identity identity, String username, String newPwd) {
-		Authentication auth = securityManager.findAuthentication(identity, "OLAT");
+		Authentication auth = securityManager.findAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		if (auth == null) { // create new authentication for provider OLAT
-			securityManager.createAndPersistAuthentication(identity, "OLAT", username, newPwd, loginModule.getDefaultHashAlgorithm());
+			securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, username, newPwd, loginModule.getDefaultHashAlgorithm());
 			log.info(Tracing.M_AUDIT, "{} created new authenticatin for identity: {}", doer.getKey(), identity.getKey());
 		} else {
 			//update credentials
@@ -467,7 +468,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 	 * @return
 	 */
 	public boolean changePasswordAsAdmin(Identity identity, String newPwd) {
-		Authentication adminAuthIdentity = securityManager.findAuthenticationByAuthusername("administrator", "OLAT");
+		Authentication adminAuthIdentity = securityManager.findAuthenticationByAuthusername("administrator", "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		Identity adminUserIdentity = adminAuthIdentity.getIdentity();
 		return changePassword(adminUserIdentity, identity, newPwd);
 	}

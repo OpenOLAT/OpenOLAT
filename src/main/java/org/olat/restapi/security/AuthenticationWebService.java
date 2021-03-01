@@ -137,7 +137,7 @@ public class AuthenticationWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		org.olat.basesecurity.Authentication auth = securityManager.findAuthentication(identity, RestSecurityBeanImpl.REST_AUTH_PROVIDER);
+		org.olat.basesecurity.Authentication auth = securityManager.findAuthentication(identity, RestSecurityBeanImpl.REST_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 		if(auth == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}

@@ -46,6 +46,8 @@ public interface Authentication extends CreateInfo, ModifiedInfo, Persistable {
 	 * @return
 	 */
 	public String getProvider();
+	
+	public String getIssuer();
 
 	/**
 	 * @return

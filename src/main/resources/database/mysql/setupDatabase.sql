@@ -108,13 +108,14 @@ create table if not exists o_temporarykey (
    fk_identity_id bigint,
    primary key (reglist_id)
 );
-create table if not exists o_bs_authentication (
+create table o_bs_authentication (
    id bigint not null,
    version mediumint unsigned not null,
    creationdate datetime,
    lastmodified datetime not null,
    identity_fk bigint not null,
    provider varchar(8),
+   issuer varchar(255) default 'DEFAULT' not null,
    authusername varchar(255),
    credential varchar(255),
    salt varchar(255) default null,
@@ -122,7 +123,7 @@ create table if not exists o_bs_authentication (
    primary key (id),
    unique (provider, authusername)
 );
-create table if not exists o_bs_authentication_history (
+create table o_bs_authentication_history (
    id bigint not null auto_increment,
    creationdate datetime,
    provider varchar(8),
@@ -3744,6 +3745,7 @@ alter table o_gp_bgtoarea_rel add constraint FK9B663F2DD381B9B7 foreign key (are
 
 -- bs
 alter table o_bs_authentication add constraint FKC6A5445652595FE6 foreign key (identity_fk) references o_bs_identity (id);
+alter table o_bs_authentication add constraint unique_pro_iss_authusername UNIQUE (provider, issuer, authusername);
 create index provider_idx on o_bs_authentication (provider);
 create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);

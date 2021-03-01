@@ -113,12 +113,12 @@ create table o_bs_authentication (
    lastmodified timestamp not null,
    identity_fk int8 not null,
    provider varchar(8),
+   issuer varchar(255) default 'DEFAULT' not null,
    authusername varchar(255),
    credential varchar(255),
    salt varchar(255) default null,
    hashalgorithm varchar(16) default null,
-   primary key (id),
-   unique (provider, authusername)
+   primary key (id)
 );
 create table o_bs_authentication_history (
    id bigserial not null,
@@ -3566,6 +3566,7 @@ create index idx_bgtoarea_area_idx on o_gp_bgtoarea_rel (area_fk);
 
 -- bs
 alter table o_bs_authentication add constraint FKC6A5445652595FE6 foreign key (identity_fk) references o_bs_identity;
+alter table o_bs_authentication add constraint unique_pro_iss_authusername UNIQUE (provider, issuer, authusername);
 create index idx_auth_ident_idx on o_bs_authentication (identity_fk);
 create index provider_idx on o_bs_authentication (provider);
 create index credential_idx on o_bs_authentication (credential);

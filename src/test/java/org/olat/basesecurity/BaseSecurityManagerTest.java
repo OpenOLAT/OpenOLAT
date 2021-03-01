@@ -79,7 +79,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String name = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + name, "last" + name, name + "@frentix.com");
 		Identity identity = securityManager.createAndPersistIdentityAndUser(null, name, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, name, "secret", null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -100,7 +100,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String name = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + name, "last" + name, name + "@openolat.com");
 		Identity identity = securityManager.createAndPersistIdentityAndUser(name, name, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, name, "secret", null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -120,7 +120,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String name = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + name, "last" + name, name + "@openolat.com");
 		Identity identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(name, name, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret", null, null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, name, "secret", null, null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -146,7 +146,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		user.setProperty(UserConstants.COUNTRY, "");
 		user.setProperty(UserConstants.CITY, "Basel");
 		Identity identity = securityManager.createAndPersistIdentityAndUser(null, nickName, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), authusername, "secret", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, authusername, "secret", null);
 		dbInstance.commitAndCloseSession();
 		
 		//reload and update
@@ -681,10 +681,10 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-d-");
 		dbInstance.commitAndCloseSession();
 		
-		Authentication auth = securityManager.findAuthentication(ident, "OLAT");
+		Authentication auth = securityManager.findAuthentication(ident, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(auth);
 		
-		String authName = securityManager.findAuthenticationName(ident, "OLAT");
+		String authName = securityManager.findAuthenticationName(ident, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(authName);
 	}
 	
@@ -693,7 +693,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("auth-c-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
 		
-		Authentication auth = securityManager.findAuthentication(ident, "OLAT");
+		Authentication auth = securityManager.findAuthentication(ident, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		String credentials = auth.getCredential();
 		Authentication updatedAuth = securityManager.updateCredentials(auth, "secret", loginModule.getDefaultHashAlgorithm());
 		Assert.assertNotNull(auth);
@@ -702,7 +702,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertFalse(credentials.equals(updatedAuth.getCredential()));
 		dbInstance.commitAndCloseSession();
 		
-		Authentication auth2 = securityManager.findAuthentication(ident, "OLAT");
+		Authentication auth2 = securityManager.findAuthentication(ident, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		String credentials2 = auth2.getCredential();
 		Authentication notUpdatedAuth = securityManager.updateCredentials(auth2, "secret", loginModule.getDefaultHashAlgorithm());
 		Assert.assertNotNull(auth2);
@@ -716,12 +716,13 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	@Test
 	public void deleteAuthentication() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("auth-del-" + UUID.randomUUID().toString());
-		Authentication auth = securityManager.createAndPersistAuthentication(identity, "del-test", identity.getName(), "secret", Encoder.Algorithm.sha512);
+		Authentication auth = securityManager.createAndPersistAuthentication(identity, "del-test", BaseSecurity.DEFAULT_ISSUER,
+				identity.getName(), "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 		
 		//reload and check
-		Authentication reloadedAuth = securityManager.findAuthentication(identity, "del-test");
+		Authentication reloadedAuth = securityManager.findAuthentication(identity, "del-test", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(reloadedAuth);
 		Assert.assertEquals(auth, reloadedAuth);
 		dbInstance.commitAndCloseSession();
@@ -733,7 +734,8 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	@Test
 	public void deleteAuthentication_checkTransactionSurvive() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("auth-del-" + UUID.randomUUID().toString());
-		Authentication auth = securityManager.createAndPersistAuthentication(identity, "del-test", identity.getName(), "secret", Encoder.Algorithm.sha512);
+		Authentication auth = securityManager.createAndPersistAuthentication(identity, "del-test", BaseSecurity.DEFAULT_ISSUER,
+				identity.getName(), "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 		
@@ -755,25 +757,31 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Identity identity = identityWithLogin.getIdentity();
 		User user = identity.getUser();
 		String email = user.getEmail();
-		securityManager.createAndPersistAuthentication(identity, "OLAT", email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, "del-mail", email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_EMAIL, email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL, email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, email, "secret", Encoder.Algorithm.sha512);
+		securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER,
+				email, "secret", Encoder.Algorithm.sha512);
+		securityManager.createAndPersistAuthentication(identity, "del-mail", BaseSecurity.DEFAULT_ISSUER,
+				email, "secret", Encoder.Algorithm.sha512);
+		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_EMAIL, BaseSecurity.DEFAULT_ISSUER,
+				email, "secret", Encoder.Algorithm.sha512);
+		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER,
+				email, "secret", Encoder.Algorithm.sha512);
+		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL, BaseSecurity.DEFAULT_ISSUER,
+				email, "secret", Encoder.Algorithm.sha512);
+		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER,
+				email, "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		
 		// User with email address exists: The authentications are valid.
 		securityManager.deleteInvalidAuthenticationsByEmail(email);
 		dbInstance.commitAndCloseSession();
 		
-		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_EMAIL));
-		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL));
-		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL));
-		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL));
-		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, "OLAT"));
-		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(identityWithLogin.getLogin(), "OLAT"));
-		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, "del-mail"));
+		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_EMAIL, BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL, BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, "OLAT", BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(identityWithLogin.getLogin(), "OLAT", BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, "del-mail", BaseSecurity.DEFAULT_ISSUER));
 		
 		// Email of the user changed: The authentications are not valid any longer.
 		user.setProperty(UserConstants.EMAIL, "new@trashcmail.com");
@@ -784,13 +792,13 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		securityManager.deleteInvalidAuthenticationsByEmail(email);
 		dbInstance.commitAndCloseSession();
 		
-		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_EMAIL));
-		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL));
-		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL));
-		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL));
-		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, "OLAT"));
-		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(identityWithLogin.getLogin(), "OLAT"));
-		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, "del-mail"));
+		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_EMAIL, BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL, BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, "OLAT", BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(identityWithLogin.getLogin(), "OLAT", BaseSecurity.DEFAULT_ISSUER));
+		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, "del-mail", BaseSecurity.DEFAULT_ISSUER));
 	}
 	
 	@Test
@@ -816,8 +824,10 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	public void findAuthenticationNameLDAP() {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("auth-0");
 		String ldapAuthusername = UUID.randomUUID().toString();
-		securityManager.createAndPersistAuthentication(id.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP, ldapAuthusername, null, null);
-		securityManager.createAndPersistAuthentication(id.getIdentity(), WebDAVAuthManager.PROVIDER_HA1, UUID.randomUUID().toString(), "secret", Encoder.Algorithm.sha512);
+		securityManager.createAndPersistAuthentication(id.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER,
+				ldapAuthusername, null, null);
+		securityManager.createAndPersistAuthentication(id.getIdentity(), WebDAVAuthManager.PROVIDER_HA1, BaseSecurity.DEFAULT_ISSUER,
+				UUID.randomUUID().toString(), "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		
 		String name = securityManager.findAuthenticationName(id.getIdentity());
@@ -830,18 +840,21 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String testLogin = id.getLogin();
 		
 		
-		Authentication authentication = securityManager.findAuthenticationByAuthusername(testLogin, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		Authentication authentication = securityManager.findAuthenticationByAuthusername(testLogin,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertEquals(testLogin, authentication.getAuthusername());
 	}
 	
 	@Test
 	public void findAuthenticationByAuthusername_attack() {
 		String testLoginHacked = "*est-logi*";
-		Authentication authentication1 = securityManager.findAuthenticationByAuthusername(testLoginHacked, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		Authentication authentication1 = securityManager.findAuthenticationByAuthusername(testLoginHacked,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNull(authentication1);
 		
 		String testLoginHacked2 = "$est-login";
-		Authentication authentication2 = securityManager.findAuthenticationByAuthusername(testLoginHacked2, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		Authentication authentication2 = securityManager.findAuthenticationByAuthusername(testLoginHacked2,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNull(authentication2);	
 	}
 

@@ -493,13 +493,13 @@ public class ViteroManager implements UserDataDeletable {
 		
 		closeDBSessionSafely();
 
-		Authentication authentication = securityManager.findAuthentication(identity, VMS_PROVIDER);
+		Authentication authentication = securityManager.findAuthentication(identity, VMS_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 		if(authentication == null) {
 			if(create) {
 				created = true;
 				userId =  createVmsUser(identity);
 				if(userId > 0) {
-					securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, Integer.toString(userId), null, null);
+					securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, BaseSecurity.DEFAULT_ISSUER, Integer.toString(userId), null, null);
 				}
 			} else {
 				userId = -1;
@@ -1397,7 +1397,7 @@ public class ViteroManager implements UserDataDeletable {
 						Identity identity = securityManager.findIdentityByName(olatUsername);
 						if(identity != null) {
 							authenticationCreated++;
-							securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, Integer.toString(user.getId()), null, null);
+							securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, BaseSecurity.DEFAULT_ISSUER, Integer.toString(user.getId()), null, null);
 							log.info("Recreate VMS authentication for: {}", identity.getKey());
 						}
 					}
@@ -1409,7 +1409,7 @@ public class ViteroManager implements UserDataDeletable {
 		//on the vms server
 		List<Identity> identities = securityManager.getIdentitiesByPowerSearch(null, null, false, null, authProviders, null, null, null, null, null);
 		for(Identity identity :identities) {
-			Authentication authentication = securityManager.findAuthentication(identity, VMS_PROVIDER);
+			Authentication authentication = securityManager.findAuthentication(identity, VMS_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 			String vmsUserId = authentication.getAuthusername();
 			
 			boolean foundIt = false;

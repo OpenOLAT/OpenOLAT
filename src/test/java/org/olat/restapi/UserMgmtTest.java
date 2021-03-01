@@ -466,7 +466,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("user-auth-name");
 		Assert.assertNotNull(id);
 		String shibIdent = UUID.randomUUID().toString();
-		securityManager.createAndPersistAuthentication(id.getIdentity(), "Shib", shibIdent, null, null);
+		securityManager.createAndPersistAuthentication(id.getIdentity(), "Shib", BaseSecurity.DEFAULT_ISSUER, shibIdent, null, null);
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();
@@ -1141,7 +1141,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		String login = "update-" + UUID.randomUUID();
 		User user = userManager.createUser(login, login, login + "@openolat.com");
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, "inst" + login + "@openolat.com");
-		Identity id = securityManager.createAndPersistIdentityAndUser(null, login, null, user, "OLAT", login, "secret", null);
+		Identity id = securityManager.createAndPersistIdentityAndUser(null, login, null, user, "OLAT", BaseSecurity.DEFAULT_ISSUER, login, "secret", null);
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		organisationService.addMember(organisation, id, OrganisationRoles.user);
 		dbInstance.commitAndCloseSession();

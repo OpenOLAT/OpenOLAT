@@ -108,7 +108,7 @@ public class CreateTemporaryUsersCallback implements StepRunnerCallback {
 		newUser.getPreferences().setLanguage(identity.getLanguage());
 		newUser.getPreferences().setInformSessionTimeout(true);
 		return securityManager.createAndPersistIdentityAndUserWithOrganisation(identity.getName(), identity.getName(), null, newUser,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), identity.getName(), identity.getPassword(),
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, identity.getName(), identity.getPassword(),
 				organisation, identity.getExpirationDate());
 	}
 	

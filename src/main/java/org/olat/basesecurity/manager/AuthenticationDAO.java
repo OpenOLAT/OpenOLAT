@@ -49,16 +49,17 @@ public class AuthenticationDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public Authentication getAuthenticationByAuthusername(String authusername, String provider) {
+	public Authentication getAuthenticationByAuthusername(String authusername, String provider, String issuer) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
 		  .append(" inner join fetch ident.user identUser")
-		  .append(" where auth.provider=:provider and lower(auth.authusername)=:authusername");
+		  .append(" where auth.provider=:provider and auth.issuer=:issuer and lower(auth.authusername)=:authusername");
 
 		List<Authentication> results = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
 				.setParameter("provider", provider)
+				.setParameter("issuer", issuer)
 				.setParameter("authusername", authusername.toLowerCase())
 				.getResultList();
 		if (results.isEmpty()) return null;
@@ -172,25 +173,48 @@ public class AuthenticationDAO {
 		return results != null && !results.isEmpty() ? results.get(0) : null;
 	}
 
-	public Authentication getAuthentication(IdentityRef identity, String provider) {
+	public Authentication getAuthentication(IdentityRef identity, String provider, String issuer) {
 		if (identity == null || !StringHelper.containsNonWhitespace(provider)) {
 			throw new IllegalArgumentException("identity must not be null");
 		}
 		
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join auth.identity as ident")
 		  .append(" inner join ident.user as user")
-		  .append(" where auth.identity.key=:identityKey and auth.provider=:provider");
+		  .append(" where auth.identity.key=:identityKey and auth.provider=:provider and auth.issuer=:issuer");
 		
 		List<Authentication> results = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("provider", provider)
+				.setParameter("issuer", issuer)
 				.getResultList();
 		if (results == null || results.isEmpty()) {
 			return null;
 		}
+		if (results.size() > 1) {
+			throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
+		}
+		return results.get(0);
+	}
+	
+	public String getAuthenticationName(IdentityRef identity, String provider, String issuer) {
+		if (identity==null) {
+			throw new IllegalArgumentException("identity must not be null");
+		}
+		
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select auth.authusername from ").append(AuthenticationImpl.class.getName())
+		  .append(" as auth where auth.identity.key=:identityKey and auth.provider=:provider and auth.issuer=:issuer");
+		
+		List<String> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("provider", provider)
+				.setParameter("issuer", issuer)
+				.getResultList();
+		if (results == null || results.isEmpty()) return null;
 		if (results.size() > 1) {
 			throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
 		}

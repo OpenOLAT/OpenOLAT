@@ -208,12 +208,12 @@ public class UserAuthenticationsWebService {
 			authentication = securityManager.updateAuthentication(currentAuthentication);
 			log.info(Tracing.M_AUDIT, "Authentication created for {} with provider {}", authUsername, provider);
 		} else {
-			Authentication currentAuthentication = securityManager.findAuthenticationByAuthusername(authUsername, provider);
+			Authentication currentAuthentication = securityManager.findAuthenticationByAuthusername(authUsername, provider, BaseSecurity.DEFAULT_ISSUER);
 			if(currentAuthentication != null && !currentAuthentication.getIdentity().equals(identity)) {
 				return notSameIdentity(currentAuthentication);
 			}
 		
-			authentication = securityManager.createAndPersistAuthentication(identity, provider, authUsername, credentials, null);
+			authentication = securityManager.createAndPersistAuthentication(identity, provider, BaseSecurity.DEFAULT_ISSUER, authUsername, credentials, null);
 			if(authentication == null) {
 				return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 			}

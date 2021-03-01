@@ -144,7 +144,8 @@ public class SetupModule extends AbstractSpringModule {
 			if(user.isAdmin() || user.isSysAdmin() || user.isGuest()) {
 				legacyName = user.getUserName();
 			}
-			identity = securityManager.createAndPersistIdentityAndUser(legacyName, user.getUserName(), null, newUser, authenticationProviderConstant,
+			identity = securityManager.createAndPersistIdentityAndUser(legacyName, user.getUserName(), null, newUser,
+					authenticationProviderConstant, BaseSecurity.DEFAULT_ISSUER,
 					user.getUserName(), user.getPassword(), null);
 
 			if (identity == null) {
