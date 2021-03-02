@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -1215,9 +1216,12 @@ public class PortfolioServiceTest extends OlatTestCase {
 		portfolioService.appendNewSection("Second section", "My second section.", null, null, binder);
 		dbInstance.commitAndCloseSession();
 		
-		Category category1 = categoryDao.createAndPersistCategory("Cat1");
+		Random random = new Random();
+		String cat1 = "Cat1" + String.valueOf(random.nextInt());
+		String cat2 = "Cat2" + String.valueOf(random.nextInt());
+		Category category1 = categoryDao.createAndPersistCategory(cat1);
 		dbInstance.commitAndCloseSession();
-		Category category2 = categoryDao.createAndPersistCategory("Cat2");
+		Category category2 = categoryDao.createAndPersistCategory(cat2);
 		dbInstance.commitAndCloseSession();
 		
 		List<Section> sections = portfolioService.getSections(binder);

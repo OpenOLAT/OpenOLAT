@@ -912,10 +912,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	private void updateCategories(OLATResourceable oresource, List<String> categories) {
 		List<Category> existingCategories = categoryDao.getCategories();
-		Map<String, Category> existingCategoriesMap = existingCategories.stream().collect(Collectors.toMap(category -> category.getName(), category -> category));
+		Map<String, Category> existingCategoriesMap = existingCategories.stream().collect(Collectors.toMap(category -> category.getName(), category -> category, (cat1, cat2) -> cat1));
 		
 		List<Category> currentCategories = categoryDao.getCategories(oresource);
-		Map<String,Category> currentCategoryMap = currentCategories.stream().collect(Collectors.toMap(category -> category.getName(), category -> category));
+		Map<String,Category> currentCategoryMap = currentCategories.stream().collect(Collectors.toMap(category -> category.getName(), category -> category, (cat1, cat2) -> cat1));
 		
 		List<String> newCategories = new ArrayList<>(categories);
 		for(String newCategory:newCategories) {
