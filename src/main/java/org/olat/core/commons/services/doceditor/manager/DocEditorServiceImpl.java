@@ -31,6 +31,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.editor.fileeditor.FileEditor;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.AccessRef;
@@ -81,6 +82,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private PropertyManager propertyManager;
+	@Autowired
+	private BaseSecurityManager securityManager;
 	
 	@PostConstruct
 	private void init() {
@@ -340,6 +343,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 
 	@Override
 	public UserInfo createOrUpdateUserInfo(Identity identity, String info) {
+		if (securityManager.isGuest(identity)) return null;
+		
 		UserInfo userInfo = userInfoDao.load(identity);
 		if (userInfo == null) {
 			userInfo = userInfoDao.create(identity, info);
