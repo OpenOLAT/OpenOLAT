@@ -400,7 +400,8 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			}
 			
 			if (!found) {
-				TopicToGroup topicToGroup = topicToGroupDao.create(topic, group);
+				Group reloadedGroup = groupDao.loadGroup(group.getKey());
+				TopicToGroup topicToGroup = topicToGroupDao.create(topic, reloadedGroup);
 				topicToGroups.add(topicToGroup);
 			}
 		}
