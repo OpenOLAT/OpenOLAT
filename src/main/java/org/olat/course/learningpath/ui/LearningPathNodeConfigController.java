@@ -109,13 +109,16 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		Date startDate = learningPathConfigs.getStartDate();
 		startDateEl = uifactory.addDateChooser("config.start.date", startDate, formLayout);
 		startDateEl.setDateChooserTimeEnabled(true);
+		startDateEl.setHelpTextKey("config.start.date.help", null);
 		
 		Date endDate = learningPathConfigs.getEndDate();
 		endDateEl = uifactory.addDateChooser("config.end.date", endDate, formLayout);
 		endDateEl.setDateChooserTimeEnabled(true);
+		endDateEl.setHelpTextKey("config.end.date.help", null);
 		
 		String duration = learningPathConfigs.getDuration() != null? learningPathConfigs.getDuration().toString(): null;
 		durationEl = uifactory.addTextElement("config.duration", 128, duration , formLayout);
+		durationEl.setHelpTextKey("config.duration.help", null);
 		
 		KeyValues triggerKV = getTriggerKV();
 		triggerEl = uifactory.addRadiosVertical("config.trigger", formLayout,

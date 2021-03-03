@@ -331,7 +331,7 @@ public class TopicGroupsController extends FormBasicController {
 				groups.add(group);
 			}
 		}
-		if (usersTableModel.getRowCount() > 0) {
+		if (topic.getGroup() != null) {
 			groups.add(topic.getGroup());
 		}
 		appointmentsService.restrictTopic(topic, groups);
