@@ -116,7 +116,7 @@ import org.olat.course.nodes.fo.FOToolController;
 import org.olat.course.nodes.info.InfoCourseSecurityCallback;
 import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
-import org.olat.course.nodes.wiki._content.WikiToolController;
+import org.olat.course.nodes.wiki.WikiToolController;
 import org.olat.course.reminder.ui.CourseRemindersController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
