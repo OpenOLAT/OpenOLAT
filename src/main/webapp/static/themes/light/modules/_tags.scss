@@ -1,0 +1,17 @@
+.o_tag {
+	
+	background-color: $o-tag-background-color;
+	padding: 0 3px;
+	
+	color: $o-tag-font-color;
+	font-weight: 600;
+	
+	border-radius: 3px;
+	border: 1px solid $o-tag-background-color;
+}
+
+.o_tags_with_icon {
+	width: 100%;
+	display: inline-flex;
+	align-items: center;
+}

@@ -54,7 +54,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 
 		TextBoxListComponent tblComponent = (TextBoxListElementComponent) source;
 		if (tblComponent.isEnabled()) {
-			renderEnabledMode(tblComponent, sb, translator);
+			renderEnabledMode(tblComponent, sb, translator, tblComponent.getIcon());
 		} else {
 			renderDisabledMode(tblComponent, sb, tblComponent.getIcon());
 		}
@@ -69,11 +69,15 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 	 *            the StringOutput
 	 * @param translator
 	 */
-	private void renderEnabledMode(TextBoxListComponent tblComponent, StringOutput sb, Translator translator) {
+	private void renderEnabledMode(TextBoxListComponent tblComponent, StringOutput sb, Translator translator, String icon) {
 		TextBoxListElementImpl te = ((TextBoxListElementComponent)tblComponent).getTextElementImpl();
 		String dispatchId = tblComponent.getFormDispatchId();
 		
 		String initialValJson = renderItemsAsJsonString(tblComponent.getCurrentItems());
+		if (StringHelper.containsNonWhitespace(icon)) {
+			sb.append("<span class='o_tags_with_icon'>");
+			sb.append("<i class='o_icon o_icon_fw " + icon + "'> </i>");
+		}
 		sb.append("<input type='text' id='textboxlistinput").append(dispatchId).append("'")
 		  .append(" name='textboxlistinput").append(dispatchId).append("'");
 		if (te.hasFocus()) {
@@ -84,6 +88,9 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		sb.append(" placeholder='").append(Formatter.escapeDoubleQuotes(myTrans.translate("add.enter"))).append("' class='o_textbox'/>\n");
 		
 		renderTagifyMode(tblComponent, sb);
+		if (StringHelper.containsNonWhitespace(icon)) {
+			sb.append("</span>");
+		}
 	}
 	
 	private void renderTagifyMode(TextBoxListComponent tblComponent, StringOutput sb) {
@@ -229,10 +236,15 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		// read only view, we just display the initialItems as
 		// comma-separated string
 		List<TextBoxItem> items = tblComponent.getCurrentItems();
-		if (items != null && !items.isEmpty()) {
-			output.append("<span class='o_textbox_disabled'><i class='o_icon o_icon_fw ").append(icon).append("'> </i> ");
+		output.append("<span class='o_textbox_disabled o_tags_with_icon'>");
+		
+		if (StringHelper.containsNonWhitespace(icon)) {
+			output.append("<i class='o_icon o_icon_fw ").append(icon).append("'> </i> ");
+		}
+		
+		if (items != null) {
 			for (TextBoxItem item : items) {
-				output.append("<span class='tag label label-info");
+				output.append("<span class='o_tag");
 				String label = item.getLabel();
 				if(!StringHelper.containsNonWhitespace(label)) {
 					label = item.getValue();
@@ -252,9 +264,8 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 				output.append(" style='background-color:").append(color).append(";'")
 				      .append(">").append(label).append("</span>");								
 			}
-			output.append("</span>");
-		} else {
-			output.append("-");
-		}
+		} 
+		
+		output.append("</span>");
 	}
 }

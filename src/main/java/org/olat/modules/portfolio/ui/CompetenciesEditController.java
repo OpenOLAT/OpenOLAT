@@ -104,8 +104,8 @@ public class CompetenciesEditController extends FormBasicController {
 		competenciesEl.setAllowDuplicates(false);
 		competenciesEl.setAllowNewValues(false);
 		competenciesEl.setElementCssClass("o_block_inline");
-		competenciesEl.getComponent().setSpanAsDomReplaceable(true);
-		competenciesEl.setIcon("o_icon_taxonomy_level");
+		competenciesEl.getComponent().setSpanAsDomReplaceable(false);
+		competenciesEl.setIcon("o_icon_competences");
 		competenciesEl.setAutoCompleteContent(availableTaxonomyLevels);
 		
 		
@@ -132,7 +132,6 @@ public class CompetenciesEditController extends FormBasicController {
 		saveButton.setVisible(editable);
 		// Special label when no categories are there
 		if (competenciesEl.getValueList().isEmpty()) {
-			competenciesEl.setVisible(editable);
 			editLink.setI18nKey("competencies.add");			
 		} else {
 			editLink.setI18nKey("edit");

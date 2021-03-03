@@ -314,11 +314,14 @@
 }
 
 .o_portfolio_competencies {
+	margin-bottom: 2px;
+	
 	.tag {
 		background-color: lightblue;
-		font-size: 80%;
-		font-weight: normal;
+		//font-size: 80%;
+		font-weight: 500;
 	}
+	
 	/* the categories edit form */
 	div, form {
 		display: inline-block;
@@ -326,10 +329,13 @@
 }
 
 .o_portfolio_categories {
+	margin-bottom: 2px;
+	
 	.tag {
-		font-size: 80%;
-		font-weight: normal;
+		//font-size: 80%;
+		font-weight: 500;
 	}
+	
 	/* the categories edit form */
 	div, form {
 		display: inline-block;

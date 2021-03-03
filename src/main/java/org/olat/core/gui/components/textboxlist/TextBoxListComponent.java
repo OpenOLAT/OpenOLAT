@@ -72,7 +72,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl impleme
 	public static final String INPUT_SUFFIX = "textboxlistinput";
 
 	private String inputHint;
-	private String icon = "o_icon_tags";
+	private String icon;
 
 	/**
 	 * Holds the initial items (keyString is the caption! valueString is the
