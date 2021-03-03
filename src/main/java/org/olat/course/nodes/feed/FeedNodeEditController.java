@@ -34,6 +34,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.condition.ConditionRemoveController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.AbstractFeedCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -49,19 +50,20 @@ import org.olat.modules.webFeed.ui.FeedUIFactory;
  * @author gwassmann
  */
 public class FeedNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
-	
+
 	public static final String PANE_TAB_CONFIG = "pane.tab.feed";
 	private static final String PANE_TAB_ACCESS = "pane.tab.access";
 	private static final String[] paneKeys = { PANE_TAB_ACCESS, PANE_TAB_CONFIG };
-	
+
 	private TabbedPane tabbedPane;
 	private VelocityContainer accessVC;
-	
+
+	private ConditionRemoveController conditionRemoveCtrl;
 	private ConditionEditController readerCtr;
 	private ConditionEditController posterCtr;
 	private ConditionEditController moderatroCtr;
 	private Controller configCtrl;
-	
+
 	private AbstractFeedCourseNode courseNode;
 
 	public FeedNodeEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
@@ -75,21 +77,25 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 			// Accessibility tab
 			accessVC = new VelocityContainer("accessVC", FeedNodeEditController.class, "access", getTranslator(), this);
 			CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-
+			
+			conditionRemoveCtrl = new ConditionRemoveController(ureq, getWindowControl());
+			listenTo(conditionRemoveCtrl);
+			accessVC.put("remove", conditionRemoveCtrl.getInitialComponent());
+			
 			// Moderator precondition
 			Condition moderatorCondition = courseNode.getPreConditionModerator();
 			moderatroCtr = new ConditionEditController(ureq, getWindowControl(), uce, moderatorCondition,
 					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
 			this.listenTo(moderatroCtr);
 			accessVC.put("moderatorCondition", moderatroCtr.getInitialComponent());
-
+			
 			// Poster precondition
 			Condition posterCondition = courseNode.getPreConditionPoster();
 			posterCtr = new ConditionEditController(ureq, getWindowControl(), uce, posterCondition,
 					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
 			this.listenTo(posterCtr);
 			accessVC.put("posterCondition", posterCtr.getInitialComponent());
-
+			
 			// Reader precondition
 			Condition readerCondition = courseNode.getPreConditionReader();
 			readerCtr = new ConditionEditController(ureq, getWindowControl(), uce, readerCondition,
@@ -97,7 +103,7 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 			this.listenTo(readerCtr);
 			accessVC.put("readerCondition", readerCtr.getInitialComponent());
 		}
-		
+
 		configCtrl = new FeedNodeConfigsController(ureq, wControl, stackPanel, translatorPackage, course, courseNode,
 				uiFactory, resourceTypeName, helpUrl);
 		listenTo(configCtrl);
@@ -145,6 +151,9 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 			}
 		} else if (source == configCtrl) {
 			fireEvent(ureq, event);
+		} else if (source == conditionRemoveCtrl && event == ConditionRemoveController.REMOVE) {
+			courseNode.removeCustomPreconditions();
+			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT);
 		}
 	}
 
@@ -154,7 +163,7 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 		if (accessVC != null) {
 			tabbedPane.addTab(translate(PANE_TAB_ACCESS), accessVC);
 		}
-		if(configCtrl != null) {
+		if (configCtrl != null) {
 			tabbedPane.addTab(translate(PANE_TAB_CONFIG), configCtrl.getInitialComponent());
 		}
 	}

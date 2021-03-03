@@ -36,6 +36,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.condition.ConditionRemoveController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.run.calendar.CourseCalendarController;
@@ -57,6 +58,7 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 
 	private static final String[] paneKeys = { PANE_TAB_CALCONFIG, PANE_TAB_ACCESSIBILITY };
 
+	private ConditionRemoveController conditionRemoveCtrl;
 	private ConditionEditController accessCondContr;
 	private Controller configCtrl;
 	private TabbedPane tabs;
@@ -77,6 +79,11 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 		if (calCourseNode.hasCustomPreConditions()) {
 			editAccessVc = createVelocityContainer("edit_access");
 			CourseEditorTreeModel editorModel = course.getEditorTreeModel();
+			
+			conditionRemoveCtrl = new ConditionRemoveController(ureq, getWindowControl());
+			listenTo(conditionRemoveCtrl);
+			editAccessVc.put("remove", conditionRemoveCtrl.getInitialComponent());
+			
 			// Accessibility precondition
 			Condition accessCondition = calCourseNode.getPreConditionAccess();
 			accessCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
@@ -114,6 +121,9 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 				calCourseNode.setPreConditionEdit(cond);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if (source == conditionRemoveCtrl && event == ConditionRemoveController.REMOVE) {
+			calCourseNode.removeCustomPreconditions();
+			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT);
 		}
 	}
 

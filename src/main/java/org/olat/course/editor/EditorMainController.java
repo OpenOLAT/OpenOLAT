@@ -580,7 +580,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		
 		if (source == nodeEditCntrllr) {
 			// event from the tabbed pane (any tab)
-			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT || event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
 				// if the user changed the name of the node, we need to update the tree also.
 				// the event is too generic to find out what happened -> update tree in all cases (applies to ajax mode only)
 				menuTree.setDirty(true);
@@ -594,6 +594,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				if(node instanceof CourseEditorTreeNode) {
 					CourseEditorTreeNode cet = (CourseEditorTreeNode)node;
 					main.contextPut("courseNode", cet.getCourseNode());
+				}
+				if (event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
+					initNodeEditor(ureq, (CourseNode)main.contextGet("courseNode"));
 				}
 			}
 		} else if (source == statusCtr) {

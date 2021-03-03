@@ -34,6 +34,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.condition.ConditionRemoveController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.InfoCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -59,6 +60,7 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 	private TabbedPane myTabbedPane;
 	private Controller configCtrl;
 	private VelocityContainer editAccessVc;
+	private ConditionRemoveController conditionRemoveCtrl;
 	private ConditionEditController accessCondContr;
 	private ConditionEditController editCondContr;
 	private ConditionEditController adminCondContr;
@@ -75,6 +77,11 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 		if (courseNode.hasCustomPreConditions()) {
 			editAccessVc = createVelocityContainer("edit_access");
 			CourseEditorTreeModel editorModel = course.getEditorTreeModel();
+			
+			conditionRemoveCtrl = new ConditionRemoveController(ureq, getWindowControl());
+			listenTo(conditionRemoveCtrl);
+			editAccessVc.put("remove", conditionRemoveCtrl.getInitialComponent());
+			
 			// Accessibility precondition
 			Condition accessCondition = courseNode.getPreConditionAccess();
 			accessCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
@@ -150,6 +157,9 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 				courseNode.setPreConditionAdmin(cond);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if (source == conditionRemoveCtrl && event == ConditionRemoveController.REMOVE) {
+			courseNode.removeCustomPreconditions();
+			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT);
 		}
 	}
 	

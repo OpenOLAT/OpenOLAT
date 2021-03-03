@@ -84,6 +84,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 	/** Event that signals that the node configuration has been changed * */
 	public static final Event NODECONFIG_CHANGED_EVENT = new Event("nodeconfigchanged");
+	public static final Event NODECONFIG_CHANGED_REFRESH_EVENT = new Event("nodeconfigrefresh");
 	private static final String[] paneKeys = { PANE_TAB_VISIBILITY, PANE_TAB_GENERAL };
 	
 	@Autowired
@@ -160,6 +161,8 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		} else if (source == childTabsCntrllr) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			} else if (event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT);
 			}
 		} else if (source == nodeConfigController) {
 			if (event == Event.DONE_EVENT) {

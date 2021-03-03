@@ -38,6 +38,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.condition.ConditionRemoveController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.noderight.ui.NodeRightsController;
@@ -63,6 +64,7 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 	
 	private TabbedPane myTabbedPane;
 	private VelocityContainer accessContent;
+	private ConditionRemoveController conditionRemoveCtrl;
 	private ConditionEditController readerCondContr, posterCondContr, moderatorCondContr;
 	private Controller elementsEditCtrl;
 	private Controller configCtrl;
@@ -84,7 +86,11 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 			listenTo(configCtrl);
 		} else {
 			accessContent = createVelocityContainer("edit_access");
-
+			
+			conditionRemoveCtrl = new ConditionRemoveController(ureq, getWindowControl());
+			listenTo(conditionRemoveCtrl);
+			accessContent.put("remove", conditionRemoveCtrl.getInitialComponent());
+			
 			CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 			// Reader precondition
 			Condition readerCondition = courseNode.getPreConditionReader();
@@ -152,6 +158,9 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 				courseNode.setPreConditionModerator(cond);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if (source == conditionRemoveCtrl && event == ConditionRemoveController.REMOVE) {
+			courseNode.removeCustomPreconditions();
+			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT);
 		}
 	}
 

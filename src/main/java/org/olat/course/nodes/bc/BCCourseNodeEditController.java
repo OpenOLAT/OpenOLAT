@@ -39,6 +39,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.condition.ConditionRemoveController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.BCCourseNode;
@@ -62,6 +63,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private VelocityContainer accessibilityContent;
 
 	private Controller configCtrl;
+	private ConditionRemoveController conditionRemoveCtrl;
 	private ConditionEditController uploaderCondContr;
 	private ConditionEditController downloaderCondContr;
 	
@@ -75,6 +77,10 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 		
 		if (bcNode.hasCustomPreConditions()) {
 			accessibilityContent = createVelocityContainer("edit");
+			
+			conditionRemoveCtrl = new ConditionRemoveController(ureq, getWindowControl());
+			listenTo(conditionRemoveCtrl);
+			accessibilityContent.put("remove", conditionRemoveCtrl.getInitialComponent());
 
 			// Uploader precondition
 			Condition uploadCondition = bcNode.getPreConditionUploaders();
@@ -134,6 +140,9 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 				}
 			}
 			fireEvent(urequest, event);
+		} else if (source == conditionRemoveCtrl && event == ConditionRemoveController.REMOVE) {
+			bcNode.removeCustomPreconditions();
+			fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT);
 		}
 	}
 
