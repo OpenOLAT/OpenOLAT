@@ -133,8 +133,12 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 
 // The dropdown menu (ul)
 .dropdown-menu {
-  // Links within the dropdown menu
-  > li > a {
-    padding: 3px 10px;
-  }
+	// Links within the dropdown menu
+	> li > a {
+		padding: 3px 10px;
+	}
+}
+
+.dropdown-header {
+	padding: 3px 10px;
 }
