@@ -40,8 +40,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
+import org.olat.modules.video.VideoMetadataSearchParams;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.TranscodingCount;
@@ -58,10 +60,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VideoAdminTranscodingController extends FormBasicController {
 	
+	// Hardcoded same as VideoAdminSetController
+	private static final List<Integer> RESOLUTIONS = List.of(2160, 1080, 720, 480, 360, 240);
+
 	private TranscodingTableModel tableModel;
 	private FlexiTableElement transcodingTable;
-	
-	private Map<OLATResource,Integer> nativeResolutions;
 	
 	@Autowired 
 	private VideoManager videoManager;
@@ -70,13 +73,6 @@ public class VideoAdminTranscodingController extends FormBasicController {
 
 	public VideoAdminTranscodingController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "transcoding_admin");
-		nativeResolutions = new HashMap<>();
-		
-		List<VideoMeta> olatresources = videoManager.getAllVideoResourcesMetadata();
-		//cache native resolutions
-		for (VideoMeta videoResource : olatresources) {
-			nativeResolutions.put(videoResource.getVideoResource(), videoResource.getHeight());
-		}
 
 		initForm(ureq);
 	}
@@ -90,6 +86,7 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		FlexiTableColumnModel transcodingModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.resolutions));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.sumVideos));
+		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.extern));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.numberTranscodings));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.failedTranscodings));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.missingTranscodings));
@@ -122,9 +119,7 @@ public class VideoAdminTranscodingController extends FormBasicController {
 	}
 
 	private void loadTable() {
-		List<TranscodingRow> resolutions = new ArrayList<>();
-		// Hardcoded same as VideoAdminSetController
-		int[] fixresolution = { 2160, 1080, 720, 480, 360, 240 };
+		List<TranscodingRow> resolutions = new ArrayList<>(6);
 		Map<Integer, Integer> successCount = new HashMap<>();
 		int beginErrorCode = VideoTranscoding.TRANSCODING_STATUS_INEFFICIENT;
 		for (TranscodingCount transcodingCount : videoManager.getAllVideoTranscodingsCountSuccess(beginErrorCode)) {
@@ -134,19 +129,27 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		for (TranscodingCount transcodingCount : videoManager.getAllVideoTranscodingsCountFails(beginErrorCode)) {
 			failCount.put(transcodingCount.getResolution(), transcodingCount.getCount());
 		}
-		for (int i = 0; i < fixresolution.length; i++) {
-			int counter = 0;
-			for (OLATResource videoResource : nativeResolutions.keySet()) {
-				if (nativeResolutions.get(videoResource) >= fixresolution[i]) counter++;
+		
+		List<VideoMeta> videoMetadatas = videoManager.getVideoMetadata(new VideoMetadataSearchParams());
+		for (Integer resolution: RESOLUTIONS) {
+			int sumVideos = 0;
+			int extern = 0;
+			for (VideoMeta videoMetadata : videoMetadatas) {
+				if (videoMetadata.getHeight() >= resolution) {
+					sumVideos++;
+					if (StringHelper.containsNonWhitespace(videoMetadata.getUrl())) {
+						extern++;
+					}
+				}
 			}
-			int success = successCount.get(fixresolution[i]) != null ? successCount.get(fixresolution[i]) : 0;
-			int fails = failCount.get(fixresolution[i]) != null ? failCount.get(fixresolution[i]) : 0;
-			TranscodingRow transcodingRow = new TranscodingRow(fixresolution[i], success, fails, counter, mayTranscode(fixresolution[i])); 
+			
+			int success = successCount.get(resolution) != null ? successCount.get(resolution) : 0;
+			int fails = failCount.get(resolution) != null ? failCount.get(resolution) : 0;
+			TranscodingRow transcodingRow = new TranscodingRow(resolution.intValue(), success, fails, extern, sumVideos,
+					mayTranscode(resolution.intValue()));
 			resolutions.add(transcodingRow);
 		}
-		if (resolutions != null){
-			tableModel.setObjects(resolutions);
-		}
+		tableModel.setObjects(resolutions);
 		transcodingTable.reset(true, true, true);
 	}
 	
@@ -176,8 +179,6 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		reloadTable();
 	}
 	
-	
-	// state orders for inexistent transcodings
 	private void queueCreateTranscoding(TranscodingRow source) {
 		List<VideoTranscoding> allVideoTranscodings = videoManager.getOneVideoResolution(source.getResolution());
 		Map<OLATResource, Set<Integer>> availableTranscodings = new HashMap<>();
@@ -190,12 +191,15 @@ public class VideoAdminTranscodingController extends FormBasicController {
 				availableTranscodings.put(videoTranscoding.getVideoResource(), availableresolutions);
 			}
 		}
-		for (OLATResource videoResource : nativeResolutions.keySet()) {
-			if (availableTranscodings.get(videoResource) == null ||
-					!availableTranscodings.get(videoResource).contains(source.getResolution())) {
-				if (nativeResolutions.get(videoResource) >= source.getResolution()) {
-					videoManager.createTranscoding(videoResource, source.getResolution(), "mp4");
-				}
+		
+		VideoMetadataSearchParams searchParams = new VideoMetadataSearchParams();
+		searchParams.setUrlNull(Boolean.TRUE);
+		searchParams.setMinHeight(source.getResolution());
+		List<VideoMeta> videoMetadatas = videoManager.getVideoMetadata(searchParams);
+		for (VideoMeta videoMetadata : videoMetadatas) {
+			OLATResource videoResource = videoMetadata.getVideoResource();
+			if (!availableTranscodings.containsKey(videoResource) || !availableTranscodings.get(videoResource).contains(source.getResolution())) {
+				videoManager.createTranscoding(videoResource, source.getResolution(), "mp4");
 			}
 		}
 	}
