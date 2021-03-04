@@ -21,7 +21,6 @@ package org.olat.upgrade;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,11 +36,10 @@ public class OLATUpgrade_15_3_12 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_15.3.12";
 	private static final String DELETE_APPOINTMENT_USER_RESTRICTIONS = "DELETE APPOINTMENT USER RESTRICTIONS";
+	private static final String DELETE_TRANSCODING_OF_EXTERNAL_VIDEOS = "DELETE TRANSCODING OF EXTERNAL VIDEOS";
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private OnlyOfficeModule onlyofficeModule;
 
 	public OLATUpgrade_15_3_12() {
 		super();
@@ -64,6 +62,7 @@ public class OLATUpgrade_15_3_12 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		allOk &= deleteAppointmentUserRestriction(upgradeManager, uhd);
+		allOk &= deleteTranscodingOfExternalVideos(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -84,13 +83,39 @@ public class OLATUpgrade_15_3_12 extends OLATUpgrade {
 						.createQuery(query)
 						.executeUpdate();
 				dbInstance.commitAndCloseSession();
-				log.info("Deleted ppointment restriction with no group.");
+				log.info("Deleted appointment restriction with no group.");
 			} catch (Exception e) {
 				log.error("", e);
 				allOk = false;
 			}
 			
 			uhd.setBooleanDataValue(DELETE_APPOINTMENT_USER_RESTRICTIONS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private boolean deleteTranscodingOfExternalVideos(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(DELETE_TRANSCODING_OF_EXTERNAL_VIDEOS)) {
+			try {
+				StringBuilder sb = new StringBuilder();
+				sb.append("delete from videotranscoding as transcoding");
+				sb.append(" where transcoding.videoResource.key in (");
+				sb.append(" select metadata.videoResource.key from videometadata as metadata where metadata.url is not null");
+				sb.append(")");
+				
+				dbInstance.getCurrentEntityManager()
+						.createQuery(sb.toString())
+						.executeUpdate();
+				dbInstance.commitAndCloseSession();
+				log.info("Deleted transcodings of external videos");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(DELETE_TRANSCODING_OF_EXTERNAL_VIDEOS, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;

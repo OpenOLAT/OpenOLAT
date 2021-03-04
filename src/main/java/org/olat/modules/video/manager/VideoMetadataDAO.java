@@ -22,11 +22,15 @@ package org.olat.modules.video.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.image.Size;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
+import org.olat.modules.video.VideoMetadataSearchParams;
 import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -73,18 +77,24 @@ public class VideoMetadataDAO {
 		return dbInstance.getCurrentEntityManager().merge(videoMetadata);
 	}
 	
-	/**
-	 * Gets the all video resources metadata.
-	 *
-	 * @return the all video resources metadata
-	 */
-	List<VideoMeta> getAllVideoResourcesMetadata () {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select meta from videometadata as meta")
-			.append(" order by meta.creationDate asc, meta.id asc");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(),VideoMeta.class)
-				.getResultList();
+	List<VideoMeta> getVideoMetadata(VideoMetadataSearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meta from videometadata as meta");
+		sb.append(" inner join fetch meta.videoResource as vResource");
+		if (searchParams.getUrlNull() != null) {
+			sb.and().append("meta.url is ").append("not ", !searchParams.getUrlNull().booleanValue()).append("null");
+		}
+		if (searchParams.getMinHeight() != null) {
+			sb.and().append("meta.height >= :minHeight");
+		}
+		
+		TypedQuery<VideoMeta> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(),VideoMeta.class);
+		if (searchParams.getMinHeight() != null) {
+			query.setParameter("minHeight", searchParams.getMinHeight());
+		}
+		
+		return query.getResultList();
 	}
 	
 	/** 

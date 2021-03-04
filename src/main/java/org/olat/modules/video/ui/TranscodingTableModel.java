@@ -49,10 +49,11 @@ public class TranscodingTableModel extends DefaultFlexiTableDataModel<Transcodin
 		switch(TranscodingCols.values()[col]) {
 			case resolutions: return translator.translate("quality.resolution." + resolution.getResolution());
 			case sumVideos: return resolution.getSumVideos();
+			case extern: return resolution.getExtern();
 			case numberTranscodings: return resolution.getNumberTranscodings();
 			case failedTranscodings: return resolution.getFailedTranscodings();
 			case missingTranscodings: return resolution.getMissingTranscodings();
-			case transcode: return resolution.isAllTranscoded();
+			case transcode: return resolution.isStartTranscodingAvailable();
 			case delete: return resolution.getNumberTranscodings() > 0;
 			default: return "";
 		}
@@ -61,6 +62,7 @@ public class TranscodingTableModel extends DefaultFlexiTableDataModel<Transcodin
 	public enum TranscodingCols implements FlexiSortableColumnDef {
 		resolutions("quality.table.header.resolution"),
 		sumVideos("sum.video"),
+		extern("extern.videos"),
 		numberTranscodings("number.transcodings"),
 		failedTranscodings("number.transcodings.failed"),
 		missingTranscodings("missing.transcodings"),
