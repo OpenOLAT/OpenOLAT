@@ -380,7 +380,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		portfolioService.getCompetenciesAndUsage(section).forEach((taxonomyLevel, usage) -> {
 			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
 			competency.setUserObject(taxonomyLevel);
-			competency.setCustomEnabledLinkCSS("tag label label-info");
+			competency.setCustomEnabledLinkCSS("o_tag o_tag_clickable o_competence");
 			
 			competencesAndUsage.add(competency);
 		});	
@@ -398,7 +398,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		portfolioService.getCompetenciesAndUsage(pages).forEach((taxonomyLevel, usage) -> {
 			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
 			competency.setUserObject(taxonomyLevel);
-			competency.setCustomEnabledLinkCSS("tag label label-info");
+			competency.setCustomEnabledLinkCSS("o_tag o_tag_clickable o_competence");
 			
 			competencesAndUsage.add(competency);
 		});	
@@ -416,7 +416,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		portfolioService.getCategoriesAndUsage(section).forEach((category, usage) -> {
 			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
 			categoryLink.setUserObject(category);
-			categoryLink.setCustomEnabledLinkCSS("tag label label-info");
+			categoryLink.setCustomEnabledLinkCSS("o_tag o_tag_clickable");
 			
 			categoriesAndUsage.add(categoryLink);
 		});	
@@ -434,7 +434,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		portfolioService.getCategoriesAndUsage(pages).forEach((category, usage) -> {
 			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
 			categoryLink.setUserObject(category);
-			categoryLink.setCustomEnabledLinkCSS("tag label label-info");
+			categoryLink.setCustomEnabledLinkCSS("o_tag o_tag_clickable");
 			
 			categoriesAndUsage.add(categoryLink);
 		});	

@@ -52,7 +52,7 @@
 			<span class="o_portfolio_categories">
 				<i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 		 	#foreach($category in $row.sectionCategories)
-		 		<a class="tag label label-info" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
+		 		<a class="o_tag" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
 		 	#end
 		 	</span>
 		</div>
@@ -61,7 +61,7 @@
 				<span class="o_portfolio_competencies text-muted o_small">
 					<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competencies")"> </i>
 					#foreach($competence in $row.pageCompetencies)
-						<a class="tag label label-info" href="javascript:${f.ffXHREvent("tag_select","$competence")}">$competence</a>
+						<a class="o_tag o_competence" href="javascript:${f.ffXHREvent("tag_select","$competence")}">$competence</a>
 					#end
 				</span>
 				#end	
@@ -141,7 +141,7 @@
 				<span class="o_portfolio_categories text-muted o_small">
 					<i class="o_icon o_icon_fw o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 					#foreach($category in $row.pageCategories)
-						<a class="tag label label-info" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
+						<a class="o_tag" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
 					#end
 				</span>
 				#end
@@ -149,7 +149,7 @@
 				<span class="o_portfolio_competencies text-muted o_small">
 					<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competencies")"> </i>
 					#foreach($competence in $row.pageCompetencies)
-						<a class="tag label label-info" href="javascript:${f.ffXHREvent("tag_select","$competence")}">$competence</a>
+						<a class="o_tag o_competence" href="javascript:${f.ffXHREvent("tag_select","$competence")}">$competence</a>
 					#end
 				</span>
 				#end

@@ -69,8 +69,15 @@
 	<div class="o_portfolio_status_block o_block_top o_small clearfix">
 		<div class="o_portfolio_status"><strong>$r.translate("page.status")</strong>: <i class="o_icon o_icon-fw $statusCss"> </i> $pageStatus</div>
 		
-		#if($r.available("edit.page.meta"))
-			<span class="o_edit_page_meta">$r.render("edit.page.meta")</span>
+		#if($r.available("edit.page.meta") || $r.available("edit.page"))
+			<span class="o_edit_page_meta">
+				#if($r.available("edit.page.meta"))
+					$r.render("edit.page.meta")
+				#end
+				#if($r.available("edit.page"))
+					$r.render("edit.page")
+				#end
+			</span>
 		#end
 		#if($r.available("publish"))
 			$r.render("publish")

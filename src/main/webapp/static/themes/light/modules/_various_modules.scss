@@ -918,7 +918,7 @@ body {
 		width: 100%;
 		
 		.tagify__tag-text {
-			font-size: 75%;
+			//font-size: 75%;
 			font-weight: bold;
 			color: $label-color;
 		}
@@ -932,18 +932,13 @@ body {
 		}
 		
 		.tagify__tag {
-			line-height: 1;
+			line-height: $line-height-base;
 			color: $label-color;
 			text-align: center;
 			white-space: nowrap;
 			vertical-align: baseline;
 			border-radius: .25em;
 			@include label-variant($label-info-bg);
-		}
-		
-		.tagify__tag>div {
-			padding: 0.3em 0.5em 0.2em 0.5em;
-			border-radius: .25em;
 		}
 		
 		.tagify__tag.o_tag_admin>div::before {

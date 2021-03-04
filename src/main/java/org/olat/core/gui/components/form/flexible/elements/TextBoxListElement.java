@@ -99,4 +99,11 @@ public interface TextBoxListElement extends FormItem {
 	 */
 	public void setCurrentItems(List<TextBoxItem> currentItems);
 	
+	/**
+	 * Set a custom css class which will be applied to all new tags
+	 * 
+	 * @param customCSS
+	 */
+	public void setCustomCSSForItems(String customCSS);
+	
 }

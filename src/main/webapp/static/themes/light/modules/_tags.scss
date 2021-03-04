@@ -1,15 +1,33 @@
 .o_tag {
-	
-	background-color: $o-tag-background-color;
-	padding: 0 3px;
-	
+	padding: 1px 6px;
+	margin-right: .25em;
+	font-weight: 700;
+	text-align: center;
+	white-space: nowrap;
+	border-radius: .25rem;
+	border: 2px solid $o-tag-background-color;
 	color: $o-tag-font-color;
-	font-weight: 600;
+	background-color: $o-tag-background-color;
 	
-	border-radius: 3px;
-	border: 1px solid $o-tag-background-color;
+	&:hover {
+		text-decoration: none;
+		color: $o-tag-font-color;
+	}
+	
+	&.o_tag_clickable {
+		&:hover {
+			text-decoration: none;
+			background-color: darken($o-tag-background-color, 10%);
+			border-color: darken($o-tag-background-color, 10%);
+		}
+		
+		&:active {
+			background-color: darken($o-tag-background-color, 15%);
+			border-color: darken($o-tag-background-color, 15%);
+		}
+	}
 }
-
+	
 .o_tags_with_icon {
 	width: 100%;
 	display: inline-flex;

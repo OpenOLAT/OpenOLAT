@@ -73,7 +73,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		TextBoxListElementImpl te = ((TextBoxListElementComponent)tblComponent).getTextElementImpl();
 		String dispatchId = tblComponent.getFormDispatchId();
 		
-		String initialValJson = renderItemsAsJsonString(tblComponent.getCurrentItems());
+		String initialValJson = renderItemsAsJsonString(tblComponent.getCurrentItems(), tblComponent.getCustomCSSForItems());
 		if (StringHelper.containsNonWhitespace(icon)) {
 			sb.append("<span class='o_tags_with_icon'>");
 			sb.append("<i class='o_icon o_icon_fw " + icon + "'> </i>");
@@ -109,7 +109,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		  .append("       tagData.class += ' o_tag_admin';\n")
 		  .append("     }\n")
 		  .append("   },\n")
-		  .append("   keepInvalidTags:true,\n");
+		  .append("   keepInvalidTags:false,\n");
 		
 		List<TextBoxItem> autocompleteContent = tblComponent.getAutoCompleteContent();
 		if(autocompleteContent != null && !autocompleteContent.isEmpty()) {
@@ -163,12 +163,13 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		  .append(FormJSHelper.getJSEnd());
 	}
 	
-	private String renderItemsAsJsonString(List<TextBoxItem> content) {
+	private String renderItemsAsJsonString(List<TextBoxItem> content, String customCSSForItems) {
 		JSONArray array = new JSONArray();
 		if (content != null && !content.isEmpty()) {
 			OWASPAntiSamyXSSFilter filter = new OWASPAntiSamyXSSFilter();
 			for(TextBoxItem item:content) {
 				String antiItem = filter.filter(item.getValue());
+				String customCSS = StringHelper.containsNonWhitespace(item.getCustomCSS()) ? item.getCustomCSS() : customCSSForItems;
 				if(StringHelper.containsNonWhitespace(antiItem)) {
 					JSONObject obj = new JSONObject();
 					obj.put("value", antiItem);
@@ -180,6 +181,9 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 					}
 					if(!item.isEditable()) {
 						obj.put("readonly", "true");
+					}
+					if(StringHelper.containsNonWhitespace(customCSS)) {
+						obj.put("customCSS", customCSS);
 					}
 					array.put(obj);
 				}	
@@ -245,6 +249,9 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		if (items != null) {
 			for (TextBoxItem item : items) {
 				output.append("<span class='o_tag");
+				if (StringHelper.containsNonWhitespace(item.getCustomCSS())) {
+					output.append(" " + item.getCustomCSS());
+				}
 				String label = item.getLabel();
 				if(!StringHelper.containsNonWhitespace(label)) {
 					label = item.getValue();
@@ -255,14 +262,11 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 				}
 				output.append("'");
 				
-				String color;
 				if(StringHelper.containsNonWhitespace(item.getColor())) {
-					color = item.getColor();
-				} else {
-					color = "#5bc0de";
+					output.append(" style='background-color:").append(item.getColor()).append(";'");
 				}
-				output.append(" style='background-color:").append(color).append(";'")
-				      .append(">").append(label).append("</span>");								
+				
+				output.append(">").append(label).append("</span>");								
 			}
 		} 
 		

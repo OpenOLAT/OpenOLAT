@@ -73,6 +73,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl impleme
 
 	private String inputHint;
 	private String icon;
+	private String customCSSForItems;
 
 	/**
 	 * Holds the initial items (keyString is the caption! valueString is the
@@ -164,8 +165,13 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl impleme
 					String itemLabel = obj.optString("label");
 					String itemValue = obj.optString("value");
 					TextBoxItem item = getByValue(itemValue);
+					if(StringHelper.containsNonWhitespace(customCSSForItems)) {
+						item.setCustomCSS(customCSSForItems);
+					}
 					if (item == null) {
-						updatedItems.add(new TextBoxItemImpl(itemLabel, itemValue, null, true));
+						TextBoxItemImpl newItem = new TextBoxItemImpl(itemLabel, itemValue, null, true);
+						newItem.setCustomCSS(customCSSForItems);
+						updatedItems.add(newItem);
 					} else {
 						updatedItems.add(item);
 					}
@@ -461,6 +467,14 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl impleme
 	
 	public void setIcon(String icon) {
 		this.icon = icon;
+	}
+	
+	public void setCustomCSSForItems(String customCSSForItems) {
+		this.customCSSForItems = customCSSForItems;
+	}
+	
+	public String getCustomCSSForItems() {
+		return customCSSForItems;
 	}
 
 	@Override

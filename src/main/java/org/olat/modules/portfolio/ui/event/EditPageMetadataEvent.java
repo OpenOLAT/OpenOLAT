@@ -17,37 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.textboxlist;
+package org.olat.modules.portfolio.ui.event;
+
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 14 nov. 2019<br>
+ * Initial date: 7 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface TextBoxItem {
-	
-	public String getValue();
-	
-	public String getLabel();
-	
-	public String getColor();
-	
-	public String getCustomCSS();
-	
-	public boolean isEditable();
-	
-	public Object getUserObject();
+public class EditPageMetadataEvent extends Event {
 
-	public void setValue(String value);
+	private static final long serialVersionUID = 547846254987606517L;
+	private static final String EDIT_PAGE_META_DATA = "edit-page-meta-data";
 	
-	public void setLabel(String label);
-	
-	public void setColor(String color);
-	
-	public void setCustomCSS(String customCSS);
-	
-	public void setEditable(boolean editable);
-	
-	public void setUserObject(Object userObject);
+	public EditPageMetadataEvent() {
+		super(EDIT_PAGE_META_DATA);
+	}
+
 }

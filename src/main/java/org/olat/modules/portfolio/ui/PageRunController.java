@@ -29,8 +29,8 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityC
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -102,6 +102,7 @@ import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.DonePageEvent;
+import org.olat.modules.portfolio.ui.event.EditPageMetadataEvent;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.event.PageChangedEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
@@ -229,7 +230,7 @@ public class PageRunController extends BasicController implements TooledControll
 
 		editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
 		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
-		editMetadataLink.setVisible(secCallback.canEditPageMetadata(page, assignments));
+		editMetadataLink.setVisible(secCallback.canEditPageMetadata(page, assignments) && page == null);
 		stackPanel.addTool(editMetadataLink, Align.left);
 		
 		if(secCallback.canExportBinder()) {
@@ -285,7 +286,7 @@ public class PageRunController extends BasicController implements TooledControll
 				editLink.setCustomDisplayText(translate("edit.page.close"));
 				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
 			}
-			editLink.setVisible(secCallback.canEditPage(page));
+			editLink.setVisible(secCallback.canEditPage(page) && page == null);
 			editLink.setUserObject(edit);
 			
 			if(pageMetaCtrl != null) {
@@ -326,10 +327,10 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 		
 		if(editLink != null) {
-			editLink.setVisible(secCallback.canEditPage(page));
+			editLink.setVisible(secCallback.canEditPage(page) && page == null);
 		}
 		if(editMetadataLink != null) {
-			editMetadataLink.setVisible(secCallback.canEditMetadataBinder());
+			editMetadataLink.setVisible(secCallback.canEditMetadataBinder() && page == null);
 		}
 		if(moveToTrashLink != null) {
 			moveToTrashLink.setVisible(secCallback.canDeletePage(page));
@@ -421,6 +422,8 @@ public class PageRunController extends BasicController implements TooledControll
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event instanceof ToggleEditPageEvent) {
 				doEditPage(ureq);
+			} else if(event instanceof EditPageMetadataEvent) {
+				doEditMetadata(ureq);
 			}
 		} else if(commentsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {

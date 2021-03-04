@@ -27,11 +27,12 @@ package org.olat.core.gui.components.textboxlist;
  */
 public class TextBoxItemImpl implements TextBoxItem {
 	
-	private final String label;
-	private final String value;
-	private final String color;
-	private final boolean editable;
-	private final Object userObject;
+	private String label;
+	private String value;
+	private String color;
+	private String customCSS;
+	private boolean editable;
+	private Object userObject;
 	
 	public TextBoxItemImpl(String label, String value) {
 		this(label, value, null, true, null);
@@ -69,7 +70,43 @@ public class TextBoxItemImpl implements TextBoxItem {
 		return editable;
 	}
 
+	@Override
 	public Object getUserObject() {
 		return userObject;
+	}
+
+	@Override
+	public String getCustomCSS() {
+		return customCSS;
+	}
+
+	@Override
+	public void setValue(String value) {
+		this.value = value;
+	}
+
+	@Override
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	@Override
+	public void setColor(String color) {
+		this.color = color;
+	}
+
+	@Override
+	public void setCustomCSS(String customCSS) {
+		this.customCSS = customCSS;
+	}
+
+	@Override
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+	
+	@Override
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
 	}
 }

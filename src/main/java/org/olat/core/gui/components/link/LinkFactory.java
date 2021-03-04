@@ -269,6 +269,24 @@ public class LinkFactory {
 	}
 	
 	/**
+	 * add a small button to the <code>vc</code> Velocity Container and make the <code>listeningController</code> listen to this small button.<p>
+	 * Follow these instructions to show the small button and catch its events:
+	 * <ol>
+	 * <li><code>$r.render("mySmallButton")</code> in your velocity page, that the small button shows up.</li>
+	 * <li>save the returned link as a instance variable <code>mySmallButton</code></li>
+	 * <li>in the <code>listeningController.event(UserRequest ureq, Component source, Event event)</code> you catch the small button by<br><code>if(source == mySmallButton){..your stuff here..}</code></li>
+	 * </ol>
+	 * 
+	 * @param one string for name of component, command and i18n key
+	 * @param vc the VelocityContainer within you put this link
+	 * @param listener
+	 * @return the link component
+	 */
+	public static Link createButtonSmall(String name, String cmd, String i18n, VelocityContainer vc, ComponentEventListener listener){
+		return new Link(name, cmd, i18n, Link.BUTTON_SMALL, vc, listener);
+	}
+	
+	/**
 	 * add a xsmall button to the <code>vc</code> Velocity Container and make the <code>listeningController</code> listen to this xsmall button.<p>
 	 * Follow these instructions to show the xsmall button and catch its events:
 	 * <ol>

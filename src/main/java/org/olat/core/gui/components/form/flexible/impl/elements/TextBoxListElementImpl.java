@@ -166,4 +166,9 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	public void setIcon(String icon) {
 		component.setIcon(icon);		
 	}
+	
+	@Override
+	public void setCustomCSSForItems(String customCSS) {
+		component.setCustomCSSForItems(customCSS);
+	}
 }

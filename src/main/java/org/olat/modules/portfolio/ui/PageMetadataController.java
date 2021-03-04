@@ -65,6 +65,7 @@ import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.DonePageEvent;
+import org.olat.modules.portfolio.ui.event.EditPageMetadataEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
@@ -87,7 +88,13 @@ public class PageMetadataController extends BasicController {
 	public static final int PICTURE_HEIGHT = 300 * 2 ; 	// max size for large images, see CSS, x2 for high res displays
 
 	private Link editLink;
-	private Link publishButton, revisionButton, closeButton, reopenButton, bookmarkButton;
+	private Link editMetaDataLink;
+	private Link publishButton;
+	private Link revisionButton;
+	private Link closeButton;
+	private Link reopenButton;
+	private Link bookmarkButton;
+	
 	private ImageComponent imageCmp;
 	private String mapperThumbnailUrl;
 	private VelocityContainer mainVC;
@@ -132,6 +139,7 @@ public class PageMetadataController extends BasicController {
 		initStatus();
 		initTaxonomyCompetencies();
 		editLink(!openInEditMode);
+		editMetaDataLink();
 		putInitialPanel(mainVC);
 	}
 	
@@ -323,17 +331,31 @@ public class PageMetadataController extends BasicController {
 	protected Link editLink(boolean edit) {
 		if(page.isEditable()) {
 			if(editLink == null) {
-				editLink = LinkFactory.createToolLink("edit.page.meta", translate("edit.page"), this);
+				editLink = LinkFactory.createButtonSmall("edit.page", mainVC, this);
 				editLink.setElementCssClass("o_sel_pf_edit_page_meta");
-				mainVC.put("edit.page.meta", editLink);
+				mainVC.put("edit.page", editLink);
 			}
 			if(edit) {
 				editLink.setCustomDisplayText(translate("edit.page.meta"));
-				editLink.setIconRightCSS("o_icon o_icon-lg o_icon_toggle_off");
+				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
 			} else {
 				editLink.setCustomDisplayText(translate("edit.page.close"));
-				editLink.setIconRightCSS("o_icon o_icon-lg o_icon_toggle_on");
+				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
 			}
+			editLink.setVisible(secCallback.canEditPage(page));
+		}
+		return editLink;
+	}
+	
+	protected Link editMetaDataLink() {
+		if(page.isEditable()) {
+			if(editMetaDataLink == null) {
+				editMetaDataLink = LinkFactory.createButtonSmall("edit.page.metadata", mainVC, this);
+				editMetaDataLink.setElementCssClass("o_sel_pf_edit_page_meta_data");
+				editMetaDataLink.setIconLeftCSS("o_icon o_ico-lg o_icon_edit_metadata");
+				mainVC.put("edit.page.meta", editMetaDataLink);
+			}
+			
 			editLink.setVisible(secCallback.canEditPage(page));
 		}
 		return editLink;
@@ -358,6 +380,8 @@ public class PageMetadataController extends BasicController {
 			toogleBookmark();
 		} else if(editLink == source) {
 			fireEvent(ureq, new ToggleEditPageEvent());
+		} else if(editMetaDataLink == source) {
+			fireEvent(ureq, new EditPageMetadataEvent());
 		}
 	}
 

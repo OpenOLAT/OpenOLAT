@@ -78,6 +78,7 @@ public class CompetenciesEditController extends FormBasicController {
 		existingCompetencies = new ArrayList<>();
 		for (TaxonomyCompetence competence : competencies) {
 			TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getDisplayName(), competence.getTaxonomyLevel().getKey().toString());
+			competenceTextBoxItem.setCustomCSS("o_competence");
 			existingCompetencies.add(competenceTextBoxItem);
 		}
 		
@@ -107,6 +108,7 @@ public class CompetenciesEditController extends FormBasicController {
 		competenciesEl.getComponent().setSpanAsDomReplaceable(false);
 		competenciesEl.setIcon("o_icon_competences");
 		competenciesEl.setAutoCompleteContent(availableTaxonomyLevels);
+		competenciesEl.setCustomCSSForItems("o_competence");
 		
 		
 		editLink = uifactory.addFormLink("edit", "edit", "edit", null, formLayout, Link.LINK);

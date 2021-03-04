@@ -22,3 +22,27 @@
 		}
 	}
 }
+
+.o_tag.o_competence {
+	background-color: #ffffff;
+	color: $o-competences-font-color;
+	border: 2px solid $o-competences-color; 
+	
+	&:hover {
+		text-decoration: none;
+		color: $o-competences-font-color;
+	}
+	
+	&.o_tag_clickable {
+		&:hover {
+			text-decoration: none;
+			background-color: darken(#ffffff, 10%);
+			border-color: $o-competences-color;
+		}
+		
+		&:active {
+			background-color: darken(#ffffff, 15%);
+			border-color: $o-competences-color;
+		}
+	}
+}	
