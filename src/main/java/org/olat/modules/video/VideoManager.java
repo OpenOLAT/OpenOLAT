@@ -382,11 +382,12 @@ public interface VideoManager {
 	public Size getVideoResolutionFromOLATResource (OLATResource videoResource);
 	
 	/**
-	 * Gets the all video resources metadata.
+	 * Gets the video resources metadata.
+	 * @param searchParams 
 	 *
-	 * @return the all video resources metadata
+	 * @return the video resources metadata
 	 */
-	public List<VideoMeta> getAllVideoResourcesMetadata();
+	public List<VideoMeta> getVideoMetadata(VideoMetadataSearchParams searchParams);
 	
 	/**
 	 * Gets the video meta data.
@@ -395,7 +396,7 @@ public interface VideoManager {
 	 * @return the video meta data
 	 */
 	public VideoMeta getVideoMetadata(OLATResource videoResource);
-
+	
 	/**
 	 * Exchange poster of the new resource.
 	 *

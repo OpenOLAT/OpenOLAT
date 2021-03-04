@@ -464,8 +464,6 @@ public class CalendarEntryForm extends FormBasicController {
 		
 		liveStreamUrlTypeEl.setVisible(isLiveStream && liveStreamNotManaged);
 		liveStreamUrlTemplateEl.setVisible(isLiveStream && liveStreamNotManaged);
-		liveStreamUrlEl.setVisible(isLiveStream);
-		liveStreamUrlEl.setEnabled(liveStreamNotManaged);
 		
 		liveStreamUrlEl.setValue(kalendarEvent.getLiveStreamUrl());
 
@@ -498,7 +496,9 @@ public class CalendarEntryForm extends FormBasicController {
 			}
 			liveStreamUrlTypeEl.select(liveStreamUrlTypeEl.getKey(0), liveStreamUrlManually);
 		}
-		updateLiveStreamUI(liveStreamUrlManually);
+		liveStreamUrlTemplateEl.setVisible(!liveStreamUrlManually);
+		liveStreamUrlEl.setVisible(isLiveStream && liveStreamUrlManually);
+		liveStreamUrlEl.setEnabled(liveStreamNotManaged);
 	}
 
 	private boolean isValidUrlTemplateKey(Long urlTemplateKey) {
@@ -506,11 +506,6 @@ public class CalendarEntryForm extends FormBasicController {
 				&& Arrays.stream(liveStreamUrlTemplateEl.getKeys()).anyMatch(key -> key.equals(urlTemplateKey.toString()));
 	}
 	
-	private void updateLiveStreamUI(boolean manually) {
-		liveStreamUrlTemplateEl.setVisible(!manually);
-		liveStreamUrlEl.setVisible(manually);
-	}
-
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent e) {
 		if (source == chooseRecurrence) {
@@ -521,7 +516,8 @@ public class CalendarEntryForm extends FormBasicController {
 			end.setDateChooserTimeEnabled(!allDay);
 		} else if (source == liveStreamUrlTypeEl) {
 			boolean manually = liveStreamUrlTypeEl.isAtLeastSelected(1);
-			updateLiveStreamUI(manually);
+			liveStreamUrlTemplateEl.setVisible(!manually);
+			liveStreamUrlEl.setVisible(manually);
 		} else if (source == liveStreamUrlTemplateEl) {
 			doSyncLiveStreamUrl();
 		} else if(deleteEventButton == source) {

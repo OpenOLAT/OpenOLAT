@@ -26,74 +26,50 @@ package org.olat.modules.video.ui;
  */
 public class TranscodingRow {
 	
-	private int resolution;
-	private int sumVideos;
-	private int missingTranscodings;
-	private int failedTranscodings;
-	private int numberTranscodings;
-	private boolean allTranscoded;
+	private final int resolution;
+	private final int sumVideos;
+	private final int external;
+	private final int missingTranscodings;
+	private final int failedTranscodings;
+	private final int numberTranscodings;
+	private final boolean startTranscodingAvailable;
 
-	public TranscodingRow(int resolution, int numberTranscodings, int failedTranscodings, int sumVideos, boolean mayTranscode) {
-		super();
+	public TranscodingRow(int resolution, int numberTranscodings, int failedTranscodings, int extern, int sumVideos, boolean mayTranscode) {
 		this.resolution = resolution;
 		this.numberTranscodings = numberTranscodings;
 		this.sumVideos = sumVideos;
-		this.missingTranscodings = sumVideos - numberTranscodings - failedTranscodings;
+		this.external = extern;
+		this.missingTranscodings = sumVideos - extern - numberTranscodings - failedTranscodings;
 		this.failedTranscodings = failedTranscodings;
-		this.allTranscoded = numberTranscodings + failedTranscodings < sumVideos && mayTranscode;		
-	}
-
-	
-	
-	public boolean isAllTranscoded() {
-		return allTranscoded;
-	}
-
-	public void setAllTranscoded(boolean allTranscoded) {
-		this.allTranscoded = allTranscoded;
+		this.startTranscodingAvailable = mayTranscode && missingTranscodings > 0;
 	}
 
 	public int getResolution() {
 		return resolution;
 	}
 
-	public void setResolution(int resolution) {
-		this.resolution = resolution;
-	}
-
 	public int getSumVideos() {
 		return sumVideos;
 	}
-
-	public void setSumVideos(int sumVideos) {
-		this.sumVideos = sumVideos;
+	
+	public int getExtern() {
+		return external;
 	}
 
 	public int getNumberTranscodings() {
 		return numberTranscodings;
 	}
 
-	public void setNumberTranscodings(int numberTranscodings) {
-		this.numberTranscodings = numberTranscodings;
-	}
-	
 	public int getFailedTranscodings() {
 		return failedTranscodings;
-	}
-
-	public void setFailedTranscodings(int failedTranscodings) {
-		this.failedTranscodings = failedTranscodings;
 	}
 
 	public int getMissingTranscodings() {
 		return missingTranscodings >= 0 ? missingTranscodings : 0;
 	}
 
-	public void setMissingTranscodings(int missingTranscodings) {
-		this.missingTranscodings = missingTranscodings;
+	public boolean isStartTranscodingAvailable() {
+		return startTranscodingAvailable;
 	}
-
-
-	
 	
 }

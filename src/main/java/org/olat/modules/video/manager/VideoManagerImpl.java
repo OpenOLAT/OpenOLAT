@@ -84,6 +84,7 @@ import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoMetadata;
+import org.olat.modules.video.VideoMetadataSearchParams;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
@@ -1246,8 +1247,8 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
-	public List<VideoMeta> getAllVideoResourcesMetadata() {
-		return videoMetadataDao.getAllVideoResourcesMetadata();
+	public List<VideoMeta> getVideoMetadata(VideoMetadataSearchParams searchParams) {
+		return videoMetadataDao.getVideoMetadata(searchParams);
 	}
 	
 	@Override

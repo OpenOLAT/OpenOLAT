@@ -131,6 +131,7 @@ public class VideoMetaImpl implements VideoMeta, Persistable, ModifiedInfo {
 		return url;
 	}
 
+	@Override
 	public void setUrl(String url) {
 		this.url = url;
 	}
