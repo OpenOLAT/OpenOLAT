@@ -823,7 +823,7 @@ public class FileUtils {
 			}
 		}
 		//check if there are any unwanted path denominators in the name
-		if (filename.indexOf("..") > -1) {
+		if (filename.indexOf("..") > -1 || filename.startsWith(".")) {
 			return false;
 		}
 		return true;
@@ -874,6 +874,10 @@ public class FileUtils {
 	}
 	
 	private static String cleanFilenamePart(String filename) {
+		while(filename.startsWith(".")) {
+			filename = filename.substring(1, filename.length());
+		}
+		
 		String cleaned = Normalizer.normalize(filename, Normalizer.Form.NFKD);
 		cleaned = cleaned.replaceAll("\\p{InCombiningDiacriticalMarks}+","");
 		for (char character: FILE_NAME_FORBIDDEN_CHARS) {

@@ -30,8 +30,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -47,6 +49,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
@@ -79,6 +82,7 @@ public class CorrectionOverviewModel {
 	private final Set<Identity> identityWithErrors = new HashSet<>();
 	private final Map<String,Boolean> manualCorrections = new ConcurrentHashMap<>();
 
+	private final Map<Identity,String> anomyzedNamed;
 	private Map<Identity,AssessmentTestSession> lastSessions;
 	private final Map<AssessmentTestSession,Identity> reversedLastSessions = new HashMap<>();
 	private final Map<Identity,Boolean> assessedIdentitiesDone = new HashMap<>();
@@ -90,7 +94,8 @@ public class CorrectionOverviewModel {
 	
 	public CorrectionOverviewModel(RepositoryEntry courseEntry, IQTESTCourseNode courseNode, RepositoryEntry testEntry,
 			ResolvedAssessmentTest resolvedAssessmentTest, ManifestBuilder manifestBuilder,
-			Map<Identity,AssessmentTestSession> lastSessions, Map<Identity, TestSessionState> testSessionStates) {
+			Map<Identity,AssessmentTestSession> lastSessions, Map<Identity, TestSessionState> testSessionStates,
+			Translator translator) {
 		CoreSpringFactory.autowireObject(this);
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
@@ -100,15 +105,18 @@ public class CorrectionOverviewModel {
 		this.lastSessions = lastSessions;
 		this.testSessionStates = testSessionStates;
 		assessedIdentities = new ArrayList<>(lastSessions.keySet());
+		Collections.shuffle(assessedIdentities);
 		
 		for(Map.Entry<Identity, AssessmentTestSession> entry:lastSessions.entrySet()) {
 			reversedLastSessions.put(entry.getValue(), entry.getKey());
 		}
+		
+		anomyzedNamed = anonymize(translator);
 	}
 	
 	public CorrectionOverviewModel(RepositoryEntry courseEntry, IQTESTCourseNode courseNode, RepositoryEntry testEntry,
 			ResolvedAssessmentTest resolvedAssessmentTest, ManifestBuilder manifestBuilder,
-			List<Identity> assessedIdentities) {
+			List<Identity> assessedIdentities, Translator translator) {
 		CoreSpringFactory.autowireObject(this);
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
@@ -116,8 +124,36 @@ public class CorrectionOverviewModel {
 		this.manifestBuilder = manifestBuilder;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
 		this.assessedIdentities = new ArrayList<>(assessedIdentities);
+		Collections.shuffle(this.assessedIdentities);
+		
 		lastSessions = loadLastSessions();
 		testSessionStates = getTestSessionStates(lastSessions);
+		
+		anomyzedNamed = anonymize(translator);
+	}
+	
+	protected String getAnonymizedName(Identity identity) {
+		String name = anomyzedNamed.get(identity);
+		if(!StringHelper.containsNonWhitespace(name)) {
+			name = "UNKOWN";
+		}
+		return name;
+	}
+	
+	private Map<Identity,String> anonymize(Translator translator) {
+		int count = 0;
+
+		Map<Identity,String> names = new HashMap<>();
+		for(Identity assessedIdentity:assessedIdentities) {
+			if(lastSessions.containsKey(assessedIdentity)) {
+				String title = translator.translate("number.assessed.identity", new String[] { Integer.toString(++count)} );
+				names.put(assessedIdentity, title);
+			} else {
+				String title = translator.translate("number.assessed.identity", new String[] { "ERR" } );
+				names.put(assessedIdentity, title);
+			}
+		}
+		return Map.copyOf(names);
 	}
 
 	public String getSubIdent() {

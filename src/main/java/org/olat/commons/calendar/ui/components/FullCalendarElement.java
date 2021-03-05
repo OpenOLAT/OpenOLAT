@@ -138,9 +138,12 @@ public class FullCalendarElement extends FormItemImpl {
 		String movedEventId = getRootForm().getRequestParameter("evMove");
 		String resizedEventId = getRootForm().getRequestParameter("evResize");
 		String changeViewName = getRootForm().getRequestParameter("evChangeView");
+		String changeDates = getRootForm().getRequestParameter("evChangeDates");
 		String print = getRootForm().getRequestParameter("print");
 		String config = getRootForm().getRequestParameter("config");
 		String aggregate = getRootForm().getRequestParameter("aggregate");
+		
+
 		
 		String dispatchuri = getRootForm().getRequestParameter("dispatchuri");
 		if("undefined".equals(dispatchuri)) {
@@ -158,8 +161,8 @@ public class FullCalendarElement extends FormItemImpl {
 			String targetDomId = getRootForm().getRequestParameter("evDomId");
 			doSelect(ureq, selectedEventId, targetDomId);
 		} else if(StringHelper.containsNonWhitespace(addEventMarker)) {
-			String start = getRootForm().getRequestParameter("start");
 			String allDay = getRootForm().getRequestParameter("allDay");
+			String start = getRootForm().getRequestParameter("start");
 			doAdd(ureq, start, allDay);
 		} else if(StringHelper.containsNonWhitespace(movedEventId)) {
 			String dayDelta = getRootForm().getRequestParameter("dayDelta");
@@ -171,21 +174,33 @@ public class FullCalendarElement extends FormItemImpl {
 			String allDay = getRootForm().getRequestParameter("allDay");
 			doResize(ureq, resizedEventId, minuteDelta, allDay);
 		} else if(StringHelper.containsNonWhitespace(changeViewName)) {
+			doChangeView(changeViewName);
 			String start = getRootForm().getRequestParameter("start");
-			doChangeView(changeViewName, start);
+			doSetCurrentDate(start);
+		} else if(StringHelper.containsNonWhitespace(changeDates)) {
+			doSetCurrentDate(changeDates);
 		}
 	}
 	
-	protected void doChangeView(String viewName, String start) {
+	protected void doChangeView(String viewName) {
 		if(FullCalendarViews.exists(viewName)) {
 			component.setViewName(viewName);
 		}
-		
+	}
+	
+	protected void doSetCurrentDate(String start) {
 		if(StringHelper.isLong(start)) {
 			long startTime = Long.parseLong(start);
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(startTime);
 			component.setCurrentDate(cal.getTime());
+		} else if(start != null && start.indexOf('-') >= 0) {
+			try {
+				Date startDate = CalendarUtils.parseISO8601(start);
+				component.setCurrentDate(startDate);
+			} catch (ParseException e) {
+				log.debug("",  e);
+			}
 		}
 	}
 	

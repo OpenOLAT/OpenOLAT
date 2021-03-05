@@ -21,7 +21,9 @@ package org.olat.ldap.manager;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +32,12 @@ import java.util.stream.Collectors;
 
 import javax.naming.directory.Attributes;
 import javax.naming.ldap.LdapContext;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -42,6 +49,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
@@ -60,8 +68,9 @@ import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.LDAPSyncConfiguration;
 import org.olat.ldap.ui.LDAPAuthenticationController;
+import org.olat.restapi.RestConnection;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +88,7 @@ import com.unboundid.ldap.sdk.ModificationType;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class LDAPLoginManagerTest extends OlatTestCase {
+public class LDAPLoginManagerTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;
@@ -95,6 +104,8 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private LDAPSyncConfiguration syncConfiguration;
 	@Autowired
@@ -846,7 +857,6 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 	}
 	
 	
-	
 	@Test
 	public void findIdentityByLdapAuthenticationConvertFromIdentityName() {
 		// Take an LDAP user, delete her LDAP authentication
@@ -886,5 +896,53 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		Authentication authentication = securityManager.findAuthentication(convertedIdentity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(authentication);
 	}
+	
+	@Test
+	public void renameLDAPViaRest() throws Exception {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
 
+		// try
+		Attributes attrs = ldapManager.bindUser("cbraben", "olat", errors);
+		Assert.assertNotNull(attrs);
+		Assert.assertEquals("cbraben", attrs.get("uid").get());
+		Assert.assertTrue(errors.isEmpty());
+		
+		// change the username of the LDAP token and the nick name
+		Authentication ldapAuthentication = securityManager.findAuthenticationByAuthusername("cbraben", LDAPAuthenticationController.PROVIDER_LDAP);
+		Identity id = ldapAuthentication.getIdentity();
+		ldapAuthentication.setAuthusername("bbraben");
+		authenticationDao.updateAuthentication(ldapAuthentication);
+		id.getUser().setProperty(UserConstants.NICKNAME, "bbraben");
+		userManager.updateUserFromIdentity(id);
+		dbInstance.commitAndCloseSession();
+		
+		// check our changes
+		Authentication changedAuth = securityManager.findAuthentication(id, LDAPAuthenticationController.PROVIDER_LDAP);
+		Assert.assertEquals("bbraben", changedAuth.getAuthusername());
+		dbInstance.commitAndCloseSession();
+		
+		// change it back via REST
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		String newUsername = "cbraben";
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(id.getKey().toString())
+				.path("username").queryParam("username", newUsername).build();
+		
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		Identity renamedId = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertEquals(newUsername, renamedId.getUser().getNickName());
+		
+		Authentication auth = securityManager.findAuthentication(id, LDAPAuthenticationController.PROVIDER_LDAP);
+		Assert.assertNotNull(auth);
+		Assert.assertEquals(newUsername, auth.getAuthusername());
+	}
 }
