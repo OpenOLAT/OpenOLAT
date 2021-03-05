@@ -29,10 +29,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -40,6 +43,7 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
@@ -55,7 +59,6 @@ import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.ui.PFParticipantController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.UserManager;
 /**
 *
 * Initial date: 15.12.2016<br>
@@ -157,20 +160,35 @@ public class FileSystemExport implements MediaResource {
 		}
 		
 		final String targetPath = zipPath;
-		final UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		
 		Set<String> idKeys = new HashSet<>();
+		Map<String, Identity> idMap  = new HashMap<>();
 		if (identities != null) {
 			for (Identity identity : identities) {
-				idKeys.add(identity.getKey().toString());
+				String identityKey = identity.getKey().toString();
+				idKeys.add(identityKey);
+				idMap.put(identityKey, identity);
 			}
 		} else {
 			File[] listOfDirectories = sourceFolder.toFile().listFiles(SystemFileFilter.DIRECTORY_ONLY);
 			if(listOfDirectories != null) {
+				List<Long> idKeysList = new ArrayList<>();
 				for (File file : listOfDirectories) {
-					idKeys.add(file.getName());
+					String filename = file.getName();
+					if(StringHelper.isLong(filename)) {
+						idKeys.add(filename);
+						idKeysList.add(Long.valueOf(filename));
+					}
+				}
+				final BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+				List<Identity> loadedIdentities = securityManager.loadIdentityByKeys(idKeysList);
+				for (Identity identity : loadedIdentities) {
+					String identityKey = identity.getKey().toString();
+					idMap.put(identityKey, identity);
 				}
 			}
 		}
+		
 		try {
 			Files.walkFileTree(sourceFolder, new SimpleFileVisitor<Path>() {
 				//contains identity check  and changes identity key to user display name
@@ -178,8 +196,14 @@ public class FileSystemExport implements MediaResource {
 					for (String key : idKeys) {
 						//additional check if folder is a identity-key (coming from fs)
 						if (relPath.contains(key) && StringHelper.isLong(key)) {
-							String exportFolderName = userManager.getUserDisplayName(Long.parseLong(key)).replace(", ", "_")
-									+ "_" + key;
+							String exportFolderName;
+							if(idMap.containsKey(key)) {
+								Identity id = idMap.get(key);
+								exportFolderName = (id.getUser().getLastName() + "_" + id.getUser().getFirstName());
+							} else {
+								exportFolderName = "";
+							}
+							exportFolderName = exportFolderName.replace(", ", "_") + "_" + key;
 							return relPath.replace(key, exportFolderName);
 						}
 					}
@@ -199,7 +223,9 @@ public class FileSystemExport implements MediaResource {
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 					String relPath = sourceFolder.relativize(file).toString();
-					if ((relPath = containsID(relPath)) != null && (relPath = boxesEnabled(relPath)) != null) {
+					if ((relPath = containsID(relPath)) != null
+							&& (relPath = boxesEnabled(relPath)) != null
+							&& !file.toFile().isHidden()) {
 						zout.putNextEntry(new ZipEntry(targetPath + relPath));
 						copyFile(file, zout);
 						zout.closeEntry();

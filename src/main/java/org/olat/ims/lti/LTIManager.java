@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.resource.OLATResource;
 
@@ -34,6 +35,7 @@ import org.olat.resource.OLATResource;
  */
 public interface LTIManager {
 
+	public static final String USER_NAME_PROP = "username";
 	public static final String USER_PROPS_PREFIX = "$userprops_";
 	public static final int EXPIRATION_TIME = 3600 * 24 * 30 * 6;//6 months
 
@@ -72,5 +74,7 @@ public interface LTIManager {
 	 * @return
 	 */
 	public String joinCustomProps(Map<String, String> customProps);
+	
+	public String getUsername(IdentityRef identity);
 
 }

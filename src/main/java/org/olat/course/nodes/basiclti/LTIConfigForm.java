@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -154,8 +155,7 @@ public class LTIConfigForm extends FormBasicController {
 			"1300", "1320", "1340", "1360", "1380"
 	};
 	private String[] heightValues;
-	private String[] userPropKeys;
-	private String[] userPropValues;
+	private KeyValues userPropKeysValues;
 	
 	@Autowired
 	private LTIModule ltiModule;
@@ -211,12 +211,11 @@ public class LTIConfigForm extends FormBasicController {
 		};
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, true);
-		userPropKeys = new String[userPropertyHandlers.size()];
-		userPropValues = new String[userPropertyHandlers.size()];
+		userPropKeysValues = new KeyValues();
+		userPropKeysValues.add(KeyValues.entry(LTIManager.USER_NAME_PROP, userPropsTranslator.translate("form.name.username")));
 		for (int i=userPropertyHandlers.size(); i-->0; ) {
 			UserPropertyHandler handler = userPropertyHandlers.get(i);
-			userPropKeys[i] = handler.getName();
-			userPropValues[i] = userPropsTranslator.translate(handler.i18nFormElementLabelKey());
+			userPropKeysValues.add(KeyValues.entry(handler.getName(), userPropsTranslator.translate(handler.i18nFormElementLabelKey())));
 		}
 		
 		String proto = (String)config.get(CONFIGKEY_PROTO);
@@ -448,15 +447,12 @@ public class LTIConfigForm extends FormBasicController {
 			typeEl.select("free", true);
 		}
 		
-		SingleSelection userPropsChoice = uifactory.addDropdownSingleselect("userprops_" + guid, null, customParamLayout, userPropKeys, userPropValues, null);
+		SingleSelection userPropsChoice = uifactory.addDropdownSingleselect("userprops_" + guid, null, customParamLayout,
+				userPropKeysValues.keys(), userPropKeysValues.values(), null);
 		userPropsChoice.setUserObject(pair);
 		userPropsChoice.setVisible(userprops);
-		if(userprops) {
-			for(String userPropKey:userPropKeys) {
-				if(userPropKey.equals(value)) {
-					userPropsChoice.select(userPropKey, true);
-				}
-			}
+		if(userprops && userPropKeysValues.containsKey(value)) {
+			userPropsChoice.select(value, true);
 		}
 		pair.setUserPropsChoice(userPropsChoice);
 
@@ -637,7 +633,7 @@ public class LTIConfigForm extends FormBasicController {
 		config.set(CONFIGKEY_URI, url.getPath());
 		config.set(CONFIGKEY_QUERY, url.getQuery());
 		int port = url.getPort();
-		config.set(CONFIGKEY_PORT, new Integer(port != -1 ? port : url.getDefaultPort()));
+		config.set(CONFIGKEY_PORT, Integer.valueOf(port != -1 ? port : url.getDefaultPort()));
 		config.set(CONFIGKEY_KEY, getFormKey());
 		config.set(CONFIGKEY_PASS, tpass.getValue());
 		config.set(CONFIG_KEY_DEBUG, Boolean.toString(doDebug.isSelected(0)));
