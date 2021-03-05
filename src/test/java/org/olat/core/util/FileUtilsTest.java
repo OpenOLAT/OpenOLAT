@@ -72,6 +72,9 @@ public class FileUtilsTest {
 		assertCleanedFilename("fgh:ghj", "fgh_ghj");
 		assertCleanedFilename("fgh,ghj", "fgh_ghj");
 		assertCleanedFilename("fgh=ghj", "fgh_ghj");
+		assertCleanedFilename(".fgh.ghj", "fgh.ghj");
+		assertCleanedFilename("...fgh.ghj", "fgh.ghj");
+		assertCleanedFilename(".....fgh.ghj", "fgh.ghj");
 	}
 
 	private void assertCleanedFilename(String raw, String expected) {
