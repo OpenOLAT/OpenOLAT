@@ -31,6 +31,7 @@ import java.util.Enumeration;
 import java.util.Map;
 
 import org.imsglobal.basiclti.BasicLTIUtil;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -106,6 +107,8 @@ public class LTIRunController extends BasicController {
 	private LTIModule ltiModule;
 	@Autowired
 	private LTIManager ltiManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
@@ -270,7 +273,11 @@ public class LTIRunController extends BasicController {
 				
 				if(value.startsWith(LTIManager.USER_PROPS_PREFIX)) {
 					String userProp = value.substring(LTIManager.USER_PROPS_PREFIX.length(), value.length());
-					value = user.getProperty(userProp, null);
+					if(LTIManager.USER_NAME_PROP.equals(userProp)) {
+						value = ltiManager.getUsername(getIdentity());
+					} else {
+						value = user.getProperty(userProp, null);
+					}
 					if (value!= null) {
 						customUserData.put(userProp, value);
 					}

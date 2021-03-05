@@ -37,15 +37,17 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.logging.log4j.Logger;
 import org.imsglobal.basiclti.BasicLTIUtil;
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -75,6 +77,8 @@ public class LTIManagerImpl implements LTIManager {
 	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	@Override
 	public LTIOutcome createOutcome(Identity identity, OLATResource resource,
@@ -249,7 +253,11 @@ public class LTIManagerImpl implements LTIManager {
 
 			if(value.startsWith(LTIManager.USER_PROPS_PREFIX)) {
 				String userProp = value.substring(LTIManager.USER_PROPS_PREFIX.length(), value.length());
-				value = identity.getUser().getProperty(userProp, null);
+				if(LTIManager.USER_NAME_PROP.equals(userProp)) {
+					value = getUsername(identity);
+				} else {
+					value = identity.getUser().getProperty(userProp, null);
+				}
 			}
 			setProperty(props, "custom_" + key, value);
 		}
@@ -348,4 +356,8 @@ public class LTIManagerImpl implements LTIManager {
 				.collect(Collectors.joining(";"));
 	}
 
+	@Override
+	public String getUsername(IdentityRef identity) {
+		return securityManager.findAuthenticationName(identity);
+	}
 }
