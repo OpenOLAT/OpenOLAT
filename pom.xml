@@ -63,15 +63,15 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.3.4</org.springframework.version>
-		<org.hibernate.version>5.4.28.Final</org.hibernate.version>
+		<org.hibernate.version>5.4.29.Final</org.hibernate.version>
 		<apache.cxf>3.4.2</apache.cxf>
 		<apache.pdfbox>2.0.22</apache.pdfbox>
 		<apache.poi>5.0.0</apache.poi>
 		<apache.log4j>2.14.0</apache.log4j>
 		<org.slf4j>1.7.30</org.slf4j>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
-		<io.undertow>2.2.4.Final</io.undertow>
-		<jackson.version>2.12.1</jackson.version>
+		<io.undertow>2.2.5.Final</io.undertow>
+		<jackson.version>2.12.2</jackson.version>
 		<org.mysql.version>8.0.23</org.mysql.version>
 		<org.postgresql.version>42.2.19</org.postgresql.version>
 		<org.infinispan.version>12.0.1.Final</org.infinispan.version>
@@ -436,7 +436,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.43.0</version>
+				    <version>3.44.0</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -2449,6 +2449,11 @@
 		<!-- end Spring dependencies -->
 		<!-- Start Apache CXF dependency and Active MQ Broker -->
 		<dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-base</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>${jackson.version}</version>
