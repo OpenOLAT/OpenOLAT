@@ -805,7 +805,7 @@ public class FileUtils {
 			}
 		}
 		//check if there are any unwanted path denominators in the name
-		if (filename.indexOf("..") > -1) {
+		if (filename.indexOf("..") > -1 || filename.startsWith(".")) {
 			return false;
 		}
 		return true;
