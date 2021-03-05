@@ -301,6 +301,21 @@ uid: mbuchholz
 userPassword: olat
 modifyTimestamp: 20100630180000Z
 
+dn: uid=cbraben,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Camille Braben
+givenname: Camille
+labeleduri: https://www.openolat.com/cbraben
+mail: cbraben@openolat.com
+o: Informatik
+sn: Braben
+uid: cbraben
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
 dn: cn=ldaplearning,ou=groups,dc=olattest,dc=org
 objectclass: top
 objectclass: groupOfNames

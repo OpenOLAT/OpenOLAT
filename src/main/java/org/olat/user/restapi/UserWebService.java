@@ -61,6 +61,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.UserShortDescription;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -82,8 +83,10 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.login.auth.AuthenticationProviderSPI;
 import org.olat.restapi.group.MyGroupWebService;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.ErrorVO;
@@ -111,6 +114,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Path("users")
 @Component
 public class UserWebService {
+	
+	private static final Logger log = Tracing.createLoggerFor(UserWebService.class);
 	
 	private static final String VERSION = "1.0";
 	
@@ -1020,5 +1025,81 @@ public class UserWebService {
 				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles);
 		
+	}
+	
+	@POST
+	@Path("{identityKey}/username")
+	@Operation(summary = "Rename an user", description = "Rename an user")
+	@ApiResponse(responseCode = "200", description = "The user has been successfully renamed")
+	@ApiResponse(responseCode = "401", description = "he roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
+	@ApiResponse(responseCode = "500", description = "Unknown problem, see olat.log")
+	public Response renamePost(@PathParam("identityKey") Long identityKey, @QueryParam("username") String username, @Context HttpServletRequest request) {
+		return renamePut(identityKey, username, request);
+	}
+	
+	@PUT
+	@Path("{identityKey}/username")
+	@Operation(summary = "Rename an user", description = "Rename an user")
+	@ApiResponse(responseCode = "200", description = "The user has been successfully renamed")
+	@ApiResponse(responseCode = "401", description = "he roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
+	@ApiResponse(responseCode = "500", description = "Unknown problem, see olat.log")
+	public Response renamePut(@PathParam("identityKey") Long identityKey, @QueryParam("username") String username, @Context HttpServletRequest request) {
+		Identity actingIdentity = getIdentity(request);
+		if(actingIdentity == null || !isUserManagerOf(identityKey, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		Map<String, AuthenticationProviderSPI> providers = CoreSpringFactory.getBeansOfType(AuthenticationProviderSPI.class);
+		List<Authentication> authentications = securityManager.getAuthentications(identity);
+		List<ErrorVO> errors = new ArrayList<>();
+		List<Authentication> manageableAuthentications = new ArrayList<>();
+		for(Authentication authentication:authentications) {
+			AuthenticationProviderSPI provider = getProvider(authentication, providers);
+			if(provider != null && provider.canChangeAuthenticationUsername(authentication.getProvider())) {
+				if(provider.changeAuthenticationUsername(authentication, username)) {
+					manageableAuthentications.add(authentication);
+				} else {
+					log.info("Cannot change authentication user name for identity:{} and provider: {}", identityKey, authentication.getProvider());
+					errors.add(new ErrorVO());
+				}
+				
+			}
+		}
+		
+		if(!errors.isEmpty()) {
+			return Response.ok(errors).status(Status.CONFLICT).build();
+		}
+		
+		identity.getUser().setProperty(UserConstants.NICKNAME, username);
+		if(userManager.updateUserFromIdentity(identity)) {
+			for(Authentication authentication:manageableAuthentications) {
+				AuthenticationProviderSPI provider = getProvider(authentication, providers);
+				if(provider != null) {
+					provider.changeAuthenticationUsername(authentication, username);
+				}
+			}
+		} else {
+			return Response.serverError()
+					.status(Status.CONFLICT).build();
+		}
+		dbInstance.commit();
+		return Response.ok().build();
+	}
+	
+	private AuthenticationProviderSPI getProvider(Authentication authentication, Map<String, AuthenticationProviderSPI> providers) {
+		for(AuthenticationProviderSPI provider:providers.values()) {
+			List<String> names = provider.getProviderNames();
+			if(names.contains(authentication.getProvider())) {
+				return provider;
+			}	
+		}
+		return null;
 	}
 }

@@ -26,7 +26,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.olat.test.OlatTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zapodot.junit.ldap.EmbeddedLdapRule;
 import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
@@ -40,8 +40,8 @@ import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
  * Initial Date:  June 30, 2008 <br>
  * @author Maurus Rohrer
  */
-public class LDAPLoginTest extends OlatTestCase {
-	
+public class LDAPLoginTest extends OlatRestTestCase {
+
 	@Autowired
 	private LDAPLoginManager ldapManager;
 	@Autowired

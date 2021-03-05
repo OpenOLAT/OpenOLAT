@@ -62,6 +62,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
@@ -2012,6 +2013,30 @@ public class UserMgmtTest extends OlatRestTestCase {
 		HttpResponse headSmallResponse = conn.execute(headSmallMethod);
 		assertEquals(200, headSmallResponse.getStatusLine().getStatusCode());
 		EntityUtils.consume(headSmallResponse.getEntity());
+	}
+	
+	@Test
+	public void rename() throws URISyntaxException, IOException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("portrait-3");
+		String newUsername = UUID.randomUUID().toString();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(id.getKey().toString())
+			.path("username").queryParam("username", newUsername).build();
+		
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		Identity renamedId = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertEquals(newUsername, renamedId.getUser().getNickName());
+		
+		Authentication auth = securityManager.findAuthentication(renamedId, "OLAT");
+		Assert.assertNotNull(auth);
+		Assert.assertEquals(newUsername, auth.getAuthusername());
 	}
 
 	protected List<UserVO> parseUserArray(HttpEntity entity) {
