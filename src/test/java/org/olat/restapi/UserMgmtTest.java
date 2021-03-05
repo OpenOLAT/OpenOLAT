@@ -2034,7 +2034,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		Identity renamedId = securityManager.loadIdentityByKey(id.getKey());
 		Assert.assertEquals(newUsername, renamedId.getUser().getNickName());
 		
-		Authentication auth = securityManager.findAuthentication(renamedId, "OLAT");
+		Authentication auth = securityManager.findAuthentication(renamedId, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(auth);
 		Assert.assertEquals(newUsername, auth.getAuthusername());
 	}

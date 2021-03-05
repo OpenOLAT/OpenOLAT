@@ -912,7 +912,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		Assert.assertTrue(errors.isEmpty());
 		
 		// change the username of the LDAP token and the nick name
-		Authentication ldapAuthentication = securityManager.findAuthenticationByAuthusername("cbraben", LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication ldapAuthentication = securityManager.findAuthenticationByAuthusername("cbraben", LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		Identity id = ldapAuthentication.getIdentity();
 		ldapAuthentication.setAuthusername("bbraben");
 		authenticationDao.updateAuthentication(ldapAuthentication);
@@ -921,7 +921,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// check our changes
-		Authentication changedAuth = securityManager.findAuthentication(id, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication changedAuth = securityManager.findAuthentication(id, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertEquals("bbraben", changedAuth.getAuthusername());
 		dbInstance.commitAndCloseSession();
 		
@@ -941,7 +941,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		Identity renamedId = securityManager.loadIdentityByKey(id.getKey());
 		Assert.assertEquals(newUsername, renamedId.getUser().getNickName());
 		
-		Authentication auth = securityManager.findAuthentication(id, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication auth = securityManager.findAuthentication(id, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(auth);
 		Assert.assertEquals(newUsername, auth.getAuthusername());
 	}
