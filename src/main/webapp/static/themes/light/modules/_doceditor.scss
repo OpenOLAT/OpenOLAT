@@ -21,7 +21,7 @@ body.o_doceditor_body {
 }
 
 .o_doceditor {
-	.o_collabora, .o_onlyoffice, .o_office365 {
+	.o_onlyoffice, .o_office365 {
 		iframe {
 			width: 100%;
 			height: 100vh;  // fallback if css variables are not supported
@@ -31,7 +31,7 @@ body.o_doceditor_body {
 	}
 	
 	&.o_web_document {
-		.o_collabora, .o_onlyoffice, .o_office365 {
+		.o_onlyoffice, .o_office365 {
 			iframe {
 				width: 100%;
 				height: calc(100vh - 331px);  // editor selection is not taken
@@ -44,7 +44,7 @@ body.o_doceditor_body {
 	}
 	
 	&.o_cnd_run {
-		.o_collabora, .o_onlyoffice, .o_office365 {
+		.o_onlyoffice, .o_office365 {
 			iframe {
 				width: 100%;
 				height: 800px;        // Fallback if css variable not supported
@@ -56,7 +56,7 @@ body.o_doceditor_body {
 		}
 	}
 	&.o_cnd_preview {
-		.o_collabora, .o_onlyoffice, .o_office365 {
+		.o_onlyoffice, .o_office365 {
 			iframe {
 				width: 100%;
 				height: 800px;
