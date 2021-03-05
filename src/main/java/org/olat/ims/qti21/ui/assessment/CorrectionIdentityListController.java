@@ -219,15 +219,14 @@ public class CorrectionIdentityListController extends FormBasicController {
 			}
 		}
 		
-		int count = 0;
 		List<CorrectionIdentityRow> rows = new ArrayList<>(model.getNumberOfAssessedIdentities());
 		Map<Identity, CorrectionIdentityRow> identityToRows = new HashMap<>();
 		for(Map.Entry<Identity, AssessmentTestSession> entry:model.getLastSessions().entrySet()) {
-			TestSessionState testSessionState = model.getTestSessionStates().get(entry.getKey());
+			Identity assessedIdentity = entry.getKey();
+			TestSessionState testSessionState = model.getTestSessionStates().get(assessedIdentity);
 			if(testSessionState != null) {
-				String user = translate("number.assessed.identity", new String[]{ Integer.toString(++count) });
-				CorrectionIdentityRow row = new CorrectionIdentityRow(user, entry.getKey(), entry.getValue(), userPropertyHandlers, getLocale());
-				rows.add(row);
+				String user = model.getAnonymizedName(assessedIdentity);
+				CorrectionIdentityRow row = new CorrectionIdentityRow(user, assessedIdentity, entry.getValue(), userPropertyHandlers, getLocale());
 				identityToRows.put(entry.getKey(), row);
 				
 				for(Map.Entry<TestPlanNodeKey, ItemSessionState> itemEntry:testSessionState.getItemSessionStates().entrySet()) {
@@ -237,6 +236,16 @@ public class CorrectionIdentityListController extends FormBasicController {
 					appendStatistics(row, itemSession, itemEntry.getValue(), itemRef);
 				}
 			}
+		}
+		
+		for(Identity assessedIdentity:model.getAssessedIdentities()) {
+			CorrectionIdentityRow row = identityToRows.remove(assessedIdentity);
+			if(row != null) {
+				rows.add(row);
+			}
+		}
+		if(!identityToRows.isEmpty()) {
+			rows.addAll(identityToRows.values());
 		}
 		
 		tableModel.setObjects(rows);
