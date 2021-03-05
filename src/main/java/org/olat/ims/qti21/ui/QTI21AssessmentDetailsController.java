@@ -480,7 +480,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			testSessionStates.put(assessedIdentity, testSessionState);
 			boolean correctionReadOnly = readOnly || assessmentEntryDone;
 			CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, testEntry,
-					resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
+					resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates, getTranslator());
 			correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
 					model, assessedIdentity, correctionReadOnly);
 			listenTo(correctionCtrl);

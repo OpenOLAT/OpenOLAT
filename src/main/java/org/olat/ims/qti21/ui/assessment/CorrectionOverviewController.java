@@ -111,7 +111,7 @@ public class CorrectionOverviewController extends BasicController implements Too
 
 		List<Identity> assessedIdentities = initializeAssessedIdentities();
 		model = new CorrectionOverviewModel(courseEntry, courseNode, testEntry,
-				resolvedAssessmentTest, manifestBuilder, assessedIdentities);
+				resolvedAssessmentTest, manifestBuilder, assessedIdentities, getTranslator());
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		assessmentItemsLink = LinkFactory.createLink("correction.assessment.items", getTranslator(), this);

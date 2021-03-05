@@ -314,7 +314,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
 		testSessionStates.put(assessedIdentity, testSessionState);
 		CorrectionOverviewModel model = new CorrectionOverviewModel(courseEntry, testCourseNode, testEntry,
-				resolvedAssessmentTest, manifestBuilder, lastSessionMap, testSessionStates);
+				resolvedAssessmentTest, manifestBuilder, lastSessionMap, testSessionStates, getTranslator());
 		
 		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, assessedIdentity, assessmentEntryDone);
 		listenTo(correctionCtrl);

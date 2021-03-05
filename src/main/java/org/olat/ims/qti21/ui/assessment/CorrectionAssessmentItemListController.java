@@ -411,7 +411,6 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		}
 		
 		//reorder to match the list of identities
-		int count = 1;
 		List<Identity> assessedIdentities = model.getAssessedIdentities();
 		List<AssessmentItemListEntry> reorderItemSessions = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
@@ -424,7 +423,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		
 					String title;
 					if(anonymous) {
-						title = translate("number.assessed.identity", new String[] { Integer.toString(count++)} );
+						title = model.getAnonymizedName(assessedIdentity);
 					} else {
 						title = userManager.getUserDisplayName(assessedIdentity);
 					}
