@@ -38,6 +38,12 @@
 			stretching: 'responsive',
 			alwaysShowControls: $alwaysShowControls,
 			clickToPlayPause: $clickToPlayPause,
+			#if($r.isNotEmpty($height))
+				videoHeight: $height,
+			#end
+			#if($r.isNotEmpty($width))
+				videoWidth: $width,
+			#end
 			hls: {
 		        path: '$r.staticLink("movie/mediaelementjs/hls/hls.min.js")',
 		    },

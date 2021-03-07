@@ -157,18 +157,12 @@ public class VideoDisplayController extends BasicController {
 
 		videoMetadata = videoManager.getVideoMetadata(videoEntry.getOlatResource());	
 		VFSLeaf video = videoManager.getMasterVideoFile(videoEntry.getOlatResource());
+		if(videoMetadata != null && videoMetadata.getHeight() != 600 && videoMetadata.getWidth() != 800) {
+			// we exclude 800x600 because it's the default (unkown) size and in this case we let the browser estimate the size
+			mainVC.contextPut("height", videoMetadata.getHeight());
+			mainVC.contextPut("width", videoMetadata.getWidth());
+		}
 		if(video != null || (videoMetadata != null && StringHelper.containsNonWhitespace(videoMetadata.getUrl()))) {
-			if(displayOptions.isAutoWidth()){
-				mainVC.contextPut("height", 480);
-				mainVC.contextPut("width", "100%");
-			} else if(videoMetadata != null) {
-				mainVC.contextPut("height", videoMetadata.getHeight());
-				mainVC.contextPut("width", videoMetadata.getWidth());
-			} else {
-				mainVC.contextPut("height", 480);
-				mainVC.contextPut("width", 640);
-			}
-
 			// Load users preferred version from GUI prefs
 			UserSession usess = ureq.getUserSession();
 			Preferences guiPrefs = usess.getGuiPreferences();
