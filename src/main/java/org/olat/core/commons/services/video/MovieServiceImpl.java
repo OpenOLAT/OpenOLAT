@@ -33,6 +33,7 @@ import org.jcodec.api.FrameGrab;
 import org.jcodec.common.Codec;
 import org.jcodec.common.VideoCodecMeta;
 import org.jcodec.common.io.FileChannelWrapper;
+import org.jcodec.common.model.Picture;
 import org.jcodec.containers.mp4.boxes.MovieBox;
 import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
 import org.jcodec.scale.AWTUtil;
@@ -102,11 +103,12 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 					FileChannelWrapper in = new FileChannelWrapper(ch);
 					MP4Demuxer demuxer1 = MP4Demuxer.createMP4Demuxer(in)) {
 				
-				
-				org.jcodec.common.model.Size size = demuxer1.getMovie().getDisplaySize();
+				MovieBox movieBox = demuxer1.getMovie();
+				org.jcodec.common.model.Size size = movieBox.getDisplaySize();
 				// Case 1: standard case, get dimension from movie
 				int w = size.getWidth();
 				int h = size.getHeight();
+				
 				// Case 2: landscape movie from iOS: width and height is negative, no dunny why
 				if (w < 0 && h < 0) {
 					w = 0 - w;
@@ -131,7 +133,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 				}
 				return new Size(w, h, false);
 			} catch (Exception | AssertionError e) {
-				log.error("Cannot extract size of: " + media, e);
+				log.error("Cannot extract size of: {}", media, e);
 			}
 		} else if(suffix.equals("flv")) {
 			try(InputStream stream = new FileInputStream(file)) {
@@ -143,7 +145,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 					return new Size(w, h, false);
 				}
 			} catch (Exception e) {
-				log.error("Cannot extract size of: " + media, e);
+				log.error("Cannot extract size of: {}", media, e);
 			}
 		}
 
@@ -178,7 +180,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 				// Simple calculation. Ignore NTSC and other issues for now
 				return duration / timescale * 1000l;
 			} catch (Exception | AssertionError e) {
-				log.error("Cannot extract duration of: " + media, e);
+				log.error("Cannot extract duration of: {}", media, e);
 			}
 		}
 
@@ -205,7 +207,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 					MP4Demuxer demuxer1 = MP4Demuxer.createMP4Demuxer(in)) {
 				return demuxer1.getVideoTrack().getMeta().getTotalFrames();
 			} catch (Exception | AssertionError e) {
-				log.error("Cannot extract num. of frames of: " + media, e);
+				log.error("Cannot extract num. of frames of: {}", media, e);
 			}
 		}
 
@@ -252,9 +254,12 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 				WorkThreadInformations.setInfoFiles(null, file);
 				WorkThreadInformations.set("Generate thumbnail (video) VFSLeaf=" + file);
 				
-				File baseFile = ((LocalFileImpl)file).getBasefile();
+				File movieFile = ((LocalFileImpl)file).getBasefile();
+				Size movieSize = getSize(file, "mp4");
 				File scaledImage = ((LocalFileImpl)thumbnailFile).getBasefile();
-				BufferedImage frame = AWTUtil.toBufferedImage(FrameGrab.getFrameFromFile(baseFile, 20));
+				Picture picture = FrameGrab.getFrameFromFile(movieFile, 20);
+				BufferedImage frame = AWTUtil.toBufferedImage(picture);
+				frame = JCodecHelper.scale(movieSize, picture, frame);
 				Size scaledSize = ImageHelperImpl.calcScaledSize(frame, maxWidth, maxHeight);
 				if(ImageHelperImpl.writeTo(frame, scaledImage, scaledSize, "jpeg")) {
 					size = new FinalSize(scaledSize.getWidth(), scaledSize.getHeight());
@@ -269,4 +274,6 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		}
 		return size;
 	}
+	
+
 }

@@ -28,6 +28,8 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.modules.bc.FolderEvent;
+import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -47,6 +49,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
 import org.olat.resource.OLATResource;
@@ -64,12 +67,16 @@ public class VideoPosterSelectionForm extends BasicController {
 	private VFSLeaf tmpFile;
 	private VFSContainer tmpContainer;
 
-	@Autowired
-	private VideoManager videoManager;
 	private final VelocityContainer proposalLayout;
 
+	private Size movieSize;
 	private static final int STEP = 24;
 	private final boolean hasProposals;
+	
+	@Autowired
+	private MovieService movieService;
+	@Autowired
+	private VideoManager videoManager;
 
 	public VideoPosterSelectionForm(UserRequest ureq, WindowControl wControl,
 			OLATResource videoResource, VideoMeta videoMetadata) {
@@ -83,8 +90,14 @@ public class VideoPosterSelectionForm extends BasicController {
 		if(StringHelper.containsNonWhitespace(videoMetadata.getUrl())) {
 			videoFile = videoManager.downloadTmpVideo(videoResource, videoMetadata);
 			tmpFile = videoFile;// delete temporary file
+			if(videoMetadata.getVideoFormat() == VideoFormat.m3u8) {
+				movieSize = movieService.getSize(videoFile, VideoFormat.mp4.name());
+			}
 		} else {
 			videoFile = videoManager.getMasterVideoFile(videoResource);
+			if(videoMetadata.getVideoFormat() == VideoFormat.mp4) {
+				movieSize = movieService.getSize(videoFile, VideoFormat.mp4.name());
+			}
 		}
 		
 		List<String> proposals = generatePosterProposals(videoFile);
@@ -116,7 +129,7 @@ public class VideoPosterSelectionForm extends BasicController {
 	
 	private List<String> generatePosterProposals(VFSLeaf videoFile) {
 		long frames = videoManager.getVideoFrameCount(videoFile);
-
+		
 		long framesStepping = frames / 7;
 		if(framesStepping == 0) {
 			framesStepping = 256;
@@ -135,7 +148,7 @@ public class VideoPosterSelectionForm extends BasicController {
 
 				boolean imgBlack = true;
 				for(int i=0; i<maxAdjust && imgBlack; i++) {
-					imgBlack = videoManager.getFrameWithFilter(videoFile, (currentFrame+adjust), frames, posterProposal);
+					imgBlack = videoManager.getFrameWithFilter(videoFile, movieSize, (currentFrame+adjust), frames, posterProposal);
 					
 					if (currentFrame + STEP <= frames) {
 						adjust += STEP;
