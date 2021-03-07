@@ -332,7 +332,7 @@ public class PageMetadataController extends BasicController {
 		if(page.isEditable()) {
 			if(editLink == null) {
 				editLink = LinkFactory.createButtonSmall("edit.page", mainVC, this);
-				editLink.setElementCssClass("o_sel_pf_edit_page_meta");
+				editLink.setElementCssClass("o_sel_pf_edit_page");
 				mainVC.put("edit.page", editLink);
 			}
 			if(edit) {
@@ -351,7 +351,7 @@ public class PageMetadataController extends BasicController {
 		if(page.isEditable()) {
 			if(editMetaDataLink == null) {
 				editMetaDataLink = LinkFactory.createButtonSmall("edit.page.metadata", mainVC, this);
-				editMetaDataLink.setElementCssClass("o_sel_pf_edit_page_meta_data");
+				editMetaDataLink.setElementCssClass("o_sel_pf_edit_metadata_page");
 				editMetaDataLink.setIconLeftCSS("o_icon o_ico-lg o_icon_edit_metadata");
 				mainVC.put("edit.page.meta", editMetaDataLink);
 			}

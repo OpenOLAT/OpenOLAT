@@ -215,7 +215,7 @@ public class EntryPage {
 	
 	public EntryPage toggleEditor() {
 		By closeBy = By.cssSelector("a.o_sel_pf_edit_page");
-		OOGraphene.waitElement(closeBy, 5, browser);
+		OOGraphene.waitElement(closeBy, browser);
 		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
