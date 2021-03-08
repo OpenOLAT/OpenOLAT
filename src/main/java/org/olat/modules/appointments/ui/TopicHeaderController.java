@@ -93,7 +93,7 @@ public class TopicHeaderController extends BasicController {
 		if (StringHelper.containsNonWhitespace(topic.getDescription())) {
 			VelocityContainer descriptionCont = createVelocityContainer("topic_description");
 			descriptionCont.setDomReplacementWrapperRequired(false);
-			descriptionCont.contextPut("description", topic.getDescription());
+			descriptionCont.contextPut("description", AppointmentsUIFactory.lineBreakToBr(topic.getDescription()));
 			descriptionCtrl = new ToggleBoxController(ureq, getWindowControl(), topic.getKey().toString(),
 					translate("topic.description.opened"), translate("topic.description.closed"), descriptionCont);
 			mainVC.put("description", descriptionCtrl.getInitialComponent());

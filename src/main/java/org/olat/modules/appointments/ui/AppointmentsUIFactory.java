@@ -20,6 +20,7 @@
 package org.olat.modules.appointments.ui;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.appointments.Appointment;
 
@@ -47,6 +48,10 @@ public class AppointmentsUIFactory {
 		}
 		
 		return sb.length() > 0? sb.toString(): null;
+	}
+	
+	public static String lineBreakToBr(String value) {
+		return Formatter.stripTabsAndReturns(value.replaceAll("\r", "")).toString();
 	}
 	
 }
