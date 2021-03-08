@@ -1,6 +1,6 @@
 
 const bg = {};
-bg.version = "1.3.31 - build: 2e48aa1";
+bg.version = "1.3.32 - build: 87f16ac";
 bg.utils = {};
 
 Reflect.defineProperty = Reflect.defineProperty || Object.defineProperty;
@@ -511,7 +511,7 @@ Reflect.defineProperty = Reflect.defineProperty || Object.defineProperty;
 		}
 
 		static GetExtension(url) {
-			let match = /\.([a-z0-9-_]*)$/i.exec(url);
+			let match = /\.([a-z0-9-_]*)(\?.*)?(\#.*)?$/i.exec(url);
 			return (match && match[1].toLowerCase()) || "";
 		}
 		
@@ -15669,7 +15669,10 @@ bg.render = {
 			let lightSources = [];
 			bg.scene.Light.GetActiveLights().some((lightComponent,index) => {
 				if (index>=bg.base.MAX_FORWARD_LIGHTS) return true;
-				if (lightComponent.light && lightComponent.light.enabled)
+				if (lightComponent.light &&
+					lightComponent.light.enabled &&
+					lightComponent.node &&
+					lightComponent.node.enabled)
 				{
 					lightSources.push(lightComponent);
 					if (lightComponent.light.type!=bg.base.LightType.POINT && lightComponent.light.castShadows) {
@@ -15690,6 +15693,12 @@ bg.render = {
 
 				this._transparentLayer.setLightSources(lightSources);
 				this._transparentLayer.shadowMap = this._shadowMap;
+			}
+			else {
+				this._opaqueLayer.setLightSources([]);
+				this._opaqueLayer.shadowMap = null;
+				this._transparentLayer.setLightSources([]);
+				this._transparentLayer.shadowMap = null;
 			}
 
 			// Update render queue

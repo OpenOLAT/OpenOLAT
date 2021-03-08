@@ -88,7 +88,6 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	public static final String CONFIG_COACH_MODERATE_ALLOWED = "coach.moderate.allowed";
 	public static final String CONFIG_COACH_POST_ALLOWED = "coach.post.allowed";
 	public static final String CONFIG_PARTICIPANT_POST_ALLOWED = "participant.post.allowed";
-	public static final String CONFIG_GUEST_POST_ALLOWED = "guest.post.allowed";
 	
 	protected Condition preConditionReader, preConditionPoster, preConditionModerator;
 
