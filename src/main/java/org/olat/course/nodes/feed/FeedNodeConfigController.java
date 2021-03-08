@@ -64,11 +64,9 @@ public class FeedNodeConfigController extends FormBasicController {
 	private static final String[] MODERATOR_KEYS = new String[] { MODERATOR_COACH };
 	private static final String POSTER_COACH = "edit.poster.coach";
 	private static final String POSTER_PARTICIPANT = "edit.poster.participant";
-	private static final String POSTER_GUEST = "edit.poster.guest";
 	private static final String[] POSTER_KEYS = new String[] {
 			POSTER_COACH,
-			POSTER_PARTICIPANT,
-			POSTER_GUEST
+			POSTER_PARTICIPANT
 	};
 
 	private StaticTextElement feedNotChoosenEl;
@@ -144,7 +142,6 @@ public class FeedNodeConfigController extends FormBasicController {
 			posterRolesEl.select(POSTER_COACH, moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_COACH_POST_ALLOWED));
 			posterRolesEl.select(POSTER_PARTICIPANT,
 					moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_PARTICIPANT_POST_ALLOWED));
-			posterRolesEl.select(POSTER_GUEST, moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_GUEST_POST_ALLOWED));
 			posterRolesEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		
@@ -252,7 +249,6 @@ public class FeedNodeConfigController extends FormBasicController {
 		Collection<String> selectedKeys = posterRolesEl.getSelectedKeys();
 		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_COACH_POST_ALLOWED, selectedKeys.contains(POSTER_COACH));
 		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_PARTICIPANT_POST_ALLOWED, selectedKeys.contains(POSTER_PARTICIPANT));
-		moduleConfig.setBooleanEntry(FOCourseNode.CONFIG_GUEST_POST_ALLOWED, selectedKeys.contains(POSTER_GUEST));
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 
