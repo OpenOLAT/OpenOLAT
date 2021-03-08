@@ -50,6 +50,11 @@ public class WithoutSequenceBlocker implements Blocker {
 	public void block() {
 		blocked = true;
 	}
+
+	@Override
+	public void blockNoPassThrough() {
+		block();
+	}
 	
 	@Override
 	public void block(Date startDate) {

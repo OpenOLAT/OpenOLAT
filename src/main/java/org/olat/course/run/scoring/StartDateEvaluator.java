@@ -19,6 +19,8 @@
  */
 package org.olat.course.run.scoring;
 
+import java.util.Date;
+
 import org.olat.course.nodes.CourseNode;
 
 /**
@@ -29,6 +31,16 @@ import org.olat.course.nodes.CourseNode;
  */
 public interface StartDateEvaluator {
 
-	public void evaluate(CourseNode courseNode, Blocker blocker);
+	/**
+	 * Evaluates the start date of the courseNode. The start date can be injected to
+	 * the blocker, so that the start date is applied to the following courseNodes
+	 * as well.
+	 * @param currentEvaluation 
+	 * @param courseNode
+	 * @param blocker
+	 * 
+	 * @return
+	 */
+	public Date evaluate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker);
 
 }

@@ -36,11 +36,12 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  *
  */
 public class ConfigObligationEvaluator implements ObligationEvaluator {
+	
+	private LearningPathService learningPathService;
 
 	@Override
 	public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode) {
-		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
-		AssessmentObligation configObligation = learningPathService.getConfigs(courseNode).getObligation();
+		AssessmentObligation configObligation = getLearningPathService().getConfigs(courseNode).getObligation();
 		Overridable<AssessmentObligation> obligation = currentEvaluation.getObligation().clone();
 		obligation.setCurrent(configObligation);
 		return obligation;
@@ -50,6 +51,13 @@ public class ConfigObligationEvaluator implements ObligationEvaluator {
 	public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation,
 			List<AssessmentEvaluation> children) {
 		return currentEvaluation.getObligation();
+	}
+	
+	private LearningPathService getLearningPathService() {
+		if (learningPathService == null) {
+			learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+		}
+		return learningPathService;
 	}
 
 }

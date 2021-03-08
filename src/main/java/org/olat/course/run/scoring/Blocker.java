@@ -32,6 +32,12 @@ public interface Blocker {
 	boolean isBlocked();
 
 	void block();
+	
+	/**
+	 * Blocks only this node and does not propagate the block to the next node
+	 *
+	 */
+	void blockNoPassThrough();
 
 	void block(Date startDate);
 
