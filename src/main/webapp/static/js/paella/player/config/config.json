@@ -34,7 +34,8 @@
           "highBufferWatchdogPeriod": 3
         },
         "iOSMaxStreams": 2,
-        "androidMaxStreams": 2
+        "androidMaxStreams": 2,
+        "initialQualityLevel": 2
       },
       { "factory":"RTMPVideoFactory", "enabled":true },
       { "factory":"ImageVideoFactory", "enabled":true },
@@ -45,11 +46,7 @@
     "audioMethods":[
       { "factory":"MultiformatAudioFactory", "enabled":true }
     ],
-    "defaultAudioTag": "",
-    "slidesMarks":{
-      "enabled":true,
-      "color":"gray"
-    }
+    "defaultAudioTag": ""
   },
   "defaultProfile":"presenter_presentation",
   "data":{
@@ -81,23 +78,26 @@
       "es.upv.paella.extendedTabAdapterPlugin": {"enabled":true, "minWindowSize": 400},
       "es.upv.paella.footprintsPlugin": {"enabled":false},
       "es.upv.paella.frameControlPlugin":  {"enabled": true, "showFullPreview": "auto", "showCaptions":true, "minWindowSize": 450 },
-      "es.upv.paella.fullScreenButtonPlugin": {"enabled":true, "reloadOnFullscreen":{ "enabled":true, "keepUserSelection":true }},
+      "es.upv.paella.fullScreenButtonPlugin": {"enabled":true, "reloadOnFullscreen":{ "enabled":true, "keepUserSelection":true }, "ariaLabel": "Switch full screen mode"},
       "es.upv.paella.helpPlugin": {"enabled":true, "langs":["en","es"], "minWindowSize": 650 },
-      "es.upv.paella.multipleQualitiesPlugin": {"enabled":true, "showWidthRes":true, "minWindowSize": 550 },
+      "es.upv.paella.multipleQualitiesPlugin": {"enabled":true, "showWidthRes":true, "minWindowSize": 550, "minVisibleQuality": 240, "ariaLabel": "Change video quality" },
       "es.upv.paella.playbackRatePlugin": {"enabled":true, "availableRates": [0.75, 1, 1.25, 1.5], "minWindowSize": 500 },
       "es.upv.paella.playPauseButtonPlugin": {"enabled":true},
       "es.upv.paella.searchPlugin": {"enabled":true, "sortType":"time", "colorSearch":false, "minWindowSize": 550},
-      "es.upv.paella.socialPlugin": {"enabled":true, "minWindowSize": 600},
+      "es.upv.paella.sharePlugin": {"enabled":true, "minWindowSize": 600},
       "es.upv.paella.themeChooserPlugin":  {"enabled":true, "minWindowSize": 600},
       "es.upv.paella.viewModePlugin": { "enabled": true, "minWindowSize": 300 },
-      "es.upv.paella.volumeRangePlugin":{"enabled":true, "showMasterVolume": true, "showSlaveVolume": false },
+      "es.upv.paella.volumeRangePlugin":{"enabled":true, "showMasterVolume": true, "showSlaveVolume": false, "ariaLabel": "Volume" },
       "es.upv.paella.pipModePlugin": { "enabled":true },
       "es.upv.paella.ratePlugin": { "enabled":true, "minWindowSize": 500 },
-      "es.upv.paella.videoZoomPlugin": { "enabled":true },
+      "es.upv.paella.videoZoomPlugin": { "enabled":true, "showButtons":true },
       "es.upv.paella.audioSelector": { "enabled":true, "minWindowSize": 400 },
       "es.upv.paella.videoZoomToolbarPlugin": { "enabled":false, "targetStreamIndex":0, "minWindowSize": 500 },
       "es.upv.paella.videoZoomTrack4kPlugin": { "enabled":true, "targetStreamIndex":0, "autoModeByDefault":false, "minWindowSize": 500 },
       "es.upv.paella.airPlayPlugin": { "enabled":true },
+
+      "es.upv.paella.timeMarksPlaybackCanvasPlugin": { "enabled": true, "color": "gray" },
+      "es.upv.paella.BufferedPlaybackCanvasPlugin": { "enabled": true, "color": "rgba(0,0,0,0.4)" },
 
       "//***** Video Overlay Button Plugins": "",
       "es.upv.paella.liveStreamingIndicatorPlugin":  { "enabled": true },
@@ -127,7 +127,7 @@
       "es.upv.paella.blackBoardPlugin": {"enabled": true},
       "es.upv.paella.breaksPlayerPlugin": {"enabled": true},
       "es.upv.paella.overlayCaptionsPlugin": {"enabled": true},
-      "es.upv.paella.playButtonOnScreenPlugin": {"enabled":true},
+      "es.upv.paella.playButtonOnScreenPlugin": {"enabled":true, "showOnPause":true },
       "es.upv.paella.translecture.captionsPlugin": {"enabled":true},
       "es.upv.paella.trimmingPlayerPlugin": {"enabled":true},
       "es.upv.paella.windowTitlePlugin": {"enabled": true},
@@ -172,10 +172,15 @@
       "es.upv.paella.usertracking.piwikSaverPlugIn": { "enabled": false, "tracker":"http://localhost/piwik/", "siteId": "1" },
       "org.opencast.usertracking.MatomoSaverPlugIn": {
         "enabled": false,
-        "server": "http://localhost/piwik/",
+        "server": "http://localhost/matomo",
         "site_id": 1,
+        "tracking_client_name": "matomo",
         "heartbeat": 30,
-        "client_id": "Paella Player"
+        "client_id": "Paella Player",
+        "ask_for_concent": true,
+        "privacy_policy_url": "https://matomo.org/blog/2018/04/how-should-i-write-my-privacy-notice-for-matomo-analytics-under-gdpr/",
+        "cookieconsent_base_color": "#1d8a8a",
+        "cookieconsent_highlight_color": "#62ffaa"
       },
       "org.opencast.usertracking.x5gonSaverPlugIn": {
         "enabled": false,
