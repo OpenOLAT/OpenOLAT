@@ -95,5 +95,6 @@
 	"Forward 30 seconds": "Avancer de 30 seconde",
 	"Downloads": "Télécharger",
 	"Video file": "Fichier vidéo",
-	"Video zoom": "Zoom vidéo"
+	"Video zoom": "Zoom vidéo",
+	"No such HLS stream: the video is not available": "Flux de diffusion en direct non trouvé : vidéo non disponible"
 }

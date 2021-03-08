@@ -105,7 +105,6 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 			.setLabel(FeedNodeEditController.class, "edit.poster")
 			.addRole(NodeRightRole.coach, true)
 			.addRole(NodeRightRole.participant, true)
-			.addRole(NodeRightRole.guest, false)
 			.build();
 	public static final List<NodeRightType> NODE_RIGHT_TYPES = List.of(MODERATE, POST);
 	
@@ -242,9 +241,6 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 			}
 			if (config.getBooleanSafe(LEGACY_PARTICIPANT_POST_ALLOWED)) {
 				postRoles.add(NodeRightRole.participant);
-			}
-			if (config.getBooleanSafe(LEGACY_GUEST_POST_ALLOWED)) {
-				postRoles.add(NodeRightRole.guest);
 			}
 			nodeRightService.setRoleGrants(postRight, postRoles);
 			nodeRightService.setRight(config, postRight);

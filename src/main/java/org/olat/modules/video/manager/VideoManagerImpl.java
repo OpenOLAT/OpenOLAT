@@ -51,6 +51,7 @@ import org.apache.logging.log4j.Logger;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.io.FileChannelWrapper;
 import org.jcodec.common.io.NIOUtils;
+import org.jcodec.common.model.Picture;
 import org.jcodec.scale.AWTUtil;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.Crop;
@@ -59,6 +60,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
+import org.olat.core.commons.services.video.JCodecHelper;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -291,11 +293,15 @@ public class VideoManagerImpl implements VideoManager {
 	public boolean getFrame(VFSLeaf video, int frameNumber, VFSLeaf frame) {
 		File videoFile = ((LocalFileImpl)video).getBasefile();
 		
+		Size movieSize = movieService.getSize(video, FILETYPE_MP4);
+
 		try (FileChannelWrapper in = NIOUtils.readableChannel(videoFile)) {
 			FrameGrab frameGrab = FrameGrab.createFrameGrab(in).seekToFrameSloppy(frameNumber);
 			OutputStream frameOutputStream = frame.getOutputStream(false);
 
-			BufferedImage bufImg = AWTUtil.toBufferedImage(frameGrab.getNativeFrame());
+			Picture picture = frameGrab.getNativeFrame();
+			BufferedImage bufImg = AWTUtil.toBufferedImage(picture);
+			bufImg = JCodecHelper.scale(movieSize, picture, bufImg);
 			ImageIO.write(bufImg, "JPG", frameOutputStream);
 
 			// close everything to prevent resource leaks
@@ -303,22 +309,24 @@ public class VideoManagerImpl implements VideoManager {
 
 			return true;
 		} catch (Exception | AssertionError e) {
-			log.error("Could not get frame::" + frameNumber + " for video::" + videoFile.getAbsolutePath(), e);
+			log.error("Could not get frame::{} for video::{}", frameNumber, videoFile.getAbsolutePath(), e);
 			return false;
 		} 
 	}
 	
 	@Override
-	public boolean getFrameWithFilter(VFSLeaf video, int frameNumber, long duration, VFSLeaf frame) {
+	public boolean getFrameWithFilter(VFSLeaf video, Size movieSize, int frameNumber, long duration, VFSLeaf frame) {
 		File videoFile = ((LocalFileImpl)video).getBasefile();
 		BufferedImage bufImg = null;
 		boolean imgBlack = true;
 		int countBlack = 0;
+		
 		try (FileChannelWrapper in = NIOUtils.readableChannel(videoFile)) {
 			OutputStream frameOutputStream = frame.getOutputStream(false);
 			FrameGrab frameGrab = FrameGrab.createFrameGrab(in).seekToFrameSloppy(frameNumber);
 
-			bufImg = AWTUtil.toBufferedImage(frameGrab.getNativeFrame());
+			Picture picture = frameGrab.getNativeFrame();
+			bufImg = AWTUtil.toBufferedImage(picture);
 
 			int xmin = bufImg.getMinX();
 			int ymin = bufImg.getMinY();
@@ -342,6 +350,7 @@ public class VideoManagerImpl implements VideoManager {
 				imgBlack = true;
 			} else {
 				imgBlack = false;
+				bufImg = JCodecHelper.scale(movieSize, picture, bufImg);
 				ImageIO.write(bufImg, "JPG", frameOutputStream);
 			}
 			// avoid endless loop
@@ -353,7 +362,7 @@ public class VideoManagerImpl implements VideoManager {
 
 			return imgBlack;
 		} catch (Exception | AssertionError e) {
-			log.error("Could not get frame::" + frameNumber + " for video::" + videoFile.getAbsolutePath(), e);
+			log.error("Could not get frame: {} for video: {}", frameNumber, videoFile.getAbsolutePath(), e);
 			return false;
 		}
 	}
@@ -406,7 +415,7 @@ public class VideoManagerImpl implements VideoManager {
 		try {
 			return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
 		} catch (Exception e) {
-			log.error("Error while parsing XStream file for videoResource::" + videoResource, e);
+			log.error("Error while parsing XStream file for videoResource::{}", videoResource, e);
 			// return an empty, so at least it displays something and not an error
 			VideoMetadata meta =  new VideoMetadataImpl();
 			meta.setWidth(800);
@@ -536,7 +545,7 @@ public class VideoManagerImpl implements VideoManager {
 		DecimalFormat df = new DecimalFormat("#.##");
 		df.setRoundingMode(RoundingMode.FLOOR);
 		String ratioCalculated = df.format(width / (height + 1.0));
-		String ratioString = "unknown";
+		String ratioString;
 		
 		switch (ratioCalculated) {
 		case "1.2": 
@@ -1075,7 +1084,7 @@ public class VideoManagerImpl implements VideoManager {
 		try(OutputStream bos = new BufferedOutputStream(webvtt.getOutputStream(false))) {
 			FileUtils.save(bos, vttString.toString(), ENCODING);
 		} catch (IOException e) {
-			log.error("chapter.vtt could not be saved for videoResource::" + videoResource, e);
+			log.error("chapter.vtt could not be saved for videoResource::{}", videoResource, e);
 		}
 	}
 	

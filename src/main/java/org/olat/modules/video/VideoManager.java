@@ -527,6 +527,6 @@ public interface VideoManager {
 	 * @param frame resource
 	 * @return true if image proposal is mostly black
 	 */
-	public boolean getFrameWithFilter(VFSLeaf video, int frameNumber, long duration, VFSLeaf frame);
+	public boolean getFrameWithFilter(VFSLeaf video, Size movieSize, int frameNumber, long duration, VFSLeaf frame);
 
 }

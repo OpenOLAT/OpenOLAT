@@ -86,7 +86,9 @@ public class PaellaMapper implements Mapper {
 		appendStaticCSS(sb, "js/paella/player/resources/bootstrap/css/bootstrap.min.css");
 		appendStaticCSS(sb, "js/paella/player/resources/style/style_dark.css");
 		sb.append("</head>");
-		sb.append("<body id=\"body\" onload=\"paella.load('playerContainer', {");
+		sb.append("<body id=\"body\" onload=\"paella.baseUrl='");
+		StaticMediaDispatcher.renderStaticURI(sb, "js/paella/player/");
+		sb.append("'; paella.load('playerContainer', {");
 		sb.append(" config: ");
 		appendPlayerConfig(sb);
 		sb.append(" ,");
@@ -171,9 +173,7 @@ public class PaellaMapper implements Mapper {
 		sb.append("  },");
 		sb.append("  'folders': {");
 		sb.append("    'profiles': 'config/profiles',");
-		sb.append("    'resources': '");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/paella/player/resources");
-		sb.append("',");
+		sb.append("    'resources': 'resources',");
 		sb.append("    'skins': 'resources/style'");
 		sb.append("  },");
 		sb.append("  'experimental':{");

@@ -107,14 +107,14 @@ public class VideoTranscodingJob extends JobWithDB {
 		for (VideoTranscoding videoTrans : videoTranscodings) {
 			String transcoder = videoTrans.getTranscoder();
 			if (transcoder == null) { 
-				log.info("Start transcoding video with resolution::" + videoTrans.getResolution()
-					+ " for video resource::" + videoTrans.getVideoResource().getResourceableId());
+				log.info("Start transcoding video with resolution: {} for video resource: {}",
+						videoTrans.getResolution(), videoTrans.getVideoResource().getResourceableId());
 				videoTrans.setTranscoder(VideoTranscoding.TRANSCODER_LOCAL);
 				videoTranscoding = videoManager.updateVideoTranscoding(videoTrans);				
 				break;
 			} else if (transcoder.equals(VideoTranscoding.TRANSCODER_LOCAL)) {
-				log.info("Continue with transcoding video with resolution::" + videoTrans.getResolution()
-					+ " for video resource::" + videoTrans.getVideoResource().getResourceableId());
+				log.info("Continue with transcoding video with resolution: {} for video resource: {}",
+						videoTrans.getResolution(), videoTrans.getVideoResource().getResourceableId());
 				videoTranscoding = videoTrans;								
 				break;
 			}
@@ -238,7 +238,7 @@ public class VideoTranscodingJob extends JobWithDB {
 		if(exitCode == 0) {
 			videoTranscoding.setStatus(VideoTranscoding.TRANSCODING_STATUS_DONE);
 		} else {
-			log.error("Exit code " + videoTranscoding + ":" + exitCode);
+			log.error("Exit code {}:{}", videoTranscoding, exitCode);
 			videoTranscoding.setStatus(VideoTranscoding.TRANSCODING_STATUS_ERROR);
 		}
 		videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
@@ -269,7 +269,7 @@ public class VideoTranscodingJob extends JobWithDB {
 					int end = line.indexOf(".");
 					if (end != -1 && end < 5) {
 						String percent = line.substring(2, end);
-						log.debug("Output: " + percent);		
+						log.debug("Output: {}", percent);		
 						// update version file for UI
 						try {
 							videoTranscoding.setStatus(Integer.parseInt(percent));
@@ -303,7 +303,7 @@ public class VideoTranscodingJob extends JobWithDB {
 			
 			String line = null;
 			while ((line = berr.readLine()) != null) {
-				log.debug("Error: " + line);
+				log.debug("Error: {}", line);
 			}
 		} catch (IOException e) {
 			log.error("", e);

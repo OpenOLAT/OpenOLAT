@@ -301,6 +301,16 @@ public class AppointmentsMailing {
 			sb.append(translator.translate("mail.end", new String[] { dateFormat.format(appointment.getEnd()) }));
 			sb.append("<br>");
 		}
+		String description = appointment.getTopic().getDescription();
+		if (StringHelper.containsNonWhitespace(description)) {
+			sb.append(translator.translate("mail.description", new String[] { description }));
+			sb.append("<br>");
+		}
+		String details = appointment.getDetails();
+		if (StringHelper.containsNonWhitespace(details)) {
+			sb.append(translator.translate("mail.details", new String[] { details }));
+			sb.append("<br>");
+		}
 		String location = AppointmentsUIFactory.getDisplayLocation(translator, appointment);
 		if (StringHelper.containsNonWhitespace(location)) {
 			sb.append(translator.translate("mail.location", new String[] { location }));
