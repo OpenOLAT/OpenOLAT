@@ -25,8 +25,10 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.DateUtils;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.Blocker;
 import org.olat.course.run.scoring.StartDateEvaluator;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -35,25 +37,35 @@ import org.olat.course.run.scoring.StartDateEvaluator;
  *
  */
 public class ConfigStartDateEvaluator implements StartDateEvaluator {
+	
+	private LearningPathService learningPathService;
 
 	@Override
-	public void evaluate(CourseNode courseNode, Blocker blocker) {
-		Date configStartDate = getConfigStartDate(courseNode);
-		evaluateDate(configStartDate, blocker);
+	public Date evaluate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
+		Date configStartDate = getLearningPathService().getConfigs(courseNode).getStartDate();
+		AssessmentObligation obligation = currentEvaluation.getObligation().getCurrent();
+		return evaluateDate(configStartDate, obligation, blocker);
 	}
 
-	private Date getConfigStartDate(CourseNode courseNode) {
-		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
-		return learningPathService.getConfigs(courseNode).getStartDate();
-	}
-
-	Date evaluateDate(Date configStartDate, Blocker blocker) {
+	Date evaluateDate(Date configStartDate, AssessmentObligation obligation, Blocker blocker) {
 		Date now = new Date();
+		Date later = blocker.getStartDate();
 		if (configStartDate != null && configStartDate.after(now)) {
-			Date later = DateUtils.getLater(configStartDate, blocker.getStartDate());
-			blocker.block(later);
+			later = DateUtils.getLater(configStartDate, blocker.getStartDate());
+			if (AssessmentObligation.mandatory == obligation) {
+				blocker.block(later);
+			} else {
+				blocker.blockNoPassThrough();
+			}
 		}
-		return configStartDate;
+		return later;
+	}
+	
+	private LearningPathService getLearningPathService() {
+		if (learningPathService == null) {
+			learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+		}
+		return learningPathService;
 	}
 
 }

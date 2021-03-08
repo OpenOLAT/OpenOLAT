@@ -24,26 +24,32 @@ import java.util.Date;
 import org.olat.course.run.scoring.Blocker;
 
 public class SequentialBlocker implements Blocker {
-	
+
 	private boolean blocked = false;
+	private boolean blockedNoPassThrough = false;
 	private Date startDate = null;
-	
+
 	@Override
 	public boolean isBlocked() {
-		return blocked;
+		return blocked || blockedNoPassThrough;
 	}
-	
+
 	@Override
 	public void block() {
 		blocked = true;
 	}
-	
+
+	@Override
+	public void blockNoPassThrough() {
+		blockedNoPassThrough = true;
+	}
+
 	@Override
 	public void block(Date startDate) {
 		this.startDate = startDate;
 		block();
 	}
-	
+
 	@Override
 	public Date getStartDate() {
 		return startDate;
@@ -51,6 +57,6 @@ public class SequentialBlocker implements Blocker {
 
 	@Override
 	public void nextCourseNode() {
-		//
+		blockedNoPassThrough = false;
 	}
 }

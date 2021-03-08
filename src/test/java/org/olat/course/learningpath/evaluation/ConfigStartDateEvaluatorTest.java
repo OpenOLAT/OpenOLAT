@@ -19,15 +19,15 @@
  */
 package org.olat.course.learningpath.evaluation;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.time.LocalDate;
 import java.util.Date;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.core.util.DateUtils;
 import org.olat.course.nodes.st.assessment.SequentialBlocker;
 import org.olat.course.run.scoring.Blocker;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -41,76 +41,142 @@ public class ConfigStartDateEvaluatorTest {
 	
 	@Test
 	public void shouldBlockIfStartIsInFuture() {
-		Blocker blocker = new SequentialBlocker();
+		SoftAssertions softly = new SoftAssertions();
 		Date inThreeDays = DateUtils.toDate(LocalDate.now().plusDays(3));
 		
-		sut.evaluateDate(inThreeDays, blocker);
+		Blocker blocker = new SequentialBlocker();
+		Date startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.mandatory, blocker);
 		
-		assertThat(blocker.isBlocked()).isTrue();
+		softly.assertThat(startDate).as("mandatory: start").isEqualTo(inThreeDays);
+		softly.assertThat(blocker.getStartDate()).as("mandatory: start (blocker)").isEqualTo(inThreeDays);
+		softly.assertThat(blocker.isBlocked()).as("mandatory: blocked").isTrue();
+		blocker.nextCourseNode();
+		softly.assertThat(blocker.isBlocked()).as("mandatory: block without pass through").isTrue();
+		
+		blocker = new SequentialBlocker();
+		startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.optional, blocker);
+		
+		softly.assertThat(startDate).as("optional: start").isEqualTo(inThreeDays);
+		// If optional, the blocker has no date because block without pass through
+		softly.assertThat(blocker.getStartDate()).as("optional: start (blocker)").isNull();
+		softly.assertThat(blocker.isBlocked()).as("optional: blocked").isTrue();
+		blocker.nextCourseNode();
+		softly.assertThat(blocker.isBlocked()).as("optional: block without pass through").isFalse();
+		
+		softly.assertAll();
 	}
 	
 	@Test
 	public void shouldNotBlockIfStartIsInPast() {
-		Blocker blocker = new SequentialBlocker();
+		SoftAssertions softly = new SoftAssertions();
 		Date threeDaysBefore = DateUtils.toDate(LocalDate.now().minusDays(3));
 		
-		sut.evaluateDate(threeDaysBefore, blocker);
+		Blocker blocker = new SequentialBlocker();
+		Date startDate = sut.evaluateDate(threeDaysBefore, AssessmentObligation.mandatory, blocker);
 		
-		assertThat(blocker.isBlocked()).isFalse();
+		softly.assertThat(startDate).as("mandatory: start").isNull();
+		softly.assertThat(blocker.getStartDate()).as("mandatory: start (blocker)").isNull();
+		softly.assertThat(blocker.isBlocked()).as("mandatory: blocked").isFalse();
+		
+		blocker = new SequentialBlocker();
+		startDate = sut.evaluateDate(threeDaysBefore, AssessmentObligation.optional, blocker);
+		
+		softly.assertThat(startDate).as("optional: start").isNull();
+		softly.assertThat(blocker.getStartDate()).as("optional: start (blocker)").isNull();
+		softly.assertThat(blocker.isBlocked()).as("optional: blocked").isFalse();
+		softly.assertAll();
 	}
 	
 	@Test
 	public void shouldNotBlockIfHasNoStart() {
+		SoftAssertions softly = new SoftAssertions();
+		
 		Blocker blocker = new SequentialBlocker();
+		Date startDate = sut.evaluateDate(null, AssessmentObligation.mandatory, blocker);
 		
-		sut.evaluateDate(null, blocker);
+		softly.assertThat(startDate).as("mandatory: start").isNull();
+		softly.assertThat(blocker.getStartDate()).as("mandatory: start (blocker)").isNull();
+		softly.assertThat(blocker.isBlocked()).as("mandatory: blocked").isFalse();
 		
-		assertThat(blocker.isBlocked()).isFalse();
-	}
-
-	@Test
-	public void shouldReturnStartDateIfBlocks() {
-		Blocker blocker = new SequentialBlocker();
-		Date inThreeDays = DateUtils.toDate(LocalDate.now().plusDays(3));
+		blocker = new SequentialBlocker();
+		startDate = sut.evaluateDate(null, AssessmentObligation.optional, blocker);
 		
-		sut.evaluateDate(inThreeDays, blocker);
-		
-		assertThat(blocker.getStartDate()).isEqualTo(inThreeDays);
+		softly.assertThat(startDate).as("optional: start").isNull();
+		softly.assertThat(blocker.getStartDate()).as("optional: start (blocker)").isNull();
+		softly.assertThat(blocker.isBlocked()).as("optional: blocked").isFalse();
+		softly.assertAll();
 	}
 
 	@Test
 	public void shouldReturnBlockerStartIfBlockerIsLater() {
+		SoftAssertions softly = new SoftAssertions();
 		Date inFourDays = DateUtils.toDate(LocalDate.now().plusDays(4));
 		Date inThreeDays = DateUtils.toDate(LocalDate.now().plusDays(3));
+
 		Blocker blocker = new SequentialBlocker();
 		blocker.block(inFourDays);
+		Date startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.mandatory, blocker);
 		
-		sut.evaluateDate(inThreeDays, blocker);
+		softly.assertThat(startDate).as("mandatory: start").isEqualTo(inFourDays);
+		softly.assertThat(blocker.getStartDate()).as("mandatory: start (blocker)").isEqualTo(inFourDays);
+		softly.assertThat(blocker.isBlocked()).as("mandatory: blocked").isTrue();
 		
-		assertThat(blocker.getStartDate()).isEqualTo(inFourDays);
+		blocker = new SequentialBlocker();
+		blocker.block(inFourDays);
+		startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.optional, blocker);
+		
+		softly.assertThat(startDate).as("optional: start").isEqualTo(inFourDays);
+		softly.assertThat(blocker.getStartDate()).as("optional: start (blocker)").isEqualTo(inFourDays);
+		softly.assertThat(blocker.isBlocked()).as("optional: blocked").isTrue();
+		softly.assertAll();
 	}
 
 	@Test
 	public void shouldReturnNodeStartIfNodeIsLater() {
+		SoftAssertions softly = new SoftAssertions();
 		Date inTwoDays = DateUtils.toDate(LocalDate.now().plusDays(2));
 		Date inThreeDays = DateUtils.toDate(LocalDate.now().plusDays(3));
+
 		Blocker blocker = new SequentialBlocker();
 		blocker.block(inTwoDays);
+		Date startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.mandatory, blocker);
 		
-		sut.evaluateDate(inThreeDays, blocker);
+		softly.assertThat(startDate).as("mandatory: start").isEqualTo(inThreeDays);
+		softly.assertThat(blocker.getStartDate()).as("mandatory: start (blocker)").isEqualTo(inThreeDays);
+		softly.assertThat(blocker.isBlocked()).as("mandatory: blocked").isTrue();
 		
-		assertThat(blocker.getStartDate()).isEqualTo(inThreeDays);
+		blocker = new SequentialBlocker();
+		blocker.block(inTwoDays);
+		startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.optional, blocker);
+		
+		softly.assertThat(startDate).as("optional: start").isEqualTo(inThreeDays);
+		// Blocker date if optional
+		softly.assertThat(blocker.getStartDate()).as("optional: start (blocker)").isEqualTo(inTwoDays);
+		softly.assertThat(blocker.isBlocked()).as("optional: blocked").isTrue();
+		softly.assertAll();
 	}
 
 	@Test
 	public void shouldReturnBlockerStartIfNodeIsNotBlocking() {
+		SoftAssertions softly = new SoftAssertions();
 		Date inFourDays = DateUtils.toDate(LocalDate.now().plusDays(4));
+		
 		Blocker blocker = new SequentialBlocker();
 		blocker.block(inFourDays);
+		Date startDate = sut.evaluateDate(null, AssessmentObligation.mandatory, blocker);
 		
-		sut.evaluateDate(null, blocker);
+		softly.assertThat(startDate).as("mandatory: start").isEqualTo(inFourDays);
+		softly.assertThat(blocker.getStartDate()).as("mandatory: start (blocker)").isEqualTo(inFourDays);
+		softly.assertThat(blocker.isBlocked()).as("mandatory: blocked").isTrue();
 		
-		assertThat(blocker.getStartDate()).isEqualTo(inFourDays);
+		blocker = new SequentialBlocker();
+		blocker.block(inFourDays);
+		startDate = sut.evaluateDate(null, AssessmentObligation.optional, blocker);
+		
+		softly.assertThat(startDate).as("optional: start").isEqualTo(inFourDays);
+		softly.assertThat(blocker.getStartDate()).as("optional: start (blocker)").isEqualTo(inFourDays);
+		softly.assertThat(blocker.isBlocked()).as("optional: blocked").isTrue();
+		softly.assertAll();
 	}
 
 }

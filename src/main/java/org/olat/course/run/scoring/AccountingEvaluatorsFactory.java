@@ -126,8 +126,8 @@ class AccountingEvaluatorsFactory {
 	private static class NoBlockingStartDateEvaluator implements StartDateEvaluator {
 		
 		@Override
-		public void evaluate(CourseNode courseNode, Blocker blocker) {
-			// nothing to do
+		public Date evaluate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
+			return null;
 		}
 		
 	}
