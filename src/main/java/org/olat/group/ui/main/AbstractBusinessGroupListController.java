@@ -700,7 +700,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 						businessGroupService.copyBusinessGroup(getIdentity(), copy.getOriginal(), copy.getNames(), copy.getDescription(),
 								copy.getMinParticipants(), copy.getMaxParticipants(),
 								copyAreas, copyCollabToolConfig, copyRights, copyOwners, copyParticipants,
-								copyMemberVisibility, copyWaitingList, copyRelations);
+								copyMemberVisibility, copyWaitingList, copyRelations, copy.getAllowToLeave());
 					
 					}
 					return StepsMainRunController.DONE_MODIFIED;

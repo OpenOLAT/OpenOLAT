@@ -86,12 +86,14 @@ public class BGCopySingleGroupStepController extends StepFormBasicController   {
 			group.setDescription(groupController.getGroupDescription());
 			group.setMinParticipants(groupController.getGroupMin());
 			group.setMaxParticipants(groupController.getGroupMax());
+			group.setAllowToLeave(groupController.isAllowToLeave());
 			copies.add(group);
 		} else {
 			currentCopy.setNames(groupController.getGroupNames());
 			currentCopy.setDescription(groupController.getGroupDescription());
 			currentCopy.setMinParticipants(groupController.getGroupMin());
 			currentCopy.setMaxParticipants(groupController.getGroupMax());
+			currentCopy.setAllowToLeave(groupController.isAllowToLeave());
 		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

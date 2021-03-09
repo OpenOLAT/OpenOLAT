@@ -188,7 +188,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		
 		BusinessGroup group = businessGroupDAO.createAndPersist(creator, name, description, externalId, managedFlags,
-				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled, false, false, false);
+				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled, false, false, false, null);
 		if(re != null) {
 			addResourceTo(group, re);
 		}
@@ -358,22 +358,24 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	public void copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup,
 			Set<String> targetNames, String targetDescription, Integer targetMin, Integer targetMax, boolean copyAreas,
 			boolean copyCollabToolConfig, boolean copyRights, boolean copyOwners, boolean copyParticipants,
-			boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations) {
+			boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations, Boolean allowToLeave) {
 		for(String targetName:targetNames) {
 			copyBusinessGroup(identity, sourceBusinessGroup, targetName, targetDescription,
 					targetMin, targetMax, copyAreas, copyCollabToolConfig, copyRights,
-					copyOwners, copyParticipants, copyMemberVisibility, copyWaitingList, copyRelations);
+					copyOwners, copyParticipants, copyMemberVisibility, copyWaitingList, copyRelations, allowToLeave);
 		}
 	}
 
 	@Override
 	public BusinessGroup copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup, String targetName, String targetDescription,
 			Integer targetMin, Integer targetMax,  boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
-			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations) {
+			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList,
+			boolean copyRelations, Boolean allowToLeave) {
 
 		// 1. create group, set waitingListEnabled, enableAutoCloseRanks like source business-group
-		BusinessGroup newGroup = createBusinessGroup(null, targetName, targetDescription, targetMin, targetMax, 
-				sourceBusinessGroup.getWaitingListEnabled(), sourceBusinessGroup.getAutoCloseRanksEnabled(), null);
+		BusinessGroup newGroup = businessGroupDAO.createAndPersist(null, targetName, targetDescription, null, null,
+				targetMin, targetMax, sourceBusinessGroup.getWaitingListEnabled(), sourceBusinessGroup.getAutoCloseRanksEnabled(),
+				false, false, false, allowToLeave);
 		// return immediately with null value to indicate an already take groupname
 		if (newGroup == null) { 
 			return null;
