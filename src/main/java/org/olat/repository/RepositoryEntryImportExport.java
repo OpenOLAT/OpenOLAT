@@ -111,17 +111,17 @@ public class RepositoryEntryImportExport {
 	 * Create a RepositoryEntryImportExport instance to do an export.
 	 * 
 	 * @param re
-	 * @param baseDirecotry
+	 * @param baseDirectory
 	 */
-	public RepositoryEntryImportExport(RepositoryEntry re, File baseDirecotry) {
+	public RepositoryEntryImportExport(RepositoryEntry re, File baseDirectory) {
 		this.re = re;
-		this.baseDirectory = baseDirecotry;
+		this.baseDirectory = baseDirectory;
 	}
 	
 	/**
 	 * Create a RepositoryEntryImportExport instance to do an import.
 	 * 
-	 * @param baseDirecotry
+	 * @param baseDirectory
 	 */
 	public RepositoryEntryImportExport(File baseDirectory) {
 		this.baseDirectory = baseDirectory;
