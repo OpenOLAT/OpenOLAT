@@ -77,18 +77,16 @@ public class PaellaMapper implements Mapper {
 		sb.append("<head>");
 		sb.append("<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8;\">");
 		sb.append("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
-		appendStaticJs(sb, "js/paella/player/javascript/swfobject.js");
-		appendStaticJs(sb, "js/paella/player/javascript/base.js");
+		appendStaticJs(sb, "js/paella/player/javascript/hls.min.js");
 		appendStaticJs(sb, "js/paella/player/javascript/jquery.min.js");
 		appendStaticJs(sb, "js/paella/player/javascript/lunr.min.js");
-		appendStaticJs(sb, "js/paella/player/javascript/require.js");
-		appendStaticJs(sb, "js/paella/player/javascript/paella_player.js");
-		appendStaticCSS(sb, "js/paella/player/resources/bootstrap/css/bootstrap.min.css");
-		appendStaticCSS(sb, "js/paella/player/resources/style/style_dark.css");
+		appendStaticJs(sb, "js/paella/player/javascript/paella_player_es2015.js");
 		sb.append("</head>");
-		sb.append("<body id=\"body\" onload=\"paella.baseUrl='");
+		sb.append("<body id=\"body\" onload=\"");
+		sb.append("paella.baseUrl='");
 		StaticMediaDispatcher.renderStaticURI(sb, "js/paella/player/");
-		sb.append("'; paella.load('playerContainer', {");
+		sb.append("';");
+		sb.append("paella.load('playerContainer', {");
 		sb.append(" config: ");
 		appendPlayerConfig(sb);
 		sb.append(" ,");
@@ -110,12 +108,6 @@ public class PaellaMapper implements Mapper {
 		sb.append("<script src=\"");
 		StaticMediaDispatcher.renderStaticURI(sb, javascript);
 		sb.append("\"></script>");
-	}
-
-	private void appendStaticCSS(StringOutput sb, String css) {
-		sb.append("<link rel=\"stylesheet\" type=\"text/css\" media=\"screen\"  href=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, css);
-		sb.append("\"></link>");
 	}
 	
 	private void appendPlayerConfig(StringOutput sb) {
@@ -151,7 +143,8 @@ public class PaellaMapper implements Mapper {
 		sb.append("          'highBufferWatchdogPeriod': 3");
 		sb.append("        },");
 		sb.append("        'iOSMaxStreams': 2,");
-		sb.append("        'androidMaxStreams': 2");
+		sb.append("        'androidMaxStreams': 2,");
+		sb.append("        'initialQualityLevel': 2");
 		sb.append("      }");
 		sb.append("    ],");
 		sb.append("    'audioMethods':[");
