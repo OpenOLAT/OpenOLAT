@@ -681,12 +681,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				tools.addComponent(archiverLink);
 			}
 			
-			ordersLink = LinkFactory.createToolLink("bookings", translate("details.orders"), this, "o_sel_repo_booking");
-			ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
-			ordersLink.setElementCssClass("o_sel_course_ac_tool");
-			boolean booking = acService.isResourceAccessControled(getRepositoryEntry().getOlatResource(), null);
-			ordersLink.setVisible(!corrupted && booking);
-			tools.addComponent(ordersLink);
+			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal()) {
+				ordersLink = LinkFactory.createToolLink("bookings", translate("details.orders"), this, "o_sel_repo_booking");
+				ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
+				ordersLink.setElementCssClass("o_sel_course_ac_tool");
+				boolean booking = acService.isResourceAccessControled(getRepositoryEntry().getOlatResource(), null);
+				ordersLink.setVisible(!corrupted && booking);
+				tools.addComponent(ordersLink);
+			}
 		}
 	}
 	
