@@ -102,6 +102,11 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	@Value("${ldap.cacheLDAPPwdAsOLATPwdOnLogin}")
 	private boolean cacheLDAPPwdAsOLATPwdOnLogin;
 	/**
+	 * Try to fallback to OLAT provider.
+	 */
+	@Value("${ldap.tryFallbackToOLATPwdOnLogin}")
+	private boolean tryFallbackToOLATPwdOnLogin;
+	/**
 	 * When the system detects an LDAP user that does already exist in OLAT but is not marked
 	 * as LDAP user, the OLAT user can be converted to an LDAP managed user. 
 	 * When enabling this feature you should make sure that you don't have a user 'administrator'
@@ -109,7 +114,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	 */
 	@Value("${ldap.convertExistingLocalUsersToLDAPUsers}")
 	private boolean convertExistingLocalUsersToLDAPUsers;
-	// 
 	/**
 	 * Users that have been created via LDAP sync but now can't be found on the LDAP anymore
 	 * can be deleted automatically. If unsure, set to false and delete those users manually
@@ -421,6 +425,10 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		this.cacheLDAPPwdAsOLATPwdOnLogin = cacheLDAPPwdAsOLATPwdOnLogin;
 	}
 
+	public void setTryFallbackToOLATPwdOnLogin(boolean tryFallbackToOLATPwdOnLogin) {
+		this.tryFallbackToOLATPwdOnLogin = tryFallbackToOLATPwdOnLogin;
+	}
+
 	public void setCreateUsersOnLogin(boolean createUsersOnLogin) {
 		this.createUsersOnLogin = createUsersOnLogin;
 	}
@@ -494,6 +502,10 @@ public class LDAPLoginModule extends AbstractSpringModule {
 
 	public boolean isCacheLDAPPwdAsOLATPwdOnLogin() {
 		return cacheLDAPPwdAsOLATPwdOnLogin;
+	}
+	
+	public boolean isTryFallbackToOLATPwdOnLogin() {
+		return tryFallbackToOLATPwdOnLogin;
 	}
 
 	public boolean isConvertExistingLocalUsersToLDAPUsers() {
