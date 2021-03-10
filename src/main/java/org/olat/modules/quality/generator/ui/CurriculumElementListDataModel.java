@@ -94,7 +94,7 @@ class CurriculumElementListDataModel extends DefaultFlexiTableDataModel<Curricul
 
 		@Override
 		public boolean sortable() {
-			return false;
+			return true;
 		}
 
 		@Override

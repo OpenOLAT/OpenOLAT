@@ -80,7 +80,7 @@ public enum PlayerProfile {
 
 		@Override
 		public String[] filterUrls(String[] urls) {
-			return urls.length >=1
+			return urls.length > 1
 					? new String[] { urls[1] }
 					: new String[] { urls[0] };
 		}
