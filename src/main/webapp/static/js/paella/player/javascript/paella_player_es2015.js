@@ -22,7 +22,7 @@ var GlobalParams = {
 
 window.paella = window.paella || {};
 paella.player = null;
-paella.version = "6.5.1 - build: 9e04eb8";
+paella.version = "6.5.2 - build: c0ea9f1";
 
 (function buildBaseUrl() {
 	if (window.paella_debug_baseUrl) {
@@ -2293,7 +2293,7 @@ function paella_DeferredNotImplemented () {
 
             paella.events.bind(paella.events.profileListChanged, () => {
                 if (paella.player && paella.player.videoContainer && 
-                    (!this.currentProfile || this.currentProfileName!=this.currentProfile.id))
+                    (!this.currentProfile || this.currentProfileName!=this.currentProfile.id))
                 {
                     this.setProfile(this.currentProfileName,false);
                 }
@@ -2489,7 +2489,7 @@ function paella_DeferredNotImplemented () {
 				//var selected = source[0];
 				var selected = null;
 				var win_h = $(window).height();
-				var maxRes = params.maxAutoQualityRes || 720;
+				var maxRes = params.maxAutoQualityRes || 720;
 				var diff = Number.MAX_VALUE;
 	
 				source.forEach(function(item,i) { 
@@ -2901,7 +2901,7 @@ paella.Profiles = {
 };
 
 class RelativeVideoSize {
-	get w() { return this._w || 1280; }
+	get w() { return this._w || 1280; }
 	set w(v) { this._w = v; }
 	get h() { return this._h || 720; }
 	set h(v) { this._h = v; }
@@ -3721,7 +3721,7 @@ class Html5Video extends paella.VideoElementBase {
 			return this.domElement;
 		}
 		else {
-			this._video = this._video || document.createElement('video');
+			this._video = this._video || document.createElement('video');
 			return this._video;
 		}
 	}
@@ -5477,7 +5477,7 @@ class StreamProvider {
 		})
 	}
 
-	get qualityStrategy() { return this._qualityStrategy || null; }
+	get qualityStrategy() { return this._qualityStrategy || null; }
 
 	get autoplay() {
 		return this.supportAutoplay && this._autoplay;
@@ -5836,7 +5836,7 @@ class VideoContainer extends paella.VideoContainerBase {
 	}
 
 	masterVideo() {
-		return this.streamProvider.mainVideoPlayer || this.audioPlayer;
+		return this.streamProvider.mainVideoPlayer || this.audioPlayer;
 	}
 
 	getVideoRect(videoIndex) {
@@ -9825,11 +9825,13 @@ paella.ControlsContainer = ControlsContainer;
 	class LazyThumbnailContainer extends paella.DomNode {
 
 		static GetIconElement() {
-			let container = document.createElement('div');
+			let container = document.createElement('button');
 			container.className = "play-button-on-screen";
+			container.setAttribute("aria-label","Play");
 			container.style.width = "100%";
 			container.style.height = "100%";
 			container.style.pointerEvents = "none";
+			container.addEventListener("click", () => paella.player.play());
 		
 			let icon = document.createElement('div');
 			icon['className'] = 'play-icon';
@@ -14683,7 +14685,7 @@ paella.addPlugin(function() {
 		    if (this.config.showCaptions === true){
 			var captionContainer = document.createElement('p');
 			captionContainer.className = "frameCaption";
-			captionContainer.innerText = caption || "";
+			captionContainer.innerText = caption || "";
 			frameRoot.append(captionContainer);
 			this._caption = captionContainer;
 		    }
@@ -14794,7 +14796,7 @@ paella.addPlugin(function() {
 				if(this._img){
 				    this._img.setAttribute('src',image);
 				    if (this.config.showCaptions === true){
-					this._caption.innerText = frame.caption || "";
+					this._caption.innerText = frame.caption || "";
 				    }
 				}
 				else{
@@ -15154,7 +15156,7 @@ paella.addPlugin(function() {
 									video.pause();
 								}
 
-								this._qualities = this._qualities || [];
+								this._qualities = this._qualities || [];
 								this._qualityIndex = this.autoQuality ? this._qualities.length - 1 : data.level;
 								paella.events.trigger(paella.events.qualityChanged,{});
 								if (console && console.log) console.log(`HLS: quality level changed to ${ data.level }`);
@@ -15202,6 +15204,8 @@ paella.addPlugin(function() {
 								resolve(video);
 							});
 
+							const rand = Math.floor(Math.random() * 100000000000);
+							url += /\?/.test(url) ? `&cache=${ rand }` : `?cache=${ rand }`;
 							this._hls.loadSource(url);
 							this._hls.attachMedia(video);
 						}
@@ -15455,7 +15459,7 @@ paella.addPlugin(function() {
 				}
 				return hlsConfig!=null;
 			});
-			return hlsConfig || {
+			return hlsConfig || {
 				iOSMaxStreams: 1,
 				androidMaxStreams: 1
 			};
@@ -19516,6 +19520,11 @@ paella.addPlugin(function() {
 
     } // checkEnabled
 
+    setVideoTitleAttr(){
+      var video_element = video_element = document.getElementsByTagName("video");
+      video_element.video_0.setAttribute("data-matomo-title", document.title);
+    }
+
     registerVisit() {
       var title,
           event_id,
@@ -19524,18 +19533,25 @@ paella.addPlugin(function() {
           presenter,
           view_mode;
 
-      if (paella.opencast && paella.opencast._episode) {
+      if ((paella.opencast != undefined) && (paella.opencast._episode != undefined)) {
         title = paella.opencast._episode.dcTitle;
         event_id = paella.opencast._episode.id;
         presenter = paella.opencast._episode.dcCreator;
         paella.userTracking.matomotracker.setCustomVariable(5, "client",
           (paella.userTracking.matomotracker.client_id || "Paella Opencast"));
       } else {
+        title = this.loadTitle();
+        // Add title for Matomo Media Analytics.
+        if (this.config.html_title){
+          this.setVideoTitleAttr();
+        } else{
+          Matomo.MediaAnalytics.setMediaTitleFallback(function (mediaElement) {return title; });
+        }
         paella.userTracking.matomotracker.setCustomVariable(5, "client",
-          (paella.userTracking.matomotracker.client_id || "Paella Standalone"));
+          (paella.userTracking.matomotracker.client_id || "Paella Standalone"));          
       }
 
-      if (paella.opencast && paella.opencast._episode && paella.opencast._episode.mediapackage) {
+      if ((paella.opencast != undefined) && (paella.opencast._episode != undefined) && (paella.opencast._episode.mediapackage != undefined)) {
         series_id = paella.opencast._episode.mediapackage.series;
         series_title = paella.opencast._episode.mediapackage.seriestitle;
       }
@@ -19568,7 +19584,7 @@ paella.addPlugin(function() {
 
         var value = "";
 
-        try {
+        try {     
           value = JSON.stringify(params);
         } catch(e) {}
 

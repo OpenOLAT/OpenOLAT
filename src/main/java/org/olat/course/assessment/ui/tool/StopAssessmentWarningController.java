@@ -90,11 +90,7 @@ public class StopAssessmentWarningController extends BasicController {
 	}
 	private void reloadAssessmentModeMessage() {
 		List<AssessmentMode> modes = assessmentModeManager.getCurrentAssessmentMode(courseEntry, new Date());
-		if(modes.isEmpty()) {
-			stackPanel.setMessageComponent(null);
-		} else {
-			assessmentModeMessage(modes);
-		}
+		assessmentModeMessage(modes);
 	}
 	
 	private void assessmentModeMessage(List<AssessmentMode> modes) {
@@ -118,8 +114,10 @@ public class StopAssessmentWarningController extends BasicController {
 				}
 				stopAssessmentMode.setUserObject(mode);
 			}
-		} else {
+		} else if(modes.size() > 1) {
 			assessmemntModeMessageFormatting("assessment.mode.several.now",  modes, mainVC);
+		} else if(stackPanel != null) {
+			stackPanel.setMessageComponent(null);
 		}
 	}
 	
