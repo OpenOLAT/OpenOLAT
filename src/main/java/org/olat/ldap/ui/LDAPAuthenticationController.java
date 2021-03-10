@@ -193,7 +193,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				}
 			} else {
 				// try fallback to OLAT provider if configured
-				if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
+				if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin() || ldapLoginModule.isTryFallbackToOLATPwdOnLogin()) {
 					AuthenticationStatus status = new AuthenticationStatus();
 					authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass, status);
 					if(status.getStatus() == AuthHelper.LOGIN_INACTIVE) {

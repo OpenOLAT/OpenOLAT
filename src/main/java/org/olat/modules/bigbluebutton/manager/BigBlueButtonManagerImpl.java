@@ -555,10 +555,14 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		if(reloadedMeeting != null) {
 			bigBlueButtonMeetingDeletionHandlers.forEach(h -> h.onBeforeDelete(reloadedMeeting));
 			removeCalendarEvent(reloadedMeeting);
-			deleteRecordings(meeting, errors);
-			deleteSlides(meeting);
-			bigBlueButtonAttendeeDao.deleteAttendee(reloadedMeeting);
-			bigBlueButtonMeetingDao.deleteMeeting(reloadedMeeting);
+			deleteRecordings(reloadedMeeting, errors);
+			deleteSlides(reloadedMeeting);
+			// slides VFS operations can close the session -> reload
+			BigBlueButtonMeeting finalReloadedMeeting = bigBlueButtonMeetingDao.loadByKey(reloadedMeeting.getKey());
+			if(finalReloadedMeeting != null) {
+				bigBlueButtonAttendeeDao.deleteAttendee(finalReloadedMeeting);
+				bigBlueButtonMeetingDao.deleteMeeting(finalReloadedMeeting);
+			}
 		}
 		return false;
 	}

@@ -95,13 +95,13 @@ public class BusinessGroupDAO {
 			boolean showOwners, boolean showParticipants, boolean showWaitingList) {
 		return createAndPersist(creator, name, description, null, null,
 				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled,
-				showOwners, showParticipants, showWaitingList);
+				showOwners, showParticipants, showWaitingList, null);
 	}
 		
 	public BusinessGroup createAndPersist(Identity creator, String name, String description,
 				String externalId, String managedFlags,
 				Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
-				boolean showOwners, boolean showParticipants, boolean showWaitingList) {
+				boolean showOwners, boolean showParticipants, boolean showWaitingList, Boolean allowToLeave) {
 
 		BusinessGroupImpl businessgroup = new BusinessGroupImpl(name, description);
 		if(minParticipants != null && minParticipants.intValue() >= 0) {
@@ -127,13 +127,13 @@ public class BusinessGroupDAO {
 		businessgroup.setDownloadMembersLists(false);
 		
 		if(creator == null) {
-			businessgroup.setAllowToLeave(businessGroupModule.isAllowLeavingGroupCreatedByAuthors());
+			allowToLeave(businessgroup, allowToLeave, businessGroupModule.isAllowLeavingGroupCreatedByAuthors());
 		} else {
 			Roles roles = securityManager.getRoles(creator);
 			if(roles.isAuthor()) {
-				businessgroup.setAllowToLeave(businessGroupModule.isAllowLeavingGroupCreatedByAuthors());
+				allowToLeave(businessgroup, allowToLeave, businessGroupModule.isAllowLeavingGroupCreatedByAuthors());
 			} else {
-				businessgroup.setAllowToLeave(businessGroupModule.isAllowLeavingGroupCreatedByLearners());
+				allowToLeave(businessgroup, allowToLeave, businessGroupModule.isAllowLeavingGroupCreatedByLearners());
 			}
 		}
 		
@@ -156,6 +156,14 @@ public class BusinessGroupDAO {
 
 		// per default all collaboration-tools are disabled
 		return businessgroup;
+	}
+	
+	private void allowToLeave(BusinessGroupImpl businessgroup, Boolean wanted, boolean configuration) {
+		if(configuration) {
+			businessgroup.setAllowToLeave(wanted == null ? configuration : wanted.booleanValue());
+		} else {
+			businessgroup.setAllowToLeave(configuration);
+		}
 	}
 	
 	public BusinessGroup load(Long key) {
@@ -535,8 +543,7 @@ public class BusinessGroupDAO {
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		List<BusinessGroup> groups = query.getResultList();
-		return groups;
+		return query.getResultList();
 	}
 	
 	private <T> TypedQuery<T> createFindDBQuery(SearchBusinessGroupParams params, RepositoryEntryRef resource, Class<T> resultClass, BusinessGroupOrder... ordering) {
@@ -567,7 +574,7 @@ public class BusinessGroupDAO {
 		if(StringHelper.containsNonWhitespace(params.getIdRef())) {
 			if(StringHelper.isLong(params.getIdRef())) {
 				try {
-					id = new Long(params.getIdRef());
+					id = Long.valueOf(params.getIdRef());
 				} catch (NumberFormatException e) {
 					//not a real number, can be a very long numerical external id
 				}

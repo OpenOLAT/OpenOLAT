@@ -29,6 +29,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 
 /**
@@ -80,13 +81,18 @@ public class EndTimeCellRenderer implements FlexiCellRenderer {
 				cal.setTime(infos.getStart());
 				cal.add(Calendar.MILLISECOND, (int)totalTimeMs);
 				Date dueDate = cal.getTime();
-
-				boolean sameDay = now.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
-						&& now.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR);
-				if(sameDay) {
+				if(DateUtils.isSameDay(now, cal)) {
 					target.append(formatter.formatTime(dueDate));
 				} else {
 					target.append(formatter.formatDateAndTime(dueDate));
+				}
+			} else if(infos.getEnd() != null) {
+				Date now = new Date();
+				Date end = infos.getEnd();
+				if(DateUtils.isSameDay(now, end)) {
+					target.append(formatter.formatTime(end));
+				} else {
+					target.append(formatter.formatDateAndTime(end));
 				}
 			}
 		}
