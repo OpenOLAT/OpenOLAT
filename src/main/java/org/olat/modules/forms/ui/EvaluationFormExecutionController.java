@@ -324,7 +324,14 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	}
 
 	private boolean doSaveResponses(UserRequest ureq) {
-		session= evaluationFormManager.loadSessionByKey(session);
+		session = evaluationFormManager.loadSessionByKey(session);
+		if (session == null) {
+			showWarning("error.cannot.save");
+			responses = null; // reload
+			initForm(ureq);
+			return false;
+		}
+		
 		if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
 			showWarning("error.session.done");
 			responses = null; // reload

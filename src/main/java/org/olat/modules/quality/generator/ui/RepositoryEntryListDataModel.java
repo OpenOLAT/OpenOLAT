@@ -97,7 +97,7 @@ class RepositoryEntryListDataModel extends DefaultFlexiTableDataModel<Repository
 
 		@Override
 		public boolean sortable() {
-			return false;
+			return true;
 		}
 
 		@Override
