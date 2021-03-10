@@ -342,7 +342,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertEquals(group, updatedGroup);
 		Assert.assertEquals("gdio-2-desc", updatedGroup.getDescription());
 		Assert.assertEquals(Boolean.FALSE, updatedGroup.getWaitingListEnabled());
-		Assert.assertTrue(updatedGroup.equals(group));
+		Assert.assertEquals(group, updatedGroup);
 
 		dbInstance.commitAndCloseSession();
 
@@ -723,12 +723,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-7");
 		String managedFlags = "all";
 		BusinessGroup groupManaged = businessGroupDao.createAndPersist(null, random(), random(), random(),
-				managedFlags, 0, 5, true, false, true, false, false);
+				managedFlags, 0, 5, true, false, true, false, false, null);
 		// Groups with external ID should be treated as managed even if they have no managed flag.
 		BusinessGroup groupExternalId = businessGroupDao.createAndPersist(null, random(), random(), random(),
-				null, 0, 5, true, false, true, false, false);
+				null, 0, 5, true, false, true, false, false, null);
 		BusinessGroup groupUnmanaged = businessGroupDao.createAndPersist(null, random(), random(), null,
-				null, 0, 5, true, false, true, false, false);
+				null, 0, 5, true, false, true, false, false, null);
 		dbInstance.commitAndCloseSession();
 
 		// Check managed
@@ -764,11 +764,11 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Date lastUsageBefore = new GregorianCalendar(2020, 8, 9).getTime();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		BusinessGroup before = businessGroupDao.createAndPersist(null, random(), random(), random(),
-				null, 0, 5, true, false, true, false, false);
+				null, 0, 5, true, false, true, false, false, null);
 		before.setLastUsage(DateUtils.addDays(lastUsageBefore, -2));
 		businessGroupDao.merge(before);
 		BusinessGroup after = businessGroupDao.createAndPersist(null, random(), random(), null,
-				null, 0, 5, true, false, true, false, false);
+				null, 0, 5, true, false, true, false, false, null);
 		after.setLastUsage(DateUtils.addDays(lastUsageBefore, 3));
 		businessGroupDao.merge(after);
 		dbInstance.commitAndCloseSession();
@@ -928,7 +928,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		String externalId = UUID.randomUUID().toString();
 		String managedFlags = "title,description";
 		BusinessGroup managedGroup = businessGroupDao.createAndPersist(null, "managed-grp-1", "managed-grp-1-desc",
-				externalId, managedFlags, 0, 5, true, false, true, false, false);
+				externalId, managedFlags, 0, 5, true, false, true, false, false, null);
 		BusinessGroup freeGroup = businessGroupDao.createAndPersist(null, "free-grp-1", "free-grp-1-desc",
 				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
@@ -959,7 +959,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		String externalId = UUID.randomUUID().toString();
 		String managedFlags = "all";
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "managed-grp-2", "managed-grp-2-desc",
-				externalId, managedFlags, 0, 5, true, false, true, false, false);
+				externalId, managedFlags, 0, 5, true, false, true, false, false, null);
 		dbInstance.commitAndCloseSession();
 
 		//search

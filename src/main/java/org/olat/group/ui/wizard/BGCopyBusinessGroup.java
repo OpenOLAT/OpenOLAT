@@ -36,6 +36,7 @@ public class BGCopyBusinessGroup implements BusinessGroupShort {
 	private String description;
 	private Integer minParticipants;
 	private Integer maxParticipants;
+	private Boolean allowToLeave;
 	
 	private final BusinessGroup original;
 	
@@ -108,5 +109,13 @@ public class BGCopyBusinessGroup implements BusinessGroupShort {
 
 	public void setMaxParticipants(Integer maxParticipants) {
 		this.maxParticipants = maxParticipants;
+	}
+
+	public Boolean getAllowToLeave() {
+		return allowToLeave;
+	}
+
+	public void setAllowToLeave(Boolean allowToLeave) {
+		this.allowToLeave = allowToLeave;
 	}
 }

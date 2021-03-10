@@ -45,6 +45,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -82,6 +83,8 @@ public class BusinessGroupFormController extends FormBasicController {
 	private MultipleSelectionElement enableWaitingList;
 	private MultipleSelectionElement enableAutoCloseRanks;
 
+	private MultipleSelectionElement allowToLeaveEl;
+
 	/**
 	 * The {@link BusinessGroup} object this form refers to.
 	 */
@@ -104,6 +107,8 @@ public class BusinessGroupFormController extends FormBasicController {
 	/** The value for the autoCloseRanks checkbox. */
 	private final String[] autoCloseValues = new String[] { translate("create.form.enableAutoCloseRanks") };
 	
+	@Autowired
+	private BusinessGroupModule businessGroupModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -214,6 +219,13 @@ public class BusinessGroupFormController extends FormBasicController {
 		businessGroupMaximumMembers.setEnabled(!managedSettings);
 		enableWaitingList.setEnabled(!managedSettings);
 		enableAutoCloseRanks.setEnabled(!managedSettings);
+		
+		allowToLeaveEl = uifactory.addCheckboxesHorizontal("allow.leaving", "allow.leaving.group", formLayout,
+				new String[]{"xx"}, new String[]{""});
+		allowToLeaveEl.setVisible(embbeded && businessGroupModule.isAllowLeavingGroupOverride());
+		if(businessGroup != null && businessGroup.isAllowToLeave()) {
+			allowToLeaveEl.select("xx", true);
+		}
 
 		if ((businessGroup != null) && (!bulkMode)) {
 			businessGroupName.setValue(businessGroup.getName());
@@ -460,6 +472,10 @@ public class BusinessGroupFormController extends FormBasicController {
 		} else {
 			return null;
 		}
+	}
+	
+	public Boolean isAllowToLeave() {
+		return this.allowToLeaveEl.isVisible() ? Boolean.valueOf(allowToLeaveEl.isAtLeastSelected(1)) : null;
 	}
 
 	/**

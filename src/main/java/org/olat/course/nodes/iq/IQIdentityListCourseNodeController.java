@@ -314,6 +314,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		for(AssessmentTestSession session:sessions) {
 			Long identityKey = session.getIdentity().getKey();
 			if(currentIdentityKey == null || !currentIdentityKey.equals(identityKey)) {
+				Date end = null;
 				Date start = null;
 				Double completion = null;
 				Integer extraTimeInSeconds = null;
@@ -323,9 +324,11 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					if(session.getNumOfQuestions() != null && session.getNumOfQuestions().intValue() > 0 && session.getNumOfAnsweredQuestions() != null) {
 						completion = session.getNumOfAnsweredQuestions().doubleValue() / session.getNumOfQuestions().doubleValue();
 					}
+				} else {
+					end = session.getFinishTime() == null ? session.getTerminationTime() : session.getFinishTime();
 				}
 				
-				ExtraInfos infos = new ExtraInfos(extraTimeInSeconds, start, completion, session.getMaxScore());
+				ExtraInfos infos = new ExtraInfos(extraTimeInSeconds, start, end, completion, session.getMaxScore());
 				identityToExtraTime.put(identityKey, infos);
 				currentIdentityKey = identityKey;
 			}

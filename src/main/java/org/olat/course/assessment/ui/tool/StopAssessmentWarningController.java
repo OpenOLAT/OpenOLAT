@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.tool;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
@@ -38,6 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.ui.tool.event.StopAssessmentEvent;
@@ -96,6 +98,11 @@ public class StopAssessmentWarningController extends BasicController {
 	}
 	
 	private void assessmentModeMessage(List<AssessmentMode> modes) {
+		// filter closed assessment mode
+		modes = modes.stream()
+				.filter(m -> !Status.end.equals(m.getStatus()))
+				.collect(Collectors.toList());
+		
 		if(modes.size() == 1) {
 			AssessmentMode mode = modes.get(0);
 			assessmemntModeMessageFormatting("assessment.mode.now",  modes, mainVC);
