@@ -19,15 +19,12 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -36,7 +33,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.modules.ModuleConfiguration;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -57,19 +53,13 @@ public class GTASubmissionEditController extends FormBasicController {
 	private MultipleSelectionElement  emailConfirmationEl;
 	
 	private final ModuleConfiguration config;
-	private final boolean externalEditorEnabled;
-	
-	@Autowired
-	private DocEditorService docEditorService;
 	
 	public GTASubmissionEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		
 		this.config = config;
-		this.externalEditorEnabled = !docEditorService.getExternalEditors(getIdentity(), ureq.getUserSession().getRoles()).isEmpty();
 		
 		initForm(ureq);
-		updateUI();
 	}
 
 	@Override
@@ -89,7 +79,6 @@ public class GTASubmissionEditController extends FormBasicController {
 		embeddedEditorEl = uifactory.addCheckboxesHorizontal("embedded.editor", "embedded.editor", configCont, enableKeys, enableValues);
 		boolean embbeded = config.getBooleanSafe(GTACourseNode.GTASK_EMBBEDED_EDITOR);
 		embeddedEditorEl.select(enableKeys[0], embbeded);
-		embeddedEditorEl.addActionListener(FormEvent.ONCHANGE);
 		
 		submissionTemplateEl = uifactory.addCheckboxesHorizontal("submission.template", "submission.template", configCont, enableKeys, enableValues);
 		boolean submissionTemplate = config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_TEMPLATE);
@@ -135,21 +124,9 @@ public class GTASubmissionEditController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void updateUI() {
-		submissionTemplateEl.setVisible(externalEditorEnabled && embeddedEditorEl.isAtLeastSelected(1));
-	}
-	
 	@Override
 	protected void doDispose() {
 		//
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == embeddedEditorEl) {
-			updateUI();
-		}
-		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -204,7 +181,7 @@ public class GTASubmissionEditController extends FormBasicController {
 		boolean embeddedEditor = embeddedEditorEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_EMBBEDED_EDITOR, embeddedEditor);
 		
-		boolean submissionTemplate = submissionTemplateEl.isVisible() && submissionTemplateEl.isAtLeastSelected(1);
+		boolean submissionTemplate = submissionTemplateEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_SUBMISSION_TEMPLATE, submissionTemplate);
 
 		setNumberOfdocuments(minNumberOfDocsEl, GTACourseNode.GTASK_MIN_SUBMITTED_DOCS);
