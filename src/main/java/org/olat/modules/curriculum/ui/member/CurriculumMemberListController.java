@@ -608,7 +608,7 @@ public class CurriculumMemberListController extends FormBasicController implemen
 			addLink("home", "home", "o_icon o_icon_home");
 			addLink("contact", "contact", "o_icon o_icon_mail");
 			if(!membersManaged && secCallback.canManagerCurriculumElementUsers(curriculumElement)) {
-				addLink("edit.member", "edit.member", "o_icon o_icon_mail");
+				addLink("edit.member", "edit.member", "o_icon o_icon_edit");
 				addLink("remove.memberships", "remove", "o_icon o_icon_remove");
 			}
 
