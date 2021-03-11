@@ -316,6 +316,7 @@ public class PageMetadataEditController extends FormBasicController {
 			competenciesEl.setAllowDuplicates(false);
 			competenciesEl.setAllowNewValues(false);
 			competenciesEl.setAutoCompleteContent(availableTaxonomyLevels);
+			competenciesEl.setCustomCSSForItems("o_competence");
 		}
 		
 		bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, new String[] { "" }, new String[] { "" }, null);
@@ -755,13 +756,17 @@ public class PageMetadataEditController extends FormBasicController {
 			existingCompetencies = new ArrayList<>();
 			for (TaxonomyCompetence competence : competencies) {
 				TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getDisplayName(), competence.getTaxonomyLevel().getKey().toString());
+				competenceTextBoxItem.setTooltip(competence.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash());
 				existingCompetencies.add(competenceTextBoxItem);
 			}
 			
 			availableTaxonomyLevels = new ArrayList<>();
 			for (Taxonomy taxonomy : portfolioV2Module.getLinkedTaxonomies()) {
 				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
-					availableTaxonomyLevels.add(new TextBoxItemImpl(taxonomyLevel.getDisplayName(), taxonomyLevel.getKey().toString()));
+					TextBoxItem item = new TextBoxItemImpl(taxonomyLevel.getDisplayName(), taxonomyLevel.getKey().toString());
+					item.setDropDownInfo(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
+					item.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
+					availableTaxonomyLevels.add(item);
 				}
 			}
 

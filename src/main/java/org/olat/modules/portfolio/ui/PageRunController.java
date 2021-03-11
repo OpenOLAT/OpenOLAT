@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -57,6 +58,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -113,6 +115,7 @@ import org.olat.modules.portfolio.ui.event.RevisionEvent;
 import org.olat.modules.portfolio.ui.event.SelectPageEvent;
 import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -140,7 +143,6 @@ public class PageRunController extends BasicController implements TooledControll
 	private ConfirmClosePageController confirmDonePageCtrl;
 	private DialogBoxController confirmPublishCtrl, confirmRevisionCtrl, confirmCloseCtrl,
 		confirmReopenCtrl, confirmMoveToTrashCtrl, confirmDeleteCtrl;
-	private DialogBoxController alreadyLockedDialogController;
 	private PageMetadataEditController editMetadataCtrl;
 	private UserCommentsAndRatingsController commentsCtrl;
 	
@@ -161,6 +163,8 @@ public class PageRunController extends BasicController implements TooledControll
 	private PortfolioService portfolioService;
 	@Autowired
 	private DocEditorService docEditorService;
+	@Autowired
+	private UserManager userManager;
 	
 	public PageRunController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Page page, boolean openEditMode) {
@@ -670,11 +674,9 @@ public class PageRunController extends BasicController implements TooledControll
 					mainVC.remove(commentsCtrl.getInitialComponent());
 				}
 			} else {
-				removeAsListenerAndDispose(alreadyLockedDialogController);
 				String i18nMsg = lockEntry.isDifferentWindows() ? "warning.page.locked.same.user" : "warning.page.locked";
-				alreadyLockedDialogController = DialogBoxUIFactory.createResourceLockedMessage(ureq, getWindowControl(), lockEntry, i18nMsg, getTranslator());
-				listenTo(alreadyLockedDialogController);
-				alreadyLockedDialogController.activate();
+				String[] i18nParams = new String[] { StringHelper.escapeHtml(userManager.getUserDisplayName(lockEntry.getOwner())), Formatter.getInstance(getLocale()).formatTime(new Date(lockEntry.getLockAquiredTime())) };
+				showWarning(i18nMsg, i18nParams);
 			}
 		}
 	}

@@ -52,7 +52,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
 
-		TextBoxListComponent tblComponent = (TextBoxListElementComponent) source;
+		TextBoxListElementComponent tblComponent = (TextBoxListElementComponent) source;
 		if (tblComponent.isEnabled()) {
 			renderEnabledMode(tblComponent, sb, translator, tblComponent.getIcon());
 		} else {
@@ -69,16 +69,25 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 	 *            the StringOutput
 	 * @param translator
 	 */
-	private void renderEnabledMode(TextBoxListComponent tblComponent, StringOutput sb, Translator translator, String icon) {
-		TextBoxListElementImpl te = ((TextBoxListElementComponent)tblComponent).getTextElementImpl();
+	private void renderEnabledMode(TextBoxListElementComponent tblComponent, StringOutput sb, Translator translator, String icon) {
+		TextBoxListElementImpl te = tblComponent.getTextElementImpl();
 		String dispatchId = tblComponent.getFormDispatchId();
 		
-		String initialValJson = renderItemsAsJsonString(tblComponent.getCurrentItems(), tblComponent.getCustomCSSForItems());
+		String initialValJson = renderItemsAsJsonString(tblComponent.getCurrentItems());
 		if (StringHelper.containsNonWhitespace(icon)) {
-			sb.append("<span class='o_tags_with_icon'>");
+			sb.append("<span class='o_tags_with_icon input-group-sm'>");
 			sb.append("<i class='o_icon o_icon_fw " + icon + "'> </i>");
 		}
-		sb.append("<input type='text' id='textboxlistinput").append(dispatchId).append("'")
+		if (StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {
+			sb.append("&nbsp").append(tblComponent.getTextElementImpl().getLabelText()).append("&nbsp");
+		}
+		if (tblComponent.showSaveButton()) {
+			sb.append("<span class='input-group input-group-sm'>");
+		}
+		if (!tblComponent.showSaveButton() && !StringHelper.containsNonWhitespace(icon)) {
+			sb.append("<span class='input-group-sm'>");
+		}
+		sb.append("<input class='form-control' type='text' id='textboxlistinput").append(dispatchId).append("'")
 		  .append(" name='textboxlistinput").append(dispatchId).append("'");
 		if (te.hasFocus()) {
 			sb.append(" autofocus");
@@ -88,13 +97,22 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		sb.append(" placeholder='").append(Formatter.escapeDoubleQuotes(myTrans.translate("add.enter"))).append("' class='o_textbox'/>\n");
 		
 		renderTagifyMode(tblComponent, sb);
-		if (StringHelper.containsNonWhitespace(icon)) {
+		
+		if (tblComponent.showSaveButton()) {
+			sb.append("<span class='input-group-btn'>")
+			  .append("<button class='btn btn-primary o_button_dirty' type='submit'>")
+			  .append(translator.translate("save"))
+			  .append("</button></span>")
+			  .append("</span>");
+		}
+		
+		if (!tblComponent.showSaveButton()) {
 			sb.append("</span>");
 		}
 	}
 	
-	private void renderTagifyMode(TextBoxListComponent tblComponent, StringOutput sb) {
-		TextBoxListElementImpl te = ((TextBoxListElementComponent)tblComponent).getTextElementImpl();
+	private void renderTagifyMode(TextBoxListElementComponent tblComponent, StringOutput sb) {
+		TextBoxListElementImpl te = tblComponent.getTextElementImpl();
 		Form rootForm = te.getRootForm();
 		String dispatchId = tblComponent.getFormDispatchId();
 		
@@ -108,6 +126,11 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		  .append("     if(tagData.value.indexOf('a:') == 0) {\n")
 		  .append("       tagData.class += ' o_tag_admin';\n")
 		  .append("     }\n")
+		  .append("     tagData.class += ' o_tag");
+		if (StringHelper.containsNonWhitespace(tblComponent.getCustomCSSForItems())) {
+			sb.append(" " + tblComponent.getCustomCSSForItems());
+		}
+		sb.append("'\n")
 		  .append("   },\n")
 		  .append("   keepInvalidTags:false,\n");
 		
@@ -126,12 +149,18 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		  .append("     dropdownItem: function(tagData) {\n")
 		  .append("       if(tagData.searchBy == 'zxyhideme') return \"<div class='tagify__dropdown__item ' style='display:none;'></div>\";\n")
 		  .append("       var tagValue = (tagData.label || tagData.value);\n")
+		  .append("       var tagInfo = '';\n")
+		  .append("       if(tagData.info) {\n")
+		  .append("         tagInfo = '<div class=\"text-muted o_textbox_dropdown_info\">' + tagData.info + '</div>';\n")
+		  .append("       }\n")
 		  .append("       tagValue = (tagValue.indexOf('a:') == 0) ? tagValue.substring(2, tagValue.length) : tagValue;\n")
-		  .append("       return \"<div class='tagify__dropdown__item' \" + ((typeof tagData.color !== 'undefined') ? \"style='background-color:\" + tagData.color + \";'\" : \"\") + \"><span>\" + tagValue + \"</span></div>\";\n")
+		  .append("       return \"<div class='o_tag ")
+	  		.append(StringHelper.containsNonWhitespace(tblComponent.getCustomCSSForItems()) ? tblComponent.getCustomCSSForItems() : "")
+	  		.append(" tagify__dropdown__item' \" + ((typeof tagData.color !== 'undefined') ? \"style='background-color:\" + tagData.color + \";'\" : \"\") + \"><div class='o_textbox_dropdown_item_value'>\" + tagValue + \"</div>\" + tagInfo + \"</div>\";\n")
 		  .append("     }\n")
 		  .append("   },\n")
 		  .append("   dropdown: {\n")
-		  .append("     classname: 'o_textbox_dropdown_item',\n")
+		  .append("     classname: 'o_textbox_dropdown',\n")
 		  .append("     enabled: 0,\n")
 		  .append("     maxItems: 250,\n")
 		  .append("     fuzzySearch: true\n")
@@ -163,13 +192,12 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		  .append(FormJSHelper.getJSEnd());
 	}
 	
-	private String renderItemsAsJsonString(List<TextBoxItem> content, String customCSSForItems) {
+	private String renderItemsAsJsonString(List<TextBoxItem> content) {
 		JSONArray array = new JSONArray();
 		if (content != null && !content.isEmpty()) {
 			OWASPAntiSamyXSSFilter filter = new OWASPAntiSamyXSSFilter();
 			for(TextBoxItem item:content) {
 				String antiItem = filter.filter(item.getValue());
-				String customCSS = StringHelper.containsNonWhitespace(item.getCustomCSS()) ? item.getCustomCSS() : customCSSForItems;
 				if(StringHelper.containsNonWhitespace(antiItem)) {
 					JSONObject obj = new JSONObject();
 					obj.put("value", antiItem);
@@ -181,9 +209,6 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 					}
 					if(!item.isEditable()) {
 						obj.put("readonly", "true");
-					}
-					if(StringHelper.containsNonWhitespace(customCSS)) {
-						obj.put("customCSS", customCSS);
 					}
 					array.put(obj);
 				}	
@@ -226,6 +251,9 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 			if(!item.isEditable()) {
 				obj.put("searchBy", "zxyhideme");
 			}
+			if(StringHelper.containsNonWhitespace(item.getDropDownInfo())) {
+				obj.put("info", item.getDropDownInfo());
+			}
 			array.put(obj);
 		}
 	}
@@ -236,7 +264,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 	 * @param tblComponent
 	 * @param output
 	 */
-	private void renderDisabledMode(TextBoxListComponent tblComponent, StringOutput output, String icon) {
+	private void renderDisabledMode(TextBoxListElementComponent tblComponent, StringOutput output, String icon) {
 		// read only view, we just display the initialItems as
 		// comma-separated string
 		List<TextBoxItem> items = tblComponent.getCurrentItems();
@@ -246,9 +274,18 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 			output.append("<i class='o_icon o_icon_fw ").append(icon).append("'> </i> ");
 		}
 		
+		if (StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {
+			output.append("&nbsp").append(tblComponent.getTextElementImpl().getLabelText()).append("&nbsp");
+		}
+		
 		if (items != null) {
+			int pos = 0;
 			for (TextBoxItem item : items) {
-				output.append("<span class='o_tag");
+				String dispatchId = tblComponent.getFormDispatchId() + "_" + pos;
+				
+				output.append("<span")
+					.append(" id=o_tag_item_" + dispatchId)
+					.append(" class='o_tag");
 				if (StringHelper.containsNonWhitespace(item.getCustomCSS())) {
 					output.append(" " + item.getCustomCSS());
 				}
@@ -266,7 +303,22 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 					output.append(" style='background-color:").append(item.getColor()).append(";'");
 				}
 				
-				output.append(">").append(label).append("</span>");								
+				output.append(">").append(label).append("</span>");		
+				if (item.showTooltip()) {
+					// render tooltip only when it contains something
+					output.append("<script>")
+					  .append("jQuery(function() {\n")
+					  .append("  jQuery('#o_tag_item_").append(dispatchId).append("').tooltip({\n")
+					  .append("    html: true,\n")
+					  .append("    container: 'body',\n")
+					  .append("    title: '").append(item.getTooltip()).append("' \n")
+					  .append("  });\n")
+					  .append("});")
+					  .append("</script>");
+				}
+				
+				// Increment position
+				pos++;
 			}
 		} 
 		

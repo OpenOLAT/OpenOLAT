@@ -83,6 +83,8 @@ public class CategoriesEditController extends FormBasicController {
 		categoriesEl.setElementCssClass("o_block_inline");
 		categoriesEl.getComponent().setSpanAsDomReplaceable(true);
 		categoriesEl.setIcon("o_icon_tags");
+		categoriesEl.setShowSaveButton(true);
+		categoriesEl.setLabel("categories", null);
 		
 		editLink = uifactory.addFormLink("edit", "edit", "edit", null, formLayout, Link.LINK);
 		editLink.setCustomEnabledLinkCSS("o_button_textstyle");
@@ -107,7 +109,7 @@ public class CategoriesEditController extends FormBasicController {
 		saveButton.setVisible(editable);
 		// Special label when no categories are there
 		if (categoriesEl.getValueList().isEmpty()) {
-			editLink.setI18nKey("categories.add");			
+			editLink.setI18nKey("add");			
 		} else {
 			editLink.setI18nKey("edit");
 		}

@@ -7,8 +7,8 @@
     --tag-pad: 0.3em 0.5em;
     --tag-inset-shadow-size: 1.1em;
     --tag-invalid-color: #d39494;
-    --tag-invalid-bg: rgba(211, 148, 148, 0.5);
-    --tag-remove-bg: rgba(211, 148, 148, 0.3);
+    --tag-invalid-bg: rgba(211, 148, 148);
+    --tag-remove-bg: none;
     --tag-remove-btn-bg: none;
     --tag-remove-btn-bg--hover: #c77777;
     display: flex;
@@ -56,19 +56,17 @@
 .tagify + textarea {
     display: none !important;
 }
+.tagify.form-control {
+	padding: 0 0 0 2px !important;
+}
 .tagify__tag {
     display: inline-flex;
     align-items: center;
-    margin: 5px 0 5px 5px;
     position: relative;
     z-index: 1;
     cursor: default;
     transition: 0.13s ease-out;
 	padding: 0 2px 0 5px; 
-}
-.tagify__tag.tagify--editable > div {
-    color: #000;
-    color: var(--tag-text-color--edit);
 }
 .tagify__tag.tagify--editable > div::before {
     box-shadow: 0 0 0 2px #d3e2e2 inset !important;
@@ -82,8 +80,6 @@
     vertical-align: top;
     box-sizing: border-box;
     max-width: 100%;
-    color: #000;
-    color: var(--tag-text-color);
     border-radius: .25rem;
     -webkit-user-select: none;
     user-select: none;
@@ -143,12 +139,16 @@
 .tagify__tag.tagify--mark div::before {
     animation: none;
 }
-.tagify__tag.tagify--notAllowed div > span {
-    opacity: 0.5;
+.tagify__tag.tagify--notAllowed {
+    border-color: var(--tag-invalid-bg) !important;
+    color: #fff !important;
+    transition: 0.2s;
 }
 .tagify__tag.tagify--notAllowed div::before {
     box-shadow: 0 0 0 1.1em rgba(211, 148, 148, 0.5) inset !important;
     box-shadow: 0 0 0 var(--tag-inset-shadow-size) var(--tag-invalid-bg) inset !important;
+    border-color: var(--tag-invalid-bg) !important;
+    color: #fff !important;
     transition: 0.2s;
 }
 .tagify__tag[readonly] .tagify__tag__removeBtn {
@@ -163,14 +163,12 @@
     order: 5;
     background: 0 0;
     background: var(--tag-remove-btn-bg);
-    color: #000;
-    color: var(--tag-text-color);
     width: 14px;
     height: 14px;
     text-align: center;
     border-radius: 50px;
     cursor: pointer;
-    margin-left: 1px;
+    margin-left: 2px;
     transition: 0.2s ease-out;
 	line-height: 1.25;
 }
@@ -181,9 +179,6 @@
     color: #fff;
     background: #c77777;
     background: var(--tag-remove-btn-bg--hover);
-}
-.tagify__tag__removeBtn:hover + div > span {
-    opacity: 0.5;
 }
 .tagify__tag__removeBtn:hover + div::before {
     box-shadow: 0 0 0 1.1em rgba(211, 148, 148, 0.3) inset !important;
@@ -201,7 +196,7 @@
     white-space: nowrap;
 }
 .tagify__input {
-    display: block;
+    display: inline-block;
     min-width: 110px;
     margin: 5px;
     position: relative;
@@ -316,7 +311,6 @@
 }
 .tagify__dropdown__item {
     box-sizing: inherit;
-    padding: 0.35em 0.6em;
     margin: 2px;
     cursor: pointer;
     border-radius: .25rem;

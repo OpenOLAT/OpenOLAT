@@ -171,4 +171,9 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	public void setCustomCSSForItems(String customCSS) {
 		component.setCustomCSSForItems(customCSS);
 	}
+	
+	@Override
+	public void setShowSaveButton(boolean showSaveButton) {
+		component.setShowSaveButton(showSaveButton);
+	}
 }

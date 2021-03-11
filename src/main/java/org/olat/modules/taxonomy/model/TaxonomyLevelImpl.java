@@ -217,11 +217,17 @@ public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLev
 	
 	@Override
 	public String getMaterializedPathIdentifiersWithoutSlash() {
+		String keysWithoutSlash = materializedPathIdentifiers;
+		
 		if (materializedPathIdentifiers.endsWith("/") && materializedPathIdentifiers.length() > 1) {
-			return materializedPathIdentifiers.substring(0, materializedPathIdentifiers.length() - 1);
+			keysWithoutSlash = keysWithoutSlash.substring(0, keysWithoutSlash.length() - 1);
 		}
 		
-		return materializedPathIdentifiers;
+		if (materializedPathIdentifiers.startsWith("/") && materializedPathIdentifiers.length() > 1) {
+			keysWithoutSlash = keysWithoutSlash.substring(1, keysWithoutSlash.length());
+		}
+		
+		return keysWithoutSlash;
 	}
 
 	public boolean isEnabled() {

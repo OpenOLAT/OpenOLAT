@@ -31,6 +31,8 @@ public interface TextBoxItem {
 	
 	public String getLabel();
 	
+	public String getDropDownInfo();
+	
 	public String getColor();
 	
 	public String getCustomCSS();
@@ -38,10 +40,16 @@ public interface TextBoxItem {
 	public boolean isEditable();
 	
 	public Object getUserObject();
+	
+	public String getTooltip();
+	
+	public boolean showTooltip();
 
 	public void setValue(String value);
 	
 	public void setLabel(String label);
+	
+	public void setDropDownInfo(String info);
 	
 	public void setColor(String color);
 	
@@ -50,4 +58,6 @@ public interface TextBoxItem {
 	public void setEditable(boolean editable);
 	
 	public void setUserObject(Object userObject);
+	
+	public void setTooltip(String tooltipContent);
 }

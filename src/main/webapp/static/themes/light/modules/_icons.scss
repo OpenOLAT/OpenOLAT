@@ -526,10 +526,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_pf_section_closed:before { content: $fa-var-lock; color: $o-portfolio-entry-closed-color;}
 .o_icon_pf_binder:before { content: $fa-var-briefcase; }
 .o_icon_pf_entry:before { content: $fa-var-file; }
-.o_icon_pf_entry_draft:before { content: $fa-var-circle; color: $o-portfolio-entry-draft-color; }
-.o_icon_pf_entry_published:before { content: $fa-var-circle; color: $o-portfolio-entry-published-color; }
-.o_icon_pf_entry_revision:before { content: $fa-var-circle; color: $o-portfolio-entry-inrevision-color; }
-.o_icon_pf_entry_closed:before { content: $fa-var-circle; color: $o-portfolio-entry-closed-color; }
+.o_icon_pf_entry_draft:before { content: $fa-var-pencil; color: $o-portfolio-entry-draft-color; }
+.o_icon_pf_entry_published:before { content: $fa-var-check; color: $o-portfolio-entry-published-color; }
+.o_icon_pf_entry_revision:before { content: $fa-var-rotate-left; color: $o-portfolio-entry-inrevision-color; }
+.o_icon_pf_entry_closed:before { content: $fa-var-lock; color: $o-portfolio-entry-closed-color; }
 .o_icon_pf_entry_deleted:before { content: $fa-var-trash; color: $o-portfolio-entry-deleted-color; }
 .o_icon_pf_history:before { content: $fa-var-clock-o;}
 .o_icon_pf_my_shares:before { content: $fa-var-share-alt; }

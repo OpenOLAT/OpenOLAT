@@ -45,6 +45,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
@@ -94,6 +95,7 @@ public class PageMetadataController extends BasicController {
 	private Link closeButton;
 	private Link reopenButton;
 	private Link bookmarkButton;
+	private Link sharedWithLink;
 	
 	private ImageComponent imageCmp;
 	private String mapperThumbnailUrl;
@@ -104,6 +106,7 @@ public class PageMetadataController extends BasicController {
 	private CategoriesEditController categoriesEditCtr;
 	private CompetenciesEditController competenciesEditCtrl;
 	private ConfirmClosePageController confirmClosePageCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
 	
 	private final Page page;
 	private PageUserInformations pageUserInfos;
@@ -198,8 +201,10 @@ public class PageMetadataController extends BasicController {
 		mainVC.contextPut("status", page.getPageStatus());
 		mainVC.contextPut("statusCss", page.getPageStatus() == null ? PageStatus.draft.cssClass() : page.getPageStatus().cssClass());
 		
-		int sharedWith = portfolioService.countSharedPageBody(page);
-		if(sharedWith > 1) {
+		int sharedWith = portfolioService.countSharedPageBody(page) - 1;
+		if(sharedWith > 0) {
+			String sharedWithString = String.valueOf(sharedWith) + " " + translate("page.body.shared.with." + (sharedWith == 1 ? "entry" : "entries"));
+			sharedWithLink = LinkFactory.createLink("sharedWithLink", "sharedWithLink", "showSharedPages", sharedWithString, getTranslator(), mainVC, this, Link.NONTRANSLATED);
 			mainVC.contextPut("sharedWith", String.valueOf(sharedWith));
 			PageStatus syntheticStatus = page.getBody().getSyntheticStatusEnum();
 			if(syntheticStatus == PageStatus.published || syntheticStatus == PageStatus.closed) {
@@ -344,6 +349,8 @@ public class PageMetadataController extends BasicController {
 			}
 			editLink.setVisible(secCallback.canEditPage(page));
 		}
+		
+		editLink.setTooltip("edit.page");
 		return editLink;
 	}
 	

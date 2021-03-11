@@ -1,21 +1,23 @@
 <div class="o_portfolio_history clearfix">
-	<div class="o_header_with_buttons">
-		<h2><i class="o_icon o_icon_portfolio_history"> </i> $r.translate('portfolio.history')</h2>
-		#if($r.available("subscription"))
-		<div class="o_button_group">
-			$r.render("subscription")
+	<div class="o_page_lead">
+		<div class="o_header_with_buttons">
+			<h2><i class="o_icon o_icon_pf_history"> </i> $r.translate('portfolio.history')</h2>
+			#if($r.available("subscription"))
+			<div class="o_button_group">
+				$r.render("subscription")
+			</div>
+			#end
 		</div>
-		#end
-	</div>
-
-	<div class="o_notifications_news_datechooser o_block_large row">
-		<div class="col-xs-12 col-sm-6">
-			<fieldset class="o_form form-horizontal" role="form">
-				<div class="form-group">
-					<div class="col-sm-3">$r.render("dateChooser_LABEL")</div>
-					<div class="col-sm-9">$r.render("dateChooser")</div>
-				</div>
-			</fieldset>
+	
+		<div class="o_notifications_news_datechooser row">
+			<div class="col-xs-12 col-sm-6">
+				<fieldset class="o_form form-horizontal" role="form">
+					<div class="form-group">
+						<div class="col-sm-3">$r.render("dateChooser_LABEL")</div>
+						<div class="col-sm-9">$r.render("dateChooser")</div>
+					</div>
+				</fieldset>
+			</div>
 		</div>
 	</div>
 	

@@ -106,4 +106,10 @@ public interface TextBoxListElement extends FormItem {
 	 */
 	public void setCustomCSSForItems(String customCSS);
 	
+	/**
+	 * Set whether a save button should be displayed.
+	 * 
+	 * @param showSaveButton
+	 */
+	public void setShowSaveButton(boolean showSaveButton);
 }

@@ -78,6 +78,7 @@ public class CompetenciesEditController extends FormBasicController {
 		existingCompetencies = new ArrayList<>();
 		for (TaxonomyCompetence competence : competencies) {
 			TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getDisplayName(), competence.getTaxonomyLevel().getKey().toString());
+			competenceTextBoxItem.setTooltip(competence.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash());
 			competenceTextBoxItem.setCustomCSS("o_competence");
 			existingCompetencies.add(competenceTextBoxItem);
 		}
@@ -86,7 +87,10 @@ public class CompetenciesEditController extends FormBasicController {
 		if (portfolioModule.isTaxonomyLinkingReady()) {
 			for (Taxonomy taxonomy : portfolioModule.getLinkedTaxonomies()) {
 				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
-					availableTaxonomyLevels.add(new TextBoxItemImpl(taxonomyLevel.getDisplayName(), taxonomyLevel.getKey().toString()));
+					TextBoxItem item = new TextBoxItemImpl(taxonomyLevel.getDisplayName(), taxonomyLevel.getKey().toString());
+					item.setDropDownInfo(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
+					item.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
+					availableTaxonomyLevels.add(item);
 				}
 			}
 		}
@@ -109,6 +113,7 @@ public class CompetenciesEditController extends FormBasicController {
 		competenciesEl.setIcon("o_icon_competences");
 		competenciesEl.setAutoCompleteContent(availableTaxonomyLevels);
 		competenciesEl.setCustomCSSForItems("o_competence");
+		competenciesEl.setShowSaveButton(true);
 		
 		
 		editLink = uifactory.addFormLink("edit", "edit", "edit", null, formLayout, Link.LINK);
@@ -134,7 +139,7 @@ public class CompetenciesEditController extends FormBasicController {
 		saveButton.setVisible(editable);
 		// Special label when no categories are there
 		if (competenciesEl.getValueList().isEmpty()) {
-			editLink.setI18nKey("competencies.add");			
+			editLink.setI18nKey("add");			
 		} else {
 			editLink.setI18nKey("edit");
 		}

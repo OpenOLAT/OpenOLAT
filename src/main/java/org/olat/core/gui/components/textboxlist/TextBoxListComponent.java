@@ -74,6 +74,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl impleme
 	private String inputHint;
 	private String icon;
 	private String customCSSForItems;
+	private boolean showSaveButton;
 
 	/**
 	 * Holds the initial items (keyString is the caption! valueString is the
@@ -475,6 +476,14 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl impleme
 	
 	public String getCustomCSSForItems() {
 		return customCSSForItems;
+	}
+	
+	public boolean showSaveButton() {
+		return showSaveButton;
+	}
+	
+	public void setShowSaveButton(boolean showConfirmButton) {
+		this.showSaveButton = showConfirmButton;
 	}
 
 	@Override

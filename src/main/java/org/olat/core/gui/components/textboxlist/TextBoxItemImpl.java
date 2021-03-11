@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.textboxlist;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 14 nov. 2019<br>
@@ -29,8 +31,10 @@ public class TextBoxItemImpl implements TextBoxItem {
 	
 	private String label;
 	private String value;
+	private String dropDownInfo;
 	private String color;
 	private String customCSS;
+	private String tooltip;
 	private boolean editable;
 	private Object userObject;
 	
@@ -59,6 +63,11 @@ public class TextBoxItemImpl implements TextBoxItem {
 	public String getLabel() {
 		return label;
 	}
+	
+	@Override
+	public String getDropDownInfo() {
+		return dropDownInfo;
+	}
 
 	@Override
 	public String getColor() {
@@ -79,6 +88,16 @@ public class TextBoxItemImpl implements TextBoxItem {
 	public String getCustomCSS() {
 		return customCSS;
 	}
+	
+	@Override
+	public String getTooltip() {
+		return tooltip;
+	}
+	
+	@Override
+	public boolean showTooltip() {
+		return StringHelper.containsNonWhitespace(tooltip);
+	}
 
 	@Override
 	public void setValue(String value) {
@@ -88,6 +107,11 @@ public class TextBoxItemImpl implements TextBoxItem {
 	@Override
 	public void setLabel(String label) {
 		this.label = label;
+	}
+	
+	@Override
+	public void setDropDownInfo(String dropDownInfo) {
+		this.dropDownInfo = dropDownInfo;
 	}
 
 	@Override
@@ -108,5 +132,10 @@ public class TextBoxItemImpl implements TextBoxItem {
 	@Override
 	public void setUserObject(Object userObject) {
 		this.userObject = userObject;
+	}
+	
+	@Override
+	public void setTooltip(String tooltip) {
+		this.tooltip = tooltip;
 	}
 }

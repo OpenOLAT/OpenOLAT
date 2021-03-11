@@ -4,17 +4,29 @@
 	#end
 	<h2>$r.escapeHtml($pageTitle) <small>$r.translate("binder.by",$owners)</small></h2>
 	<div class="o_portfolio_page_meta">		
+		#if($r.available("sharedWithLink"))
+		<div class="text-muted o_small">
+			<i class="o_icon o_icon_fw o_icon_pf_page_shared" title="$r.translateInAttribute("page.shared.tooltip")"> </i>
+			$r.translate("page.body.shared.with")
+			$r.render("sharedWithLink").
+			#if($r.isNotNull($syntheticStatus))
+				$syntheticStatus
+				<!-- i class="o_icon o_icon-fw $syntheticStatusCss" title="$syntheticStatusTooltip"> </i> -->
+			#end
+		</div>
+		#end
 		#if($r.isNotNull($lastPublicationDate))
-		<span class="o_portfolio_publication_date text-muted o_small">
+		<div class="o_portfolio_publication_date text-muted o_small">
+			<i class="o_icon o_icon_fw o_icon_time" title="$r.translateInAttribute("meta.last.publication")"> </i>
 			 $r.translate("meta.last.publication", $r.formatDateAndTime($lastPublicationDate))
 			 ,
-		</span>
+		</div>
 		#end
 		
-		<span class="o_portfolio_last_modified text-muted o_small">
-			<i class="o_icon o_icon_fw o_icon_time" title="$r.translateInAttribute("categories")"> </i>
+		<div class="o_portfolio_last_modified text-muted o_small">
+			<i class="o_icon o_icon_fw o_icon_time" title="$r.translateInAttribute("meta.last.modified")"> </i>
 			 $r.translate("meta.last.modified", $r.formatDateAndTime($lastModified))
-		</span>
+		</div>
 		
 		#if($r.isNotEmpty($pageCategories) || $r.available("pageCategoriesCtr"))
 			<div class="o_portfolio_categories text-muted o_small">
@@ -45,13 +57,6 @@
 			#end
 			</div>
 		#end
-		
-		#if($r.isNotNull($sharedWith))
-			<br><span class="text-muted o_small">$r.translate("page.body.shared.with", $sharedWith)</span>
-			#if($r.isNotNull($syntheticStatus))
-				<span class="text-muted o_small"><i class="o_icon o_icon-fw $syntheticStatusCss" title="$syntheticStatusTooltip"> </i> $syntheticStatus</span>
-			#end
-		#end
 	</div>
 	#if($r.available("poster") || $r.isNotEmpty($pageSummary))
 	<div class="o_page_summary clearfix">
@@ -70,28 +75,36 @@
 		#if($statusEnabled)
 		<div class="o_portfolio_status"><strong>$r.translate("page.status")</strong>: <i class="o_icon o_icon-fw $statusCss"> </i> $pageStatus</div>
 		#end
+		
 		#if($r.available("edit.page.meta") || $r.available("edit.page"))
-			<span class="o_edit_page_meta">
+			<span class="o_edit_page_meta o_button_group">
+				<span class="btn-group">
 				#if($r.available("edit.page.meta"))
 					$r.render("edit.page.meta")
 				#end
 				#if($r.available("edit.page"))
 					$r.render("edit.page")
 				#end
+				</span>
 			</span>
 		#end
-		#if($r.available("publish"))
-			$r.render("publish")
-		#end
-		#if($r.available("revision.page"))
-			$r.render("revision.page")
-		#end
-		#if($r.available("close.page"))
-			$r.render("close.page")
-		#end
-		#if($r.available("reopen.page"))
-			$r.render("reopen.page")
-		#end
+		
+		<span class="o_button_group">
+			<span class="btn-group">
+			#if($r.available("publish"))
+				$r.render("publish")
+			#end
+			#if($r.available("revision.page"))
+				$r.render("revision.page")
+			#end
+			#if($r.available("close.page"))
+				$r.render("close.page")
+			#end
+			#if($r.available("reopen.page"))
+				$r.render("reopen.page")
+			#end
+			</span>
+		</span>
 		
 		#if($r.available("userStatus"))
 			<div class="form-inline pull-right">$r.render("userStatus")</div>

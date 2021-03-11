@@ -918,9 +918,7 @@ body {
 		width: 100%;
 		
 		.tagify__tag-text {
-			//font-size: 75%;
 			font-weight: bold;
-			color: $label-color;
 		}
 		
 		&.o_textbox {
@@ -931,15 +929,7 @@ body {
 			@include transition(border-color ease-in-out .15s, box-shadow ease-in-out .15s);
 		}
 		
-		.tagify__tag {
-			line-height: $line-height-base;
-			color: $label-color;
-			text-align: center;
-			white-space: nowrap;
-			vertical-align: baseline;
-			border-radius: .25em;
-			@include label-variant($label-info-bg);
-		}
+		
 		
 		.tagify__tag.o_tag_admin>div::before {
 			box-shadow: none;
@@ -953,8 +943,29 @@ body {
 	}
 	
 	div.tagify__dropdown__item {
-		color: $label-color;
-		font-weight: bold;
-		@include label-variant($label-info-bg);
+		text-align: left;
 	}
+}
+
+.o_textbox_dropdown_item_value {
+	display: inline-block !important;
+}
+
+.o_textbox_dropdown_info {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: inline-block;
+    overflow: hidden;
+}
+.tagify__dropdown__item {
+	
+	/*white-space: nowrap;
+  width: 100%;
+  overflow: hidden;             
+
+  text-overflow: ellipsis;*/
+}
+
+.o_textbox_dropdown {
+	overflow: hidden;
 }

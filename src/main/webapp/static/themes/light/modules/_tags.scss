@@ -1,13 +1,17 @@
 .o_tag {
-	padding: 1px 6px;
-	margin-right: .25em;
-	font-weight: 700;
+	padding: 1px 3px;
+	margin-right: 2px;
+	margin-bottom: 2px;
+	font-weight: 450;
 	text-align: center;
 	white-space: nowrap;
-	border-radius: .25rem;
-	border: 2px solid $o-tag-background-color;
+	border-radius: .25em;
+	border-width: .1em;
+	border-style: solid;
+	border-color: $o-tag-background-color;
 	color: $o-tag-font-color;
 	background-color: $o-tag-background-color;
+	line-height: 1.2;
 	
 	&:hover {
 		text-decoration: none;
@@ -32,4 +36,10 @@
 	width: 100%;
 	display: inline-flex;
 	align-items: center;
+}
+
+.o_textbox_dropdown_info {
+	font-size: 75%;
+	margin-left: 1em;
+	font-weight: normal;
 }
