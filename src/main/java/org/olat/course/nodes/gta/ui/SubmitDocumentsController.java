@@ -237,7 +237,8 @@ class SubmitDocumentsController extends FormBasicController {
 			
 			FormItem download;
 			if(filename.endsWith(".html")) {
-				download = uifactory.addFormLink("view-" + CodeHelper.getRAMUniqueID(), "view", filename, null, flc, Link.LINK | Link.NONTRANSLATED);
+				String iconFilename = "<i class=\"o_icon o_icon-fw o_filetype_file o_filetype_html\"></i> " + filename;
+				download = uifactory.addFormLink("view-" + CodeHelper.getRAMUniqueID(), "view", iconFilename, null, flc, Link.LINK | Link.NONTRANSLATED);
 				download.setUserObject(filename);
 			} else {
 				download = uifactory.addDownloadLink("view-" + CodeHelper.getRAMUniqueID(), filename, null, document, tableEl);
