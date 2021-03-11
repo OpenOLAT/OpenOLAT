@@ -534,7 +534,7 @@ public class PFManager {
 			List<Identity> participants = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 			identitySet.addAll(participants);
 		} else {
-			List<Identity> participants = repositoryEntryRelationDao.getCoachedParticipants(id, re);
+			List<Identity> participants = repositoryEntryRelationDao.getRelatedMembers(re, id, GroupRoles.coach, GroupRoles.participant);
 			identitySet.addAll(participants);
 		}
 		

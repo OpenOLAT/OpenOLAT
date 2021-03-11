@@ -260,6 +260,16 @@ public interface RepositoryService {
 	 * @return A list of identities
 	 */
 	public List<Identity> getCoachedParticipants(IdentityRef coach, RepositoryEntryRef re);
+	
+	/**
+	 * The coaches the specified participant. The method is specific to
+	 * the participant role, but follow the business groups and curriculums.
+	 * 
+	 * @param participant
+	 * @param re
+	 * @return A list of identities
+	 */
+	public List<Identity> getAssignedCoaches(IdentityRef participant, RepositoryEntryRef re);
 
 	/**
 	 * Get the role in the specified resource, business group and curriculums are

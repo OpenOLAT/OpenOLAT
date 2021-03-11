@@ -666,7 +666,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getCoachedParticipants() {
+	public void getRelatedMembers_CoachedParticipants() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		// Course members
@@ -705,13 +705,13 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// Course coach coaches course participant but not group participant
-		List<Identity> courseCoachedParticipants = repositoryEntryRelationDao.getCoachedParticipants(courseCoach, entry);
+		List<Identity> courseCoachedParticipants = repositoryEntryRelationDao.getRelatedMembers(entry, courseCoach, GroupRoles.coach, GroupRoles.participant);
 		assertThat(courseCoachedParticipants)
 				.hasSize(2)
 				.containsExactlyInAnyOrder(courseParticipant1, courseParticipant2);
 		
 		// Group coach coaches group participant but not course participant
-		List<Identity> groupdParticipants = repositoryEntryRelationDao.getCoachedParticipants(groupCoach1_1, entry);
+		List<Identity> groupdParticipants = repositoryEntryRelationDao.getRelatedMembers(entry, groupCoach1_1, GroupRoles.coach, GroupRoles.participant);
 		assertThat(groupdParticipants)
 				.hasSize(2)
 				.containsExactlyInAnyOrder(groupParticipant1_1, groupParticipant1_2);
@@ -720,7 +720,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(groupCoach1_1, group2, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
-		groupdParticipants = repositoryEntryRelationDao.getCoachedParticipants(groupCoach1_1, entry);
+		groupdParticipants = repositoryEntryRelationDao.getRelatedMembers(entry, groupCoach1_1, GroupRoles.coach, GroupRoles.participant);
 		assertThat(groupdParticipants)
 				.hasSize(4)
 				.containsExactlyInAnyOrder(groupParticipant1_1, groupParticipant1_2, groupParticipant2_1, groupParticipant2_2);
@@ -729,7 +729,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(groupParticipant1_1, group2, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
-		groupdParticipants = repositoryEntryRelationDao.getCoachedParticipants(groupCoach1_1, entry);
+		groupdParticipants = repositoryEntryRelationDao.getRelatedMembers(entry, groupCoach1_1, GroupRoles.coach, GroupRoles.participant);
 		assertThat(groupdParticipants)
 				.hasSize(4)
 				.containsExactlyInAnyOrder(groupParticipant1_1, groupParticipant1_2, groupParticipant2_1, groupParticipant2_2);
@@ -738,7 +738,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(courseCoach, group1, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
-		courseCoachedParticipants = repositoryEntryRelationDao.getCoachedParticipants(courseCoach, entry);
+		courseCoachedParticipants = repositoryEntryRelationDao.getRelatedMembers(entry, courseCoach, GroupRoles.coach, GroupRoles.participant);
 		assertThat(courseCoachedParticipants)
 				.hasSize(2)
 				.containsExactlyInAnyOrder(courseParticipant1, courseParticipant2);
@@ -750,11 +750,103 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		repositoryService.addRole(courseCoach, entry2, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
-		courseCoachedParticipants = repositoryEntryRelationDao.getCoachedParticipants(courseCoach, entry);
+		courseCoachedParticipants = repositoryEntryRelationDao.getRelatedMembers(entry, courseCoach, GroupRoles.coach, GroupRoles.participant);
 		assertThat(courseCoachedParticipants)
 				.hasSize(2)
 				.containsExactlyInAnyOrder(courseParticipant1, courseParticipant2);
+	}
+	
+	@Test
+	public void getRelatedMembers_AssignedCoaches() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		
+		// Course members
+		Identity courseOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("repo-owner-1");
+		repositoryService.addRole(courseOwner, entry, GroupRoles.owner.name());
+		Identity courseParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("repo-participant-1");
+		repositoryService.addRole(courseParticipant, entry, GroupRoles.participant.name());
+		Identity courseCoach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("repo-coach-1");
+		repositoryService.addRole(courseCoach1, entry, GroupRoles.coach.name());
+		Identity courseCoach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("repo-coach-2");
+		repositoryService.addRole(courseCoach2, entry, GroupRoles.coach.name());
+		dbInstance.commitAndCloseSession();
+		
+		//Group 1 members
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "group-1", "tg", null, null, true, false, entry);
+		Identity groupOwner1_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("group-owner-1-1");
+		businessGroupRelationDao.addRole(groupOwner1_1, group1, GroupRoles.owner.name());
+		Identity groupParticipant1_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("group-participant-1-1");
+		businessGroupRelationDao.addRole(groupParticipant1_1, group1, GroupRoles.participant.name());
+		Identity groupCoach1_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("group-coach-1-1");
+		businessGroupRelationDao.addRole(groupCoach1_1, group1, GroupRoles.coach.name());
+		Identity groupCoach1_2= JunitTestHelper.createAndPersistIdentityAsRndUser("group-coach-1-1");
+		businessGroupRelationDao.addRole(groupCoach1_2, group1, GroupRoles.coach.name());
+		dbInstance.commitAndCloseSession();
+		
+		//Group 2 members
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "group-2", "tg", null, null, true, false, entry);
+		Identity groupOwner2_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("group-owner-2-1");
+		businessGroupRelationDao.addRole(groupOwner2_1, group2, GroupRoles.owner.name());
+		Identity groupParticipant2_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("group-participant-2-1");
+		businessGroupRelationDao.addRole(groupParticipant2_1, group2, GroupRoles.participant.name());
+		Identity groupCoach2_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("group-coach-2-1");
+		businessGroupRelationDao.addRole(groupCoach2_1, group2, GroupRoles.coach.name());
+		Identity groupCoach2_2= JunitTestHelper.createAndPersistIdentityAsRndUser("group-coach-2-1");
+		businessGroupRelationDao.addRole(groupCoach2_2, group2, GroupRoles.coach.name());
+		dbInstance.commitAndCloseSession();
+		
+		// Course participant participantes course coach but not group coach
+		List<Identity> courseParticipantedCoachs = repositoryEntryRelationDao.getRelatedMembers(entry,
+				courseParticipant, GroupRoles.participant, GroupRoles.coach);
+		assertThat(courseParticipantedCoachs)
+				.hasSize(2)
+				.containsExactlyInAnyOrder(courseCoach1, courseCoach2);
+		
+		// Group participant participantes group coach but not course coach
+		List<Identity> groupdCoachs = repositoryEntryRelationDao.getRelatedMembers(entry, groupParticipant1_1,
+				GroupRoles.participant, GroupRoles.coach);
+		assertThat(groupdCoachs)
+				.hasSize(2)
+				.containsExactlyInAnyOrder(groupCoach1_1, groupCoach1_2);
+		
+		// Participant of group 1 is now participant of group 2 as well
+		businessGroupRelationDao.addRole(groupParticipant1_1, group2, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		groupdCoachs = repositoryEntryRelationDao.getRelatedMembers(entry, groupParticipant1_1, GroupRoles.participant, GroupRoles.coach);
+		assertThat(groupdCoachs)
+				.hasSize(4)
+				.containsExactlyInAnyOrder(groupCoach1_1, groupCoach1_2, groupCoach2_1, groupCoach2_2);
+		
+		// Coach of group 1 is now member of group 2 as well. Get it only once.
+		businessGroupRelationDao.addRole(groupCoach1_1, group2, GroupRoles.coach.name());
+		dbInstance.commitAndCloseSession();
+		
+		groupdCoachs = repositoryEntryRelationDao.getRelatedMembers(entry, groupParticipant1_1, GroupRoles.participant, GroupRoles.coach);
+		assertThat(groupdCoachs)
+				.hasSize(4)
+				.containsExactlyInAnyOrder(groupCoach1_1, groupCoach1_2, groupCoach2_1, groupCoach2_2);
+		
+		// Course participant is now coach of group 1. He still participantes only the course coachs
+		businessGroupRelationDao.addRole(courseParticipant, group1, GroupRoles.coach.name());
+		dbInstance.commitAndCloseSession();
+		
+		courseParticipantedCoachs = repositoryEntryRelationDao.getRelatedMembers(entry, courseParticipant, GroupRoles.participant, GroupRoles.coach);
+		assertThat(courseParticipantedCoachs)
+				.hasSize(2)
+				.containsExactlyInAnyOrder(courseCoach1, courseCoach2);
+		
+		// Participant of course is participant of an other repo. Don't get the coachs of the of the repo.
+		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity course2Coach = JunitTestHelper.createAndPersistIdentityAsRndUser("repo-coach-122");
+		repositoryService.addRole(course2Coach, entry2, GroupRoles.coach.name());
+		repositoryService.addRole(courseParticipant, entry2, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		courseParticipantedCoachs = repositoryEntryRelationDao.getRelatedMembers(entry, courseParticipant, GroupRoles.participant, GroupRoles.coach);
+		assertThat(courseParticipantedCoachs)
+				.hasSize(2)
+				.containsExactlyInAnyOrder(courseCoach1, courseCoach2);
 	}
 	
 	@Test
