@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.members.ui.group;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -63,8 +66,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class MembersSelectorFormFragment extends FormBasicController {
 	
 	private static final String[] onKeys = new String[]{ "xx" };
-	private static final String[] memberWithoutCurriculumKeys = new String[]{"all", "course", "group" };
-	private static final String[] memberWithCurriculumKeys = new String[]{"all", "course", "group", "curriculumElement" };
+	private static final String MEMEBER_KEY_ALL = "all";
+	private static final String MEMEBER_KEY_COURSE = "course";
+	private static final String MEMEBER_KEY_GROUP = "group";
+	private static final String MEMEBER_KEY_CURRICULUM_ELEMENT = "curriculumElement";
+	private static final String MEMEBER_KEY_ASSIGNED = "assigned";
 
 	// Coaches
 	private SelectionElement wantCoaches;
@@ -98,9 +104,13 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 	private CurriculumElementSelectionController curriculumElementsChooseParticipants;
 	private StaticTextElement easyCurriculumElementParticipantsSelectionList;
 	
-
 	// Popup form
 	private CloseableModalController cmc;
+
+	private final boolean withCurriculum;
+	private final boolean withAssignedCoaches;
+	private final CourseEditorEnv cev;
+	protected final ModuleConfiguration config;
 	
 	@Autowired
 	private BGAreaManager areaManager;
@@ -110,44 +120,15 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 	private CurriculumService curriculumService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-
-	private final boolean withCurriculum;
-	private final String[] membersKeys;
-	private final String[] membersCoachesValues;
-	private final String[] membersParticipantsValues;
-	
-	private final CourseEditorEnv cev;
-	protected final ModuleConfiguration config;
 	
 	public MembersSelectorFormFragment(UserRequest ureq, WindowControl wControl,
-			CourseEditorEnv cev, ModuleConfiguration config, boolean withCurriculum) {
+			CourseEditorEnv cev, ModuleConfiguration config, boolean withCurriculum, boolean withAssignedCoaches) {
 		super(ureq, wControl, Util.createPackageTranslator(MembersSelectorFormFragment.class, ureq.getLocale()));
 		this.cev = cev;
 		this.config = config;
+		this.withAssignedCoaches = withAssignedCoaches;
 		this.withCurriculum = withCurriculum && curriculumModule.isEnabled()
 				&& !cev.getCourseGroupManager().getAllCurriculumElements().isEmpty();
-		
-		if(this.withCurriculum) {
-			membersKeys = memberWithCurriculumKeys;
-			membersCoachesValues = new String[] {
-					translate("form.message.coaches.all"), translate("form.message.coaches.course"),
-					translate("form.message.coaches.group"), translate("form.message.coaches.curriculum.element")
-				};
-			membersParticipantsValues = new String[]{
-					translate("form.message.participants.all"), translate("form.message.participants.course"),
-					translate("form.message.participants.group"), translate("form.message.participants.curriculum.element")
-				};
-		} else {
-			membersKeys = memberWithoutCurriculumKeys;
-			membersCoachesValues = new String[] {
-					translate("form.message.coaches.all"), translate("form.message.coaches.course"),
-					translate("form.message.coaches.group")
-				};
-			membersParticipantsValues = new String[]{
-					translate("form.message.participants.all"), translate("form.message.participants.course"),
-					translate("form.message.participants.group")
-				};
-		}
 		
 		initForm(ureq);
 		validateFormLogic(ureq);
@@ -155,34 +136,47 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
-		Boolean coacheSelection = config.getBooleanSafe(getConfigKeyCoachesAll())
+		// COACHES
+		boolean coacheSelection = config.getBooleanSafe(getConfigKeyCoachesAll())
 				|| config.getBooleanSafe(getConfigKeyCoachesCourse())
+				|| config.getBooleanSafe(getConfigKeyCoachesAssigned())
 				|| config.get(getConfigKeyCoachesGroup()) != null
 				|| config.get(getConfigKeyCoachesArea()) != null
 				|| config.get(getConfigKeyCoachesCurriculumElement()) != null;
-
-		// COACHES: from course or groups
+		
 		wantCoaches = uifactory.addCheckboxesHorizontal("coaches", "message.want.coaches", formLayout, onKeys, new String[]{ "" });
 		wantCoaches.setElementCssClass("o_sel_config_want_coaches");
-		if(coacheSelection != null && coacheSelection) {
+		if(coacheSelection) {
 			wantCoaches.select("xx", true);
 		}
 		wantCoaches.addActionListener(FormEvent.ONCLICK);
 		
-		coachesChoice = uifactory.addRadiosVertical("coachesChoice", null, formLayout, membersKeys, membersCoachesValues);
+		KeyValues coachesKV = new KeyValues();
+		coachesKV.add(entry(MEMEBER_KEY_ALL, translate("form.message.coaches.all")));
+		if (withAssignedCoaches) {
+			coachesKV.add(entry(MEMEBER_KEY_ASSIGNED, translate("form.message.coaches.assigned")));
+		}
+		coachesKV.add(entry(MEMEBER_KEY_COURSE, translate("form.message.coaches.course")));
+		coachesKV.add(entry(MEMEBER_KEY_GROUP, translate("form.message.coaches.group")));
+		if (withCurriculum) {
+			coachesKV.add(entry(MEMEBER_KEY_CURRICULUM_ELEMENT, translate("form.message.coaches.curriculum.element")));
+		}
+		coachesChoice = uifactory.addRadiosVertical("coachesChoice", null, formLayout, coachesKV.keys(), coachesKV.values());
 		coachesChoice.setElementCssClass("o_sel_config_coaches");
 		if(config.getBooleanSafe(getConfigKeyCoachesAll())) {
-			coachesChoice.select("all", true);
+			coachesChoice.select(MEMEBER_KEY_ALL, true);
 		}
 		if(config.getBooleanSafe(getConfigKeyCoachesCourse())) {
-			coachesChoice.select("course", true);
+			coachesChoice.select(MEMEBER_KEY_COURSE, true);
 		}
 		if(config.get(getConfigKeyCoachesGroup()) != null || config.get(getConfigKeyCoachesArea()) != null) {
-			coachesChoice.select("group", true);
+			coachesChoice.select(MEMEBER_KEY_GROUP, true);
 		}
 		if(config.get(getConfigKeyCoachesCurriculumElement()) != null) {
-			coachesChoice.select("curriculumElement", true);
+			coachesChoice.select(MEMEBER_KEY_CURRICULUM_ELEMENT, true);
+		}
+		if(config.getBooleanSafe(getConfigKeyCoachesAssigned())) {
+			coachesChoice.select(MEMEBER_KEY_ASSIGNED, true);
 		}
 		coachesChoice.addActionListener(FormEvent.ONCLICK);
 		coachesChoice.setVisible(false);
@@ -247,10 +241,10 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		easyCurriculumElementCoachesSelectionList.setUserObject(curriculumElementsCoachesKeys);
 		easyCurriculumElementCoachesSelectionList.setVisible(false);
 		easyCurriculumElementCoachesSelectionList.setElementCssClass("text-muted");
-				
 		
-		// PARTICIPANTS: from course or groups
-		Boolean particiapntSelection = config.getBooleanSafe(getConfigKeyParticipantsAll())
+		
+		// PARTICIPANTS
+		boolean particiapntSelection = config.getBooleanSafe(getConfigKeyParticipantsAll())
 				|| config.getBooleanSafe(getConfigKeyParticipantsCourse())
 				|| config.get(getConfigKeyParticipantsGroup()) != null
 				|| config.get(getConfigKeyParticipantsArea()) != null
@@ -258,22 +252,29 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		
 		wantParticipants = uifactory.addCheckboxesHorizontal("participants", "message.want.participants", formLayout, onKeys,new String[]{null});
 		wantParticipants.setElementCssClass("o_sel_config_want_participants");
-		if(particiapntSelection != null && particiapntSelection) wantParticipants.select("xx", true);
+		if(particiapntSelection) wantParticipants.select("xx", true);
 		wantParticipants.addActionListener(FormEvent.ONCLICK);
 		
-		participantsChoice = uifactory.addRadiosVertical("participantsChoice", null, formLayout, membersKeys, membersParticipantsValues);
+		KeyValues participantKV = new KeyValues();
+		participantKV.add(entry(MEMEBER_KEY_ALL, translate("form.message.participants.all")));
+		participantKV.add(entry(MEMEBER_KEY_COURSE, translate("form.message.participants.course")));
+		participantKV.add(entry(MEMEBER_KEY_GROUP, translate("form.message.participants.group")));
+		if (withCurriculum) {
+			participantKV.add(entry(MEMEBER_KEY_CURRICULUM_ELEMENT, translate("form.message.participants.curriculum.element")));
+		}
+		participantsChoice = uifactory.addRadiosVertical("participantsChoice", null, formLayout, participantKV.keys(), participantKV.values());
 		participantsChoice.setElementCssClass("o_sel_config_participants");
 		if(config.getBooleanSafe(getConfigKeyParticipantsAll())) {
-			participantsChoice.select("all", true);
+			participantsChoice.select(MEMEBER_KEY_ALL, true);
 		}
 		if(config.getBooleanSafe(getConfigKeyParticipantsCourse())) {
-			participantsChoice.select("course", true);
+			participantsChoice.select(MEMEBER_KEY_COURSE, true);
 		}
 		if(config.get(getConfigKeyParticipantsGroup()) != null || config.get(getConfigKeyParticipantsArea()) != null) {
-			participantsChoice.select("group", true);
+			participantsChoice.select(MEMEBER_KEY_GROUP, true);
 		}
 		if(config.get(getConfigKeyParticipantsCurriculumElement()) != null) {
-			participantsChoice.select("curriculumElement", true);
+			participantsChoice.select(MEMEBER_KEY_CURRICULUM_ELEMENT, true);
 		}
 		
 		participantsChoice.addActionListener(FormEvent.ONCLICK);
@@ -346,22 +347,28 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 	
 	protected void update() {
 		// coaches
-		coachesChoice.setVisible(wantCoaches.isSelected(0));
-		chooseGroupCoachesLink.setVisible(coachesChoice.isSelected(2) && wantCoaches.isSelected(0));
-		chooseAreasCoachesLink.setVisible(coachesChoice.isSelected(2) && wantCoaches.isSelected(0));
-		chooseCurriculumElementsCoachesLink.setVisible(coachesChoice.isSelected(3) && wantCoaches.isSelected(0));
-		easyGroupCoachSelectionList.setVisible(coachesChoice.isSelected(2) && wantCoaches.isSelected(0));
-		easyAreaCoachSelectionList.setVisible(coachesChoice.isSelected(2) && wantCoaches.isSelected(0));
-		easyCurriculumElementCoachesSelectionList.setVisible(coachesChoice.isSelected(3) && wantCoaches.isSelected(0));
+		boolean coachesSelected = wantCoaches.isSelected(0);
+		boolean coachesGroup = coachesChoice.isOneSelected() && MEMEBER_KEY_GROUP.equals(coachesChoice.getSelectedKey());
+		boolean coachesCurriculumElement = coachesChoice.isOneSelected() && MEMEBER_KEY_CURRICULUM_ELEMENT.equals(coachesChoice.getSelectedKey());
+		coachesChoice.setVisible(coachesSelected);
+		chooseGroupCoachesLink.setVisible(coachesSelected && coachesGroup);
+		chooseAreasCoachesLink.setVisible(coachesSelected && coachesGroup);
+		chooseCurriculumElementsCoachesLink.setVisible(coachesSelected && coachesCurriculumElement);
+		easyGroupCoachSelectionList.setVisible(coachesSelected && coachesGroup);
+		easyAreaCoachSelectionList.setVisible(coachesSelected && coachesGroup);
+		easyCurriculumElementCoachesSelectionList.setVisible(coachesSelected && coachesCurriculumElement);
 
 		// participants
-		participantsChoice.setVisible(wantParticipants.isSelected(0));
-		chooseGroupParticipantsLink.setVisible(participantsChoice.isSelected(2) && wantParticipants.isSelected(0));
-		chooseAreasParticipantsLink.setVisible(participantsChoice.isSelected(2) && wantParticipants.isSelected(0));
-		chooseCurriculumElementsParticipantsLink.setVisible(participantsChoice.isSelected(3) && wantParticipants.isSelected(0));
-		easyGroupParticipantsSelectionList.setVisible(participantsChoice.isSelected(2) && wantParticipants.isSelected(0));
-		easyAreaParticipantsSelectionList.setVisible(participantsChoice.isSelected(2) && wantParticipants.isSelected(0));
-		easyCurriculumElementParticipantsSelectionList.setVisible(participantsChoice.isSelected(3) && wantParticipants.isSelected(0));
+		boolean participantsSelected = wantParticipants.isSelected(0);
+		boolean participantsGroup = participantsChoice.isOneSelected() && MEMEBER_KEY_GROUP.equals(participantsChoice.getSelectedKey());
+		boolean participantsCurriculumElement = participantsChoice.isOneSelected() && MEMEBER_KEY_CURRICULUM_ELEMENT.equals(participantsChoice.getSelectedKey());
+		participantsChoice.setVisible(participantsSelected);
+		chooseGroupParticipantsLink.setVisible(participantsSelected && participantsGroup);
+		chooseAreasParticipantsLink.setVisible(participantsSelected && participantsGroup);
+		chooseCurriculumElementsParticipantsLink.setVisible(participantsSelected && participantsCurriculumElement);
+		easyGroupParticipantsSelectionList.setVisible(participantsSelected && participantsGroup);
+		easyAreaParticipantsSelectionList.setVisible(participantsSelected && participantsGroup);
+		easyCurriculumElementParticipantsSelectionList.setVisible(participantsSelected && participantsCurriculumElement);
 		
 		easyGroupParticipantsSelectionList.clearError();
 		easyAreaParticipantsSelectionList.clearError();
@@ -371,7 +378,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		coachesChoice.clearError();
 		participantsChoice.clearError();
 		
-		setNeedsLayout();
+		flc.setDirty(true);
 	}
 	
 	@Override
@@ -504,7 +511,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 				easyGroupCoachSelectionList.setValue(getGroupNames(groupChooseCoaches.getSelectedKeys()));
 				easyGroupCoachSelectionList.setUserObject(groupChooseCoaches.getSelectedKeys());
 				chooseGroupCoachesLink.setI18nKey("groupCoachesChoose");
-				setNeedsLayout();
+				flc.setDirty(true);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -513,7 +520,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 				easyAreaCoachSelectionList.setValue(getAreaNames(areaChooseCoaches.getSelectedKeys()));
 				easyAreaCoachSelectionList.setUserObject(areaChooseCoaches.getSelectedKeys());
 				chooseAreasCoachesLink.setI18nKey("areaCoachesChoose");
-				setNeedsLayout();
+				flc.setDirty(true);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -522,7 +529,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 				easyGroupParticipantsSelectionList.setValue(getGroupNames(groupChooseParticipants.getSelectedKeys()));
 				easyGroupParticipantsSelectionList.setUserObject(groupChooseParticipants.getSelectedKeys());
 				chooseGroupParticipantsLink.setI18nKey("groupParticipantsChoose");
-				setNeedsLayout();
+				flc.setDirty(true);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -531,7 +538,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 				easyAreaParticipantsSelectionList.setValue(getAreaNames(areaChooseParticipants.getSelectedKeys()));
 				easyAreaParticipantsSelectionList.setUserObject(areaChooseParticipants.getSelectedKeys());
 				chooseAreasParticipantsLink.setI18nKey("areaParticipantsChoose");
-				setNeedsLayout();
+				flc.setDirty(true);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -540,7 +547,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 				easyCurriculumElementCoachesSelectionList.setValue(getCurriculumElementNames(curriculumElementsChooseCoaches.getSelectedKeys()));
 				easyCurriculumElementCoachesSelectionList.setUserObject(curriculumElementsChooseCoaches.getSelectedKeys());
 				chooseCurriculumElementsCoachesLink.setI18nKey("curriculumElementsCoachesChoose");
-				setNeedsLayout();
+				flc.setDirty(true);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -549,7 +556,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 				easyCurriculumElementParticipantsSelectionList.setValue(getCurriculumElementNames(curriculumElementsChooseParticipants.getSelectedKeys()));
 				easyCurriculumElementParticipantsSelectionList.setUserObject(curriculumElementsChooseParticipants.getSelectedKeys());
 				chooseCurriculumElementsParticipantsLink.setI18nKey("curriculumElementsParticipantsChoose");
-				setNeedsLayout();
+				flc.setDirty(true);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -662,28 +669,28 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 	}
 	
 	protected String getGroupCoaches() {
-		if (!isEmpty(easyGroupCoachSelectionList) && wantCoaches.isSelected(0) && coachesChoice.isSelected(2)) {
+		if (!isEmpty(easyGroupCoachSelectionList) && wantCoaches.isSelected(0) && coachesChoice.isOneSelected() && MEMEBER_KEY_GROUP.equals(coachesChoice.getSelectedKey())) {
 			return easyGroupCoachSelectionList.getValue();
 		}
 		return null;
 	}
 	
 	protected List<Long> getGroupCoachesIds() {
-		if (!isEmpty(easyGroupCoachSelectionList) && wantCoaches.isSelected(0) && coachesChoice.isSelected(2)) {
+		if (!isEmpty(easyGroupCoachSelectionList) && wantCoaches.isSelected(0) && coachesChoice.isOneSelected()  && MEMEBER_KEY_GROUP.equals(coachesChoice.getSelectedKey())) {
 			return getKeys(easyGroupCoachSelectionList);
 		}
 		return null;
 	}
 	
 	protected String getGroupParticipants() {
-		if (!isEmpty(easyGroupParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isSelected(2)) {
+		if (!isEmpty(easyGroupParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isOneSelected() && MEMEBER_KEY_GROUP.equals(participantsChoice.getSelectedKey())) {
 			return easyGroupParticipantsSelectionList.getValue();
 		}
 		return null;
 	}
 	
 	protected List<Long> getGroupParticipantsIds() {
-		if (!isEmpty(easyGroupParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isSelected(2)) {
+		if (!isEmpty(easyGroupParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isOneSelected() && MEMEBER_KEY_GROUP.equals(participantsChoice.getSelectedKey())) {
 			return getKeys(easyGroupParticipantsSelectionList);
 		}
 		return null;
@@ -693,49 +700,49 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 	 * returns the chosen learning areas, or null if no ares were chosen.
 	 */
 	protected String getCoachesAreas() {
-		if(!isEmpty(easyAreaCoachSelectionList) && wantCoaches.isSelected(0) && coachesChoice.isSelected(2)) {
+		if(!isEmpty(easyAreaCoachSelectionList) && wantCoaches.isSelected(0) && coachesChoice.isOneSelected() && MEMEBER_KEY_GROUP.equals(coachesChoice.getSelectedKey())) {
 			return easyAreaCoachSelectionList.getValue();
 		}
 		return null;
 	}
 	
 	protected List<Long> getCoachesAreaIds() {
-		if(!isEmpty(easyAreaCoachSelectionList) && wantCoaches.isSelected(0) && coachesChoice.isSelected(2)) {
+		if(!isEmpty(easyAreaCoachSelectionList) && wantCoaches.isSelected(0) && coachesChoice.isOneSelected() && MEMEBER_KEY_GROUP.equals(coachesChoice.getSelectedKey())) {
 			return getKeys(easyAreaCoachSelectionList);
 		}
 		return null;
 	}
 
 	protected String getParticipantsAreas() {
-		if(!isEmpty(easyAreaParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isSelected(2)) {
+		if(!isEmpty(easyAreaParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isOneSelected() && MEMEBER_KEY_GROUP.equals(participantsChoice.getSelectedKey())) {
 			return easyAreaParticipantsSelectionList.getValue();
 		}
 		return null;
 	}
 	
 	protected String getCoachesCurriculumElements() {
-		if (!isEmpty(easyCurriculumElementCoachesSelectionList) && wantCoaches.isSelected(0) && coachesChoice.isSelected(3)) {
+		if (!isEmpty(easyCurriculumElementCoachesSelectionList) && wantCoaches.isSelected(0) && participantsChoice.isOneSelected() && MEMEBER_KEY_CURRICULUM_ELEMENT.equals(coachesChoice.getSelectedKey())) {
 			return easyCurriculumElementCoachesSelectionList.getValue();
 		}
 		return null;
 	}
 	
 	protected List<Long> getCoachesCurriculumElementIds() {
-		if (!isEmpty(easyCurriculumElementCoachesSelectionList) && wantCoaches.isSelected(0) && coachesChoice.isSelected(3)) {
+		if (!isEmpty(easyCurriculumElementCoachesSelectionList) && wantCoaches.isSelected(0) && coachesChoice.isOneSelected() && MEMEBER_KEY_CURRICULUM_ELEMENT.equals(coachesChoice.getSelectedKey())) {
 			return getKeys(easyCurriculumElementCoachesSelectionList);
 		}
 		return null;
 	}
 	
 	protected String getParticipantsCurriculumElements() {
-		if (!isEmpty(easyCurriculumElementParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isSelected(3)) {
+		if (!isEmpty(easyCurriculumElementParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isOneSelected() && MEMEBER_KEY_CURRICULUM_ELEMENT.equals(participantsChoice.getSelectedKey())) {
 			return easyCurriculumElementParticipantsSelectionList.getValue();
 		}
 		return null;
 	}
 	
 	protected List<Long> getCurriculumElementParticipantsIds() {
-		if (!isEmpty(easyCurriculumElementParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isSelected(3)) {
+		if (!isEmpty(easyCurriculumElementParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isOneSelected() && MEMEBER_KEY_CURRICULUM_ELEMENT.equals(participantsChoice.getSelectedKey())) {
 			return getKeys(easyCurriculumElementParticipantsSelectionList);
 		}
 		return null;
@@ -746,31 +753,35 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 	}
 	
 	public boolean sendToCoachesCourse(){
-		return coachesChoice.isSelected(1) && wantCoaches.isSelected(0);
+		return wantCoaches.isSelected(0) && coachesChoice.isOneSelected() && coachesChoice.isOneSelected() && MEMEBER_KEY_COURSE.equals(coachesChoice.getSelectedKey());
+	}
+	
+	public boolean sendToCoachesAssigned(){
+		return wantCoaches.isSelected(0) && coachesChoice.isOneSelected() && coachesChoice.isOneSelected() && MEMEBER_KEY_ASSIGNED.equals(coachesChoice.getSelectedKey());
 	}
 	
 	protected boolean sendToCoachesAll(){
-		return coachesChoice.isSelected(0) && wantCoaches.isSelected(0);
+		return wantCoaches.isSelected(0) && coachesChoice.isOneSelected() && coachesChoice.isOneSelected() && MEMEBER_KEY_ALL.equals(coachesChoice.getSelectedKey());
 	}
 	
 	protected boolean sendToCoachesGroup(){
-		return coachesChoice.isSelected(2) && wantCoaches.isSelected(0);
+		return wantCoaches.isSelected(0) && coachesChoice.isOneSelected() && coachesChoice.isOneSelected() && MEMEBER_KEY_GROUP.equals(coachesChoice.getSelectedKey());
 	}
 	
 	protected boolean sendToParticipantsCourse(){
-		return participantsChoice.isSelected(1) && wantParticipants.isSelected(0);
+		return wantParticipants.isSelected(0) && participantsChoice.isOneSelected() && participantsChoice.isOneSelected() && MEMEBER_KEY_COURSE.equals(participantsChoice.getSelectedKey());
 	}
 	
 	protected boolean sendToParticipantsAll(){
-		return participantsChoice.isSelected(0) && wantParticipants.isSelected(0);
+		return wantParticipants.isSelected(0) && participantsChoice.isOneSelected() && participantsChoice.isOneSelected() && MEMEBER_KEY_ALL.equals(participantsChoice.getSelectedKey());
 	}
 	
 	protected boolean sendToParticipantsGroup(){
-		return participantsChoice.isSelected(2) && wantParticipants.isSelected(0);
+		return wantParticipants.isSelected(0) && participantsChoice.isOneSelected() && participantsChoice.isOneSelected() && MEMEBER_KEY_GROUP.equals(participantsChoice.getSelectedKey());
 	}
 	
 	protected List<Long> getParticipantsAreaIds() {
-		if(!isEmpty(easyAreaParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isSelected(2)) {
+		if(!isEmpty(easyAreaParticipantsSelectionList) && wantParticipants.isSelected(0) && participantsChoice.isOneSelected() && MEMEBER_KEY_GROUP.equals(participantsChoice.getSelectedKey())) {
 			return getKeys(easyAreaParticipantsSelectionList);
 		}
 		return null;
@@ -789,6 +800,9 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		configToStore.set(getConfigKeyCoachesCurriculumElementIds(), getCoachesCurriculumElementIds());
 		configToStore.setBooleanEntry(getConfigKeyCoachesAll(), sendToCoachesAll());
 		configToStore.setBooleanEntry(getConfigKeyCoachesCourse(), sendToCoachesCourse());
+		if (getConfigKeyCoachesAssigned() != null) {
+			configToStore.setBooleanEntry(getConfigKeyCoachesAssigned(), sendToCoachesAssigned());
+		}
 		
 		configToStore.set(getConfigKeyParticipantsGroup(), getGroupParticipants());
 		configToStore.set(getConfigKeyParticipantsGroupIds(), getGroupParticipantsIds());
@@ -810,6 +824,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 	protected abstract String getConfigKeyCoachesCurriculumElementIds();
 	
 	protected abstract String getConfigKeyCoachesCourse();
+	protected abstract String getConfigKeyCoachesAssigned();
 	protected abstract String getConfigKeyCoachesAll();
 
 	protected abstract String getConfigKeyParticipantsGroup();

@@ -67,7 +67,7 @@ public class MembersConfigForm extends MembersSelectorFormFragment {
 	 */
 	protected MembersConfigForm(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment euce, ModuleConfiguration config) {
-		super(ureq, wControl, euce.getCourseEditorEnv(), config, true);
+		super(ureq, wControl, euce.getCourseEditorEnv(), config, true, false);
 	}
 
 	@Override
@@ -103,6 +103,11 @@ public class MembersConfigForm extends MembersSelectorFormFragment {
 	@Override
 	protected String getConfigKeyCoachesCourse() {
 		return MembersCourseNode.CONFIG_KEY_COACHES_COURSE;
+	}
+	
+	@Override
+	protected String getConfigKeyCoachesAssigned() {
+		return null;
 	}
 
 	@Override

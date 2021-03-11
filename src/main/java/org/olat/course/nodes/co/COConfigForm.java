@@ -74,7 +74,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 	 */
 	protected COConfigForm(UserRequest ureq, WindowControl wControl,
 			ModuleConfiguration config, UserCourseEnvironment uce) {
-		super(ureq, wControl, uce.getCourseEditorEnv(), config, false);
+		super(ureq, wControl, uce.getCourseEditorEnv(), config, false, true);
 	}
 
 	@Override
@@ -110,6 +110,11 @@ public class COConfigForm extends MembersSelectorFormFragment {
 	@Override
 	protected String getConfigKeyCoachesCourse() {
 		return COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE;
+	}
+
+	@Override
+	protected String getConfigKeyCoachesAssigned() {
+		return COEditController.CONFIG_KEY_EMAILTOCOACHES_ASSIGNED;
 	}
 
 	@Override

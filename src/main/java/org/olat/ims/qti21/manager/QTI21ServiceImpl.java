@@ -355,6 +355,15 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	        internalLoadAndResolveAssessmentTest(resourceDirectory, assessmentObjectSystemId));
 	}
 	
+	@Override
+	public ResolvedAssessmentTest loadAndResolveAssessmentTestNoCache(File resourceDirectory) {
+		URI assessmentObjectSystemId = createAssessmentTestUri(resourceDirectory);
+        if(assessmentObjectSystemId == null) {
+        	return null;
+        }
+		return  internalLoadAndResolveAssessmentTest(resourceDirectory, assessmentObjectSystemId);
+	}
+	
 	private ResolvedAssessmentTest internalLoadAndResolveAssessmentTest(File resourceDirectory, URI assessmentObjectSystemId) {
 		QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
 		ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());

@@ -80,6 +80,8 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_EMAILTOCOACHES_ALL = "emailToCoachesAll";
 	/** config key: email goes to course coaches */
 	public static final String CONFIG_KEY_EMAILTOCOACHES_COURSE = "emailToCourseCoaches";
+	/** config key: email goes to assigned coaches */
+	public static final String CONFIG_KEY_EMAILTOCOACHES_ASSIGNED = "emailToAssignedCoaches";
 	/** config key: email goes to course owners */
 	public static final String CONFIG_KEY_EMAILTOOWNERS = "emailToOwners";
 	/** config key: email goes to email address */

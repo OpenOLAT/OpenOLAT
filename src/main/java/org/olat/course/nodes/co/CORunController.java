@@ -49,6 +49,7 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailContent;
 import org.olat.core.util.mail.MailManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.members.ui.group.MembersSelectorFormFragment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -99,6 +100,7 @@ public class CORunController extends BasicController {
 		//set translator with fall back translator.
 		Translator fallback = Util.createPackageTranslator(ContactFormController.class, ureq.getLocale());
 		setTranslator(Util.createPackageTranslator(CORunController.class, ureq.getLocale(), fallback));
+		setTranslator(Util.createPackageTranslator(MembersSelectorFormFragment.class, ureq.getLocale(), getTranslator()));
 		
 		List<String> emailListConfig = moduleConfiguration.getList(COEditController.CONFIG_KEY_EMAILTOADRESSES, String.class);
 		String mSubject = (String) moduleConfiguration.get(COEditController.CONFIG_KEY_MSUBJECT_DEFAULT);
@@ -109,6 +111,7 @@ public class CORunController extends BasicController {
 		Boolean participantsCourseConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE);
 		Boolean participantsAllConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL);
 		Boolean coachesCourseConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE);
+		Boolean coachesAssignedConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ASSIGNED);
 		Boolean coachesAllConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL);
 		Boolean ownersConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS);
 		
@@ -169,6 +172,9 @@ public class CORunController extends BasicController {
 			contactLists.push(cl);
 		} else if (coachesCourseConfigured != null && coachesCourseConfigured.booleanValue()){
 			ContactList cl = retrieveCoachesFromCourse();
+			contactLists.push(cl);
+		} else if (coachesAssignedConfigured != null && coachesAssignedConfigured.booleanValue()){
+			ContactList cl = retrieveAssignedCoaches();
 			contactLists.push(cl);
 		}
 		
@@ -267,6 +273,23 @@ public class CORunController extends BasicController {
 		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
 		cl.addAllIdentites(coaches);
 		cl.addAllIdentites(curriculumCoaches);
+		return cl;
+	}
+
+	private ContactList retrieveAssignedCoaches() {
+		List<Identity> coaches = repositoryService.getAssignedCoaches(getIdentity(), cgm.getCourseEntry());
+		
+		// Fallback: Course coaches
+		if (coaches.isEmpty()) {
+			coaches = repositoryService.getMembers(cgm.getCourseEntry(), RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name());
+		}
+		// Fallback: Course owners
+		if (coaches.isEmpty()) {
+			coaches = repositoryService.getMembers(cgm.getCourseEntry(), RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
+		}
+		
+		ContactList cl = new ContactList(translate("form.message.coaches.assigned"));
+		cl.addAllIdentites(coaches);
 		return cl;
 	}
 

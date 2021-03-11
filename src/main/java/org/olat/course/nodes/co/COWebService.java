@@ -181,6 +181,7 @@ public class COWebService extends AbstractCourseNodeWebService {
 			@FormParam("accessExpertRules") String accessExpertRules,
 			@FormParam("coachesAll") @DefaultValue("false") boolean coachesAll,
 			@FormParam("courseCoaches") @DefaultValue("false") boolean coachesCourse,
+			@FormParam("assignedCoaches") @DefaultValue("false") boolean coachesAssigned,
 			@FormParam("coachesGroup") String coachesGroups,
 			@FormParam("coachesArea") String coachesAreas,
 			@FormParam("participantsAll") @DefaultValue("false") boolean participantsAll,
@@ -191,7 +192,7 @@ public class COWebService extends AbstractCourseNodeWebService {
 			@FormParam("defaultSubject") String defaultSubject, 
 			@FormParam("defaultBody") String defaultBody,
 			@Context HttpServletRequest request) {
-		ContactConfigDelegate config = new ContactConfigDelegate(coachesAll,coachesCourse, coachesGroups, coachesAreas, participantsAll, participantsCourse, participantsGroups, participantsAreas,to, defaultSubject, defaultBody);
+		ContactConfigDelegate config = new ContactConfigDelegate(coachesAll,coachesCourse, coachesAssigned, coachesGroups, coachesAreas, participantsAll, participantsCourse, participantsGroups, participantsAreas,to, defaultSubject, defaultBody);
 		return attach(courseId, parentNodeId, "co", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
@@ -207,6 +208,7 @@ public class COWebService extends AbstractCourseNodeWebService {
 		
 		private Boolean coachesAll;
 		private Boolean coachesCourse;
+		private Boolean coachesAssigned;
 		private List<String> coachesGroups; 
 		private List<String> coachesAreas; 
 		private Boolean participantsAll; 
@@ -238,9 +240,10 @@ public class COWebService extends AbstractCourseNodeWebService {
 			this.defaultBody = defaultBody;
 		}
 		
-		public ContactConfigDelegate(Boolean coachesAll, Boolean coachesCourse, String coachesGroups, String coachesAreas, Boolean participantsAll, Boolean participantsCourse, String participantsGroups, String participantsAreas, String to, String defaultSubject, String defaultBody){
+		public ContactConfigDelegate(Boolean coachesAll, Boolean coachesCourse, Boolean coachesAssigned, String coachesGroups, String coachesAreas, Boolean participantsAll, Boolean participantsCourse, String participantsGroups, String participantsAreas, String to, String defaultSubject, String defaultBody){
 			this.coachesAll = coachesAll;
 			this.coachesCourse = coachesCourse;
+			this.coachesAssigned = coachesAssigned;
 			this.coachesGroups = getGroupNames(coachesGroups);
 			this.coachesAreas = getGroupNames(coachesAreas);
 			this.participantsAll = participantsAll;
@@ -267,6 +270,7 @@ public class COWebService extends AbstractCourseNodeWebService {
 			}else{
 				ok = ok || coachesAll;
 				ok = ok || coachesCourse;
+				ok = ok || coachesAssigned;
 				ok = ok || participantsAll;
 				ok = ok || participantsCourse;
 				ok = ok || (participantsGroups != null && !participantsGroups.isEmpty());
@@ -301,6 +305,7 @@ public class COWebService extends AbstractCourseNodeWebService {
 			}else{
 				moduleConfig.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_ALL, coachesAll.booleanValue());
 				moduleConfig.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_COURSE, coachesCourse.booleanValue());
+				moduleConfig.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ASSIGNED, coachesAssigned.booleanValue());
 				moduleConfig.set(CONFIG_KEY_EMAILTOCOACHES_GROUP, getGroupNamesToString(coachesGroups));
 				moduleConfig.set(CONFIG_KEY_EMAILTOCOACHES_AREA, getGroupNamesToString(coachesAreas));
 				moduleConfig.set(CONFIG_KEY_EMAILTOPARTICIPANTS_ALL, participantsAll.booleanValue());

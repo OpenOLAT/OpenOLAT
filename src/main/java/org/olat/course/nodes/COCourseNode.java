@@ -243,6 +243,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         isValid = isValid || (StringHelper.containsNonWhitespace(email2GroupCoaches));
         isValid = isValid || getModuleConfiguration().getBooleanSafe(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL, false);
         isValid = isValid || getModuleConfiguration().getBooleanSafe(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE, false);
+        isValid = isValid || getModuleConfiguration().getBooleanSafe(COEditController.CONFIG_KEY_EMAILTOCOACHES_ASSIGNED, false);
         String email2AreaParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA);
         isValid = isValid || (StringHelper.containsNonWhitespace(email2AreaParticipants));
         String email2GroupParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
@@ -397,6 +398,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         if(isNewNode){     
             mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL, false);
             mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE, false);
+            mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ASSIGNED, false);
             mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, new ArrayList<Long>());
             mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP, null);
             mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA, null);

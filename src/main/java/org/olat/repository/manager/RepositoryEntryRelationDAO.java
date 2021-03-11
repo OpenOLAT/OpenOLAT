@@ -519,7 +519,7 @@ public class RepositoryEntryRelationDAO {
 	}
 	
 
-	public List<Identity> getCoachedParticipants(IdentityRef coach, RepositoryEntryRef re) {
+	public List<Identity> getRelatedMembers(RepositoryEntryRef re, IdentityRef sourceIdentity, GroupRoles sourceRole, GroupRoles targetRole) {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select distinct ident");
 		sb.append(" from repositoryentry as v")
@@ -528,14 +528,15 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join baseGroup.members as memberships")
 		  .append(" inner join memberships.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
-		  .append(" inner join baseGroup.members as coaches")
-		  .append(" where v.key=:repoKey and memberships.role=:role and coaches.identity.key=:coachKey")
-		  .append(" and coaches.role='").append(GroupRoles.coach.name()).append("'");
+		  .append(" inner join baseGroup.members as sourceMember")
+		  .append(" where v.key=:repoKey and memberships.role=:targetRole and sourceMember.identity.key=:sourceIdentityKey")
+		  .append(" and sourceMember.role=:sourceRole");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("repoKey", re.getKey())
-				.setParameter("role", GroupRoles.participant.name())
-				.setParameter("coachKey", coach.getKey())
+				.setParameter("sourceIdentityKey", sourceIdentity.getKey())
+				.setParameter("sourceRole", sourceRole.toString())
+				.setParameter("targetRole", targetRole.toString())
 				.getResultList();
 	}
 	

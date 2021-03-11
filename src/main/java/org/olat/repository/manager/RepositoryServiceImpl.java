@@ -762,7 +762,12 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public List<Identity> getCoachedParticipants(IdentityRef coach, RepositoryEntryRef re) {
-		return reToGroupDao.getCoachedParticipants(coach, re);
+		return reToGroupDao.getRelatedMembers(re, coach, GroupRoles.coach, GroupRoles.participant);
+	}
+	
+	@Override
+	public List<Identity> getAssignedCoaches(IdentityRef participant, RepositoryEntryRef re) {
+		return reToGroupDao.getRelatedMembers(re, participant, GroupRoles.participant, GroupRoles.coach);
 	}
 
 	@Override

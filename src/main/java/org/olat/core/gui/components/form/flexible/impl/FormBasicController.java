@@ -688,8 +688,4 @@ public abstract class FormBasicController extends BasicController {
 			}
 		}, getUserActivityLogger());
 	}
-	
-	public void setNeedsLayout() {
-		flc.setDirty(true);
-	}
 }
