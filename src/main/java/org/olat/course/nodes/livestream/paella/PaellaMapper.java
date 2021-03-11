@@ -75,7 +75,7 @@ public class PaellaMapper implements Mapper {
 		sb.append("<!DOCTYPE html>");
 		sb.append("<html>");
 		sb.append("<head>");
-		sb.append("<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8;\">");
+		sb.append("<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">");
 		sb.append("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
 		appendStaticJs(sb, "js/paella/player/javascript/hls.min.js");
 		appendStaticJs(sb, "js/paella/player/javascript/jquery.min.js");
