@@ -24,8 +24,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
@@ -85,7 +83,6 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 	private boolean licenseEnabled;
 	private final Translator translator;
 	private final List<RepositoryEntry> testEntries;
-	private final ConcurrentMap<RepositoryEntry, TestHolder> holdersMap = new ConcurrentHashMap<>();
 	
 	@Autowired
 	private DB dbInstance;
@@ -228,10 +225,6 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 	}
 
 	private TestHolder getTestHolder(RepositoryEntry testEntry) {
-		return holdersMap.computeIfAbsent(testEntry, entry -> loadQuestionMetadata(testEntry));
-	}
-	
-	private TestHolder loadQuestionMetadata(RepositoryEntry testEntry) {
 		TestHolder testHolder = new TestHolder(testEntry);
 		String owners = getOwners(testEntry);
 		testHolder.setOwners(owners);
@@ -381,7 +374,7 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 
 		private final RepositoryEntry testEntry;
 
-		private AssessmentTest assessmentTest;
+		private final AssessmentTest assessmentTest;
 		private final ManifestBuilder manifestBuilder;
 		private final ResolvedAssessmentTest resolvedAssessmentTest;
 		
@@ -396,9 +389,11 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 			FileResourceManager frm = FileResourceManager.getInstance();
 			unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 			manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
-			resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, true);
+			resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTestNoCache(unzippedDirRoot);
 			if(resolvedAssessmentTest != null) {
 				assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+			} else {
+				assessmentTest = null;
 			}
 		}
 		
@@ -515,8 +510,10 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 			context = metadata.getEducationContext();
 			if(StringHelper.containsNonWhitespace(metadata.getOpenOLATMetadataQuestionType())) {
 				type = metadata.getOpenOLATMetadataQuestionType();
-			} else {
+			} else if(assessmentItem != null) {
 				type = QTI21QuestionType.getType(assessmentItem).name();
+			} else {
+				type = QTI21QuestionType.unkown.name();
 			}
 			masterIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
 			correctionTime = metadata.getOpenOLATMetadataCorrectionTime() == null ? "" :  metadata.getOpenOLATMetadataCorrectionTime().toString();
