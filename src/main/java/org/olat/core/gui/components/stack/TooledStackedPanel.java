@@ -354,6 +354,11 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 		}
 	}
 	
+	public void removeMessageComponent() {
+		messageCmp = null;
+		setDirty(true);
+	}
+	
 	public enum Align {
 		left("o_tools_left"),
 		center("o_tools_center"),

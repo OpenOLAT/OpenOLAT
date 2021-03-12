@@ -62,6 +62,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Topic;
+import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
@@ -96,7 +97,7 @@ public class TopicGroupsController extends FormBasicController {
 	private UserSearchController userSearchCtrl;
 	private DialogBoxController confirmRemoveCtrl;
 
-	private final Topic topic;
+	private Topic topic;
 	private final RepositoryEntry entry;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private Map<String, Group> keyToBussinesGroups;
@@ -115,10 +116,11 @@ public class TopicGroupsController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public TopicGroupsController(UserRequest ureq, WindowControl wControl, Topic topic) {
+	public TopicGroupsController(UserRequest ureq, WindowControl wControl, TopicRef topicRef) {
 		super(ureq, wControl, "topic_groups");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		this.topic = topic;
+		
+		topic = appointmentsService.getTopic(topicRef);
 		entry = topic.getEntry();
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -331,6 +333,7 @@ public class TopicGroupsController extends FormBasicController {
 				groups.add(group);
 			}
 		}
+		topic = appointmentsService.getTopic(topic);
 		if (topic.getGroup() != null) {
 			groups.add(topic.getGroup());
 		}
