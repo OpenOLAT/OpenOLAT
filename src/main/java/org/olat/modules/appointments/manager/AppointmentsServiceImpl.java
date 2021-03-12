@@ -162,6 +162,11 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			calendarSyncher.syncCalendars(topic, appointments);
 		}
 	}
+	
+	@Override
+	public Topic getTopic(TopicRef topic) {
+		return topicDao.loadByKey(topic);
+	}
 
 	@Override
 	public List<Topic> getTopics(RepositoryEntryRef entryRef, String subIdent) {
@@ -232,7 +237,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			calendarSyncher.unsyncCalendars(appointments.get(0).getTopic(), appointments);
 		}
 		
-		Topic topic = topicDao.loadByKey(topicRef.getKey());
+		Topic topic = topicDao.loadByKey(topicRef);
 		deleteTopicGroup(topic);
 		topicToGroupDao.delete(topicRef);
 		participationDao.delete(topicRef);
@@ -425,7 +430,8 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	}
 	
 	@Override
-	public void addTopicRestriction(Topic topic, Identity identity) {
+	public void addTopicRestriction(TopicRef topicRef, Identity identity) {
+		Topic topic = topicDao.loadByKey(topicRef);
 		Group group = topic.getGroup();
 		if (group == null) {
 			group = groupDao.createGroup();
@@ -435,21 +441,25 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	}
 
 	@Override
-	public void removeTopicRestriction(Topic topic, IdentityRef identity) {
+	public void removeTopicRestriction(TopicRef topicRef, IdentityRef identity) {
+		Topic topic = topicDao.loadByKey(topicRef);
 		Group group = topic.getGroup();
 		if (group != null) {
 			groupDao.removeMembership(group, identity, TOPIC_USER_RESTRICTION_ROLE);
 			if (groupDao.countMembers(group) == 0) {
 				topicToGroupDao.delete(group);
-				groupDao.removeGroup(group);
+				Group reloadedGroup = groupDao.loadGroup(group.getKey());
+				if (reloadedGroup != null) {
+					groupDao.removeGroup(group);
+				}
 				topicDao.setGroup(topic, null);
 			}
 		}
 	}
 	
 	@Override
-	public List<Identity> getUserRestrictions(Topic topic) {
-		Group group = topic.getGroup();
+	public List<Identity> getUserRestrictions(TopicRef topicRef) {
+		Group group = topicDao.loadByKey(topicRef).getGroup();
 		if (group != null) {
 			return groupDao.getMembers(group, TOPIC_USER_RESTRICTION_ROLE);
 		}
