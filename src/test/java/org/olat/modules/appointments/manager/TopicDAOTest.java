@@ -118,7 +118,7 @@ public class TopicDAOTest extends OlatTestCase {
 		TopicRef topic = sut.createTopic(entry, subIdent);
 		dbInstance.commitAndCloseSession();
 		
-		Topic reloadedTopic = sut.loadByKey(topic.getKey());
+		Topic reloadedTopic = sut.loadByKey(topic);
 		
 		assertThat(reloadedTopic).isEqualTo(topic);
 	}
@@ -140,7 +140,7 @@ public class TopicDAOTest extends OlatTestCase {
 		sut.updateTopic(topic);
 		dbInstance.commitAndCloseSession();
 		
-		topic = sut.loadByKey(topic.getKey());
+		topic = sut.loadByKey(topic);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(topic.getTitle()).isEqualTo(title);

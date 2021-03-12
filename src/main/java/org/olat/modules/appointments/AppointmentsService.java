@@ -53,6 +53,8 @@ public interface AppointmentsService {
 	
 	public void deleteTopic(TopicRef topic);
 	
+	public Topic getTopic(TopicRef topic);
+	
 	public List<Topic> getTopics(RepositoryEntryRef entryRef, String subIdent);
 
 	/**
@@ -73,9 +75,9 @@ public interface AppointmentsService {
 	
 	public void restrictTopic(Topic topic, List<Group> groups);
 
-	public void addTopicRestriction(Topic topic, Identity identity);
+	public void addTopicRestriction(TopicRef topicRef, Identity identity);
 	
-	public void removeTopicRestriction(Topic topic, IdentityRef identity);
+	public void removeTopicRestriction(TopicRef topicRef, IdentityRef identity);
 	
 	public boolean hasGroupRestrictions(TopicRef topic);
 	
@@ -86,7 +88,7 @@ public interface AppointmentsService {
 	 * @param topic
 	 * @return the identities of the topic group.
 	 */
-	public List<Identity> getUserRestrictions(Topic topic);
+	public List<Identity> getUserRestrictions(TopicRef topicRef);
 	
 	/**
 	 *

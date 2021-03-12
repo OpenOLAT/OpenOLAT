@@ -64,15 +64,17 @@ class TopicDAO {
 		return topic;
 	}
 	
-	Topic loadByKey(Long key) {
+	Topic loadByKey(TopicRef topicRef) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select topic");
 		sb.append("  from appointmenttopic topic");
+		sb.append("       inner join fetch topic.entry as entry");
+		sb.append("       left join fetch topic.group as group");
 		sb.and().append(" topic.key = :topicKey");
 		
 		List<Topic> topics = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Topic.class)
-				.setParameter("topicKey", key)
+				.setParameter("topicKey", topicRef.getKey())
 				.getResultList();
 		return topics.isEmpty() ? null : topics.get(0);
 	}
