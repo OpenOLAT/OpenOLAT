@@ -39,6 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
@@ -96,7 +97,7 @@ public class StopAssessmentWarningController extends BasicController {
 	private void assessmentModeMessage(List<AssessmentMode> modes) {
 		// filter closed assessment mode
 		modes = modes.stream()
-				.filter(m -> !Status.end.equals(m.getStatus()))
+				.filter(m -> !(Status.end.equals(m.getStatus()) && EndStatus.all.equals(m.getEndStatus())))
 				.collect(Collectors.toList());
 		
 		if(modes.size() == 1) {
@@ -117,7 +118,7 @@ public class StopAssessmentWarningController extends BasicController {
 		} else if(modes.size() > 1) {
 			assessmemntModeMessageFormatting("assessment.mode.several.now",  modes, mainVC);
 		} else if(stackPanel != null) {
-			stackPanel.setMessageComponent(null);
+			stackPanel.removeMessageComponent();
 		}
 	}
 	
