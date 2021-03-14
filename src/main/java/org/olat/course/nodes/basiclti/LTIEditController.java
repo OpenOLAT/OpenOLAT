@@ -33,7 +33,6 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
@@ -46,6 +45,7 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Description:<BR/>
@@ -56,7 +56,7 @@ import org.olat.modules.ModuleConfiguration;
  * @author guido
  * @author Charles Severance
  */
-public class LTIEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
+public class LTIEditController extends ActivateableTabbableDefaultController {
 
 	public static final String PANE_TAB_LTCONFIG = "pane.tab.ltconfig";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
@@ -99,7 +99,8 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config);
 		listenTo(highScoreNodeConfigController);
 		
-		ltConfigForm = new LTIConfigForm(ureq, wControl, config, NodeAccessType.of(course));
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		ltConfigForm = new LTIConfigForm(ureq, wControl, config, NodeAccessType.of(course), courseEntry, ltCourseNode.getIdent());
 		listenTo(ltConfigForm);
 		
 		myContent.put("ltConfigForm", ltConfigForm.getInitialComponent());

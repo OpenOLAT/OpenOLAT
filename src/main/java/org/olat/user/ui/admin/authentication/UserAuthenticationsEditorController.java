@@ -27,12 +27,14 @@ package org.olat.user.ui.admin.authentication;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.olat.admin.user.UserChangePasswordController;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -48,6 +50,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -108,13 +112,14 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.provider));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.issuer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.login));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.credential));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.action", translate("delete"), "delete"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.action", AuthenticationCols.edit.ordinal(), "edit",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("edit"), "edit"), null)));
 		
-		tableModel = new AuthenticationsTableDataModel(columnsModel);
+		tableModel = new AuthenticationsTableDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 	}
@@ -245,6 +250,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 
 	public enum AuthenticationCols implements FlexiSortableColumnDef {
 		provider("table.auth.provider"),
+		issuer("table.auth.issuer"),
 		login("table.auth.login"),
 		credential("table.auth.credential"),
 		edit("edit");
@@ -262,7 +268,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 
 		@Override
 		public boolean sortable() {
-			return false;
+			return this != edit;
 		}
 
 		@Override
@@ -271,30 +277,55 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		}
 	}
 	
-	private static class AuthenticationsTableDataModel extends DefaultFlexiTableDataModel<UserAuthenticationRow> {
+	private static class AuthenticationsTableDataModel extends DefaultFlexiTableDataModel<UserAuthenticationRow>
+	implements SortableFlexiTableDataModel<UserAuthenticationRow> {
 		
 		private static final AuthenticationCols[] COLS = AuthenticationCols.values();
+		
+		private final Locale locale;
 
-		public AuthenticationsTableDataModel(FlexiTableColumnModel columnsModel) {
+		public AuthenticationsTableDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 			super(columnsModel);
+			this.locale = locale;
+		}
+
+		@Override
+		public void sort(SortKey orderBy) {
+			if(orderBy != null) {
+				List<UserAuthenticationRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+				super.setObjects(rows);
+			}
 		}
 
 		@Override
 		public final Object getValueAt(int row, int col) {
 			UserAuthenticationRow authRow = getObject(row);
-			Authentication auth = authRow.getAuthentication();
+			return getValueAt(authRow, col);
+		}
+
+		@Override
+		public Object getValueAt(UserAuthenticationRow row, int col) {
+			Authentication auth = row.getAuthentication();
 			switch (COLS[col]) {
 				case provider: return auth.getProvider();
+				case issuer: return getIssuer(auth);
 				case login: return auth.getAuthusername();
 				case credential: return auth.getCredential();
-				case edit: return authRow.isCanEditAuthenticationUsername();
+				case edit: return row.isCanEditAuthenticationUsername();
 				default: return "error";
 			}
+		}
+		
+		private String getIssuer(Authentication auth) {
+			if(auth.getIssuer() == null || BaseSecurity.DEFAULT_ISSUER.equals(auth.getIssuer())) {
+				return null;
+			}
+			return auth.getIssuer();
 		}
 
 		@Override
 		public AuthenticationsTableDataModel createCopyWithEmptyList() {
-			return new AuthenticationsTableDataModel(getTableColumnModel());
+			return new AuthenticationsTableDataModel(getTableColumnModel(), locale);
 		}
 	}
 }

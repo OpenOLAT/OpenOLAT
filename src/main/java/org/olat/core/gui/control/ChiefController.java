@@ -32,6 +32,7 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControl;
 /**
  * Description: <br>
  * 
@@ -51,6 +52,14 @@ public interface ChiefController extends Controller {
 	public ScreenMode getScreenMode();
 	
 	public boolean isLoginInterceptionInProgress();
+	
+	/**
+	 * Specialized for launching a resource, if some interactions is needed before
+	 * effectively launching it.
+	 * 
+	 * @return true if the dispatcher must not launch the resource
+	 */
+	public boolean delayLaunch(UserRequest ureq, BusinessControl bc);
 	
 	/**
 	 * The method is called by the poller thread.

@@ -182,7 +182,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				userDN = ldapDao.searchUserDNByUid(name, ctx);
 			}
 			if(StringHelper.containsNonWhitespace(userDN)) {
-				Authentication currentAuth = authenticationDao.getAuthentication(name, LDAPAuthenticationController.PROVIDER_LDAP);
+				Authentication currentAuth = authenticationDao.getAuthentication(name, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 				if(currentAuth == null || currentAuth.getIdentity().equals(identity)) {
 					return LDAPValidationResult.allOk();
 				}
@@ -879,7 +879,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		String token = null;
 		for(String loginAttribute:loginAttributes) {
 			String loginToken = getAttributeValue(attrs.get(loginAttribute));
-			Authentication ldapAuth = authenticationDao.getAuthentication(loginToken, LDAPAuthenticationController.PROVIDER_LDAP);
+			Authentication ldapAuth = authenticationDao.getAuthentication(loginToken, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 			if(ldapAuth != null) {
 				return ldapAuth;
 			}
@@ -890,7 +890,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 
 		String uid = getAttributeValue(attrs.get(uidAttribute));
-		Authentication ldapAuth = authenticationDao.getAuthentication(uid, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication ldapAuth = authenticationDao.getAuthentication(uid, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		if(ldapAuth != null) {
 			if(StringHelper.containsNonWhitespace(token) && !token.equals(ldapAuth.getAuthusername())) {
 				ldapAuth.setAuthusername(token);
@@ -900,7 +900,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		
 		if(ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers()) {
-			Authentication defaultAuth = authenticationDao.getAuthentication(uid, "OLAT");
+			Authentication defaultAuth = authenticationDao.getAuthentication(uid, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 			if(defaultAuth != null) {
 				// Add user to LDAP security group and add the ldap provider
 				securityManager.createAndPersistAuthentication(defaultAuth.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER,

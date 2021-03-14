@@ -635,3 +635,17 @@ body.o_dmz {
     }
   }
 }
+
+.o_body_minimal {
+	#o_navbar_wrapper {
+		height: 2px;
+		min-height: 2px;
+		margin-bottom: 20px;
+		border: none;
+		background-color: inherit;
+		
+		#o_navbar_container {
+			display: none;
+		}
+	}
+}

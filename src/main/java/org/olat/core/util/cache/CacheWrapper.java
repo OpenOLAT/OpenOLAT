@@ -90,6 +90,14 @@ public interface CacheWrapper<U, V> {
 	 */
 	public V put(U key, V value);
 	
+	/**
+	 * Same as above but with an explicit expiration in seconds.
+	 * 
+	 * @param key The key
+	 * @param value	The value
+	 * @param expirationTime The expiration time in seconds
+	 * @return The value
+	 */
 	public V put(U key, V value, int expirationTime);
 	
 	

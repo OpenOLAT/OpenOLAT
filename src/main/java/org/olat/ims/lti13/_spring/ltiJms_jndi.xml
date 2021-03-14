@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- JMS Stuff -->
+	<bean id="ltiConnectionFactory" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+        <property name="jndiName"><value>${jms.broker.jndi}</value></property>
+    </bean>
+    <bean id="ltiQueue" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName"><value>${lti.broker.jndi}</value></property>
+	</bean>
+
+</beans>

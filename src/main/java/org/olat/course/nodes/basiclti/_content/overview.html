@@ -7,15 +7,13 @@
 		<table class="table">
 		<tbody>
 			<tr class="o_attempts">
-				<th>$r.translate("attempts.yourattempts")</th>
-				<td>
-					$attempts
-				</td> 
+				<th scope="row">$r.translate("attempts.yourattempts")</th>
+				<td>$attempts</td> 
 			</tr> 
 			
 			#if ($hasScore)
 			<tr class="o_score">
-				<th>$r.translate("score.yourscore")</th>
+				<th scope="row">$r.translate("score.yourscore")</th>
 				<td>
 				#if($score)
 					#if($resultsVisible)
@@ -36,7 +34,7 @@
 			
 			#if ($hasPassedValue)
 			<tr class="o_state #if(!$resultsVisible) #elseif($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
-				<th>$r.translate("passed.yourpassed")</th>
+				<th scope="row">$r.translate("passed.yourpassed")</th>
 				<td>
 				#if($hasPassedValue && !$resultsVisible)
 					<span id="o_passed_in_review" class="o_in_review">
@@ -58,9 +56,7 @@
 		</table>				
 	</div>
 	#else 
-		<div class="o_no_scoreinfo">
-			$r.translate("score.noscoreinfoyet")
-		</div>
+		<div class="o_no_scoreinfo">$r.translate("score.noscoreinfoyet")</div>
 	#end
 #end
 #if ($r.available("highScore"))

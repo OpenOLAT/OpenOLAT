@@ -255,10 +255,16 @@ public class BusinessControlFactory {
 		return bc.getAsString();
 	}
 	
+	public String getAsString(List<ContextEntry> entries) {
+		BusinessControl bc = createFromContextEntries(entries);
+		return getAsString(bc);
+	}
+	
 	public BusinessControl createFromString(String businessControlString) {
 		final List<ContextEntry> ces = createCEListFromString(businessControlString);
 		if (ces.isEmpty() || ces.get(0) ==null) {
-			log.warn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty. string is "+businessControlString, new Exception("stacktrace"));
+			log.warn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty. string is {}",
+					businessControlString, new Exception("stacktrace"));
 		}
 		return createFromContextEntries(ces);
 	}
@@ -266,7 +272,8 @@ public class BusinessControlFactory {
 	public BusinessControl createFromPoint(HistoryPoint point) {
 		final List<ContextEntry> ces = point.getEntries();
 		if (ces.isEmpty() || ces.get(0) == null) {
-			log.warn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty. string is " + point.getBusinessPath(), new Exception("stacktrace"));
+			log.warn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty. string is {}",
+					point.getBusinessPath(), new Exception("stacktrace"));
 		}
 		return createFromContextEntries(ces);
 	}

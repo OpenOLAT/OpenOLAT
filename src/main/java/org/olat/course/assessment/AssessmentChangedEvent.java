@@ -25,12 +25,13 @@
 
 package org.olat.course.assessment;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.id.Identity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * Initial Date:  Nov 30, 2004
@@ -51,37 +52,53 @@ public class AssessmentChangedEvent extends MultiUserEvent {
 	/** Changed coach comment value **/
 	public static final String TYPE_COACH_COMMENT_CHANGED = "coach.comment";
 	
-	private static final List<String> assessmentTypes = new ArrayList<>();
-
-	static {
-		assessmentTypes.add(TYPE_ATTEMPTS_CHANGED);
-		assessmentTypes.add(TYPE_SCORE_EVAL_CHANGED);		
-		assessmentTypes.add(TYPE_EFFICIENCY_STATEMENT_CHANGED);
-		assessmentTypes.add(TYPE_USER_COMMENT_CHANGED);
-		assessmentTypes.add(TYPE_COACH_COMMENT_CHANGED);
-	}
+	private static final List<String> assessmentTypes = List
+			.of(TYPE_ATTEMPTS_CHANGED, TYPE_SCORE_EVAL_CHANGED, TYPE_EFFICIENCY_STATEMENT_CHANGED,
+					TYPE_USER_COMMENT_CHANGED, TYPE_COACH_COMMENT_CHANGED);
 	
 	private Long identityKey;
+	private Long courseEntryKey;
+	private Boolean entryRoot;
+	private String courseNodeIdent;
 	
 	/**
 	 * @param changedAssessmentType On of the static types from this class
 	 * @param identity The identity that is target of the change
 	 */
-	public AssessmentChangedEvent(String changedAssessmentType, Identity identity) {
+	public AssessmentChangedEvent(String changedAssessmentType, IdentityRef identity,
+			RepositoryEntryRef courseEntry, CourseNode courseNode, Boolean entryRoot) {
 		super(changedAssessmentType);
 		if (!assessmentTypes.contains(changedAssessmentType)) 
 			throw new AssertException("Wrong changed assessment type::" + changedAssessmentType + " not supported");
 		identityKey = identity.getKey();
+		courseEntryKey = courseEntry.getKey();
+		courseNodeIdent = courseNode == null ? null : courseNode.getIdent();
+		this.entryRoot = entryRoot;
 	}
 
 	/**
-	 * @return The key of the identity that is target of the change. the identity itself is not available and must be refetched if needed since it is not serialized. (performance and possibly unserializable implementations of Identity)
+	 * @return The key of the identity that is target of the change. the identity itself is not available
+	 *     and must be refetched if needed since it is not serialized. (performance and possibly
+	 *     unserializable implementations of Identity)
 	 */
 	public Long getIdentityKey() {
 		return identityKey;
 	}
 	
+	public Long getCourseEntryKey() {
+		return courseEntryKey;
+	}
+	
+	public String getCourseNodeIdent() {
+		return courseNodeIdent;
+	}
+	
+	public Boolean getEntryRoot() {
+		return entryRoot;
+	}
+	
+	@Override
 	public String toString() {
-		return "assesstype:"+getCommand()+", for identity with key:"+identityKey;
+		return "assesstype:" + getCommand() + ", for identity with key:" + identityKey;
 	}
 }

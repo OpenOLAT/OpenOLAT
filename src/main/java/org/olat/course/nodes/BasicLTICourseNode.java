@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,11 +44,14 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.basiclti.LTIAssessmentConfig;
 import org.olat.course.nodes.basiclti.LTIConfigForm;
@@ -58,9 +63,10 @@ import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
+import org.olat.ims.lti13.LTI13Service;
+import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResource;
 
 /**
  * @author guido
@@ -133,14 +139,52 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 					String message = trans.translate("guestnoaccess.message");
 					runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 				} else {
-					runCtrl = new LTIRunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv);
+					runCtrl = getRunController(ureq, wControl, userCourseEnv);
 				}
 			} else {
-				runCtrl = new LTIRunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv);
+				runCtrl = getRunController(ureq, wControl, userCourseEnv);
 			}
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_lti_icon");
 		return new NodeRunConstructionResult(ctrl);
+	}
+	
+	public Controller getRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
+		Controller runCtrl;
+		ModuleConfiguration config = getModuleConfiguration();
+		String ltiVersion = config.getStringValue(LTIConfigForm.CONFIGKEY_LTI_VERSION, LTIConfigForm.CONFIGKEY_LTI_11);
+		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			LTI13ToolDeployment deployment = CoreSpringFactory.getImpl(LTI13Service.class).getToolDeployment(courseEntry, getIdent());
+			runCtrl = new LTIRunController(ureq, wControl, this, deployment, userCourseEnv);
+		} else {
+			runCtrl = new LTIRunController(ureq, wControl, this, userCourseEnv);
+		}
+		return runCtrl;
+	}
+	
+	public String getUrl() {
+		ModuleConfiguration config = getModuleConfiguration();
+		// put url in template to show content on extern page
+		URL url = null;
+		try {
+			url = new URL(config.getStringValue(LTIConfigForm.CONFIGKEY_PROTO), config.getStringValue(LTIConfigForm.CONFIGKEY_HOST),
+					((Integer)config.get(LTIConfigForm.CONFIGKEY_PORT)).intValue(), config.getStringValue(LTIConfigForm.CONFIGKEY_URI));
+		} catch (MalformedURLException e) {
+			// this should not happen since the url was already validated in edit mode
+			return null;
+		}
+
+		StringBuilder querySb = new StringBuilder(128);
+		querySb.append(url.toString());
+		// since the url only includes the path, but not the query (?...), append
+		// it here, if any
+		String query = (String) config.get(LTIConfigForm.CONFIGKEY_QUERY);
+		if (query != null) {
+			querySb.append("?");
+			querySb.append(query);
+		}
+		return querySb.toString();
 	}
 	
 	public boolean isGuestAllowed() {
@@ -150,6 +194,36 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 		boolean sendEmail = config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDEMAIL, false);
 		boolean customValues = StringHelper.containsNonWhitespace(config.getStringValue(LTIConfigForm.CONFIG_KEY_CUSTOM));
 		return !assessable && !sendName && !sendEmail && !customValues;
+	}
+	
+	public Float getCutValue(AssessmentConfig assessmentConfig) {
+		if(Mode.setByNode == assessmentConfig.getPassedMode()) {
+			Float cutValue = assessmentConfig.getCutValue();
+			if(cutValue == null) {
+				return null;
+			}
+			return cutValue;
+		}
+		return null;
+	}
+	
+	/**
+	 * Return the scaling factor or 1.0f if not configured.
+	 * 
+	 * @param node
+	 * @return
+	 */
+	public float getScalingFactor() {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(this);
+		if(Mode.none != assessmentConfig.getScoreMode()) {
+			Float scale = getModuleConfiguration().getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
+			if(scale == null) {
+				return 1.0f;
+			}
+			return scale.floatValue();
+		}
+		return 1.0f;
 	}
 
 	@Override
@@ -246,8 +320,11 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);
-		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		CoreSpringFactory.getImpl(LTIManager.class).deleteOutcomes(resource);
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+		CoreSpringFactory.getImpl(LTIManager.class)
+			.deleteOutcomes(cgm.getCourseResource());
+		CoreSpringFactory.getImpl(LTI13Service.class)
+			.deleteToolsAndDeployments(cgm.getCourseEntry(), getIdent());
 	}
 
 	/**

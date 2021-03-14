@@ -41,6 +41,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.LockResourceInfos;
+import org.olat.core.commons.fullWebApp.MinimalBaseFullWebappController;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -342,7 +343,11 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		
 		if(chiefController == null) {
 			String newWindow = ureq.getParameter("new-window");
-			if("reduced".equals(newWindow)) {
+			if("minimal".equals(newWindow)) {
+				PopupBrowserWindow pbw = new MinimalBaseFullWebappController(ureq);
+				pbw.open(ureq);
+				chiefController = (ChiefController)pbw;
+			} else if("reduced".equals(newWindow)) {
 				ControllerCreator alternativeWindowControllerCreator = (lureq, lwControl) -> {
 					Controller dummyCtr = new BasicController(lureq, lwControl) {
 						@Override
@@ -375,10 +380,12 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		// If no client side window detected => open in new window, create new server side window
 		if ((!StringHelper.containsNonWhitespace(ooBrowserWinCheck) || "-1".equals(ooBrowserWinCheck))
 				&& (windowId == null || "-1".equals(windowId))) {
-			WindowControl wControl = chiefController.getWindowControl();
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(businessPath);
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
-			NewControllerFactory.getInstance().launch(ureq, bwControl);	
+			if(!chiefController.delayLaunch(ureq, bc)) {
+				WindowControl wControl = chiefController.getWindowControl();
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
+				NewControllerFactory.getInstance().launch(ureq, bwControl);	
+			}
 			chiefController.getWindow().dispatchRequest(ureq, true); // renderOnly
 			chiefController.resetReload();
 			return;
@@ -400,15 +407,17 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				String historyPointId = ureq.getHttpReq().getParameter("historyPointId");
 				if(StringHelper.containsNonWhitespace(historyPointId)) {
 					HistoryPoint point = ureq.getUserSession().getHistoryPoint(historyPointId);
-					bc = BusinessControlFactory.getInstance().createFromContextEntries(point.getEntries());
+					bc = BusinessControlFactory.getInstance().createFromContextEntries(point.getEntries());	
 				}
 				if(bc == null) {
 					bc = BusinessControlFactory.getInstance().createFromString(businessPath);
 				}
-					
-				WindowControl wControl = windowBackOffice.getChiefController().getWindowControl();
-				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
-				NewControllerFactory.getInstance().launch(ureq, bwControl);	
+
+				if(!chiefController.delayLaunch(ureq, bc)) {
+					WindowControl wControl = windowBackOffice.getChiefController().getWindowControl();
+					WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
+					NewControllerFactory.getInstance().launch(ureq, bwControl);
+				}
 				// render the window
 				Window w = windowBackOffice.getWindow();
 				log.debug("Dispatch auth request by window {}", w.getInstanceId());

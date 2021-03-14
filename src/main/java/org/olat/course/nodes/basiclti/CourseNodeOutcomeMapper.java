@@ -35,13 +35,12 @@ import org.olat.core.logging.activity.UserActivityLoggerImpl;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.ui.OutcomeMapper;
 import org.olat.modules.assessment.Role;
 import org.olat.resource.OLATResource;
@@ -86,30 +85,9 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 
 	@Override
 	protected boolean doUpdateResult(Float score) {
+		LTIManager ltiManager = CoreSpringFactory.getImpl(LTIManager.class);
 		ICourse course = CourseFactory.loadCourse(courseOresId);
-		CourseNode node = course.getRunStructure().getNode(courseNodeId);
-		if(node instanceof BasicLTICourseNode) {
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
-			
-			Identity assessedId = getIdentity();
-			Float cutValue = getCutValue(assessmentConfig);
-			
-			Float scaledScore = null;
-			Boolean passed = null;
-			if(score != null) {
-				float scale = getScalingFactor(node);
-				scaledScore = score * scale;
-				if(cutValue != null) {
-					passed = scaledScore >= cutValue;
-				}
-			}
-			
-			ScoreEvaluation eval = new ScoreEvaluation(scaledScore, passed);
-			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
-			courseAssessmentService.updateScoreEvaluation(node, eval, userCourseEnv, assessedId, false, Role.user);
-		}
-		
+		ltiManager.updateScore(getIdentity(), score, course, courseNodeId);
 		return super.doUpdateResult(score);
 	}
 
@@ -124,7 +102,6 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
 			courseAssessmentService.updateScoreEvaluation(node, eval, userCourseEnv, assessedId, false, Role.user);
 		}
-
 		return super.doDeleteResult();
 	}
 
@@ -133,18 +110,11 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 		ICourse course = CourseFactory.loadCourse(courseOresId);
 		CourseNode node = course.getRunStructure().getNode(courseNodeId);
 		if(node instanceof BasicLTICourseNode) {
-			BasicLTICourseNode ltiNode = (BasicLTICourseNode)node;
-			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(ltiNode, userCourseEnv);
+			LTIManager ltiManager = CoreSpringFactory.getImpl(LTIManager.class);
+			Float scoreFloat = ltiManager.getScore(getIdentity(), course, courseNodeId);
 			String score = "";
-			if(eval != null && eval.getScore() != null) {
-				float scaledScore = eval.getScore();
-				if(scaledScore > 0.0f) {
-					float scale = getScalingFactor(ltiNode);
-					scaledScore= scaledScore / scale;
-				}
-				score = Float.toString(scaledScore);
+			if(scoreFloat != null ) {
+				score = Float.toString(scoreFloat);
 			}
 			Map<String,Object> theMap = new TreeMap<>();
 			theMap.put("/readResultResponse/result/sourcedId", getSourcedId());
@@ -159,31 +129,6 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 	private UserCourseEnvironment getUserCourseEnvironment(ICourse course) {
 		IdentityEnvironment identityEnvironment = new IdentityEnvironment();
 		identityEnvironment.setIdentity(getIdentity());
-		UserCourseEnvironmentImpl userCourseEnv = new UserCourseEnvironmentImpl(identityEnvironment, course.getCourseEnvironment());
-		return userCourseEnv;
-	}
-	
-	private float getScalingFactor(CourseNode node) {
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
-		if(Mode.none != assessmentConfig.getScoreMode()) {
-			Float scale = node.getModuleConfiguration().getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
-			if(scale == null) {
-				return 1.0f;
-			}
-			return scale.floatValue();
-		}
-		return 1.0f;
-	}
-	
-	private Float getCutValue(AssessmentConfig assessmentConfig) {
-		if(Mode.setByNode == assessmentConfig.getPassedMode()) {
-			Float cutValue = assessmentConfig.getCutValue();
-			if(cutValue == null) {
-				return null;
-			}
-			return cutValue;
-		}
-		return null;
+		return new UserCourseEnvironmentImpl(identityEnvironment, course.getCourseEnvironment());
 	}
 }

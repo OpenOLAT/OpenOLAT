@@ -32,6 +32,7 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.context.BusinessControl;
 import org.olat.core.util.Util;
 import org.olat.login.oauth.OAuthConstants;
 
@@ -63,6 +64,11 @@ public class JSRedirectWindowController extends DefaultChiefController {
 	
 	@Override
 	public boolean isLoginInterceptionInProgress() {
+		return false;
+	}
+	
+	@Override
+	public boolean delayLaunch(UserRequest ureq, BusinessControl bc) {
 		return false;
 	}
 	

@@ -104,6 +104,9 @@
 				<entry key="/checkoutv2/">
 					<ref bean="paypalCheckoutCallback" />
 				</entry>
+				<entry key="/lti/">
+					<ref bean="ltidispatcherbean" />
+				</entry>
 			</map>
 		</property>
 	</bean>

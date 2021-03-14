@@ -84,6 +84,20 @@
 			<expiration max-idle="7200000" interval="15000" />
 		</local-cache>
 		
+		<local-cache name="LTI@states" simple-cache="true" statistics="true" statistics-available="true">
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory when-full="NONE" />
+			<expiration max-idle="7200000" interval="15000" />
+		</local-cache>
+		
+		<local-cache name="LTI@accessTokens" simple-cache="true" statistics="true" statistics-available="true">
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory max-count="1021" when-full="REMOVE" />
+			<expiration max-idle="21600000" interval="300000" />
+		</local-cache>
+		
 		<local-cache name="WebDAVManager@webdav" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />

@@ -1,3 +1,6 @@
 $r.render("accessAndBooking")
 $r.render("authorAccess")
+#if($r.available("lti13Access"))
+	$r.render("lti13Access")
+#end
 

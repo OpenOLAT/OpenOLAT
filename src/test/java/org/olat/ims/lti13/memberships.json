@@ -1,0 +1,20 @@
+{
+	"id":"https:\/\/kivik.frentix.com\/moodle\/mod\/lti\/services.php\/CourseSection\/2\/bindings\/1\/memberships",
+	"context": {
+		"id":"2",
+		"label":"LTI 1.3",
+		"title":"LTI 1.3"
+	},
+	"members":[
+		{
+			"status":"Active",
+			"roles":["Learner"],
+			"user_id":"3",
+			"lis_person_sourcedid":"",
+			"name":"Aoi Volks",
+			"given_name":"Aoi",
+			"family_name":"Volks",
+			"email":"aoi@cyberiacafe.ch"
+		}
+	]
+}

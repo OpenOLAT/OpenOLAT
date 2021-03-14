@@ -143,7 +143,7 @@ public class DispatcherModule {
 		try {
 			response.sendRedirect(url);
 		} catch (IOException e) {
-			log.error("Redirect failed: url=" + url, e);
+			log.error("Redirect failed: url={}", url, e);
 		}
 	}
 
@@ -157,7 +157,7 @@ public class DispatcherModule {
 		try {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 		} catch (IOException e) {
-			log.error("Send 404 failed: url=" + url, e);
+			log.error("Send 404 failed: url={}", url, e);
 		}
 	}
 	
@@ -184,7 +184,7 @@ public class DispatcherModule {
 		try {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 		} catch (IOException e) {
-			log.error("Send 403 failed: url=" + url, e);
+			log.error("Send 403 failed: url={}", url, e);
 		}
 	}
 	
@@ -211,7 +211,7 @@ public class DispatcherModule {
 		try {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 		} catch (IOException e) {
-			log.error("Send 400 failed: url=" + url, e);
+			log.error("Send 400 failed: url={}", url, e);
 		}
 	}
 	

@@ -28,7 +28,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -53,9 +52,7 @@ import org.olat.resource.OLATResourceImpl;
  */
 @Entity(name="ltioutcome")
 @Table(name="o_lti_outcome")
-@NamedQueries({
-	@NamedQuery(name="loadLTIOutcomeByKey", query="select outcome from ltioutcome outcome where outcome.key=:outcomeKey")
-})
+@NamedQuery(name="loadLTIOutcomeByKey", query="select outcome from ltioutcome outcome where outcome.key=:outcomeKey")
 public class LTIOutcomeImpl implements LTIOutcome, CreateInfo, ModifiedInfo, Persistable{
 
 	private static final long serialVersionUID = 8645018375238423824L;

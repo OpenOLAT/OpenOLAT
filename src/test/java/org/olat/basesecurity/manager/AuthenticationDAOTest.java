@@ -165,11 +165,11 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
-		Authentication olatAuthentication = authenticationDao.getAuthentication(ident.getLogin(), "OLAT");
+		Authentication olatAuthentication = authenticationDao.getAuthentication(ident.getLogin(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(olatAuthentication);
 		Assert.assertEquals(ident.getIdentity(), olatAuthentication.getIdentity());
 		
-		Authentication ldapAuthentication = authenticationDao.getAuthentication(ident.getLogin(), "LDAP");
+		Authentication ldapAuthentication = authenticationDao.getAuthentication(ident.getLogin(), "LDAP", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNull(ldapAuthentication);
 	}
 	
@@ -186,7 +186,7 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(olatAuthentication);
 		Assert.assertEquals(ident.getIdentity(), olatAuthentication.getIdentity());
 		
-		Authentication ldapAuthentication = authenticationDao.getAuthentication(ident.getLogin(), "LDAP");
+		Authentication ldapAuthentication = authenticationDao.getAuthentication(ident.getLogin(), "LDAP", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNull(ldapAuthentication);
 	}
 	

@@ -28,6 +28,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.ims.lti13.LTI13Module;
+import org.olat.ims.lti13.ui.LTI13ResourceAccessController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -48,11 +50,14 @@ public class AuthoringEditAccessController extends BasicController {
 	
 	private VelocityContainer mainVC;
 	
+	private LTI13ResourceAccessController lti13AccessCtrl;
 	private AuthoringEditAuthorAccessController authorAccessCtrl;
 	private AuthoringEditAccessAndBookingController accessAndBookingCtrl;
 	
 	private RepositoryEntry entry;
 	
+	@Autowired
+	private LTI13Module lti13Module;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	
@@ -63,6 +68,9 @@ public class AuthoringEditAccessController extends BasicController {
 		mainVC = createVelocityContainer("editproptabpub");
 		initAccessAndBooking(ureq);
 		initAuthorAccess(ureq);
+		if(lti13Module.isEnabled()) {
+			initLTI13Access(ureq);
+		}
 		putInitialPanel(mainVC);
 	}
 	
@@ -139,5 +147,13 @@ public class AuthoringEditAccessController extends BasicController {
 		authorAccessCtrl = new AuthoringEditAuthorAccessController(ureq, getWindowControl(), entry);
 		listenTo(authorAccessCtrl);
 		mainVC.put("authorAccess", authorAccessCtrl.getInitialComponent());
+	}
+	
+	private void initLTI13Access(UserRequest ureq) {
+		removeAsListenerAndDispose(lti13AccessCtrl);
+		
+		lti13AccessCtrl = new LTI13ResourceAccessController(ureq, getWindowControl(), entry);
+		listenTo(lti13AccessCtrl);
+		mainVC.put("lti13Access", lti13AccessCtrl.getInitialComponent());
 	}
 }

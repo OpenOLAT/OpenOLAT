@@ -50,6 +50,7 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
@@ -230,6 +231,11 @@ public class ExceptionWindowController extends DefaultChiefController {
 
 	@Override
 	public boolean isLoginInterceptionInProgress() {
+		return false;
+	}
+	
+	@Override
+	public boolean delayLaunch(UserRequest ureq, BusinessControl bc) {
 		return false;
 	}
 

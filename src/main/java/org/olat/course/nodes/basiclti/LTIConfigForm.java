@@ -36,8 +36,8 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -50,6 +50,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -60,7 +61,14 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.LTIModule;
+import org.olat.ims.lti13.LTI13Module;
+import org.olat.ims.lti13.LTI13Service;
+import org.olat.ims.lti13.LTI13Tool;
+import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
+import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +79,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Charles Severance
  */
 public class LTIConfigForm extends FormBasicController {
+	
+	public static final String CONFIGKEY_13_DEPLOYMENT_KEY = "deploymentKey";
+	
+	public static final String CONFIGKEY_LTI_VERSION = "ltiversion";
+	public static final String CONFIGKEY_LTI_11 = "LTI11";
+	public static final String CONFIGKEY_LTI_13 = "LTI13";
 
 	public static final String CONFIGKEY_PASS = "pass";
 	public static final String CONFIGKEY_KEY = "key";
@@ -87,19 +101,25 @@ public class LTIConfigForm extends FormBasicController {
   
 	public static final String usageIdentifyer = LTIManager.class.getCanonicalName();
 	
-	private ModuleConfiguration config;
-	
 	private TextElement thost;
 	private TextElement tkey;
 	private TextElement tpass;
+	
+	private TextElement clientIdEl;
+	private StaticTextElement deploymentIdEl;
+	private SingleSelection ltiVersionEl; 
+	private SingleSelection publicKeyTypeEl;
+	private TextElement publicKeyEl;
+	private TextElement publicKeyUrlEl;
+	private TextElement initiateLoginUrlEl;
 	
 	private MultipleSelectionElement skipLaunchPageEl;
 	private MultipleSelectionElement skipAcceptLaunchPageEl;
 	private DialogBoxController confirmDialogCtr;
 	
-	private SelectionElement sendName;
-	private SelectionElement sendEmail;
-	private SelectionElement doDebug;
+	private MultipleSelectionElement sendName;
+	private MultipleSelectionElement sendEmail;
+	private MultipleSelectionElement doDebug;
 
 	private TextElement scaleFactorEl;
 	private TextElement cutValueEl;
@@ -114,13 +134,20 @@ public class LTIConfigForm extends FormBasicController {
 	private SingleSelection widthEl;
 
 	private String fullURI;
-	private Boolean sendNameConfig;
-	private Boolean sendEmailConfig;
 	private Boolean doDebugConfig;
 	private final boolean ignoreInCourseAssessmentAvailable;
 	private boolean isAssessable;
 	private String key;
 	private String pass;
+	
+	
+	private final String subIdent;
+	private final ModuleConfiguration config;
+	private final RepositoryEntry courseEntry;
+	
+	private LTI13Tool tool;
+	private LTI13ToolDeployment toolDeployement;
+	private LTI13ToolDeployment backupToolDeployement;
 	
 	private List<NameValuePair> nameValuePairs = new ArrayList<>();
 	
@@ -160,7 +187,11 @@ public class LTIConfigForm extends FormBasicController {
 	@Autowired
 	private LTIModule ltiModule;
 	@Autowired
+	private LTI13Module lti13Module;
+	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private LTI13Service lti13Service;
 	@Autowired
 	private NodeAccessService nodeAccessService;
 	
@@ -171,9 +202,12 @@ public class LTIConfigForm extends FormBasicController {
 	 * @param nodeAccessType 
 	 * @param withCancel
 	 */
-	public LTIConfigForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, NodeAccessType nodeAccessType) {
+	public LTIConfigForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, NodeAccessType nodeAccessType,
+			RepositoryEntry courseEntry, String subIdent) {
 		super(ureq, wControl);
 		this.config = config;
+		this.subIdent = subIdent;
+		this.courseEntry = courseEntry;
 		int configVersion = config.getConfigurationVersion();
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		
@@ -237,20 +271,20 @@ public class LTIConfigForm extends FormBasicController {
 		if (pass == null) pass = "";
 		
 		fullURI = getFullURL(proto, host, port, uri, query).toString();
-		
-		sendNameConfig = config.getBooleanEntry(CONFIG_KEY_SENDNAME);
-		if (sendNameConfig == null) sendNameConfig = Boolean.FALSE;
-
-		sendEmailConfig = config.getBooleanEntry(CONFIG_KEY_SENDEMAIL);
-		if (sendEmailConfig == null) sendEmailConfig = Boolean.FALSE;
 
 		doDebugConfig = config.getBooleanEntry(CONFIG_KEY_DEBUG);
 		if (doDebugConfig == null) doDebugConfig = Boolean.FALSE;
     
 		Boolean assessable = config.getBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		isAssessable = assessable == null ? false : assessable.booleanValue();
+		isAssessable = assessable != null && assessable.booleanValue();
+		
+		if(CONFIGKEY_LTI_13.equals(config.getStringValue(CONFIGKEY_LTI_VERSION, CONFIGKEY_LTI_11))) {
+			toolDeployement = lti13Service.getToolDeployment(courseEntry, subIdent);
+			tool = toolDeployement == null ? null: toolDeployement.getTool();	
+		}
 
 		initForm(ureq);
+		updateUI();
 	}
 	
 	@Override
@@ -258,13 +292,168 @@ public class LTIConfigForm extends FormBasicController {
 		setFormTitle("form.title");
 		setFormContextHelp("Other#_lti_config");
 		formLayout.setElementCssClass("o_sel_lti_config_form");
-
+		
+		KeyValues kValues = new KeyValues();
+		kValues.add(KeyValues.entry(CONFIGKEY_LTI_11, translate("config.lti.11")));
+		if(lti13Module.isEnabled()) {
+			kValues.add(KeyValues.entry(CONFIGKEY_LTI_13, translate("config.lti.13")));
+			List<LTI13Tool> tools = lti13Service.getTools(LTI13ToolType.EXT_TEMPLATE);
+			for(LTI13Tool template:tools) {
+				kValues.add(KeyValues.entry(template.getKey().toString(), template.getToolName()));
+			}
+		} else if(tool != null) {
+			if(tool.getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE) {
+				kValues.add(KeyValues.entry(tool.getKey().toString(), tool.getToolName()));
+			} else {
+				kValues.add(KeyValues.entry(CONFIGKEY_LTI_13, translate("config.lti.13")));
+			}
+		}
+		ltiVersionEl = uifactory.addDropdownSingleselect("config.lti.version", "config.lti.version", formLayout, kValues.keys(), kValues.values());
+		ltiVersionEl.addActionListener(FormEvent.ONCHANGE);
+		String version = config.getStringValue(CONFIGKEY_LTI_VERSION, CONFIGKEY_LTI_11);
+		if(tool != null && ltiVersionEl.containsKey(tool.getKey().toString())) {
+			ltiVersionEl.select(tool.getKey().toString(), true);
+		} else if(kValues.containsKey(version)) {
+			ltiVersionEl.select(version, true);
+		} else {
+			ltiVersionEl.select(CONFIGKEY_LTI_13, true);
+		}
+		
 		thost = uifactory.addTextElement("host", "LTConfigForm.url", 255, fullURI, formLayout);
 		thost.setElementCssClass("o_sel_lti_config_title");
 		thost.setExampleKey("LTConfigForm.url.example", null);
-		thost.setDisplaySize(64);
 		thost.setMandatory(true);
+
+		initLti10Form(formLayout);
+		initLti13Form(formLayout);
 		
+		initLaunchForm(formLayout);
+		initAttributesForm(formLayout);
+		initRolesForm(formLayout);
+	
+		uifactory.addFormSubmitButton("save", formLayout);
+	}
+	
+	protected void initLti13Form(FormItemContainer formLayout) {
+		if(toolDeployement != null && StringHelper.containsNonWhitespace(toolDeployement.getTargetUrl())) {
+			thost.setValue(toolDeployement.getTargetUrl());
+		} else if(tool != null) {
+			thost.setValue(tool.getToolUrl());
+		}
+		
+		String clientId = tool == null ? null : tool.getClientId();
+		clientIdEl = uifactory.addTextElement("config.client.id", "config.client.id", 255, clientId, formLayout);
+
+		String deploymentId = toolDeployement == null ? null : toolDeployement.getDeploymentId();
+		deploymentIdEl = uifactory.addStaticTextElement("config.deployment.id", deploymentId, formLayout);
+		deploymentIdEl.setExampleKey("config.deployment.id.example", null);
+		
+		KeyValues kValues = new KeyValues();
+		kValues.add(KeyValues.entry(PublicKeyType.KEY.name(), translate("config.public.key.type.key")));
+		kValues.add(KeyValues.entry(PublicKeyType.URL.name(), translate("config.public.key.type.url")));
+		PublicKeyType publicKeyType = tool == null ? null : tool.getPublicKeyTypeEnum();
+		publicKeyTypeEl = uifactory.addDropdownSingleselect("config.public.key.type", "config.public.key.type", formLayout, kValues.keys(), kValues.values());
+		publicKeyTypeEl.addActionListener(FormEvent.ONCHANGE);
+		if(publicKeyType != null && kValues.containsKey(publicKeyType.name())) {
+			publicKeyTypeEl.select(publicKeyType.name(), true);
+		} else {
+			publicKeyTypeEl.select(kValues.keys()[0], true);
+		}
+		
+		String publicKey = tool == null ? null : tool.getPublicKey();
+		publicKeyEl = uifactory.addTextAreaElement("config.public.key.value", "config.public.key.value", -1, 15, 60, false, true, true, publicKey, formLayout);
+		
+		String publicKeyUrl = tool == null ? null : tool.getPublicKeyUrl();
+		publicKeyUrlEl = uifactory.addTextElement("config.public.key.url", "config.public.key.url", 255, publicKeyUrl, formLayout);
+		
+		String initiateLoginUrl = tool == null ? null : tool.getInitiateLoginUrl();
+		initiateLoginUrlEl = uifactory.addTextElement("config.initiate.login.url", "config.initiate.login.url", 255, initiateLoginUrl, formLayout);
+	}
+	
+	private void updateLtiVersion() {
+		String versionKey = ltiVersionEl.getSelectedKey();
+		if(CONFIGKEY_LTI_11.equals(versionKey)) {
+			// do something
+		} else if(CONFIGKEY_LTI_13.equals(versionKey)) {
+			if(toolDeployement != null && toolDeployement.getTool().getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE) {
+				backupToolDeployement = toolDeployement;
+				toolDeployement = null;
+			}
+			thost.setValue(null);
+			clientIdEl.setValue(null);
+			deploymentIdEl.setValue("");
+			publicKeyEl.setValue(null);
+			publicKeyUrlEl.setValue(null);
+			initiateLoginUrlEl.setValue(null);
+		} else if(StringHelper.isLong(versionKey)) {
+			tool = lti13Service.getToolByKey(Long.valueOf(versionKey));
+			boolean configurable = tool.getToolTypeEnum() == LTI13ToolType.EXTERNAL;
+
+			thost.setValue(tool.getToolUrl());
+			thost.setEnabled(configurable);
+			clientIdEl.setValue(tool.getClientId());
+			clientIdEl.setEnabled(false);
+			publicKeyTypeEl.select(tool.getPublicKeyTypeEnum().name(), true);
+			publicKeyTypeEl.setEnabled(configurable);
+			publicKeyEl.setValue(tool.getPublicKey());
+			publicKeyEl.setEnabled(configurable);
+			publicKeyUrlEl.setValue(tool.getPublicKeyUrl());
+			publicKeyUrlEl.setEnabled(configurable);
+			initiateLoginUrlEl.setValue(tool.getInitiateLoginUrl());
+			initiateLoginUrlEl.setEnabled(configurable);
+			
+			if(toolDeployement != null && !toolDeployement.getTool().equals(tool)) {
+				backupToolDeployement = toolDeployement;
+				toolDeployement = null;
+				deploymentIdEl.setValue("");
+			} else if(backupToolDeployement != null && backupToolDeployement.getTool().equals(tool)) {
+				toolDeployement = backupToolDeployement;
+				backupToolDeployement = null;
+				deploymentIdEl.setValue(toolDeployement.getDeploymentId());
+			}
+		}
+		updateUI();
+	}
+	
+	
+	private void updateUI() {
+		String selectedVersionKey = ltiVersionEl.getSelectedKey();
+		boolean lti13 = !CONFIGKEY_LTI_11.equals(selectedVersionKey);
+		boolean sharedTool = StringHelper.isLong(selectedVersionKey)
+				&& tool != null && tool.getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE;
+		
+		thost.setEnabled(!sharedTool);
+		
+		// LTI 1.3
+		clientIdEl.setVisible(lti13);
+		clientIdEl.setEnabled(!sharedTool);
+		deploymentIdEl.setVisible(lti13);
+		publicKeyTypeEl.setVisible(lti13);
+		publicKeyTypeEl.setEnabled(!sharedTool);
+		publicKeyEl.setVisible(lti13 && PublicKeyType.KEY.name().equals(publicKeyTypeEl.getSelectedKey()));
+		publicKeyEl.setEnabled(!sharedTool);
+		publicKeyUrlEl.setVisible(lti13 && PublicKeyType.URL.name().equals(publicKeyTypeEl.getSelectedKey()));
+		publicKeyUrlEl.setEnabled(!sharedTool);
+		initiateLoginUrlEl.setVisible(lti13);
+		initiateLoginUrlEl.setEnabled(!sharedTool);
+		
+		// LTI 1.1
+		tkey.setVisible(!lti13);
+		tpass.setVisible(!lti13);
+		
+		// Assessment
+		boolean assessEnabled = isAssessableEl.isAtLeastSelected(1);
+		scaleFactorEl.setVisible(assessEnabled);
+		cutValueEl.setVisible(assessEnabled);
+		ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && assessEnabled);
+		
+		boolean newWindow = LTIDisplayOptions.window.name().equals(displayEl.getSelectedKey());
+		boolean sizeVisible = !newWindow || !lti13;
+		heightEl.setVisible(sizeVisible);
+		widthEl.setVisible(sizeVisible); 
+	}
+	
+	protected void initLti10Form(FormItemContainer formLayout) {
 		tkey  = uifactory.addTextElement ("key","LTConfigForm.key", 255, key, formLayout);
 		tkey.setElementCssClass("o_sel_lti_config_key");
 		tkey.setExampleKey ("LTConfigForm.key.example", null);
@@ -274,8 +463,10 @@ public class LTIConfigForm extends FormBasicController {
 		tpass.setElementCssClass("o_sel_lti_config_pass");
 		tpass.setExampleKey("LTConfigForm.pass.example", null);
 		tpass.setMandatory(true);
-
-		uifactory.addSpacerElement("attributes", formLayout, false);
+	}
+	
+	protected void initLaunchForm(FormItemContainer formLayout) {
+		uifactory.addSpacerElement("launch", formLayout, false);
 
 		String[] enableValues = new String[]{ translate("on") };	
 		skipLaunchPageEl = uifactory.addCheckboxesHorizontal("display.config.skipLaunchPage", formLayout, enabledKeys, enableValues);
@@ -295,16 +486,24 @@ public class LTIConfigForm extends FormBasicController {
 		}
 		skipAcceptLaunchPageEl.setHelpTextKey("display.config.skipAcceptLaunchPageWarning", null);
 		skipAcceptLaunchPageEl.addActionListener(FormEvent.ONCHANGE);
-		
+	}
+
+	protected void initAttributesForm(FormItemContainer formLayout) {	
 		uifactory.addSpacerElement("attributes", formLayout, false);
 
 		sendName = uifactory.addCheckboxesHorizontal("sendName", "display.config.sendName", formLayout, new String[]{"xx"}, new String[]{null});
-		sendName.select("xx", sendNameConfig);
 		sendName.addActionListener(FormEvent.ONCHANGE);
+		if((toolDeployement != null && toolDeployement.getSendUserAttributesList().contains(UserConstants.LASTNAME))
+				|| config.getBooleanSafe(CONFIG_KEY_SENDNAME, false)) {
+			sendName.select("xx", true);
+		}
 		
 		sendEmail = uifactory.addCheckboxesHorizontal("sendEmail", "display.config.sendEmail", formLayout, new String[]{"xx"}, new String[]{null});
-		sendEmail.select("xx", sendEmailConfig);
 		sendEmail.addActionListener(FormEvent.ONCHANGE);
+		if((toolDeployement != null && toolDeployement.getSendUserAttributesList().contains(UserConstants.EMAIL))
+				|| config.getBooleanSafe(CONFIG_KEY_SENDEMAIL, false)) {
+			sendEmail.select("xx", true);
+		}
 		
 		boolean sendEnabled = sendName.isSelected(0) || sendEmail.isSelected(0);
 		skipAcceptLaunchPageEl.setVisible(sendEnabled);
@@ -315,20 +514,27 @@ public class LTIConfigForm extends FormBasicController {
 		customParamLayout.setLabel("display.config.custom", null);
 		formLayout.add(customParamLayout);
 		customParamLayout.contextPut("nameValuePairs", nameValuePairs);
-		updateNameValuePair((String)config.get(CONFIG_KEY_CUSTOM));
+		
+		String customConfig = toolDeployement != null ? toolDeployement.getSendCustomAttributes() : (String)config.get(CONFIG_KEY_CUSTOM);
+		updateNameValuePair(customConfig);
 		if(nameValuePairs.isEmpty()) {
 			createNameValuePair("", "", -1);
 		}
-		
+	}
+	
+	protected void initRolesForm(FormItemContainer formLayout) {
 		uifactory.addSpacerElement("roles", formLayout, false);
-		uifactory.addStaticTextElement("roletitle", "roles.title.oo", translate("roles.title.lti"), formLayout);
+		uifactory.addStaticTextElement("roletitle", "roles.title.oo", translate("roles.title.lti"), formLayout);	
 		
 		authorRoleEl = uifactory.addCheckboxesHorizontal("author", "author.roles", formLayout, ltiRolesKeys, ltiRolesValues);
-		udpateRoles(authorRoleEl, BasicLTICourseNode.CONFIG_KEY_AUTHORROLE, "Instructor,Administrator,TeachingAssistant,ContentDeveloper,Mentor"); 
+		String authorDeploymentRoles = toolDeployement == null ? null : toolDeployement.getAuthorRoles();
+		udpateRoles(authorRoleEl, BasicLTICourseNode.CONFIG_KEY_AUTHORROLE, authorDeploymentRoles, "Instructor,Administrator,TeachingAssistant,ContentDeveloper,Mentor"); 
 		coachRoleEl = uifactory.addCheckboxesHorizontal("coach", "coach.roles", formLayout, ltiRolesKeys, ltiRolesValues);
-		udpateRoles(coachRoleEl, BasicLTICourseNode.CONFIG_KEY_COACHROLE, "Instructor,TeachingAssistant,Mentor");
+		String coachDeploymentRoles = toolDeployement == null ? null : toolDeployement.getCoachRoles();
+		udpateRoles(coachRoleEl, BasicLTICourseNode.CONFIG_KEY_COACHROLE, coachDeploymentRoles, "Instructor,TeachingAssistant,Mentor");
 		participantRoleEl = uifactory.addCheckboxesHorizontal("participant", "participant.roles", formLayout, ltiRolesKeys, ltiRolesValues);
-		udpateRoles(participantRoleEl, BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, "Learner"); 
+		String participantsDeploymentRoles = toolDeployement == null ? null : toolDeployement.getParticipantRoles();
+		udpateRoles(participantRoleEl, BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, participantsDeploymentRoles, "Learner"); 
 		
 		uifactory.addSpacerElement("scoring", formLayout, false);
 		
@@ -364,15 +570,18 @@ public class LTIConfigForm extends FormBasicController {
 		
 		uifactory.addSpacerElement("display", formLayout, false);
 		
-		String display = config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
+		String display = toolDeployement != null ? toolDeployement.getDisplay()
+				: config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
 		displayEl = uifactory.addRadiosVertical("display.window", "display.config.window", formLayout, displayKeys, displayValues);
+		displayEl.addActionListener(FormEvent.ONCHANGE);
 		for(String displayKey:displayKeys) {
 			if(displayKey.equals(display)) {
 				displayEl.select(displayKey, true);
 			}
 		}
 		
-		String height = config.getStringValue(BasicLTICourseNode.CONFIG_HEIGHT, BasicLTICourseNode.CONFIG_HEIGHT_AUTO);
+		String height = toolDeployement != null ? toolDeployement.getDisplayHeight()
+				: config.getStringValue(BasicLTICourseNode.CONFIG_HEIGHT, BasicLTICourseNode.CONFIG_HEIGHT_AUTO);
 		heightEl = uifactory.addDropdownSingleselect("display.height", "display.config.height", formLayout, heightKeys, heightValues, null);
 		for(String heightKey:heightKeys) {
 			if(heightKey.equals(height)) {
@@ -380,7 +589,8 @@ public class LTIConfigForm extends FormBasicController {
 			}
 		}
 
-		String width = config.getStringValue(BasicLTICourseNode.CONFIG_WIDTH, BasicLTICourseNode.CONFIG_HEIGHT_AUTO);
+		String width = toolDeployement != null ? toolDeployement.getDisplayWidth()
+				: config.getStringValue(BasicLTICourseNode.CONFIG_WIDTH, BasicLTICourseNode.CONFIG_HEIGHT_AUTO);
 		widthEl = uifactory.addDropdownSingleselect("display.width", "display.config.width", formLayout, heightKeys, heightValues, null);
 		for(String heightKey:heightKeys) {
 			if(heightKey.equals(width)) {
@@ -392,9 +602,7 @@ public class LTIConfigForm extends FormBasicController {
 		
 		doDebug = uifactory.addCheckboxesHorizontal("doDebug", "display.config.doDebug", formLayout, new String[]{"xx"}, new String[]{null});
 		doDebug.select("xx", doDebugConfig);
-				
-		uifactory.addSpacerElement("buttons", formLayout, false);
-		uifactory.addFormSubmitButton("save", formLayout);
+	
 	}
 	
 	@Override
@@ -475,10 +683,12 @@ public class LTIConfigForm extends FormBasicController {
 		}
 	}
 	
-	private void udpateRoles(MultipleSelectionElement roleEl, String configKey, String defaultRoles) {
+	private void udpateRoles(MultipleSelectionElement roleEl, String configKey, String deploymentRoles, String defaultRoles) {
 		Object configRoles = config.get(configKey);
 		String roles = defaultRoles;
-		if(configRoles instanceof String) {
+		if(StringHelper.containsNonWhitespace(deploymentRoles)) {
+			roles = deploymentRoles;
+		} else if(configRoles instanceof String) {
 			roles = (String)configRoles;
 		}
 		String[] roleArr = roles.split(",");
@@ -489,9 +699,9 @@ public class LTIConfigForm extends FormBasicController {
 	
 	private String getRoles(MultipleSelectionElement roleEl) {
 		StringBuilder sb = new StringBuilder();
-		for(String key:roleEl.getSelectedKeys()) {
+		for(String role:roleEl.getSelectedKeys()) {
 			if(sb.length() > 0) sb.append(',');
-			sb.append(key);
+			sb.append(role);
 		}
 		return sb.toString();
 	}
@@ -523,13 +733,19 @@ public class LTIConfigForm extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) { 
 		boolean allOk = super.validateFormLogic(ureq);
 		try {
-			new URL(thost.getValue());
+			URL url = new URL(thost.getValue());
+			if(url.getHost() == null) {
+				thost.setErrorKey("LTConfigForm.invalidurl", null);
+				allOk &= false;
+			}
 		} catch (MalformedURLException e) {
 			thost.setErrorKey("LTConfigForm.invalidurl", null);
 			allOk &= false;
 		}
-		allOk &= validateFloat(cutValueEl);
-		allOk &= validateFloat(scaleFactorEl);
+		if(cutValueEl != null) {
+			allOk &= validateFloat(cutValueEl);
+			allOk &= validateFloat(scaleFactorEl);
+		}
 		return allOk;
 	}
 	
@@ -554,12 +770,10 @@ public class LTIConfigForm extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == isAssessableEl) {
-			boolean assessEnabled = isAssessableEl.isAtLeastSelected(1);
-			scaleFactorEl.setVisible(assessEnabled);
-			cutValueEl.setVisible(assessEnabled);
-			ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && assessEnabled);
-			flc.setDirty(true);
+		if(isAssessableEl == source || displayEl == source || publicKeyTypeEl == source) {
+			updateUI();
+		} else if(ltiVersionEl == source) {
+			updateLtiVersion();
 		} else if (sendName == source || sendEmail == source) {
 			boolean sendEnabled = sendName.isSelected(0) || sendEmail.isSelected(0);
 			skipAcceptLaunchPageEl.setVisible(sendEnabled);
@@ -634,6 +848,91 @@ public class LTIConfigForm extends FormBasicController {
 		config.set(CONFIGKEY_QUERY, url.getQuery());
 		int port = url.getPort();
 		config.set(CONFIGKEY_PORT, Integer.valueOf(port != -1 ? port : url.getDefaultPort()));
+		
+		String ltiVersion = ltiVersionEl.getSelectedKey();
+		if(CONFIGKEY_LTI_13.equals(ltiVersion) || StringHelper.isLong(ltiVersion)) {
+			config.set(CONFIGKEY_LTI_VERSION, CONFIGKEY_LTI_13);
+			return getUpdatedConfigLti13();
+		}
+		config.set(CONFIGKEY_LTI_VERSION, CONFIGKEY_LTI_11);
+		return getUpdatedConfigLti11();
+	}
+	
+	private ModuleConfiguration getUpdatedConfigLti13() {
+		String targetUrl = thost.getValue();
+		String clientId = clientIdEl.getValue();
+		String initiateLoginUrl = initiateLoginUrlEl.getValue();
+		
+		boolean canUpdateTool = tool == null || LTI13ToolType.EXTERNAL.equals(tool.getToolTypeEnum());
+		if(tool == null) {
+			tool = lti13Service.createExternalTool(courseEntry.getDisplayname(), targetUrl, clientId, initiateLoginUrl, LTI13ToolType.EXTERNAL);
+		} else if(canUpdateTool) {
+			tool.setToolUrl(targetUrl);
+		}
+		
+		if(canUpdateTool) {
+			tool.setInitiateLoginUrl(initiateLoginUrlEl.getValue());
+			
+			PublicKeyType publicKeyType = PublicKeyType.valueOf(publicKeyTypeEl.getSelectedKey());
+			tool.setPublicKeyTypeEnum(publicKeyType);
+			if(publicKeyType == PublicKeyType.KEY) {
+				tool.setPublicKey(publicKeyEl.getValue());
+				tool.setPublicKeyUrl(null);
+			} else if(publicKeyType == PublicKeyType.URL) {
+				tool.setPublicKey(null);
+				tool.setPublicKeyUrl(publicKeyUrlEl.getValue());
+			}
+			tool = lti13Service.updateTool(tool);
+		}
+		
+		if(backupToolDeployement != null && backupToolDeployement.getTool().equals(tool)) {
+			toolDeployement = backupToolDeployement;
+			backupToolDeployement = null;
+		}
+		if(toolDeployement == null || !toolDeployement.getTool().equals(tool)) {
+			toolDeployement = lti13Service.createToolDeployment(targetUrl, tool, courseEntry, subIdent);
+		} else {
+			toolDeployement.setTargetUrl(targetUrl);
+		}
+		deploymentIdEl.setValue(toolDeployement.getDeploymentId());
+		
+		List<String> sendAttributes = new ArrayList<>();
+		if(sendName.isAtLeastSelected(1)) {
+			sendAttributes.add(UserConstants.FIRSTNAME);
+			sendAttributes.add(UserConstants.LASTNAME);
+		}
+		if(sendEmail.isAtLeastSelected(1)) {
+			sendAttributes.add(UserConstants.EMAIL);
+		}
+		toolDeployement.setSendUserAttributesList(sendAttributes);
+		toolDeployement.setSendCustomAttributes(getCustomConfig());
+		
+		toolDeployement.setAuthorRoles(getRoles(authorRoleEl));
+		toolDeployement.setCoachRoles(getRoles(coachRoleEl));
+		toolDeployement.setParticipantRoles(getRoles(participantRoleEl));
+		
+		String display = displayEl.isOneSelected() ?displayEl.getSelectedKey() : LTIDisplayOptions.iframe.name();
+		toolDeployement.setDisplay(display);
+		String height = heightEl.isOneSelected() ? heightEl.getSelectedKey() : null;
+		toolDeployement.setDisplayHeight(height);
+		String width =  widthEl.isOneSelected() ?  widthEl.getSelectedKey() : null;
+		toolDeployement.setDisplayWidth(width);
+		
+		boolean assessable = isAssessableEl.isAtLeastSelected(1);
+		toolDeployement.setAssessable(assessable);
+		
+		boolean skipLaunchPage = (ltiModule.isForceLaunchPage() || skipAcceptLaunchPageEl.isAtLeastSelected(1))
+				&& (sendName.isSelected(0) || sendEmail.isSelected(0));
+		toolDeployement.setSkipLaunchPage(skipLaunchPage);
+
+		toolDeployement = lti13Service.updateToolDeployment(toolDeployement);
+		
+		config.setStringValue(CONFIGKEY_13_DEPLOYMENT_KEY, toolDeployement.getKey().toString());
+		getUpdateConfigCommon();
+		return config;
+	}
+	
+	private ModuleConfiguration getUpdatedConfigLti11() {
 		config.set(CONFIGKEY_KEY, getFormKey());
 		config.set(CONFIGKEY_PASS, tpass.getValue());
 		config.set(CONFIG_KEY_DEBUG, Boolean.toString(doDebug.isSelected(0)));
@@ -643,14 +942,37 @@ public class LTIConfigForm extends FormBasicController {
 		} else {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE, Boolean.FALSE);
 		}
+
 		config.set(CONFIG_KEY_SENDNAME, Boolean.toString(sendName.isSelected(0)));
 		config.set(CONFIG_KEY_SENDEMAIL, Boolean.toString(sendEmail.isSelected(0)));
+		
+		config.set(BasicLTICourseNode.CONFIG_KEY_AUTHORROLE, getRoles(authorRoleEl));
+		config.set(BasicLTICourseNode.CONFIG_KEY_COACHROLE, getRoles(coachRoleEl));
+		config.set(BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, getRoles(participantRoleEl));
+		
+		if(displayEl.isOneSelected()) {
+			config.set(BasicLTICourseNode.CONFIG_DISPLAY, displayEl.getSelectedKey());
+		} else {
+			config.set(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
+		}
+		if(heightEl.isOneSelected()) {
+			config.set(BasicLTICourseNode.CONFIG_HEIGHT, heightEl.getSelectedKey());
+		}
+		if(widthEl.isOneSelected()) {
+			config.set(BasicLTICourseNode.CONFIG_WIDTH, widthEl.getSelectedKey());
+		}
+		
 		if ((ltiModule.isForceLaunchPage() || skipAcceptLaunchPageEl.isAtLeastSelected(1)) && (sendName.isSelected(0) || sendEmail.isSelected(0))) {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE, Boolean.TRUE);
 		} else {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE, Boolean.FALSE);
 		}
 		
+		getUpdateConfigCommon();
+		return config;
+	}
+	
+	private void getUpdateConfigCommon() {
 		if(isAssessableEl.isAtLeastSelected(1)) {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.TRUE);
 			
@@ -679,23 +1001,6 @@ public class LTIConfigForm extends FormBasicController {
 			config.remove(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
 			config.remove(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		}
-
-		config.set(BasicLTICourseNode.CONFIG_KEY_AUTHORROLE, getRoles(authorRoleEl));
-		config.set(BasicLTICourseNode.CONFIG_KEY_COACHROLE, getRoles(coachRoleEl));
-		config.set(BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, getRoles(participantRoleEl));
-		
-		if(displayEl.isOneSelected()) {
-			config.set(BasicLTICourseNode.CONFIG_DISPLAY, displayEl.getSelectedKey());
-		} else {
-			config.set(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
-		}
-		if(heightEl.isOneSelected()) {
-			config.set(BasicLTICourseNode.CONFIG_HEIGHT, heightEl.getSelectedKey());
-		}
-		if(widthEl.isOneSelected()) {
-			config.set(BasicLTICourseNode.CONFIG_WIDTH, widthEl.getSelectedKey());
-		}
-		return config;
 	}
 	
 	private Float getFloat(String text) {

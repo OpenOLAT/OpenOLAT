@@ -1,0 +1,36 @@
+#if($r.available("backLink"))
+	<div id="o_back_wrapper" class="o_toolbar clearfix">
+		<div class="o_breadcrumb">
+			<ol class="breadcrumb">
+				<li>$r.render("backLink")</li>
+			</ol>
+		</div>
+	</div>
+#end
+<div class="o_iframedisplay">
+	#if($r.isTrue($newWindow))
+		<div class="o_info">$r.translate("popup.info")</div>
+	#end
+	
+	<form id="frmConnect" name="frmConnect" action="${initiateLoginUrl}" method="post" enctype="application/x-www-form-urlencoded" #if($r.isTrue($newWindow)) target="_blank" #else target="connectframe" #end>
+		<div>
+			<input type="hidden" name="client_id" value="${client_id}">
+            <input type="hidden" name="iss" value="${iss}">
+            <input type="hidden" name="login_hint" value="${login_hint}">
+            <input type="hidden" name="lti_deployment_id" value="${lti_deployment_id}">
+            <input type="hidden" name="lti_message_hint" value="${lti_message_hint}">
+            <input type="hidden" name="target_link_uri" value="${target_link_uri}">
+		</div>
+		#if($r.isTrue($newWindow))
+			<div class="o_button_group"><button href="javascript:;" class="btn btn-primary" onclick="document.forms['frmConnect'].submit()">$r.translate("popup.link")</button></div>
+		#end
+	</form>
+	
+	#if($r.isFalse($newWindow))
+		<iframe id="connectframe" name="connectframe" src="about:blank"  marginwidth="0" marginheight="0" #if($r.isNotEmpty($width)) width="${width}px" #end #if($r.isNotEmpty($height)) height="${height}px" #end frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+	#end
+	<script>
+		document.forms['frmConnect'].submit();
+		jQuery(function() { b_resizeIframeToMainMaxHeight("connectframe"); });
+	</script>
+</div>

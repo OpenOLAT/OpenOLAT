@@ -154,6 +154,13 @@ public class DisclaimerController extends BasicController {
 
 		putInitialPanel(main);
 	}
+	
+	public String getAndRemoveTitle() {
+		if(disclaimerFormController != null) {
+			return disclaimerFormController.getAndRemoveFormTitle();
+		}
+		return null;
+	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {

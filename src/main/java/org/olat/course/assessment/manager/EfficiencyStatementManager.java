@@ -252,7 +252,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		}					
 		
 		// send modified event to everybody
-		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED, assessedIdentity);
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED,
+				assessedIdentity, repoEntry, null, null);
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseEnv.getCourseResourceableId());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, courseOres);
 	}

@@ -26,7 +26,19 @@ package org.olat.ims.lti;
  *
  */
 public enum LTIDisplayOptions {
-	iframe, fullscreen, window;
+	iframe("iframe"),
+	fullscreen("iframe"),
+	window("window");
+	
+	private final String lti13Value;
+	
+	private LTIDisplayOptions(String lti13Value) {
+		this.lti13Value = lti13Value;
+	}
+	
+	public String lti13Value() {
+		return lti13Value;
+	}
 	
 	public static LTIDisplayOptions valueOfOrDefault(String val) {
 		LTIDisplayOptions opt = LTIDisplayOptions.iframe;

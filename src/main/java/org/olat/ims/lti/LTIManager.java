@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.course.ICourse;
 import org.olat.resource.OLATResource;
 
 /**
@@ -51,6 +52,17 @@ public interface LTIManager {
 	public LTIOutcome loadOutcomeByKey(Long key);
 
 	public List<LTIOutcome> loadOutcomes(Identity identity, OLATResource resource, String resSubPath);
+	
+	/**
+	 * 
+	 * @param assessedId The assessed identity
+	 * @param score The score return by the LTI tool
+	 * @param course The course
+	 * @param courseNodeId The course identifier
+	 */
+	public void updateScore(Identity assessedId, Float score, ICourse course, String courseNodeId);
+	
+	public Float getScore(Identity assessedId, ICourse course, String courseNodeId);
 
 	/**
 	 * Remove the outcomes of a resource, typically before deleting a course.

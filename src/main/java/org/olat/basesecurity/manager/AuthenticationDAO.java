@@ -229,17 +229,18 @@ public class AuthenticationDAO {
 	 * @param provider The provider
 	 * @return An authentication
 	 */
-	public Authentication getAuthentication(String authUsername, String provider) {
+	public Authentication getAuthentication(String authUsername, String provider, String issuer) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity as ident")
 		  .append(" inner join fetch ident.user as user")
-		  .append(" where lower(auth.authusername)=:authUsername and auth.provider=:provider");
+		  .append(" where lower(auth.authusername)=:authUsername and auth.provider=:provider and auth.issuer=:issuer");
 		List<Authentication> authentications = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
 				.setFlushMode(FlushModeType.COMMIT)
 				.setParameter("authUsername", authUsername.toLowerCase())
 				.setParameter("provider", provider)
+				.setParameter("issuer", issuer)
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();

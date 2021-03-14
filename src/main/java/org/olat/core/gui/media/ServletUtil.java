@@ -41,6 +41,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -72,15 +73,48 @@ public class ServletUtil {
 	public static final void printOutRequestParameters(HttpServletRequest request) {
 		for(Enumeration<String> names=request.getParameterNames(); names.hasMoreElements(); ) {
 			String name = names.nextElement();
-			log.info(name + " :: " + request.getParameter(name));
+			log.info("Parameter {} :: {}", name, request.getParameter(name));
 		}
 	}
 	
 	public static final void printOutRequestHeaders(HttpServletRequest request) {
 		for(Enumeration<String> headers=request.getHeaderNames(); headers.hasMoreElements(); ) {
 			String header = headers.nextElement();
-			log.info(header + " :: " + request.getHeader(header));
+			log.info("Header {} :: {}", header, request.getHeader(header));
 		}
+	}
+	
+	public static final void printOutRequestCookies(HttpServletRequest request) {
+		Cookie[] cookies = request.getCookies();
+		
+		if (cookies != null) {
+			for (int i = 0; i < cookies.length; i++) {
+				Cookie cookie=cookies[i];
+				String cookieName = cookie.getName();
+				String cookieValue = cookie.getValue();
+				if (!StringHelper.containsNonWhitespace(cookieName) ) continue;
+
+				log.info("Cookie {} :: {}", cookieName, cookieValue);
+			}
+		}
+	}
+	
+	public static String getCookie(HttpServletRequest request, String lookup) {
+		if ( request == null || lookup == null ) return null;
+
+		// https://stackoverflow.com/questions/11047548/getting-cookie-in-servlet
+		Cookie[] cookies = request.getCookies();
+		if ( cookies == null ) return null;
+		for (int i = 0; i < cookies.length; i++) {
+			Cookie cookie=cookies[i];
+			String cookieName = cookie.getName();
+			String cookieValue = cookie.getValue();
+			if (!StringHelper.containsNonWhitespace(cookieName) ) continue;
+			if ( cookieName.equalsIgnoreCase(lookup) ) {
+				return cookieValue;
+			}
+		}
+		return null;
 	}
 	
 	public static final boolean acceptJson(HttpServletRequest request) {

@@ -46,16 +46,26 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.nodes.BasicLTICourseNode;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.ims.lti.LTIContext;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.LTIOutcome;
 import org.olat.ims.lti.model.LTIOutcomeImpl;
 import org.olat.ldap.ui.LDAPAuthenticationController;
+import org.olat.modules.assessment.Role;
 import org.olat.resource.OLATResource;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserManager;
@@ -79,6 +89,8 @@ public class LTIManagerImpl implements LTIManager {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	@Override
 	public LTIOutcome createOutcome(Identity identity, OLATResource resource,
@@ -359,5 +371,56 @@ public class LTIManagerImpl implements LTIManager {
 	@Override
 	public String getUsername(IdentityRef identity) {
 		return securityManager.findAuthenticationName(identity);
+	}
+
+	@Override
+	public void updateScore(Identity assessedId, Float score, ICourse course, String courseNodeId) {
+		CourseNode node = course.getRunStructure().getNode(courseNodeId);
+		if(node instanceof BasicLTICourseNode) {
+			BasicLTICourseNode ltiNode = (BasicLTICourseNode)node;
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
+
+			Float cutValue = ltiNode.getCutValue(assessmentConfig);
+			
+			Float scaledScore = null;
+			Boolean passed = null;
+			if(score != null) {
+				float scale = ltiNode.getScalingFactor();
+				scaledScore = score * scale;
+				if(cutValue != null) {
+					passed = scaledScore >= cutValue;
+				}
+			}
+			
+			ScoreEvaluation eval = new ScoreEvaluation(scaledScore, passed);
+			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(assessedId, course);
+			courseAssessmentService.updateScoreEvaluation(node, eval, userCourseEnv, assessedId, false, Role.user);
+		}
+	}
+	
+	@Override
+	public Float getScore(Identity assessedId, ICourse course, String courseNodeId) {
+		Float score = null;
+		CourseNode node = course.getRunStructure().getNode(courseNodeId);
+		if(node instanceof BasicLTICourseNode) {
+			BasicLTICourseNode ltiNode = (BasicLTICourseNode)node;
+			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(assessedId, course);
+			ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(ltiNode, userCourseEnv);
+			if(eval != null && eval.getScore() != null) {
+				float scaledScore = eval.getScore();
+				if(scaledScore > 0.0f) {
+					float scale = ltiNode.getScalingFactor();
+					scaledScore = scaledScore / scale;
+				}
+				score = Float.valueOf(scaledScore);
+			}
+		}
+		return score;
+	}
+
+	private UserCourseEnvironment getUserCourseEnvironment(Identity identity, ICourse course) {
+		IdentityEnvironment identityEnvironment = new IdentityEnvironment();
+		identityEnvironment.setIdentity(identity);
+		return new UserCourseEnvironmentImpl(identityEnvironment, course.getCourseEnvironment());
 	}
 }

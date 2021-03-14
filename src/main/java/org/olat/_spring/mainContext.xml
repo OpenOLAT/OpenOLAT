@@ -34,6 +34,7 @@
 	<import resource="classpath:/org/olat/home/_spring/homeContext.xml"/>
 	<import resource="classpath:/org/olat/gui/control/_spring/navContext.xml"/>
 	<import resource="classpath:/org/olat/ims/_spring/imsContext.xml"/>
+	<import resource="classpath:/org/olat/ims/lti13/_spring/lti13Context.xml"/>
 	<import resource="classpath:/org/olat/instantMessaging/_spring/instantMessagingContext.xml"/>
 	<import resource="classpath:/org/olat/ldap/_spring/ldapContext.xml"/>
 	<import resource="classpath:/org/olat/login/_spring/loginContext.xml"/>

@@ -177,7 +177,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "ATTEMPTS set to: " + attempts, by);
 
 		// notify about changes
-		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED, assessedIdentity);
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED,
+				assessedIdentity, cgm.getCourseEntry(), courseNode, entryRoot);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 
 		// user activity logging
@@ -201,7 +202,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "COMMENT set to: " + comment, null);
 
 		// notify about changes
-		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_USER_COMMENT_CHANGED, assessedIdentity);
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_USER_COMMENT_CHANGED,
+				assessedIdentity, cgm.getCourseEntry(), courseNode, entryRoot);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 
 		// user activity logging
@@ -309,7 +311,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 		
 		// notify about changes
-		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_COACH_COMMENT_CHANGED, assessedIdentity);
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_COACH_COMMENT_CHANGED,
+				assessedIdentity, cgm.getCourseEntry(), courseNode, entryRoot);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 
 		// user activity logging
@@ -344,7 +347,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		
 		// notify about changes
-		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED, assessedIdentity);
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED,
+				assessedIdentity, cgm.getCourseEntry(), courseNode, entryRoot);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
 		// user activity logging
@@ -370,7 +374,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		
 		// notify about changes
-		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED, assessedIdentity);
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED,
+				assessedIdentity, cgm.getCourseEntry(), courseNode, entryRoot);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 	}
 	
@@ -550,7 +555,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		
 		// notify about changes
-		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED, assessedIdentity);
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED,
+				assessedIdentity, cgm.getCourseEntry(), courseNode, entryRoot);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
 		// user activity logging
@@ -617,7 +623,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		logAuditPassed(rootNode, coach, Role.coach, userCourseEnvironment, passed);
 		logActivityPassed(assessedIdentity, passed);
 		
-		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED, assessedIdentity);
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED,
+				assessedIdentity, cgm.getCourseEntry(), rootNode, Boolean.TRUE);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
@@ -655,7 +662,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		logAuditPassed(rootNode, coach, Role.coach, userCourseEnvironment, passed);
 		logActivityPassed(assessedIdentity, passed);
 		
-		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED, assessedIdentity);
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED,
+				assessedIdentity, cgm.getCourseEntry(), rootNode, Boolean.TRUE);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);

@@ -319,6 +319,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		return resumeSessionCtrl != null && resumeSessionCtrl.userInteractionNeeded();
 	}
 
+	@Override
+	public boolean delayLaunch(UserRequest ureq, BusinessControl bc) {
+		return false;
+	}
+
 	/**
 	 * Remove all possible redirect commands in session.
 	 * 
