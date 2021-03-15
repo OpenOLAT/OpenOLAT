@@ -21,6 +21,8 @@ package org.olat.course.condition;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -32,12 +34,16 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ConditionTest extends OlatTestCase {
+	
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	@Test
 	public void complexExpression() throws Exception {
@@ -313,6 +319,29 @@ public class ConditionTest extends OlatTestCase {
 		condition = "isNotInUserProperty(\"lastName\", \"firstcondition\")";
 		result = interpreter.evaluateCondition(condition);
 		Assert.assertTrue(condition, result);
+	}
+	
+	@Test
+	public void testIsUser() throws Exception {
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		Identity identity = uce.getIdentityEnvironment().getIdentity();
+		Authentication olatAuthentication = securityManager.findAuthentication(identity, "OLAT");
+		Assert.assertNotNull(olatAuthentication);
+
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+		String condition = "isUser(\"" + olatAuthentication.getAuthusername() + "\")";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+	}
+	
+	@Test
+	public void testIsNotUser() throws Exception {
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+		String condition = "isUser(\"administrator\")";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
 	}
 	
 	@Test
