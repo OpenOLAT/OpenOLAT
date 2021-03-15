@@ -43,6 +43,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.cache.CacheWrapper;
@@ -389,7 +390,8 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			Organisation ltiOrganisation = getLTIOrganisation();
 			User user = userManager.createUser(givenName, familyName, email);
 			user.getPreferences().setLanguage(locale.toString());
-			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, sub, sub, user,
+			String nickName = "l" + CodeHelper.getForeverUniqueID();
+			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, nickName, null, user,
 					LTI13Service.LTI_PROVIDER, issuer, sub, null, ltiOrganisation, null);
 		}
 		return identity;

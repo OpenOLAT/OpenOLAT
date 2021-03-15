@@ -26,8 +26,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.util.CodeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.ims.lti13.LTI13Constants.UserSub;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
 import org.olat.ims.lti13.manager.LTI13PlatformSigningPrivateKeyResolver;
 import org.olat.ims.lti13.manager.LTI13ServiceImpl;
@@ -36,6 +39,7 @@ import org.olat.ims.lti13.manager.LTI13ToolDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,6 +47,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.impl.DefaultClaims;
 
 /**
  * 
@@ -99,6 +104,45 @@ public class LTI13ServiceTest extends OlatTestCase {
 		
 		Assert.assertNotNull(jwt);
 		Assert.assertEquals(nonce, ((Claims)jwt.getBody()).get("nonce"));
+	}
+	
+	@Test
+	public void matchIdentityNewUser() {
+		DefaultClaims claims = new DefaultClaims();
+		String sub = Long.toString(CodeHelper.getForeverUniqueID());
+		claims.setSubject(sub);
+		claims.setIssuer("https://cuberai.openolat.com");
+		claims.put(UserSub.GIVEN_NAME, "Fabio");
+		claims.put(UserSub.FAMILY_NAME, "Orlando");
+		String email = "f.orlando." + sub + "@openolat.com";
+		claims.put(UserSub.EMAIL, email);
+		claims.put(UserSub.LOCALE, "en-US");
+
+		Identity identity = lti13Service.matchIdentity(claims);
+		Assert.assertNotNull(identity);
+		Assert.assertNotNull(identity.getUser().getNickName());
+		Assert.assertNotEquals(sub, identity.getUser().getNickName());
+		Assert.assertEquals("Fabio", identity.getUser().getFirstName());
+		Assert.assertEquals("Orlando", identity.getUser().getLastName());
+		Assert.assertEquals(email, identity.getUser().getEmail());
+	}
+	
+	@Test
+	public void matchIdentityCurrentUser() {
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("lti-user-1");
+		User user = ident.getIdentity().getUser();
+		
+		DefaultClaims claims = new DefaultClaims();
+		String sub = Long.toString(CodeHelper.getForeverUniqueID());
+		claims.setSubject(sub);
+		claims.setIssuer("https://cuberai.openolat.com");
+		claims.put(UserSub.GIVEN_NAME, user.getFirstName());
+		claims.put(UserSub.FAMILY_NAME, user.getLastName());
+		claims.put(UserSub.EMAIL, user.getEmail());
+		claims.put(UserSub.LOCALE, "en-US");
+
+		Identity identity = lti13Service.matchIdentity(claims);
+		Assert.assertEquals(ident.getIdentity(), identity);
 	}
 	
 	@Test
