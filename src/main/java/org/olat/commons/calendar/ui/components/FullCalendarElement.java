@@ -304,9 +304,9 @@ public class FullCalendarElement extends FormItemImpl {
 		Date currentDate = component.getCurrentDate();
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(currentDate);
-		calendar.add(Calendar.MONTH, -2);
+		calendar.add(Calendar.MONTH, -12);
 		Date from = calendar.getTime();
-		calendar.add(Calendar.MONTH, +4);
+		calendar.add(Calendar.MONTH, +36);
 		Date to = calendar.getTime();
 		
 		List<KalendarEvent> events = calendarManager.getEvents(cal.getKalendar(), from, to, privateEventsVisible);
