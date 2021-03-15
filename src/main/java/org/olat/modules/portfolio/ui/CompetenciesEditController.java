@@ -150,6 +150,9 @@ public class CompetenciesEditController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 		if (source == editLink) {
 			initFormEditableState(true);
+		} else if(source == competenciesEl) {
+			fireEvent(ureq, Event.CHANGED_EVENT);
+			initFormEditableState(false);
 		}
 	}
 	

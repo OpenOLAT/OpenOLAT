@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementImpl;
@@ -100,7 +101,11 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		
 		if (tblComponent.showSaveButton()) {
 			sb.append("<span class='input-group-btn'>")
-			  .append("<button class='btn btn-primary o_button_dirty' type='submit'>")
+			  .append("<button class='btn btn-primary o_button_dirty' type='submit'");
+			
+			StringBuilder js = FormJSHelper.getRawJSFor(te.getRootForm(), dispatchId, FormEvent.ONCLICK);
+			sb.append(js);
+			sb.append(">")
 			  .append(translator.translate("save"))
 			  .append("</button></span>")
 			  .append("</span>");
