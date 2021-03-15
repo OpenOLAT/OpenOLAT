@@ -1047,11 +1047,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 			((SectionImpl)reloadedSection).setSectionStatus(SectionStatus.inProgress);
 		}
 		Page page = pageDao.createAndPersist(title, summary, imagePath, align, editable, reloadedSection, pageDelegate);
-		for (TaxonomyCompetence competence : portfolioPageToTaxonomyCompetenceDAO.getCompetenciesToPortfolioPage(pageDelegate, false)) {
-			portfolioPageToTaxonomyCompetenceDAO.createRelation(page, taxonomyCompetenceDAO.createTaxonomyCompetence(competence.getCompetenceType(), competence.getTaxonomyLevel(), competence.getIdentity(), competence.getExpiration()));
+		if(pageDelegate != null) {
+			for (TaxonomyCompetence competence : portfolioPageToTaxonomyCompetenceDAO.getCompetenciesToPortfolioPage(pageDelegate, false)) {
+				portfolioPageToTaxonomyCompetenceDAO.createRelation(page, taxonomyCompetenceDAO.createTaxonomyCompetence(competence.getCompetenceType(), competence.getTaxonomyLevel(), competence.getIdentity(), competence.getExpiration()));
+			}
+			updateCategories(page, getCategories(pageDelegate).stream().map(cat -> cat.getName()).collect(Collectors.toList()));
 		}
-		
-		updateCategories(page, getCategories(pageDelegate).stream().map(cat -> cat.getName()).collect(Collectors.toList()));
 		
 		groupDao.addMembershipTwoWay(page.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		return page;
