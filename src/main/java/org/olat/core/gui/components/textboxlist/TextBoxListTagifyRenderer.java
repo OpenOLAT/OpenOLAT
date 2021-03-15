@@ -78,7 +78,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 			sb.append("<span class='o_tags_with_icon input-group-sm'>");
 			sb.append("<i class='o_icon o_icon_fw " + icon + "'> </i>");
 		}
-		if (StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {
+		if (tblComponent.isShowLabelAsInlineText() && StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {
 			sb.append("&nbsp").append(tblComponent.getTextElementImpl().getLabelText()).append("&nbsp");
 		}
 		if (tblComponent.showSaveButton()) {
@@ -274,7 +274,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 			output.append("<i class='o_icon o_icon_fw ").append(icon).append("'> </i> ");
 		}
 		
-		if (StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {
+		if (tblComponent.isShowLabelAsInlineText() && StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {
 			output.append("&nbsp").append(tblComponent.getTextElementImpl().getLabelText()).append("&nbsp");
 		}
 		
