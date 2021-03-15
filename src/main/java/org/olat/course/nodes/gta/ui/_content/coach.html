@@ -56,6 +56,11 @@
 			<br>
 			#if($hasUploadedDocs)
 				$r.translate("coach.waiting.submitted.documents.ready.description")
+				#if($docsEdit)
+					<div class="o_warning">
+						$r.translate("coach.documents.editing")
+					</div>
+				#end
 			#else 
 				$r.translate("coach.waiting.submitted.documents.description")
 			#end

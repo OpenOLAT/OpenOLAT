@@ -22,8 +22,14 @@ package org.olat.course.nodes.gta.ui;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.services.doceditor.Access;
+import org.olat.core.commons.services.doceditor.AccessSearchParams;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -47,6 +53,7 @@ import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.ui.tool.AssessmentFormCallback;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAType;
@@ -104,6 +111,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private DocEditorService docEditorService;
 	
 	public GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup,
@@ -243,13 +252,26 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			}
 		} else {
 			File documentsDir;
+			VFSContainer submitContainer;
 			if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 				documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+				submitContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedGroup);
 			} else {
 				documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
+				submitContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedIdentity);
 			}
 			boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
 			mainVC.contextPut("hasUploadedDocs", hasDocuments);
+			
+			List<VFSMetadata> metadatas = submitContainer.getItems().stream()
+					.filter(item -> item instanceof VFSLeaf)
+					.map(item -> ((VFSLeaf)item).getMetaInfo())
+					.collect(Collectors.toList());
+			AccessSearchParams params = new AccessSearchParams();
+			params.setMode(Mode.EDIT);
+			params.setMatadatas(metadatas);
+			List<Access> accesses = docEditorService.getAccesses(params);
+			mainVC.contextPut("docsEdit", !accesses.isEmpty());
 		}
 		return assignedTask;
 	}
