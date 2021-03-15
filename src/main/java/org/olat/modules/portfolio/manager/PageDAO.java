@@ -268,7 +268,7 @@ public class PageDAO {
 			query.setParameter("searchString", makeFuzzyQueryString(options.getSearchString()));
 		}
 		if(options.getCategories() != null && !options.getCategories().isEmpty()) {
-			List<String> categoryNames = options.getCategories().stream().map(cat -> cat.getName()).collect(Collectors.toList());
+			List<String> categoryNames = options.getCategories().stream().map(cat -> cat.getName().toLowerCase()).collect(Collectors.toList());
 			query.setParameter("categoryNames", categoryNames);
 			query.setParameter("categoryCountSize", Long.valueOf(options.getCategories().size()));
 		}

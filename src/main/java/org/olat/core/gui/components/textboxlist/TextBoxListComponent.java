@@ -75,6 +75,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl impleme
 	private String icon;
 	private String customCSSForItems;
 	private boolean showSaveButton;
+	private boolean showLabelAsInlineText;
 
 	/**
 	 * Holds the initial items (keyString is the caption! valueString is the
@@ -484,6 +485,14 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl impleme
 	
 	public void setShowSaveButton(boolean showConfirmButton) {
 		this.showSaveButton = showConfirmButton;
+	}
+	
+	public void setShowLabelAsInlineText(boolean showLabelAsInlineText) {
+		this.showLabelAsInlineText = showLabelAsInlineText;
+	}
+	
+	public boolean isShowLabelAsInlineText() {
+		return showLabelAsInlineText;
 	}
 
 	@Override
