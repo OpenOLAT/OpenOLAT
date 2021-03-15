@@ -325,7 +325,7 @@ public class ConditionTest extends OlatTestCase {
 	public void testIsUser() throws Exception {
 		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
 		Identity identity = uce.getIdentityEnvironment().getIdentity();
-		Authentication olatAuthentication = securityManager.findAuthentication(identity, "OLAT");
+		Authentication olatAuthentication = securityManager.findAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(olatAuthentication);
 
 		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
