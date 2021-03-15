@@ -595,22 +595,31 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	 */
 	private void removeDefaultPreconditions() {
 		if (hasCustomPreConditions()) {
-			boolean defaultPreconditions =
+			preConditionPoster = null;
+
+			boolean defaultPreconditions = (preConditionModerator == null || ( 
 					!preConditionModerator.isExpertMode()
 				&& preConditionModerator.isEasyModeCoachesAndAdmins()
 				&& !preConditionModerator.isEasyModeAlwaysAllowCoachesAndAdmins()
 				&& !preConditionModerator.isAssessmentMode()
-				&& !preConditionModerator.isAssessmentModeViewResults()
-				&& !preConditionPoster.isExpertMode()
+				&& !preConditionModerator.isAssessmentModeViewResults())
+			)
+			&&
+			(preConditionPoster == null || (
+				!preConditionPoster.isExpertMode()
 				&& !preConditionPoster.isEasyModeCoachesAndAdmins()
 				&& !preConditionPoster.isEasyModeAlwaysAllowCoachesAndAdmins()
 				&& !preConditionPoster.isAssessmentMode()
-				&& !preConditionPoster.isAssessmentModeViewResults()
-				&& !preConditionReader.isExpertMode()
+				&& !preConditionPoster.isAssessmentModeViewResults())
+			)
+			&&
+			(preConditionReader == null || (
+				!preConditionReader.isExpertMode()
 				&& !preConditionReader.isEasyModeCoachesAndAdmins()
 				&& !preConditionReader.isEasyModeAlwaysAllowCoachesAndAdmins()
 				&& !preConditionReader.isAssessmentMode()
-				&& !preConditionReader.isAssessmentModeViewResults();
+				&& !preConditionReader.isAssessmentModeViewResults())
+			);
 			if (defaultPreconditions) {
 				removeCustomPreconditions();
 			}
