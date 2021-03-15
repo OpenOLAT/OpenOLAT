@@ -82,7 +82,7 @@ public class SelectPageListController extends AbstractPageListController {
 
 		initForm(ureq);
 		loadModel(ureq, null);
-		tableEl.setRendererType(FlexiTableRendererType.classic);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.classic);
 		super.loadCompetenciesFilter();
 		super.loadCategoriesFilter();
 	}
@@ -91,6 +91,7 @@ public class SelectPageListController extends AbstractPageListController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
 		tableEl.setMultiSelect(isMultiSelect);
+		tableEl.setSelectAllEnable(isMultiSelect);
 	}
 
 	@Override

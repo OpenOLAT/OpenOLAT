@@ -929,10 +929,15 @@ $o-addremove-remove-color		: $state-danger-bg;
 /* Tags */
 $o-tag-background-color			: $brand-primary !default;
 $o-tag-font-color				: #fff;
+$o-tag-selected-background-color: $o-button-dirty-bg;
+$o-tag-selected-border-color	: $o-button-dirty-border;
 
 /* Competences */
-$o-competences-color			: darken($brand-primary, 5%);
-$o-competences-font-color		: $o-competences-color;
+$o-competences-color				: darken($brand-primary, 5%);
+$o-competences-font-color			: $o-competences-color;
+$o-competences-selected-bg-color	: #fff;
+$o-competences-selected-color		: $o-button-dirty-bg;
+$o-competences-selected-border-color: $o-button-dirty-border;
 
 
 

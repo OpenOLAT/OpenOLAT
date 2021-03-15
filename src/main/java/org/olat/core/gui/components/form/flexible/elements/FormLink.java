@@ -176,5 +176,12 @@ public interface FormLink extends FormItem {
 	 * @param string
 	 */
 	public void setTarget(String string);
+	
+	/**
+	 * Provide a tooltip as i18nKey
+	 * 
+	 * @param i18nTooltipKey
+	 */
+	public void setTooltip(String i18nTooltipKey);
 
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.text.Collator;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -31,6 +32,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
+import org.olat.modules.portfolio.ui.PageListSortableDataModelDelegate.ListComparator.Mode;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 
 /**
@@ -58,6 +60,8 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 				case key: comparator = new PageCreationDateComparator(); break;
 				case status: comparator = new StatusComparator(); break;
 				case comment: comparator = new CommentsComparator(); break;
+				case competencies: comparator = new ListComparator(getCollator(), Mode.Competence); break;
+				case categories: comparator = new ListComparator(getCollator(), Mode.Category); break;
 				default: comparator = new DefaultComparator(); break;
 			}
 		}
@@ -104,6 +108,77 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 				c = compareString(o1.getTitle(), o2.getTitle());
 			}
 			return c;
+		}
+	}
+	
+	public static final class ListComparator implements Comparator<PortfolioElementRow> {
+		
+		private Collator collator;	
+		private Mode mode;
+		
+		public ListComparator(Collator collator, Mode mode) {
+			this.collator = collator;
+			this.mode = mode;
+		}
+		
+		@Override
+		public int compare(PortfolioElementRow o1, PortfolioElementRow o2) {
+			List<String> c1 = null; 
+			List<String> c2 = null; 
+			
+			switch (mode) {
+				case Competence: 
+					c1 = (List<String>) o1.getPageCompetencies();
+					c2 = (List<String>) o2.getPageCompetencies();
+					break;
+				case Category: 
+					c1 = (List<String>) o1.getPageCategories();
+					c2 = (List<String>) o2.getPageCategories();
+			}
+			
+			if (isEmpty(c1) && isEmpty(c2)) {
+				// Both empty
+				return 0;
+			} else if (isEmpty(c1)) {
+				// Only first is empty
+				return 1;
+			} else if (isEmpty(c2)) {
+				// Only second is empty
+				return -1;
+			} else {
+				// Both contain values, let's compare them
+				// Fallback: Compare the length of the list
+				// Fallback: Sort by amount of competences
+				int fallbackCompare = Integer.compare(c2.size(), c1.size());
+				
+				// Sort both lists alphabetically
+				c1.sort(collator);
+				c2.sort(collator);
+				
+				int shortesListSize = c1.size() <= c2.size() ? c1.size() : c2.size();
+				for (int i = 0; i < shortesListSize; i++) {
+					// Compare the competences at the given index
+					int compare = collator.compare(c1.get(i), c2.get(i));
+					
+					// If they differ, return the value
+					if (compare != 0) {
+						return compare;
+					}
+				}
+				
+				// If no difference could be found, use the comparison based on the list size
+				return fallbackCompare;
+			}
+			
+		}
+		
+		private boolean isEmpty(List<String> list) {
+			return list == null || list.isEmpty();
+		}
+		
+		public enum Mode {
+			Competence, 
+			Category;
 		}
 	}
 	

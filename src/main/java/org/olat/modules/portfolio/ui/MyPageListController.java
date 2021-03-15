@@ -50,6 +50,7 @@ import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.manager.PortfolioServiceSearchOptions;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 
@@ -73,6 +74,8 @@ public class MyPageListController extends AbstractPageListController {
 
 		initForm(ureq);
 		loadModel(ureq, null);
+		loadCategoriesFilter();
+		loadCompetenciesFilter();
 	}
 
 	@Override
@@ -120,7 +123,9 @@ public class MyPageListController extends AbstractPageListController {
 		FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
 		newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
 		
-		List<Page> pages = portfolioService.searchOwnedPages(getIdentity(), searchString);
+		PortfolioServiceSearchOptions options = new PortfolioServiceSearchOptions(null, null, searchString, activeCompetenceFilters, activeCategoryFilters);
+		options.setOwner(getIdentity());
+		List<Page> pages = portfolioService.getPages(options);
 		List<PortfolioElementRow> rows = new ArrayList<>(pages.size());
 		List<TimelinePoint> points = new ArrayList<>(pages.size());
 		for (Page page : pages) {

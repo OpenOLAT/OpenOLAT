@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
@@ -39,6 +40,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -128,6 +130,10 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	protected final TooledStackedPanel stackPanel;
 	protected final VelocityContainer rowVC;
 	
+	protected List<Category> activeCategoryFilters;
+	protected List<TaxonomyLevel> activeCompetenceFilters;
+	protected String searchString;
+	
 	protected PageRunController pageCtrl;
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
@@ -160,6 +166,9 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		this.withSections = withSections;
 		this.withComments = withComments;
 		rowVC = createVelocityContainer("portfolio_element_row");
+		
+		activeCategoryFilters = new ArrayList<>();
+		activeCompetenceFilters = new ArrayList<>();
 	}
 	
 	public AbstractPageListController(UserRequest ureq, WindowControl wControl, Form rootForm,
@@ -173,6 +182,9 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		this.withComments = withComments;
 		this.stackPanel = null;
 		rowVC = createVelocityContainer("portfolio_element_row");
+		
+		activeCategoryFilters = new ArrayList<>();
+		activeCompetenceFilters = new ArrayList<>();
 	}
 	
 	public int getNumOfPages() {
@@ -259,6 +271,11 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		FlexiTableRendererType renderType = portfolioV2Module.isEntriesListEnabled() ? FlexiTableRendererType.custom: FlexiTableRendererType.classic;
 		tableEl.setRendererType(renderType);
 		tableEl.setAndLoadPersistedPreferences(ureq, "page-list-v2-".concat(preferencesName));
+		
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
+		options.setFromColumnModel(true);
+		options.setDefaultOrderBy(new SortKey(null, false));
+		tableEl.setSortSettings(options);
 	}
 	
 	protected void initColumns(FlexiTableColumnModel columnsModel) {
@@ -378,9 +395,14 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	protected void loadCompetenciesFilter(Section section) {
 		List<FormLink> competencesAndUsage = new ArrayList<>();
 		portfolioService.getCompetenciesAndUsage(section).forEach((taxonomyLevel, usage) -> {
-			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
+			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
+			String css = "o_tag o_tag_clickable o_competence";
+			if (activeCompetenceFilters.contains(taxonomyLevel)) {
+				css += " o_tag_selected";
+			}
+			
+			competency.setCustomEnabledLinkCSS(css);
 			competency.setUserObject(taxonomyLevel);
-			competency.setCustomEnabledLinkCSS("o_tag o_tag_clickable o_competence");
 			
 			competencesAndUsage.add(competency);
 		});	
@@ -396,9 +418,14 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		List<FormLink> competencesAndUsage = new ArrayList<>();
 		
 		portfolioService.getCompetenciesAndUsage(pages).forEach((taxonomyLevel, usage) -> {
-			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
+			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
+			String css = "o_tag o_tag_clickable o_competence";
+			if (activeCompetenceFilters.contains(taxonomyLevel)) {
+				css += " o_tag_selected";
+			}
+			
+			competency.setCustomEnabledLinkCSS(css);
 			competency.setUserObject(taxonomyLevel);
-			competency.setCustomEnabledLinkCSS("o_tag o_tag_clickable o_competence");
 			
 			competencesAndUsage.add(competency);
 		});	
@@ -414,9 +441,14 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	protected void loadCategoriesFilter(Section section) {
 		List<FormLink> categoriesAndUsage = new ArrayList<>();
 		portfolioService.getCategoriesAndUsage(section).forEach((category, usage) -> {
-			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
+			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
+			String css = "o_tag o_tag_clickable";
+			if (activeCategoryFilters.contains(category)) {
+				css += " o_tag_selected";
+			}
+			
+			categoryLink.setCustomEnabledLinkCSS(css);
 			categoryLink.setUserObject(category);
-			categoryLink.setCustomEnabledLinkCSS("o_tag o_tag_clickable");
 			
 			categoriesAndUsage.add(categoryLink);
 		});	
@@ -432,14 +464,53 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		List<FormLink> categoriesAndUsage = new ArrayList<>();
 		
 		portfolioService.getCategoriesAndUsage(pages).forEach((category, usage) -> {
-			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + " (" + usage + ")", null, flc, Link.NONTRANSLATED);
+			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
+			String css = "o_tag o_tag_clickable";
+			if (activeCategoryFilters.contains(category)) {
+				css += " o_tag_selected";
+			}
+			
+			categoryLink.setCustomEnabledLinkCSS(css);
 			categoryLink.setUserObject(category);
-			categoryLink.setCustomEnabledLinkCSS("o_tag o_tag_clickable");
 			
 			categoriesAndUsage.add(categoryLink);
 		});	
 		
 		flc.contextPut("categoriesUsage", categoriesAndUsage);
+	}
+	
+	private void toggleTagSearchState(FormLink element) {
+		String css = element.getComponent().getCustomEnabledLinkCSS();
+		
+		if (css.contains("o_tag_selected")) {
+			// Remove css class
+			css = css.replace("o_tag_selected", "");
+			// Remove eventual double white spaces
+			css = css.replace("  ", " ");
+			// Save new css
+			element.setCustomEnabledLinkCSS(css);
+			// Remove from filter list
+			if (element.getCmd().contains("competence")) {
+				TaxonomyLevel level = (TaxonomyLevel) element.getUserObject();
+				activeCompetenceFilters.remove(level);
+			} else {
+				Category category = (Category) element.getUserObject();
+				activeCategoryFilters.remove(category);
+			}
+		} else {
+			// Add CSS class
+			css += " o_tag_selected";
+			// Save the new CSS
+			element.setCustomEnabledLinkCSS(css);
+			// Add to active filters
+			if (element.getCmd().contains("competence")) {
+				TaxonomyLevel competence = (TaxonomyLevel) element.getUserObject();
+				activeCompetenceFilters.add(competence);
+			} else {
+				Category category = (Category) element.getUserObject();
+				activeCategoryFilters.add(category);
+			}
+		}
 	}
 	
 	protected abstract void loadModel(UserRequest ureq, String searchString);
@@ -759,6 +830,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		if(tableEl == source) {
 			if(event instanceof FlexiTableSearchEvent) {
 				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
+				searchString = se.getSearch();
 				loadModel(ureq, se.getSearch());
 			} else if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -816,11 +888,11 @@ public abstract class AbstractPageListController extends FormBasicController imp
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doMoveDownAssignment(ureq, row);
 			} else if("competence_filter".equals(cmd)) {
-				TaxonomyLevel level = (TaxonomyLevel)link.getUserObject();
-				tableEl.quickSearch(ureq, level.getDisplayName());
+				toggleTagSearchState(link);
+				loadModel(ureq, null);
 			} else if("category_filter".equals(cmd)) {
-				Category category = (Category)link.getUserObject();
-				tableEl.quickSearch(ureq, category.getName());
+				toggleTagSearchState(link);
+				loadModel(ureq, null);
 			}
 		} else if(source instanceof SingleSelection) {
 			SingleSelection startAssignment = (SingleSelection) source;

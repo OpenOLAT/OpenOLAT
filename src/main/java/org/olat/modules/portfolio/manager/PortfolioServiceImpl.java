@@ -620,6 +620,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public List<Page> getPages(SectionRef section) {
 		return pageDao.getPages(section);
 	}
+	
+	@Override
+	public List<Page> getPages(PortfolioServiceSearchOptions options) {
+		return pageDao.getPages(options);
+	}
 
 	@Override
 	public List<Binder> getOwnedBinders(IdentityRef owner) {
@@ -1042,6 +1047,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 			((SectionImpl)reloadedSection).setSectionStatus(SectionStatus.inProgress);
 		}
 		Page page = pageDao.createAndPersist(title, summary, imagePath, align, editable, reloadedSection, pageDelegate);
+		for (TaxonomyCompetence competence : portfolioPageToTaxonomyCompetenceDAO.getCompetenciesToPortfolioPage(pageDelegate, false)) {
+			portfolioPageToTaxonomyCompetenceDAO.createRelation(page, taxonomyCompetenceDAO.createTaxonomyCompetence(competence.getCompetenceType(), competence.getTaxonomyLevel(), competence.getIdentity(), competence.getExpiration()));
+		}
+		
+		updateCategories(page, getCategories(pageDelegate).stream().map(cat -> cat.getName()).collect(Collectors.toList()));
+		
 		groupDao.addMembershipTwoWay(page.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		return page;
 	}

@@ -11,7 +11,25 @@
 	</div>
 	
 	<div class="o_portfolio_entries #if($timelineSwitch) o_portfolio_withtimeline #end">
-	// TODO Competencies and Categories
+	#if($r.isNotNull($competencesUsage) && $r.isNotEmpty($competencesUsage))
+	<div class="o_block clearfix o_small"> 
+		<div class="pull-left"><i class="o_icon o_icon_fw o_icon_competences"> </i>
+		#foreach($competenceUsage in $competencesUsage)
+			$r.render($competenceUsage.getName())
+		#end
+		</div>
+	</div>
+	#end
+
+	#if($r.isNotNull($categoriesUsage) && $r.isNotEmpty($categoriesUsage))
+	<div class="o_block clearfix o_small"> 
+		<div class="pull-left"><i class="o_icon o_icon_fw o_icon_tags"> </i>
+		#foreach($categoryUsage in $categoriesUsage)
+			$r.render($categoryUsage.getName())
+		#end
+		</div>
+	</div>
+	#end
 	$r.render("table")
 	</div>
 	

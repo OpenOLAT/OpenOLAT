@@ -19,7 +19,9 @@
  */
 package org.olat.modules.portfolio.ui.component;
 
+import java.text.Collator;
 import java.util.Collection;
+import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -42,18 +44,15 @@ public class CompetencesCellRenderer implements FlexiCellRenderer {
 		
 		if(cellValue instanceof Collection) {
 			@SuppressWarnings("unchecked")
-			Collection<String> categories = (Collection<String>)cellValue;
-			if(categories.size() > 0) {
-				target.append("<i class='o_icon o_icon-fw o_icon_competences'> </i> ");
-				
-				boolean start = true;
-				for(String category:categories) {
-					if(start) {
-						start = false;
-					} else {
-						target.append(", ");
-					}
-					target.append(category);
+			List<String> competences = (List<String>)cellValue;
+			Collator collator = Collator.getInstance(translator.getLocale());
+			competences.sort(collator);
+			
+			if(competences.size() > 0) {
+				for(String competence : competences) {
+					target.append("<span class='o_tag o_competence o_small o_block_inline'>");
+					target.append(competence);
+					target.append("</span>");
 				}
 			}
 		}

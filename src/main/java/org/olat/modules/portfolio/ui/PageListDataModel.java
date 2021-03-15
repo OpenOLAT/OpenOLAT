@@ -213,13 +213,13 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 
 	public enum PageCols implements FlexiSortableColumnDef {
 		type("table.header.type", false),
-		key("table.header.key", true),
+		key("table.header.key", false),
 		title("table.header.title", true),
 		status("table.header.status", true),
 		date("table.header.date", true),
 		publicationDate("table.header.publication.date", true),
-		categories("table.header.categories", false),
-		competencies("table.header.competencies", false),
+		categories("table.header.categories", true),
+		competencies("table.header.competencies", true),
 		section("table.header.section", true),
 		up("table.header.up", false),
 		down("table.header.down", false),

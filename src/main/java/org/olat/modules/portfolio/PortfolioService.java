@@ -35,6 +35,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.portfolio.manager.PortfolioServiceSearchOptions;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
@@ -512,6 +513,14 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public List<Page> getPages(SectionRef section);
+	
+	/**
+	 * Load a list of pages filtered with the provided options
+	 * 
+	 * @param options
+	 * @return
+	 */
+	public List<Page> getPages(PortfolioServiceSearchOptions options);
 	
 	public int countOwnedPages(IdentityRef owner);
 	

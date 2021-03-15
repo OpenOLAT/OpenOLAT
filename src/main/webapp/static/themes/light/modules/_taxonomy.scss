@@ -45,4 +45,23 @@
 			border-color: $o-competences-color;
 		}
 	}
+	
+	&.o_tag_selected {
+		color: $o-competences-selected-color;
+		background-color: #fff;
+		border-color: $o-competences-selected-border-color;
+		
+		&.o_tag_clickable {
+			&:hover {
+				text-decoration: none;
+				background-color: darken(#ffffff, 10%);
+				border-color: darken($o-competences-selected-border-color, 10%);
+			}
+			
+			&:active {
+				background-color: darken(#ffffff, 15%);
+				border-color: darken($o-competences-selected-border-color, 15%);
+			}
+		}
+	}
 }	

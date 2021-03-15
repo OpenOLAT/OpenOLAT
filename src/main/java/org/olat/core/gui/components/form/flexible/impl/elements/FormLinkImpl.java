@@ -468,5 +468,9 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 			return super.hasFocus();			
 		}
 	}
-
+	
+	@Override
+	public void setTooltip(String i18nTooltipKey) {
+		component.setTooltip(i18nTooltipKey);
+	}
 }

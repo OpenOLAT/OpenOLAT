@@ -76,6 +76,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageUserInformations;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.manager.PortfolioServiceSearchOptions;
 import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
@@ -219,7 +220,7 @@ public class BinderPageListController extends AbstractPageListController {
 		}
 
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
-		options.setFromColumnModel(false);
+		options.setFromColumnModel(true);
 		options.setDefaultOrderBy(new SortKey(null, false));
 		tableEl.setSortSettings(options);
 		
@@ -326,8 +327,9 @@ public class BinderPageListController extends AbstractPageListController {
 				userInfosToPage.put(userInfo.getPage().getKey(), userInfo);
 			}
 		}
-
-		List<Page> pages = portfolioService.getPages(binder, searchString);
+		
+		PortfolioServiceSearchOptions options = new PortfolioServiceSearchOptions(binder, filteringSection, super.searchString, activeCompetenceFilters, activeCategoryFilters);
+		List<Page> pages = portfolioService.getPages(options);
 		for (Page page : pages) {
 			boolean viewElement = secCallback.canViewElement(page);
 			boolean viewTitleElement = viewElement || secCallback.canViewTitleOfElement(page);

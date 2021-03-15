@@ -227,6 +227,8 @@ public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLev
 			keysWithoutSlash = keysWithoutSlash.substring(1, keysWithoutSlash.length());
 		}
 		
+		keysWithoutSlash = keysWithoutSlash.replace("/", " / ");
+		
 		return keysWithoutSlash;
 	}
 

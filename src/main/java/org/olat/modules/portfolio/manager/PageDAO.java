@@ -30,12 +30,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -78,6 +80,8 @@ public class PageDAO {
 	private UserCommentsDAO userCommentsDAO;
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private PortfolioPageToTaxonomyCompetenceDAO competenceDAO;
 
 	/**
 	 * 
@@ -187,6 +191,98 @@ public class PageDAO {
 			query.setParameter("searchString", searchString.toLowerCase());
 		}
 		return query.getResultList();
+	}
+	
+	public List<Page> getPages(PortfolioServiceSearchOptions options) {
+		StringBuilder categorySubQuery = new StringBuilder();
+		if(options.getCategories() != null && !options.getCategories().isEmpty()) {
+			categorySubQuery.append(", (select count(distinct cat.key) = :categoryCountSize")
+				.append(" from pfcategoryrelation rel ")
+			    .append(" inner join rel.category cat")
+			    .append(" where rel.resId=page.key and rel.resName='Page' and lower(cat.name) in :categoryNames")
+			    .append(") as categoryCountCorrect");
+		}
+		
+		StringBuilder competenceSubQuery = new StringBuilder();
+		if(options.getTaxonomyLevels() != null && !options.getTaxonomyLevels().isEmpty()) {
+			competenceSubQuery.append(", (select count(distinct competence.key) = :competenceCountSize")
+				.append(" from pfpagetotaxonomycompetence competenceRel")
+				.append(" inner join competenceRel.taxonomyCompetence as competence")
+				.append(" inner join competence.taxonomyLevel level")
+				.append(" where competenceRel.portfolioPage.key = page.key and level.key in :levelKeys")
+				.append(") as competenceCountCorrect ");
+		}
+		
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select page as page")
+		  .append(competenceSubQuery.toString(), ", true as competenceCountCorrect", options.getTaxonomyLevels() != null && !options.getTaxonomyLevels().isEmpty())
+		  .append(categorySubQuery.toString(), ", true as categoryCountCorrect", options.getCategories() != null && !options.getCategories().isEmpty())
+		  .append(" from pfpage as page")
+		  .append(" inner join fetch page.baseGroup as baseGroup")
+		  .append(" inner join fetch page.section as section")
+		  .append(" inner join fetch page.body as body")
+		  .append(" left join fetch section.binder as binder");
+		if(options.getOwner() != null) {
+		  qb.where().append("exists (select pageMember from bgroupmember as pageMember")
+		    .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
+		    .append("   where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
+		    .append(" )");
+		}
+		if(options.getBinder() != null) {
+		  qb.where().append("section.binder.key=:binderKey");
+		}
+		if(options.getSection() != null) {
+		  qb.where().append("section.key=:sectionKey");
+		}
+		if(StringHelper.containsNonWhitespace(options.getSearchString())) {
+			qb.where().append("(");
+			appendFuzzyLike(qb, "page.title", "searchString", dbInstance.getDbVendor());
+			qb.append(" or ");
+			appendFuzzyLike(qb, "page.summary", "searchString", dbInstance.getDbVendor());
+			qb.append(" or exists (select cat from pfcategoryrelation rel ")
+			  .append("   inner join rel.category cat")
+			  .append("   where rel.resId=page.key and rel.resName='Page' and lower(cat.name) like :searchString")
+			  .append(" )");
+			qb.append(" or exists (select competence from pfpagetotaxonomycompetence competenceRel ")
+			  .append("   inner join competenceRel.taxonomyCompetence as competence")
+			  .append("   inner join competence.taxonomyLevel level")
+			  .append("   where competenceRel.portfolioPage.key = page.key and lower(level.displayName) like :searchString")
+			  .append(" )");
+			qb.append(")");
+		}
+		
+		qb.append(" order by section.pos, page.pos");
+		
+		TypedQuery<Tuple> query = dbInstance.getCurrentEntityManager()
+			.createQuery(qb.toString(), Tuple.class);
+		if(options.getOwner() != null) {
+			query.setParameter("ownerKey", options.getOwner().getKey());
+		}
+		if(options.getBinder()!= null) {
+			query.setParameter("binderKey", options.getBinder().getKey());
+		}
+		if(options.getSection()!= null) {
+			query.setParameter("sectionKey", options.getSection().getKey());
+		}
+		if(StringHelper.containsNonWhitespace(options.getSearchString())) {
+			query.setParameter("searchString", makeFuzzyQueryString(options.getSearchString()));
+		}
+		if(options.getCategories() != null && !options.getCategories().isEmpty()) {
+			List<String> categoryNames = options.getCategories().stream().map(cat -> cat.getName()).collect(Collectors.toList());
+			query.setParameter("categoryNames", categoryNames);
+			query.setParameter("categoryCountSize", Long.valueOf(options.getCategories().size()));
+		}
+		if(options.getTaxonomyLevels() != null && !options.getTaxonomyLevels().isEmpty()) {
+			List<Long> levelKeys = options.getTaxonomyLevels().stream().map(level -> level.getKey()).collect(Collectors.toList());
+			query.setParameter("levelKeys", levelKeys);
+			query.setParameter("competenceCountSize", Long.valueOf(levelKeys.size()));
+		}
+			
+		return query.getResultList().stream()
+				.filter(tuple -> (Boolean) tuple.get("competenceCountCorrect"))
+				.filter(tuple -> (Boolean) tuple.get("categoryCountCorrect"))
+				.map(tuple -> (Page) tuple.get("page"))
+				.collect(Collectors.toList());
 	}
 	
 	public List<Page> getPages(SectionRef section) {
@@ -677,6 +773,8 @@ public class PageDAO {
 		if(page == null || page.getKey() == null) return 0;//nothing to do
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
+		
+		competenceDAO.deleteRelation(page);
 		
 		int parts = 0;
 		PageBody body = page.getBody();
