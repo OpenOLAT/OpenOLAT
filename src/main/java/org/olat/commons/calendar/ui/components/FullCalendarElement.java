@@ -143,8 +143,6 @@ public class FullCalendarElement extends FormItemImpl {
 		String config = getRootForm().getRequestParameter("config");
 		String aggregate = getRootForm().getRequestParameter("aggregate");
 		
-
-		
 		String dispatchuri = getRootForm().getRequestParameter("dispatchuri");
 		if("undefined".equals(dispatchuri)) {
 			//to nothing
@@ -176,7 +174,12 @@ public class FullCalendarElement extends FormItemImpl {
 		} else if(StringHelper.containsNonWhitespace(changeViewName)) {
 			doChangeView(changeViewName);
 			String start = getRootForm().getRequestParameter("start");
-			doSetCurrentDate(start);
+			if(StringHelper.containsNonWhitespace(start)) {
+				doSetCurrentDate(start);
+			}
+			if(StringHelper.containsNonWhitespace(changeDates)) {
+				doSetCurrentDate(changeDates);
+			}
 		} else if(StringHelper.containsNonWhitespace(changeDates)) {
 			doSetCurrentDate(changeDates);
 		}
