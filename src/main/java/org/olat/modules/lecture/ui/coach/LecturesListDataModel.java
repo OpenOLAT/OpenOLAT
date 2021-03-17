@@ -124,7 +124,7 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatisticsRow>, Flexi
 	
 	public enum StatsCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
-		externalRef("table.header.entry"),
+		externalRef("table.header.entry.external.ref"),
 		entry("table.header.entry"),
 		plannedLectures("table.header.planned.lectures"),
 		attendedLectures("table.header.attended.lectures"),
