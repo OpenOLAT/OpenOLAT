@@ -129,6 +129,7 @@ public class LecturesListController extends FormBasicController {
 		}
 
 		if(showRepositoryEntry) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.externalRef, "open.course"));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.entry, "open.course"));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.plannedLectures));

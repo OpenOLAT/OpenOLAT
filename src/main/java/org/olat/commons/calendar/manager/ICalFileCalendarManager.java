@@ -1289,8 +1289,21 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		List<KalendarEvent> allEvents = calendar.getEvents();
 		List<KalendarEvent> events = new ArrayList<>(128);
 		
+		// first pass, collect edited recurring events
+		Map<String,List<Date>> idToRecurringStartDateEvents = new HashMap<>();
+		for(KalendarEvent event:allEvents) {
+			if(StringHelper.containsNonWhitespace(event.getRecurrenceID()) && isInRange(from, to, event)) {
+				VEvent vEvent = getVEvent(event);
+				RecurrenceId recurrenceId = vEvent.getRecurrenceId();
+				net.fortuna.ical4j.model.Date recurenceIdDate = recurrenceId.getDate();
+				idToRecurringStartDateEvents
+					.computeIfAbsent(event.getID(), id -> new ArrayList<>())
+					.add(recurenceIdDate);
+			}
+		}
+		
 		Map<String, List<KalendarRecurEvent>> idToRecurringEvents = new HashMap<>();
-		//first pass, ignore events with recurrenceId
+		// second pass, ignore events with recurrenceId
 		for(KalendarEvent event:allEvents) {
 			if(!privateEventsVisible && event.getClassification() == KalendarEvent.CLASS_PRIVATE) {
 				continue;
@@ -1300,8 +1313,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			}
 
 			if (StringHelper.containsNonWhitespace(event.getRecurrenceRule())) {
-				List<KalendarRecurEvent> recurringEvents = getRecurringEventsInPeriod(event, from, to, tz);
-				if(recurringEvents.size() > 0) {
+				List<Date> recurringStartDateEvents = idToRecurringStartDateEvents.get(event.getID());
+				List<KalendarRecurEvent> recurringEvents = getRecurringEventsInPeriod(event, from, to, recurringStartDateEvents, tz);
+				if(!recurringEvents.isEmpty()) {
 					idToRecurringEvents.put(event.getID(), recurringEvents);
 					for (KalendarRecurEvent recurEvent:recurringEvents) {
 						events.add(recurEvent);
@@ -1312,7 +1326,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			}
 		}
 		
-		//process events with recurrenceId
+		// third pass, process events with recurrenceId
 		for(KalendarEvent event:allEvents) {
 			if(!StringHelper.containsNonWhitespace(event.getRecurrenceID())) {
 				continue;
@@ -1327,7 +1341,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 					List<KalendarRecurEvent> recurringEvents = idToRecurringEvents.get(id);
 					for(KalendarRecurEvent recurEvent:recurringEvents) {
 						Date beginDate = recurEvent.getBegin();
-						if(beginDate.equals(startDate)) {
+						if(startDate.equals(beginDate)) {
 							recurEvent.setRecurrenceEvent(event);
 						}
 					}
@@ -1346,7 +1360,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		
 		return events;
 	}
-	
+
 	private final boolean isInRange(Date from, Date to, KalendarEvent event) {
 		Date begin = event.getBegin();
 		Date end = CalendarUtils.endOf(event);
@@ -1373,17 +1387,48 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		return false;
 	}
 	
-	private final List<KalendarRecurEvent> getRecurringEventsInPeriod(KalendarEvent kEvent, Date periodStart, Date periodEnd, TimeZone userTz) {
+	private Date calculateRecurringStartPeriod(Date periodStart, List<Date> recurringIdDates) {
+		if(recurringIdDates != null && !recurringIdDates.isEmpty()) {
+			for(Date recurringIdDate:recurringIdDates) {
+				if(recurringIdDate.before(periodStart)) {
+					java.util.Calendar cal = java.util.Calendar.getInstance();
+					cal.setTime(recurringIdDate);
+					cal.add(java.util.Calendar.DATE, -2);// make sure the date is included
+					periodStart = cal.getTime();
+				}
+			}
+		}
+		return periodStart;
+	}
+	
+	private Date calculateRecurringEndPeriod(Date periodEnd, List<Date> recurringIdDates) {
+		if(recurringIdDates != null && !recurringIdDates.isEmpty()) {
+			for(Date recurringIdDate:recurringIdDates) {
+				if(recurringIdDate.after(periodEnd)) {
+					java.util.Calendar cal = java.util.Calendar.getInstance();
+					cal.setTime(recurringIdDate);
+					cal.add(java.util.Calendar.DATE, 2);// make sure the date is included
+					periodEnd = cal.getTime();
+				}
+			}
+		}
+		return periodEnd;
+	}
+	
+	private final List<KalendarRecurEvent> getRecurringEventsInPeriod(KalendarEvent kEvent,
+			Date periodStart, Date periodEnd, List<Date> recurringIdDates, TimeZone userTz) {
 		VEvent vEvent = getVEvent(kEvent);
 		if(vEvent.getEndDate() == null || vEvent.getStartDate().getDate().after(vEvent.getEndDate().getDate())) {
 			return Collections.emptyList();
 		}
+		
+		periodStart = calculateRecurringStartPeriod(periodStart, recurringIdDates);
+		periodEnd = calculateRecurringEndPeriod(periodEnd, recurringIdDates);
 
 		//calculate the events in the specified period
         Period recurringPeriod = new Period(new DateTime(periodStart), new DateTime(periodEnd));
 		PeriodList periodList = vEvent.calculateRecurrenceSet(recurringPeriod);
 		List<KalendarRecurEvent> recurringEvents = new ArrayList<>(periodList.size());
-		
 		for(Object obj : periodList) {
 			Period period = (Period)obj;
 			Date date = period.getStart();
