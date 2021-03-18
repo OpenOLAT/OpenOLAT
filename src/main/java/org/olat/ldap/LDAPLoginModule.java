@@ -87,6 +87,9 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	private Integer connectionTimeout;
 	@Value("${ldap.batch.size:50}")
 	private Integer batchSize;
+	
+	@Value("${ldap.socket.factory:}")
+	private String socketFactory;
 	/**
 	 * Create LDAP users on the fly when authenticated successfully
 	 */
@@ -452,6 +455,10 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	public void setResetLockTimoutOnPasswordChange(boolean resetLockTimoutOnPasswordChange) {
 		this.resetLockTimoutOnPasswordChange = resetLockTimoutOnPasswordChange;
 	}
+	
+	public void setSocketFactory(String socketFactory) {
+		this.socketFactory = socketFactory;
+	}
 
 	public boolean isLDAPEnabled() {
 		return ldapEnabled;
@@ -530,5 +537,9 @@ public class LDAPLoginModule extends AbstractSpringModule {
 
 	public String getChangePasswordUrl() {
 		return changePasswordUrl;
+	}
+	
+	public String getSocketFactory() {
+		return socketFactory;
 	}
 }
