@@ -108,7 +108,7 @@ public class CourseConfigManagerImpl implements CourseConfigManager {
 			configFile = course.getCourseBaseContainer().createChildLeaf(COURSECONFIG_XML);
 		} else if(configFile.exists() && configFile.canVersion() == VFSConstants.YES) {
 			try(InputStream in = configFile.getInputStream()) {
-				CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(configFile, null, "", in);
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(configFile, null, false, "", in);
 			} catch (Exception e) {
 				log.error("Cannot versioned CourseConfig.xml", e);
 			}

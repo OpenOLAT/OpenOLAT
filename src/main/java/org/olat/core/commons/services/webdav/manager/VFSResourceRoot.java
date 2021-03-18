@@ -174,7 +174,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 				//versioning
 				if(childLeaf.canVersion() == VFSConstants.YES) {
 					try(InputStream in=childLeaf.getInputStream()) {
-						CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(childLeaf, identity, "", in);
+						CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(childLeaf, identity, false, "", in);
 					} catch(IOException e) {
 						log.error("", e);
 					}

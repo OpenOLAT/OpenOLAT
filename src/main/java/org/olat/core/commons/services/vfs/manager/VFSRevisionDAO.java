@@ -50,11 +50,13 @@ public class VFSRevisionDAO {
 	private DB dbInstance;
 
 	public VFSRevision createRevision(Identity fileInitializedBy, Identity fileLastModifiedBy, String filename,
-			int revisionNr, long size, Date fileLastModified, String revisionComment, VFSMetadata metadata) {
+			int revisionNr, Integer revisionTempNr, long size, Date fileLastModified, String revisionComment,
+			VFSMetadata metadata) {
 		VFSRevisionImpl rev = new VFSRevisionImpl();
 		rev.setCreationDate(new Date());
 		rev.setLastModified(rev.getCreationDate());
 		rev.setRevisionNr(revisionNr);
+		rev.setRevisionTempNr(revisionTempNr);
 		rev.setFilename(filename);
 		if(fileLastModified == null) {
 			rev.setFileLastModified(rev.getCreationDate());
@@ -111,7 +113,7 @@ public class VFSRevisionDAO {
 		.append(" left join fetch rev.fileInitializedBy as fileInitializedBy")
 		.append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		.append(" where rev.metadata.key=:metadataKey")
-		.append(" order by rev.revisionNr");
+		.append(" order by rev.revisionNr, rev.revisionTempNr");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), VFSRevision.class)
 				.setParameter("metadataKey", metadata.getKey())

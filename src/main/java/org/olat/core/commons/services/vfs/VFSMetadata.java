@@ -169,6 +169,15 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	
 	public void setRevisionNr(long nr);
 	
+	/**
+	 * Indicates if it is a temporary version.
+	 * 
+	 * @return the number of the temporary revision or null
+	 */
+	public Integer getRevisionTempNr();
+	
+	public void setRevisionTempNr(Integer nr);
+	
 	public String getRevisionComment();
 	
 	public void setRevisionComment(String text);

@@ -102,17 +102,17 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		//save a first version
 		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
-		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		vfsRepositoryService.addVersion(file, id, false, "Version 1", in1);
 		in1.close();
 		
 		//save a second version
 		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
-		vfsRepositoryService.addVersion(file, id, "Version 2", in2);
+		vfsRepositoryService.addVersion(file, id, false, "Version 2", in2);
 		in2.close();
 		
 		//save a third version
 		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
-		vfsRepositoryService.addVersion(file, id, "Version 3", in3);
+		vfsRepositoryService.addVersion(file, id, false, "Version 3", in3);
 		in3.close();
 
 		//make the checks
@@ -151,15 +151,17 @@ public class VFSVersioningTest extends OlatTestCase {
 		int byteCopied = copyTestTxt(file);
 		Assert.assertFalse(byteCopied == 0);
 		
-		//save a first version
-		for(int i=0; i<5; i++) {
-			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
-			vfsRepositoryService.addVersion(file, id2, "Version " + (1 +i), inv);
-			inv.close();
-		}
-
 		VFSItem retrievedFile = rootTest.resolve(filename);
 		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(retrievedFile);
+		
+		//save five versions
+		for(int i=0; i<5; i++) {
+			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
+			vfsRepositoryService.addVersion(file, id2, false, "Version " + (1 +i), inv);
+			inv.close();
+		}
+		
+		metadata = vfsRepositoryService.getMetadataFor(retrievedFile);
 		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
 		Assert.assertNotNull(revisions);
 		Assert.assertEquals(3, revisions.size());
@@ -188,7 +190,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		//save a first version
 		for(int i=0; i<2; i++) {
 			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
-			vfsRepositoryService.addVersion(file, id2, "Version " + (1 +i), inv);
+			vfsRepositoryService.addVersion(file, id2, false, "Version " + (1 +i), inv);
 			inv.close();
 		}
 
@@ -210,7 +212,6 @@ public class VFSVersioningTest extends OlatTestCase {
 		// rename new file to old name
 		newFile.rename(filename);
 		dbInstance.commit();
-		
 	}
 	
 	@Test
@@ -230,7 +231,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		//save a first version
 		for(int i=0; i<5; i++) {
 			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
-			vfsRepositoryService.addVersion(file, id, "Version " + (1 +i), inv);
+			vfsRepositoryService.addVersion(file, id, false, "Version " + (1 +i), inv);
 			inv.close();
 		}
 
@@ -239,6 +240,132 @@ public class VFSVersioningTest extends OlatTestCase {
 		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
 		Assert.assertNotNull(revisions);
 		Assert.assertTrue(revisions.isEmpty());
+	}
+	
+	@Test
+	public void addVersions_temp() throws IOException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-t-1");
+		
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test", null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		vfsRepositoryService.itemSaved(file, id);
+		VFSMetadata data = vfsRepositoryService.getMetadataFor(file);
+		vfsRepositoryService.updateMetadata(data);
+		dbInstance.commitAndCloseSession();
+		
+		//save a first version
+		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
+		vfsRepositoryService.addVersion(file, id, false, "Version 1", in1);
+		in1.close();
+		
+		//save a second version
+		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
+		vfsRepositoryService.addVersion(file, id, false, "Version 2", in2);
+		in2.close();
+		
+		//save a temp version
+		InputStream in2t1 = new ByteArrayInputStream("Hello version 2.1".getBytes());
+		vfsRepositoryService.addVersion(file, id, true, "Version 2.1", in2t1);
+		in2t1.close();
+		
+		//save a temp version
+		InputStream in2t2 = new ByteArrayInputStream("Hello version 2.2".getBytes());
+		vfsRepositoryService.addVersion(file, id, true, "Version 2.2", in2t2);
+		in2t2.close();
+
+		//make the checks
+		VFSItem retrievedFile = rootTest.resolve(filename);
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(retrievedFile);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(4, revisions.size());
+		
+		//check the comments
+		Assert.assertNull(revisions.get(0).getRevisionComment());
+		Assert.assertEquals("Version 1", revisions.get(1).getRevisionComment());
+		Assert.assertEquals("Version 2", revisions.get(2).getRevisionComment());
+		Assert.assertEquals("Version 2.1", revisions.get(3).getRevisionComment());
+		
+		//save more versions
+		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
+		vfsRepositoryService.addVersion(file, id, false, "Version 3", in3);
+		in3.close();
+		
+		InputStream in4 = new ByteArrayInputStream("Hello version 4".getBytes());
+		vfsRepositoryService.addVersion(file, id, false, "Version 4", in4);
+		in4.close();
+		
+		//make the checks
+		metadata = vfsRepositoryService.getMetadataFor(retrievedFile);
+		revisions = vfsRepositoryService.getRevisions(metadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(4, revisions.size());
+		//check the comments
+		Assert.assertNull(revisions.get(0).getRevisionComment());
+		Assert.assertEquals("Version 1", revisions.get(1).getRevisionComment());
+		Assert.assertEquals("Version 2", revisions.get(2).getRevisionComment());
+		Assert.assertEquals("Version 3", revisions.get(3).getRevisionComment());
+	}
+	
+	@Test
+	public void addVersions_temp_level_ignored() throws IOException {
+		versionsModule.setMaxNumberOfVersions(3);
+		waitForCondition(new SetMaxNumberOfVersions(versionsModule, 3l), 2000);
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-t-2");
+		
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test_" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		
+		// set metadata
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
+		metadata.setComment("Initital version 0");
+		vfsRepositoryService.updateMetadata(metadata);
+		dbInstance.commitAndCloseSession();
+		
+		//save a first version
+		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
+		vfsRepositoryService.addVersion(file, id, false, "Version 1", in1);
+		in1.close();
+		
+		// create 10 temporary versions
+		for(int i=0; i<10; i++) {
+			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
+			vfsRepositoryService.addVersion(file, id, true, "Version 1." + (1 +i), inv);
+			inv.close();
+		}
+		
+		// Check if all temporary versions are persisted
+		VFSItem retrievedFile = rootTest.resolve(filename);
+		metadata = vfsRepositoryService.getMetadataFor(retrievedFile);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(11, revisions.size());
+		// The stable versions should still exist.
+		Assert.assertEquals("Version 1", revisions.get(1).getRevisionComment());
+		Assert.assertEquals("Version 1.9", revisions.get(10).getRevisionComment());
+		
+		//save a second stable version
+		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
+		vfsRepositoryService.addVersion(file, id, false, "Version 2", in2);
+		in2.close();
+		
+		// Stable version 2
+		metadata = vfsRepositoryService.getMetadataFor(retrievedFile);
+		Assert.assertEquals("Version 2", metadata.getRevisionComment());
+		revisions = vfsRepositoryService.getRevisions(metadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(2, revisions.size());
+		Assert.assertNull(revisions.get(0).getRevisionComment());
+		Assert.assertEquals("Version 1", revisions.get(1).getRevisionComment());
 	}
 	
 	@Test
@@ -253,17 +380,17 @@ public class VFSVersioningTest extends OlatTestCase {
 
 		//save a first version
 		InputStream in1 = VFSVersioningTest.class.getResourceAsStream("test.txt");
-		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		vfsRepositoryService.addVersion(file, id, false, "Version 1", in1);
 		in1.close();
 		
 		//save a second version
 		InputStream in2 = VFSVersioningTest.class.getResourceAsStream("test.txt");
-		vfsRepositoryService.addVersion(file, id, "Version 2", in2);
+		vfsRepositoryService.addVersion(file, id, false, "Version 2", in2);
 		in2.close();
 		
 		//save a third version
 		InputStream in3 = VFSVersioningTest.class.getResourceAsStream("test.txt");
-		vfsRepositoryService.addVersion(file, id, "Version 3", in2);
+		vfsRepositoryService.addVersion(file, id, false, "Version 3", in2);
 		in3.close();
 		
 		//check if there is only one backup file
@@ -294,7 +421,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		//save a first version
 		for(int i=0; i<2; i++) {
 			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
-			vfsRepositoryService.addVersion(file, id, "Version " + (1 +i), inv);
+			vfsRepositoryService.addVersion(file, id, false, "Version " + (1 +i), inv);
 			inv.close();
 		}
 
@@ -334,17 +461,17 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		//save a first version
 		InputStream in1 = VFSVersioningTest.class.getResourceAsStream("test.txt");
-		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		vfsRepositoryService.addVersion(file, id, false, "Version 1", in1);
 		in1.close();
 		
 		//save a second version
 		InputStream in2 = VFSVersioningTest.class.getResourceAsStream("test.txt");
-		vfsRepositoryService.addVersion(file, id, "Version 2", in2);
+		vfsRepositoryService.addVersion(file, id, false, "Version 2", in2);
 		in2.close();
 		
 		//save a third version
 		InputStream in3 = VFSVersioningTest.class.getResourceAsStream("test.txt");
-		vfsRepositoryService.addVersion(file, id, "Version 3", in2);
+		vfsRepositoryService.addVersion(file, id, false, "Version 3", in2);
 		in3.close();
 		
 		//delete revisions
@@ -396,27 +523,27 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		//save a first version
 		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
-		vfsRepositoryService.addVersion(file, id2, "Version 1", in1);
+		vfsRepositoryService.addVersion(file, id2, false, "Version 1", in1);
 		in1.close();
 		
 		//save a second version
 		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
-		vfsRepositoryService.addVersion(file, id2, "Version 2", in2);
+		vfsRepositoryService.addVersion(file, id2, false, "Version 2", in2);
 		in2.close();
 		
 		//save a third version
 		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
-		vfsRepositoryService.addVersion(file, id2, "Version 3", in3);
+		vfsRepositoryService.addVersion(file, id2, false, "Version 3", in3);
 		in3.close();
 		
 		//save a fourth version
 		InputStream in4 = new ByteArrayInputStream("Hello version 4".getBytes());
-		vfsRepositoryService.addVersion(file, id2, "Version 4", in4);
+		vfsRepositoryService.addVersion(file, id2, false, "Version 4", in4);
 		in4.close();
 		
 		//save a fourth version
 		InputStream in5 = new ByteArrayInputStream("Hello version 5".getBytes());
-		vfsRepositoryService.addVersion(file, id2, "Version 5", in5);
+		vfsRepositoryService.addVersion(file, id2, false, "Version 5", in5);
 		in5.close();
 		
 		dbInstance.commitAndCloseSession();
@@ -474,17 +601,17 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		//save a first version -> id2
 		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
-		vfsRepositoryService.addVersion(file, id2, "Version 1", in1);
+		vfsRepositoryService.addVersion(file, id2, false, "Version 1", in1);
 		in1.close();
 		
 		//save a second version -> id1
 		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
-		vfsRepositoryService.addVersion(file, id1, "Version 2", in2);
+		vfsRepositoryService.addVersion(file, id1, false, "Version 2", in2);
 		in2.close();
 		
 		//save a third version -> id2
 		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
-		vfsRepositoryService.addVersion(file, id2, "Version 3", in3);
+		vfsRepositoryService.addVersion(file, id2, false, "Version 3", in3);
 		in3.close();
 
 		//make the checks
@@ -520,7 +647,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		//save a first version -> id
 		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
-		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		vfsRepositoryService.addVersion(file, id, false, "Version 1", in1);
 		in1.close();
 		
 		dbInstance.commitAndCloseSession();
@@ -555,7 +682,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		//save a first version -> id
 		InputStream in1 = new ByteArrayInputStream("Hello, move me".getBytes());
-		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		vfsRepositoryService.addVersion(file, id, false, "Version 1", in1);
 		in1.close();
 		dbInstance.commitAndCloseSession();
 		
@@ -599,12 +726,12 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		//save a first version -> id2
 		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
-		vfsRepositoryService.addVersion(file, id2, "Version 1", in1);
+		vfsRepositoryService.addVersion(file, id2, false, "Version 1", in1);
 		in1.close();
 		
 		//save a second version -> id1
 		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
-		vfsRepositoryService.addVersion(file, id1, "Version 2", in2);
+		vfsRepositoryService.addVersion(file, id1, false, "Version 2", in2);
 		in2.close();
 		
 		//move the file
@@ -650,17 +777,17 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		//save a first version -> id
 		InputStream in1 = new ByteArrayInputStream("Hello 1".getBytes());
-		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		vfsRepositoryService.addVersion(file, id, false, "Version 1", in1);
 		in1.close();
 		dbInstance.commitAndCloseSession();
 		// save version 2
 		InputStream in2 = new ByteArrayInputStream("Hello 2".getBytes());
-		vfsRepositoryService.addVersion(file, id, "Version 2", in2);
+		vfsRepositoryService.addVersion(file, id, false, "Version 2", in2);
 		in2.close();
 		dbInstance.commitAndCloseSession();
 		// save version 3
 		InputStream in3 = new ByteArrayInputStream("Hello 3".getBytes());
-		vfsRepositoryService.addVersion(file, id, "Version 3", in3);
+		vfsRepositoryService.addVersion(file, id, false, "Version 3", in3);
 		in3.close();
 		dbInstance.commitAndCloseSession();
 		
@@ -704,7 +831,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		//save a first version -> id
 		InputStream in1 = new ByteArrayInputStream("Hello 1".getBytes());
-		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		vfsRepositoryService.addVersion(file, id, false, "Version 1", in1);
 		in1.close();
 		dbInstance.commitAndCloseSession();
 		
@@ -717,12 +844,12 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		// save version 2
 		InputStream in2 = new ByteArrayInputStream("Hello 2".getBytes());
-		vfsRepositoryService.addVersion(file, id, "Version 2", in2);
+		vfsRepositoryService.addVersion(file, id, false, "Version 2", in2);
 		in2.close();
 		dbInstance.commitAndCloseSession();
 		// save version 3
 		InputStream in3 = new ByteArrayInputStream("Hello 3".getBytes());
-		vfsRepositoryService.addVersion(file, id, "Version 3", in3);
+		vfsRepositoryService.addVersion(file, id, false, "Version 3", in3);
 		in3.close();
 		dbInstance.commitAndCloseSession();
 		

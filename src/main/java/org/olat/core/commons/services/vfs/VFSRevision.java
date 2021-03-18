@@ -54,7 +54,8 @@ public interface VFSRevision {
 	 */
 	public int getRevisionNr();
 	
-
+	public Integer getRevisionTempNr();
+	
 	public Date getCreationDate();
 
 	/**

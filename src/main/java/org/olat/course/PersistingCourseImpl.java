@@ -342,7 +342,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 			vfsItem = getCourseBaseContainer().createChildLeaf(fileName);
 		} else if(vfsItem.exists()) {
 			try(InputStream in=vfsItem.getInputStream()) {
-				CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(vfsItem, null, "", in);
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(vfsItem, null, false, "", in);
 			} catch (Exception e) {
 				log.error("Cannot versioned " + fileName, e);
 			}

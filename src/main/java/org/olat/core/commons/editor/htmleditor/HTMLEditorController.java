@@ -543,7 +543,7 @@ public class HTMLEditorController extends FormBasicController implements Activat
 		// save the file
 		if(versionsEnabled && fileLeaf.canVersion() == VFSConstants.YES) {
 			try(InputStream inStream = FileUtils.getInputStream(fileContent.toString(), charSet)) {
-				vfsRepositoryService.addVersion(fileLeaf, getIdentity(), "", inStream);
+				vfsRepositoryService.addVersion(fileLeaf, getIdentity(), false, "", inStream);
 			} catch(IOException e) {
 				logError("", e);
 			}

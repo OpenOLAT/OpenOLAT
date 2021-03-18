@@ -119,7 +119,7 @@ public class TextEditorController extends FormBasicController {
 		String content = contentEl.getValue();
 		if (versionControlled && vfsLeaf.canVersion() == VFSConstants.YES) {
 			try (InputStream inStream = FileUtils.getInputStream(content, encoding)) {
-				vfsRepositoryService.addVersion(vfsLeaf, getIdentity(), "", inStream);
+				vfsRepositoryService.addVersion(vfsLeaf, getIdentity(), false, "", inStream);
 			} catch (IOException e) {
 				logError("", e);
 			}

@@ -38,6 +38,7 @@ public class RevisionRow {
 	private boolean current;
 	
 	private int revisionNr;
+	private Integer revisionTempNr;
 	private long revisionSize;
 	private Identity author;
 	private String comment;
@@ -57,6 +58,7 @@ public class RevisionRow {
 	public RevisionRow(VFSRevision revision, DownloadLink downloadLink) {
 		current = false;
 		revisionNr = revision.getRevisionNr();
+		revisionTempNr = revision.getRevisionTempNr();
 		author = revision.getFileInitializedBy();
 		comment = revision.getRevisionComment();
 		revisionSize = revision.getSize();
@@ -83,6 +85,10 @@ public class RevisionRow {
 		return current ? metadata.getRevisionNr() : revisionNr;
 	}
 	
+	public Integer getRevisionTempNr() {
+		return current ? metadata.getRevisionTempNr() : revisionTempNr;
+	}
+
 	public long getSize() {
 		return current ? metadata.getFileSize() : revisionSize;
 	}

@@ -497,7 +497,7 @@ public class FileUploadController extends FormBasicController {
 		
 		//ok, new version of the file
 		if(existingVFSItem instanceof VFSLeaf && existingVFSItem.canVersion() == VFSConstants.YES) {
-			boolean ok = vfsRepositoryService.addVersion((VFSLeaf)existingVFSItem, ureq.getIdentity(), comment, newFile.getInputStream());
+			boolean ok = vfsRepositoryService.addVersion((VFSLeaf)existingVFSItem, ureq.getIdentity(), false, comment, newFile.getInputStream());
 			if(ok) {
 				newFile.deleteSilently();
 				//what can i do if existingVFSItem is a container

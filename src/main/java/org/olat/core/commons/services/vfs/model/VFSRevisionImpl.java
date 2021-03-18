@@ -67,6 +67,8 @@ public class VFSRevisionImpl implements Persistable, VFSRevision {
 
 	@Column(name="f_revision_nr", nullable=false, insertable=true, updatable=true)
 	private int revisionNr;
+	@Column(name="f_revision_temp_nr", nullable=true, insertable=true, updatable=true)
+	private Integer revisionTempNr;
 	@Column(name="f_revision_filename", nullable=false, insertable=true, updatable=true)
 	private String filename;
 	@Column(name="f_revision_size", nullable=false, insertable=true, updatable=true)
@@ -189,6 +191,15 @@ public class VFSRevisionImpl implements Persistable, VFSRevision {
 		this.revisionNr = revision;
 	}
 	
+	@Override
+	public Integer getRevisionTempNr() {
+		return revisionTempNr;
+	}
+
+	public void setRevisionTempNr(Integer revisionTempNr) {
+		this.revisionTempNr = revisionTempNr;
+	}
+
 	@Override
 	public String getRevisionComment() {
 		return revisionComment;

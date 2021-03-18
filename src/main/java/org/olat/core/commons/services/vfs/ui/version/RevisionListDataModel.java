@@ -64,7 +64,7 @@ implements SortableFlexiTableDataModel<RevisionRow> {
 	public Object getValueAt(RevisionRow row, int col) {
 		switch(RevisionCols.values()[col]) {
 			case id: return row.getKey();
-			case nr: return row.getRevisionNr();
+			case nr: return row;
 			case size: return row.getSize();
 			case author: return row.getAuthor();
 			case revisionComment: {

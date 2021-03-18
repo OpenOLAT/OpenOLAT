@@ -241,13 +241,18 @@ public interface VFSRepositoryService {
 	 * The current file will be added in the version history. The content of the
 	 * specified input stream will replace the content in the current file.
 	 * 
+	 * Temporary versions are always "on top" of the versions stack.
+	 * If a stable version is added, all temporary versions are deleted.
+	 * 
 	 * @param currentFile The file
 	 * @param identity The acting identity
+	 * @param tempVersion indicated whether it is a temporary version
 	 * @param comment A comment
 	 * @param newFile The new content for the current file
 	 * @return true if successful
 	 */
-	public boolean addVersion(VFSLeaf currentFile, Identity identity, String comment, InputStream newFile);
+	public boolean addVersion(VFSLeaf currentFile, Identity identity, boolean tempVersion, String comment,
+			InputStream newFile);
 
 	/**
 	 * Restore the specified revision and replace the current file. If the

@@ -142,6 +142,8 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	
 	@Column(name="f_revision_nr", nullable=true, insertable=true, updatable=true)
 	private long revisionNr;
+	@Column(name="f_revision_temp_nr", nullable=true, insertable=true, updatable=true)
+	private Integer revisionTempNr;
 	@Column(name="f_revision_comment", nullable=true, insertable=true, updatable=true)
 	private String revisionComment;
 	
@@ -525,6 +527,16 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	@Override
 	public void setRevisionNr(long revisionNr) {
 		this.revisionNr = revisionNr;
+	}
+
+	@Override
+	public Integer getRevisionTempNr() {
+		return revisionTempNr;
+	}
+
+	@Override
+	public void setRevisionTempNr(Integer revisionTempNr) {
+		this.revisionTempNr = revisionTempNr;
 	}
 
 	@Override

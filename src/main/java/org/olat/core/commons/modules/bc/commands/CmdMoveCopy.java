@@ -177,7 +177,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 			if(vfsSource instanceof VFSLeaf && targetFile != null && targetFile.canVersion() == VFSConstants.YES) {
 				//add a new version to the file
 				VFSLeaf sourceLeaf = (VFSLeaf)vfsSource;
-				vfsRepositoryService.addVersion(sourceLeaf, ureq.getIdentity(), "", sourceLeaf.getInputStream());
+				vfsRepositoryService.addVersion(sourceLeaf, ureq.getIdentity(), false, "", sourceLeaf.getInputStream());
 			} else {
 				vfsStatus = target.copyFrom(vfsSource, ureq.getIdentity());
 			}

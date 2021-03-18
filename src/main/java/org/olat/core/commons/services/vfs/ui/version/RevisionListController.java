@@ -127,7 +127,7 @@ public class RevisionListController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RevisionCols.id));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.nr));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.nr, new RevisionNrsCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.size, new BytesCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.author, new IdentityCellRenderer(userManager)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.revisionComment));

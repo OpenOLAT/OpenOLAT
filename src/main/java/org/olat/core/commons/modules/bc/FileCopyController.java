@@ -228,7 +228,7 @@ public class FileCopyController extends LinkChooserController {
 			}
 			
 			//ok, new version of the file
-			boolean ok = vfsRepositoryService.addVersion(existingVFSItem, ureq.getIdentity(), comment, sourceLeaf.getInputStream());
+			boolean ok = vfsRepositoryService.addVersion(existingVFSItem, ureq.getIdentity(), false, comment, sourceLeaf.getInputStream());
 			if(ok) {
 				newFile = existingVFSItem;
 			}

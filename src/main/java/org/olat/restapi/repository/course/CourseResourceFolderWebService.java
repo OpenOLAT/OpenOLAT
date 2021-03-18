@@ -374,7 +374,7 @@ public class CourseResourceFolderWebService {
 
 			if (existingVFSItem instanceof VFSLeaf && existingVFSItem.canVersion() == VFSConstants.YES) {
 				VFSLeaf existingLeaf = (VFSLeaf)existingVFSItem;
-				vfsRepositoryService.addVersion(existingLeaf, ureq.getIdentity(), "REST upload", file);
+				vfsRepositoryService.addVersion(existingLeaf, ureq.getIdentity(), false, "REST upload", file);
 				newFile = existingLeaf;
 			} else {
 				existingVFSItem.delete();

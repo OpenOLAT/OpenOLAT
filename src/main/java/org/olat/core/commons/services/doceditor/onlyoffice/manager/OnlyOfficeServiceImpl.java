@@ -335,7 +335,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 			if (httpResponse.getStatusLine().getStatusCode() == 200) {
 				InputStream content = httpResponse.getEntity().getContent();
 				if (versionControlled && vfsLeaf.canVersion() == VFSConstants.YES) {
-					updated = vfsRepositoryService.addVersion(vfsLeaf, identity, "OnlyOffice", content);
+					updated = vfsRepositoryService.addVersion(vfsLeaf, identity, false, "OnlyOffice", content);
 				} else {
 					updated = VFSManager.copyContent(content, vfsLeaf, identity);
 				}

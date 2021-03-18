@@ -19,6 +19,9 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.nullsFirst;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,6 +38,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Deque;
 import java.util.HashMap;
@@ -45,6 +49,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
@@ -117,6 +122,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	private final OLATResourceable fileSizeSubscription = OresHelper.createOLATResourceableType("UpdateFileSizeAsync");
 	private final OLATResourceable incrementFileDownload = OresHelper.createOLATResourceableType("IncrementFileDownloadAsync");
 	private static final String CANONICAL_ROOT_REL_PATH = "/";
+	private static final Comparator<VFSRevision> VERSION_ASC = comparing(VFSRevision::getRevisionNr)
+				.thenComparing(comparing(VFSRevision::getRevisionTempNr, nullsFirst(Integer::compareTo)));
 	
 	@Autowired
 	private DB dbInstance;
@@ -567,7 +574,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					resetThumbnails(file);
 				}
 				if(file.canVersion() == VFSConstants.YES) {
-					addToRevisions(file, metadata, author, "", true);
+					addToRevisions(file, metadata, author, false, "", true);
 				}
 			}
 			metadataDao.updateMetadata(metadata);
@@ -601,6 +608,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				if(source.canVersion() == VFSConstants.YES || target.canVersion() == VFSConstants.YES) {
 					targetMetadata.setRevisionComment(sourceMetadata.getRevisionComment());
 					targetMetadata.setRevisionNr(sourceMetadata.getRevisionNr());
+					targetMetadata.setRevisionTempNr(sourceMetadata.getRevisionTempNr());
 					copyRevisions(sourceMetadata, targetMetadata, savedBy);
 				}
 				metadataDao.updateMetadata(targetMetadata);
@@ -651,7 +659,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		for(VFSRevision revision:revisions) {
 			VFSLeaf revFile = getRevisionLeaf(metadata, (VFSRevisionImpl)revision);
 			if(revFile != null && revFile.exists()) {
-				String newRevFilename = generateFilenameForRevision(newName, revision.getRevisionNr());
+				String newRevFilename = generateFilenameForRevision(newName, revision.getRevisionNr(), revision.getRevisionTempNr());
 				revFile.rename(newRevFilename);
 				((VFSRevisionImpl)revision).setFilename(newRevFilename);
 				revisionDao.updateRevision(revision);
@@ -908,7 +916,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			}
 			VFSLeaf currentLeaf = VFSManager.olatRootLeaf(olatLeafRelativePath);
 			// add current version to versions file
-			if (addToRevisions(currentLeaf, metadata, identity, comment, false)) {
+			if (addToRevisions(currentLeaf, metadata, identity, false, comment, false)) {
 				// copy the content of the new file to the old
 				VFSLeaf revFile = getRevisionLeaf(metadata, ((VFSRevisionImpl)revision));
 				if (VFSManager.copyContent(revFile.getInputStream(), currentLeaf, identity)) {
@@ -934,10 +942,10 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 	
 	@Override
-	public boolean addVersion(VFSLeaf currentFile, Identity identity, String comment, InputStream newFile) {
+	public boolean addVersion(VFSLeaf currentFile, Identity identity, boolean tempVersion, String comment, InputStream newFile) {
 		boolean allOk = false;
 		VFSMetadata metadata = getMetadataFor(currentFile);
-		if (addToRevisions(currentFile, metadata, identity, comment, true)) {
+		if (addToRevisions(currentFile, metadata, identity, tempVersion, comment, true)) {
 			// copy the content of the new file to the old
 			if(newFile instanceof net.sf.jazzlib.ZipInputStream || newFile instanceof java.util.zip.ZipInputStream) {
 				newFile = new ShieldInputStream(newFile);
@@ -950,7 +958,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		return allOk;
 	}
 	
-	private boolean addToRevisions(VFSLeaf currentLeaf, VFSMetadata metadata, Identity identity, String comment, boolean pruneRevision) {
+	private boolean addToRevisions(VFSLeaf currentLeaf, VFSMetadata metadata, Identity identity, boolean tempVersion,
+			String comment, boolean pruneRevision) {
 		int maxNumOfVersions = versionModule.getMaxNumberOfVersions();
 		if(maxNumOfVersions == 0) {
 			return true;//deactivated, return all ok
@@ -959,15 +968,22 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		if(currentFile == null) {
 			return false;
 		}
-
-		// read from the
+		
 		List<VFSRevision> revisions = revisionDao.getRevisions(metadata);
+		if (!tempVersion) {
+			// Delete the temporary versions if a new stable version is set.
+			List<VFSRevision> tempVersions = revisions.stream()
+					.filter(rev -> rev.getRevisionTempNr() != null)
+					.collect(Collectors.toList());
+			deleteRevisions(metadata, revisions, tempVersions);
+		}
+		
 		VFSRevisionImpl lastRevision = (VFSRevisionImpl)getLastRevision(revisions);
-		int versionNr = getNextRevisionNr(revisions);
+		RevisionNrs versionNrs = getNextRevisionNr(lastRevision, metadata.getRevisionTempNr() != null);
 		
 		boolean sameFile = isSameFile(currentLeaf, metadata, revisions);
 		String uuid = sameFile && lastRevision != null ? lastRevision.getFilename()
-				: generateFilenameForRevision(currentFile, versionNr);
+				: generateFilenameForRevision(currentFile, versionNrs.getRevisionNr(), versionNrs.getRevisionTempNr());
 
 		Date lastModifiedDate = metadata.getFileLastModified();
 		if(lastModifiedDate == null) {
@@ -977,11 +993,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		if(fileSize <= 0l) {
 			fileSize = currentFile.length();
 		}
-
-		VFSRevision newRevision = revisionDao.createRevision(metadata.getFileInitializedBy(),
-				metadata.getFileLastModifiedBy(), uuid, versionNr, fileSize, lastModifiedDate,
-				metadata.getRevisionComment(), metadata);
-		revisions.add(newRevision);
+		
+		// Don't make a revision if it is the first stable version after some temporary versions
+		// It would be a stable revision of a temporary version. We do not want that.
+		if (tempVersion || metadata.getRevisionTempNr() == null) {
+			VFSRevision newRevision = revisionDao.createRevision(metadata.getFileInitializedBy(),
+					metadata.getFileLastModifiedBy(), uuid, versionNrs.getRevisionNr(), versionNrs.getRevisionTempNr(),
+					fileSize, lastModifiedDate, metadata.getRevisionComment(), metadata);
+			revisions.add(newRevision);
+		}
 
 		if(!sameFile) {
 			resetThumbnails(currentLeaf);
@@ -989,15 +1009,18 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 		File revFile = new File(currentFile.getParentFile(), uuid);
 		if (sameFile || copyContent(currentFile, revFile)) {
-			if(pruneRevision && maxNumOfVersions >= 0 && revisions.size() > maxNumOfVersions) {
+			if(pruneRevision && !tempVersion && maxNumOfVersions >= 0 && revisions.size() > maxNumOfVersions) {
 				int numOfVersionsToDelete = Math.min(revisions.size(), (revisions.size() - maxNumOfVersions));
 				if(numOfVersionsToDelete > 0) {
+					revisions.sort(VERSION_ASC);
 					List<VFSRevision> versionsToDelete = new ArrayList<>(revisions.subList(0, numOfVersionsToDelete));
 					deleteRevisions(metadata, revisions, versionsToDelete);
 				}
 			}
 			metadata.setRevisionComment(comment);
-			metadata.setRevisionNr(getNextRevisionNr(revisions));
+			RevisionNrs revisionNrs = getNextRevisionNr(getLastRevision(revisions), tempVersion);
+			metadata.setRevisionNr(revisionNrs.getRevisionNr());
+			metadata.setRevisionTempNr(revisionNrs.getRevisionTempNr());
 			if (metadata instanceof VFSMetadataImpl) {
 				((VFSMetadataImpl)metadata).setFileInitializedBy(identity);
 			}
@@ -1089,24 +1112,51 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 	
 	private VFSRevision getLastRevision(List<VFSRevision> revisions) {
-		VFSRevision last = null;
-		for (VFSRevision version : revisions) {
-			if (last == null || version.getRevisionNr() > last.getRevisionNr()) {
-				last = version;
-			}
-		}
-		return last;
+		if (revisions == null || revisions.isEmpty()) return null;
+		
+		return revisions.stream()
+				// sort by revisionNr and revisionTempNr
+				.sorted(VERSION_ASC)
+				// Get last of the sorted revisions
+				.skip(revisions.size() - 1)
+				.findFirst()
+				.get();
 	}
 	
-	private int getNextRevisionNr(List<VFSRevision> revisions) {
-		int maxNumber = 0;
-		for (VFSRevision version : revisions) {
-			int versionNr = version.getRevisionNr();
-			if (versionNr > 0 && versionNr > maxNumber) {
-				maxNumber = versionNr;
-			}
+	private RevisionNrs getNextRevisionNr(VFSRevision revision, boolean tempVersion) {
+		if (revision == null) {
+			Integer numberTemp = tempVersion? 1: null;
+			return new RevisionNrs(1, numberTemp);
 		}
-		return maxNumber + 1;
+		
+		if (tempVersion) {
+			Integer numberTemp = revision.getRevisionTempNr() != null
+					? revision.getRevisionTempNr().intValue() + 1
+					: 1;
+			return new RevisionNrs(revision.getRevisionNr(), numberTemp);
+		}
+		
+		return new RevisionNrs(revision.getRevisionNr() + 1, null);
+	}
+	
+	private static final class RevisionNrs {
+		
+		private final int revisionNr;
+		private final Integer revisionTempNr;
+		
+		public RevisionNrs(int revisionNr, Integer revisionTempNr) {
+			this.revisionNr = revisionNr;
+			this.revisionTempNr = revisionTempNr;
+		}
+
+		public int getRevisionNr() {
+			return revisionNr;
+		}
+		
+		public Integer getRevisionTempNr() {
+			return revisionTempNr;
+		}
+		
 	}
 	
 	private boolean isSameFile(VFSLeaf currentFile, VFSMetadata metadata, List<VFSRevision> revisions) {
@@ -1173,7 +1223,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			Path path = getRevisionPath(currentRelativePath, revImpl.getFilename());
 			File revFile = path.toFile();
 			if(revFile.exists()) {
-				String newRevFilename = generateFilenameForRevision(newTargetName, revision.getRevisionNr());
+				String newRevFilename = generateFilenameForRevision(newTargetName, revision.getRevisionNr(), revision.getRevisionTempNr());
 				Path targetRevPath = getRevisionPath(targetRelativePath, newRevFilename);
 				try {
 					Files.move(path, targetRevPath, StandardCopyOption.REPLACE_EXISTING);
@@ -1431,20 +1481,23 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	 * @param revisionNr The version number
 	 * @return A name like ._oo_vr_filename.ext
 	 */
-	private String generateFilenameForRevision(File file, int revisionNr) {
-		StringBuilder sb = new StringBuilder(128);
-		sb.append("._oo_vr_").append(revisionNr).append("_").append(file.getName());
-		return sb.toString();
+	private String generateFilenameForRevision(File file, int revisionNr, Integer revisonTempNr) {
+		return generateFilenameForRevision(file.getName(), revisionNr, revisonTempNr);
 	}
 	
 	/**
 	 * @param filename The original filename
 	 * @param revisionNr The version number
+	 * @param revisonTempNr The version temp number
 	 * @return A name like ._oo_vr_filename.ext
 	 */
-	private String generateFilenameForRevision(String filename, int revisionNr) {
+	private String generateFilenameForRevision(String filename, int revisionNr, Integer revisonTempNr) {
 		StringBuilder sb = new StringBuilder(128);
-		sb.append("._oo_vr_").append(revisionNr).append("_").append(filename);
+		sb.append("._oo_vr_").append(revisionNr);
+		if (revisonTempNr != null) {
+			sb.append("_t").append(revisonTempNr);
+		}
+		sb.append("_").append(filename);
 		return sb.toString();
 	}
 	
@@ -1519,10 +1572,10 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			File oldOne = new File(versionFile.getParentFile(), filename);
 			if(oldOne.exists()) {
 				try {
-					String newRevisionFilename = generateFilenameForRevision(file, revision.getRevisionNr());
+					String newRevisionFilename = generateFilenameForRevision(file, revision.getRevisionNr(), null);
 					revisionDao.createRevision(revision.getFileInitializedBy(), revision.getFileLastModifiedBy(),
-							newRevisionFilename, revision.getRevisionNr(), oldOne.length(),
-							revision.getFileLastModified(), revision.getComment(), metadata);
+							newRevisionFilename, revision.getRevisionNr(), null,
+							oldOne.length(), revision.getFileLastModified(), revision.getComment(), metadata);
 					File target = new File(file.getParentFile(), newRevisionFilename);
 					Files.move(oldOne.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
