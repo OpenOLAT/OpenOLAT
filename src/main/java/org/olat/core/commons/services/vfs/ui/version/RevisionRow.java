@@ -37,8 +37,8 @@ public class RevisionRow {
 	
 	private boolean current;
 	
-	private int revisionNr;
-	private Integer revisionTempNr;
+	private final long revisionNr;
+	private final String formatedRevisionNr;
 	private long revisionSize;
 	private Identity author;
 	private String comment;
@@ -47,18 +47,20 @@ public class RevisionRow {
 	private VFSMetadata metadata;
 	private final DownloadLink downloadLink;
 	
-	public RevisionRow(VFSMetadata metadata, DownloadLink downloadLink) {
+	public RevisionRow(VFSMetadata metadata, String formatedRevisionNr, DownloadLink downloadLink) {
 		current = true;
 		this.metadata = metadata;
+		this.revisionNr = metadata.getRevisionNr();
+		this.formatedRevisionNr = formatedRevisionNr;
 		comment = metadata.getRevisionComment();
 		author = metadata.getFileInitializedBy();
 		this.downloadLink = downloadLink;
 	}
 	
-	public RevisionRow(VFSRevision revision, DownloadLink downloadLink) {
+	public RevisionRow(VFSRevision revision, String formatedRevisionNr, DownloadLink downloadLink) {
 		current = false;
-		revisionNr = revision.getRevisionNr();
-		revisionTempNr = revision.getRevisionTempNr();
+		this.revisionNr = revision.getRevisionNr();
+		this.formatedRevisionNr = formatedRevisionNr;
 		author = revision.getFileInitializedBy();
 		comment = revision.getRevisionComment();
 		revisionSize = revision.getSize();
@@ -82,13 +84,13 @@ public class RevisionRow {
 	}
 	
 	public long getRevisionNr() {
-		return current ? metadata.getRevisionNr() : revisionNr;
-	}
-	
-	public Integer getRevisionTempNr() {
-		return current ? metadata.getRevisionTempNr() : revisionTempNr;
+		return revisionNr;
 	}
 
+	public String getFormatedRevisionNr() {
+		return formatedRevisionNr;
+	}
+	
 	public long getSize() {
 		return current ? metadata.getFileSize() : revisionSize;
 	}

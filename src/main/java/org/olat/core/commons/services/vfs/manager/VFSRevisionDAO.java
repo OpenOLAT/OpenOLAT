@@ -108,12 +108,12 @@ public class VFSRevisionDAO {
 	public List<VFSRevision> getRevisions(VFSMetadataRef metadata) {
 		if(metadata == null) return new ArrayList<>();
 
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select rev from vfsrevision rev")
 		.append(" left join fetch rev.fileInitializedBy as fileInitializedBy")
 		.append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		.append(" where rev.metadata.key=:metadataKey")
-		.append(" order by rev.revisionNr, rev.revisionTempNr");
+		.append(" order by rev.revisionNr, rev.revisionTempNr").append(" nulls first", !dbInstance.isMySQL());
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), VFSRevision.class)
 				.setParameter("metadataKey", metadata.getKey())

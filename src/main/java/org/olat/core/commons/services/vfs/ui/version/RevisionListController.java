@@ -127,7 +127,7 @@ public class RevisionListController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RevisionCols.id));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.nr, new RevisionNrsCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.nr));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.size, new BytesCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.author, new IdentityCellRenderer(userManager)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.revisionComment));
@@ -160,15 +160,17 @@ public class RevisionListController extends FormBasicController {
 		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(versionedLeaf);
 		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
 		List<RevisionRow> rows = new ArrayList<>(revisions.size() + 2);
+		String revisionNr = formatRevisionNr(metadata.getRevisionNr(), metadata.getRevisionTempNr());
 		VFSMediaResource resource = new VFSMediaResource(versionedFile);
 		resource.setDownloadable(true);
 		DownloadLink download = uifactory.addDownloadLink("download" + (counter++), translate("download"), null, resource, tableEl);
-		rows.add(new RevisionRow(metadata, download));
+		rows.add(new RevisionRow(metadata, revisionNr, download));
 		Collection<String> names = new HashSet<>();
 		for(VFSRevision revision:revisions) {
+			revisionNr = formatRevisionNr(revision.getRevisionNr(), revision.getRevisionTempNr());
 			MediaResource revResource = new VFSRevisionMediaResource(metadata, revision);
 			DownloadLink revDownload = uifactory.addDownloadLink("download" + (counter++), translate("download"), null, revResource, tableEl);
-			rows.add(new RevisionRow(revision, revDownload));
+			rows.add(new RevisionRow(revision, revisionNr, revDownload));
 		}
 		
 		Map<String, IdentityShort> mappedIdentities = new HashMap<>();
@@ -178,6 +180,16 @@ public class RevisionListController extends FormBasicController {
 
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	private String formatRevisionNr(long revisionNr, Integer revisionTempNr) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(revisionNr);
+		if (revisionTempNr != null) {
+			sb.append(".").append(revisionTempNr);
+			sb.append(" (").append(getTranslator().translate("number.temp")).append(")");
+		}
+		return sb.toString();
 	}
 
 	public int getStatus() {
