@@ -1048,7 +1048,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 		}
 		Page page = pageDao.createAndPersist(title, summary, imagePath, align, editable, reloadedSection, pageDelegate);
 		if(pageDelegate != null) {
-			for (TaxonomyCompetence competence : portfolioPageToTaxonomyCompetenceDAO.getCompetenciesToPortfolioPage(pageDelegate, false)) {
+			for (TaxonomyCompetence competence : portfolioPageToTaxonomyCompetenceDAO.getCompetencesToPortfolioPage(pageDelegate, false)) {
 				portfolioPageToTaxonomyCompetenceDAO.createRelation(page, taxonomyCompetenceDAO.createTaxonomyCompetence(competence.getCompetenceType(), competence.getTaxonomyLevel(), competence.getIdentity(), competence.getExpiration()));
 			}
 			updateCategories(page, getCategories(pageDelegate).stream().map(cat -> cat.getName()).collect(Collectors.toList()));
@@ -1649,8 +1649,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public List<TaxonomyCompetence> getRelatedCompetencies(Page page, boolean fetchTaxonomies) {
-		return portfolioPageToTaxonomyCompetenceDAO.getCompetenciesToPortfolioPage(page, fetchTaxonomies);
+	public List<TaxonomyCompetence> getRelatedCompetences(Page page, boolean fetchTaxonomies) {
+		return portfolioPageToTaxonomyCompetenceDAO.getCompetencesToPortfolioPage(page, fetchTaxonomies);
 	}
 	
 	@Override
@@ -1666,24 +1666,24 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public void linkCompetences(Page page, Identity identity, List<TextBoxItem> competencies) {
-		List<TaxonomyCompetence> relatedCompetences = getRelatedCompetencies(page, true);
+	public void linkCompetences(Page page, Identity identity, List<TextBoxItem> competences) {
+		List<TaxonomyCompetence> relatedCompetences = getRelatedCompetences(page, true);
 		List<TaxonomyLevel> relatedCompetenceLevels = relatedCompetences.stream().map(competence -> competence.getTaxonomyLevel()).collect(Collectors.toList());
 		
-		List<Long> newTaxonomyLevelKeys = competencies.stream()
+		List<Long> newTaxonomyLevelKeys = competences.stream()
 				.map(textBoxItem -> Long.valueOf(textBoxItem.getValue()))
 				.collect(Collectors.toList());
 		
 		List<TaxonomyLevel> newTaxonomyLevels = taxonomyLevelDAO.loadLevelsByKeys(newTaxonomyLevelKeys);
 		
-		// Remove old competencies
+		// Remove old competences
 		for (TaxonomyCompetence competence : relatedCompetences) {
 			if (!newTaxonomyLevels.contains(competence.getTaxonomyLevel())) {
 				unlinkCompetence(page, competence);
 			}
 		}
 		
-		// Create new competencies
+		// Create new competences
 		for (TaxonomyLevel newLevel : newTaxonomyLevels) {
 			if (!relatedCompetenceLevels.contains(newLevel)) {
 				TaxonomyCompetence competence = taxonomyCompetenceDAO.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, newLevel, identity, null);
@@ -1693,13 +1693,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(Section section) {
-		return portfolioPageToTaxonomyCompetenceDAO.getCompetenciesAndUsage(section);
+	public LinkedHashMap<TaxonomyLevel, Long> getCompetencesAndUsage(Section section) {
+		return portfolioPageToTaxonomyCompetenceDAO.getCompetencesAndUsage(section);
 	}
 	
 	@Override
-	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(List<Page> pages) {
-		return portfolioPageToTaxonomyCompetenceDAO.getCompetenciesAndUsage(pages);
+	public LinkedHashMap<TaxonomyLevel, Long> getCompetencesAndUsage(List<Page> pages) {
+		return portfolioPageToTaxonomyCompetenceDAO.getCompetencesAndUsage(pages);
 	}
 	
 	@Override

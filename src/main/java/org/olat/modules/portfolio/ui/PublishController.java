@@ -607,7 +607,7 @@ public class PublishController extends BasicController implements TooledControll
 			if(element.getType() == PortfolioElementType.section) {
 				Section section = (Section)element;
 				return section.getSectionStatus() == null
-					? SectionStatus.notStarted.cssClass() : section.getSectionStatus().cssClass();
+					? SectionStatus.notStarted.iconClass() : section.getSectionStatus().iconClass();
 			}
 			return "";
 		}

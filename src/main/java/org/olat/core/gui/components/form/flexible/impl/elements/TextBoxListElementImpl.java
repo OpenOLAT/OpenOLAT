@@ -176,4 +176,14 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	public void setShowSaveButton(boolean showSaveButton) {
 		component.setShowSaveButton(showSaveButton);
 	}
+	
+	@Override
+	public void setShowInlineLabel(boolean inlineLabel) {
+		component.setShowLabelAsInlineText(inlineLabel);
+	}
+	
+	@Override
+	public void setIconTitleKey(String iconTitleKey) {
+		component.setIconTitleKey(iconTitleKey);
+	}
 }

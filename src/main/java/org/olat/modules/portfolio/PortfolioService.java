@@ -736,13 +736,13 @@ public interface PortfolioService {
 	public void deleteSurvey(PageBody body);
 	
 	/**
-	 * Get all related taxonomy competencies to one portfolio page
+	 * Get all related taxonomy competences to one portfolio page
 	 * 
 	 * @param page
 	 * @param fetchTaxonomies
 	 * @return
 	 */
-	public List<TaxonomyCompetence> getRelatedCompetencies(Page page, boolean fetchTaxonomies);
+	public List<TaxonomyCompetence> getRelatedCompetences(Page page, boolean fetchTaxonomies);
 	
 	/**
 	 * Link a taxonomy competence to a portfolio page
@@ -753,12 +753,12 @@ public interface PortfolioService {
 	public void linkCompetence(Page page, TaxonomyCompetence competence);
 	
 	/**
-	 * Link a list of competencies coming from a text box
+	 * Link a list of competences coming from a text box
 	 * 
 	 * @param page
-	 * @param competencies
+	 * @param competences
 	 */
-	public void linkCompetences(Page page, Identity identity, List<TextBoxItem> competencies);
+	public void linkCompetences(Page page, Identity identity, List<TextBoxItem> competences);
 	
 	/**
 	 * Unlink a taxonomy competence from a portfolio page
@@ -775,7 +775,7 @@ public interface PortfolioService {
 	 * @param section
 	 * @return
 	 */
-	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(Section section);
+	public LinkedHashMap<TaxonomyLevel, Long> getCompetencesAndUsage(Section section);
 	
 	/**
 	 * Get all competences for a list of pages and its usage count
@@ -784,7 +784,7 @@ public interface PortfolioService {
 	 * @param pages
 	 * @return
 	 */
-	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(List<Page> pages);
+	public LinkedHashMap<TaxonomyLevel, Long> getCompetencesAndUsage(List<Page> pages);
 	
 	/**
 	 * Get all categories used in a section and its usage count.

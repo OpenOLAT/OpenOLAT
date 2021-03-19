@@ -6,7 +6,7 @@
 	#else 
 		$r.contextHelpWithWrapper("Portfolio task and assignment: Collecting and editing")
 	#end
-	<h2>$r.translate("table.of.contents", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end </h2>
+	<h2><i class="o_icon o_icon_fw o_icon_pf_binder"> </i> $r.translate("table.of.contents", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end </h2>
 	#if($r.available("to.ref.entry"))
 		<div class="o_portfolio_repo_link o_block_bottom o_block_move_up_small">$r.render("to.ref.entry")</div>
 	#end
@@ -21,7 +21,11 @@
 				<div class="o_portfolio_toc_section">
 					<h4>
 						$r.render($section.sectionLink) 
-						<i class="o_icon $section.cssClassStatus o_icon-fw" title="$r.translateInAttribute("${section.i18nKeyStatus}")"> </i>#if(${section.isAssessable()}) ${section.getFormattedResult()} #end
+						<span class="o_small o_labeled_light $section.statusCss">
+							<i class="o_icon $section.statusIconCss o_icon-fw" title="$r.translateInAttribute("${section.i18nKeyStatus}")"> </i>
+							$r.translateInAttribute("${section.i18nKeyStatus}")
+						</span>
+						#if(${section.isAssessable()}) ${section.getFormattedResult()} #end
 					</h4> 
 				#if($r.notNull($section.section.beginDate) || $r.notNull($section.section.endDate))
 					<div class="o_portfolio_section_meta text-muted o_xsmall o_block_bottom">
@@ -63,8 +67,15 @@
 				#if($r.isNotEmpty(${section.getPages()}))
 				<ul class="list-unstyled o_portfolio_toc_pages">
 					#foreach($page in $section.pages)
-						<li><i class="o_icon $page.cssClassStatus o_icon-fw o_pf_status" title="$r.translateInAttribute("${page.i18nKeyStatus}")"> </i> $r.render($page.openLink) #if($r.isNotNull($page.commentLink)) $r.render($page.commentLink) #end
-						#if($r.isTrue($userInfos)) $userInfosRenderer.renderPageRow($page)#end</li>
+						<li>
+							$r.render($page.openLink) 
+							<span class="o_small o_labeled_light $page.statusCss">
+								<i class="o_icon $page.statusIconCss o_icon-fw o_pf_status" title="$r.translateInAttribute("${page.i18nKeyStatus}")"> </i>
+								$r.translateInAttribute("${page.i18nKeyStatus}")
+							</span>
+							#if($r.isNotNull($page.commentLink)) $r.render($page.commentLink) #end
+							#if($r.isTrue($userInfos)) $userInfosRenderer.renderPageRow($page)#end
+						</li>
 					#end
 				</ul>
 				#end

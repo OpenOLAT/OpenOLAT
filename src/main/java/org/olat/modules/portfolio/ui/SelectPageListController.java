@@ -83,7 +83,7 @@ public class SelectPageListController extends AbstractPageListController {
 		initForm(ureq);
 		loadModel(ureq, null);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.classic);
-		super.loadCompetenciesFilter();
+		super.loadCompetencesFilter();
 		super.loadCategoriesFilter();
 	}
 	

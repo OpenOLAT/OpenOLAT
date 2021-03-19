@@ -46,7 +46,7 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Reusable controller to show the list of competencies and edit them with
+ * Reusable controller to show the list of competences and edit them with
  * a small edit button. When edited, an Event.CHANGED is fired
  * 
  * Initial date: 28.07.2017<br>
@@ -55,13 +55,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
-public class CompetenciesEditController extends FormBasicController {
+public class CompetencesEditController extends FormBasicController {
 	
-	private TextBoxListElement competenciesEl;
+	private TextBoxListElement competencesEl;
 	private FormLink editLink;
 	private FormSubmit saveButton;
 
-	List<TextBoxItem> existingCompetencies;
+	List<TextBoxItem> existingCompetences;
 	List<TextBoxItem> availableTaxonomyLevels;
 	
 	@Autowired
@@ -71,16 +71,16 @@ public class CompetenciesEditController extends FormBasicController {
 	@Autowired
 	private TaxonomyService taxonomyService;
 	
-	public CompetenciesEditController(UserRequest ureq, WindowControl wControl, Page portfolioPage) {
-		super(ureq, wControl, "competencies_edit");
+	public CompetencesEditController(UserRequest ureq, WindowControl wControl, Page portfolioPage) {
+		super(ureq, wControl, "competences_edit");
 		
-		List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(portfolioPage, true);
-		existingCompetencies = new ArrayList<>();
-		for (TaxonomyCompetence competence : competencies) {
+		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(portfolioPage, true);
+		existingCompetences = new ArrayList<>();
+		for (TaxonomyCompetence competence : competences) {
 			TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getDisplayName(), competence.getTaxonomyLevel().getKey().toString());
 			competenceTextBoxItem.setTooltip(competence.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash());
 			competenceTextBoxItem.setCustomCSS("o_competence");
-			existingCompetencies.add(competenceTextBoxItem);
+			existingCompetences.add(competenceTextBoxItem);
 		}
 		
 		availableTaxonomyLevels = new ArrayList<>();
@@ -96,7 +96,7 @@ public class CompetenciesEditController extends FormBasicController {
 		}
 
 		initForm(ureq);
-		/* we add domID to competencies_edit.html to reduce DIV count */
+		/* we add domID to competences_edit.html to reduce DIV count */
 		this.flc.getFormItemComponent().setDomReplacementWrapperRequired(false);
 	}
 	
@@ -104,16 +104,19 @@ public class CompetenciesEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_pf_edit_entry_tags_form");
 		
-		competenciesEl = uifactory.addTextBoxListElement("competencies", "competencies", "competencies.hint", existingCompetencies, formLayout, getTranslator());
-		competenciesEl.setHelpText(translate("competencies.hint"));
-		competenciesEl.setAllowDuplicates(false);
-		competenciesEl.setAllowNewValues(false);
-		competenciesEl.setElementCssClass("o_block_inline");
-		competenciesEl.getComponent().setSpanAsDomReplaceable(false);
-		competenciesEl.setIcon("o_icon_competences");
-		competenciesEl.setAutoCompleteContent(availableTaxonomyLevels);
-		competenciesEl.setCustomCSSForItems("o_competence");
-		competenciesEl.setShowSaveButton(true);
+		competencesEl = uifactory.addTextBoxListElement("competences", "competences", "competences.hint", existingCompetences, formLayout, getTranslator());
+		competencesEl.setHelpText(translate("competences.hint"));
+		competencesEl.setAllowDuplicates(false);
+		competencesEl.setAllowNewValues(false);
+		competencesEl.setElementCssClass("o_block_inline");
+		competencesEl.getComponent().setSpanAsDomReplaceable(false);
+		competencesEl.setIcon("o_icon_competences");
+		competencesEl.setAutoCompleteContent(availableTaxonomyLevels);
+		competencesEl.setCustomCSSForItems("o_competence");
+		competencesEl.setShowSaveButton(true);
+		competencesEl.setShowInlineLabel(true);
+		competencesEl.setIconTitleKey("competences");
+		
 		
 		
 		editLink = uifactory.addFormLink("edit", "edit", "edit", null, formLayout, Link.LINK);
@@ -134,11 +137,11 @@ public class CompetenciesEditController extends FormBasicController {
 	 * @param editable
 	 */
 	private void initFormEditableState(boolean editable) {
-		competenciesEl.setEnabled(editable);
+		competencesEl.setEnabled(editable);
 		editLink.setVisible(!editable);
 		saveButton.setVisible(editable);
 		// Special label when no categories are there
-		if (competenciesEl.getValueList().isEmpty()) {
+		if (competencesEl.getValueList().isEmpty()) {
 			editLink.setI18nKey("add");			
 		} else {
 			editLink.setI18nKey("edit");
@@ -150,7 +153,7 @@ public class CompetenciesEditController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 		if (source == editLink) {
 			initFormEditableState(true);
-		} else if(source == competenciesEl) {
+		} else if(source == competencesEl) {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 			initFormEditableState(false);
 		}
@@ -163,10 +166,10 @@ public class CompetenciesEditController extends FormBasicController {
 	}
 
 	/**
-	 * @return The list of competencies as visually configured in the box
+	 * @return The list of competences as visually configured in the box
 	 */
-	public List<TextBoxItem> getUpdatedCompetencies() {
-		return competenciesEl.getValueItems();
+	public List<TextBoxItem> getUpdatedCompetences() {
+		return competencesEl.getValueItems();
 	}
 	
 	@Override

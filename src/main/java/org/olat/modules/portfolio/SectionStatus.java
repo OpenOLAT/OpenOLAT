@@ -29,20 +29,26 @@ import java.util.Date;
  */
 public enum SectionStatus {
 	
-	notStarted("o_icon_pf_section_draft", "status.not.started"),
-	inProgress("o_icon_pf_section_progress", "status.in.progress"),
-	closed("o_icon_pf_section_closed", "status.closed");
+	notStarted("o_icon_pf_section_draft", "o_portfolio_section_draft", "status.not.started"),
+	inProgress("o_icon_pf_section_progress", "o_portfolio_section_progress", "status.in.progress"),
+	closed("o_icon_pf_section_closed", "o_portfolio_section_closed", "status.closed");
 	
-	private final String cssClass;
+	private final String iconClass;
+	private final String statusClass;
 	private final String i18nKey;
 	
-	private SectionStatus(String cssClass, String i18nKey) {
-		this.cssClass = cssClass;
+	private SectionStatus(String iconClass, String statusClass, String i18nKey) {
+		this.iconClass = iconClass;
+		this.statusClass = statusClass;
 		this.i18nKey = i18nKey;
 	}
 	
-	public String cssClass() {
-		return cssClass;
+	public String iconClass() {
+		return iconClass;
+	}
+	
+	public String statusClass() {
+		return statusClass;
 	}
 	
 	public String i18nKey() {

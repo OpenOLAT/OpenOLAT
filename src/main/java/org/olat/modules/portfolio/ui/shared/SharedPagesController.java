@@ -182,7 +182,7 @@ public class SharedPagesController extends FormBasicController implements Activa
 			List<FlexiTableFilter> tableFilters = new ArrayList<>(filters.size());
 			for(PageStatus status:filters) {
 				String label = translate(status.i18nKey());
-				tableFilters.add(new FlexiTableFilter(label, status.name(), "o_icon ".concat(status.cssClass())));
+				tableFilters.add(new FlexiTableFilter(label, status.name(), "o_icon ".concat(status.iconClass())));
 			}
 			tableFilters.add(FlexiTableFilter.SPACER);
 			tableFilters.add(new FlexiTableFilter(translate("filter.show.all"), "all", true));

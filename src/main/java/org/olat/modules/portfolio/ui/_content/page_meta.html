@@ -11,7 +11,7 @@
 			$r.render("sharedWithLink").
 			#if($r.isNotNull($syntheticStatus))
 				$syntheticStatus
-				<!-- i class="o_icon o_icon-fw $syntheticStatusCss" title="$syntheticStatusTooltip"> </i> -->
+				<i class="o_icon o_icon-fw $syntheticStatusCss" title="$syntheticStatusTooltip"> </i>
 			#end
 		</div>
 		#end
@@ -43,13 +43,13 @@
 			</div>
 		#end
 		
-		#if($r.isNotEmpty($pageCompetencies) || $r.available("pageCompetenciesCtrl"))
-			<div class="o_portfolio_competencies text-muted o_small">
-			#if ($r.available("pageCompetenciesCtrl"))
-				$r.render("pageCompetenciesCtrl")
+		#if($r.isNotEmpty($pageCompetences) || $r.available("pageCompetencesCtrl"))
+			<div class="o_portfolio_competences text-muted o_small">
+			#if ($r.available("pageCompetencesCtrl"))
+				$r.render("pageCompetencesCtrl")
 			#else
-				<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competencies")"> </i>
-				 #foreach($competence in $pageCompetencies)
+				<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competences")"> </i>
+				 #foreach($competence in $pageCompetences)
 				 	<span class="tag label label-info">
 					 	$competence
 				 	</span>
@@ -73,7 +73,12 @@
 	#if($statusEnabled || $r.available("edit.page.meta") || $r.available("edit.page"))
 	<div class="o_portfolio_status_block o_block_top o_small clearfix">
 		#if($statusEnabled)
-		<div class="o_portfolio_status"><strong>$r.translate("page.status")</strong>: <i class="o_icon o_icon-fw $statusCss"> </i> $pageStatus</div>
+		<div class="o_portfolio_status">
+			<strong>$r.translate("page.status")</strong>: 
+			<span class="o_labeled $statusCssClass">
+				<i class="o_icon o_icon-fw $statusIconCss"> </i> $pageStatus
+			</span>
+		</div>
 		#end
 		
 		#if($r.available("edit.page.meta") || $r.available("edit.page"))

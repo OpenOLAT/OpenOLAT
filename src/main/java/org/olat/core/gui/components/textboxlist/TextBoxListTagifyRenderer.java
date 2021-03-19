@@ -55,9 +55,9 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 
 		TextBoxListElementComponent tblComponent = (TextBoxListElementComponent) source;
 		if (tblComponent.isEnabled()) {
-			renderEnabledMode(tblComponent, sb, translator, tblComponent.getIcon());
+			renderEnabledMode(tblComponent, sb, translator);
 		} else {
-			renderDisabledMode(tblComponent, sb, tblComponent.getIcon());
+			renderDisabledMode(tblComponent, sb, translator);
 		}
 	}
 
@@ -70,14 +70,17 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 	 *            the StringOutput
 	 * @param translator
 	 */
-	private void renderEnabledMode(TextBoxListElementComponent tblComponent, StringOutput sb, Translator translator, String icon) {
+	private void renderEnabledMode(TextBoxListElementComponent tblComponent, StringOutput sb, Translator translator) {
 		TextBoxListElementImpl te = tblComponent.getTextElementImpl();
 		String dispatchId = tblComponent.getFormDispatchId();
 		
 		String initialValJson = renderItemsAsJsonString(tblComponent.getCurrentItems());
-		if (StringHelper.containsNonWhitespace(icon)) {
+		if (StringHelper.containsNonWhitespace(tblComponent.getIcon())) {
 			sb.append("<span class='o_tags_with_icon input-group-sm'>");
-			sb.append("<i class='o_icon o_icon_fw " + icon + "'> </i>");
+			sb.append("<i class='o_icon o_icon_fw ")
+			  .append(tblComponent.getIcon()).append("'")
+			  .append(StringHelper.containsNonWhitespace(tblComponent.getIconTitleKey()) ? " title='" + translator.translate(tblComponent.getIconTitleKey()) + "'" : "")
+			  .append("> </i>");
 		}
 		if (tblComponent.isShowLabelAsInlineText() && StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {
 			sb.append("&nbsp").append(tblComponent.getTextElementImpl().getLabelText()).append("&nbsp");
@@ -85,7 +88,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		if (tblComponent.showSaveButton()) {
 			sb.append("<span class='input-group input-group-sm'>");
 		}
-		if (!tblComponent.showSaveButton() && !StringHelper.containsNonWhitespace(icon)) {
+		if (!tblComponent.showSaveButton() && !StringHelper.containsNonWhitespace(tblComponent.getIcon())) {
 			sb.append("<span class='input-group-sm'>");
 		}
 		sb.append("<input class='form-control' type='text' id='textboxlistinput").append(dispatchId).append("'")
@@ -269,14 +272,17 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 	 * @param tblComponent
 	 * @param output
 	 */
-	private void renderDisabledMode(TextBoxListElementComponent tblComponent, StringOutput output, String icon) {
+	private void renderDisabledMode(TextBoxListElementComponent tblComponent, StringOutput output, Translator translator) {
 		// read only view, we just display the initialItems as
 		// comma-separated string
 		List<TextBoxItem> items = tblComponent.getCurrentItems();
 		output.append("<span class='o_textbox_disabled o_tags_with_icon'>");
 		
-		if (StringHelper.containsNonWhitespace(icon)) {
-			output.append("<i class='o_icon o_icon_fw ").append(icon).append("'> </i> ");
+		if (StringHelper.containsNonWhitespace(tblComponent.getIcon())) {
+			output.append("<i class='o_icon o_icon_fw ")
+			  	  .append(tblComponent.getIcon()).append("'")
+			  	  .append(StringHelper.containsNonWhitespace(tblComponent.getIconTitleKey()) ? " title='" + translator.translate(tblComponent.getIconTitleKey()) + "'" : "")
+			  	  .append("> </i>");
 		}
 		
 		if (tblComponent.isShowLabelAsInlineText() && StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {

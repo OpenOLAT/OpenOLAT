@@ -68,7 +68,7 @@ public interface BinderSecurityCallback {
 
 	public boolean canEditCategories(Page page);
 	
-	public boolean canEditCompetencies(Page page);
+	public boolean canEditCompetences(Page page);
 
 	public boolean canPublish(Page page);
 	

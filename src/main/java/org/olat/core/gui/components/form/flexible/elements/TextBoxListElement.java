@@ -112,4 +112,18 @@ public interface TextBoxListElement extends FormItem {
 	 * @param showSaveButton
 	 */
 	public void setShowSaveButton(boolean showSaveButton);
+	
+	/**
+	 * Set whether the label should be rendered as text in front of the text box
+	 * 
+	 * @param inlineLabel
+	 */
+	public void setShowInlineLabel(boolean inlineLabel);
+	
+	/**
+	 * Set a i18nKey which will be translated and shown as hover title to the icon
+	 * 
+	 * @param iconTitleKey
+	 */
+	public void setIconTitleKey(String iconTitleKey);
 }

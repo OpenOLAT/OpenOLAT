@@ -445,6 +445,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		
 		Link sectionLink = LinkFactory.createCustomLink(sectionId, "open_section", title, Link.LINK | Link.NONTRANSLATED, mainVC, this);
+		sectionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_pf_section");
 		SectionRow sectionRow = new SectionRow(section, sectionLink, assessmentSection, notAssignedAssignments);
 		sectionLink.setUserObject(sectionRow);
 		
@@ -527,6 +528,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		openLink.setElementCssClass("o_pf_open_entry");
 		openLink.setUserObject(pageRow);
 		openLink.setEnabled(selectElement);
+		openLink.setIconLeftCSS("o_icon o_icon_fw o_icon_pf_page");
 		pageRow.setOpenLink(openLink);
 
 		Long numOfComments = numberOfCommentsMap.get(page.getKey());
@@ -1141,9 +1143,14 @@ public class TableOfContentController extends BasicController implements TooledC
 			return page;
 		}
 		
-		public String getCssClassStatus() {
+		public String getStatusCss() {
 			return page.getPageStatus() == null
-					? PageStatus.draft.cssClass() : page.getPageStatus().cssClass();
+					? PageStatus.draft.statusClass() : page.getPageStatus().statusClass();
+		}
+		
+		public String getStatusIconCss() {
+			return page.getPageStatus() == null
+					? PageStatus.draft.iconClass() : page.getPageStatus().iconClass();
 		}
 
 		public String getI18nKeyStatus() {
@@ -1199,14 +1206,19 @@ public class TableOfContentController extends BasicController implements TooledC
 			return section.getTitle();
 		}
 		
-		public String getCssClassStatus() {
+		public String getStatusCss() {
 			return section.getSectionStatus() == null
-					? SectionStatus.notStarted.cssClass() : section.getSectionStatus().cssClass();
+					? SectionStatus.notStarted.statusClass() : section.getSectionStatus().statusClass();
+		}
+		
+		public String getStatusIconCss() {
+			return section.getSectionStatus() == null
+					? SectionStatus.notStarted.iconClass() : section.getSectionStatus().iconClass();
 		}
 		
 		public String getI18nKeyStatus() {
 			return section.getSectionStatus() == null
-					? SectionStatus.notStarted.cssClass() : section.getSectionStatus().i18nKey();			
+					? SectionStatus.notStarted.i18nKey() : section.getSectionStatus().i18nKey();			
 		}
 		
 		public boolean isAssessable() {

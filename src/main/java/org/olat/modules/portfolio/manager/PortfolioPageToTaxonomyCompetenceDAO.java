@@ -60,7 +60,7 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 		return relation;
 	}
 	
-	public List<TaxonomyCompetence> getCompetenciesToPortfolioPage(Page portfolioPage, boolean fetchTaxonomies) {
+	public List<TaxonomyCompetence> getCompetencesToPortfolioPage(Page portfolioPage, boolean fetchTaxonomies) {
 		StringBuilder sb = new StringBuilder(256);
 		
 		sb.append("select competence from pfpagetotaxonomycompetence rel")
@@ -113,7 +113,7 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 		}
 	}
 	
-	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(Section section) {
+	public LinkedHashMap<TaxonomyLevel, Long> getCompetencesAndUsage(Section section) {
 		StringBuilder sb = new StringBuilder(256);
 		
 		sb.append("select level as level, count(*) as competenceCount from pfpagetotaxonomycompetence rel")
@@ -136,7 +136,7 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 						LinkedHashMap::new));
 	}
 	
-	public LinkedHashMap<TaxonomyLevel, Long> getCompetenciesAndUsage(List<Page> pages) {
+	public LinkedHashMap<TaxonomyLevel, Long> getCompetencesAndUsage(List<Page> pages) {
 		StringBuilder sb = new StringBuilder(256);
 		
 		sb.append("select level as level, count(*) as competenceCount from pfpagetotaxonomycompetence rel")
@@ -147,7 +147,7 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 		  .append(" group by level")
 		  .append(" order by competenceCount desc, level.displayName asc");
 		
-		List<Long> pageKeys = pages.stream().map(page -> page.getKey()).collect(Collectors.toList());
+		List<Long> pageKeys = pages.stream().filter(page -> page != null).map(page -> page.getKey()).collect(Collectors.toList());
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Tuple.class)

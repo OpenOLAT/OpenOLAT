@@ -106,7 +106,7 @@ public class PortfolioPageToTaxonomyCompetenceDAOTest extends OlatTestCase {
 		Assert.assertNotNull(relation.getTaxonomyCompetence());
 		Assert.assertNotNull(relation.getPortfolioPage());
 		
-		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetencies(page, true);
+		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(page, true);
 		
 		Assert.assertNotNull(competences);
 		Assert.assertNotNull(competences.get(0));
@@ -122,17 +122,17 @@ public class PortfolioPageToTaxonomyCompetenceDAOTest extends OlatTestCase {
 		portfolioPageToTaxonomyCompetenceDAO.createRelation(page, competence2);
 		portfolioPageToTaxonomyCompetenceDAO.createRelation(page, competence3);
 		
-		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetencies(page, true);
+		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(page, true);
 		
 		Assert.assertEquals(3, competences.size());
 		
 		portfolioPageToTaxonomyCompetenceDAO.deleteRelation(page, competence1);
-		competences = portfolioService.getRelatedCompetencies(page, true);
+		competences = portfolioService.getRelatedCompetences(page, true);
 		
 		Assert.assertFalse(competences.contains(competence1));
 		
 		portfolioPageToTaxonomyCompetenceDAO.deleteRelation(page);
-		competences = portfolioService.getRelatedCompetencies(page, true);
+		competences = portfolioService.getRelatedCompetences(page, true);
 		
 		Assert.assertEquals(0, competences.size());
 	}

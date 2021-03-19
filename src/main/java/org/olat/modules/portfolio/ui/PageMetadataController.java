@@ -104,7 +104,7 @@ public class PageMetadataController extends BasicController {
 	private CloseableModalController cmc;
 	private UserInfosStatusController userStatusCtrl;
 	private CategoriesEditController categoriesEditCtr;
-	private CompetenciesEditController competenciesEditCtrl;
+	private CompetencesEditController competencesEditCtrl;
 	private ConfirmClosePageController confirmClosePageCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	
@@ -113,7 +113,7 @@ public class PageMetadataController extends BasicController {
 	private final List<Assignment> assignments;
 	private final BinderSecurityCallback secCallback;
 	
-	private boolean competenciesEnabled;
+	private boolean competencesEnabled;
 	
 	@Autowired
 	private UserManager userManager;
@@ -140,7 +140,7 @@ public class PageMetadataController extends BasicController {
 		initMetadata(ureq);
 		initAssignments(ureq);
 		initStatus();
-		initTaxonomyCompetencies();
+		initTaxonomyCompetences();
 		editLink(!openInEditMode);
 		editMetaDataLink();
 		putInitialPanel(mainVC);
@@ -161,12 +161,12 @@ public class PageMetadataController extends BasicController {
 		}
 	}
 	
-	private void initTaxonomyCompetencies() {
+	private void initTaxonomyCompetences() {
 		if (portfolioV2Module.isTaxonomyLinkingReady()) {
-			this.competenciesEnabled = true;			
+			this.competencesEnabled = true;			
 		}
 		
-		mainVC.contextPut("isCompetenciesEnabled", competenciesEnabled);
+		mainVC.contextPut("isCompetencesEnabled", competencesEnabled);
 	}
 	
 	private void syncUserInfosStatus() {
@@ -199,7 +199,8 @@ public class PageMetadataController extends BasicController {
 		mainVC.contextPut("pageTitle", page.getTitle());
 		mainVC.contextPut("pageSummary", page.getSummary());
 		mainVC.contextPut("status", page.getPageStatus());
-		mainVC.contextPut("statusCss", page.getPageStatus() == null ? PageStatus.draft.cssClass() : page.getPageStatus().cssClass());
+		mainVC.contextPut("statusIconCss", page.getPageStatus() == null ? PageStatus.draft.iconClass() : page.getPageStatus().iconClass());
+		mainVC.contextPut("statusCssClass", page.getPageStatus() == null ? PageStatus.draft.statusClass() : page.getPageStatus().statusClass());
 		
 		int sharedWith = portfolioService.countSharedPageBody(page) - 1;
 		if(sharedWith > 0) {
@@ -208,7 +209,7 @@ public class PageMetadataController extends BasicController {
 			mainVC.contextPut("sharedWith", String.valueOf(sharedWith));
 			PageStatus syntheticStatus = page.getBody().getSyntheticStatusEnum();
 			if(syntheticStatus == PageStatus.published || syntheticStatus == PageStatus.closed) {
-				mainVC.contextPut("syntheticStatusCss", syntheticStatus.cssClass());
+				mainVC.contextPut("syntheticStatusCss", syntheticStatus.iconClass());
 				mainVC.contextPut("syntheticStatusTooltip", translate("status." + syntheticStatus.name()));
 				mainVC.contextPut("syntheticStatus", translate("synthetic.status." + syntheticStatus.name()));
 			}
@@ -230,19 +231,19 @@ public class PageMetadataController extends BasicController {
 		}
 		
 		if (portfolioV2Module.isTaxonomyLinkingReady()) {
-			if (secCallback.canEditCompetencies(page)) {
+			if (secCallback.canEditCompetences(page)) {
 				// editable categories
-				competenciesEditCtrl = new CompetenciesEditController(ureq, getWindowControl(), page);
-				listenTo(competenciesEditCtrl);
-				mainVC.put("pageCompetenciesCtrl", competenciesEditCtrl.getInitialComponent());			
+				competencesEditCtrl = new CompetencesEditController(ureq, getWindowControl(), page);
+				listenTo(competencesEditCtrl);
+				mainVC.put("pageCompetencesCtrl", competencesEditCtrl.getInitialComponent());			
 			} else {
 				// read-only categories
-				List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(page, true);
-				List<String> competencyNames = new ArrayList<>(competencies.size());
-				for(TaxonomyCompetence competence:competencies) {
+				List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(page, true);
+				List<String> competencyNames = new ArrayList<>(competences.size());
+				for(TaxonomyCompetence competence:competences) {
 					competencyNames.add(competence.getTaxonomyLevel().getDisplayName());
 				}
-				mainVC.contextPut("pageCompetencies", competencyNames);
+				mainVC.contextPut("pageCompetences", competencyNames);
 			}
 		}
 		
@@ -399,9 +400,9 @@ public class PageMetadataController extends BasicController {
 				portfolioService.updateCategories(page, categoriesEditCtr.getUpdatedCategories());
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
-		} else if (source == competenciesEditCtrl) {
+		} else if (source == competencesEditCtrl) {
 			if (event == Event.CHANGED_EVENT) {				
-				portfolioService.linkCompetences(page, getIdentity(), competenciesEditCtrl.getUpdatedCompetencies());
+				portfolioService.linkCompetences(page, getIdentity(), competencesEditCtrl.getUpdatedCompetences());
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(confirmClosePageCtrl == source) {

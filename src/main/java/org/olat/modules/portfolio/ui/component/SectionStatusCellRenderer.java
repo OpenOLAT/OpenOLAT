@@ -46,7 +46,7 @@ public class SectionStatusCellRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof SectionStatus) {
 			SectionStatus status = (SectionStatus)cellValue;
-			target.append("<i class='o_icon o_icon-fw ").append(status.cssClass()).append("'> </i> ")
+			target.append("<i class='o_icon o_icon-fw ").append(status.iconClass()).append("'> </i> ")
 			      .append(translator.translate(status.i18nKey()));
 		}
 	}

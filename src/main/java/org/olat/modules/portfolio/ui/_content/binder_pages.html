@@ -1,6 +1,6 @@
 <div class="o_portfolio_content clearfix">
 	<div class="o_header_with_buttons">
-		<h2>$r.translate("binder.title", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end</h2>
+		<h2><i class="o_icon o_icon-fw o_icon_pf_binder"> </i> $r.translate("binder.title", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end</h2>
 		##$binderKey
 		#if($r.available("timeline.switch.on") || $r.available("timeline.switch.off"))
 		<div class="o_button_group o_noprint">
@@ -24,7 +24,7 @@
 
 		#if($r.isNotNull($competencesUsage) && $r.isNotEmpty($competencesUsage))
 		<div class="o_block clearfix"> 
-			<div class="pull-left o_small"><i class="o_icon o_icon_fw o_icon_competences"> </i>
+			<div class="pull-left o_small"><i class="o_icon o_icon_fw o_icon_competences" title="$r.translate("competences")"> </i>
 			#foreach($competenceUsage in $competencesUsage)
 				$r.render($competenceUsage.getName())
 			#end
@@ -34,7 +34,7 @@
 		
 		#if($r.isNotNull($categoriesUsage) && $r.isNotEmpty($categoriesUsage))
 		<div class="o_block clearfix"> 
-			<div class="pull-left o_small"><i class="o_icon o_icon_fw o_icon_tags"> </i>
+			<div class="pull-left o_small"><i class="o_icon o_icon_fw o_icon_tags" title="$r.translate("categories")"> </i>
 			#foreach($categoryUsage in $categoriesUsage)
 				$r.render($categoryUsage.getName())
 			#end

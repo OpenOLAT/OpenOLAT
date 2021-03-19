@@ -106,7 +106,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private SingleSelection evaluationFormEl;
 	private SingleSelection assignmentsTemplatesEl;
 	private TextBoxListElement categoriesEl;
-	private TextBoxListElement competenciesEl;
+	private TextBoxListElement competencesEl;
 	private DownloadLink downloadAssignmentDocEl;
 	private FileElement assignmentDocUploadEl;
 	private FormLayoutContainer assignmentDocsContainer;
@@ -132,7 +132,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private List<TextBoxItem> categories = new ArrayList<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
 	private Map<String,Assignment> assignmentTemplatesMap = new HashMap<>();
-	List<TextBoxItem> existingCompetencies;
+	List<TextBoxItem> existingCompetences;
 	List<TextBoxItem> availableTaxonomyLevels;
 	
 	@Autowired
@@ -156,7 +156,7 @@ public class PageMetadataEditController extends FormBasicController {
 		this.chooseSection = chooseSection;
 		editTitleAndSummary = true;
 		
-		initTaxonomyCompetencies();
+		initTaxonomyCompetences();
 		initForm(ureq);
 		
 		if(assignmentsTemplatesEl != null && assignmentsTemplatesEl.getKeys().length > 0) {
@@ -189,7 +189,7 @@ public class PageMetadataEditController extends FormBasicController {
 		this.chooseSection = chooseSection;
 		editTitleAndSummary = true;
 		
-		initTaxonomyCompetencies();
+		initTaxonomyCompetences();
 		initForm(ureq);
 		
 		assignmentsTemplatesEl.select(assignmentTemplate.getKey().toString(), true);
@@ -219,7 +219,7 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 		}
 		
-		initTaxonomyCompetencies();
+		initTaxonomyCompetences();
 		initForm(ureq);
 	}
 	
@@ -310,13 +310,13 @@ public class PageMetadataEditController extends FormBasicController {
 		categoriesEl.setAllowDuplicates(false);
 		
 		if (portfolioV2Module.isTaxonomyLinkingReady()) {
-			competenciesEl = uifactory.addTextBoxListElement("competencies", "competencies", "competencies.hint", existingCompetencies, formLayout, getTranslator());
-			competenciesEl.setHelpText(translate("competencies.hint"));
-			competenciesEl.setElementCssClass("o_sel_ep_tagsinput");
-			competenciesEl.setAllowDuplicates(false);
-			competenciesEl.setAllowNewValues(false);
-			competenciesEl.setAutoCompleteContent(availableTaxonomyLevels);
-			competenciesEl.setCustomCSSForItems("o_competence");
+			competencesEl = uifactory.addTextBoxListElement("competences", "competences", "competences.hint", existingCompetences, formLayout, getTranslator());
+			competencesEl.setHelpText(translate("competences.hint"));
+			competencesEl.setElementCssClass("o_sel_ep_tagsinput");
+			competencesEl.setAllowDuplicates(false);
+			competencesEl.setAllowNewValues(false);
+			competencesEl.setAutoCompleteContent(availableTaxonomyLevels);
+			competencesEl.setCustomCSSForItems("o_competence");
 		}
 		
 		bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, new String[] { "" }, new String[] { "" }, null);
@@ -639,7 +639,7 @@ public class PageMetadataEditController extends FormBasicController {
 		portfolioService.updateCategories(page, updatedCategories);
 		
 		if (portfolioV2Module.isTaxonomyLinkingReady()) {
-			portfolioService.linkCompetences(page, getIdentity(), competenciesEl.getValueItems());
+			portfolioService.linkCompetences(page, getIdentity(), competencesEl.getValueItems());
 		}
 		
 		List<Page> sharingTheBody = portfolioService.getPagesSharingSameBody(page);
@@ -750,14 +750,14 @@ public class PageMetadataEditController extends FormBasicController {
 		}
 	}
 	
-	private void initTaxonomyCompetencies() {
+	private void initTaxonomyCompetences() {
 		if (portfolioV2Module.isTaxonomyLinkingReady() && page != null) {
-			List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(page, true);
-			existingCompetencies = new ArrayList<>();
-			for (TaxonomyCompetence competence : competencies) {
+			List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(page, true);
+			existingCompetences = new ArrayList<>();
+			for (TaxonomyCompetence competence : competences) {
 				TextBoxItemImpl competenceTextBoxItem = new TextBoxItemImpl(competence.getTaxonomyLevel().getDisplayName(), competence.getTaxonomyLevel().getKey().toString());
 				competenceTextBoxItem.setTooltip(competence.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash());
-				existingCompetencies.add(competenceTextBoxItem);
+				existingCompetences.add(competenceTextBoxItem);
 			}
 			
 			availableTaxonomyLevels = new ArrayList<>();

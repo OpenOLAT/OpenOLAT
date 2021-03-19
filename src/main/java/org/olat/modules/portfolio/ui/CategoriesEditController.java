@@ -85,6 +85,8 @@ public class CategoriesEditController extends FormBasicController {
 		categoriesEl.setIcon("o_icon_tags");
 		categoriesEl.setShowSaveButton(true);
 		categoriesEl.setLabel("categories", null);
+		categoriesEl.setShowInlineLabel(true);
+		categoriesEl.setIconTitleKey("categories");
 		
 		editLink = uifactory.addFormLink("edit", "edit", "edit", null, formLayout, Link.LINK);
 		editLink.setCustomEnabledLinkCSS("o_button_textstyle");

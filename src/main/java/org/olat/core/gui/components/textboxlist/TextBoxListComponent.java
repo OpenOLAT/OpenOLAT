@@ -74,6 +74,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl impleme
 	private String inputHint;
 	private String icon;
 	private String customCSSForItems;
+	private String iconTitleKey;
 	private boolean showSaveButton;
 	private boolean showLabelAsInlineText;
 
@@ -493,6 +494,14 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl impleme
 	
 	public boolean isShowLabelAsInlineText() {
 		return showLabelAsInlineText;
+	}
+	
+	public void setIconTitleKey(String iconTitleKey) {
+		this.iconTitleKey = iconTitleKey;
+	}
+	
+	public String getIconTitleKey() {
+		return iconTitleKey;
 	}
 
 	@Override

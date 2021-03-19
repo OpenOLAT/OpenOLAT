@@ -32,22 +32,28 @@ import org.olat.core.util.StringHelper;
  */
 public enum PageStatus {
 	
-	draft("o_icon_pf_entry_draft", "status.draft"),
-	published("o_icon_pf_entry_published", "status.published"),
-	inRevision("o_icon_pf_entry_revision", "status.in.revision"),
-	closed("o_icon_pf_entry_closed", "status.closed"),
-	deleted("o_icon_pf_entry_deleted", "status.deleted");
+	draft("o_icon_pf_entry_draft", "o_portfolio_entry_draft", "status.draft"),
+	published("o_icon_pf_entry_published", "o_portfolio_entry_published", "status.published"),
+	inRevision("o_icon_pf_entry_revision", "o_portfolio_entry_revision", "status.in.revision"),
+	closed("o_icon_pf_entry_closed", "o_portfolio_entry_closed", "status.closed"),
+	deleted("o_icon_pf_entry_deleted", "o_portfolio_entry_deleted", "status.deleted");
 	
-	private final String cssClass;
+	private final String iconClass;
+	private final String statusCssClass;
 	private final String i18nKey;
 
-	private PageStatus(String cssClass, String i18nKey) {
-		this.cssClass = cssClass;
+	private PageStatus(String iconClass, String statusCssClass, String i18nKey) {
+		this.iconClass = iconClass;
 		this.i18nKey = i18nKey;
+		this.statusCssClass = statusCssClass;
 	}
 	
-	public String cssClass() {
-		return cssClass;
+	public String iconClass() {
+		return iconClass;
+	}
+	
+	public String statusClass() {
+		return statusCssClass;
 	}
 
 	public String i18nKey() {

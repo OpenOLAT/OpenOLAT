@@ -60,7 +60,7 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 				case key: comparator = new PageCreationDateComparator(); break;
 				case status: comparator = new StatusComparator(); break;
 				case comment: comparator = new CommentsComparator(); break;
-				case competencies: comparator = new ListComparator(getCollator(), Mode.Competence); break;
+				case competences: comparator = new ListComparator(getCollator(), Mode.Competence); break;
 				case categories: comparator = new ListComparator(getCollator(), Mode.Category); break;
 				default: comparator = new DefaultComparator(); break;
 			}
@@ -128,8 +128,8 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 			
 			switch (mode) {
 				case Competence: 
-					c1 = (List<String>) o1.getPageCompetencies();
-					c2 = (List<String>) o2.getPageCompetencies();
+					c1 = (List<String>) o1.getPageCompetences();
+					c2 = (List<String>) o2.getPageCompetences();
 					break;
 				case Category: 
 					c1 = (List<String>) o1.getPageCategories();

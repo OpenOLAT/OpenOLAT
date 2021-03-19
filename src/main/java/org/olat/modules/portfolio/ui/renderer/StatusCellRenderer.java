@@ -47,14 +47,18 @@ public class StatusCellRenderer implements FlexiCellRenderer {
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof PageStatus) {
 			PageStatus status = (PageStatus)cellValue;
-			String tip = translator.translate(status.i18nKey());
-			target.append("<i class='o_icon ").append(status.cssClass()).append(" o_icon-fw' title='")
-			      .append(tip).append("'> </i>");
+			String statusText = translator.translate(status.i18nKey());
+			target.append("<span class='o_labeled_light ").append(status.statusClass()).append("'>")
+				  .append("<i class='o_icon ").append(status.iconClass()).append(" o_icon-fw' title='").append(statusText).append("'> </i>")
+				  .append(statusText)
+			      .append("</span");
 		} else if(cellValue instanceof SectionStatus) {
 			SectionStatus status = (SectionStatus)cellValue;
-			String tip = translator.translate(status.i18nKey());
-			target.append("<i class='o_icon ").append(status.cssClass()).append(" o_icon-fw' title='")
-			      .append(tip).append("'> </i>");
+			String statusText = translator.translate(status.i18nKey());
+			target.append("<span class='o_labeled_light ").append(status.statusClass()).append("'>")
+				  .append("<i class='o_icon ").append(status.iconClass()).append(" o_icon-fw' title='").append(statusText).append("'> </i>")
+				  .append(statusText)
+			      .append("</span");
 		}
 	}
 }

@@ -280,7 +280,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	
 	protected void initColumns(FlexiTableColumnModel columnsModel) {
 		if(flatList) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.type,
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.type, "select-page",
 				new PortfolioElementCellRenderer(getTranslator())));
 		}
 		
@@ -302,7 +302,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select-page"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.categories, new CategoriesCellRenderer()));
 		if (portfolioV2Module.isTaxonomyLinkingReady()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.competencies, new CompetencesCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.competences, new CompetencesCellRenderer()));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.section/*, "select-section"*/));
 		if(secCallback.canNewAssignment()) {
@@ -388,13 +388,13 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	}
 	
 	/**
-	 * Load competencies for a specific section
+	 * Load competences for a specific section
 	 * 
 	 * @param section
 	 */
-	protected void loadCompetenciesFilter(Section section) {
+	protected void loadCompetencesFilter(Section section) {
 		List<FormLink> competencesAndUsage = new ArrayList<>();
-		portfolioService.getCompetenciesAndUsage(section).forEach((taxonomyLevel, usage) -> {
+		portfolioService.getCompetencesAndUsage(section).forEach((taxonomyLevel, usage) -> {
 			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
 			String css = "o_tag o_tag_clickable o_competence";
 			if (activeCompetenceFilters.contains(taxonomyLevel)) {
@@ -413,11 +413,11 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	/**
 	 * Load competences for all currently listed pages
 	 */
-	protected void loadCompetenciesFilter() {
+	protected void loadCompetencesFilter() {
 		List<Page> pages = model.getObjects().stream().map(row -> row.getPage()).collect(Collectors.toList());
 		List<FormLink> competencesAndUsage = new ArrayList<>();
 		
-		portfolioService.getCompetenciesAndUsage(pages).forEach((taxonomyLevel, usage) -> {
+		portfolioService.getCompetencesAndUsage(pages).forEach((taxonomyLevel, usage) -> {
 			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", taxonomyLevel.getDisplayName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
 			String css = "o_tag o_tag_clickable o_competence";
 			if (activeCompetenceFilters.contains(taxonomyLevel)) {
@@ -539,7 +539,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
 		addCategoriesToRow(row, categorizedElementMap);
-		addCompetenciesToRow(row);
+		addCompetencesToRow(row);
 
 		if (assignments != null && secCallback.canViewPendingAssignments(section)
 				&& secCallback.canInstantiateAssignment()) {
@@ -623,7 +623,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
 		addCategoriesToRow(row, categorizedElementMap);
-		addCompetenciesToRow(row);
+		addCompetencesToRow(row);
 		if(assignments != null) {
 			for(Assignment assignment:assignments) {
 				if(page.equals(assignment.getPage())) {
@@ -701,18 +701,18 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		}
 	}
 	
-	private void addCompetenciesToRow(PortfolioElementRow row) {
+	private void addCompetencesToRow(PortfolioElementRow row) {
 		if (!portfolioV2Module.isTaxonomyLinkingReady() || row == null || row.getPage() == null) {
 			return;
 		}
 		
-		List<TaxonomyCompetence> competencies = portfolioService.getRelatedCompetencies(row.getPage(), true);
+		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(row.getPage(), true);
 		
-		if (competencies == null || competencies.isEmpty()) {
+		if (competences == null || competences.isEmpty()) {
 			return;
 		}
 		
-		row.setPageCompetencies(competencies.stream().map(competence -> competence.getTaxonomyLevel().getDisplayName()).collect(Collectors.toList()));
+		row.setPageCompetences(competences.stream().map(competence -> competence.getTaxonomyLevel().getDisplayName()).collect(Collectors.toList()));
 	}
 	
 	private List<String> getCategories(OLATResourceable ores, Map<OLATResourceable,List<Category>> categorizedElementMap) {

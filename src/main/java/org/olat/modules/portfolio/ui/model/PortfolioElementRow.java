@@ -58,7 +58,7 @@ public class PortfolioElementRow {
 	private final boolean assignments;
 
 	private Collection<String> pageCategories;
-	private Collection<String> pageCompetencies;
+	private Collection<String> pageCompetences;
 	private Collection<String> sectionCategories;
 
 	private long numOfComments;
@@ -207,9 +207,14 @@ public class PortfolioElementRow {
 		return page == null ? null : page.getLastPublicationDate();
 	}
 	
-	public String getCssClassStatus() {
+	public String getStatusCss() {
 		return page.getPageStatus() == null
-				? PageStatus.draft.cssClass() : page.getPageStatus().cssClass();
+				? PageStatus.draft.statusClass() : page.getPageStatus().statusClass();
+	}
+	
+	public String getStatusIconCss() {
+		return page.getPageStatus() == null
+				? PageStatus.draft.iconClass() : page.getPageStatus().iconClass();
 	}
 	
 	public Section getSection() {
@@ -231,11 +236,18 @@ public class PortfolioElementRow {
 		return getSectionStatus().i18nKey();
 	}
 	
-	public String getSectionCssClassStatus() {
+	public String getSectionStatusCss() {
 		if(section == null) {
 			return null;
 		}
-		return section.getSectionStatus() == null ? SectionStatus.notStarted.cssClass() : section.getSectionStatus().cssClass();
+		return section.getSectionStatus() == null ? SectionStatus.notStarted.statusClass() : section.getSectionStatus().statusClass();
+	}
+	
+	public String getSectionStatusIconCss() {
+		if(section == null) {
+			return null;
+		}
+		return section.getSectionStatus() == null ? SectionStatus.notStarted.iconClass() : section.getSectionStatus().iconClass();
 	}
 	
 	public String getSectionLongTitle() {
@@ -262,12 +274,12 @@ public class PortfolioElementRow {
 		this.pageCategories = pageCategories;
 	}
 	
-	public void setPageCompetencies(Collection<String> pageCompetencies) {
-		this.pageCompetencies = pageCompetencies;
+	public void setPageCompetences(Collection<String> pageCompetences) {
+		this.pageCompetences = pageCompetences;
 	}
 	
-	public Collection<String> getPageCompetencies() {
-		return pageCompetencies;
+	public Collection<String> getPageCompetences() {
+		return pageCompetences;
 	}
 	
 	public Collection<String> getSectionCategories() {

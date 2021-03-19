@@ -520,7 +520,7 @@ public class BinderSecurityCallbackFactory {
 		}
 		
 		@Override
-		public boolean canEditCompetencies(Page page) {
+		public boolean canEditCompetences(Page page) {
 			return owner;
 		}
 
@@ -930,7 +930,7 @@ public class BinderSecurityCallbackFactory {
 		}
 		
 		@Override
-		public boolean canEditCompetencies(Page page) {
+		public boolean canEditCompetences(Page page) {
 			return false;
 		}
 		

@@ -424,6 +424,8 @@ public class BinderPageListController extends AbstractPageListController {
 		} else {
 			tableEl.reloadData();
 			updateTimeline();
+			super.loadCompetencesFilter();
+			super.loadCategoriesFilter();
 		}
 	}
 	
@@ -597,7 +599,7 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 	
 	protected void doFilterSection(Section section) {
-		super.loadCompetenciesFilter(section);
+		super.loadCompetencesFilter(section);
 		super.loadCategoriesFilter(section);
 		this.filteringSection = section;
 		List<Section> currentSections = model.filter(section);

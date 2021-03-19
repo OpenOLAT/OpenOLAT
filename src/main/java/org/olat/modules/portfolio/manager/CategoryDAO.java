@@ -235,7 +235,7 @@ public class CategoryDAO {
 		  .append(" group by category")
 		  .append(" order by categoryCount desc");
 		
-		List<Long> pageKeys = pages.stream().map(page -> page.getKey()).collect(Collectors.toList());
+		List<Long> pageKeys = pages.stream().filter(page -> page != null).map(page -> page.getKey()).collect(Collectors.toList());
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Tuple.class)

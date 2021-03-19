@@ -185,7 +185,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 				return null;
 			}
 			case categories: return page.getPageCategories();
-			case competencies: return page.getPageCompetencies();
+			case competences: return page.getPageCompetences();
 			case section: return page.getSectionTitle();
 			case up: {
 				if(page.isPendingAssignment()) {
@@ -219,7 +219,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 		date("table.header.date", true),
 		publicationDate("table.header.publication.date", true),
 		categories("table.header.categories", true),
-		competencies("table.header.competencies", true),
+		competences("table.header.competences", true),
 		section("table.header.section", true),
 		up("table.header.up", false),
 		down("table.header.down", false),

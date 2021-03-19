@@ -13,7 +13,14 @@
 #end
 #if(${row.isSection()})
 <div class="o_portfolio_section #if(${row.isSectionEnded()}) o_section_ended #end">
-	<h3>$r.escapeHtml($row.sectionLongTitle) <small><i class="o_icon $row.sectionCssClassStatus" title="$r.translate("section.status"): $r.translate("$row.getSectionStatusI18nKey()")"> </i></small></h3>
+	<h3>
+		<i class="o_icon o_icon-fw o_icon_pf_section"> </i> 
+		$r.escapeHtml($row.sectionLongTitle)
+		<span class="o_small o_labeled_light $row.sectionStatusCss">
+			<i class="o_icon $row.sectionStatusIconCss o_icon-fw" title="$r.translateInAttribute("${row.getSectionStatusI18nKey()}")"> </i>
+			$r.translateInAttribute("${row.getSectionStatusI18nKey()}")
+		</span> 
+	</h3>
 	<div class="o_section_lead o_block_large_bottom clearfix">
 		<div class="o_portfolio_section_meta o_small">
 			<div class="o_portfolio_dates clearfix">
@@ -57,10 +64,10 @@
 		 	</span>
 		</div>
 		#end
-		#if($r.isNotEmpty($row.pageCompetencies))
-				<span class="o_portfolio_competencies text-muted o_small">
-					<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competencies")"> </i>
-					#foreach($competence in $row.pageCompetencies)
+		#if($r.isNotEmpty($row.pageCompetences))
+				<span class="o_portfolio_competences text-muted o_small">
+					<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competences")"> </i>
+					#foreach($competence in $row.pageCompetences)
 						<a class="o_tag o_competence" href="javascript:${f.ffXHREvent("tag_select","$competence")}">$competence</a>
 					#end
 				</span>
@@ -119,9 +126,15 @@
 #end
 #if(${row.isPage()})
 <div class="o_portfolio_page o_block_large">
-	<div class="#if($r.isNotNull($row.assignment)) o_portfolio_assignments #end  #if($row.imageAlign == "background") o_block_imagebg #end" #if($row.imageAlign == "background" && $r.isNotNull($row.imageUrl)) style="background-image: url('$mapperThumbnailUrl/${row.imageUrl}')" #end>
-		<h4><i class="o_icon ${row.getCssClassStatus()} o_icon-fw" title="$r.translate("page.status"): $r.translate("$row.getPageStatusI18nKey()")"> </i> $r.escapeHtml($row.title)
-			#if($r.isTrue($userInfos))<small>$userInfosRenderer.renderPortfolioElementRow($row)</small> #end</h4>
+	<div class="#if($r.isNotNull($row.assignment)) o_portfolio_assignments #end  o_block#if($row.imageAlign == "background" && $r.isNotNull($row.imageUrl))_imagebg #end" #if($row.imageAlign == "background" && $r.isNotNull($row.imageUrl)) style="background-image: url('$mapperThumbnailUrl/${row.imageUrl}')" #end>
+		<h4><i class="o_icon o_icon-fw o_icon_pf_page"> </i> $r.escapeHtml($row.title)
+			#if($r.isTrue($userInfos))<small>$userInfosRenderer.renderPortfolioElementRow($row)</small> #end
+			<span class="o_small o_labeled_light ${row.getStatusCss()} pull-right">
+				<i class="o_icon ${row.getStatusIconCss()} o_icon-fw" title="$r.translate("page.status"): $r.translate("$row.getPageStatusI18nKey()")"> </i>
+				$r.translate("$row.getPageStatusI18nKey()")
+			</span>
+		</h4>
+		
 		<div class="o_portfolio_page_body">
 			<div class="o_portfolio_page_meta_wrapper">
 				#if($r.isNotNull($row.assignment))
@@ -129,29 +142,28 @@
 					#if($r.isNotNull($row.lastPublicationDate)), #end
 				#end
 				#if($r.isNotNull($row.lastPublicationDate))
-				<span class="o_portfolio_page_meta text-muted o_small">
-					$r.translate("meta.last.publication", $r.formatDateAndTime($row.lastPublicationDate))
-					,
-				</span>
+				<div class="o_portfolio_page_meta text-muted o_small">
+					<i class="o_icon o_icon_fw o_icon_pf_entry_published"> </i> $r.translate("meta.last.publication", $r.formatDateAndTime($row.lastPublicationDate))
+				</div>
 				#end
-				<span class="o_portfolio_page_meta text-muted o_small">
-					$r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
-				</span>
+				<div class="o_portfolio_page_meta text-muted o_small">
+					<i class="o_icon o_icon_fw o_icon_pf_history"> </i> $r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
+				</div>
 				#if($r.isNotEmpty($row.pageCategories))
-				<span class="o_portfolio_categories text-muted o_small">
+				<div class="o_portfolio_categories text-muted o_small">
 					<i class="o_icon o_icon_fw o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 					#foreach($category in $row.pageCategories)
-						<a class="o_tag" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
+						<a class="o_tag">$category</a>
 					#end
-				</span>
+				</div>
 				#end
-				#if($r.isNotEmpty($row.pageCompetencies))
-				<span class="o_portfolio_competencies text-muted o_small">
-					<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competencies")"> </i>
-					#foreach($competence in $row.pageCompetencies)
-						<a class="o_tag o_competence" href="javascript:${f.ffXHREvent("tag_select","$competence")}">$competence</a>
+				#if($r.isNotEmpty($row.pageCompetences))
+				<div class="o_portfolio_competences text-muted o_small">
+					<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competences")"> </i>
+					#foreach($competence in $row.pageCompetences)
+						<a class="o_tag o_competence">$competence</a>
 					#end
-				</span>
+				</div>
 				#end
 				#if($r.isNotNull(${r.row.getMetaBinderAndSectionTitles()}))
 				<div class="o_portfolio_page_meta text-muted o_small">

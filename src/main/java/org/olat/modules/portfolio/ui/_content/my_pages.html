@@ -13,7 +13,7 @@
 	<div class="o_portfolio_entries #if($timelineSwitch) o_portfolio_withtimeline #end">
 	#if($r.isNotNull($competencesUsage) && $r.isNotEmpty($competencesUsage))
 	<div class="o_block clearfix o_small"> 
-		<div class="pull-left"><i class="o_icon o_icon_fw o_icon_competences"> </i>
+		<div class="pull-left"><i class="o_icon o_icon_fw o_icon_competences" title="$r.translate("competences")"> </i>  
 		#foreach($competenceUsage in $competencesUsage)
 			$r.render($competenceUsage.getName())
 		#end
@@ -23,7 +23,7 @@
 
 	#if($r.isNotNull($categoriesUsage) && $r.isNotEmpty($categoriesUsage))
 	<div class="o_block clearfix o_small"> 
-		<div class="pull-left"><i class="o_icon o_icon_fw o_icon_tags"> </i>
+		<div class="pull-left"><i class="o_icon o_icon_fw o_icon_tags" title="$r.translate("categories")"> </i>  
 		#foreach($categoryUsage in $categoriesUsage)
 			$r.render($categoryUsage.getName())
 		#end

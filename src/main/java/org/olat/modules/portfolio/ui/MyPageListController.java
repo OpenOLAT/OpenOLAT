@@ -75,7 +75,7 @@ public class MyPageListController extends AbstractPageListController {
 		initForm(ureq);
 		loadModel(ureq, null);
 		loadCategoriesFilter();
-		loadCompetenciesFilter();
+		loadCompetencesFilter();
 	}
 
 	@Override
