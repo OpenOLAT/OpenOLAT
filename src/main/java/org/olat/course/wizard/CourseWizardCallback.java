@@ -83,18 +83,20 @@ public class CourseWizardCallback implements StepRunnerCallback {
 		}
 		
 		if (runContext.containsKey(RUN_CONTEXT_TEST)) {
-			IQTESTCourseNodeDefaults defaults = (IQTESTCourseNodeDefaults) runContext.get(RUN_CONTEXT_TEST);
+			IQTESTCourseNodeContext defaults = (IQTESTCourseNodeContext) runContext.get(RUN_CONTEXT_TEST);
 			courseWizardService.createIQTESTCourseNode(course, defaults);
+			courseWizardService.createAssessmentMode(course, defaults);
 		}
 		
 		if (runContext.containsKey(CourseDisclaimerStep.RUN_CONTEXT_KEY)) {
 			CourseDisclaimerContext disclaimerContext = (CourseDisclaimerContext) runContext.get(CourseDisclaimerStep.RUN_CONTEXT_KEY);
-			courseWizardService.updateRepositoryEntryDisclaimer(disclaimerContext);
+			courseWizardService.setDisclaimerConfigs(course, disclaimerContext);
 		}
 		
 		if (runContext.containsKey(RUN_CONTEXT_RETEST)) {
-			IQTESTCourseNodeDefaults defaults = (IQTESTCourseNodeDefaults) runContext.get(RUN_CONTEXT_RETEST);
+			IQTESTCourseNodeContext defaults = (IQTESTCourseNodeContext) runContext.get(RUN_CONTEXT_RETEST);
 			courseWizardService.createIQTESTCourseNode(course, defaults);
+			courseWizardService.createAssessmentMode(course, defaults);
 		}
 		
 		if (runContext.containsKey(RUN_CONTEXT_COACHES) || runContext.containsKey(RUN_CONTEXT_PARTICIPANTS)) {

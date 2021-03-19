@@ -30,7 +30,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
 import org.olat.course.wizard.CourseWizardCallback;
 import org.olat.course.wizard.CourseWizardService;
-import org.olat.course.wizard.IQTESTCourseNodeDefaults;
+import org.olat.course.wizard.IQTESTCourseNodeContext;
 import org.olat.course.wizard.ui.TitleAndEntryController;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.repository.RepositoryEntry;
@@ -70,7 +70,7 @@ public class RetestSelectionStep extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,
 			StepsRunContext stepsRunContext, Form form) {
 		return new TitleAndEntryController(ureq, windowControl, form, stepsRunContext,
-				CourseWizardCallback.RUN_CONTEXT_RETEST, IQTESTCourseNodeDefaults::new, "wizard.title.retest",
+				CourseWizardCallback.RUN_CONTEXT_RETEST, IQTESTCourseNodeContext::new, "wizard.title.retest",
 				ImsQTI21Resource.TYPE_NAME, new QTI21Figures());
 	}
 

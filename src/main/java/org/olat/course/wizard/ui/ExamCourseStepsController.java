@@ -70,9 +70,9 @@ public class ExamCourseStepsController extends StepFormBasicController {
 		setFormTitle("wizard.title.exam.steps");
 		
 		KeyValues configKV = new KeyValues();
+		configKV.add(KeyValues.entry(KEY_DISCLAIMER, translate("exam.disclaimer")));
 		configKV.add(KeyValues.entry(KEY_RETEST, translate("exam.retest")));
 		configKV.add(KeyValues.entry(KEY_CERTIFICATE, translate("exam.certificate")));
-		configKV.add(KeyValues.entry(KEY_DISCLAIMER, translate("exam.disclaimer")));
 		configEl = uifactory.addCheckboxesVertical("exam.config", formLayout, configKV.keys(), configKV.values(), 1);
 		configEl.select(KEY_RETEST, parts.isRetest());
 		configEl.select(KEY_CERTIFICATE, parts.isCertificate());

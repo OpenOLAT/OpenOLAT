@@ -60,7 +60,8 @@ public class RetestConfigStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,
 			StepsRunContext stepsRunContext, Form form) {
-		return new IQTESTNodeController(ureq, windowControl, form, stepsRunContext, CourseWizardCallback.RUN_CONTEXT_RETEST, entry);
+		return new IQTESTNodeController(ureq, windowControl, form, stepsRunContext,
+				CourseWizardCallback.RUN_CONTEXT_RETEST, entry);
 	}
 
 }

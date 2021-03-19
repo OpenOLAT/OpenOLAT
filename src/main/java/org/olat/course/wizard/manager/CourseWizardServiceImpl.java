@@ -21,7 +21,6 @@ package org.olat.course.wizard.manager;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -53,6 +52,7 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.PublishTreeModel;
+import org.olat.course.wizard.AssessmentModeDefaults;
 import org.olat.course.wizard.CertificateDefaults;
 import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.course.wizard.CourseNodeTitleContext;
@@ -106,37 +106,6 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 	}
 	
 	@Override
-	public void updateRepositoryEntryDisclaimer(CourseDisclaimerContext disclaimerContext) {
-		OLATResourceable courseOres = disclaimerContext.getEntry().getOlatResource();
-		if (CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
-			return;
-		}
-
-		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
-		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
-
-		courseConfig.setDisclaimerEnabled(1, disclaimerContext.isTermsOfUseEnabled());
-		if (disclaimerContext.isTermsOfUseEnabled()) {
-			courseConfig.setDisclaimerTitle(1, disclaimerContext.getTermsOfUseTitle());
-			courseConfig.setDisclaimerTerms(1, disclaimerContext.getTermsOfUseContent());
-			courseConfig.setDisclaimerLabel(1, 1, disclaimerContext.getTermsOfUseLabel1());
-			courseConfig.setDisclaimerLabel(1, 2, disclaimerContext.getTermsOfUseLabel2());
-		}
-
-		courseConfig.setDisclaimerEnabled(2, disclaimerContext.isDataProtectionEnabled());
-		if (disclaimerContext.isDataProtectionEnabled()) {
-			courseConfig.setDisclaimerTitle(2, disclaimerContext.getDataProtectionTitle());
-			courseConfig.setDisclaimerTerms(2, disclaimerContext.getDataProtectionContent());
-			courseConfig.setDisclaimerLabel(2, 1, disclaimerContext.getDataProtectionLabel1());
-			courseConfig.setDisclaimerLabel(2, 2, disclaimerContext.getDataProtectionLabel2());
-		}
-
-		CourseFactory.setCourseConfig(courseOres.getResourceableId(), courseConfig);
-		CourseFactory.saveCourse(courseOres.getResourceableId());
-		CourseFactory.closeCourseEditSession(courseOres.getResourceableId(), true);
-	}
-	
-	@Override
 	public void addRepositoryMembers(Identity executor, Roles roles, RepositoryEntry entry,
 			Collection<Identity> coaches, Collection<Identity> participants) {
 		repositoryEntryWizardService.addRepositoryMembers(executor, roles, entry, coaches, participants);
@@ -162,6 +131,7 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 	@Override
 	public void finishCourseEditSession(ICourse course) {
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+		CourseFactory.saveCourse(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		log.debug("Course edit session finished. resourceableId={}", course.getResourceableId());
 	}
@@ -227,6 +197,29 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 			}
 		}
 	}
+	
+	@Override
+	public void setDisclaimerConfigs(ICourse course, CourseDisclaimerContext disclaimerContext) {
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+
+		courseConfig.setDisclaimerEnabled(1, disclaimerContext.isTermsOfUseEnabled());
+		if (disclaimerContext.isTermsOfUseEnabled()) {
+			courseConfig.setDisclaimerTitle(1, disclaimerContext.getTermsOfUseTitle());
+			courseConfig.setDisclaimerTerms(1, disclaimerContext.getTermsOfUseContent());
+			courseConfig.setDisclaimerLabel(1, 1, disclaimerContext.getTermsOfUseLabel1());
+			courseConfig.setDisclaimerLabel(1, 2, disclaimerContext.getTermsOfUseLabel2());
+		}
+
+		courseConfig.setDisclaimerEnabled(2, disclaimerContext.isDataProtectionEnabled());
+		if (disclaimerContext.isDataProtectionEnabled()) {
+			courseConfig.setDisclaimerTitle(2, disclaimerContext.getDataProtectionTitle());
+			courseConfig.setDisclaimerTerms(2, disclaimerContext.getDataProtectionContent());
+			courseConfig.setDisclaimerLabel(2, 1, disclaimerContext.getDataProtectionLabel1());
+			courseConfig.setDisclaimerLabel(2, 2, disclaimerContext.getDataProtectionLabel2());
+		}
+		
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+	}
 
 	@Override
 	public void setCertificateConfigs(ICourse course, CertificateDefaults defaults) {
@@ -239,6 +232,7 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		if (defaults.getTemplate() != null) {
 			courseConfig.setCertificateTemplate(defaults.getTemplate().getKey());
 		}
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
 	
 	@Override
@@ -254,20 +248,6 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 			moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
 			IQEditController.setIQReference(defaults.getReferencedEntry(), moduleConfig);
 		}
-		
-		// Assessment mode
-		if (moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST)
-				&& moduleConfig.has(IQEditController.CONFIG_KEY_START_TEST_DATE)
-				&& moduleConfig.has(IQEditController.CONFIG_KEY_END_TEST_DATE)) {
-			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			AssessmentMode assessmentMode = assessmentModeManager.createAssessmentMode(courseEntry);
-			assessmentMode.setName(defaults.getShortTitle());
-			Date start = moduleConfig.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
-			assessmentMode.setBegin(start);
-			Date end = moduleConfig.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
-			assessmentMode.setEnd(end);
-			assessmentModeManager.merge(assessmentMode, false);
-		}
 	}
 	
 	private CourseNode createCourseNode(ICourse course, String nodeType, CourseNodeTitleContext description) {
@@ -281,6 +261,21 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		cetm.addCourseNode(createdNode, rootNode);
 		log.debug("Course node '{}' of type {} created.", createdNode.getShortTitle(), nodeType);
 		return createdNode;
+	}
+
+	@Override
+	public void createAssessmentMode(ICourse course, AssessmentModeDefaults defaults) {
+		if (defaults.isEnabled() && defaults.getBegin() != null && defaults.getEnd() != null) {
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			AssessmentMode assessmentMode = assessmentModeManager.createAssessmentMode(courseEntry);
+			assessmentMode.setName(defaults.getName());
+			assessmentMode.setBegin(defaults.getBegin());
+			assessmentMode.setLeadTime(defaults.getLeadTime());
+			assessmentMode.setEnd(defaults.getEnd());
+			assessmentMode.setFollowupTime(defaults.getFollowUpTime());
+			assessmentMode.setManualBeginEnd(defaults.isManualBeginEnd());
+			assessmentModeManager.merge(assessmentMode, false);
+		}
 	}
 
 }

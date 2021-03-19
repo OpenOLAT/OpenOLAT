@@ -99,7 +99,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	public void shouldPublishCourseElements() {
 		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		IQTESTCourseNodeDefaults defaults = new IQTESTCourseNodeDefaults();
+		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
 		defaults.setReferencedEntry(testEntry);
 		String shortTitle = random();
 		defaults.setShortTitle(shortTitle);
@@ -164,7 +164,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	public void shouldCreateIQTESTCourseNode() {
 		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
 		dbInstance.commitAndCloseSession();
-		IQTESTCourseNodeDefaults defaults = new IQTESTCourseNodeDefaults();
+		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
 
 		ICourse course = sut.startCourseEditSession(entry);
 		sut.createIQTESTCourseNode(course, defaults);
@@ -180,7 +180,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		IQTESTCourseNodeDefaults defaults = new IQTESTCourseNodeDefaults();
+		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
 		defaults.setReferencedEntry(testEntry);
 		String shortTitle = random();
 		defaults.setShortTitle(shortTitle);
@@ -211,22 +211,23 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldCreateAssessmentModeForTestIfDateDependent() {
+	public void shouldCreateAssessmentMode() {
 		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
 		dbInstance.commitAndCloseSession();
-		IQTESTCourseNodeDefaults defaults = new IQTESTCourseNodeDefaults();
+		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
+		defaults.setEnabled(true);
 		String shortTitle = random();
 		defaults.setShortTitle(shortTitle);
-		ModuleConfiguration defaultModuleConfig = new ModuleConfiguration();
-		defaultModuleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, true);
-		Date start = new GregorianCalendar(2020, 12, 10, 10, 0, 0).getTime();
-		defaultModuleConfig.setDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE, start);
-		Date end = new GregorianCalendar(2020, 12, 10, 11, 13, 15).getTime();
-		defaultModuleConfig.setDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE, end);
-		defaults.setModuleConfig(defaultModuleConfig);
+		Date begin = new GregorianCalendar(2020, 12, 10, 10, 0, 0).getTime();
+		defaults.setBegin(begin);
+		Date end = new GregorianCalendar(2020, 12, 10, 11, 15, 0).getTime();
+		defaults.setEnd(end);
+		defaults.setLeadTime(3);
+		defaults.setFollowUpTime(5);
+		defaults.setManualBeginEnd(false);
 		
 		ICourse course = sut.startCourseEditSession(entry);
-		sut.createIQTESTCourseNode(course, defaults);
+		sut.createAssessmentMode(course, defaults);
 		sut.finishCourseEditSession(course);
 		
 		List<AssessmentMode> assessmentModes = assessmentModeManager.getAssessmentModeFor(entry);
@@ -235,43 +236,24 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		if (!assessmentModes.isEmpty()) {
 			AssessmentMode assessmentMode = assessmentModes.get(0);
 			softly.assertThat(assessmentMode.getName()).isEqualTo(shortTitle);
-			softly.assertThat(assessmentMode.getBegin()).isCloseTo(start, 2000);
+			softly.assertThat(assessmentMode.getBegin()).isCloseTo(begin, 2000);
 			softly.assertThat(assessmentMode.getEnd()).isCloseTo(end, 2000);
+			softly.assertThat(assessmentMode.getLeadTime()).isEqualTo(3);
+			softly.assertThat(assessmentMode.getFollowupTime()).isEqualTo(5);
+			softly.assertThat(assessmentMode.isManualBeginEnd()).isFalse();
 		}
 		softly.assertAll();
 	}
 	
 	@Test
-	public void shouldNotCreateAssessmentModeForTestIfNotDateDependent() {
+	public void shouldNotCreateAssessmentModeIfDisabled() {
 		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
 		dbInstance.commitAndCloseSession();
-		IQTESTCourseNodeDefaults defaults = new IQTESTCourseNodeDefaults();
-		ModuleConfiguration defaultModuleConfig = new ModuleConfiguration();
-		defaultModuleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, false);
-		defaults.setModuleConfig(defaultModuleConfig);
+		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
+		defaults.setEnabled(false);
 		
 		ICourse course = sut.startCourseEditSession(entry);
-		sut.createIQTESTCourseNode(course, defaults);
-		sut.finishCourseEditSession(course);
-		
-		List<AssessmentMode> assessmentModes = assessmentModeManager.getAssessmentModeFor(entry);
-		assertThat(assessmentModes).isEmpty();
-	}
-	
-	@Test
-	public void shouldNotCreateAssessmentModeForTestIfNoEndDate() {
-		RepositoryEntry entry = JunitTestHelper.deployEmptyCourse(author, random(), RepositoryEntryStatusEnum.published, false, false);
-		dbInstance.commitAndCloseSession();
-		IQTESTCourseNodeDefaults defaults = new IQTESTCourseNodeDefaults();
-		defaults.setShortTitle(random());
-		ModuleConfiguration defaultModuleConfig = new ModuleConfiguration();
-		defaultModuleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, true);
-		Date start = new GregorianCalendar(2020, 12, 10, 10, 0, 0).getTime();
-		defaultModuleConfig.setDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE, start);
-		defaults.setModuleConfig(defaultModuleConfig);
-		
-		ICourse course = sut.startCourseEditSession(entry);
-		sut.createIQTESTCourseNode(course, defaults);
+		sut.createAssessmentMode(course, defaults);
 		sut.finishCourseEditSession(course);
 		
 		List<AssessmentMode> assessmentModes = assessmentModeManager.getAssessmentModeFor(entry);

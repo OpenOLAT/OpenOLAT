@@ -19,7 +19,7 @@
  */
 package org.olat.course.wizard;
 
-import org.olat.repository.wizard.ReferencableEntryContext;
+import java.util.Date;
 
 /**
  * 
@@ -27,7 +27,32 @@ import org.olat.repository.wizard.ReferencableEntryContext;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface IQTESTCourseNodeDefaults
-		extends CourseNodeTitleContext, ReferencableEntryContext, ModuleConfigurationDefaults {
+public interface AssessmentModeDefaults {
 	
+	public boolean isEnabled();
+	
+	public void setEnabled(boolean enabled);
+	
+	public String getName();
+	
+	public Date getBegin();
+	
+	public void setBegin(Date begin);
+	
+	public Date getEnd();
+	
+	public void setEnd(Date end);
+	
+	public int getLeadTime();
+
+	public void setLeadTime(int leadTime);
+
+	public int getFollowUpTime();
+
+	public void setFollowUpTime(int followUpTime);
+
+	public boolean isManualBeginEnd();
+
+	public void setManualBeginEnd(boolean manualBeginEnd);
+
 }

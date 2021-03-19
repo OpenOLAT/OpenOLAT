@@ -19,7 +19,7 @@
  */
 package org.olat.course.wizard;
 
-import org.olat.repository.wizard.ReferencableEntryContext;
+import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -27,7 +27,10 @@ import org.olat.repository.wizard.ReferencableEntryContext;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface IQTESTCourseNodeDefaults
-		extends CourseNodeTitleContext, ReferencableEntryContext, ModuleConfigurationDefaults {
+public interface ModuleConfigurationDefaults {
+
+	public ModuleConfiguration getModuleConfig();
+	
+	public void setModuleConfig(ModuleConfiguration moduleConfig);
 	
 }

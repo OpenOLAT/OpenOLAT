@@ -38,7 +38,7 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.QTI21EditForm;
 import org.olat.course.wizard.CourseWizardService;
-import org.olat.course.wizard.IQTESTCourseNodeDefaults;
+import org.olat.course.wizard.IQTESTCourseNodeContext;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -53,17 +53,17 @@ public class IQTESTNodeController extends StepFormBasicController {
 
 	private final QTI21EditForm qti21EditForm;
 	
-	
-	private IQTESTCourseNodeDefaults context;
+	private final IQTESTCourseNodeContext context;
 
-	public IQTESTNodeController(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext, String contextKey, RepositoryEntry entry) {
+	public IQTESTNodeController(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext,
+			String nodeContextKey, RepositoryEntry entry) {
 		super(ureq, control, rootForm, runContext, LAYOUT_BAREBONE, null);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		
 		ICourse course = CourseFactory.loadCourse(entry);
 		NodeAccessType nodeAccessType = NodeAccessType.of(course);
 
-		context = (IQTESTCourseNodeDefaults)getOrCreateFromRunContext(contextKey, IQTESTCourseNodeDefaults::new);
+		context = (IQTESTCourseNodeContext)getOrCreateFromRunContext(nodeContextKey, IQTESTCourseNodeContext::new);
 		ModuleConfiguration moduleConfig = context.getModuleConfig();
 		if (moduleConfig == null) {
 			CourseNode courseNode = CourseNodeFactory.getInstance().getCourseNodeConfiguration(IQTESTCourseNode.TYPE).getInstance(null);
@@ -80,7 +80,7 @@ public class IQTESTNodeController extends StepFormBasicController {
 			IQEditController.setIQReference(testEntry, moduleConfig);
 			needManualCorrection = CoreSpringFactory.getImpl(QTI21Service.class).needManualCorrection(testEntry);
 		}
-		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, moduleConfig, nodeAccessType, needManualCorrection);
+		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, context, nodeAccessType, needManualCorrection);
 		listenTo(qti21EditForm);
 		
 		initForm(ureq);

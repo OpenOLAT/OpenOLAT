@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.iq;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
+
 import java.io.File;
 import java.util.Date;
 
@@ -26,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -42,6 +45,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.wizard.AssessmentModeDefaults;
+import org.olat.course.wizard.IQTESTCourseNodeContext;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
@@ -86,6 +91,9 @@ public class QTI21EditForm extends FormBasicController {
 			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME,
 	};
 	private final String[] dateValues = new String[dateKeys.length];
+	private final String ASSESSMENT_MODE_AUTO = "auto";
+	private final String ASSESSMENT_MODE_MANUAL = "manual";
+	private final String ASSESSMENT_MODE_NONE = "none";
 
 	private SingleSelection correctionModeEl;
 	private SingleSelection scoreVisibilityAfterCorrectionEl;
@@ -100,6 +108,9 @@ public class QTI21EditForm extends FormBasicController {
 	private MultipleSelectionElement testDateDependentEl;
 	private DateChooser startTestDateElement;
 	private DateChooser endTestDateElement;
+	private SingleSelection assessmentModeEl;
+	private IntegerElement leadTimeEl;
+	private IntegerElement followupTimeEl;
 	private StaticTextElement minScoreEl;
 	private StaticTextElement maxScoreEl;
 	private StaticTextElement passedTypeEl;
@@ -114,6 +125,7 @@ public class QTI21EditForm extends FormBasicController {
 	private final boolean ignoreInCourseAssessmentAvailable;
 	private final QTI21DeliveryOptions deliveryOptions;
 	private final boolean wizard;
+	private final AssessmentModeDefaults assessmentModeDefaults;
 	
 	private DialogBoxController confirmTestDateCtrl;
 
@@ -132,14 +144,16 @@ public class QTI21EditForm extends FormBasicController {
 		this.deliveryOptions = (deliveryOptions == null ? new QTI21DeliveryOptions() : deliveryOptions);
 		this.needManualCorrection = needManualCorrection;
 		this.wizard = false;
+		this.assessmentModeDefaults = null;
 		initDateValues();
 		initForm(ureq);
 	}
 
-	public QTI21EditForm(UserRequest ureq, WindowControl wControl, Form rootForm, ModuleConfiguration moduleConfig,
+	public QTI21EditForm(UserRequest ureq, WindowControl wControl, Form rootForm, IQTESTCourseNodeContext context,
 			NodeAccessType nodeAccessType, boolean needManualCorrection) {
 		super(ureq, wControl, LAYOUT_BAREBONE, null, rootForm);
-		this.modConfig = moduleConfig;
+		this.modConfig = context.getModuleConfig();
+		this.assessmentModeDefaults = context;
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		this.deliveryOptions = new QTI21DeliveryOptions();
 		this.needManualCorrection = needManualCorrection;
@@ -205,12 +219,37 @@ public class QTI21EditForm extends FormBasicController {
 		startTestDateElement.setElementCssClass("o_qti_21_datetest_start");
 		startTestDateElement.setDateChooserTimeEnabled(true);
 		startTestDateElement.setMandatory(true);
+		startTestDateElement.addActionListener(FormEvent.ONCHANGE);
 		
 		Date endTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
 		endTestDateElement = uifactory.addDateChooser("qti_form_end_test_date", "qti.form.date.end", endTestDate, formLayout);
 		endTestDateElement.setElementCssClass("o_qti_21_datetest_end");
 		endTestDateElement.setDateChooserTimeEnabled(true);
 		endTestDateElement.setMandatory(wizard);
+		
+		if (wizard) {
+			KeyValues assessmentModeKV = new KeyValues();
+			assessmentModeKV.add(entry(ASSESSMENT_MODE_AUTO, translate("assessment.mode.auto")));
+			assessmentModeKV.add(entry(ASSESSMENT_MODE_MANUAL, translate("assessment.mode.manual")));
+			assessmentModeKV.add(entry(ASSESSMENT_MODE_NONE, translate("assessment.mode.none")));
+			assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", formLayout, assessmentModeKV.keys(), assessmentModeKV.values());
+			assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
+			if (assessmentModeDefaults.isEnabled()) {
+				if (assessmentModeDefaults.isManualBeginEnd()) {
+					assessmentModeEl.select(ASSESSMENT_MODE_MANUAL, true);
+				} else {
+					assessmentModeEl.select(ASSESSMENT_MODE_AUTO, true);
+				}
+			} else {
+				assessmentModeEl.select(ASSESSMENT_MODE_NONE, true);
+			}
+			
+			leadTimeEl = uifactory.addIntegerElement("assessment.mode.leadTime", assessmentModeDefaults.getLeadTime(), formLayout);
+			leadTimeEl.setDisplaySize(3);
+			
+			followupTimeEl = uifactory.addIntegerElement("assessment.mode.followupTime", assessmentModeDefaults.getFollowUpTime(), formLayout);
+			followupTimeEl.setDisplaySize(3);
+		}
 	}
 	
 	protected void initFormCorrection(FormItemContainer formLayout) {
@@ -358,6 +397,7 @@ public class QTI21EditForm extends FormBasicController {
 			} else {
 				testDateDependentEl.uncheckAll();
 			}
+			updateAssessmentModeVisibility();
 		}
 		super.event(ureq, source, event);
 	}
@@ -460,9 +500,14 @@ public class QTI21EditForm extends FormBasicController {
 				confirmTestDates(ureq);
 			} else {
 				update();
+				updateAssessmentModeVisibility();
 			}
+		} else if(startTestDateElement == source) {
+			updateEndTestDate();
 		} else if(correctionModeEl == source) {
 			updateScoreVisibility();
+		} else if (assessmentModeEl == source) {
+			updateAssessmentModeVisibility();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -472,6 +517,29 @@ public class QTI21EditForm extends FormBasicController {
 		scoreVisibilityAfterCorrectionEl.setVisible(correctionMode.equals(IQEditController.CORRECTION_MANUAL) ||  correctionMode.equals(IQEditController.CORRECTION_GRADING));
 	}
 	
+	private void updateAssessmentModeVisibility() {
+		if (assessmentModeEl != null) {
+			boolean testDateVisible = testDateDependentEl.isAtLeastSelected(1);
+			if (testDateVisible) {
+				assessmentModeEl.setVisible(true);
+				boolean assessmentModeEnabled = assessmentModeEl.isOneSelected()
+						&& !assessmentModeEl.getSelectedKey().equals(ASSESSMENT_MODE_NONE);
+				leadTimeEl.setVisible(assessmentModeEnabled);
+				followupTimeEl.setVisible(assessmentModeEnabled);
+			} else {
+				assessmentModeEl.setVisible(false);
+				leadTimeEl.setVisible(false);
+				followupTimeEl.setVisible(false);
+			}
+		}
+	}
+
+	private void updateEndTestDate() {
+		if (endTestDateElement.isVisible() && endTestDateElement.getDate() == null) {
+			endTestDateElement.setDate(startTestDateElement.getDate());
+		}
+	}
+
 	private void update() {
 		assessmentResultsOnFinishEl.setVisible(showResultsOnFinishEl.isSelected(0) || !showResultsDateDependentEl.isSelected(0));
 		
@@ -637,6 +705,9 @@ public class QTI21EditForm extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		updateModuleConfig();
+		if (assessmentModeDefaults != null) {
+			updateAssessmentModeDefaults();
+		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
@@ -726,4 +797,28 @@ public class QTI21EditForm extends FormBasicController {
 			modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_NONE);
 		}
 	}
+	
+	private void updateAssessmentModeDefaults() {
+		if (assessmentModeEl != null && assessmentModeEl.isVisible()) {
+			
+			boolean enabled = assessmentModeEl.isOneSelected()
+					&& !assessmentModeEl.getSelectedKey().equals(ASSESSMENT_MODE_NONE);
+			assessmentModeDefaults.setEnabled(enabled);
+			
+			boolean autoBeginEnd = assessmentModeEl.isOneSelected()
+					&& assessmentModeEl.getSelectedKey().equals(ASSESSMENT_MODE_AUTO);
+			assessmentModeDefaults.setManualBeginEnd(!autoBeginEnd);
+			
+			Date start = modConfig.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
+			assessmentModeDefaults.setBegin(start);
+			Date end = modConfig.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
+			assessmentModeDefaults.setEnd(end);
+			
+			int leadTime = leadTimeEl.getIntValue();
+			assessmentModeDefaults.setLeadTime(leadTime);
+			int followupTime = followupTimeEl.getIntValue();
+			assessmentModeDefaults.setFollowUpTime(followupTime);
+		}
+	}
+
 }
