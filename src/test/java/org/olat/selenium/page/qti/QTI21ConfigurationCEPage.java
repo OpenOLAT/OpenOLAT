@@ -117,13 +117,13 @@ public class QTI21ConfigurationCEPage {
 		// set dates
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(start);
-		setTime("o_qti_21_datetest_start", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE));
+		setTime("o_qti_21_datetest_start", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true);
 		cal.setTime(end);
-		setTime("o_qti_21_datetest_end", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE));
+		setTime("o_qti_21_datetest_end", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), false);
 		return this;
 	}
 	
-	private QTI21ConfigurationCEPage setTime(String fieldClass, int hour, int minutes) {
+	private QTI21ConfigurationCEPage setTime(String fieldClass, int hour, int minutes, boolean waitBusy) {
 		try {
 			By untilAltBy = By.cssSelector("div." + fieldClass + " div.o_date_picker span.input-group-addon i");
 			OOGraphene.waitElement(untilAltBy, browser);
@@ -139,14 +139,33 @@ public class QTI21ConfigurationCEPage {
 			throw e;
 		}
 		
+		if(waitBusy) {
+			OOGraphene.waitBusy(browser);
+		}
+		
 		By hourBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dch_o_')]");
 		WebElement hourEl = browser.findElement(hourBy);
 		hourEl.clear();
+		if(waitBusy) {
+			OOGraphene.waitBusy(browser);
+			hourEl = browser.findElement(hourBy);
+		}
 		hourEl.sendKeys(Integer.toString(hour));
+		if(waitBusy) {
+			OOGraphene.waitBusy(browser);
+		}
+		
 		By minuteBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dcm_o_')]");
 		WebElement minuteEl = browser.findElement(minuteBy);
 		minuteEl.clear();
+		if(waitBusy) {
+			OOGraphene.waitBusy(browser);
+			minuteEl = browser.findElement(minuteBy);
+		}
 		minuteEl.sendKeys(Integer.toString(minutes));
+		if(waitBusy) {
+			OOGraphene.waitBusy(browser);
+		}
 		return this;
 	}
 	
