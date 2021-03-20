@@ -53,20 +53,20 @@ public class BinderPage {
 	}
 	
 	public BinderPage assertOnSectionTitleInEntries(String title) {
-		By sectionTitleBy = By.xpath("//div[contains(@class,'o_portfolio_section')]//h3[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(sectionTitleBy, 5, browser);
+		By sectionTitleBy = By.xpath("//div[contains(@class,'o_portfolio_section')]/h3[text()[contains(.,'" + title + "')]]");
+		OOGraphene.waitElement(sectionTitleBy, browser);
 		return this;
 	}
 	
 	public BinderPage assertOnPageInEntries(String title) {
 		By sectionTitleBy = By.xpath("//div[contains(@class,'o_portfolio_page')]//h4[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(sectionTitleBy, 5, browser);
+		OOGraphene.waitElement(sectionTitleBy, browser);
 		return this;
 	}
 	
 	public BinderPage assertOnPageInToc(String title) {
 		By pageTitleBy = By.xpath("//a[contains(@class,'o_pf_open_entry')]/span[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(pageTitleBy, 5, browser);
+		OOGraphene.waitElement(pageTitleBy, browser);
 		return this;
 	}
 	
@@ -284,7 +284,7 @@ public class BinderPage {
 	}
 	
 	public BinderPage createAssignmentForSection(String sectionTitle, String title, String summary, String content) {
-		By newAssignmentBy = By.xpath("//div[contains(@class,'o_portfolio_section')][h3[contains(text(),'" + sectionTitle + "')]]//a[contains(@class,'o_sel_pf_new_assignment')]");
+		By newAssignmentBy = By.xpath("//div[contains(@class,'o_portfolio_section')][h3[text()[contains(.,'" + sectionTitle + "')]]]//a[contains(@class,'o_sel_pf_new_assignment')]");
 		List<WebElement> newAssignmentButtons = browser.findElements(newAssignmentBy);
 		Assert.assertEquals(1, newAssignmentButtons.size());
 		newAssignmentButtons.get(0).click();
