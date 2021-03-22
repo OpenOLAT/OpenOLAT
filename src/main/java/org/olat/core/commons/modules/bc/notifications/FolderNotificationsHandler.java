@@ -97,7 +97,7 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 		// there could be news for me, investigate deeper
 		try {
 			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
-				if("CourseModule".equals(p.getResName())) {
+				if("CourseModule".equals(p.getResName()) || "RepositoryEntry".equals(p.getResName())) {
 					RepositoryEntry re = repositoryManager.lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
 					if(re == null || re.getEntryStatus().decommissioned()) {
 						return notificationsManager.getNoSubscriptionInfo();
@@ -174,7 +174,7 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 					log.info("deactivating publisher with key; {}", p.getKey());
 					notificationsManager.deactivate(p);
 				}
-			} else if ("CourseModule".equals(p.getResName())) {
+			} else if ("CourseModule".equals(p.getResName()) || "RepositoryEntry".equals(p.getResName())) {
 				if(!NotificationsUpgradeHelper.checkCourse(p)) {
 					log.info("deactivating publisher with key; {}", p.getKey());
 					notificationsManager.deactivate(p);
