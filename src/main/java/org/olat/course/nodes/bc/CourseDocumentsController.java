@@ -44,7 +44,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class CourseDocumentsController extends BasicController implements Activateable2 {
 
-	private static final String SUBSCRIPTION_SUBIDENTIFIER = "documents";
+	public static final String SUBSCRIPTION_SUBIDENTIFIER = "documents";
 	
 	private final FolderRunController folderCtrl;
 	

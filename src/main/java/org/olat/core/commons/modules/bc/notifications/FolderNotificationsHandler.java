@@ -55,6 +55,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.nodes.bc.CourseDocumentsController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
@@ -99,6 +100,11 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 				if("CourseModule".equals(p.getResName())) {
 					RepositoryEntry re = repositoryManager.lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
+					if(re == null || re.getEntryStatus().decommissioned()) {
+						return notificationsManager.getNoSubscriptionInfo();
+					}
+				} else if("RepositoryEntry".equals(p.getResName())) {
+					RepositoryEntry re = repositoryManager.lookupRepositoryEntry(p.getResId());
 					if(re == null || re.getEntryStatus().decommissioned()) {
 						return notificationsManager.getNoSubscriptionInfo();
 					}
@@ -177,6 +183,12 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 					log.info("deactivating publisher with key; {}", p.getKey());
 					notificationsManager.deactivate(p);
 				}
+			} else if ("RepositoryEntry".equals(p.getResName())) {
+				RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(p.getResId());
+				if(repositoryEntry == null) {
+					log.info("deactivating publisher with key; {}", p.getKey());
+					notificationsManager.deactivate(p);
+				}
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -193,6 +205,10 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 			} else if("CourseModule".equals(resName)) {
 				String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(p.getResId());
 				title = translator.translate("notifications.header.course", new String[]{displayName});
+			} else if("RepositoryEntry".equals(resName)
+					&& CourseDocumentsController.SUBSCRIPTION_SUBIDENTIFIER.equals(p.getSubidentifier())) {
+				String displayName = repositoryManager.lookupDisplayName(p.getResId());
+				title = translator.translate("notifications.header.documents", new String[]{displayName});
 			} else {
 				title = translator.translate("notifications.header");
 			}
