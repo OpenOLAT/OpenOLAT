@@ -43,24 +43,29 @@ import org.olat.repository.RepositoryEntry;
  *
  */
 public class CourseDocumentsController extends BasicController implements Activateable2 {
-
-	private static final String SUBSCRIPTION_SUBIDENTIFIER = "documents";
 	
-	private final FolderRunController folderCtrl;
+	private FolderRunController folderCtrl;
+	private BCCourseNodeNoFolderForm noFolderCtrl;
 	
 	public CourseDocumentsController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
-		SubscriptionContext subContext = new SubscriptionContext(courseEntry, SUBSCRIPTION_SUBIDENTIFIER);
+		SubscriptionContext subContext = CourseDocumentsFactory.getSubscriptionContext(courseEntry);
 		VFSSecurityCallback secCallback = CourseDocumentsFactory
 				.getSecurityCallback(userCourseEnv, ureq.getUserSession().getRoles().isGuestOnly(), subContext);
 		VFSContainer rootContainer = CourseDocumentsFactory.getFileContainer(userCourseEnv.getCourseEnvironment());
-		rootContainer.setLocalSecurityCallback(secCallback);
-		folderCtrl = new FolderRunController(rootContainer, true, false, true, ureq, getWindowControl());
-		listenTo(folderCtrl);
-		putInitialPanel(folderCtrl.getInitialComponent());
+		if (rootContainer != null) {
+			rootContainer.setLocalSecurityCallback(secCallback);
+			folderCtrl = new FolderRunController(rootContainer, true, false, true, ureq, getWindowControl());
+			listenTo(folderCtrl);
+			putInitialPanel(folderCtrl.getInitialComponent());
+		} else {
+			noFolderCtrl = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
+			listenTo(noFolderCtrl);
+			putInitialPanel(noFolderCtrl.getInitialComponent());
+		}
 	}
 
 	@Override

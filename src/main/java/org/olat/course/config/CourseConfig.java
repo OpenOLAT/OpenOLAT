@@ -110,6 +110,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String WIKI_ENABLED = "WIKI_ENABLED";
 	public static final transient String WIKI_SOFTKEY = "WIKI_SOFTKEY";
 	public static final transient String DOCUMENTS_ENABLED = "DOCUMENTS_ENABLED";
+	public static final transient String DOCUMENTS_PATH = "DOCUMENTS_PATH";
 	public static final transient String KEY_CALENDAR_ENABLED = "KEY_CALENDAR_ENABLED";
 	public static final transient String TEAMS_ENABLED = "TEAMS_ENABLED";
 	public static final transient String BIGBLUEBUTTON_ENABLED = "BIGBLUEBUTTON_ENABLED";
@@ -824,6 +825,19 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(DOCUMENTS_ENABLED, Boolean.valueOf(b));
 	}
 
+	public String getDocumentsPath() {
+		Object path = configuration.get(DOCUMENTS_PATH);
+		return path != null ? (String) path : null;
+	}
+
+	public void setDocumentPath(String documentPath) {
+		if (documentPath != null) {
+			configuration.put(DOCUMENTS_PATH, documentPath);
+		} else {
+			configuration.remove(DOCUMENTS_PATH);
+		}
+	}
+
 	public boolean isToolbarEnabled() {
 		Boolean bool = (Boolean) configuration.get(TOOLBAR_ENABLED);
 		return bool.booleanValue();
@@ -971,6 +985,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setWikiEnabled(isWikiEnabled());
 		clone.setWikiSoftKey(getWikiSoftKey());
 		clone.setDocumentsEnabled(isDocumentsEnabled());
+		clone.setDocumentPath(getDocumentsPath());
 		clone.setCompletionType(getCompletionType());
 		clone.setNodeAccessType(getNodeAccessType().getType());
 		clone.setDisclaimerEnabled(1, isDisclaimerEnabled(1));

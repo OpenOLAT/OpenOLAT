@@ -25,10 +25,13 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -39,13 +42,34 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class CourseDocumentsFactory {
 	
 	public static final String FOLDER_NAME = "coursedocuments";
+	private static final String SUBSCRIPTION_SUBIDENTIFIER = "documents";
 	
-	public static  VFSContainer getFileContainer(CourseEnvironment courseEnv) {
-		return VFSManager.olatRootContainer(getFileDirectory(courseEnv), null);
+	public static VFSContainer getFileContainer(CourseEnvironment courseEnv) {
+		String documentsPath = courseEnv.getCourseConfig().getDocumentsPath();
+		return getFileContainer(courseEnv, documentsPath);
+	}
+	
+	public static VFSContainer getFileContainer(CourseEnvironment courseEnv, String documentsPath) {
+		if (documentsPath == null) {
+			return VFSManager.resolveOrCreateContainerFromPath(courseEnv.getCourseBaseContainer(), FOLDER_NAME);
+		}
+		VFSItem documentsItem = courseEnv.getCourseFolderContainer().resolve(documentsPath);
+		if (documentsItem instanceof VFSContainer) {
+			return (VFSContainer)documentsItem;
+		}
+		return null;
 	}
 	
 	public static String getFileDirectory(CourseEnvironment courseEnv) {
-		return courseEnv.getCourseBaseContainer().getRelPath() + "/" + FOLDER_NAME;
+		String documentsPath = courseEnv.getCourseConfig().getDocumentsPath();
+		if (documentsPath == null) {
+			return courseEnv.getCourseBaseContainer().getRelPath() + "/" + FOLDER_NAME;
+		}
+		return courseEnv.getCourseFolderContainer().getRelPath() + documentsPath;
+	}
+	
+	public static SubscriptionContext getSubscriptionContext(RepositoryEntry courseEntry) {
+		return new SubscriptionContext(courseEntry, SUBSCRIPTION_SUBIDENTIFIER);
 	}
 	
 	public static VFSSecurityCallback getSecurityCallback(UserCourseEnvironment userCourseEnv) {
@@ -61,11 +85,21 @@ public class CourseDocumentsFactory {
 	}
 	
 	private static boolean isReadOnly(UserCourseEnvironment userCourseEnv, boolean isGuestOnly) {
-		return userCourseEnv.isCourseReadOnly() || isGuestOnly || isParticipantOnly(userCourseEnv);
+		return userCourseEnv.isCourseReadOnly()
+				|| isGuestOnly
+				|| isParticipantOnly(userCourseEnv)
+				|| isRessourceFolderReadOnly(userCourseEnv);
 	}
 	
 	private static boolean isParticipantOnly(UserCourseEnvironment userCourseEnv) {
 		return userCourseEnv.isParticipant() && !userCourseEnv.isAdmin() && !userCourseEnv.isCoach();
+	}
+	
+	private static boolean isRessourceFolderReadOnly(UserCourseEnvironment userCourseEnv) {
+		CourseConfig courseConfig = userCourseEnv.getCourseEnvironment().getCourseConfig();
+		return courseConfig.getDocumentsPath() != null
+				&& courseConfig.getDocumentsPath().startsWith("/_sharedfolder")
+				&& courseConfig.isSharedFolderReadOnlyMount();
 	}
 
 	private static class ReadWriteCallback implements VFSSecurityCallback {
@@ -76,7 +110,6 @@ public class CourseDocumentsFactory {
 		private final String defaultQuota;
 		
 		public ReadWriteCallback(SubscriptionContext subsContext, String folderPath) {
-			super();
 			this.subsContext = subsContext;
 			this.folderPath = folderPath;
 			this.defaultQuota = QuotaConstants.IDENTIFIER_DEFAULT_DOCUMENTS;

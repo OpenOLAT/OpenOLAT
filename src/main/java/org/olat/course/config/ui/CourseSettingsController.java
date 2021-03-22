@@ -218,9 +218,8 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 	
 	private void doOpenToolbarSettings(UserRequest ureq) {
 		ICourse course = CourseFactory.loadCourse(entry);
-		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Toolbar"), null);
-		toolbarCtrl = new CourseToolbarController(ureq, swControl, entry, courseConfig);
+		toolbarCtrl = new CourseToolbarController(ureq, swControl, entry, course);
 		listenTo(toolbarCtrl);
 		mainPanel.setContent(toolbarCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(toolbarLink);

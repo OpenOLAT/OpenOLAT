@@ -19,17 +19,26 @@
  */
 package org.olat.course.config.ui;
 
+import java.io.File;
 import java.util.Optional;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderModule;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -49,11 +58,18 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
+import org.olat.course.nodes.bc.BCCourseNodeConfigController;
+import org.olat.course.nodes.bc.BCCourseNodeEditChooseFolderForm;
+import org.olat.course.nodes.bc.CourseDocumentsFactory;
+import org.olat.course.nodes.bc.SelectFolderEvent;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
@@ -79,6 +95,9 @@ public class CourseToolbarController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] {"xx"};
 	private final String[] onValues;
+	private static final String DOC_LOCATION_CUSTOM = "custom";
+	private static final String DOC_LOCATION_COURSE_FOLDER = "course.folder";
+	private static final String[] DOC_LOCATION_KEYS = {DOC_LOCATION_CUSTOM, DOC_LOCATION_COURSE_FOLDER};
 	
 	private SelectionElement toolbarEl;
 	private StaticTextElement explainEl;
@@ -97,6 +116,10 @@ public class CourseToolbarController extends FormBasicController {
 	private FormLink wikiSelectLink;
 	private SelectionElement forumEl;
 	private SelectionElement documentsEl;
+	private SingleSelection documentsTargetEl;
+	private StaticTextElement documentsPathEl;
+	private FormLayoutContainer docButtonsCont;
+	private FormLink selectFolderLink;
 	private SelectionElement chatEl;
 	private SelectionElement glossaryEl;
 	private MultipleSelectionElement teamsEl;
@@ -106,10 +129,12 @@ public class CourseToolbarController extends FormBasicController {
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController blogSearchCtrl;
 	private ReferencableEntriesSearchController wikiSearchCtrl;
+	private BCCourseNodeEditChooseFolderForm folderSelectCtrl;
 	
 	private LockResult lockEntry;
 	private final boolean editable;
 	private RepositoryEntry entry;
+	private final ICourse course;
 	private CourseConfig courseConfig;
 	private RepositoryEntry blogEntry;
 	private RepositoryEntry wikiEntry;
@@ -126,13 +151,15 @@ public class CourseToolbarController extends FormBasicController {
 	private TeamsModule teamsModule;
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
-	
+		
 	public CourseToolbarController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, CourseConfig courseConfig) {
+			RepositoryEntry entry, ICourse course) {
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(BCCourseNodeConfigController.class, getLocale(), getTranslator()));
 		onValues = new String[] {translate("on")};
 		this.entry = entry;
-		this.courseConfig = courseConfig;
+		this.course = course;
+		this.courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 		if (StringHelper.containsNonWhitespace(courseConfig.getBlogSoftKey())) {
 			blogEntry = repositoryManager.lookupRepositoryEntryBySoftkey(courseConfig.getBlogSoftKey(), false);
 		}
@@ -307,11 +334,34 @@ public class CourseToolbarController extends FormBasicController {
 		boolean documentsEnabled = courseConfig.isDocumentsEnabled();
 		boolean managedDocuments = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.documents);
 		documentsEl = uifactory.addCheckboxesHorizontal("documentsIsOn", "chkbx.documents.onoff", formLayout, onKeys, onValues);
+		documentsEl.addActionListener(FormEvent.ONCHANGE);
 		documentsEl.select(onKeys[0], documentsEnabled);
 		documentsEl.setEnabled(editable && !managedDocuments);
 		if(managedDocuments && documentsEnabled) {
 			canHideToolbar &= false;
 		}
+		
+		String documentsPath = courseConfig.getDocumentsPath();
+		String[] docLocationValues = {translate("pathChoose.auto"), translate("pathChoose.custom")};
+		documentsTargetEl = uifactory.addRadiosVertical("pathChoose", formLayout, DOC_LOCATION_KEYS, docLocationValues);
+		documentsTargetEl.addActionListener(FormEvent.ONCLICK);
+		if (documentsPath == null) {
+			documentsTargetEl.select(DOC_LOCATION_CUSTOM, true);
+		} else {
+			documentsTargetEl.select(DOC_LOCATION_COURSE_FOLDER, true);
+		}
+		
+		String documentPathStr = documentsPath != null? documentsPath: "";
+		documentsPathEl = uifactory.addStaticTextElement("subPathLab.label", documentPathStr, formLayout);
+		
+		docButtonsCont = FormLayoutContainer.createButtonLayout("docButtons", getTranslator());
+		docButtonsCont.setRootForm(mainForm);
+		formLayout.add(docButtonsCont);
+		
+		selectFolderLink = uifactory.addFormLink("chooseFolder", docButtonsCont, Link.BUTTON);
+		
+		updateDocumentsUI();
+		validateDocumentPath();
 		
 		boolean chatEnabled = courseConfig.isChatEnabled();
 		boolean managedChat = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.chat);
@@ -343,6 +393,16 @@ public class CourseToolbarController extends FormBasicController {
 		saveButton.setEnabled(editable);
 		
 		updateUI();
+	}
+	
+	private void updateDocumentsUI() {
+		boolean documentsEnabled = documentsEl.isSelected(0);
+		documentsTargetEl.setVisible(documentsEnabled);
+		boolean courseFolder = documentsTargetEl.isOneSelected()
+				&& documentsTargetEl.getSelectedKey().equals(DOC_LOCATION_COURSE_FOLDER);
+		documentsPathEl.setVisible(documentsEnabled && courseFolder);
+		docButtonsCont.setVisible(documentsEnabled && courseFolder);
+		selectFolderLink.setVisible(documentsEnabled && courseFolder);
 	}
 
 	private void updateUI() {
@@ -393,6 +453,12 @@ public class CourseToolbarController extends FormBasicController {
 			updateUI();
 		} else if (source == wikiSelectLink) {
 			doSelectWiki(ureq);
+		} else if (source == documentsEl) {
+			updateDocumentsUI();
+		} else if (source == documentsTargetEl) {
+			updateDocumentsUI();
+		} else if (source == selectFolderLink){
+			doSelectDocumentsFolder(ureq);
 		} else if(bigBlueButtonEl == source) {
 			bigBlueButtonModeratorStartsMeetingEl.setVisible(bigBlueButtonEl.isAtLeastSelected(1));
 		} else if(toolbarEl == source) {
@@ -469,7 +535,16 @@ public class CourseToolbarController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		}
+		}  else if(source == folderSelectCtrl) {
+			if(event instanceof SelectFolderEvent) {
+				SelectFolderEvent sfe = (SelectFolderEvent)event;
+				String subpath = sfe.getSubpath();
+				documentsPathEl.setValue(subpath != null? subpath: "");
+				validateDocumentPath();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} 
 		super.event(ureq, source, event);
 	}
 
@@ -490,17 +565,63 @@ public class CourseToolbarController extends FormBasicController {
 		boolean blogEnabled = blogEl.isSelected(0);
 		if (blogEnabled && blogEntry == null) {
 			blogCont.setErrorKey("error.no.blog.selected", null);
-			allOk = false;
+			allOk &= false;
 		}
 
 		wikiCont.clearError();
 		boolean wikiEnabled = wikiEl.isSelected(0);
 		if (wikiEnabled && wikiEntry == null) {
 			wikiCont.setErrorKey("error.no.wiki.selected", null);
-			allOk = false;
+			allOk &= false;
+		}
+		
+		allOk = validateDocumentPath();
+		
+		return allOk;
+	}
+	
+	private boolean validateDocumentPath() {
+		boolean allOk = true;
+		
+		boolean hadError = documentsPathEl.hasError();
+		documentsPathEl.clearError();
+		if (documentsEl.isSelected(0)
+				&& documentsTargetEl.isOneSelected()
+				&& documentsTargetEl.getSelectedKey().equals(DOC_LOCATION_COURSE_FOLDER)) {
+			if (!StringHelper.containsNonWhitespace(documentsPathEl.getValue())) {
+				documentsPathEl.setErrorKey("warning.no.linkedfolder", null);
+				allOk &= false;
+			} else if (isSharedfolderNotPresent(documentsPathEl.getValue())) {
+				documentsPathEl.setErrorKey("warning.no.sharedfolder", null);
+				allOk &= false;
+			} else if (isLinkedFolderNotPresent(documentsPathEl.getValue())) {
+				documentsPathEl.setErrorKey("warning.no.linkedfolder", null);
+				allOk &= false;
+			}
+		}
+		// After user has selected an other folder (SelectFolderEvent).
+		if (allOk && hadError) {
+			flc.setDirty(true);
 		}
 		
 		return allOk;
+	}
+	
+	private boolean isSharedfolderNotPresent(String documentPath) {
+		return documentPath.startsWith("/_sharedfolder") 
+				&& course.getCourseEnvironment().getCourseFolderContainer().resolve("/_sharedfolder/") == null;
+	}
+
+	private boolean isLinkedFolderNotPresent(String documentPath) {
+		VFSContainer courseBase = course.getCourseBaseContainer();
+		
+		VFSItem folder;
+		if(documentPath.startsWith("/_sharedfolder/")) {
+			folder = course.getCourseEnvironment().getCourseFolderContainer().resolve(documentPath);
+		} else {
+			folder = courseBase.resolve("/coursefolder" + documentPath);
+		}
+		return folder == null;
 	}
 
 	@Override
@@ -567,6 +688,13 @@ public class CourseToolbarController extends FormBasicController {
 		boolean enableDocuments = documentsEl.isSelected(0);
 		boolean updateDocuments = courseConfig.isDocumentsEnabled() != enableDocuments;
 		courseConfig.setDocumentsEnabled(enableDocuments && toolbarEnabled);
+		
+		String documentPath = enableDocuments && documentsTargetEl.isOneSelected()
+									&& documentsTargetEl.getSelectedKey().equals(DOC_LOCATION_COURSE_FOLDER)
+						? documentsPathEl.getValue()
+						: null;
+		courseConfig.setDocumentPath(documentPath);
+		updatePublisher(documentPath);
 		
 		boolean enableChat = chatEl.isSelected(0);
 		boolean updateChat = courseConfig.isChatEnabled() != enableChat;
@@ -772,6 +900,34 @@ public class CourseToolbarController extends FormBasicController {
 			}
 		} else if(!wikiSelected && reference.isPresent()) {
 			referenceManager.delete(reference.get());
+		}
+	}
+	
+	private void doSelectDocumentsFolder(UserRequest ureq) {
+		VFSContainer namedContainer = course.getCourseFolderContainer();
+		
+		folderSelectCtrl = new BCCourseNodeEditChooseFolderForm(ureq, getWindowControl(), namedContainer);
+		listenTo(folderSelectCtrl);
+
+		String title = translate("createFolder");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), folderSelectCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void updatePublisher(String documentsPath){
+		VFSContainer vfsContainer = CourseDocumentsFactory.getFileContainer(course.getCourseEnvironment(), documentsPath);
+		File realFile = VFSManager.getRealFile(vfsContainer);
+		String relPath = new File(FolderConfig.getCanonicalRoot()).toPath().relativize(realFile.toPath()).toString();
+		
+		SubscriptionContext subContext = CourseDocumentsFactory.getSubscriptionContext(entry);
+		NotificationsManager notifManager = CoreSpringFactory.getImpl(NotificationsManager.class);
+		Publisher publisher = notifManager.getPublisher(subContext);
+		if (publisher != null) {
+			String businessPath = getWindowControl().getBusinessControl().getAsString();
+			String data = "/" + relPath;
+			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(FolderModule.class), data, businessPath);
+			notifManager.updatePublisherData(subContext, pdata);
 		}
 	}
 

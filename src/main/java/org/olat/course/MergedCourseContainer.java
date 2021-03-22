@@ -165,10 +165,12 @@ public class MergedCourseContainer extends MergeSource {
 		if (!persistingCourse.getCourseConfig().isDocumentsEnabled()) return;
 		
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
-		VFSSecurityCallback securityCallback = CourseDocumentsFactory.getSecurityCallback(userCourseEnv);
 		VFSContainer documentsContainer = CourseDocumentsFactory.getFileContainer(persistingCourse.getCourseEnvironment());
-		documentsContainer.setLocalSecurityCallback(securityCallback);
-		addContainer(new NamedContainerImpl("_documents", documentsContainer));
+		if (documentsContainer != null) {
+			VFSSecurityCallback securityCallback = CourseDocumentsFactory.getSecurityCallback(userCourseEnv);
+			documentsContainer.setLocalSecurityCallback(securityCallback);
+			addContainer(new NamedContainerImpl("_documents", documentsContainer));
+		}
 	}
 
 	private Object readResolve() {
