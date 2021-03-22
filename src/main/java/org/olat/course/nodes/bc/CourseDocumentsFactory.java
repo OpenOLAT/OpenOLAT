@@ -42,7 +42,7 @@ import org.olat.repository.RepositoryEntry;
 public class CourseDocumentsFactory {
 	
 	public static final String FOLDER_NAME = "coursedocuments";
-	private static final String SUBSCRIPTION_SUBIDENTIFIER = "documents";
+	public static final String SUBSCRIPTION_SUBIDENTIFIER = "documents";
 	
 	public static VFSContainer getFileContainer(CourseEnvironment courseEnv) {
 		String documentsPath = courseEnv.getCourseConfig().getDocumentsPath();
