@@ -55,6 +55,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.nodes.bc.CourseDocumentsController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
@@ -206,6 +207,10 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 			} else if("CourseModule".equals(resName)) {
 				String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(p.getResId());
 				title = translator.translate("notifications.header.course", new String[]{displayName});
+			} else if("RepositoryEntry".equals(resName)
+					&& CourseDocumentsController.SUBSCRIPTION_SUBIDENTIFIER.equals(p.getSubidentifier())) {
+				String displayName = repositoryManager.lookupDisplayName(p.getResId());
+				title = translator.translate("notifications.header.documents", new String[]{displayName});
 			} else {
 				title = translator.translate("notifications.header");
 			}
