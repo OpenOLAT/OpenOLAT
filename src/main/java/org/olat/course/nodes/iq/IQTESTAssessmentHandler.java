@@ -139,7 +139,7 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback) {
 		return new IQIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, group, courseNode,
-				coachCourseEnv, toolContainer, assessmentCallback);
+				coachCourseEnv, toolContainer, assessmentCallback, true);
 	}
 
 }

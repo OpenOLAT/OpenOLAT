@@ -302,7 +302,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 					courseNode, courseEntry, null, coachCourseEnv, toolContainer, assessmentCallback);
 		} else {
 			identityListCtrl = new IdentityListCourseNodeController(ureq, bbwControl, stackPanel, courseEntry, null,
-					courseNode, coachCourseEnv, toolContainer, assessmentCallback);
+					courseNode, coachCourseEnv, toolContainer, assessmentCallback, true);
 		}
 		
 		return identityListCtrl;

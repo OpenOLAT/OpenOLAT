@@ -81,6 +81,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	private final Identity assessedIdentity;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnvironment;
+	private final boolean showTitle;
 	
 	@Autowired
 	private BaseSecurity securityManager;
@@ -89,13 +90,14 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	
 	public AssessmentIdentityCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
-			Identity assessedIdentity, boolean courseNodeDetails) {
+			Identity assessedIdentity, boolean courseNodeDetails, boolean showTitle) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentModule.class, ureq.getLocale()));
 		
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
 		this.assessedIdentity = assessedIdentity;
 		this.coachCourseEnv = coachCourseEnv;
+		this.showTitle = showTitle;
 
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Roles roles = securityManager.getRoles(assessedIdentity);
@@ -154,6 +156,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	}
 	
 	private void initDetails() {
+		identityAssessmentVC.contextPut("showTitle", Boolean.valueOf(showTitle));
 		identityAssessmentVC.contextPut("courseNode", courseNode.getShortTitle());
 		
 		String courseNodeCssClass = CourseNodeFactory.getInstance()

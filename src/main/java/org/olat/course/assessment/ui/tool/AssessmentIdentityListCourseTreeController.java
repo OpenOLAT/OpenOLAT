@@ -182,7 +182,7 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 					courseEntry, businessGroup, coachCourseEnv, toolContainer, assessmentCallback);
 		} else {
 			currentCtrl = new IdentityListCourseNodeController(ureq, bwControl, stackPanel, courseEntry, businessGroup,
-					courseNode, coachCourseEnv, toolContainer, assessmentCallback);
+					courseNode, coachCourseEnv, toolContainer, assessmentCallback, true);
 		}
 		listenTo(currentCtrl);
 		mainPanel.setContent(currentCtrl.getInitialComponent());

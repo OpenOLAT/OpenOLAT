@@ -70,6 +70,7 @@ import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQPreviewController;
 import org.olat.course.nodes.iq.IQRunController;
 import org.olat.course.nodes.iq.IQTESTAssessmentConfig;
+import org.olat.course.nodes.iq.IQTESTCoachRunController;
 import org.olat.course.nodes.iq.IQTESTLearningPathNodeHandler;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.nodes.iq.QTIResourceTypeModule;
@@ -188,7 +189,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			OLATResource ores = testEntry.getOlatResource();
 			if(ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName())) {
 				//QTI 2.1
-				controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
+				if (userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
+					controller = new IQTESTCoachRunController(ureq, wControl, userCourseEnv, this);
+				} else {
+					controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
+				}
 			} else if(QTIResourceTypeModule.isOnyxTest(ores)) {
 				Translator transe = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
 				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.onyx"));

@@ -1,4 +1,6 @@
+#if($showTitle)
 <h2><i class="o_icon $courseNodeCss"> </i> $r.escapeHtml($courseNode)</h2>
+#end
 
 #if($r.available("identityInfos"))
 	$r.render("identityInfos")

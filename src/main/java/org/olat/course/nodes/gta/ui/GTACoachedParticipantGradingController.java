@@ -181,7 +181,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		
 		RepositoryEntry courseEntry = CourseFactory.loadCourse(courseOres).getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
-		assessmentForm = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), null, courseEntry, gtaNode, coachCourseEnv, assessedIdentity, false);
+		assessmentForm = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), null, courseEntry, gtaNode, coachCourseEnv, assessedIdentity, false, true);
 		listenTo(assessmentForm);
 		
 		String title = translate("grading");

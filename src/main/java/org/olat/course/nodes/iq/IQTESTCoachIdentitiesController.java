@@ -17,74 +17,51 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.ms;
+package org.olat.course.nodes.iq;
 
-import java.util.List;
-
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.groupsandrights.CourseRights;
-import org.olat.course.nodes.MSCourseNode;
+import org.olat.core.util.Util;
+import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntrySecurity;
-import org.olat.repository.RepositoryManager;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 17 Jun 2019<br>
+ * Initial date: 21.03.2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MSCoachRunController extends BasicController {
+public class IQTESTCoachIdentitiesController extends BasicController {
 
-	private MSIdentityListCourseNodeController identitityListCtrl;
-	
-	@Autowired
-	private RepositoryManager repositoryManager;
+	private IQIdentityListCourseNodeController identitityListCtrl;
 
-	public MSCoachRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, MSCourseNode msCourseNode) {
+	public IQTESTCoachIdentitiesController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
+			IQTESTCourseNode courseNode, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
 
-		TooledStackedPanel stackPanel = new TooledStackedPanel("msCoachStackPanel", getTranslator(), this);
+		TooledStackedPanel stackPanel = new TooledStackedPanel("iqtestCoachStackPanel", getTranslator(), this);
 		stackPanel.setToolbarAutoEnabled(false);
 		stackPanel.setToolbarEnabled(false);
 		stackPanel.setShowCloseLink(true, false);
 		stackPanel.setCssClass("o_identity_list_stack");
 		putInitialPanel(stackPanel);
 		
-		GroupRoles role = userCourseEnv.isCoach()? GroupRoles.coach: GroupRoles.owner;
-		// see CourseRuntimeController.doAssessmentTool(ureq);
-		boolean hasAssessmentRight = userCourseEnv.getCourseEnvironment().getCourseGroupManager()
-				.hasRight(getIdentity(), CourseRights.RIGHT_ASSESSMENT, role);
-
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
-		boolean admin = userCourseEnv.isAdmin() || hasAssessmentRight;
-
-		boolean nonMembers = reSecurity.isEntryAdmin();
-		List<BusinessGroup> coachedGroups = null;
-		if (reSecurity.isGroupCoach()) {
-			coachedGroups = userCourseEnv.getCoachedGroups();
-		}
-		AssessmentToolSecurityCallback secCallBack = new AssessmentToolSecurityCallback(admin, nonMembers,
-				reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups);
-
-		identitityListCtrl = new MSIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, null,
-				msCourseNode, userCourseEnv, new AssessmentToolContainer(), secCallBack, false);
+		identitityListCtrl = new IQIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, null,
+				courseNode, userCourseEnv, new AssessmentToolContainer(), assessmentCallback, false);
 		listenTo(identitityListCtrl);
 		identitityListCtrl.activate(ureq, null, null);
 		
-		stackPanel.pushController(translate("breadcrumb.users"), identitityListCtrl);
+		stackPanel.pushController(courseNode.getShortName(), identitityListCtrl);
 	}
 	
 	@Override

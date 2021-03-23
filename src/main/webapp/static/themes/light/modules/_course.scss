@@ -556,12 +556,12 @@ div.o_correction_navigation {
 	}
 }
 
-/* Manual scoring */
-.o_ms_stack_panel {
-	.o_toolbar {
-		margin-top: 0px;
-	}
+/* IQTEST */
+.o_iq_coach .o_assessment_modes {
+	margin-top: 1em;
 }
+
+/* Manual scoring */
 .o_ms_bold {
 	font-weight: bold;
 }

@@ -141,6 +141,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	protected final AssessmentToolSecurityCallback assessmentCallback;
+	private final boolean showTitle;
 	
 	private Link nextLink;
 	private Link previousLink;
@@ -181,8 +182,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	public IdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
-			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
 		super(ureq, wControl, "identity_courseelement");
+		this.showTitle = showTitle;
 		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -878,7 +880,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 					courseEntry, coachCourseEnv, assessedIdentity, true);
 		} else {
 			currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
-					courseEntry, courseNode, coachCourseEnv, assessedIdentity, true);
+					courseEntry, courseNode, coachCourseEnv, assessedIdentity, true, showTitle);
 		}
 		listenTo(currentIdentityCtrl);
 		stackPanel.pushController(fullName, currentIdentityCtrl);

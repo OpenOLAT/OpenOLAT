@@ -87,7 +87,7 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	public STIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
-		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
+		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback, true);
 	}
 
 	@Override

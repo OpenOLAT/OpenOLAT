@@ -78,7 +78,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	public MSIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
+		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 
 		flc.contextPut("showTitle", Boolean.valueOf(showTitle));
 		flc.setDirty(true);
@@ -94,7 +94,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		
 		if(!coachCourseEnv.isCourseReadOnly()) {
 			BulkAssessmentToolController bulkAssessmentToolCtrl = new BulkAssessmentToolController(ureq, getWindowControl(),
-					coachCourseEnv.getCourseEnvironment(), (MSCourseNode)courseNode);
+					coachCourseEnv.getCourseEnvironment(), courseNode);
 			listenTo(bulkAssessmentToolCtrl);
 			formLayout.put("bulk.assessment", bulkAssessmentToolCtrl.getInitialComponent());
 			

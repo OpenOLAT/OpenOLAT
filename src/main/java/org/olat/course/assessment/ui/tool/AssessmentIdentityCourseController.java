@@ -304,7 +304,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		removeAsListenerAndDispose(currentNodeCtrl);
 
 		currentNodeCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
-				courseEntry, courseNode, coachCourseEnv, assessedIdentity, true);
+				courseEntry, courseNode, coachCourseEnv, assessedIdentity, true, true);
 
 		listenTo(currentNodeCtrl);
 		stackPanel.pushController(courseNode.getShortTitle(), currentNodeCtrl);

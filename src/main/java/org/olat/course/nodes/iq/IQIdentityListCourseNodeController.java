@@ -142,11 +142,13 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	public IQIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
-			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
-		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
+		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 		if(stackPanel != null) {
 			stackPanel.addListener(this);
 		}
+		flc.contextPut("showTitle", Boolean.valueOf(showTitle));
+		flc.setDirty(true);
 	}
 	
 	@Override
