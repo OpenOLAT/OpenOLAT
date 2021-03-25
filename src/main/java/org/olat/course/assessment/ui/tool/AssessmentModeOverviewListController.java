@@ -289,6 +289,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		} else if(stopCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
+				fireEvent(ureq, new AssessmentModeStatusEvent());
 			}
 			cmc.deactivate();
 			cleanUp();

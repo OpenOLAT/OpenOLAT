@@ -360,7 +360,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 	}
 	
 	public void removeMessageComponent() {
-		navigationCmp = null;
+		messageCmp = null;
 		setDirty(true);
 	}
 	
