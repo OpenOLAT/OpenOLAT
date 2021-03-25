@@ -224,7 +224,6 @@
 		@include border-right-radius($o-toolbar-nav-border-radius);
 	}
 	
-				
 	.o_tool_dropdown {
 		margin: 0 10px;	
 		&:first-child {
@@ -431,6 +430,10 @@
 		
 	}
 	
+}
+
+#o_main_container .o_toolbar_navigation {
+	position: relative;
 }
 
 #o_main_container .o_toolbar_message {
