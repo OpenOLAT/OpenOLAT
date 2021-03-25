@@ -54,6 +54,8 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 	private String message;
 	private String messageCssClass;
 	private Component messageCmp;
+	private Component navigationCmp;
+	private Controller navigationBindController;
 	private final ToolBar toolBar;
 	private final EnumMap<Align,ToolsSlot> toolsSlots;
 	
@@ -83,6 +85,9 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 		cmps.add(toolBar);
 		if(messageCmp != null) {
 			cmps.add(messageCmp);
+		}
+		if(navigationCmp != null) {
+			cmps.add(navigationCmp);
 		}
 		return cmps;
 	}
@@ -356,6 +361,35 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 	
 	public void removeMessageComponent() {
 		messageCmp = null;
+		setDirty(true);
+	}
+	
+	public Component getNavigationComponent() {
+		return navigationCmp;
+	}
+	
+	public Controller getNavigationBindController() {
+		return navigationBindController;
+	}
+
+	/**
+	 * Set a navigation component.
+	 * If a navigationBindController is set, the navigation component is only visible if the navigationBindController is visible.
+	 *
+	 * @param navigationCmp
+	 * @param navigationBindController
+	 */
+	public void setNavigationComponent(Component navigationCmp, Controller navigationBindController) {
+		if(this.navigationCmp != navigationCmp) {
+			this.navigationCmp = navigationCmp;
+			this.navigationBindController = navigationBindController;
+			setDirty(true);
+		}
+	}
+	
+	public void removeNavigationComponent() {
+		navigationCmp = null;
+		navigationBindController = null;
 		setDirty(true);
 	}
 	

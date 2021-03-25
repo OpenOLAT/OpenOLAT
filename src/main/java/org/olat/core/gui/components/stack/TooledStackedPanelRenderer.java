@@ -76,6 +76,16 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 			sb.append("</div>"); // o_toolbar
 		}
 		
+		Component navigationCmp = panel.getNavigationComponent();
+		boolean navigationCtrlActive = panel.getNavigationBindController() == null
+				|| panel.getNavigationBindController() == panel.getLastController();
+		if(navigationCmp != null && navigationCmp.isVisible() && navigationCtrlActive) {
+			sb.append("<div class='o_toolbar_navigation'>");
+			URLBuilder cubu = ubu.createCopyFor(navigationCmp);
+			navigationCmp.getHTMLRendererSingleton().render(renderer, sb, navigationCmp, cubu, translator, renderResult, args);
+			navigationCmp.setDirty(false);
+			sb.append("</div>");
+		}
 		if(StringHelper.containsNonWhitespace(panel.getMessage())) {
 			sb.append("<div class='o_toolbar_message ");
 			if(StringHelper.containsNonWhitespace(panel.getMessageCssClass())) {

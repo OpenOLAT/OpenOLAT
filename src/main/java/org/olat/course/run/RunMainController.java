@@ -142,7 +142,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private LayoutMain3ColsController columnLayoutCtr;
 	private CourseDisclaimerConsentController disclaimerController;
 	
-	private CourseContentController contentCtrl;
 	private CoursePaginationController paginationCtrl;
 	private ProgressBar courseProgress;
 	private Controller currentNodeController;
@@ -249,7 +248,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			layoutTree = null;
 		}
 		
-		Component paginationCmp = paginationCtrl != null? paginationCtrl.getInitialComponent(): null;
+		Component contentComp = contentP;
 		if (glossaryMarkerCtr != null) {
 			listenTo(glossaryMarkerCtr);
 			// enable / disable glossary highlighting according to user prefs
@@ -266,13 +265,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else {
 				glossaryMarkerCtr.setTextMarkingEnabled(state.booleanValue());
 			}
-			contentCtrl = new CourseContentController(ureq, getWindowControl(), paginationCmp,
-					glossaryMarkerCtr.getInitialComponent());
-		} else {
-			contentCtrl = new CourseContentController(ureq, getWindowControl(), paginationCmp, contentP);
+			contentComp = glossaryMarkerCtr.getInitialComponent();
 		}
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), layoutTree,
-				contentCtrl.getInitialComponent(), "courseRun" + course.getResourceableId());
+				contentComp, "courseRun" + course.getResourceableId());
 		listenTo(columnLayoutCtr);
 
 		// activate the custom course css if any
@@ -335,6 +331,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	protected void initToolbarAndProgressbar() {
 		// Progress bar only for learning path courses
 		if (paginationCtrl != null) {
+			toolbarPanel.setNavigationComponent(paginationCtrl.getInitialComponent(), this);
+			
 			courseProgress = new ProgressBar("courseProgress");	
 			courseProgress.setWidth(100);
 			courseProgress.setMax(100);

@@ -57,6 +57,7 @@ import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.mode.AssessmentModeListModel.Cols;
 import org.olat.course.assessment.ui.tool.ConfirmStopAssessmentModeController;
+import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -188,11 +189,12 @@ public class AssessmentModeListController extends FormBasicController implements
 		} else if(startDialogBox == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				AssessmentMode row = (AssessmentMode)startDialogBox.getUserObject();
-				doStart(row);
+				doStart(ureq, row);
 			}
 		} else if(stopCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
+				fireEvent(ureq, new AssessmentModeStatusEvent());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -340,9 +342,10 @@ public class AssessmentModeListController extends FormBasicController implements
 		startDialogBox.setUserObject(mode);
 	}
 
-	private void doStart(AssessmentMode mode) {
+	private void doStart(UserRequest ureq, AssessmentMode mode) {
 		assessmentModeCoordinationService.startAssessment(mode);
 		loadModel();
+		fireEvent(ureq, new AssessmentModeStatusEvent());
 	}
 	
 	private void doConfirmStop(UserRequest ureq, AssessmentMode mode) {

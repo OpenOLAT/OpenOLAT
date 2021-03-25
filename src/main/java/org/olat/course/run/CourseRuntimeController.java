@@ -19,6 +19,7 @@
  */
 package org.olat.course.run;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,11 +88,15 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiverMainController;
 import org.olat.course.archiver.FullAccessArchiverCallback;
 import org.olat.course.area.CourseAreasController;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.ui.mode.AssessmentModeListController;
 import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallback;
 import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallbackFactory;
 import org.olat.course.assessment.ui.tool.AssessmentToolController;
+import org.olat.course.assessment.ui.tool.StopAssessmentWarningController;
+import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
@@ -222,6 +227,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private StatisticCourseNodesController statsToolCtr;
 	private BigBlueButtonRunController bigBlueButtonCtrl;
 	private AssessmentModeListController assessmentModeCtrl;
+	private StopAssessmentWarningController stopAssessmentCtrl;
 	private LectureRepositoryAdminController lecturesAdminCtrl;
 	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
 	private CloseableCalloutWindowController courseSearchCalloutCtr;
@@ -245,6 +251,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentModule assessmentModule;
+	@Autowired
+	private AssessmentModeManager assessmentModeManager;
 	@Autowired
 	private InstantMessagingModule imModule;
 	@Autowired
@@ -279,6 +287,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				setGlossaryLinkTitle(ureq, state);
 			}
 		}
+		
+		setAssessmentModeMessage(ureq);
 	}
 
 	@Override
@@ -302,6 +312,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			runMainController.reloadGroupMemberships(reSecurity);
 			runMainController.updateCurrentCourseNode(ureq);
 		}
+		
+		setAssessmentModeMessage(ureq);
 	}
 
 	private void loadRights() {
@@ -497,9 +509,35 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				toolbarPanel.setMessage(translate("course.deleted"));
 				toolbarPanel.setMessageCssClass("o_warning");
 			}
+			
 		} else {
 			toolbarPanel.setMessage(null);
 			toolbarPanel.setMessageComponent(null);
+		}
+	}
+	
+	private void setAssessmentModeMessage(UserRequest ureq) {
+		UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
+		if(userCourseEnv != null && assessmentLink != null) {
+			RepositoryEntry courseEntry = getRepositoryEntry();
+			List<AssessmentMode> modes = assessmentModeManager.getCurrentAssessmentMode(courseEntry, new Date());
+			if(!modes.isEmpty()) {
+				if(stopAssessmentCtrl != null) {
+					stopAssessmentCtrl.removeControllerListener(this);
+				}
+				stopAssessmentCtrl = new StopAssessmentWarningController(ureq, getWindowControl(), toolbarPanel,
+						courseEntry, modes, createAssessmentToolSecurityCallback());
+				listenTo(stopAssessmentCtrl);
+				toolbarPanel.setMessageComponent(stopAssessmentCtrl.getInitialComponent());
+			} else {
+				toolbarPanel.removeMessageComponent();
+			}
+			
+			if (assessmentToolCtr != null) {
+				assessmentToolCtr.reloadAssessmentModes();
+			}
+		} else {
+			toolbarPanel.removeMessageComponent();
 		}
 	}
 	
@@ -1225,6 +1263,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			cmc.deactivate();
 			cleanUp();
 		}
+		if (event instanceof AssessmentModeStatusEvent) {
+			setAssessmentModeMessage(ureq);
+		}
 		
 		if(editorCtrl == source && source instanceof VetoableCloseController) {
 			if(event == Event.DONE_EVENT) {
@@ -1706,6 +1747,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				AssessmentModeListController ctrl = new AssessmentModeListController(ureq, swControl,
 						toolbarPanel, getRepositoryEntry(), secCallback);
 				assessmentModeCtrl = pushController(ureq, translate("command.assessment.mode"), ctrl);
+				listenTo(assessmentModeCtrl);
 				setActiveTool(assessmentModeLink);
 				currentToolCtr = assessmentModeCtrl;
 			}
@@ -1927,22 +1969,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl swControl = addToHistory(ureq, ores, null);
 			
-			boolean admin = reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT);
-			boolean nonMembers = reSecurity.isEntryAdmin();
-			List<BusinessGroup> coachedGroups = null;
-			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
-			if(reSecurity.isGroupCoach()) {
-				coachedGroups = userCourseEnv.getCoachedGroups();
-			}
-			AssessmentToolSecurityCallback secCallBack
-				= new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups);
-
 			removeCustomCSS();
-			AssessmentToolController ctrl = new AssessmentToolController(ureq, swControl, toolbarPanel, getRepositoryEntry(), userCourseEnv, secCallBack);
+			AssessmentToolController ctrl = new AssessmentToolController(ureq, swControl, toolbarPanel, getRepositoryEntry(), getUserCourseEnvironment(), createAssessmentToolSecurityCallback());
 			ctrl.activate(ureq, null, null);
-			listenTo(ctrl);
 			assessmentToolCtr = pushController(ureq, translate("command.openassessment"), ctrl);
-			assessmentToolCtr.assessmentModeMessage(ureq);
+			listenTo(assessmentToolCtr);
 			currentToolCtr = assessmentToolCtr;
 			setActiveTool(assessmentLink);
 			ctrl.initToolbar();
@@ -1952,6 +1983,17 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			delayedClose = Delayed.assessmentTool;
 		}
 		return null;
+	}
+	
+	private AssessmentToolSecurityCallback createAssessmentToolSecurityCallback() {
+		boolean admin = reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT);
+		boolean nonMembers = reSecurity.isEntryAdmin();
+		List<BusinessGroup> coachedGroups = null;
+		UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
+		if(reSecurity.isGroupCoach()) {
+			coachedGroups = userCourseEnv.getCoachedGroups();
+		}
+		return new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups);
 	}
 	
 	private void doEfficiencyStatements(UserRequest ureq) {
