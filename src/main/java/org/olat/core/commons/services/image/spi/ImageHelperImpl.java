@@ -134,8 +134,10 @@ public class ImageHelperImpl extends AbstractImageHelper {
 
 	/**
 	 * @param image the image to scale
-	 * @param scaledImaged the new scaled image
-	 * @param maxSize the maximum size (height or width) of the new scaled image
+	 * @param imageExt extension of image (jpg, png, ...)
+	 * @param scaledImage the new scaled image
+	 * @param maxWidth the maximum width of the new scaled image
+	 * @param maxHeight the maximum width of the new scaled image
 	 * @return
 	 */
 	@Override
@@ -177,8 +179,10 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	
 	/**
 	 * @param image the image to scale
-	 * @param scaledImaged the new scaled image
-	 * @param maxSize the maximum size (height or width) of the new scaled image
+	 * @param scaledImage the new scaled image
+	 * @param maxWidth the maximum width of the new scaled image
+	 * @param maxHeight the maximum width of the new scaled image
+	 * @param fill
 	 * @return
 	 */
 	@Override
@@ -271,9 +275,9 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	/**
 	 * @param image The image to scale
 	 * @param imageExt The extension if not given by the image file (optional)
-	 * @param scaledImaged the new scaled image
+	 * @param scaledImage the new scaled image
 	 * @param maxWidth the maximum width of the new scaled image
-	 * @param maxheight the maximum height of the new scaled image
+	 * @param maxHeight the maximum height of the new scaled image
 	 * @return
 	 */
 	@Override
@@ -356,7 +360,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	 * scale up the image.
 	 * @param image the image to scale
 	 * @param maxWidth the maximum width of the new scaled image
-	 * @param maxheight the maximum height of the new scaled image
+	 * @param maxHeight the maximum height of the new scaled image
 	 * @return
 	 */
 	public static Size calcScaledSize(BufferedImage image, int maxWidth, int maxHeight) {
@@ -464,26 +468,28 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		
 		int xOffset = 0;
 		int yOffset = 0;
-		
-		if(fill) {
-			double thumbRatio = (double)maxWidth / (double)maxHeight;
-			double imageRatio = (double)width / (double)height;
+
+		double thumbRatio = (double)maxWidth / (double)maxHeight;
+		double imageRatio = (double)width / (double)height;
+		if (fill) {
 			if (thumbRatio < imageRatio) {
 				int newWidth = (int)(maxHeight * imageRatio);
 				if(newWidth > maxWidth) {
-					xOffset = (newWidth - maxWidth) / 2;
+					// we need to limit the xOffset, subImage calculation in
+					// scaleFastTo will fail otherwise
+					xOffset = Math.min((newWidth - maxWidth) / 2, maxWidth / 2);
 				}
 				maxWidth = Math.min(maxWidth, newWidth);
 			} else {
 				int newHeight = (int)(maxWidth / imageRatio);
 				if(newHeight > maxHeight) {
-					yOffset = (newHeight - maxHeight) / 2;
+					// we need to limit the yOffset, subImage calculation in
+					// scaleFastTo will fail otherwise
+					yOffset = Math.min((newHeight - maxHeight) / 2, maxHeight / 2);
 				}
 				maxHeight = Math.min(maxHeight, newHeight);
 			}
 		} else {
-			double thumbRatio = (double)maxWidth / (double)maxHeight;
-			double imageRatio = (double)width / (double)height;
 			if (thumbRatio < imageRatio) {
 				maxHeight = (int)(maxWidth / imageRatio);
 			} else {
@@ -497,6 +503,8 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	 * Can change this to choose a better compression level as the default
 	 * @param image
 	 * @param scaledImage
+	 * @param scaledSize
+	 * @param outputFormat
 	 * @return
 	 */
 	public static boolean writeTo(BufferedImage image, File scaledImage, Size scaledSize, String outputFormat) {
@@ -529,6 +537,8 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	 * Can change this to choose a better compression level as the default
 	 * @param image
 	 * @param scaledImage
+	 * @param scaledSize
+	 * @param outputFormat
 	 * @return
 	 */
 	private static boolean writeTo(BufferedImage image, OutputStream scaledImage, Size scaledSize, String outputFormat) {
@@ -609,17 +619,17 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	 */
 	private static BufferedImage scaleFastTo(BufferedImage img, Size scaledSize) {
 		if(!scaledSize.isChanged()) return img;
+
+		int dstWidth = scaledSize.getWidth();
+		int dstHeight = scaledSize.getHeight();
 		
 		BufferedImage dest;
 		if (img.getType() == BufferedImage.TYPE_CUSTOM) {
-			dest = new BufferedImage(scaledSize.getWidth(), scaledSize.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			dest = new BufferedImage(dstWidth, dstHeight, BufferedImage.TYPE_INT_ARGB);
 		} else {
-			dest = new BufferedImage(scaledSize.getWidth(), scaledSize.getHeight(), img.getType());
+			dest = new BufferedImage(dstWidth, dstHeight, img.getType());
 		}
 		
-		int dstWidth = scaledSize.getWidth();
-		int dstHeight = scaledSize.getHeight();
-			
 	    BufferedImage ret = img;
 	    int w, h;
 	

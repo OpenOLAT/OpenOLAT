@@ -175,6 +175,7 @@ import org.junit.runners.Suite;
 	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,
 	org.olat.instantMessaging.RosterDAOTest.class,
 	org.olat.instantMessaging.InstantMessageServiceTest.class,
+	org.olat.core.commons.services.image.spi.ImageHelperImplTest.class,
 	org.olat.course.archiver.FormatConfigHelperTest.class,
 	org.olat.course.condition.ConditionTest.class,
 	org.olat.course.condition.GetPassedTest.class,
