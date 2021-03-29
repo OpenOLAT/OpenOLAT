@@ -19,9 +19,11 @@
  */
 package org.olat.course.assessment.ui.mode;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -59,8 +61,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentModeAdminListController extends FormBasicController {
 
-	private DateChooser dateEl;
-	private TextElement idAndRefsEl, nameEl;
+	private TextElement nameEl;
+	private DateChooser dateToEl;
+	private DateChooser dateFromEl;
+	private TextElement idAndRefsEl;
 	private FormLink searchButton;
 	private FlexiTableElement tableEl;
 	private AssessmentModeListModel model;
@@ -89,8 +93,9 @@ public class AssessmentModeAdminListController extends FormBasicController {
 		FormLayoutContainer searchRightForm = FormLayoutContainer.createDefaultFormLayout("right_1", getTranslator());
 		searchRightForm.setRootForm(mainForm);
 		formLayout.add("right_1", searchRightForm);
-		dateEl = uifactory.addDateChooser("assessment.mode.date", null, searchRightForm);
-		dateEl.setDateChooserTimeEnabled(true);
+		dateFromEl = uifactory.addDateChooser("assessment.mode.date.from", null, searchRightForm);
+		dateFromEl.addActionListener(FormEvent.ONCHANGE);
+		dateToEl = uifactory.addDateChooser("assessment.mode.date.to", null, searchRightForm);
 		
 		//search button
 		FormLayoutContainer searchButtons = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
@@ -133,10 +138,11 @@ public class AssessmentModeAdminListController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(searchButton == source) {
-			params.setDate(dateEl.getDate());
-			params.setIdAndRefs(idAndRefsEl.getValue());
-			params.setName(nameEl.getValue());
-			loadModel();
+			doSearch();
+		} else if(dateFromEl == source) {
+			if(dateToEl.getDate() == null) {
+				dateToEl.setDate(dateFromEl.getDate());
+			}
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -154,6 +160,21 @@ public class AssessmentModeAdminListController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doSearch() {
+		Date from = dateFromEl.getDate();
+		if(from != null) {
+			params.setDateFrom(CalendarUtils.startOfDay(from));
+		}
+		Date to = dateToEl.getDate();
+		if(to != null) {
+			params.setDateTo(CalendarUtils.endOfDay(to));
+			
+		}
+		params.setIdAndRefs(idAndRefsEl.getValue());
+		params.setName(nameEl.getValue());
+		loadModel();
 	}
 	
 	private void launch(UserRequest ureq, RepositoryEntry entry) {

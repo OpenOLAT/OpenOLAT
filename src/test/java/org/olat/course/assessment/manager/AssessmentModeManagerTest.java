@@ -971,7 +971,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertNotNull(mode);
 		
 		SearchAssessmentModeParams params = new SearchAssessmentModeParams();
-		params.setDate(DateUtils.addDays(new Date(), -24));
+		params.setDateFrom(DateUtils.addDays(new Date(), -26));
+		params.setDateTo(DateUtils.addDays(new Date(), -20));
 		params.setIdAndRefs(entry.getKey().toString());
 		params.setName("Mode");
 	

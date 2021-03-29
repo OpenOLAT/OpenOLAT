@@ -29,18 +29,27 @@ import java.util.Date;
  */
 public class SearchAssessmentModeParams {
 	
-	private Date date;
+	private Date dateTo;
+	private Date dateFrom;
 	private String idAndRefs;
 	private String name;
 
-	public Date getDate() {
-		return date;
+	public Date getDateFrom() {
+		return dateFrom;
 	}
 
-	public void setDate(Date date) {
-		this.date = date;
+	public void setDateFrom(Date date) {
+		this.dateFrom = date;
+	}
+	
+	public Date getDateTo() {
+		return dateTo;
 	}
 
+	public void setDateTo(Date date) {
+		this.dateTo = date;
+	}
+	
 	public String getIdAndRefs() {
 		return idAndRefs;
 	}
