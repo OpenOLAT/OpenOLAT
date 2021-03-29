@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ruleset xmlns="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" comparisonMethod="maven" xsi:schemaLocation="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0 https://mojo.codehaus.org/versions-maven-plugin/xsd/rule-2.0.0.xsd">
 	<ignoreVersions>
-    	<ignoreVersion type="regex">.*[-_\.](alpha|Alpha|ALPHA|beta|Beta|BETA|Dev0|Dev1|Dev2|Dev3|Dev4|CR1|rc1|rc2|rc3|rc4|RC1|RC2|RC3|RC4|RC5|RC6|java7|jdk7|jre7|jre6)[-_\.]?[0-9]*</ignoreVersion>
+    	<ignoreVersion type="regex">.*[-_\.](alpha|Alpha|ALPHA|beta|Beta|BETA|Dev0|Dev1|Dev2|Dev3|Dev4|CR1|CR2|rc1|rc2|rc3|rc4|RC1|RC2|RC3|RC4|RC5|RC6|java7|jdk7|jre7|jre6)[-_\.]?[0-9]*</ignoreVersion>
 	</ignoreVersions>
 </ruleset>
