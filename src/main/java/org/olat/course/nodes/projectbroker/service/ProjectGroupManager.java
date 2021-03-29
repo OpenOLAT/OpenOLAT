@@ -33,7 +33,6 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.properties.CoursePropertyManager;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
@@ -191,7 +190,7 @@ public interface ProjectGroupManager {
 	 */
 	public boolean isProjectManager(Identity identity, Project project);
 
-	public boolean isProjectManagerOrAdministrator(UserRequest ureq, CourseEnvironment courseEnv, Project project);	
+	public boolean isProjectManagerOrAdministrator(UserRequest ureq, UserCourseEnvironment userCourseEnv, Project project);	
 
 	/**
 	 * Check if a certain identity is a participant of a project.

@@ -64,6 +64,7 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
 import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 
@@ -93,15 +94,14 @@ public class ProjectDetailsDisplayController extends BasicController {
 	private final ProjectBrokerMailer projectBrokerMailer;
 	private final ProjectBrokerManager projectBrokerManager;
 	private final ProjectGroupManager projectGroupManager;
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param hpc
-	 */
-	public ProjectDetailsDisplayController(UserRequest ureq, WindowControl wControl, Project project, CourseEnvironment courseEnv, CourseNode courseNode, ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration) {
+	
+	
+	public ProjectDetailsDisplayController(UserRequest ureq, WindowControl wControl, Project project,
+			UserCourseEnvironment userCourseEnv, CourseNode courseNode,
+			ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration) {
 		super(ureq, wControl);
 		this.project = project;
-		this.courseEnv = courseEnv;
+		this.courseEnv = userCourseEnv.getCourseEnvironment();
 		this.courseNode = courseNode;
 		
 		projectBrokerMailer = CoreSpringFactory.getImpl(ProjectBrokerMailer.class);
@@ -117,7 +117,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 			myContent.contextPut("keyMaxLabel", "detailsform.places.label");
 		}
 
-		if ( projectGroupManager.isProjectManagerOrAdministrator(ureq, courseEnv, project) ) {
+		if ( projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv, project) ) {
 			myContent.contextPut("isProjectManager", true);
 			editProjectButton = LinkFactory.createButtonSmall("edit.project.button", myContent, this);
 			deleteProjectButton = LinkFactory.createButtonSmall("delete.project.button", myContent, this);
@@ -192,10 +192,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 		putInitialPanel(myContent);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == deleteConfirmController) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {

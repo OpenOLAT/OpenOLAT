@@ -64,13 +64,7 @@ public class ProjectController extends BasicController {
 
 	private ProjectGroupManager projectGroupManager;
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param userCourseEnv
-	 * @param ne
-	 * @param previewMode
-	 */
+	
 	public ProjectController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNode courseNode, Project project, 
 			boolean newCreatedProject, ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration) { 
@@ -85,12 +79,12 @@ public class ProjectController extends BasicController {
 			backLink = LinkFactory.createLinkBack(contentVC, this);
 		}
 		myTabbedPane = new TabbedPane("projectTabbedPane", ureq.getLocale());		
-		detailsController = new ProjectDetailsPanelController(ureq, wControl, project, newCreatedProject, userCourseEnv.getCourseEnvironment(), courseNode, projectBrokerModuleConfiguration);
+		detailsController = new ProjectDetailsPanelController(ureq, wControl, project, newCreatedProject, userCourseEnv, courseNode, projectBrokerModuleConfiguration);
 		detailsController.addControllerListener(this);
 		myTabbedPane.addTab(translate("tab.project.details"), detailsController.getInitialComponent());
 		projectFolderController = new ProjectFolderController( ureq, wControl, userCourseEnv, courseNode, false, project);
 		myTabbedPane.addTab(translate("tab.project.folder"), projectFolderController.getInitialComponent());
-		if ( projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv.getCourseEnvironment(), project) ) {
+		if (projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv, project)) {
 			projectGroupController = new ProjectGroupController(ureq, wControl, userCourseEnv, project, projectBrokerModuleConfiguration);
 			myTabbedPane.addTab(translate("tab.project.members"), projectGroupController.getInitialComponent());
 		}
@@ -99,18 +93,14 @@ public class ProjectController extends BasicController {
 	}
 	
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLink) {
 			fireEvent(ureq,Event.BACK_EVENT);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		getLogger().debug("event" + event );
 		if ((source == detailsController) && (event == Event.CHANGED_EVENT)) {
@@ -122,14 +112,9 @@ public class ProjectController extends BasicController {
 		fireEvent(urequest, event);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		
 	}
-
-
 
 }

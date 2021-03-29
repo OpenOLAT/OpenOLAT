@@ -50,7 +50,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.properties.CoursePropertyManager;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
@@ -178,7 +177,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	private boolean tryToRepareAccountManagerProperty(CoursePropertyManager cpm, CourseNode courseNode) {
 		List<Property> properties = cpm.findCourseNodeProperties(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
 		if(properties.size() > 1) {
-			Collections.sort(properties, (p1, p2) -> { return p1.getCreationDate().compareTo(p2.getCreationDate()); });
+			Collections.sort(properties, (p1, p2) -> p1.getCreationDate().compareTo(p2.getCreationDate()));
 			for(int i=1; i<properties.size(); i++) {
 				cpm.deleteProperty(properties.get(i));
 			}
@@ -346,9 +345,8 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	}
 
 	@Override
-	public boolean isProjectManagerOrAdministrator(UserRequest ureq, CourseEnvironment courseEnv, Project project) {	
-		return isProjectManager(ureq.getIdentity(), project)
-				|| courseEnv.getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity());
+	public boolean isProjectManagerOrAdministrator(UserRequest ureq, UserCourseEnvironment userCourseEnv, Project project) {
+		return userCourseEnv.isAdmin() || isProjectManager(ureq.getIdentity(), project);
 	}
 
 	@Override
