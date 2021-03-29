@@ -577,6 +577,49 @@ public class UserMgmtTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void findByUsername() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("username")
+				.queryParam("username","administrator").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		UserVO userVo = conn.parse(response, UserVO.class);
+		
+		Assert.assertNotNull(userVo);
+		conn.shutdown();
+	}
+	
+	@Test
+	public void findByUsernameCheckProperties() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		IdentityWithLogin meLogin = JunitTestHelper.createAndPersistRndUser("rest-users");
+		Identity me = meLogin.getIdentity();
+		me.getUser().setProperty("telMobile", "92737");
+		me.getUser().setProperty("telOffice", "92737");
+		me.getUser().setProperty("telPrivate", "92737");
+		me.getUser().setProperty("gender", "female");
+		me.getUser().setProperty("birthDay", "19980405");
+		dbInstance.updateObject(me.getUser());
+		dbInstance.commit();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("username")
+				.queryParam("username", meLogin.getLogin()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		UserVO userVo = conn.parse(response, UserVO.class);
+		
+		Assert.assertNotNull(userVo);
+		Assert.assertEquals("92737", userVo.getProperty("telPrivate"));
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testGetMe() throws IOException, URISyntaxException {
 		IdentityWithLogin meLogin = JunitTestHelper.createAndPersistRndUser("rest-users");
 		Identity me = meLogin.getIdentity();

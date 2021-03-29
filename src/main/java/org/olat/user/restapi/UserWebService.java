@@ -1027,6 +1027,36 @@ public class UserWebService {
 		
 	}
 	
+	/**
+	 * Search a user by user name. This is an exact match and search a unique user
+	 * in the old identity name, the new nick name and the authentications user names.
+	 * 
+	 * @param username The user name to search for
+	 * @param request The HTTP request
+	 * @return A unique userVo, with all properties, inclusive administrative properties
+	 */
+	@GET
+	@Path("username")
+	@Operation(summary = "Search a user by user name", description = "Search a user by user name. This is an exact match and search a unique user in the old identity name, the new nick name and the authentications user names.")
+	@ApiResponse(responseCode = "200", description = "A unique user has been successfully found")
+	@ApiResponse(responseCode = "401", description = "he roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
+	@ApiResponse(responseCode = "500", description = "Unknown problem, see olat.log")
+	public Response searchByUsername(@QueryParam("username") String username, @Context HttpServletRequest request) {
+		Identity actingIdentity = getIdentity(request);
+		if(actingIdentity == null || !isUserManager(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		Identity identity = securityManager.findIdentityByUsernames(username);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if(!isUserManagerOf(identity.getKey(), request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		return Response.ok(get(identity, true, true)).build();
+	}
+	
 	@POST
 	@Path("{identityKey}/username")
 	@Operation(summary = "Rename an user", description = "Rename an user")
