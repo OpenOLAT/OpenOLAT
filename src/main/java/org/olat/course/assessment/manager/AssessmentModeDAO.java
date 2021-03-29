@@ -95,10 +95,17 @@ public class AssessmentModeDAO {
 		
 		boolean where = false;
 		
-		Date date = params.getDate();
-		if(date != null) {
+		Date dateFrom = params.getDateFrom();
+		Date dateTo = params.getDateTo();
+		if(dateFrom != null && dateTo != null) {
 			where = appendAnd(sb, where);
-			sb.append(":date between mode.beginWithLeadTime and mode.endWithFollowupTime");
+			sb.append("mode.beginWithLeadTime>=:dateFrom and mode.endWithFollowupTime<=:dateTo");
+		} else if(dateFrom != null) {
+			where = appendAnd(sb, where);
+			sb.append("mode.beginWithLeadTime>=:dateFrom");
+		} else if(dateTo != null) {
+			where = appendAnd(sb, where);
+			sb.append("mode.endWithFollowupTime<=:dateTo");
 		}
 		
 		String name = params.getName();
@@ -149,8 +156,11 @@ public class AssessmentModeDAO {
 		if(fuzzyRefs != null) {
 			query.setParameter("fuzzyRefs", fuzzyRefs);
 		}
-		if(date != null) {
-			query.setParameter("date", date, TemporalType.TIMESTAMP);
+		if(dateFrom != null) {
+			query.setParameter("dateFrom", dateFrom, TemporalType.TIMESTAMP);
+		}
+		if(dateTo != null) {
+			query.setParameter("dateTo", dateTo, TemporalType.TIMESTAMP);
 		}
 		return query.getResultList();
 	}

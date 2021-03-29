@@ -77,7 +77,7 @@ public class ProjectBrokerDropboxScoringViewController extends DropboxScoringVie
 		Translator fallbackTranslator = Util.createPackageTranslator(this.getClass(), getLocale());
 		Translator myTranslator = Util.createPackageTranslator(DropboxScoringViewController.class, getLocale(), fallbackTranslator);
 		setTranslator(myTranslator);
-		boolean hasNotification = projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv.getCourseEnvironment(), project);
+		boolean hasNotification = projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv, project);
 		init(ureq, hasNotification);
 	}
 	

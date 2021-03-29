@@ -242,8 +242,13 @@ public class DataCollectionSearchController extends FormBasicController implemen
 		
 		String keyValue = keyEl.getValue();
 		if (StringHelper.containsNonWhitespace(keyValue)) {
-			Long key = Long.valueOf(keyValue);
-			se.setDataCollectionRef(() -> key);
+			try {
+				Long key = Long.valueOf(keyValue);
+				se.setDataCollectionRef(() -> key);
+			} catch (NumberFormatException e) {
+				// Sometime the form validation is skipped?!
+				se.setDataCollectionRef(() -> -1l);
+			}
 		}
 		
 		se.setStartAfter(startAfterEl.getDate());

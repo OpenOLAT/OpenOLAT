@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -48,7 +49,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
  */
 public class BigBlueButtonUIHelper {
 	
-	public static void updateTemplateInformations(SingleSelection templateEl, TextElement externalLinkEl,
+	public static void updateTemplateInformations(SingleSelection templateEl, FormItem externalLinkEl,
 			MultipleSelectionElement passwordEnableEl, TextElement passwordEl,
 			SingleSelection publishingEl, SingleSelection recordEl, List<BigBlueButtonMeetingTemplate> templates, boolean meetingExists) {
 		templateEl.setExampleKey(null, null);
@@ -68,9 +69,11 @@ public class BigBlueButtonUIHelper {
 			if (externalLinkEl != null) {
 				boolean visible = template != null && template.isExternalUsersAllowed();
 				externalLinkEl.setVisible(visible);
-				if(visible && !StringHelper.containsNonWhitespace(externalLinkEl.getValue()) && !meetingExists) {
+				if(visible && externalLinkEl instanceof TextElement
+						&& !StringHelper.containsNonWhitespace(((TextElement)externalLinkEl).getValue())
+						&& !meetingExists) {
 					String externalLink = Long.toString(CodeHelper.getForeverUniqueID());
-					externalLinkEl.setValue(Long.toString(CodeHelper.getForeverUniqueID()));
+					((TextElement)externalLinkEl).setValue(Long.toString(CodeHelper.getForeverUniqueID()));
 					if (externalLink != null) {
 						String url = BigBlueButtonDispatcher.getMeetingUrl(externalLink);
 						externalLinkEl.setExampleKey("noTransOnlyParam", new String[] { url });	
