@@ -85,7 +85,7 @@ public class CreateTemporaryUsersCallback implements StepRunnerCallback {
 				doCreateAndPersistIdentity(identity, organisation);
 			}
 			
-			MediaResource report = new TemporaryUsersMediaResources("Temp_users", temporaryUsers, translator);
+			MediaResource report = new TemporaryUsersMediaResources("Temp_users.xlsx", temporaryUsers, translator);
 			ureq.getDispatchResult().setResultingMediaResource(report);
 			
 			if(identities.size() == 1) {

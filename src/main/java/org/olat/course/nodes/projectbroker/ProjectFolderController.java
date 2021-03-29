@@ -67,13 +67,8 @@ public class ProjectFolderController extends BasicController {
 	private MSCourseNodeRunController scoringController;
 
 	private final ProjectGroupManager projectGroupManager;
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param userCourseEnv
-	 * @param ne
-	 * @param previewMode
-	 */
+	
+	
 	public ProjectFolderController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNode courseNode, boolean previewMode, Project project) { 
 		super(ureq, wControl);
 		config = courseNode.getModuleConfiguration();
@@ -82,7 +77,7 @@ public class ProjectFolderController extends BasicController {
 		ProjectBrokerModuleConfiguration moduleConfig = new ProjectBrokerModuleConfiguration(config);
 		
 		content = createVelocityContainer("folder");
-		boolean isProjectManagerOrAdministrator = projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv.getCourseEnvironment(), project);
+		boolean isProjectManagerOrAdministrator = projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv, project);
 		if (projectGroupManager.isProjectParticipant(ureq.getIdentity(), project)
 			  || isProjectManagerOrAdministrator ) {
 			content.contextPut("isParticipant", true);
@@ -151,17 +146,10 @@ public class ProjectFolderController extends BasicController {
 		hasReturnbox = (bValue != null) ? bValue.booleanValue() : false;
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		if (dropboxController != null) {

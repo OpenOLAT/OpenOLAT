@@ -43,7 +43,7 @@ import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
-import org.olat.course.assessment.ui.tool.event.StopAssessmentEvent;
+import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
@@ -214,6 +214,6 @@ public class StopAssessmentWarningController extends BasicController {
 	
 	private void doAfterStop(UserRequest ureq) {
 		reloadAssessmentModeMessage();
-		fireEvent(ureq, new StopAssessmentEvent());
+		fireEvent(ureq, new AssessmentModeStatusEvent());
 	}
 }

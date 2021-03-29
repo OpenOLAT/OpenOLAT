@@ -190,7 +190,19 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
 					//bootstrap tooltip
 					html: true,
 					container:'body',
-					placement: 'auto bottom',
+					placement: function() {
+						var inIframe = (window.self !== window.top);
+						if(inIframe) {
+							var target = jQuery('#' + targetId);
+							var offset = target.offset();
+							var top = (offset.top < 0 ? 0 : offset.top);
+							var body = document.body,
+								html = document.documentElement;
+							var docHeight = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
+							return (docHeight / 2.0) < top ? 'top' : 'bottom';
+						}
+						return 'auto';
+					},
 					title: function() {
 				        var elem = jQuery(this);
 				        jQuery.ajax(glossUrl).always(function(data, textStatus, jqXHR) {

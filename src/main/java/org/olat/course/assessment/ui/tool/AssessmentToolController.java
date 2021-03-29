@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -45,14 +44,11 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentMode;
-import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
-import org.olat.course.assessment.ui.tool.event.StopAssessmentEvent;
 import org.olat.course.config.ui.AssessmentResetController;
 import org.olat.course.config.ui.AssessmentResetController.AssessmentResetEvent;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -91,7 +87,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private AssessmentCourseOverviewController overviewCtrl;
 	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
 	private AssessmentResetController assessmentResetCtrl;
-	private StopAssessmentWarningController stopAssessmentCtrl;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -99,8 +94,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private NodeAccessService nodeAccessService;
 	@Autowired
 	private AssessmentService assessmentService;
-	@Autowired
-	private AssessmentModeManager assessmentModeManager;
 	
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachUserEnv, AssessmentToolSecurityCallback assessmentCallback) {
@@ -119,22 +112,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		overviewCtrl = new AssessmentCourseOverviewController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(overviewCtrl);
 		putInitialPanel(overviewCtrl.getInitialComponent());
-	}
-	
-	public void assessmentModeMessage(UserRequest ureq) {
-		List<AssessmentMode> modes = assessmentModeManager.getCurrentAssessmentMode(courseEntry, new Date());
-		if(!modes.isEmpty()) {
-			// don't use listenTo as the controller must survive the assessment tool controller
-			if(stopAssessmentCtrl != null) {
-				stopAssessmentCtrl.removeControllerListener(this);
-			}
-			stopAssessmentCtrl = new StopAssessmentWarningController(ureq, getWindowControl(), stackPanel,
-					courseEntry, modes, assessmentCallback);
-			stopAssessmentCtrl.addControllerListener(this);
-			stackPanel.setMessageComponent(stopAssessmentCtrl.getInitialComponent());
-		} else {
-			stackPanel.setMessageComponent(null);
-		}
 	}
 	
 	public void initToolbar() {
@@ -165,9 +142,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	protected void doDispose() {
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
-		}
-		if(stopAssessmentCtrl != null) {
-			stopAssessmentCtrl.removeControllerListener(this);
 		}
 	}
 	
@@ -249,7 +223,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 					doSelectNodeView(ureq, cne.getIdent());
 				}
 			} else if(event instanceof AssessmentModeStatusEvent) {
-				assessmentModeMessage(ureq);
+				fireEvent(ureq, event);
 			}
 		} else if(source == assessmentResetCtrl) {
 			if (event instanceof AssessmentResetEvent) {
@@ -258,10 +232,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(stopAssessmentCtrl == source) {
-			if(event instanceof StopAssessmentEvent) {
-				overviewCtrl.reloadAssessmentModes();
-			}
 		} else if (source == cmc) {
 			cmc.deactivate();
 			cleanUp();
@@ -276,6 +246,10 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		bulkAssessmentOverviewCtrl = null;
 		assessmentResetCtrl = null;
 		cmc = null;
+	}
+	
+	public void reloadAssessmentModes() {
+		overviewCtrl.reloadAssessmentModes();
 	}
 	
 	private void doBulkAssessmentView(UserRequest ureq) {
