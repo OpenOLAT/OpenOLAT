@@ -19,6 +19,8 @@
  */
 package org.olat.modules.bigbluebutton.ui.recurring;
 
+import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.isWebcamLayoutAvailable;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -41,7 +43,10 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,6 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BigBlugButtonMeetingConfigurationController extends StepFormBasicController {
 
 	private static final String[] onKeys = new String[] { "on" };
+	private static final String[] yesNoKeys = new String[] { "yes", "no" };
 	
 	private TextElement nameEl;
 	private TextElement descriptionEl;
@@ -69,6 +75,9 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 	private DateChooser endRecurringDateEl;
 	private DateChooser startRecurringDateEl;
 	private SingleSelection templateEl;
+	private SingleSelection layoutEl;
+	private SingleSelection recordEl;
+	private SingleSelection publishingEl;
 
 	private RecurringMeetingsContext meetingsContext;
 	private List<BigBlueButtonMeetingTemplate> templates;
@@ -133,6 +142,46 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 			templateEl.select(templatesKeys[0], true);
 		}
 		
+		String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
+		recordEl = uifactory.addRadiosVertical("meeting.record", formLayout, yesNoKeys, yesNoValues);
+		recordEl.addActionListener(FormEvent.ONCHANGE);
+		if(BigBlueButtonUIHelper.isRecord(meetingsContext.getTemplate())) {
+			recordEl.select(yesNoKeys[0], true);
+		} else {
+			recordEl.select(yesNoKeys[1], true);
+		}
+		
+		recordEl.select(yesNoKeys[0], true);
+		
+		KeyValues publishKeyValues = new KeyValues();
+		publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.auto.name(), translate("meeting.publishing.auto")));
+		publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.manual.name(), translate("meeting.publishing.manual")));
+		publishingEl = uifactory.addRadiosVertical("meeting.publishing", formLayout, publishKeyValues.keys(), publishKeyValues.values());
+		BigBlueButtonRecordingsPublishingEnum publish = meetingsContext.getRecordingsPublishing() == null
+				? BigBlueButtonRecordingsPublishingEnum.auto :  meetingsContext.getRecordingsPublishing();
+		publishingEl.select(publish.name(), true);
+
+		KeyValues layoutKeyValues = new KeyValues();
+		layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
+		if(isWebcamLayoutAvailable(BigBlueButtonUIHelper.getSelectedTemplate(templateEl, templates))) {
+			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
+		}
+		layoutEl = uifactory.addDropdownSingleselect("meeting.layout", "meeting.layout", formLayout,
+				layoutKeyValues.keys(), layoutKeyValues.values());
+		boolean layoutSelected = false;
+		String selectedLayout = meetingsContext.getMeetingLayout() == null
+				? BigBlueButtonMeetingLayoutEnum.standard.name() : meetingsContext.getMeetingLayout().name();
+		for(String layoutKey:layoutKeyValues.keys()) {
+			if(layoutKey.equals(selectedLayout)) {
+				layoutEl.select(layoutKey, true);
+				layoutSelected = true;
+			}
+		}
+		if(!layoutSelected) {
+			layoutEl.select(BigBlueButtonMeetingLayoutEnum.standard.name(), true);
+		}
+		layoutEl.setVisible(layoutEl.getKeys().length > 1);
+		
 		String[] externalLinkValues = new String[] { translate("enable.generate.url") };
 		externalLinkEl = uifactory.addCheckboxesHorizontal("meeting.external.users", formLayout, onKeys, externalLinkValues);
 		externalLinkEl.addActionListener(FormEvent.ONCHANGE);
@@ -143,7 +192,8 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		
 		passwordEl = uifactory.addTextElement("meeting.password", 64, "", formLayout);
 		
-		updateTemplateInformations();
+		BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
+				templates, false);
 		
 		startRecurringDateEl = uifactory.addDateChooser("meeting.recurring.start", "meeting.recurring.start", null, formLayout);
 		startRecurringDateEl.setMandatory(true);
@@ -174,27 +224,6 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		
 		String followup = Long.toString(meetingsContext.getFollowupTime());
 		followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
-	}
-	
-	private void updateTemplateInformations() {
-		templateEl.setExampleKey(null, null);
-		if(templateEl.isOneSelected()) {
-			BigBlueButtonMeetingTemplate template = getSelectedTemplate();
-			if(template != null && template.getMaxParticipants() != null) {
-				Integer maxConcurrentInt = template.getMaxConcurrentMeetings();
-				String maxConcurrent = (maxConcurrentInt == null ? " ∞" : maxConcurrentInt.toString());
-				String[] args = new String[] { template.getMaxParticipants().toString(), maxConcurrent};				
-				if(template.getWebcamsOnlyForModerator() != null && template.getWebcamsOnlyForModerator().booleanValue()) {
-					templateEl.setExampleKey("template.explain.max.participants.with.webcams.mod", args);
-				} else {
-					templateEl.setExampleKey("template.explain.max.participants", args);
-				}
-				
-				externalLinkEl.setVisible(template.isExternalUsersAllowed());
-				passwordEnableEl.setVisible(template.isExternalUsersAllowed() && externalLinkEl.isAtLeastSelected(1));
-				passwordEl.setVisible(template.isExternalUsersAllowed() && passwordEnableEl.isAtLeastSelected(1));
-			}
-		}
 	}
 	
 	private void updatePasswordElement() {
@@ -354,7 +383,13 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(templateEl == source) {
-			updateTemplateInformations();
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
+					templates, false);
+			boolean webcamAvailable = isWebcamLayoutAvailable(BigBlueButtonUIHelper.getSelectedTemplate(templateEl, templates));
+			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
+		} else if(recordEl == source || passwordEnableEl == source) {
+			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
+					templates, false);
 		} else if(externalLinkEl == source || passwordEnableEl == source) {
 			updatePasswordElement();
 		}
@@ -369,6 +404,24 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		meetingsContext.setMainPresenter(mainPresenterEl.getValue());
 		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
 		meetingsContext.setTemplate(template);
+		
+		if(layoutEl.isVisible() && layoutEl.isOneSelected()) {
+			BigBlueButtonMeetingLayoutEnum layout = BigBlueButtonMeetingLayoutEnum.secureValueOf(layoutEl.getSelectedKey());
+			meetingsContext.setMeetingLayout(layout);
+		} else {
+			meetingsContext.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
+		}
+		
+		if(publishingEl.isVisible() && publishingEl.isOneSelected()) {
+			meetingsContext.setRecordingsPublishing(BigBlueButtonRecordingsPublishingEnum.valueOf(publishingEl.getSelectedKey()));
+		} else {
+			meetingsContext.setRecordingsPublishing(BigBlueButtonRecordingsPublishingEnum.manual);
+		}
+		if(recordEl.isVisible() && recordEl.isOneSelected()) {
+			meetingsContext.setRecord(Boolean.valueOf(yesNoKeys[0].equals(recordEl.getSelectedKey())));
+		} else {
+			meetingsContext.setRecord(null);
+		}
 
 		Date startDate = startTimeEl.getDate();
 		meetingsContext.setStartTime(startDate);

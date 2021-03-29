@@ -26,7 +26,9 @@ import java.util.List;
 
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.repository.RepositoryEntry;
 
@@ -50,6 +52,10 @@ public class RecurringMeetingsContext {
 	private Date endRecurringDate;
 	private String password;
 	private boolean generateUrl;
+	private Boolean record;
+	private BigBlueButtonMeetingLayoutEnum layout;
+	private BigBlueButtonRecordingsPublishingEnum recordingsPublishing;
+	
 	private BigBlueButtonMeetingTemplate template;
 	
 	private List<RecurringMeeting> meetings = new ArrayList<>();
@@ -135,6 +141,30 @@ public class RecurringMeetingsContext {
 
 	public void setGenerateUrl(boolean generateUrl) {
 		this.generateUrl = generateUrl;
+	}
+
+	public Boolean getRecord() {
+		return record;
+	}
+
+	public void setRecord(Boolean record) {
+		this.record = record;
+	}
+
+	public BigBlueButtonRecordingsPublishingEnum getRecordingsPublishing() {
+		return recordingsPublishing;
+	}
+
+	public void setRecordingsPublishing(BigBlueButtonRecordingsPublishingEnum recordingsPublishing) {
+		this.recordingsPublishing = recordingsPublishing;
+	}
+
+	public BigBlueButtonMeetingLayoutEnum getMeetingLayout() {
+		return layout;
+	}
+
+	public void setMeetingLayout(BigBlueButtonMeetingLayoutEnum layout) {
+		this.layout = layout;
 	}
 
 	public Date getStartTime() {

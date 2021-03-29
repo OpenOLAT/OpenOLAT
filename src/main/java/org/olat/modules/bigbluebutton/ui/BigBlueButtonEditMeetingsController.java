@@ -363,6 +363,9 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 			bMeeting.setEndDate(meeting.getEndDate());
 			bMeeting.setLeadTime(context.getLeadTime());
 			bMeeting.setFollowupTime(context.getFollowupTime());
+			bMeeting.setRecord(context.getRecord());
+			bMeeting.setMeetingLayout(context.getMeetingLayout());
+			bMeeting.setRecordingsPublishingEnum(context.getRecordingsPublishing());
 			if(generateUrl) {
 				String externalLink = String.valueOf(CodeHelper.getForeverUniqueID());
 				bMeeting.setReadableIdentifier(externalLink);
