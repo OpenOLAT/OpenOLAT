@@ -31,9 +31,9 @@ public class SingleChoice extends AbstractElement {
 	public static final String TYPE = "formsinglechoice";
 	
 	public enum Presentation {
-		DROPDOWN,
 		VERTICAL,
-		HORIZONTAL
+		HORIZONTAL,
+		DROPDOWN
 	}
 	
 	private Presentation presentation;

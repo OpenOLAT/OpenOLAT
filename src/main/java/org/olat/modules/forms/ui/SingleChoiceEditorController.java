@@ -110,8 +110,8 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		formLayout.add("settings", settingsCont);
 		
 		// presentation
-		presentationEl = uifactory.addDropdownSingleselect("sc_pres_" + postfix, "single.choice.presentation", settingsCont, getPresentationKeys(),
-				getPresentationValues(), null);
+		presentationEl = uifactory.addRadiosHorizontal("sc_pres_" + postfix, "single.choice.presentation", settingsCont,
+				getPresentationKeys(), getPresentationValues());
 		if (Arrays.asList(Presentation.values()).contains(singleChoice.getPresentation())) {
 			presentationEl.select(singleChoice.getPresentation().name(), true);
 		}

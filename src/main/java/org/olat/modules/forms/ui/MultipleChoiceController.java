@@ -99,7 +99,16 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 			keys[keys.length - 1] = OTHERS_KEY;
 			values[values.length -1] = translate(OTHERS_KEY);
 		}
-		multipleChoiceEl = uifactory.addCheckboxesVertical(name, null, flc, keys, values, 1);
+		switch (multipleChoice.getPresentation()) {
+			case HORIZONTAL:
+				multipleChoiceEl = uifactory.addCheckboxesHorizontal(name, null, flc, keys, values);
+				break;
+			case DROPDOWN:
+				multipleChoiceEl = uifactory.addCheckboxesDropdown(name, null, flc, keys, values);
+				break;
+			default:
+				multipleChoiceEl = uifactory.addCheckboxesVertical(name, null, flc, keys, values, 1);
+		}
 		multipleChoiceEl.addActionListener(FormEvent.ONCHANGE);
 		
 		if (otherEl != null) {
@@ -109,7 +118,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 		otherEl.setElementCssClass("o_evaluation_mc_other");
 		showHideOthers();
 	}
-
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == multipleChoiceEl) {

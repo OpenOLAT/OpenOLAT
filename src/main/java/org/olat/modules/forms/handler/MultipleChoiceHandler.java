@@ -36,6 +36,7 @@ import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.Choices;
 import org.olat.modules.forms.model.xml.MultipleChoice;
+import org.olat.modules.forms.model.xml.MultipleChoice.Presentation;
 import org.olat.modules.forms.ui.MultipleChoiceController;
 import org.olat.modules.forms.ui.MultipleChoiceEditorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
@@ -96,6 +97,7 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 	public PageElement createPageElement(Locale locale) {
 		MultipleChoice multipleChoice = new MultipleChoice();
 		multipleChoice.setId(UUID.randomUUID().toString());
+		multipleChoice.setPresentation(Presentation.VERTICAL);
 		multipleChoice.setWithOthers(false);
 		
 		Translator translator = Util.createPackageTranslator(MultipleChoiceEditorController.class, locale);

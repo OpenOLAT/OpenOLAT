@@ -20,8 +20,10 @@
 package org.olat.modules.forms.ui;
 
 import static org.olat.core.gui.components.updown.UpDown.Layout.LINK_HORIZONTAL;
+import static org.olat.core.gui.components.util.KeyValues.entry;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -46,6 +49,7 @@ import org.olat.core.gui.components.updown.UpDown;
 import org.olat.core.gui.components.updown.UpDownEvent;
 import org.olat.core.gui.components.updown.UpDownEvent.Direction;
 import org.olat.core.gui.components.updown.UpDownFactory;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -53,6 +57,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.MultipleChoice;
+import org.olat.modules.forms.model.xml.MultipleChoice.Presentation;
 import org.olat.modules.forms.ui.ChoiceDataModel.ChoiceCols;
 
 /**
@@ -67,6 +72,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	private static final String[] WITH_OTHER_KEYS = new String[] {WITH_OTHER_KEY};
 	private static final String CMD_DELETE = "delete";
 	
+	private SingleSelection presentationEl;
 	private MultipleSelectionElement withOthersEl;
 	private FormLink addChoiceEl;
 	private FlexiTableElement tableEl;
@@ -108,6 +114,18 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 				getTranslator());
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
+		
+		// presentation
+		KeyValues presentationKV = new KeyValues();
+		Arrays.stream(Presentation.values()).forEach(presentation -> presentationKV.add(entry(
+				presentation.name(),
+				translate("single.choice.presentation." + presentation.name().toLowerCase()))));
+		presentationEl = uifactory.addRadiosHorizontal("sc_pres_" + postfix, "single.choice.presentation",
+				settingsCont, presentationKV.keys(), presentationKV.values());
+		if (Arrays.asList(Presentation.values()).contains(multipleChoice.getPresentation())) {
+			presentationEl.select(multipleChoice.getPresentation().name(), true);
+		}
+		presentationEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// withOthers
 		withOthersEl = uifactory.addCheckboxesVertical("mc_others_" + postfix, "multiple.choice.with.others",
@@ -169,7 +187,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == withOthersEl || source instanceof TextElement) {
+		if (presentationEl == source || source == withOthersEl || source instanceof TextElement) {
 			doSave();
 		} else if (addChoiceEl == source) {
 			doAddChoice();
@@ -197,9 +215,19 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	}
 	
 	private void doSave() {
+		doSavePresentation();
 		doSaveWithOthers();
 		doSaveValues();
 		multipleChoiceCtrl.updateForm();
+	}
+	
+	private void doSavePresentation() {
+		Presentation presentation = null;
+		if (presentationEl.isOneSelected()) {
+			String selectedKey = presentationEl.getSelectedKey();
+			presentation = Presentation.valueOf(selectedKey);
+		}
+		multipleChoice.setPresentation(presentation);
 	}
 	
 	private void doSaveWithOthers() {

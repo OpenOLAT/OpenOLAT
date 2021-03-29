@@ -30,7 +30,13 @@ public class MultipleChoice extends AbstractElement {
 	private static final long serialVersionUID = -7366221315042186647L;
 	
 	public static final String TYPE = "formmultiplechoice";
+	public enum Presentation {
+		VERTICAL,
+		HORIZONTAL,
+		DROPDOWN
+	}
 	
+	private Presentation presentation;
 	private Choices choices;
 	private boolean withOthers;
 
@@ -39,6 +45,17 @@ public class MultipleChoice extends AbstractElement {
 		return TYPE;
 	}
 	
+	public Presentation getPresentation() {
+		if (presentation == null) {
+			presentation = Presentation.VERTICAL;
+		}
+		return presentation;
+	}
+
+	public void setPresentation(Presentation presentation) {
+		this.presentation = presentation;
+	}
+
 	public Choices getChoices() {
 		return choices;
 	}
