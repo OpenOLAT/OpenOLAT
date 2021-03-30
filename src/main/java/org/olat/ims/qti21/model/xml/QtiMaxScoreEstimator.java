@@ -73,10 +73,12 @@ public class QtiMaxScoreEstimator {
 		} else if(sectionPart instanceof AssessmentItemRef) {
 			AssessmentItemRef itemRef = (AssessmentItemRef)sectionPart;
 			ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-			if(assessmentItem != null) {
-				Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
-				visitor.add(maxScore);
+			if(resolvedAssessmentItem != null) {
+				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+				if(assessmentItem != null) {
+					Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+					visitor.add(maxScore);
+				}
 			}
 		}
 	}
