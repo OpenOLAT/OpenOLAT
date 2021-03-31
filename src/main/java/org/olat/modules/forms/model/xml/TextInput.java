@@ -34,6 +34,8 @@ public class TextInput extends AbstractElement {
 	private int rows;
 	private boolean singleRow;
 	private boolean numeric;
+	private Double numericMin;
+	private Double numericMax;
 	private boolean date;
 
 	@Override
@@ -63,6 +65,22 @@ public class TextInput extends AbstractElement {
 
 	public void setNumeric(boolean numeric) {
 		this.numeric = numeric;
+	}
+
+	public Double getNumericMin() {
+		return numericMin;
+	}
+
+	public void setNumericMin(Double numericMin) {
+		this.numericMin = numericMin;
+	}
+
+	public Double getNumericMax() {
+		return numericMax;
+	}
+
+	public void setNumericMax(Double numericMax) {
+		this.numericMax = numericMax;
 	}
 
 	public boolean isDate() {

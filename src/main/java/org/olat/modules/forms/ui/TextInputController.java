@@ -131,7 +131,24 @@ public class TextInputController extends FormBasicController implements Evaluati
 					allOk = false;
 				} else {
 					try {
-						Double.parseDouble(val);
+						double value = Double.parseDouble(val);
+						if (textInput.getNumericMin() != null && textInput.getNumericMax() != null) {
+							if (textInput.getNumericMin().doubleValue() > value || textInput.getNumericMax().doubleValue() < value) {
+								singleRowEl.setErrorKey("error.number.between", new String[] {
+										textInput.getNumericMin().toString(), textInput.getNumericMax().toString() });
+								allOk = false;
+							}
+						} else if (textInput.getNumericMin() != null) {
+							if (textInput.getNumericMin().doubleValue() > value) {
+								singleRowEl.setErrorKey("error.number.min", new String[] { textInput.getNumericMin().toString()});
+								allOk = false;
+							}
+						} else if (textInput.getNumericMax() != null) {
+							if (textInput.getNumericMax().doubleValue() < value) {
+								singleRowEl.setErrorKey("error.number.max", new String[] { textInput.getNumericMax().toString() });
+								allOk = false;
+							}
+						}
 					} catch (NumberFormatException e) {
 						singleRowEl.setErrorKey("error.no.number", null);
 						allOk = false;
@@ -139,6 +156,8 @@ public class TextInputController extends FormBasicController implements Evaluati
 				}
 			}
 		}
+		
+		
 		
 		return allOk;
 	}

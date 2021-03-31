@@ -66,6 +66,8 @@ public class TextInputEditorController extends FormBasicController implements Pa
 	private SingleSelection inputTypeEl;
 	private SingleSelection singleRowEl;
 	private TextElement rowsEl;
+	private TextElement numericMinEl;
+	private TextElement numericMaxEl;
 	private FormLink saveButton;
 	private TextInputController textInputCtrl;
 	
@@ -126,6 +128,16 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		}
 		rowsEl = uifactory.addTextElement("textinput_rows_" + CodeHelper.getRAMUniqueID(), "textinput.rows", 8, rows, settingsCont);
 		
+		String numericMin = textInput.getNumericMin() != null? textInput.getNumericMin().toString(): "";
+		numericMinEl = uifactory.addTextElement("textinput_nmin_" + CodeHelper.getRAMUniqueID(),
+				"textinput.numeric.min", 8, numericMin, settingsCont);
+		numericMinEl.setEnabled(!restrictedEdit);
+		
+		String numericMax = textInput.getNumericMax() != null? textInput.getNumericMax().toString(): "";
+		numericMaxEl = uifactory.addTextElement( "textinput_nmax_" + CodeHelper.getRAMUniqueID(), 
+				"textinput.numeric.max", 8, numericMax, settingsCont);
+		numericMaxEl.setEnabled(!restrictedEdit);
+		
 		saveButton = uifactory.addFormLink("save_" + CodeHelper.getRAMUniqueID(), "save", null, settingsCont, Link.BUTTON);
 		
 		updateUI();
@@ -136,6 +148,10 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		boolean isMultipleRows = MULTIPLE_ROWS_KEY.equals(singleRowEl.getSelectedKey());
 		singleRowEl.setVisible(isText);
 		rowsEl.setVisible(isText && isMultipleRows);
+		
+		boolean numeric = INPUT_TYPE_NUMERIC_KEY.equals(inputTypeEl.getSelectedKey());
+		numericMinEl.setVisible(numeric);
+		numericMaxEl.setVisible(numeric);
 	}
 
 	@Override
@@ -156,7 +172,34 @@ public class TextInputEditorController extends FormBasicController implements Pa
 				allOk &= false;
 			}
 		}
+		
+		allOk &= validateDouble(numericMinEl);
+		allOk &= validateDouble(numericMaxEl);
+		if (allOk && numericMinEl.isVisible() && numericMaxEl.isVisible()
+				&& StringHelper.containsNonWhitespace(numericMinEl.getValue())
+				&& StringHelper.containsNonWhitespace(numericMaxEl.getValue()) 
+				&& Double.parseDouble(numericMinEl.getValue()) >= Double.parseDouble(numericMaxEl.getValue())) {
+			numericMaxEl.setErrorKey("error.numeric.max.lower.min", null);
+			allOk &= false;
+		}
+		
 		return allOk;
+	}
+	
+	private boolean validateDouble(TextElement element) {
+		element.clearError();
+		if (element.isVisible()) {
+			String value = element.getValue();
+			if(StringHelper.containsNonWhitespace(value)) {
+				try {
+					Double.parseDouble(value);
+				} catch (NumberFormatException e) {
+					element.setErrorKey("error.no.number", null);
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	@Override
@@ -192,6 +235,26 @@ public class TextInputEditorController extends FormBasicController implements Pa
 				logError("Cannot parse integer: " + rowsEl.getValue(), null);
 			}
 		}
+		
+		Double numericMin = null;
+		if(StringHelper.containsNonWhitespace(numericMinEl.getValue())) {
+			try {
+				numericMin = Double.parseDouble(numericMinEl.getValue());
+			} catch (NumberFormatException e) {
+				logError("Cannot parse double: " + numericMinEl.getValue(), null);
+			}
+		}
+		textInput.setNumericMin(numericMin);
+		
+		Double numericMax = null;
+		if(StringHelper.containsNonWhitespace(numericMaxEl.getValue())) {
+			try {
+				numericMax = Double.parseDouble(numericMaxEl.getValue());
+			} catch (NumberFormatException e) {
+				logError("Cannot parse double: " + numericMaxEl.getValue(), null);
+			}
+		}
+		textInput.setNumericMax(numericMax);
 		
 		textInputCtrl.update();
 		fireEvent(ureq, new ChangePartEvent(textInput));
