@@ -60,6 +60,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.ui.BGMailHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -110,6 +111,10 @@ public class ProjectGroupController extends BasicController {
 		projectLeaderController = new GroupController(ureq, getWindowControl(), mayModifyMembers, true, true, false, true, false, group, GroupRoles.coach.name());
 		listenTo(projectLeaderController);
 		myContent.put("projectLeaderController", projectLeaderController.getInitialComponent());
+		MailTemplate leaderAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(projectGroup, ureq.getIdentity());
+		projectLeaderController.setAddUserMailTempl(leaderAddUserMailTempl,false);
+		MailTemplate leaderAremoveUserMailTempl = BGMailHelper.createRemoveParticipantMailTemplate(projectGroup, ureq.getIdentity());
+		projectLeaderController.setRemoveUserMailTempl(leaderAremoveUserMailTempl,false);
 
 		// Project Member Management
 		projectMemberController = new GroupController(ureq, getWindowControl(), mayModifyMembers, false, true, false, true, false, group, GroupRoles.participant.name());
