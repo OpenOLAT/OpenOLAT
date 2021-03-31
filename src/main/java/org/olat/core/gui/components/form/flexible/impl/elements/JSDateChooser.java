@@ -68,6 +68,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	private boolean checkForValidDate;
 	private boolean sameDay;
 	private boolean secondDate;
+	private boolean buttonsEnabled = true;
 	private int minute;
 	private int hour;
 	private int secondMinute;
@@ -296,6 +297,15 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	@Override
 	public void setDefaultTimeAtEndOfDay(boolean defaultTimeAtEndOfDay) {
 		this.defaultTimeAtEndOfDay = defaultTimeAtEndOfDay;
+	}
+
+	public boolean isButtonsEnabled() {
+		return buttonsEnabled;
+	}
+
+	@Override
+	public void setButtonsEnabled(boolean buttonsEnabled) {
+		this.buttonsEnabled = buttonsEnabled;
 	}
 
 	@Override

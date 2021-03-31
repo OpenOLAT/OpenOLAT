@@ -19,7 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
-import java.util.stream.Stream;
+import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -48,11 +48,13 @@ import org.olat.modules.forms.model.xml.TextInput;
  */
 public class TextInputEditorController extends FormBasicController implements PageElementEditorController {
 	
-	private static final String NUMERIC_TEXT_KEY = "textinput.numeric.text";
-	private static final String NUMERIC_NUMERIC_KEY = "textinput.numeric.numeric";
+	private static final String INPUT_TYPE_TEXT_KEY = "textinput.numeric.text";
+	private static final String INPUT_TYPE_NUMERIC_KEY = "textinput.numeric.numeric";
+	private static final String INPUT_TYPE_DATE_KEY = "textinput.numeric.date";
 	private static final String[] NUMERIC_KEYS = new String[] {
-			NUMERIC_TEXT_KEY,
-			NUMERIC_NUMERIC_KEY
+			INPUT_TYPE_TEXT_KEY,
+			INPUT_TYPE_NUMERIC_KEY,
+			INPUT_TYPE_DATE_KEY
 	};
 	private static final String SINGLE_ROW_KEY = "textinput.single.row";
 	private static final String MULTIPLE_ROWS_KEY = "textinput.multiple.rows";
@@ -61,7 +63,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 			MULTIPLE_ROWS_KEY
 	};
 	
-	private SingleSelection numericEl;
+	private SingleSelection inputTypeEl;
 	private SingleSelection singleRowEl;
 	private TextElement rowsEl;
 	private FormLink saveButton;
@@ -91,7 +93,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		textInputCtrl = new TextInputController(ureq, getWindowControl(), textInput);
+		textInputCtrl = new TextInputController(ureq, getWindowControl(), textInput, true);
 		listenTo(textInputCtrl);
 		formLayout.add("textInput", textInputCtrl.getInitialFormItem());
 
@@ -99,15 +101,20 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
 		
-		numericEl = uifactory.addDropdownSingleselect("textinput_num_" + CodeHelper.getRAMUniqueID(),
-				"textinput.numeric", settingsCont, NUMERIC_KEYS, translateKeys(NUMERIC_KEYS));
-		String selectedNumericKey = textInput.isNumeric()? NUMERIC_NUMERIC_KEY: NUMERIC_TEXT_KEY;
-		numericEl.select(selectedNumericKey, true);
-		numericEl.addActionListener(FormEvent.ONCHANGE);
-		numericEl.setEnabled(!restrictedEdit);
+		inputTypeEl = uifactory.addRadiosHorizontal("textinput_num_" + CodeHelper.getRAMUniqueID(),
+				"textinput.numeric", settingsCont, NUMERIC_KEYS, translateAll(getTranslator(), NUMERIC_KEYS));
+		if (textInput.isNumeric()) {
+			inputTypeEl.select(INPUT_TYPE_NUMERIC_KEY, true);
+		} else if (textInput.isDate()) {
+			inputTypeEl.select(INPUT_TYPE_DATE_KEY, true);
+		} else {
+			inputTypeEl.select(INPUT_TYPE_TEXT_KEY, true);
+		}
+		inputTypeEl.addActionListener(FormEvent.ONCHANGE);
+		inputTypeEl.setEnabled(!restrictedEdit);
 		
-		singleRowEl = uifactory.addDropdownSingleselect("textinput_row_" + CodeHelper.getRAMUniqueID(),
-				"textinput.rows.mode", settingsCont, ROW_OPTIONS, translateKeys(ROW_OPTIONS));
+		singleRowEl = uifactory.addRadiosHorizontal("textinput_row_" + CodeHelper.getRAMUniqueID(),
+				"textinput.rows.mode", settingsCont, ROW_OPTIONS, translateAll(getTranslator(), ROW_OPTIONS));
 		String selectedRowsKey = textInput.isSingleRow()? SINGLE_ROW_KEY: MULTIPLE_ROWS_KEY;
 		singleRowEl.select(selectedRowsKey, true);
 		singleRowEl.addActionListener(FormEvent.ONCHANGE);
@@ -124,14 +131,8 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		updateUI();
 	}
 
-	private String[] translateKeys(String[] keys) {
-		return Stream.of(keys)
-				.map(key -> getTranslator().translate(key))
-				.toArray(String[]::new);
-	}
-
 	private void updateUI() {
-		boolean isText = NUMERIC_TEXT_KEY.equals(numericEl.getSelectedKey());
+		boolean isText = INPUT_TYPE_TEXT_KEY.equals(inputTypeEl.getSelectedKey());
 		boolean isMultipleRows = MULTIPLE_ROWS_KEY.equals(singleRowEl.getSelectedKey());
 		singleRowEl.setVisible(isText);
 		rowsEl.setVisible(isText && isMultipleRows);
@@ -160,7 +161,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (numericEl == source) {
+		if (inputTypeEl == source) {
 			updateUI();
 		} else if (singleRowEl == source) {
 			updateUI();
@@ -174,8 +175,11 @@ public class TextInputEditorController extends FormBasicController implements Pa
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean numeric = NUMERIC_NUMERIC_KEY.equals(numericEl.getSelectedKey());
+		boolean numeric = INPUT_TYPE_NUMERIC_KEY.equals(inputTypeEl.getSelectedKey());
 		textInput.setNumeric(numeric);
+		
+		boolean date = INPUT_TYPE_DATE_KEY.equals(inputTypeEl.getSelectedKey());
+		textInput.setDate(date);
 		
 		boolean singleRow = SINGLE_ROW_KEY.equals(singleRowEl.getSelectedKey());
 		textInput.setSingleRow(singleRow);

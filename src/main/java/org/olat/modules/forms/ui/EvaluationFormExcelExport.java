@@ -214,10 +214,17 @@ public class EvaluationFormExcelExport {
 		for (EvaluationFormSession session: sessions) {
 			EvaluationFormResponse response = responses.getResponse(session, textinput.getId());
 			if (response != null) {
-				String value = response.getStringuifiedResponse();
-				if (StringHelper.containsNonWhitespace(value)) {
-					value = value.replaceAll("\n", "");
-					row.addCell(col, value, workbook.getStyles().getTopAlignStyle());
+				if (textinput.isDate()) {
+					Date date = evaluationFormManager.getDate(response);
+					if (date != null) {
+						row.addCell(col, date, workbook.getStyles().getDateStyle());
+					}
+				} else {
+					String value = response.getStringuifiedResponse();
+					if (StringHelper.containsNonWhitespace(value)) {
+						value = value.replaceAll("\n", "");
+						row.addCell(col, value, workbook.getStyles().getTopAlignStyle());
+					}
 				}
 			}
 			col++;

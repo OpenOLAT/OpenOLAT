@@ -34,6 +34,7 @@ public class TextInput extends AbstractElement {
 	private int rows;
 	private boolean singleRow;
 	private boolean numeric;
+	private boolean date;
 
 	@Override
 	public String getType() {
@@ -62,6 +63,14 @@ public class TextInput extends AbstractElement {
 
 	public void setNumeric(boolean numeric) {
 		this.numeric = numeric;
+	}
+
+	public boolean isDate() {
+		return date;
+	}
+
+	public void setDate(boolean date) {
+		this.date = date;
 	}
 
 	@Override

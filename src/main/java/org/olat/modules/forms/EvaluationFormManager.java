@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -187,6 +188,9 @@ public interface EvaluationFormManager {
 	public EvaluationFormResponse createFileResponse(String responseIdentifier, EvaluationFormSession session,
 			File file, String filename) throws IOException;
 
+	public EvaluationFormResponse createDateResponse(String responseIdentifier, EvaluationFormSession session,
+			Date date);
+	
 	public EvaluationFormResponse createNoResponse(String responseIdentifier, EvaluationFormSession session);
 
 	public EvaluationFormResponse updateNumericalResponse(EvaluationFormResponse response, BigDecimal value);
@@ -195,6 +199,8 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormResponse updateFileResponse(EvaluationFormResponse response, File file, String filename)
 			throws IOException;
+
+	public EvaluationFormResponse updateDateResponse(EvaluationFormResponse response, Date date);
 
 	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response);
 
@@ -209,6 +215,8 @@ public interface EvaluationFormManager {
 	public void deleteTmpDirs();
 	
 	public void copyFilesTo(Collection<EvaluationFormResponse> responses, File targetDir);
+	
+	public Date getDate(EvaluationFormResponse response);
 
 	public void deleteResponse(EvaluationFormResponse response);
 

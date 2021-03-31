@@ -30,6 +30,7 @@ import org.olat.modules.forms.ui.TextInputLegendTextController;
 import org.olat.modules.forms.ui.model.EvaluationFormControllerReportElement;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 import org.olat.modules.forms.ui.model.TextInputLegendTextDataSource;
+import org.olat.modules.forms.ui.model.TextInputLegendTextDataSource.ResponseFormatter;
 
 /**
  * 
@@ -45,11 +46,14 @@ public class TextInputLegendTextHandler implements EvaluationFormReportHandler {
 	}
 
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			SessionFilter filter, ReportHelper reportHelper) {
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
+			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof TextInput) {
 			TextInput textInput = (TextInput) element;
-			TextInputLegendTextDataSource dataSource = new TextInputLegendTextDataSource(textInput.getId(), filter, reportHelper);
+			ResponseFormatter responseFormatter = TextInputLegendTextDataSource.createResponseFormatter(textInput,
+					ureq.getLocale());
+			TextInputLegendTextDataSource dataSource = new TextInputLegendTextDataSource(textInput.getId(), filter,
+					reportHelper, responseFormatter);
 			Controller ctrl = new TextInputLegendTextController(ureq, windowControl, dataSource, reportHelper);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}

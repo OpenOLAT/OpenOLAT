@@ -73,7 +73,7 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
 		if(element instanceof TextInput) {
-			Controller ctrl = new TextInputController(ureq, wControl, (TextInput)element);
+			Controller ctrl = new TextInputController(ureq, wControl, (TextInput)element, false);
 			return new PageRunControllerElement(ctrl);
 		}
 		return null;
@@ -92,6 +92,7 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 		TextInput part = new TextInput();
 		part.setId(UUID.randomUUID().toString());
 		part.setNumeric(false);
+		part.setDate(false);
 		part.setSingleRow(false);
 		part.setRows(12);
 		return part;

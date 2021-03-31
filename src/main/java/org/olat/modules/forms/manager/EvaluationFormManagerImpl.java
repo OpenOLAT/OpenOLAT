@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.nodes.ms.MSService;
@@ -385,12 +386,20 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 			BigDecimal value) {
 		return evaluationFormResponseDao.createResponse(responseIdentifier, value, value.toPlainString(), null, session);
 	}
+	
+	@Override
+	public EvaluationFormResponse createDateResponse(String responseIdentifier, EvaluationFormSession session,
+			Date date) {
+		BigDecimal numerical = date != null? BigDecimal.valueOf(date.getTime()): null;
+		String stringuified = date != null? Formatter.formatDateFilesystemSave(date): null;
+		return evaluationFormResponseDao.createResponse(responseIdentifier, numerical, stringuified, null, session);
+	}
 
 	@Override
 	public EvaluationFormResponse createNoResponse(String responseIdentifier, EvaluationFormSession session) {
 		return evaluationFormResponseDao.createNoResponse(responseIdentifier, session);
 	}
-
+	
 	@Override
 	public EvaluationFormResponse updateNumericalResponse(EvaluationFormResponse response, BigDecimal value) {
 		return evaluationFormResponseDao.updateResponse(value, value.toPlainString(), null, response);
@@ -414,6 +423,13 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	@Override
 	public EvaluationFormResponse updateStringResponse(EvaluationFormResponse response, String stringValue) {
 		return evaluationFormResponseDao.updateResponse(null, stringValue, null, response);
+	}
+
+	@Override
+	public EvaluationFormResponse updateDateResponse(EvaluationFormResponse response, Date date) {
+		BigDecimal numerical = date != null? BigDecimal.valueOf(date.getTime()): null;
+		String stringuified = date != null? Formatter.formatDateFilesystemSave(date): null;
+		return evaluationFormResponseDao.updateResponse(numerical, stringuified, null, response);
 	}
 
 	@Override
@@ -460,6 +476,15 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		}
 	}
 
+	@Override
+	public Date getDate(EvaluationFormResponse response) {
+		BigDecimal numericalResponse = response.getNumericalResponse();
+		if (numericalResponse != null) {
+			return new Date(numericalResponse.longValue());
+		}
+		return null;
+	}
+	
 	@Override
 	public void deleteResponse(EvaluationFormResponse response) {
 		deleteResponses(Collections.singletonList(response));

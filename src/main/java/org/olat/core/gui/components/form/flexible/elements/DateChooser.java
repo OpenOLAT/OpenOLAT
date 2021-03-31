@@ -116,5 +116,13 @@ public interface DateChooser extends TextElement {
 	 * @param endOfDay
 	 */
 	public void setDefaultTimeAtEndOfDay(boolean endOfDay);
+	
+	/**
+	 * Enable or disable whether the interactive parts of the element are active.
+	 * The buttons should be disabled mainly in preview scenarios.
+	 * 
+	 * @param enable
+	 */
+	public void setButtonsEnabled(boolean enable);
 
 }

@@ -121,8 +121,9 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append(" onclick=\"jQuery('#").append(receiverId).append("').datepicker('show');\"")
 		  .append(">\u00A0</i></span>")
 		  .append("</div></div>");//input-group
-		// date chooser javascript
-		sb.append("<script>\n")
+		if (jsdcc.isButtonsEnabled()) {
+			// date chooser javascript
+			sb.append("<script>\n")
 			.append("jQuery(function(){ jQuery('#").append(receiverId).append("').datepicker({\n")
 			.append("  dateFormat:'").append(format).append("',\n")
 			.append("  firstDay:1,\n")
@@ -150,19 +151,20 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			  .append("'").append(dateTranslator.translate("day.short.sa")).append("'")
 			.append("],\n")
 			.append("  showOtherMonths:true,\n");
-		if(jsdcc.getFormItem().getDefaultValue() != null) {
-			String id = ((JSDateChooser)jsdcc.getFormItem().getDefaultValue()).getTextElementComponent().getFormDispatchId();
-			sb.append("  beforeShow:function(el, inst) {\n")
-			  .append("    var defDate = jQuery('#").append(id).append("').datepicker('getDate');\n")
-			  .append("    jQuery('#").append(receiverId).append("').datepicker('option', 'defaultDate', defDate);")
-			  .append("  },\n");
+			if(jsdcc.getFormItem().getDefaultValue() != null) {
+				String id = ((JSDateChooser)jsdcc.getFormItem().getDefaultValue()).getTextElementComponent().getFormDispatchId();
+				sb.append("  beforeShow:function(el, inst) {\n")
+				  .append("    var defDate = jQuery('#").append(id).append("').datepicker('getDate');\n")
+				  .append("    jQuery('#").append(receiverId).append("').datepicker('option', 'defaultDate', defDate);")
+				  .append("  },\n");
+			}
+			sb.append("  onSelect:function(){\n")
+			  .append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n")
+			  .append("    jQuery(this).change();\n")
+			  .append("  }\n")
+			  .append("})});")
+			  .append("\n</script>");
 		}
-		sb.append("  onSelect:function(){\n")
-		  .append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n")
-		  .append("    jQuery(this).change();\n")
-		  .append("  }\n")
-		  .append("})});")
-		  .append("\n</script>");
 	}
 	
 	private void renderDateChooserDisabled(StringOutput sb, JSDateChooserComponent jsdcc, String value, String cssClass, int maxLength) {

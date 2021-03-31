@@ -20,10 +20,12 @@
 package org.olat.modules.forms.ui;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -31,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
@@ -51,9 +54,12 @@ public class TextInputController extends FormBasicController implements Evaluati
 	
 	private TextElement singleRowEl;
 	private TextAreaElement multiRowEl;
+	private DateChooser dateEl;
 	
 	private final TextInput textInput;
+	private final boolean editor;
 	private boolean singleRow;
+	private boolean isDate;
 	private EvaluationFormResponse response;
 	
 	@Autowired
@@ -61,15 +67,17 @@ public class TextInputController extends FormBasicController implements Evaluati
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public TextInputController(UserRequest ureq, WindowControl wControl, TextInput textInput) {
+	public TextInputController(UserRequest ureq, WindowControl wControl, TextInput textInput, boolean editor) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.textInput = textInput;
+		this.editor = editor;
 		initForm(ureq);
 	}
 	
 	public TextInputController(UserRequest ureq, WindowControl wControl, TextInput textInput, Form rootForm) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
 		this.textInput = textInput;
+		this.editor = false;
 		initForm(ureq);
 	}
 
@@ -79,11 +87,15 @@ public class TextInputController extends FormBasicController implements Evaluati
 
 		multiRowEl = uifactory.addTextAreaElement("textinput_" + CodeHelper.getRAMUniqueID(), null, 56000, -1, 72, false, true, "", formLayout);
 		
+		dateEl = uifactory.addDateChooser("textinput_" + CodeHelper.getRAMUniqueID(), null, null, formLayout);
+		dateEl.setButtonsEnabled(!editor);
+		
 		update();
 	}
 	
 	public void update() {
 		singleRow = textInput.isNumeric() || textInput.isSingleRow();
+		isDate = textInput.isDate();
 		
 		int rows = 12;
 		if(textInput.getRows() > 0) {
@@ -92,7 +104,8 @@ public class TextInputController extends FormBasicController implements Evaluati
 		multiRowEl.setRows(rows);
 		
 		singleRowEl.setVisible(singleRow);
-		multiRowEl.setVisible(!singleRow);
+		multiRowEl.setVisible(!singleRow && !isDate);
+		dateEl.setVisible(isDate);
 	}
 	
 	@Override
@@ -136,6 +149,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 		int rows = readOnly? -1: textInput.getRows();
 		multiRowEl.setRows(rows);
 		multiRowEl.setEnabled(!readOnly);
+		dateEl.setEnabled(!readOnly);
 	}
 
 	@Override
@@ -149,6 +163,9 @@ public class TextInputController extends FormBasicController implements Evaluati
 		if (response != null) {
 			if (singleRow) {
 				singleRowEl.setValue(response.getStringuifiedResponse());
+			} else if (isDate) {
+				Date date = evaluationFormManager.getDate(response);
+				dateEl.setDate(date);
 			} else {
 				multiRowEl.setValue(response.getStringuifiedResponse());
 			}
@@ -157,34 +174,60 @@ public class TextInputController extends FormBasicController implements Evaluati
 
 	@Override
 	public void saveResponse(UserRequest ureq, EvaluationFormSession session) {
-		String valueToSave = getValueToSave();
-		if (StringHelper.containsNonWhitespace(valueToSave)) {
-			if (textInput.isNumeric()) {
-				BigDecimal value = new BigDecimal(valueToSave);
-				if (response == null) {
-					response = evaluationFormManager.createNumericalResponse(textInput.getId(), session, value);
-				} else {
-					response = evaluationFormManager.updateNumericalResponse(response, value);
-				}
-			} else {
-				if (response == null) {
-					response = evaluationFormManager.createStringResponse(textInput.getId(), session, valueToSave);
-				} else {
-					response = evaluationFormManager.updateStringResponse(response, valueToSave);
-				}
-			}
-		} else if (response != null) {
-			// If all text is deleted by the user, the response should be deleted as well.
-			evaluationFormManager.deleteResponse(response);
-			response = null;
+		if (textInput.isNumeric()) {
+			saveNumericResponse(session);
+		} else if (isDate) {
+			saveDateResponse(session);
+		} else {
+			saveTextResponse(session);
 		}
 	}
 
-	private String getValueToSave() {
-		if (singleRow) {
-			return singleRowEl.getValue();
+	private void saveNumericResponse(EvaluationFormSession session) {
+		if (StringHelper.containsNonWhitespace(singleRowEl.getValue())) {
+			BigDecimal value = new BigDecimal(singleRowEl.getValue());
+			if (response == null) {
+				response = evaluationFormManager.createNumericalResponse(textInput.getId(), session, value);
+			} else {
+				response = evaluationFormManager.updateNumericalResponse(response, value);
+			}
+		} else {
+			deleteResponse();
 		}
-		return multiRowEl.getValue();
+	}
+	
+	private void saveDateResponse(EvaluationFormSession session) {
+		Date date = dateEl.getDate();
+		if (date != null) {
+			date = DateUtils.setTime(date, 0, 0, 0);
+			if (response == null) {
+				response = evaluationFormManager.createDateResponse(textInput.getId(), session, date);
+			} else {
+				response = evaluationFormManager.updateDateResponse(response, date);
+			}
+		} else {
+			deleteResponse();
+		}
+	}
+	
+	private void saveTextResponse(EvaluationFormSession session) {
+		String value = singleRow? singleRowEl.getValue(): multiRowEl.getValue();
+		if (StringHelper.containsNonWhitespace(value)) {
+			if (response == null) {
+				response = evaluationFormManager.createStringResponse(textInput.getId(), session, value);
+			} else {
+				response = evaluationFormManager.updateStringResponse(response, value);
+			}
+		} else {
+			deleteResponse();
+		}
+	}
+	
+	private void deleteResponse() {
+		if (response != null) {
+			evaluationFormManager.deleteResponse(response);
+			response = null;
+		}
 	}
 
 	@Override

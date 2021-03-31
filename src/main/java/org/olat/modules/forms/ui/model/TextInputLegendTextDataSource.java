@@ -20,14 +20,19 @@
 package org.olat.modules.forms.ui.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.util.Formatter;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
+import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.ui.ReportHelper;
 
 /**
@@ -37,19 +42,23 @@ import org.olat.modules.forms.ui.ReportHelper;
  *
  */
 public class TextInputLegendTextDataSource implements LegendTextDataSource {
+	
+	private static final ResponseFormatter STRINGUIFIED_FORMATTER = new StringuifiedResponseFormatter();
 
 	private final String responseIdentifier;
 	private final SessionFilter filter;
 	private final ReportHelper reportHelper;
+	private final ResponseFormatter responseFormatter;
 	
 	private EvaluationFormReportDAO reportDAO;
 	private EvaluationFormsModule evaluationFormsModule;
 	
-	public TextInputLegendTextDataSource(String responseIdentifier, SessionFilter filter, ReportHelper reportHelper) {
-		super();
+	public TextInputLegendTextDataSource(String responseIdentifier, SessionFilter filter, ReportHelper reportHelper,
+			ResponseFormatter responseFormatter) {
 		this.responseIdentifier = responseIdentifier;
 		this.filter = filter;
 		this.reportHelper = reportHelper;
+		this.responseFormatter = responseFormatter;
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 		this.evaluationFormsModule = CoreSpringFactory.getImpl(EvaluationFormsModule.class);
 	}
@@ -64,7 +73,8 @@ public class TextInputLegendTextDataSource implements LegendTextDataSource {
 		List<EvaluationFormResponse> responses = reportDAO.getResponses(responseIdentifier, filter, limit);
 		responses.sort((r1, r2) -> reportHelper.getComparator().compare(r1.getSession(), r2.getSession()));
 		for (EvaluationFormResponse response : responses) {
-			SessionText sessionText = new SessionText(response.getSession(), response.getStringuifiedResponse());
+			String text = responseFormatter.format(response);
+			SessionText sessionText = new SessionText(response.getSession(), text);
 			sessionTexts.add(sessionText);
 		}
 		return sessionTexts;
@@ -80,6 +90,43 @@ public class TextInputLegendTextDataSource implements LegendTextDataSource {
 
 	private Limit getLimitMax() {
 		return Limit.max(evaluationFormsModule.getReportMaxSessions());
+	}
+	
+	public interface ResponseFormatter {
+		public String format(EvaluationFormResponse response);
+	}
+	
+	public static ResponseFormatter createResponseFormatter(TextInput textInput, Locale locale) {
+		return textInput.isDate()
+		? new DateResponseFormatter(locale)
+		: STRINGUIFIED_FORMATTER;
+	}
+	
+	private static class StringuifiedResponseFormatter implements ResponseFormatter {
+
+		@Override
+		public String format(EvaluationFormResponse response) {
+			return response.getStringuifiedResponse();
+		}
+		
+	}
+	
+	private static class DateResponseFormatter implements ResponseFormatter {
+		
+		private final Formatter formatter;
+		private final EvaluationFormManager evaluationFormManager;
+
+		public DateResponseFormatter(Locale locale) {
+			formatter = Formatter.getInstance(locale);
+			evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+		}
+		
+		@Override
+		public String format(EvaluationFormResponse response) {
+			Date date = evaluationFormManager.getDate(response);
+			return date != null? formatter.formatDate(date): null;
+		}
+		
 	}
 
 }

@@ -111,6 +111,10 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 		return element.isDefaultTimeAtEndOfDay();
 	}
 	
+	public boolean isButtonsEnabled() {
+		return element.isButtonsEnabled();
+	}
+	
 	public boolean isSecondDate() {
 		return element.isSecondDate();
 	}
