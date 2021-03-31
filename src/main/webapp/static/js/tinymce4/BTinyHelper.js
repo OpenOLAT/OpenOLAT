@@ -31,7 +31,7 @@ var BTinyHelper = {
 			BTinyHelper.currentField = win.document.forms[0].elements[field_name];	
 			BTinyHelper.currentFieldId = field_name;
 			BTinyHelper.currentWindow = win;
-			var editor = top.tinymce.activeEditor;
+			var editor = tinymce.activeEditor;
 			var ffxhrevent = editor.settings.ffxhrevent;
 			o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, '2', false, false, true, 'browser', type);
 		}
@@ -56,7 +56,7 @@ var BTinyHelper = {
 	// - absolute links: media an links to external sites
 	linkConverter : function (url, node, on_save, name) {
 		var orig = url + '';
-		var editor = top.tinymce.activeEditor;
+		var editor = tinymce.activeEditor;
 		if(editor === undefined) {
 			//do nothing
 		} else {
@@ -117,8 +117,8 @@ var BTinyHelper = {
 			if (elem.length == 0) {
 				newExecutor.cancel();
 				BTinyHelper.formDirtyObservers.remove(observerKey);
-			} else if (top.tinymce != null && top.tinymce.activeEditor != null && top.tinymce.activeEditor.initialized) {
-				if (top.tinymce.activeEditor.isDirty()) {
+			} else if (tinymce != null && tinymce.activeEditor != null && tinymce.activeEditor.initialized) {
+				if (tinymce.activeEditor.isDirty()) {
 					setFlexiFormDirty(formId);
 				}
 			}		
@@ -130,9 +130,9 @@ var BTinyHelper = {
 	// Remove the editor instance for the given DOM node ID if such an editor exists.
 	// Remove all event handlers and release the memory
 	removeEditorInstance : function (elementId, cmd) {
-		if (top.tinymce) {
+		if (tinymce) {
 			try {
-				top.tinymce.remove('#' + elementId);
+				tinymce.remove('#' + elementId);
 			} catch(e) {
 				// IE (of course) has some issues here, need to silently catch those 
 			}

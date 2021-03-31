@@ -587,8 +587,8 @@ function o_ainvoke(r) {
 								for(var t=0; t<eds.length; t++) {
 									try {
 										var edId = jQuery(eds.get(t)).attr('id');
-										if(typeof top.tinymce != undefined) {
-											top.tinymce.remove('#' + edId);
+										if(typeof tinymce != undefined) {
+											tinymce.remove('#' + edId);
 										}
 									} catch(e) {
 										if(window.console) console.log(e);
@@ -1446,8 +1446,8 @@ function o_XHRSubmit(formNam) {
 	var enctype = form.attr('enctype');
 	if(enctype && enctype.indexOf("multipart") == 0) {
 		if (window.FormData && ("upload" in (jQuery.ajaxSettings.xhr())) && !('ActiveXObject' in window)) {
-			if(typeof top.tinymce !== 'undefined') {
-				top.tinymce.triggerSave(true,true);
+			if(typeof tinymce !== 'undefined') {
+				tinymce.triggerSave(true,true);
 			}
 	
 			// Send files via XHR and show upload progress

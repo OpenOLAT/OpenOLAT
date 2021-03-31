@@ -383,16 +383,16 @@ public class OOGraphene {
 			.until(new TinyMCELoadedPredicate());
 	}
 	
-	// top.tinymce.get('o_fi1000000416').setContent('<p>Hacked</p>');
+	// tinymce.get('o_fi1000000416').setContent('<p>Hacked</p>');
 	// <div id="o_fi1000000416_diw" class="o_richtext_mce"> <iframe id="o_fi1000000416_ifr">
 	public static final void tinymce(String content, WebDriver browser) {
 		waitTinymce(browser);
-		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
+		((JavascriptExecutor)browser).executeScript("tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
 	public static final void tinymceExec(String content, WebDriver browser) {
 		waitTinymce(browser);
-		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.execCommand('mceInsertRawHTML', true, '" + content + "')");
+		((JavascriptExecutor)browser).executeScript("tinymce.activeEditor.execCommand('mceInsertRawHTML', true, '" + content + "')");
 	}
 	
 	public static final void tinymce(String content, String containerCssSelector, WebDriver browser) {
@@ -404,7 +404,7 @@ public class OOGraphene {
 		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
 			.pollingEvery(polling)
 			.until(new TinyMCELoadedByIdPredicate(tinyId));
-		((JavascriptExecutor)browser).executeScript("top.tinymce.editors['" + tinyId + "'].setContent('" + content + "')");
+		((JavascriptExecutor)browser).executeScript("tinymce.editors['" + tinyId + "'].setContent('" + content + "')");
 	}
 	
 	/**
@@ -423,7 +423,7 @@ public class OOGraphene {
 		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
 			.pollingEvery(polling)
 			.until(new TinyMCELoadedByIdPredicate(tinyId));
-		((JavascriptExecutor)browser).executeScript("top.tinymce.editors['" + tinyId + "'].insertContent('" + content + "')");
+		((JavascriptExecutor)browser).executeScript("tinymce.editors['" + tinyId + "'].insertContent('" + content + "')");
 	}
 	
 	/**

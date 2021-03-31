@@ -48,10 +48,10 @@ public class TinyMCELoadedByIdPredicate implements Function<WebDriver,Boolean> {
 	public Boolean apply(WebDriver driver) {
         try {
 			Object active = ((JavascriptExecutor)driver)
-					.executeScript("return top != null && top.tinymce != null && top.tinymce.activeEditor != null "
-							+ " && top.tinymce.activeEditor.initialized && top.tinymce.editors[0].initialized "
-							+ " && (top.tinymce.editors.length > 1 ? top.tinymce.editors[1].initialized : true)"
-							+ " && top.tinymce.editors['" + id + "'].initialized;");
+					.executeScript("return window != null && tinymce != null && tinymce.activeEditor != null "
+							+ " && tinymce.activeEditor.initialized && tinymce.editors[0].initialized "
+							+ " && (tinymce.editors.length > 1 ? tinymce.editors[1].initialized : true)"
+							+ " && tinymce.editors['" + id + "'].initialized;");
 			return Boolean.TRUE.equals(active);
 		} catch (Exception e) {
 			log.error("", e);
