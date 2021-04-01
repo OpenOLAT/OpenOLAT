@@ -2108,11 +2108,11 @@ create table o_pf_page_user_infos (
 );
 
 create table o_pf_page_to_tax_competence (
-	id bigserial,
-	creationdate timestamp not null,
-	fk_tax_competence int8 not null,
-	fk_pf_page int8 not null,
-	primary key (id)
+  id bigserial,
+  creationdate timestamp not null,
+  fk_tax_competence int8 not null,
+  fk_pf_page int8 not null,
+  primary key (id)
 );
 
 -- evaluation form
@@ -2979,6 +2979,7 @@ create table o_tax_taxonomy_level_type (
   t_library_teach_write bool default false,
   t_library_have_read bool default true,
   t_library_target_read bool default true,
+  t_allow_as_competence bool default true not null,
   fk_taxonomy int8 not null,
   primary key (id)
 );
@@ -3021,6 +3022,7 @@ create table o_tax_taxonomy_competence (
   t_external_id varchar(64),
   t_source_text varchar(255),
   t_source_url varchar(255),
+  t_link_location varchar(255) default 'UNDEFINED' not null,
   fk_level int8 not null,
   fk_identity int8 not null,
   primary key (id)
@@ -3576,16 +3578,6 @@ create or replace view o_qp_share_2_item_short_v as (
    inner join o_qp_share_item as shareditem on (shareditem.fk_item_id = item.id)
    inner join o_gp_business as bgroup on (shareditem.fk_resource_id = bgroup.fk_resource)
 );
-
--- Taxonomy linking in portfolio
-create table o_pf_page_to_tax_competence (
-	id bigserial,
-	creationdate timestamp not null,
-	fk_tax_competence int8 not null,
-	fk_pf_page int8 not null,
-	primary key (id)
-);
-
 
 
 -- rating
@@ -4244,9 +4236,6 @@ create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_co
 alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
 create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
 
-alter table o_tax_taxonomy_level_type add column t_allow_as_competence bool default true not null;
-alter table o_tax_taxonomy_competence add column t_link_location varchar(255) default 'UNDEFINED' not null;
-
 -- vfs metadata
 alter table o_vfs_metadata add constraint fmeta_to_author_idx foreign key (fk_locked_identity) references o_bs_identity (id);
 create index idx_fmeta_to_author_idx on o_vfs_metadata (fk_locked_identity);
@@ -4664,11 +4653,5 @@ create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right (f
 alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
 create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
 create index idx_qr_id_idx on o_ct_location (l_qr_id);
-
--- Taxonomy ePortfolio Linking
-alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
-create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_competence);
-alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
-create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
 
 insert into hibernate_unique_key values ( 0 );

@@ -2146,11 +2146,11 @@ create table o_pf_page_user_infos (
 );
 
 create table o_pf_page_to_tax_competence (
-   id number(20) generated always as identity,
-   creationdate date not null,
-   fk_tax_competence number(20) not null,
-   fk_pf_page number(20) not null,
-   primary key (id)
+  id number(20) generated always as identity,
+  creationdate date not null,
+  fk_tax_competence number(20) not null,
+  fk_pf_page number(20) not null,
+  primary key (id)
 );
 
 -- evaluation forms
@@ -3038,6 +3038,7 @@ create table o_tax_taxonomy_level_type (
   t_library_teach_write number default 0,
   t_library_have_read number default 1,
   t_library_target_read number default 1,
+  t_allow_as_competence number default 1 not null,
   fk_taxonomy number(20) not null,
   primary key (id)
 );
@@ -3080,6 +3081,7 @@ create table o_tax_taxonomy_competence (
   t_external_id varchar2(64 char),
   t_source_text varchar2(255 char),
   t_source_url varchar2(255 char),
+  t_link_location varchar(255) default 'UNDEFINED' not null,
   fk_level number(20) not null,
   fk_identity number(20) not null,
   primary key (id)
@@ -3496,15 +3498,6 @@ create table o_ct_registration (
    l_seat_number varchar2(64),
    fk_location number(20) not null,
    primary key (id)
-);
-
--- Taxonomy linking in portfolio
-create table o_pf_page_to_tax_competence (
-	id number(20) generated always as identity,
-	creationdate date not null,
-	fk_tax_competence number(20) not null,
-	fk_pf_page number(20) not null,
-	primary key (id)
 );
 
 
@@ -4375,9 +4368,6 @@ create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_co
 alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
 create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
 
-alter table o_tax_taxonomy_level_type add t_allow_as_competence number default 1 not null;
-alter table o_tax_taxonomy_competence add t_link_location varchar(255) default 'UNDEFINED' not null;
-
 -- evaluation form
 alter table o_eva_form_survey add constraint eva_surv_to_surv_idx foreign key (fk_series_previous) references o_eva_form_survey (id);
 create index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resname);
@@ -4768,11 +4758,6 @@ create index idx_org_role_to_r_to_org_idx on o_org_role_to_right(fk_organisation
 alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
 create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
 
--- Taxonomy ePortfolio Linking
-alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
-create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_competence);
-alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
-create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
 
 commit
 /
