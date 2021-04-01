@@ -59,6 +59,7 @@ implements SortableFlexiTableDataModel<TaxonomyLevelTypeRow> {
 		switch(TypesCols.values()[col]) {
 			case identifier: return row.getIdentifier();
 			case displayName: return row.getDisplayName();
+			case allowedAsCompetence: return row.getType().isAllowedAsCompetence();
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
@@ -72,6 +73,7 @@ implements SortableFlexiTableDataModel<TaxonomyLevelTypeRow> {
 	public enum TypesCols implements FlexiSortableColumnDef {
 		identifier("table.header.type.identifier"),
 		displayName("table.header.type.displayName"),
+		allowedAsCompetence("table.header.type.competence.allowed"),
 		tools("table.header.actions");
 		
 		private final String i18nHeaderKey;

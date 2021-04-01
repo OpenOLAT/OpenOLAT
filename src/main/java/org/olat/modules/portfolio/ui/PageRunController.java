@@ -208,8 +208,11 @@ public class PageRunController extends BasicController implements TooledControll
 		if(openInEditMode) {
 			pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
 					new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()), new FullEditorSecurityCallback(),
-					getTranslator());
+					getTranslator(), page);
 			listenTo(pageEditCtrl);
+			if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
+				showWarning("page.is.referenced");
+			}
 			mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
 			// Remove comments controller in edit mode, save button confuses user
@@ -664,7 +667,10 @@ public class PageRunController extends BasicController implements TooledControll
 			if(lockEntry.isSuccess()) {
 				pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
 						new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()),
-						new FullEditorSecurityCallback(), getTranslator());
+						new FullEditorSecurityCallback(), getTranslator(), page);
+				if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
+					showWarning("page.is.referenced");
+				}
 				listenTo(pageEditCtrl);
 				mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
 				mainVC.put("page", pageEditCtrl.getInitialComponent());

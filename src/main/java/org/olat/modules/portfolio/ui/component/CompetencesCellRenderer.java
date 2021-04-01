@@ -29,6 +29,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
 
 /**
  * 
@@ -44,15 +45,24 @@ public class CompetencesCellRenderer implements FlexiCellRenderer {
 		
 		if(cellValue instanceof Collection) {
 			@SuppressWarnings("unchecked")
-			List<String> competences = (List<String>)cellValue;
+			List<TaxonomyCompetence> competences = (List<TaxonomyCompetence>)cellValue;
 			Collator collator = Collator.getInstance(translator.getLocale());
-			competences.sort(collator);
+			competences.sort((c1, c2) -> collator.compare(c1.getTaxonomyLevel().getDisplayName(), c2.getTaxonomyLevel().getDisplayName()));
 			
 			if(competences.size() > 0) {
-				for(String competence : competences) {
-					target.append("<span class='o_tag o_competence o_small o_block_inline'>");
-					target.append(competence);
+				for(TaxonomyCompetence competence : competences) {
+					target.append("<span class='o_tag o_competence o_small o_block_inline' id='").append("o_competence_" + competence.getKey()).append("'>");
+					target.append(competence.getTaxonomyLevel().getDisplayName());
 					target.append("</span>");
+					target.append("<script>")
+					  	  .append("jQuery(function() {\n")
+					  	  .append("  jQuery('#").append("o_competence_" + competence.getKey()).append("').tooltip({\n")
+					  	  .append("    html: true,\n")
+					  	  .append("    container: 'body',\n")
+					  	  .append("    title: '").append(competence.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash()).append("' \n")
+					  	  .append("  });\n")
+					  	  .append("});")
+					  	  .append("</script>");
 				}
 			}
 		}

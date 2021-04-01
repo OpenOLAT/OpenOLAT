@@ -177,7 +177,10 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 
 	@Override
 	public List<FlexiTreeTableNode> reloadBreadcrumbs(List<FlexiTreeTableNode> crumbs) {
-		if(crumbs == null || crumbs.isEmpty()) return Collections.emptyList();
+		if(crumbs == null || crumbs.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
 		List<FlexiTreeTableNode> refreshedCrumbs = new ArrayList<>();
 		for(FlexiTreeTableNode crumb:crumbs) {
 			int index = backupRows.indexOf(crumb);

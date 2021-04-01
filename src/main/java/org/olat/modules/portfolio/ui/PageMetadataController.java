@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -45,10 +46,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
@@ -390,6 +393,43 @@ public class PageMetadataController extends BasicController {
 			fireEvent(ureq, new ToggleEditPageEvent());
 		} else if(editMetaDataLink == source) {
 			fireEvent(ureq, new EditPageMetadataEvent());
+		} else if (sharedWithLink == source) {
+			removeAsListenerAndDispose(calloutCtrl);
+
+			CalloutSettings settings = new CalloutSettings(false);
+			VelocityContainer sharedBodyPagesList = createVelocityContainer("shared_body_callout");
+			
+			List<String> sharingPagesIds = new ArrayList<>();
+			portfolioService.getPagesSharingSameBody(page).stream().forEach(sharingPage -> {
+				if (!sharingPage.equals(page)) {
+					// Should not happen, only in case of NPE due to old / incomplete data
+					try {
+						Link shareingPageLink = LinkFactory.createLink("shared_page_" + sharingPage.getKey().toString(), sharingPage.getKey().toString(), "open_shared_page", sharingPage.getSection().getBinder().getTitle() + " / " + sharingPage.getSection().getTitle() + " / " + sharingPage.getTitle(), (Translator) null, sharedBodyPagesList, this, Link.LINK + Link.NONTRANSLATED);
+						shareingPageLink.setIconLeftCSS("o_icon o_icon_fw o_icon_pf_page");
+						shareingPageLink.setUserObject(sharingPage);
+						sharedBodyPagesList.put("shared_page_" + sharingPage.getKey().toString(), shareingPageLink);
+						sharingPagesIds.add("shared_page_" + sharingPage.getKey().toString());
+					} catch (Exception e) {}
+				}
+			});
+			sharedBodyPagesList.contextPut("pages", sharingPagesIds);
+		
+
+			calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),sharedBodyPagesList, sharedWithLink.getDispatchID(), "", true, "", settings);
+			listenTo(calloutCtrl);
+			calloutCtrl.activate();
+		} else if (source instanceof Link) {
+			if (((Link) source).getCommand().equals("open_shared_page")) {
+				calloutCtrl.deactivate();
+				cleanUp();
+				
+				Page sharedPage = (Page) ((Link) source).getUserObject();
+				String identityKey = ureq.getUserSession().getIdentity().getKey().toString();
+				String binderKey = sharedPage.getSection().getBinder().getKey().toString();
+				String pageKey = sharedPage.getKey().toString();
+				String businessPath = "[HomeSite:" + identityKey + "][PortfolioV2:0][MyBinders:0][Binder:" + binderKey + "][Toc:0][Entry:" + pageKey + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			}
 		}
 	}
 
@@ -418,8 +458,10 @@ public class PageMetadataController extends BasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmClosePageCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmClosePageCtrl = null;
+		calloutCtrl = null;
 		cmc = null;
 	}
 	
@@ -535,7 +577,7 @@ public class PageMetadataController extends BasicController {
 							.valueOfWithDefault(statusEl.getSelectedKey());
 					doChangeUserStatus(ureq, selectedStatus);
 				}
-			}
+			} 
 			super.formInnerEvent(ureq, source, event);
 		}
 

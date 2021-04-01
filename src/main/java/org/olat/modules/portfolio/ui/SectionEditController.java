@@ -112,9 +112,12 @@ public class SectionEditController extends FormBasicController {
 		String title = section == null ? null : section.getTitle();
 		titleEl = uifactory.addTextElement("title", "title", 255, title, formLayout);
 		titleEl.setElementCssClass("o_sel_pf_edit_section_title");
-		titleEl.setMandatory(true);
+		titleEl.setMandatory(wizardContext == null || StringHelper.containsNonWhitespace(wizardContext.getNewSectionTitlePlaceHolder()));
 		if(!StringHelper.containsNonWhitespace(title)) {
 			titleEl.setFocus(true);
+		}
+		if (wizardContext != null && StringHelper.containsNonWhitespace(wizardContext.getNewSectionTitlePlaceHolder())) {
+			titleEl.setPlaceholderText(wizardContext.getNewSectionTitlePlaceHolder());
 		}
 		
 		String description = section == null ? null : section.getDescription();
@@ -186,7 +189,7 @@ public class SectionEditController extends FormBasicController {
 	}
 	
 	public void saveDataInWizardContext() {
-		wizardContext.setNewSectionTitle(titleEl.getValue());
+		wizardContext.setNewSectionTitle(StringHelper.containsNonWhitespace(titleEl.getValue()) ? titleEl.getValue() : titleEl.getPlaceholder());
 		wizardContext.setNewSectionDescription(descriptionEl.getValue());
 	}
 

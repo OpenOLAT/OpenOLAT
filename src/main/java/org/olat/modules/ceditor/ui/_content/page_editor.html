@@ -1,3 +1,8 @@
+#if($pageIsReferenced)
+<div class="row o_portfolio_reference_warning">
+	<div class="alert alert-warning col-xs-12 col-md-offset-4 col-md-4">$r.translate("page.referenced.warning")</div>
+</div>
+#end
 $r.render("page_editor")
 #if($r.available("add.element"))
 	<div class="o_button_group o_ce_add_main_btns">

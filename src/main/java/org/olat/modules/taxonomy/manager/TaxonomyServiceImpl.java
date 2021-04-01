@@ -34,6 +34,7 @@ import org.olat.modules.quality.manager.QualityDataCollectionDAO;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog.Action;
+import org.olat.modules.taxonomy.TaxonomyCompetenceLinkLocations;
 import org.olat.modules.taxonomy.TaxonomyCompetenceRef;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -227,8 +228,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 
 	@Override
 	public TaxonomyLevelType createTaxonomyLevelType(String identifier, String displayName, String description,
-			String externalId, Taxonomy taxonomy) {
-		return taxonomyLevelTypeDao.createTaxonomyLevelType(identifier, displayName, description, externalId, taxonomy);
+			String externalId, boolean allowedAsCompetence, Taxonomy taxonomy) {
+		return taxonomyLevelTypeDao.createTaxonomyLevelType(identifier, displayName, description, externalId, allowedAsCompetence, taxonomy);
 	}
 
 	@Override
@@ -335,6 +336,12 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 		return taxonomyCompetenceDao.countTaxonomyCompetences(taxonomyLevels);
 	}
 
+	@Override
+	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity,
+			TaxonomyCompetenceTypes competence, Date expiration, TaxonomyCompetenceLinkLocations linkLocation) {
+		return taxonomyCompetenceDao.createTaxonomyCompetence(competence, taxonomyLevel, identity, expiration, linkLocation);
+	}
+	
 	@Override
 	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity,
 			TaxonomyCompetenceTypes competence, Date expiration) {

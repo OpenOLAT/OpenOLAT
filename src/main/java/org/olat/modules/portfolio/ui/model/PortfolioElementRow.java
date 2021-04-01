@@ -19,8 +19,10 @@
  */
 package org.olat.modules.portfolio.ui.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -34,6 +36,7 @@ import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
 
 /**
  * 
@@ -58,7 +61,7 @@ public class PortfolioElementRow {
 	private final boolean assignments;
 
 	private Collection<String> pageCategories;
-	private Collection<String> pageCompetences;
+	private Collection<TaxonomyCompetence> pageCompetences = new ArrayList<>();
 	private Collection<String> sectionCategories;
 
 	private long numOfComments;
@@ -274,11 +277,15 @@ public class PortfolioElementRow {
 		this.pageCategories = pageCategories;
 	}
 	
-	public void setPageCompetences(Collection<String> pageCompetences) {
+	public void setPageCompetences(Collection<TaxonomyCompetence> pageCompetences) {
 		this.pageCompetences = pageCompetences;
 	}
 	
 	public Collection<String> getPageCompetences() {
+		return pageCompetences.stream().map(competence -> competence.getTaxonomyLevel().getDisplayName()).collect(Collectors.toList());
+	}
+	
+	public Collection<TaxonomyCompetence> getPageCompetencesObjects() {
 		return pageCompetences;
 	}
 	

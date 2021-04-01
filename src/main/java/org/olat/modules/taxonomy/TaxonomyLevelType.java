@@ -92,5 +92,9 @@ public interface TaxonomyLevelType extends TaxonomyLevelTypeRef, CreateInfo {
 	public Taxonomy getTaxonomy();
 	
 	public Set<TaxonomyLevelTypeToType> getAllowedTaxonomyLevelSubTypes();
+	
+	public boolean isAllowedAsCompetence();
+	
+	public void setAllowedAsCompetence(boolean allowedAsCompetence);
 
 }

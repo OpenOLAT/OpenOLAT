@@ -57,6 +57,7 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 	private RichTextElement descriptionEl;
 	private MultipleSelectionElement visibleEl;
 	private MultipleSelectionElement allowedSubTypesEl;
+	private MultipleSelectionElement allowedAsCompetenceEl;
 	
 	private TaxonomyLevelType levelType;
 	private Taxonomy taxonomy;
@@ -96,6 +97,11 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 		visibleEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.visibility));
 		if(levelType != null && levelType.isVisible()) {
 			visibleEl.select(onKeys[0], true);
+		}
+		
+		allowedAsCompetenceEl = uifactory.addCheckboxesHorizontal("level.allow.competence", formLayout, onKeys, new String[] {translate("level.allow.competence.explanation")});
+		if(levelType != null && levelType.isAllowedAsCompetence()) {
+			allowedAsCompetenceEl.select(onKeys[0], true);
 		}
 		
 		String description = levelType == null ? "" : levelType.getDescription();
@@ -155,12 +161,13 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(levelType == null) {
-			levelType = taxonomyService.createTaxonomyLevelType(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(), null, taxonomy);
+			levelType = taxonomyService.createTaxonomyLevelType(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(), null, allowedAsCompetenceEl.isAtLeastSelected(1), taxonomy);
 		} else {
 			levelType = taxonomyService.getTaxonomyLevelType(levelType);
 			levelType.setIdentifier(identifierEl.getValue());
 			levelType.setDisplayName(displayNameEl.getValue());
 			levelType.setDescription(descriptionEl.getValue());
+			levelType.setAllowedAsCompetence(allowedAsCompetenceEl.isAtLeastSelected(1));
 		}
 		
 		levelType.setCssClass(cssClassEl.getValue());

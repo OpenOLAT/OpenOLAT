@@ -52,5 +52,7 @@ public interface TaxonomyCompetence extends TaxonomyCompetenceRef, CreateInfo {
 	public Identity getIdentity();
 	
 	public TaxonomyLevel getTaxonomyLevel();
+	
+	public TaxonomyCompetenceLinkLocations getLinkLocation();
 
 }

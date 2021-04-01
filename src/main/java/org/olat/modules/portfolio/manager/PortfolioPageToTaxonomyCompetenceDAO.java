@@ -80,6 +80,23 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 				.getResultList();
 	}
 	
+	public Page getPageToCompetence(TaxonomyCompetence competence) {
+		StringBuilder sb = new StringBuilder(256);
+		
+		sb.append("select page from pfpagetotaxonomycompetence rel")
+		  .append(" inner join rel.portfolioPage as page")
+		  .append(" inner join fetch page.section as section")
+		  .append(" inner join fetch section.binder as binder")
+		  .append(" where rel.taxonomyCompetence.key = :competenceKey");
+		
+		List<Page> pages = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Page.class)
+				.setParameter("competenceKey", competence.getKey())
+				.getResultList();
+		
+		return !pages.isEmpty() ? pages.get(0) : null;
+	}
+	
 	public void deleteRelation(Page portfolioPage, TaxonomyCompetence taxonomyCompetence) {
 		StringBuilder sb = new StringBuilder(256);
 		
@@ -103,6 +120,16 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 		sb.append("select rel from pfpagetotaxonomycompetence rel")
 		  .append(" where rel.portfolioPage.key = :pageKey");
 		
+		StringBuilder qb = new StringBuilder(256);
+		qb.append("select competence from pfpagetotaxonomycompetence rel")
+		  .append(" inner join rel.taxonomyCompetence as competence")
+		  .append(" where rel.portfolioPage.key = :pageKey");
+		
+		List<TaxonomyCompetence> competencesToDelete = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), TaxonomyCompetence.class)
+				.setParameter("pageKey", portfolioPage.getKey())
+				.getResultList();
+		
 		List<PortfolioPageToTaxonomyCompetence> relationsToDelete = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), PortfolioPageToTaxonomyCompetence.class)
 				.setParameter("pageKey", portfolioPage.getKey())
@@ -110,6 +137,10 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 		
 		for(PortfolioPageToTaxonomyCompetence relationToDelete:relationsToDelete) {
 			dbInstance.getCurrentEntityManager().remove(relationToDelete);
+		}
+		
+		for (TaxonomyCompetence competenceToDelete : competencesToDelete) {
+			dbInstance.getCurrentEntityManager().remove(competenceToDelete);
 		}
 	}
 	

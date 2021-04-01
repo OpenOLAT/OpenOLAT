@@ -73,7 +73,7 @@ import org.olat.modules.grading.ui.GraderUserOverviewController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.modules.taxonomy.TaxonomyModule;
-import org.olat.modules.taxonomy.ui.IdentityCompetencesController;
+import org.olat.modules.taxonomy.ui.CompetencesOverviewController;
 import org.olat.properties.Property;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.ChangePrefsController;
@@ -159,7 +159,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private GroupOverviewController grpCtr;
 	private CloseableModalController cmc;
 	private UserDataExportController exportDataCtrl;
-	private IdentityCompetencesController competencesCtrl;
+	private CompetencesOverviewController competencesCtrl;
 	private ConfirmDeleteUserController confirmDeleteUserCtlr;
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
@@ -543,7 +543,7 @@ public class UserAdminController extends BasicController implements Activateable
 		if(taxonomyModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_COMPETENCES),  uureq -> {
 				boolean canModify = isUserManagerOf || isRolesManagerOf || isAdminOf;
-				competencesCtrl = new IdentityCompetencesController(uureq, getWindowControl(), identity, canModify);
+				competencesCtrl = new CompetencesOverviewController(uureq, getWindowControl(), null, identity, canModify);
 				listenTo(competencesCtrl);
 				BreadcrumbedStackedPanel competencePanel = new BreadcrumbedStackedPanel("competences", getTranslator(), competencesCtrl);
 				competencePanel.pushController(translate(NLS_VIEW_COMPETENCES), competencesCtrl);

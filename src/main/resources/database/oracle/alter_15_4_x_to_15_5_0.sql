@@ -27,6 +27,9 @@ create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_co
 alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
 create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
 
+alter table o_tax_taxonomy_level_type add t_allow_as_competence number default 1 not null;
+alter table o_tax_taxonomy_competence add t_link_location varchar(255) default 'UNDEFINED' not null;
+
 
 -- Authentication
 alter table o_bs_authentication add issuer varchar(255) default 'DEFAULT' not null;

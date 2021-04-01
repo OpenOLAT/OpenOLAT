@@ -80,7 +80,7 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 				setFilteredObjects(filteredRows);
 			}
 		} else {
-			setUnfilteredObjects();
+			setObjects(backupRows);
 		}
 	}
 	

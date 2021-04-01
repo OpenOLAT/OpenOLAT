@@ -53,6 +53,7 @@ public class PortfolioImportEntriesContext {
 	private Section currentSection;
 	private String newSectionTitle;
 	private String newSectionDescription;
+	private String newSectionTitlePlaceHolder;
 	
 	private Set<Integer> selectedEntries = new HashSet<>();
 	private List<PortfolioElementRow> selectedPortfolioEntries = new ArrayList<>();
@@ -112,6 +113,14 @@ public class PortfolioImportEntriesContext {
 	
 	public void setNewSectionDescription(String newSectionDescription) {
 		this.newSectionDescription = newSectionDescription;
+	}
+	
+	public String getNewSectionTitlePlaceHolder() {
+		return newSectionTitlePlaceHolder;
+	}
+	
+	public void setNewSectionTitlePlaceHolder(String newSectionTitlePlaceHolder) {
+		this.newSectionTitlePlaceHolder = newSectionTitlePlaceHolder;
 	}
 
 	public String getNewBinderTitle() {

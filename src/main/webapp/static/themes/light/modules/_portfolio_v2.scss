@@ -453,6 +453,10 @@
 			padding-left: 5px;
 			padding-right: 5px;
 			
+			.o_xsmall {
+				font-size: ceil($font-size-small * .9);
+			}
+			
 			.o_small {
 				font-size: $font-size-small;
 			}
@@ -483,6 +487,10 @@
 	.o_portfolio_toc_section {
 		position: relative;
 		padding-right: 80px;
+		
+		.o_xsmall {
+			font-size: ceil($font-size-small * .9);
+		}
 		
 		.o_small {
 			font-size: $font-size-small;
@@ -953,7 +961,16 @@
 }
 
 .o_portfolio_section {
+	.o_xsmall {
+		font-size: ceil($font-size-small * .9);
+	}
 	.o_small {
 		font-size: $font-size-small;
 	}
+}
+
+.o_portfolio_reference_warning {
+	margin-left: 0;
+	margin-right: 0;
+	text-align: center;
 }

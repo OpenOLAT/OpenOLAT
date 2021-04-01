@@ -162,7 +162,7 @@ public interface TaxonomyService {
 	public VFSContainer getLostAndFoundDirectory(Taxonomy taxonomy);
 	
 
-	public TaxonomyLevelType createTaxonomyLevelType(String identifier, String displayName, String description, String externalId, Taxonomy taxonomy);
+	public TaxonomyLevelType createTaxonomyLevelType(String identifier, String displayName, String description, String externalId, boolean allowedAsCompetence, Taxonomy taxonomy);
 	
 	/**
 	 * 
@@ -297,6 +297,9 @@ public interface TaxonomyService {
 	 * @param identities
 	 * @param comptence
 	 */
+	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity,
+			TaxonomyCompetenceTypes competence, Date expiration, TaxonomyCompetenceLinkLocations linkLocation);
+	// TODO Alex: Talk to Stephane, should be removed
 	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity,
 			TaxonomyCompetenceTypes competence, Date expiration);
 	

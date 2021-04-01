@@ -20,21 +20,17 @@
 package org.olat.modules.taxonomy;
 
 /**
- * 
- * Initial date: 22 sept. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 26.03.2021<br>
  *
+ * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public enum TaxonomyCompetenceTypes {
+public enum TaxonomyCompetenceLinkLocations {
+	PORTFOLIO("competence.location.portfolio"),
+	UNDEFINED("competence.location.undefined");
 	
-	target("taxonomy.competence.type.target"),
-	have("taxonomy.competence.type.have"),
-	teach("taxonomy.competence.type.teach"),
-	manage("taxonomy.competence.type.manage");
+	private final String i18nKey;
 	
-	String i18nKey;
-	
-	private TaxonomyCompetenceTypes(String i18nKey) {
+	private TaxonomyCompetenceLinkLocations(String i18nKey) {
 		this.i18nKey = i18nKey;
 	}
 	

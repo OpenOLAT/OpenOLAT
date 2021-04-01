@@ -21,7 +21,7 @@
 				<div class="o_portfolio_toc_section">
 					<h4>
 						$r.render($section.sectionLink) 
-						<span class="o_small o_labeled_light $section.statusCss">
+						<span class="o_xsmall o_labeled_light $section.statusCss">
 							<i class="o_icon $section.statusIconCss o_icon-fw" title="$r.translateInAttribute("${section.i18nKeyStatus}")"> </i>
 							$r.translateInAttribute("${section.i18nKeyStatus}")
 						</span>
@@ -69,7 +69,7 @@
 					#foreach($page in $section.pages)
 						<li>
 							$r.render($page.openLink) 
-							<span class="o_small o_labeled_light $page.statusCss">
+							<span class="o_xsmall o_labeled_light $page.statusCss">
 								<i class="o_icon $page.statusIconCss o_icon-fw o_pf_status" title="$r.translateInAttribute("${page.i18nKeyStatus}")"> </i>
 								$r.translateInAttribute("${page.i18nKeyStatus}")
 							</span>

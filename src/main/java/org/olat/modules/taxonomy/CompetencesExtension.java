@@ -19,26 +19,13 @@
  */
 package org.olat.modules.taxonomy;
 
+import org.olat.admin.user.tools.UserToolExtension;
+
 /**
- * 
- * Initial date: 22 sept. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 19.03.2021<br>
  *
+ * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public enum TaxonomyCompetenceTypes {
+public class CompetencesExtension extends UserToolExtension {
 	
-	target("taxonomy.competence.type.target"),
-	have("taxonomy.competence.type.have"),
-	teach("taxonomy.competence.type.teach"),
-	manage("taxonomy.competence.type.manage");
-	
-	String i18nKey;
-	
-	private TaxonomyCompetenceTypes(String i18nKey) {
-		this.i18nKey = i18nKey;
-	}
-	
-	public String i18nKey() {
-		return i18nKey;
-	}
 }

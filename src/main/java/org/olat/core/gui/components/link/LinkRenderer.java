@@ -315,6 +315,18 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			  .append(jsSb).append("})();")
 		      .append("\n</script>");
 		}
+		
+		if (elementId != null && link.isHasTooltip() && StringHelper.containsNonWhitespace(link.getTitle())) {
+			sb.append("<script>")
+			  .append("jQuery(function() {\n")
+			  .append("  jQuery('#").append(elementId).append("').tooltip({\n")
+			  .append("    html: true,\n")
+			  .append("    container: 'body',\n")
+			  .append("    title: '").appendHtmlEscaped(link.getTitle()).append("' \n")
+			  .append("  });\n")
+			  .append("});")
+			  .append("</script>");
+		}
 	}
 	
 	private void renderHrefAndOnclickLink(Renderer renderer, StringOutput sb, Link link, URLBuilder ubu) {

@@ -37,11 +37,11 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
@@ -182,7 +182,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-3", "Taxonomy on rest", "PUT is cool, yes!", "PUT-tax-2");
 		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Tax-r-1", "Root level on rest", "Level", "Ext-23", null, null, taxonomy);
-		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("Sub-type", "Type for a sub level", "All is in the title", "TYP-23", taxonomy);
+		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("Sub-type", "Type for a sub level", "All is in the title", "TYP-23", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
 		
@@ -240,7 +240,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-4", "Taxonomy on rest", "PUT is cool, yes!", "PUT-tax-2");
 		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Tax-u-1", "Root level on rest", "Level", "Ext-25", null, null, taxonomy);
 		TaxonomyLevel levelToUpdate = taxonomyService.createTaxonomyLevel("REST-Tax-u-1", "Sub level on rest", "Level", "Ext-26", null, rootLevel, taxonomy);
-		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("Sub-type", "Type for a sub level", "All is in the title", "TYP-27", taxonomy);
+		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("Sub-type", "Type for a sub level", "All is in the title", "TYP-27", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
 		
@@ -346,8 +346,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	public void getTaxonomyLevelTypes()
 	throws IOException, URISyntaxException {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-2", "Taxonomy on rest", "Rest is cool", "Ext-tax-1");
-		TaxonomyLevelType type1 = taxonomyService.createTaxonomyLevelType("RESR-Type-1", "Type 1 on rest", "Type", "EXT-Type-1", taxonomy);
-		TaxonomyLevelType type2 = taxonomyService.createTaxonomyLevelType("RESR-Type-2", "Type 2 on rest", "Type", "EXT-Type-2", taxonomy);
+		TaxonomyLevelType type1 = taxonomyService.createTaxonomyLevelType("RESR-Type-1", "Type 1 on rest", "Type", "EXT-Type-1", true, taxonomy);
+		TaxonomyLevelType type2 = taxonomyService.createTaxonomyLevelType("RESR-Type-2", "Type 2 on rest", "Type", "EXT-Type-2", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
 		
@@ -379,7 +379,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	public void getTaxonomyLevelType()
 	throws IOException, URISyntaxException {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-2", "Taxonomy on rest", "Rest is cool", "Ext-tax-1");
-		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("REST-Type-3", "Type 3 on rest", "Type", "EXT-Type-3", taxonomy);
+		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("REST-Type-3", "Type 3 on rest", "Type", "EXT-Type-3", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
 		
@@ -430,9 +430,9 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	public void getTaxonomyLevelTypeAllowedSubTypes()
 	throws IOException, URISyntaxException {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-4", "Taxonomy on rest", "Rest is cool", "Ext-tax-1");
-		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("REST-Type-4", "Type 4 on rest", "Type", "EXT-Type-4", taxonomy);
-		TaxonomyLevelType subType1 = taxonomyService.createTaxonomyLevelType("REST-Type-4-1", "Type 4.1 on rest", "Type", "EXT-Type-4-1", taxonomy);
-		TaxonomyLevelType subType2 = taxonomyService.createTaxonomyLevelType("REST-Type-4-2", "Type 4.2 on rest", "Type", "EXT-Type-4-2", taxonomy);
+		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("REST-Type-4", "Type 4 on rest", "Type", "EXT-Type-4", true, taxonomy);
+		TaxonomyLevelType subType1 = taxonomyService.createTaxonomyLevelType("REST-Type-4-1", "Type 4.1 on rest", "Type", "EXT-Type-4-1", true, taxonomy);
+		TaxonomyLevelType subType2 = taxonomyService.createTaxonomyLevelType("REST-Type-4-2", "Type 4.2 on rest", "Type", "EXT-Type-4-2", true, taxonomy);
 		dbInstance.commit();
 		List<TaxonomyLevelType> subTypes = new ArrayList<>(2);
 		subTypes.add(subType1);
@@ -471,9 +471,9 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	public void allowTaxonomyLevelTypeAllowedSubType()
 	throws IOException, URISyntaxException {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-4", "Taxonomy on rest", "Rest is cool", "Ext-tax-1");
-		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("REST-Type-4", "Type 4 on rest", "Type", "EXT-Type-4", taxonomy);
-		TaxonomyLevelType subType1 = taxonomyService.createTaxonomyLevelType("REST-Type-4-1", "Type 4.1 on rest", "Type", "EXT-Type-4-1", taxonomy);
-		TaxonomyLevelType subType2 = taxonomyService.createTaxonomyLevelType("REST-Type-4-2", "Type 4.2 on rest", "Type", "EXT-Type-4-2", taxonomy);
+		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("REST-Type-4", "Type 4 on rest", "Type", "EXT-Type-4", true, taxonomy);
+		TaxonomyLevelType subType1 = taxonomyService.createTaxonomyLevelType("REST-Type-4-1", "Type 4.1 on rest", "Type", "EXT-Type-4-1", true, taxonomy);
+		TaxonomyLevelType subType2 = taxonomyService.createTaxonomyLevelType("REST-Type-4-2", "Type 4.2 on rest", "Type", "EXT-Type-4-2", true, taxonomy);
 		dbInstance.commit();
 		type = taxonomyService.updateTaxonomyLevelType(type, Collections.singletonList(subType1));
 		dbInstance.commitAndCloseSession();
@@ -509,10 +509,10 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 	public void disallowTaxonomyLevelTypeAllowedSubType()
 	throws IOException, URISyntaxException {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-6", "Taxonomy on rest", "Rest is cool", "Ext-tax-6");
-		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("REST-Type-6", "Type 6 on rest", "Type", "EXT-Type-6", taxonomy);
-		TaxonomyLevelType subType1 = taxonomyService.createTaxonomyLevelType("REST-Type-6-1", "Type 6.1 on rest", "Type", "EXT-Type-6-1", taxonomy);
-		TaxonomyLevelType subType2 = taxonomyService.createTaxonomyLevelType("REST-Type-6-2", "Type 6.2 on rest", "Type", "EXT-Type-6-2", taxonomy);
-		TaxonomyLevelType subType3 = taxonomyService.createTaxonomyLevelType("REST-Type-6-3", "Type 6.3 on rest", "Type", "EXT-Type-6-3", taxonomy);
+		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("REST-Type-6", "Type 6 on rest", "Type", "EXT-Type-6", true, taxonomy);
+		TaxonomyLevelType subType1 = taxonomyService.createTaxonomyLevelType("REST-Type-6-1", "Type 6.1 on rest", "Type", "EXT-Type-6-1", true, taxonomy);
+		TaxonomyLevelType subType2 = taxonomyService.createTaxonomyLevelType("REST-Type-6-2", "Type 6.2 on rest", "Type", "EXT-Type-6-2", true, taxonomy);
+		TaxonomyLevelType subType3 = taxonomyService.createTaxonomyLevelType("REST-Type-6-3", "Type 6.3 on rest", "Type", "EXT-Type-6-3", true, taxonomy);
 		dbInstance.commit();
 		List<TaxonomyLevelType> allowedSubTypes = new ArrayList<>();
 		allowedSubTypes.add(subType1);

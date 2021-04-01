@@ -64,6 +64,7 @@ import org.olat.modules.ceditor.ui.event.MoveUpElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
 import org.olat.modules.ceditor.ui.event.SaveElementEvent;
+import org.olat.modules.portfolio.Page;
 
 /**
  * 
@@ -88,7 +89,7 @@ public class PageEditorV2Controller extends BasicController {
 	private Map<String,PageElementHandler> handlerMap = new HashMap<>();
 
 	public PageEditorV2Controller(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
-			PageEditorSecurityCallback secCallback, Translator fallbackTranslator) {
+			PageEditorSecurityCallback secCallback, Translator fallbackTranslator, Page page) {
 		super(ureq, wControl, fallbackTranslator);
 		this.provider = provider;
 		this.secCallback = secCallback;
@@ -109,8 +110,15 @@ public class PageEditorV2Controller extends BasicController {
 			addElementButton.setElementCssClass("o_sel_add_element_main");
 		}
 		
+		mainVC.contextPut("pageIsReferenced", page != null && page.getBody() != null && page.getBody().getUsage() > 1);
+
 		loadModel(ureq);
 		putInitialPanel(mainVC);
+	}
+	
+	public PageEditorV2Controller(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
+			PageEditorSecurityCallback secCallback, Translator fallbackTranslator) {
+		this(ureq, wControl, provider, secCallback, fallbackTranslator, null);
 	}
 
 	private void loadModel(UserRequest ureq) {

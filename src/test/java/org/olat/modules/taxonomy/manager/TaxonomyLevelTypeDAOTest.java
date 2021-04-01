@@ -53,7 +53,7 @@ public class TaxonomyLevelTypeDAOTest extends OlatTestCase {
 	@Test
 	public void createTaxonomyLevelType() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("Tax-type", "Typed taxonomy", "A typed taxonomy", "");
-		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-0", "A first type", "Typed", "TYP-0", taxonomy);
+		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-0", "A first type", "Typed", "TYP-0", true, taxonomy);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(type);
@@ -68,7 +68,7 @@ public class TaxonomyLevelTypeDAOTest extends OlatTestCase {
 	@Test
 	public void createAndLoadTaxonomyLevelType() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("Tax-type", "Typed taxonomy", "A typed taxonomy", "");
-		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-reload", "A first reloaded type", "Typed", "TYP-1", taxonomy);
+		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-reload", "A first reloaded type", "Typed", "TYP-1", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 
 		TaxonomyLevelType reloadedType = taxonomyLevelTypeDao.loadTaxonomyLevelTypeByKey(type.getKey());
@@ -85,7 +85,7 @@ public class TaxonomyLevelTypeDAOTest extends OlatTestCase {
 	public void loadTaxonomyLevelTypeByTaxonomy() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("Tax-type", "Typed taxonomy", "A typed taxonomy", "");
 		Taxonomy taxonomyMarker = taxonomyDao.createTaxonomy("Tax-marker", "Marker taxonomy", "An unused taxonomy", "");
-		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-reload", "A first reloaded type", "Typed", "TYP-1", taxonomy);
+		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-reload", "A first reloaded type", "Typed", "TYP-1", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		//check the taxonomy with types
@@ -103,9 +103,9 @@ public class TaxonomyLevelTypeDAOTest extends OlatTestCase {
 	@Test
 	public void allowSubTypes() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("Tax-type", "Typed taxonomy", "A typed taxonomy", "");
-		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-parent", "A type", null, null, taxonomy);
-		TaxonomyLevelType subType1 = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-sub-1", "A type", null, null, taxonomy);
-		TaxonomyLevelType subType2 = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-sub-2", "A type", null, null, taxonomy);
+		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-parent", "A type", null, null, true, taxonomy);
+		TaxonomyLevelType subType1 = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-sub-1", "A type", null, null, true, taxonomy);
+		TaxonomyLevelType subType2 = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-sub-2", "A type", null, null, true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
 		taxonomyLevelTypeToTypeDao.addAllowedSubType(type, subType1);

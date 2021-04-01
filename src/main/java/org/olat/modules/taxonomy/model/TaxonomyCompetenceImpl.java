@@ -24,6 +24,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -39,6 +41,7 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyCompetenceLinkLocations;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
@@ -83,6 +86,9 @@ public class TaxonomyCompetenceImpl implements Persistable, ModifiedInfo, Taxono
 	private String sourceText;
 	@Column(name="t_source_url", nullable=true, insertable=true, updatable=true)
 	private String sourceUrl;
+	@Enumerated(EnumType.STRING)
+	@Column(name="t_link_location", nullable=false, insertable=true, updatable=false)
+	private TaxonomyCompetenceLinkLocations linkLocation;
 	
 	@ManyToOne(targetEntity=TaxonomyLevelImpl.class)
 	@JoinColumn(name="fk_level", nullable=false, insertable=true, updatable=false)
@@ -156,6 +162,7 @@ public class TaxonomyCompetenceImpl implements Persistable, ModifiedInfo, Taxono
 		return expiration;
 	}
 
+	@Override
 	public void setExpiration(Date expiration) {
 		this.expiration = expiration;
 	}
@@ -203,6 +210,15 @@ public class TaxonomyCompetenceImpl implements Persistable, ModifiedInfo, Taxono
 
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
+	}
+	
+	@Override
+	public TaxonomyCompetenceLinkLocations getLinkLocation() {
+		return linkLocation;
+	}
+	
+	public void setLinkLocation(TaxonomyCompetenceLinkLocations linkLocation) {
+		this.linkLocation = linkLocation;
 	}
 
 	@Override

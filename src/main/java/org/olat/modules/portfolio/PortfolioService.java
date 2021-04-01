@@ -745,6 +745,14 @@ public interface PortfolioService {
 	public List<TaxonomyCompetence> getRelatedCompetences(Page page, boolean fetchTaxonomies);
 	
 	/**
+	 * Get the portfolio page related to a competence
+	 * 
+	 * @param competence
+	 * @return
+	 */
+	public Page getPageToCompetence(TaxonomyCompetence competence);
+	
+	/**
 	 * Link a taxonomy competence to a portfolio page
 	 * 
 	 * @param page

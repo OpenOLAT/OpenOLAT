@@ -83,7 +83,7 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void createAndLoadTaxonomyLevel_withType() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-103", "Typed taxonomy", null, null);
-		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-t", "A type", "Typed", "TYP-T", taxonomy);
+		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-t", "A type", "Typed", "TYP-T", true, taxonomy);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "A taxonomy level", "A basic level", null, null, null, type, taxonomy);
 		dbInstance.commitAndCloseSession();
 		

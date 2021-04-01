@@ -490,8 +490,7 @@ public class TaxonomyWebService {
 			}
 		} else {
 			type = taxonomyService
-				.createTaxonomyLevelType(typeVo.getIdentifier(), typeVo.getDisplayName(), typeVo.getDescription(), typeVo.getExternalId(),
-						taxonomy);
+				.createTaxonomyLevelType(typeVo.getIdentifier(), typeVo.getDisplayName(), typeVo.getDescription(), typeVo.getExternalId(), true, taxonomy);
 		}
 		
 		if(typeVo.getManagedFlags() != null) {

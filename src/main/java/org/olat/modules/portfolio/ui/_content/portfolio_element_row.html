@@ -16,7 +16,7 @@
 	<h3>
 		<i class="o_icon o_icon-fw o_icon_pf_section"> </i> 
 		$r.escapeHtml($row.sectionLongTitle)
-		<span class="o_small o_labeled_light $row.sectionStatusCss">
+		<span class="o_xsmall o_labeled_light $row.sectionStatusCss">
 			<i class="o_icon $row.sectionStatusIconCss o_icon-fw" title="$r.translateInAttribute("${row.getSectionStatusI18nKey()}")"> </i>
 			$r.translateInAttribute("${row.getSectionStatusI18nKey()}")
 		</span> 
@@ -59,7 +59,7 @@
 			<span class="o_portfolio_categories">
 				<i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 		 	#foreach($category in $row.sectionCategories)
-		 		<a class="o_tag" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
+		 		<a class="o_tag">$category</a>
 		 	#end
 		 	</span>
 		</div>
@@ -68,7 +68,7 @@
 				<span class="o_portfolio_competences text-muted o_small">
 					<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competences")"> </i>
 					#foreach($competence in $row.pageCompetences)
-						<a class="o_tag o_competence" href="javascript:${f.ffXHREvent("tag_select","$competence")}">$competence</a>
+						<a class="o_tag o_competence">$competence</a>
 					#end
 				</span>
 				#end	
@@ -129,7 +129,7 @@
 	<div class="#if($r.isNotNull($row.assignment)) o_portfolio_assignments #end  o_block#if($row.imageAlign == "background" && $r.isNotNull($row.imageUrl))_imagebg #end" #if($row.imageAlign == "background" && $r.isNotNull($row.imageUrl)) style="background-image: url('$mapperThumbnailUrl/${row.imageUrl}')" #end>
 		<h4><i class="o_icon o_icon-fw o_icon_pf_page"> </i> $r.escapeHtml($row.title)
 			#if($r.isTrue($userInfos))<small>$userInfosRenderer.renderPortfolioElementRow($row)</small> #end
-			<span class="o_small o_labeled_light ${row.getStatusCss()} pull-right">
+			<span class="o_xsmall o_labeled_light ${row.getStatusCss()} pull-right">
 				<i class="o_icon ${row.getStatusIconCss()} o_icon-fw" title="$r.translate("page.status"): $r.translate("$row.getPageStatusI18nKey()")"> </i>
 				$r.translate("$row.getPageStatusI18nKey()")
 			</span>

@@ -403,6 +403,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			
 			competency.setCustomEnabledLinkCSS(css);
 			competency.setUserObject(taxonomyLevel);
+			competency.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
 			
 			competencesAndUsage.add(competency);
 		});	
@@ -426,6 +427,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			
 			competency.setCustomEnabledLinkCSS(css);
 			competency.setUserObject(taxonomyLevel);
+			competency.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
 			
 			competencesAndUsage.add(competency);
 		});	
@@ -708,11 +710,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		
 		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(row.getPage(), true);
 		
-		if (competences == null || competences.isEmpty()) {
-			return;
-		}
-		
-		row.setPageCompetences(competences.stream().map(competence -> competence.getTaxonomyLevel().getDisplayName()).collect(Collectors.toList()));
+		row.setPageCompetences(competences);
 	}
 	
 	private List<String> getCategories(OLATResourceable ores, Map<OLATResourceable,List<Category>> categorizedElementMap) {

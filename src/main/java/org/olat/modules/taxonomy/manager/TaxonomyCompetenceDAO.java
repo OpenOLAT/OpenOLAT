@@ -32,6 +32,7 @@ import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyCompetenceLinkLocations;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -53,7 +54,7 @@ public class TaxonomyCompetenceDAO {
 	private DB dbInstance;
 	
 	public TaxonomyCompetence createTaxonomyCompetence(TaxonomyCompetenceTypes type, TaxonomyLevel taxonomyLevel, Identity identity,
-			Date expiration) {
+			Date expiration, TaxonomyCompetenceLinkLocations linkLocation) {
 		TaxonomyCompetenceImpl competence = new TaxonomyCompetenceImpl();
 		competence.setCreationDate(new Date());
 		competence.setLastModified(competence.getCreationDate());
@@ -61,8 +62,15 @@ public class TaxonomyCompetenceDAO {
 		competence.setTaxonomyLevel(taxonomyLevel);
 		competence.setIdentity(identity);
 		competence.setExpiration(expiration);
+		competence.setLinkLocation(linkLocation);
 		dbInstance.getCurrentEntityManager().persist(competence);
 		return competence;
+	}
+	
+	public TaxonomyCompetence createTaxonomyCompetence(TaxonomyCompetenceTypes type, TaxonomyLevel taxonomyLevel, Identity identity,
+			Date expiration) {
+		// TODO Alex: Ask Stephane, how to proceed here
+		return createTaxonomyCompetence(type, taxonomyLevel, identity, expiration, TaxonomyCompetenceLinkLocations.UNDEFINED);
 	}
 	
 	public TaxonomyCompetence updateCompetence(TaxonomyCompetence competence) {

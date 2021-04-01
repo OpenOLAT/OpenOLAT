@@ -432,7 +432,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	        // Collect the created types for the next step
 	        List<TaxonomyLevelType> createdTypes = new ArrayList<>();
 	        for (TaxonomyLevelType newLevelType : context.getTaxonomyLevelTypeCreateList()) {
-	        	createdTypes.add(taxonomyService.createTaxonomyLevelType(newLevelType.getIdentifier(), newLevelType.getIdentifier(), null, null, context.getTaxonomy()));
+	        	createdTypes.add(taxonomyService.createTaxonomyLevelType(newLevelType.getIdentifier(), newLevelType.getIdentifier(), null, null, true, context.getTaxonomy()));
 	        }
 	        
 	        // Collect created levels to find parents 

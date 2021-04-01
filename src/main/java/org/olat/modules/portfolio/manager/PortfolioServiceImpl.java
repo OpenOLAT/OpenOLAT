@@ -122,6 +122,7 @@ import org.olat.modules.portfolio.model.SectionKeyRef;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyCompetenceLinkLocations;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
@@ -1049,7 +1050,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 		Page page = pageDao.createAndPersist(title, summary, imagePath, align, editable, reloadedSection, pageDelegate);
 		if(pageDelegate != null) {
 			for (TaxonomyCompetence competence : portfolioPageToTaxonomyCompetenceDAO.getCompetencesToPortfolioPage(pageDelegate, false)) {
-				portfolioPageToTaxonomyCompetenceDAO.createRelation(page, taxonomyCompetenceDAO.createTaxonomyCompetence(competence.getCompetenceType(), competence.getTaxonomyLevel(), competence.getIdentity(), competence.getExpiration()));
+				portfolioPageToTaxonomyCompetenceDAO.createRelation(page, taxonomyCompetenceDAO.createTaxonomyCompetence(competence.getCompetenceType(), competence.getTaxonomyLevel(), competence.getIdentity(), competence.getExpiration(), TaxonomyCompetenceLinkLocations.PORTFOLIO));
 			}
 			updateCategories(page, getCategories(pageDelegate).stream().map(cat -> cat.getName()).collect(Collectors.toList()));
 		}
@@ -1654,6 +1655,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
+	public Page getPageToCompetence(TaxonomyCompetence competence) {
+		return portfolioPageToTaxonomyCompetenceDAO.getPageToCompetence(competence);
+	}
+	
+	@Override
 	public void linkCompetence(Page page, TaxonomyCompetence competence) {
 		portfolioPageToTaxonomyCompetenceDAO.createRelation(page, competence);
 		
@@ -1686,7 +1692,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 		// Create new competences
 		for (TaxonomyLevel newLevel : newTaxonomyLevels) {
 			if (!relatedCompetenceLevels.contains(newLevel)) {
-				TaxonomyCompetence competence = taxonomyCompetenceDAO.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, newLevel, identity, null);
+				TaxonomyCompetence competence = taxonomyCompetenceDAO.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, newLevel, identity, null, TaxonomyCompetenceLinkLocations.PORTFOLIO);
 				linkCompetence(page, competence);
 			}
 		}		
@@ -1711,4 +1717,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public LinkedHashMap<Category, Long> getCategoriesAndUsage(List<Page> pages) {
 		return categoryDao.getCategoriesAndUsage(pages);
 	}
+	
+	
 }

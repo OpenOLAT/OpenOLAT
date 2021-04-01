@@ -20,11 +20,13 @@
 package org.olat.modules.portfolio.ui;
 
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
@@ -34,6 +36,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.PageListSortableDataModelDelegate.ListComparator.Mode;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
 
 /**
  * 
@@ -128,8 +131,21 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 			
 			switch (mode) {
 				case Competence: 
-					c1 = (List<String>) o1.getPageCompetences();
-					c2 = (List<String>) o2.getPageCompetences();
+					List<TaxonomyCompetence> comp1 = (List<TaxonomyCompetence>) o1.getPageCompetencesObjects();
+					List<TaxonomyCompetence> comp2 = (List<TaxonomyCompetence>) o2.getPageCompetencesObjects();
+					
+					if (comp1 != null && !comp1.isEmpty()) {
+						c1 = comp1.stream().map(competence -> competence.getTaxonomyLevel().getDisplayName()).collect(Collectors.toList());
+					} else {
+						c1 = new ArrayList<>();
+					}
+					
+					if (comp2 != null && !comp2.isEmpty()) {
+						c2 = comp2.stream().map(competence -> competence.getTaxonomyLevel().getDisplayName()).collect(Collectors.toList());
+					} else {
+						c2 = new ArrayList<>();
+					}
+					
 					break;
 				case Category: 
 					c1 = (List<String>) o1.getPageCategories();

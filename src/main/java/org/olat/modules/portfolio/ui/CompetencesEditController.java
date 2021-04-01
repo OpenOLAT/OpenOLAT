@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,11 +32,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
@@ -43,6 +46,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.CompetenceBrowserController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,8 +65,10 @@ public class CompetencesEditController extends FormBasicController {
 	private FormLink editLink;
 	private FormSubmit saveButton;
 
-	List<TextBoxItem> existingCompetences;
-	List<TextBoxItem> availableTaxonomyLevels;
+	private List<TextBoxItem> existingCompetences;
+	private List<TextBoxItem> availableTaxonomyLevels;
+	
+	private FormLink openBrowserLink;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -87,6 +93,13 @@ public class CompetencesEditController extends FormBasicController {
 		if (portfolioModule.isTaxonomyLinkingReady()) {
 			for (Taxonomy taxonomy : portfolioModule.getLinkedTaxonomies()) {
 				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
+					if (taxonomyLevel.getType() != null) {
+						if(taxonomyLevel.getType().isAllowedAsCompetence() == false) {
+							// Do not list items, which are not marked as available for competences
+							continue;
+						}
+					}
+					
 					TextBoxItem item = new TextBoxItemImpl(taxonomyLevel.getDisplayName(), taxonomyLevel.getKey().toString());
 					item.setDropDownInfo(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
 					item.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
@@ -94,7 +107,7 @@ public class CompetencesEditController extends FormBasicController {
 				}
 			}
 		}
-
+		
 		initForm(ureq);
 		/* we add domID to competences_edit.html to reduce DIV count */
 		this.flc.getFormItemComponent().setDomReplacementWrapperRequired(false);
@@ -126,6 +139,11 @@ public class CompetencesEditController extends FormBasicController {
 		saveButton.setVisible(false);
 		saveButton.setElementCssClass("btn-xs");
 		
+		openBrowserLink = uifactory.addFormLink("open.browser", formLayout, Link.LINK);
+		openBrowserLink.setCustomEnabledLinkCSS("o_button_textstyle");
+		openBrowserLink.setPopup(new LinkPopupSettings(800, 600, "Open"));
+		
+		
 		// on init set to read-only
 		initFormEditableState(false);
 	}
@@ -156,6 +174,12 @@ public class CompetencesEditController extends FormBasicController {
 		} else if(source == competencesEl) {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 			initFormEditableState(false);
+		} else if(source == openBrowserLink) {
+			ControllerCreator competenceBrowserCreator = (lureq, lwControl) -> {
+				return new CompetenceBrowserController(lureq, lwControl);				
+			};
+			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, competenceBrowserCreator);
+			openInNewBrowserWindow(ureq, layoutCtrlr);
 		}
 	}
 	

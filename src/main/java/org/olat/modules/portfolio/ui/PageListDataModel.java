@@ -185,7 +185,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 				return null;
 			}
 			case categories: return page.getPageCategories();
-			case competences: return page.getPageCompetences();
+			case competences: return page.getPageCompetencesObjects();
 			case section: return page.getSectionTitle();
 			case up: {
 				if(page.isPendingAssignment()) {

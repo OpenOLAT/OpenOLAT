@@ -39,7 +39,7 @@ public class TaxonomyLevelTypeDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public TaxonomyLevelType createTaxonomyLevelType(String identifier, String displayName, String description, String externalId,
+	public TaxonomyLevelType createTaxonomyLevelType(String identifier, String displayName, String description, String externalId, boolean allowedAsCompetence,
 			Taxonomy taxonomy) {
 		TaxonomyLevelTypeImpl type = new TaxonomyLevelTypeImpl();
 		type.setCreationDate(new Date());
@@ -49,6 +49,7 @@ public class TaxonomyLevelTypeDAO {
 		} else {
 			type.setIdentifier(UUID.randomUUID().toString());
 		}
+		type.setAllowedAsCompetence(allowedAsCompetence);
 		type.setDisplayName(displayName);
 		type.setDescription(description);
 		type.setExternalId(externalId);

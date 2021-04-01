@@ -106,6 +106,8 @@ public class SelectOrCreateSectionStep extends BasicStep {
 			sectionSelectionKeys[sections.size() + (sectionsExist ? 1 : 0)] = NEW_SECTION;
 			sectionSelectionValues[sections.size() + (sectionsExist ? 1 : 0)] = translate(NEW_SECTION);
 			
+			context.setNewSectionTitlePlaceHolder(translate("section"));
+			
 			sectionController = new SectionEditController(ureq, wControl, rootForm, context);
 			initForm(ureq);
 			loadData();

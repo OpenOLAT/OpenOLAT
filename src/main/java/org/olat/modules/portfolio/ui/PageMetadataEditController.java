@@ -50,6 +50,7 @@ import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -99,6 +100,9 @@ public class PageMetadataEditController extends FormBasicController {
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] evaKeys = new String[] { "only-autoevaluation", "alien-evaluation"};
 	
+	private static final String[] editKeys = new String[] {"metadata.edit.global", "metadata.edit.local"};
+	
+	private SingleSelection editModeEl;
 	private TextElement titleEl;
 	private RichTextElement summaryEl;
 	private SingleSelection bindersEl;
@@ -261,6 +265,11 @@ public class PageMetadataEditController extends FormBasicController {
 		
 		if(pageDelegate != null) {
 			setFormInfo("page.sharing.infos");
+		}
+		
+		if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
+			editModeEl = uifactory.addDropdownSingleselect("edit.mode", formLayout, editKeys, TranslatorHelper.translateAll(getTranslator(), editKeys));
+			setFormWarning("edit.mode.info");
 		}
 		
 		String title = page == null ? null : page.getTitle();
@@ -642,14 +651,20 @@ public class PageMetadataEditController extends FormBasicController {
 			portfolioService.linkCompetences(page, getIdentity(), competencesEl.getValueItems());
 		}
 		
+		if (editModeEl != null && editModeEl.getSelectedKey().equals(editKeys[0])) {
 		List<Page> sharingTheBody = portfolioService.getPagesSharingSameBody(page);
-		for(Page sharing:sharingTheBody) {
-			if(!sharing.equals(page)) {
-				sharing.setTitle(titleEl.getValue());
-				sharing.setSummary(summaryEl.getValue());
-				sharing.setImageAlignment(imageAlign);
-				sharing.setImagePath(imagePath);
-				portfolioService.updatePage(sharing, null);
+			for(Page sharing:sharingTheBody) {
+				if(!sharing.equals(page)) {
+					sharing.setTitle(titleEl.getValue());
+					sharing.setSummary(summaryEl.getValue());
+					sharing.setImageAlignment(imageAlign);
+					sharing.setImagePath(imagePath);
+					portfolioService.updatePage(sharing, null);
+					portfolioService.updateCategories(sharing, updatedCategories);
+					if (portfolioV2Module.isTaxonomyLinkingReady()) {
+						portfolioService.linkCompetences(sharing, getIdentity(), competencesEl.getValueItems());
+					}
+				}
 			}
 		}
 
@@ -759,10 +774,18 @@ public class PageMetadataEditController extends FormBasicController {
 				competenceTextBoxItem.setTooltip(competence.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash());
 				existingCompetences.add(competenceTextBoxItem);
 			}
-			
+		}
+		
+		if (portfolioV2Module.isTaxonomyLinkingReady()) {
 			availableTaxonomyLevels = new ArrayList<>();
 			for (Taxonomy taxonomy : portfolioV2Module.getLinkedTaxonomies()) {
 				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
+					if (taxonomyLevel.getType() != null) {
+						if(taxonomyLevel.getType().isAllowedAsCompetence() == false) {
+							// Do not list items, which are not marked as available for competences
+							continue;
+						}
+					}
 					TextBoxItem item = new TextBoxItemImpl(taxonomyLevel.getDisplayName(), taxonomyLevel.getKey().toString());
 					item.setDropDownInfo(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());
 					item.setTooltip(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash());

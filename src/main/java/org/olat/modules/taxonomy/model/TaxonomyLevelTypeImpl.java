@@ -103,6 +103,8 @@ public class TaxonomyLevelTypeImpl implements Persistable, ModifiedInfo, Taxonom
 	private boolean documentsLibraryHaveCompetenceReadEnabled;
 	@Column(name="t_library_target_read", nullable=false, insertable=true, updatable=true)
 	private boolean documentsLibraryTargetCompetenceReadEnabled;
+	@Column(name="t_allow_as_competence", nullable=false, insertable=true, updatable=true)
+	private boolean allowedAsCompetence;
 	
 	@ManyToOne(targetEntity=TaxonomyImpl.class)
 	@JoinColumn(name="fk_taxonomy", nullable=true, insertable=true, updatable=true)
@@ -305,6 +307,16 @@ public class TaxonomyLevelTypeImpl implements Persistable, ModifiedInfo, Taxonom
 
 	public void setTaxonomy(Taxonomy taxonomy) {
 		this.taxonomy = taxonomy;
+	}
+	
+	@Override
+	public boolean isAllowedAsCompetence() {
+		return allowedAsCompetence;
+	}
+	
+	@Override
+	public void setAllowedAsCompetence(boolean allowedAsCompetence) {
+		this.allowedAsCompetence = allowedAsCompetence;
 	}
 
 	@Override
