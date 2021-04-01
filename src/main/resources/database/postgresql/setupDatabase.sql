@@ -2107,6 +2107,14 @@ create table o_pf_page_user_infos (
   primary key (id)
 );
 
+create table o_pf_page_to_tax_competence (
+	id bigserial,
+	creationdate timestamp not null,
+	fk_tax_competence int8 not null,
+	fk_pf_page int8 not null,
+	primary key (id)
+);
+
 -- evaluation form
 create table o_eva_form_survey (
    id bigserial,
@@ -4230,6 +4238,14 @@ alter table o_pf_page_user_infos add constraint user_pfpage_idx foreign key (fk_
 create index idx_user_pfpage_idx on o_pf_page_user_infos (fk_identity_id);
 alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_pf_page (id);
 create index idx_page_pfpage_idx on o_pf_page_user_infos (fk_page_id);
+
+alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
+create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_competence);
+alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
+create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
+
+alter table o_tax_taxonomy_level_type add column t_allow_as_competence bool default true not null;
+alter table o_tax_taxonomy_competence add column t_link_location varchar(255) default 'UNDEFINED' not null;
 
 -- vfs metadata
 alter table o_vfs_metadata add constraint fmeta_to_author_idx foreign key (fk_locked_identity) references o_bs_identity (id);

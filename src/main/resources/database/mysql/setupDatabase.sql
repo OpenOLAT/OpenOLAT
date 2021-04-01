@@ -2219,6 +2219,15 @@ create table o_pf_page_user_infos (
   primary key (id)
 );
 
+create table o_pf_page_to_tax_competence (
+	id bigint not null auto_increment,
+	creationdate datetime not null,
+	fk_tax_competence bigint not null,
+	fk_pf_page bigint not null,
+	primary key (id)
+);
+
+
 -- evaluation form
 create table o_eva_form_survey (
    id bigint not null auto_increment,
@@ -3707,6 +3716,7 @@ alter table o_pf_binder ENGINE = InnoDB;
 alter table o_pf_assessment_section ENGINE = InnoDB;
 alter table o_pf_assignment ENGINE = InnoDB;
 alter table o_pf_binder_user_infos ENGINE = InnoDB;
+alter table o_pf_page_to_tax_competence ENGINE = InnoDB;
 alter table o_eva_form_participation ENGINE = InnoDB;
 alter table o_eva_form_session ENGINE = InnoDB;
 alter table o_eva_form_response ENGINE = InnoDB;
@@ -3777,7 +3787,6 @@ alter table o_ap_appointment ENGINE = InnoDB;
 alter table o_ap_participation ENGINE = InnoDB;
 alter table o_ct_location ENGINE = InnoDB;
 alter table o_ct_registration ENGINE = InnoDB;
-alter table o_pf_page_to_tax_competence ENGINE = InnoDB;
 
 
 -- rating
@@ -4270,6 +4279,12 @@ alter table o_eva_form_session add constraint eva_sess_to_form_idx foreign key (
 
 alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key (fk_session) references o_eva_form_session (id);
 create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_responseidentifier, e_no_response);
+
+alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
+alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
+
+alter table o_tax_taxonomy_level_type add column t_allow_as_competence bool default true not null;
+alter table o_tax_taxonomy_competence add column t_link_location varchar(255) default 'UNDEFINED' not null;
 
 -- vfs metadata
 alter table o_vfs_metadata add constraint fmeta_to_author_idx foreign key (fk_locked_identity) references o_bs_identity (id);

@@ -2145,6 +2145,14 @@ create table o_pf_page_user_infos (
   primary key (id)
 );
 
+create table o_pf_page_to_tax_competence (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_tax_competence number(20) not null,
+   fk_pf_page number(20) not null,
+   primary key (id)
+);
+
 -- evaluation forms
 create table o_eva_form_survey (
    id number(20) GENERATED ALWAYS AS IDENTITY,
@@ -4361,6 +4369,14 @@ alter table o_pf_page_user_infos add constraint user_pfpage_idx foreign key (fk_
 create index idx_user_pfpage_idx on o_pf_page_user_infos (fk_identity_id);
 alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_pf_page (id);
 create index idx_page_pfpage_idx on o_pf_page_user_infos (fk_page_id);
+
+alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
+create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_competence);
+alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
+create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
+
+alter table o_tax_taxonomy_level_type add t_allow_as_competence number default 1 not null;
+alter table o_tax_taxonomy_competence add t_link_location varchar(255) default 'UNDEFINED' not null;
 
 -- evaluation form
 alter table o_eva_form_survey add constraint eva_surv_to_surv_idx foreign key (fk_series_previous) references o_eva_form_survey (id);
