@@ -363,6 +363,7 @@ public class FileElementImpl extends FormItemImpl
 	 * 
 	 * @return
 	 */
+	@Override
 	public boolean isButtonsEnabled() {
 		return buttonsEnabled;
 	}

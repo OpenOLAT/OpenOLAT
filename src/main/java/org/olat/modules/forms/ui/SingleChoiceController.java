@@ -101,6 +101,19 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		singleChoiceEl.clearError();
+		if (singleChoice.isMandatory() && !singleChoiceEl.isOneSelected()) {
+			singleChoiceEl.setErrorKey("form.legende.mandatory", null);
+			allOk = false;
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

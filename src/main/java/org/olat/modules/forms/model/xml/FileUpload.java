@@ -31,6 +31,7 @@ public class FileUpload extends AbstractElement {
 	
 	public static final String TYPE = "formfileupload";
 
+	private boolean mandatory;
 	private long maxUploadSizeKB;
 	private String mimeTypeSetKey;
 
@@ -39,6 +40,14 @@ public class FileUpload extends AbstractElement {
 		return TYPE;
 	}
 	
+	public boolean isMandatory() {
+		return mandatory;
+	}
+
+	public void setMandatory(boolean mandatory) {
+		this.mandatory = mandatory;
+	}
+
 	public Long getMaxUploadSizeKB() {
 		return maxUploadSizeKB;
 	}

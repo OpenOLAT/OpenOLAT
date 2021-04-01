@@ -133,6 +133,19 @@ public class FileUploadController extends FormBasicController implements Evaluat
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		fileEl.clearError();
+		if (fileUpload.isMandatory() && fileEl.isButtonsEnabled() && !fileEl.isUploadSuccess() && fileEl.getInitialFile() == null) {
+			fileEl.setErrorKey("form.legende.mandatory", null);
+			allOk = false;
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

@@ -36,6 +36,7 @@ public class SingleChoice extends AbstractElement {
 		DROPDOWN
 	}
 	
+	private boolean mandatory;
 	private Presentation presentation;
 	private Choices choices;
 
@@ -44,6 +45,14 @@ public class SingleChoice extends AbstractElement {
 		return TYPE;
 	}
 	
+	public boolean isMandatory() {
+		return mandatory;
+	}
+
+	public void setMandatory(boolean mandatory) {
+		this.mandatory = mandatory;
+	}
+
 	public Presentation getPresentation() {
 		return presentation;
 	}

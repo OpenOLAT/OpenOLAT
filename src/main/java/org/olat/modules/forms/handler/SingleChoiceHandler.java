@@ -98,6 +98,7 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 	public PageElement createPageElement(Locale locale) {
 		SingleChoice singleChoice = new SingleChoice();
 		singleChoice.setId(UUID.randomUUID().toString());
+		singleChoice.setMandatory(false);
 		singleChoice.setPresentation(Presentation.VERTICAL);
 		
 		Translator translator = Util.createPackageTranslator(SingleChoiceEditorController.class, locale);

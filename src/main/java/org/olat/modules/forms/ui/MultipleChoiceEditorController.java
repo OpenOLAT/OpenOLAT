@@ -68,12 +68,15 @@ import org.olat.modules.forms.ui.ChoiceDataModel.ChoiceCols;
  */
 public class MultipleChoiceEditorController extends FormBasicController implements PageElementEditorController {
 
+	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
+	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
 	private static final String WITH_OTHER_KEY = "multiple.choice.with.others.enabled";
 	private static final String[] WITH_OTHER_KEYS = new String[] {WITH_OTHER_KEY};
 	private static final String CMD_DELETE = "delete";
 	
 	private SingleSelection presentationEl;
 	private MultipleSelectionElement withOthersEl;
+	private SingleSelection obligationEl;
 	private FormLink addChoiceEl;
 	private FlexiTableElement tableEl;
 	private ChoiceDataModel dataModel;
@@ -134,6 +137,17 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		withOthersEl.addActionListener(FormEvent.ONCHANGE);
 		withOthersEl.setEnabled(!restrictedEdit);
 		
+		// Mandatory
+		KeyValues obligationKV = new KeyValues();
+		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
+		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
+		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,
+				obligationKV.keys(), obligationKV.values());
+		obligationEl.select(OBLIGATION_MANDATORY_KEY, multipleChoice.isMandatory());
+		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !multipleChoice.isMandatory());
+		obligationEl.addActionListener(FormEvent.ONCLICK);
+		obligationEl.setEnabled(!restrictedEdit);
+		
 		// choices
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.move));
@@ -187,7 +201,8 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (presentationEl == source || source == withOthersEl || source instanceof TextElement) {
+		if (presentationEl == source || source == withOthersEl || source == obligationEl
+				|| source instanceof TextElement) {
 			doSave();
 		} else if (addChoiceEl == source) {
 			doAddChoice();
@@ -215,27 +230,27 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	}
 	
 	private void doSave() {
-		doSavePresentation();
-		doSaveWithOthers();
-		doSaveValues();
+		doSaveMultipleChoice();
+		doSaveChoices();
 		multipleChoiceCtrl.updateForm();
 	}
 	
-	private void doSavePresentation() {
+	private void doSaveMultipleChoice() {
 		Presentation presentation = null;
 		if (presentationEl.isOneSelected()) {
 			String selectedKey = presentationEl.getSelectedKey();
 			presentation = Presentation.valueOf(selectedKey);
 		}
 		multipleChoice.setPresentation(presentation);
-	}
-	
-	private void doSaveWithOthers() {
+		
 		boolean withOthers = withOthersEl.getSelectedKeys().contains(WITH_OTHER_KEY);
 		multipleChoice.setWithOthers(withOthers);
+		
+		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
+		multipleChoice.setMandatory(mandatory);
 	}
 	
-	private void doSaveValues() {
+	private void doSaveChoices() {
 		for (ChoiceRow choiceRow : dataModel.getObjects()) {
 			TextElement valueEl = choiceRow.getValueEl();
 			String value = valueEl.getValue();

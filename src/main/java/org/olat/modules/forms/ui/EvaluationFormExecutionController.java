@@ -268,13 +268,11 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (saveLink == source) {
-			if(mainForm.validate(ureq)) {
-				mainForm.forceSubmittedAndValid();
-				boolean saved = doSaveResponses(ureq);
-				if (saved) {
-					Double progress = doCalculateProgress();
-					fireEvent(ureq, new ProgressEvent(progress));
-				}
+			mainForm.forceSubmittedAndValid();
+			boolean saved = doSaveResponses(ureq);
+			if (saved) {
+				Double progress = doCalculateProgress();
+				fireEvent(ureq, new ProgressEvent(progress));
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

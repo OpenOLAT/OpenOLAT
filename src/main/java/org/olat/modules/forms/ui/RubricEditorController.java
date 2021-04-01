@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.modules.forms.ui.EvaluationFormFormatter.oneDecimal;
 
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -65,6 +67,8 @@ import org.olat.modules.forms.model.xml.StepLabel;
 public class RubricEditorController extends FormBasicController implements PageElementEditorController {
 	
 	private static final String[] ENABLED_KEYS = new String[]{"on"};
+	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
+	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
 	private static final String GOOD_RATING_END_KEY = "rubric.good.rating.end";
 	private static final String GOOD_RATING_START_KEY = "rubric.good.rating.start";
 	private final String[] GOOD_RATING_KEYS = new String[] {
@@ -104,6 +108,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private TextElement lowerBoundSufficientEl;
 	private TextElement upperBoundSufficientEl;
 	private SingleSelection goodRatingEl;
+	private SingleSelection obligationEl;
 	private FormLink addSliderButton;
 	private Boolean showEnd;
 	private FormLink showEndButton;
@@ -300,6 +305,16 @@ public class RubricEditorController extends FormBasicController implements PageE
 		noAnswerEl.setHelpTextKey("no.response.help", null);
 		noAnswerEl.setEnabled(!restrictedEdit);
 		
+		// mandatory
+		KeyValues obligationKV = new KeyValues();
+		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
+		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
+		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsLayout,
+				obligationKV.keys(), obligationKV.values());
+		obligationEl.select(OBLIGATION_MANDATORY_KEY, rubric.isMandatory());
+		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !rubric.isMandatory());
+		obligationEl.setEnabled(!restrictedEdit);
+		
 		uifactory.addSpacerElement("rubric.survey.configuration.upper", settingsLayout, false);
 
 		updateTypeSettings();
@@ -359,6 +374,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		lowerBoundSufficientEl.setVisible(isSurveyConfig);
 		upperBoundSufficientEl.setVisible(isSurveyConfig);
 		goodRatingEl.setVisible(isSurveyConfig);
+		obligationEl.setVisible(isSurveyConfig);
 	}
 	
 	private void doShowEnd() {
@@ -925,6 +941,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 				? true
 				: false;
 		rubric.setStartGoodRating(startGoodRating);
+		
+		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
+		rubric.setMandatory(mandatory);
 		
 		rubricCtrl.updateForm();
 		

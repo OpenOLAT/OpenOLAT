@@ -96,6 +96,7 @@ public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAd
 		EvaluationFormsModule evaluationFormModule = CoreSpringFactory.getImpl(EvaluationFormsModule.class);
 		FileUpload part = new FileUpload();
 		part.setId(UUID.randomUUID().toString());
+		part.setMandatory(false);
 		part.setMaxUploadSizeKB(evaluationFormModule.getMaxFileUploadLimitKB());
 		return part;
 	}

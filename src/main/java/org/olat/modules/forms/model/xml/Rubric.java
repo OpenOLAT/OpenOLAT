@@ -35,6 +35,7 @@ public class Rubric extends AbstractElement {
 	
 	public static final String TYPE = "formrubric";
 
+	private boolean mandatory;
 	private SliderType sliderType;
 	private ScaleType scaleType;
 	private List<Slider> sliders = new ArrayList<>();
@@ -57,6 +58,14 @@ public class Rubric extends AbstractElement {
 	@Override
 	public String getType() {
 		return TYPE;
+	}
+
+	public boolean isMandatory() {
+		return mandatory;
+	}
+
+	public void setMandatory(boolean mandatory) {
+		this.mandatory = mandatory;
 	}
 
 	public SliderType getSliderType() {

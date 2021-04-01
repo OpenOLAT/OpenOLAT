@@ -130,6 +130,37 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	private void showHideOthers() {
 		boolean othersSelected = multipleChoiceEl.getSelectedKeys().contains(OTHERS_KEY);
 		otherEl.setVisible(othersSelected);
+		
+		// Remove error if others field is shown
+		multipleChoiceEl.clearError();
+		otherEl.clearError();
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		multipleChoiceEl.clearError();
+		if (multipleChoice.isMandatory() && !isOneSelected() && !isOtherFilledIn()) {
+			if (otherEl.isVisible()) {
+				otherEl.setErrorKey("form.legende.mandatory", null);
+			} else {
+				multipleChoiceEl.setErrorKey("form.legende.mandatory", null);
+			}
+			allOk = false;
+		}
+		
+		return allOk;
+	}
+	
+	private boolean isOneSelected() {
+		return multipleChoiceEl.isAtLeastSelected(2)
+				// not only the other key selected
+				|| (multipleChoiceEl.isAtLeastSelected(1) && !multipleChoiceEl.getSelectedKeys().contains(OTHERS_KEY));
+	}
+
+	private boolean isOtherFilledIn() {
+		return otherEl != null && otherEl.isVisible() && StringHelper.containsNonWhitespace(otherEl.getValue());
 	}
 
 	@Override

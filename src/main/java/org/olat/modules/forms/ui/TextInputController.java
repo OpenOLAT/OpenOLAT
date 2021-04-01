@@ -84,7 +84,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		singleRowEl = uifactory.addTextElement("textinput_" + CodeHelper.getRAMUniqueID(), null, 1000, null, formLayout);
-
+		
 		multiRowEl = uifactory.addTextAreaElement("textinput_" + CodeHelper.getRAMUniqueID(), null, 56000, -1, 72, false, true, "", formLayout);
 		
 		dateEl = uifactory.addDateChooser("textinput_" + CodeHelper.getRAMUniqueID(), null, null, formLayout);
@@ -123,6 +123,21 @@ public class TextInputController extends FormBasicController implements Evaluati
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		singleRowEl.clearError();
+		multiRowEl.clearError();
+		dateEl.clearError();
+		if (textInput.isMandatory()) {
+			if (singleRowEl.isVisible() && !StringHelper.containsNonWhitespace(singleRowEl.getValue())) {
+				singleRowEl.setErrorKey("form.legende.mandatory", null);
+				allOk = false;
+			} else if (multiRowEl.isVisible() && !StringHelper.containsNonWhitespace(multiRowEl.getValue())) {
+				multiRowEl.setErrorKey("form.legende.mandatory", null);
+				allOk = false;
+			}if (dateEl.isVisible() && dateEl.getDate() == null) {
+				dateEl.setErrorKey("form.legende.mandatory", null);
+				allOk = false;
+			}
+		}
+		
 		if (textInput.isNumeric()) {
 			String val = singleRowEl.getValue();
 			if(StringHelper.containsNonWhitespace(val)) {

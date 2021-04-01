@@ -93,6 +93,8 @@ public interface FileElement extends FormMultipartItem {
 	 */
 	public void setPreview(UserSession usess, boolean enable);
 	
+	public boolean isButtonsEnabled();
+	
 	/**
 	 * Enable or disable whether the upload and delete buttons are active. Disabled
 	 * buttons are an alternative to the disabling of the whole element.

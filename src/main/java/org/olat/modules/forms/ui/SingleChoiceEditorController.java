@@ -20,6 +20,7 @@
 package org.olat.modules.forms.ui;
 
 import static org.olat.core.gui.components.updown.UpDown.Layout.LINK_HORIZONTAL;
+import static org.olat.core.gui.components.util.KeyValues.entry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +48,7 @@ import org.olat.core.gui.components.updown.UpDown;
 import org.olat.core.gui.components.updown.UpDownEvent;
 import org.olat.core.gui.components.updown.UpDownEvent.Direction;
 import org.olat.core.gui.components.updown.UpDownFactory;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -65,9 +67,12 @@ import org.olat.modules.forms.ui.ChoiceDataModel.ChoiceCols;
  */
 public class SingleChoiceEditorController extends FormBasicController implements PageElementEditorController {
 
+	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
+	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
 	private static final String CMD_DELETE = "delete";
 	
 	private SingleSelection presentationEl;
+	private SingleSelection obligationEl;
 	private FormLink addChoiceEl;
 	private FlexiTableElement tableEl;
 	private ChoiceDataModel dataModel;
@@ -116,6 +121,16 @@ public class SingleChoiceEditorController extends FormBasicController implements
 			presentationEl.select(singleChoice.getPresentation().name(), true);
 		}
 		presentationEl.addActionListener(FormEvent.ONCHANGE);
+		
+		KeyValues obligationKV = new KeyValues();
+		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
+		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
+		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,
+				obligationKV.keys(), obligationKV.values());
+		obligationEl.select(OBLIGATION_MANDATORY_KEY, singleChoice.isMandatory());
+		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !singleChoice.isMandatory());
+		obligationEl.setEnabled(!restrictedEdit);
+		obligationEl.addActionListener(FormEvent.ONCLICK);
 		
 		// choices
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -170,7 +185,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (presentationEl == source || source instanceof TextElement) {
+		if (presentationEl == source || obligationEl == source || source instanceof TextElement) {
 			doSave();
 		} else if (addChoiceEl == source) {
 			doAddChoice();
@@ -198,21 +213,24 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	}
 	
 	private void doSave() {
-		doSavePresentation();
-		doSaveValues();
+		doSaveSingleChoice();
+		doSaveChoices();
 		singleChoiceCtrl.updateForm();
 	}
 
-	private void doSavePresentation() {
+	private void doSaveSingleChoice() {
 		Presentation presentation = null;
 		if (presentationEl.isOneSelected()) {
 			String selectedKey = presentationEl.getSelectedKey();
 			presentation = Presentation.valueOf(selectedKey);
 		}
 		singleChoice.setPresentation(presentation);
+		
+		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
+		singleChoice.setMandatory(mandatory);
 	}
 	
-	private void doSaveValues() {
+	private void doSaveChoices() {
 		for (ChoiceRow choiceRow : dataModel.getObjects()) {
 			TextElement valueEl = choiceRow.getValueEl();
 			String value = valueEl.getValue();

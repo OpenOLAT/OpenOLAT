@@ -201,6 +201,47 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		flc.contextRemove("errorMandatory");
+		if (rubric.isMandatory() && !areAllSlidersFilledIn()) {
+			flc.contextPut("errorMandatory", Boolean.TRUE);
+			allOk = false;
+		}
+		
+		return allOk;
+	}
+
+	private boolean areAllSlidersFilledIn() {
+		for (SliderWrapper sliderWrapper: sliderWrappers) {
+			if (!isFilledOut(sliderWrapper)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean isFilledOut(SliderWrapper sliderWrapper) {
+		return isRadioFilledIn(sliderWrapper) || isSliderFilledIn(sliderWrapper) || isNoResponseFilledId(sliderWrapper);
+	}
+
+	private boolean isRadioFilledIn(SliderWrapper sliderWrapper) {
+		SingleSelection radioEl = sliderWrapper.getRadioEl();
+		return radioEl != null && radioEl.isOneSelected();
+	}
+
+	private boolean isSliderFilledIn(SliderWrapper sliderWrapper) {
+		SliderElement sliderEl = sliderWrapper.getSliderEl();
+		return sliderEl != null && sliderEl.hasValue();
+	}
+
+	private boolean isNoResponseFilledId(SliderWrapper sliderWrapper) {
+		SingleSelection noResponseEl = sliderWrapper.getNoResponseEl();
+		return noResponseEl != null && noResponseEl.isOneSelected();
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof SingleSelection || source instanceof SliderElement) {
 			Object uobject = source.getUserObject();

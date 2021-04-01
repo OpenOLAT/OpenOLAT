@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import org.olat.core.gui.UserRequest;
@@ -31,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -48,6 +50,8 @@ import org.olat.modules.forms.model.xml.TextInput;
  */
 public class TextInputEditorController extends FormBasicController implements PageElementEditorController {
 	
+	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
+	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
 	private static final String INPUT_TYPE_TEXT_KEY = "textinput.numeric.text";
 	private static final String INPUT_TYPE_NUMERIC_KEY = "textinput.numeric.numeric";
 	private static final String INPUT_TYPE_DATE_KEY = "textinput.numeric.date";
@@ -68,6 +72,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 	private TextElement rowsEl;
 	private TextElement numericMinEl;
 	private TextElement numericMaxEl;
+	private SingleSelection obligationEl;
 	private FormLink saveButton;
 	private TextInputController textInputCtrl;
 	
@@ -137,6 +142,15 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		numericMaxEl = uifactory.addTextElement( "textinput_nmax_" + CodeHelper.getRAMUniqueID(), 
 				"textinput.numeric.max", 8, numericMax, settingsCont);
 		numericMaxEl.setEnabled(!restrictedEdit);
+		
+		KeyValues obligationKV = new KeyValues();
+		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
+		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
+		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,
+				obligationKV.keys(), obligationKV.values());
+		obligationEl.select(OBLIGATION_MANDATORY_KEY, textInput.isMandatory());
+		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !textInput.isMandatory());
+		obligationEl.setEnabled(!restrictedEdit);
 		
 		saveButton = uifactory.addFormLink("save_" + CodeHelper.getRAMUniqueID(), "save", null, settingsCont, Link.BUTTON);
 		
@@ -255,6 +269,9 @@ public class TextInputEditorController extends FormBasicController implements Pa
 			}
 		}
 		textInput.setNumericMax(numericMax);
+		
+		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
+		textInput.setMandatory(mandatory);
 		
 		textInputCtrl.update();
 		fireEvent(ureq, new ChangePartEvent(textInput));

@@ -97,6 +97,7 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 	public PageElement createPageElement(Locale locale) {
 		MultipleChoice multipleChoice = new MultipleChoice();
 		multipleChoice.setId(UUID.randomUUID().toString());
+		multipleChoice.setMandatory(false);
 		multipleChoice.setPresentation(Presentation.VERTICAL);
 		multipleChoice.setWithOthers(false);
 		

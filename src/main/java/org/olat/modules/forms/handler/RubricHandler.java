@@ -95,6 +95,7 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 	public PageElement createPageElement(Locale locale) {
 		Rubric rubric = new Rubric();
 		rubric.setId(UUID.randomUUID().toString());
+		rubric.setMandatory(false);
 		rubric.setStart(1);
 		rubric.setEnd(5);
 		rubric.setSteps(5);

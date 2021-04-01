@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.ui;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
+
 import java.util.Arrays;
 
 import org.olat.core.gui.UserRequest;
@@ -28,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -46,8 +49,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FileUploadEditorController extends FormBasicController implements PageElementEditorController {
 	
+	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
+	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
+	
 	private SingleSelection fileLimitEl;
 	private SingleSelection mimeTypesEl;
+	private SingleSelection obligationEl;
 	private FileUploadController fileUploadCtrl;
 	
 	private final FileUpload fileUpload;
@@ -103,6 +110,16 @@ public class FileUploadEditorController extends FormBasicController implements P
 		mimeTypesEl.select(getInitialMimeTypeSetKey(), true);
 		mimeTypesEl.addActionListener(FormEvent.ONCHANGE);
 		mimeTypesEl.setEnabled(!restrictedEdit);
+		
+		KeyValues obligationKV = new KeyValues();
+		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
+		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
+		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,
+				obligationKV.keys(), obligationKV.values());
+		obligationEl.select(OBLIGATION_MANDATORY_KEY, fileUpload.isMandatory());
+		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !fileUpload.isMandatory());
+		obligationEl.setEnabled(!restrictedEdit);
+		obligationEl.addActionListener(FormEvent.ONCLICK);
 	}
 
 	private String getInitialMaxFileUploadLimitKey(String[] orderedKeys) {
@@ -132,6 +149,8 @@ public class FileUploadEditorController extends FormBasicController implements P
 			doSetMaxUploadSize();
 		} else if (source == mimeTypesEl) {
 			doSetMimeTypes();
+		} else if (source == obligationEl) {
+			doSetObligation();
 		}
 		fileUploadCtrl.update();
 		fireEvent(ureq, new ChangePartEvent(fileUpload));
@@ -156,6 +175,11 @@ public class FileUploadEditorController extends FormBasicController implements P
 			String selectedKey = mimeTypesEl.getSelectedKey();
 			fileUpload.setMimeTypeSetKey(selectedKey);
 		}
+	}
+	
+	private void doSetObligation() {
+		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
+		fileUpload.setMandatory(mandatory);
 	}
 	
 	@Override

@@ -31,6 +31,7 @@ public class TextInput extends AbstractElement {
 	
 	public static final String TYPE = "formtextinput";
 
+	private boolean mandatory;
 	private int rows;
 	private boolean singleRow;
 	private boolean numeric;
@@ -43,6 +44,14 @@ public class TextInput extends AbstractElement {
 		return TYPE;
 	}
 	
+	public boolean isMandatory() {
+		return mandatory;
+	}
+
+	public void setMandatory(boolean mandatory) {
+		this.mandatory = mandatory;
+	}
+
 	public int getRows() {
 		return rows;
 	}
