@@ -15,7 +15,7 @@
 	</div>
 	#end
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
-		<div class="o_error badResponse">
+		<div class="o_warning badResponse">
 		#if($interaction.minStrings > 0 && $interaction.maxStrings > 0)
 			$r.translate("error.input.extendedText.min.max", $interaction.minStrings, $interaction.maxStrings)
 		#elseif($interaction.minStrings > 0)
