@@ -405,6 +405,11 @@ span.o_qti_gaptext_score_alternative {
 		font-weight: bold;
 	}
 	
+	div.o_warning.badResponse, span.o_warning.badResponse {
+		color: $o-qti-badResponse-warning-color;
+		font-weight: bold;
+	}
+	
 	input.badResponse {
   		border: 1px solid $o-qti-badResponse-color;
 	}
