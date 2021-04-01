@@ -382,7 +382,7 @@ class NewUserForm extends FormBasicController {
 		// expiration
 		expirationDateEl.clearError();
 		if(expirationDateEl.getDate() != null && expirationDateEl.getDate().before(ureq.getRequestTimestamp())) {
-			expirationDateEl.setErrorKey("form.error.date.in.past", null);
+			expirationDateEl.setErrorKey("error.date.in.past", null);
 			allOk &= false;
 		}
 
