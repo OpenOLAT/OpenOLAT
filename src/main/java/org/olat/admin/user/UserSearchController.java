@@ -202,7 +202,6 @@ public class UserSearchController extends BasicController {
 		}
 		
 		tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("error.no.user.found"));
 		tableConfig.setDownloadOffered(false);// no download because user should not download user-list
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), myContent.getTranslator());
 		listenTo(tableCtr);

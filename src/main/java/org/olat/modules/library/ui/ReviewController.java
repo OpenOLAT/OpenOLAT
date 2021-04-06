@@ -78,7 +78,7 @@ public class ReviewController extends BasicController {
 		documentListModel = new ReviewTableDataModel(documentsInVFS, ureq.getLocale());
 
 		TableGuiConfiguration tableGuiConfiguration = new TableGuiConfiguration();
-		tableGuiConfiguration.setTableEmptyMessage(getTranslator().translate("table.empty"));
+		tableGuiConfiguration.setTableEmptyMessage(getTranslator().translate("table.empty"), null, "o_icon_library");
 		documentListTableController = new TableController(tableGuiConfiguration, ureq, wControl, getTranslator());
 		documentListTableController.addControllerListener(this);
 

@@ -106,7 +106,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 		showAllLink.setIconRightCSS("o_icon o_icon_start");
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(trans.translate("efficiencyStatementsPortlet.nostatements"));
+		tableConfig.setTableEmptyMessage(trans.translate("efficiencyStatementsPortlet.nostatements"), null, "o_icon_certificate");
 		tableConfig.setDisplayTableHeader(false);
 		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);

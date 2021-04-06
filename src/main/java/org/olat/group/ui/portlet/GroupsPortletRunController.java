@@ -106,7 +106,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		showAllLink.setIconRightCSS("o_icon o_icon_start");
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(trans.translate("groupsPortlet.nogroups"));
+		tableConfig.setTableEmptyMessage(trans.translate("groupsPortlet.nogroups"), null, "o_icon_group");
 		tableConfig.setDisplayTableHeader(false);
 		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);

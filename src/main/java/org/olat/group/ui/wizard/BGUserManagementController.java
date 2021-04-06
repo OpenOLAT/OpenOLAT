@@ -94,7 +94,9 @@ public class BGUserManagementController extends BasicController {
 
 		Translator userTrans = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());;
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("resources.nomembers"));
+		tableConfig.setTableEmptyMessage(translate("resources.nomembers"), null, "o_icon_group");
+		tableConfig.setTableEmptyNextPrimaryAction(translate("users.addparticipant"), "o_icon_add");
+		
 		usersCtrl = new TableController(tableConfig, ureq, getWindowControl(), userTrans);
 		listenTo(usersCtrl);
 
@@ -156,6 +158,8 @@ public class BGUserManagementController extends BasicController {
 					List<Identity> toRemove = userTableModel.getObjects(tmse.getSelection());
 					removeIdentities(toRemove);
 				}
+			} else if (event.equals(TableController.EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION)) {
+				addMembership(ureq, GroupRoles.participant);
 			}
 		}
 		super.event(ureq, source, event);

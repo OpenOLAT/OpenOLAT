@@ -113,6 +113,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_correction:before { content: $fa-var-pencil; }
 .o_icon_curriculum_element:before { content: $fa-var-cube; }
 .o_icon_customize:before { content: $fa-var-gear;}
+.o_icon_database:before { content: $fa-var-database; }
 .o_icon_deactivate:before { content: $fa-var-ban; }
 .o_icon_delete_item:before { content: $fa-var-trash;}
 .o_icon_delete:before { content: $fa-var-minus-circle; color: #A87E7E;}
@@ -132,6 +133,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_educational_type:before { content: $fa-var-sticky-note;}
 .o_icon_element_after:before { content: $fa-var-arrow-down; }
 .o_icon_element_before:before { content: $fa-var-arrow-up; }
+.o_icon_empty_indicator { @include fa-icon-flip(-1, 1, 0); &:before { content: $fa-var-search;}} 
+.o_icon_empty_objects:before { content: $fa-var-clone; }
 .o_icon_enabled:before { content: $fa-var-circle; }
 .o_icon_enlarge:before { content: $fa-var-search-plus;}
 .o_icon_eportfolio_add:before { content: $fa-var-puzzle-piece;}

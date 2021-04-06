@@ -89,7 +89,7 @@ public class PortletManualSortingConfigurator<T> extends BasicController {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setMultiSelect(true);
 		tableConfig.setSortingEnabled(true); 
-		tableConfig.setTableEmptyMessage("manual.sorting.no.entries.found");
+		tableConfig.setTableEmptyMessage("manual.sorting.no.entries.found", null, null);
 		tableController = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(tableController);
 		int maxNumColumns = tableDataModel.getColumnCount();

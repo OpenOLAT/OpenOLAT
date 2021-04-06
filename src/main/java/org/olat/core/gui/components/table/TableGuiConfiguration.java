@@ -1,5 +1,7 @@
 /**
-* OLAT - Online Learning and Training<br>
+	public void setTableEmptyMessage(final String tableEmptyMessage) {
+		this.tableEmptyMessage = tableEmptyMessage;
+	}* OLAT - Online Learning and Training<br>
 * http://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -55,7 +57,11 @@ public class TableGuiConfiguration {
 	private boolean pageingEnabled = true;
 	private int resultsPerPage = 20;
 	
-	private String tableEmptyMessage;
+	private String tableEmptyMessage; 	// default value set by table controller (i18n)
+	private String tableEmptyHint;		// optional
+	private String tableEmtpyIconCss = "o_icon_empty_objects";
+	private String tableEmptyPrimaryAction; 		// optional
+	private String tableEmptyPrimaryActionIconCss;	// optional
 	
 	private String customCssClass = null; // default is empty
 	private boolean showAllLinkEnabled = true;
@@ -203,10 +209,70 @@ public class TableGuiConfiguration {
 		return tableEmptyMessage;
 	}
 	/**
-	 * @param tableEmptyMessage Messaged displayed then table model is empty or null for default message
+	 * @return String Hint message displayed then table model is empty
+	 */
+	public String getTableEmptyHint() {
+		return tableEmptyHint;
+	}	
+	/**
+	 * @return String CssClass displayed then table model is empty that represents
+	 *         the objects of the table
+	 */
+	public String getTableEmptyIconCss() {
+		return tableEmtpyIconCss;
+	}
+
+	/**
+ 	 * Use new setter method below, method will be removed when refactoring is done
+ 	 * FIXME:FG
+	 * @param tableEmptyMessage
+	 * @deprecated
 	 */
 	public void setTableEmptyMessage(final String tableEmptyMessage) {
+		setTableEmptyMessage(tableEmptyMessage, null, "o_icon_empty_objects");
+	}
+	
+	
+	/**
+	 * @param tableEmptyMessage Messaged displayed then table model is empty or null
+	 *                          for default message
+	 * @param tableEmptyHint    An additional hint displayed below the message to
+	 *                          indicate why the table is empty and what the user
+	 *                          can do about it
+	 * @param tableEmtpyIconCss An icon that represents the objects in the table
+	 */
+	public void setTableEmptyMessage(final String tableEmptyMessage, final String tableEmptyHint, final String tableEmtpyIconCss) {
 		this.tableEmptyMessage = tableEmptyMessage;
+		this.tableEmptyHint = tableEmptyHint;
+		this.tableEmtpyIconCss = tableEmtpyIconCss;
+	}
+	
+	/**
+	 * @return String Button label of the next primary action in case the table is
+	 *         empty
+	 */
+	public String getTableEmptyPrimaryAction() {
+		return tableEmptyPrimaryAction;
+	}
+	
+	/**
+	 * @return String CssClass of the button of next primary action in case the
+	 *         table is empty
+	 */
+	public String getTableEmptyPrimaryActionIconCss() {
+		return tableEmptyPrimaryActionIconCss;
+	}
+	
+	/**
+	 * Show a button below the empty state message with the next primary action for
+	 * the user. Default is to not have such an action.
+	 * 
+	 * @param tableEmptyPrimaryAction
+	 * @param tableEmptyPrimaryActionIconCss
+	 */
+	public void setTableEmptyNextPrimaryAction(final String tableEmptyPrimaryAction, final String tableEmptyPrimaryActionIconCss) {
+		this.tableEmptyPrimaryAction = tableEmptyPrimaryAction;
+		this.tableEmptyPrimaryActionIconCss = tableEmptyPrimaryActionIconCss;
 	}
 	/**
 	 * @return String the additional CSS class used when rendering the table

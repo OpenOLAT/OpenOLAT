@@ -78,10 +78,12 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		addResource = uifactory.addFormLink("cmd.addresource", formLayout, Link.BUTTON);
+		addResource.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		Translator resourceTrans = Util.createPackageTranslator(RepositoryTableModel.class, getLocale(), getTranslator());
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("config.resources.noresources"));
+		tableConfig.setTableEmptyMessage(translate("config.resources.noresources"), null, "o_CourseModule_icon");
+		tableConfig.setTableEmptyNextPrimaryAction(translate("cmd.addresource"), "o_icon_add");
 		resourcesCtr = new TableController(tableConfig, ureq, getWindowControl(), resourceTrans);
 		listenTo(resourcesCtr);
 
@@ -90,6 +92,7 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 		resourcesCtr.setTableDataModel(repoTableModel);
 		
 		((FormLayoutContainer)formLayout).put("resources", resourcesCtr.getInitialComponent());
+		((FormLayoutContainer)formLayout).contextPut("repoTableModel", repoTableModel);
 	}
 	
 	@Override
@@ -128,7 +131,7 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 					resourcesCtr.modelChanged();
 					flc.setDirty(true);
 				}
-			}
+			} 
 		} else if (source == resourcesCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
@@ -143,6 +146,8 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 					int row = resourcesCtr.getIndexOfSortedObject(re);
 					doOpenInfos(ureq, re, row);
 				}
+			} else if (event.equals(TableController.EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION)) {
+				doAddResourceDialog(ureq);
 			}
 		}
 		super.event(ureq, source, event);
@@ -151,18 +156,21 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == addResource) {
-			removeAsListenerAndDispose(repoSearchCtr);
-			removeAsListenerAndDispose(cmc);
-			
-			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{CourseModule.getCourseTypeName()},
-					translate("resources.add"), true, true, true, false, true, false);
-			listenTo(repoSearchCtr);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), this.repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
-			listenTo(cmc);
-			cmc.activate();
+			doAddResourceDialog(ureq);
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
+	}
+	private void doAddResourceDialog(UserRequest ureq) {
+		removeAsListenerAndDispose(repoSearchCtr);
+		removeAsListenerAndDispose(cmc);
+		
+		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{CourseModule.getCourseTypeName()},
+				translate("resources.add"), true, true, true, false, true, false);
+		listenTo(repoSearchCtr);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), this.repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 	@Override
 	protected void formOK(UserRequest ureq) {

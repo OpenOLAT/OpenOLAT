@@ -93,7 +93,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 		showAllLink.setIconRightCSS("o_icon o_icon_start");
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("portlet.no_messages"));
+		tableConfig.setTableEmptyMessage(translate("portlet.no_messages"), null, "o_forum_status_thread_icon");
 		tableConfig.setDisplayTableHeader(false);
 		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);

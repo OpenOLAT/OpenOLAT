@@ -75,7 +75,8 @@ public class GroupListController extends BasicController implements Activateable
 		this.stackPanel = stackPanel;
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("error.no.found"));
+		tableConfig.setTableEmptyMessage(null, null, "o_icon_group");
+		
 		tableConfig.setDownloadOffered(true);
 		tableConfig.setPreferencesOffered(true, "groupListController");
 		

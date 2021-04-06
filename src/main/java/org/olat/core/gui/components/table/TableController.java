@@ -126,7 +126,11 @@ public class TableController extends BasicController {
 	 * retrieve the selected filter
 	 */
 	public static final Event EVENT_FILTER_SELECTED = new Event("filter.selected");
-
+	/**
+	 * Fired when the next primary action is klicked in the emtpy state
+	 */
+	public static final Event EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION = new Event("emtpy.table.next.primary.action");
+	
 
 	private VelocityContainer contentVc;
 
@@ -149,6 +153,7 @@ public class TableController extends BasicController {
 	
 	private Link preferenceLink;
 	private Link downloadLink;
+	private Link tableEmptyNextActionLink;
 
 	
 	/**
@@ -240,10 +245,22 @@ public class TableController extends BasicController {
 
 		// empty table message
 		String tableEmptyMessage = tableConfig.getTableEmptyMessage();
-		if (tableEmptyMessage == null){
+		if (tableEmptyMessage == null) {
 			tableEmptyMessage = translate("default.tableEmptyMessage");
 		}
 		contentVc.contextPut("tableEmptyMessage", tableEmptyMessage);
+		contentVc.contextPut("tableEmptyHint", tableConfig.getTableEmptyHint());
+		contentVc.contextPut("tableEmptyIconCss", tableConfig.getTableEmptyIconCss());
+		
+		// table empty next primary action link
+		if (tableConfig.getTableEmptyPrimaryAction() != null) {
+			tableEmptyNextActionLink = LinkFactory.createCustomLink("tableEmptyNextActionLink",
+					"tableEmptyNextActionLink", tableConfig.getTableEmptyPrimaryAction(), Link.BUTTON + Link.NONTRANSLATED, contentVc, this);
+			tableEmptyNextActionLink.setPrimary(true);
+			if (tableConfig.getTableEmptyPrimaryActionIconCss() != null) {
+				tableEmptyNextActionLink.setIconLeftCSS("o_icon o_icon-fw " + tableConfig.getTableEmptyPrimaryActionIconCss());
+			}
+		}		
 
 		contentVc.contextPut("tableConfig", tableConfig);
 		contentVc.contextPut(VC_VAR_HAS_TABLE_SEARCH, Boolean.FALSE);
@@ -328,6 +345,8 @@ public class TableController extends BasicController {
 		} else if (source == resetLink) {
 			table.setSearchString(null);
 			modelChanged();
+		} else if (source == tableEmptyNextActionLink) {
+			fireEvent(ureq, EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION);
 		}
 	}
 

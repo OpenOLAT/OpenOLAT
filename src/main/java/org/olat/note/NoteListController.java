@@ -86,7 +86,7 @@ public class NoteListController extends BasicController implements GenericEventL
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setDownloadOffered(false);
-		tableConfig.setTableEmptyMessage(translate("note.nonotes"));
+		tableConfig.setTableEmptyMessage(translate("note.nonotes"), null, "o_icon_notes");
 		tableC = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(tableC); // autodispose on controller dispose
 		tableC.addColumnDescriptor(new DefaultColumnDescriptor("table.note.title", 0, "choose", ureq.getLocale()));

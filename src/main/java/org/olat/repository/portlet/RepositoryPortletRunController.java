@@ -91,7 +91,7 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		showAllLink.setIconRightCSS("o_icon o_icon_start");
 			
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(trans.translate("repositoryPortlet.noentry"));
+		tableConfig.setTableEmptyMessage(trans.translate("repositoryPortlet.noentry"), null, "o_CourseModule_icon");
 		tableConfig.setDisplayTableHeader(false);
 		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);

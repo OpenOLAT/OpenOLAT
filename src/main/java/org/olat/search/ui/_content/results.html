@@ -1,8 +1,13 @@
 #if($hasResult)
 	#if ($emptyResult)
-		<div id="o_search_results_header" class="o_search_no_results o_important">
-			<i class="o_icon o_icon_important"> </i>
-	  		$r.translate("search.empty.result",$searchResults.getNumberOfIndexDocuments())
+		<div class="o_empty_state">
+			<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_icon_database"></i></div>
+			<h3 class="o_empty_msg">
+				$r.translate("search.empty.result")
+			</h3>
+			<div class="o_empty_hint">
+				$r.translate("search.empty.result.hint",$searchResults.getNumberOfIndexDocuments())
+			</div>
 		</div>
   	#else
 	  	<div id="o_search_results_header" class="clearfix o_block">

@@ -125,7 +125,7 @@ public class MailListController extends BasicController implements Activateable2
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setDownloadOffered(true);
 		tableConfig.setPreferencesOffered(true, "MailBox");		
-		tableConfig.setTableEmptyMessage(translate("mail.empty.box"));
+		tableConfig.setTableEmptyMessage(translate("mail.empty.box"), null, "o_icon_mail");
 		tableConfig.setMultiSelect(true);
 
 		mainVC = createVelocityContainer("mails");

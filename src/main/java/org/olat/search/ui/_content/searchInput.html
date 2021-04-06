@@ -28,17 +28,22 @@
 
 <div id="o_search_results">
 	#if ($hasDidYouMean)
-		<div id="o_search_results_header" class="o_search_did_you_mean o_important">
-			<i class="o_icon o_icon_important"> </i>
-	  		$r.translate("search.did.you.mean")
-	      	#set ($wordCounter = 0)
-	      	<ul class="list-inline o_search_did_you_mean_words">
-			  	#foreach( $link in $didYouMeanLinks )
-			    	#set ($linkname = "didYouMeanLink-$wordCounter")
-			    	<li>$r.render($linkname)</li>
-			    	#set ($wordCounter = $wordCounter + 1)
-			  	#end
-	      	</ul>
+		<div class="o_empty_state">
+			<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_icon_database"></i></div>
+			<h3 class="o_empty_msg">
+				$r.translate("search.did.you.mean")
+			</h3>
+			<div class="o_empty_hint">
+				$r.translate("search.did.you.mean.hint")
+		      	#set ($wordCounter = 0)
+		      	<ul class="list-inline o_search_did_you_mean_words">
+				  	#foreach( $link in $didYouMeanLinks )
+				    	#set ($linkname = "didYouMeanLink-$wordCounter")
+				    	<li>$r.render($linkname)</li>
+				    	#set ($wordCounter = $wordCounter + 1)
+				  	#end
+		      	</ul>				
+			</div>
 		</div>
 	#else
 		$r.render("resultList")

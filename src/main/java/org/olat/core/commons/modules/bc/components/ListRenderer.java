@@ -48,6 +48,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -140,16 +141,27 @@ public class ListRenderer {
 		LicenseHandler licenseHandler = CoreSpringFactory.getImpl(FolderLicenseHandler.class);
 		licensesEnabled = licenseModule.isEnabled(licenseHandler);
 
+		VFSContainer currentContainer = fc.getCurrentContainer();
 		List<VFSItem> children = fc.getCurrentContainerChildren();
 		// folder empty?
 		if (children.isEmpty()) {
-			sb.append("<div class=\"o_bc_empty\"><i class='o_icon o_icon_warn'></i> ")
-			  .append(translator.translate("NoFiles"))
-			  .append("</div>");
+			sb.append("<div class=\"o_empty_state\">")
+				.append("<div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon o_icon_files'></i></div>")
+				.append("<h3 class=\"o_empty_msg\">").append(translator.translate("NoFiles")).append("</h3>");
+			if (currentContainer.canWrite() == VFSConstants.YES) {
+				sb.append("<div class=\"o_empty_hint\">").append(translator.translate("NoFiles.hint.readwrite")).append("</div>")
+					.append("<div class=\"o_empty_action\"><a class='btn btn-default btn-primary' ");
+				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "ul" ))
+					.append("><i class='o_icon o_icon_upload o_icon-fw'></i> ")
+					.append(translator.translate("ul"));
+				sb.append("</a></div>");
+			} else {
+				sb.append("<div class=\"o_empty_hint\">").append(translator.translate("NoFiles.hint.readonly")).append("</div>");					
+			}
+			sb.append("</div>");			
 			return;
 		}
 
-		VFSContainer currentContainer = fc.getCurrentContainer();
 		boolean canVersion = vfsVersionModule.isEnabled() && currentContainer.canVersion() == VFSConstants.YES;
 		String sortOrder = fc.getCurrentSortOrder();
 		boolean sortAsc = fc.isCurrentSortAsc();

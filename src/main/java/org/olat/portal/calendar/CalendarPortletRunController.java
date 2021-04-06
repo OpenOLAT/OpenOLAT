@@ -104,7 +104,7 @@ public class CalendarPortletRunController extends BasicController {
 		calendarVC.contextPut("today", today);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("calendar.noEvents"));
+		tableConfig.setTableEmptyMessage(translate("calendar.noEvents"), null, "o_icon_calendar");
 		tableConfig.setDisplayTableHeader(false);
 		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);

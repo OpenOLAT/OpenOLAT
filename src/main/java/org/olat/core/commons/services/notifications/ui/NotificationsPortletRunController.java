@@ -109,7 +109,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 		showAllLink.setIconRightCSS("o_icon o_icon_start");
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(trans.translate("notificationsPortlet.nonotifications"));
+		tableConfig.setTableEmptyMessage(trans.translate("notificationsPortlet.nonotifications"), null, "o_icon_notification");
 		tableConfig.setDisplayTableHeader(false);
 		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);

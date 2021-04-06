@@ -160,10 +160,69 @@ ul.o_dropdown {
 	&.o_scorm_not_attempted { background: none; }
 }
 
-/* briefcase (folder) module */
-.o_bc_empty{
-	@extend %o_important;
+/* Empty state in various modules */
+.o_empty_state {
+	text-align: center;
+	margin: 2em auto;
+	padding: 0, 5em;
+	max-width: 45em;
+	
+	.o_empty_visual {
+		display: inline-block;
+		position: relative;
+		
+		.o_icon_empty_indicator {
+			position: absolute;
+			z-index: 2;
+			left: -20%;
+			bottom: 10%; 
+			font-weight: bold;
+			font-size: 5em;
+			color: $o-emtpy-indicator-color;
+			text-shadow: 5px 10px 10px rgba(0,0,0,.2);
+		}
+		.o_icon_empty_indicator + i {
+			font-weight: bold;
+			font-size: 10em;
+			color: $o-emtpy-icon-color;
+		}
+		
+	}	
+	.o_empty_msg {
+		margin-top: 1.5em;
+		color: $o-emtpy-msg-color;	
+		font-size: 2em;
+	}
+	.o_empty_hint {
+		margin: 1.5em;
+	}
+	.o_empty_action {
+		margin: 1.5em;
+	}
+	
+	@media (max-width: $screen-xs-max) { 
+		.o_empty_visual {
+			.o_icon_empty_indicator {
+				font-size: 3em;
+			}
+			.o_icon_empty_indicator + i {
+				font-size: 6em;
+			}		
+		}
+		.o_empty_msg {
+			margin-top: 1em;
+			font-size: 1.5em;
+		}
+		.o_empty_hint {
+			margin: 1em;
+		}
+	}
 }
+.o_portlet .o_empty_state {
+	font-size: 0.8em;
+}
+
+/* briefcase (folder) module */
 .o_bc_meta, .tooltip {
 	@extend %o_small;
 	h5, .o_author, .o_comment {

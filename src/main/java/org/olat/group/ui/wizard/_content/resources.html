@@ -1,4 +1,6 @@
+#if($repoTableModel.getRowCount() != 0)
 <div class="btn-toolbar"><div class="pull-right">
 	$r.render("cmd.addresource")
 </div></div>
+#end
 $r.render("resources")

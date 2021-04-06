@@ -107,7 +107,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 		showAllLink.setIconRightCSS("o_icon o_icon_start");
 				
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(trans.translate("bookmarksPortlet.nobookmarks"));
+		tableConfig.setTableEmptyMessage(trans.translate("bookmarksPortlet.nobookmarks"), null, "o_icon_bookmark_header");
 		tableConfig.setDisplayTableHeader(false);
 		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);

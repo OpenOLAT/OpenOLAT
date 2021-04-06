@@ -116,7 +116,12 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		
 		Translator resourceTrans = Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator());
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("resources.noresources"));
+		if (managed) {
+			tableConfig.setTableEmptyMessage(translate("resources.noresources"), null, "o_CourseModule_icon");
+		} else {
+			tableConfig.setTableEmptyMessage(translate("resources.noresources"), translate("resources.noresources.hint"), "o_CourseModule_icon");
+			tableConfig.setTableEmptyNextPrimaryAction(translate("cmd.addresource"), "o_icon_add");						
+		}
 		resourcesCtr = new TableController(tableConfig, ureq, getWindowControl(), resourceTrans);
 		listenTo(resourcesCtr);
 
@@ -131,8 +136,10 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		mainVC = createVelocityContainer("tab_bgResources");
 		addTabResourcesButton = LinkFactory.createButtonSmall("cmd.addresource", mainVC, this);
 		addTabResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addTabResourcesButton.setPrimary(true);
 		addTabResourcesButton.setVisible(!managed);
 		mainVC.put("resources", resourcesCtr.getInitialComponent());
+		mainVC.contextPut("repoTableModel", repoTableModel); // to check for empty model
 		putInitialPanel(mainVC);
 	}
 
@@ -179,6 +186,8 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 					int row = resourcesCtr.getIndexOfSortedObject(re);
 					doOpenInfos(ureq, re, row);
 				}
+			} else if (event.equals(TableController.EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION)) {
+				doAddRepositoryEntry(ureq);
 			}
 		} else if (source == confirmRemoveResource) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
