@@ -235,7 +235,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		
 		// prepare table for run view
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("cl.table.empty"));
+		tableConfig.setTableEmptyMessage(translate("cl.table.empty"), null, "o_cl_icon");
 		tableConfig.setDownloadOffered(true);
 		tableConfig.setPreferencesOffered(true, "ExtendedManageTable");
 		
@@ -278,7 +278,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		editTableData = new ChecklistRunTableDataModel(checkpoints, getTranslator());
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("cl.table.empty"));
+		tableConfig.setTableEmptyMessage(translate("cl.table.empty"), null, "o_cl_icon");
 		tableConfig.setDownloadOffered(true);
 		tableConfig.setPreferencesOffered(true, "ExtendedEditTable");
 		

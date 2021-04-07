@@ -70,7 +70,7 @@ public class OpenMeetingsAdminRoomsController extends BasicController {
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("table.empty"));
+		tableConfig.setTableEmptyMessage(translate("table.empty"), null, "o_cal_icon");
 		tableConfig.setDownloadOffered(true);
 		tableConfig.setSortingEnabled(true);
 		tableConfig.setDisplayTableHeader(true);

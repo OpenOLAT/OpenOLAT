@@ -1,7 +1,14 @@
 <fieldset>
 	<legend>$r.contextHelpWithWrapper("Communication and Collaboration#_vitero")
 	$r.translate("booking.admin.title")</legend>
-	
+	#if($bookingDisplays.isEmpty())
+	<div class="o_empty_state">
+		<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_cal_icon"></i></div>
+		<h3 class="o_empty_msg">
+			$r.translate("table.empty")			
+		</h3>
+	</div>
+	#else
 	<table class="table">
 		<thead>
 			<tr>
@@ -25,6 +32,7 @@
 		#end
 		</tbody>
 	</table>
+	#end
 	<div class="o_button_group">
 		$r.render("buttons-cont")
 	</div>

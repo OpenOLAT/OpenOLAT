@@ -124,7 +124,7 @@ public class ChecklistDisplayController extends BasicController {
 		runTableData = new ChecklistRunTableDataModel(visibleCheckpoints, getTranslator());
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("cl.table.empty"));
+		tableConfig.setTableEmptyMessage(translate("cl.table.empty"), null, "o_cl_icon");
 		
 		removeAsListenerAndDispose(runChecklistTable);
 		runChecklistTable = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());

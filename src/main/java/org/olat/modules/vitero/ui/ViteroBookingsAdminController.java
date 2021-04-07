@@ -73,7 +73,7 @@ public class ViteroBookingsAdminController extends BasicController {
 		viteroManager = (ViteroManager) CoreSpringFactory.getBean("viteroManager");
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("table.empty"));
+		tableConfig.setTableEmptyMessage(translate("table.empty"), null, "o_cal_icon");
 		tableConfig.setDownloadOffered(true);
 		tableConfig.setSortingEnabled(true);
 		tableConfig.setDisplayTableHeader(true);

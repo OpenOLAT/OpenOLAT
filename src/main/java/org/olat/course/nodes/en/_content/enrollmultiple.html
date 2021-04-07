@@ -33,18 +33,16 @@
 	</div>
 	#end
 	
-	<div class="o_course_run_statusinfo">	
+	<div class="o_course_run_statusinfo"><div class="o_note">
 	#if($isEnrolledView)
-		<p>
 		#if($isWaitingList)
 		  $r.translate("waitinglist.explain")
 		#else
 		  $r.translate("enrolled.explain")
 		#end		
-		</p>		
 	#else
 		$r.translate("enroll.explain")
 	#end
-	</div>
+	</div></div>
 	
 	$r.render("grouplisttable")

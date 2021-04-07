@@ -577,7 +577,7 @@ public class DENManager {
 	 */
 	protected TableController createRunDatesTable(UserRequest ureq, WindowControl wControl, Translator trans, DENRunTableDataModel tableData) {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(trans.translate("dates.table.empty"));
+		tableConfig.setTableEmptyMessage(trans.translate("dates.table.empty"), null, "o_den_icon");
 		TableController tableCntrl = new TableController(tableConfig, ureq, wControl, trans);
 		tableCntrl.addColumnDescriptor(new StrongColumnDescriptor("dates.table.date", 0, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.begin", 1, null, ureq.getLocale()));
@@ -610,7 +610,7 @@ public class DENManager {
 	 */
 	protected TableController createListParticipantsTable(UserRequest ureq, WindowControl wControl, Translator trans, DENListTableDataModel tableData) {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(trans.translate("dates.table.empty"));
+		tableConfig.setTableEmptyMessage(trans.translate("dates.table.empty"), null, "o_den_icon");
 		TableController tableCntrl = new TableController(tableConfig, ureq, wControl, trans);
 		tableCntrl.addColumnDescriptor(new StrongColumnDescriptor("dates.table.date", 0, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.begin", 1, null, ureq.getLocale()));
@@ -645,7 +645,7 @@ public class DENManager {
 	 */
 	protected TableController createParticipantsTable(UserRequest ureq, WindowControl wControl, Translator trans, DENParticipantsTableDataModel tableData) {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(trans.translate("dates.table.empty"));
+		tableConfig.setTableEmptyMessage(trans.translate("dates.table.empty"), null, "o_den_icon");
 		TableController tableCntrl = new TableController(tableConfig, ureq, wControl, trans);
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.participant.firstname", 0, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.participant.lastname", 1, null, ureq.getLocale()));

@@ -111,7 +111,7 @@ public class CourseCalendarPeekViewController extends BasicController {
 		List<KalendarEvent> nextThreeEvents = nextEvents.subList(0, Math.min(3, nextEvents.size()));
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("calendar.noEvents"));
+		tableConfig.setTableEmptyMessage(translate("calendar.noEvents"), null, "o_cal_icon");
 		tableConfig.setDisplayTableHeader(false);
 		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);

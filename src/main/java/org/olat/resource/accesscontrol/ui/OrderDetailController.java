@@ -147,7 +147,7 @@ public class OrderDetailController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 			tableConfig.setDownloadOffered(false);		
-			tableConfig.setTableEmptyMessage(translate("orders.empty"));
+			tableConfig.setTableEmptyMessage(translate("orders.empty"), null, "o_ac_order_status_prepayment_icon");
 
 			tableCtr = new TableController(tableConfig, ureq, getWindowControl(), Collections.<ShortName>emptyList(), null, null , null, false, getTranslator());
 			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("order.item.name", 0, null, getLocale()));

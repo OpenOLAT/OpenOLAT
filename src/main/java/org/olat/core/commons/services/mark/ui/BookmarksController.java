@@ -91,7 +91,7 @@ public class BookmarksController extends BasicController {
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setDownloadOffered(false);
-		tableConfig.setTableEmptyMessage(translate("bookmarks.nobookmarks"));
+		tableConfig.setTableEmptyMessage(translate("bookmarks.nobookmarks"), null, "o_icon_bookmark_header");
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.bm.title", 0, "choose", getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.bm.resource", 1, null, getLocale()));

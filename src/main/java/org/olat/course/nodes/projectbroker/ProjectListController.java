@@ -402,7 +402,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		numberOfCustomFieldInTable = 0;
 		numberOfEventInTable = 0;
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("projectlist.no.projects"));
+		tableConfig.setTableEmptyMessage(translate("projectlist.no.projects"), null, "o_projectbroker_icon");
 		tableConfig.setPreferencesOffered(true, "projectbrokerList");
 		tableConfig.setShowAllLinkEnabled(false);// Do not allow show all because many entries takes too long to render
 

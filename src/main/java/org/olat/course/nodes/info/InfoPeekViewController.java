@@ -85,7 +85,7 @@ public class InfoPeekViewController extends BasicController {
 	
 	private void init(UserRequest ureq) {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("peekview.noInfos"));
+		tableConfig.setTableEmptyMessage(translate("peekview.noInfos"), null, "o_infomsg_icon");
 		tableConfig.setDisplayTableHeader(false);
 		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);

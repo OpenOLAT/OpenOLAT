@@ -56,10 +56,10 @@ public class TableGuiConfiguration {
 
 	private boolean pageingEnabled = true;
 	private int resultsPerPage = 20;
-	
+
 	private String tableEmptyMessage; 	// default value set by table controller (i18n)
 	private String tableEmptyHint;		// optional
-	private String tableEmtpyIconCss = "o_icon_empty_objects";
+	private String tableEmtpyIconCss;	// defaults value set by table controller
 	private String tableEmptyPrimaryAction; 		// optional
 	private String tableEmptyPrimaryActionIconCss;	// optional
 	
@@ -221,17 +221,6 @@ public class TableGuiConfiguration {
 	public String getTableEmptyIconCss() {
 		return tableEmtpyIconCss;
 	}
-
-	/**
- 	 * Use new setter method below, method will be removed when refactoring is done
- 	 * FIXME:FG
-	 * @param tableEmptyMessage
-	 * @deprecated
-	 */
-	public void setTableEmptyMessage(final String tableEmptyMessage) {
-		setTableEmptyMessage(tableEmptyMessage, null, "o_icon_empty_objects");
-	}
-	
 	
 	/**
 	 * @param tableEmptyMessage Messaged displayed then table model is empty or null

@@ -82,7 +82,7 @@ public class CourseAreasController extends MainLayoutBasicController {
 
 		Translator resourceTrans = Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator());
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("resources.noresources"));
+		tableConfig.setTableEmptyMessage(translate("resources.noresources"), null, "o_icon_courseareas");
 		tableCtrl = new TableController(tableConfig, ureq, getWindowControl(), resourceTrans);
 		listenTo(tableCtrl);
 		

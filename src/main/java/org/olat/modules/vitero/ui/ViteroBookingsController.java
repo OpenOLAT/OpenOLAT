@@ -76,7 +76,7 @@ public class ViteroBookingsController extends BasicController {
 		this.subIdentifier = subIdentifier;
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("table.empty"));
+		tableConfig.setTableEmptyMessage(translate("table.empty"), null, "o_cal_icon");
 		tableConfig.setSortingEnabled(true);
 		tableCtr = new TableController(tableConfig, ureq, wControl, getTranslator());
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("group.name", ViteroBookingDataModel.Column.name.ordinal(), null, getLocale()));

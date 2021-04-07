@@ -74,7 +74,7 @@ public class OpenMeetingsRecordingsController extends BasicController {
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("recordings.empty"));
+		tableConfig.setTableEmptyMessage(translate("recordings.empty"), null, "o_FileResource-VIDEO_icon");
 		
 		Translator trans = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), trans);

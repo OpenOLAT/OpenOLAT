@@ -130,6 +130,7 @@ public class TableController extends BasicController {
 	 * Fired when the next primary action is klicked in the emtpy state
 	 */
 	public static final Event EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION = new Event("emtpy.table.next.primary.action");
+	public static final String TABLE_EMPTY_ICON = "o_icon_empty_objects";
 	
 
 	private VelocityContainer contentVc;
@@ -248,9 +249,13 @@ public class TableController extends BasicController {
 		if (tableEmptyMessage == null) {
 			tableEmptyMessage = translate("default.tableEmptyMessage");
 		}
+		String tableEmptyIconCss = tableConfig.getTableEmptyIconCss();
+		if (tableEmptyIconCss == null) {
+			tableEmptyIconCss = TABLE_EMPTY_ICON;
+		}
 		contentVc.contextPut("tableEmptyMessage", tableEmptyMessage);
 		contentVc.contextPut("tableEmptyHint", tableConfig.getTableEmptyHint());
-		contentVc.contextPut("tableEmptyIconCss", tableConfig.getTableEmptyIconCss());
+		contentVc.contextPut("tableEmptyIconCss", tableEmptyIconCss);
 		
 		// table empty next primary action link
 		if (tableConfig.getTableEmptyPrimaryAction() != null) {

@@ -75,7 +75,7 @@ public class ViteroAdminBookingMembersController extends BasicController {
 		mainVC = createVelocityContainer("vms_user_admin");
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("users.empty"));
+		tableConfig.setTableEmptyMessage(translate("users.empty"), null, "o_icon_user");
 		
 		Translator trans = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), trans);

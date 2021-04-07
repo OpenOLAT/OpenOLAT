@@ -332,7 +332,7 @@ public class ENRunController extends BasicController implements GenericEventList
 
 	private TableController createTableController(UserRequest ureq, boolean hasAnyWaitingList) {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("grouplist.no.groups"));
+		tableConfig.setTableEmptyMessage(translate("grouplist.no.groups"), null, "o_icon_group");
 
 		removeAsListenerAndDispose(tableCtr);
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());

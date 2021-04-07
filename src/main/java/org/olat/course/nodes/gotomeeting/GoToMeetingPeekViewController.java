@@ -62,7 +62,7 @@ public class GoToMeetingPeekViewController extends BasicController {
 		filterMyFutureTrainings(trainings);
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("table.empty"));
+		tableConfig.setTableEmptyMessage(translate("table.empty"), null, "o_cal_icon");
 		tableConfig.setDisplayTableHeader(false);
 		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);

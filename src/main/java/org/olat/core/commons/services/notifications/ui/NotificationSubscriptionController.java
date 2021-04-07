@@ -75,7 +75,7 @@ public class NotificationSubscriptionController extends BasicController {
 		this.subscriberIdentity = subscriberIdentity;
 		// Build the table that contains all the subscriptions
 		TableGuiConfiguration tableGuiPrefs = new TableGuiConfiguration();
-		tableGuiPrefs.setTableEmptyMessage(translate("subscriptions.no.subscriptions"));
+		tableGuiPrefs.setTableEmptyMessage(translate("subscriptions.no.subscriptions"), translate("subscriptions.no.subscriptions.hint"), "o_icon_notification");
 		tableGuiPrefs.setPreferencesOffered(true, "notifications-" + adminColumns);
 		subscriptionsTableCtr = new TableController(tableGuiPrefs, ureq, wControl, getTranslator());
 		subscriptionsTableModel = new NotificationSubscriptionTableDataModel(getTranslator());
