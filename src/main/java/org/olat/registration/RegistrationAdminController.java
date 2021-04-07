@@ -21,7 +21,9 @@
 package org.olat.registration;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
@@ -29,20 +31,32 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.course.CourseModule;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.controllers.RepositoryEntryFilter;
+import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -78,14 +92,16 @@ public class RegistrationAdminController extends FormBasicController {
 	private FormLayoutContainer domainsContainer;
 	private FormLayoutContainer pendingPropContainer;
 	private FormLayoutContainer staticPropContainer;
+	private FormLayoutContainer autoEnrolmentCoursesContainer;
+	private FormLink openCourseBrowserLink;
+	private CloseableModalController cmc;
+	private ReferencableEntriesSearchController selectCoursesController;
 	
-
 	private static final String[] pendingRegistrationKeys = new String[] { 
 			RegistrationPendingStatus.active.name(),
 			RegistrationPendingStatus.pending.name(),
 			RegistrationPendingStatus.pendingMatchingProperties.name()
 		};
-	
 	private static final String[] enableRegistrationKeys = new String[]{ "on" };
 	private final String[] propertyKeys;
 	private final String[] propertyValues;
@@ -100,6 +116,9 @@ public class RegistrationAdminController extends FormBasicController {
 	private OrganisationService organisationService;
 	@Autowired
 	private UserPropertiesConfig userPropertiesConfig;
+	@Autowired
+	private RepositoryService repositoryService;
+	
 	private final Translator userPropTranslator;
 	
 	public RegistrationAdminController(UserRequest ureq, WindowControl wControl) {
@@ -168,6 +187,8 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		initOrganisationsEl(settingsContainer);
 		
+		initAutoEnrolment(settingsContainer);
+		
 		validUntilGuiEl = uifactory.addTextElement("admin.registration.valid.until.gui", 20, registrationModule.getValidUntilHoursGui().toString(), settingsContainer);
 		validUntilGuiEl.setMandatory(true);
 		validUntilRestEl = uifactory.addTextElement("admin.registration.valid.until.rest", 20, registrationModule.getValidUntilHoursRest().toString(), settingsContainer);
@@ -195,6 +216,30 @@ public class RegistrationAdminController extends FormBasicController {
 		formLayout.add(buttonGroupLayout);
 		
 		updateUI();	
+	}
+	
+	private void initAutoEnrolment(FormItemContainer formLayout) {
+		String page = Util.getPackageVelocityRoot(getClass()) + "/auto_enrolment_courses.html";
+		autoEnrolmentCoursesContainer = FormLayoutContainer.createCustomFormLayout("auto_enrolment", getTranslator(), page);
+		autoEnrolmentCoursesContainer.setRootForm(mainForm);
+		autoEnrolmentCoursesContainer.setLabel("auto.enrolment.courses.label", null);
+		openCourseBrowserLink = uifactory.addFormLink("auto.enrolment.select.courses", autoEnrolmentCoursesContainer, Link.BUTTON_SMALL);
+		
+		Map<Long, String> courseNames = new HashMap<>();
+		
+		for (Long courseKey : registrationModule.getAutoEnrolmentCourseKeys()) {
+			String courseName = repositoryService.loadByKey(courseKey).getDisplayname();
+			FormLink removeLink = uifactory.addFormLink("remove_course_" + courseKey.toString(), "remove_course", "remove", null, autoEnrolmentCoursesContainer, Link.LINK);
+			removeLink.setElementCssClass("o_button_textstyle");
+			removeLink.setUserObject(courseKey);
+			
+			courseNames.put(courseKey, courseName);
+		}		
+		
+		autoEnrolmentCoursesContainer.contextPut("autoEnrolmentCourseKeys", registrationModule.getAutoEnrolmentCourseKeys());
+		autoEnrolmentCoursesContainer.contextPut("autoEnrolmentCourseNames", courseNames);
+		
+		formLayout.add(autoEnrolmentCoursesContainer);
 	}
 	
 	private void initDomainForm(FormItemContainer formLayout) {
@@ -333,9 +378,61 @@ public class RegistrationAdminController extends FormBasicController {
 			updateUI();
 		} else if(source == pendingRegistrationStatusEl) {
 			updateUI();
+		} else if(source == openCourseBrowserLink) {
+			openCourseBrowser(ureq);
+		} else if (source instanceof FormLink) {
+			if (((FormLink) source).getCmd().equals("remove_course")) {
+				if (source.getUserObject() instanceof Long) {
+					registrationModule.removeCourseFromAutoEnrolment((Long) source.getUserObject());
+					initForm(ureq);
+				}
+			}
 		}
 		
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == selectCoursesController) {
+			if (event.equals(ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED) ||
+				event.equals(ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED)) {
+				
+				for (RepositoryEntry entry : selectCoursesController.getSelectedEntries()) {
+					registrationModule.addCourseToAutoEnrolment(entry.getKey());
+				}
+				
+				initForm(ureq);
+			} 
+			
+			cleanUp();
+		} else if(source == cmc) {
+			cleanUp();
+		}
+	}
+	
+	private void openCourseBrowser(UserRequest ureq) {
+		cleanUp();
+		
+		selectCoursesController = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{ CourseModule.getCourseTypeName() }, new AutoEnrolmentCourseFilter(), null, translate("auto.enrolment.add"), false, false, true, false, true, false, Can.all);
+		listenTo(selectCoursesController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectCoursesController.getInitialComponent(), true);
+		listenTo(cmc);
+		
+		cmc.activate();
+	}
+	
+	private void cleanUp() {
+		if (cmc != null && cmc.isCloseable()) {
+			cmc.deactivate();
+		}
+		
+		removeAsListenerAndDispose(selectCoursesController);
+		removeAsListenerAndDispose(cmc);
+		
+		selectCoursesController = null;
+		cmc = null;
 	}
 	
 	private void updateUI() {
@@ -595,5 +692,14 @@ public class RegistrationAdminController extends FormBasicController {
 		public String getValue() {
 			return propertyValueEl.getValue();
 		}
+	}
+	
+	private static class AutoEnrolmentCourseFilter implements RepositoryEntryFilter {
+
+		@Override
+		public boolean accept(RepositoryEntry re) {
+			return re.getEntryStatus().equals(RepositoryEntryStatusEnum.published);
+		}
+		
 	}
 }

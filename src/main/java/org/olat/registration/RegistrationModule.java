@@ -28,6 +28,7 @@ package org.olat.registration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -62,8 +63,11 @@ import org.springframework.stereotype.Service;
 public class RegistrationModule extends AbstractSpringModule {
 	private static final Logger log = Tracing.createLoggerFor(RegistrationModule.class);
 	
+	public static final String SEPARATOR = ";";
+	
 	private static final String EMAIL_VLIDATION_ENABLED = "email.validation.enabled";
 	private static final String ACCOUNT_EXPIRATION = "registration.account.expiration";
+	private static final String AUTO_ENROLMENT_COURSES = "registration.auto.enrolment.courses";
 	
 	@Value("${registration.enableSelfRegistration}")
 	private boolean selfRegistrationEnabled;
@@ -79,6 +83,8 @@ public class RegistrationModule extends AbstractSpringModule {
 	private Integer validUntilHoursRest;
 	@Value("${registration.organisation.key:default}")
 	private String selfRegistrationOrganisationKey;
+	@Value("${registration.auto.enrolment.courses:}")
+	private String selfRegistrationAutoEnrolmentCourseKeys;
 	@Value("${registration.account.expiration}")
 	private String accountExpirationInDays;
 	
@@ -345,6 +351,51 @@ public class RegistrationModule extends AbstractSpringModule {
 		setStringProperty("registration.organisation.key", key, true);
 	}
 	
+	public List<Long> getAutoEnrolmentCourseKeys() {
+		List<Long> courseKeys = new ArrayList<>();
+		
+		if (StringHelper.containsNonWhitespace(selfRegistrationAutoEnrolmentCourseKeys)) {
+			for (String courseKey : selfRegistrationAutoEnrolmentCourseKeys.split(SEPARATOR)) {
+				try {
+					courseKeys.add(Long.valueOf(courseKey));
+				} catch (Exception e) {
+					log.atError().log("Self-registration conifg contains errors: " + courseKey + " is not a numerical value!");
+				}
+			}
+		}
+		
+		return courseKeys;
+	}
+	
+	public String getAutoEnrolmentRawValue() {
+		return this.selfRegistrationAutoEnrolmentCourseKeys;
+	}
+	
+	public void addCourseToAutoEnrolment(Long courseKey) {
+		List<Long> courseKeys = getAutoEnrolmentCourseKeys();
+		
+		if (!courseKeys.contains(courseKey)) {
+			courseKeys.add(courseKey);
+			
+			saveCourseKeys(courseKeys);
+		}
+	}
+	
+	public void removeCourseFromAutoEnrolment(Long courseKey) {
+		List<Long> courseKeys = getAutoEnrolmentCourseKeys();
+		
+		if (courseKeys.contains(courseKey)) {
+			courseKeys.remove(courseKey);
+			
+			saveCourseKeys(courseKeys);
+		}
+	}
+	
+	public void saveCourseKeys(List<Long> courseKeys) {
+		this.selfRegistrationAutoEnrolmentCourseKeys = courseKeys.stream().map(String::valueOf).collect(Collectors.joining(SEPARATOR));
+		setStringProperty(AUTO_ENROLMENT_COURSES, selfRegistrationAutoEnrolmentCourseKeys, true);
+	}
+	
 	public String getRegistrationPendingPropertyName1() {
 		return registrationPendingPropertyName1;
 	}
@@ -551,6 +602,14 @@ public class RegistrationModule extends AbstractSpringModule {
 			staticPropertyMappingValue = propValueObj;
 		} else {
 			staticPropertyMappingValue = null; // reset
+		}
+		
+		// Auto-enrolment courses
+		String selfRegistrationAutoEnrolmentCourseKeysString = getStringPropertyValue(AUTO_ENROLMENT_COURSES, true);
+		if (StringHelper.containsNonWhitespace(selfRegistrationAutoEnrolmentCourseKeysString)) {
+			selfRegistrationAutoEnrolmentCourseKeys = selfRegistrationAutoEnrolmentCourseKeysString;
+		} else {
+			selfRegistrationAutoEnrolmentCourseKeys = null;
 		}
 		
 		accountExpirationInDays = getStringPropertyValue(ACCOUNT_EXPIRATION, accountExpirationInDays);		

@@ -1,0 +1,17 @@
+#if($r.isNotNull($autoEnrolmentCourseKeys) && $r.isNotEmpty($autoEnrolmentCourseKeys)) 
+	#foreach($key in $autoEnrolmentCourseKeys)
+		<div>
+			[$key] $autoEnrolmentCourseNames.get($key) $r.render("remove_course_" + $key)
+		</div>
+	#end
+#end
+
+#if($r.available("auto.enrolment.select.courses"))
+	<div>
+		$r.render("auto.enrolment.select.courses")
+	</div>
+#end
+
+<div class="o_info">
+	$r.translate("auto.enrolment.info")
+</div>

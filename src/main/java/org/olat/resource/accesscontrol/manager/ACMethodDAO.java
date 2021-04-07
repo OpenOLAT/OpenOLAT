@@ -38,6 +38,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.registration.SelfRegistrationAutoAccessMethod;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.Offer;
@@ -74,6 +75,7 @@ public class ACMethodDAO {
 
 	public void enableAutoMethods(boolean autoEnabled) {
 		enableMethod(ShibbolethAutoAccessMethod.class, autoEnabled);
+		enableMethod(SelfRegistrationAutoAccessMethod.class, autoEnabled);
 	}
 
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable) {

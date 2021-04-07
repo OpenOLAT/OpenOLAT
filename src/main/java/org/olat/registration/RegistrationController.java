@@ -71,6 +71,7 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.dispatcher.LocaleNegotiator;
+import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.olat.user.UserPropertiesConfig;
@@ -129,6 +130,8 @@ public class RegistrationController extends BasicController implements Activatea
 	private RegistrationManager registrationManager;
 	@Autowired
 	private UserPropertiesConfig userPropertiesConfig;
+	@Autowired
+	private AutoAccessManager autoAccessManager;
 
 	/**
 	 * Controller implementing registration workflow.
@@ -548,6 +551,13 @@ public class RegistrationController extends BasicController implements Activatea
 		} else {
 			// update other user properties from form
 			User persistedUser = persistedIdentity.getUser();
+			
+			// Enrol user to auto enroled courses
+			SelfRegistrationAdvanceOrderInput input = new SelfRegistrationAdvanceOrderInput();
+			input.setIdentity(persistedIdentity);
+			input.setRawValues(registrationModule.getAutoEnrolmentRawValue());
+			autoAccessManager.createAdvanceOrders(input);
+			autoAccessManager.grantAccessToCourse(persistedIdentity);
 			
 			//add eventually static value
 			if(registrationModule.isStaticPropertyMappingEnabled()) {

@@ -128,6 +128,7 @@
 		<class>org.olat.group.BusinessGroupImpl</class>
 		<class>org.olat.note.NoteImpl</class>
 		<class>org.olat.registration.TemporaryKeyImpl</class>
+		<class>org.olat.registration.SelfRegistrationAutoAccessMethod</class>
 		<class>org.olat.repository.RepositoryEntry</class>
 		<class>org.olat.repository.model.CatalogEntryImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryShortImpl</class>
