@@ -31,12 +31,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
@@ -127,16 +124,7 @@ public class EdusharingCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		Controller controller;
-		Roles roles = ureq.getUserSession().getRoles();
-		if (roles.isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(AppointmentsCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-		} else {
-			controller = new EdusharingRunController(ureq, wControl, this);
-		}
+		Controller controller = new EdusharingRunController(ureq, wControl, this);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, ICON_CSS);
 		return new NodeRunConstructionResult(ctrl);
 	}
@@ -279,7 +267,7 @@ public class EdusharingCourseNode extends AbstractAccessableCourseNode {
 		String width = config.getStringValue(EdusharingCourseNode.CONFIG_ES_WINDOW_WIDTH);
 		element.setWidth(width);
 		
-		String hight = config.getStringValue(EdusharingCourseNode.CONFIG_ES_WINDOW_HEIGHT);;
+		String hight = config.getStringValue(EdusharingCourseNode.CONFIG_ES_WINDOW_HEIGHT);
 		element.setHight(hight);
 		
 		return element;
