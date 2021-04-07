@@ -1246,6 +1246,7 @@ public class I18nManager {
 			case "fa": country = "AF"; break;
 			case "sq": country = "AL"; break;
 			case "da": country = "DK"; break;
+			case "tr": country = "TR"; break;
 			case "jp": lang = "ja"; country = "JP"; break;
 			default: country = lang.toUpperCase(); break;
 		}
@@ -1257,11 +1258,11 @@ public class I18nManager {
 			}
 		}
 		
-		if(!found) {
-			System.out.println("Not found:" +  lang + " " + country);
+		if(!found && log.isDebugEnabled()) {
+			log.debug("Not found: {} {}", lang, country);
 			for(Locale alocale:Locale.getAvailableLocales()) {
 				if(alocale.getLanguage().equals(lang)) {
-					System.out.println("Alt:" +  alocale.getLanguage() + " " + alocale.getCountry() + " " + alocale.getDisplayCountry());
+					log.debug("Alt: {} {} {}", alocale.getLanguage(), alocale.getCountry(), alocale.getDisplayCountry());
 				}
 			}
 		}
