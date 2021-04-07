@@ -19,13 +19,15 @@
  */
 package org.olat.ims.lti13;
 
+import java.security.PublicKey;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
-import org.olat.ims.lti13.model.LTI13SharedToolWithInfos;
+import org.olat.ims.lti13.model.LTI13PlatformWithInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -71,28 +73,43 @@ public interface LTI13Service {
 	public List<LTI13ToolDeployment> getToolDeployments(LTI13Tool tool);
 	
 	/**
-	 * @param entry The course or the learn resource
-	 * @return A non-persisted shared tool with a pre filled client-id
+	 * @return A non-persisted platform - tool with a pre filled client-id
 	 */
-	public LTI13SharedTool createTransientSharedTool(RepositoryEntry entry);
+	public LTI13Platform createTransientPlatform(LTI13PlatformScope type);
 	
-	public LTI13SharedTool createTransientSharedTool(BusinessGroup businessGroup);
+	public LTI13Platform updatePlatform(LTI13Platform tool);
 	
-	public LTI13SharedTool updateSharedTool(LTI13SharedTool tool);
+	public LTI13Platform getPlatform(String issuer, String clientId);
 	
-	public List<LTI13SharedToolWithInfos> getSharedToolsWithInfos(RepositoryEntryRef entry);
+	public LTI13Platform getPlatformByKey(Long key);
 	
-	public List<LTI13SharedToolWithInfos> getSharedToolsWithInfos(BusinessGroupRef businessGroup);
+	public List<LTI13PlatformWithInfos> getPlatformWithInfos();
 	
-	public LTI13SharedTool getSharedTool(String issuer, String clientId);
+	public List<LTI13Platform> getPlatforms();
 	
-	public LTI13SharedTool getSharedToolByKey(Long key);
+	/**
+	 * 
+	 * @param deploymentId The deployment ID
+	 * @param platform  The platform
+	 * @param repositoryEntry The repository entry
+	 * @param businessGroup The group
+	 * @return A deployment
+	 */
+	public LTI13SharedToolDeployment createSharedToolDeployment(String deploymentId, LTI13Platform platform,
+			RepositoryEntry repositoryEntry, BusinessGroup businessGroup);
 	
-	public LTI13SharedToolDeployment getOrCreateSharedToolDeployment(String deploymentId, LTI13SharedTool sharedTool);
+	public LTI13SharedToolDeployment updateSharedToolDeployment(LTI13SharedToolDeployment deployment);
+	
+	public LTI13SharedToolDeployment getSharedToolDeployment(String deploymentId, LTI13Platform platform);
 	
 	public void updateSharedToolServiceEndpoint(String contextId, ServiceType type, String endpointUrl, LTI13SharedToolDeployment deployment);
 	
-	public List<LTI13SharedToolDeployment> getSharedToolDeployments(LTI13SharedTool sharedTool);
+	public List<LTI13SharedToolDeployment> getSharedToolDeployments(LTI13Platform sharedTool);
+	
+	public List<LTI13SharedToolDeployment> getSharedToolDeployments(RepositoryEntryRef entry);
+	
+	public List<LTI13SharedToolDeployment> getSharedToolDeployments(BusinessGroupRef businessGroup);
+	
 	
 	/**
 	 * @return The last valid public/private key
@@ -100,6 +117,8 @@ public interface LTI13Service {
 	public LTI13Key getLastPlatformKey();
 	
 	public List<LTI13Key> getPlatformKeys();
+	
+	public PublicKey getPlatformPublicKey(String kid);
 	
 	public LTI13Key getKey(String jwkSetUri, String kid);
 	
@@ -109,11 +128,11 @@ public interface LTI13Service {
 	
 	public String subIdentity(Identity identity, String issuer);
 	
-	public Identity matchIdentity(Claims claims);
+	public Identity matchIdentity(Claims claims, LTI13Platform platform);
 	
-	public void checkMembership(Identity identity, LTI13SharedTool tool);
+	public void checkMembership(Identity identity, GroupRoles role, LTI13SharedToolDeployment deployment);
 	
 	
-	public OAuth2AccessToken getAccessToken(LTI13SharedTool tool, List<String> scopes);
+	public OAuth2AccessToken getAccessToken(LTI13Platform tool, List<String> scopes);
 	
 }

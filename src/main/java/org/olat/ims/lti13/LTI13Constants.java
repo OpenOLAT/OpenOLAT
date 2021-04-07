@@ -92,13 +92,16 @@ public class LTI13Constants {
 	}
 	
 	public enum Roles {
-		LEARNER("Learner", "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner"),
-		INSTRUCTOR("Instructor", "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor"),
-		INSTITUTION_STUDENT(null, "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Student"),
-	    MENTOR("Mentor", "http://purl.imsglobal.org/vocab/lis/v2/membership#Mentor"),
+		// Membership
+		LEARNER("Learner",                      "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner"),
+		INSTRUCTOR("Instructor",                "http://purl.imsglobal.org/vocab/lis/v2/membership#Instructor"),
+	    MENTOR("Mentor",                        "http://purl.imsglobal.org/vocab/lis/v2/membership#Mentor"),
 	    TEACHING_ASSISTANT("TeachingAssistant", "http://purl.imsglobal.org/vocab/lis/v2/membership/Instructor#TeachingAssistant"),
-	    CONTENT_DEVELOPER("ContentDeveloper", "http://purl.imsglobal.org/vocab/lis/v2/membership#ContentDeveloper"),
-	    ADMINISTRATOR("Administrator", "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator")
+	    CONTENT_DEVELOPER("ContentDeveloper",   "http://purl.imsglobal.org/vocab/lis/v2/membership#ContentDeveloper"),
+		// Institution
+		INSTITUTION_INSTRUCTOR("Instructor", "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor"),
+		INSTITUTION_STUDENT(null,            "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Student"),
+	    ADMINISTRATOR("Administrator",       "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator")
 	    ;
 	    
 	    private final String roleV2;

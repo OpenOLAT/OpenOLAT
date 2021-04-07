@@ -21,7 +21,7 @@ package org.olat.ims.lti13.model;
 
 import java.util.List;
 
-import org.olat.ims.lti13.LTI13SharedTool;
+import org.olat.ims.lti13.LTI13Platform;
 
 /**
  * 
@@ -34,7 +34,7 @@ public class AccessTokenKey {
 	private final String scopes;
 	private final Long sharedToolKey;
 	
-	public AccessTokenKey(LTI13SharedTool sharedTool, List<String> scopeList) {
+	public AccessTokenKey(LTI13Platform sharedTool, List<String> scopeList) {
 		this.sharedToolKey = sharedTool.getKey();
 		this.scopes = scopeList == null ? "" : String.join("|", scopeList);
 	}

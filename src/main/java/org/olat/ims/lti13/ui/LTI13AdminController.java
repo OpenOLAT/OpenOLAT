@@ -45,7 +45,7 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class LTI13AdminController extends BasicController implements Activateable2 {
 	
-
+	private Link platformsLink;
 	private Link configurationLink;
 	private Link externalToolsLink;
 	private final SegmentViewComponent segmentView;
@@ -53,6 +53,7 @@ public class LTI13AdminController extends BasicController implements Activateabl
 	
 	private LTI13AdminExternalToolsController toolsCtrl;
 	private LTI13AdminConfigurationController configCtrl;
+	private LTI13AdminPlatformsController platformsCtrl;
 	
 	public LTI13AdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -62,6 +63,8 @@ public class LTI13AdminController extends BasicController implements Activateabl
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		configurationLink = LinkFactory.createLink("lti13.configuration", mainVC, this);
 		segmentView.addSegment(configurationLink, true);
+		platformsLink = LinkFactory.createLink("lti13.external.platforms", mainVC, this);
+		segmentView.addSegment(platformsLink, false);
 		externalToolsLink = LinkFactory.createLink("lti13.external.tools", mainVC, this);
 		segmentView.addSegment(externalToolsLink, false);
 
@@ -83,6 +86,9 @@ public class LTI13AdminController extends BasicController implements Activateabl
 		if("Configuration".equalsIgnoreCase(type)) {
 			doOpenConfiguration(ureq);
 			segmentView.select(configurationLink);
+		} else if("Platforms".equalsIgnoreCase(type)) {
+			doOpenPlatforms(ureq);
+			segmentView.select(platformsLink);
 		} else if("Tools".equalsIgnoreCase(type)) {
 			doOpenTools(ureq);
 			segmentView.select(externalToolsLink);
@@ -98,6 +104,8 @@ public class LTI13AdminController extends BasicController implements Activateabl
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == configurationLink) {
 					doOpenConfiguration(ureq);
+				} else if (clickedLink == platformsLink) {
+					doOpenPlatforms(ureq);
 				} else if (clickedLink == externalToolsLink) {
 					doOpenTools(ureq);
 				}
@@ -115,6 +123,17 @@ public class LTI13AdminController extends BasicController implements Activateabl
 		mainVC.put("segmentCmp", configCtrl.getInitialComponent());
 	}
 	
+	private void doOpenPlatforms(UserRequest ureq) {
+		if(platformsCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Platforms", 0l), null);
+			platformsCtrl = new LTI13AdminPlatformsController(ureq, bwControl);
+			listenTo(platformsCtrl);
+		} else {
+			addToHistory(ureq, platformsCtrl);
+		}
+		mainVC.put("segmentCmp", platformsCtrl.getInitialComponent());
+	}
+	
 	private void doOpenTools(UserRequest ureq) {
 		if(toolsCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Tools", 0l), null);
@@ -125,6 +144,4 @@ public class LTI13AdminController extends BasicController implements Activateabl
 		}
 		mainVC.put("segmentCmp", toolsCtrl.getInitialComponent());
 	}
-
-
 }

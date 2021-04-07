@@ -27,7 +27,8 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.ims.lti13.LTI13Service;
-import org.olat.ims.lti13.LTI13SharedTool;
+import org.olat.ims.lti13.LTI13Platform;
+import org.olat.ims.lti13.LTI13PlatformScope;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
 import org.olat.ims.lti13.LTI13SharedToolService;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
@@ -115,7 +116,7 @@ public class LTI13SharedToolServiceDAOTest extends OlatTestCase {
 		String clientId = UUID.randomUUID().toString();
 		String endpointUrl = "https://openolat.edu/lti13/lineitems/3/lineitem/4?type_id=1";
 		LTI13SharedToolDeployment deployment = createSharedToolDeployment(issuer, clientId);
-		RepositoryEntry entry = deployment.getSharedTool().getEntry();
+		RepositoryEntry entry = deployment.getEntry();
 		
 		LTI13SharedToolService service = lti13SharedToolServiceDao.createServiceEndpoint("4", ServiceType.lineitem, endpointUrl, deployment);
 		dbInstance.commit();
@@ -137,15 +138,15 @@ public class LTI13SharedToolServiceDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-1");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		
-		LTI13SharedTool sharedTool = lti13Service.createTransientSharedTool(entry);
-		sharedTool.setClientId(clientId);
-		sharedTool.setIssuer(issuer);
-		sharedTool.setAuthorizationUri(issuer + "/ltideploy/auth");
-		sharedTool.setTokenUri(issuer + "/ltideploy/token");
-		sharedTool.setJwkSetUri(issuer + "/ltideploy/jwks");
-		sharedTool =  lti13Service.updateSharedTool(sharedTool);
+		LTI13Platform platform = lti13Service.createTransientPlatform(LTI13PlatformScope.PRIVATE);
+		platform.setClientId(clientId);
+		platform.setIssuer(issuer);
+		platform.setAuthorizationUri(issuer + "/ltideploy/auth");
+		platform.setTokenUri(issuer + "/ltideploy/token");
+		platform.setJwkSetUri(issuer + "/ltideploy/jwks");
+		platform =  lti13Service.updatePlatform(platform);
 		
-		LTI13SharedToolDeployment deployment = lti13Service.getOrCreateSharedToolDeployment("4", sharedTool);
+		LTI13SharedToolDeployment deployment = lti13Service.createSharedToolDeployment("4", platform, entry, null);
 		dbInstance.commit();
 		return deployment;
 	}

@@ -19,9 +19,9 @@
  */
 package org.olat.ims.lti13.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,15 +37,20 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.ContactMessage;
 import org.olat.group.BusinessGroup;
+import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Service;
-import org.olat.ims.lti13.LTI13SharedTool;
-import org.olat.ims.lti13.model.LTI13SharedToolWithInfos;
-import org.olat.ims.lti13.ui.LTI13SharedToolsTableModel.SharedToolsCols;
-import org.olat.ims.lti13.ui.events.AddDeploymentEvent;
+import org.olat.ims.lti13.LTI13SharedToolDeployment;
+import org.olat.ims.lti13.ui.LTI13SharedToolDeploymentsTableModel.SharedToolsCols;
+import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,20 +63,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LTI13ResourceAccessController extends FormBasicController {
 	
-	private FormLink shareToolButton;
+	private FormLink addDeploymentButton;
+	private FormLink askForDeploymentButton;
 	private FlexiTableElement tableEl;
-	private LTI13SharedToolsTableModel tableModel;
+	private LTI13SharedToolDeploymentsTableModel tableModel;
 	
-	private int count = 0;
 	private RepositoryEntry entry;
 	private BusinessGroup businessGroup;
+	private final boolean allowedToAddDeployment;
 
 	private CloseableModalController cmc;
-	private LTI13EditSharedToolController shareToolCtrl;
-	private CloseableCalloutWindowController calloutCtrl;
+	private ContactFormController emailCtrl;
+	private LTI13SharedToolDeploymentController viewDeploymentCtrl;
 	private LTI13EditSharedToolDeploymentController addDeploymentCtrl;
-	private LTI13SharedToolDeploymentCalloutController deploymentListCtrl;
-	
+	private LTI13EditSharedToolDeploymentController editDeploymentCtrl;
+
+	@Autowired
+	private LTI13Module lti13Module;
 	@Autowired
 	private LTI13Service lti13Service;
 
@@ -79,6 +87,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		super(ureq, wControl, "access_resource");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
+		allowedToAddDeployment = allowedToAddDeployments(ureq, lti13Module.getDeploymentRolesListForRepositoryEntries());
 
 		initForm(ureq);
 		loadModel();
@@ -88,25 +97,45 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		super(ureq, wControl, "access_resource");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.businessGroup = businessGroup;
+		allowedToAddDeployment = allowedToAddDeployments(ureq, lti13Module.getDeploymentRolesListForRepositoryEntries());
 
 		initForm(ureq);
 		loadModel();
+	}
+	
+	private boolean allowedToAddDeployments(UserRequest ureq, List<OrganisationRoles> rolesAllowedTo) {
+		Roles roles = ureq.getUserSession().getRoles();
+		for(OrganisationRoles role:rolesAllowedTo) {
+			if(roles.hasRole(role)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("access.lti13.title");
 		
-		shareToolButton = uifactory.addFormLink("share.tool", formLayout, Link.BUTTON);
-		shareToolButton.setIconLeftCSS("o_icon o_icon_add");
+		if(allowedToAddDeployment) {
+			addDeploymentButton = uifactory.addFormLink("add.deployment", formLayout, Link.BUTTON);
+			addDeploymentButton.setIconLeftCSS("o_icon o_icon_add");
+		} else {
+			askForDeploymentButton = uifactory.addFormLink("ask.deployment", formLayout, Link.BUTTON);
+			askForDeploymentButton.setIconLeftCSS("o_icon o_icon_add");
+		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SharedToolsCols.platformName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SharedToolsCols.issuer, new ServerCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SharedToolsCols.clientId));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SharedToolsCols.deployments));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SharedToolsCols.deploymentId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("view", translate("view"), "view"));
+		if(allowedToAddDeployment) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+		}
 		
-		tableModel = new LTI13SharedToolsTableModel(columnsModel, getLocale());
+		tableModel = new LTI13SharedToolDeploymentsTableModel(columnsModel, getLocale());
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
@@ -120,25 +149,13 @@ public class LTI13ResourceAccessController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<LTI13SharedToolWithInfos> infos;
+		List<LTI13SharedToolDeployment> rows;
 		if(entry != null) {
-			infos = lti13Service.getSharedToolsWithInfos(entry);
+			rows = lti13Service.getSharedToolDeployments(entry);
 		} else if(businessGroup != null) {
-			infos = lti13Service.getSharedToolsWithInfos(businessGroup);
+			rows = lti13Service.getSharedToolDeployments(businessGroup);
 		} else {
-			infos = List.of();
-		}
-
-		List<SharedToolRow> rows = new ArrayList<>(infos.size());
-		for(LTI13SharedToolWithInfos info:infos) {
-			LTI13SharedTool tool = info.getSharedTool();
-			FormLink deploymentLink = uifactory.addFormLink("deployments_" + (++count), "deployments", String.valueOf(info.getNumOfDeployments()), null,
-					flc, Link.LINK | Link.NONTRANSLATED);
-			SharedToolRow row = new SharedToolRow(tool.getKey(), tool.getClientId(), tool.getIssuer(),
-					info.getNumOfDeployments());
-			row.setDeploymentLink(deploymentLink);
-			deploymentLink.setUserObject(row);
-			rows.add(row);
+			rows = List.of();
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -146,52 +163,48 @@ public class LTI13ResourceAccessController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(shareToolCtrl == source || addDeploymentCtrl == source) {
+		if(editDeploymentCtrl == source || addDeploymentCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(deploymentListCtrl == source) {
-			calloutCtrl.deactivate();
+		} else if(viewDeploymentCtrl == source || emailCtrl == source) {
+			cmc.deactivate();
 			cleanUp();
-			if(event instanceof AddDeploymentEvent) {
-				doAddDeployment(ureq, ((AddDeploymentEvent)event).getSharedTool());
-			}
-		} else if(cmc == source || calloutCtrl == source) {
+		} else if(cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(deploymentListCtrl);
+		removeAsListenerAndDispose(viewDeploymentCtrl);
+		removeAsListenerAndDispose(editDeploymentCtrl);
 		removeAsListenerAndDispose(addDeploymentCtrl);
-		removeAsListenerAndDispose(shareToolCtrl);
-		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(emailCtrl);
 		removeAsListenerAndDispose(cmc);
-		deploymentListCtrl = null;
+		viewDeploymentCtrl = null;
+		editDeploymentCtrl = null;
 		addDeploymentCtrl = null;
-		shareToolCtrl = null;
-		calloutCtrl = null;
+		emailCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(shareToolButton == source) {
-			doAddShareTool(ureq);
+		if(addDeploymentButton == source) {
+			doAddDeployment(ureq);
+		} else if(askForDeploymentButton == source) {
+			doAskDeployment(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				if("edit".equals(se.getCommand())) {
-					doEditSharedTool(ureq, tableModel.getObject(se.getIndex()));
+					doEditDeployment(ureq, tableModel.getObject(se.getIndex()));
+				} else if("view".equals(se.getCommand())) {
+					doViewDeployment(ureq, tableModel.getObject(se.getIndex()));
 				}
-			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if("deployments".equals(link.getCmd()) && link.getUserObject() instanceof SharedToolRow) {
-				doOpenDeploymentsList(ureq, (FormLink)source, (SharedToolRow)link.getUserObject());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -202,57 +215,80 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		//
 	}
 	
-	private void doOpenDeploymentsList(UserRequest ureq, FormLink link, SharedToolRow row) {
-		LTI13SharedTool sharedTool = lti13Service.getSharedToolByKey(row.getKey());
-		deploymentListCtrl = new LTI13SharedToolDeploymentCalloutController(ureq, getWindowControl(), sharedTool);
-		listenTo(deploymentListCtrl);
-		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), deploymentListCtrl.getInitialComponent(),
-				link.getFormDispatchId(), "", true, "");
-		listenTo(calloutCtrl);
-		calloutCtrl.activate();
-	}
-	
-	private void doAddShareTool(UserRequest ureq) {
-		if(guardModalController(shareToolCtrl)) return;
+	private void doAddDeployment(UserRequest ureq) {
+		if(guardModalController(addDeploymentCtrl)) return;
 
-		LTI13SharedTool sharedTool;
-		if(entry != null) {
-			sharedTool = lti13Service.createTransientSharedTool(entry);
-		} else if(businessGroup != null) {
-			sharedTool = lti13Service.createTransientSharedTool(businessGroup);
-		} else {
-			return;
-		}
+		addDeploymentCtrl = new LTI13EditSharedToolDeploymentController(ureq, getWindowControl(), entry, businessGroup);
+		listenTo(addDeploymentCtrl);
 		
-		shareToolCtrl = new LTI13EditSharedToolController(ureq, getWindowControl(), sharedTool);
-		listenTo(shareToolCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", shareToolCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), "close", addDeploymentCtrl.getInitialComponent(),
 				true, translate("add.tool"));
 		cmc.activate();
 		listenTo(cmc);
 	}
 	
-	private void doEditSharedTool(UserRequest ureq, SharedToolRow row) {
-		if(guardModalController(shareToolCtrl)) return;
+	private void doEditDeployment(UserRequest ureq, LTI13SharedToolDeployment deployment) {
+		if(guardModalController(editDeploymentCtrl)) return;
 
-		LTI13SharedTool sharedTool = lti13Service.getSharedToolByKey(row.getKey());
-		shareToolCtrl = new LTI13EditSharedToolController(ureq, getWindowControl(), sharedTool);
-		listenTo(shareToolCtrl);
+		editDeploymentCtrl = new LTI13EditSharedToolDeploymentController(ureq, getWindowControl(), deployment);
+		listenTo(editDeploymentCtrl);
 		
-		String title = translate("edit.tool", new String[] { row.getIssuer() });
-		cmc = new CloseableModalController(getWindowControl(), "close", shareToolCtrl.getInitialComponent(), true, title);
+		String title = translate("edit.tool", new String[] { deployment.getPlatform().getIssuer() });
+		cmc = new CloseableModalController(getWindowControl(), "close", editDeploymentCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}
 	
-	private void doAddDeployment(UserRequest ureq, LTI13SharedTool sharedTool) {
-		addDeploymentCtrl = new LTI13EditSharedToolDeploymentController(ureq, getWindowControl(), sharedTool);
-		listenTo(addDeploymentCtrl);
+	private void doViewDeployment(UserRequest ureq, LTI13SharedToolDeployment deployment) {
+		if(guardModalController(editDeploymentCtrl)) return;
 		
-		String title = translate("add.deployment");
-		cmc = new CloseableModalController(getWindowControl(), "close", addDeploymentCtrl.getInitialComponent(), true, title);
+		viewDeploymentCtrl = new LTI13SharedToolDeploymentController(ureq, getWindowControl(), deployment);
+		listenTo(viewDeploymentCtrl);
+		
+		String title = translate("view.deployment.tool", new String[] { deployment.getPlatform().getIssuer() });
+		cmc = new CloseableModalController(getWindowControl(), "close", viewDeploymentCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doAskDeployment(UserRequest ureq) {
+		if(guardModalController(emailCtrl)) return;
+		
+		ContactMessage cmsg = new ContactMessage(getIdentity());
+		
+		if(entry != null) {
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(entry);
+			String uri = BusinessControlFactory.getInstance().getAsAuthURIString(entries, true);
+			
+			String[] args = new String[] {
+				entry.getDisplayname(),
+				entry.getExternalRef(),
+				uri	
+			};
+			cmsg.setSubject(translate("mail.deployment.entry.subject", args));
+			cmsg.setBodyText(translate("mail.deployment.entry.body", args));
+		} else if(businessGroup != null) {
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(businessGroup);
+			String uri = BusinessControlFactory.getInstance().getAsAuthURIString(entries, true);
+			
+			String[] args = new String[] {
+				businessGroup.getName(),
+				uri
+			};
+			cmsg.setSubject(translate("mail.deployment.group.subject", args));
+			cmsg.setBodyText(translate("mail.deployment.group.body", args));
+		}
+		
+		String mailAddress = WebappHelper.getMailConfig("mailSupport");
+		ContactList contact = new ContactList(mailAddress);
+		contact.add(mailAddress);
+		cmsg.addEmailTo(contact);
+		
+		emailCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
+		listenTo(emailCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", emailCtrl.getInitialComponent(),
+				true, translate("ask.deployment"));
 		cmc.activate();
 		listenTo(cmc);
 	}

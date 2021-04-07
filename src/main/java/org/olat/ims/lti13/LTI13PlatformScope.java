@@ -19,36 +19,15 @@
  */
 package org.olat.ims.lti13;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
-import org.olat.group.BusinessGroup;
-import org.olat.repository.RepositoryEntry;
-
 /**
  * 
- * Initial date: 22 févr. 2021<br>
+ * Initial date: 23 févr. 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LTI13SharedToolDeployment extends CreateInfo, ModifiedInfo {
+public enum LTI13PlatformScope {
 	
-	public Long getKey();
-	
-	/**
-	 * Claim: https://purl.imsglobal.org/spec/lti/claim/deployment_id
-	 * 
-	 * @return
-	 */
-	public String getDeploymentId();
-	
-	public void setDeploymentId(String deploymentId);
-	
-	public String getToolUrl();
-	
-	public LTI13Platform getPlatform();
-	
-	public RepositoryEntry getEntry();
-
-	public BusinessGroup getBusinessGroup();
+	SHARED,
+	PRIVATE
 
 }

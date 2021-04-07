@@ -49,20 +49,20 @@ public class OIDCApi extends DefaultApi20 {
 	
 	private static final Logger log = Tracing.createLoggerFor(OIDCApi.class);
 
-	private LTI13SharedTool sharedTool;
+	private LTI13Platform platform;
 	private LTI13SharedToolDeployment deployment;
 	
 	public OIDCApi() {
 		//
 	}
 	
-	public OIDCApi(LTI13SharedToolDeployment deployment, LTI13SharedTool sharedTool) {
-		this.sharedTool = sharedTool;
+	public OIDCApi(LTI13SharedToolDeployment deployment, LTI13Platform platform) {
+		this.platform = platform;
 		this.deployment = deployment;
 	}
 	
-	public LTI13SharedTool getTool() {
-		return sharedTool;
+	public LTI13Platform getPlatform() {
+		return platform;
 	}
 	
 	public LTI13SharedToolDeployment getDeployment() {
@@ -74,12 +74,12 @@ public class OIDCApi extends DefaultApi20 {
 	}
 	
 	public String getJwksSetUri() {
-		return sharedTool.getJwkSetUri();
+		return platform.getJwkSetUri();
 	}
 
 	@Override
 	public String getAccessTokenEndpoint() {
-		return sharedTool.getTokenUri();
+		return platform.getTokenUri();
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class OIDCApi extends DefaultApi20 {
 	@Override
 	protected String getAuthorizationBaseUrl() {
 	   	StringBuilder authorizeUrl = new StringBuilder();
-	   	String authorizationUri = sharedTool.getAuthorizationUri();
+	   	String authorizationUri = platform.getAuthorizationUri();
     	authorizeUrl
     		.append(authorizationUri).append("?")
     		.append("nonce=").append(UUID.randomUUID().toString());		

@@ -19,6 +19,7 @@
  */
 package org.olat.ims.lti13;
 
+import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 
@@ -88,5 +89,20 @@ public class LTI13JsonUtil {
 		JSONObject keyset = new JSONObject();
 		keyset.put("keys", jar);
 		return keyset.toString();
+	}
+	
+	public static String publicKeysToJwks(String kid, PublicKey key) {
+		RSAPublicKey publicKey = (RSAPublicKey)key;
+		JWK jwk = new RSAKey.Builder(publicKey)
+				.algorithm(JWSAlgorithm.parse(key.getAlgorithm()))
+			    .keyUse(KeyUse.SIGNATURE)
+			    .keyID(kid)
+			    .build();
+		
+		String keyStr = jwk.toJSONString();
+		JSONObject kobj = new JSONObject(keyStr);
+		kobj.put("kid", kid);
+		kobj.put("use", "sig");
+		return kobj.toString();
 	}
 }

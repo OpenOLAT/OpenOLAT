@@ -159,7 +159,7 @@
 		<class>org.olat.instantMessaging.model.InstantMessageNotificationImpl</class>
 		<class>org.olat.ims.lti13.model.LTI13ToolImpl</class>
 		<class>org.olat.ims.lti13.model.LTI13ToolDeploymentImpl</class>
-		<class>org.olat.ims.lti13.model.LTI13SharedToolImpl</class>
+		<class>org.olat.ims.lti13.model.LTI13PlatformImpl</class>
 		<class>org.olat.ims.lti13.model.LTI13SharedToolDeploymentImpl</class>
 		<class>org.olat.ims.lti13.model.LTI13SharedToolServiceImpl</class>
 		<class>org.olat.ims.lti13.model.LTI13KeyImpl</class>

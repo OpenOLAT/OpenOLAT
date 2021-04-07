@@ -20,7 +20,7 @@
 package org.olat.ims.lti13.ui.events;
 
 import org.olat.core.gui.control.Event;
-import org.olat.ims.lti13.LTI13SharedTool;
+import org.olat.ims.lti13.LTI13Platform;
 
 /**
  * 
@@ -34,14 +34,14 @@ public class AddDeploymentEvent extends Event {
 
 	public static final String ADD_DEPLOYMENT = "add-deployment";
 	
-	private final LTI13SharedTool sharedTool;
+	private final LTI13Platform sharedTool;
 	
-	public AddDeploymentEvent(LTI13SharedTool sharedTool) {
+	public AddDeploymentEvent(LTI13Platform sharedTool) {
 		super(ADD_DEPLOYMENT);
 		this.sharedTool = sharedTool;
 	}
 	
-	public LTI13SharedTool getSharedTool() {
+	public LTI13Platform getSharedTool() {
 		return sharedTool;
 	}
 

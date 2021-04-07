@@ -20,6 +20,7 @@
 package org.olat.ims.lti13.model;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,10 +33,17 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
-import org.olat.ims.lti13.LTI13SharedTool;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupImpl;
+import org.olat.ims.lti13.LTI13Platform;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -64,11 +72,16 @@ public class LTI13SharedToolDeploymentImpl implements LTI13SharedToolDeployment,
     @Column(name="l_deployment_id", nullable=false, insertable=true, updatable=false)
 	private String deploymentId;
 	
-	@ManyToOne(targetEntity=LTI13SharedToolImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_shared_tool_id", nullable=false, insertable=true, updatable=false)
-	private LTI13SharedTool sharedTool;
-
+	@ManyToOne(targetEntity=LTI13PlatformImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_platform_id", nullable=false, insertable=true, updatable=false)
+	private LTI13Platform platform;
 	
+	@ManyToOne(targetEntity=RepositoryEntry.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_entry_id", nullable=true, insertable=true, updatable=false)
+	private RepositoryEntry entry;
+	@ManyToOne(targetEntity=BusinessGroupImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_group_id", nullable=true, insertable=true, updatable=false)
+	private BusinessGroup businessGroup;
 
 	@Override
 	public Long getKey() {
@@ -108,12 +121,46 @@ public class LTI13SharedToolDeploymentImpl implements LTI13SharedToolDeployment,
 	}
 
 	@Override
-	public LTI13SharedTool getSharedTool() {
-		return sharedTool;
+	public LTI13Platform getPlatform() {
+		return platform;
 	}
 
-	public void setSharedTool(LTI13SharedTool tool) {
-		this.sharedTool = tool;
+	public void setPlatform(LTI13Platform platform) {
+		this.platform = platform;
+	}
+
+	@Override
+	public RepositoryEntry getEntry() {
+		return entry;
+	}
+
+	public void setEntry(RepositoryEntry entry) {
+		this.entry = entry;
+	}
+
+	@Override
+	public BusinessGroup getBusinessGroup() {
+		return businessGroup;
+	}
+
+	public void setBusinessGroup(BusinessGroup businessGroup) {
+		this.businessGroup = businessGroup;
+	}
+
+	@Override
+	@Transient
+	public String getToolUrl() {
+		OLATResourceable ores;
+		if(getEntry() != null) {
+			ores = getEntry();
+		} else if(getBusinessGroup() != null) {
+			ores = getBusinessGroup();
+		} else {
+			return null;
+		}
+		
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
+		return BusinessControlFactory.getInstance().getAsAuthURIString(entries, true);
 	}
 
 	@Override

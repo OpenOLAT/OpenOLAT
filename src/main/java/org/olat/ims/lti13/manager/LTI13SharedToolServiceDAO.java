@@ -94,8 +94,8 @@ public class LTI13SharedToolServiceDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select toolservice from ltisharedtoolserivce as toolservice")
 		  .append(" inner join fetch toolservice.deployment as deployment")
-		  .append(" inner join fetch deployment.sharedTool as tool")
-		  .append(" where tool.entry.key=:entryKey and tool.issuer in (:issuers) and toolservice.type=:serviceType");
+		  .append(" inner join fetch deployment.platform as platform")
+		  .append(" where deployment.entry.key=:entryKey and platform.issuer in (:issuers) and toolservice.type=:serviceType");
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), LTI13SharedToolService.class)

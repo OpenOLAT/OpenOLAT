@@ -108,17 +108,20 @@ public class LTI13ServiceTest extends OlatTestCase {
 	
 	@Test
 	public void matchIdentityNewUser() {
+		String clientId = UUID.randomUUID().toString();
+		LTI13Platform platform = createPlatform("https://cuberai.openolat.com", clientId);
+		
 		DefaultClaims claims = new DefaultClaims();
 		String sub = Long.toString(CodeHelper.getForeverUniqueID());
 		claims.setSubject(sub);
-		claims.setIssuer("https://cuberai.openolat.com");
+		claims.setIssuer(platform.getIssuer());
 		claims.put(UserSub.GIVEN_NAME, "Fabio");
 		claims.put(UserSub.FAMILY_NAME, "Orlando");
 		String email = "f.orlando." + sub + "@openolat.com";
 		claims.put(UserSub.EMAIL, email);
 		claims.put(UserSub.LOCALE, "en-US");
 
-		Identity identity = lti13Service.matchIdentity(claims);
+		Identity identity = lti13Service.matchIdentity(claims, platform);
 		Assert.assertNotNull(identity);
 		Assert.assertNotNull(identity.getUser().getNickName());
 		Assert.assertNotEquals(sub, identity.getUser().getNickName());
@@ -128,21 +131,48 @@ public class LTI13ServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void matchIdentityCurrentUser() {
+	public void matchIdentityCurrentUserByEmail() {
+		String clientId = UUID.randomUUID().toString();
+		LTI13Platform platform = createPlatform("https://gfx.openolat.com", clientId);
+		platform.setEmailMatching(true);
+		
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("lti-user-1");
 		User user = ident.getIdentity().getUser();
 		
 		DefaultClaims claims = new DefaultClaims();
 		String sub = Long.toString(CodeHelper.getForeverUniqueID());
 		claims.setSubject(sub);
-		claims.setIssuer("https://cuberai.openolat.com");
+		claims.setIssuer(platform.getIssuer());
 		claims.put(UserSub.GIVEN_NAME, user.getFirstName());
 		claims.put(UserSub.FAMILY_NAME, user.getLastName());
 		claims.put(UserSub.EMAIL, user.getEmail());
 		claims.put(UserSub.LOCALE, "en-US");
 
-		Identity identity = lti13Service.matchIdentity(claims);
+		Identity identity = lti13Service.matchIdentity(claims, platform);
 		Assert.assertEquals(ident.getIdentity(), identity);
+	}
+	
+	@Test
+	public void matchNotIdentityCurrentUserByEmail() {
+		String clientId = UUID.randomUUID().toString();
+		LTI13Platform platform = createPlatform("https://z7.openolat.com", clientId);
+		platform.setEmailMatching(false);
+		
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("lti-user-1");
+		User user = ident.getIdentity().getUser();
+		
+		DefaultClaims claims = new DefaultClaims();
+		String sub = Long.toString(CodeHelper.getForeverUniqueID());
+		claims.setSubject(sub);
+		claims.setIssuer(platform.getIssuer());
+		claims.put(UserSub.GIVEN_NAME, user.getFirstName());
+		claims.put(UserSub.FAMILY_NAME, user.getLastName());
+		claims.put(UserSub.EMAIL, user.getEmail());
+		claims.put(UserSub.LOCALE, "en-US");
+
+		Identity identity = lti13Service.matchIdentity(claims, platform);
+		Assert.assertNotEquals(ident.getIdentity(), identity);
+		Assert.assertNull(identity.getUser().getEmail());
 	}
 	
 	@Test
@@ -151,9 +181,10 @@ public class LTI13ServiceTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		String clientId = UUID.randomUUID().toString();
 		String issuer = "https://m.openolat.com";
-		LTI13SharedTool sharedTool = createSharedTool(issuer, clientId, entry);
-		sharedTool = lti13Service.updateSharedTool(sharedTool);
-		LTI13SharedToolDeployment deployment = lti13Service.getOrCreateSharedToolDeployment(UUID.randomUUID().toString(), sharedTool);
+		LTI13Platform platform = createPlatform(issuer, clientId);
+		platform = lti13Service.updatePlatform(platform);
+		LTI13SharedToolDeployment deployment = lti13Service
+				.createSharedToolDeployment(UUID.randomUUID().toString(), platform, entry, null);
 		lti13Service.updateSharedToolServiceEndpoint(clientId, ServiceType.lineitem, issuer, deployment);
 		dbInstance.commitAndCloseSession();
 
@@ -248,14 +279,15 @@ public class LTI13ServiceTest extends OlatTestCase {
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(coach, "LTI service group", "Group with LTI 1.3", -1, -1, false, false, null);
 		String clientId = UUID.randomUUID().toString();
 		String issuer = "https://sg.openolat.com";
-		LTI13SharedTool sharedTool = lti13Service.createTransientSharedTool(businessGroup);
-		sharedTool.setClientId(clientId);
-		sharedTool.setIssuer(issuer);
-		sharedTool.setAuthorizationUri(issuer + "/mod/lti/auth.php");
-		sharedTool.setTokenUri(issuer + "/mod/lti/token.php");
-		sharedTool.setJwkSetUri(issuer + "/mod/lti/certs.php");
-		sharedTool = lti13Service.updateSharedTool(sharedTool);
-		LTI13SharedToolDeployment deployment = lti13Service.getOrCreateSharedToolDeployment(UUID.randomUUID().toString(), sharedTool);
+		LTI13Platform platform = lti13Service.createTransientPlatform(LTI13PlatformScope.PRIVATE);
+		platform.setClientId(clientId);
+		platform.setIssuer(issuer);
+		platform.setAuthorizationUri(issuer + "/mod/lti/auth.php");
+		platform.setTokenUri(issuer + "/mod/lti/token.php");
+		platform.setJwkSetUri(issuer + "/mod/lti/certs.php");
+		platform = lti13Service.updatePlatform(platform);
+		LTI13SharedToolDeployment deployment = lti13Service
+				.createSharedToolDeployment(UUID.randomUUID().toString(), platform, null, businessGroup);
 		lti13Service.updateSharedToolServiceEndpoint(clientId, ServiceType.lineitem, issuer, deployment);
 		dbInstance.commitAndCloseSession();
 
@@ -266,14 +298,13 @@ public class LTI13ServiceTest extends OlatTestCase {
 		Assert.assertTrue(deployments.isEmpty());	
 	}
 	
-	private LTI13SharedTool createSharedTool(String issuer, String clientId, RepositoryEntry entry) {
-		LTI13SharedTool sharedTool = lti13Service.createTransientSharedTool(entry);
-		sharedTool.setClientId(clientId);
-		sharedTool.setIssuer(issuer);
-		sharedTool.setAuthorizationUri(issuer + "/mod/lti/auth.php");
-		sharedTool.setTokenUri(issuer + "/mod/lti/token.php");
-		sharedTool.setJwkSetUri(issuer + "/mod/lti/certs.php");
-		return sharedTool;
+	private LTI13Platform createPlatform(String issuer, String clientId) {
+		LTI13Platform platform = lti13Service.createTransientPlatform(LTI13PlatformScope.PRIVATE);
+		platform.setClientId(clientId);
+		platform.setIssuer(issuer);
+		platform.setAuthorizationUri(issuer + "/mod/lti/auth.php");
+		platform.setTokenUri(issuer + "/mod/lti/token.php");
+		platform.setJwkSetUri(issuer + "/mod/lti/certs.php");
+		return platform;
 	}
-
 }

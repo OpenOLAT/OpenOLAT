@@ -19,6 +19,10 @@
  */
 package org.olat.ims.lti13;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.helpers.Settings;
@@ -41,6 +45,9 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 	private static final String PROP_PLATFORM_ISS = "lti13.platform.iss";
 	private static final String PROP_MATCHING_BY_EMAIL = "lti13.platform.matching.by.email";
 	private static final String PROP_DEFAULT_ORGANISATION = "lti13.default.organisation";
+	private static final String PROP_DEPLOYMENT_ROLES_REPOSITORY_ENTRY = "lti13.deployment.roles.repositoryentry";
+	private static final String PROP_DEPLOYMENT_ROLES_BUSINESS_GROUP = "lti13.deployment.roles.businessgroup";
+	
 	
 	@Value("${lti13.enabled}")
 	private boolean enabled;
@@ -53,6 +60,11 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 	
 	@Value("${lti13.default.organisation}")
 	private String defaultOrganisationKey;
+	
+	@Value("${lti13.deployment.roles.repositoryentry:user,author,learnresourcemanager,administrator}")
+	private String deploymentRolesForRepositoryEntries;
+	@Value("${lti13.deployment.roles.businessgroup:user,author,groupmanager,administrator}")
+	private String deploymentRolesForBusinessGroups;
 	
 	@Autowired
 	public LTI13Module(CoordinatorManager coordinatorManager) {
@@ -68,6 +80,8 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 		
 		matchingByEmail = getStringPropertyValue(PROP_MATCHING_BY_EMAIL, matchingByEmail);
 		defaultOrganisationKey = getStringPropertyValue(PROP_DEFAULT_ORGANISATION, defaultOrganisationKey);
+		deploymentRolesForRepositoryEntries = getStringPropertyValue(PROP_DEPLOYMENT_ROLES_REPOSITORY_ENTRY, deploymentRolesForRepositoryEntries);
+		deploymentRolesForBusinessGroups = getStringPropertyValue(PROP_DEPLOYMENT_ROLES_BUSINESS_GROUP, deploymentRolesForBusinessGroups);
 	}
 
 	@Override
@@ -112,6 +126,45 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(PROP_MATCHING_BY_EMAIL, enabled, true);
 	}
 
+	public String getDeploymentRolesForRepositoryEntries() {
+		return deploymentRolesForRepositoryEntries;
+	}
+
+	public void setDeploymentRolesForRepositoryEntries(String deploymentRoles) {
+		this.deploymentRolesForRepositoryEntries = deploymentRoles;
+		setStringProperty(PROP_DEPLOYMENT_ROLES_REPOSITORY_ENTRY, deploymentRoles, true);
+	}
+	
+	public List<OrganisationRoles> getDeploymentRolesListForRepositoryEntries() {
+		return toRoles(getDeploymentRolesForRepositoryEntries());
+	}
+
+	public String getDeploymentRolesForBusinessGroups() {
+		return deploymentRolesForBusinessGroups;
+	}
+
+	public void setDeploymentRolesForBusinessGroups(String deploymentRoles) {
+		this.deploymentRolesForBusinessGroups = deploymentRoles;
+		setStringProperty(PROP_DEPLOYMENT_ROLES_BUSINESS_GROUP, deploymentRoles, true);
+	}
+	
+	public List<OrganisationRoles> getDeploymentRolesListForBusinessGroups() {
+		return toRoles(getDeploymentRolesForBusinessGroups());
+	}
+	
+	private List<OrganisationRoles> toRoles(String roles) {
+		List<OrganisationRoles> roleList = new ArrayList<>(5);
+		if(StringHelper.containsNonWhitespace(roles)) {
+			String[] values = roles.split("[,]");
+			for(String value:values) {
+				if(OrganisationRoles.valid(value)) {
+					roleList.add(OrganisationRoles.valueOf(value));
+				}
+			}
+		}
+		return roleList;
+	}
+
 	public String getPlatformJwkSetUri() {
 		return Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_JWKSET_PATH;
 	}
@@ -131,5 +184,6 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 	public String getToolLoginRedirectUri() {
 		return Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_LOGIN_REDIRECT_PATH;
 	}
+
 	
 }

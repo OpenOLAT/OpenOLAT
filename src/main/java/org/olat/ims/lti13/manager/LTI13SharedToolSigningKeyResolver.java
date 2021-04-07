@@ -26,7 +26,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.lti13.LTI13Key;
 import org.olat.ims.lti13.LTI13Service;
-import org.olat.ims.lti13.LTI13SharedTool;
+import org.olat.ims.lti13.LTI13Platform;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.jsonwebtoken.Claims;
@@ -43,18 +43,18 @@ public class LTI13SharedToolSigningKeyResolver implements SigningKeyResolver {
 	
 	private static final Logger log = Tracing.createLoggerFor(LTI13SharedToolSigningKeyResolver.class);
 	
-	private LTI13SharedTool tool;
+	private LTI13Platform tool;
 	
 	@Autowired
 	private LTI13Service lti13Service;
 	
-	public LTI13SharedToolSigningKeyResolver(LTI13SharedTool tool) {
+	public LTI13SharedToolSigningKeyResolver(LTI13Platform tool) {
 		CoreSpringFactory.autowireObject(this);
 		this.tool = tool;
 	}
 
 	@Override
-	public Key resolveSigningKey(@SuppressWarnings("rawtypes") JwsHeader header, Claims claims) {
+	public Key resolveSigningKey(JwsHeader header, Claims claims) {
 		try {
 			log.debug("resolveSigningKey: {} claims: {}", header, claims);
 			String kid = header.getKeyId();
@@ -68,7 +68,7 @@ public class LTI13SharedToolSigningKeyResolver implements SigningKeyResolver {
 	}
 
 	@Override
-	public Key resolveSigningKey(@SuppressWarnings("rawtypes") JwsHeader header, String plaintext) {
+	public Key resolveSigningKey(JwsHeader header, String plaintext) {
 		log.debug("resolveSigningKey: {} claims: {}", header, plaintext);
 		return null;
 	}

@@ -67,7 +67,7 @@ import org.olat.ims.lti13.LTI13Constants.ActivityProgress;
 import org.olat.ims.lti13.LTI13Constants.GradingProgress;
 import org.olat.ims.lti13.LTI13JsonUtil;
 import org.olat.ims.lti13.LTI13Service;
-import org.olat.ims.lti13.LTI13SharedTool;
+import org.olat.ims.lti13.LTI13Platform;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
 import org.olat.ims.lti13.LTI13SharedToolService;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
@@ -248,14 +248,14 @@ public class LTI13EventProcessor implements GenericEventListener, MessageListene
 	private void pushScore(IdentityRef identityRef, LTI13SharedToolService service) {
 		String url = service.getEndpointUrl();
 		LTI13SharedToolDeployment deployment = service.getDeployment();
-		LTI13SharedTool sharedTool = deployment.getSharedTool();
-		String deploymentId = service.getDeployment().getDeploymentId();
+		LTI13Platform platform = deployment.getPlatform();
+		String deploymentId = deployment.getDeploymentId();
 		log.info("Push to service lineitems {} {}", deploymentId, url);
 		
 		Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
-		Authentication ltiUser = authenticationDao.getAuthentication(identity, LTI13Service.LTI_PROVIDER, sharedTool.getIssuer());
+		Authentication ltiUser = authenticationDao.getAuthentication(identity, LTI13Service.LTI_PROVIDER, platform.getIssuer());
 		
-		RepositoryEntry entry = repositoryService.loadByKey(sharedTool.getEntry().getKey());
+		RepositoryEntry entry = repositoryService.loadByKey(deployment.getEntry().getKey());
 		ICourse course = CourseFactory.loadCourse(entry);
 
 		IdentityEnvironment identityEnv = new IdentityEnvironment(identity, null);
@@ -288,7 +288,7 @@ public class LTI13EventProcessor implements GenericEventListener, MessageListene
 			score.setComment(assessmentEval.getComment());
 			
 			List<String> scopes = List.of(LTI13Constants.Scopes.AGS_LINE_ITEM.url(), LTI13Constants.Scopes.AGS_SCORE.url());
-			OAuth2AccessToken accessToken = lti13Service.getAccessToken(sharedTool, scopes);		
+			OAuth2AccessToken accessToken = lti13Service.getAccessToken(platform, scopes);		
 
 			String urlScore = LTI13RequestUtil.scoreUrl(url);
 			LTI13RequestUtil.post(accessToken.getAccessToken(), LTI13Constants.ContentTypes.SCORE_CONTENT_TYPE, urlScore, score);

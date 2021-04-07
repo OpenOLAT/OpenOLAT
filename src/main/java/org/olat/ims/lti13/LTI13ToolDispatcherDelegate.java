@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -106,19 +107,20 @@ public class LTI13ToolDispatcherDelegate {
 			String ltiDeploymentId = request.getParameter("lti_deployment_id");
 			String targetLinkUri = request.getParameter("target_link_uri");
 			
-			LTI13SharedTool sharedTool = lti13Service.getSharedTool(iss, clientId);
-			if(sharedTool == null) {
+			LTI13Platform platform = lti13Service.getPlatform(iss, clientId);
+			if(platform == null) {
 				DispatcherModule.sendBadRequest(Errors.INVALID_REQUEST, response);
 				return;
 			}
-			if(!checkTargetLinkUri(targetLinkUri, sharedTool)) {
-				DispatcherModule.sendBadRequest(Errors.INVALID_TARGET_LINK_URI, response);
-				return;
-			}
-
-			LTI13SharedToolDeployment sharedToolDeployment = lti13Service.getOrCreateSharedToolDeployment(ltiDeploymentId, sharedTool);
+			
+			LTI13SharedToolDeployment sharedToolDeployment = lti13Service.getSharedToolDeployment(ltiDeploymentId, platform);
 			if(sharedToolDeployment == null) {
 				DispatcherModule.sendBadRequest(Errors.INVALID_REQUEST, response);
+				return;
+			}
+			
+			if(!checkTargetLinkUri(targetLinkUri, sharedToolDeployment)) {
+				DispatcherModule.sendBadRequest(Errors.INVALID_TARGET_LINK_URI, response);
 				return;
 			}
 			
@@ -130,7 +132,7 @@ public class LTI13ToolDispatcherDelegate {
 			        .callback(callbackUri)
 			        .defaultScope("openid")
 			        .responseType(LTI13Constants.OAuth.ID_TOKEN)
-			        .build(new OIDCApi(sharedToolDeployment, sharedTool));
+			        .build(new OIDCApi(sharedToolDeployment, platform));
 
 			String state = UUID.randomUUID().toString().replace("-", "");
 			Map<String,String> additionalParams = new HashMap<>();
@@ -180,14 +182,14 @@ public class LTI13ToolDispatcherDelegate {
 			OIDCService service = (OIDCService)stateToRequests.get(state);
 			OIDCApi api = service.getApi();
 			Jwt<?,?> jwt = Jwts.parserBuilder()
-				.setSigningKeyResolver(new LTI13SharedToolSigningKeyResolver(api.getTool()))
+				.setSigningKeyResolver(new LTI13SharedToolSigningKeyResolver(api.getPlatform()))
 				.setAllowedClockSkewSeconds(300)
 				.build()
 				.parse(idToken);
 
 			Claims body = (Claims)jwt.getBody();
 			String targetLinkUri = body.get(LTI13Constants.Claims.TARGET_LINK_URI.url(), String.class);
-			if(!checkTargetLinkUri(targetLinkUri, api.getTool())) {
+			if(!checkTargetLinkUri(targetLinkUri, api.getDeployment())) {
 				DispatcherModule.sendBadRequest(Errors.INVALID_TARGET_LINK_URI, response);
 				return;
 			}
@@ -209,13 +211,14 @@ public class LTI13ToolDispatcherDelegate {
 			
 			log.debug("Login deployment id: {} context id: {} resource link id: {}", deploymentId, contextId, resourceLinkId);
 			
-			Identity identity = lti13Service.matchIdentity(body);
+			Identity identity = lti13Service.matchIdentity(body, api.getPlatform());
 			if(identity == null) {
 				DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			} else {
 				UserRequest ureq = createUserRequest(request, response);
 				if(ureq != null) {
-					lti13Service.checkMembership(identity, service.getApi().getTool());
+					GroupRoles role = getRolesFromClaims(body);
+					lti13Service.checkMembership(identity, role, service.getApi().getDeployment());
 					AuthHelper.doLogin(identity, "LTI", ureq);
 					response.sendRedirect(targetLinkUri + "?new-window=minimal");
 				} else {
@@ -228,12 +231,32 @@ public class LTI13ToolDispatcherDelegate {
 		}
 	}
 	
-	private boolean checkTargetLinkUri(String targetLinkUri, LTI13SharedTool sharedTool) {
+	private GroupRoles getRolesFromClaims(Claims claims) {
+		Object roles = claims.get(LTI13Constants.Claims.ROLES.url());
+		if(roles instanceof List) {
+			List<?> roleList = (List<?>)roles;
+			for(Object role:roleList) {
+				if(role instanceof String  && isRoleToCoach((String)role)) {
+					return GroupRoles.coach;
+				}
+			}
+		}
+		return GroupRoles.participant;
+	}
+	
+	private boolean isRoleToCoach(String role) {
+		return StringHelper.containsNonWhitespace(role)
+				&& (role.startsWith(LTI13Constants.Roles.INSTRUCTOR.roleV2())
+						|| role.startsWith(LTI13Constants.Roles.MENTOR.roleV2())
+						|| role.startsWith(LTI13Constants.Roles.INSTITUTION_INSTRUCTOR.roleV2()));
+	}
+	
+	private boolean checkTargetLinkUri(String targetLinkUri, LTI13SharedToolDeployment deployment) {
 		OLATResourceable ores;
-		if(sharedTool.getEntry() != null) {
-			ores = sharedTool.getEntry();
-		} else if(sharedTool.getBusinessGroup() != null) {
-			ores = sharedTool.getBusinessGroup();
+		if(deployment.getEntry() != null) {
+			ores = deployment.getEntry();
+		} else if(deployment.getBusinessGroup() != null) {
+			ores = deployment.getBusinessGroup();
 		} else {
 			return false;
 		}
@@ -241,7 +264,11 @@ public class LTI13ToolDispatcherDelegate {
 		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
 		String authUri = BusinessControlFactory.getInstance().getAsAuthURIString(entries, true);
 		String restUri = BusinessControlFactory.getInstance().getAsRestPart(entries, true);
-		return targetLinkUri.startsWith(authUri) || targetLinkUri.startsWith(restUri);
+		boolean match = targetLinkUri.startsWith(authUri) || targetLinkUri.startsWith(restUri);
+		if(!match) {
+			log.warn("Target link uri mismatch, target link uri: {}, allowed deployment: {} ({})", targetLinkUri, authUri, restUri);
+		}
+		return match;
 	}
 	
 	private void updateServices(String contextId, Claims body, LTI13SharedToolDeployment deployment) {

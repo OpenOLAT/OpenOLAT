@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -412,6 +413,21 @@ public class LTI13PlatformDispatcherDelegate {
 			List<LTI13Key> platformKeys = lti13Service.getPlatformKeys();
 			String encoded = LTI13JsonUtil.publicKeysToJwks(platformKeys);
 			w.append(encoded);
+		} catch(IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	public void handleKey(String kid, HttpServletResponse response) {
+		ServletUtil.setJSONResourceHeaders(response);
+		try(Writer w=response.getWriter()) {
+			PublicKey key = lti13Service.getPlatformPublicKey(kid);
+			if(key != null) {
+				String encoded = LTI13JsonUtil.publicKeysToJwks(kid, key);
+				w.append(encoded);
+			} else {
+				DispatcherModule.sendNotFound(response);
+			}
 		} catch(IOException e) {
 			log.error("", e);
 		}

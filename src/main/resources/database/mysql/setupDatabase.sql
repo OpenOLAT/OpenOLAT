@@ -2490,20 +2490,21 @@ create table o_lti_tool_deployment (
    primary key (id)
 );
 
-create table o_lti_shared_tool (
+create table o_lti_platform (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
+   l_name varchar(255),
+   l_mail_matching bool default false not null,
+   l_scope varchar(32) default 'SHARED' not null,
    l_issuer varchar(255) not null,
    l_client_id varchar(128) not null,
    l_key_id varchar(64) not null,
-   l_public_key mediumtext not null,
-   l_private_key mediumtext not null,
+   l_public_key text not null,
+   l_private_key text not null,
    l_authorization_uri varchar(2000),
    l_token_uri varchar(2000),
    l_jwk_set_uri varchar(2000),
-   fk_entry_id bigint,
-   fk_group_id bigint,
    primary key (id)
 );
 
@@ -2512,7 +2513,9 @@ create table o_lti_shared_tool_deployment (
    creationdate datetime not null,
    lastmodified datetime not null,
    l_deployment_id varchar(255),
-   fk_shared_tool_id bigint,
+   fk_platform_id bigint,
+   fk_entry_id bigint,
+   fk_group_id bigint,
    primary key (id)
 );
 
@@ -3578,7 +3581,7 @@ alter table o_re_educational_type ENGINE = InnoDB;
 alter table o_lti_outcome ENGINE = InnoDB;
 alter table o_lti_tool ENGINE = InnoDB;
 alter table o_lti_tool_deployment ENGINE = InnoDB;
-alter table o_lti_shared_tool ENGINE = InnoDB;
+alter table o_lti_platform ENGINE = InnoDB;
 alter table o_lti_shared_tool_deployment ENGINE = InnoDB;
 alter table o_lti_shared_tool_service ENGINE = InnoDB;
 alter table o_lti_key ENGINE = InnoDB;
@@ -4365,10 +4368,10 @@ alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk
 alter table o_lti_tool_deployment add constraint lti_sdep_to_tool_idx foreign key (fk_tool_id) references o_lti_tool (id);
 alter table o_lti_tool_deployment add constraint lti_sdep_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 
-alter table o_lti_shared_tool add constraint lti_shared_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
-alter table o_lti_shared_tool add constraint lti_shared_to_bg_idx foreign key (fk_group_id) references o_gp_business (group_id);
-
-alter table o_lti_shared_tool_deployment add constraint lti_sha_dep_to_tool_idx foreign key (fk_shared_tool_id) references o_lti_shared_tool (id);
+alter table o_lti_shared_tool_deployment add constraint unique_deploy_platform unique (l_deployment_id, fk_platform_id);
+alter table o_lti_shared_tool_deployment add constraint lti_sha_dep_to_tool_idx foreign key (fk_platform_id) references o_lti_platform (id);
+alter table o_lti_shared_tool_deployment add constraint lti_shared_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+alter table o_lti_shared_tool_deployment add constraint lti_shared_to_bg_idx foreign key (fk_group_id) references o_gp_business (group_id);
 
 alter table o_lti_shared_tool_service add constraint lti_sha_ser_to_dep_idx foreign key (fk_deployment_id) references o_lti_shared_tool_deployment (id);
 

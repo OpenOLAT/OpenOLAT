@@ -1,9 +1,0 @@
-<ul class="list-unstyled">
-	#if($r.isNotEmpty($deploymentIds))
-		#foreach($deploymentId in $deploymentIds)
-			<li>$r.escapeHtml($deploymentId)</li>
-		#end
-		<li class="divider"></li>
-	#end
-	<li>$r.render("add.deployment")</li>
-</ul>

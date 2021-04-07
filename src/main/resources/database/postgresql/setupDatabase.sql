@@ -2512,10 +2512,13 @@ create table o_lti_tool_deployment (
    primary key (id)
 );
 
-create table o_lti_shared_tool (
+create table o_lti_platform (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   l_name varchar(255),
+   l_mail_matching bool default false not null,
+   l_scope varchar(32) default 'SHARED' not null,
    l_issuer varchar(255) not null,
    l_client_id varchar(128) not null,
    l_key_id varchar(64) not null,
@@ -2524,8 +2527,6 @@ create table o_lti_shared_tool (
    l_authorization_uri varchar(2000),
    l_token_uri varchar(2000),
    l_jwk_set_uri varchar(2000),
-   fk_entry_id int8,
-   fk_group_id int8,
    primary key (id)
 );
 
@@ -2534,7 +2535,9 @@ create table o_lti_shared_tool_deployment (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    l_deployment_id varchar(255),
-   fk_shared_tool_id int8,
+   fk_platform_id int8,
+   fk_entry_id int8,
+   fk_group_id int8,
    primary key (id)
 );
 
@@ -4387,13 +4390,13 @@ create index idx_lti_sdep_to_tool_idx on o_lti_tool_deployment (fk_tool_id);
 alter table o_lti_tool_deployment add constraint lti_sdep_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 create index idx_lti_sdep_to_re_idx on o_lti_tool_deployment (fk_entry_id);
 
-alter table o_lti_shared_tool add constraint lti_shared_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
-create index idx_lti_shared_to_re_idx on o_lti_shared_tool (fk_entry_id);
-alter table o_lti_shared_tool add constraint lti_shared_to_bg_idx foreign key (fk_group_id) references o_gp_business (group_id);
-create index idx_lti_shared_to_bg_idx on o_lti_shared_tool (fk_group_id);
-
-alter table o_lti_shared_tool_deployment add constraint lti_sha_dep_to_tool_idx foreign key (fk_shared_tool_id) references o_lti_shared_tool (id);
-create index idx_lti_sha_dep_to_tool_idx on o_lti_shared_tool_deployment (fk_shared_tool_id);
+alter table o_lti_shared_tool_deployment add constraint unique_deploy_platform unique (l_deployment_id, fk_platform_id);
+alter table o_lti_shared_tool_deployment add constraint lti_sha_dep_to_tool_idx foreign key (fk_platform_id) references o_lti_platform (id);
+create index idx_lti_sha_dep_to_tool_idx on o_lti_shared_tool_deployment (fk_platform_id);
+alter table o_lti_shared_tool_deployment add constraint lti_shared_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_lti_shared_to_re_idx on o_lti_shared_tool_deployment (fk_entry_id);
+alter table o_lti_shared_tool_deployment add constraint lti_shared_to_bg_idx foreign key (fk_group_id) references o_gp_business (group_id);
+create index idx_lti_shared_to_bg_idx on o_lti_shared_tool_deployment (fk_group_id);
 
 alter table o_lti_shared_tool_service add constraint lti_sha_ser_to_dep_idx foreign key (fk_deployment_id) references o_lti_shared_tool_deployment (id);
 create index idx_lti_sha_ser_to_dep_idx on o_lti_shared_tool_service (fk_deployment_id);

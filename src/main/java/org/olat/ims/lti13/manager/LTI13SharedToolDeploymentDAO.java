@@ -24,10 +24,12 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
-import org.olat.ims.lti13.LTI13SharedTool;
+import org.olat.ims.lti13.LTI13Platform;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
 import org.olat.ims.lti13.model.LTI13SharedToolDeploymentImpl;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,34 +46,42 @@ public class LTI13SharedToolDeploymentDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public LTI13SharedToolDeployment createDeployment(String deploymentId, LTI13SharedTool sharedTool) {
+	public LTI13SharedToolDeployment createDeployment(String deploymentId, LTI13Platform platform,
+			RepositoryEntry entry, BusinessGroup businessGroup) {
 		LTI13SharedToolDeploymentImpl deployment = new LTI13SharedToolDeploymentImpl();
 		deployment.setCreationDate(new Date());
 		deployment.setLastModified(deployment.getCreationDate());
 		deployment.setDeploymentId(deploymentId);
-		deployment.setSharedTool(sharedTool);
+		deployment.setPlatform(platform);
+		deployment.setBusinessGroup(businessGroup);
+		deployment.setEntry(entry);
 		dbInstance.getCurrentEntityManager().persist(deployment);
 		return deployment;
 	}
 	
-	public List<LTI13SharedToolDeployment> getSharedToolDeployment(String deploymentId, LTI13SharedTool sharedTool) {
+	public LTI13SharedToolDeployment updateDeployment(LTI13SharedToolDeployment deployment) {
+		((LTI13SharedToolDeploymentImpl)deployment).setLastModified(new Date());
+		return dbInstance.getCurrentEntityManager().merge(deployment);
+	}
+	
+	public List<LTI13SharedToolDeployment> getSharedToolDeployment(String deploymentId, LTI13Platform platform) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select deployment from ltisharedtooldeployment deployment")
-		  .append(" inner join deployment.sharedTool sharedTool")
-		  .append(" where deployment.deploymentId=:deploymentId and sharedTool.key=:sharedToolKey");
+		  .append(" inner join deployment.platform platform")
+		  .append(" where deployment.deploymentId=:deploymentId and platform.key=:platformKey");
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), LTI13SharedToolDeployment.class)
 			.setParameter("deploymentId", deploymentId)
-			.setParameter("sharedToolKey", sharedTool.getKey())
+			.setParameter("platformKey", platform.getKey())
 			.getResultList();
 	}
 	
 	public List<LTI13SharedToolDeployment> getSharedToolDeployment(RepositoryEntryRef entryRef) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select deployment from ltisharedtooldeployment deployment")
-		  .append(" inner join fetch deployment.sharedTool sharedTool")
-		  .append(" where sharedTool.entry.key=:entryKey");
+		  .append(" inner join fetch deployment.platform platform")
+		  .append(" where deployment.entry.key=:entryKey");
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), LTI13SharedToolDeployment.class)
@@ -82,8 +92,8 @@ public class LTI13SharedToolDeploymentDAO {
 	public List<LTI13SharedToolDeployment> getSharedToolDeployment(BusinessGroupRef businessGroup) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select deployment from ltisharedtooldeployment deployment")
-		  .append(" inner join fetch deployment.sharedTool sharedTool")
-		  .append(" where sharedTool.businessGroup.key=:groupKey");
+		  .append(" inner join fetch deployment.platform platform")
+		  .append(" where deployment.businessGroup.key=:groupKey");
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), LTI13SharedToolDeployment.class)
@@ -91,23 +101,23 @@ public class LTI13SharedToolDeploymentDAO {
 			.getResultList();
 	}
 	
-	public List<LTI13SharedToolDeployment> loadSharedToolDeployments(LTI13SharedTool sharedTool) {
+	public List<LTI13SharedToolDeployment> loadSharedToolDeployments(LTI13Platform platform) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select deployment from ltisharedtooldeployment deployment")
-		  .append(" inner join fetch deployment.sharedTool sharedTool")
-		  .append(" where sharedTool.key=:sharedToolKey");
+		  .append(" inner join fetch deployment.platform platform")
+		  .append(" where platform.key=:platformKey");
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), LTI13SharedToolDeployment.class)
-			.setParameter("sharedToolKey", sharedTool.getKey())
+			.setParameter("platformKey", platform.getKey())
 			.getResultList();
 	}
 	
 	public boolean hasDeployment(Long repositoryEntryKey) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select deployment.key from ltisharedtooldeployment deployment")
-		  .append(" inner join deployment.sharedTool as tool")
-		  .append(" where tool.entry.key=:entryKey");
+		  .append(" inner join deployment.platform as platform")
+		  .append(" where deployment.entry.key=:entryKey");
 		
 		List<Long> firstKey = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Long.class)

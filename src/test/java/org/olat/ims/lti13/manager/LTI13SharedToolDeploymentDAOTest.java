@@ -26,8 +26,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.ims.lti13.LTI13Platform;
+import org.olat.ims.lti13.LTI13PlatformScope;
 import org.olat.ims.lti13.LTI13Service;
-import org.olat.ims.lti13.LTI13SharedTool;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -47,55 +50,66 @@ public class LTI13SharedToolDeploymentDAOTest extends OlatTestCase {
 	@Autowired
 	private LTI13Service lti13Service;
 	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
 	private LTI13SharedToolDeploymentDAO lti13SharedToolDeploymentDao;
+	
 	
 	@Test
 	public void createSharedToolDeployment() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-1");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		
 		String clientId = UUID.randomUUID().toString();
 		String issuer = "https://cuberai.openolat.org";
-		LTI13SharedTool sharedTool = createSharedTool(issuer, clientId);
+		LTI13Platform platform = createPlatform(issuer, clientId);
 		
 		String deploymentId = UUID.randomUUID().toString();
-		LTI13SharedToolDeployment deployment = lti13SharedToolDeploymentDao.createDeployment(deploymentId, sharedTool);
+		LTI13SharedToolDeployment deployment = lti13SharedToolDeploymentDao.createDeployment(deploymentId, platform, entry, null);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(deployment);
 		Assert.assertNotNull(deployment.getCreationDate());
 		Assert.assertNotNull(deployment.getLastModified());
-		Assert.assertEquals(sharedTool, deployment.getSharedTool());
+		Assert.assertEquals(platform, deployment.getPlatform());
 		Assert.assertEquals(deploymentId, deployment.getDeploymentId());
 	}
 	
 	@Test
 	public void getSharedToolDeploymentByDeploymentId() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-2");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		
 		String clientId = UUID.randomUUID().toString();
 		String issuer = "https://cuberai.openolat.org";
-		LTI13SharedTool sharedTool = createSharedTool(issuer, clientId);
+		LTI13Platform platform = createPlatform(issuer, clientId);
 		
 		String deploymentId = UUID.randomUUID().toString();
-		LTI13SharedToolDeployment deployment = lti13SharedToolDeploymentDao.createDeployment(deploymentId, sharedTool);
+		LTI13SharedToolDeployment deployment = lti13SharedToolDeploymentDao.createDeployment(deploymentId, platform, entry, null);
 		dbInstance.commit();
 		
-		List<LTI13SharedToolDeployment> foundDeployments = lti13SharedToolDeploymentDao.getSharedToolDeployment(deploymentId, sharedTool);
+		List<LTI13SharedToolDeployment> foundDeployments = lti13SharedToolDeploymentDao.getSharedToolDeployment(deploymentId, platform);
 		Assert.assertNotNull(foundDeployments);
 		Assert.assertEquals(1, foundDeployments.size());
 		LTI13SharedToolDeployment foundDeployment = foundDeployments.get(0);
 		
 		Assert.assertNotNull(foundDeployment);
 		Assert.assertEquals(deployment, foundDeployment);
-		Assert.assertEquals(sharedTool, foundDeployment.getSharedTool());
+		Assert.assertEquals(platform, foundDeployment.getPlatform());
 		Assert.assertEquals(deploymentId, foundDeployment.getDeploymentId());
 	}
 	
 	@Test
 	public void getSharedToolDeploymentByRepositoryEntry() {
-		String clientId = UUID.randomUUID().toString();
-		String issuer = "https://z.openolat.org";
-		LTI13SharedTool sharedTool = createSharedTool(issuer, clientId);
-		RepositoryEntry entry = sharedTool.getEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-3");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		
+		String clientId = UUID.randomUUID().toString();
+		String issuer = "https://z21.openolat.org";
+		LTI13Platform platform = createPlatform(issuer, clientId);
+
 		String deploymentId = UUID.randomUUID().toString();
-		LTI13SharedToolDeployment deployment = lti13SharedToolDeploymentDao.createDeployment(deploymentId, sharedTool);
+		LTI13SharedToolDeployment deployment = lti13SharedToolDeploymentDao.createDeployment(deploymentId, platform, entry, null);
 		dbInstance.commit();
 		
 		List<LTI13SharedToolDeployment> foundDeployments = lti13SharedToolDeploymentDao.getSharedToolDeployment(entry);
@@ -105,15 +119,68 @@ public class LTI13SharedToolDeploymentDAOTest extends OlatTestCase {
 		
 		Assert.assertNotNull(foundDeployment);
 		Assert.assertEquals(deployment, foundDeployment);
-		Assert.assertEquals(sharedTool, foundDeployment.getSharedTool());
-		Assert.assertEquals(entry, foundDeployment.getSharedTool().getEntry());
+		Assert.assertEquals(platform, foundDeployment.getPlatform());
+		Assert.assertEquals(entry, foundDeployment.getEntry());
+	}
+
+	@Test
+	public void getSharedToolDeploymentByBusinessGroup() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-coach-4");
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(coach,
+				"LTI service group", "Group with LTI 1.3 for z21", -1, -1, false, false, null);
+
+		String clientId = UUID.randomUUID().toString();
+		String issuer = "https://z21.openolat.org";
+		LTI13Platform platform = createPlatform(issuer, clientId);
+
+		String deploymentId = UUID.randomUUID().toString();
+		LTI13SharedToolDeployment deployment = lti13Service
+				.createSharedToolDeployment(deploymentId, platform, null, businessGroup);
+		dbInstance.commit();
+	
+		List<LTI13SharedToolDeployment> foundDeployments = lti13SharedToolDeploymentDao.getSharedToolDeployment(businessGroup);
+		Assert.assertNotNull(foundDeployments);
+		Assert.assertEquals(1, foundDeployments.size());
+		LTI13SharedToolDeployment foundDeployment = foundDeployments.get(0);
+		
+		Assert.assertNotNull(foundDeployment);
+		Assert.assertEquals(deployment, foundDeployment);
+		Assert.assertEquals(platform, foundDeployment.getPlatform());
+		Assert.assertEquals(businessGroup, foundDeployment.getBusinessGroup());
+	}
+	
+	@Test
+	public void loadSharedToolDeployments() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-1");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		
+		String clientId = UUID.randomUUID().toString();
+		String issuer = "https://z.openolat.org";
+		LTI13Platform platform = createPlatform(issuer, clientId);
+
+		String deploymentId = UUID.randomUUID().toString();
+		LTI13SharedToolDeployment deployment = lti13SharedToolDeploymentDao.createDeployment(deploymentId, platform, entry, null);
+		dbInstance.commit();
+		
+		List<LTI13SharedToolDeployment> foundDeployments = lti13SharedToolDeploymentDao.loadSharedToolDeployments(platform);
+		Assert.assertNotNull(foundDeployments);
+		Assert.assertEquals(1, foundDeployments.size());
+		LTI13SharedToolDeployment foundDeployment = foundDeployments.get(0);
+		
+		Assert.assertNotNull(foundDeployment);
+		Assert.assertEquals(deployment, foundDeployment);
+		Assert.assertEquals(platform, foundDeployment.getPlatform());
+		Assert.assertEquals(entry, foundDeployment.getEntry());
 	}
 	
 	@Test
 	public void hasDeployment() {
-		LTI13SharedTool sharedTool = createSharedTool("https://s.openolat.org", UUID.randomUUID().toString());
-		RepositoryEntry entry = sharedTool.getEntry();
-		LTI13SharedToolDeployment deployment = lti13SharedToolDeploymentDao.createDeployment(UUID.randomUUID().toString(), sharedTool);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-1");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		
+		LTI13Platform platform = createPlatform("https://s.openolat.org", UUID.randomUUID().toString());
+		LTI13SharedToolDeployment deployment = lti13SharedToolDeploymentDao
+				.createDeployment(UUID.randomUUID().toString(), platform, entry, null);
 		dbInstance.commit();
 		Assert.assertNotNull(deployment);
 		
@@ -121,17 +188,13 @@ public class LTI13SharedToolDeploymentDAOTest extends OlatTestCase {
 		Assert.assertTrue(hasDeployment);
 	}
 	
-	
-	private LTI13SharedTool createSharedTool(String issuer, String clientId) {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		
-		LTI13SharedTool sharedTool = lti13Service.createTransientSharedTool(entry);
+	private LTI13Platform createPlatform(String issuer, String clientId) {
+		LTI13Platform sharedTool = lti13Service.createTransientPlatform(LTI13PlatformScope.PRIVATE);
 		sharedTool.setClientId(clientId);
 		sharedTool.setIssuer(issuer);
 		sharedTool.setAuthorizationUri(issuer + "/ltideploy/auth");
 		sharedTool.setTokenUri(issuer + "/ltideploy/token");
 		sharedTool.setJwkSetUri(issuer + "/ltideploy/jwks");
-		return lti13Service.updateSharedTool(sharedTool);
+		return lti13Service.updatePlatform(sharedTool);
 	}
 }

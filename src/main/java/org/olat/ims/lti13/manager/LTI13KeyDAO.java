@@ -81,4 +81,15 @@ public class LTI13KeyDAO {
 				.setParameter("issuer", issuer)
 				.getResultList();
 	}
+	
+	public List<LTI13Key> getKey(String kid, String issuer) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select pkey from ltikey as pkey where pkey.keyId=:kid and pkey.issuer=:issuer");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LTI13Key.class)
+				.setParameter("issuer", issuer)
+				.setParameter("kid", kid)
+				.getResultList();
+	}
 }

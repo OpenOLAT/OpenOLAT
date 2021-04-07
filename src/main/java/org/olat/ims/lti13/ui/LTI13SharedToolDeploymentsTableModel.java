@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.ims.lti13.LTI13SharedToolDeployment;
 
 /**
  * 
@@ -35,14 +36,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LTI13SharedToolsTableModel extends DefaultFlexiTableDataModel<SharedToolRow>
-implements SortableFlexiTableDataModel<SharedToolRow> {
+public class LTI13SharedToolDeploymentsTableModel extends DefaultFlexiTableDataModel<LTI13SharedToolDeployment>
+implements SortableFlexiTableDataModel<LTI13SharedToolDeployment> {
 	
 	private static final SharedToolsCols[] COLS = SharedToolsCols.values();
 
 	private final Locale locale;
 	
-	public LTI13SharedToolsTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public LTI13SharedToolDeploymentsTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
 	}
@@ -50,36 +51,38 @@ implements SortableFlexiTableDataModel<SharedToolRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<SharedToolRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<LTI13SharedToolDeployment> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 			super.setObjects(rows);
 		}
 	}
 	
 	@Override
 	public Object getValueAt(int row, int col) {
-		SharedToolRow tool = getObject(row);
+		LTI13SharedToolDeployment tool = getObject(row);
 		return getValueAt(tool, col);
 	}
 
 	@Override
-	public Object getValueAt(SharedToolRow row, int col) {
+	public Object getValueAt(LTI13SharedToolDeployment row, int col) {
 		switch(COLS[col]) {
-			case issuer: return row.getIssuer();
-			case clientId: return row.getClientId();
-			case deployments: return row.getDeploymentLink();
+			case platformName: return row.getPlatform().getName();
+			case issuer: return row.getPlatform().getIssuer();
+			case clientId: return row.getPlatform().getClientId();
+			case deploymentId: return row.getDeploymentId();
 			default: return "ERROR";
 		}
 	}
 
 	@Override
-	public LTI13SharedToolsTableModel createCopyWithEmptyList() {
-		return new LTI13SharedToolsTableModel(getTableColumnModel(), locale);
+	public LTI13SharedToolDeploymentsTableModel createCopyWithEmptyList() {
+		return new LTI13SharedToolDeploymentsTableModel(getTableColumnModel(), locale);
 	}
 
 	public enum SharedToolsCols implements FlexiSortableColumnDef  {
+		platformName("table.header.name"),
 		issuer("table.header.issuer"),
 		clientId("table.header.client.id"),
-		deployments("table.header.deployments");
+		deploymentId("table.header.deployment.id");
 		
 		private final String i18nHeaderKey;
 		

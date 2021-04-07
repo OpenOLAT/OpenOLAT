@@ -115,5 +115,17 @@ public class LTI13KeyDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, keys.size());
 		Assert.assertEquals(key, keys.get(0));
 	}
+	
+	@Test
+	public void getKeysByKidIssuer() {
+		String issuer = "https://" + UUID.randomUUID() + ".frentix.com";
+		LTI13Key key = lti13KeyDao.generateKey(issuer);
+		dbInstance.commitAndCloseSession();
+		
+		List<LTI13Key> keys = lti13KeyDao.getKey(key.getKeyId(), issuer);
+		Assert.assertNotNull(keys);
+		Assert.assertEquals(1, keys.size());
+		Assert.assertEquals(key, keys.get(0));
+	}
 
 }

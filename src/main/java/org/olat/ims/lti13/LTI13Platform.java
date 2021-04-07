@@ -21,8 +21,6 @@ package org.olat.ims.lti13;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
-import org.olat.group.BusinessGroup;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -30,9 +28,21 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LTI13SharedTool extends CreateInfo, ModifiedInfo {
+public interface LTI13Platform extends CreateInfo, ModifiedInfo {
 	
 	public Long getKey();
+	
+	public String getName();
+	
+	public void setName(String name);
+	
+	public LTI13PlatformScope getScopeEnum();
+	
+	public void setScopeEnum(LTI13PlatformScope scope);
+	
+	public boolean isEmailMatching();
+
+	public void setEmailMatching(boolean emailMatching);
 	
 	/**
 	 * The issuer, platform ID or iss
@@ -47,11 +57,11 @@ public interface LTI13SharedTool extends CreateInfo, ModifiedInfo {
 
 	public void setClientId(String clientId);
 	
-	public String getToolUrl();
-	
 	public String getKeyId();
 
 	public String getPublicKey();
+	
+	public String getPublicKeyUrl();
 
 	public String getPrivateKey();
 
@@ -67,8 +77,4 @@ public interface LTI13SharedTool extends CreateInfo, ModifiedInfo {
 
 	public void setJwkSetUri(String jwkSetUri);
 	
-	public RepositoryEntry getEntry();
-	
-	public BusinessGroup getBusinessGroup();
-
 }

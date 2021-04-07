@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -42,6 +43,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
@@ -50,6 +52,7 @@ import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
@@ -58,8 +61,9 @@ import org.olat.ims.lti13.LTI13Constants;
 import org.olat.ims.lti13.LTI13Constants.UserSub;
 import org.olat.ims.lti13.LTI13Key;
 import org.olat.ims.lti13.LTI13Module;
+import org.olat.ims.lti13.LTI13Platform;
+import org.olat.ims.lti13.LTI13PlatformScope;
 import org.olat.ims.lti13.LTI13Service;
-import org.olat.ims.lti13.LTI13SharedTool;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
 import org.olat.ims.lti13.LTI13SharedToolService;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
@@ -69,8 +73,8 @@ import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.ims.lti13.OIDCApi;
 import org.olat.ims.lti13.model.AccessTokenKey;
 import org.olat.ims.lti13.model.AccessTokenTimed;
-import org.olat.ims.lti13.model.LTI13SharedToolImpl;
-import org.olat.ims.lti13.model.LTI13SharedToolWithInfos;
+import org.olat.ims.lti13.model.LTI13PlatformImpl;
+import org.olat.ims.lti13.model.LTI13PlatformWithInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
@@ -133,7 +137,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	@Autowired
 	private AuthenticationDAO authenticationDao;
 	@Autowired
-	private LTI13SharedToolDAO lti13SharedToolDao;
+	private LTI13PlatformDAO lti13SharedToolDao;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
 	@Autowired
@@ -163,7 +167,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			sharedToolDeploymentDao.deleteSharedDeployment(sharedDeployment);
 		}
 		dbInstance.commit();
-		lti13SharedToolDao.deleteSharedTools(re);
+		//TODO lti lti13SharedToolDao.deleteSharedTools(re);
 		return true;
 	}
 
@@ -176,7 +180,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			sharedToolDeploymentDao.deleteSharedDeployment(sharedDeployment);
 		}
 		dbInstance.commit();
-		lti13SharedToolDao.deleteSharedTools(group);
+		//TODO lti lti13SharedToolDao.deleteSharedTools(group);
 		return true;
 	}
 
@@ -206,80 +210,97 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public LTI13SharedTool createTransientSharedTool(BusinessGroup businessGroup) {
-		LTI13SharedToolImpl sharedTool = createTransientSharedTool();
-		sharedTool.setBusinessGroup(businessGroup);
-		return sharedTool;
-	}
-
-	@Override
-	public LTI13SharedTool createTransientSharedTool(RepositoryEntry entry) {
-		LTI13SharedToolImpl sharedTool = createTransientSharedTool();
-		sharedTool.setEntry(entry);
-		return sharedTool;
-	}
-	
-	private LTI13SharedToolImpl createTransientSharedTool() {
-		LTI13SharedToolImpl sharedTool = new LTI13SharedToolImpl();
-		sharedTool.setCreationDate(new Date());
-		sharedTool.setLastModified(sharedTool.getLastModified());
-		sharedTool.setKeyId(UUID.randomUUID().toString());
+	public LTI13Platform createTransientPlatform(LTI13PlatformScope type) {
+		LTI13PlatformImpl platform = new LTI13PlatformImpl();
+		platform.setCreationDate(new Date());
+		platform.setLastModified(platform.getLastModified());
+		platform.setKeyId(UUID.randomUUID().toString());
+		platform.setScopeEnum(type);
 		
 		KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
 	
 		String publicEncoded = CryptoUtil.getPublicEncoded(keyPair.getPublic());
 		publicEncoded = CryptoUtil.getPublicEncoded(publicEncoded);
-		sharedTool.setPublicKey(publicEncoded);
+		platform.setPublicKey(publicEncoded);
 		String privateEncoded = CryptoUtil.getPrivateEncoded(keyPair.getPrivate());
 		privateEncoded = CryptoUtil.getPublicEncoded(privateEncoded);
-		sharedTool.setPrivateKey(privateEncoded);
+		platform.setPrivateKey(privateEncoded);
 		
-		return sharedTool;
+		return platform;
 	}
 
 	@Override
-	public LTI13SharedTool updateSharedTool(LTI13SharedTool tool) {
-		return lti13SharedToolDao.updateSharedTool(tool);
+	public LTI13Platform updatePlatform(LTI13Platform tool) {
+		return lti13SharedToolDao.updatePlatform(tool);
 	}
 
 	@Override
-	public List<LTI13SharedToolWithInfos> getSharedToolsWithInfos(RepositoryEntryRef entry) {
-		return lti13SharedToolDao.getSharedTools(entry);
-	}
-
-	@Override
-	public List<LTI13SharedToolWithInfos> getSharedToolsWithInfos(BusinessGroupRef businessGroup) {
-		return lti13SharedToolDao.getSharedTools(businessGroup);
-	}
-
-	@Override
-	public LTI13SharedTool getSharedTool(String issuer, String clientId) {
+	public LTI13Platform getPlatform(String issuer, String clientId) {
 		return lti13SharedToolDao.loadByClientId(issuer, clientId);
 	}
 
 	@Override
-	public LTI13SharedTool getSharedToolByKey(Long key) {
+	public LTI13Platform getPlatformByKey(Long key) {
 		return lti13SharedToolDao.loadByKey(key);
 	}
 
 	@Override
-	public LTI13SharedToolDeployment getOrCreateSharedToolDeployment(String deploymentId, LTI13SharedTool sharedTool) {
-		List<LTI13SharedToolDeployment> deployments = sharedToolDeploymentDao.getSharedToolDeployment(deploymentId, sharedTool);
+	public List<LTI13Platform> getPlatforms() {
+		return lti13SharedToolDao.getPlatforms().stream()
+				.map(LTI13PlatformWithInfos::getPlatform)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<LTI13PlatformWithInfos> getPlatformWithInfos() {
+		return lti13SharedToolDao.getPlatforms();
+	}
+
+	@Override
+	public LTI13SharedToolDeployment createSharedToolDeployment(String deploymentId, LTI13Platform platform,
+			RepositoryEntry repositoryEntry, BusinessGroup bsuienssGroup) {
+		List<LTI13SharedToolDeployment> deployments = sharedToolDeploymentDao.getSharedToolDeployment(deploymentId, platform);
 		if(deployments.isEmpty()) {
-			LTI13SharedToolDeployment newDeployment = sharedToolDeploymentDao.createDeployment(deploymentId, sharedTool);
+			LTI13SharedToolDeployment newDeployment = sharedToolDeploymentDao
+					.createDeployment(deploymentId, platform, repositoryEntry, bsuienssGroup);
 			dbInstance.commit();
 			return newDeployment;
 		}
 		if(deployments.size() == 1) {
 			return deployments.get(0);
 		}
-		log.error("Shared tool with same deployments: {} {}", sharedTool.getKey(), deploymentId);
+		log.error("Shared tool with same deployments: {} {}", platform.getKey(), deploymentId);
 		return null;
 	}
 
 	@Override
-	public List<LTI13SharedToolDeployment> getSharedToolDeployments(LTI13SharedTool sharedTool) {
+	public LTI13SharedToolDeployment updateSharedToolDeployment(LTI13SharedToolDeployment deployment) {
+		return sharedToolDeploymentDao.updateDeployment(deployment);
+	}
+
+	@Override
+	public LTI13SharedToolDeployment getSharedToolDeployment(String deploymentId, LTI13Platform platform) {
+		List<LTI13SharedToolDeployment> deployments = sharedToolDeploymentDao.getSharedToolDeployment(deploymentId, platform);
+		if(deployments.size() == 1) {
+			return deployments.get(0);
+		}
+		log.error("Shared tool with problematic deployment: {} {} (num. of deployments: {})", platform.getKey(), deploymentId, deployments.size());
+		return null;
+	}
+
+	@Override
+	public List<LTI13SharedToolDeployment> getSharedToolDeployments(LTI13Platform sharedTool) {
 		return sharedToolDeploymentDao.loadSharedToolDeployments(sharedTool);
+	}
+
+	@Override
+	public List<LTI13SharedToolDeployment> getSharedToolDeployments(RepositoryEntryRef entry) {
+		return sharedToolDeploymentDao.getSharedToolDeployment(entry);
+	}
+
+	@Override
+	public List<LTI13SharedToolDeployment> getSharedToolDeployments(BusinessGroupRef businessGroup) {
+		return sharedToolDeploymentDao.getSharedToolDeployment(businessGroup);
 	}
 
 	@Override
@@ -365,18 +386,20 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 	
 	@Override
-	public Identity matchIdentity(Claims body) {
+	public Identity matchIdentity(Claims body, LTI13Platform platform) {
 		String issuer = body.getIssuer();
 		String sub = body.getSubject();
+		String givenName = body.get(UserSub.GIVEN_NAME, String.class);
+		String familyName = body.get(UserSub.FAMILY_NAME, String.class);
+		String email = body.get(UserSub.EMAIL, String.class);
+		
 		Identity identity = loadIdentity(sub, issuer);
 		if(identity == null) {
-			String givenName = body.get(UserSub.GIVEN_NAME, String.class);
-			String familyName = body.get(UserSub.FAMILY_NAME, String.class);
-			String email = body.get(UserSub.EMAIL, String.class);
 			String language = body.get(UserSub.LOCALE, String.class);
 			log.debug("sub: {}, given_name: {} family_name: {}", sub, givenName, familyName);
 			
-			if(StringHelper.containsNonWhitespace(email) && lti13Module.isMatchingByEmailEnabled() && userModule.isEmailUnique()) {
+			if(StringHelper.containsNonWhitespace(email) && lti13Module.isMatchingByEmailEnabled()
+					&& platform.isEmailMatching() && userModule.isEmailUnique()) {
 				List<Identity> currentIdentities = userManager.findIdentitiesByEmail(List.of(email));
 				if(currentIdentities.size() == 1) {
 					identity = currentIdentities.get(0);
@@ -386,33 +409,60 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			}
 			
 			Locale locale = i18nManager.getLocaleOrDefault(language);
-			
 			Organisation ltiOrganisation = getLTIOrganisation();
+			if(userModule.isEmailUnique() && !userManager.isEmailAllowed(email)) {
+				email = null;
+			}
 			User user = userManager.createUser(givenName, familyName, email);
 			user.getPreferences().setLanguage(locale.toString());
 			String nickName = "l" + CodeHelper.getForeverUniqueID();
 			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, nickName, null, user,
 					LTI13Service.LTI_PROVIDER, issuer, sub, null, ltiOrganisation, null);
+		} else if(isLTIOnlyUser(identity) &&
+				(!StringHelper.isSame(identity.getUser().getFirstName(), givenName)
+						|| !StringHelper.isSame(identity.getUser().getLastName(), familyName)
+						|| !StringHelper.isSame(identity.getUser().getEmail(), email))) {
+			User user = identity.getUser();
+			user.setProperty(UserConstants.FIRSTNAME, givenName);
+			user.setProperty(UserConstants.LASTNAME, familyName);
+			user.setProperty(UserConstants.EMAIL, email);
+			userManager.updateUserFromIdentity(identity);
 		}
 		return identity;
 	}
 	
+	private boolean isLTIOnlyUser(Identity identity) {
+		List<Authentication> authentications = securityManager.getAuthentications(identity);
+		return authentications.size() == 1;
+	}
+	
 	@Override
-	public void checkMembership(Identity identity, LTI13SharedTool tool) {
+	public void checkMembership(Identity identity, GroupRoles role, LTI13SharedToolDeployment tool) {
 		if(tool.getEntry() != null) {
 			// check if participant, if not
 			RepositoryEntry entry = tool.getEntry();
-			if(!repositoryService.hasRole(identity, entry, GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name())) {
+			if(!repositoryService.hasRole(identity, entry, role.name())) {
 				Roles roles = securityManager.getRoles(identity);
 				IdentitiesAddEvent iae = new IdentitiesAddEvent(identity);
-				repositoryManager.addParticipants(identity, roles, iae, entry, null);
+				if(role == GroupRoles.participant) {
+					repositoryManager.addParticipants(identity, roles, iae, entry, new MailPackage(false));
+				} else if(role == GroupRoles.coach) {
+					repositoryManager.addTutors(identity, roles, iae, entry, new MailPackage(false));
+				} else {
+					log.warn("Roles not supported: {}", role);
+				}
 			}
 		} else if(tool.getBusinessGroup() != null) {
 			BusinessGroup businessGroup = tool.getBusinessGroup();
-			if(!businessGroupService.hasRoles(identity, businessGroup, GroupRoles.coach.name())
-					&& !businessGroupService.hasRoles(identity, businessGroup, GroupRoles.participant.name())) {
+			if(!businessGroupService.hasRoles(identity, businessGroup, role.name())) {
 				Roles roles = securityManager.getRoles(identity);
-				businessGroupService.addParticipants(identity, roles, List.of(identity), businessGroup, null);
+				if(role == GroupRoles.participant) {
+					businessGroupService.addParticipants(identity, roles, List.of(identity), businessGroup, new MailPackage(false));
+				} else if(role == GroupRoles.coach) {
+					businessGroupService.addOwners(identity, roles, List.of(identity), businessGroup, new MailPackage(false));
+				} else {
+					log.warn("Roles not supported: {}", role);
+				}
 			}
 		}
 	}
@@ -449,6 +499,21 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
+	public PublicKey getPlatformPublicKey(String kid) {
+		//kid is unique
+		List<LTI13Platform> platforms = lti13SharedToolDao.loadByKid(kid);
+		if(!platforms.isEmpty()) {
+			String publicKeyText = platforms.get(0).getPublicKey();
+			return CryptoUtil.string2PublicKey(publicKeyText);
+		}
+		List<LTI13Key> keys = lti13KeyDao.getKey(kid, lti13Module.getPlatformIss());
+		if(keys.size() == 1) {
+			return keys.get(0).getPublicKey();
+		}
+		return null;
+	}
+
+	@Override
 	public LTI13Key getKey(String jwkSetUri, String kid) {
 		List<LTI13Key> keys = lti13KeyDao.getKeys(jwkSetUri);
 		for(LTI13Key key:keys) {
@@ -473,7 +538,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public OAuth2AccessToken getAccessToken(LTI13SharedTool tool, List<String> scopes) {
+	public OAuth2AccessToken getAccessToken(LTI13Platform tool, List<String> scopes) {
 		AccessTokenKey tokenKey = new AccessTokenKey(tool, scopes);
 		if(accessTokensCache.containsKey(tokenKey)) {
 			AccessTokenTimed obj = accessTokensCache.get(tokenKey);

@@ -19,7 +19,7 @@
  */
 package org.olat.ims.lti13.model;
 
-import org.olat.ims.lti13.LTI13SharedTool;
+import org.olat.ims.lti13.LTI13Platform;
 
 /**
  * 
@@ -27,18 +27,18 @@ import org.olat.ims.lti13.LTI13SharedTool;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LTI13SharedToolWithInfos {
+public class LTI13PlatformWithInfos {
 	
 	private long numOfDeployments;
-	private final LTI13SharedTool sharedTool;
+	private final LTI13Platform platform;
 	
-	public LTI13SharedToolWithInfos(LTI13SharedTool sharedTool, long numOfDeployments) {
-		this.sharedTool = sharedTool;
+	public LTI13PlatformWithInfos(LTI13Platform platform, long numOfDeployments) {
+		this.platform = platform;
 		this.numOfDeployments = numOfDeployments;
 	}
 	
-	public LTI13SharedTool getSharedTool() {
-		return sharedTool;
+	public LTI13Platform getPlatform() {
+		return platform;
 	}
 	
 	public long getNumOfDeployments() {

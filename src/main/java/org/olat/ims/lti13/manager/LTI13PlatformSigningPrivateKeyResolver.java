@@ -58,7 +58,7 @@ public class LTI13PlatformSigningPrivateKeyResolver implements SigningKeyResolve
 	}
 
 	@Override
-	public Key resolveSigningKey(@SuppressWarnings("rawtypes") JwsHeader header, Claims claims) {
+	public Key resolveSigningKey(JwsHeader header, Claims claims) {
 		try {
 			String kid = header.getKeyId();
 			String alg = header.getAlgorithm();
@@ -76,7 +76,7 @@ public class LTI13PlatformSigningPrivateKeyResolver implements SigningKeyResolve
 	}
 
 	@Override
-	public Key resolveSigningKey(@SuppressWarnings("rawtypes") JwsHeader header, String plaintext) {
+	public Key resolveSigningKey(JwsHeader header, String plaintext) {
 		log.debug("resolveSigningKey plain: {} claims: {}", header, plaintext);
 		return null;
 	}

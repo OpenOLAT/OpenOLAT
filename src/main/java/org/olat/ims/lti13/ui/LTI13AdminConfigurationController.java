@@ -19,8 +19,10 @@
  */
 package org.olat.ims.lti13.ui;
 
+import java.util.Collection;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
 import org.olat.core.gui.UserRequest;
@@ -37,7 +39,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.ims.lti13.LTI13Module;
+import org.olat.user.ui.organisation.OrganisationAdminController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -53,6 +57,8 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 	private MultipleSelectionElement moduleEnabled;
 	private TextElement platformIssEl;
 	private SingleSelection organisationsEl;
+	private MultipleSelectionElement deploymentRolesForEntriesEl;
+	private MultipleSelectionElement deploymentRolesForGroupsEl;
 	
 	@Autowired
 	private LTI13Module lti13Module;
@@ -60,7 +66,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 	private OrganisationService organisationService;
 	
 	public LTI13AdminConfigurationController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(OrganisationAdminController.class, ureq.getLocale()));
 		
 		initForm(ureq);
 		updateUI();
@@ -79,6 +85,34 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		platformIssEl.setEnabled(false);
 		
 		initOrganisationsEl(formLayout);
+		
+		KeyValues rolesEntriesValues = new KeyValues();
+		rolesEntriesValues.add(KeyValues.entry(OrganisationRoles.user.name(), translate("role.user")));
+		rolesEntriesValues.add(KeyValues.entry(OrganisationRoles.author.name(), translate("role.author")));
+		rolesEntriesValues.add(KeyValues.entry(OrganisationRoles.learnresourcemanager.name(), translate("role.learnresourcemanager")));
+		rolesEntriesValues.add(KeyValues.entry(OrganisationRoles.administrator.name(), translate("role.administrator")));
+		deploymentRolesForEntriesEl = uifactory.addCheckboxesVertical("lti13.deployment.roles.entries", formLayout,
+				rolesEntriesValues.keys(), rolesEntriesValues.values(), 1);
+		List<OrganisationRoles> rolesForEntries = lti13Module.getDeploymentRolesListForRepositoryEntries();
+		for(OrganisationRoles role:rolesForEntries) {
+			if(rolesEntriesValues.containsKey(role.name())) {
+				deploymentRolesForEntriesEl.select(role.name(), true);
+			}
+		}
+		
+		KeyValues rolesGroupsValues = new KeyValues();
+		rolesGroupsValues.add(KeyValues.entry(OrganisationRoles.user.name(), translate("role.user")));
+		rolesGroupsValues.add(KeyValues.entry(OrganisationRoles.author.name(), translate("role.author")));
+		rolesGroupsValues.add(KeyValues.entry(OrganisationRoles.groupmanager.name(), translate("role.groupmanager")));
+		rolesGroupsValues.add(KeyValues.entry(OrganisationRoles.administrator.name(), translate("role.administrator")));
+		deploymentRolesForGroupsEl = uifactory.addCheckboxesVertical("lti13.deployment.roles.groups", formLayout,
+				rolesGroupsValues.keys(), rolesGroupsValues.values(), 1);
+		List<OrganisationRoles> rolesForGroups = lti13Module.getDeploymentRolesListForBusinessGroups();
+		for(OrganisationRoles role:rolesForGroups) {
+			if(rolesGroupsValues.containsKey(role.name())) {
+				deploymentRolesForGroupsEl.select(role.name(), true);
+			}
+		}
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -122,6 +156,18 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		deploymentRolesForEntriesEl.clearError();
+		if(!deploymentRolesForEntriesEl.isAtLeastSelected(1)) {
+			deploymentRolesForEntriesEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		deploymentRolesForGroupsEl.clearError();
+		if(!deploymentRolesForGroupsEl.isAtLeastSelected(1)) {
+			deploymentRolesForGroupsEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 
@@ -137,6 +183,8 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		boolean enabled = moduleEnabled.isAtLeastSelected(1);
 		platformIssEl.setVisible(enabled);
 		organisationsEl.setVisible(enabled);
+		deploymentRolesForEntriesEl.setVisible(enabled);
+		deploymentRolesForGroupsEl.setVisible(enabled);
 	}
 
 	@Override
@@ -145,7 +193,24 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		lti13Module.setEnabled(enabled);
 		
 		String selectedOrganisationKey = organisationsEl.getSelectedKey();
-		lti13Module.setDefaultOrganisationKey(selectedOrganisationKey);	
+		lti13Module.setDefaultOrganisationKey(selectedOrganisationKey);
+		
+		String rolesForEntries = toString(deploymentRolesForEntriesEl.getSelectedKeys());
+		lti13Module.setDeploymentRolesForRepositoryEntries(rolesForEntries);
+		String rolesForGroups = toString(deploymentRolesForGroupsEl.getSelectedKeys());
+		lti13Module.setDeploymentRolesForBusinessGroups(rolesForGroups);
 	}
-
+	
+	private String toString(Collection<String> selectedKeys) {
+		StringBuilder sb = new StringBuilder();
+		for(String selectedKey:selectedKeys)  {
+			if(OrganisationRoles.valid(selectedKey)) {
+				if(sb.length() > 0) {
+					sb.append(",");
+				}
+				sb.append(selectedKey);
+			}
+		}
+		return sb.toString();
+	}
 }
