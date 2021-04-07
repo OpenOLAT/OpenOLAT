@@ -52,9 +52,8 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
 		
 		if (ftE.getTableDataModel().getRowCount() == 0 && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey())) {
-			sb.append("<div class='o_info'>")
-			  .append(translator.translate(ftE.getEmtpyTableMessageKey()))
-			  .append("</div>");
+			renderEmptyState(renderer, sb, ubu, translator, renderResult, ftE);			
+		
 		} else {
 			//render wrapper
 			String wrapperCss = null;

@@ -41,8 +41,20 @@ public interface InlineElement extends FormItem {
 	 */
 	public boolean isInlineEditingElement();
 
+	/**
+	 * The text used as the empty value for inline elements when nothing has been
+	 * added.
+	 * 
+	 * @param i18nKey4Text
+	 * @return
+	 */
 	FormItem setEmptyDisplayText(String i18nKey4Text);
 
+	/**
+	 * 
+	 * @return The text used as the empty value for inline elements when nothing has
+	 *         been added.
+	 */
 	String getEmptyDisplayText();
 
 }

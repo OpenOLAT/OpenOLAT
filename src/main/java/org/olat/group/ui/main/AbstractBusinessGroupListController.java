@@ -220,7 +220,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		if(startExtendedSearch) {
 			tableEl.expandExtendedSearch(ureq);
 		}
-		tableEl.setEmptyTableSettings("table.empty", showAlwaysSearch);
+		tableEl.setEmptyTableSettings("table.empty", null, "o_icon_group", null, null, showAlwaysSearch);
 		
 		initButtons(formLayout, ureq);
 	}

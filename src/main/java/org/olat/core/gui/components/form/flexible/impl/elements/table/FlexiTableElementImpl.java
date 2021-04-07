@@ -108,7 +108,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean extendedSearchExpanded = false;
 	private boolean hasAlwaysVisibleColumns = false;
 	private int columnLabelForDragAndDrop;
+	
 	private String emptyTableMessageKey;
+	private String emptyTableHintKey;		
+	private String emtpyTableIconCss;	
+	private FormLink emptyTablePrimaryActionButton;
 	private boolean emptyShowSearch = true;
 	
 	private VelocityContainer rowRenderer;
@@ -194,6 +198,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			//preload it
 			dataSource.load(null, null, null, 0, pageSize);
 		}
+		// Initialize empty state with standard message
+		setEmtpyTableMessageKey("default.tableEmptyMessage");
 	}
 
 	@Override
@@ -268,6 +274,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return customTypeButton;
 	}
 
+	public FormLink getEmptyTablePrimaryActionButton() {
+		return emptyTablePrimaryActionButton;
+	}
+	
 	@Override
 	public boolean isBordered() {
 		return bordered;
@@ -973,6 +983,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(exportButton != null
 				&& exportButton.getFormDispatchId().equals(dispatchuri)) {
 			doExport(ureq);
+		} else if (emptyTablePrimaryActionButton != null && emptyTablePrimaryActionButton.getFormDispatchId().equals(dispatchuri)) {
+			getRootForm().fireFormEvent(ureq, new FormEvent(EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION, this));
 		} else if(dispatchuri != null && select != null && select.equals("checkall")) {
 			selectAll();
 		} else if(dispatchuri != null && select != null && select.equals("checkpage")) {
@@ -1980,14 +1992,30 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public void setEmtpyTableMessageKey(String i18key) {
-		setEmptyTableSettings(i18key, true);
+		setEmptyTableSettings(i18key, null, TABLE_EMPTY_ICON, null, null, true);
 	}
 	
 	@Override
-	public void setEmptyTableSettings(String emtpyMessagei18key, boolean showAlwaysSearchFields) {
+	public void setEmptyTableSettings(String emtpyMessagei18key, String emptyTableHintKey, String emtpyTableIconCss, String emptyPrimaryActionKey, String emptyPrimaryActionIconCSS, boolean showAlwaysSearchFields) {
 		this.emptyTableMessageKey = emtpyMessagei18key;
+		this.emptyTableHintKey = emptyTableHintKey;
+		this.emtpyTableIconCss = emtpyTableIconCss;
+		// create action button
+		if (emptyPrimaryActionKey != null) {
+			String dispatchId = component.getDispatchID();
+			emptyTablePrimaryActionButton = new FormLinkImpl(dispatchId + "_emtpyTablePrimaryActionButton", "rEmtpyTablePrimaryActionButton", emptyPrimaryActionKey, Link.BUTTON);
+			emptyTablePrimaryActionButton.setTranslator(translator);
+			emptyTablePrimaryActionButton.setPrimary(true);
+			if (emptyPrimaryActionIconCSS != null) {
+				emptyTablePrimaryActionButton.setIconLeftCSS("o_icon o_icon-fw " + emptyPrimaryActionIconCSS);
+			}
+			emptyTablePrimaryActionButton.setAriaLabel(translator.translate(emptyPrimaryActionKey));
+			components.put("rEmtpyTablePrimaryActionButton", emptyTablePrimaryActionButton);			
+		}
+		// search filed config
 		this.emptyShowSearch = showAlwaysSearchFields;
 	}
+
 	
 	public boolean isShowAlwaysSearchFields() {
 		return emptyShowSearch;
@@ -1995,6 +2023,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	public String getEmtpyTableMessageKey() {
 		return emptyTableMessageKey;
+	}
+	public String getEmptyTableHintKey() {
+		return emptyTableHintKey;
+	}
+	public String getEmtpyTableIconCss() {
+		return emtpyTableIconCss;
 	}
 
 	@Override

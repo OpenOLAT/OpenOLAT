@@ -57,10 +57,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		renderBreadcrumbs(sb, ftE);
 		
 		if(ftE.getTableDataModel().getRowCount() == 0 && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey())) {
-			String emptyMessageKey = ftE.getEmtpyTableMessageKey();
-			sb.append("<div class='o_info'>")
-			  .append(translator.translate(emptyMessageKey))
-			  .append("</div>");
+			renderEmptyState(renderer, sb, ubu, translator, renderResult, ftE);			
+			
 		} else {
 			sb.append("<div class='o_table_wrapper o_table_flexi")
 			  .append(" o_table_edit", ftE.isEditMode());
@@ -121,6 +119,25 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		if (source.isEnabled()) {
 			FormJSHelper.appendFlexiFormDirty(sb, ftE.getRootForm(), id);
 		}
+	}
+
+	protected void renderEmptyState(Renderer renderer, StringOutput sb, URLBuilder ubu, Translator translator,
+		RenderResult renderResult, FlexiTableElementImpl ftE) {
+		String emptyMessageKey = ftE.getEmtpyTableMessageKey();
+		String emptyMessageIconCss = ftE.getEmtpyTableIconCss();
+		String emptyMessageHintKey = ftE.getEmptyTableHintKey();
+		sb.append("<div class=\"o_empty_state\">")
+			.append("<div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon ").append(emptyMessageIconCss).append("'></i></div>")
+			.append("<h3 class=\"o_empty_msg\">").append(translator.translate(emptyMessageKey)).append("</h3>");			
+		if (emptyMessageHintKey != null) {
+			sb.append("<div class=\"o_empty_hint\">").append(translator.translate(emptyMessageHintKey)).append("</div>");
+		}			
+		if (ftE.getEmptyTablePrimaryActionButton() != null) {
+			sb.append("<div class=\"o_empty_action\">");
+			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, null);
+			sb.append("</div> ");				
+		}
+		sb.append("</div>");
 	}
 	
 	protected boolean hasFooter(FlexiTableElementImpl ftE) {

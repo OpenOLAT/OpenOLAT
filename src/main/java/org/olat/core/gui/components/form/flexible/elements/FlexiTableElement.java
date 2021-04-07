@@ -51,6 +51,9 @@ import org.olat.core.util.prefs.Preferences;
 public interface FlexiTableElement extends FormItem, FormItemCollection {
 
 	public static final String ROM_SELECT_EVENT = "rSelect";
+	public static final String TABLE_EMPTY_ICON = "o_icon_empty_objects";
+	public static final String EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION = "emtpy.table.next.primary.action";
+
 	
 	@Override
 	public FlexiTableComponent getComponent();
@@ -479,7 +482,7 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 */
 	public void setEmtpyTableMessageKey(String i18key);
 	
-	public void setEmptyTableSettings(String emtpyMessagei18key, boolean showAlwaysSearchFields);
+	public void setEmptyTableSettings(String emtpyMessagei18key, String emptyTableHintKey, String emtpyTableIconCss, String emptyPrimaryActionKey, String emptyPrimaryActionIconCSS, boolean showAlwaysSearchFields);
 	
 	/**
 	 * Add a button or an other component in the "button grouped"

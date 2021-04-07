@@ -118,7 +118,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		
 		tableModel = new AssignedReferenceEntryListTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("table.assignments.empty", true);
+		tableEl.setEmptyTableSettings("table.assignments.empty", null, FlexiTableElement.TABLE_EMPTY_ICON, null, null, true);
 		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "grading-entries-list");
 	}

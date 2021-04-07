@@ -192,8 +192,8 @@ public class CompetencesOverviewController extends FormBasicController implement
 		tableEl.setCustomizeColumns(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "competences_overview");
 		tableEl.setSearchEnabled(true);
-		tableEl.setEmptyTableSettings("competences.empty.table", true);
-		
+		tableEl.setEmptyTableSettings("competences.empty.table", null, "o_icon_competences", null, null, true);
+				
 		// Set rootcrumb
 		rootCrumb = new CompetencesOverviewTableRow(getTranslator());
 		tableEl.setRootCrumb(rootCrumb);

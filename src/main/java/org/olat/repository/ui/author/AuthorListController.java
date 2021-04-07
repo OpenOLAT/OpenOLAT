@@ -439,12 +439,14 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setShowAllRowsEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
-		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
 		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(OrderBy.displayname.name(), true)));
 		tableEl.setAndLoadPersistedPreferences(ureq, "authors-list-" + i18nName);
-		if(!withSearch) {
+		if (withSearch) {
+			tableEl.setEmptyTableSettings("author.search.empty", "author.search.empty.hint", "o_CourseModule_icon", null, null, true);
+		} else {
+			tableEl.setEmptyTableSettings("author.list.empty", "author.list.empty.hint", "o_CourseModule_icon", null, null, true);
 			tableEl.reloadData();
-			tableEl.setFilters(null, getFilters(), false);
+			tableEl.setFilters(null, getFilters(), false);			
 		}
 		
 		initBatchButtons(formLayout);
@@ -789,6 +791,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.deselectAll();
 		tableEl.reloadData();
 		dirtyRows.clear();
+		flc.setDirty(true);
 	}
 
 	private void doOpenTools(UserRequest ureq, AuthoringEntryRow row, FormLink link) {
@@ -958,6 +961,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setTaxonomyLevels(null);
 		
 		tableEl.resetSearch(ureq);
+		flc.setDirty(true);
 	}
 	
 	private void doExtendedSearch(UserRequest ureq, SearchEvent se) {
@@ -980,7 +984,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setEntryOrganisations(se.getEntryOrganisations());
 		searchParams.setTaxonomyLevels(se.getTaxonomyLevels());
 		tableEl.reset(true, true, true);
-		
+		flc.setDirty(true);
+
 		AuthorListState stateEntry = new AuthorListState();
 		stateEntry.setSearchEvent(se);
 		stateEntry.setTableState(tableEl.getStateEntry());

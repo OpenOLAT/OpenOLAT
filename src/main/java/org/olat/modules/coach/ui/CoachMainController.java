@@ -247,7 +247,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			return userRelationRolesMap.keySet().stream().findFirst().get();
 		}
 		
-		if (organisationModule.isEnabled() && organisationMap != null) {
+		if (showLineManagerView) {
 			return organisationMap.keySet().stream().findFirst().get();
 		}
 		return "Members";

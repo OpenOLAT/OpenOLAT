@@ -41,6 +41,7 @@ import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
+import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.table.TableMultiSelectEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -102,8 +103,11 @@ public class GroupOverviewController extends BasicController {
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		vc = createVelocityContainer("groupoverview");
-		
-		groupListCtr = new TableController(null, ureq, control, getTranslator());
+
+		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
+		tableConfig.setTableEmptyMessage(translate("table.emtpy"), (canEdit ? translate("table.empty.hint") : null), "o_icon_group");
+		tableConfig.setTableEmptyNextPrimaryAction(translate("add.groups"), "o_icon_add");
+		groupListCtr = new TableController(tableConfig, ureq, control, getTranslator());
 		listenTo(groupListCtr);
 		groupListCtr.addColumnDescriptor(new BusinessGroupNameColumnDescriptor(canOpenGroup ? TABLE_ACTION_LAUNCH : null, getLocale()));
 		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
@@ -121,6 +125,7 @@ public class GroupOverviewController extends BasicController {
 		}
 		
 		tableDataModel = new BusinessGroupTableModelWithType(getTranslator(), 4);
+		vc.contextPut("groupModel", tableDataModel);	
 		groupListCtr.setTableDataModel(tableDataModel);		
 		vc.put("table.groups", groupListCtr.getInitialComponent());	
 		updateModel();
@@ -165,6 +170,7 @@ public class GroupOverviewController extends BasicController {
 		}
 		tableDataModel.setEntries(items);
 		groupListCtr.modelChanged();
+		vc.setDirty(true);
 	}
 
 	@Override
@@ -175,13 +181,17 @@ public class GroupOverviewController extends BasicController {
 	@Override
 	protected void event(	UserRequest ureq, Component source, Event event) {
 		if (source == addGroups){
-			groupsCtrl = new GroupSearchController(ureq, getWindowControl());
-			listenTo(groupsCtrl);
-			
-			cmc = new CloseableModalController(getWindowControl(), translate("add.groups"), groupsCtrl.getInitialComponent(), true, translate("add.groups"), true);
-			listenTo(cmc);
-			cmc.activate();
+			doGroupAddDialog(ureq);
 		}
+	}
+
+	private void doGroupAddDialog(UserRequest ureq) {
+		groupsCtrl = new GroupSearchController(ureq, getWindowControl());
+		listenTo(groupsCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("add.groups"), groupsCtrl.getInitialComponent(), true, translate("add.groups"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	@Override
@@ -208,6 +218,8 @@ public class GroupOverviewController extends BasicController {
 					List<BusinessGroup> groups = toBusinessGroups(items);
 					doLeave(ureq, groups);
 				}
+			} else if (event.equals(TableController.EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION)) {
+				doGroupAddDialog(ureq);
 			}
 		}	else if (source == groupsCtrl && event instanceof AddToGroupsEvent){
 			AddToGroupsEvent groupsEv = (AddToGroupsEvent) event;

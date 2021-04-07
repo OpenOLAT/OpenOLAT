@@ -7,6 +7,7 @@
 	</div>
 #end
 $r.render("table")
+#if($r.getComponent("table").getFlexiTableElement().getRowCount() > 0)
 <div class="o_button_group clearfix">
 	#if($r.available("tools.send.mail"))
 		$r.render("tools.send.mail")
@@ -27,3 +28,4 @@ $r.render("table")
 		$r.render("tools.delete.permanently")
 	#end
 </div>
+#end

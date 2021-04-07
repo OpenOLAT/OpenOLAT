@@ -237,7 +237,11 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
-		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		if (withSearch) {
+			tableEl.setEmptyTableSettings("table.search.empty", "table.search.empty.hint", "o_CourseModule_icon", null, null, true);			
+		} else {
+			tableEl.setEmptyTableSettings("table.list.empty", "table.list.empty.hint", "o_CourseModule_icon", null, null, true);			
+		}
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);

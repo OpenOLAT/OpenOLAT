@@ -319,7 +319,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		tableModel = new GradingAssignmentsTableModel(columnsModel,
 				userPropertyHandlers, assessedUserPropertyHandlers, getTranslator(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "assignments", tableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("table.assignments.empty", true);
+		tableEl.setEmptyTableSettings("table.assignments.empty", null, FlexiTableElement.TABLE_EMPTY_ICON, null, null, true);		
 		tableEl.setElementCssClass("o_sel_grading_assignments_list");
 		tableEl.setExportEnabled(true);
 		String id = "grading-assignments-list-v2-" + (testEntry == null ? "coaching" : testEntry.getKey());
