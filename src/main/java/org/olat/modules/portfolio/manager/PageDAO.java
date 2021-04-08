@@ -219,7 +219,7 @@ public class PageDAO {
 		  .append(categorySubQuery.toString(), ", true as categoryCountCorrect", options.getCategories() != null && !options.getCategories().isEmpty())
 		  .append(" from pfpage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
-		  .append(" inner join fetch page.section as section")
+		  .append(" left join fetch page.section as section")
 		  .append(" inner join fetch page.body as body")
 		  .append(" left join fetch section.binder as binder");
 		if(options.getOwner() != null) {

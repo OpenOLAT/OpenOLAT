@@ -44,6 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog;
+import org.olat.modules.taxonomy.TaxonomyCompetenceLinkLocations;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
@@ -383,7 +384,7 @@ public class TaxonomyWebService {
 		if(competence == null) {
 			TaxonomyCompetenceTypes competenceType
 				= TaxonomyCompetenceTypes.valueOf(comptenceVo.getTaxonomyCompetenceType());
-			competence = taxonomyService.addTaxonomyLevelCompetences(level, identity, competenceType, comptenceVo.getExpiration());
+			competence = taxonomyService.addTaxonomyLevelCompetences(level, identity, competenceType, comptenceVo.getExpiration(), TaxonomyCompetenceLinkLocations.MANUAL_EXTERNAL);
 		} else {
 			competence.setExpiration(comptenceVo.getExpiration());
 			competence = taxonomyService.updateTaxonomyLevelCompetence(competence);

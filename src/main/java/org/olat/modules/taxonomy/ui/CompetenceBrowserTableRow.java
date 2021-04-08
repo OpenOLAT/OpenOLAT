@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -36,6 +37,8 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 	
 	private Taxonomy taxonomy;
 	private TaxonomyLevel taxonomyLevel;
+	
+	private FormLink detailsLink;
 	
 	private Translator translator;
 	
@@ -63,6 +66,14 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 	
 	public TaxonomyLevel getTaxonomyLevel() {
 		return taxonomyLevel;
+	}
+	
+	public FormLink getDetailsLink() {
+		return detailsLink;
+	}
+	
+	public void setDetailsLink(FormLink detailsLink) {
+		this.detailsLink = detailsLink;
 	}
 	
 	public boolean hasChildren() {
@@ -133,6 +144,16 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 			return taxonomyLevel.getIdentifier();
 		} else if (taxonomy != null) {
 			return taxonomy.getIdentifier();
+		} else {
+			return null;
+		}
+	}
+	
+	public String getDisplayName() {
+		if (taxonomyLevel != null) {
+			return taxonomyLevel.getDisplayName();
+		} else if (taxonomy != null) {
+			return taxonomy.getDisplayName();
 		} else {
 			return null;
 		}

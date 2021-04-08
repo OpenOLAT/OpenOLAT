@@ -100,7 +100,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] evaKeys = new String[] { "only-autoevaluation", "alien-evaluation"};
 	
-	private static final String[] editKeys = new String[] {"metadata.edit.global", "metadata.edit.local"};
+	private static final String[] editKeys = new String[] {"metadata.edit.local", "metadata.edit.global"};
 	
 	private SingleSelection editModeEl;
 	private TextElement titleEl;
@@ -115,6 +115,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private FileElement assignmentDocUploadEl;
 	private FormLayoutContainer assignmentDocsContainer;
 	private MultipleSelectionElement reviewerSeeAutoEvaEl;
+	private MultipleSelectionElement updateGlobalEntriesEl;
 	
 	private FileElement imageUpload;
 	private SingleSelection imageAlignEl;
@@ -269,6 +270,30 @@ public class PageMetadataEditController extends FormBasicController {
 		
 		if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
 			editModeEl = uifactory.addDropdownSingleselect("edit.mode", formLayout, editKeys, TranslatorHelper.translateAll(getTranslator(), editKeys));
+			editModeEl.addActionListener(FormEvent.ONCHANGE);
+			updateGlobalEntriesEl = uifactory.addCheckboxesDropdown("update.gloabl.entries", formLayout);
+			
+			List<Page> sharedPages = portfolioService.getPagesSharingSameBody(page);
+			String[] keys = new String[sharedPages.size()];
+			String[] values = new String[sharedPages.size()];
+			
+			for(int i = 0; i < sharedPages.size(); i++) {
+				Page page = sharedPages.get(i);
+				keys[i] = page.getKey().toString();
+				
+				String title = page.getTitle();
+				
+				if (page.getSection() != null && page.getSection().getBinder() != null) {
+					title = page.getSection().getBinder().getTitle() + " / " + page.getSection().getTitle() + " / " + page.getTitle();
+				}
+				
+				
+				values[i] = title;
+			}
+			
+			updateGlobalEntriesEl.setKeysAndValues(keys, values);
+			updateGlobalEntriesEl.setVisible(false);
+			
 			setFormWarning("edit.mode.info");
 		}
 		
@@ -651,10 +676,10 @@ public class PageMetadataEditController extends FormBasicController {
 			portfolioService.linkCompetences(page, getIdentity(), competencesEl.getValueItems());
 		}
 		
-		if (editModeEl != null && editModeEl.getSelectedKey().equals(editKeys[0])) {
+		if (editModeEl != null && editModeEl.getSelectedKey().equals(editKeys[1])) {
 		List<Page> sharingTheBody = portfolioService.getPagesSharingSameBody(page);
 			for(Page sharing:sharingTheBody) {
-				if(!sharing.equals(page)) {
+				if(!sharing.equals(page) && updateGlobalEntriesEl.getSelectedKeys().contains(sharing.getKey().toString())) {
 					sharing.setTitle(titleEl.getValue());
 					sharing.setSummary(summaryEl.getValue());
 					sharing.setImageAlignment(imageAlign);
@@ -757,6 +782,8 @@ public class PageMetadataEditController extends FormBasicController {
 		} else if(evaluationFormEl == source) {
 			boolean otherOptions = evaluationFormEl.isOneSelected() && evaluationFormEl.isSelected(1);
 			reviewerSeeAutoEvaEl.setVisible(otherOptions);
+		} else if (editModeEl == source) {
+			updateGlobalEntriesEl.setVisible(editModeEl.getSelectedKey().equals(editKeys[1]));
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("delete".equals(link.getCmd()) && link.getUserObject() instanceof File) {

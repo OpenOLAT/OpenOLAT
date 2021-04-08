@@ -25,8 +25,10 @@ package org.olat.modules.taxonomy;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
 public enum TaxonomyCompetenceLinkLocations {
-	PORTFOLIO("competence.location.portfolio"),
-	UNDEFINED("competence.location.undefined");
+	PORTFOLIO("competence.location.portfolio"),					// Used in Portfolio
+	MANUAL_INTERNAL("competences.location.manual.internal"),	// Used in Useradministration
+	MANUAL_EXTERNAL("competences.location.manual.external"),	// Used in REST API
+	UNDEFINED("competence.location.undefined");					// Fallback
 	
 	private final String i18nKey;
 	

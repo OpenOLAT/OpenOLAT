@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -34,11 +34,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.CompetenceBrowserTableModel.CompetenceBrowserCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +55,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CompetenceBrowserController extends FormBasicController {
 
+	private static final String OPEN_INFO = "open_info";
+	
 	private CompetenceBrowserTableModel tableModel;
 	private CompetenceBrowserTableRow rootCrumb;
 	private FlexiTableElement tableEl;
+	
+	private CloseableCalloutWindowController ccmc;
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
@@ -73,7 +82,7 @@ public class CompetenceBrowserController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetenceBrowserCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceBrowserCols.competences, new TreeNodeFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceBrowserCols.identifier));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetenceBrowserCols.description, new TextFlexiCellRenderer(EscapeMode.antisamy)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceBrowserCols.details));
 		
 		// Create table model
 		tableModel = new CompetenceBrowserTableModel(columnsModel);
@@ -90,16 +99,30 @@ public class CompetenceBrowserController extends FormBasicController {
 	private void loadModel() {
 		List<CompetenceBrowserTableRow> rows = new ArrayList<>();
 		
-		portfolioModule.getLinkedTaxonomies().stream()
-			.forEach(taxonomy -> {
-				CompetenceBrowserTableRow taxonomyRow = new CompetenceBrowserTableRow(null, taxonomy, null);
-				rows.add(taxonomyRow);
+		int linkCounter = 0;
+		
+		for (Taxonomy taxonomy : portfolioModule.getLinkedTaxonomies()) {
+			CompetenceBrowserTableRow taxonomyRow = new CompetenceBrowserTableRow(null, taxonomy, null);
+			if (StringHelper.containsNonWhitespace(taxonomyRow.getDescription())) {
+				FormLink taxonomyDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + taxonomyRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+				taxonomyDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
+				taxonomyDetailsLink.setUserObject(taxonomyRow);
+				taxonomyRow.setDetailsLink(taxonomyDetailsLink);
+			}
+			rows.add(taxonomyRow);
+			
+			for (TaxonomyLevel level : taxonomyService.getTaxonomyLevels(taxonomy)) {
+				CompetenceBrowserTableRow levelRow = new CompetenceBrowserTableRow(null, taxonomy, level);
+				if (StringHelper.containsNonWhitespace(levelRow.getDescription())) {
+					FormLink levelDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+					levelDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
+					levelDetailsLink.setUserObject(levelRow);
+					levelRow.setDetailsLink(levelDetailsLink);
+				}
+				rows.add(levelRow);
+			}
+		}
 				
-				taxonomyService.getTaxonomyLevels(taxonomy).stream().forEach(level -> {
-					CompetenceBrowserTableRow levelRow = new CompetenceBrowserTableRow(null, taxonomy, level);
-					rows.add(levelRow);
-				});
-		});	
 		
 		// Set parents
 		// Root levels to taxonomy
@@ -129,6 +152,26 @@ public class CompetenceBrowserController extends FormBasicController {
 				} else {
 					tableModel.filter(tableEl.getQuickSearchString(), null);
 				}
+			}
+		} else if (source instanceof FormLink) {
+			FormLink sFl = (FormLink) source;
+			if (sFl.getCmd().equals(OPEN_INFO)) {
+				CompetenceBrowserTableRow row = (CompetenceBrowserTableRow) sFl.getUserObject();
+				
+				String title = row.getDisplayName();
+				String description = row.getDescription();
+				
+				VelocityContainer taxonomyDetails = createVelocityContainer("taxonomy_details");
+				
+				if (StringHelper.containsNonWhitespace(title)) {
+					taxonomyDetails.contextPut("title", title);
+				}
+				if (StringHelper.containsNonWhitespace(description)) {
+					taxonomyDetails.contextPut("description", description);
+				}
+				
+				ccmc = new CloseableCalloutWindowController(ureq, getWindowControl(), taxonomyDetails, sFl, null, true, null);
+				ccmc.activate();
 			}
 		}
 	}

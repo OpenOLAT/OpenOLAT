@@ -50,6 +50,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog;
+import org.olat.modules.taxonomy.TaxonomyCompetenceLinkLocations;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -224,7 +225,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 			if(!found) {
 				TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(selectedLevel);
 				Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
-				TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, assessedIdentity, competenceType, null);
+				TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, assessedIdentity, competenceType, null, TaxonomyCompetenceLinkLocations.MANUAL_INTERNAL);
 				String after = taxonomyService.toAuditXml(competence);
 				taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.addCompetence, null, after, null, taxonomy, competence, assessedIdentity, getIdentity());
 			}

@@ -345,7 +345,7 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	@Override
 	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity,
 			TaxonomyCompetenceTypes competence, Date expiration) {
-		return taxonomyCompetenceDao.createTaxonomyCompetence(competence, taxonomyLevel, identity, expiration);
+		return taxonomyCompetenceDao.createTaxonomyCompetence(competence, taxonomyLevel, identity, expiration, TaxonomyCompetenceLinkLocations.MANUAL_INTERNAL);
 	}
 
 	@Override

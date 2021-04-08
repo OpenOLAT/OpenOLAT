@@ -37,7 +37,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
@@ -49,6 +48,7 @@ import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.manager.PortfolioServiceSearchOptions;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.event.PageSelectionEvent;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
@@ -63,12 +63,6 @@ public class SelectPageListController extends AbstractPageListController {
 
 	private Section currentSection; 
 	private boolean isMultiSelect;
-	
-	public SelectPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Section currentSection, BinderSecurityCallback secCallback, boolean isMultiSelect) {
-		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createSelectPagesConfig(), "select_pages", false, false, true);
-		
-		initPageListController(ureq, currentSection, isMultiSelect);
-	}
 	
 	public SelectPageListController(UserRequest ureq, WindowControl wControl, Form rootForm, Section currentSection, BinderSecurityCallback secCallback, boolean isMultiSelect) {
 		super(ureq, wControl, rootForm, secCallback, BinderConfiguration.createSelectPagesConfig(), "select_pages", false, false, true);
@@ -144,12 +138,14 @@ public class SelectPageListController extends AbstractPageListController {
 			assignmentList.add(assignment);
 		}
 		
-		List<Page> pages = portfolioService.searchOwnedPages(getIdentity(), searchString);
+		PortfolioServiceSearchOptions options = new PortfolioServiceSearchOptions(null, null, searchString, activeCompetenceFilters, activeCategoryFilters);
+		options.setOwner(getIdentity());
+		List<Page> pages = portfolioService.getPages(options);
 		List<PortfolioElementRow> rows = new ArrayList<>(pages.size());
 		List<TimelinePoint> points = new ArrayList<>(pages.size());
 		Set<Long> pageBodyKeys = new HashSet<>();
 		for (Page page : pages) {
-			if(page.getPageStatus() == PageStatus.deleted || pageBodyKeys.contains(page.getBody().getKey())) {
+			if(page.getPageStatus() == PageStatus.deleted) {
 				continue;
 			}
 			

@@ -48,13 +48,13 @@ public class CompetencesOverviewTableModel extends DefaultFlexiTreeTableDataMode
 
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		// TODO Implement filters		
+		//
 	}
 
 	@Override
 	public void sort(SortKey sortKey) {
 		if (sortKey != null) {
-			// TODO Sort here
+			//
 		}
 		
 	}
@@ -79,7 +79,9 @@ public class CompetencesOverviewTableModel extends DefaultFlexiTreeTableDataMode
 			case taxonomyLevelExternalId: return row.getTaxonomyLevelExternalId();
 			case taxonomyLevelType: return row.getTaxonomyLevelType();
 			case expiration: return row.getExpiration();
+			case creationDate: return row.getCreationDate();
 			case remove: return Boolean.valueOf(!row.isManaged() && row.isCompetence());
+			case info: return row.getDetailsLink();
 			default: return null;
 		}
 	}
@@ -102,17 +104,31 @@ public class CompetencesOverviewTableModel extends DefaultFlexiTreeTableDataMode
 		taxonomyLevelExternalId("table.header.taxonomy.level.externalId"),
 		type("table.header.competence.type"),
 		expiration("table.header.competence.expiration"),
+		info("table.header.info", "o_icon o_icon_fw o_icon_description"),
+		creationDate("table.hader.competence.creation.date"),
+		
 		remove("remove");
 
 		private final String i18nHeaderKey;
+		private final String iconHeader;
 
 		private CompetencesOverviewCols(String i18nHeaderKey) {
+			this(i18nHeaderKey, null);
+		}
+		
+		private CompetencesOverviewCols(String i18nHeaderKey, String iconHeader) {
 			this.i18nHeaderKey = i18nHeaderKey;
+			this.iconHeader = iconHeader;
 		}
 		
 		@Override
 		public String i18nHeaderKey() {
 			return i18nHeaderKey;
+		}
+		
+		@Override
+		public String iconHeader() {
+			return iconHeader;
 		}
 
 		@Override

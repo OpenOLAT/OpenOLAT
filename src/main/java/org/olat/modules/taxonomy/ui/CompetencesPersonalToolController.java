@@ -50,12 +50,12 @@ public class CompetencesPersonalToolController extends BasicController implement
 		stackPanel = new TooledStackedPanel("competencesStackPanel", getTranslator(), this);
 		stackPanel.setToolbarAutoEnabled(true);
 		stackPanel.setShowCloseLink(true, false);
-		stackPanel.setInvisibleCrumb(0);
+		stackPanel.setInvisibleCrumb(1);
 		stackPanel.setCssClass("o_competences");
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("CompetencesOverview", 0l);
 		WindowControl swControl = addToHistory(ureq, ores, null, getWindowControl(), true);
-		competencesController = new CompetencesOverviewController(ureq, swControl, stackPanel, getIdentity(), false);
+		competencesController = new CompetencesOverviewController(ureq, swControl, stackPanel, getIdentity(), false, true);
 		listenTo(competencesController);
 		
 		stackPanel.pushController(translate("competences.root.breadcrump"), competencesController);		

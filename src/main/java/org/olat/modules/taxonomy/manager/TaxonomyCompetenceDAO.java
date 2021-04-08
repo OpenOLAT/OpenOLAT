@@ -69,7 +69,6 @@ public class TaxonomyCompetenceDAO {
 	
 	public TaxonomyCompetence createTaxonomyCompetence(TaxonomyCompetenceTypes type, TaxonomyLevel taxonomyLevel, Identity identity,
 			Date expiration) {
-		// TODO Alex: Ask Stephane, how to proceed here
 		return createTaxonomyCompetence(type, taxonomyLevel, identity, expiration, TaxonomyCompetenceLinkLocations.UNDEFINED);
 	}
 	

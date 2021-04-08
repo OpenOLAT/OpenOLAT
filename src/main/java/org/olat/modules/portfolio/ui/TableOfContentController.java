@@ -88,6 +88,7 @@ import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
@@ -948,16 +949,6 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doImportExistingEntry(UserRequest ureq, Section currentSection) {
-		/*if(guardModalController(selectPageListCtrl)) return;
-
-		selectPageListCtrl = new SelectPageListController(ureq, getWindowControl(), (TooledStackedPanel)null, currentSection, secCallback, false);
-		listenTo(selectPageListCtrl);
-		
-		String title = translate("select.page");
-		cmc = new CloseableModalController(getWindowControl(), null, selectPageListCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();*/
-		
 		PortfolioImportEntriesContext context = new PortfolioImportEntriesContext();
 		context.setBinderSecurityCallback(BinderSecurityCallbackFactory.getCallbackFroImportPages());
 		context.setCurrentSection(currentSection);
@@ -1313,9 +1304,16 @@ public class TableOfContentController extends BasicController implements TooledC
         	// Get context
         	PortfolioImportEntriesContext context = (PortfolioImportEntriesContext) runContext.get(PortfolioImportEntriesContext.CONTEXT_KEY);
         	
+        	// Create or load section
+        	SectionRef currentSection = context.getCurrentSection();
+        	
+        	if (currentSection == null) {
+        		currentSection = portfolioService.appendNewSection(context.getNewSectionTitle(), context.getNewSectionDescription(), null, null, context.getCurrentBinder());
+        	}
+        	
         	// Import pages into section
         	for (PortfolioElementRow page : context.getSelectedPortfolioEntries()) {
-        		portfolioService.appendNewPage(getIdentity(), page.getTitle(), page.getSummary(), page.getImageUrl(), page.getPage().getImageAlignment(), context.getCurrentSection(), page.getPage());
+        		portfolioService.appendNewPage(getIdentity(), page.getTitle(), page.getSummary(), page.getImageUrl(), page.getPage().getImageAlignment(), currentSection, page.getPage());
         	}
         	
             // Fire event

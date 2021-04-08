@@ -49,7 +49,7 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 			case key: return tableRow.getKey();
 			case competences: return tableRow.getTaxonomyOrLevel();
 			case identifier: return tableRow.getIdentifier();
-			case description: return tableRow.getDescription();
+			case details: return tableRow.getDetailsLink();
 			default: return "ERROR";
 		}
 	}
@@ -97,20 +97,29 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 		key("table.header.key"),
 		competences("table.header.competence"),
 		identifier("table.header.taxonomy.level.identifier"),
-		description("table.header.taxonomy.level.description"),
+		details("table.header.info", "o_icon o_icon_fw o_icon_description"),
 		type("table.header.taxonomy.level.type");
 		
-		
-
+		private String iconHeader;
 		private String i18nHeaderKey;
 		
 		private CompetenceBrowserCols(String i18nHeaderKey) {
+			this(i18nHeaderKey, null);
+		}
+		
+		private CompetenceBrowserCols(String i18nHeaderKey, String iconHeader) {
 			this.i18nHeaderKey = i18nHeaderKey;
+			this.iconHeader = iconHeader;
 		}
 		
 		@Override
 		public String i18nHeaderKey() {
 			return i18nHeaderKey;
+		}
+		
+		@Override
+		public String iconHeader() {
+			return iconHeader;
 		}
 
 		@Override

@@ -21,8 +21,10 @@ package org.olat.modules.taxonomy.ui;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
@@ -43,6 +45,7 @@ public class CompetencesOverviewTableRow implements FlexiTreeTableNode {
 	private TaxonomyCompetence competence;
 	private Page portfolioLocation;
 	private CompetencesOverviewTableRow parent;
+	private FormLink detailsLink;
 	
 	private boolean isUsed;
 	private boolean isManaged;
@@ -243,6 +246,40 @@ public class CompetencesOverviewTableRow implements FlexiTreeTableNode {
 	
 	public boolean isCompetence() {
 		return competence != null;
+	}
+	
+	public Date getCreationDate() {
+		return competence != null ? competence.getCreationDate() : null;
+	}
+	
+	public boolean hasDescription() {
+		if (competence != null) {
+			return StringHelper.containsNonWhitespace(competence.getSourceText()) || StringHelper.containsNonWhitespace(competence.getSourceUrl());
+		} else if (level != null) {
+			return StringHelper.containsNonWhitespace(level.getDescription());
+		} else if (taxonomy != null) {
+			return StringHelper.containsNonWhitespace(taxonomy.getDescription());
+		} else {
+			return false;
+		}
+	}
+	
+	public FormLink getDetailsLink() {
+		return detailsLink;
+	}
+	
+	public void setDetailsLink(FormLink detailsLink) {
+		this.detailsLink = detailsLink;
+	}
+	
+	public String getDescription() {
+		if (level != null) {
+			return level.getDescription();
+		} else if (taxonomy != null) {
+			return taxonomy.getDescription();
+		} else {
+			return null;
+		}
 	}
 	
 	@Override

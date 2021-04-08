@@ -42,9 +42,11 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -70,6 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CompetencesOverviewController extends FormBasicController implements BreadcrumbPanelAware {
 	
 	private static final String OPEN_RESOURCE = "open_resource";
+	private static final String OPEN_INFO = "open_info";
 	private static final String REMOVE = "remove";
 	
 	private BreadcrumbPanel stackPanel;
@@ -88,18 +91,21 @@ public class CompetencesOverviewController extends FormBasicController implement
 	private CloseableModalController cmc;
 	private SelectTaxonomyLevelController levelsSearchCtrl;
 	private DialogBoxController removeCompentenceConfirmationCtrl;
+	private CloseableCalloutWindowController ccc;
 
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private PortfolioService portfolioService;
 
-	public CompetencesOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity assessedIdentity, boolean canModify) {
+	public CompetencesOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity assessedIdentity, boolean canModify, boolean usedAsPersonalTool) {
 		super(ureq, wControl, "identity_competences");
 		
 		this.stackPanel = stackPanel;
 		this.assessedIdentity = assessedIdentity;
 		this.canModify = canModify;
+		
+		flc.contextPut("isPersonalTool", usedAsPersonalTool);
 		
 		initForm(ureq);
 		loadModel();	
@@ -120,6 +126,8 @@ public class CompetencesOverviewController extends FormBasicController implement
 				.distinct()
 				.collect(Collectors.toList());
 		
+		int linkCounter = 0;
+		
 		for (Taxonomy taxonomy : taxonomies) {
 			List<TaxonomyLevel> taxonomyLevels = levels.stream()
 					.filter(level -> level.getTaxonomy()
@@ -128,6 +136,12 @@ public class CompetencesOverviewController extends FormBasicController implement
 			
 			CompetencesOverviewTableRow taxonomyRow = new CompetencesOverviewTableRow(getTranslator());
 			taxonomyRow.setTaxonomy(taxonomy);
+			if (taxonomyRow.hasDescription()) {
+				FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + taxonomyRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+				detailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
+				detailsLink.setUserObject(taxonomyRow);
+				taxonomyRow.setDetailsLink(detailsLink);
+			}
 			rows.add(taxonomyRow);
 			
 			for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
@@ -139,6 +153,12 @@ public class CompetencesOverviewController extends FormBasicController implement
 				levelRow.setTaxonomy(taxonomy);
 				levelRow.setLevel(taxonomyLevel);
 				levelRow.setParent(taxonomyRow);
+				if (levelRow.hasDescription()) {
+					FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+					detailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
+					detailsLink.setUserObject(levelRow);
+					levelRow.setDetailsLink(detailsLink);
+				}
 				rows.add(levelRow);
 				
 				for (TaxonomyCompetence competence : taxonomyLevelCompetences) {
@@ -149,6 +169,12 @@ public class CompetencesOverviewController extends FormBasicController implement
 					competenceRow.setCompetence(competence);
 					if (competence.getLinkLocation().equals(TaxonomyCompetenceLinkLocations.PORTFOLIO)) {
 						competenceRow.setPortfolioLocation(portfolioService.getPageToCompetence(competence));
+					}
+					if (competenceRow.hasDescription()) {
+						FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + competenceRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+						detailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
+						detailsLink.setUserObject(competenceRow);
+						competenceRow.setDetailsLink(detailsLink);
 					}
 					rows.add(competenceRow);
 				}
@@ -172,6 +198,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetencesOverviewCols.key));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetencesOverviewCols.competence, new TreeNodeFlexiCellRenderer(true)));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetencesOverviewCols.resource, OPEN_RESOURCE));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetencesOverviewCols.info));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetencesOverviewCols.type));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetencesOverviewCols.taxonomyDisplayName));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetencesOverviewCols.taxonomyIdentifier));
@@ -180,6 +207,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetencesOverviewCols.taxonomyLevelIdentifier));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetencesOverviewCols.taxonomyLevelExternalId));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetencesOverviewCols.taxonomyLevelType));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetencesOverviewCols.creationDate));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetencesOverviewCols.expiration));
 		if(canModify) {
 			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetencesOverviewCols.remove, REMOVE,
@@ -225,6 +253,42 @@ public class CompetencesOverviewController extends FormBasicController implement
 						// External competences or competences in general without linked resource can not be openend
 						showInfo("competence.without.link");
 					}
+				} 
+			}
+		} else if (source instanceof FormLink) {
+			FormLink sFl = (FormLink) source;
+			if (sFl.getCmd().equals(OPEN_INFO)) {
+				CompetencesOverviewTableRow row = (CompetencesOverviewTableRow) sFl.getUserObject();
+				if (row.isCompetence()) {
+					String url = row.getCompetence().getSourceUrl();
+					String description = row.getCompetence().getSourceText();
+					
+					VelocityContainer competenceDetails = createVelocityContainer("competence_details");
+					
+					if (StringHelper.containsNonWhitespace(url)) {
+						competenceDetails.contextPut("sourceURL", url);
+					}
+					if (StringHelper.containsNonWhitespace(description)) {
+						competenceDetails.contextPut("sourceText", description);
+					}
+					
+					ccc = new CloseableCalloutWindowController(ureq, getWindowControl(), competenceDetails, sFl, null, true, null);
+					ccc.activate();
+				} else {
+					String title = row.getDisplayName();
+					String description = row.getDescription();
+					
+					VelocityContainer taxonomyDetails = createVelocityContainer("taxonomy_details");
+					
+					if (StringHelper.containsNonWhitespace(title)) {
+						taxonomyDetails.contextPut("title", title);
+					}
+					if (StringHelper.containsNonWhitespace(description)) {
+						taxonomyDetails.contextPut("description", description);
+					}
+					
+					ccc = new CloseableCalloutWindowController(ureq, getWindowControl(), taxonomyDetails, sFl, null, true, null);
+					ccc.activate();
 				}
 			}
 		}
@@ -291,7 +355,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 			if(!found) {
 				TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(selectedLevel);
 				Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
-				TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, assessedIdentity, competenceType, null);
+				TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, assessedIdentity, competenceType, null, TaxonomyCompetenceLinkLocations.MANUAL_INTERNAL);
 				String after = taxonomyService.toAuditXml(competence);
 				taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.addCompetence, null, after, null, taxonomy, competence, assessedIdentity, getIdentity());
 			}

@@ -543,7 +543,7 @@ public class UserAdminController extends BasicController implements Activateable
 		if(taxonomyModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_COMPETENCES),  uureq -> {
 				boolean canModify = isUserManagerOf || isRolesManagerOf || isAdminOf;
-				competencesCtrl = new CompetencesOverviewController(uureq, getWindowControl(), null, identity, canModify);
+				competencesCtrl = new CompetencesOverviewController(uureq, getWindowControl(), null, identity, canModify, false);
 				listenTo(competencesCtrl);
 				BreadcrumbedStackedPanel competencePanel = new BreadcrumbedStackedPanel("competences", getTranslator(), competencesCtrl);
 				competencePanel.pushController(translate(NLS_VIEW_COMPETENCES), competencesCtrl);
