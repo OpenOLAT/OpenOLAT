@@ -1935,6 +1935,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		rootFormAvailable(extendedSearchButton);
 		rootFormAvailable(customTypeButton);
 		rootFormAvailable(classicTypeButton);
+		rootFormAvailable(emptyTablePrimaryActionButton);
 		if(components != null) {
 			for(FormItem item:components.values()) {
 				rootFormAvailable(item);

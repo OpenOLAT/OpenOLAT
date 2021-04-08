@@ -81,13 +81,13 @@ public class BindersPage {
 	}
 	
 	/**
-	 * Only check the presence of the message "table empty".
+	 * Only check the presence of the message "table empty" in the binders list
 	 * 
 	 * @return
 	 */
 	public BindersPage assertEmptyTableView() {
-		By emptyMessageBy = By.cssSelector("div.o_segments_content div.o_info");
-		OOGraphene.waitElement(emptyMessageBy, 5, browser);
+		By emptyMessageBy = By.cssSelector("div.o_segments_content div.o_empty_state");
+		OOGraphene.waitElement(emptyMessageBy, browser);
 		return this;
 	}
 	

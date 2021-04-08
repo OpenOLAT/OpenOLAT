@@ -104,7 +104,7 @@ public class EntriesPage {
 	}
 	
 	public EntriesPage assertEmptyTableView() {
-		By emptyMessageBy = By.cssSelector("div.o_portfolio_entries div.o_info");
+		By emptyMessageBy = By.cssSelector("div.o_portfolio_entries div.o_empty_state");
 		OOGraphene.waitElement(emptyMessageBy, browser);
 		return this;
 	}

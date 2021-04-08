@@ -126,8 +126,13 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		String emptyMessageKey = ftE.getEmtpyTableMessageKey();
 		String emptyMessageIconCss = ftE.getEmtpyTableIconCss();
 		String emptyMessageHintKey = ftE.getEmptyTableHintKey();
-		sb.append("<div class=\"o_empty_state\">")
-			.append("<div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon ").append(emptyMessageIconCss).append("'></i></div>")
+		sb.append("<div class=\"o_empty_state\"");
+		
+		String wrapperSelector = ftE.getWrapperSelector();
+		if (wrapperSelector != null) {
+			sb.append(" id=\"").append(wrapperSelector).append("\"");
+		}
+		sb.append("><div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon ").append(emptyMessageIconCss).append("'></i></div>")
 			.append("<h3 class=\"o_empty_msg\">").append(translator.translate(emptyMessageKey)).append("</h3>");			
 		if (emptyMessageHintKey != null) {
 			sb.append("<div class=\"o_empty_hint\">").append(translator.translate(emptyMessageHintKey)).append("</div>");
