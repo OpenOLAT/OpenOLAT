@@ -94,6 +94,7 @@ public class OAuthAdminController extends FormBasicController {
 	private TextElement tequilaOAuth2EndpointEl;
 	
 	private MultipleSelectionElement keycloakEl;
+	private MultipleSelectionElement keycloakDefaultEl;
 	private TextElement keycloakClientIdEl;
 	private TextElement keycloakClientSecretEl;
 	private TextElement keycloakEndpointEl;
@@ -335,6 +336,9 @@ public class OAuthAdminController extends FormBasicController {
 		keycloakEl = uifactory.addCheckboxesHorizontal("keycloak.enabled", keycloakCont, keys, values);
 		keycloakEl.addActionListener(FormEvent.ONCHANGE);
 		
+		keycloakDefaultEl = uifactory.addCheckboxesHorizontal("keycloak.default.enabled", keycloakCont, keys, values);
+		keycloakDefaultEl.addActionListener(FormEvent.ONCHANGE);
+		
 		String keycloakEndpoint = oauthModule.getKeycloakEndpoint();
 		keycloakEndpointEl = uifactory.addTextElement("keycloak.endpoint", "keycloak.endpoint", 256, keycloakEndpoint, keycloakCont);
 		keycloakEndpointEl.setExampleKey("keycloak.endpoint.example", null);
@@ -350,10 +354,15 @@ public class OAuthAdminController extends FormBasicController {
 		if(oauthModule.isKeycloakEnabled()) {
 			keycloakEl.select(keys[0], true);
 		} else {
+			keycloakDefaultEl.setVisible(false);
 			keycloakClientIdEl.setVisible(false);
 			keycloakClientSecretEl.setVisible(false);
 			keycloakEndpointEl.setVisible(false);
 			keycloakRealmEl.setVisible(false);
+		}
+		
+		if(oauthModule.isKeycloakRootEnabled()) {
+			keycloakDefaultEl.select(keys[0], true);
 		}
 	}
 	
@@ -553,6 +562,7 @@ public class OAuthAdminController extends FormBasicController {
 			azureAdfsDefaultEl.setVisible(azureAdfsEl.isAtLeastSelected(1));
 			azureAdfsTenantEl.setVisible(azureAdfsEl.isAtLeastSelected(1));
 		} else if(source == keycloakEl) {
+			keycloakDefaultEl.setVisible(keycloakEl.isAtLeastSelected(1));
 			keycloakClientIdEl.setVisible(keycloakEl.isAtLeastSelected(1));
 			keycloakClientSecretEl.setVisible(keycloakEl.isAtLeastSelected(1));
 			keycloakEndpointEl.setVisible(keycloakEl.isAtLeastSelected(1));
@@ -656,12 +666,14 @@ public class OAuthAdminController extends FormBasicController {
 			oauthModule.setKeycloakClientId(keycloakClientIdEl.getValue());
 			oauthModule.setKeycloakClientSecret(keycloakClientSecretEl.getValue());
 			oauthModule.setKeycloakEndpoint(keycloakEndpointEl.getValue());
+			oauthModule.setKeycloakRootEnabled(keycloakDefaultEl.isAtLeastSelected(1));
 			oauthModule.setKeycloakRealm(keycloakRealmEl.getValue());
 		} else {
 			oauthModule.setKeycloakEnabled(false);
 			oauthModule.setKeycloakClientId("");
 			oauthModule.setKeycloakClientSecret("");
 			oauthModule.setKeycloakEndpoint("");
+			oauthModule.setKeycloakRootEnabled(false);
 			oauthModule.setKeycloakRealm("");
 		}
 		
