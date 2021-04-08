@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
@@ -409,7 +410,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				doSearch((FlexiTableSearchEvent)event);
-			} else if (FlexiTableElement.EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION.equals(event.getCommand())) {
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doCreate(ureq, getWindowControl(), null);
 			}
 		} 

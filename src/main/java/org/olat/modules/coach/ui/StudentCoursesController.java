@@ -245,7 +245,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		model = new EfficiencyStatementEntryTableDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setEmtpyTableMessageKey("error.no.found");
+		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
 		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentCourseListController-v2");
 	}
 

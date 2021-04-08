@@ -134,7 +134,7 @@ public abstract class AbstactCoachListController extends FormBasicController imp
         model = new StudentsTableDataModel(columnsModel);
         tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
         tableEl.setExportEnabled(true);
-        tableEl.setEmtpyTableMessageKey("error.no.found");
+		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
         tableEl.setAndLoadPersistedPreferences(ureq, "UserRelationsListController");
 
         UserSession usess = ureq.getUserSession();

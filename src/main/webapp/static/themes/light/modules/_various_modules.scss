@@ -163,7 +163,7 @@ ul.o_dropdown {
 /* Empty state in various modules */
 .o_empty_state {
 	text-align: center;
-	margin: 4em auto 2em auto;
+	margin: 3em auto 2em auto;
 	padding: 0, 5em;
 	max-width: 45em;
 	
@@ -201,7 +201,7 @@ ul.o_dropdown {
 	}
 	
 	@media (max-width: $screen-xs-max) { 
-		margin: 3em auto 1.5em auto;
+		margin: 2em auto 1.5em auto;
 		
 		.o_empty_visual {
 			.o_icon_empty_indicator {

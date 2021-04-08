@@ -984,7 +984,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				&& exportButton.getFormDispatchId().equals(dispatchuri)) {
 			doExport(ureq);
 		} else if (emptyTablePrimaryActionButton != null && emptyTablePrimaryActionButton.getFormDispatchId().equals(dispatchuri)) {
-			getRootForm().fireFormEvent(ureq, new FormEvent(EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION, this));
+			getRootForm().fireFormEvent(ureq, new FlexiTableEmptyNextPrimaryActionEvent(this));
 		} else if(dispatchuri != null && select != null && select.equals("checkall")) {
 			selectAll();
 		} else if(dispatchuri != null && select != null && select.equals("checkpage")) {

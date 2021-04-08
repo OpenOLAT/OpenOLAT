@@ -194,7 +194,7 @@ public class GroupController extends FormBasicController implements Activateable
 		model = new EfficiencyStatementEntryTableDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setEmtpyTableMessageKey("error.no.found");
+		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_group");
 		tableEl.setAndLoadPersistedPreferences(ureq, "fGroupController-v2");
 	}
 

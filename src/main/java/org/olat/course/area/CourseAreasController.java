@@ -82,7 +82,10 @@ public class CourseAreasController extends MainLayoutBasicController {
 
 		Translator resourceTrans = Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator());
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("resources.noresources"), null, "o_icon_courseareas");
+		tableConfig.setTableEmptyMessage(translate("resources.noresources"), translate("course.areas.description"), "o_icon_courseareas");
+		if (!readOnly) {
+			tableConfig.setTableEmptyNextPrimaryAction(translate("create.area"), "o_icon_add");			
+		}
 		tableCtrl = new TableController(tableConfig, ureq, getWindowControl(), resourceTrans);
 		listenTo(tableCtrl);
 		
@@ -103,6 +106,7 @@ public class CourseAreasController extends MainLayoutBasicController {
 		mainVC.put("areaList", tableCtrl.getInitialComponent());
 		
 		createAreaLink = LinkFactory.createButton("create.area", mainVC, this);
+		createAreaLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		createAreaLink.setVisible(!readOnly);
 		mainVC.put("createArea", createAreaLink);
 		
@@ -123,14 +127,18 @@ public class CourseAreasController extends MainLayoutBasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == createAreaLink) {
-			removeAsListenerAndDispose(newAreaController);
-			newAreaController = new NewAreaController(ureq, getWindowControl(), resource, false, null);
-			listenTo(newAreaController);
-			// wrap in velocity container to add help, title 
-			createVC = createVelocityContainer("area_create");
-			createVC.put("areaForm", newAreaController.getInitialComponent());
-			mainPanel.pushContent(createVC);
+			doCreateAreaDialog(ureq);
 		}
+	}
+
+	private void doCreateAreaDialog(UserRequest ureq) {
+		removeAsListenerAndDispose(newAreaController);
+		newAreaController = new NewAreaController(ureq, getWindowControl(), resource, false, null);
+		listenTo(newAreaController);
+		// wrap in velocity container to add help, title 
+		createVC = createVelocityContainer("area_create");
+		createVC.put("areaForm", newAreaController.getInitialComponent());
+		mainPanel.pushContent(createVC);
 	}
 
 	@Override
@@ -148,6 +156,8 @@ public class CourseAreasController extends MainLayoutBasicController {
 					deleteDialogCtr = activateYesNoDialog(ureq, translate("delete.area.title"), text, deleteDialogCtr);
 					deleteDialogCtr.setUserObject(area);
 				}
+			} else if (event.equals(TableController.EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION)) {
+				doCreateAreaDialog(ureq);
 			}
 		} else if (source == deleteDialogCtr) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case

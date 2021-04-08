@@ -100,7 +100,7 @@ public class CourseListController extends FormBasicController implements Activat
 		tableModel = new CoursesTableDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setEmtpyTableMessageKey("error.no.found");
+		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_CourseModule_icon");
 		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v2");
 	}
 

@@ -207,7 +207,7 @@ public class CourseController extends FormBasicController implements Activateabl
 		model = new EfficiencyStatementEntryTableDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setEmtpyTableMessageKey("error.no.found");
+		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
 		tableEl.setAndLoadPersistedPreferences(ureq, "fCourseController-v2");
 	}
 

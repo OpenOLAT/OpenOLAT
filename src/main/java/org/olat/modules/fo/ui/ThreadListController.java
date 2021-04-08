@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
@@ -149,8 +150,11 @@ public class ThreadListController extends FormBasicController {
 		threadTable = uifactory.addTableElement(getWindowControl(), "threads", threadTableModel, getTranslator(), formLayout);
 		threadTable.setCustomizeColumns(false);
 		threadTable.setElementCssClass("o_forum");
-		threadTable.setEmptyTableSettings("forum.emtpy", null, "o_forum_status_thread_icon");
-		
+		if(foCallback.mayOpenNewThread()) {
+			threadTable.setEmptyTableSettings("forum.emtpy", "forum.emtpy.hint", "o_forum_status_thread_icon", "msg.create", "o_forum_status_thread_icon", true);
+		} else {
+			threadTable.setEmptyTableSettings("forum.emtpy", null, "o_forum_status_thread_icon");			
+		}
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(ThreadListCols.lastModified.name(), false));
 		threadTable.setSortSettings(sortOptions);
@@ -236,6 +240,8 @@ public class ThreadListController extends FormBasicController {
 				} else if("unread".equals(cmd)) {
 					doSelectNew(ureq, row);
 				}
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doNewThread(ureq);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

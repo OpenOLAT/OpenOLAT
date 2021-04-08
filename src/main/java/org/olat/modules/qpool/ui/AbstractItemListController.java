@@ -231,6 +231,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.setColumnIndexForDragAndDropLabel(Cols.title.ordinal());
 		itemsTable.setExportEnabled(true);
 		itemsTable.setAndLoadPersistedPreferences(ureq, "qpool-list-" + prefsKey);
+		itemsTable.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_qpool", null, null, false);
 		listenTo(extendedSearchCtrl);
 		
 		VelocityContainer detailsVC = createVelocityContainer("item_list_details");

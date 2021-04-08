@@ -115,7 +115,7 @@ public class UserListController extends FormBasicController implements Activatea
 		model = new StudentsTableDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setEmtpyTableMessageKey("error.no.found");
+		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
 
 		UserSession usess = ureq.getUserSession();
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(usess.getRoles());

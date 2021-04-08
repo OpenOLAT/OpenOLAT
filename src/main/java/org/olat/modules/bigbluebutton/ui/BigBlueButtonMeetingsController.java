@@ -98,7 +98,7 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 
 		upcomingTableModel = new BigBlueButtonMeetingTableModel(columnsModel, getLocale());
 		upcomingTableEl = uifactory.addTableElement(getWindowControl(), "upcomingMeetings", upcomingTableModel, getTranslator(), formLayout);
-		upcomingTableEl.setEmtpyTableMessageKey("no.upcoming.meetings");
+		upcomingTableEl.setEmptyTableSettings("no.upcoming.meetings", null, "o_icon_calendar");
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(BMeetingsCols.start.name(), true));

@@ -315,6 +315,7 @@ public class InfoDisplayController extends FormBasicController {
 		if(secCallback.canAdd()) {
 			newInfoLink = uifactory.addFormLink("new_message", "new_message", "new_message", formLayout, Link.BUTTON);
 			newInfoLink.setElementCssClass("o_sel_course_info_create_msg");
+			newInfoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		}
 		
 		oldMsgsLink = uifactory.addFormLink("display.old_messages", "display.old_messages", "display.old_messages", formLayout, Link.BUTTON);

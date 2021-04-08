@@ -1,13 +1,8 @@
 <h4>$r.contextHelpWithWrapper("Using Course Tools#_lernbereich")
 	<i class="o_icon o_icon_courseareas"> </i> $r.translate("course.areas.title")</h4>
-$r.render("areaList")
 #if($r.visible("createArea"))
-<div class="clearfix o_block_large">
-	<div class="panel panel-placeholder">
-		<div class="panel-body">
-			<p>$r.translate("course.areas.description")</p>
-			<div class="o_button_group">$r.render("createArea")</div>
-		</div>
+	<div class="o_button_group o_button_group_right">
+		$r.render("createArea")
 	</div>
-</div>
 #end
+$r.render("areaList")

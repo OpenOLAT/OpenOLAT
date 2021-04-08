@@ -188,7 +188,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
-		tableEl.setEmtpyTableMessageKey(emptyI18nKey);
+		tableEl.setEmptyTableSettings(emptyI18nKey, null, "o_icon_calendar");
 		tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview-v3-".concat(id));
 	}
 	

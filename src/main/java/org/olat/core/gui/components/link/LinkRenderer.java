@@ -110,6 +110,9 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(link.getElementCssClass())) {
 			cssSb.append(" ").append(link.getElementCssClass());
 		}
+		if(args != null && args.length > 0 && StringHelper.containsNonWhitespace(args[0])) {
+			cssSb.append(" ").append(args[0]);
+		}
 		cssSb.append("\"");
 
 		String elementId = link.getElementId();

@@ -52,7 +52,6 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 
 	public static final String ROM_SELECT_EVENT = "rSelect";
 	public static final String TABLE_EMPTY_ICON = "o_icon_empty_objects";
-	public static final String EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION = "emtpy.table.next.primary.action";
 
 	
 	@Override

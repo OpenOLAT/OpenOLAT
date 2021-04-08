@@ -1,12 +1,18 @@
 #if($infos.isEmpty())
-	<div class="o_important">
-		<p>$r.translate("display.no_messages")</p>
+	<div class="o_empty_state">
+		<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_icon_news"></i></div>
+		<h3 class="o_empty_msg">
+			$r.translate("display.no_messages")
+		</h3>
 		#if($r.available("new_message"))
-		<div class="o_button_group">
-			$r.render("new_message")
+		<div class="o_empty_hint">
+			$r.translate("display.no_messages.hint")
+		</div>
+		<div class="o_empty_action">
+			$r.render("new_message", "btn-primary")
 		</div>
 		#end		
-	</div>		
+	</div>
 #else 
 	#if($r.available("new_message"))
 		<div class="clearfix">
