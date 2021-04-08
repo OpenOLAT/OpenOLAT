@@ -91,7 +91,7 @@ public class ForumPseudonymsAdminController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "pseudonyms", model, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_forum");
-		tableEl.setEmtpyTableMessageKey("forum.emtpy");
+		tableEl.setEmptyTableSettings("forum.emtpy", null, "o_forum_status_thread_icon", null, null, false);
 		tableEl.setSearchEnabled(true);
 	}
 	

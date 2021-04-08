@@ -163,7 +163,7 @@ ul.o_dropdown {
 /* Empty state in various modules */
 .o_empty_state {
 	text-align: center;
-	margin: 2em auto;
+	margin: 4em auto 2em auto;
 	padding: 0, 5em;
 	max-width: 45em;
 	
@@ -177,13 +177,13 @@ ul.o_dropdown {
 			left: -20%;
 			bottom: 10%; 
 			font-weight: bold;
-			font-size: 5em;
+			font-size: 4em;
 			color: $o-emtpy-indicator-color;
 			text-shadow: 5px 10px 10px rgba(0,0,0,.2);
 		}
 		.o_icon_empty_indicator + i {
 			font-weight: bold;
-			font-size: 10em;
+			font-size: 8em;
 			color: $o-emtpy-icon-color;
 		}
 		
@@ -191,7 +191,7 @@ ul.o_dropdown {
 	.o_empty_msg {
 		margin-top: 1.5em;
 		color: $o-emtpy-msg-color;	
-		font-size: 2em;
+		font-size: 1.5em;
 	}
 	.o_empty_hint {
 		margin: 1.5em;
@@ -201,17 +201,19 @@ ul.o_dropdown {
 	}
 	
 	@media (max-width: $screen-xs-max) { 
+		margin: 3em auto 1.5em auto;
+		
 		.o_empty_visual {
 			.o_icon_empty_indicator {
-				font-size: 3em;
+				font-size: 2.5em;
 			}
 			.o_icon_empty_indicator + i {
-				font-size: 6em;
+				font-size: 5em;
 			}		
 		}
 		.o_empty_msg {
 			margin-top: 1em;
-			font-size: 1.5em;
+			font-size: 1.25em;
 		}
 		.o_empty_hint {
 			margin: 1em;

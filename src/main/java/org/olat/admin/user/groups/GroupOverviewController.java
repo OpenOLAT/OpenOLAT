@@ -122,10 +122,10 @@ public class GroupOverviewController extends BasicController {
 			groupListCtr.setMultiSelect(true);
 			groupListCtr.addMultiSelectAction("table.leave", TABLE_ACTION_UNSUBSCRIBE);
 			addGroups = LinkFactory.createButton("add.groups", vc, this);
+			addGroups.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		}
 		
 		tableDataModel = new BusinessGroupTableModelWithType(getTranslator(), 4);
-		vc.contextPut("groupModel", tableDataModel);	
 		groupListCtr.setTableDataModel(tableDataModel);		
 		vc.put("table.groups", groupListCtr.getInitialComponent());	
 		updateModel();
@@ -170,7 +170,6 @@ public class GroupOverviewController extends BasicController {
 		}
 		tableDataModel.setEntries(items);
 		groupListCtr.modelChanged();
-		vc.setDirty(true);
 	}
 
 	@Override

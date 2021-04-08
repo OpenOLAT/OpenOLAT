@@ -7,25 +7,3 @@
 	</div>
 #end
 $r.render("table")
-#if($r.getComponent("table").getFlexiTableElement().getRowCount() > 0)
-<div class="o_button_group clearfix">
-	#if($r.available("tools.send.mail"))
-		$r.render("tools.send.mail")
-	#end
-	#if($r.available("tools.modify.owners"))
-		$r.render("tools.modify.owners")
-	#end
-	#if($r.available("details.copy"))
-		$r.render("details.copy")
-	#end
-	#if($r.available("details.delete"))
-		$r.render("details.delete")
-	#end
-	#if($r.available("tools.restore"))
-		$r.render("tools.restore")
-	#end
-		#if($r.available("tools.delete.permanently"))
-		$r.render("tools.delete.permanently")
-	#end
-</div>
-#end

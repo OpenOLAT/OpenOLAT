@@ -138,8 +138,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("<div class=\"o_empty_hint\">").append(translator.translate(emptyMessageHintKey)).append("</div>");
 		}			
 		if (ftE.getEmptyTablePrimaryActionButton() != null) {
-			sb.append("<div class=\"o_empty_action\">");
-			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, null);
+			sb.append("<div class=\"o_empty_action\">");			
+			renderFormItem(renderer, sb, ftE.getEmptyTablePrimaryActionButton(), ubu, translator, renderResult, null);
 			sb.append("</div> ");				
 		}
 		sb.append("</div>");

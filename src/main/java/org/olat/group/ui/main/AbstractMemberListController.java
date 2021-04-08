@@ -248,7 +248,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		memberListModel = new MemberListTableModel(columnsModel, imModule.isOnlineStatusEnabled());
 		membersTable = uifactory.addTableElement(getWindowControl(), "memberList", memberListModel, 20, false, getTranslator(), formLayout);
 		membersTable.setMultiSelect(true);
-		membersTable.setEmtpyTableMessageKey("nomembers");
+		membersTable.setEmptyTableSettings("nomembers", null, "o_icon_user", null, null, false);
 		membersTable.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName() + "-v3");
 		membersTable.setSearchEnabled(true);
 		
@@ -263,10 +263,13 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 
 		editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
+		membersTable.addBatchButton(editButton);
 		editButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
 		mailButton = uifactory.addFormLink("table.header.mail", formLayout, Link.BUTTON);
+		membersTable.addBatchButton(mailButton);
 		removeButton = uifactory.addFormLink("table.header.remove", formLayout, Link.BUTTON);
 		removeButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
+		membersTable.addBatchButton(removeButton);
 	}
 	
 	private boolean calcGloballyManaged() {

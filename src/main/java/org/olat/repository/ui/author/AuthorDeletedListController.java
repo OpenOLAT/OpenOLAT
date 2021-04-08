@@ -96,12 +96,16 @@ public class AuthorDeletedListController extends AuthorListController {
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 	}
+	
 
 	@Override
 	protected void initBatchButtons(FormItemContainer formLayout) {
 		restoreButton = uifactory.addFormLink("tools.restore", formLayout, Link.BUTTON);
+		tableEl.addBatchButton(restoreButton);
+
 		if(hasAdministratorRight) {
 			deletePermanentlyButton = uifactory.addFormLink("tools.delete.permanently", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(deletePermanentlyButton);
 		}
 	}
 

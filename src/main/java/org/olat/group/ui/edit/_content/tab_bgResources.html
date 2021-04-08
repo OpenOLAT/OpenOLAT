@@ -2,7 +2,7 @@
 	<legend>
 		$r.contextHelpWithWrapper("Group Administration#gruppensystem_embed_course")
 		$r.translate("fieldset.legend.resources")</legend>
-	#if($repoTableModel.getRowCount() != 0)
+	#if($r.available("cmd.addresource"))
 	<div class="o_button_group o_button_group_right">
 		$r.render("cmd.addresource")
 	</div>

@@ -134,12 +134,12 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		resourcesCtr.setSortColumn(sortCol, true);
 		
 		mainVC = createVelocityContainer("tab_bgResources");
-		addTabResourcesButton = LinkFactory.createButtonSmall("cmd.addresource", mainVC, this);
-		addTabResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-		addTabResourcesButton.setPrimary(true);
-		addTabResourcesButton.setVisible(!managed);
+		if (!managed) {
+			addTabResourcesButton = LinkFactory.createButtonSmall("cmd.addresource", mainVC, this);
+			addTabResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			addTabResourcesButton.setVisible(!managed);
+		}
 		mainVC.put("resources", resourcesCtr.getInitialComponent());
-		mainVC.contextPut("repoTableModel", repoTableModel); // to check for empty model
 		putInitialPanel(mainVC);
 	}
 

@@ -119,7 +119,8 @@ public class VideoListingController extends FormBasicController implements Activ
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_video_listing");
-		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		boolean isAuthor = ureq.getUserSession().getRoles().isAuthor();
+		tableEl.setEmptyTableSettings("video.site.empty", isAuthor ? "video.site.empty.hint" : null, "o_icon_video", null, null, true);
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("video_cell");
 		row.contextPut("imgUrl", imgUrl);

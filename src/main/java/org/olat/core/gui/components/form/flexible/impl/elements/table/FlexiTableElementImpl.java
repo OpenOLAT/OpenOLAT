@@ -2014,7 +2014,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			components.put("rEmtpyTablePrimaryActionButton", emptyTablePrimaryActionButton);			
 			if(getRootForm() != null) {
 				rootFormAvailable(emptyTablePrimaryActionButton);
-			}		}
+			}		
+		}
 		// search filed config
 		this.emptyShowSearch = showAlwaysSearchFields;
 	}

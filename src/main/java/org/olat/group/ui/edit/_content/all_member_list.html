@@ -2,14 +2,3 @@
 	<div class="o_info">$infos</div>
 #end
 $r.render("memberList")
-<div class="o_button_group">
-	#if($r.available("edit.members"))
-		$r.render("edit.members")
-	#end
-	#if($r.available("table.header.mail"))
-		$r.render("table.header.mail")
-	#end
-	#if($r.available("table.header.remove"))
-		$r.render("table.header.remove")
-	#end
-</div>

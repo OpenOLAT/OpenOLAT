@@ -1,11 +1,9 @@
 <fieldset>
 	<legend><i class="o_icon o_icon_group"> </i> $r.translate("add.groups.title")</legend>
 	#if($r.available("add.groups"))
-		#if($groupModel.getRowCount() != 0)
 		<div class="o_button_group o_button_group_right">
 			$r.render("add.groups")
 		</div>
-		#end
 	#end
 	$r.render("table.groups")
 </fieldset>

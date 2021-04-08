@@ -448,7 +448,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			tableEl.reloadData();
 			tableEl.setFilters(null, getFilters(), false);			
 		}
-		
 		initBatchButtons(formLayout);
 	}
 	
@@ -469,11 +468,15 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	protected void initBatchButtons(FormItemContainer formLayout) {
-		if(hasAuthorRight) {
+		if(hasAuthorRight) {			
 			sendMailButton = uifactory.addFormLink("tools.send.mail", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(sendMailButton);
 			modifyOwnersButton = uifactory.addFormLink("tools.modify.owners", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(modifyOwnersButton);
 			copyButton = uifactory.addFormLink("details.copy", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(copyButton);
 			deleteButton = uifactory.addFormLink("details.delete", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(deleteButton);
 		}
 	}
 	

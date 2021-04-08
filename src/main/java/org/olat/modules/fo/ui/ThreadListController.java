@@ -149,7 +149,7 @@ public class ThreadListController extends FormBasicController {
 		threadTable = uifactory.addTableElement(getWindowControl(), "threads", threadTableModel, getTranslator(), formLayout);
 		threadTable.setCustomizeColumns(false);
 		threadTable.setElementCssClass("o_forum");
-		threadTable.setEmtpyTableMessageKey("forum.emtpy");
+		threadTable.setEmptyTableSettings("forum.emtpy", null, "o_forum_status_thread_icon", null, null, false);
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(ThreadListCols.lastModified.name(), false));

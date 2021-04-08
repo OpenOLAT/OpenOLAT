@@ -220,9 +220,13 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		if(startExtendedSearch) {
 			tableEl.expandExtendedSearch(ureq);
 		}
-		tableEl.setEmptyTableSettings("table.empty", null, "o_icon_group", null, null, showAlwaysSearch);
-		
 		initButtons(formLayout, ureq);
+		if (createButton == null) {
+			tableEl.setEmptyTableSettings("table.empty", null, "o_icon_group", null, null, showAlwaysSearch);		
+		} else {
+			tableEl.setEmptyTableSettings("table.empty", "create.group.description", "o_icon_group", "create.group", "o_icon_add", showAlwaysSearch);					
+		}
+		
 	}
 	
 	protected abstract FlexiTableColumnModel initColumnModel();
@@ -249,6 +253,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		if(create && groupModule.isAllowedCreate(ureq.getUserSession().getRoles())) {
 			createButton = uifactory.addFormLink("create.group", formLayout, Link.BUTTON);
 			createButton.setElementCssClass("o_sel_group_create");
+			createButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		}
 		
 		if(select) {
@@ -404,6 +409,8 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				doSearch((FlexiTableSearchEvent)event);
+			} else if (FlexiTableElement.EVENT_EMPTY_TABLE_NEXT_PRIMARY_ACTION.equals(event.getCommand())) {
+				doCreate(ureq, getWindowControl(), null);
 			}
 		} 
 		super.formInnerEvent(ureq, source, event);
