@@ -112,7 +112,7 @@ public class AdobeConnectEditMeetingsController extends FormBasicController {
 		
 		tableModel = new AdobeConnectMeetingTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "meetings", tableModel, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("no.meeting.configured");
+		tableEl.setEmptyTableSettings("no.meeting.configured", null, "o_icon_calendar");
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), false));

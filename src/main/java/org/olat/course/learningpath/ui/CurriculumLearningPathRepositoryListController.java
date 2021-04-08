@@ -115,7 +115,7 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 		
 		dataModel = new CurriculumLearningPathRepositoryDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("table.empty.repository");
+		tableEl.setEmptyTableSettings("table.empty.repository", null, "o_CourseModule_icon");
 		tableEl.setExportEnabled(true);
 		
 		loadModel();

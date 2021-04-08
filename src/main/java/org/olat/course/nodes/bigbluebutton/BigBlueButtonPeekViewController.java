@@ -80,7 +80,7 @@ public class BigBlueButtonPeekViewController extends FormBasicController {
 		upcomingTableModel = new BigBlueButtonMeetingTableModel(columnsModel, getLocale());
 		upcomingTableEl = uifactory.addTableElement(getWindowControl(), "upcomingMeetings", upcomingTableModel,
 				5, false, getTranslator(), formLayout);
-		upcomingTableEl.setEmtpyTableMessageKey("no.upcoming.meetings");
+		upcomingTableEl.setEmptyTableSettings("no.upcoming.meetings", null, "o_icon_calendar");
 		upcomingTableEl.setCustomizeColumns(false);
 		upcomingTableEl.setNumOfRowsEnabled(false);
 		

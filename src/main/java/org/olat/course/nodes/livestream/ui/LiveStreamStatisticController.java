@@ -85,7 +85,7 @@ public class LiveStreamStatisticController extends FormBasicController {
 		dataModel = new LiveStreamEventDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "livestream-statistic");
-		tableEl.setEmtpyTableMessageKey("statistic.table.empty");
+		tableEl.setEmptyTableSettings("statistic.table.empty", null, "o_icon_calendar");
 		loadModel();
 	}
 	

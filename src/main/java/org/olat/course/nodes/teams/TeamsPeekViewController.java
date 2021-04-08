@@ -80,7 +80,7 @@ public class TeamsPeekViewController extends FormBasicController {
 		tableModel = new TeamsMeetingTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "upcomingMeetings", tableModel,
 				5, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("no.upcoming.meetings");
+		tableEl.setEmptyTableSettings("no.upcoming.meetings", null, "o_icon_calendar");
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		

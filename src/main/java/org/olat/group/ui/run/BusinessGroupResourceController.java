@@ -94,7 +94,7 @@ public class BusinessGroupResourceController extends FormBasicController {
 		tableModel = new RepositoryFlexiTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "resources", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "group-resources");
-		tableEl.setEmtpyTableMessageKey("resources.noresources");
+		tableEl.setEmptyTableSettings("resources.noresources", null, "o_CourseModule_icon");
 		tableEl.setExportEnabled(true);
 	}
 	

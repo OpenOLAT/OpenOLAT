@@ -81,7 +81,8 @@ public class LiveStreamListController extends FormBasicController {
 		dataModel = new LiveStreamEventDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "livestream-upcoming");
-		tableEl.setEmtpyTableMessageKey("table.empty");
+		tableEl.setEmptyTableSettings("table.empty", null, "o_icon_calendar");
+
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		loadModel();

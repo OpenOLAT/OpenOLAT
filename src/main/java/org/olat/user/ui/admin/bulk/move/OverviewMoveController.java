@@ -115,7 +115,7 @@ public class OverviewMoveController extends StepFormBasicController {
 		tableModel = new OverviewMoveTableModel(columnsModel);
 		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmtpyTableMessageKey("error.no.user.found");
+		tableEl.setEmptyTableSettings("error.no.user.found", null, "o_icon_user");
 		tableEl.setAndLoadPersistedPreferences(ureq, "overview_user_search_table-v2");
 	}
 	

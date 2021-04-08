@@ -244,7 +244,7 @@ public class GroupSelectionController extends FormBasicController {
 		
 		groupTableModel = new ENEditGroupTableModel(columnsModel, getLocale(), getTranslator());
 		groupTableElement = uifactory.addTableElement(getWindowControl(), "entries", groupTableModel, getTranslator(), formLayout);
-		groupTableElement.setEmtpyTableMessageKey("groupselection.noentries");
+		groupTableElement.setEmptyTableSettings("groupselection.noentries", null, "o_icon_group");
 		groupTableElement.setMultiSelect(true);		
 		groupTableElement.setSelectAllEnable(true);
 		groupTableElement.setCustomizeColumns(false);

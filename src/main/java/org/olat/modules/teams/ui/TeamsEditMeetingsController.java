@@ -153,7 +153,8 @@ public class TeamsEditMeetingsController extends FormBasicController {
 		
 		tableModel = new TeamsMeetingTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "meetings", tableModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("no.meetings");
+		tableEl.setEmptyTableSettings("no.meetings", null, "o_icon_calendar");
+
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), true));

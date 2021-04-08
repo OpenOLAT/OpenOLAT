@@ -213,7 +213,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		tableModel = new UserSearchTableModel(new EmptyDataSource(), columnsModel, userModule, userLifecycleManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmtpyTableMessageKey("error.no.user.found");
+		tableEl.setEmptyTableSettings("error.no.user.found", null, "o_icon_user");
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);

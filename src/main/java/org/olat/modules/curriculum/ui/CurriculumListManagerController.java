@@ -164,7 +164,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
-		tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
+		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-manage");
 	}
 	

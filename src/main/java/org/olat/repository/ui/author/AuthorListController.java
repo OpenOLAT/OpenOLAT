@@ -442,9 +442,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(OrderBy.displayname.name(), true)));
 		tableEl.setAndLoadPersistedPreferences(ureq, "authors-list-" + i18nName);
 		if (withSearch) {
-			tableEl.setEmptyTableSettings("author.search.empty", "author.search.empty.hint", "o_CourseModule_icon", null, null, true);
+			tableEl.setEmptyTableSettings("author.search.empty", "author.search.empty.hint", "o_CourseModule_icon");
 		} else {
-			tableEl.setEmptyTableSettings("author.list.empty", "author.list.empty.hint", "o_CourseModule_icon", null, null, true);
+			tableEl.setEmptyTableSettings("author.list.empty", "author.list.empty.hint", "o_CourseModule_icon");
 			tableEl.reloadData();
 			tableEl.setFilters(null, getFilters(), false);			
 		}

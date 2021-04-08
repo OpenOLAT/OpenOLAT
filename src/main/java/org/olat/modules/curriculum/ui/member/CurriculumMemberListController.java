@@ -189,7 +189,7 @@ public class CurriculumMemberListController extends FormBasicController implemen
 		tableModel = new CurriculumMemberListTableModel(columnsModel, userPropertyHandlers, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
-		tableEl.setEmtpyTableMessageKey("nomembers");
+		tableEl.setEmptyTableSettings("nomembers", null, "o_icon_user");
 		tableEl.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName());
 		tableEl.setSearchEnabled(true);
 		

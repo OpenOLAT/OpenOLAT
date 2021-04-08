@@ -481,7 +481,42 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 * @param i18key
 	 */
 	public void setEmtpyTableMessageKey(String i18key);
-	
+
+	/**
+	 * Configure the empty table screen with custom message, hint text and
+	 * background icon and define the next primary user action.
+	 * 
+	 * @param emtpyMessagei18key        the i18n key used as the main message. If
+	 *                                  set to null, the empty screen is disabled
+	 *                                  alltogether
+	 * @param emptyTableHintKey         the i18n key for an optional hint message to
+	 *                                  tell the user what the empty table means and
+	 *                                  what to do about it
+	 * @param emtpyTableIconCss         the CSS icon class that shows the icon for
+	 *                                  the objects listed in the table
+	 */
+	public void setEmptyTableSettings(String emtpyMessagei18key, String emptyTableHintKey, String emtpyTableIconCss);
+
+	/**
+	 * Configure the empty table screen with custom message, hint text and
+	 * background icon and define the next primary user action.
+	 * 
+	 * @param emtpyMessagei18key        the i18n key used as the main message. If
+	 *                                  set to null, the empty screen is disabled
+	 *                                  alltogether
+	 * @param emptyTableHintKey         the i18n key for an optional hint message to
+	 *                                  tell the user what the empty table means and
+	 *                                  what to do about it
+	 * @param emtpyTableIconCss         the CSS icon class that shows the icon for
+	 *                                  the objects listed in the table
+	 * @param emptyPrimaryActionKey     the i18n key for the button presented as the
+	 *                                  primary user action below the empty screen
+	 *                                  (optional)
+	 * @param emptyPrimaryActionIconCSS the CSS icon class added to the button
+	 *                                  (optional)
+	 * @param showAlwaysSearchFields    true (default): show the search field,
+	 *                                  false: don't show it on empty tables
+	 */
 	public void setEmptyTableSettings(String emtpyMessagei18key, String emptyTableHintKey, String emtpyTableIconCss, String emptyPrimaryActionKey, String emptyPrimaryActionIconCSS, boolean showAlwaysSearchFields);
 	
 	/**

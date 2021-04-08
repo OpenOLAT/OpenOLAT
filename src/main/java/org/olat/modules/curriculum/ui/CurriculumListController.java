@@ -141,7 +141,7 @@ public class CurriculumListController extends FormBasicController implements Act
 		tableModel = new CurriculumManagerDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
+		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setFilters("activity", getFilters(), false);
 		if(assessedIdentity.equals(getIdentity())) {
 			tableEl.setSelectedFilterKey("active");

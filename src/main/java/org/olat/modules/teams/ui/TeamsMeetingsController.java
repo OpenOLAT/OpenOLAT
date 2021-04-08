@@ -103,7 +103,7 @@ public class TeamsMeetingsController extends FormBasicController {
 
 		pastTableModel = new TeamsMeetingTableModel(columnsModel, getLocale());
 		pastTableEl = uifactory.addTableElement(getWindowControl(), "pastMeetings", pastTableModel, getTranslator(), formLayout);
-		pastTableEl.setEmtpyTableMessageKey("no.past.meetings");
+		pastTableEl.setEmptyTableSettings("no.past.meetings", null, "o_icon_calendar");
 				
 		FlexiTableSortOptions pastSortOptions = new FlexiTableSortOptions();
 		pastSortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), true));

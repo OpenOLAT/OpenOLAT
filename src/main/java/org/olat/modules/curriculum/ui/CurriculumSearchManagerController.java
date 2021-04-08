@@ -122,7 +122,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setExtendedSearch(searchCtrl);
-		tableEl.setEmtpyTableMessageKey("table.search.curriculum.empty");
+		tableEl.setEmptyTableSettings("table.search.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-search-manage");
 	}
 

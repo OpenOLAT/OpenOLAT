@@ -151,7 +151,7 @@ public class MembersTableController extends FormBasicController {
 		membersModel.setObjects(membersList);
 		membersModel.setCurriculumInfos(curriculumInfos);
 		membersTable = uifactory.addTableElement(getWindowControl(), "table", membersModel, pageSize, false, getTranslator(), formLayout);
-		membersTable.setEmtpyTableMessageKey("nomembers");
+		membersTable.setEmptyTableSettings("nomembers", null, "o_icon_user");
 		membersTable.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName());
 		membersTable.setExportEnabled(false);
 		membersTable.setElementCssClass("o_sel_member_list");

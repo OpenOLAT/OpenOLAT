@@ -150,7 +150,7 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		
 		versionsDeletedFileDataModel = new VersionsDeletedFileDataModel(columnsModel, getTranslator());
 		orphansListTableEl = uifactory.addTableElement(getWindowControl(), "orphansList", versionsDeletedFileDataModel, 24, false, getTranslator(), tableLayout);
-		orphansListTableEl.setEmtpyTableMessageKey("version.noDeletedFiles");
+		orphansListTableEl.setEmptyTableSettings("version.noDeletedFiles", null, "o_icon_files");
 		orphansListTableEl.setMultiSelect(true);
 		orphansListTableEl.setSelectAllEnable(true);
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions(true);

@@ -100,7 +100,7 @@ public class DeletedUsersController extends FormBasicController {
 		tableModel = new DeletedUsersTableModel(new DeletedUserDataSource(), userManager, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, true, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmtpyTableMessageKey("error.no.user.found");
+		tableEl.setEmptyTableSettings("error.no.user.found", null, "o_icon_user");
 		tableEl.setExportEnabled(false);
 		tableEl.setAndLoadPersistedPreferences(ureq, "deleted-user-list-v2");
 	}

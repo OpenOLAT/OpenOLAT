@@ -135,7 +135,7 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		
 		dataModel = new LearningPathIdentityDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("table.empty.curriculum");
+		tableEl.setEmptyTableSettings("table.empty.curriculum", null, "o_icon_user");
 		tableEl.setExportEnabled(true);
 		
 		loadModel();

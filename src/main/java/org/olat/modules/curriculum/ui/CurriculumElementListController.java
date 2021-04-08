@@ -195,7 +195,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		}
 		tableEl.setElementCssClass("o_curriculumtable");
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
+		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setCssDelegate(this);
 		tableEl.setFilters("activity", getFilters(), false);
 		tableEl.setSelectedFilterKey("active");

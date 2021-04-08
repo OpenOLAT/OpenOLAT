@@ -118,7 +118,7 @@ public class CurriculumElementLearningPathListController extends FormBasicContro
 		
 		dataModel = new LearningPathIdentityDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("table.empty.identities");
+		tableEl.setEmptyTableSettings("table.empty.identities", null, "o_icon_user");
 		tableEl.setExportEnabled(true);
 		
 		loadModel();

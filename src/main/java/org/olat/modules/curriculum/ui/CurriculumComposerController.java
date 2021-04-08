@@ -225,7 +225,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.setRootCrumb(new CurriculumCrumb(curriculum.getDisplayName()));
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_curriculum_el_listing");
-		tableEl.setEmtpyTableMessageKey("table.curriculum.element.empty");
+		tableEl.setEmptyTableSettings("table.curriculum.element.empty", null, "o_icon_curriculum_element");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(40);

@@ -133,7 +133,7 @@ public class CertificatesReportController extends FormBasicController {
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "certificates-reports-courses-list");
-		tableEl.setEmtpyTableMessageKey("search.empty");
+		tableEl.setEmptyTableSettings("search.empty", null, "o_icon_certificate");
 		
 		generateReportButton = uifactory.addFormLink("report.certificates", "report.certificates", null, formLayout, Link.BUTTON);
 		

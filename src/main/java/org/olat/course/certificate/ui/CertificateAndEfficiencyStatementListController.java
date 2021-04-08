@@ -236,7 +236,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		loadModel();
 		tableEl = uifactory.addTableElement(getWindowControl(), "certificates", tableModel, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_sel_certificates_table");
-		tableEl.setEmtpyTableMessageKey("table.statements.empty");
+		tableEl.setEmptyTableSettings("table.statements.empty", null, "o_icon_certificate");
 	}
 	
 	private void loadModel() {
