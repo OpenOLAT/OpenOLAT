@@ -37,6 +37,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.login.oauth.OAuthLoginManager;
+import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.OAuthUserCreator;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.registration.DisclaimerController;
@@ -58,7 +60,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	public static final String USERPROPERTIES_FORM_IDENTIFIER = OAuthDisclaimerController.class.getCanonicalName();
 	
 	private final OAuthUser user;
-	private final OAuthUserCreator userCreator;
+	private final OAuthSPI provider;
 
 	private CloseableModalController cmc;
 	private DisclaimerController disclaimerController;
@@ -66,15 +68,18 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private OAuthLoginManager oauthLoginManager;
+	@Autowired
 	private RegistrationManager registrationManager;
 	
-	public OAuthDisclaimerController(UserRequest ureq, WindowControl wControl, OAuthUser user, OAuthUserCreator userCreator) {
+	public OAuthDisclaimerController(UserRequest ureq, WindowControl wControl,
+			OAuthUser user, OAuthSPI provider) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RegistrationForm2.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 
 		this.user = user;
-		this.userCreator = userCreator;
+		this.provider = provider;
 		initForm(ureq);
 	}
 
@@ -106,12 +111,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 			
 			if (event == Event.DONE_EVENT) {
 				// User accepted disclaimer, do login now
-				Identity authenticatedIdentity;
-				if(userCreator != null) {
-					authenticatedIdentity = userCreator.createUser(user);
-					registrationManager.setHasConfirmedDislaimer(authenticatedIdentity);
-					doLoginAndRegister(authenticatedIdentity, ureq);
-				}
+				doCreateUser(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				// User did not accept, workflow ends here
 				showWarning("disclaimer.form.cancelled");
@@ -133,6 +133,17 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doCreateUser(UserRequest ureq) {
+		Identity authenticatedIdentity;
+		if(provider instanceof OAuthUserCreator) {
+			authenticatedIdentity =((OAuthUserCreator)provider).createUser(user);
+		} else {
+			authenticatedIdentity = oauthLoginManager.createIdentity(user, provider.getProviderName());
+		}
+		registrationManager.setHasConfirmedDislaimer(authenticatedIdentity);
+		doLoginAndRegister(authenticatedIdentity, ureq);
 	}
 	
 	private void doLoginAndRegister(Identity authIdentity, UserRequest ureq) {

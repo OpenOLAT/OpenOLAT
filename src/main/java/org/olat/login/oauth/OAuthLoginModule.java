@@ -50,7 +50,12 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private static final String KEYCLOAK_CLIENT_ID = "keycloakClientId";
 	private static final String KEYCLOAK_CLIENT_SECRET = "keycloakClientSecret";
 	
+	private static final String SKIP_DISCLAIMER_DIALOG = "skip.disclaimer.dialog";
+	private static final String SKIP_REGISTRATION_DIALOG = "skip.registration.dialog";
+	
 	private boolean allowUserCreation;
+	private boolean skipDisclaimerDialog;
+	private boolean skipRegistrationDialog;
 	
 	private boolean linkedInEnabled;
 	private String linkedInApiKey;
@@ -129,6 +134,10 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private void updateProperties() {
 		String allowUserCreationObj = getStringPropertyValue("allowUserCreation", true);
 		allowUserCreation = "true".equals(allowUserCreationObj);
+		String skipDisclaimerDialogObj = getStringPropertyValue(SKIP_DISCLAIMER_DIALOG, true);
+		skipDisclaimerDialog = "true".equals(skipDisclaimerDialogObj);
+		String skipRegistrationDialogObj = getStringPropertyValue(SKIP_REGISTRATION_DIALOG, true);
+		skipRegistrationDialog = "true".equals(skipRegistrationDialogObj);
 		
 		//linkedin
 		String linkedInEnabledObj = getStringPropertyValue("linkedInEnabled", true);
@@ -318,6 +327,24 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	public void setAllowUserCreation(boolean allowUserCreation) {
 		this.allowUserCreation = allowUserCreation;
 		setStringProperty("allowUserCreation", allowUserCreation ? "true" : "false", true);
+	}
+	
+	public boolean isSkipDisclaimerDialog() {
+		return skipDisclaimerDialog;
+	}
+	
+	public void setSkipDisclaimerDialog(boolean skipDisclaimerDialog) {
+		this.skipDisclaimerDialog = skipDisclaimerDialog;
+		setStringProperty(SKIP_DISCLAIMER_DIALOG, skipDisclaimerDialog ? "true" : "false", true);
+	}
+	
+	public boolean isSkipRegistrationDialog() {
+		return skipRegistrationDialog;
+	}
+	
+	public void setSkipRegistrationDialog(boolean skipRegistrationDialog) {
+		this.skipRegistrationDialog = skipDisclaimerDialog;
+		setStringProperty(SKIP_REGISTRATION_DIALOG, skipRegistrationDialog ? "true" : "false", true);
 	}
 
 	public boolean isLinkedInEnabled() {

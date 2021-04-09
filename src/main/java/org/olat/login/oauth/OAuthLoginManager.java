@@ -19,24 +19,19 @@
  */
 package org.olat.login.oauth;
 
+import org.olat.core.id.Identity;
+import org.olat.login.oauth.model.OAuthUser;
+
 /**
  * 
- * Initial date: 04.11.2014<br>
+ * Initial date: 9 avr. 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface OAuthConstants {
+public interface OAuthLoginManager {
 	
-
-	public static final String CALLBACK_PATH = "/oauthcallback";
-
-	public static final String REQUEST_TOKEN = "oauthToken";
-	public static final String OAUTH_SERVICE = "oauthService";
-	public static final String OAUTH_REGISTER_PATH = "oauthregister";
-	public static final String OAUTH_DISCLAIMER_PATH = "oauthdisclaimer";
-	public static final String OAUTH_USER_ATTR = "oauthUser";
-	public static final String OAUTH_SPI = "oauthSpi";
-	public static final String OAUTH_STATE = "oauthState";
-	public static final String OAUTH_NONCE = "oauthNonce";
+	public boolean isValid(OAuthUser oauthUser);
+	
+	public Identity createIdentity(OAuthUser oauthUser, String provider);
 
 }

@@ -59,6 +59,8 @@ public class OAuthAdminController extends FormBasicController {
 	private FormLink addProviderLink;
 
 	private MultipleSelectionElement userCreationEl;
+	private MultipleSelectionElement skipDisclaimerEl;
+	private MultipleSelectionElement skipRegistrationEl;
 	
 	private MultipleSelectionElement linkedInEl;
 	private TextElement linkedInApiKeyEl;
@@ -136,10 +138,14 @@ public class OAuthAdminController extends FormBasicController {
 		if(oauthModule.isAllowUserCreation()) {
 			userCreationEl.select(keys[0], true);
 		}
+		skipDisclaimerEl = uifactory.addCheckboxesHorizontal("skip.disclaimer", oauthCont, keys, values);
+		skipDisclaimerEl.select(keys[0], oauthModule.isSkipDisclaimerDialog());
+		skipRegistrationEl = uifactory.addCheckboxesHorizontal("skip.user.registration", oauthCont, keys, values);
+		skipRegistrationEl.select(keys[0], oauthModule.isSkipRegistrationDialog());
+		
 		String callbackUrl = "<span class='o_copy_code o_nowrap'><input type='text' value='" + oauthModule.getCallbackUrl() + "' onclick='this.select()'/></span>";
 		uifactory.addStaticTextElement("oauth.redirect.uri", callbackUrl, oauthCont);
-
-
+		
 		initLinkedInForm(formLayout);
 		initTwitterForm(formLayout);
 		initGoogleForm(formLayout);
@@ -539,7 +545,10 @@ public class OAuthAdminController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == linkedInEl) {
+		if(userCreationEl == source) {
+			skipDisclaimerEl.setVisible(userCreationEl.isAtLeastSelected(1));
+			skipRegistrationEl.setVisible(userCreationEl.isAtLeastSelected(1));
+		} else if(source == linkedInEl) {
 			linkedInApiKeyEl.setVisible(linkedInEl.isAtLeastSelected(1));
 			linkedInApiSecretEl.setVisible(linkedInEl.isAtLeastSelected(1));	
 		} else if(source == twitterEl) {
@@ -591,7 +600,15 @@ public class OAuthAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		oauthModule.setAllowUserCreation(userCreationEl.isAtLeastSelected(1));
+		if(userCreationEl.isAtLeastSelected(1)) {
+			oauthModule.setAllowUserCreation(true);
+			oauthModule.setSkipDisclaimerDialog(skipDisclaimerEl.isAtLeastSelected(1));
+			oauthModule.setSkipRegistrationDialog(skipRegistrationEl.isAtLeastSelected(1));
+		} else {
+			oauthModule.setAllowUserCreation(false);
+			oauthModule.setSkipDisclaimerDialog(false);
+			oauthModule.setSkipRegistrationDialog(false);
+		}
 		
 		if(linkedInEl.isAtLeastSelected(1)) {
 			oauthModule.setLinkedInEnabled(true);

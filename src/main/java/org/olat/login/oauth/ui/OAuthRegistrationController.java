@@ -45,6 +45,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.login.auth.OLATAuthManager;
+import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.login.validation.SyntaxValidator;
@@ -52,6 +53,7 @@ import org.olat.login.validation.ValidationResult;
 import org.olat.registration.DisclaimerController;
 import org.olat.registration.RegistrationForm2;
 import org.olat.registration.RegistrationManager;
+import org.olat.registration.RegistrationModule;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -85,6 +87,10 @@ public class OAuthRegistrationController extends FormBasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
+	@Autowired
+	private OAuthLoginModule oauthLoginModule;
+	@Autowired
+	private RegistrationModule registrationModule;
 	@Autowired
 	private RegistrationManager registrationManager;
 	
@@ -231,10 +237,17 @@ public class OAuthRegistrationController extends FormBasicController {
 		}
 		authenticatedIdentity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, username, null, newUser,
 				registration.getAuthProvider(), BaseSecurity.DEFAULT_ISSUER, id, null, null, null);
-
-		//open disclaimer
+		
+		if(oauthLoginModule.isSkipDisclaimerDialog() || !registrationModule.isDisclaimerEnabled()) {
+			doLoginAndRegister(authenticatedIdentity, ureq);
+		} else {
+			doOpenDisclaimer(authenticatedIdentity, ureq);
+		}
+	}
+	
+	private void doOpenDisclaimer(Identity authIdentity, UserRequest ureq) {
 		removeAsListenerAndDispose(disclaimerController);
-		disclaimerController = new DisclaimerController(ureq, getWindowControl(), authenticatedIdentity, false);
+		disclaimerController = new DisclaimerController(ureq, getWindowControl(), authIdentity, false);
 		listenTo(disclaimerController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerController.getInitialComponent(),

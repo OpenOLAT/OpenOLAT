@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.MessageWindowController;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -54,6 +53,7 @@ import org.olat.login.oauth.spi.OpenIdConnectApi.OpenIdConnectService;
 import org.olat.login.oauth.spi.OpenIdConnectFullConfigurableApi.OpenIdConnectFullConfigurableService;
 import org.olat.login.oauth.ui.JSRedirectWindowController;
 import org.olat.login.oauth.ui.OAuthAuthenticationController;
+import org.olat.registration.RegistrationModule;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -79,6 +79,12 @@ public class OAuthDispatcher implements Dispatcher {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OAuthLoginModule oauthLoginModule;
+	@Autowired
+	private OAuthLoginManager oauthLoginManager;
+	@Autowired
+	private RegistrationModule registrationModule;
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response)
@@ -169,10 +175,10 @@ public class OAuthDispatcher implements Dispatcher {
 			}
 			
 			if(provider instanceof OAuthUserCreator && registration.getIdentity() == null) {
-				disclaimer(request, response, infos, (OAuthUserCreator)provider);
+				disclaimer(request, response, infos, provider);
 			} else if(registration.getIdentity() == null) {
-				if(CoreSpringFactory.getImpl(OAuthLoginModule.class).isAllowUserCreation()) {
-					register(request, response, registration);
+				if(oauthLoginModule.isAllowUserCreation()) {
+					createUser(infos, registration, provider, ureq, request, response);
 				} else {
 					error(ureq, translate(ureq, "error.account.creation"));
 					log.error("OAuth Login ok but the user has not an account on OpenOLAT: {}", infos);
@@ -184,32 +190,54 @@ public class OAuthDispatcher implements Dispatcher {
 				}
 			
 				Identity identity = registration.getIdentity();
-				int loginStatus = AuthHelper.doLogin(identity, provider.getProviderName(), ureq);
-				if (loginStatus != AuthHelper.LOGIN_OK) {
-					if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-						DispatcherModule.redirectToServiceNotAvailable(response);
-					} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
-						error(ureq, translate(ureq, "login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
-						log.error("OAuth Login ok but the user is inactive: {}", identity);
-					} else {
-						// error, redirect to login screen
-						DispatcherModule.redirectToDefaultDispatcher(response); 
-					}
-				} else {
-					//update last login date and register active user
-					securityManager.setIdentityLastLogin(identity);
-					MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
-					if (mr instanceof RedirectMediaResource) {
-						RedirectMediaResource rmr = (RedirectMediaResource)mr;
-						rmr.prepare(response);
-					} else {
-						DispatcherModule.redirectToDefaultDispatcher(response); // error, redirect to login screen
-					}
-				}
+				login(identity, provider, ureq, response);
 			}
 		} catch (Exception e) {
 			log.error("Unexpected error", e);
 			error(ureq, translate(ureq, "error.generic"));
+		}
+	}
+	
+	private void createUser(OAuthUser infos, OAuthRegistration registration, OAuthSPI provider,
+			UserRequest ureq, HttpServletRequest request, HttpServletResponse response) {
+		if(oauthLoginModule.isSkipRegistrationDialog()
+				&& (oauthLoginModule.isSkipDisclaimerDialog() || !registrationModule.isDisclaimerEnabled())
+				&& oauthLoginManager.isValid(infos)) {
+			Identity authenticatedIdentity = oauthLoginManager.createIdentity(infos, registration.getAuthProvider());
+			if(authenticatedIdentity != null) {
+				login(authenticatedIdentity, provider, ureq, response);	
+			} else {
+				error(ureq, "Unexpected error");
+			}
+		} else if(oauthLoginModule.isSkipRegistrationDialog() && oauthLoginManager.isValid(infos)) {
+			disclaimer(request, response, infos, provider);
+		} else {
+			register(request, response, registration);
+		}
+	}
+	
+	private void login(Identity identity, OAuthSPI provider, UserRequest ureq, HttpServletResponse response) {
+		int loginStatus = AuthHelper.doLogin(identity, provider.getProviderName(), ureq);
+		if (loginStatus != AuthHelper.LOGIN_OK) {
+			if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
+				DispatcherModule.redirectToServiceNotAvailable(response);
+			} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+				error(ureq, translate(ureq, "login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
+				log.error("OAuth Login ok but the user is inactive: {}", identity);
+			} else {
+				// error, redirect to login screen
+				DispatcherModule.redirectToDefaultDispatcher(response); 
+			}
+		} else {
+			//update last login date and register active user
+			securityManager.setIdentityLastLogin(identity);
+			MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
+			if (mr instanceof RedirectMediaResource) {
+				RedirectMediaResource rmr = (RedirectMediaResource)mr;
+				rmr.prepare(response);
+			} else {
+				DispatcherModule.redirectToDefaultDispatcher(response); // error, redirect to login screen
+			}
 		}
 	}
 	
@@ -289,9 +317,9 @@ public class OAuthDispatcher implements Dispatcher {
 		msgcc.getWindow().dispatchRequest(ureq, true);
 	}
 	
-	private void disclaimer(HttpServletRequest request, HttpServletResponse response, OAuthUser user, OAuthUserCreator userCreator) {
+	private void disclaimer(HttpServletRequest request, HttpServletResponse response, OAuthUser user, OAuthSPI provider) {
 		try {
-			request.getSession().setAttribute(OAuthConstants.OAUTH_USER_CREATOR_ATTR, userCreator);
+			request.getSession().setAttribute(OAuthConstants.OAUTH_SPI, provider);
 			request.getSession().setAttribute(OAuthConstants.OAUTH_USER_ATTR, user);
 			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + OAuthConstants.OAUTH_DISCLAIMER_PATH + "/");
 		} catch (IOException e) {
