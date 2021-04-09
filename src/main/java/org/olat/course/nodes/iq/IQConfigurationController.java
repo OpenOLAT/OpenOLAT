@@ -168,7 +168,7 @@ public class IQConfigurationController extends BasicController {
 		} else {
 			String displayName = StringHelper.escapeHtml(re.getDisplayname());
 			myContent.contextPut(VC_CHOSENTEST, displayName);
-			myContent.contextPut("dontRenderRepositoryButton", new Boolean(true));
+			myContent.contextPut("dontRenderRepositoryButton", Boolean.valueOf(true));
 			// Put values to velocity container
 			if (isEditable(re)) {
 				editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
@@ -248,7 +248,7 @@ public class IQConfigurationController extends BasicController {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), moduleConfiguration,
-					NodeAccessType.of(course), deliveryOptions, needManualCorrection);
+					NodeAccessType.of(course), deliveryOptions, needManualCorrection, courseNode instanceof IQSELFCourseNode);
 			mod21ConfigForm.update(re);
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
@@ -660,7 +660,7 @@ public class IQConfigurationController extends BasicController {
 				previewLink.setTitle(getTranslator().translate("command.preview"));
 				previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
 				previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
-				myContent.contextPut("dontRenderRepositoryButton", new Boolean(true));
+				myContent.contextPut("dontRenderRepositoryButton", Boolean.valueOf(true));
 				// If of type test, get min, max, cut - put in module config and push
 				// to velocity
 				

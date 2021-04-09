@@ -58,24 +58,32 @@ public class ImageUtils {
 	public static Size getImageSize(String suffix, InputStream in) {
 		Size result = null;
 
-		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
-		if (iter.hasNext()) {
-			ImageReader reader = iter.next();
-			try(ImageInputStream stream = new MemoryCacheImageInputStream(in)) {
-				reader.setInput(stream);
-				
-				int imageIndex = reader.getMinIndex();
-				int width = reader.getWidth(imageIndex);
-				int height = reader.getHeight(imageIndex);
-				result = new Size(width, height, 0, 0, false);
-			} catch (IOException e) {
-				log.error(e.getMessage());
-			} finally {
-				reader.dispose();
+		try(ImageInputStream stream = new MemoryCacheImageInputStream(in)) {
+			Iterator<ImageReader> iter = ImageIO.getImageReaders(stream);
+			if (iter.hasNext()) {
+				result = getImageSize(iter.next(), stream);
+			} else {
+				log.error("No reader found for given format: {}", suffix);
 			}
-		} else {
-			log.error("No reader found for given format: " + suffix);
+		} catch (IOException e) {
+			log.error(e.getMessage());
 		}
 		return result;
+	}
+	
+	private static Size getImageSize(ImageReader reader, ImageInputStream stream) {
+		try {
+			reader.setInput(stream);
+			
+			int imageIndex = reader.getMinIndex();
+			int width = reader.getWidth(imageIndex);
+			int height = reader.getHeight(imageIndex);
+			return new Size(width, height, 0, 0, false);
+		} catch (IOException e) {
+			log.error(e.getMessage());
+			return null;
+		} finally {
+			reader.dispose();
+		}
 	}
 }
