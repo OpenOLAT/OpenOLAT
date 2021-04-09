@@ -37,6 +37,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
@@ -115,8 +116,13 @@ public class EvaluationFormExcelExport {
 	
 	public void export(ZipOutputStream out, String currentPath) throws IOException {
 		String name = ZipUtil.concat(currentPath, fileName);
-		out.putNextEntry(new ZipEntry(name));
-		createWorkbook(out);
+		try (OutputStream shieldOut = new ShieldOutputStream(out)) {
+			out.putNextEntry(new ZipEntry(name));
+			createWorkbook(shieldOut);
+			out.closeEntry();
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 
 	private void createWorkbook(OutputStream out) {
