@@ -1098,7 +1098,7 @@ public class OpenXMLDocument {
 		return mathEls;
 	}
 	
-	public void appendImage(File file) {
+	public boolean appendImage(File file) {
 		Element imgEl = createImageEl(file);
 		if(imgEl != null) {
 			Element runEl = createRunEl(Collections.singletonList(imgEl));
@@ -1106,6 +1106,7 @@ public class OpenXMLDocument {
 			paragraphEl.appendChild(runEl);
 			getCursor().appendChild(paragraphEl);
 		}
+		return imgEl != null;
 	}
 
 	public Element createImageEl(String path, double maxWidthCm) {
@@ -1182,6 +1183,9 @@ public class OpenXMLDocument {
 	
 	public Element createImageEl(File image, double widthCm) {
 		DocReference ref = registerImage(image, widthCm);
+		if (ref == null)
+			return null;
+		
 		String id = ref.getId();
 		OpenXMLSize emuSize = ref.getEmuSize();
 		String filename = ref.getFilename();
@@ -1280,7 +1284,10 @@ public class OpenXMLDocument {
 		} else {
 			String id = generateId();
 			Size size = ImageUtils.getImageSize(image);
-			OpenXMLSize emuSize = OpenXMLUtils.convertPixelToEMUs(size, DPI, widthCm/* cm */);
+			if (size == null) {
+				return null;
+			}
+			OpenXMLSize	emuSize = OpenXMLUtils.convertPixelToEMUs(size, DPI, widthCm/* cm */);
 			String filename = getUniqueFilename(image);
 			ref = new DocReference(id, filename, emuSize, image);
 			fileToImagesMap.put(image, ref);
