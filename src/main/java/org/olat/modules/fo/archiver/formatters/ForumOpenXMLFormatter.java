@@ -186,8 +186,7 @@ public class ForumOpenXMLFormatter implements Visitor {
 				if (lastDot > 0) {
 					String extension = filename.substring(lastDot + 1).toLowerCase();
 					if("jpeg".equals(extension) || "jpg".equals(extension) || "gif".equals(extension) || "png".equals(extension)) {
-						document.appendImage(file);
-						attach = false;
+						attach = !document.appendImage(file);
 					}
 				}
 				

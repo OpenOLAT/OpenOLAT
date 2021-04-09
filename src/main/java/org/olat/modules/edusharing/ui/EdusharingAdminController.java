@@ -127,7 +127,7 @@ public class EdusharingAdminController extends FormBasicController {
 		
 		String soapPublicKey = edusharingModule.getSoapKeys() != null
 				? edusharingSignature.getPublicKey(edusharingModule.getSoapKeys())
-				: null;
+				: translate("admin.soap.key.public.default");
 		soapPublicKeyEl = uifactory.addTextAreaElement("admin.soap.key.public", 8, 72, soapPublicKey, formLayout);
 		soapPublicKeyEl.setMandatory(true);
 		soapPublicKeyEl.setEnabled(false);
@@ -136,7 +136,9 @@ public class EdusharingAdminController extends FormBasicController {
 		
 		uifactory.addSpacerElement("admin.spacer", formLayout, false);
 		
-		String repoPublicKeyString = edusharingModule.getRepoPublicKeyString();
+		String repoPublicKeyString = edusharingModule.getRepoPublicKeyString() != null
+				? edusharingModule.getRepoPublicKeyString()
+				: translate("admin.repo.key.public.default");
 		repoPublicKeyEl = uifactory.addTextAreaElement("admin.repo.key.public", 8, 72, repoPublicKeyString, formLayout);
 		repoPublicKeyEl.setMandatory(true);
 		
