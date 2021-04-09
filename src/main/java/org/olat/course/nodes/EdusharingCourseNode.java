@@ -218,7 +218,12 @@ public class EdusharingCourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		config.setStringValue(CONFIG_IDENTIFIER, createIdentifier());
 		EdusharingHtmlElement element = createEdusharingHtmlElement(config);
-		EdusharingUsage usage = getOrCreateUsage(courseEntry, courseNode.getIdent(), element, identity);
+		EdusharingUsage usage = null;
+		try {
+			usage = getOrCreateUsage(courseEntry, courseNode.getIdent(), element, identity);
+		} catch (Exception e) {
+			log.debug("", e);
+		}
 		if (usage == null) {
 			log.warn("edu-sharing course node without usage! {}, nodeIdend={}", courseEntry, courseNode.getIdent());
 		}
