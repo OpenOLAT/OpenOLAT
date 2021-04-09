@@ -107,6 +107,7 @@ public class QTI21EditForm extends FormBasicController {
 	private FormLayoutContainer reportLayout;
 	private FormLayoutContainer testLayout;
 	
+	private final boolean selfAssessment;
 	private final boolean needManualCorrection;
 	private final ModuleConfiguration modConfig;
 	private final boolean ignoreInCourseAssessmentAvailable;
@@ -122,13 +123,15 @@ public class QTI21EditForm extends FormBasicController {
 	private NodeAccessService nodeAccessService;
 	
 	public QTI21EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig,
-			NodeAccessType nodeAccessType, QTI21DeliveryOptions deliveryOptions, boolean needManualCorrection) {
+			NodeAccessType nodeAccessType, QTI21DeliveryOptions deliveryOptions,
+			boolean needManualCorrection, boolean selfAssessment) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		
 		this.modConfig = modConfig;
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		this.deliveryOptions = (deliveryOptions == null ? new QTI21DeliveryOptions() : deliveryOptions);
 		this.needManualCorrection = needManualCorrection;
+		this.selfAssessment = selfAssessment;
 		
 		for (int i = 0; i < dateKeys.length; i++) {
 			dateValues[i] = translate(dateBase + dateKeys[i]);
@@ -149,6 +152,13 @@ public class QTI21EditForm extends FormBasicController {
 		correctionLayout.setFormTitle(translate("correction.config"));
 		correctionLayout.setRootForm(mainForm);
 		formLayout.add(correctionLayout);
+		if(selfAssessment) {
+			if(needManualCorrection) {
+				correctionLayout.contextPut("off_warn", translate("correction.manual.self"));
+			} else {
+				correctionLayout.setVisible(false);
+			}
+		}
 		initFormCorrection(correctionLayout);
 		
 		reportLayout = FormLayoutContainer.createDefaultFormLayout("report", getTranslator());
@@ -203,8 +213,10 @@ public class QTI21EditForm extends FormBasicController {
 		
 		correctionModeEl = uifactory.addRadiosVertical("correction.mode", "correction.mode", formLayout,
 				correctionKeyValues.keys(), correctionKeyValues.values());
+		correctionModeEl.addActionListener(FormEvent.ONCHANGE);
 		correctionModeEl.setHelpText(translate("correction.mode.help"));
 		correctionModeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
+		correctionModeEl.setVisible(!selfAssessment);
 
 		boolean selected = false;
 		for(String correctionModeKey:correctionKeyValues.keys()) {
@@ -226,6 +238,7 @@ public class QTI21EditForm extends FormBasicController {
 		visibilityKeyValues.add(KeyValues.entry(IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION, translate("results.visibility.after.correction.not.visible")));
 		scoreVisibilityAfterCorrectionEl = uifactory.addRadiosVertical("results.visibility.after.correction", "results.visibility.after.correction", formLayout,
 				visibilityKeyValues.keys(), visibilityKeyValues.values());
+		scoreVisibilityAfterCorrectionEl.setVisible(!selfAssessment);
 		String defVisibility = qtiModule.isResultsVisibleAfterCorrectionWorkflow()
 				? IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION : IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION;
 		String visibility = modConfig.getStringValue(IQEditController.CONFIG_KEY_SCORE_VISIBILITY_AFTER_CORRECTION, defVisibility);
@@ -416,7 +429,8 @@ public class QTI21EditForm extends FormBasicController {
 	
 	private void updateScoreVisibility() {
 		String correctionMode = correctionModeEl.getSelectedKey();
-		scoreVisibilityAfterCorrectionEl.setVisible(correctionMode.equals(IQEditController.CORRECTION_MANUAL) ||  correctionMode.equals(IQEditController.CORRECTION_GRADING));
+		scoreVisibilityAfterCorrectionEl.setVisible(!selfAssessment
+				&& (correctionMode.equals(IQEditController.CORRECTION_MANUAL) || correctionMode.equals(IQEditController.CORRECTION_GRADING)));
 	}
 	
 	private void update() {
@@ -581,7 +595,7 @@ public class QTI21EditForm extends FormBasicController {
 		modConfig.setDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE, startTestDateElement.getDate());
 		modConfig.setDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE, endTestDateElement.getDate());
 		
-		if(correctionModeEl.isOneSelected()) {
+		if(correctionModeEl.isOneSelected() && !selfAssessment) {
 			modConfig.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionModeEl.getSelectedKey());
 		}
 		if(scoreVisibilityAfterCorrectionEl.isOneSelected() && scoreVisibilityAfterCorrectionEl.isVisible()) {
