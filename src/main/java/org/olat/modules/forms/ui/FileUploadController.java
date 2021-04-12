@@ -64,6 +64,7 @@ public class FileUploadController extends FormBasicController implements Evaluat
 	
 	private final FileUpload fileUpload;
 	private EvaluationFormResponse response;
+	private boolean validationEnabled = true;
 	private boolean newFileUploaded = false;
 	private boolean fileDeleted = false;
 	
@@ -131,12 +132,19 @@ public class FileUploadController extends FormBasicController implements Evaluat
 			}	
 		}
 	}
+	
+	@Override
+	public void setValidationEnabled(boolean enabled) {
+		this.validationEnabled = enabled;
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		fileEl.clearError();
+		if (!validationEnabled) return true;
+		
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		fileEl.clearError();
 		if (fileUpload.isMandatory() && fileEl.isButtonsEnabled() && !fileEl.isUploadSuccess() && fileEl.getInitialFile() == null) {
 			fileEl.setErrorKey("form.legende.mandatory", null);
 			allOk = false;
@@ -215,11 +223,18 @@ public class FileUploadController extends FormBasicController implements Evaluat
 					throw new RuntimeException(e);
 				}
 			}
-		} else if (fileDeleted && response != null) {
+		} else if (fileDeleted) {
+			deleteResponse(session);
+		}
+		updateReadOnlyUI(ureq, response);
+	}
+	
+	@Override
+	public void deleteResponse(EvaluationFormSession session) {
+		if (response != null) {
 			evaluationFormManager.deleteResponse(response);
 			response = null;
 		}
-		updateReadOnlyUI(ureq, response);
 	}
 
 	@Override

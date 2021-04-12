@@ -282,7 +282,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 			toolbar.setMessage(translator.translate("evaluation.form.in.use"));
 			toolbar.setMessageCssClass("o_warning");
 		}
-		return new EvaluationFormEditorController(ureq, control, formFile, storage, restrictedEdit, restrictedEditWeight);
+		return new EvaluationFormEditorController(ureq, control, toolbar, formFile, storage, restrictedEdit, restrictedEditWeight);
 	}
 	
 	public File getFormFile(RepositoryEntry re) {

@@ -74,6 +74,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	private static final String[] WITH_OTHER_KEYS = new String[] {WITH_OTHER_KEY};
 	private static final String CMD_DELETE = "delete";
 	
+	private TextElement nameEl;
 	private SingleSelection presentationEl;
 	private MultipleSelectionElement withOthersEl;
 	private SingleSelection obligationEl;
@@ -117,6 +118,10 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 				getTranslator());
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
+		
+		// name
+		nameEl = uifactory.addTextElement("rubric.name", 128, multipleChoice.getName(), settingsCont);
+		nameEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// presentation
 		KeyValues presentationKV = new KeyValues();
@@ -201,7 +206,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (presentationEl == source || source == withOthersEl || source == obligationEl
+		if (nameEl == source || presentationEl == source || source == withOthersEl || source == obligationEl
 				|| source instanceof TextElement) {
 			doSave();
 		} else if (addChoiceEl == source) {
@@ -236,6 +241,8 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	}
 	
 	private void doSaveMultipleChoice() {
+		multipleChoice.setName(nameEl.getValue());
+		
 		Presentation presentation = null;
 		if (presentationEl.isOneSelected()) {
 			String selectedKey = presentationEl.getSelectedKey();

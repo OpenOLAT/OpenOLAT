@@ -95,6 +95,8 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		renderClose(sb, cmp, containerUbu, translator);
 		renderDelete(sb, cmp, containerUbu, translator);
 		renderContainerColumnLinks(sb, cmp, containerUbu, translator);
+		renderNameLink(sb, cmp, containerUbu, translator);
+		renderRuleLink(sb, cmp, containerUbu, translator);
 		
 		sb.append("</div>") // o_page_others_above
 		  .append("</div>");// o_page_tools_above
@@ -127,6 +129,32 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 			sb.append("o_icon_columns");
 		}
 		sb.append("'> </i> <span>").append(translator.translate("text.column." + columns)).append("</span></a>");
+	}
+	
+	private void renderNameLink(StringOutput sb, ContentEditorContainerComponent cmp, URLBuilder ubu,
+			Translator translator) {
+		if (cmp.supportsName()) {
+			sb.append("<a id='o_cname_").append(cmp.getElementId()).append("' ")
+			  .append("href='javascript:;' onclick=\"");
+			ubu.buildXHREvent(sb, "", false, true,
+					new NameValuePair(VelocityContainer.COMMAND_ID, "change_name"),
+					new NameValuePair("fragment", cmp.getComponentName()));
+			sb.append(" return false;\" class=''><i class='o_icon o_icon_settings'> </i>");
+			sb.append(" <span>").append(translator.translate("container.name")).append("</span></a>");
+		}
+	}
+	
+	private void renderRuleLink(StringOutput sb, ContentEditorContainerComponent cmp, URLBuilder ubu,
+			Translator translator) {
+		if (cmp.isRuleLinkEnabled()) {
+			sb.append("<a id='o_crule_").append(cmp.getElementId()).append("' ")
+			  .append("href='javascript:;' onclick=\"");
+			ubu.buildXHREvent(sb, "", false, true,
+					new NameValuePair(VelocityContainer.COMMAND_ID, "open_rules"),
+					new NameValuePair("fragment", cmp.getComponentName()));
+			sb.append(" return false;\" class='o_ce_rule'><i class='o_icon o_icon_branch'> </i>");
+			sb.append(" <span>").append(translator.translate("container.rule")).append("</span></a>");
+		}
 	}
 	
 	private void renderContainer(Renderer renderer, StringOutput sb, ContentEditorContainerComponent cmp, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {

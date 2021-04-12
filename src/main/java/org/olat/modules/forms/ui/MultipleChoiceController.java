@@ -22,6 +22,9 @@ package org.olat.modules.forms.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -40,7 +43,11 @@ import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Choice;
+import org.olat.modules.forms.model.xml.ChoiceSelectedCondition;
 import org.olat.modules.forms.model.xml.MultipleChoice;
+import org.olat.modules.forms.model.xml.Rule;
+import org.olat.modules.forms.rules.RuleAware;
+import org.olat.modules.forms.rules.RulesEngine;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.Progress;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MultipleChoiceController extends FormBasicController implements EvaluationFormResponseController {
+public class MultipleChoiceController extends FormBasicController implements EvaluationFormResponseController, RuleAware {
 	
 	private static final String OTHERS_KEY = "multiple.choice.others";
 
@@ -60,6 +67,9 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	
 	private final MultipleChoice multipleChoice;
 	private List<EvaluationFormResponse> multipleChoiceResponses;
+	private boolean validationEnabled = true;
+	private RulesEngine rulesEngine;
+	private Map<ChoiceSelectedCondition, Rule> selectedConditionToRule;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -118,11 +128,21 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 		otherEl.setElementCssClass("o_evaluation_mc_other");
 		showHideOthers();
 	}
+
+	@Override
+	public void initRulesEngine(RulesEngine rulesEngine) {
+		this.rulesEngine = rulesEngine;
+		selectedConditionToRule = rulesEngine.getRules().stream()
+				.filter(rule -> multipleChoice.getId().equals(rule.getCondition().getElementId()))
+				.filter(rule -> rule.getCondition() instanceof ChoiceSelectedCondition)
+				.collect(Collectors.toMap(rule -> (ChoiceSelectedCondition)rule.getCondition(), Function.identity()));
+	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == multipleChoiceEl) {
 			showHideOthers();
+			fireChoiceSelectedCondition();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -137,10 +157,17 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	}
 
 	@Override
+	public void setValidationEnabled(boolean enabled) {
+		this.validationEnabled = enabled;
+	}
+
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		multipleChoiceEl.clearError();
+		if (!validationEnabled) return true;
+		
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		multipleChoiceEl.clearError();
 		if (multipleChoice.isMandatory() && !isOneSelected() && !isOtherFilledIn()) {
 			if (otherEl.isVisible()) {
 				otherEl.setErrorKey("form.legende.mandatory", null);
@@ -198,6 +225,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 			}
 		}
 		showHideOthers();
+		fireChoiceSelectedCondition();
 	}
 
 	@Override
@@ -222,11 +250,27 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 			}
 		}
 	}
+	
+	@Override
+	public void deleteResponse(EvaluationFormSession session) {
+		if (multipleChoiceResponses != null) {
+			multipleChoiceResponses.forEach(response -> evaluationFormManager.deleteResponse(response));
+			multipleChoiceResponses = new ArrayList<>(1);
+		}
+	}
 
 	@Override
 	public Progress getProgress() {
 		int current = multipleChoiceResponses.isEmpty()? 0: 1;
 		return Progress.of(current, 1);
+	}
+	
+	private void fireChoiceSelectedCondition() {
+		for (Map.Entry<ChoiceSelectedCondition, Rule> conditionToRule: selectedConditionToRule.entrySet()) {
+			boolean fulfilled = multipleChoiceEl.isAtLeastSelected(1)
+					&& multipleChoiceEl.getSelectedKeys().contains(conditionToRule.getKey().getChoiceId());
+			rulesEngine.fulfilledChanged(conditionToRule.getValue(), fulfilled);
+		}
 	}
 
 }

@@ -22,14 +22,22 @@ package org.olat.modules.forms.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageEditorProvider;
@@ -38,6 +46,8 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
+import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
+import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.forms.handler.ContainerHandler;
 import org.olat.modules.forms.handler.DisclaimerHandler;
 import org.olat.modules.forms.handler.FileUploadHandler;
@@ -55,6 +65,10 @@ import org.olat.modules.forms.handler.TitleHandler;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
+import org.olat.modules.forms.model.xml.Rule;
+import org.olat.modules.forms.model.xml.VisibilityAction;
+import org.olat.modules.forms.rules.ui.EvaluationFormRulesController;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 
 /**
  * 
@@ -62,10 +76,16 @@ import org.olat.modules.forms.model.xml.FormXStream;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EvaluationFormEditorController extends BasicController {
+public class EvaluationFormEditorController extends BasicController implements ToolbarAware {
 	
-	private VelocityContainer mainVC;
-	
+	private final VelocityContainer mainVC;
+	private final TooledStackedPanel toolbar;
+	private Link rulesLink;
+
+	private PageEditorV2Controller pageEditCtrl;
+	private CloseableModalController cmc;
+	private EvaluationFormRulesController rulesCtrl;
+
 	private final Form form;
 	private final File formFile;
 	private final DataStorage storage;
@@ -73,11 +93,10 @@ public class EvaluationFormEditorController extends BasicController {
 	private final boolean restrictedEdit;
 	private final boolean restrictedEditWeight;
 	
-	private PageEditorV2Controller pageEditCtrl;
-	
-	public EvaluationFormEditorController(UserRequest ureq, WindowControl wControl, File formFile, DataStorage storage,
-			boolean restrictedEdit, boolean restrictedEditWeight) {
+	public EvaluationFormEditorController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
+			File formFile, DataStorage storage, boolean restrictedEdit, boolean restrictedEditWeight) {
 		super(ureq, wControl);
+		this.toolbar = toolbar;
 		this.formFile = formFile;
 		this.storage = storage;
 		this.restrictedEdit = restrictedEdit;
@@ -96,7 +115,15 @@ public class EvaluationFormEditorController extends BasicController {
 		listenTo(pageEditCtrl);
 		mainVC.put("page", pageEditCtrl.getInitialComponent());
 		
+		fireContainerRuleLinkEvent(ureq);
+		
 		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	public void initToolbar() {
+		rulesLink = LinkFactory.createToolLink("rules", translate("rules"), this, "o_icon_branch");
+		toolbar.addTool(rulesLink, Align.left);
 	}
 	
 	@Override
@@ -110,19 +137,58 @@ public class EvaluationFormEditorController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == rulesLink) {
+			doOpenRules(ureq);
+		}
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(event == Event.CHANGED_EVENT) {
+		if (source == pageEditCtrl && event instanceof OpenRulesEvent) {
+			doOpenRules(ureq);
+		} else if (source == rulesCtrl) {
+			if (event == FormEvent.DONE_EVENT) {
+				persistForm();
+				fireContainerRuleLinkEvent(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == cmc) {
+			cmc.deactivate();
+			cleanUp();
+		} else if (event == Event.CHANGED_EVENT) {
 			persistForm();
 		}
 	}
 	
+	private void cleanUp() {
+		removeAsListenerAndDispose(rulesCtrl);
+		removeAsListenerAndDispose(cmc);
+		rulesCtrl = null;
+		cmc = null;
+	}
+
 	private void persistForm() {
 		XStreamHelper.writeObject(FormXStream.getXStream(), formFile, form);
 		changes = true;
+	}
+	
+	private void doOpenRules(UserRequest ureq) {
+		rulesCtrl = new EvaluationFormRulesController(ureq, getWindowControl(), form);
+		listenTo(rulesCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), rulesCtrl.getInitialComponent(),
+				true, translate("rules"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void fireContainerRuleLinkEvent(UserRequest ureq) {
+		Set<String> elementIds = form.getRules().stream()
+				.map(Rule::getAction)
+				.filter(action -> action instanceof VisibilityAction)
+				.map(action -> ((VisibilityAction)action).getElementId())
+				.collect(Collectors.toSet());
+		fireEvent(ureq, new ContainerRuleLinkEvent(elementIds));
 	}
 
 	private class FormPageEditorProvider implements PageEditorProvider {
@@ -167,7 +233,7 @@ public class EvaluationFormEditorController extends BasicController {
 			handlers.add(disclaimerHandler);
 			SessionInformationsHandler sessionInformationsHandler = new SessionInformationsHandler(restrictedEdit);
 			handlers.add(sessionInformationsHandler);
-			ContainerHandler containerHandler = new ContainerHandler();
+			ContainerHandler containerHandler = new ContainerHandler(EvaluationFormEditorController.this);
 			handlers.add(containerHandler);
 
 			if(!restrictedEdit) {

@@ -55,6 +55,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_bookmark:before { content: $fa-var-bookmark; color: $o-bookmark-color; }
 .o_icon_bookmark_add:before { content: $fa-var-bookmark-o;  color: $o-bookmark-color; }
 .o_icon_bookmark_header:before { content: $fa-var-bookmark; }
+.o_icon_branch:before { content: $fa-var-code-fork; }
 .o_icon_browse:before { content: $fa-var-search-plus; } 
 .o_icon_brush:before { content: $fa-var-paint-brush; }
 .o_icon_browsercheck:before { content: $fa-var-thumbs-up; }

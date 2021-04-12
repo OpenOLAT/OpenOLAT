@@ -39,12 +39,14 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.ContainerEditorController;
 import org.olat.modules.ceditor.ui.PageElementTarget;
+import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
 import org.olat.modules.ceditor.ui.event.EditElementEvent;
 import org.olat.modules.ceditor.ui.event.MoveDownElementEvent;
 import org.olat.modules.ceditor.ui.event.MoveUpElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
+import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
 
 /**
@@ -61,6 +63,7 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	private boolean editMode = false;
 	private boolean moveable = false;
 	private boolean deleteable = false;
+	private boolean ruleLinkEnabled = false;
 	
 	private final ContainerEditorController editorPart;
 
@@ -69,6 +72,7 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	public ContentEditorContainerComponent(String name, ContainerEditorController editorPart) {
 		super(name);
 		this.editorPart = editorPart;
+		editorPart.addControllerListener(this);
 		setDomReplacementWrapperRequired(false);
 	}
 
@@ -124,6 +128,13 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 					String belowLinkId = "o_ccabe_".concat(getDispatchID());
 					fireEvent(ureq, new OpenAddElementEvent(belowLinkId, this, PageElementTarget.below));
 					break;
+				case "change_name":
+					String nameLinkId = "o_cname_".concat(getElementId());
+					editorPart.openNameCallout(ureq, nameLinkId);
+					break;
+				case "open_rules":
+					fireEvent(ureq, new OpenRulesEvent());
+					break;
 				default:
 					log.error("Uncatched dispatch to container {} with command {}", getComponentName(), cmd);
 					break;
@@ -133,7 +144,16 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
-		//
+		if (source == editorPart) {
+			if (event instanceof ContainerRuleLinkEvent) {
+				ContainerRuleLinkEvent crle = (ContainerRuleLinkEvent)event;
+				boolean containsId = crle.getElementIds().contains(editorPart.getContainer().getId());
+				if (containsId != ruleLinkEnabled) {
+					ruleLinkEnabled = containsId;
+					setDirty(true);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -249,6 +269,14 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	@Override
 	public PageElement getElement() {
 		return editorPart.getContainer();
+	}
+	
+	public boolean supportsName() {
+		return editorPart.getContainer().supportsName();
+	}
+
+	public boolean isRuleLinkEnabled() {
+		return ruleLinkEnabled;
 	}
 
 	public ContainerSettings getContainerSettings() {

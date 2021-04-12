@@ -71,6 +71,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
 	private static final String CMD_DELETE = "delete";
 	
+	private TextElement nameEl;
 	private SingleSelection presentationEl;
 	private SingleSelection obligationEl;
 	private FormLink addChoiceEl;
@@ -113,6 +114,10 @@ public class SingleChoiceEditorController extends FormBasicController implements
 				getTranslator());
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
+		
+		// name
+		nameEl = uifactory.addTextElement("rubric.name", 128, singleChoice.getName(), settingsCont);
+		nameEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// presentation
 		presentationEl = uifactory.addRadiosHorizontal("sc_pres_" + postfix, "single.choice.presentation", settingsCont,
@@ -185,7 +190,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (presentationEl == source || obligationEl == source || source instanceof TextElement) {
+		if (nameEl == source || presentationEl == source || obligationEl == source || source instanceof TextElement) {
 			doSave();
 		} else if (addChoiceEl == source) {
 			doAddChoice();
@@ -219,6 +224,8 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	}
 
 	private void doSaveSingleChoice() {
+		singleChoice.setName(nameEl.getValue());
+		
 		Presentation presentation = null;
 		if (presentationEl.isOneSelected()) {
 			String selectedKey = presentationEl.getSelectedKey();

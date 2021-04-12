@@ -28,6 +28,8 @@ import org.olat.modules.ceditor.ValidatingController;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
+import org.olat.modules.forms.rules.RuleAware;
+import org.olat.modules.forms.rules.RulesEngine;
 
 /**
  * 
@@ -38,6 +40,7 @@ import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 public class EvaluationFormResponseControllerElement implements EvaluationFormExecutionElement {
 	
 	private final EvaluationFormResponseController controller;
+	private boolean visible = true;
 	
 	public EvaluationFormResponseControllerElement(EvaluationFormResponseController controller) {
 		this.controller = controller;
@@ -50,7 +53,7 @@ public class EvaluationFormResponseControllerElement implements EvaluationFormEx
 
 	@Override
 	public boolean hasFormItem() {
-		return true;
+		return visible;
 	}
 
 	@Override
@@ -59,8 +62,22 @@ public class EvaluationFormResponseControllerElement implements EvaluationFormEx
 	}
 
 	@Override
+	public void initRulesEngine(RulesEngine rulesEngine) {
+		if (controller instanceof RuleAware) {
+			((RuleAware)controller).initRulesEngine(rulesEngine);
+		}
+	}
+
+	@Override
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+		controller.getInitialFormItem().setVisible(visible);
+		controller.setValidationEnabled(visible);
+	}
+
+	@Override
 	public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
-		if(controller instanceof ValidatingController) {
+		if(visible && controller instanceof ValidatingController) {
 			return ((ValidatingController)controller).validate(ureq, messages);
 		}
 		return true;
@@ -73,22 +90,26 @@ public class EvaluationFormResponseControllerElement implements EvaluationFormEx
 
 	@Override
 	public boolean hasResponse() {
-		return controller.hasResponse();
+		return visible? controller.hasResponse(): true;
 	}
 	
 	@Override
 	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
-		controller.initResponse(null, session, responses);;
+		controller.initResponse(null, session, responses);
 	}
 
 	@Override
-	public void saveResponse(EvaluationFormSession session) {
-		controller.saveResponse(null, session);
+	public void saveResponse(UserRequest ureq, EvaluationFormSession session) {
+		if (visible) {
+			controller.saveResponse(ureq, session);
+		} else {
+			controller.deleteResponse(session);
+		}
 	}
 
 	@Override
 	public Progress getProgress() {
-		return controller.getProgress();
+		return visible? controller.getProgress(): Progress.none();
 	}
 
 	@Override

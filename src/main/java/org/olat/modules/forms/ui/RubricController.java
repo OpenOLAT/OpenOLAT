@@ -65,6 +65,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	private final Rubric rubric;
 	private List<SliderWrapper> sliderWrappers;
 	private Map<String, EvaluationFormResponse> rubricResponses = new HashMap<>();
+	private boolean validationEnabled = true;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -199,12 +200,19 @@ public class RubricController extends FormBasicController implements EvaluationF
 	protected void formOK(UserRequest ureq) {
 		//
 	}
+	
+	@Override
+	public void setValidationEnabled(boolean enabled) {
+		this.validationEnabled = enabled;
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		flc.contextRemove("errorMandatory");
+		if (!validationEnabled) return true;
+		
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		flc.contextRemove("errorMandatory");
 		if (rubric.isMandatory() && !areAllSlidersFilledIn()) {
 			flc.contextPut("errorMandatory", Boolean.TRUE);
 			allOk = false;
@@ -400,6 +408,14 @@ public class RubricController extends FormBasicController implements EvaluationF
 				evaluationFormManager.deleteResponse(response);
 				rubricResponses.remove(sliderWrapper.getId());
 			}
+		}
+	}
+	
+	@Override
+	public void deleteResponse(EvaluationFormSession session) {
+		if (rubricResponses != null) {
+			rubricResponses.values().forEach(response -> evaluationFormManager.deleteResponse(response));
+			rubricResponses = new HashMap<>();
 		}
 	}
 

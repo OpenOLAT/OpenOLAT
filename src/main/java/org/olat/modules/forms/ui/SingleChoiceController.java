@@ -20,12 +20,17 @@
 package org.olat.modules.forms.ui;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -35,7 +40,11 @@ import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Choice;
+import org.olat.modules.forms.model.xml.ChoiceSelectedCondition;
+import org.olat.modules.forms.model.xml.Rule;
 import org.olat.modules.forms.model.xml.SingleChoice;
+import org.olat.modules.forms.rules.RuleAware;
+import org.olat.modules.forms.rules.RulesEngine;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.Progress;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,11 +55,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceController extends FormBasicController implements EvaluationFormResponseController {
+public class SingleChoiceController extends FormBasicController implements EvaluationFormResponseController, RuleAware {
 
 	private SingleSelection singleChoiceEl;
 	
 	private final SingleChoice singleChoice;
+	private boolean validationEnabled = true;
+	private RulesEngine rulesEngine;
+	private Map<ChoiceSelectedCondition, Rule> selectedConditionToRule;
+
 	private EvaluationFormResponse response;
 	
 	@Autowired
@@ -101,10 +114,37 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 	}
 
 	@Override
+	public void initRulesEngine(RulesEngine rulesEngine) {
+		this.rulesEngine = rulesEngine;
+		selectedConditionToRule = rulesEngine.getRules().stream()
+				.filter(rule -> singleChoice.getId().equals(rule.getCondition().getElementId()))
+				.filter(rule -> rule.getCondition() instanceof ChoiceSelectedCondition)
+				.collect(Collectors.toMap(rule -> (ChoiceSelectedCondition)rule.getCondition(), Function.identity()));
+		if (!selectedConditionToRule.isEmpty()) {
+			singleChoiceEl.addActionListener(FormEvent.ONCHANGE);
+		}
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == singleChoiceEl) {
+			fireChoiceSelectedCondition();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	public void setValidationEnabled(boolean enabled) {
+		this.validationEnabled = enabled;
+	}
+	
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		singleChoiceEl.clearError();
+		if (!validationEnabled) return true;
+		
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		singleChoiceEl.clearError();
 		if (singleChoice.isMandatory() && !singleChoiceEl.isOneSelected()) {
 			singleChoiceEl.setErrorKey("form.legende.mandatory", null);
 			allOk = false;
@@ -143,6 +183,7 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 				}
 			}
 		}
+		fireChoiceSelectedCondition();
 	}
 
 	@Override
@@ -159,10 +200,27 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 			response = null;
 		}
 	}
+	
+	@Override
+	public void deleteResponse(EvaluationFormSession session) {
+		if (response != null) {
+			evaluationFormManager.deleteResponse(response);
+			response = null;
+		}
+	}
 
 	@Override
 	public Progress getProgress() {
 		int current = hasResponse()? 1: 0;
 		return Progress.of(current, 1);
 	}
+	
+	private void fireChoiceSelectedCondition() {
+		for (Map.Entry<ChoiceSelectedCondition, Rule> conditionToRule: selectedConditionToRule.entrySet()) {
+			boolean fulfilled = singleChoiceEl.isOneSelected()
+					&& conditionToRule.getKey().getChoiceId().equals(singleChoiceEl.getSelectedKey());
+			rulesEngine.fulfilledChanged(conditionToRule.getValue(), fulfilled);
+		}
+	}
+	
 }

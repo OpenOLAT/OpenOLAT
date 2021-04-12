@@ -48,6 +48,10 @@ public class ExecutionFragment extends PageFragment {
 		return executionElement.validate(ureq, messages);
 	}
 	
+	public void setVisible(boolean visible) {
+		executionElement.setVisible(visible);
+	}
+	
 	public void setReadOnly(boolean readOnly) {
 		executionElement.setReadOnly(readOnly);
 	}
@@ -60,8 +64,8 @@ public class ExecutionFragment extends PageFragment {
 		executionElement.initResponse(session, responses);
 	}
 	
-	public void save(EvaluationFormSession session) {
-		executionElement.saveResponse(session);
+	public void save(UserRequest ureq, EvaluationFormSession session) {
+		executionElement.saveResponse(ureq, session);
 	}
 
 	public Progress getProgress() {

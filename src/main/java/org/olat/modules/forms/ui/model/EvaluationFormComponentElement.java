@@ -28,6 +28,7 @@ import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
+import org.olat.modules.forms.rules.RulesEngine;
 
 /**
  * 
@@ -39,9 +40,7 @@ public class EvaluationFormComponentElement implements EvaluationFormExecutionEl
 
 	private final PageRunElement runElement;
 	
-	
 	public EvaluationFormComponentElement(PageRunElement runElement) {
-		super();
 		this.runElement = runElement;
 	}
 
@@ -66,6 +65,16 @@ public class EvaluationFormComponentElement implements EvaluationFormExecutionEl
 	}
 
 	@Override
+	public void initRulesEngine(RulesEngine rulesEngine) {
+		//
+	}
+
+	@Override
+	public void setVisible(boolean visible) {
+		getComponent().setVisible(visible);
+	}
+
+	@Override
 	public void setReadOnly(boolean readOnly) {
 		getComponent().setEnabled(readOnly);
 	}
@@ -81,7 +90,7 @@ public class EvaluationFormComponentElement implements EvaluationFormExecutionEl
 	}
 
 	@Override
-	public void saveResponse(EvaluationFormSession session) {
+	public void saveResponse(UserRequest ureq, EvaluationFormSession session) {
 		//
 	}
 

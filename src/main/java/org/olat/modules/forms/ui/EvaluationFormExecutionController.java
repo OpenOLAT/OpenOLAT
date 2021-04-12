@@ -61,6 +61,8 @@ import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
+import org.olat.modules.forms.rules.RulesEngine;
+import org.olat.modules.forms.rules.VisibilityHandler;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.ExecutionFragment;
 import org.olat.modules.forms.ui.model.ExecutionIdentity;
@@ -222,18 +224,22 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		if (elements.isEmpty()) {
 			flc.contextPut("messageWithoutElements", Boolean.TRUE);
 		}
+		
+		RulesEngine rulesEngine = new RulesEngine(form.getRules());
 		for (AbstractElement element : elements) {
 			EvaluationFormElementHandler handler = handlerMap.get(element.getType());
 			if (handler != null) {
 				EvaluationFormExecutionElement executionElement = handler.getExecutionElement(ureq, getWindowControl(),
 						mainForm, element, executionIdentity);
+				executionElement.initRulesEngine(rulesEngine);
 				String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
 				fragments.add(new ExecutionFragment(handler.getType(), cmpId, executionElement, element));
 			}
 		}
 		fragmentsEl.setFragments(fragments);
+		VisibilityHandler.registerListeners(rulesEngine, form, fragments);
 	}
-
+	
 	private void loadResponses() {
 		if (session == null) return;
 		
@@ -340,7 +346,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		boolean allSaved = true;
 		for (ExecutionFragment fragment : fragments) {
 			try {
-				fragment.save(session);
+				fragment.save(ureq, session);
 			} catch (Exception e) {
 				log.error("Saving evaluation form response failed!", e);
 				allSaved = false;

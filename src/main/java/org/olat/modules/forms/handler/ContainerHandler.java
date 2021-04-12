@@ -54,6 +54,12 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  */
 public class ContainerHandler implements EvaluationFormElementHandler, PageElementStore<ContainerElement>, SimpleAddPageElementHandler, EvaluationFormReportHandler {
 
+	private final Controller ruleLinkController;
+
+	public ContainerHandler(Controller ruleLinkController) {
+		this.ruleLinkController = ruleLinkController;
+	}
+
 	@Override
 	public String getType() {
 		return "formcontainer";
@@ -79,7 +85,7 @@ public class ContainerHandler implements EvaluationFormElementHandler, PageEleme
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof ContainerElement) {
-			return new ContainerEditorController(ureq, wControl, (ContainerElement)element, this);
+			return new ContainerEditorController(ureq, wControl, (ContainerElement)element, this, ruleLinkController);
 		}
 		return null;
 	}
@@ -110,4 +116,5 @@ public class ContainerHandler implements EvaluationFormElementHandler, PageEleme
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		return new EvaluationFormComponentReportElement(new Panel(""));
 	}
+
 }

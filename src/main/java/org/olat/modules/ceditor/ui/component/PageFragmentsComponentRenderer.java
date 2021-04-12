@@ -97,7 +97,9 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append("<div class='").append(fragment.getCssClass()).append("'>");
 			Component subCmp = fragment.getComponent();
-			subCmp.getHTMLRendererSingleton().render(renderer, sb, subCmp, ubu, translator, renderResult, args);
+			if (fragment.getComponent().isVisible()) {
+				subCmp.getHTMLRendererSingleton().render(renderer, sb, subCmp, ubu, translator, renderResult, args);
+			}
 			subCmp.setDirty(false);
 		}
 		fragment.getComponent().setDirty(false);

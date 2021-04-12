@@ -36,6 +36,7 @@ public class SingleChoice extends AbstractElement {
 		DROPDOWN
 	}
 	
+	private String name;
 	private boolean mandatory;
 	private Presentation presentation;
 	private Choices choices;
@@ -45,6 +46,14 @@ public class SingleChoice extends AbstractElement {
 		return TYPE;
 	}
 	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public boolean isMandatory() {
 		return mandatory;
 	}

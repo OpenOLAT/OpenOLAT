@@ -34,12 +34,16 @@ public interface EvaluationFormResponseController extends FormController {
 	
 	public void setReadOnly(boolean readOnly);
 	
+	public void setValidationEnabled(boolean validationEnabled);
+	
 	public boolean hasResponse();
 	
 	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses);
 	
 	public void saveResponse(UserRequest ureq, EvaluationFormSession session);
 
-	public Progress getProgress();
+	public void deleteResponse(EvaluationFormSession session);
 	
+	public Progress getProgress();
+
 }

@@ -55,6 +55,7 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 	
 	private final Disclaimer disclaimer;
 	private EvaluationFormResponse response;
+	private boolean validationEnabled = true;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -90,12 +91,19 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 		textEl.setVisible(hasText);
 		agreementEl.setKeysAndValues(ACCEPTED_KEYS, new String[] { disclaimer.getAgreement() });
 	}
+	
+	@Override
+	public void setValidationEnabled(boolean enabled) {
+		this.validationEnabled = enabled;
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		agreementEl.clearError();
+		if (!validationEnabled) return true;
+		
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		agreementEl.clearError();
 		if (!agreementEl.isAtLeastSelected(1)) {
 			agreementEl.setErrorKey("disclaimer.not.accepted", null);
 			allOk = false;
@@ -136,7 +144,14 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 		boolean accepted = agreementEl.isAtLeastSelected(1);
 		if (accepted && response == null) {
 			response = evaluationFormManager.createStringResponse(disclaimer.getId(), session, ACCEPTED_DB_KEY);
-		} else if (!accepted && response != null) {
+		} else if (!accepted) {
+			deleteResponse(session);
+		}
+	}
+	
+	@Override
+	public void deleteResponse(EvaluationFormSession session) {
+		if (response != null) {
 			evaluationFormManager.deleteResponse(response);
 			response = null;
 		}

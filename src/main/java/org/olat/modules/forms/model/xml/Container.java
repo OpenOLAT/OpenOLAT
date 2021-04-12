@@ -41,6 +41,11 @@ public class Container extends AbstractElement implements ContainerElement {
 	}
 
 	@Override
+	public boolean supportsName() {
+		return true;
+	}
+	
+	@Override
 	public String getLayoutOptions() {
 		return layoutOptions;
 	}

@@ -61,6 +61,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 	private boolean singleRow;
 	private boolean isDate;
 	private EvaluationFormResponse response;
+	private boolean validationEnabled = true;
 	
 	@Autowired
 	private DB dbInstance;
@@ -119,12 +120,19 @@ public class TextInputController extends FormBasicController implements Evaluati
 	}
 	
 	@Override
+	public void setValidationEnabled(boolean enabled) {
+		this.validationEnabled = enabled;
+	}
+	
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-		
 		singleRowEl.clearError();
 		multiRowEl.clearError();
 		dateEl.clearError();
+		if (!validationEnabled) return true;
+		
+		boolean allOk = super.validateFormLogic(ureq);
+		
 		if (textInput.isMandatory()) {
 			if (singleRowEl.isVisible() && !StringHelper.containsNonWhitespace(singleRowEl.getValue())) {
 				singleRowEl.setErrorKey("form.legende.mandatory", null);
@@ -226,7 +234,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 				response = evaluationFormManager.updateNumericalResponse(response, value);
 			}
 		} else {
-			deleteResponse();
+			deleteResponse(session);
 		}
 	}
 	
@@ -240,7 +248,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 				response = evaluationFormManager.updateDateResponse(response, date);
 			}
 		} else {
-			deleteResponse();
+			deleteResponse(session);
 		}
 	}
 	
@@ -253,11 +261,12 @@ public class TextInputController extends FormBasicController implements Evaluati
 				response = evaluationFormManager.updateStringResponse(response, value);
 			}
 		} else {
-			deleteResponse();
+			deleteResponse(session);
 		}
 	}
 	
-	private void deleteResponse() {
+	@Override
+	public void deleteResponse(EvaluationFormSession session) {
 		if (response != null) {
 			evaluationFormManager.deleteResponse(response);
 			response = null;

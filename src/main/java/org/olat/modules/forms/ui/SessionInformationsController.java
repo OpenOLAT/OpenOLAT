@@ -59,6 +59,7 @@ public class SessionInformationsController extends FormBasicController implement
 	
 	private final SessionInformations sessionInformations;
 	private final ExecutionIdentity executionIdentity;
+	private boolean validationEnabled = true;
 
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -67,7 +68,7 @@ public class SessionInformationsController extends FormBasicController implement
 			SessionInformations sessionInformations) {
 		super(ureq, wControl, LAYOUT_HORIZONTAL);
 		this.sessionInformations = sessionInformations;
-		this.executionIdentity = new ExecutionIdentity(getIdentity());;
+		this.executionIdentity = new ExecutionIdentity(getIdentity());
 		initForm(ureq);
 	}
 
@@ -126,15 +127,22 @@ public class SessionInformationsController extends FormBasicController implement
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+	
+	@Override
+	public void setValidationEnabled(boolean enabled) {
+		this.validationEnabled = enabled;
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		sessionInformationWrappers.forEach(wrapper -> wrapper.getInformationEl().clearError());
+		if (!validationEnabled) return true;
+		
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (isMandatory()) {
 			for (SessionInformationWrapper sessionInformationWrapper : sessionInformationWrappers) {
 				TextElement informationEl = sessionInformationWrapper.getInformationEl();
-				informationEl.clearError();
 				if (!StringHelper.containsNonWhitespace(informationEl.getValue())) {
 					informationEl.setErrorKey("form.legende.mandatory", null);
 					allOk = false;
@@ -243,9 +251,17 @@ public class SessionInformationsController extends FormBasicController implement
 		}
 	}
 	
+
+	
+	@Override
+	public void deleteResponse(EvaluationFormSession session) {
+		EvaluationFormSession reloadedSession = evaluationFormManager.loadSessionByKey(session);
+		evaluationFormManager.updateSession(reloadedSession, null, null, null, null, null, null, null);
+	}
+	
 	@Override
 	public Progress getProgress() {
-		int current = isAsLeastOneFilledIn()? 1: 0;;
+		int current = isAsLeastOneFilledIn()? 1: 0;
 		return Progress.of(current, 1);
 	}
 

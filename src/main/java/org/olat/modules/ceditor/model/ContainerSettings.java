@@ -34,8 +34,18 @@ public class ContainerSettings {
 	
 	public static final String EMPTY = "xxx-empty-xxx";
 	
+	private String name;
 	private int numOfColumns = 2;
 	private List<ContainerColumn> columns;
+	
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public int getNumOfColumns() {
 		return numOfColumns;

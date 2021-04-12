@@ -19,10 +19,12 @@
  */
 package org.olat.modules.forms.ui.model;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
+import org.olat.modules.forms.rules.RulesEngine;
 
 /**
  * 
@@ -36,13 +38,17 @@ public interface EvaluationFormExecutionElement extends PageRunElement {
 
 	public FormItem getFormItem();
 	
+	public void initRulesEngine(RulesEngine rulesEngine);
+
+	public void setVisible(boolean visible);
+	
 	public void setReadOnly(boolean readOnly);
 	
 	public boolean hasResponse();
 	
 	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses);
 	
-	public void saveResponse(EvaluationFormSession session);
+	public void saveResponse(UserRequest ureq, EvaluationFormSession session);
 
 	public Progress getProgress();
 	

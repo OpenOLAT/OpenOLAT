@@ -20,6 +20,7 @@
 package org.olat.modules.forms.model.xml;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,6 +32,7 @@ import java.util.List;
 public class Form {
 	
 	private List<AbstractElement> elements = new ArrayList<>();
+	private List<Rule> rules = Collections.emptyList();
 
 	public List<AbstractElement> getElements() {
 		return elements;
@@ -103,5 +105,13 @@ public class Form {
 				elements.add(elementToMove);
 			}
 		}
+	}
+	
+	public List<Rule> getRules() {
+		return rules;
+	}
+
+	public void setRules(List<Rule> rules) {
+		this.rules = rules;
 	}
 }

@@ -33,6 +33,8 @@ import org.olat.modules.ceditor.PageElement;
  */
 public interface ContainerElement extends PageElement {
 	
+	public boolean supportsName();
+	
 	public String getLayoutOptions();
 	
 	public void setLayoutOptions(String options);

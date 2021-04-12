@@ -41,4 +41,10 @@ public class ContainerPart extends AbstractPart implements ContainerElement {
 	public String getType() {
 		return "container";
 	}
+
+	@Override
+	public boolean supportsName() {
+		return false;
+	}
+	
 }

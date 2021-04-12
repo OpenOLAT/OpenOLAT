@@ -73,7 +73,7 @@ public class ContainerHandler implements PageElementHandler, PageElementStore<Co
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof ContainerPart) {
-			return new ContainerEditorController(ureq, wControl, (ContainerPart)element, this);
+			return new ContainerEditorController(ureq, wControl, (ContainerPart)element, this, null);
 		}
 		return null;
 	}
