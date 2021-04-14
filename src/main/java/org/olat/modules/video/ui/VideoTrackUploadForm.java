@@ -19,11 +19,10 @@
  */
 package org.olat.modules.video.ui;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
+
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
+import java.util.Arrays;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -67,21 +67,16 @@ public class VideoTrackUploadForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<String> langs = new ArrayList<>();
-		List<String> dispLangs = new ArrayList<>();
-		for(Locale locale : DateFormat.getAvailableLocales()){
-			if(locale.hashCode() != 0){
-				langs.add(locale.getLanguage());
-				dispLangs.add(locale.getDisplayLanguage(getTranslator().getLocale()));
-			}
-		}
-
-		List<String> langsWithoutDup = langs.parallelStream().distinct().collect(Collectors.toList());
-		List<String> dispLangsWithoutDup = dispLangs.parallelStream().distinct().collect(Collectors.toList());
-
-		langsItem = uifactory.addDropdownSingleselect("track.langs", formLayout,
-				langsWithoutDup.toArray(new String[langsWithoutDup.size()]),
-				dispLangsWithoutDup.toArray(new String[dispLangsWithoutDup.size()]), null);
+		KeyValues languageKV = new KeyValues();
+		Arrays.stream(DateFormat.getAvailableLocales())
+				.filter(locale -> locale.hashCode() != 0)
+				.distinct()
+				.forEach(locale -> languageKV.add(entry(
+						locale.getLanguage(), 
+						locale.getDisplayLanguage(getTranslator().getLocale())
+						)));
+		languageKV.sort(KeyValues.VALUE_ASC);
+		langsItem = uifactory.addDropdownSingleselect("track.langs", formLayout, languageKV.keys(), languageKV.values(), null);
 		fileEl = uifactory.addFileElement(getWindowControl(), "track.upload", formLayout);
 		langsItem.setMandatory(true);
 
