@@ -23,11 +23,18 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CourseModule;
+import org.olat.course.config.CourseConfig;
+import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
@@ -43,12 +50,16 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 	private MultipleSelectionElement infoBoxEl;
 	private MultipleSelectionElement changeLogEl;
 	private MultipleSelectionElement disclaimerEnabledEl;
+	
+	private SingleSelection courseDefaultTypeEl;
 
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 	
 	public AssessableCourseNodeAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		
 		onValues = new String[]{ translate("on") };
 
@@ -57,27 +68,55 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-	    setFormTitle("admin.assessable.coursenode");
+		// General Course Settings
+		FormLayoutContainer courseSettings = FormLayoutContainer.createDefaultFormLayout("courseSettings", getTranslator());
+		courseSettings.setFormTitle(translate("admin.course.type.settings"));
+		courseSettings.setRootForm(mainForm);
 		
-		infoBoxEl = uifactory.addCheckboxesHorizontal("admin.info.box", formLayout, onKeys, onValues);
+		KeyValues nodeAccessKV = new KeyValues();
+		String helpText = "";
+		for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
+			String title = identifier.getDisplayName(getLocale());
+			nodeAccessKV.add(KeyValues.entry(identifier.getType(), title));
+			helpText += "<strong>" + title + "</strong><br />" + identifier.getToolTipHelpText(getLocale()) + "<br /><br />";
+		}
+		
+		courseDefaultTypeEl = uifactory.addRadiosVertical("course.default.type", courseSettings, nodeAccessKV.keys(), nodeAccessKV.values());
+		courseDefaultTypeEl.setHelpText(helpText);
+		courseDefaultTypeEl.addActionListener(FormEvent.ONCHANGE);
+		
+		String defaultCourseType = courseModule.getCourseTypeDefault();
+		if (!StringHelper.containsNonWhitespace(defaultCourseType) || !nodeAccessKV.containsKey(defaultCourseType)) {
+			defaultCourseType = CourseConfig.NODE_ACCESS_TYPE_DEFAULT;
+		}
+		courseDefaultTypeEl.select(defaultCourseType, true);
+		
+		formLayout.add(courseSettings);
+		
+		// Assessable course node settings
+		FormLayoutContainer assessableCourseNodeSettings = FormLayoutContainer.createDefaultFormLayout("assessableCourseNodeSettings", getTranslator());
+		assessableCourseNodeSettings.setRootForm(mainForm);
+		assessableCourseNodeSettings.setFormTitle(translate("admin.assessable.coursenode"));
+		
+		infoBoxEl = uifactory.addCheckboxesHorizontal("admin.info.box", assessableCourseNodeSettings, onKeys, onValues);
 		infoBoxEl.addActionListener(FormEvent.ONCHANGE);
 		if (courseModule.isDisplayInfoBox()) {
 			infoBoxEl.select(onKeys[0], true);
 		}
 		
-		changeLogEl = uifactory.addCheckboxesHorizontal("admin.user.changelog", formLayout, onKeys, onValues);
+		changeLogEl = uifactory.addCheckboxesHorizontal("admin.user.changelog", assessableCourseNodeSettings, onKeys, onValues);
 		changeLogEl.addActionListener(FormEvent.ONCHANGE);
 		if (courseModule.isDisplayChangeLog()) {
 			changeLogEl.select(onKeys[0], true);
 		}
 		
-		disclaimerEnabledEl = uifactory.addCheckboxesHorizontal("admin.disclaimer.enabled", formLayout, onKeys, onValues);
+		disclaimerEnabledEl = uifactory.addCheckboxesHorizontal("admin.disclaimer.enabled", assessableCourseNodeSettings, onKeys, onValues);
 		disclaimerEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		if (courseModule.isDisclaimerEnabled()) {
 			disclaimerEnabledEl.select(onKeys[0], true);
 		}
 		
-
+		formLayout.add(assessableCourseNodeSettings);
 	}
 	
 	@Override
@@ -88,6 +127,8 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 			courseModule.setDisplayChangeLog(changeLogEl.isSelected(0));
 		} else if (source == disclaimerEnabledEl) {
 			courseModule.setDisclaimerEnabled(disclaimerEnabledEl.isSelected(0));
+		} else if (source == courseDefaultTypeEl) {
+			courseModule.setCourseTypeDefault(courseDefaultTypeEl.getSelectedKey());
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

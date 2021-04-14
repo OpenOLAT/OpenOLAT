@@ -26,7 +26,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -46,6 +48,8 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private CourseModule courseModule;
 
 	public CreateCourseRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler,
 			boolean wizardsEnabled) {
@@ -64,7 +68,11 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 		nodeAccessEl = uifactory.addRadiosVertical("cif.node.access", "cif.node.access", formLayout,
 				nodeAccessKV.keys(), nodeAccessKV.values());
 		
-		nodeAccessEl.select(CourseConfig.NODE_ACCESS_TYPE_DEFAULT, true);
+		String defaultCourseType = courseModule.getCourseTypeDefault();
+		if (!StringHelper.containsNonWhitespace(defaultCourseType) || !nodeAccessKV.containsKey(defaultCourseType)) {
+			defaultCourseType = CourseConfig.NODE_ACCESS_TYPE_DEFAULT;
+		}
+		nodeAccessEl.select(defaultCourseType, true);
 		nodeAccessEl.addActionListener(FormEvent.ONCHANGE);
 		
 		nodeAccessEl.setHelpText(helpText);
