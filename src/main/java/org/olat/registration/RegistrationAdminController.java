@@ -57,6 +57,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositoryEntryFilter;
 import org.olat.repository.controllers.RepositorySearchController.Can;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -118,6 +119,8 @@ public class RegistrationAdminController extends FormBasicController {
 	private UserPropertiesConfig userPropertiesConfig;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private AccessControlModule acModule;
 	
 	private final Translator userPropTranslator;
 	
@@ -223,7 +226,7 @@ public class RegistrationAdminController extends FormBasicController {
 		autoEnrolmentCoursesContainer = FormLayoutContainer.createCustomFormLayout("auto_enrolment", getTranslator(), page);
 		autoEnrolmentCoursesContainer.setRootForm(mainForm);
 		autoEnrolmentCoursesContainer.setLabel("auto.enrolment.courses.label", null);
-		openCourseBrowserLink = uifactory.addFormLink("auto.enrolment.select.courses", autoEnrolmentCoursesContainer, Link.BUTTON_SMALL);
+		openCourseBrowserLink = uifactory.addFormLink("auto.enrolment.select.courses", autoEnrolmentCoursesContainer, Link.BUTTON_XSMALL);
 		
 		Map<Long, String> courseNames = new HashMap<>();
 		
@@ -238,6 +241,7 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		autoEnrolmentCoursesContainer.contextPut("autoEnrolmentCourseKeys", registrationModule.getAutoEnrolmentCourseKeys());
 		autoEnrolmentCoursesContainer.contextPut("autoEnrolmentCourseNames", courseNames);
+		autoEnrolmentCoursesContainer.contextPut("autoBooking", acModule.isAutoEnabled());
 		
 		formLayout.add(autoEnrolmentCoursesContainer);
 	}

@@ -12,6 +12,8 @@
 	</div>
 #end
 
-<div class="o_info">
+#if(!$autoBooking)
+<div class="o_warning">
 	$r.translate("auto.enrolment.info")
 </div>
+#end
