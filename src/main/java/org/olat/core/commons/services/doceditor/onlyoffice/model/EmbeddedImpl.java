@@ -21,12 +21,16 @@ package org.olat.core.commons.services.doceditor.onlyoffice.model;
 
 import org.olat.core.commons.services.doceditor.onlyoffice.Embedded;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 /**
  * 
  * Initial date: 31 Aug 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
+@JsonInclude(Include.NON_NULL)
 public class EmbeddedImpl implements Embedded {
 	
 	private String saveUrl;
