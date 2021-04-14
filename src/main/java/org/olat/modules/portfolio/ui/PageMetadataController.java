@@ -354,7 +354,6 @@ public class PageMetadataController extends BasicController {
 			editLink.setVisible(secCallback.canEditPage(page));
 		}
 		
-		editLink.setTooltip("edit.page");
 		return editLink;
 	}
 	

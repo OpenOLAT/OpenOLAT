@@ -88,7 +88,7 @@ public class OlatTopNavController extends BasicController implements LockableCon
 		if (ureq.getIdentity() == null || isGuest) {
 			loginLink = LinkFactory.createLink("topnav.login", topNavVC, this);
 			loginLink.setIconLeftCSS("o_icon o_icon_login o_icon-lg");
-			loginLink.setTooltip("topnav.login.alt");
+			loginLink.setTitle("topnav.login.alt");
 		}
 		
 		if(ureq.getIdentity() != null && !isGuest && !isInvitee) {

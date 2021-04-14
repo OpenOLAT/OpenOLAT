@@ -113,28 +113,28 @@ public class CPTreeController extends BasicController {
 	void initToolbar(TooledStackedPanel toolbar) {
 		importLink = LinkFactory.createToolLink("cptreecontroller.importlink", "cptreecontroller.importlink",
 				translate("cptreecontroller.importlink_title"), this);
-		importLink.setTooltip(translate("cptreecontroller.importlink_title"));
+		importLink.setTitle(translate("cptreecontroller.importlink_title"));
 		importLink.setElementCssClass("o_sel_cp_import_link");
 		importLink.setIconLeftCSS("o_icon o_icon-lg o_icon_import");
 		toolbar.addTool(importLink, Align.left);
 
 		newLink = LinkFactory.createToolLink("cptreecontroller.newlink", "cptreecontroller.newlink",
 				translate("cptreecontroller.newlink_title"), this);
-		newLink.setTooltip(translate("cptreecontroller.newlink_title"));
+		newLink.setTitle(translate("cptreecontroller.newlink_title"));
 		newLink.setElementCssClass("o_sel_cp_new_link");
 		newLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		toolbar.addTool(newLink, Align.left);
 
 		copyLink = LinkFactory.createToolLink("cptreecontroller.copylink", "cptreecontroller.copylink",
 				translate("cptreecontroller.copylink_title"), this);
-		copyLink.setTooltip(translate("cptreecontroller.copylink_title"));
+		copyLink.setTitle(translate("cptreecontroller.copylink_title"));
 		copyLink.setElementCssClass("o_sel_cp_copy_link");
 		copyLink.setIconLeftCSS("o_icon o_icon-lg o_icon_copy");
 		toolbar.addTool(copyLink, Align.left);
 
 		deleteLink = LinkFactory.createToolLink("cptreecontroller.deletelink", "cptreecontroller.deletelink",
 				translate("cptreecontroller.deletelink_title"), this);
-		deleteLink.setTooltip(translate("cptreecontroller.deletelink_title"));
+		deleteLink.setTitle(translate("cptreecontroller.deletelink_title"));
 		deleteLink.setElementCssClass("o_sel_cp_delete_link");
 		deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 		toolbar.addTool(deleteLink, Align.left);
@@ -317,6 +317,7 @@ public class CPTreeController extends BasicController {
 	 * Event-handling from components
 	 * 
 	 */
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == importLink) {
 			uploadCtr = new CPFileImportController(ureq, getWindowControl(), cp, currentPage);
@@ -367,6 +368,7 @@ public class CPTreeController extends BasicController {
 	 * Event-handling from controllers
 	 * 
 	 */
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cmc) {
 			if (event.equals(CloseableModalController.CLOSE_MODAL_EVENT)) {

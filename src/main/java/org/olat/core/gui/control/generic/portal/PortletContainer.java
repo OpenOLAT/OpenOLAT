@@ -80,31 +80,26 @@ public class PortletContainer extends BasicController implements PortletContaine
 		toolboxContainer = createVelocityContainer("portletToolbox");
 				
 		moveLeftLink = LinkFactory.createCustomLink("move.left", "move.left", null, Link.NONTRANSLATED, toolboxContainer, this);
-		moveLeftLink.setTooltip(translate("move.left"));
 		moveLeftLink.setTextReasonForDisabling(translate("move.left.impossible"));		
 		moveLeftLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_move_left");
 		moveLeftLink.setElementCssClass("o_portlet_edit_left");
 		
 		moveUpLink = LinkFactory.createCustomLink("move.up", "move.up", null, Link.NONTRANSLATED, toolboxContainer, this);
-		moveUpLink.setTooltip(translate("move.up"));
 		moveUpLink.setTextReasonForDisabling(translate("move.up.impossible"));
 		moveUpLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_move_up");
 		moveUpLink.setElementCssClass("o_portlet_edit_up");
 		
 		moveDownLink = LinkFactory.createCustomLink("move.down", "move.down", null, Link.NONTRANSLATED, toolboxContainer, this);
-		moveDownLink.setTooltip(translate("move.down"));
 		moveDownLink.setTextReasonForDisabling(translate("move.down.impossible"));
 		moveDownLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_move_down");
 		moveDownLink.setElementCssClass("o_portlet_edit_down");
 				
 		moveRightLink = LinkFactory.createCustomLink("move.right", "move.right", null, Link.NONTRANSLATED, toolboxContainer, this);
-		moveRightLink.setTooltip(translate("move.right"));
 		moveRightLink.setTextReasonForDisabling(translate("move.right.impossible"));
 		moveRightLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_move_right");
 		moveRightLink.setElementCssClass("o_portlet_edit_right");
 		
 		close = LinkFactory.createCustomLink("close", "close", null, Link.NONTRANSLATED, toolboxContainer, this);
-		close.setTooltip(translate("close"));
 		close.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_delete_item");
 		close.setElementCssClass("o_portlet_edit_delete");
 		
@@ -144,6 +139,7 @@ public class PortletContainer extends BasicController implements PortletContaine
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// forward event to portal
 		fireEvent(ureq, event);
@@ -159,6 +155,7 @@ public class PortletContainer extends BasicController implements PortletContaine
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		if (portlet != null) {
 			portlet.dispose();
@@ -185,21 +182,25 @@ public class PortletContainer extends BasicController implements PortletContaine
 		}
 	}
 
+	@Override
 	public void setCanMoveDown(boolean canMoveDown) {
 		toolboxContainer.contextPut("canDown", new Boolean(canMoveDown));
 		moveDownLink.setEnabled(canMoveDown);
 	}
 
+	@Override
 	public void setCanMoveLeft(boolean canMoveLeft) {
 		toolboxContainer.contextPut("canLeft", new Boolean(canMoveLeft));
 		moveLeftLink.setEnabled(canMoveLeft);
 	}
 
+	@Override
 	public void setCanMoveRight(boolean canMoveRight) {
 		toolboxContainer.contextPut("canRight", new Boolean(canMoveRight));
 		moveRightLink.setEnabled(canMoveRight);
 	}
 
+	@Override
 	public void setCanMoveUp(boolean canMoveUp) {		
 		toolboxContainer.contextPut("canUp", new Boolean(canMoveUp));
 		moveUpLink.setEnabled(canMoveUp);

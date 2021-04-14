@@ -109,14 +109,14 @@ public class CPContentController extends BasicController {
 				translate("contentcontroller.editlink_title"), this);
 		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
 		editMetadataLink.setElementCssClass("o_sel_cp_edit_metadata");
-		editMetadataLink.setTooltip(translate("contentcontroller.editlink_title"));
+		editMetadataLink.setTitle(translate("contentcontroller.editlink_title"));
 		toolbar.addTool(editMetadataLink, Align.right);
 
 		previewLink = LinkFactory.createToolLink("contentcontroller.previewlink", "contentcontroller.previewlink",
 				translate("contentcontroller.previewlink_title"), this);
 		previewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_preview");
 		previewLink.setElementCssClass("o_sel_cp_preview");
-		previewLink.setTooltip(translate("contentcontroller.previewlink_title"));
+		previewLink.setTitle(translate("contentcontroller.previewlink_title"));
 		toolbar.addTool(previewLink, Align.right);
 
 		if (helpLink != null) {

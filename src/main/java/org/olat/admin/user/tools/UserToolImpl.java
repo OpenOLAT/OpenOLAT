@@ -60,7 +60,6 @@ public class UserToolImpl implements UserTool, ComponentEventListener {
 		link.setCustomDisplayText(label);
 		link.setElementCssClass("o_sel_user_tools-" + extension.getNavigationKey());
 		link.setIconLeftCSS(iconCssClass + " o_icon-lg");
-		link.setTooltip(label);
 		link.setTitle(label);
 		return link;
 	}

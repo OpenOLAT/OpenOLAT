@@ -96,7 +96,6 @@ public class LinkFactory {
 	public static Link createIconClose(String title, VelocityContainer vc, ComponentEventListener listener){
 		Link closeIcon = new Link("closeIcon", "close", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vc, listener);
 		closeIcon.setIconLeftCSS("close o_icon o_icon_close o_icon-lg");
-		closeIcon.setTooltip(title);
 		if(title != null){
 			closeIcon.setTitle(title);
 		}

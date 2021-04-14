@@ -78,7 +78,7 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 		vc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
 		impressumLink = LinkFactory.createLink("_top_nav_dmz_impressum", "topnav.impressum", vc, this);
 		impressumLink.setSuppressDirtyFormWarning(true);
-		impressumLink.setTooltip("topnav.impressum.alt");
+		impressumLink.setTitle("topnav.impressum.alt");
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
 		impressumLink.setAjaxEnabled(false);
 		impressumLink.setTarget("_blank");

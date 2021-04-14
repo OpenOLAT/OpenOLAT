@@ -87,7 +87,6 @@ public class PortletToolSortingControllerImpl<T> extends BasicController
 		mainVC.setDomReplacementWrapperRequired(false);
 						
 		manualSorting = LinkFactory.createCustomLink("manual.sorting.config", "manual.sorting.config", null, Link.NONTRANSLATED, mainVC, this);
-		manualSorting.setTooltip(translate("manual.sorting.config"));
 		manualSorting.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_list");
 		manualSorting.setElementCssClass("o_portlet_edit_sort_manual");
 		if(tableDataModel.getObjects().isEmpty()) {
@@ -95,7 +94,6 @@ public class PortletToolSortingControllerImpl<T> extends BasicController
 		}
 				
 		autoSorting = LinkFactory.createCustomLink("auto.sorting.config", "auto.sorting.config", null, Link.NONTRANSLATED, mainVC, this);
-		autoSorting.setTooltip(translate("auto.sorting.config"));
 		autoSorting.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_sort");
 		autoSorting.setElementCssClass("o_portlet_edit_sort_auto");
 		
@@ -140,6 +138,7 @@ public class PortletToolSortingControllerImpl<T> extends BasicController
 		}		
 	}
 
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event)	 {
 		if (source == portletAutoSortingConfigurator) {
 			if (event==Event.DONE_EVENT) {
@@ -174,22 +173,27 @@ public class PortletToolSortingControllerImpl<T> extends BasicController
 		mainVC.contextPut("hasAutoSorting", new Boolean(configAutoSorting));		
 	}
 
+	@Override
 	public boolean isAutoSortable() {
 		return isAutoSortable;
 	}
 
+	@Override
 	public void setAutoSortable(boolean isAutoSortable) {
 		this.isAutoSortable = isAutoSortable;
 	}
 
+	@Override
 	public boolean isManualSortable() {
 		return isManualSortable;
 	}
 
+	@Override
 	public void setManualSortable(boolean isManualSortable) {
 		this.isManualSortable = isManualSortable;
 	}
 
+	@Override
 	public SortingCriteria getSortingCriteria() {
 		return sortingCriteria;
 	}
@@ -199,6 +203,7 @@ public class PortletToolSortingControllerImpl<T> extends BasicController
 		portletAutoSortingConfigurator.setSortingCriteria(sortingCriteria);
 	}	
 
+	@Override
 	public List<PortletEntry<T>> getSortedItems() {
 		return sortedItems;
 	}

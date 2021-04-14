@@ -29,6 +29,7 @@ package org.olat.core.gui.control.generic.iframe;
 import java.io.File;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
@@ -48,7 +49,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -363,7 +363,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 				downloadLink = LinkFactory.createCustomLink(COMMAND_DOWNLOAD, COMMAND_DOWNLOAD, "", Link.NONTRANSLATED, myContent, this);
 				downloadLink.setCustomEnabledLinkCSS("o_download");
 				downloadLink.setIconLeftCSS("o_icon o_icon_download o_icon-lg");
-				downloadLink.setTooltip(getTranslator().translate(COMMAND_DOWNLOAD));
 			} else if (!downloadLink.isVisible()) {
 				downloadLink.setVisible(true);
 			}

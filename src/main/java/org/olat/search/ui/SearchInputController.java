@@ -32,6 +32,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
@@ -52,7 +53,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.EventBus;
@@ -243,7 +243,7 @@ public class SearchInputController extends FormBasicController implements Generi
 		if(!context.isEmpty()) {
 			String scope = context.getValueAt(context.getSize() - 1);
 			String tooltip = getTranslator().translate("form.search.label.tooltip", new String[]{scope});
-			searchButton.getComponent().setTooltip(tooltip);
+			searchButton.getComponent().setTitle(tooltip);
 		}
 	}
 	

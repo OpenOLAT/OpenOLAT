@@ -43,7 +43,7 @@ public class ImpressumUserTool implements UserTool, ComponentEventListener {
 	@Override
 	public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
 		Link impressumLink = LinkFactory.createLink("topnav.impressum", container, this);
-		impressumLink.setTooltip("topnav.impressum.alt");
+		impressumLink.setTitle("topnav.impressum.alt");
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-fw");
 		impressumLink.setAjaxEnabled(false);
 		impressumLink.setTarget("_blank");

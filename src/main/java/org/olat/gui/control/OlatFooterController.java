@@ -108,7 +108,7 @@ public class OlatFooterController extends BasicController implements LockableCon
 		
 		olatFootervc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
 		impressumLink = LinkFactory.createLink("_footer_dmz_impressum", "topnav.impressum", olatFootervc, this);
-		impressumLink.setTooltip("topnav.impressum.alt");
+		impressumLink.setTitle("topnav.impressum.alt");
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
 		impressumLink.setAjaxEnabled(false);
 		impressumLink.setTarget("_blank");

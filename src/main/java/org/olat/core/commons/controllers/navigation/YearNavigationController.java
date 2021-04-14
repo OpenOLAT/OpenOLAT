@@ -180,11 +180,9 @@ public class YearNavigationController extends BasicController {
 		mainVC = createVelocityContainer("yearnavigation");
 		next = LinkFactory.createCustomLink("navi.forward", "navi.forward", null, Link.NONTRANSLATED, mainVC, this);
 		next.setIconLeftCSS("o_icon o_icon_next_page");
-		next.setTooltip(translate("navi.forward"));
 		//
 		previous = LinkFactory.createCustomLink("navi.backward", "navi.backward", null, Link.NONTRANSLATED, mainVC, this);
 		previous.setIconLeftCSS("o_icon o_icon_previous_page");
-		previous.setTooltip(translate("navi.backward"));
 		//
 		if (mainPanel == null) {
 			// first time

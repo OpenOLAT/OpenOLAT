@@ -136,7 +136,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		if (imModule.isGroupPeersEnabled()) {
 			onlineOfflineCount = LinkFactory.createCustomLink("onlineOfflineCount", "cmd.roster", "", Link.NONTRANSLATED, main, this);
-			onlineOfflineCount.setTooltip(translate("im.roster.intro"));
+			onlineOfflineCount.setTitle(translate("im.roster.intro"));
 			onlineOfflineCount.registerForMousePositionEvent(true);
 			onlineOfflineCount.setCustomEnabledLinkCSS("badge");
 			updateBuddyStats();
