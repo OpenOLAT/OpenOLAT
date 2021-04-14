@@ -164,7 +164,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		permissions.setComment(true);
 		permissions.setDownload(isDownloadEnabled);
 		permissions.setFillForms(true);
-		permissions.setPrint(true);
+		permissions.setPrint(isDownloadEnabled);
 		permissions.setReview(true);
 		document.setPermissions(permissions);
 		
