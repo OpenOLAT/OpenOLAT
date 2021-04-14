@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,12 @@ import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
 import org.olat.modules.ceditor.ui.event.SaveElementEvent;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.ui.SelectPageListController;
+import org.olat.modules.portfolio.ui.event.PageSelectionEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -78,16 +84,22 @@ public class PageEditorV2Controller extends BasicController {
 	private final VelocityContainer mainVC;
 	private final ContentEditorComponent editorCmp;
 	private Link addElementButton;
+	private Link importContentButton;
 	
 	private CloseableModalController cmc;
 	private PageElementAddController addCtrl;
 	private AddElementsController addElementsCtrl;
 	private CloseableCalloutWindowController addCalloutCtrl;
+	private SelectPageListController selectPageController; 
 	
 	private int counter;
 	private final PageEditorProvider provider;
 	private final PageEditorSecurityCallback secCallback;
 	private Map<String,PageElementHandler> handlerMap = new HashMap<>();
+	private Page page;
+	
+	@Autowired
+	PortfolioService portfolioService;
 
 	public PageEditorV2Controller(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
 			PageEditorSecurityCallback secCallback, Translator fallbackTranslator, Page page) {
@@ -109,9 +121,13 @@ public class PageEditorV2Controller extends BasicController {
 			addElementButton = LinkFactory.createButton("add.element", mainVC, this);
 			addElementButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 			addElementButton.setElementCssClass("o_sel_add_element_main");
+			
+			importContentButton = LinkFactory.createButton("import.content", mainVC, this);
+			importContentButton.setIconLeftCSS("o_icon o_icon-lg o_icon_import");
 		}
 		
 		mainVC.contextPut("pageIsReferenced", page != null && page.getBody() != null && page.getBody().getUsage() > 1);
+		this.page = page;
 
 		loadModel(ureq);
 		putInitialPanel(mainVC);
@@ -125,6 +141,9 @@ public class PageEditorV2Controller extends BasicController {
 	private void loadModel(UserRequest ureq) {
 		List<? extends PageElement> elements = provider.getElements();
 		List<ContentEditorFragment> flatFragmentsList = new ArrayList<>(elements.size());
+		
+		importContentButton.setVisible(elements.isEmpty() && page.getBody().getUsage() == 1);
+		
 		for(PageElement element:elements) {
 			ContentEditorFragment fragment = createFragmentComponent(ureq, element);
 			if(fragment != null) {
@@ -178,7 +197,10 @@ public class PageEditorV2Controller extends BasicController {
 				AddElementEvent aee = (AddElementEvent)event;
 				doAddElement(ureq, aee.getReferenceComponent(), aee.getHandler(),
 						aee.getTarget(), aee.getContainerColumn());
+				importContentButton.setVisible(false);
 			}
+		} else if (source == selectPageController) {
+			importSelectedContents(ureq, event);
 		} else if(addCalloutCtrl == source) {
 			cleanUp();
 		} else if(cmc == source) {
@@ -193,10 +215,12 @@ public class PageEditorV2Controller extends BasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(selectPageController);
 		removeAsListenerAndDispose(addElementsCtrl);
 		removeAsListenerAndDispose(addCalloutCtrl);
 		removeAsListenerAndDispose(addCtrl);
 		removeAsListenerAndDispose(cmc);
+		selectPageController = null;
 		addElementsCtrl = null;
 		addCalloutCtrl = null;
 		addCtrl = null;
@@ -207,6 +231,8 @@ public class PageEditorV2Controller extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == addElementButton) {
 			openAddElementCallout(ureq);
+		} else if(source == importContentButton) {
+			openImportPageSelection(ureq);
 		} else if(event instanceof EditElementEvent) {
 			EditElementEvent e = (EditElementEvent)event;
 			doCloseEditionEvent(ureq, e.getElementId());
@@ -217,6 +243,10 @@ public class PageEditorV2Controller extends BasicController {
 			openAddElementCallout(ureq, aee.getDispatchId(), aee.getComponent(), aee.getTarget(), aee.getColumn());
 		} else if(event instanceof DeleteElementEvent) {
 			doDeleteElement(ureq, ((DeleteElementEvent)event).getComponent());
+			if (provider.getElements().isEmpty()) {
+				importContentButton.setVisible(page.getBody().getUsage() == 1);
+				mainVC.setDirty(true);
+			}
 		} else if(event instanceof MoveUpElementEvent) {
 			doMoveUpElement(ureq, ((MoveUpElementEvent)event).getComponent());
 		} else if(event instanceof MoveDownElementEvent) {
@@ -577,5 +607,30 @@ public class PageEditorV2Controller extends BasicController {
 			return ancestors.get(1);
 		}
 		return null;
+	}
+	
+	private void openImportPageSelection(UserRequest ureq) {
+		selectPageController = new SelectPageListController(ureq, getWindowControl(), BinderSecurityCallbackFactory.getCallbackForImportPages(), page != null ? Collections.singletonList(page) : null);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectPageController.getInitialComponent(), true, translate("import.content"), true);
+		listenTo(selectPageController);
+		listenTo(cmc);
+		
+		cmc.activate();		
+	}
+	
+	private void importSelectedContents(UserRequest ureq, Event event) {
+		if (selectPageController == null || event == null || !(event instanceof PageSelectionEvent)) {
+			return;
+		}
+		
+		Page selectedPage = ((PageSelectionEvent) event).getPage();
+		this.page = portfolioService.linkPageBody(page, selectedPage);		
+		
+		cmc.deactivate();
+		cleanUp();
+		
+		loadModel(ureq);
+		mainVC.contextPut("pageIsReferenced", page != null && page.getBody() != null && page.getBody().getUsage() > 1);
+		mainVC.setDirty(true);
 	}
 }

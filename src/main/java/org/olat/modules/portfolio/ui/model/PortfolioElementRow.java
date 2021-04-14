@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.image.ImageComponent;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.portfolio.AssessmentSection;
@@ -67,7 +68,7 @@ public class PortfolioElementRow {
 	private long numOfComments;
 
 	private FormLink commentFormLink, openFormLink,
-		newFloatingEntryLink, newEntryLink,
+		newFloatingEntryLink, newEntryLink, importLink,
 		closeSectionLink, reopenSectionLink;
 	// assignment
 	private FormLink newAssignmentLink, editAssignmentLink, deleteAssignmentLink,
@@ -79,6 +80,11 @@ public class PortfolioElementRow {
 	private boolean newEntry;
 	private final boolean shared;
 	private RowType type;
+	
+	// Is used to reduce the amount of equal pages in import
+	private boolean representsOtherPages; 
+	
+	private Translator translator;
 	
 	public PortfolioElementRow(Section section, AssessmentSection assessmentSection,
 			boolean assessable, boolean assignments) {
@@ -225,7 +231,31 @@ public class PortfolioElementRow {
 	}
 	
 	public String getSectionTitle() {
-		return section == null ? null : section.getTitle();
+		if (isRepresentingOtherPages()) {
+			if (translator != null) {
+				return translator.translate("multiple");
+			} else {
+				return "Multiple";
+			}
+		} else if (section != null ) {
+			return section.getTitle();
+		} else {
+			return null;
+		}
+	}
+	
+	public String getBinderTitle() {
+		if (isRepresentingOtherPages()) {
+			if (translator != null) {
+				return translator.translate("multiple");
+			} else {
+				return "Multiple";
+			}
+		} else if (section != null && section.getBinder() != null) {
+			return section.getBinder().getTitle();
+		} else {
+			return null;
+		}
 	}
 	
 	public SectionStatus getSectionStatus() {
@@ -338,6 +368,14 @@ public class PortfolioElementRow {
 	
 	public void setNewEntryLink(FormLink newEntryLink) {
 		this.newEntryLink = newEntryLink;
+	}
+	
+	public FormLink getImportLink() {
+		return importLink;
+	}
+	
+	public void setImportLink(FormLink importLink) {
+		this.importLink = importLink;
 	}
 	
 	public FormLink getNewFloatingEntryLink() {
@@ -475,9 +513,61 @@ public class PortfolioElementRow {
 		this.reopenSectionLink = reopenSectionLink;
 	}
 	
+	public boolean isRepresentingOtherPages() {
+		return representsOtherPages;
+	}
+	
+	public void setRepresentsOtherPages(boolean representsOtherPages) {
+		this.representsOtherPages = representsOtherPages;
+	}
+	
+	public void setTranslator(Translator translator) {
+		this.translator = translator;
+	}
+	
 	public enum RowType {
 		section,
 		page,
 		pendingAssignment
+	}
+	
+	/**
+	 * Compares page name, categories and competences to filter duplicates
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof PortfolioElementRow)) {
+			return false;
+		}
+		
+		PortfolioElementRow compare = (PortfolioElementRow) obj;
+		
+		boolean equals = true;
+		
+		if (this.getPage() != null && compare.getPage() != null) {
+			equals &= this.page.getTitle().equals(compare.getPage().getTitle());
+			equals &= this.page.getBody().equals(compare.getPage().getBody());
+		}
+		
+		if (pageCategories != null && compare.getPageCategories() != null) {
+			equals &= this.pageCategories.equals(compare.getPageCategories());
+		}
+		
+		if (getPageCompetences() != null && compare.getPageCompetences() != null) {
+			equals &= this.getPageCompetences().equals(compare.getPageCompetences());
+		}
+		
+		return equals;
+	}
+	
+	@Override
+	public int hashCode() {
+		if (page != null) {
+			return page.getTitle().hashCode() + page.getBody().hashCode();
+		} else if (section != null) {
+			return section.getKey().hashCode();
+		} else {
+			return -58796;
+		}
 	}
 }

@@ -122,6 +122,40 @@ public class PageDAO {
 		return page;
 	}
 	
+	public Page linkPageBody(Page newPage, Page existingPage) {
+		if (newPage == null || existingPage == null) {
+			return null;
+		}
+		
+		PageImpl newPageImpl = (PageImpl) newPage;
+		PageBody newBody = existingPage.getBody();
+		PageBody oldBody = newPage.getBody();
+		
+		int count = getCountSharedPageBody(existingPage);
+		((PageBodyImpl)newBody).setUsage(count + 1);
+		newBody = dbInstance.getCurrentEntityManager().merge(newBody);
+		
+		newPageImpl.setBody(newBody);
+		newPage = updatePage(newPageImpl);
+		
+		
+
+		boolean deleteBody = oldBody.getUsage() <= 1;
+		if(deleteBody) {
+			oldBody = loadPageBodyByKey(oldBody.getKey());
+			String partQ = "delete from pfpagepart part where part.body.key=:bodyKey";
+			dbInstance.getCurrentEntityManager()
+					.createQuery(partQ)
+					.setParameter("bodyKey", oldBody.getKey())
+					.executeUpdate();
+			
+			portfolioService.deleteSurvey(oldBody);
+			dbInstance.getCurrentEntityManager().remove(oldBody);
+		}
+		
+		return newPage;
+	}
+	
 	public Page updatePage(Page page) {
 		((PageImpl)page).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(page);

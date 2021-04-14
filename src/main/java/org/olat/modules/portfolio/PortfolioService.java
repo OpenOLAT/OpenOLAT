@@ -809,4 +809,13 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public LinkedHashMap<Category, Long> getCategoriesAndUsage(List<Page> pages);
+	
+	/**
+	 * Link an existing pageBody to a page
+	 * 
+	 * @param newPage
+	 * @param pageBody
+	 * @return Page
+	 */
+	public Page linkPageBody(Page newPage, Page existingPage);
 }

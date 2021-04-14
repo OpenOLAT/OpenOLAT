@@ -46,7 +46,7 @@ public class CreateNewBinderStep extends BasicStep {
 		this.context = context; 
 		
 		setI18nTitleAndDescr("page.binders", null);
-		setNextStep(new SelectPagesStep(ureq));
+		setNextStep(new SelectPagesStep(ureq, false));
 	}
 
 	@Override

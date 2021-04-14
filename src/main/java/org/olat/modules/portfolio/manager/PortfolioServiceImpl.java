@@ -1718,5 +1718,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 		return categoryDao.getCategoriesAndUsage(pages);
 	}
 	
-	
+	@Override
+	public Page linkPageBody(Page newPage, Page existingPage) {
+		return pageDao.linkPageBody(newPage, existingPage);
+	}	
 }

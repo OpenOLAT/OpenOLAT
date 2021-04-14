@@ -304,7 +304,8 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		if (portfolioV2Module.isTaxonomyLinkingReady()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.competences, new CompetencesCellRenderer()));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.section/*, "select-section"*/));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.section));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.binder));
 		if(secCallback.canNewAssignment()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.up", PageCols.up.ordinal(), "up",
 					new BooleanCellRenderer(
@@ -341,6 +342,9 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		List<Component> components = new ArrayList<>(4);
 		if(elRow.getNewEntryLink() != null) {
 			components.add(elRow.getNewEntryLink().getComponent());
+		}
+		if(elRow.getImportLink() != null) {
+			components.add(elRow.getImportLink().getComponent());
 		}
 		if(elRow.getNewFloatingEntryLink() != null) {
 			components.add(elRow.getNewFloatingEntryLink().getComponent());

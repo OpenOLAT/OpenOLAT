@@ -187,6 +187,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 			case categories: return page.getPageCategories();
 			case competences: return page.getPageCompetencesObjects();
 			case section: return page.getSectionTitle();
+			case binder: return page.getBinderTitle();
 			case up: {
 				if(page.isPendingAssignment()) {
 					return page.getUpAssignmentLink() != null && page.getUpAssignmentLink().isEnabled();
@@ -220,6 +221,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 		publicationDate("table.header.publication.date", true),
 		categories("table.header.categories", true),
 		competences("table.header.competences", true),
+		binder("table.header.binder", true),
 		section("table.header.section", true),
 		up("table.header.up", false),
 		down("table.header.down", false),

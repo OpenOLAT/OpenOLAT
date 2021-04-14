@@ -52,7 +52,7 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackImpl(true, false, true, null);
 	}
 	
-	public static final BinderSecurityCallback getCallbackFroImportPages() {
+	public static final BinderSecurityCallback getCallbackForImportPages() {
 		return new BinderSecurityCallbackForImporPages();
 	}
 	

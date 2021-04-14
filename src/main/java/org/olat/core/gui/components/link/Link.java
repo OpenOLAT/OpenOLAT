@@ -396,7 +396,7 @@ public class Link extends AbstractComponent implements ComponentCollection {
 		return elementId;
 	}
 
-	public boolean isHasTooltip() {
+	public boolean hasTooltip() {
 		return hasTooltip;
 	}
 	

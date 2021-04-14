@@ -57,6 +57,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -70,12 +74,14 @@ import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageUserInformations;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.manager.PortfolioServiceSearchOptions;
 import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
@@ -95,8 +101,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BinderPageListController extends AbstractPageListController {
 	
-	private Link newSectionLink, newEntryLink, newAssignmentLink,
-		exportBinderAsCpLink, exportBinderAsPdfLink, printLink;
+	private Link newSectionLink;
+	private Link newEntryLink;
+	private Link newAssignmentLink;
+	private Link exportBinderAsCpLink;
+	private Link exportBinderAsPdfLink;
+	private Link printLink;
+	private Link importExistingEntryLink;
+	
 	private FormLink newSectionButton, previousSectionLink, nextSectionLink, showAllSectionsLink;
 	
 	private CloseableModalController cmc;
@@ -105,6 +117,7 @@ public class BinderPageListController extends AbstractPageListController {
 	private SectionEditController newSectionCtrl;
 	private PageMetadataEditController newPageCtrl;
 	private AssignmentEditController newAssignmentCtrl;
+	private StepsMainRunController wizardCtrl;
 
 	private final Binder binder;
 	private final List<Identity> owners;
@@ -194,6 +207,12 @@ public class BinderPageListController extends AbstractPageListController {
 			stackPanel.addTool(newEntryLink, Align.right);
 		}
 		
+		if(secCallback.canAddPage(null) && secCallback.canAddSection()) {
+			importExistingEntryLink = LinkFactory.createToolLink("import.page", translate("import.page"), this);
+			importExistingEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_import");
+			importExistingEntryLink.setElementCssClass("o_sel_pf_existing_entry");
+			stackPanel.addTool(importExistingEntryLink, Align.right);
+		}
 		if(secCallback.canNewAssignment()) {
 			newAssignmentLink = LinkFactory.createToolLink("new.assignment", translate("create.new.assignment"), this);
 			newAssignmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
@@ -346,6 +365,11 @@ public class BinderPageListController extends AbstractPageListController {
 				newEntryButton.setCustomEnabledLinkCSS("btn btn-primary o_sel_pf_new_entry");
 				newEntryButton.setUserObject(pageRow);
 				pageRow.setNewEntryLink(newEntryButton);
+				
+				FormLink importButton = uifactory.addFormLink("import.entry." + (++counter), "import.entry", "import.entry", null, flc, Link.BUTTON);
+				importButton.setCustomEnabledLinkCSS("btn btn-primary");
+				importButton.setUserObject(pageRow);
+				pageRow.setImportLink(importButton);
 			}
 			
 			if(secCallback.canNewAssignment() && section != null) {
@@ -392,6 +416,11 @@ public class BinderPageListController extends AbstractPageListController {
 					newEntryButton.setCustomEnabledLinkCSS("btn btn-primary o_sel_pf_new_entry");
 					newEntryButton.setUserObject(sectionRow);
 					sectionRow.setNewEntryLink(newEntryButton);
+					
+					FormLink importButton = uifactory.addFormLink("import.entry." + (++counter), "import.entry", "import.entry", null, flc, Link.BUTTON);
+					importButton.setCustomEnabledLinkCSS("btn btn-primary");
+					importButton.setUserObject(sectionRow);
+					sectionRow.setImportLink(importButton);
 				}
 				
 				if(secCallback.canNewAssignment() && section != null) {
@@ -490,6 +519,8 @@ public class BinderPageListController extends AbstractPageListController {
 			} else if("new.assignment".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doCreateNewAssignment(ureq, row.getSection());
+			} else if("import.entry".equals(cmd)) {
+				doImportExistingEntry(ureq, null);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -513,6 +544,8 @@ public class BinderPageListController extends AbstractPageListController {
 			doExportBinderAsPdf(ureq);
 		} else if(printLink == source) {
 			doPrint(ureq);
+		} else if (importExistingEntryLink == source) {
+			doImportExistingEntry(ureq, null);
 		} else if(stackPanel == source) {
 			if(event instanceof PopEvent && pageCtrl != null && ((PopEvent)event).getController() == pageCtrl && pageCtrl.getSection() != null) {
 				doFilterSection(pageCtrl.getSection());
@@ -570,6 +603,17 @@ public class BinderPageListController extends AbstractPageListController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (wizardCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+                // Reload data
+				loadModel(ureq, null);
+				
+				// Close the dialog
+                getWindowControl().pop();
+
+                // Remove steps controller
+                cleanUp();
+            }
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -580,10 +624,12 @@ public class BinderPageListController extends AbstractPageListController {
 		removeAsListenerAndDispose(newAssignmentCtrl);
 		removeAsListenerAndDispose(newSectionCtrl);
 		removeAsListenerAndDispose(newPageCtrl);
+		removeAsListenerAndDispose(wizardCtrl);
 		removeAsListenerAndDispose(cmc);
 		newAssignmentCtrl = null;
 		newSectionCtrl = null;
 		newPageCtrl = null;
+		wizardCtrl = null;
 		cmc = null;
 	}
 	
@@ -733,4 +779,50 @@ public class BinderPageListController extends AbstractPageListController {
 		}
 		return null;
 	}
+	
+	private void doImportExistingEntry(UserRequest ureq, Section currentSection) {
+		PortfolioImportEntriesContext context = new PortfolioImportEntriesContext();
+		context.setBinderSecurityCallback(BinderSecurityCallbackFactory.getCallbackForImportPages());
+		context.setCurrentSection(currentSection);
+		context.setCurrentBinder(binder);
+		
+		SelectPagesStep selectEntriesStep = new SelectPagesStep(ureq, context, binder != null);
+		
+		FinishCallback finish = new FinishCallback();
+		CancelCallback cancel = new CancelCallback();
+				
+		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), selectEntriesStep, finish, cancel, translate("import.entries"), null);
+		listenTo(wizardCtrl);
+        getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
+	}
+	
+	private class FinishCallback implements StepRunnerCallback {
+        @Override
+        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+        	// Get context
+        	PortfolioImportEntriesContext context = (PortfolioImportEntriesContext) runContext.get(PortfolioImportEntriesContext.CONTEXT_KEY);
+        	
+        	// Create or load section
+        	SectionRef currentSection = context.getCurrentSection();
+        	
+        	if (currentSection == null) {
+        		currentSection = portfolioService.appendNewSection(context.getNewSectionTitle(), context.getNewSectionDescription(), null, null, context.getCurrentBinder());
+        	}
+        	
+        	// Import pages into section
+        	for (PortfolioElementRow page : context.getSelectedPortfolioEntries()) {
+        		portfolioService.appendNewPage(getIdentity(), page.getTitle(), page.getSummary(), page.getImageUrl(), page.getPage().getImageAlignment(), currentSection, page.getPage());
+        	}
+        	
+            // Fire event
+            return StepsMainRunController.DONE_MODIFIED;
+        }
+    }
+    
+    private static class CancelCallback implements StepRunnerCallback {
+        @Override
+        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+            return Step.NOSTEP;
+        }
+    }
 }

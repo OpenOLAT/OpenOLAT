@@ -159,7 +159,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			
 			//tooltips
 			if(title != null) {
-				if (!link.isHasTooltip()) {
+				if (!link.hasTooltip()) {
 					sb.append(" title=\"");
 					if (nontranslated){
 						sb.appendHtmlEscaped(title).append("\"");
@@ -169,7 +169,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 
 				}
 				//tooltips based on the extjs library, see webapp/static/js/ext*
-				if (link.isHasTooltip()) {
+				if (link.hasTooltip()) {
 					String text;
 					if (nontranslated) {
 						text = title;
@@ -319,7 +319,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		      .append("\n</script>");
 		}
 		
-		if (elementId != null && link.isHasTooltip() && StringHelper.containsNonWhitespace(link.getTitle())) {
+		if (elementId != null && link.hasTooltip() && StringHelper.containsNonWhitespace(link.getTitle())) {
 			sb.append("<script>")
 			  .append("jQuery(function() {\n")
 			  .append("  jQuery('#").append(elementId).append("').tooltip({\n")

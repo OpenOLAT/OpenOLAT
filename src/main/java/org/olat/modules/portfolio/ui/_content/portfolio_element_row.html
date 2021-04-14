@@ -200,6 +200,9 @@
 		<p>$r.translate("create.new.page.descr")</p>
 		<div class="o_button_group">
 			$r.render($row.newEntryLink)
+			#if($r.isNotNull($row.importLink))
+			$r.render($row.importLink)
+			#end
 		</div>
 	</div>
 </div>

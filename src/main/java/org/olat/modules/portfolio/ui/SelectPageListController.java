@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
@@ -63,10 +64,18 @@ public class SelectPageListController extends AbstractPageListController {
 
 	private Section currentSection; 
 	private boolean isMultiSelect;
+	private List<Page> blackList;
 	
 	public SelectPageListController(UserRequest ureq, WindowControl wControl, Form rootForm, Section currentSection, BinderSecurityCallback secCallback, boolean isMultiSelect) {
 		super(ureq, wControl, rootForm, secCallback, BinderConfiguration.createSelectPagesConfig(), "select_pages", false, false, true);
 		
+		initPageListController(ureq, currentSection, isMultiSelect);
+	}
+	
+	public SelectPageListController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback, List<Page> blackList) {
+		super(ureq, wControl, (TooledStackedPanel) null, secCallback, BinderConfiguration.createSelectPagesConfig(), "select_pages", false, false, true);
+		
+		this.blackList = blackList;
 		initPageListController(ureq, currentSection, isMultiSelect);
 	}
 	
@@ -76,7 +85,10 @@ public class SelectPageListController extends AbstractPageListController {
 
 		initForm(ureq);
 		loadModel(ureq, null);
-		tableEl.setAvailableRendererTypes(FlexiTableRendererType.classic);
+		
+		tableEl.setRendererType(FlexiTableRendererType.classic);
+		tableEl.setAndLoadPersistedPreferences(ureq, "page-list-v2-import");
+		
 		super.loadCompetencesFilter();
 		super.loadCategoriesFilter();
 	}
@@ -149,8 +161,21 @@ public class SelectPageListController extends AbstractPageListController {
 				continue;
 			}
 			
+			// Used to remove the current entry from the import options
+			if(blackList != null && blackList.contains(page)) {
+				continue;
+			}
+			
 			List<Assignment> assignmentList = pageToAssignments.get(page);
 			PortfolioElementRow row = forgePageRow(ureq, page, null, assignmentList, categorizedElementMap, numberOfCommentsMap, true);
+			
+			// Check for duplicates
+			if (rows.contains(row)) {
+				rows.get(rows.indexOf(row)).setTranslator(getTranslator());
+				rows.get(rows.indexOf(row)).setRepresentsOtherPages(true);
+				continue;
+			}
+			
 			rows.add(row);
 			if(page.getSection() != null) {
 				Section section = page.getSection();

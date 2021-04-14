@@ -1297,29 +1297,7 @@ Tagify.prototype = {
           document.body.appendChild(this.DOM.dropdown);
           this.events.binding.call(this, false); // unbind the main events
         }
-        
-        var dropDownItems = document.getElementsByClassName('o_textbox_dropdown_item_value');
-        var dropDownItemWrappers = document.getElementsByClassName('tagify__dropdown__item');
-        var dropDownItemInfos = document.getElementsByClassName('o_textbox_dropdown_info');
-        
-        var wrapperWidths = Array.prototype.map.call(dropDownItemWrappers, function(el)  {
-            return el.getBoundingClientRect().width;
-        });
-        var widths = Array.prototype.map.call(dropDownItems, function(el)  {
-            return el.getBoundingClientRect().width;
-        });
-        var maxWidth = Math.max.apply(null, widths);
-        var minWrapperWidth = Math.min.apply(null, wrapperWidths);
-        var infoWidth = minWrapperWidth - maxWidth - 15;
 
-        Array.prototype.forEach.call(dropDownItems, function(el) {
-            el.style.width = maxWidth + "px";
-        });
-        
-        Array.prototype.forEach.call(dropDownItemInfos, function(el) {
-            el.style.width = infoWidth + "px";
-        });    
-        
         this.dropdown.events.binding.call(this);
       }
     },
@@ -1530,28 +1508,6 @@ Tagify.prototype = {
         value = this.suggestedListItems[this.getNodeIndex(elm)].value || this.input.value;
         this.input.autocomplete.suggest.call(this, value);
       }
-      
-	  	var dropDownItems = document.getElementsByClassName('o_textbox_dropdown_item_value');
-        var dropDownItemWrappers = document.getElementsByClassName('tagify__dropdown__item');
-        var dropDownItemInfos = document.getElementsByClassName('o_textbox_dropdown_info');
-        
-        var wrapperWidths = Array.prototype.map.call(dropDownItemWrappers, function(el)  {
-            return el.getBoundingClientRect().width;
-        });
-        var widths = Array.prototype.map.call(dropDownItems, function(el)  {
-            return el.getBoundingClientRect().width;
-        });
-        var maxWidth = Math.max.apply(null, widths);
-        var minWrapperWidth = Math.min.apply(null, wrapperWidths);
-        var infoWidth = minWrapperWidth - maxWidth - 15;
-
-        Array.prototype.forEach.call(dropDownItems, function(el) {
-            el.style.width = maxWidth + "px";
-        });
-        
-        Array.prototype.forEach.call(dropDownItemInfos, function(el) {
-            el.style.width = infoWidth + "px";
-        });           
     },
 
     /**

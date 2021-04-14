@@ -100,7 +100,7 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 	private Date lastPublicationDate;
 	
 	@ManyToOne(targetEntity=PageBodyImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_body_id", nullable=false, insertable=true, updatable=false)
+	@JoinColumn(name="fk_body_id", nullable=false, insertable=true, updatable=true)
 	private PageBody body;
 	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -45,11 +46,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -77,6 +80,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.CompetenceBrowserController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -116,6 +120,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private FormLayoutContainer assignmentDocsContainer;
 	private MultipleSelectionElement reviewerSeeAutoEvaEl;
 	private MultipleSelectionElement updateGlobalEntriesEl;
+	private FormLink openCompetenceBrowserLink;
 	
 	private FileElement imageUpload;
 	private SingleSelection imageAlignEl;
@@ -271,7 +276,6 @@ public class PageMetadataEditController extends FormBasicController {
 		if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
 			editModeEl = uifactory.addDropdownSingleselect("edit.mode", formLayout, editKeys, TranslatorHelper.translateAll(getTranslator(), editKeys));
 			editModeEl.addActionListener(FormEvent.ONCHANGE);
-			updateGlobalEntriesEl = uifactory.addCheckboxesDropdown("update.gloabl.entries", formLayout);
 			
 			List<Page> sharedPages = portfolioService.getPagesSharingSameBody(page);
 			String[] keys = new String[sharedPages.size()];
@@ -291,7 +295,8 @@ public class PageMetadataEditController extends FormBasicController {
 				values[i] = title;
 			}
 			
-			updateGlobalEntriesEl.setKeysAndValues(keys, values);
+			updateGlobalEntriesEl = uifactory.addCheckboxesVertical("update.global.entries", formLayout, keys, values, 1);
+			updateGlobalEntriesEl.setMandatory(true);
 			updateGlobalEntriesEl.setVisible(false);
 			
 			setFormWarning("edit.mode.info");
@@ -352,6 +357,10 @@ public class PageMetadataEditController extends FormBasicController {
 			competencesEl.setAutoCompleteContent(availableTaxonomyLevels);
 			competencesEl.setCustomCSSForItems("o_competence");
 		}
+		
+		openCompetenceBrowserLink = uifactory.addFormLink("open.browser.link", formLayout, Link.BUTTON_XSMALL);
+		openCompetenceBrowserLink.setLabel("no.label", null);
+		openCompetenceBrowserLink.setPopup(new LinkPopupSettings(800, 600, "Open"));
 		
 		bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, new String[] { "" }, new String[] { "" }, null);
 		
@@ -602,6 +611,17 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 		}
 		
+		if (updateGlobalEntriesEl != null) {
+			updateGlobalEntriesEl.clearError();
+			if(updateGlobalEntriesEl.isVisible()) {
+				if(updateGlobalEntriesEl.getSelectedKeys().size() < 1) {
+					allOk &= false;
+					updateGlobalEntriesEl.setErrorKey("form.legende.mandatory", null);
+				}
+				
+			}
+		}
+		
 		return allOk;
 	}
 
@@ -784,6 +804,14 @@ public class PageMetadataEditController extends FormBasicController {
 			reviewerSeeAutoEvaEl.setVisible(otherOptions);
 		} else if (editModeEl == source) {
 			updateGlobalEntriesEl.setVisible(editModeEl.getSelectedKey().equals(editKeys[1]));
+			sectionsEl.setVisible(editModeEl.getSelectedKey().equals(editKeys[0]));
+			bindersEl.setVisible(editModeEl.getSelectedKey().equals(editKeys[0]));
+		} else if (openCompetenceBrowserLink == source) {
+			ControllerCreator competenceBrowserCreator = (lureq, lwControl) -> {
+				return new CompetenceBrowserController(lureq, lwControl);				
+			};
+			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, competenceBrowserCreator);
+			openInNewBrowserWindow(ureq, layoutCtrlr);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("delete".equals(link.getCmd()) && link.getUserObject() instanceof File) {

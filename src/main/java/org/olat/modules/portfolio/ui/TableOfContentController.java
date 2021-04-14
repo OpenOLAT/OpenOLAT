@@ -950,11 +950,11 @@ public class TableOfContentController extends BasicController implements TooledC
 	
 	private void doImportExistingEntry(UserRequest ureq, Section currentSection) {
 		PortfolioImportEntriesContext context = new PortfolioImportEntriesContext();
-		context.setBinderSecurityCallback(BinderSecurityCallbackFactory.getCallbackFroImportPages());
+		context.setBinderSecurityCallback(BinderSecurityCallbackFactory.getCallbackForImportPages());
 		context.setCurrentSection(currentSection);
 		context.setCurrentBinder(binder);
 		
-		SelectPagesStep selectEntriesStep = new SelectPagesStep(ureq, context);
+		SelectPagesStep selectEntriesStep = new SelectPagesStep(ureq, context, binder != null);
 		
 		FinishCallback finish = new FinishCallback();
 		CancelCallback cancel = new CancelCallback();

@@ -6,6 +6,15 @@
 $r.render("page_editor")
 #if($r.available("add.element"))
 	<div class="o_button_group o_ce_add_main_btns">
+		#if($r.available("import.content") && $r.isVisible("import.content"))
+		<div class="btn-group">
+		#end
 		$r.render("add.element")
+		#if($r.available("import.content"))
+			$r.render("import.content")
+		#end
+		#if($r.available("import.content") && $r.isVisible("import.content"))
+		</div>
+		#end
 	</div>
 #end

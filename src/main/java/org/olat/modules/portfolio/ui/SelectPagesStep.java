@@ -40,22 +40,24 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 public class SelectPagesStep extends BasicStep {
 
 	private PortfolioImportEntriesContext context;
+	private boolean binderSelected;
 	
-	public SelectPagesStep(UserRequest ureq) {
+	public SelectPagesStep(UserRequest ureq, boolean binderSelected) {
 		super(ureq);
-		
+	
+		this.binderSelected = binderSelected;
 		setI18nTitleAndDescr("select.entries.title", null);
 		setNextStep(new SelectOrCreateSectionStep(ureq));
 	}
 	
-	public SelectPagesStep(UserRequest ureq, PortfolioImportEntriesContext context) {
-		this(ureq);
+	public SelectPagesStep(UserRequest ureq, PortfolioImportEntriesContext context, boolean binderSelected) {
+		this(ureq, binderSelected);
 		this.context = context;
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, true, false);
+		return new PrevNextFinishConfig(!binderSelected, true, false);
 	}
 
 	@Override

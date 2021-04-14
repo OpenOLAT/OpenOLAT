@@ -641,7 +641,7 @@ public class BinderListController extends FormBasicController
 	
 	private void doNewBinderFromEntries(UserRequest ureq) {
 		PortfolioImportEntriesContext context = new PortfolioImportEntriesContext();
-		context.setBinderSecurityCallback(BinderSecurityCallbackFactory.getCallbackFroImportPages());
+		context.setBinderSecurityCallback(BinderSecurityCallbackFactory.getCallbackForImportPages());
 		FinishCallback finish = new FinishCallback();
 		CancelCallback cancel = new CancelCallback();
 		CreateNewBinderStep createNewBinderStep = new CreateNewBinderStep(ureq, context);
