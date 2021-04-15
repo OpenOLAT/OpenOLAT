@@ -48,4 +48,5 @@ public interface PageEditorProvider extends PageProvider {
 	 */
 	public void movePageElement(PageElement elementToMove, PageElement sibling, boolean after);
 	
+	public String getImportButtonKey();
 }

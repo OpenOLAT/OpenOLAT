@@ -1009,17 +1009,12 @@ body {
 	}
 }
 
-.o_textbox_dropdown_item_value {
-	//display: inline-block !important;
-}
-
 .o_textbox_dropdown_info {
     white-space: nowrap;
     text-overflow: ellipsis;
     display: inline-block;
-    overflow: hidden;
 }
 
 .o_textbox_dropdown {
-	overflow: hidden;
+	overflow-y: scroll;
 }

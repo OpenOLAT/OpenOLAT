@@ -318,5 +318,10 @@ public class EvaluationFormEditorController extends BasicController implements T
 				persistForm();
 			}
 		}
+		
+		@Override
+		public String getImportButtonKey() {
+			return null;
+		}
 	}
 }

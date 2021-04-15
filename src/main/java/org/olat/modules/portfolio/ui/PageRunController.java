@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -81,9 +82,11 @@ import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.PageController;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.ceditor.ui.ValidationMessage;
+import org.olat.modules.ceditor.ui.event.ImportEvent;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.Page;
@@ -109,6 +112,7 @@ import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.event.PageChangedEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
+import org.olat.modules.portfolio.ui.event.PageSelectionEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
@@ -145,6 +149,7 @@ public class PageRunController extends BasicController implements TooledControll
 		confirmReopenCtrl, confirmMoveToTrashCtrl, confirmDeleteCtrl;
 	private PageMetadataEditController editMetadataCtrl;
 	private UserCommentsAndRatingsController commentsCtrl;
+	private SelectPageListController selectPageController;
 	
 	private Page page;
 	private LockResult lockEntry;
@@ -208,10 +213,11 @@ public class PageRunController extends BasicController implements TooledControll
 		if(openInEditMode) {
 			pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
 					new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()), new FullEditorSecurityCallback(),
-					getTranslator(), page);
+					getTranslator());
 			listenTo(pageEditCtrl);
 			if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
 				showWarning("page.is.referenced");
+				mainVC.contextPut("pageIsReferenced", true);
 			}
 			mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
@@ -405,6 +411,8 @@ public class PageRunController extends BasicController implements TooledControll
 					.fireEventToListenersOf(new PageChangedEvent(getIdentity().getKey(), page.getKey()), lockOres);
 			} else if(event instanceof PublishEvent) {
 				doConfirmPublish(ureq);
+			} else if(event instanceof ImportEvent) {
+				openImportPageSelection(ureq);
 			}
 		} else if(editMetadataCtrl == source || restorePageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -469,7 +477,9 @@ public class PageRunController extends BasicController implements TooledControll
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(cmc == source) {
+		} else if(selectPageController == source) {
+			importSelectedContents(ureq, event);
+		}  else if(cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -667,7 +677,7 @@ public class PageRunController extends BasicController implements TooledControll
 			if(lockEntry.isSuccess()) {
 				pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
 						new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()),
-						new FullEditorSecurityCallback(), getTranslator(), page);
+						new FullEditorSecurityCallback(), getTranslator());
 				if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
 					showWarning("page.is.referenced");
 				}
@@ -719,6 +729,31 @@ public class PageRunController extends BasicController implements TooledControll
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);
+	}
+	
+	private void openImportPageSelection(UserRequest ureq) {
+		selectPageController = new SelectPageListController(ureq, getWindowControl(), BinderSecurityCallbackFactory.getCallbackForImportPages(), page != null ? Collections.singletonList(page) : null);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectPageController.getInitialComponent(), true, translate("import.content"), true);
+		listenTo(selectPageController);
+		listenTo(cmc);
+		
+		cmc.activate();		
+	}
+	
+	private void importSelectedContents(UserRequest ureq, Event event) {
+		if (selectPageController == null || event == null || !(event instanceof PageSelectionEvent)) {
+			return;
+		}
+		
+		Page selectedPage = ((PageSelectionEvent) event).getPage();
+		this.page = portfolioService.linkPageBody(page, selectedPage);		
+		
+		cmc.deactivate();
+		cleanUp();
+		
+		pageEditCtrl.loadModel(ureq);
+		mainVC.contextPut("pageIsReferenced", page != null && page.getBody() != null && page.getBody().getUsage() > 1);
+		mainVC.setDirty(true);
 	}
 
 	private class PortfolioPageProvider implements PageProvider {
@@ -891,6 +926,11 @@ public class PageRunController extends BasicController implements TooledControll
 			if(elementToMove instanceof PagePart && (sibling == null || sibling instanceof PagePart)) {
 				portfolioService.movePagePart(page, (PagePart)elementToMove, (PagePart)sibling, after);
 			}
+		}
+		
+		@Override
+		public String getImportButtonKey() {
+			return page.getBody().getUsage() <= 1 ? "import.content" : null;
 		}
 	}
 	
