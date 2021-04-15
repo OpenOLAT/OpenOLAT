@@ -75,12 +75,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EvaluationFormExcelExport {
 	
 	private static final Logger log = Tracing.createLoggerFor(EvaluationFormExcelExport.class);
+	private static final List<String> MERGE_TYPES = List.of(HTMLParagraph.TYPE, HTMLRaw.TYPE);
 
 	private final String fileName;
 	private final ReportHelper reportHelper;
 	private final List<AbstractElement> elements;
 	private final EvaluationFormResponses responses;
 	private final List<EvaluationFormSession> sessions;
+	private final List<String> mergedElementIds = new ArrayList<>();
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -129,6 +131,7 @@ public class EvaluationFormExcelExport {
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 			
+			mergedElementIds.clear();
 			addHeader(workbook, exportSheet);
 			addContent(workbook, exportSheet);
 		} catch (IOException e) {
@@ -172,10 +175,10 @@ public class EvaluationFormExcelExport {
 				addSessionInformationsHeader(workbook, headerRow, col, (SessionInformations) element);
 				break;
 			case SingleChoice.TYPE:
-				col.getAndIncrement(); // no header
+				mergeColumn(element, col);
 				break;
 			case MultipleChoice.TYPE:
-				col.getAndIncrement(); // no header
+				mergeColumn(element, col);
 				break;
 			case Rubric.TYPE:
 				addRubricHeader(workbook, headerRow, col, (Rubric) element);
@@ -183,6 +186,25 @@ public class EvaluationFormExcelExport {
 			default:
 				break;
 			}
+		}
+	}
+
+	private void mergeColumn(AbstractElement element, AtomicInteger col) {
+		int index = elements.indexOf(element);
+		if (index > 1) {
+			AbstractElement previousElement = elements.get(index - 1);
+			if (MERGE_TYPES.contains(previousElement.getType())) {
+				mergedElementIds.add(element.getId());
+				return;
+			}
+		}
+		// no merge => new column
+		col.getAndIncrement();
+	}
+	
+	private void decrementMergedColumn(AbstractElement element, AtomicInteger col) {
+		if (mergedElementIds.contains(element.getId())) {
+			col.getAndDecrement();
 		}
 	}
 
@@ -342,6 +364,7 @@ public class EvaluationFormExcelExport {
 		Map<String, String> keyToValue = singleChoice.getChoices().asList().stream()
 				.collect(Collectors.toMap(Choice::getId, Choice::getValue));
 		EvaluationFormResponse response = responses.getResponse(session, singleChoice.getId());
+		decrementMergedColumn(singleChoice, col);
 		if (response != null) {
 			String value = keyToValue.get(response.getStringuifiedResponse());
 			if (value != null) {
@@ -357,6 +380,7 @@ public class EvaluationFormExcelExport {
 				.collect(Collectors.toMap(Choice::getId, Choice::getValue));
 		List<EvaluationFormResponse> responseList = responses.getResponses(session, multipleChoice.getId());
 		List<String> values = new ArrayList<>(responseList.size());
+		decrementMergedColumn(multipleChoice, col);
 		for (EvaluationFormResponse response: responseList) {
 			String key = response.getStringuifiedResponse();
 			String value = keyToValue.get(response.getStringuifiedResponse());
