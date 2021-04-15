@@ -28,6 +28,7 @@ package org.olat.core.util.openxml.workbookstyle;
 public class Alignment {
 	
 	public static final String TOP = "top";
+	public static final String BOTTOM = "bottom";
 	
 	private final String vertical;
 	private final String wrapText;

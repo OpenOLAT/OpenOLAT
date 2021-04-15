@@ -73,6 +73,7 @@ public class OpenXMLWorkbookStyles {
 	private final CellStyle percentStyle;
 	private final CellStyle lightGrayStyle;
 	private final CellStyle topAlignStyle;
+	private final CellStyle bottomAlignStyle;
 
 	public OpenXMLWorkbookStyles() {
 		standardFont = new Font(fonts.size(), "12", "1", "Calibri", "2", "minor", FontStyle.none);
@@ -117,6 +118,9 @@ public class OpenXMLWorkbookStyles {
 		Alignment topAlign = new Alignment(Alignment.TOP, "1");
 		topAlignStyle = new CellStyle(cellXfs.size(), "0", standardFont, noneFile, noBorder, null, null, topAlign, "1");
 		cellXfs.add(topAlignStyle);
+		Alignment bottomAlign = new Alignment(Alignment.BOTTOM, "1");
+		bottomAlignStyle = new CellStyle(cellXfs.size(), "0", standardFont, noneFile, noBorder, null, null, bottomAlign, "1");
+		cellXfs.add(bottomAlignStyle);
 	}
 	
 	public CellStyle getBorderRightStyle() {
@@ -161,6 +165,10 @@ public class OpenXMLWorkbookStyles {
 	
 	public CellStyle getTopAlignStyle() {
 		return topAlignStyle;
+	}
+
+	public CellStyle getBottomAlignStyle() {
+		return bottomAlignStyle;
 	}
 
 	public List<Font> getFonts() {
