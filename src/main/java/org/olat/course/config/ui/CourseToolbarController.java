@@ -396,7 +396,8 @@ public class CourseToolbarController extends FormBasicController {
 	}
 	
 	private void updateDocumentsUI() {
-		boolean documentsEnabled = documentsEl.isSelected(0);
+		boolean toolbarEnabled = toolbarEl.isSelected(0);
+		boolean documentsEnabled = toolbarEnabled && documentsEl.isSelected(0);
 		documentsTargetEl.setVisible(documentsEnabled);
 		boolean courseFolder = documentsTargetEl.isOneSelected()
 				&& documentsTargetEl.getSelectedKey().equals(DOC_LOCATION_COURSE_FOLDER);
@@ -504,11 +505,12 @@ public class CourseToolbarController extends FormBasicController {
 			bigBlueButtonModeratorStartsMeetingEl.setVisible(enabled && bigBlueButtonEl.isAtLeastSelected(1));
 		}
 		blogEl.setVisible(enabled);
-		blogCont.setVisible(enabled);
+		blogCont.setVisible(enabled && blogEl.isSelected(0));
 		wikiEl.setVisible(enabled);
-		wikiCont.setVisible(enabled);
+		wikiCont.setVisible(enabled && wikiEl.isSelected(0));
 		forumEl.setVisible(enabled);
 		documentsEl.setVisible(enabled);
+		updateDocumentsUI();
 		chatEl.setVisible(enabled);
 		glossaryEl.setVisible(enabled);
 	}
