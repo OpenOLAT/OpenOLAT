@@ -86,7 +86,7 @@ public class AutomaticLifecycleService {
 				try {
 					boolean closeManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close);
 					if(!closeManaged) {
-						log.info(Tracing.M_AUDIT, "Automatic closing course: {} [{}]", entry.getDisplayname(), entry.getKey());
+						log.info(Tracing.M_AUDIT, "Automatic closing {}: {} [{}]", entry.getResourceableTypeName(), entry.getDisplayname(), entry.getKey());
 						repositoryService.closeRepositoryEntry(entry, null, false);
 						dbInstance.commit();
 					}
@@ -108,7 +108,7 @@ public class AutomaticLifecycleService {
 				try {
 					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
 					if(!deleteManaged) {
-						log.info(Tracing.M_AUDIT, "Automatic deleting (soft) course: {} [{}]", entry.getDisplayname(), entry.getKey() );
+						log.info(Tracing.M_AUDIT, "Automatic deleting (soft) {}: {} [{}]", entry.getResourceableTypeName(), entry.getDisplayname(), entry.getKey() );
 						repositoryService.deleteSoftly(entry, null, true, false);
 						dbInstance.commit();
 					}
@@ -150,7 +150,7 @@ public class AutomaticLifecycleService {
 		if(administrator != null) {
 			Roles roles = securityManager.getRoles(administrator);
 			Locale locale = I18nManager.getInstance().getLocaleOrDefault(administrator.getUser().getPreferences().getLanguage());
-			log.info(Tracing.M_AUDIT, "Automatic deleting (definitively) course: {} [{}]", entry.getDisplayname(), entry.getKey());
+			log.info(Tracing.M_AUDIT, "Automatic deleting (definitively) {}: {} [{}]", entry.getResourceableTypeName(), entry.getDisplayname(), entry.getKey());
 			ErrorList errors = repositoryService.deletePermanently(entry, administrator, roles, locale);
 			deleted = !errors.hasErrors();
 		} else {

@@ -155,8 +155,14 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		
 		try {
 			String receiverId = component.getFormDispatchId();
-			hour = getRequestValue("o_dch_".concat(receiverId));
-			minute = getRequestValue("o_dcm_".concat(receiverId));
+			int requestHour = getRequestValue("o_dch_".concat(receiverId));
+			if (requestHour > -1) {
+				hour = requestHour;
+			}
+			int requestMinute = getRequestValue("o_dcm_".concat(receiverId));
+			if (requestMinute > -1) {
+				minute = requestMinute;
+			}
 			if(isSecondDate()) {
 				String secondReceiverId = receiverId.concat("_snd");
 				secondHour = getRequestValue("o_dch_".concat(secondReceiverId));

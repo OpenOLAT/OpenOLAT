@@ -214,6 +214,16 @@ public class BinderTemplateHandler implements RepositoryHandler {
 					new String[] { referencesSummary, entry.getDisplayname() }));
 			return false;
 		}
+		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+		int usage = portfolioService.getTemplateUsage(entry);
+		if(usage > 0) {
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
+			String reason = translator.translate("details.referenceinfo.binder.template",
+					new String[] { String.valueOf(usage) });
+			errors.setError(translator.translate("details.delete.error.references",
+					new String[] { reason, entry.getDisplayname() }));
+			return false;
+		}
 		
 		return true;
 	}
