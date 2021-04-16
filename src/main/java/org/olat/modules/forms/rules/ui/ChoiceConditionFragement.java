@@ -36,6 +36,7 @@ import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.model.xml.AbstractElement;
@@ -88,12 +89,14 @@ public class ChoiceConditionFragement implements ConditionEditorFragment {
 				String value = StringHelper.containsNonWhitespace(singleChoice.getName())
 						? singleChoice.getName()
 						: singleChoice.getId();
+				value = Formatter.truncate(value, 23);
 				conditionKV.add(KeyValues.entry(singleChoice.getId(), value));
 			} else if (element instanceof MultipleChoice) {
 				MultipleChoice multipleChoice = (MultipleChoice)element;
 				String value = StringHelper.containsNonWhitespace(multipleChoice.getName())
 						? multipleChoice.getName()
 						: multipleChoice.getId();
+				value = Formatter.truncate(value, 23);
 				conditionKV.add(KeyValues.entry(multipleChoice.getId(), value));
 			}
 		}
@@ -153,11 +156,15 @@ public class ChoiceConditionFragement implements ConditionEditorFragment {
 				AbstractElement choiceElement = element.get();
 				if (choiceElement instanceof SingleChoice) {
 					((SingleChoice)choiceElement).getChoices().asList().stream()
-							.forEach(choice -> choiceKV.add(entry(choice.getId(), choice.getValue())));
+							.forEach(choice -> choiceKV.add(entry( 
+									choice.getId(),
+									Formatter.truncate(choice.getValue(), 23))));
 					choiceEl.setKeysAndValues(choiceKV.keys(), choiceKV.values(), null);
 				} else if (choiceElement instanceof MultipleChoice) {
 					((MultipleChoice)choiceElement).getChoices().asList().stream()
-							.forEach(choice -> choiceKV.add(entry(choice.getId(), choice.getValue())));
+							.forEach(choice -> choiceKV.add(entry(
+									choice.getId(), 
+									Formatter.truncate(choice.getValue(), 23))));
 				}
 			}
 		}

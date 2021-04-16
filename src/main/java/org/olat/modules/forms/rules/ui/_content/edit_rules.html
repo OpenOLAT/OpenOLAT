@@ -1,4 +1,4 @@
-<div class="o_form">
+<div class="o_form o_eva_rules">
 	#if($r.isEmpty($rules))
 		<div class="o_info">$r.translate("rules.empty.state")</div>
 	#end
@@ -6,26 +6,32 @@
 		$r.render("rule.add")
 	</div>
 	#if($r.isNotEmpty($rules))
-	<div class="row">
-		<div class="col-md-5"><label>$r.translate("condition")</label></div>
-		<div class="col-md-5"><label>$r.translate("action")</label></div>
+	<div class="o_rule o_label_top">
+		<div class="o_condition"><label>$r.translate("condition")</label></div>
+		<div class="o_action"><label>$r.translate("action")</label></div>
 	</div>
 	#end
 	#foreach($rule in $rules)
-	<div class="row">
-		<div class="col-md-5">
-			$r.render($rule.conditionItemName)
+	<div class="o_rule">
+		<div class="o_condition">
+			<div class="o_label_inside"><label>$r.translate("condition")</label></div>
+			<div class="o_elements">
+				$r.render($rule.conditionItemName)
+			</div>
 			#if($f.hasError($rule.conditionItemName))
 				$r.render($rule.conditionItemErrorName)
 			#end
 		</div>
-		<div class="col-md-5">
-			$r.render($rule.actionItemName)
+		<div class="o_action">
+			<div class="o_label_inside"><label>$r.translate("action")</label></div>
+			<div class="o_elements">
+				$r.render($rule.actionItemName)
+				<div class="o_delete">$r.render($rule.deleteButtonName)</div>
+			</div>
 			#if($f.hasError($rule.actionItemName))
 				$r.render($rule.actionItemErrorName)
 			#end
 		</div>
-		<div class="col-md-2"><div class="text-right">$r.render($rule.deleteButtonName)</div></div>
 	</div>
 	<hr>
 	#end

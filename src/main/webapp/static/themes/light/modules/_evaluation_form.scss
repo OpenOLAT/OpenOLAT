@@ -472,3 +472,66 @@
 	}
 }
 
+.o_eva_rules {
+	.o_rule {
+		display: flex;
+		
+		.o_condition, .o_action {
+			width: 50%;
+			
+			.o_elements {
+				display: flex;
+				align-items: flex-end;
+				
+				.o_delete {
+					margin-left: auto;
+				}
+			}
+		}
+		
+		.o_label_inside {
+			display: none;
+		}
+	}
+}
+
+@media (max-width: $screen-md-min) {
+	.o_eva_rules {
+		.o_rule.o_label_top {
+			display: none;
+		}
+		
+		.o_rule {
+			display: block;
+		
+			.o_condition, .o_action {
+				width: 100%;
+			}
+			
+			.o_action {
+				margin-top: $line-height-computed;
+			}
+		
+			.o_label_inside {
+				display: initial;
+			}
+			
+			.form-control {
+				display: inline-block;
+				width: auto;
+			}
+		}
+	}
+}
+
+@media (max-width: $screen-xs-min) {
+	.o_eva_rules {
+		.o_rule {
+			.form-control {
+				display: block;
+				width: 100%;
+			}
+		}
+	}
+}
+

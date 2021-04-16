@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.model.xml.AbstractElement;
@@ -79,6 +80,7 @@ public class VisibilityActionFragement implements ActionEditorFragment {
 				String value = StringHelper.containsNonWhitespace(container.getContainerSettings().getName())
 						? container.getContainerSettings().getName()
 						: container.getId();
+				value = Formatter.truncate(value, 40);
 				conditionKV.add(KeyValues.entry(container.getId(), value));
 			}
 		}
