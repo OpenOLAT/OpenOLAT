@@ -516,6 +516,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		OLATResource resource = entry.getOlatResource();
 		//delete old context
 		if (handler != null && !handler.readyToDelete(entry, identity, roles, locale, errors)) {
+			log.info(Tracing.M_AUDIT, "deleteRepositoryEntry aborted: references detected for entry={}", entry);
 			return errors;
 		}
 
@@ -573,7 +574,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if(debug) log.debug("deleteRepositoryEntry after reload entry={}", entry);
 		deleteRepositoryEntryAndBaseGroups(entry);
 
-		log.info(Tracing.M_AUDIT, "deleteRepositoryEntry Done");
+		log.info(Tracing.M_AUDIT, "deleteRepositoryEntry Done entry={}", entry);
 		return errors;
 	}
 
