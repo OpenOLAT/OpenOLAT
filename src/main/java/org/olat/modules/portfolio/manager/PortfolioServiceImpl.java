@@ -315,6 +315,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	@Override
 	public boolean deleteBinderTemplate(Binder binder, RepositoryEntry templateEntry) {
+		getBindersAssignmentsTemplates(binder).forEach(this::deleteAssignment);
+		
 		BinderImpl reloadedBinder = (BinderImpl)binderDao.loadByKey(binder.getKey());
 		int deletedRows = binderDao.deleteBinderTemplate(reloadedBinder);
 		return deletedRows > 0;
