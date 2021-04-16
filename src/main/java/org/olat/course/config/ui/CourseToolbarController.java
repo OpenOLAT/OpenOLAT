@@ -343,6 +343,7 @@ public class CourseToolbarController extends FormBasicController {
 		saveButton.setEnabled(editable);
 		
 		updateUI();
+		updateToolbar();
 	}
 
 	private void updateUI() {
