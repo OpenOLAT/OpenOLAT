@@ -131,8 +131,12 @@ public class TeamsUIHelper {
 			sb.append("<li>");
 			if(StringHelper.containsNonWhitespace(error.getMessageKey())) {
 				sb.append(translator.translate("error.server.raw", new String[]{ error.getMessageKey(), error.getMessage() } ));
-			} else {
+			} else if(error.getCode() != null) {
 				sb.append(translator.translate("error." + error.getCode().name(), error.getArguments()));
+			} else if(StringHelper.containsNonWhitespace(error.getMessage())) {
+				sb.append(error.getMessage());
+			} else {
+				sb.append(translator.translate("error.unkown"));
 			}
 			sb.append("</li>");
 		}

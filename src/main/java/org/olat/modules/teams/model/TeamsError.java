@@ -41,6 +41,10 @@ public class TeamsError implements Serializable {
 		this.messageKey = messageKey;
 	}
 	
+	public TeamsError(String message) {
+		this.message = message;
+	}
+
 	public TeamsError(TeamsErrorCodes code) {
 		this.code = code;
 	}

@@ -338,7 +338,7 @@ public class MicrosoftGraphDAO {
 			log.error("", e);
 			return null;
 		} catch (Exception e) {
-			errors.append(new TeamsError(e.getMessage(), ""));
+			errors.append(new TeamsError(e.getMessage()));
 			log.error("", e);
 			return null;
 		}
