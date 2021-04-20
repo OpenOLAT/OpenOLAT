@@ -62,7 +62,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
-		<org.springframework.version>5.3.5</org.springframework.version>
+		<org.springframework.version>5.3.6</org.springframework.version>
 		<org.hibernate.version>5.4.30.Final</org.hibernate.version>
 		<apache.cxf>3.4.3</apache.cxf>
 		<apache.pdfbox>2.0.23</apache.pdfbox>
@@ -70,11 +70,11 @@
 		<apache.log4j>2.14.1</apache.log4j>
 		<org.slf4j>1.7.30</org.slf4j>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
-		<io.undertow>2.2.5.Final</io.undertow>
-		<jackson.version>2.12.2</jackson.version>
-		<org.mysql.version>8.0.23</org.mysql.version>
+		<io.undertow>2.2.7.Final</io.undertow>
+		<jackson.version>2.12.3</jackson.version>
+		<org.mysql.version>8.0.24</org.mysql.version>
 		<org.postgresql.version>42.2.19</org.postgresql.version>
-		<org.infinispan.version>12.0.2.Final</org.infinispan.version>
+		<org.infinispan.version>12.1.1.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.2</version.drone>
@@ -436,7 +436,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.45.0</version>
+				    <version>3.47.1</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1910,7 +1910,7 @@
 		<dependency>
 		    <groupId>com.github.scribejava</groupId>
 		    <artifactId>scribejava-apis</artifactId>
-		    <version>8.1.0</version>
+		    <version>8.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -2094,7 +2094,7 @@
 		<dependency>
 			<groupId>com.lmax</groupId>
 			<artifactId>disruptor</artifactId>
-			<version>3.4.2</version>
+			<version>3.4.3</version>
 		</dependency>
 
 		<!-- basic LTI stuff for lti demo: http://www.imsglobal.org/toolsinteroperability2.cfm -->
