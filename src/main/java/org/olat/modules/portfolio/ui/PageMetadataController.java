@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -358,7 +359,7 @@ public class PageMetadataController extends BasicController {
 	}
 	
 	protected Link editMetaDataLink() {
-		if(page.isEditable()) {
+		if(page.isEditable() && secCallback.canEditPageMetadata(page, assignments)) {
 			if(editMetaDataLink == null) {
 				editMetaDataLink = LinkFactory.createButtonSmall("edit.page.metadata", mainVC, this);
 				editMetaDataLink.setElementCssClass("o_sel_pf_edit_metadata_page");
