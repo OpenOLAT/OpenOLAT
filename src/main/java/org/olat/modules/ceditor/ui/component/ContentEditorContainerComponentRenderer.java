@@ -64,6 +64,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		  .append(" class='o_page_part o_page_part_view o_page_container clearfix'>");
 		
 		renderContainer(fr, sb, cmp, containerUbu, translator, renderResult, args);
+		renderHoverText(sb, cmp, translator);
 		
 		sb.append("</div>");
 	}
@@ -198,4 +199,14 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 			sb.append("</div>");
 		}
 	}
+
+	private void renderHoverText(StringOutput sb, ContentEditorContainerComponent cmp, Translator translator) {
+		if (cmp.isRuleLinkEnabled()) {
+			sb.append("<div class='o_hover_text_wrapper'><div class='o_hover_text'>");
+			sb.append("<i class='o_icon o_icon_branch'> </i>");
+			sb.append(" <span>").append(translator.translate("container.rule")).append("</span>");
+			sb.append("</div></div>");
+		}
+	}
+
 }

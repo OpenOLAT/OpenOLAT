@@ -263,6 +263,24 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 		/* bug in web-kit: does not work when draging from outside */
 		border: $o-panel-placeholder-border-width dotted $o-editor-hover-border-color;    
 	}
+	&:hover .o_hover_text {
+		visibility:visible;
+	}
+	.o_hover_text_wrapper {
+		visibility:hidden;
+		position: relative;
+		.o_hover_text {
+			position: absolute;
+			top: -10px;
+			left: -10px;
+			padding: 0px 4px;
+			color: $o-portfolio-editor-border-color;
+			// background-color: Window; // Does not work in Safari
+			background-color: white;
+			border-right: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;
+			border-bottom: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;
+		}
+	}
 }
 .o_page_add_in_container_grp {
 	margin-bottom: 0;
