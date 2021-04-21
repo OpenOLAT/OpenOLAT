@@ -64,7 +64,7 @@ public class VideoTrackEditController extends FormBasicController {
 	private VideoManager videoManager;
 
 	public VideoTrackEditController(UserRequest ureq, WindowControl wControl, OLATResource videoResource) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.videoResource = videoResource;
 		initForm(ureq);
 	}
@@ -76,10 +76,11 @@ public class VideoTrackEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer generalCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
-		generalCont.setFormTitle(translate("tab.video.trackConfig"));
+		setFormTitle("tab.video.trackConfig");
+		setFormContextHelp("Learning resource: Video#_video_subtitle");
+		
+		FormLayoutContainer generalCont = FormLayoutContainer.createCustomFormLayout("general", getTranslator(), velocity_root + "/tracks_list.html");
 		generalCont.setRootForm(mainForm);
-		generalCont.setFormContextHelp("Learning resource: Video#_video_subtitle");
 		formLayout.add(generalCont);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -88,7 +89,7 @@ public class VideoTrackEditController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TrackTableCols.delete));
 		tableModel = new VideoTracksTableModel(columnsModel, getLocale());
 
-		tableEl = uifactory.addTableElement(getWindowControl(), "tracks", tableModel, getTranslator(), generalCont);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), generalCont);
 		tableEl.setCustomizeColumns(false);
 		Map<String, VFSLeaf> tracks = videoManager.getAllTracks(videoResource);
 		List<TrackTableRow> rows = new ArrayList<>(tracks.size());
@@ -96,9 +97,12 @@ public class VideoTrackEditController extends FormBasicController {
 			rows.add(forgeRow(entry.getKey(), entry.getValue()));
 		}
 		tableModel.setObjects(rows);
-		tableEl.setEmtpyTableMessageKey("track.notrack");
+		tableEl.setNumOfRowsEnabled(false);
 
-		addButton = uifactory.addFormLink("add.track", generalCont, Link.BUTTON);
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonLayout.setRootForm(mainForm);
+		generalCont.add(buttonLayout);
+		addButton = uifactory.addFormLink("add.track", buttonLayout, Link.BUTTON);
 	}
 	
 	private TrackTableRow forgeRow(String language, VFSLeaf track) {
