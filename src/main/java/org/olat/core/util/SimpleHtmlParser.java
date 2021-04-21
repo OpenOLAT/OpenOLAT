@@ -28,7 +28,7 @@ package org.olat.core.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +57,8 @@ public class SimpleHtmlParser {
 
 	private static final String CHARSET = "charset=";
 	private static final String ISO_8859_1 = "ISO-8859-1";
+	private static final String END_BODY_TAG = "</body>";
+	private static final String END_HTML_TAG = "</html>";
 
 	private static final Logger log = Tracing.createLoggerFor(SimpleHtmlParser.class);
 	
@@ -66,6 +68,7 @@ public class SimpleHtmlParser {
 	private String jsOnLoad;
 	private String bodyTag;
 	private String htmlContent;
+	private String outerBodyContent;
 	private String charsetName;
 	private boolean validHtml;
 	//does the parsed content has it's own css classes inline or a css file defined
@@ -100,13 +103,8 @@ public class SimpleHtmlParser {
 		// 1. parse the body assuming iso-8859-1 (so us-ascii is ok and we do not
 		// needs a reparse if not iso-8859-1
 
-		String parse = null;
-		try {
-			parse = new String(bytes, ISO_8859_1);
-		} catch (UnsupportedEncodingException e1) {
-			//won't happen
-		}
-		
+		String parse = new String(bytes, StandardCharsets.ISO_8859_1);
+
 		// Parse HTML header
 		// look for body start tag - some people forget to use proper header tags, also support those
 		int bspos = lookForTag(parse, 0, "<body");
@@ -145,7 +143,9 @@ public class SimpleHtmlParser {
 		if (spos == -1) {
 			// This is not valid HTML - assume whole file is the content
 			htmlContent = cont;
-			if (log.isDebugEnabled()) log.debug("Could not detect proper HTML content, no HTML tag found." + cont);
+			if (log.isDebugEnabled()) {
+				log.debug("Could not detect proper HTML content, no HTML tag found. {}", cont);
+			}
 			return; 
 		}
 		
@@ -156,7 +156,9 @@ public class SimpleHtmlParser {
 		if (bodypos == -1) {
 			// This is not valid HTML - assume whole file is the content
 			htmlContent = cont;
-			if (log.isDebugEnabled()) log.debug("Could not detect proper HTML content, no BODY tag found." + cont);
+			if (log.isDebugEnabled()) {
+				log.debug("Could not detect proper HTML content, no BODY tag found. {}", cont);
+			}
 			return; 
 		}
 		
@@ -227,14 +229,19 @@ public class SimpleHtmlParser {
 		
 		int bepos = -1;
 		if (bodypos != -1) { // look for end tag is start tag found
-			bepos = lookForTag(cont, endOfBodyTagPos, "</body>");
+			bepos = lookForTag(cont, endOfBodyTagPos, END_BODY_TAG);
 			if (bepos == -1) {
 				// use end of html as fallback
-				bepos = lookForTag(cont, endOfBodyTagPos, "</html>");
+				bepos = lookForTag(cont, endOfBodyTagPos, END_HTML_TAG);
 				if (bepos == -1) {
 					// use end of content as fallback
 					bepos = cont.length()-1;
 				}
+			} else {
+
+				int outbepos = lookForTag(cont, bepos, END_HTML_TAG);
+				outerBodyContent = cont.substring(bepos + END_BODY_TAG.length(), outbepos);
+
 			}
 		}
 		
@@ -247,13 +254,14 @@ public class SimpleHtmlParser {
 		validHtml = true;
 		
 		if (log.isDebugEnabled()) {			
-			log.debug("original content::" + cont);
-			log.debug("xhtmlNamespaces::" + xhtmlNamespaces);
-			log.debug("charsetName::" + charsetName);
-			log.debug("htmlHead::" + htmlHead);
-			log.debug("jsOnLoad::" + jsOnLoad);
-			log.debug("bodyTag::" + bodyTag);
-			log.debug("htmlContent::" + htmlContent);
+			log.debug("original content::{}", cont);
+			log.debug("xhtmlNamespaces::{}", xhtmlNamespaces);
+			log.debug("charsetName::{}", charsetName);
+			log.debug("htmlHead::{}", htmlHead);
+			log.debug("jsOnLoad::{}", jsOnLoad);
+			log.debug("bodyTag::{}", bodyTag);
+			log.debug("htmlContent::{}", htmlContent);
+			log.debug("outerBodyContent::{}", outerBodyContent);
 		}
 	}
 
@@ -381,7 +389,7 @@ public class SimpleHtmlParser {
 	}
 	
 	public String removeLineTerminators(String in) {
-		return in.replaceAll("\\n", "");
+		return in.replace("\\n", "");
 	}
 	
 	/**
@@ -389,6 +397,12 @@ public class SimpleHtmlParser {
 	 */
 	public String getHtmlContent() {
 		return htmlContent;
+	}
+	/**
+	 * @return Returns the content between the end body tag ad the end html tag.
+	 */
+	public String getOuterBodyContent() {
+		return outerBodyContent;
 	}
 	/**
 	 * @return Returns the htmlHead.
