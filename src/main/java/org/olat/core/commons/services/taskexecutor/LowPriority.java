@@ -20,15 +20,14 @@
 package org.olat.core.commons.services.taskexecutor;
 
 /**
- * 
  * Marker interface for the task executor manager. The task marked
- * with this interface will be first persisted to the database and
- * executed by the scheduler in a queue with a single thread.
+ * with this interface will be executed by the scheduler in low priority
+ * queue.
  * 
- * Initial date: 29 mai 2018<br>
+ * Initial date: 21 avr. 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LowPriorityRunnable extends LongRunnable, LowPriority {
+public interface LowPriority extends Runnable {
 
 }

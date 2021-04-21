@@ -17,18 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.taskexecutor;
+package org.olat.course.statistic;
+
+import org.olat.core.util.event.MultiUserEvent;
 
 /**
  * 
- * Marker interface for the task executor manager. The task marked
- * with this interface will be first persisted to the database and
- * executed by the scheduler in a queue with a single thread.
- * 
- * Initial date: 29 mai 2018<br>
+ * Initial date: 21 avr. 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LowPriorityRunnable extends LongRunnable, LowPriority {
+public class CourseLogRunEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = -5955783690369293816L;
+
+	public static final String COURSE_LOG_READY = "course-log-ready";
+	
+	private final Long identityKey;
+	private final Long oresId;
+	
+	public CourseLogRunEvent(Long identityKey, Long oresId) {
+		super(COURSE_LOG_READY);
+		this.identityKey = identityKey;
+		this.oresId = oresId;
+	}
+
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+
+	public Long getOresId() {
+		return oresId;
+	}
 }

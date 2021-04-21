@@ -37,7 +37,7 @@ import java.util.concurrent.RejectedExecutionException;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
-import org.olat.core.commons.services.taskexecutor.LowPriorityRunnable;
+import org.olat.core.commons.services.taskexecutor.LowPriority;
 import org.olat.core.commons.services.taskexecutor.Sequential;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskAwareRunnable;
@@ -259,7 +259,7 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 			if(runnable instanceof Sequential) {
 				return sequential;
 			}
-			if(runnable instanceof LowPriorityRunnable) {
+			if(runnable instanceof LowPriority) {
 				return lowPriority;
 			}
 			return standard;
