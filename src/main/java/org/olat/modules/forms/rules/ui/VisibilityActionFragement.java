@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -65,10 +66,12 @@ public class VisibilityActionFragement implements ActionEditorFragment {
 
 	@Override
 	public FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		Translator translator = formLayout.getTranslator();
+		
 		String page = Util.getPackageVelocityRoot(this.getClass()) + "/visibility.html";
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		ruleCont = FormLayoutContainer
-				.createCustomFormLayout("visibility." + id, formLayout.getTranslator(), page);
+				.createCustomFormLayout("visibility." + id, translator, page);
 		ruleCont.setRootForm(formLayout.getRootForm());
 		formLayout.add(ruleCont);
 		ruleCont.getFormItemComponent().contextPut("id", id);
@@ -79,7 +82,7 @@ public class VisibilityActionFragement implements ActionEditorFragment {
 				Container container = (Container)element;
 				String value = StringHelper.containsNonWhitespace(container.getContainerSettings().getName())
 						? container.getContainerSettings().getName()
-						: container.getId();
+						: RulesUIFactory.formatUntitled(translator, container.getId());
 				value = Formatter.truncate(value, 40);
 				conditionKV.add(KeyValues.entry(container.getId(), value));
 			}
@@ -93,7 +96,7 @@ public class VisibilityActionFragement implements ActionEditorFragment {
 			if (Arrays.asList(elementEl.getKeys()).contains(elementId)) {
 				elementEl.select(elementId, true);
 			} else {
-				elementEl.enableNoneSelection(formLayout.getTranslator().translate("element.deleted"));
+				elementEl.enableNoneSelection(translator.translate("element.deleted"));
 				ruleCont.setErrorKey("error.element.not.available", null);
 			}
 		} else if (elementEl.getKeys().length > 0) {
@@ -101,12 +104,12 @@ public class VisibilityActionFragement implements ActionEditorFragment {
 		}
 		
 		if (elementEl.getKeys().length == 0) {
-			ruleCont = FormLayoutContainer.createBareBoneFormLayout("choice." + id, formLayout.getTranslator());
+			ruleCont = FormLayoutContainer.createBareBoneFormLayout("choice." + id, translator);
 			ruleCont.setRootForm(formLayout.getRootForm());
 			formLayout.add(ruleCont);
 			ruleCont.getFormItemComponent().contextPut("id", id);
 			uifactory.addStaticTextElement("element." + id, null,
-					formLayout.getTranslator().translate("no.action.available"), ruleCont);
+					translator.translate("no.action.available"), ruleCont);
 		}
 		
 		return ruleCont;
