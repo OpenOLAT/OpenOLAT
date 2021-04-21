@@ -37,9 +37,11 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
+import org.olat.ims.qti21.ui.editor.events.OpenTestConfigurationOverviewEvent;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -57,6 +59,7 @@ public class AssessmentSectionEditorController extends BasicController implement
 	private final VFSContainer rootContainer;
 	
 	private final AssessmentSection section;
+	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	
 	private final boolean editable;
 	private final boolean restrictedEdit;
@@ -65,7 +68,8 @@ public class AssessmentSectionEditorController extends BasicController implement
 	private AssessmentSectionExpertOptionsEditorController expertOptionsCtrl;
 	
 	public AssessmentSectionEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentSection section, File rootDirectory, VFSContainer rootContainer, File testFile,
+			AssessmentSection section, ResolvedAssessmentTest resolvedAssessmentTest,
+			File rootDirectory, VFSContainer rootContainer, File testFile,
 			boolean restrictedEdit, boolean editable) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.section = section;
@@ -74,6 +78,7 @@ public class AssessmentSectionEditorController extends BasicController implement
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
 		this.restrictedEdit = restrictedEdit;
+		this.resolvedAssessmentTest = resolvedAssessmentTest;
 		
 		mainVC = createVelocityContainer("assessment_test_editor");
 		mainVC.contextPut("restrictedEdit", restrictedEdit);
@@ -87,7 +92,8 @@ public class AssessmentSectionEditorController extends BasicController implement
 	}
 
 	private void initSectionEditor(UserRequest ureq) {
-		optionsCtrl = new AssessmentSectionOptionsEditorController(ureq, getWindowControl(), section, rootDirectory, rootContainer, testFile, restrictedEdit, editable);
+		optionsCtrl = new AssessmentSectionOptionsEditorController(ureq, getWindowControl(),
+				section, resolvedAssessmentTest, rootDirectory, rootContainer, testFile, restrictedEdit, editable);
 		listenTo(optionsCtrl);
 		expertOptionsCtrl = new AssessmentSectionExpertOptionsEditorController(ureq, getWindowControl(), section, restrictedEdit, editable);
 		listenTo(expertOptionsCtrl);
@@ -121,7 +127,8 @@ public class AssessmentSectionEditorController extends BasicController implement
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(optionsCtrl == source || expertOptionsCtrl == source) {
-			if(AssessmentSectionEvent.ASSESSMENT_SECTION_CHANGED.equals(event.getCommand())) {
+			if(AssessmentSectionEvent.ASSESSMENT_SECTION_CHANGED.equals(event.getCommand())
+					|| OpenTestConfigurationOverviewEvent.OPEN_TEST_CONFIGURATION_OVERVIEW.equals(event.getCommand())) {
 				fireEvent(ureq, event);
 			}
 		}

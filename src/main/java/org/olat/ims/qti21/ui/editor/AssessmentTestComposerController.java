@@ -82,6 +82,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -99,6 +100,7 @@ import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.DrawingAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
@@ -123,6 +125,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestPartEvent;
 import org.olat.ims.qti21.ui.editor.events.DetachFromPoolEvent;
+import org.olat.ims.qti21.ui.editor.events.OpenTestConfigurationOverviewEvent;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
 import org.olat.ims.qti21.ui.editor.metadata.MetadataChangedEvent;
@@ -442,7 +445,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				AssessmentTest ast = assessmentTestBuilder.getAssessmentTest();
 				assessmentChanged(ureq);
 				doSaveAssessmentTest(ureq, null);
-				doUpdate(ast.getIdentifier(), ast.getTitle());
+				doUpdate(ast.getIdentifier(), ast.getTitle(), false);
 			}
 		} else if(event instanceof AssessmentTestPartEvent) {
 			AssessmentTestPartEvent atpe = (AssessmentTestPartEvent)event;
@@ -454,7 +457,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			AssessmentSectionEvent ase = (AssessmentSectionEvent)event;
 			if(AssessmentSectionEvent.ASSESSMENT_SECTION_CHANGED.equals(ase.getCommand())) {
 				doSaveAssessmentTest(ureq, null);
-				doUpdate(ase.getSection().getIdentifier(), ase.getSection().getTitle());
+				doUpdate(ase.getSection().getIdentifier(), ase.getSection().getTitle(), maxScoreWarning(ase.getSection()));
 				doSaveManifest();
 			}
 		} else if(event instanceof AssessmentItemEvent) {
@@ -462,7 +465,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
 				assessmentChanged(ureq);
 				doSaveAssessmentTest(ureq, null);
-				doUpdate(aie.getAssessmentItemRef().getIdentifier(), aie.getAssessmentItem().getTitle());
+				doUpdate(aie.getAssessmentItemRef().getIdentifier(), aie.getAssessmentItem().getTitle(), false);
+				doUpdateParentSection(aie.getAssessmentItemRef().getIdentifier());
 				doSaveManifest();
 			} else if(AssessmentItemEvent.ASSESSMENT_ITEM_METADATA_CHANGED.equals(aie.getCommand())) {
 				doSaveManifest();
@@ -472,6 +476,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(event instanceof DetachFromPoolEvent) {
 			DetachFromPoolEvent dfpe = (DetachFromPoolEvent)event;
 			doDetachItemFromPool(ureq, dfpe.getItemRef());
+		} else if(event instanceof OpenTestConfigurationOverviewEvent) {
+			doConfigurationOverview(ureq);
 		} else if(event instanceof MetadataChangedEvent) {
 			doSaveManifest();
 		} else if(selectQItemCtrl == source) {
@@ -507,6 +513,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private boolean maxScoreWarning(AssessmentSection section) {
+		int selectNum = section.getSelection() != null ? section.getSelection().getSelect() : 0;
+		return selectNum > 0 && !QtiMaxScoreEstimator.sameMaxScore(section, resolvedAssessmentTest);
 	}
 	
 	private void cleanUp() {
@@ -1247,12 +1258,26 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 		manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
 	}
+	
+	private void doUpdateParentSection(Identifier identifier) {
+		TreeNode node = menuTree.getTreeModel()
+				.getNodeById(identifier.toString());
+		for(INode parent=node.getParent(); parent.getParent() != null; parent=parent.getParent()) {
+			if(parent instanceof TreeNode) {
+				TreeNode parentNode = (TreeNode)parent;
+				if(parentNode.getUserObject() instanceof AssessmentSection) {
+					AssessmentSection section = (AssessmentSection)parentNode.getUserObject();
+					doUpdate(section.getIdentifier(), section.getTitle(), maxScoreWarning(section));
+				}
+			}
+		}
+	}
 
-	private void doUpdate(Identifier identifier, String newTitle) {
-		doUpdate(identifier.toString(), newTitle);
+	private void doUpdate(Identifier identifier, String newTitle, boolean warning) {
+		doUpdate(identifier.toString(), newTitle, warning);
 	}
 	
-	private void doUpdate(String identifier, String newTitle) {
+	private void doUpdate(String identifier, String newTitle, boolean warning) {
 		TreeNode node = menuTree.getTreeModel()
 				.getNodeById(identifier);
 		if(node instanceof GenericTreeNode) {
@@ -1261,6 +1286,14 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				itemNode.setTitle(newTitle);
 				menuTree.setDirty(true);
 				mainVC.contextPut("title", newTitle);
+			}
+			if(Boolean.compare(warning, StringHelper.containsNonWhitespace(itemNode.getIconDecorator1CssClass())) != 0) {
+				if(warning) {
+					itemNode.setIconDecorator1CssClass("o_midwarn");
+				} else {
+					itemNode.setIconDecorator1CssClass(null);
+				}
+				menuTree.setDirty(true);
 			}
 		}
 	}
@@ -1297,7 +1330,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
 			File testFile = new File(testURI);
 			currentEditorCtrl = new AssessmentSectionEditorController(ureq, getWindowControl(), (AssessmentSection)uobject,
-					unzippedDirRoot, unzippedContRoot, testFile, restrictedEdit, assessmentTestBuilder.isEditable());
+					resolvedAssessmentTest, unzippedDirRoot, unzippedContRoot, testFile, restrictedEdit, assessmentTestBuilder.isEditable());
 		} else if(uobject instanceof AssessmentItemRef) {
 			AssessmentItemRef itemRef = (AssessmentItemRef)uobject;
 			ResolvedAssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);

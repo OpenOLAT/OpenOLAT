@@ -282,7 +282,7 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 			itemBuilder.clearMapping();
 			for(HotspotChoiceWrapper wrapper:wrappers) {
 				String pointsStr = wrapper.getPointsEl().getValue();
-				Double points = new Double(pointsStr);
+				Double points = Double.valueOf(pointsStr);
 				itemBuilder.setMapping(wrapper.getChoice().getIdentifier(), points);
 			}
 		} else {

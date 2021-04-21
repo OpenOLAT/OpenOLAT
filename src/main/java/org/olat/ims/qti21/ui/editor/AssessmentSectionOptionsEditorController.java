@@ -25,27 +25,34 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
+import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
+import org.olat.ims.qti21.ui.editor.events.OpenTestConfigurationOverviewEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.Ordering;
 import uk.ac.ed.ph.jqtiplus.node.test.Selection;
 import uk.ac.ed.ph.jqtiplus.node.test.View;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -56,7 +63,10 @@ import uk.ac.ed.ph.jqtiplus.node.test.View;
 public class AssessmentSectionOptionsEditorController extends FormBasicController {
 
 	private TextElement titleEl;
-	private SingleSelection shuffleEl, randomSelectedEl;
+	private SingleSelection shuffleEl;
+	private SingleSelection randomSelectedEl;
+	private FormLink openTestConfigurationOverviewLink;
+	private FormLayoutContainer warningRandomSelectedCont;
 	private List<RichTextElement> rubricEls = new ArrayList<>();
 	
 	private final File testFile;
@@ -65,6 +75,7 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 	
 	private final AssessmentSection section;
 	private final AssessmentHtmlBuilder htmlBuilder;
+	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	
 	private int counter = 0;
 	private final boolean editable;
@@ -72,7 +83,8 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 	
 	public AssessmentSectionOptionsEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentSection section, File rootDirectory, VFSContainer rootContainer, File testFile,
+			AssessmentSection section, ResolvedAssessmentTest resolvedAssessmentTest,
+			File rootDirectory, VFSContainer rootContainer, File testFile,
 			boolean restrictedEdit, boolean editable) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.section = section;
@@ -81,6 +93,7 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
 		this.restrictedEdit = restrictedEdit;
+		this.resolvedAssessmentTest = resolvedAssessmentTest;
 		htmlBuilder = new AssessmentHtmlBuilder();
 		initForm(ureq);
 	}
@@ -142,6 +155,7 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 		}
 		
 		randomSelectedEl = uifactory.addDropdownSingleselect("form.section.selection_pre", formLayout, theKeys, theValues, null);
+		randomSelectedEl.addActionListener(FormEvent.ONCHANGE);
 		randomSelectedEl.setHelpText(translate("form.section.selection_pre.hover"));
 		randomSelectedEl.setEnabled(!restrictedEdit && editable);
 		
@@ -154,10 +168,26 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 			randomSelectedEl.select(theKeys[0], true);
 		}
 		
+		String warningVC = velocity_root + "/warning_section.html";
+		warningRandomSelectedCont = FormLayoutContainer.createCustomFormLayout("warn.section.selection_pre", getTranslator(), warningVC);
+		formLayout.add(warningRandomSelectedCont);
+		openTestConfigurationOverviewLink = uifactory.addFormLink("section.open.test.configuration", warningRandomSelectedCont, Link.LINK);
+		updateSameMaxScoreWarning();
+		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("butons", getTranslator());
 		formLayout.add(buttonsCont);
 		FormSubmit submit = uifactory.addFormSubmitButton("save", "save", buttonsCont);
 		submit.setEnabled(editable);
+	}
+	
+	private void updateSameMaxScoreWarning() {
+		String val = randomSelectedEl.getSelectedKey();
+		if(!"0".equals(val)) {
+			boolean sameMaxScore = QtiMaxScoreEstimator.sameMaxScore(section, resolvedAssessmentTest);
+			warningRandomSelectedCont.setVisible(!sameMaxScore);
+		} else {
+			warningRandomSelectedCont.setVisible(false);
+		}
 	}
 	
 	/**
@@ -180,7 +210,7 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
@@ -194,7 +224,17 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(randomSelectedEl == source) {
+			updateSameMaxScoreWarning();
+		} else if(openTestConfigurationOverviewLink == source) {
+			fireEvent(ureq, new OpenTestConfigurationOverviewEvent());
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

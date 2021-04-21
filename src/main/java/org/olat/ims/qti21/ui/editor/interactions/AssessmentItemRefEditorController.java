@@ -164,7 +164,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 				&& maxAttemptsEl != null && maxAttemptsEl.isVisible()
 				&& StringHelper.isLong(maxAttemptsEl.getValue())) {
 			try {
-				getOrCreateItemSessionControl().setMaxAttempts(new Integer(maxAttemptsEl.getValue()));
+				getOrCreateItemSessionControl().setMaxAttempts(Integer.valueOf(maxAttemptsEl.getValue()));
 			} catch(NumberFormatException e) {
 				//do nothing
 			}

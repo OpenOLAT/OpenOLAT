@@ -311,10 +311,10 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(readOnly) return;
 		
-		interaction.setSolution(new Double(solutionEl.getValue()));
+		interaction.setSolution(Double.valueOf(solutionEl.getValue()));
 		interaction.setPlaceholder(placeholderEl.getValue());
 		if(StringHelper.containsNonWhitespace(expectedLengthEl.getValue())) {
-			interaction.setExpectedLength(new Integer(expectedLengthEl.getValue()));
+			interaction.setExpectedLength(Integer.valueOf(expectedLengthEl.getValue()));
 		} else {
 			interaction.setExpectedLength(null);
 		}

@@ -95,7 +95,7 @@ public class MinimalScoreController extends AssessmentItemRefEditorController {
 		String maxScoreValue = maxScoreEl.getValue();
 		Double maxScore = Double.parseDouble(maxScoreValue);
 		itemBuilder.setMaxScore(maxScore);
-		itemBuilder.setMinScore(new Double(0d));
+		itemBuilder.setMinScore(Double.valueOf(0d));
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem()));
 	}
