@@ -95,7 +95,7 @@ public class MembersManagerImpl implements MembersManager {
 		List<Long> groupKeys = null;
 		boolean entryAndCurriculums = false;
 		List<Long> curriculumElementKeys = null;
-		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL)) {
+		if(moduleConfiguration == null || moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL)) {
 			// all
 		} else {
 			if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_COACHES_GROUP)
@@ -134,7 +134,7 @@ public class MembersManagerImpl implements MembersManager {
 		boolean entryAndCurriculums = false;
 		List<Long> curriculumElementKeys = null;
 		
-		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)) {
+		if(moduleConfiguration == null || moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)) {
 			// take all
 		} else {
 			if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP)
