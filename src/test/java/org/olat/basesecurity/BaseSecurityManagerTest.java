@@ -34,8 +34,10 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
@@ -937,6 +939,48 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertNull(reloadedIdentity.getInactivationDate());
 		Assert.assertNull(reloadedIdentity.getReactivationDate());
 		Assert.assertNull(((IdentityImpl)reloadedIdentity).getInactivationEmailDate());
+	}
+	
+	@Test
+	public void saveIdentityExpirationDate() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("expiration-login-0");
+		Date expiration = CalendarUtils.startOfDay(new Date());
+		securityManager.saveIdentityExpirationDate(id, expiration, id);
+		
+		Identity reloadedId = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertNotNull(reloadedId.getExpirationDate());
+	}
+	
+	@Test
+	public void saveIdentityExpirationDateUpdate() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("expiration-login-1");
+		((IdentityImpl)id).setExpirationDate(DateUtils.addDays(CalendarUtils.startOfDay(new Date()), -3));
+		((IdentityImpl)id).setExpirationEmailDate(DateUtils.addDays(CalendarUtils.startOfDay(new Date()), -20));
+		id = dbInstance.getCurrentEntityManager().merge(id);
+		dbInstance.commitAndCloseSession();
+		
+		Date expiration = CalendarUtils.startOfDay(new Date());
+		securityManager.saveIdentityExpirationDate(id, expiration, id);
+		
+		Identity reloadedId = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertNotNull(reloadedId.getExpirationDate());
+		Assert.assertNull(((IdentityImpl)reloadedId).getExpirationEmailDate());
+	}
+	
+	@Test
+	public void saveIdentityExpirationDateSameDay() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("expiration-login-2");
+		((IdentityImpl)id).setExpirationDate(CalendarUtils.startOfDay(new Date()));
+		((IdentityImpl)id).setExpirationEmailDate(CalendarUtils.startOfDay(new Date()));
+		id = dbInstance.getCurrentEntityManager().merge(id);
+		dbInstance.commitAndCloseSession();
+		
+		Date expiration = CalendarUtils.startOfDay(new Date());
+		securityManager.saveIdentityExpirationDate(id, expiration, id);
+		
+		Identity reloadedId = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertNotNull(reloadedId.getExpirationDate());
+		Assert.assertNotNull(((IdentityImpl)reloadedId).getExpirationEmailDate());
 	}
 	
 	@Test

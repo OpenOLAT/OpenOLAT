@@ -255,7 +255,12 @@ public class TeamsConfigurationController extends FormBasicController {
 		updateModel(infos);
 		
 		if(infos == null) {
-			showError("error.connection");
+			if(errors.getErrors().isEmpty()) {
+				showError("error.connection");
+			} else {
+				String formattedErrors = TeamsUIHelper.formatErrors(getTranslator(), errors);
+				getWindowControl().setError(formattedErrors);
+			}
 		} else {
 			if(StringHelper.containsNonWhitespace(producerId)
 					&& !StringHelper.containsNonWhitespace(infos.getProducerDisplayName())) {

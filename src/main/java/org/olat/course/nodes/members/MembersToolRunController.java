@@ -62,8 +62,8 @@ private MembersDisplayRunController membersDisplayRunController;
 		RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		
 		List<Identity> owners = membersManager.getOwners(courseRepositoryEntry);
-		List<Identity> coaches = courseEnv.getCourseGroupManager().getCoaches();
-		List<Identity> participants = courseEnv.getCourseGroupManager().getParticipants();
+		List<Identity> coaches = membersManager.getCoaches(courseRepositoryEntry, null);
+		List<Identity> participants = membersManager.getParticipants(courseRepositoryEntry, null);
 		List<Identity> waiting = Collections.emptyList();
 		
 		Map<Long,CurriculumMemberInfos> curriculumInfos = null;
