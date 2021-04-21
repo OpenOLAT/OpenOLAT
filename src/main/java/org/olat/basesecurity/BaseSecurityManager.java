@@ -66,6 +66,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.StringHelper;
@@ -1177,7 +1178,16 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	public Identity saveIdentityExpirationDate(Identity identity, Date expirationDate, Identity doer) {
 		IdentityImpl reloadedIdentity = loadForUpdate(identity);
 		if(reloadedIdentity != null) {
-			reloadedIdentity.setExpirationDate(expirationDate);
+			if(expirationDate == null) {
+				reloadedIdentity.setExpirationDate(null);
+				reloadedIdentity.setExpirationEmailDate(null);
+			} else if(reloadedIdentity.getExpirationDate() == null
+					|| !DateUtils.isSameDay(expirationDate, reloadedIdentity.getExpirationDate())) {
+				reloadedIdentity.setExpirationDate(expirationDate);
+				reloadedIdentity.setExpirationEmailDate(null);
+			} else {
+				reloadedIdentity.setExpirationDate(expirationDate);
+			}
 			reloadedIdentity = (IdentityImpl)identityDao.saveIdentity(reloadedIdentity);
 		}
 		dbInstance.commit();
