@@ -47,11 +47,16 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.AsyncExportManager;
+import org.olat.course.statistic.CourseLogRunEvent;
+import org.olat.course.statistic.CourseLogRunnable;
 import org.olat.home.HomeMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -64,13 +69,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date: Dec 6, 2004
  * @author Alex
  */
-public class CourseLogsArchiveController extends BasicController {
+public class CourseLogsArchiveController extends BasicController implements GenericEventListener {
 	
 	private Panel myPanel;
 	private VelocityContainer myContent;
 	
 	private Link showFileButton;
 	private OLATResourceable ores;
+	private final OLATResourceable logOres;
 	
 	private CloseableModalController cmc;
 	private LogFileChooserForm logFileChooserForm;
@@ -91,6 +97,9 @@ public class CourseLogsArchiveController extends BasicController {
 	public CourseLogsArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores) {
 		super(ureq, wControl);
 		this.ores = ores;
+		logOres = OresHelper.createOLATResourceableInstance(CourseLogRunnable.class, ores.getResourceableId());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, logOres);
+		
 		myPanel = new Panel("myPanel");
 		myPanel.addListener(this);
 
@@ -133,6 +142,14 @@ public class CourseLogsArchiveController extends BasicController {
 
 		putInitialPanel(myPanel);
 	}
+	
+
+
+	@Override
+	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, logOres);
+	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
@@ -150,7 +167,18 @@ public class CourseLogsArchiveController extends BasicController {
 			}
 		}
 	}
-	
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof CourseLogRunEvent) {
+			CourseLogRunEvent clre = (CourseLogRunEvent)event;
+			if(getIdentity().getKey().equals(clre.getIdentityKey())
+					&& ores.getResourceableId().equals(clre.getOresId())) {
+				showExportFinished();
+			}
+		}
+	}
+
 	private void doStartLog() {
 		final boolean logAdminChecked = logFileChooserForm.logAdminChecked();
 	    final boolean logUserChecked = logFileChooserForm.logUserChecked();
@@ -171,7 +199,7 @@ public class CourseLogsArchiveController extends BasicController {
 	    final Locale theLocale = getLocale();
 	    final String email = getIdentity().getUser().getProperty(UserConstants.EMAIL, getLocale());
 
-	    asyncExportManager.asyncArchiveCourseLogFiles(getIdentity(), this::showExportFinished,
+	    asyncExportManager.asyncArchiveCourseLogFiles(getIdentity(),
 	    		resId, targetDir, begin, end, logAdminChecked, logUserChecked, logStatisticChecked, theLocale, email);
 	}
 	
@@ -229,10 +257,5 @@ public class CourseLogsArchiveController extends BasicController {
 		//       to get rid of the poller - and that's not possible currently
 
 		showInfo("course.logs.finished", course.getCourseTitle());
-	}
-
-	@Override
-	protected void doDispose() {
-		//has nothing to dispose so far
 	}
 }

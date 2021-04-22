@@ -760,7 +760,7 @@ public class CourseFactory {
 		// cause db connection timeout to be triggered
 		// rework when backgroundjob infrastructure exists
 		DBFactory.getInstance().intermediateCommit();
-		CoreSpringFactory.getImpl(AsyncExportManager.class).asyncArchiveCourseLogFiles(archiveOnBehalfOf, () -> { /* nothing to do */ },
+		CoreSpringFactory.getImpl(AsyncExportManager.class).asyncArchiveCourseLogFiles(archiveOnBehalfOf,
 				course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, null, null);
 
 		course.getCourseEnvironment().getCourseGroupManager().archiveCourseGroups(exportDirectory);

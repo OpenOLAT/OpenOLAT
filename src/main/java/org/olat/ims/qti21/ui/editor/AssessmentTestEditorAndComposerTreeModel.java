@@ -26,6 +26,7 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -97,6 +98,9 @@ public class AssessmentTestEditorAndComposerTreeModel extends GenericTreeModel i
 		sectionNode.setTitle(section.getTitle());
 		sectionNode.setIconCssClass("o_icon o_mi_qtisection");
 		sectionNode.setUserObject(section);
+		if(maxScoreWarning(section)) {
+			sectionNode.setIconDecorator1CssClass("o_midwarn");
+		}
 		parentNode.addChild(sectionNode);
 		
 		for(SectionPart part: section.getSectionParts()) {
@@ -106,6 +110,11 @@ public class AssessmentTestEditorAndComposerTreeModel extends GenericTreeModel i
 				buildRecursively((AssessmentSection) part, sectionNode);
 			}
 		}
+	}
+	
+	private boolean maxScoreWarning(AssessmentSection section) {
+		int selectNum = section.getSelection() != null ? section.getSelection().getSelect() : 0;
+		return selectNum > 0 && !QtiMaxScoreEstimator.sameMaxScore(section, resolvedAssessmentTest);
 	}
 	
 	private TreeNode buildRecursively(AssessmentItemRef itemRef, TreeNode parentNode) {
