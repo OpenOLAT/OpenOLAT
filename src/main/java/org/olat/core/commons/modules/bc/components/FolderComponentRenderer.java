@@ -183,19 +183,10 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 
 		// add file listing for current folder
 		target.append("<div class='o_table_wrapper'>");
-		listRenderer.render(fc, target, ubu, translator, iframePostEnabled);
+		listRenderer.render(fc, target, ubu, translator, iframePostEnabled, formName);
 
 		if (!children.isEmpty()) {
-			target.append("<div class='o_table_footer'>")
-			      .append("<div class=\"o_table_checkall input-sm\">")
-			      .append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', true)\">")
-			      .append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />")
-			      .append(translator.translate("checkall"))
-			      .append("</a></label> <label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', false)\">")
-			      .append("<input type=\"checkbox\" disabled=\"disabled\" />")
-			      .append(translator.translate("uncheckall"))
-			      .append("</a></label></div>")
-			      .append("<div class='o_table_buttons'>");
+			target.append("<div class='o_button_group'>");
 			
 			if(canMail) {
 				target.append("<button type=\"button\" class='btn btn-default' onclick=\"o_TableMultiActionEvent('").append(formName).append("','")

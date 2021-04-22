@@ -118,9 +118,9 @@ public class ListRenderer {
 	 * @param ubu
 	 * @param translator
 	 * @param iframePostEnabled
-	 * @return Render results.
+	 * @return Sting formName
 	 */
-	public void render(FolderComponent fc, StringOutput sb, URLBuilder ubu, Translator translator, boolean iframePostEnabled) {
+	public void render(FolderComponent fc, StringOutput sb, URLBuilder ubu, Translator translator, boolean iframePostEnabled, String formName) {
 		if(lockManager == null) {
 			lockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 		}
@@ -166,9 +166,26 @@ public class ListRenderer {
 		String sortOrder = fc.getCurrentSortOrder();
 		boolean sortAsc = fc.isCurrentSortAsc();
 		String sortCss = (sortAsc ? "o_orderby_asc" : "o_orderby_desc");
+		
+
 				
 		sb.append("<table class=\"table table-condensed table-striped table-hover o_bc_table\">")
-		  .append("<thead><tr><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_NAME.equals(sortOrder)).append("' ");
+		  .append("<thead><tr><th class='o_table_checkall'>");
+		// Nothing is checked - check all
+		sb.append("<a id='").append(formName).append("_dsa' href=\"javascript:b_briefcase_toggleCheck('")
+		.append(formName).append("',false);o_table_updateCheckAllMenu('")
+		.append(formName).append("',true,false);")
+		.append("\" title=\"").append(translator.translate("uncheckall")).append("\"")
+		.append(" style='display:none'")
+		.append("><i class='o_icon o_icon-lg o_icon_check_on' aria-hidden='true'> </i></a>");
+		// Everything is checked - uncheck all
+		sb.append("<a id='").append(formName).append("_sa' href=\"javascript:b_briefcase_toggleCheck('")
+		.append(formName).append("',true);o_table_updateCheckAllMenu('")
+		.append(formName).append("',false,true);")
+		.append("\" title=\"").append(translator.translate("checkall")).append("\"")
+		.append("><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a>");
+		
+		sb.append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_NAME.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_NAME))
 		   .append(">").append(translator.translate("header.Name")).append("</a>").append("</th>");
 		
@@ -282,7 +299,7 @@ public class ListRenderer {
 		} else {
 			sb.append(name).append("\" ");
 		}
-		sb.append("/> ");
+		sb.append("/></td><td>");
 		// browse link pre
 		if(xssErrors) {
 			sb.append("<i class='o_icon o_icon-fw o_icon_banned'> </i> ");

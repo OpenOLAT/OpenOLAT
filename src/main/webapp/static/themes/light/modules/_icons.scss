@@ -73,6 +73,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_certificate:before { content: $fa-var-certificate;}
 .o_icon_chat:before { content: $fa-var-comment-o; }
 .o_icon_check:before { content: $fa-var-check; }
+.o_icon_check_disabled:before { content: $fa-var-ban; }
+.o_icon_check_mixed:before { content: $fa-var-minus-square-o; }
 .o_icon_check_off:before { content: $fa-var-square-o; }
 .o_icon_check_on:before { content: $fa-var-check-square-o; }
 .o_icon_checkbox:before { content: $fa-var-square-o; }

@@ -65,6 +65,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -1659,6 +1660,23 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
+	private void updateSelectAllToggle() {
+		int rowCount = dataModel.getRowCount();
+		int selectCount = multiSelectedIndex.size();
+		boolean showSelectAll = (selectCount == 0);
+		boolean showDeselectAll = (rowCount != 0 && rowCount == selectCount);
+		StringBuilder sb = new StringBuilder();
+		sb.append("o_table_updateCheckAllMenu('")
+			.append(getFormDispatchId())
+			.append("',")
+			.append(Boolean.toString(showSelectAll))
+			.append(",")
+			.append(Boolean.toString(showDeselectAll))
+			.append(");");
+		JSCommand updateSelectAllToggleCmd = new JSCommand(sb.toString());
+		getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(updateSelectAllToggleCmd);				
+	}
+	
 	@Override
 	public void selectAll() {
 		if(multiSelectedIndex != null) {
@@ -1673,6 +1691,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			multiSelectedIndex.put(Integer.valueOf(i), objectRow);
 		}
 		allSelectedNeedLoadOfWholeModel = true;
+		updateSelectAllToggle();
 	}
 	
 	@Override
@@ -1692,6 +1711,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			multiSelectedIndex.put(Integer.valueOf(i), objectRow);
 		}
 		allSelectedNeedLoadOfWholeModel = false;
+		updateSelectAllToggle();
 	}
 	
 	protected void doUnSelectAll() {
@@ -1699,6 +1719,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			multiSelectedIndex.clear();
 		}
 		allSelectedNeedLoadOfWholeModel = false;
+		updateSelectAllToggle();
 	}
 	
 	protected void doSelect(UserRequest ureq, int index) {
@@ -1819,6 +1840,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} catch (NumberFormatException e) {
 			//can happen
 		}
+		updateSelectAllToggle();
 	}
 	
 	protected void setMultiSelectIndex(String[] selections) {
@@ -1843,6 +1865,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 			}
 		}
+		updateSelectAllToggle();
 	}
 
 	@Override

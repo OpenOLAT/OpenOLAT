@@ -32,12 +32,12 @@
 	}
 
 	.o_table_footer {
-		.o_table_checkall>a {
+		.o_table_expandall>a {
 			font-weight: normal;
 			margin-right: 10px;
 		}
 		
-		.o_table_checkall.input-sm {
+		.o_table_expandall.input-sm {
 			padding: 5px 6px;
 		}	
 
@@ -150,16 +150,6 @@ a.o_orderby, a.o_orderby:hover {
 
 .o_table_config {
 	font-size: floor($font-size-base * 0.9);
-}
-
-.o_table_buttons {
-	text-align: center;
-	input {
-		margin-right: 1em;
-		&:last-child {
-			margin-right: 0;		
-		}
-	}
 }
 
 .o_table_tools {

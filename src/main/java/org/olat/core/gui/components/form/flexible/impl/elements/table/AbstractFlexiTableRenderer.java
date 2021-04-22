@@ -441,39 +441,11 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	protected void renderFooterButtons(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		if(ftE.isSelectAllEnable() || ftE.getTreeTableDataModel() != null) {
-			String formName = ftE.getRootForm().getFormName();
 			String dispatchId = ftE.getFormDispatchId();
 
-			sb.append("<div class='o_table_footer'><div class='o_table_checkall input-sm'>");
-
-			if(ftE.isSelectAllEnable()) {
-				FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
-				int numOfRows = dataModel.getRowCount();
-				
-				sb.append("<a id='")
-				  .append(dispatchId).append("_sa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
-				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
-						  new NameValuePair("select", "checkall")))
-				  .append("\"><i class='o_icon o_icon-lg o_icon_check_on'> </i> <span>")
-				  .append(translator.translate("form.checkall.numbered", new String[] { Integer.toString(numOfRows) }))
-				  .append("</span></a>");
-				
-				sb.append("<a id='")
-				  .append(dispatchId).append("_psa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
-				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
-						  new NameValuePair("select", "checkpage")))
-				  .append("\"><i class='o_icon o_icon-lg o_icon_check_on'> </i> <span>").append(translator.translate("form.checkpage"))
-				  .append("</span></a>");
-	
-				sb.append("<a id='")
-				  .append(dispatchId).append("_dsa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', false);")
-				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
-						  new NameValuePair("select", "uncheckall")))
-				  .append("\"><i class='o_icon o_icon-lg o_icon_check_off'> </i> <span>").append(translator.translate("form.uncheckall"))
-				  .append("</span></a>");
-			}
-			
 			if(ftE.getTreeTableDataModel() != null && ftE.getTreeTableDataModel().hasOpenCloseAll()) {
+				sb.append("<div class='o_table_footer'><div class='o_table_expandall input-sm'>");
+			
 				sb.append("<a id='")
 				  .append(dispatchId).append("_toa' href=\"javascript:;\" onclick=\"")
 				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
@@ -487,9 +459,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 						  new NameValuePair("tt-openclose", "closeall")))
 				  .append("\"><i class='o_icon o_icon-lg o_icon_open_tree'> </i> <span>").append(translator.translate("form.closeall"))
 				  .append("</span></a>");
+				
+				sb.append("</div></div>");
 			}
-
-			sb.append("</div></div>");
 		}
 		
 		if(ftE.getDefaultPageSize() > 0) {

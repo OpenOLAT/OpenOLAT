@@ -2112,6 +2112,38 @@ function o_table_toggleCheck(ref, checked) {
 		}
 	}
 }
+function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll) {
+	try {
+		var selectAllEl = jQuery('#' + dispatchId + '_sm');
+		if (selectAllEl.length == 0) {
+			// if the select all menu is not there, try with select all link
+			selectAllEl = jQuery('#' + dispatchId + '_sa');
+		}
+		var deselectAllEl = jQuery('#' + dispatchId + '_dsa');
+		var deselectMixedEl = jQuery('#' + dispatchId + '_dsm');
+		
+		if (!selectAllEl || !deselectAllEl || !deselectMixedEl) {
+			// abort, not found the necessary DOM elements
+			return;
+		}
+	
+		if (showSelectAll) {
+			selectAllEl.show();
+			deselectAllEl.hide();
+			deselectMixedEl.hide();
+		} else if (showDeselectAll) {
+			selectAllEl.hide();
+			deselectAllEl.show();
+			deselectMixedEl.hide();
+		} else {
+			selectAllEl.hide();
+			deselectAllEl.hide();
+			deselectMixedEl.show();		
+		}
+	} catch(e){
+		if(window.console)  console.log(e);
+	}
+}
 
 /*
  * For menu tree

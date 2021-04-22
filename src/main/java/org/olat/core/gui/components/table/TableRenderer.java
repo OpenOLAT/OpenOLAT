@@ -100,7 +100,6 @@ public class TableRenderer extends DefaultComponentRenderer {
 		appendHeaderLinks(target, translator, table, cols, iframePostEnabled, ubu);
 		appendDataRows(renderer, target, ubu, table, iframePostEnabled, cols, selRowUnSelectable, selRowId, startRowId, endRowId);
 		target.append("</table><div class='o_table_footer'>");
-		appendSelectDeselectAllButtons(target, translator, table, formName, rows, resultsPerPage, iframePostEnabled, ubu);
 		appendTablePageing(target, translator, table, rows, resultsPerPage, currentPageId, usePageing, iframePostEnabled, ubu);
 		appendMultiselectFormActions(target, formName, translator, table);
 		target.append("</div></div>")
@@ -131,7 +130,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 		// add multiselect form actions
 		List<TableMultiSelect> multiSelectActions = table.getMultiSelectActions();
 		if (multiSelectActions.size() > 0) {
-			target.append("<div class=\"o_table_buttons\">");
+			target.append("<div class=\"o_button_group\">");
 			for (TableMultiSelect action: multiSelectActions) {
 				String multiSelectActionIdentifer = action.getAction();
 				String value;
@@ -164,6 +163,18 @@ public class TableRenderer extends DefaultComponentRenderer {
 			
 			target.append("</ul></div>");
 		}
+		if (table.isShowAllSelected() && (rows > resultsPerPage)) {
+			target.append("<div class='o_table_pagination'><ul class='pagination'><li>")
+			      .append("<a class=\"").append("btn btn-sm btn-default").append("\" ");	
+			
+			ubu.buildHrefAndOnclick(target, ajaxEnabled,
+					new NameValuePair(Table.FORM_CMD, Table.COMMAND_PAGEACTION),
+					new NameValuePair(Table.FORM_PARAM, Table.COMMAND_SHOW_PAGES))
+				.append(">")
+			    .append(translator.translate("table.showpages")).append("</a>")
+			    .append("</li><ul></div>");
+		}
+
 	}
 
 	private void appendTablePageingShowallLink(StringOutput sb, Translator translator, Table table, boolean ajaxEnabled, URLBuilder ubu) {
@@ -202,31 +213,25 @@ public class TableRenderer extends DefaultComponentRenderer {
 		target.append(">&laquo;").append("</a>");
 	}
 
-	private void appendSelectDeselectAllButtons(StringOutput target, Translator translator, Table table, String formName, int rows, int resultsPerPage,
-			boolean ajaxEnabled, URLBuilder ubu) {
+	private void appendSelectDeselectAllButtons(StringOutput target, Translator translator, Table table, boolean iframePostEnabled, URLBuilder ubu) {
+			String formID = renderMultiselectForm(target, table, ubu, iframePostEnabled);
 		if (table.isMultiSelect() && !table.isMultiSelectAsDisabled()) {
-			target.append("<div class='o_table_checkall input-sm'>")
-			  .append("<a href='#' onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', true)\">")
-			  .append("<i class='o_icon o_icon-lg o_icon_check_on'> </i> ")
-			  .append(translator.translate("checkall"))
-			  .append("</a>");
-			target.append("<a href=\"#\" onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', false)\">")
-			  .append("<i class='o_icon o_icon-lg o_icon_check_off'> </i> ")
-			  .append(translator.translate("uncheckall"))
-			  .append("</a>")
-			  .append("</div>");
-		}
-
-		if (table.isShowAllSelected() && (rows > resultsPerPage)) {
-			target.append("<div class='o_table_pagination'><ul class='pagination'><li>")
-			      .append("<a class=\"").append("btn btn-sm btn-default").append("\" ");	
-			
-			ubu.buildHrefAndOnclick(target, ajaxEnabled,
-					new NameValuePair(Table.FORM_CMD, Table.COMMAND_PAGEACTION),
-					new NameValuePair(Table.FORM_PARAM, Table.COMMAND_SHOW_PAGES))
-				.append(">")
-			    .append(translator.translate("table.showpages")).append("</a>")
-			    .append("</li><ul></div>");
+			// Nothing is checked - check all
+			target.append("<div class='o_table_checkall'><a id='").append(formID).append("_dsa' href=\"javascript:o_table_toggleCheck('")
+				.append(formID).append("',false);o_table_updateCheckAllMenu('")
+				.append(formID).append("',true,false);")
+				.append("\" title=\"").append(translator.translate("uncheckall")).append("\"")
+				.append(" style='display:none'")
+				.append("><i class='o_icon o_icon-lg o_icon_check_on' aria-hidden='true'> </i></a>");
+			// Everything is checked - uncheck all
+			target.append("<a id='").append(formID).append("_sa' href=\"javascript:o_table_toggleCheck('")
+				.append(formID).append("',true);o_table_updateCheckAllMenu('")
+				.append(formID).append("',false,true);")
+				.append("\" title=\"").append(translator.translate("checkall")).append("\"")
+				.append("><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a></div>");
+		} else {
+			target.append("<div title=\"").append(translator.translate("table.header.multiselect")).append("\">")
+				.append("<i class='o_icon o_icon-lg o_icon_check_disabled text-muted' aria-hidden='true'> </i></div>");
 		}
 	}
 
@@ -333,7 +338,9 @@ public class TableRenderer extends DefaultComponentRenderer {
 			String cssHeaderClass = (alignment == ColumnDescriptor.ALIGNMENT_LEFT ? "text-left" : (alignment == ColumnDescriptor.ALIGNMENT_RIGHT ? "text-right" : "text-center"));
 			target.append("<th class='").append(cssHeaderClass).append("'>");
 			// header either a link or not
-			if (table.isSortingEnabled() && cd.isSortingAllowed()) {
+			if (cd instanceof MultiSelectColumnDescriptor) {
+				appendSelectDeselectAllButtons(target, translator, table, ajaxEnabled, ubu);
+			} else if (table.isSortingEnabled() && cd.isSortingAllowed()) {
 				target.append("<a class='o_orderby' ");
 				ubu.buildHrefAndOnclick(target, ajaxEnabled,
 						new NameValuePair(Table.FORM_CMD, Table.COMMAND_SORTBYCOLUMN),

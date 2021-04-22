@@ -738,6 +738,16 @@ public class Form {
 	public String getFormName() {
 		return formName;
 	}
+	
+	/**
+	 * Get the window control for this form, e.g. to send JS messages or display
+	 * messages
+	 * 
+	 * @return The window control object
+	 */
+	public WindowControl getWindowControl() {
+		return windowControl;
+	}
 
 	public void fireFormEvent(UserRequest ureq, FormEvent event) {
 		formWrapperComponent.fireFormEvent(ureq, event);
