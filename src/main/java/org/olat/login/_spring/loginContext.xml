@@ -49,6 +49,14 @@
 		<constructor-arg index="3" value="o_icon_provider_oauth"/>
 	</bean>
 	
+	<bean id="ToccoAuthenticationProvider" class="org.olat.login.tocco.ToccoAuthenticationProvider" >
+		<constructor-arg index="0" value="Tocco"/>
+		<constructor-arg index="1" value="org.olat.login.tocco.ui.ToccoAuthenticationController"/>
+		<constructor-arg index="2" value="${tocco.enable}"/>
+		<constructor-arg index="3" value="${tocco.default}"/>
+		<constructor-arg index="4" value="o_icon_provider_tocco"/>
+	</bean>
+	
 	<!-- Login admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8810" />
