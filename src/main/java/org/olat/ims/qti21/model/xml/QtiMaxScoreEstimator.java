@@ -41,6 +41,41 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
  */
 public class QtiMaxScoreEstimator {
 	
+	public static boolean sameMaxScore(AssessmentSection section, ResolvedAssessmentTest resolvedAssessmentTest) {
+		boolean same = true;
+		Double sectionMaxScore = null;
+		
+		List<SectionPart> sectionParts = section.getSectionParts();
+		for(SectionPart sectionPart:sectionParts) {
+			if(sectionPart instanceof AssessmentSection) {
+				MaxScoreVisitor visitor = new MaxScoreVisitor();
+				estimateMaxScore(sectionPart, resolvedAssessmentTest, visitor);
+				Double sectionScore = visitor.get();
+				if(sectionMaxScore == null) {
+					sectionMaxScore = sectionScore;
+				} else if(sectionScore == null || !sectionMaxScore.equals(sectionScore)) {
+					same = false;
+				}
+			} else if(sectionPart instanceof AssessmentItemRef) {
+				AssessmentItemRef itemRef = (AssessmentItemRef)sectionPart;
+				ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+				if(resolvedAssessmentItem != null) {
+					AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+					if(assessmentItem != null) {
+						Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+						if(sectionMaxScore == null) {
+							sectionMaxScore = maxScore;
+						} else if(maxScore == null || !sectionMaxScore.equals(maxScore)) {
+							same = false;
+						}
+					}
+				}
+			}
+		}
+
+		return same;
+	}
+	
 	public static Double estimateMaxScore(ResolvedAssessmentTest resolvedAssessmentTest) {
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 		
