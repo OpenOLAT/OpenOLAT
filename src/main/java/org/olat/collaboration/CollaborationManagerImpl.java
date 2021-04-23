@@ -72,7 +72,6 @@ public class CollaborationManagerImpl implements CollaborationManager {
 		
 		List<Long> props = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Long.class)
-				.setHint("", Boolean.TRUE)
 				.getResultList();
 		if(props.isEmpty()) {
 			return null;
