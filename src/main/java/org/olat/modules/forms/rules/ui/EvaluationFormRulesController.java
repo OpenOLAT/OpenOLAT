@@ -27,6 +27,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -34,9 +37,11 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.Action;
 import org.olat.modules.forms.model.xml.ChoiceSelectedCondition;
@@ -62,11 +67,15 @@ public class EvaluationFormRulesController extends FormBasicController {
 	private FormLayoutContainer rulesCont;
 	private FormLink addRuleLink;
 	private final List<RuleElement> ruleEls = new ArrayList<>();
+	private FormSubmit saveButton;
 	
 	private final Form form;
 	private final RuleHandlerProvider ruleHandlerProvider;
 	private int counter = 0;
-	
+	private EmptyState emptyState;
+	private EmptyState noRulesPossible;
+
+
 	public EvaluationFormRulesController(UserRequest ureq, WindowControl wControl, Form form) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.form = form;
@@ -82,6 +91,18 @@ public class EvaluationFormRulesController extends FormBasicController {
 		rulesCont.setRootForm(mainForm);
 		formLayout.add(rulesCont);
 		rulesCont.contextPut("rules", ruleEls);
+		
+		emptyState = EmptyStateFactory.create("empty.state", rulesCont.getFormItemComponent(), this);
+		emptyState.setIconCss("o_icon_branch");
+		emptyState.setMessageI18nKey("empty.state.message");
+		emptyState.setHintI18nKey("empty.state.hint");
+		emptyState.setButtonI18nKey("rule.add");
+			
+		noRulesPossible = EmptyStateFactory.create("no.rules.possible", rulesCont.getFormItemComponent(), this);
+		noRulesPossible.setIconCss("o_icon_branch");
+		noRulesPossible.setIndicatorIconCss("o_icon_warn");
+		noRulesPossible.setMessageI18nKey("no.rules.possible.message");
+		noRulesPossible.setHintI18nKey("no.rules.possible.hint");
 		
 		addRuleLink = uifactory.addFormLink("rule.add", rulesCont, Link.BUTTON);
 		addRuleLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
@@ -99,8 +120,10 @@ public class EvaluationFormRulesController extends FormBasicController {
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setRootForm(mainForm);
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("save", buttonLayout);
+		saveButton = uifactory.addFormSubmitButton("save", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		
+		updateRulesPossibleUI(false);
 	}
 	
 	private ConditionHandler getConditionHandler(Condition condition) {
@@ -178,6 +201,14 @@ public class EvaluationFormRulesController extends FormBasicController {
 	}
 	
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == emptyState && event == EmptyState.EVENT) {
+			doAddRule(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == addRuleLink) {
 			doAddRule(ureq);
@@ -248,8 +279,36 @@ public class EvaluationFormRulesController extends FormBasicController {
 
 	private void doDeleteRule(RuleElement ruleElement) {
 		ruleEls.remove(ruleElement);
+		updateRulesPossibleUI(true);
 	}
 	
+	private void updateRulesPossibleUI(boolean showSaveButton) {
+		boolean rulesPossible = !ruleEls.isEmpty();
+		if (!rulesPossible) {
+			rulesPossible = conditionsAvailable() && actionsAvailable();
+		}
+		rulesCont.contextPut("noRulesPossible", Boolean.valueOf(!rulesPossible));
+		saveButton.setVisible(showSaveButton || rulesPossible);
+	}
+	
+	private boolean conditionsAvailable() {
+		for (ConditionHandler conditionHandler : ruleHandlerProvider.getConditionHandlers()) {
+			if (conditionHandler.conditionsAvailable(form)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean actionsAvailable() {
+		for (ActionHandler actionHandler : ruleHandlerProvider.getActionHandlers()) {
+			if (actionHandler.actionsAvailable(form)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static class RuleElement {
 		
 		private final FormLink deleteRuleButton;

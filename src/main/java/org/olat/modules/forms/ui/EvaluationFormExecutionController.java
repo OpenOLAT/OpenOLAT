@@ -29,6 +29,10 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateConfigBuilder;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -80,6 +84,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EvaluationFormExecutionController extends FormBasicController implements ValidatingController {
 
 	private static final Logger log = Tracing.createLoggerFor(EvaluationFormExecutionController.class);
+	
+	private static final EmptyStateConfig EMPTY_STATE_DEFAULTS = defaultEmptyState().build();
+	public static final String EMPTY_STATE_EDIT_HINT = "empty.state.edit.hint";
+	public static final String EMPTY_STATE_EDIT_BUTTON = "empty.state.edit.button";
+	public static final EmptyStateConfigBuilder defaultEmptyState() {
+		return EmptyStateConfig.builder()
+				.withMessageI18nKey("empty.state.message")
+				.withIconCss("o_FileResource-FORM_icon");
+	}
 
 	private final Map<String, EvaluationFormElementHandler> handlerMap = new HashMap<>();
 	private final List<ExecutionFragment> fragments = new ArrayList<>();
@@ -92,6 +105,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private final DataStorage storage;
 	private final ExecutionIdentity executionIdentity;
 	private final Component header;
+	private EmptyStateConfig emptyStateConfig;
+	private EmptyState emptyState;
 	private boolean readOnly;
 	private boolean showDoneButton;
 
@@ -130,6 +145,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 		this.session = session;
 		this.header = header;
+		this.emptyStateConfig = EMPTY_STATE_DEFAULTS;
 		this.readOnly = readOnly;
 		this.showDoneButton = showDoneButton;
 
@@ -151,7 +167,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		initForm(ureq);
 	}
 
-	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, File formFile, DataStorage storage) {
+	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, File formFile,
+			DataStorage storage, EmptyStateConfig emptyStateConfig) {
 		super(ureq, wControl, "execute");
 
 		this.form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
@@ -160,6 +177,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		this.session = null;
 		this.responses = null;
 		this.header = null;
+		this.emptyStateConfig = emptyStateConfig;
 		this.readOnly = false;
 		this.showDoneButton = false;
 		this.executionIdentity = new ExecutionIdentity(getIdentity());
@@ -185,7 +203,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		if (header != null) {
 			flc.put("header", header);
 		}
-
+		
+		emptyState = EmptyStateFactory.create("empty.state", flc.getFormItemComponent(), this, emptyStateConfig);
+		
 		boolean notAnonymous = session != null && session.getParticipation() != null
 				&& !session.getParticipation().isAnonymous();
 		boolean anonymous = !notAnonymous;
@@ -222,7 +242,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		fragments.clear();
 		List<AbstractElement> elements = form.getElements();
 		if (elements.isEmpty()) {
-			flc.contextPut("messageWithoutElements", Boolean.TRUE);
+			flc.contextPut("noElements", Boolean.TRUE);
 		}
 		
 		RulesEngine rulesEngine = new RulesEngine(form.getRules());
@@ -269,6 +289,14 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		for (ExecutionFragment fragment : fragments) {
 			fragment.dispose();
 		}
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == emptyState && event == EmptyState.EVENT) {
+			fireEvent(ureq, event);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

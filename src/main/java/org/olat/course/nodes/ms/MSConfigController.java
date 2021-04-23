@@ -554,7 +554,7 @@ public class MSConfigController extends FormBasicController {
 		if (formEntry == null) {
 			formMinMax = MinMax.of(Float.valueOf(0), Float.valueOf(0));
 			return;
-		};
+		}
 		
 		String scoreKey = scoreEl != null && scoreEl.isOneSelected()
 				? scoreEl.getSelectedKey()
@@ -596,7 +596,7 @@ public class MSConfigController extends FormBasicController {
 				FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		DataStorage storage = evaluationFormManager.loadStorage(formEntry);
-		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage);
+		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage, null);
 
 		previewCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
 				controller.getInitialComponent(), null);

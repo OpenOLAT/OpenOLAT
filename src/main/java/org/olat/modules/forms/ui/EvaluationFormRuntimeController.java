@@ -21,7 +21,9 @@ package org.olat.modules.forms.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.repository.RepositoryEntry;
@@ -41,6 +43,16 @@ public class EvaluationFormRuntimeController extends RepositoryEntryRuntimeContr
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
 	}
 	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == getRuntimeController()) {
+			if (event == EmptyState.EVENT) {
+				doEdit(ureq);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		 if(source == toolbarPanel) {

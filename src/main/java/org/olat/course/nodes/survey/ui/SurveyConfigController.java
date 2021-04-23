@@ -208,7 +208,7 @@ public class SurveyConfigController extends FormBasicController {
 	private void doPreviewEvaluationForm(UserRequest ureq) {
 		File formFile = surveyManager.getFormFile(survey);
 		DataStorage storage = surveyManager.loadStorage(survey);
-		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage);
+		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage, null);
 
 		previewCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
 				controller.getInitialComponent(), null);

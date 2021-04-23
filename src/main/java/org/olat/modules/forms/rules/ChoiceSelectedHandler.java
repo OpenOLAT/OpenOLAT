@@ -21,10 +21,11 @@ package org.olat.modules.forms.rules;
 
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.modules.forms.model.xml.AbstractElement;
+import org.olat.modules.forms.model.xml.ChoiceSelectedCondition;
 import org.olat.modules.forms.model.xml.Condition;
 import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.SingleChoice;
-import org.olat.modules.forms.model.xml.ChoiceSelectedCondition;
 import org.olat.modules.forms.rules.ui.ChoiceConditionFragement;
 import org.olat.modules.forms.rules.ui.ConditionEditorFragment;
 
@@ -48,7 +49,7 @@ public class ChoiceSelectedHandler implements ConditionHandler {
 
 	@Override
 	public boolean accepts(AbstractElement element) {
-		return SingleChoice.TYPE.equals(element.getType());
+		return SingleChoice.TYPE.equals(element.getType()) || MultipleChoice.TYPE.equals(element.getType()) ;
 	}
 
 	@Override
@@ -57,6 +58,24 @@ public class ChoiceSelectedHandler implements ConditionHandler {
 				? (ChoiceSelectedCondition)condition
 				: null;
 		return new ChoiceConditionFragement(uifactory, choiceCondition, form);
+	}
+
+	@Override
+	public boolean conditionsAvailable(Form form) {
+		for (AbstractElement element : form.getElements()) {
+			if (element instanceof SingleChoice) {
+				SingleChoice singleChoice = (SingleChoice)element;
+				if (!singleChoice.getChoices().asList().isEmpty()) {
+					return true;
+				}
+			} else if (element instanceof MultipleChoice) {
+				MultipleChoice multipleChoice = (MultipleChoice)element;
+				if (!multipleChoice.getChoices().asList().isEmpty()) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

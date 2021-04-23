@@ -17,30 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.rules;
-
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
-import org.olat.modules.forms.model.xml.AbstractElement;
-import org.olat.modules.forms.model.xml.Condition;
-import org.olat.modules.forms.model.xml.Form;
-import org.olat.modules.forms.rules.ui.ConditionEditorFragment;
+package org.olat.core.gui.components.emptystate;
 
 /**
  * 
- * Initial date: 6 Apr 2021<br>
+ * Initial date: 22 Apr 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ConditionHandler {
+public interface EmptyStateConfig {
 	
-	public String getI18nKey();
-	
-	public String getConditionType();
-	
-	public boolean accepts(AbstractElement element);
+	static EmptyStateConfigBuilder builder() {
+		return new EmptyStateConfigBuilder();
+	}
 
-	public ConditionEditorFragment getEditorFragment(FormUIFactory uifactory, Condition condition, Form form);
+	public String getIconCss();
 
-	public boolean conditionsAvailable(Form form);
+	public String getIndicatorIconCss();
+	
+	public String getMessageI18nKey();
+
+	public String getHintI18nKey();
+
+	public String getButtonI18nKey();
 
 }

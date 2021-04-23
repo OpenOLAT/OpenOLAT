@@ -229,7 +229,7 @@ public class GeneratorConfigController extends FormBasicController {
 				FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		DataStorage storage = evaluationManager.loadStorage(formEntry);
-		Controller previewCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage);
+		Controller previewCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage, null);
 		stackPanel.pushController(translate("generator.form.preview.title"), previewCtrl);
 	}
 

@@ -40,5 +40,7 @@ public interface ActionHandler {
 	public boolean accepts(AbstractElement element);
 
 	public ActionEditorFragment getEditorFragment(FormUIFactory uifactory, Action action, Form form);
+
+	public boolean actionsAvailable(Form form);
 	
 }

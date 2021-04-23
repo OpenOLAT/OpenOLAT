@@ -67,6 +67,16 @@ public class VisibilityHandler implements ActionHandler {
 		return new VisibilityActionFragement(uifactory, visibilityAction, form);
 	}
 	
+	@Override
+	public boolean actionsAvailable(Form form) {
+		for (AbstractElement element : form.getElements()) {
+			if (element instanceof Container) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	
 	public static void registerListeners(RulesEngine rulesEngine, Form form, List<ExecutionFragment> fragments) {
 		for (AbstractElement abstractElement : form.getElements()) {

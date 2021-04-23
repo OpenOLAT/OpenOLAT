@@ -213,7 +213,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 			File formFile = new File(repositoryDir, FORM_XML_FILE);
 
 			DataStorage storage = evaluationFormManager.loadStorage(re);
-			return new EvaluationFormExecutionController(ureq, wControl, formFile, storage);
+			return new EvaluationFormExecutionController(ureq, wControl, formFile, storage, null);
 		}
 		return null;
 	}

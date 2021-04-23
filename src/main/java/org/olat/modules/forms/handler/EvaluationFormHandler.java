@@ -38,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -297,7 +298,11 @@ public class EvaluationFormHandler implements RepositoryHandler {
 					File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
 					File formFile = new File(repositoryDir, FORM_XML_FILE);
 					DataStorage storage = evaluationFormManager.loadStorage(re);
-					return new EvaluationFormExecutionController(uureq, wwControl, formFile, storage);
+					EmptyStateConfig emptyStateConfig = EvaluationFormExecutionController.defaultEmptyState()
+							.withHintI18nKey(EvaluationFormExecutionController.EMPTY_STATE_EDIT_HINT)
+							.withButtonI18nKey(EvaluationFormExecutionController.EMPTY_STATE_EDIT_BUTTON)
+							.build();
+					return new EvaluationFormExecutionController(uureq, wwControl, formFile, storage, emptyStateConfig);
 			});
 	}
 
