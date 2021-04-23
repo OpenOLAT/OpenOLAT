@@ -85,7 +85,7 @@ public class EvaluationFormComponentElement implements EvaluationFormExecutionEl
 	}
 
 	@Override
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
+	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses) {
 		//
 	}
 

@@ -46,7 +46,7 @@ public interface EvaluationFormExecutionElement extends PageRunElement {
 	
 	public boolean hasResponse();
 	
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses);
+	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses);
 	
 	public void saveResponse(UserRequest ureq, EvaluationFormSession session);
 

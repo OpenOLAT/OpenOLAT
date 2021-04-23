@@ -27,6 +27,7 @@ import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.ceditor.ui.model.PageFragment;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
+import org.olat.modules.forms.rules.RulesEngine;
 
 /**
  * 
@@ -48,6 +49,10 @@ public class ExecutionFragment extends PageFragment {
 		return executionElement.validate(ureq, messages);
 	}
 	
+	public void initRulesEngine(RulesEngine rulesEngine) {
+		executionElement.initRulesEngine(rulesEngine);
+	}
+	
 	public void setVisible(boolean visible) {
 		executionElement.setVisible(visible);
 	}
@@ -60,8 +65,8 @@ public class ExecutionFragment extends PageFragment {
 		return executionElement.hasResponse();
 	}
 	
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses){
-		executionElement.initResponse(session, responses);
+	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses){
+		executionElement.initResponse(ureq, session, responses);
 	}
 	
 	public void save(UserRequest ureq, EvaluationFormSession session) {

@@ -136,6 +136,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 				.filter(rule -> multipleChoice.getId().equals(rule.getCondition().getElementId()))
 				.filter(rule -> rule.getCondition() instanceof ChoiceSelectedCondition)
 				.collect(Collectors.toMap(rule -> (ChoiceSelectedCondition)rule.getCondition(), Function.identity()));
+		fireChoiceSelectedCondition();
 	}
 	
 	@Override
@@ -225,7 +226,6 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 			}
 		}
 		showHideOthers();
-		fireChoiceSelectedCondition();
 	}
 
 	@Override

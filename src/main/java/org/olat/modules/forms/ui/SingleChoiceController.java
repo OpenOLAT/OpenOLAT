@@ -123,6 +123,7 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 		if (!selectedConditionToRule.isEmpty()) {
 			singleChoiceEl.addActionListener(FormEvent.ONCHANGE);
 		}
+		fireChoiceSelectedCondition();
 	}
 
 	@Override
@@ -183,7 +184,6 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 				}
 			}
 		}
-		fireChoiceSelectedCondition();
 	}
 
 	@Override

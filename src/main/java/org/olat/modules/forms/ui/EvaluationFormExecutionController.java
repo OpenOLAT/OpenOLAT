@@ -197,7 +197,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 		ajustFromSession();
 		loadElements(ureq);
-		loadResponses();
+		loadResponses(ureq);
+		initRulesEngine();
 		propagateReadOnly();
 
 		if (header != null) {
@@ -245,22 +246,19 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			flc.contextPut("noElements", Boolean.TRUE);
 		}
 		
-		RulesEngine rulesEngine = new RulesEngine(form.getRules());
 		for (AbstractElement element : elements) {
 			EvaluationFormElementHandler handler = handlerMap.get(element.getType());
 			if (handler != null) {
 				EvaluationFormExecutionElement executionElement = handler.getExecutionElement(ureq, getWindowControl(),
 						mainForm, element, executionIdentity);
-				executionElement.initRulesEngine(rulesEngine);
 				String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
 				fragments.add(new ExecutionFragment(handler.getType(), cmpId, executionElement, element));
 			}
 		}
 		fragmentsEl.setFragments(fragments);
-		VisibilityHandler.registerListeners(rulesEngine, form, fragments);
 	}
 	
-	private void loadResponses() {
+	private void loadResponses(UserRequest ureq) {
 		if (session == null) return;
 		
 		if (responses == null) {
@@ -269,7 +267,15 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		}
 		
 		for (ExecutionFragment fragment : fragments) {
-			fragment.initResponse(session, responses);
+			fragment.initResponse(ureq, session, responses);
+		}
+	}
+	
+	private void initRulesEngine() {
+		RulesEngine rulesEngine = new RulesEngine(form.getRules());
+		VisibilityHandler.registerListeners(rulesEngine, form, fragments);
+		for (ExecutionFragment fragment : fragments) {
+			fragment.initRulesEngine(rulesEngine);
 		}
 	}
 

@@ -94,8 +94,8 @@ public class EvaluationFormResponseControllerElement implements EvaluationFormEx
 	}
 	
 	@Override
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
-		controller.initResponse(null, session, responses);
+	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses) {
+		controller.initResponse(ureq, session, responses);
 	}
 
 	@Override
