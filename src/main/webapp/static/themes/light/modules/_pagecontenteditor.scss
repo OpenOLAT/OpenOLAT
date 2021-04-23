@@ -273,12 +273,15 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 			position: absolute;
 			top: -10px;
 			left: -10px;
-			padding: 0px 4px;
 			color: $o-portfolio-editor-border-color;
 			// background-color: Window; // Does not work in Safari
 			background-color: white;
-			border-right: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;
 			border-bottom: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;
+			div {
+				display: inline-block;
+				padding: 0px 5px;
+				border-right: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;
+			}
 		}
 	}
 }

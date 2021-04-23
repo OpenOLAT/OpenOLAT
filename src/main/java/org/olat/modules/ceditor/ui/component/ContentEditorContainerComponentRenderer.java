@@ -29,6 +29,8 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerSettings;
 
@@ -201,10 +203,21 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 	}
 
 	private void renderHoverText(StringOutput sb, ContentEditorContainerComponent cmp, Translator translator) {
-		if (cmp.isRuleLinkEnabled()) {
+		String name = cmp.getContainerSettings().getName();
+		if (cmp.isRuleLinkEnabled() || StringHelper.containsNonWhitespace(name)) {
 			sb.append("<div class='o_hover_text_wrapper'><div class='o_hover_text'>");
-			sb.append("<i class='o_icon o_icon_branch'> </i>");
-			sb.append(" <span>").append(translator.translate("container.rule")).append("</span>");
+			if (cmp.isRuleLinkEnabled()) {
+				sb.append("<div>");
+				sb.append("<i class='o_icon o_icon_branch'> </i> ");
+				sb.append(translator.translate("container.rule"));
+				sb.append("</div>");
+			}
+			if (StringHelper.containsNonWhitespace(name)) {
+				sb.append("<div>");
+				sb.append("<i class='o_icon o_icon_name'> </i> ");
+				sb.append(translator.translate("container.name.ref", new String[] { Formatter.truncate(name, 20) } ));
+				sb.append("</div>");
+			}
 			sb.append("</div></div>");
 		}
 	}
