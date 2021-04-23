@@ -200,6 +200,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		tableEl.setEmtpyTableMessageKey("table.empty");
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 		tableEl.setBordered(true);
 		
 		loadModel();
