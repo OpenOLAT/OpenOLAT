@@ -18,7 +18,7 @@ public class ToccoLoginModule extends AbstractSpringModule implements ConfigOnOf
 	
 	public static final String TOCCO_PROVIDER = "TOCCO";
 	
-	@Value("${tocco.enable:true}")
+	@Value("${tocco.enable:false}")
 	private boolean enabled;	
 	@Value("${tocco.server.url:true}")
 	private String toccoServerUrl;
