@@ -28,7 +28,6 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -69,7 +68,7 @@ public class TaxonomyLevelPage {
 		
 		searchMember(user);
 		
-		By chooseBy = By.xpath("//fieldset[@class='o_sel_usersearch_searchform']//div[@class='o_table_buttons']/button[@name='msc']");
+		By chooseBy = By.xpath("//fieldset[@class='o_sel_usersearch_searchform']//div[@class='o_table_footer']/div[@class='o_button_group']/button[@name='msc']");
 		browser.findElement(chooseBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		
@@ -91,13 +90,12 @@ public class TaxonomyLevelPage {
 		OOGraphene.moveAndClick(searchBy, browser);
 
 		// select all
-		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
+		By selectAll = By.xpath("//div[contains(@class,'modal')]//th/div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_off')]]");
 		OOGraphene.waitElement(selectAll, browser);
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar
-		}
 		browser.findElement(selectAll).click();
 		OOGraphene.waitBusy(browser);
+		By selectedAll = By.xpath("//div[contains(@class,'modal')]//th/div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
+		OOGraphene.waitElement(selectedAll, browser);
 		return this;
 	}
 	

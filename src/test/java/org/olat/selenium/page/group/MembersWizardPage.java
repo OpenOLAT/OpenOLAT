@@ -86,13 +86,12 @@ public class MembersWizardPage {
 		searchMemberForm(user, admin);
 
 		// select all
-		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
+		By selectAll = By.xpath("//div[contains(@class,'modal')]//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_off')]]");
 		OOGraphene.waitElement(selectAll, browser);
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar
-		}
 		browser.findElement(selectAll).click();
 		OOGraphene.waitBusy(browser);
+		By selectedAll = By.xpath("//div[contains(@class,'modal')]//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
+		OOGraphene.waitElement(selectedAll, browser);
 		return this;
 	}
 	

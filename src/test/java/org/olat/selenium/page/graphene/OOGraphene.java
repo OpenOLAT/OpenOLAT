@@ -530,14 +530,12 @@ public class OOGraphene {
 	}
 	
 	public static final void flexiTableSelectAll(WebDriver browser) {
-		By selectAll = By.xpath("//div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
+		By selectAll = By.xpath("//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_off')]]");
 		waitElement(selectAll, browser);
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar
-		}
 		browser.findElement(selectAll).click();
 		waitBusy(browser);
-		
+		By selectedAll = By.xpath("//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
+		waitElement(selectedAll, browser);
 	}
 	
 	public static final Locale getLocale(WebDriver browser) {
