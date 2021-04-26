@@ -1661,20 +1661,22 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private void updateSelectAllToggle() {
-		int rowCount = dataModel.getRowCount();
-		int selectCount = multiSelectedIndex.size();
-		boolean showSelectAll = (selectCount == 0);
-		boolean showDeselectAll = (rowCount != 0 && rowCount == selectCount);
-		StringBuilder sb = new StringBuilder();
-		sb.append("o_table_updateCheckAllMenu('")
+		if (isMultiSelect() && multiSelectedIndex != null) {
+			int rowCount = dataModel.getRowCount();
+			int selectCount = multiSelectedIndex.size();
+			boolean showSelectAll = (selectCount == 0);
+			boolean showDeselectAll = (rowCount != 0 && rowCount == selectCount);
+			StringBuilder sb = new StringBuilder();
+			sb.append("o_table_updateCheckAllMenu('")
 			.append(getFormDispatchId())
 			.append("',")
 			.append(Boolean.toString(showSelectAll))
 			.append(",")
 			.append(Boolean.toString(showDeselectAll))
 			.append(");");
-		JSCommand updateSelectAllToggleCmd = new JSCommand(sb.toString());
-		getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(updateSelectAllToggleCmd);				
+			JSCommand updateSelectAllToggleCmd = new JSCommand(sb.toString());
+			getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(updateSelectAllToggleCmd);
+		}
 	}
 	
 	@Override
