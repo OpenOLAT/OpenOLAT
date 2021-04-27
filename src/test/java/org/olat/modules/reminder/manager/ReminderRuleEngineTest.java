@@ -182,7 +182,8 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(coach2, re, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(participant4, re, GroupRoles.participant.name());
 		
-		BusinessGroup group = businessGroupDao.createAndPersist(groupCoach3, "grp-rule-1", "grp-rule-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(groupCoach3, "grp-rule-1", "grp-rule-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		businessGroupRelationDao.addRole(groupParticipant5, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRelationToResource(group, re);
 		dbInstance.commitAndCloseSession();

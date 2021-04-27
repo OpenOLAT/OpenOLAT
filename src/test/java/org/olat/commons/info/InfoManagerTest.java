@@ -132,7 +132,8 @@ public class InfoManagerTest extends OlatTestCase {
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-3");
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-4");
 		RepositoryEntry resource1 =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group1 = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", -1, -1, false, false, resource1);
+		BusinessGroup group1 = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource1);
 		final OLATResourceable ores1 = new OLATResourceable() {
 			@Override
 			public String getResourceableTypeName() {
@@ -144,7 +145,8 @@ public class InfoManagerTest extends OlatTestCase {
 			}			
 		};
 		RepositoryEntry resource2 =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group2 = groupService.createBusinessGroup(null, "gdao2", "gdao2-desc", -1, -1, false, false, resource2);
+		BusinessGroup group2 = groupService.createBusinessGroup(null, "gdao2", "gdao2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource2);
 		final OLATResourceable ores2 = new OLATResourceable() {
 			@Override
 			public String getResourceableTypeName() {

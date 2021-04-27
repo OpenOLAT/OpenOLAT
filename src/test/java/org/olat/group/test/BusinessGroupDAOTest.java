@@ -96,7 +96,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 	@Test
 	public void createBusinessGroup() {
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		dbInstance.commit();
 
 		Assert.assertNotNull(group);
@@ -114,7 +115,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 	@Test
 	public void loadBusinessGroupStandard() {
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdbo", "gdbo-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdbo", "gdbo-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		BusinessGroup reloadedGroup = businessGroupDao.load(group.getKey());
@@ -135,7 +137,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void loadBusinessGroup() {
 		//create business group
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdco", "gdco-desc", 0, 10, true, true, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdco", "gdco-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		BusinessGroup reloadedGroup = businessGroupDao.load(group.getKey());
@@ -157,7 +160,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void loadBusinessGroup_fetch() {
 		//create business group
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "gd-fetch", "gd-fetch-desc", 0, 10, true, true, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gd-fetch", "gd-fetch-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		BusinessGroup reloadedGroup = businessGroupDao.load(group.getKey());
@@ -176,7 +180,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void loadBusinessGroup_forUpdate() {
 		//create a group
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdco", "gdco-desc", 0, 10, true, true, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdco", "gdco-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//load an lock
@@ -199,7 +204,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("bdao-1-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
 
-		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gddo", "gddo-desc", 0, 10, true, true, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gddo", "gddo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		BusinessGroup reloadedGroup = businessGroupDao.load(group.getKey());
@@ -212,8 +218,10 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void loadBusinessGroupsByIds() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("bdao-2-" + UUID.randomUUID().toString());
-		BusinessGroup group1 = businessGroupDao.createAndPersist(owner, "gdeo", "gdeo-desc", 0, 10, true, true, false, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(owner, "gdfo", "gdfo-desc", 0, 10, true, true, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(owner, "gdeo", "gdeo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(owner, "gdfo", "gdfo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//check if the method is robust against empty list fo keys
@@ -240,8 +248,10 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 	@Test
 	public void loadShortBusinessGroupsByKeys() {
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "shorty-1", "shorty-1-desc", 0, 10, true, true, false, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "shorty-2", "shorty-2-desc", 0, 10, true, true, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "shorty-1", "shorty-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "shorty-2", "shorty-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//check if the method is robust against empty list fo keys
@@ -274,7 +284,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void loadDescription() {
 		String description = "My desc " + UUID.randomUUID();
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "load descr", description, 0, 10, true, true, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "load descr", description, BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		String loadDescription = businessGroupDao.loadDescription(group.getKey());
@@ -285,8 +296,10 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void loadAllBusinessGroups() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("bdao-3-" + UUID.randomUUID().toString());
-		BusinessGroup group1 = businessGroupDao.createAndPersist(owner, "gdgo", "gdgo-desc", 0, 10, true, true, false, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(owner, "gdho", "gdho-desc", 0, 10, true, true, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(owner, "gdgo", "gdgo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(owner, "gdho", "gdho-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//load all business groups
@@ -301,7 +314,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void mergeBusinessGroup() {
 		//create a business group
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("bdao-3-" + UUID.randomUUID().toString());
-		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdho", "gdho-desc", 0, 10, true, true, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdho", "gdho-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//delete a business group
@@ -329,7 +343,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void updateBusinessGroup() {
 		//create a business group
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("bdao-4-" + UUID.randomUUID().toString());
-		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdio", "gdio-desc", 1, 10, true, true, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdio", "gdio-desc", BusinessGroup.BUSINESS_TYPE,
+				1, 10, true, true, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//delete a business group
@@ -362,9 +377,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("bdao-7-" + UUID.randomUUID().toString());
 
 		//create 3 groups
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gdlo", "gdlo-desc", 0, 5, true, false, false, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gdmo", "gdmo-desc", 0, 5, true, false, false, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gdno", "gdno-desc", 0, 5, true, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gdlo", "gdlo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gdmo", "gdmo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gdno", "gdno-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//id1 -> group 1 and 2
@@ -394,9 +412,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void testVisibilityOfSecurityGroups() {
 		//create 3 groups
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gdro", "gdro-desc", 0, 5, true, false, true, true, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gdso", "gdso-desc", 0, 5, true, false, false, true, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gdto", "gdto-desc", 0, 5, true, false, false, false, true);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gdro", "gdro-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, true, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gdso", "gdso-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, true, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gdto", "gdto-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, true);
 		dbInstance.commitAndCloseSession();
 
 		//check the value
@@ -416,8 +437,10 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void findBusinessGroups() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search");
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gduo", "gduo-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gdvo", "gdvo-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gduo", "gduo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gdvo", "gdvo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -445,9 +468,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void findBusinessGroupsByExactName() {
 		String exactName = UUID.randomUUID().toString();
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, exactName, "gdwo-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, exactName + "x", "gdxo-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "y" +exactName, "gdyo-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, exactName, "gdwo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, exactName + "x", "gdxo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "y" +exactName, "gdyo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -464,10 +490,14 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void findBusinessGroupsByName() {
 		String marker = UUID.randomUUID().toString();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-2");
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, marker.toUpperCase(), "fingbg-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, marker + "xxx", "fingbg-2-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "yyy" + marker.toUpperCase(), "fingbg-3-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group4 = businessGroupDao.createAndPersist(null, "yyyyZZZxxx", "fingbg-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, marker.toUpperCase(), "fingbg-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, marker + "xxx", "fingbg-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "yyy" + marker.toUpperCase(), "fingbg-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group4 = businessGroupDao.createAndPersist(null, "yyyyZZZxxx", "fingbg-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -496,9 +526,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void findBusinessGroupsByNameFuzzy() {
 		String marker = UUID.randomUUID().toString();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-3");
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, marker.toUpperCase(), "fingbg-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, marker + "xxx", "fingbg-2-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "yyy" + marker.toUpperCase(), "fingbg-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, marker.toUpperCase(), "fingbg-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, marker + "xxx", "fingbg-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "yyy" + marker.toUpperCase(), "fingbg-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -525,9 +558,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void findBusinessGroupsByDescription() {
 		String marker = UUID.randomUUID().toString();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-4");
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "fingbg-1", marker.toUpperCase() + "-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "fingbg-2", "desc-" + marker, 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "fingbg-3", "desc-other-one", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "fingbg-1", marker.toUpperCase() + "-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "fingbg-2", "desc-" + marker, BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "fingbg-3", "desc-other-one", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//check find business group
@@ -555,9 +591,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void findBusinessGroupsByDescriptionFuzzy() {
 		String marker = UUID.randomUUID().toString();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-5");
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "fingbg-1", marker + "-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "fingbg-2", "desc-" + marker.toUpperCase(), 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "fingbg-3", "desc-" + marker + "-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "fingbg-1", marker + "-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "fingbg-2", "desc-" + marker.toUpperCase(), BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "fingbg-3", "desc-" + marker + "-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -585,9 +624,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void findBusinessGroupsByNameOrDesc() {
 		String marker = UUID.randomUUID().toString();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-6");
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "fingbg-1", marker.toUpperCase() + "-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "fingbg-2", "fingbg-2-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, marker.toUpperCase() + "-xxx", "desc-fingb-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "fingbg-1", marker.toUpperCase() + "-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "fingbg-2", "fingbg-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, marker.toUpperCase() + "-xxx", "desc-fingb-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -614,9 +656,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void findBusinessGroupsByNameOrDescFuzzy() {
 		String marker = UUID.randomUUID().toString();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-7");
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "fingbg-1", marker + "-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "fingbg-2", "desc-" + marker.toUpperCase(), 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "fingbg-3", "desc-" + marker + "-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "fingbg-1", marker + "-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "fingbg-2", "desc-" + marker.toUpperCase(), BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "fingbg-3", "desc-" + marker + "-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -648,10 +693,14 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser(marker + "-ddao-3");
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("something-else-ddao-4");
 
-		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "fingbgown-1", "fingbgown-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "fingbgown-2", "fingbgown-2-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(id3, "fingbgown-3", "fingbgown-3-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group4 = businessGroupDao.createAndPersist(id4, "fingbgown-4", "fingbgown-4-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "fingbgown-1", "fingbgown-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "fingbgown-2", "fingbgown-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(id3, "fingbgown-3", "fingbgown-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group4 = businessGroupDao.createAndPersist(id4, "fingbgown-4", "fingbgown-4-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//check the same with the views
@@ -673,9 +722,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("ddao-2-" + marker.toUpperCase());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser(marker + "-ddao-3-");
 
-		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "fingbg-own-1-1", "fingbg-own-1-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "fingbg-own-1-2", "fingbg-own-1-2-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(id3, "fingbg-own-1-3", "fingbg-own-1-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "fingbg-own-1-1", "fingbg-own-1-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "fingbg-own-1-2", "fingbg-own-1-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(id3, "fingbg-own-1-3", "fingbg-own-1-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//check the same with the views
@@ -695,9 +747,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryEntryRelationDao.addRole(author, re, GroupRoles.owner.name());
 
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gdlo", "gdlo-desc", 0, 5, true, false, false, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(author, "gdmo", "gdmo-desc", 0, 5, true, false, false, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(author, "gdmo", "gdmo-desc", 0, 5, true, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gdlo", "gdlo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(author, "gdmo", "gdmo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(author, "gdmo", "gdmo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, re);
 		businessGroupRelationDao.addRelationToResource(group3, re);
 		dbInstance.commitAndCloseSession();
@@ -722,13 +777,13 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void findBusinessGroupsManaged() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-7");
 		String managedFlags = "all";
-		BusinessGroup groupManaged = businessGroupDao.createAndPersist(null, random(), random(), random(),
-				managedFlags, 0, 5, true, false, true, false, false, null);
+		BusinessGroup groupManaged = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
+				random(), managedFlags, 0, 5, true, false, true, false, false, null);
 		// Groups with external ID should be treated as managed even if they have no managed flag.
-		BusinessGroup groupExternalId = businessGroupDao.createAndPersist(null, random(), random(), random(),
-				null, 0, 5, true, false, true, false, false, null);
-		BusinessGroup groupUnmanaged = businessGroupDao.createAndPersist(null, random(), random(), null,
-				null, 0, 5, true, false, true, false, false, null);
+		BusinessGroup groupExternalId = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
+				random(), null, 0, 5, true, false, true, false, false, null);
+		BusinessGroup groupUnmanaged = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
+				null, null, 0, 5, true, false, true, false, false, null);
 		dbInstance.commitAndCloseSession();
 
 		// Check managed
@@ -763,12 +818,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void findBusinessLastUsageBefore() {
 		Date lastUsageBefore = new GregorianCalendar(2020, 8, 9).getTime();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		BusinessGroup before = businessGroupDao.createAndPersist(null, random(), random(), random(),
-				null, 0, 5, true, false, true, false, false, null);
+		BusinessGroup before = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
+				random(), null, 0, 5, true, false, true, false, false, null);
 		before.setLastUsage(DateUtils.addDays(lastUsageBefore, -2));
 		businessGroupDao.merge(before);
-		BusinessGroup after = businessGroupDao.createAndPersist(null, random(), random(), null,
-				null, 0, 5, true, false, true, false, false, null);
+		BusinessGroup after = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
+				null, null, 0, 5, true, false, true, false, false, null);
 		after.setLastUsage(DateUtils.addDays(lastUsageBefore, 3));
 		businessGroupDao.merge(after);
 		dbInstance.commitAndCloseSession();
@@ -790,9 +845,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void findBusinessGroupsByIdentity() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
-		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "is-in-grp-1", "is-in-grp-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "is-in-grp-2", "is-in-grp-2-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "is-in-grp-1", "is-in-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "is-in-grp-2", "is-in-grp-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		businessGroupRelationDao.addRole(id, group2, GroupRoles.participant.name());
@@ -882,7 +940,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//create a repository entry with a relation to a group
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-grp-1-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupDao.createAndPersist(id, "grp-course-1", "grp-course-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(id, "grp-course-1", "grp-course-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 	    businessGroupRelationDao.addRelationToResource(group, re);
 		dbInstance.commitAndCloseSession();
@@ -905,7 +964,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//create a repository entry with a relation to a group
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-grp-1-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupDao.createAndPersist(id, "grp-course-1", "grp-course-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(id, "grp-course-1", "grp-course-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 	    businessGroupRelationDao.addRelationToResource(group, re);
 		dbInstance.commitAndCloseSession();
@@ -927,9 +987,9 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//create a managed group with an external ID
 		String externalId = UUID.randomUUID().toString();
 		String managedFlags = "title,description";
-		BusinessGroup managedGroup = businessGroupDao.createAndPersist(null, "managed-grp-1", "managed-grp-1-desc",
+		BusinessGroup managedGroup = businessGroupDao.createAndPersist(null, "managed-grp-1", "managed-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
 				externalId, managedFlags, 0, 5, true, false, true, false, false, null);
-		BusinessGroup freeGroup = businessGroupDao.createAndPersist(null, "free-grp-1", "free-grp-1-desc",
+		BusinessGroup freeGroup = businessGroupDao.createAndPersist(null, "free-grp-1", "free-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
 				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
@@ -958,7 +1018,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//create a managed group with an external ID
 		String externalId = UUID.randomUUID().toString();
 		String managedFlags = "all";
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "managed-grp-2", "managed-grp-2-desc",
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "managed-grp-2", "managed-grp-2-desc", BusinessGroup.BUSINESS_TYPE,
 				externalId, managedFlags, 0, 5, true, false, true, false, false, null);
 		dbInstance.commitAndCloseSession();
 
@@ -975,7 +1035,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void findPublicGroups() {
 		//create a group with an access control
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-11");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "access-grp-1", "access-grp-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "access-grp-1", "access-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		//create and save an offer
 		Offer offer = acService.createOffer(group.getResource(), "TestBGWorkflow");
 		assertNotNull(offer);
@@ -1010,7 +1071,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void findPublicGroupsLimitedDate() {
 		//create a group with an access control limited by a valid date
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-11");
-		BusinessGroup groupVisible = businessGroupDao.createAndPersist(null, "access-grp-2", "access-grp-2-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup groupVisible = businessGroupDao.createAndPersist(null, "access-grp-2", "access-grp-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		//create and save an offer
 		Offer offer = acService.createOffer(groupVisible.getResource(), "TestBGWorkflow");
 
@@ -1029,7 +1091,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		acMethodManager.save(access);
 
 		//create a group with an access control limited by dates in the past
-		BusinessGroup oldGroup = businessGroupDao.createAndPersist(null, "access-grp-3", "access-grp-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup oldGroup = businessGroupDao.createAndPersist(null, "access-grp-3", "access-grp-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		//create and save an offer
 		Offer oldOffer = acService.createOffer(oldGroup.getResource(), "TestBGWorkflow");
 		cal.add(Calendar.HOUR_OF_DAY, -5);
@@ -1060,8 +1123,10 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-10");
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("marker-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group1 = businessGroupDao.createAndPersist(owner, "rsrc-grp-1", "rsrc-grp-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(owner, "rsrc-grp-2", "rsrc-grp-2-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(owner, "rsrc-grp-1", "rsrc-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(owner, "rsrc-grp-2", "rsrc-grp-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, re);
 		dbInstance.commitAndCloseSession();
 
@@ -1087,8 +1152,10 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void findMarkedBusinessGroup() {
 		Identity marker = JunitTestHelper.createAndPersistIdentityAsUser("marker-" + UUID.randomUUID().toString());
 		//create a group with a mark and an other without as control
-		BusinessGroup group1 = businessGroupDao.createAndPersist(marker, "marked-grp-1", "marked-grp-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(marker, "marked-grp-2", "marked-grp-2-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(marker, "marked-grp-1", "marked-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(marker, "marked-grp-2", "marked-grp-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		markManager.setMark(group1.getResource(), marker, null, "[BusinessGroup:" + group1.getKey() + "]");
 		dbInstance.commitAndCloseSession();
 
@@ -1109,8 +1176,10 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Identity marker1 = JunitTestHelper.createAndPersistIdentityAsUser("marker-1-" + UUID.randomUUID().toString());
 		Identity marker2 = JunitTestHelper.createAndPersistIdentityAsUser("marker-2-" + UUID.randomUUID().toString());
 		//create a group with a mark and an other without as control
-		BusinessGroup group1 = businessGroupDao.createAndPersist(marker1, "marked-grp-3", "marked-grp-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(marker1, "marked-grp-4", "marked-grp-2-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(marker1, "marked-grp-3", "marked-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(marker1, "marked-grp-4", "marked-grp-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		markManager.setMark(group1.getResource(), marker1, null, "[BusinessGroup:" + group1.getKey() + "]");
 		markManager.setMark(group2.getResource(), marker2, null, "[BusinessGroup:" + group2.getKey() + "]");
 		dbInstance.commitAndCloseSession();
@@ -1128,8 +1197,10 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void findBusinessGroupsHeadless() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("head-1-" + UUID.randomUUID().toString());
-		BusinessGroup headlessGroup = businessGroupDao.createAndPersist(null, "headless-grp", "headless-grp-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup headedGroup = businessGroupDao.createAndPersist(owner, "headed-grp", "headed-grp-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup headlessGroup = businessGroupDao.createAndPersist(null, "headless-grp", "headless-grp-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup headedGroup = businessGroupDao.createAndPersist(owner, "headed-grp", "headed-grp-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//check marked
@@ -1145,9 +1216,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void findBusinessGroups_my() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
-		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "is-in-grp-1", "is-in-grp-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "is-in-grp-2", "is-in-grp-2-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "is-in-grp-1", "is-in-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "is-in-grp-2", "is-in-grp-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		businessGroupRelationDao.addRole(id, group2, GroupRoles.participant.name());
@@ -1166,9 +1240,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void isIdentityInBusinessGroups() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
-		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "is-in-grp-1", "is-in-grp-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "is-in-grp-2", "is-in-grp-2-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "is-in-grp-1", "is-in-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "is-in-grp-2", "is-in-grp-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		businessGroupRelationDao.addRole(id, group2, GroupRoles.participant.name());
@@ -1203,9 +1280,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	@Test
 	public void getMembershipInfoInBusinessGroups() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
-		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "is-in-grp-1", "is-in-grp-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "is-in-grp-2", "is-in-grp-2-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "is-in-grp-1", "is-in-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "is-in-grp-2", "is-in-grp-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		businessGroupRelationDao.addRole(id, group2, GroupRoles.participant.name());
@@ -1246,9 +1326,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	public void getBusinessGroupsMembership() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-rev-1" + UUID.randomUUID().toString());
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-rev-2" + UUID.randomUUID().toString());
-		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "is-in-grp-rev-1", "is-in-grp-rev-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "is-in-grp-rev-2", "is-in-grp-rev-2-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-rev-3", "is-in-grp-rev-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "is-in-grp-rev-1", "is-in-grp-rev-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "is-in-grp-rev-2", "is-in-grp-rev-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-rev-3", "is-in-grp-rev-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		businessGroupRelationDao.addRole(id1, group2, GroupRoles.participant.name());
@@ -1307,9 +1390,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
 
-		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "is-in-grp-1", "is-in-grp-1-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "is-in-grp-2", "is-in-grp-2-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "is-in-grp-1", "is-in-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "is-in-grp-2", "is-in-grp-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		businessGroupRelationDao.addRole(id1, group1, GroupRoles.participant.name());
@@ -1333,6 +1419,25 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 			Assert.assertNotNull(membership.getCreationDate());
 			Assert.assertNotNull(membership.getLastModified());
 		}
+	}
+	
+	@Test
+	public void searchBusinessGroupsForRepositoryEntry() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("stats-1");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("stats-2");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gstat", "gstat-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
+		businessGroupRelationDao.addRelationToResource(group, re);
+		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
+
+		List<StatisticsBusinessGroupRow> stats = businessGroupDao.searchBusinessGroupsForRepositoryEntry(params, owner, re);
+		Assert.assertNotNull(stats);
+		Assert.assertEquals(1, stats.size());
 	}
 
 	private boolean contains(List<? extends BusinessGroupRef> rows, BusinessGroup group) {

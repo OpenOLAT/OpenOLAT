@@ -19,10 +19,13 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.List;
+
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupQueryParams;
 
 /**
@@ -51,6 +54,7 @@ public class SelectOwnedBusinessGroupController extends AbstractSelectBusinessGr
 	@Override
 	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
 		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		params.setOwner(true);
 		params.setAttendee(false);
 		params.setWaiting(false);
@@ -60,6 +64,7 @@ public class SelectOwnedBusinessGroupController extends AbstractSelectBusinessGr
 	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams(true, false);
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		params.setOwner(true);
 		params.setAttendee(false);
 		params.setWaiting(false);

@@ -38,6 +38,11 @@ alter table o_bs_authentication drop constraint u_o_bs_authentication;
 alter table o_bs_authentication add constraint unique_pro_iss_authusername UNIQUE (provider, issuer, authusername);
 
 
+-- Business group
+alter table o_gp_business add technical_type varchar2(32) default 'business' not null;
+create index gp_tech_type_idx on o_gp_business (technical_type);
+
+
 -- LTI 1.3
 create table o_lti_tool (
    id number(20) generated always as identity,

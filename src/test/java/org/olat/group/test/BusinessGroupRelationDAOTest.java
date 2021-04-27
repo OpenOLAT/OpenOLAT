@@ -71,7 +71,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	public void addRelation() {
 		//create a relation
 		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdbo", "gdbo-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdbo", "gdbo-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group, resource);
 		
 		dbInstance.commitAndCloseSession();
@@ -90,7 +91,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	public void addRelation_v2() {
 		//create a relation
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("grp-v2-");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(null, "gdbo", "gdbo-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(null, "gdbo", "gdbo-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		Group group = ((BusinessGroupImpl)businessGroup).getBaseGroup();
@@ -128,7 +130,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-bg-1", "rel-bg-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-bg-1", "rel-bg-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group, resource1);
 		businessGroupRelationDao.addRelationToResource(group, resource2);
 		businessGroupRelationDao.addRelationToResource(group, resource3);
@@ -151,11 +154,13 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bg-1", "rel-bg-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bg-1", "rel-bg-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, resource1);
 		businessGroupRelationDao.addRelationToResource(group1, resource2);
 		
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "rel-bg-2", "rel-bg-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "rel-bg-2", "rel-bg-2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group2, resource2);
 		businessGroupRelationDao.addRelationToResource(group2, resource3);
 		
@@ -185,11 +190,13 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bg-1", "rel-bg-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bg-1", "rel-bg-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, resource1);
 		businessGroupRelationDao.addRelationToResource(group1, resource2);
 		
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "rel-bg-2", "rel-bg-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "rel-bg-2", "rel-bg-2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group2, resource2);
 		businessGroupRelationDao.addRelationToResource(group2, resource3);
 		dbInstance.commitAndCloseSession();
@@ -221,11 +228,12 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bg-1", "rel-bg-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bg-1", "rel-bg-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, resource1);
 		businessGroupRelationDao.addRelationToResource(group1, resource2);
 		
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "rel-bg-2", "rel-bg-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "rel-bg-2", "rel-bg-2-desc", BusinessGroup.BUSINESS_TYPE,-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group2, resource2);
 		businessGroupRelationDao.addRelationToResource(group2, resource3);
 		dbInstance.commitAndCloseSession();
@@ -255,7 +263,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bgis-1", "rel-bgis-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bgis-1", "rel-bgis-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, resource1);
 		businessGroupRelationDao.addRelationToResource(group1, resource2);
 		businessGroupRelationDao.addRole(id, group1, GroupRoles.coach.name());
@@ -283,7 +292,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bgiskey-1", "rel-bgiskey-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bgiskey-1", "rel-bgiskey-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, resource1);
 		businessGroupRelationDao.addRelationToResource(group1, resource2);
 		businessGroupRelationDao.addRole(id, group1, GroupRoles.coach.name());
@@ -310,7 +320,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bg-part-1", "rel-bgis-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bg-part-1", "rel-bgis-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, resource1);
 		businessGroupRelationDao.addRelationToResource(group1, resource2);
 		businessGroupRelationDao.addRole(id, group1, GroupRoles.participant.name());
@@ -335,18 +346,21 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bg-part-one", "rel-bgis-1-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "rel-bg-part-one", "rel-bgis-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, resource1);
 		businessGroupRelationDao.addRelationToResource(group1, resource2);
 		businessGroupRelationDao.addRole(id1, group1, GroupRoles.waiting.name());
 		businessGroupRelationDao.addRole(id4, group1, GroupRoles.waiting.name());
 		
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "rel-bg-part-two", "rel-bgis-2-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "rel-bg-part-two", "rel-bgis-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group2, resource1);
 		businessGroupRelationDao.addRole(id2, group2, GroupRoles.waiting.name());
 		businessGroupRelationDao.addRole(id4, group2, GroupRoles.waiting.name());
 		
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "rel-bg-part-three", "rel-bgis-3-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "rel-bg-part-three", "rel-bgis-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group3, resource2);
 		businessGroupRelationDao.addRole(id3, group3, GroupRoles.waiting.name());
 		
@@ -396,14 +410,17 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		
-		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "rel-bg-part-one", "rel-bgis-1-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "rel-bg-part-one", "rel-bgis-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, resource1);
 		businessGroupRelationDao.addRelationToResource(group1, resource2);
 		
-		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "rel-bg-part-two", "rel-bgis-2-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "rel-bg-part-two", "rel-bgis-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group2, resource1);
 		
-		BusinessGroup group3 = businessGroupDao.createAndPersist(id3, "rel-bg-part-three", "rel-bgis-3-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(id3, "rel-bg-part-three", "rel-bgis-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group3, resource2);
 		
 		dbInstance.commitAndCloseSession();
@@ -443,17 +460,20 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		
-		BusinessGroup group1 = businessGroupDao.createAndPersist(owner1, "rel-bg-part-one", "rel-bgis-1-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(owner1, "rel-bg-part-one", "rel-bgis-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, resource1);
 		businessGroupRelationDao.addRole(part1, group1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(part2, group1, GroupRoles.participant.name());
 
-		BusinessGroup group2 = businessGroupDao.createAndPersist(owner2, "rel-bg-part-two", "rel-bgis-2-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(owner2, "rel-bg-part-two", "rel-bgis-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group2, resource1);
 		businessGroupRelationDao.addRole(owner1, group2, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(part3, group2, GroupRoles.participant.name());
 		
-		BusinessGroup group3 = businessGroupDao.createAndPersist(owner3, "rel-bg-part-three", "rel-bgis-3-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(owner3, "rel-bg-part-three", "rel-bgis-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group3, resource2);
 		businessGroupRelationDao.addRole(part4, group3, GroupRoles.participant.name());
 
@@ -512,15 +532,18 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Identity part1 = JunitTestHelper.createAndPersistIdentityAsUser("part-1-" + UUID.randomUUID().toString());
 		Identity part2 = JunitTestHelper.createAndPersistIdentityAsUser("part-2-" + UUID.randomUUID().toString());
 
-		BusinessGroup group1 = businessGroupDao.createAndPersist(owner, "filter-membership-one", "rel-bgis-1-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(owner, "filter-membership-one", "rel-bgis-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRole(part1, group1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(part2, group1, GroupRoles.participant.name());
 
-		BusinessGroup group2 = businessGroupDao.createAndPersist(owner, "filter-membership-two", "rel-bgis-2-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(owner, "filter-membership-two", "rel-bgis-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRole(owner, group2, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(part2, group2, GroupRoles.participant.name());
 		
-		BusinessGroup group3 = businessGroupDao.createAndPersist(owner, "filter-membership-three", "rel-bgis-3-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(owner, "filter-membership-three", "rel-bgis-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		List<BusinessGroup> groups = new ArrayList<>(3);
@@ -574,7 +597,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	public void countAuthors() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-" + UUID.randomUUID().toString());
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("not-auth");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRole(author, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(test, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
@@ -587,7 +611,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	public void countRoles() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-" + UUID.randomUUID().toString());
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("not-auth");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRole(author, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(test, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
@@ -603,7 +628,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-" + UUID.randomUUID().toString());
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("not-auth");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("not-auth");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		businessGroupRelationDao.addRole(author, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(participant1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant2, group, GroupRoles.participant.name());
@@ -615,7 +641,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadForUpdate() {
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		BusinessGroup groupToUpdate = businessGroupDao.loadForUpdate(group.getKey());
@@ -629,7 +656,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		businessGroupRelationDao.addRelationToResource(group, re1);
@@ -661,7 +689,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRepositoryEntryKeys() {
 		//create 2 entries and 1 group
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
@@ -683,7 +712,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		businessGroupRelationDao.addRelationToResource(group, re1);
@@ -717,7 +747,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		businessGroupRelationDao.addRelationToResource(group, re1);
@@ -749,9 +780,11 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	public void toGroupKeys() {
 		//create a resource with 2 groups
 		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, resource);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group2, resource);
 		dbInstance.commitAndCloseSession();
 		
@@ -767,7 +800,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		businessGroupRelationDao.addRelationToResource(group, re1);
@@ -787,9 +821,12 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRoles() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("wait-1");
-		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", -1, -1, false, false, false, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "to-group-1", "to-group-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(id, group2, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id, group3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
@@ -811,9 +848,12 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	public void getDuplicateMemberships() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("wait-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wait-1");
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", -1, -1, false, false, false, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(id1, group1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id1, group2, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, group3, GroupRoles.participant.name());
@@ -835,7 +875,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("m-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("m-2");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("m-3");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(id1, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id3, group, GroupRoles.waiting.name());
@@ -855,7 +896,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("m-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("m-2");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("m-3");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(id1, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id3, group, GroupRoles.waiting.name());
@@ -880,7 +922,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
@@ -900,7 +943,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
@@ -920,7 +964,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-3");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-4");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-5");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
@@ -941,7 +986,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-6");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-7");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-8");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-3", "to-group-3-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-3", "to-group-3-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
@@ -962,7 +1008,8 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-1");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-1");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(id1, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());

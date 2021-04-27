@@ -128,9 +128,11 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of 2 groups
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", null, null, false, false, re);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 	    businessGroupRelationDao.addRole(participant1, group1, GroupRoles.participant.name());
-	    BusinessGroup group2 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-2", "tg", null, null, false, false, re);
+	    BusinessGroup group2 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-2", "tg", BusinessGroup.BUSINESS_TYPE,
+	    		null, null, false, false, re);
 	    businessGroupRelationDao.addRole(participant1, group2, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -230,7 +232,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of 2 groups
-		BusinessGroup group= businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", null, null, false, false, re1);
+		BusinessGroup group= businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re1);
 		businessGroupService.addResourceTo(group, re2);
 		businessGroupService.addResourceTo(group, re3);
 		businessGroupRelationDao.addRole(participant1, group, GroupRoles.participant.name());
@@ -346,7 +349,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of group of re 2
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", null, null, false, false, re2);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re2);
 		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3");
 		businessGroupRelationDao.addRole(participant3, group2, GroupRoles.participant.name());
 		Identity participant4 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-4");
@@ -354,7 +358,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of group of re 3
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", null, null, false, false, re3);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re3);
 		Identity participant5 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-5");
 		businessGroupRelationDao.addRole(participant5, group3, GroupRoles.participant.name());
 		Identity participant6 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-6");
@@ -505,7 +510,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of group of re 1
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", null, null, false, false, re1);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re1);
 		Identity participantG1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g1");
 		businessGroupRelationDao.addRole(participantG1, group1, GroupRoles.participant.name());
 		Identity participantG11 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g11");
@@ -513,7 +519,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//members of group of re 2
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-2", "tg", null, null, false, false, re2);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-2", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re2);
 		Identity participantG2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g2");
 		businessGroupRelationDao.addRole(participantG2, group2, GroupRoles.participant.name());
 		Identity participantG21 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g22");
@@ -521,7 +528,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of group of re 3
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-3", "tg", null, null, false, false, re3);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-3", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re3);
 		Identity participantG3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g3");
 		businessGroupRelationDao.addRole(participantG3, group3, GroupRoles.participant.name());
 		Identity participantG31 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g33");
@@ -676,7 +684,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//groups
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", null, null, false, false, re1);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re1);
 		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3");
 		businessGroupRelationDao.addRole(participant3, group1, GroupRoles.participant.name());
 		Identity participant4 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-4");
@@ -747,7 +756,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		repositoryService.addRole(coach, re1, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re2, GroupRoles.coach.name());
 		//groups
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", null, null, false, false, re1);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re1);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(group);
 
@@ -791,14 +801,16 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of group of re 2
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", null, null, false, false, re2);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re2);
 		businessGroupRelationDao.addRole(coach, group2, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(participant1, group2, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant2, group2, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//members of group of re 3
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "Coaching-grp-2", "tg", null, null, false, false, re3);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "Coaching-grp-2", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re3);
 		businessGroupRelationDao.addRole(coach, group3, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(participant1, group3, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant2, group3, GroupRoles.participant.name());
@@ -887,9 +899,11 @@ public class CoachingDAOTest extends OlatTestCase {
 		repositoryService.addRole(participant, re2, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		// groups
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", null, null, false, false, re2);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re2);
 		businessGroupRelationDao.addRole(participant, group2, GroupRoles.participant.name());
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", null, null, false, false, re3);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re3);
 		businessGroupRelationDao.addRole(participant, group3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
@@ -968,9 +982,11 @@ public class CoachingDAOTest extends OlatTestCase {
 		repositoryService.addRole(participant2, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		// groups
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", null, null, false, false, re);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 		businessGroupRelationDao.addRole(participant2, group2, GroupRoles.participant.name());
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", null, null, false, false, re);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 		businessGroupRelationDao.addRole(participant3, group3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
@@ -1001,9 +1017,11 @@ public class CoachingDAOTest extends OlatTestCase {
 		repositoryService.addRole(participant2, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		// groups
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", null, null, false, false, re);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 		businessGroupRelationDao.addRole(participant2, group2, GroupRoles.participant.name());
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", null, null, false, false, re);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 		businessGroupRelationDao.addRole(participant3, group3, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant4, group3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
@@ -1053,7 +1071,8 @@ public class CoachingDAOTest extends OlatTestCase {
 
 		//coach in a group of the course
 		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-2");
-		BusinessGroup group = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", null, null, false, false, re);
+		BusinessGroup group = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 		Assert.assertNotNull(group);
 		dbInstance.commitAndCloseSession();
 		
@@ -1080,7 +1099,8 @@ public class CoachingDAOTest extends OlatTestCase {
 
 		//coach in a group of the course
 		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-2");
-		BusinessGroup group = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", null, null, false, false, re);
+		BusinessGroup group = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 		Assert.assertNotNull(group);
 		dbInstance.commitAndCloseSession();
 		

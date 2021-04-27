@@ -121,7 +121,8 @@ public class RepositoryEntryMembershipProcessorTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(member, re, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(coach, re, GroupRoles.coach.name());
 		
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "mbr-proc-1", "mbr-proc-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "mbr-proc-1", "mbr-proc-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(businessGroup, re);
 		
 		//create a publisher

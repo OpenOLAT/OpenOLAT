@@ -70,7 +70,7 @@ public interface BusinessGroupService {
 	 * @param resource
 	 * @return
 	 */
-	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
+	public BusinessGroup createBusinessGroup(Identity creator, String name, String description, String technicalType,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			RepositoryEntry resource);
 	
@@ -89,7 +89,7 @@ public interface BusinessGroupService {
 	 * @return
 	 */
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
-			String externalId, String managedFlags,
+			String technicalType, String externalId, String managedFlags,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			RepositoryEntry resource);
 	

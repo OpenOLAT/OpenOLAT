@@ -152,7 +152,8 @@ public class PoolDAOTest extends OlatTestCase {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsUser("Group-participant-" + UUID.randomUUID().toString());
 		//create a group to share 2 items
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		QuestionItem item = questionDao.createAndPersist(owner, "Shared-Item-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		questionDao.share(item, group.getResource());
 
@@ -176,7 +177,8 @@ public class PoolDAOTest extends OlatTestCase {
 		Pool pool = poolDao.createPool(owner, "NGC owned", false);
 		Assert.assertNotNull(pool);
 		//group without item
-		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(somebody, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		

@@ -222,8 +222,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		RepositoryEntry c1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		// create groups without waiting list
 		g1externalId = UUID.randomUUID().toString();
-		g1 = businessGroupService.createBusinessGroup(null, "user-rest-g1", null, g1externalId, "all", 0, 10, false, false, c1);
-		g2 = businessGroupService.createBusinessGroup(null, "user-rest-g2", null, 0, 10, false, false, c1);
+		g1 = businessGroupService.createBusinessGroup(null, "user-rest-g1", null, BusinessGroup.BUSINESS_TYPE, g1externalId, "all", 0, 10, false, false, c1);
+		g2 = businessGroupService.createBusinessGroup(null, "user-rest-g2", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, c1);
 		// members g1
 		businessGroupRelationDao.addRole(id1.getIdentity(), g1, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(id2.getIdentity(), g1, GroupRoles.participant.name());
@@ -235,8 +235,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		RepositoryEntry c2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		// groups
 		g3ExternalId = UUID.randomUUID().toString();
-		g3 = businessGroupService.createBusinessGroup(null, "user-rest-g3", null, g3ExternalId, "all", -1, -1, false, false, c2);
-		g4 = businessGroupService.createBusinessGroup(null, "user-rest-g4", null, -1, -1, false, false, c2);
+		g3 = businessGroupService.createBusinessGroup(null, "user-rest-g3", null, BusinessGroup.BUSINESS_TYPE, g3ExternalId, "all", -1, -1, false, false, c2);
+		g4 = businessGroupService.createBusinessGroup(null, "user-rest-g4", null, BusinessGroup.BUSINESS_TYPE, -1, -1, false, false, c2);
 		// members
 		businessGroupRelationDao.addRole(id1.getIdentity(), g3, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2.getIdentity(), g4, GroupRoles.participant.name());

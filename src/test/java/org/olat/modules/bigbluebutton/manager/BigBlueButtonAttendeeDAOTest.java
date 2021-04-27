@@ -55,7 +55,8 @@ public class BigBlueButtonAttendeeDAOTest extends OlatTestCase {
 	@Test
 	public void createAttendee() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-attendee-1");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Attendees 1", "bbb-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Attendees 1", "bbb-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Attend - 1", null, null, group, id);
 		dbInstance.commit();
 		
@@ -74,7 +75,8 @@ public class BigBlueButtonAttendeeDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createAttendee_guest() {
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Attendees 1", "bbb-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Attendees 1", "bbb-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Attend - 1", null, null, group, null);
 		dbInstance.commit();
 		
@@ -95,7 +97,8 @@ public class BigBlueButtonAttendeeDAOTest extends OlatTestCase {
 	public void hasAttendee_identified() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-attendee-2");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-attendee-3");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Attendees 2", "bbb-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Attendees 2", "bbb-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Attend - 1", null, null, group, id2);
 		BigBlueButtonAttendee attendee1 = bigBlueButtonAttendeeDao
 				.createAttendee(id1, null, BigBlueButtonAttendeeRoles.moderator, new Date(), meeting);
@@ -110,7 +113,8 @@ public class BigBlueButtonAttendeeDAOTest extends OlatTestCase {
 	
 	@Test
 	public void hasAttendee_guest() {
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Attendees 2", "bbb-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Attendees 2", "bbb-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Attend - 1", null, null, group, null);
 		BigBlueButtonAttendee attendee1 = bigBlueButtonAttendeeDao
 				.createAttendee(null, "Jeremey", BigBlueButtonAttendeeRoles.guest, new Date(), meeting);
@@ -126,7 +130,8 @@ public class BigBlueButtonAttendeeDAOTest extends OlatTestCase {
 	@Test
 	public void getAttendee() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-attendee-4");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Attendees 2", "bbb-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Attendees 2", "bbb-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Attend - 1", null, null, group, null);
 		BigBlueButtonAttendee attendee = bigBlueButtonAttendeeDao
 				.createAttendee(id, null, BigBlueButtonAttendeeRoles.moderator, new Date(), meeting);

@@ -258,11 +258,17 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 
 	@Override
 	public LTI13SharedToolDeployment createSharedToolDeployment(String deploymentId, LTI13Platform platform,
-			RepositoryEntry repositoryEntry, BusinessGroup bsuienssGroup) {
+			RepositoryEntry repositoryEntry, BusinessGroup businessGroup) {
 		List<LTI13SharedToolDeployment> deployments = sharedToolDeploymentDao.getSharedToolDeployment(deploymentId, platform);
 		if(deployments.isEmpty()) {
+			if(repositoryEntry != null && businessGroup == null) {
+				String groupName = "LTI: " + platform.getName();
+				String groupDescription =  "LTI group for: " + platform.getName();
+				businessGroup = businessGroupService.createBusinessGroup(null, groupName, groupDescription,
+						LTI13Service.LTI_GROUP_TYPE, -1, -1, false, false, repositoryEntry);
+			}
 			LTI13SharedToolDeployment newDeployment = sharedToolDeploymentDao
-					.createDeployment(deploymentId, platform, repositoryEntry, bsuienssGroup);
+					.createDeployment(deploymentId, platform, repositoryEntry, businessGroup);
 			dbInstance.commit();
 			return newDeployment;
 		}
@@ -438,7 +444,19 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	
 	@Override
 	public void checkMembership(Identity identity, GroupRoles role, LTI13SharedToolDeployment tool) {
-		if(tool.getEntry() != null) {
+		if(tool.getBusinessGroup() != null) {
+			BusinessGroup businessGroup = tool.getBusinessGroup();
+			if(!businessGroupService.hasRoles(identity, businessGroup, role.name())) {
+				Roles roles = securityManager.getRoles(identity);
+				if(role == GroupRoles.participant) {
+					businessGroupService.addParticipants(identity, roles, List.of(identity), businessGroup, new MailPackage(false));
+				} else if(role == GroupRoles.coach) {
+					businessGroupService.addOwners(identity, roles, List.of(identity), businessGroup, new MailPackage(false));
+				} else {
+					log.warn("Roles not supported: {}", role);
+				}
+			}
+		} else if(tool.getEntry() != null) {
 			// check if participant, if not
 			RepositoryEntry entry = tool.getEntry();
 			if(!repositoryService.hasRole(identity, entry, role.name())) {
@@ -452,19 +470,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 					log.warn("Roles not supported: {}", role);
 				}
 			}
-		} else if(tool.getBusinessGroup() != null) {
-			BusinessGroup businessGroup = tool.getBusinessGroup();
-			if(!businessGroupService.hasRoles(identity, businessGroup, role.name())) {
-				Roles roles = securityManager.getRoles(identity);
-				if(role == GroupRoles.participant) {
-					businessGroupService.addParticipants(identity, roles, List.of(identity), businessGroup, new MailPackage(false));
-				} else if(role == GroupRoles.coach) {
-					businessGroupService.addOwners(identity, roles, List.of(identity), businessGroup, new MailPackage(false));
-				} else {
-					log.warn("Roles not supported: {}", role);
-				}
-			}
-		}
+		} 
 	}
 	
 	private Organisation getLTIOrganisation() {

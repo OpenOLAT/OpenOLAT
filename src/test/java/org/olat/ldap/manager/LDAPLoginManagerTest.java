@@ -633,7 +633,8 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		BusinessGroup ldapGroup = ldapGroups.get(0);
 		
 		String externalId = UUID.randomUUID().toString();
-		BusinessGroup managedGroup = businessGroupService.createBusinessGroup(admin, "External LDAP Group", "", externalId, null, null, null, false, false, null);
+		BusinessGroup managedGroup = businessGroupService.createBusinessGroup(admin, "External LDAP Group", "", BusinessGroup.BUSINESS_TYPE,
+				externalId, null, null, null, false, false, null);
 		Identity id1 = securityManager.findIdentityByLogin("dforster");
 		businessGroupRelationDao.addRole(id1, managedGroup, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();

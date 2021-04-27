@@ -239,7 +239,7 @@ public class CourseGroupWebService {
     } else {
   		Integer min = normalize(group.getMinParticipants());
   		Integer max = normalize(group.getMaxParticipants());
-  		bg = bgm.createBusinessGroup(ureq.getIdentity(), group.getName(), group.getDescription(),
+  		bg = bgm.createBusinessGroup(ureq.getIdentity(), group.getName(), group.getDescription(), BusinessGroup.BUSINESS_TYPE,
   				group.getExternalId(), group.getManagedFlags(), min, max, false, false, courseRe);
     }
     GroupVO savedVO = ObjectFactory.get(bg);

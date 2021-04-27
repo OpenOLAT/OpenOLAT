@@ -69,6 +69,7 @@ public class SearchBusinessGroupListController extends AbstractStandardBusinessG
 	@Override
 	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
 		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		//security
 		if(!isAdmin() && !params.isAttendee() && !params.isOwner() && !params.isWaiting()
 				&& (params.getPublicGroups() == null || !params.getPublicGroups().booleanValue())) {
@@ -82,6 +83,7 @@ public class SearchBusinessGroupListController extends AbstractStandardBusinessG
 	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		//security
 		if(!isAdmin()) {
 			params.setOwner(true);

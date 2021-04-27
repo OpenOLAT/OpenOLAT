@@ -285,7 +285,8 @@ public class NotificationsTest extends OlatRestTestCase {
 	public void testGetBusinessGroupForumNotifications() throws IOException, URISyntaxException {
 		//create a business group with forum notifications
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("rest-not-4-");
-		BusinessGroup group = businessGroupService.createBusinessGroup(id.getIdentity(), "Notifications 1", "REST forum notifications for group", null, null, false, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(id.getIdentity(), "Notifications 1", "REST forum notifications for group",
+				BusinessGroup.BUSINESS_TYPE, null, null, false, false, null);
 		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 		tools.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
 		Forum groupForum = tools.getForum();
@@ -325,7 +326,8 @@ public class NotificationsTest extends OlatRestTestCase {
 	public void testGetBusinessGroupFolderNotifications() throws IOException, URISyntaxException {
 		//create a business group with folder notifications
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("rest-not-5-");
-		BusinessGroup group = businessGroupService.createBusinessGroup(id.getIdentity(), "Notifications 2", "REST folder notifications for group", null, null, false, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(id.getIdentity(), "Notifications 2", "REST folder notifications for group",
+				BusinessGroup.BUSINESS_TYPE, null, null, false, false, null);
 		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 		tools.setToolEnabled(CollaborationTools.TOOL_FOLDER, true);
 		String relPath = tools.getFolderRelPath();
@@ -470,7 +472,8 @@ public class NotificationsTest extends OlatRestTestCase {
 	public void testGetPublisher() throws IOException, URISyntaxException {
 		//create a business group with forum notifications
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-not-9");
-		BusinessGroup group = businessGroupService.createBusinessGroup(id, "Notifications 1", "REST forum notifications for group", null, null, false, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(id, "Notifications 1", "REST forum notifications for group",
+				BusinessGroup.BUSINESS_TYPE, null, null, false, false, null);
 		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 		tools.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
 		Forum groupForum = tools.getForum();

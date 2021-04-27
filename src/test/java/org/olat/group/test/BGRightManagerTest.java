@@ -105,7 +105,8 @@ public class BGRightManagerTest extends OlatTestCase {
 	@Test
 	public void addRight() {
 		RepositoryEntry c1 =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "addRight", null, -1, -1, false, false, c1);
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "addRight", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, c1);
 		rightManager.addBGRight("test-right", g1, BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 	}
@@ -113,7 +114,8 @@ public class BGRightManagerTest extends OlatTestCase {
 	@Test
 	public void addRightWithResource() {
 		RepositoryEntry c1 =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "addRight", null, -1, -1, false, false, c1);
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "addRight", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, c1);
 		rightManager.addBGRight("test-right", g1.getBaseGroup(), c1.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 	}
@@ -123,7 +125,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		//create a right for the identity
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("has-right-1-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "hasBGRight", null, -1, -1, false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "hasBGRight", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.has-right", group, BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
@@ -141,7 +144,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		//create a right for the identity
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("has-right-2-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "hasBGRight", null, -1, -1, false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "hasBGRight", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.has-right", group.getBaseGroup(), resource.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
@@ -159,7 +163,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		//create 2 rights for the identity
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, -1, -1, false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 	    businessGroupRelationDao.addRole(identity, group, GroupRoles.coach.name());
 		rightManager.addBGRight("bgr.right1", group.getBaseGroup(), resource.getOlatResource(), BGRightsRole.tutor);
 		dbInstance.commitAndCloseSession();
@@ -175,7 +180,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		//create 2 rights for the identity
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, -1, -1, false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.right1", group.getBaseGroup(), resource.getOlatResource(), BGRightsRole.tutor);
 		dbInstance.commitAndCloseSession();
@@ -195,7 +201,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
 		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, -1, -1, false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 		businessGroupRelationDao.addRole(identity1, group, GroupRoles.participant.name());
 	    businessGroupRelationDao.addRole(identity2, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(identity2, group, GroupRoles.participant.name());
@@ -228,7 +235,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		//create 2 rights for the identity
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("find-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "findBGRights", null, -1, -1, false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "findBGRights", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.findright1", group, BGRightsRole.participant);
 		rightManager.addBGRight("bgr.findright2", group, BGRightsRole.participant);
@@ -247,7 +255,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		//create 2 rights for the identity
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("find-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "findBGRights", null, -1, -1, false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "findBGRights", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.findright1", group, BGRightsRole.participant);
 		rightManager.addBGRight("bgr.findright2", group, BGRightsRole.participant);
@@ -267,7 +276,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		//create 2 rights for the identity
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("remove-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, -1, -1, false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.removeright1", group, BGRightsRole.participant);
 		rightManager.addBGRight("bgr.removeright2", group, BGRightsRole.participant);
@@ -299,7 +309,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		RepositoryEntry resource1 =  JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 =  JunitTestHelper.createAndPersistRepositoryEntry();
 
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, -1, -1, false, false, resource1);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource1);
 		businessGroupService.addResourceTo(group, resource2);
 	    businessGroupRelationDao.addRole(tutor, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
@@ -346,7 +357,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		RepositoryEntry resource1 =  JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 =  JunitTestHelper.createAndPersistRepositoryEntry();
 
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, -1, -1, false, false, resource1);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource1);
 		businessGroupService.addResourceTo(group, resource2);
 	    businessGroupRelationDao.addRole(tutor, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
@@ -391,9 +403,11 @@ public class BGRightManagerTest extends OlatTestCase {
 		RepositoryEntry resource2 =  JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource3 =  JunitTestHelper.createAndPersistRepositoryEntry();
 
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "findRights", null, -1, -1, false, false, resource1);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "findRights", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource1);
 		businessGroupService.addResourceTo(group1, resource2);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "findRights", null, -1, -1, false, false, resource3);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "findRights", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource3);
 
 		rightManager.addBGRight("bgr.fr1", group1.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.tutor);
 		rightManager.addBGRight("bgr.fr2", group1.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.participant);
@@ -428,7 +442,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		//create 2 rights for the identity
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("remove-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, -1, -1, false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		rightManager.addBGRight("bgr.removeright1", group, BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
@@ -443,9 +458,12 @@ public class BGRightManagerTest extends OlatTestCase {
 		RepositoryEntry c1 =  JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry c2 =  JunitTestHelper.createAndPersistRepositoryEntry();
 
-		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, -1, -1, false, false, c1);
-		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, -1, -1, false, false, c1);
-		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, -1, -1, false, false, c2);
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, c1);
+		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, c1);
+		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, c2);
 
 		businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());

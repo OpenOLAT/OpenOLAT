@@ -247,7 +247,8 @@ public class BusinessGroupImportExport {
 					showWaitingList = group.getShowWaitingList().booleanValue();
 				}
 				
-				BusinessGroup newGroup = businessGroupService.createBusinessGroup(null, groupName, groupDesc, groupMinParticipants, groupMaxParticipants, waitingList, enableAutoCloseRanks, re);
+				BusinessGroup newGroup = businessGroupService.createBusinessGroup(null, groupName, groupDesc, BusinessGroup.BUSINESS_TYPE,//TODO type
+						groupMinParticipants, groupMaxParticipants, waitingList, enableAutoCloseRanks, re);
 				dbInstance.commit();
 				//map the group
 				env.getGroups().add(new BusinessGroupReference(newGroup, group.getKey(), group.getName()));

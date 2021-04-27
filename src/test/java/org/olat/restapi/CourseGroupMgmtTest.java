@@ -115,8 +115,8 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 		courseRepoEntry = JunitTestHelper.deployBasicCourse(auth);
 
 		// create groups without waiting list
-		g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, courseRepoEntry);
-		g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, courseRepoEntry);
+		g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseRepoEntry);
+		g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseRepoEntry);
 		// members
 		businessGroupRelationDao.addRole(id1, g2, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
@@ -124,8 +124,8 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 		businessGroupRelationDao.addRole(id2, g2, GroupRoles.participant.name());
     
 		// groups
-		g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, courseRepoEntry);
-		g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, courseRepoEntry);
+		g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, BusinessGroup.BUSINESS_TYPE, -1, -1, false, false, courseRepoEntry);
+		g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, BusinessGroup.BUSINESS_TYPE, -1, -1, false, false, courseRepoEntry);
 		// members
 		businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, g4, GroupRoles.participant.name());
@@ -201,8 +201,8 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 		GroupVO vo = new GroupVO();
 		vo.setName("hello");
 		vo.setDescription("hello description");
-		vo.setMinParticipants(new Integer(-1));
-		vo.setMaxParticipants(new Integer(-1));
+		vo.setMinParticipants(Integer.valueOf(-1));
+		vo.setMaxParticipants(Integer.valueOf(-1));
 		
 		Long courseId = courseRepoEntry.getOlatResource().getResourceableId();
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups").build();
@@ -284,8 +284,8 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 		GroupVO vo = new GroupVO();
 		vo.setName("hello dont put");
 		vo.setDescription("hello description dont put");
-		vo.setMinParticipants(new Integer(-1));
-		vo.setMaxParticipants(new Integer(-1));
+		vo.setMinParticipants(Integer.valueOf(-1));
+		vo.setMaxParticipants(Integer.valueOf(-1));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseRepoEntry.getOlatResource().getResourceableId() + "/groups").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);

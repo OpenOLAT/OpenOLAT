@@ -414,8 +414,10 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	public void getSharedItemByResource() {
 		//create a group to share 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QShare-2-");
-		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "gdao-1", "gdao-desc", -1, -1, false, false, false, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(id, "gdao-2", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "gdao-1", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(id, "gdao-2", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-3", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commit();
 		
@@ -445,7 +447,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	public void getSharedItemByResource_orderBy() {
 		//create a group to share 1 item
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QShare-2-" + UUID.randomUUID());
-		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao-3", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao-3", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-3", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commit();
 		
@@ -474,7 +477,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	public void getSharedItemByResource_subset() {
 		//create a group to share 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QShare-1-" + UUID.randomUUID());
-		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		QuestionItem item1 = questionDao.createAndPersist(id, "Share-Item-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		QuestionItem item2 = questionDao.createAndPersist(id, "Share-Item-2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commit();
@@ -699,7 +703,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItem item11 = createRandomItem(owner1);
 		QuestionItem item12 = createRandomItem(owner1);
 		QuestionItem item13 = createRandomItem(owner1);
-		BusinessGroup group = businessGroupDao.createAndPersist(owner1, "QPool", "QPool", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(owner1, "QPool", "QPool", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		List<OLATResource> groupResources = Arrays.asList(group.getResource());
 		questionDao.share(item11, groupResources, true);
 		questionDao.share(item12, groupResources, false);

@@ -781,6 +781,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		mainVC.contextPut("groupName", group.getName());
 		openGroupButton = LinkFactory.createButton("open.group", mainVC, this);
 		openGroupButton.setIconLeftCSS("o_icon o_icon_group");
+		openGroupButton.setVisible(BusinessGroup.BUSINESS_TYPE.equals(group.getTechnicalType()));
 	}
 	
 	private void setMultiGroupsSelection() {

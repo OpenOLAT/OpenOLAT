@@ -202,8 +202,10 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		
 		RepositoryEntry re = deployGTACourse();
 		
-		BusinessGroup businessGroup1 = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
-		BusinessGroup businessGroup2 = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup1 = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup2 = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		
 		businessGroupRelationDao.addRole(participant1, businessGroup1, GroupRole.participant.name());
 		businessGroupRelationDao.addRole(participant2, businessGroup1, GroupRole.participant.name());

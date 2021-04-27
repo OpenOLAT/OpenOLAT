@@ -90,16 +90,16 @@ public class BusinessGroupDAO {
 	@Autowired
 	private BusinessGroupModule businessGroupModule;
 	
-	public BusinessGroup createAndPersist(Identity creator, String name, String description,
+	public BusinessGroup createAndPersist(Identity creator, String name, String description, String technicalType,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			boolean showOwners, boolean showParticipants, boolean showWaitingList) {
-		return createAndPersist(creator, name, description, null, null,
+		return createAndPersist(creator, name, description, technicalType, null, null,
 				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled,
 				showOwners, showParticipants, showWaitingList, null);
 	}
 		
 	public BusinessGroup createAndPersist(Identity creator, String name, String description,
-				String externalId, String managedFlags,
+				String technicalType, String externalId, String managedFlags,
 				Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 				boolean showOwners, boolean showParticipants, boolean showWaitingList, Boolean allowToLeave) {
 
@@ -117,6 +117,7 @@ public class BusinessGroupDAO {
 		if(StringHelper.containsNonWhitespace(managedFlags)) {
 			businessgroup.setManagedFlagsString(managedFlags);
 		}
+		businessgroup.setTechnicalType(technicalType);
 		businessgroup.setOwnersVisibleIntern(showOwners);
 		businessgroup.setParticipantsVisibleIntern(showParticipants);
 		businessgroup.setWaitingListVisibleIntern(showWaitingList);
@@ -1037,6 +1038,11 @@ public class BusinessGroupDAO {
 			}
 		}
 		
+		//technical type
+		if(params.getTechnicalTypes() != null && !params.getTechnicalTypes().isEmpty()) {
+			query.setParameter("technicalTypes", params.getTechnicalTypes());
+		}
+		
 		//course title
 		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
 			query.setParameter("displayName", PersistenceHelper.makeFuzzyQueryString(params.getCourseTitle()));
@@ -1134,6 +1140,12 @@ public class BusinessGroupDAO {
 				where = PersistenceHelper.appendAnd(sb, where);
 				searchLikeAttribute(sb, "bgi", "description", "description");
 			}
+		}
+		
+		//technical type
+		if(params.getTechnicalTypes() != null && !params.getTechnicalTypes().isEmpty()) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("bgi.technicalType in (:technicalTypes)");
 		}
 	
 		// course title

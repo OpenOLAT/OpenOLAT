@@ -127,7 +127,7 @@ public class LTI13SharedToolDeploymentDAOTest extends OlatTestCase {
 	public void getSharedToolDeploymentByBusinessGroup() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-coach-4");
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(coach,
-				"LTI service group", "Group with LTI 1.3 for z21", -1, -1, false, false, null);
+				"LTI service group", "Group with LTI 1.3 for z21", LTI13Service.LTI_GROUP_TYPE, -1, -1, false, false, null);
 
 		String clientId = UUID.randomUUID().toString();
 		String issuer = "https://z21.openolat.org";

@@ -74,7 +74,8 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		//create a group to share 2 items
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-rm-" + UUID.randomUUID().toString());
-		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdrm", "gdrm-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdrm", "gdrm-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		QuestionItem item1 = questionDao.createAndPersist(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		QuestionItem item2 = questionDao.createAndPersist(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		dbInstance.commit();

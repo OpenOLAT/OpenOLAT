@@ -196,7 +196,8 @@ public class GTAManagerTest extends OlatTestCase {
 	public void selectTask_businessGroup() {
 		//prepare
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-2");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		dbInstance.commit();
 		RepositoryEntry re = deployGTACourse();
 		GTACourseNode node = getGTACourseNode(re);
@@ -228,7 +229,8 @@ public class GTAManagerTest extends OlatTestCase {
 	public void getTasks() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-3");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-4");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
 		dbInstance.commit();
 		RepositoryEntry re = deployGTACourse();
@@ -253,7 +255,8 @@ public class GTAManagerTest extends OlatTestCase {
 	public void getTaskList_byTask() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-3");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-4");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
 		dbInstance.commit();
 		RepositoryEntry re = deployGTACourse();
@@ -481,7 +484,8 @@ public class GTAManagerTest extends OlatTestCase {
 	@Test
 	public void getEnrollmentDate() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-20");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		dbInstance.commit();
 		
 		//no participant enrolled
@@ -502,7 +506,8 @@ public class GTAManagerTest extends OlatTestCase {
 	public void deleteTaskList() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-9");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-10");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
 		dbInstance.commit();
 		RepositoryEntry re = deployGTACourse();
@@ -538,7 +543,8 @@ public class GTAManagerTest extends OlatTestCase {
 	public void deleteTaskList_withRevisionDates() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-9");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-10");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
 		dbInstance.commit();
 		RepositoryEntry re = deployGTACourse();
@@ -579,7 +585,8 @@ public class GTAManagerTest extends OlatTestCase {
 	public void deleteTaskList_withRevisions() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-29");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-30");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-rev-delete-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-rev-delete-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
 		dbInstance.commit();
 		RepositoryEntry re = deployGTACourse();
@@ -625,7 +632,8 @@ public class GTAManagerTest extends OlatTestCase {
 	public void deleteTaskList_parano() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-9");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-10");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
 		dbInstance.commit();
 		RepositoryEntry re = deployGTACourse();
@@ -819,7 +827,8 @@ public class GTAManagerTest extends OlatTestCase {
 		//prepare
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-30");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-10");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "Task group deletion", "Task group deletion desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "Task group deletion", "Task group deletion desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
 		dbInstance.commit();
 		
@@ -859,9 +868,11 @@ public class GTAManagerTest extends OlatTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-31");
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-32");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-33");
-		BusinessGroup businessGroup1 = businessGroupDao.createAndPersist(coach, "Task 1 group deletion", "Task group deletion desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup1 = businessGroupDao.createAndPersist(coach, "Task 1 group deletion", "Task group deletion desc",
+				BusinessGroup.BUSINESS_TYPE, -1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant1, businessGroup1, GroupRole.participant.name());
-		BusinessGroup businessGroup2 = businessGroupDao.createAndPersist(coach, "Task 2 group deletion", "Task group deletion desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup2 = businessGroupDao.createAndPersist(coach, "Task 2 group deletion", "Task group deletion desc",
+				BusinessGroup.BUSINESS_TYPE,-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant2, businessGroup2, GroupRole.participant.name());
 		
 		dbInstance.commit();

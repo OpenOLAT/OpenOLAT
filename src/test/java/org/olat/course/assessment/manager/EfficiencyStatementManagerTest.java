@@ -316,7 +316,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		BusinessGroup group = businessGroupService
-				.createBusinessGroup(author, "gcoach", "Group coaching", null, null, 0, 15, false, false, re1);
+				.createBusinessGroup(author, "gcoach", "Group coaching", BusinessGroup.BUSINESS_TYPE, null, null, 0, 15, false, false, re1);
 		businessGroupService.addResourceTo(group, re2);
 		
 		Identity participantGrp1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-7a");
@@ -369,11 +369,13 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		BusinessGroup group1 = businessGroupService
-				.createBusinessGroup(author, "gcoach-1", "Group coaching", null, null, 0, 15, false, false, re1);
+				.createBusinessGroup(author, "gcoach-1", "Group coaching", BusinessGroup.BUSINESS_TYPE,
+						null, null, 0, 15, false, false, re1);
 		businessGroupService.addResourceTo(group1, re2);
 		
 		BusinessGroup group2 = businessGroupService
-				.createBusinessGroup(author, "gcoach-2", "Group coaching", null, null, 0, 15, false, false, re1);
+				.createBusinessGroup(author, "gcoach-2", "Group coaching", BusinessGroup.BUSINESS_TYPE,
+						null, null, 0, 15, false, false, re1);
 		businessGroupService.addResourceTo(group2, re2);
 		
 		Identity participantGrp1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-7a");

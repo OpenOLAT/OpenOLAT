@@ -378,7 +378,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 	public void getLearningResourcesAsStudentWithGroups() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-lb-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studg", "tg", null, null, false, false, re);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studg", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
@@ -402,7 +403,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-lb-");
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-lb-");
 		RepositoryEntry re = JunitTestHelper.deployBasicCourse(owner);
-		BusinessGroup group = businessGroupService.createBusinessGroup(owner, "studg", "tg", null, null, false, false, re);
+		BusinessGroup group = businessGroupService.createBusinessGroup(owner, "studg", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
@@ -589,7 +591,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 	public void getParticipantRepositoryEntryWithGroups() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-ld-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studh", "th", null, null, false, false, re);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "studh", "th", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
@@ -636,7 +639,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 	public void getLearningResourcesAsTeacherWithGroups() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-teac-lb-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 
@@ -1113,10 +1117,12 @@ public class RepositoryManagerTest extends OlatTestCase {
 		//entry 2 is only linked to group 2
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(owner, "leaving-group-1", "tg", null, null, false, false, re1);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(owner, "leaving-group-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re1);
 	    businessGroupRelationDao.addRole(participant, group1, GroupRoles.participant.name());
 		
-	    BusinessGroup group2 = businessGroupService.createBusinessGroup(owner, "leaving-group-2", "tg", null, null, false, false, re1);
+	    BusinessGroup group2 = businessGroupService.createBusinessGroup(owner, "leaving-group-2", "tg", BusinessGroup.BUSINESS_TYPE,
+	    		null, null, false, false, re1);
 	    businessGroupRelationDao.addRole(participant, group2, GroupRoles.participant.name());
 	    businessGroupRelationDao.addRelationToResource(group2, re2);
 		dbInstance.commitAndCloseSession();

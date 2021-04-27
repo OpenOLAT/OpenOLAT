@@ -39,6 +39,7 @@ public class BusinessGroupQueryParams {
 	private String courseTitle;
 	private String externalId;
 	private String idRef;
+	private List<String> technicalTypes;
 	
 	private boolean owner;
 	private boolean attendee;
@@ -117,6 +118,14 @@ public class BusinessGroupQueryParams {
 
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+
+	public List<String> getTechnicalTypes() {
+		return technicalTypes;
+	}
+
+	public void setTechnicalTypes(List<String> technicalTypes) {
+		this.technicalTypes = technicalTypes;
 	}
 
 	public boolean isOwner() {

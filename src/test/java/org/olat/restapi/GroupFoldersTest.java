@@ -136,8 +136,8 @@ public class GroupFoldersTest extends OlatRestTestCase {
 	    // 1) context one: learning groups
 		RepositoryEntry c1 =  JunitTestHelper.createAndPersistRepositoryEntry();
 	    // create groups without waiting list
-	    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
-	    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
+	    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, c1);
+	    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, c1);
 	    DBFactory.getInstance().commitAndCloseSession();
 	    
 	    //permission to see owners and participants

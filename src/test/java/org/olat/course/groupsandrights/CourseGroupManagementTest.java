@@ -91,10 +91,10 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		RepositoryEntry course1 =  JunitTestHelper.createAndPersistRepositoryEntry();
 
 		// create groups without waitinglist
-		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, 0, 10, false, false,
-				course1);
-		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, 0, 10, false, false,
-				course1);
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, BusinessGroup.BUSINESS_TYPE,
+				0, 10, false, false, course1);
+		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.BUSINESS_TYPE,
+				0, 10, false, false, course1);
 		// members
 		businessGroupRelationDao.addRole(id1, g2, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
@@ -103,10 +103,10 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(id3, g1, GroupRoles.coach.name());
 
 		// groups
-		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, -1, -1, false, false,
-				course1);
-		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g4", null, -1, -1, false, false,
-				course1);
+		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, course1);
+		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g4", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, course1);
 		// members
 		businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id1, g4, GroupRoles.participant.name());
@@ -157,10 +157,10 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		RepositoryEntry course1 =  JunitTestHelper.createAndPersistRepositoryEntry();
 
 		// create groups without waitinglist
-		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, 0, 10, false, false,
-				course1);
-		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, 0, 10, false, false,
-				course1);
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, BusinessGroup.BUSINESS_TYPE,
+				0, 10, false, false, course1);
+		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.BUSINESS_TYPE,
+				0, 10, false, false, course1);
 		// members
 		businessGroupRelationDao.addRole(id1, g2, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
@@ -177,10 +177,10 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		areaManager.addBGToBGArea(g2, a3);
 
 		// groups
-		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, -1, -1, false, false,
-				course1);
-		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g4", null, -1, -1, false, false,
-				course1);
+		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, course1);
+		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g4", null, BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, course1);
 		// members
 		businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id1, g4, GroupRoles.participant.name());

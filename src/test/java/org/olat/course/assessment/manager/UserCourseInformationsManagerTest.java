@@ -200,7 +200,8 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//add user to a group
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "initial launch", "tg", null, null, false, false, courseEntry);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "initial launch", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, courseEntry);
 	    businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
 	    businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 	    dbInstance.commitAndCloseSession();

@@ -150,8 +150,8 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-2");
 		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup businessGroup = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", -1, -1, false,
-				false, resource);
+		BusinessGroup businessGroup = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 		final OLATResourceable ores = new OLATResourceable() {
 			@Override
 			public String getResourceableTypeName() {
@@ -205,8 +205,8 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-2");
 		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup businessGroup = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", -1, -1, false,
-				false, resource);
+		BusinessGroup businessGroup = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 		final OLATResourceable ores = new OLATResourceable() {
 			@Override
 			public String getResourceableTypeName() {
@@ -282,8 +282,8 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-2");
 		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup businessGroup = groupService.createBusinessGroup(null, "gdao", "gdao-desc", -1, -1, false, false,
-				resource);
+		BusinessGroup businessGroup = groupService.createBusinessGroup(null, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
 		final OLATResourceable ores = new OLATResourceable() {
 			@Override
 			public String getResourceableTypeName() {

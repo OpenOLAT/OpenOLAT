@@ -238,7 +238,8 @@ public class LectureServiceTest extends OlatTestCase {
 		Identity coachGroup = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-grp");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		//add business group
-		BusinessGroup group = businessGroupService.createBusinessGroup(coachGroup, "For lectures", "tg", null, null, false, false, entry);
+		BusinessGroup group = businessGroupService.createBusinessGroup(coachGroup, "For lectures", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, entry);
 	    businessGroupService.addResourceTo(group, entry);
 	    dbInstance.commit();
 	    

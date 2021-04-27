@@ -121,11 +121,13 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 			} else {
 				log.debug("No group for project-broker exist => create a new one");
 				RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, -1, -1, false, false, re);
+				accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, BusinessGroup.BUSINESS_TYPE,//TODO group type
+						-1, -1, false, false, re);
 				int i = 2;
 				while (accountManagerGroup == null) {
 					// group with this name exist already, try another name
-					accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName + " _" + i, groupDescription, -1, -1, false, false, re);
+					accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName + " _" + i, groupDescription, BusinessGroup.BUSINESS_TYPE,//TODO group type
+							-1, -1, false, false, re);
 					i++;
 				}
 				log.debug("createAndPersistBusinessGroup businessgroup={}", accountManagerGroup);			
@@ -232,13 +234,15 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 		RepositoryEntry re = cgm.getCourseEntry();
 
 		log.debug("createProjectGroupFor groupName={}", groupName);
-		BusinessGroup projectGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, -1, -1, false, false, re);
+		BusinessGroup projectGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, BusinessGroup.BUSINESS_TYPE,//TODO group type
+				-1, -1, false, false, re);
 		// projectGroup could be null when a group with name already exists
 		int counter = 2;
 		while (projectGroup == null) {
 			// name already exist try another one
 			String newGroupName = groupName + " _" + counter ;
-			projectGroup = businessGroupService.createBusinessGroup(identity, newGroupName, groupDescription, -1, -1, false, false, re);
+			projectGroup = businessGroupService.createBusinessGroup(identity, newGroupName, groupDescription, BusinessGroup.BUSINESS_TYPE,//TODO gorup type
+					-1, -1, false, false, re);
 			counter++;
 		}
 		log.debug("Created a new projectGroup={}", projectGroup);

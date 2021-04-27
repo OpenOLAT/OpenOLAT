@@ -65,7 +65,8 @@ public class EnrollmentManagerSerialTest extends OlatTestCase {
 		Identity waiter1 = JunitTestHelper.createAndPersistIdentityAsRndUser("en-wait-3");
 		Identity out = JunitTestHelper.createAndPersistIdentityAsRndUser("en-out-4");
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(coach, "en-1", "en-1", 0, 10, true, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(coach, "en-1", "en-1", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, resource);
 		businessGroupRelationDao.addRole(participant1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant2, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(waiter1, group, GroupRoles.waiting.name());
@@ -121,7 +122,8 @@ public class EnrollmentManagerSerialTest extends OlatTestCase {
 		Identity waiter1 = JunitTestHelper.createAndPersistIdentityAsRndUser("en-wait-3");
 		Identity out = JunitTestHelper.createAndPersistIdentityAsRndUser("en-out-4");
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(coach, "en-1", "en-1", 0, 10, false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(coach, "en-1", "en-1", BusinessGroup.BUSINESS_TYPE,
+				0, 10, false, false, resource);
 		
 		businessGroupRelationDao.addRole(participant1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant2, group, GroupRoles.participant.name());
@@ -186,9 +188,12 @@ public class EnrollmentManagerSerialTest extends OlatTestCase {
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
 		BGArea area = areaManager.createAndPersistBGArea("en-area-" + areaName, "description:" + areaName, resource.getOlatResource());
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "en-area-group", "area-group-desc", 0, 10, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "en-group-2", "area-group-desc", 0, 10, true, false, resource);
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "en-group-3", "area-group-desc", 0, 10, true, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "en-area-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "en-group-2", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, resource);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "en-group-3", "area-group-desc",BusinessGroup.BUSINESS_TYPE, 
+				0, 10, true, false, resource);
 		
 		businessGroupRelationDao.addRole(participant1, group1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant2, group2, GroupRoles.participant.name());

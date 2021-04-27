@@ -77,6 +77,9 @@ public class BusinessGroupToSearch implements Persistable {
 	@Column(name="groupname", nullable=true, insertable=true, updatable=true)
 	private String name;
 	
+	@Column(name="technical_type", nullable=true, insertable=true, updatable=false)
+	private String technicalType;
+	
 	@Column(name="external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
 	@Column(name="managed_flags", nullable=true, insertable=true, updatable=true)
@@ -115,6 +118,10 @@ public class BusinessGroupToSearch implements Persistable {
 
 	public String getName() {
 		return name;
+	}
+	
+	public String getTechnicalType() {
+		return technicalType;
 	}
 
 	public String getDescription() {

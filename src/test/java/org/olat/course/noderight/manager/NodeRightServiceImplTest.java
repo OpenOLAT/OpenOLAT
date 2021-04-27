@@ -1186,6 +1186,11 @@ public class NodeRightServiceImplTest {
 		}
 
 		@Override
+		public String getTechnicalType() {
+			return BusinessGroup.BUSINESS_TYPE;
+		}
+
+		@Override
 		public boolean equalsByPersistableKey(Persistable persistable) {
 			return false;
 		}

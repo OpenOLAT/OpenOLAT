@@ -19,9 +19,12 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupQueryParams;
 
 /**
@@ -48,6 +51,7 @@ public class SelectBusinessGroupCourseAuthorController extends AbstractSelectBus
 	@Override
 	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		params.setAuthorConnection(true);
 		return params;
 	}
@@ -55,6 +59,7 @@ public class SelectBusinessGroupCourseAuthorController extends AbstractSelectBus
 	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		params.setAuthorConnection(true);
 		return params;
 	}

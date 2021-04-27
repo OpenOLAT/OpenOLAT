@@ -927,7 +927,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		dbInstance.commit();
 
 		// add 2 participants to a business group linked to the repository entry
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "count relation 1", "tg", null, null, false, false, entry);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "count relation 1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, entry);
 	    businessGroupRelationDao.addRole(coach1, group, GroupRoles.coach.name());
 	    businessGroupRelationDao.addRole(participant1, group, GroupRoles.participant.name());
 	    businessGroupRelationDao.addRole(participant2, group, GroupRoles.participant.name());
@@ -1005,7 +1006,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		// add 2 participants to a business group linked to the repository entry
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "lectures 2", "tg", null, null, false, false, entry);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "lectures 2", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, entry);
 	    businessGroupRelationDao.addRole(coach1, group, GroupRoles.coach.name());
 	    businessGroupRelationDao.addRole(participant3, group, GroupRoles.participant.name());
 	    businessGroupRelationDao.addRole(participant4, group, GroupRoles.participant.name());

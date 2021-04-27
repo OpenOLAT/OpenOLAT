@@ -88,9 +88,11 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "assessment-tool-bg-1", "assessment-tool-bg-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "assessment-tool-bg-1", "assessment-tool-bg-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, entry);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "assessment-tool-bg-2", "assessment-tool-bg-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "assessment-tool-bg-2", "assessment-tool-bg-2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group2, entry);
 		
 		businessGroupRelationDao.addRole(assessedIdentity1, group1, GroupRoles.participant.name());
@@ -197,9 +199,11 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "assessment-tool-bg-1", "assessment-tool-bg-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "assessment-tool-bg-1", "assessment-tool-bg-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, entry);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "assessment-tool-bg-2", "assessment-tool-bg-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "assessment-tool-bg-2", "assessment-tool-bg-2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group2, entry);
 		
 		businessGroupRelationDao.addRole(assessedIdentity1, group1, GroupRoles.participant.name());
@@ -288,7 +292,8 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "assessment-tool-bg-1", "assessment-tool-bg-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "assessment-tool-bg-1", "assessment-tool-bg-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, entry);
 		
 		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());

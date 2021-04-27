@@ -127,7 +127,8 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//add business group
-		BusinessGroup group = businessGroupService.createBusinessGroup(coachGroup, "Relation 1", "tg", null, null, false, false, re);
+		BusinessGroup group = businessGroupService.createBusinessGroup(coachGroup, "Relation 1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 	    businessGroupService.addResourceTo(group, re);
 	    dbInstance.commit();
 	    

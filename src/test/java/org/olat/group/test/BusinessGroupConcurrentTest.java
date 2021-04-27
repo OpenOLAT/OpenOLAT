@@ -60,7 +60,8 @@ public class BusinessGroupConcurrentTest extends OlatTestCase {
 	
 	@Test
 	public void concurrentSetLastUsageFor_multipleUser() {
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		dbInstance.commit();
 
 		int numOfThreads = 25;
@@ -95,7 +96,8 @@ public class BusinessGroupConcurrentTest extends OlatTestCase {
 	@Test
 	public void concurrentSetLastUsageFor_singleUser() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("group-cc-single-" + UUID.randomUUID().toString());
-		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 
 		int numOfThreads = 25;

@@ -61,9 +61,12 @@ public class ContactDAOTest extends OlatTestCase {
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("cdao-4-" + UUID.randomUUID().toString());
 		Identity id5 = JunitTestHelper.createAndPersistIdentityAsUser("cdao-5-" + UUID.randomUUID().toString());
 		//create 3 groups
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gdlo", "gdlo-desc", 0, 5, true, false, true, true, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gdmo", "gdmo-desc", 0, 5, true, false, false, true, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gdno", "gdno-desc", 0, 5, true, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gdlo", "gdlo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, true, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gdmo", "gdmo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, true, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gdno", "gdno-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//id1 -> group 1 and 2
@@ -128,9 +131,12 @@ public class ContactDAOTest extends OlatTestCase {
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("ddao-4-" + UUID.randomUUID().toString());
 		Identity id5 = JunitTestHelper.createAndPersistIdentityAsUser("ddao-5-" + UUID.randomUUID().toString());
 		//create 3 groups
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gdoo", "gdoo-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gdpo", "gdpo-desc", 0, 5, true, false, false, true, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gdqo", "gdqo-desc", 0, 5, true, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gdoo", "gdoo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gdpo", "gdpo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, true, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gdqo", "gdqo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//id1 -> group 1 and 2
@@ -193,9 +199,12 @@ public class ContactDAOTest extends OlatTestCase {
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("edao-4-" + UUID.randomUUID().toString());
 		Identity id5 = JunitTestHelper.createAndPersistIdentityAsUser("edao-5-" + UUID.randomUUID().toString());
 		//create 3 groups
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "geoo", "gdoo-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gepo", "gdpo-desc", 0, 5, true, false, false, true, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "geqo", "gdqo-desc", 0, 5, true, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "geoo", "gdoo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gepo", "gdpo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, true, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "geqo", "gdqo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//id1 -> group 1 and 2
@@ -253,9 +262,12 @@ public class ContactDAOTest extends OlatTestCase {
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("fdao-4-" + UUID.randomUUID().toString());
 		Identity id5 = JunitTestHelper.createAndPersistIdentityAsUser("fdao-5-" + UUID.randomUUID().toString());
 		//create 3 groups
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gfoo", "gfoo-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gfpo", "gfpo-desc", 0, 5, true, false, false, true, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gfqo", "gfqo-desc", 0, 5, true, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gfoo", "gfoo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gfpo", "gfpo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, true, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gfqo", "gfqo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//id1 -> group 1 and 2
@@ -311,9 +323,12 @@ public class ContactDAOTest extends OlatTestCase {
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("fdao-4-" + UUID.randomUUID().toString());
 		Identity id5 = JunitTestHelper.createAndPersistIdentityAsUser("fdao-5-" + UUID.randomUUID().toString());
 		//create 3 groups
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gfoo", "gfoo-desc", 0, 5, true, false, true, false, false);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gfpo", "gfpo-desc", 0, 5, true, false, false, true, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gfqo", "gfqo-desc", 0, 5, true, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "gfoo", "gfoo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "gfpo", "gfpo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, true, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "gfqo", "gfqo-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 5, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//id1 -> group 1 and 2

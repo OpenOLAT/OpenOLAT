@@ -122,7 +122,8 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		//create a group with owner and participant
 		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-4-");
 		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-5-");
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Chat-1-", "testGetBuddyStats_mustBeEmpty", 0, 10, false, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Chat-1-", "testGetBuddyStats_mustBeEmpty", BusinessGroup.BUSINESS_TYPE,
+				0, 10, false, false, null);
 		businessGroupRelationDao.addRole(chatter1, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(chatter2, group, GroupRoles.participant.name());
 		dbInstance.commit();
@@ -144,7 +145,8 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		//create a group with owner and participant
 		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-6-");
 		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-7-");
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Chat-2-", "testGetBuddyStats_visible", 0, 10, false, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Chat-2-", "testGetBuddyStats_visible", BusinessGroup.BUSINESS_TYPE,
+				0, 10, false, false, null);
 		businessGroupRelationDao.addRole(chatter1, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(chatter2, group, GroupRoles.participant.name());
 		dbInstance.commit();

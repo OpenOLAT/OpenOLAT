@@ -58,7 +58,7 @@ public abstract class GTACoachedListController extends FormBasicController {
 			
 			ModuleConfiguration config = gtaNode.getModuleConfiguration();
 			boolean assignment = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
-			layoutCont.contextPut("assignmentEnabled", new Boolean(assignment));
+			layoutCont.contextPut("assignmentEnabled", Boolean.valueOf(assignment));
 			
 			boolean submit = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
 			layoutCont.contextPut("submitEnabled", submit);

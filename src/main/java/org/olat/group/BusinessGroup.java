@@ -49,6 +49,8 @@ public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateIn
 	
 	/** the max length for the group name.*/
 	public static final int MAX_GROUP_NAME_LENGTH = 255;
+	
+	public static final String BUSINESS_TYPE = "business";
 
 	/**
 	 * @return The group display name (not system unique)
@@ -69,6 +71,8 @@ public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateIn
 	 * @param description the description of this group. Might be NULL
 	 */
 	public void setDescription(String description);
+	
+	public String getTechnicalType();
 	
 	/**
 	 * 

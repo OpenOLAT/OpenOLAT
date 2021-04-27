@@ -98,6 +98,7 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
 		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
 		params.setPublicGroups(Boolean.TRUE);
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		return params;
 	}
 
@@ -105,6 +106,7 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setPublicGroups(Boolean.TRUE);
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		return params;
 	}
 

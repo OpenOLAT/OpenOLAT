@@ -824,11 +824,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			// 2) add coached groups
 			if (!userCourseEnv.getCoachedGroups().isEmpty()) {
 				for (BusinessGroup group: userCourseEnv.getCoachedGroups()) {
-					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
-					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-					link.setUserObject(group);
-					link.setEnabled(!assessmentLock);
-					myCourse.addComponent(link);
+					if(BusinessGroup.BUSINESS_TYPE.equals(group.getTechnicalType())) {
+						Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
+						link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+						link.setUserObject(group);
+						link.setEnabled(!assessmentLock);
+						myCourse.addComponent(link);
+					}
 					
 				}
 			}
@@ -836,11 +838,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			// 3) add participating groups
 			if (!userCourseEnv.getParticipatingGroups().isEmpty()) {
 				for (BusinessGroup group: userCourseEnv.getParticipatingGroups()) {
-					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
-					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-					link.setUserObject(group);
-					link.setEnabled(!assessmentLock);
-					myCourse.addComponent(link);
+					if(BusinessGroup.BUSINESS_TYPE.equals(group.getTechnicalType())) {
+						Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
+						link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+						link.setUserObject(group);
+						link.setEnabled(!assessmentLock);
+						myCourse.addComponent(link);
+					}
 				}
 			}
 

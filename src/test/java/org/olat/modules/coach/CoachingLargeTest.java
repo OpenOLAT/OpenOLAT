@@ -174,8 +174,10 @@ public class CoachingLargeTest extends OlatTestCase {
 			URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 			RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);// 3 
 			// create groups without waiting list
-			BusinessGroup g1 = businessGroupService.createBusinessGroup(author, "coach-g1", null, new Integer(0), new Integer(10), false, false, re);
-			BusinessGroup g2 = businessGroupService.createBusinessGroup(author, "coach-g2", null, new Integer(0), new Integer(10), false, false, re);
+			BusinessGroup g1 = businessGroupService.createBusinessGroup(author, "coach-g1", null, BusinessGroup.BUSINESS_TYPE,
+				Integer.valueOf(0), Integer.valueOf(10), false, false, re);
+			BusinessGroup g2 = businessGroupService.createBusinessGroup(author, "coach-g2", null, BusinessGroup.BUSINESS_TYPE,
+				Integer.valueOf(0), Integer.valueOf(10), false, false, re);
 	    
 			//permission to see owners and participants
 			businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);

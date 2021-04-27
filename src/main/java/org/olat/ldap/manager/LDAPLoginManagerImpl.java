@@ -1592,7 +1592,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		if(businessGroups.isEmpty()) {
 			String managedFlags = BusinessGroupManagedFlag.membersmanagement.name() + "," + BusinessGroupManagedFlag.delete.name();
 			managedBusinessGroup = businessGroupService
-					.createBusinessGroup(null, externalId, externalId, externalId, managedFlags, null, null, false, false, null);
+					.createBusinessGroup(null, externalId, externalId, BusinessGroup.BUSINESS_TYPE,
+							externalId, managedFlags, null, null, false, false, null);
 
 		} else if(businessGroups.size() == 1) {
 			managedBusinessGroup = businessGroups.get(0);

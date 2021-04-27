@@ -171,15 +171,15 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private DB dbInstance;
 
 	@Override
-	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
+	public BusinessGroup createBusinessGroup(Identity creator, String name, String description, String technicalType,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			RepositoryEntry re) {
-		return createBusinessGroup(creator, name,  description, null, null,
+		return createBusinessGroup(creator, name,  description, technicalType, null, null,
 				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled, re);
 	}
 
 	@Override
-	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
+	public BusinessGroup createBusinessGroup(Identity creator, String name, String description, String technicalType,
 			String externalId, String managedFlags, Integer minParticipants, Integer maxParticipants,
 			boolean waitingListEnabled, boolean autoCloseRanksEnabled, RepositoryEntry re) {
 		
@@ -187,7 +187,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			managedFlags = null;
 		}
 		
-		BusinessGroup group = businessGroupDAO.createAndPersist(creator, name, description, externalId, managedFlags,
+		BusinessGroup group = businessGroupDAO.createAndPersist(creator, name, description, technicalType, externalId, managedFlags,
 				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled, false, false, false, null);
 		if(re != null) {
 			addResourceTo(group, re);
@@ -373,7 +373,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			boolean copyRelations, Boolean allowToLeave) {
 
 		// 1. create group, set waitingListEnabled, enableAutoCloseRanks like source business-group
-		BusinessGroup newGroup = businessGroupDAO.createAndPersist(null, targetName, targetDescription, null, null,
+		BusinessGroup newGroup = businessGroupDAO.createAndPersist(null, targetName, targetDescription,
+				sourceBusinessGroup.getTechnicalType(), null, null,
 				targetMin, targetMax, sourceBusinessGroup.getWaitingListEnabled(), sourceBusinessGroup.getAutoCloseRanksEnabled(),
 				false, false, false, allowToLeave);
 		// return immediately with null value to indicate an already take groupname

@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.StatisticsBusinessGroupRow;
@@ -64,6 +65,7 @@ public class BusinessGroupListController extends AbstractStandardBusinessGroupLi
 	@Override
 	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
 		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		//security
 		if(!params.isAttendee() && !params.isOwner() && !params.isWaiting()) {
 			params.setOwner(true);
@@ -76,6 +78,7 @@ public class BusinessGroupListController extends AbstractStandardBusinessGroupLi
 	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		params.setAttendee(true);
 		params.setOwner(true);
 		params.setWaiting(true);

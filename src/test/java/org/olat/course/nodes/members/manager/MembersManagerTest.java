@@ -121,7 +121,8 @@ public class MembersManagerTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(part2, entry, GroupRoles.participant.name());
 		
 		// add groups
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "memberg", "tg", null, null, false, false, entry);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "memberg", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, entry);
 		Identity coach3 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-3");
 	    businessGroupRelationDao.addRole(coach3, group, GroupRoles.coach.name());
 	    Identity part4 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-4");
@@ -152,7 +153,8 @@ public class MembersManagerTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(coach2, entry, GroupRoles.coach.name());
 		
 		// add groups
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "memberg-1", "tg", null, null, false, false, entry);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "memberg-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, entry);
 		Identity coach3 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-8");
 	    businessGroupRelationDao.addRole(coach3, group1, GroupRoles.coach.name());
 	    Identity part4 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-9");
@@ -161,7 +163,8 @@ public class MembersManagerTest extends OlatTestCase {
 	    businessGroupRelationDao.addRole(part5, group1, GroupRoles.participant.name());
 	    
 	    Identity coach6 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-11");
-	    BusinessGroup group2 = businessGroupService.createBusinessGroup(coach6, "memberg-2", "tg", null, null, false, false, entry);
+	    BusinessGroup group2 = businessGroupService.createBusinessGroup(coach6, "memberg-2", "tg", BusinessGroup.BUSINESS_TYPE,
+	    		null, null, false, false, entry);
 	    Identity part7 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-12");
 	    businessGroupRelationDao.addRole(part7, group2, GroupRoles.participant.name());
 		
@@ -210,7 +213,8 @@ public class MembersManagerTest extends OlatTestCase {
 		
 		// add group
 	    Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-15");
-	    BusinessGroup group = businessGroupService.createBusinessGroup(coach1, "memberg-2", "tg", null, null, false, false, entry);
+	    BusinessGroup group = businessGroupService.createBusinessGroup(coach1, "memberg-2", "tg", BusinessGroup.BUSINESS_TYPE,
+	    		null, null, false, false, entry);
 	    Identity part2 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-16");
 		businessGroupRelationDao.addRole(part2, group, CurriculumRoles.participant.name());
 	    Identity part3 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-17");
@@ -255,7 +259,8 @@ public class MembersManagerTest extends OlatTestCase {
 		BGArea area = areaManager.createAndPersistBGArea("area-mem-1", "description:", entry.getOlatResource());
 		
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-19");
-		BusinessGroup group = businessGroupService.createBusinessGroup(coach1, "area-group", "area-group-desc", 0, -1, false, false, entry);
+		BusinessGroup group = businessGroupService.createBusinessGroup(coach1, "area-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, entry);
 		areaManager.addBGToBGArea(group, area);
 		
 		Identity part2 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-20");

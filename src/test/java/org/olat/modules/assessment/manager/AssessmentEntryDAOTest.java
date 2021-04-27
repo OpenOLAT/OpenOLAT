@@ -688,9 +688,11 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		
-		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "assessment-bg-1", "assessment-bg-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "assessment-bg-1", "assessment-bg-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group1, entry);
-		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "assessment-bg-2", "assessment-bg-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "assessment-bg-2", "assessment-bg-2-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group2, entry);
 		
 		businessGroupRelationDao.addRole(assessedIdentity1, group1, GroupRoles.participant.name());
@@ -1112,7 +1114,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-bg-part-1", "rel-bgis-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-bg-part-1", "rel-bgis-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(group, entry);
 		businessGroupRelationDao.addRelationToResource(group, refEntry);
 		businessGroupRelationDao.addRole(assessedIdentity1, group, GroupRoles.participant.name());

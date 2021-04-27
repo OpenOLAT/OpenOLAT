@@ -78,6 +78,7 @@ CREATE TABLE o_gp_business (
   creationdate date,
   lastusage date,
   groupname varchar2(255 char),
+  technical_type varchar2(32 char) default 'business' not null,
   external_id varchar2(64 char),
   managed_flags varchar2(255 char),
   descr varchar2(4000),
@@ -3760,6 +3761,7 @@ alter table o_gp_business add constraint idx_bgp_rsrc foreign key (fk_resource) 
 
 create index gp_name_idx on o_gp_business (groupname);
 create index idx_grp_lifecycle_soft_idx on o_gp_business (external_id);
+create index gp_tech_type_idx on o_gp_business (technical_type);
 
 alter table o_bs_namedgroup add constraint FKBAFCBBC4B85B522C foreign key (secgroup_id) references o_bs_secgroup (id);
 create index FKBAFCBBC4B85B522C on o_bs_namedgroup (secgroup_id);

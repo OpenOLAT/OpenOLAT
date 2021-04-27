@@ -309,7 +309,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(id1, re2, GroupRoles.participant.name());
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re1);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re1);
 	    businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -364,7 +365,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-gen-3-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 	    businessGroupRelationDao.addRole(id2, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -419,7 +421,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	public void queryByTypeLimitAccess() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-1-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-1", "tg", null, null, false, false, re);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -442,7 +445,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	public void queryByTypeLimitAccess_withoutInstitution() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-2-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-2", "tg", null, null, false, false, re);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-2", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -465,7 +469,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	public void queryByTypeLimitAccess_withInstitution() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-3-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-3", "tg", null, null, false, false, re);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-3", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 

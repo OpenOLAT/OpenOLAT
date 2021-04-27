@@ -129,12 +129,14 @@ public class NewBGController extends BasicController {
 				newGroups = new ArrayList<>();
 				if (bulkMode) {
 					for(String bgName:groupCreateController.getGroupNames()) {
-						BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, re);
+						BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, BusinessGroup.BUSINESS_TYPE,
+								bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, re);
 						newGroups.add(group);
 					}
 				} else {
 					String bgName = groupCreateController.getGroupName();
-					BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax, enableWaitingList, enableAutoCloseRanks, re);
+					BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, BusinessGroup.BUSINESS_TYPE,
+							bgMin, bgMax, enableWaitingList, enableAutoCloseRanks, re);
 					newGroups.add(group);
 					if(wildcard != null && Boolean.TRUE.equals(wildcard)) {
 						usess.putEntry("wild_card_" + group.getKey(), Boolean.TRUE);

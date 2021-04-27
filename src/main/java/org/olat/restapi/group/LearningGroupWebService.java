@@ -254,7 +254,7 @@ public class LearningGroupWebService {
 
 		Integer minPart = normalize(group.getMinParticipants());
 		Integer maxPart = normalize(group.getMaxParticipants());
-		BusinessGroup newBG = bgs.createBusinessGroup(identity, group.getName(), group.getDescription(),
+		BusinessGroup newBG = bgs.createBusinessGroup(identity, group.getName(), group.getDescription(), BusinessGroup.BUSINESS_TYPE,
 				group.getExternalId(), group.getManagedFlags(), minPart, maxPart, false, false, null);
 		GroupVO savedVO = ObjectFactory.get(newBG);
 		return Response.ok(savedVO).build();

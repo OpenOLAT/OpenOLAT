@@ -128,13 +128,14 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 			// create business-group with waiting-list
 			String bgWithWaitingListName = "Group with WaitingList";
 			String bgWithWaitingListDesc = "some short description for Group with WaitingList";
-			Boolean enableWaitinglist = new Boolean(true);
-			Boolean enableAutoCloseRanks = new Boolean(true);
+			Boolean enableWaitinglist = Boolean.TRUE;
+			Boolean enableAutoCloseRanks = Boolean.TRUE;
 			RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 			log.info("testAddToWaitingListAndFireEvent: resource=" + resource);
 			bgWithWaitingList = businessGroupService.createBusinessGroup(id1, bgWithWaitingListName,
-					bgWithWaitingListDesc, -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
-			bgWithWaitingList.setMaxParticipants(new Integer(2));
+					bgWithWaitingListDesc, BusinessGroup.BUSINESS_TYPE,
+					-1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
+			bgWithWaitingList.setMaxParticipants(Integer.valueOf(2));
 			log.info("TEST bgWithWaitingList=" + bgWithWaitingList);
 			log.info("TEST bgWithWaitingList.getMaxParticipants()=" + bgWithWaitingList.getMaxParticipants() );
 			log.info("TEST bgWithWaitingList.getWaitingListEnabled()=" + bgWithWaitingList.getWaitingListEnabled() );
@@ -267,7 +268,8 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("enroller");
 		RepositoryEntry addedEntry = JunitTestHelper.deployBasicCourse(author);
 		CourseEnvironment cenv = CourseFactory.createCourse(addedEntry, "Test-Enroll", "Test", "Test enrollment with concurrent users").getCourseEnvironment();
-		BusinessGroup group = businessGroupService.createBusinessGroup(id1, "Enrollment", "Enroll", new Integer(1), new Integer(10), true, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(id1, "Enrollment", "Enroll", BusinessGroup.BUSINESS_TYPE,
+				Integer.valueOf(1), Integer.valueOf(10), true, false, null);
 		Assert.assertNotNull(group);
 		dbInstance.commitAndCloseSession();
 

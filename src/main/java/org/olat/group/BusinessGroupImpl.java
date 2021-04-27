@@ -93,6 +93,9 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 	private String description;
 	@Column(name="groupname", nullable=true, insertable=true, updatable=true)
 	private String name;
+
+	@Column(name="technical_type", nullable=true, insertable=true, updatable=false)
+	private String technicalType;
 	
 	@Column(name="external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
@@ -155,7 +158,7 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		setName(groupName);
 		setDescription(description);
 		// per default no waiting-list
-		Boolean disabled = new Boolean(false);
+		Boolean disabled = Boolean.valueOf(false);
 		setWaitingListEnabled(disabled);
 		setAutoCloseRanksEnabled(disabled);
 		setLastUsage(new Date());
@@ -182,33 +185,28 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		this.lastModified = date;
 	}
 
-
-	/**
-	 * @param groupName
-	 */
+	@Override
 	public void setName(String groupName) {
 		this.name = groupName;
 
 	}
 
-	/**
-	 * @see org.olat.group.BusinessGroup#getDescription()
-	 */
+	@Override
 	public String getDescription() {
 		return this.description;
 	}
 
-	/**
-	 * @see org.olat.group.BusinessGroup#setDescription(java.lang.String)
-	 */
+	@Override
 	public void setDescription(final String descriptionP) {
 		this.description = descriptionP;
 	}
 
+	@Override
 	public String getExternalId() {
 		return externalId;
 	}
 
+	@Override
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
 	}
@@ -231,65 +229,85 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		this.managedFlagsString = managedFlags;
 	}
 
-	/**
-	 * @see org.olat.group.BusinessGroup#getName()
-	 */
+	@Override
 	public String getName() {
 		return name;
 	}
+	
+	public String getTechnicalType() {
+		return technicalType;
+	}
 
+	public void setTechnicalType(String technicalType) {
+		this.technicalType = technicalType;
+	}
+
+	@Override
 	public boolean isOwnersVisibleIntern() {
 		return ownersVisibleIntern;
 	}
 
+	@Override
 	public void setOwnersVisibleIntern(boolean visible) {
 		this.ownersVisibleIntern = visible;
 	}
 
+	@Override
 	public boolean isParticipantsVisibleIntern() {
 		return participantsVisibleIntern;
 	}
 
+	@Override
 	public void setParticipantsVisibleIntern(boolean visible) {
 		this.participantsVisibleIntern = visible;
 	}
 
+	@Override
 	public boolean isWaitingListVisibleIntern() {
 		return waitingListVisibleIntern;
 	}
 
+	@Override
 	public void setWaitingListVisibleIntern(boolean visible) {
 		this.waitingListVisibleIntern = visible;
 	}
 
+	@Override
 	public boolean isOwnersVisiblePublic() {
 		return ownersVisiblePublic;
 	}
 
+	@Override
 	public void setOwnersVisiblePublic(boolean visible) {
 		this.ownersVisiblePublic = visible;
 	}
 
+	@Override
 	public boolean isParticipantsVisiblePublic() {
 		return participantsVisiblePublic;
 	}
 
+	@Override
 	public void setParticipantsVisiblePublic(boolean visible) {
 		this.participantsVisiblePublic = visible;
 	}
 
+	@Override
 	public boolean isWaitingListVisiblePublic() {
 		return waitingListVisiblePublic;
 	}
 
+	@Override
 	public void setWaitingListVisiblePublic(boolean visible) {
 		this.waitingListVisiblePublic = visible;
 	}
 
+	@Override
 	public boolean isDownloadMembersLists() {
 		return downloadMembersLists;
 	}
 
+	@Override
 	public void setDownloadMembersLists(boolean visible) {
 		this.downloadMembersLists = visible;
 	}
@@ -304,6 +322,7 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		this.allowToLeave = allow;
 	}
 
+	@Override
 	public OLATResource getResource() {
 		return resource;
 	}
@@ -312,6 +331,7 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		this.resource = resource;
 	}
 
+	@Override
 	public Group getBaseGroup() {
 		return baseGroup;
 	}
@@ -323,6 +343,7 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 	/**
 	 * @return Returns the lastUsage.
 	 */
+	@Override
 	public Date getLastUsage() {
 		return lastUsage;
 	}
@@ -332,68 +353,62 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 	 * 
 	 * @param lastUsageP
 	 */
+	@Override
 	public void setLastUsage(Date lastUsage) {
 		this.lastUsage = lastUsage;
 	}
 
-	/**
-	 * @see org.olat.group.BusinessGroup#getDisplayableType(java.util.Locale)
-	 */
-
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
-	 */
+	@Override
 	public String getResourceableTypeName() {
 		return OresHelper.calculateTypeName(BusinessGroup.class);
 	}
 
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
-	 */
+	@Override
 	public Long getResourceableId() {
 		return getKey();
 	}
 
-	/**
-	 * @see org.olat.group.BusinessGroup#getMaxParticipants()
-	 */
+	@Override
 	public Integer getMaxParticipants() {
 		return maxParticipants;
 	}
 
-	/**
-	 * @see org.olat.group.BusinessGroup#setMaxParticipants(java.lang.Integer)
-	 */
+	@Override
 	public void setMaxParticipants(Integer maxParticipants) {
 		boolean maxParticipantsChanged = getMaxParticipants()!=null && !getMaxParticipants().equals(maxParticipants);
 		int oldMaxParticipants = getMaxParticipants()!=null ? getMaxParticipants() : 0;
 		this.maxParticipants = maxParticipants;
 		if(maxParticipantsChanged) {
-		  log.info(Tracing.M_AUDIT, "Max participants value changed for group " + this + " was " + oldMaxParticipants + " changed to " + maxParticipants);
+		  log.info(Tracing.M_AUDIT, "Max participants value changed for group {} was {} changed to {}", this, oldMaxParticipants, maxParticipants);
 		}
 	}
 
+	@Override
 	public Integer getMinParticipants() {
 		return minParticipants;
 	}
 
+	@Override
 	public void setMinParticipants(Integer minParticipants) {
 		this.minParticipants = minParticipants;
 	}
 
-
+	@Override
 	public Boolean getAutoCloseRanksEnabled() {
 		return autoCloseRanksEnabled;
 	}
 
+	@Override
 	public void setAutoCloseRanksEnabled(Boolean autoCloseRanksEnabled) {
 		this.autoCloseRanksEnabled = autoCloseRanksEnabled;
 	}
 
+	@Override
 	public Boolean getWaitingListEnabled() {
 		return waitingListEnabled;
 	}
 
+	@Override
 	public void setWaitingListEnabled(Boolean waitingListEnabled) {
 		this.waitingListEnabled = waitingListEnabled;
 	}

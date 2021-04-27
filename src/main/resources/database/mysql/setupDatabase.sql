@@ -76,6 +76,7 @@ create table if not exists o_gp_business (
    creationdate datetime,
    lastusage datetime,
    groupname varchar(255),
+   technical_type varchar(32) default 'business' not null,
    external_id varchar(64),
    managed_flags varchar(255),
    descr longtext,
@@ -3833,6 +3834,7 @@ alter table o_gp_business add constraint idx_bgp_rsrc foreign key (fk_resource) 
 
 create index gp_name_idx on o_gp_business (groupname);
 create index idx_grp_lifecycle_soft_idx on o_gp_business (external_id);
+create index gp_tech_type_idx on o_gp_business (technical_type);
 
 alter table o_bs_namedgroup add constraint FKBAFCBBC4B85B522C foreign key (secgroup_id) references o_bs_secgroup (id);
 create index groupname_idx on o_bs_namedgroup (groupname);

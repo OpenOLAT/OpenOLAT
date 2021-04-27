@@ -86,7 +86,8 @@ public class BigBlueButtonManagerTest extends OlatTestCase {
 		bigBlueButtonModule.setRecordingHandlerId("unittests");
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-recording-1");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 1", "Delete recording or not", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 1", "Delete recording or not", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording saved - 1", null, null, group, id);
 		dbInstance.commit();
 		
@@ -135,7 +136,8 @@ public class BigBlueButtonManagerTest extends OlatTestCase {
 		bigBlueButtonModule.setRecordingHandlerId("unittests");
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-recording-2");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 2", "Not hold recordings", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 2", "Not hold recordings", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Record all - 2", null, null, group, id);
 		dbInstance.commit();
 		

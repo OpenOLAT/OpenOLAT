@@ -147,7 +147,8 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getMeetings_businessGroup() {
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "Connected group", "Adobe connected group", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "Connected group", "Adobe connected group", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		dbInstance.commit();
 		
 		AdobeConnectMeeting meeting1 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", false, new Date(), 5, new Date(), 5, null, "sco-cid-1", "folder-id", null, null, null, group);

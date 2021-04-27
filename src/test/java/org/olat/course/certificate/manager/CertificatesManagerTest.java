@@ -235,7 +235,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-7");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-8");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(owner);
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "certified-group", "Group with certification", null, null, false, false, entry);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "certified-group", "Group with certification", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, entry);
 	    businessGroupRelationDao.addRole(coach, group, GroupRoles.coach.name());
 	    businessGroupRelationDao.addRole(participant1, group, GroupRoles.participant.name());
 	    businessGroupRelationDao.addRole(participant2, group, GroupRoles.participant.name());

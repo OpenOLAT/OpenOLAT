@@ -213,7 +213,8 @@ public class BGAreaManagerTest extends OlatTestCase {
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		String areaName = UUID.randomUUID().toString();
 		BGArea area = areaManager.createAndPersistBGArea("area-" + areaName, "description:" + areaName, resource.getOlatResource());
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "area-group", "area-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "area-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 
 		dbInstance.commitAndCloseSession();
 		
@@ -228,8 +229,10 @@ public class BGAreaManagerTest extends OlatTestCase {
 		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
 		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 		
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 		dbInstance.commitAndCloseSession();
 		
 		//add the relations
@@ -260,8 +263,10 @@ public class BGAreaManagerTest extends OlatTestCase {
 		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 		BGArea area3 = areaManager.createAndPersistBGArea("area-3-" + areaName, "description:" + areaName, resource.getOlatResource());
 
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 		dbInstance.commitAndCloseSession();
 		
 		//add the relation
@@ -292,9 +297,12 @@ public class BGAreaManagerTest extends OlatTestCase {
 		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
 		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "area-3-group", "area-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "area-3-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 		dbInstance.commitAndCloseSession();
 		
 		//add the relation
@@ -326,10 +334,14 @@ public class BGAreaManagerTest extends OlatTestCase {
 		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
 		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "area-3-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group4 = businessGroupService.createBusinessGroup(null, "area-4-group", "area-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "area-3-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group4 = businessGroupService.createBusinessGroup(null, "area-4-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 		dbInstance.commitAndCloseSession();
 		
 		//add the relation
@@ -380,8 +392,10 @@ public class BGAreaManagerTest extends OlatTestCase {
 		String areaName = UUID.randomUUID().toString();
 		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 		dbInstance.commitAndCloseSession();
 		//add the relations
 		areaManager.addBGToBGArea(group1, area1);
@@ -420,7 +434,8 @@ public class BGAreaManagerTest extends OlatTestCase {
 		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource1.getOlatResource());
 		BGArea area2 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource2.getOlatResource());
 		//create the group
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, null);
 		dbInstance.commitAndCloseSession();
 		//add relations group to courses
 		businessGroupService.addResourceTo(group, resource1);
@@ -462,8 +477,10 @@ public class BGAreaManagerTest extends OlatTestCase {
 		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 		BGArea area3 = areaManager.createAndPersistBGArea("area-3-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 		dbInstance.commitAndCloseSession();
 		//add the relations
 		areaManager.addBGToBGArea(group1, area1);
@@ -503,9 +520,12 @@ public class BGAreaManagerTest extends OlatTestCase {
 		BGArea area1 = areaManager.createAndPersistBGArea("find-group-1-" + areaName, "description:" + areaName, resource.getOlatResource());
 		BGArea area2 = areaManager.createAndPersistBGArea("find-group-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "find-group-1-area", "find-group-in-area-1-desc", 0, -1, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "find-group-2-area", "find-group-in-area-2-desc", 0, -1, false, false, resource);
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "find-group-2-area", "find-group-in-area-3-desc", 0, -1, false, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "find-group-1-area", "find-group-in-area-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "find-group-2-area", "find-group-in-area-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "find-group-2-area", "find-group-in-area-3-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 		dbInstance.commitAndCloseSession();
 		//add the relations
 		areaManager.addBGToBGArea(group1, area1);
@@ -578,8 +598,10 @@ public class BGAreaManagerTest extends OlatTestCase {
 		BGArea area2 = areaManager.createAndPersistBGArea("count-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 		BGArea area3 = areaManager.createAndPersistBGArea("count-3-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "count-1-group", "count-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "count-2-group", "count-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "count-1-group", "count-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "count-2-group", "count-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 		dbInstance.commitAndCloseSession();
 		//add the relations
 		areaManager.addBGToBGArea(group1, area1);
@@ -612,9 +634,12 @@ public class BGAreaManagerTest extends OlatTestCase {
 		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
 		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "area-3-group", "area-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "area-3-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 		dbInstance.commitAndCloseSession();
 		//add the relations
 		areaManager.addBGToBGArea(group1, area1);
@@ -651,9 +676,12 @@ public class BGAreaManagerTest extends OlatTestCase {
 		BGArea area1 = areaManager.createAndPersistBGArea("area-1-" + areaName, "description:" + areaName, resource.getOlatResource());
 		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "area-3-group", "area-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "area-3-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 		dbInstance.commitAndCloseSession();
 		//add the relations
 		areaManager.addBGToBGArea(group1, area1);
@@ -699,9 +727,12 @@ public class BGAreaManagerTest extends OlatTestCase {
 		BGArea area2 = areaManager.createAndPersistBGArea("area-2-" + areaName, "description:" + areaName, resource.getOlatResource());
 		BGArea area3 = areaManager.createAndPersistBGArea("area-3-" + areaName, "description:" + areaName, resource.getOlatResource());
 		//create 2 groups
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", 0, -1, false, false, resource);
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "area-3-group", "area-group-desc", 0, -1, false, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "area-1-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "area-2-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "area-3-group", "area-group-desc", BusinessGroup.BUSINESS_TYPE,
+				0, -1, false, false, resource);
 		dbInstance.commitAndCloseSession();
 		//add the relations
 		areaManager.addBGToBGArea(group1, area1);

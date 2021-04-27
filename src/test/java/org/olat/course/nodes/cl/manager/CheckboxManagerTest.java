@@ -340,7 +340,8 @@ public class CheckboxManagerTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("check-19");
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-check-19");
-		BusinessGroup group = businessGroupDao.createAndPersist(coach, "gcheck", "gcheck-desc", 0, 10, true, true, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(coach, "gcheck", "gcheck-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
 		businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRelationToResource(group, entry);
 		dbInstance.commitAndCloseSession();
@@ -366,7 +367,8 @@ public class CheckboxManagerTest extends OlatTestCase {
 	public void loadAssessmentDatas_admin() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity groupParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("check-20");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "gcheck", "gcheck-desc", 0, 10, true, true, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gcheck", "gcheck-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, true, false, false, false);
 		businessGroupRelationDao.addRole(groupParticipant, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRelationToResource(group, entry);
 

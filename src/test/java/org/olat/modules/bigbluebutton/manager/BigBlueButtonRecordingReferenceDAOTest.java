@@ -59,7 +59,8 @@ public class BigBlueButtonRecordingReferenceDAOTest extends OlatTestCase {
 	@Test
 	public void createReference() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-record-1");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 1", "bbb-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 1", "bbb-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Record all - 1", null, null, group, id);
 		dbInstance.commit();
 		
@@ -81,7 +82,8 @@ public class BigBlueButtonRecordingReferenceDAOTest extends OlatTestCase {
 	@Test
 	public void getRecordingReferences() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-record-2");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 2", "bbb-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 2", "bbb-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording - 2", null, null, group, id);
 
 		BigBlueButtonRecording recording = BigBlueButtonRecordingImpl.valueOf(UUID.randomUUID().toString(), "Recorded always", UUID.randomUUID().toString(),
@@ -108,7 +110,8 @@ public class BigBlueButtonRecordingReferenceDAOTest extends OlatTestCase {
 	@Test
 	public void getRecordingReferencesOfMeetings() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-record-3");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 3", "bbb-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 3", "bbb-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting1 = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording - 3.1", null, null, group, id);
 		BigBlueButtonMeeting meeting2 = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording - 3.2", null, null, group, id);
 		BigBlueButtonMeeting meeting3 = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording - 3.3", null, null, group, id);
@@ -137,7 +140,8 @@ public class BigBlueButtonRecordingReferenceDAOTest extends OlatTestCase {
 	@Test
 	public void loadRecordingReferenceByKey() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-record-4");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 4", "A description", -1, -1, false, false, true, true, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 4", "A description", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, true, true, false);
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording - 4", null, null, group, id);
 
 		BigBlueButtonRecording recording = BigBlueButtonRecordingImpl.valueOf(UUID.randomUUID().toString(), "Recorded always", UUID.randomUUID().toString(),
@@ -153,7 +157,8 @@ public class BigBlueButtonRecordingReferenceDAOTest extends OlatTestCase {
 	@Test
 	public void deleteRecordingReferences() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-record-5");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 5", "Several recordings", -1, -1, false, false, false, false, false);
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB Recording 5", "Several recordings", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting1 = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording - 5.1", null, null, group, id);
 		BigBlueButtonMeeting meeting2 = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording - 5.2", null, null, group, id);
 		

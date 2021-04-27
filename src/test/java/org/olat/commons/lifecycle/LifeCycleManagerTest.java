@@ -32,8 +32,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 
-import java.util.UUID;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -66,8 +64,9 @@ public class LifeCycleManagerTest extends OlatTestCase {
 	@Test
 	public void testCreateInstanceFor() {
 		OLATResource res = JunitTestHelper.createRandomResource();
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("life-1-" + UUID.randomUUID().toString());
-		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "life cycled group 1", "a desc", -1, -1, false, false, null);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("life-1-");
+		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "life cycled group 1", "a desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
 		dbInstance.commitAndCloseSession();
 
 		LifeCycleManager lcm1 = LifeCycleManager.createInstanceFor(group);
@@ -81,8 +80,9 @@ public class LifeCycleManagerTest extends OlatTestCase {
 	@Test
 	public void testMarkTimestampFor() {
 		OLATResource res = JunitTestHelper.createRandomResource();
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("life-2-" + UUID.randomUUID().toString());
-		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "life cycled group 2", "a desc", -1, -1, false, false, null);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("life-2-");
+		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "life cycled group 2", "a desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		String action = "doTest";
@@ -111,8 +111,9 @@ public class LifeCycleManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void testDeleteTimestampFor() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("life-3-" + UUID.randomUUID().toString());
-		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "life cycled group 3", "a desc", -1, -1, false, false, null);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("life-3-");
+		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "life cycled group 3", "a desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		String action = "doTestDelete";

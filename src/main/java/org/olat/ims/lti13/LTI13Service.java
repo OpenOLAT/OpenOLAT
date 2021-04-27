@@ -45,6 +45,8 @@ public interface LTI13Service {
 	
 	public static final String LTI_PROVIDER = "LTI";
 	
+	public static final String LTI_GROUP_TYPE = "lti";
+	
 	public LTI13Tool createExternalTool(String toolName, String toolUrl, String clientId, String initiateLoginUrl, LTI13ToolType type);
 
 	public List<LTI13Tool> getTools(LTI13ToolType type);

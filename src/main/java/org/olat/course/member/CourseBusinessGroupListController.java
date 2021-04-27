@@ -63,11 +63,13 @@ import org.olat.group.ui.main.BusinessGroupViewFilter;
 import org.olat.group.ui.main.SearchEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.group.ui.main.UnmanagedGroupFilter;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
+ * List the business groups of all types linked to a course.
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
@@ -357,6 +359,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE, LTI13Service.LTI_GROUP_TYPE));
 		params.setRepositoryEntry(re);
 		return params;
 	}

@@ -841,7 +841,8 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		// add some stuff
 		
 		//a group
-		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "Group", "Group", -1, -1, false, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "Group", "Group", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
 		Assert.assertNotNull(group);
 		dbInstance.commit();
 		//a course
@@ -916,7 +917,8 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 
 		//a group
 		Roles coachRolesId = securityManager.getRoles(groupCoach);
-		BusinessGroup group = businessGroupService.createBusinessGroup(groupCoach, "Group", "Group", -1, -1, false, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(groupCoach, "Group", "Group", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
 		dbInstance.commit();
 		businessGroupService.addParticipants(groupCoach, coachRolesId, Collections.singletonList(identity), group, null);
 		dbInstance.commit();

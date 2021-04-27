@@ -74,7 +74,8 @@ public class BusinessGroupMembershipProcessorTest extends OlatTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("mbr-proc-1");
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("mbr-proc-2");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("mbr-proc-3");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "mbr-proc-1", "mbr-proc-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "mbr-proc-1", "mbr-proc-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(id1, businessGroup, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, businessGroup, GroupRoles.participant.name());
 		
@@ -115,7 +116,8 @@ public class BusinessGroupMembershipProcessorTest extends OlatTestCase {
 	public void testUnlinkMemberOfBusinessGroup_with2Roles() {
 		//create a group with members
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("mbr-proc-4");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(member, "mbr-proc-2", "mbr-proc-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(member, "mbr-proc-2", "mbr-proc-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(member, businessGroup, GroupRoles.participant.name());
 		
 		//create a publisher
@@ -145,7 +147,8 @@ public class BusinessGroupMembershipProcessorTest extends OlatTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("mbr-proc-1");
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("mbr-proc-2");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("mbr-proc-3");
-		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "mbr-proc-1", "mbr-proc-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "mbr-proc-1", "mbr-proc-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRelationToResource(businessGroup, re);
 		businessGroupRelationDao.addRole(id1, businessGroup, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, businessGroup, GroupRoles.participant.name());

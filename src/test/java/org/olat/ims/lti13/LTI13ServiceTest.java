@@ -38,6 +38,8 @@ import org.olat.ims.lti13.manager.LTI13SharedToolDeploymentDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatTestCase;
@@ -69,6 +71,8 @@ public class LTI13ServiceTest extends OlatTestCase {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private LTI13SharedToolDeploymentDAO sharedToolDeploymentDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
 	/**
 	 * Write and read JWT
@@ -276,7 +280,8 @@ public class LTI13ServiceTest extends OlatTestCase {
 	@Test
 	public void deleteBusinessGroup() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-coach-1");
-		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(coach, "LTI service group", "Group with LTI 1.3", -1, -1, false, false, null);
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(coach, "LTI service group", "Group with LTI 1.3",
+				LTI13Service.LTI_GROUP_TYPE, -1, -1, false, false, null);
 		String clientId = UUID.randomUUID().toString();
 		String issuer = "https://sg.openolat.com";
 		LTI13Platform platform = lti13Service.createTransientPlatform(LTI13PlatformScope.PRIVATE);
@@ -296,6 +301,38 @@ public class LTI13ServiceTest extends OlatTestCase {
 		
 		List<LTI13SharedToolDeployment> deployments = sharedToolDeploymentDao.getSharedToolDeployment(businessGroup);
 		Assert.assertTrue(deployments.isEmpty());	
+	}
+	
+	@Test
+	public void createSharedToolDeployment() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-10");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		
+		String clientId = UUID.randomUUID().toString();
+		String issuer = "https://cuberai.openolat.org";
+		LTI13Platform platform = createPlatform(issuer, clientId);
+		platform = lti13Service.updatePlatform(platform);
+		
+		String deploymentId = UUID.randomUUID().toString();
+		LTI13SharedToolDeployment deployment = lti13Service.createSharedToolDeployment(deploymentId, platform, entry, null);
+		dbInstance.commit();
+		
+		Assert.assertNotNull(deployment);
+		Assert.assertNotNull(deployment.getCreationDate());
+		Assert.assertNotNull(deployment.getLastModified());
+		Assert.assertEquals(platform, deployment.getPlatform());
+		Assert.assertEquals(deploymentId, deployment.getDeploymentId());
+		
+		Assert.assertEquals(entry, deployment.getEntry());
+		Assert.assertNotNull(deployment.getBusinessGroup());
+		
+		BusinessGroup businessGroup = deployment.getBusinessGroup();
+		Assert.assertEquals(LTI13Service.LTI_GROUP_TYPE, businessGroup.getTechnicalType());
+		
+		List<RepositoryEntryToGroupRelation> rels = repositoryEntryRelationDao.getBusinessGroupAndCurriculumRelations(entry);
+		Assert.assertNotNull(rels);
+		Assert.assertEquals(1, rels.size());
+		Assert.assertEquals(businessGroup.getBaseGroup(), rels.get(0).getGroup());
 	}
 	
 	private LTI13Platform createPlatform(String issuer, String clientId) {
