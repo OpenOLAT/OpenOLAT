@@ -878,14 +878,16 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		
 		String token = null;
 		for(String loginAttribute:loginAttributes) {
-			String loginToken = getAttributeValue(attrs.get(loginAttribute));
-			Authentication ldapAuth = authenticationDao.getAuthentication(loginToken, LDAPAuthenticationController.PROVIDER_LDAP);
-			if(ldapAuth != null) {
-				return ldapAuth;
-			}
-			// prefer the not uid attribute
-			if((loginAttributes.size() == 1 || !loginAttribute.equals(uidAttribute)) && token == null) {
-				token = loginToken;
+			String loginToken = getAttributeValue(attrs.get(loginAttribute.trim()));
+			if(StringHelper.containsNonWhitespace(loginToken)) {
+				Authentication ldapAuth = authenticationDao.getAuthentication(loginToken, LDAPAuthenticationController.PROVIDER_LDAP);
+				if(ldapAuth != null) {
+					return ldapAuth;
+				}
+				// prefer the not uid attribute
+				if((loginAttributes.size() == 1 || !loginAttribute.equals(uidAttribute)) && token == null) {
+					token = loginToken;
+				}
 			}
 		}
 
