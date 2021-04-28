@@ -390,7 +390,6 @@ public class LTIConfigForm extends FormBasicController {
 			boolean configurable = tool.getToolTypeEnum() == LTI13ToolType.EXTERNAL;
 
 			thost.setValue(tool.getToolUrl());
-			thost.setEnabled(configurable);
 			clientIdEl.setValue(tool.getClientId());
 			clientIdEl.setEnabled(false);
 			publicKeyTypeEl.select(tool.getPublicKeyTypeEnum().name(), true);
@@ -421,8 +420,6 @@ public class LTIConfigForm extends FormBasicController {
 		boolean lti13 = !CONFIGKEY_LTI_11.equals(selectedVersionKey);
 		boolean sharedTool = StringHelper.isLong(selectedVersionKey)
 				&& tool != null && tool.getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE;
-		
-		thost.setEnabled(!sharedTool);
 		
 		// LTI 1.3
 		clientIdEl.setVisible(lti13);
@@ -733,9 +730,16 @@ public class LTIConfigForm extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) { 
 		boolean allOk = super.validateFormLogic(ureq);
 		try {
+			thost.clearError();
+			boolean lti13 = CONFIGKEY_LTI_13.equals(ltiVersionEl.getSelectedKey()) || StringHelper.isLong(ltiVersionEl.getSelectedKey());
 			URL url = new URL(thost.getValue());
 			if(url.getHost() == null) {
 				thost.setErrorKey("LTConfigForm.invalidurl", null);
+				allOk &= false;
+			} else if(lti13 && tool != null
+					&& StringHelper.containsNonWhitespace(tool.getToolUrl())
+					&& !(new URL(tool.getToolUrl()).getHost().equals(url.getHost()))) {
+				thost.setErrorKey("LTConfigForm.urlToolIncompatible", new String[] { new URL(tool.getToolUrl()).getHost() });
 				allOk &= false;
 			}
 		} catch (MalformedURLException e) {
@@ -866,7 +870,7 @@ public class LTIConfigForm extends FormBasicController {
 		boolean canUpdateTool = tool == null || LTI13ToolType.EXTERNAL.equals(tool.getToolTypeEnum());
 		if(tool == null) {
 			tool = lti13Service.createExternalTool(courseEntry.getDisplayname(), targetUrl, clientId, initiateLoginUrl, LTI13ToolType.EXTERNAL);
-		} else if(canUpdateTool) {
+		} else {
 			tool.setToolUrl(targetUrl);
 		}
 		
