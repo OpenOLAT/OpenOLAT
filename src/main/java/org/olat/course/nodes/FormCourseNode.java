@@ -93,6 +93,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 			.build();
 
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repository.softkey";
+	public static final String CONFIG_KEY_CONFIRMATION_ENABLED = "confirmation.enabled";
 
 	public FormCourseNode() {
 		this(null);

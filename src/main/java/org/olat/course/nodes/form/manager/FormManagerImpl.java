@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -73,6 +74,8 @@ public class FormManagerImpl implements FormManager {
 
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private FormMailing formMailing;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -178,11 +181,30 @@ public class FormManagerImpl implements FormManager {
 		courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 		courseAssessmentService.updateCompletion(courseNode, userCourseEnv, Double.valueOf(1),
 				AssessmentEntryStatus.done, Role.user);
+		
+		if (courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_ENABLED)) {
+			sendConfirmationEmail(courseNode, userCourseEnv);
+		}
+		
 		log.info(Tracing.M_AUDIT, "Form filled in: {}, course node {}", 
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
 				courseNode.getIdent());
 	}
-	
+
+	private void sendConfirmationEmail(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentifier(courseNode, courseEntry);
+		EvaluationFormSurvey survey = loadSurvey(surveyIdent);
+		EvaluationFormParticipation participation = loadParticipation(survey, identity);
+		EvaluationFormSession session = participation != null? loadOrCreateSesssion(participation): null;
+		
+		MailTemplate mailTemplate = formMailing.getConfirmationTemplate(courseEntry, courseNode, identity, session);
+		formMailing.addFormPdfAttachment(mailTemplate, courseNode, userCourseEnv);
+		formMailing.sendEmail(mailTemplate, courseEntry, courseNode, identity);
+		formMailing.deleteTempDir(mailTemplate);
+	}
+
 	@Override
 	public List<Identity> getCoachedIdentities(UserCourseEnvironment userCourseEnv) {
 		if (userCourseEnv.isAdmin()) {

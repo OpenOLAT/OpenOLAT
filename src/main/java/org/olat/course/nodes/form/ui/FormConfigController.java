@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -36,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.FormCourseNode;
@@ -58,18 +60,21 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class FormConfigController extends FormBasicController {
+	
+	private static final String[] ON_KEYS = new String[]{ "on" };
 
 	private StaticTextElement evaluationFormNotChoosen;
 	private FormLink evaluationFormLink;
 	private FormLink chooseLink;
 	private FormLink replaceLink;
 	private FormLink editLink;
+	private MultipleSelectionElement confirmationEl;
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController searchCtrl;
 	private LayoutMain3ColsPreviewController previewCtr;
 	
-	private final ModuleConfiguration moduleConfiguration;
+	private final ModuleConfiguration config;
 	private final EvaluationFormSurveyIdentifier surveyIdent;
 	private EvaluationFormSurvey survey;
 	
@@ -79,7 +84,7 @@ public class FormConfigController extends FormBasicController {
 	public FormConfigController(UserRequest ureq, WindowControl wControl, FormCourseNode formCourseNode,
 			RepositoryEntry courseEntry) {
 		super(ureq, wControl);
-		this.moduleConfiguration = formCourseNode.getModuleConfiguration();
+		this.config = formCourseNode.getModuleConfiguration();
 		this.surveyIdent = formManager.getSurveyIdentifier(formCourseNode, courseEntry);
 		this.survey = formManager.loadSurvey(surveyIdent);
 		initForm(ureq);
@@ -102,6 +107,12 @@ public class FormConfigController extends FormBasicController {
 		chooseLink.setElementCssClass("o_sel_survey_choose_repofile");
 		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, "btn btn-default o_xsmall");
 		editLink = uifactory.addFormLink("edit.edit", buttonsCont, "btn btn-default o_xsmall");
+		
+		confirmationEl = uifactory.addCheckboxesVertical("edit.confirmation.enabled", formLayout, ON_KEYS,
+				TranslatorHelper.translateAll(getTranslator(), ON_KEYS), 1);
+		confirmationEl.addActionListener(FormEvent.ONCHANGE);
+		boolean confirmationEnabled = config.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_ENABLED);
+		confirmationEl.select(confirmationEl.getKey(0), confirmationEnabled);
 		
 		updateUI();
 	}
@@ -136,6 +147,8 @@ public class FormConfigController extends FormBasicController {
 			doEditevaluationForm(ureq);
 		} else if (source == evaluationFormLink) {
 			doPreviewEvaluationForm(ureq);
+		} else if (source == confirmationEl) {
+			setConfirmation(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -189,7 +202,7 @@ public class FormConfigController extends FormBasicController {
 			}
 			updateUI();
 			
-			SurveyCourseNode.setEvaluationFormReference(formEntry, moduleConfiguration);
+			SurveyCourseNode.setEvaluationFormReference(formEntry, config);
 			// fire event so the updated config is saved
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
@@ -216,6 +229,11 @@ public class FormConfigController extends FormBasicController {
 		previewCtr.addDisposableChildController(controller);
 		previewCtr.activate();
 		listenTo(previewCtr);
+	}
+	
+	private void setConfirmation(UserRequest ureq) {
+		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_CONFIRMATION_ENABLED, confirmationEl.isAtLeastSelected(1));
+		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 
 	@Override
