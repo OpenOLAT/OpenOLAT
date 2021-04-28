@@ -268,8 +268,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	
 	@Override
 	public List<EvaluationFormParticipation> loadParticipations(EvaluationFormSurveyRef surveyRef,
-			EvaluationFormParticipationStatus status) {
-		return evaluationFormParticipationDao.loadBySurvey(surveyRef, status);
+			EvaluationFormParticipationStatus status, boolean fetchExecutor) {
+		return evaluationFormParticipationDao.loadBySurvey(surveyRef, status, fetchExecutor);
 	}
 
 	@Override

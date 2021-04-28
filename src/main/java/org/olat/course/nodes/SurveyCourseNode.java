@@ -75,6 +75,7 @@ import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.forms.ui.LegendNameGenerator;
 import org.olat.modules.forms.ui.ReportHelper;
+import org.olat.modules.forms.ui.ReportHelperUserColumns;
 import org.olat.modules.forms.ui.SessionInformationLegendNameGenerator;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -348,9 +349,10 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			
 			LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
 			ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
-
-			EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter, reportHelper,
-					getShortName());
+			ReportHelperUserColumns userColumns = new ReportHelperUserColumns(reportHelper);
+			
+			EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter,
+					reportHelper.getComparator(), userColumns, getShortName());
 			evaluationFormExport.export(exportStream, archivePath);
 		} catch (IOException e) {
 			log.error("", e);

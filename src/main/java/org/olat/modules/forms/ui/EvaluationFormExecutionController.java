@@ -119,8 +119,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session) {
-		this(ureq, wControl, null, null, session, null, null, false, true);
+	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
+			EmptyStateConfig emptyStateConfig) {
+		this(ureq, wControl, null, null, session, null, null, false, true, emptyStateConfig);
 	}
 
 	/**
@@ -129,23 +130,23 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	 */
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			EvaluationFormResponses responses, Form form, DataStorage storage, Component header) {
-		this(ureq, wControl, form, storage, session, null, header, false, true);
+		this(ureq, wControl, form, storage, session, null, header, false, true, null);
 		this.responses = responses;
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
-			boolean readOnly, boolean showDoneButton) {
-		this(ureq, wControl, null, null, session, null, null, readOnly, showDoneButton);
+			boolean readOnly, boolean showDoneButton, EmptyStateConfig emptyState) {
+		this(ureq, wControl, null, null, session, null, null, readOnly, showDoneButton, emptyState);
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
 			EvaluationFormSession session, ExecutionIdentity executionIdentity, Component header, boolean readOnly,
-			boolean showDoneButton) {
+			boolean showDoneButton, EmptyStateConfig emptyStateConfig) {
 		super(ureq, wControl, "execute");
 
 		this.session = session;
 		this.header = header;
-		this.emptyStateConfig = EMPTY_STATE_DEFAULTS;
+		this.emptyStateConfig = emptyStateConfig != null? emptyStateConfig: EMPTY_STATE_DEFAULTS;
 		this.readOnly = readOnly;
 		this.showDoneButton = showDoneButton;
 
@@ -177,7 +178,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		this.session = null;
 		this.responses = null;
 		this.header = null;
-		this.emptyStateConfig = emptyStateConfig;
+		this.emptyStateConfig = emptyStateConfig != null? emptyStateConfig: EMPTY_STATE_DEFAULTS;
 		this.readOnly = false;
 		this.showDoneButton = false;
 		this.executionIdentity = new ExecutionIdentity(getIdentity());

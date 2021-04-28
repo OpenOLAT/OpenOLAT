@@ -55,6 +55,7 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.nodes.FOCourseNode;
+import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
@@ -88,6 +89,7 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 	private static final String CMD_CHECKLIST = "checklist";
 	private static final String CMD_PARTICIPANTFOLDER = "participantfolder";
 	private static final String CMD_SURVEY = "survey";
+	private static final String CMD_FORM = "form";
 	
 	
 	private IArchiverCallback archiverCallback;
@@ -281,6 +283,13 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 			gtn.setAltText(translate("menu.checklist.alt"));
 			root.addChild(gtn);
 		}
+		if (archiverCallback.mayArchiveForms()) {
+			gtn = new GenericTreeNode();
+			gtn.setTitle(translate("menu.forms"));
+			gtn.setUserObject(CMD_FORM);
+			gtn.setAltText(translate("menu.forms.alt"));
+			root.addChild(gtn);
+		}
 		
 		
 		//add extension menues
@@ -350,6 +359,9 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 				main.setContent(contentCtr.getInitialComponent());
 			} else if (menuCommand.equals(CMD_PARTICIPANTFOLDER)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new PFCourseNode());
+				main.setContent(contentCtr.getInitialComponent());
+			} else if (menuCommand.equals(CMD_FORM)) {
+				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new FormCourseNode());
 				main.setContent(contentCtr.getInitialComponent());
 			}
 			

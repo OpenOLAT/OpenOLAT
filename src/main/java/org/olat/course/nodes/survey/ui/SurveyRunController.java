@@ -199,7 +199,7 @@ public class SurveyRunController extends BasicController {
 	private void doShowExecution(UserRequest ureq) {
 		removeAllComponents();
 		EvaluationFormSession session = surveyManager.loadOrCreateSesssion(participation);
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session);
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, null);
 		listenTo(executionCtrl);
 		mainVC.put("execution", executionCtrl.getInitialComponent());
 	}

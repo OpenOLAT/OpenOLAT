@@ -72,7 +72,7 @@ public class ExecutionController extends BasicController {
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
 		EvaluationFormSession session = loadOrCreateSession(qualityParticipation.getParticipationRef());
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session);
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, null);
 		listenTo(executionCtrl);
 		mainVC.put("execution", executionCtrl.getInitialComponent());
 	}

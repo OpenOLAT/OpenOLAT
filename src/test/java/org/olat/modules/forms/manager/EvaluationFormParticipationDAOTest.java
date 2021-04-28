@@ -134,15 +134,15 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		EvaluationFormParticipationStatus status = EvaluationFormParticipationStatus.done;
 		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
 		EvaluationFormSurvey survey2 = evaTestHelper.createSurvey();
-		EvaluationFormParticipation participation = evaTestHelper.createParticipation(survey);
+		EvaluationFormParticipation participation = evaTestHelper.createParticipation(survey, true);
 		participation = sut.changeStatus(participation, status);
-		EvaluationFormParticipation otherStatus = evaTestHelper.createParticipation(survey);
+		EvaluationFormParticipation otherStatus = evaTestHelper.createParticipation(survey, true);
 		otherStatus = sut.changeStatus(otherStatus, EvaluationFormParticipationStatus.prepared);
-		EvaluationFormParticipation otherSurvey = evaTestHelper.createParticipation(survey2);
+		EvaluationFormParticipation otherSurvey = evaTestHelper.createParticipation(survey2, false);
 		otherSurvey = sut.changeStatus(otherSurvey, status);
 		dbInstance.commitAndCloseSession();
 		
-		List<EvaluationFormParticipation> participations = sut.loadBySurvey(survey, status);
+		List<EvaluationFormParticipation> participations = sut.loadBySurvey(survey, status, true);
 
 		assertThat(participations).contains(participation)
 				.doesNotContain(otherStatus, otherSurvey);
@@ -226,8 +226,8 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldShouldDeleteParticipationsOfSurvey() {
 		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
-		EvaluationFormParticipation participation1 = evaTestHelper.createParticipation(survey);
-		EvaluationFormParticipation participation2 = evaTestHelper.createParticipation(survey);
+		EvaluationFormParticipation participation1 = evaTestHelper.createParticipation(survey, false);
+		EvaluationFormParticipation participation2 = evaTestHelper.createParticipation(survey, false);
 		EvaluationFormParticipation otherParticipation = evaTestHelper.createParticipation();
 		dbInstance.commit();
 

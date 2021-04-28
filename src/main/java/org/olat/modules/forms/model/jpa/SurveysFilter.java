@@ -43,15 +43,17 @@ public class SurveysFilter implements SessionFilter {
 
 	private Collection<? extends EvaluationFormSurveyRef> surveys;
 	private EvaluationFormSessionStatus status;
+	private boolean fetchExecutor;
 	private EvaluationFormSurveyIdentifier surveyIdentitfier;
 	
 	public SurveysFilter(Collection<? extends EvaluationFormSurveyRef> surveys) {
-		this(surveys, null);
+		this(surveys, null, false);
 	}
 
-	public SurveysFilter(Collection<? extends EvaluationFormSurveyRef> surveys, EvaluationFormSessionStatus status) {
+	public SurveysFilter(Collection<? extends EvaluationFormSurveyRef> surveys, EvaluationFormSessionStatus status, boolean fetchExecutor) {
 		this.surveys = surveys;
 		this.status = status;
+		this.fetchExecutor = fetchExecutor;
 	}
 	
 	public SurveysFilter(EvaluationFormSurveyIdentifier surveyIdentitfier) {
@@ -110,4 +112,8 @@ public class SurveysFilter implements SessionFilter {
 		return true;
 	}
 
+	@Override
+	public boolean fetchExecutor() {
+		return fetchExecutor;
+	}
 }

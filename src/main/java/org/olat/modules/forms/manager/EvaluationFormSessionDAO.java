@@ -99,6 +99,11 @@ class EvaluationFormSessionDAO {
 		if (filter.fetchSurveys()) {
 			sb.append("       join fetch session.survey as survey");
 		}
+		if (filter.fetchExecutor()) {
+			sb.append("    left join fetch session.participation as participation");
+			sb.append("    left join fetch participation.executor as executor");
+			sb.append("    left join fetch executor.user as user");
+		}
 		sb.append(" where session.key in (").append(filter.getSelectKeys()).append(")");
 		
 		appendOrderBy(sb, orderBy);

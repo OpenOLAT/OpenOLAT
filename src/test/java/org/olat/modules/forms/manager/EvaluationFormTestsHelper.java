@@ -130,11 +130,12 @@ public class EvaluationFormTestsHelper {
 	
 	EvaluationFormParticipation createParticipation() {
 		EvaluationFormSurvey survey = createSurvey();
-		return createParticipation(survey);
+		return createParticipation(survey, false);
 	}
 	
-	EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey) {
-		return evaluationFormManager.createParticipation(survey);
+	EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, boolean withUser) {
+		Identity identity = withUser? JunitTestHelper.createAndPersistIdentityAsUser(JunitTestHelper.random()): null;
+		return evaluationFormManager.createParticipation(survey, identity);
 	}
 	
 	EvaluationFormSession createSession() {
@@ -143,7 +144,7 @@ public class EvaluationFormTestsHelper {
 	}
 	
 	public EvaluationFormSession createSession(EvaluationFormSurvey survey) {
-		EvaluationFormParticipation participation = createParticipation(survey);
+		EvaluationFormParticipation participation = createParticipation(survey, false);
 		return createSession(participation);
 	}
 	

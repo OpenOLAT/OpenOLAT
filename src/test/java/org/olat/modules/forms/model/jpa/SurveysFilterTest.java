@@ -216,7 +216,7 @@ public class SurveysFilterTest extends OlatTestCase {
 		EvaluationFormSession sessionUnfinished = evaTestHelper.createSession(survey);
 		dbInstance.commitAndCloseSession();
 		
-		SurveysFilter filter = new SurveysFilter(Collections.singletonList(survey), EvaluationFormSessionStatus.done);
+		SurveysFilter filter = new SurveysFilter(Collections.singletonList(survey), EvaluationFormSessionStatus.done, true);
 		List<EvaluationFormSession> filtered = evaManager.loadSessionsFiltered(filter, 0, -1);
 		
 		assertThat(filtered)

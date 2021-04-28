@@ -25,10 +25,10 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
@@ -107,12 +107,15 @@ class EvaluationFormParticipationDAO {
 	}
 	
 	List<EvaluationFormParticipation> loadBySurvey(EvaluationFormSurveyRef survey,
-			EvaluationFormParticipationStatus status) {
+			EvaluationFormParticipationStatus status, boolean fetchExecutor) {
 		if (survey == null) return null;
 		
 		StringBuilder query = new StringBuilder();
 		query.append("select participation from evaluationformparticipation as participation");
-		query.append("  left join participation.executor executor");
+		if (fetchExecutor) {
+			query.append(" left join fetch participation.executor executor");
+			query.append(" left join fetch executor.user user");
+		}
 		query.append(" where participation.survey.key=:surveyKey");
 		if (status != null) {
 			query.append("   and participation.status=:status");

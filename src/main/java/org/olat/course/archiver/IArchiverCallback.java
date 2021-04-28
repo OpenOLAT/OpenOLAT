@@ -82,4 +82,7 @@ public interface IArchiverCallback {
 	public boolean mayArchiveProjectBroker();
 
 	public boolean mayArchiveSurveys();
+	
+	public boolean mayArchiveForms();
+	
 }

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
+import org.olat.core.util.openxml.OpenXMLWorkbookStyles;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -78,7 +80,7 @@ public class EvaluationFormExcelExport {
 	private static final List<String> MERGE_TYPES = List.of(HTMLParagraph.TYPE, HTMLRaw.TYPE);
 
 	private final String fileName;
-	private final ReportHelper reportHelper;
+	private final UserColumns userColumns;
 	private final List<AbstractElement> elements;
 	private final EvaluationFormResponses responses;
 	private final List<EvaluationFormSession> sessions;
@@ -87,15 +89,18 @@ public class EvaluationFormExcelExport {
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public EvaluationFormExcelExport(Form form, SessionFilter filter, ReportHelper reportHelper, String surveyName) {
-		this.fileName = getFileName(surveyName);
-		this.reportHelper = reportHelper;
+	public EvaluationFormExcelExport(Form form, SessionFilter filter, Comparator<EvaluationFormSession> comparator,
+			UserColumns userColumns, String fileName) {
+		this.fileName = getFileName(fileName);
+		this.userColumns = userColumns;
 
 		CoreSpringFactory.autowireObject(this);
 		elements = evaluationFormManager.getUncontainerizedElements(form);
 		responses = evaluationFormManager.loadResponsesBySessions(filter);
 		sessions = evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
-		sessions.sort(reportHelper.getComparator());
+		if (comparator != null) {
+			sessions.sort(comparator);
+		}
 	}
 	
 	private String getFileName(String surveyName) {
@@ -146,7 +151,7 @@ public class EvaluationFormExcelExport {
 		Row headerRow = exportSheet.newRow();
 		
 		AtomicInteger col = new AtomicInteger();
-		col.getAndIncrement(); // column user 
+		userColumns.addHeaderColumns(headerRow, col, workbook.getStyles());
 		for (AbstractElement element: elements) {
 			String elementType = element.getType();
 			switch (elementType) {
@@ -212,17 +217,9 @@ public class EvaluationFormExcelExport {
 		for (EvaluationFormSession session: sessions) {
 			Row row = exportSheet.newRow();
 			AtomicInteger col = new AtomicInteger();
-			addName(session, row, col);
+			userColumns.addColumns(session, row, col);
 			addResponses(workbook, session, row, col);
 		}
-	}
-
-	private void addName(EvaluationFormSession session, Row row, AtomicInteger col) {
-		String name = reportHelper.getLegend(session).getName();
-		if (StringHelper.containsNonWhitespace(name)) {
-			row.addCell(col.get(), name);
-		}
-		col.getAndIncrement();
 	}
 	
 	private void addResponses(OpenXMLWorkbook workbook, EvaluationFormSession session, Row row, AtomicInteger col) {
@@ -301,7 +298,7 @@ public class EvaluationFormExcelExport {
 	
 	private void addRubricHeader(OpenXMLWorkbook workbook, Row row, AtomicInteger col, Rubric rubric) {
 		for (Slider slider: rubric.getSliders()) {
-			row.addCell(col.incrementAndGet(), getSliderLabel(slider), workbook.getStyles().getBottomAlignStyle());
+			row.addCell(col.getAndIncrement(), getSliderLabel(slider), workbook.getStyles().getBottomAlignStyle());
 		}
 	}
 
@@ -425,5 +422,13 @@ public class EvaluationFormExcelExport {
 			sb.append(slider.getEndLabel());
 		}
 		return FilterFactory.getHtmlTagAndDescapingFilter().filter(sb.toString());
+	}
+	
+	public interface UserColumns {
+		
+		public void addHeaderColumns(Row row, AtomicInteger col, OpenXMLWorkbookStyles styles);
+		
+		public void addColumns(EvaluationFormSession session, Row row, AtomicInteger col);
+		
 	}
 }

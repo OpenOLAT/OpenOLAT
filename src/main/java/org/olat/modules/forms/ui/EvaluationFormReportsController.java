@@ -173,7 +173,8 @@ public class EvaluationFormReportsController extends BasicController {
 
 	private void doExport(UserRequest ureq) {
 		String surveyName = "survey";
-		EvaluationFormExcelExport export = new EvaluationFormExcelExport(form, filter, reportHelper, surveyName);
+		EvaluationFormExcelExport export = new EvaluationFormExcelExport(form, filter, reportHelper.getComparator(),
+				new ReportHelperUserColumns(reportHelper), surveyName);
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 

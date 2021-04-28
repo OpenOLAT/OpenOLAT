@@ -70,6 +70,7 @@ import org.olat.modules.forms.ui.EvaluationFormReportController;
 import org.olat.modules.forms.ui.LegendNameGenerator;
 import org.olat.modules.forms.ui.NameShuffleAnonymousComparator;
 import org.olat.modules.forms.ui.ReportHelper;
+import org.olat.modules.forms.ui.ReportHelperUserColumns;
 import org.olat.modules.forms.ui.SessionInformationLegendNameGenerator;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
@@ -646,7 +647,8 @@ public class AnalysisController extends BasicController implements TooledControl
 
 	private void doExport(UserRequest ureq) {
 		String surveyName = "survey";
-		EvaluationFormExcelExport export = new EvaluationFormExcelExport(form, getReportSessionFilter(), getReportHelper(), surveyName);
+		EvaluationFormExcelExport export = new EvaluationFormExcelExport(form, getReportSessionFilter(),
+				reportHelper.getComparator(), new ReportHelperUserColumns(getReportHelper()), surveyName);
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 	

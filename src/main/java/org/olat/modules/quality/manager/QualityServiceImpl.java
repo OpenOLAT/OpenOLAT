@@ -634,7 +634,7 @@ public class QualityServiceImpl
 		EvaluationFormParticipationStatus status = type.getParticipationStatus();
 		QualityDataCollection dataCollection = reminder.getDataCollection();
 		EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
-		return evaluationFormManager.loadParticipations(survey, status);
+		return evaluationFormManager.loadParticipations(survey, status, true);
 	}
 
 

@@ -99,7 +99,7 @@ public class MSResultDetailsController extends BasicController {
 			mainVC.contextPut("rubrics", rubricWrappers);
 		}
 		
-		formCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false);
+		formCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false, null);
 		listenTo(formCtrl);
 		mainVC.put("evaluationForm", formCtrl.getInitialComponent());
 		

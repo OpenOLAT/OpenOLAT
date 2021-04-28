@@ -96,4 +96,9 @@ public class FullAccessArchiverCallback implements IArchiverCallback {
 	public boolean mayArchiveSurveys() {
 		return true;
 	}
+
+	@Override
+	public boolean mayArchiveForms() {
+		return true;
+	}
 }

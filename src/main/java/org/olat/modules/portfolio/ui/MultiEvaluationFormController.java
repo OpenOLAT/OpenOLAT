@@ -180,7 +180,7 @@ public class MultiEvaluationFormController extends BasicController {
 		boolean ro = readOnly || !evaluator.equals(getIdentity());
 		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || !owner.equals(evaluator));
 		EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, evaluator);
-		Controller evalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, ro, doneButton);
+		Controller evalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, ro, doneButton, null);
 		listenTo(evalutionFormCtrl);
 		return evalutionFormCtrl;
 	}
@@ -297,7 +297,7 @@ public class MultiEvaluationFormController extends BasicController {
 		boolean ro = readOnly || !evaluator.equals(getIdentity());
 		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || !owner.equals(evaluator));
 		EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, evaluator);
-		currentEvalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, ro, doneButton);
+		currentEvalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, ro, doneButton, null);
 		listenTo(currentEvalutionFormCtrl);
 		mainVC.put("segmentCmp", currentEvalutionFormCtrl.getInitialComponent());
 	}

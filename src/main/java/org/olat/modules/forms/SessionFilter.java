@@ -38,5 +38,9 @@ public interface SessionFilter {
 	public default boolean fetchSurveys() {
 		return false;
 	}
+	
+	public default boolean fetchExecutor() {
+		return false;
+	}
 
 }
