@@ -19,6 +19,7 @@
  */
 package org.olat.ims.lti13.manager;
 
+import java.math.BigDecimal;
 import java.net.URL;
 import java.security.Key;
 import java.security.KeyPair;
@@ -40,6 +41,7 @@ import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -53,12 +55,23 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.nodes.BasicLTICourseNode;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
 import org.olat.ims.lti13.LTI13Constants;
 import org.olat.ims.lti13.LTI13Constants.UserSub;
+import org.olat.ims.lti13.LTI13JsonUtil;
 import org.olat.ims.lti13.LTI13Key;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Platform;
@@ -73,13 +86,17 @@ import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.ims.lti13.OIDCApi;
 import org.olat.ims.lti13.model.AccessTokenKey;
 import org.olat.ims.lti13.model.AccessTokenTimed;
+import org.olat.ims.lti13.model.AssessmentEntryWithUserId;
 import org.olat.ims.lti13.model.LTI13PlatformImpl;
 import org.olat.ims.lti13.model.LTI13PlatformWithInfos;
+import org.olat.ims.lti13.model.json.LineItem;
+import org.olat.ims.lti13.model.json.Result;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.InitializingBean;
@@ -146,6 +163,10 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private LTI13ToolDeploymentDAO lti13ToolDeploymentDao;
+	@Autowired
+	private LTI13AssessmentEntryDAO lti13AssessmentEntryDao;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private LTI13SharedToolServiceDAO lti13SharedToolServiceDao;
 	@Autowired
@@ -606,5 +627,126 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			log.error("", e);
 			return null;
 		}
+	}
+	
+	@Override
+	public Result getResult(String userId, Identity assessedId, LTI13ToolDeployment deployment) {
+		RepositoryEntry entry = deployment.getEntry();
+		String subIdent = deployment.getSubIdent();
+		ICourse course = CourseFactory.loadCourse(entry);
+		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
+		if(courseNode instanceof BasicLTICourseNode) {
+			BasicLTICourseNode ltiNode = (BasicLTICourseNode)courseNode;
+			
+			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(assessedId, course);
+			ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+			Float score = getScoreFromEvalutation(eval, ltiNode);
+			Float maxScore = getMaxScoreFromNode(ltiNode);
+			return LTI13JsonUtil.createResult(userId, score, maxScore, deployment);
+		}
+		return null;
+	}
+	
+	@Override
+	public List<Result> getResults(LTI13ToolDeployment deployment, int firstResult, int maxResults) {
+		RepositoryEntry entry = deployment.getEntry();
+		String subIdent = deployment.getSubIdent();
+		ICourse course = CourseFactory.loadCourse(entry);
+		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
+		
+		List<Result> results = new ArrayList<>();
+		if(courseNode instanceof BasicLTICourseNode) {
+			BasicLTICourseNode ltiNode = (BasicLTICourseNode)courseNode;
+			Float maxScore = getMaxScoreFromNode(ltiNode);
+			
+			List<AssessmentEntryWithUserId> assessmentEntries = lti13AssessmentEntryDao.getAssessmentEntriesWithUserIds(deployment, firstResult, maxResults);
+			for(AssessmentEntryWithUserId assessmentEntry:assessmentEntries) {
+				Float score = getScoreFromEvalutation(assessmentEntry, ltiNode);
+				Result result = LTI13JsonUtil.createResult(assessmentEntry.getUserId(), score, maxScore, deployment);
+				results.add(result);
+			}
+		}
+		return results;
+	}
+	
+	@Override
+	public LineItem getLineItem(LTI13ToolDeployment deployment) {
+		RepositoryEntry entry = deployment.getEntry();
+		
+		String subIdent = deployment.getSubIdent();
+		ICourse course = CourseFactory.loadCourse(entry);
+		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
+		
+		LineItem lineItem = new LineItem();
+		lineItem.setId(deployment.getSubIdent());
+		if(StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
+			lineItem.setLabel(courseNode.getShortTitle());
+		} else {
+			lineItem.setLabel(courseNode.getLongTitle());
+		}
+		
+		if(courseNode instanceof BasicLTICourseNode) {
+			Float maxScore = getMaxScoreFromNode((BasicLTICourseNode)courseNode);
+			if(maxScore != null) {
+				lineItem.setScoreMaximum(maxScore.doubleValue());
+			}
+		}
+		lineItem.setResourceId(subIdent);
+		RepositoryEntryLifecycle lifeCycle = entry.getLifecycle();
+		if(lifeCycle != null) {
+			lineItem.setStartDateTime(lifeCycle.getValidFrom());
+			lineItem.setEndDateTime(lifeCycle.getValidTo());
+		}
+		return lineItem;
+	}
+	
+	private Float getMaxScoreFromNode(BasicLTICourseNode ltiNode) {
+		Float maxScore = null;
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(ltiNode);
+		if(assessmentConfig.getScoreMode() == Mode.setByNode) {
+			maxScore = assessmentConfig.getMaxScore();
+			if(maxScore != null && maxScore.floatValue() > 0.0f) {
+				float scale = ltiNode.getScalingFactor();
+				maxScore = Float.valueOf(maxScore.floatValue() / scale);
+			}
+		}
+		return maxScore;
+	}
+	
+	private Float getScoreFromEvalutation(AssessmentEntryWithUserId eval, BasicLTICourseNode ltiNode) {
+		Float score = null;
+		if(eval != null && eval.getAssessmentEntry() != null && eval.getAssessmentEntry().getScore() != null) {
+			BigDecimal scaledScore = eval.getAssessmentEntry().getScore();
+			if(scaledScore != null && scaledScore.doubleValue() > 0.0d) {
+				float scale = ltiNode.getScalingFactor();
+				score = Float.valueOf(scaledScore.floatValue() / scale);
+			} else if(scaledScore != null) {
+				score = Float.valueOf(0.0f);
+			}
+		}
+		return score;
+	}
+	
+	private Float getScoreFromEvalutation(ScoreEvaluation eval, BasicLTICourseNode ltiNode) {
+		Float score = null;
+		if(eval != null && eval.getScore() != null) {
+			float scaledScore = eval.getScore();
+			if(scaledScore > 0.0f) {
+				float scale = ltiNode.getScalingFactor();
+				scaledScore = scaledScore / scale;
+			}
+			score = Float.valueOf(scaledScore);
+		}
+		return score;
+	}
+		
+	private UserCourseEnvironment getUserCourseEnvironment(Identity identity, ICourse course) {
+		IdentityEnvironment identityEnvironment = new IdentityEnvironment();
+		identityEnvironment.setIdentity(identity);
+		return new UserCourseEnvironmentImpl(identityEnvironment, course.getCourseEnvironment());
+	}
+	
+	public List<Result> getResults() {
+		return null;
 	}
 }

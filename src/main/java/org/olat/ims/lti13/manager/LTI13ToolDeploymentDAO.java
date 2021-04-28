@@ -95,10 +95,21 @@ public class LTI13ToolDeploymentDAO {
 			.getResultList();
 	}
 	
+	/**
+	 * Load the deployment by key and fetch the repository entry
+	 * and the tool.
+	 * 
+	 * @param key The primary key
+	 * @return The deployment
+	 */
 	public LTI13ToolDeployment loadDeploymentByKey(Long key) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select deployment from ltitooldeployment as deployment")
 		  .append(" inner join fetch deployment.tool tool")
+		  .append(" left join fetch deployment.entry as v")
+		  .append(" left join fetch v.olatResource as vOres")
+		  .append(" left join fetch v.statistics as vStatistics")
+		  .append(" left join fetch v.lifecycle as vLifecycle")
 		  .append(" where deployment.key=:deploymentKey");
 		
 		List<LTI13ToolDeployment> deployments = dbInstance.getCurrentEntityManager()

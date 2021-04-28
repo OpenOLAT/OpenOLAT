@@ -19,12 +19,15 @@
  */
 package org.olat.ims.lti13;
 
+import java.math.BigDecimal;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.olat.core.helpers.Settings;
+import org.olat.ims.lti13.model.json.Result;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -105,4 +108,38 @@ public class LTI13JsonUtil {
 		kobj.put("use", "sig");
 		return kobj.toString();
 	}
+	
+	public static Result createResult(String userId, Float score, Float maxScore, LTI13ToolDeployment deployment) {
+		Result result = new Result();
+		result.setId(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + deployment.getKey() + "/results/" + deployment.getSubIdent());
+		result.setScoreOf(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + deployment.getKey());
+		result.setUserId(userId);
+		if(score != null) {
+			result.setResultScore(score.doubleValue());
+		} else {
+			result.setResultScore(0.0d);
+		}
+		if(maxScore != null) {
+			result.setResultMaximum(maxScore.doubleValue());
+		}
+		return result;
+	}
+	
+	public static Result createResult(String userId, BigDecimal score, Float maxScore, LTI13ToolDeployment deployment) {
+		Result result = new Result();
+		result.setId(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + deployment.getKey() + "/results/" + deployment.getSubIdent());
+		result.setScoreOf(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + deployment.getKey());
+		result.setUserId(userId);
+		if(score != null) {
+			result.setResultScore(score.doubleValue());
+		} else {
+			result.setResultScore(0.0d);
+		}
+		if(maxScore != null) {
+			result.setResultMaximum(maxScore.doubleValue());
+		}
+		return result;
+	}
+	
+
 }

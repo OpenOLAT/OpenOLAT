@@ -28,6 +28,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
 import org.olat.ims.lti13.model.LTI13PlatformWithInfos;
+import org.olat.ims.lti13.model.json.LineItem;
+import org.olat.ims.lti13.model.json.Result;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -136,5 +138,21 @@ public interface LTI13Service {
 	
 	
 	public OAuth2AccessToken getAccessToken(LTI13Platform tool, List<String> scopes);
+	
+	// Assignment and grading
+	
+	/**
+	 * The line item link to this deployment (course + course element) or null.
+	 * 
+	 * @param deployment The deployment
+	 * @return A line item
+	 */
+	public LineItem getLineItem(LTI13ToolDeployment deployment);
+	
+	public Result getResult(String userId, Identity assessedId, LTI13ToolDeployment deployment);
+	
+	public List<Result> getResults(LTI13ToolDeployment deployment, int firstResult, int maxResults);
+	
+	
 	
 }
