@@ -127,6 +127,7 @@ public class VisibilityActionFragement implements ActionEditorFragment {
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
+		ruleCont.clearError();
 		if (!elementEl.isOneSelected()) {
 			ruleCont.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;

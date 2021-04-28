@@ -188,6 +188,7 @@ public class ChoiceConditionFragement implements ConditionEditorFragment {
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
+		ruleCont.clearError();
 		if (!elementEl.isOneSelected() || !choiceEl.isOneSelected()) {
 			ruleCont.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;

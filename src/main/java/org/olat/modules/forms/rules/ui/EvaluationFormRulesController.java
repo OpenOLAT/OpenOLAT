@@ -230,6 +230,7 @@ public class EvaluationFormRulesController extends FormBasicController {
 		
 		for (RuleElement ruleEl:ruleEls) {
 			allOk &= ruleEl.getConditionEditor().validateFormLogic(ureq);
+			allOk &= ruleEl.getActionEditor().validateFormLogic(ureq);
 		}
 		
 		return allOk;
