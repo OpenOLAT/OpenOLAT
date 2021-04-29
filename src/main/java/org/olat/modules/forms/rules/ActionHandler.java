@@ -20,7 +20,6 @@
 package org.olat.modules.forms.rules;
 
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
-import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Action;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.rules.ui.ActionEditorFragment;
@@ -31,16 +30,8 @@ import org.olat.modules.forms.rules.ui.ActionEditorFragment;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ActionHandler {
-	
-	public String getI18nKey();
-	
-	public String getActionType();
-	
-	public boolean accepts(AbstractElement element);
+public interface ActionHandler extends RuleHandler {
 
 	public ActionEditorFragment getEditorFragment(FormUIFactory uifactory, Action action, Form form);
 
-	public boolean actionsAvailable(Form form);
-	
 }

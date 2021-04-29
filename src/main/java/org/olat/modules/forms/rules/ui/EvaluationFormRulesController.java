@@ -50,6 +50,7 @@ import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rule;
 import org.olat.modules.forms.model.xml.VisibilityAction;
 import org.olat.modules.forms.rules.ActionHandler;
+import org.olat.modules.forms.rules.ConditionEditorFragment;
 import org.olat.modules.forms.rules.ConditionHandler;
 import org.olat.modules.forms.rules.EvaluationFormRuleHandlerProvider;
 import org.olat.modules.forms.rules.RuleHandlerProvider;
@@ -128,7 +129,7 @@ public class EvaluationFormRulesController extends FormBasicController {
 	
 	private ConditionHandler getConditionHandler(Condition condition) {
 		for (ConditionHandler conditionHandler : ruleHandlerProvider.getConditionHandlers()) {
-			if (conditionHandler.getConditionType().equals(condition.getType())) {
+			if (conditionHandler.getHandledType().equals(condition.getType())) {
 				return conditionHandler;
 			}
 		}
@@ -137,7 +138,7 @@ public class EvaluationFormRulesController extends FormBasicController {
 	
 	private ActionHandler getActionHandler(Action action) {
 		for (ActionHandler actionHandler : ruleHandlerProvider.getActionHandlers()) {
-			if (actionHandler.getActionType().equals(action.getType())) {
+			if (actionHandler.getHandledType().equals(action.getType())) {
 				return actionHandler;
 			}
 		}
@@ -149,7 +150,7 @@ public class EvaluationFormRulesController extends FormBasicController {
 		//Condition
 		KeyValues conditionTypeKV = new KeyValues();
 		ruleHandlerProvider.getConditionHandlers().stream()
-				.forEach(handler -> conditionTypeKV.add(entry(handler.getConditionType(), translate(handler.getI18nKey()))));
+				.forEach(handler -> conditionTypeKV.add(entry(handler.getHandledType(), translate(handler.getI18nKey()))));
 		conditionTypeKV.sort(KeyValues.VALUE_ASC);
 		
 		// This element is not in the velocity template, because it has only one entry.
@@ -160,7 +161,7 @@ public class EvaluationFormRulesController extends FormBasicController {
 		SingleSelection conditionTypeEl = uifactory.addDropdownSingleselect("condition.type." + counter++, null, rulesCont,
 				conditionTypeKV.keys(), conditionTypeKV.values(), null);
 		conditionTypeEl.addActionListener(FormEvent.ONCHANGE);
-		String conditionType = conditionHandler.getConditionType();
+		String conditionType = conditionHandler.getHandledType();
 		for(String conditionTypeKey : conditionTypeEl.getKeys()) {
 			if(conditionType.equals(conditionTypeKey)) {
 				conditionTypeEl.select(conditionTypeKey, true);
@@ -173,13 +174,13 @@ public class EvaluationFormRulesController extends FormBasicController {
 		// Action
 		KeyValues actionTypeKV = new KeyValues();
 		ruleHandlerProvider.getActionHandlers().stream()
-				.forEach(handler -> actionTypeKV.add(entry(handler.getActionType(), translate(handler.getI18nKey()))));
+				.forEach(handler -> actionTypeKV.add(entry(handler.getHandledType(), translate(handler.getI18nKey()))));
 		actionTypeKV.sort(KeyValues.VALUE_ASC);
 		
 		SingleSelection actionTypeEl = uifactory.addDropdownSingleselect("action.type." + counter++, null, rulesCont,
 				actionTypeKV.keys(), actionTypeKV.values(), null);
 		actionTypeEl.addActionListener(FormEvent.ONCHANGE);
-		String actionType = actionHandler.getActionType();
+		String actionType = actionHandler.getHandledType();
 		for(String actionTypeKey : actionTypeEl.getKeys()) {
 			if(actionType.equals(actionTypeKey)) {
 				actionTypeEl.select(actionTypeKey, true);
@@ -269,10 +270,10 @@ public class EvaluationFormRulesController extends FormBasicController {
 	
 	private void doAddRule(UserRequest ureq) {
 		ConditionHandler conditionHandler = ruleHandlerProvider.getConditionHandlers().stream()
-				.filter(handler -> ChoiceSelectedCondition.TYPE.equals(handler.getConditionType()))
+				.filter(handler -> ChoiceSelectedCondition.TYPE.equals(handler.getHandledType()))
 				.findFirst().get();
 		ActionHandler actionHandler = ruleHandlerProvider.getActionHandlers().stream()
-				.filter(handler -> VisibilityAction.TYPE.equals(handler.getActionType()))
+				.filter(handler -> VisibilityAction.TYPE.equals(handler.getHandledType()))
 				.findFirst().get();
 		RuleElement ruleEl = initRuleForm(ureq, null, conditionHandler, null, actionHandler, null);
 		ruleEls.add(ruleEl);
@@ -286,30 +287,14 @@ public class EvaluationFormRulesController extends FormBasicController {
 	private void updateRulesPossibleUI(boolean showSaveButton) {
 		boolean rulesPossible = !ruleEls.isEmpty();
 		if (!rulesPossible) {
-			rulesPossible = conditionsAvailable() && actionsAvailable();
+			rulesPossible = ruleHandlerProvider.getRuleHandlers().stream()
+					.anyMatch(handler -> handler.isHandleableElementAvailable(form));
 		}
 		rulesCont.contextPut("noRulesPossible", Boolean.valueOf(!rulesPossible));
 		saveButton.setVisible(showSaveButton || rulesPossible);
 	}
 	
-	private boolean conditionsAvailable() {
-		for (ConditionHandler conditionHandler : ruleHandlerProvider.getConditionHandlers()) {
-			if (conditionHandler.conditionsAvailable(form)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean actionsAvailable() {
-		for (ActionHandler actionHandler : ruleHandlerProvider.getActionHandlers()) {
-			if (actionHandler.actionsAvailable(form)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
+	
 	public static class RuleElement {
 		
 		private final FormLink deleteRuleButton;

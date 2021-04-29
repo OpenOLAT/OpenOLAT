@@ -45,6 +45,7 @@ import org.olat.modules.forms.model.xml.Condition;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.SingleChoice;
+import org.olat.modules.forms.rules.ConditionEditorFragment;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
 

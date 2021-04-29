@@ -19,18 +19,23 @@
  */
 package org.olat.modules.forms.rules;
 
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
-import org.olat.modules.forms.model.xml.Condition;
+import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 
 /**
  * 
- * Initial date: 6 Apr 2021<br>
+ * Initial date: 29 Apr 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ConditionHandler extends RuleHandler {
-	
-	public ConditionEditorFragment getEditorFragment(FormUIFactory uifactory, Condition condition, Form form);
+public interface RuleHandler {
+
+	String getI18nKey();
+
+	String getHandledType();
+
+	boolean accepts(AbstractElement element);
+
+	boolean isHandleableElementAvailable(Form form);
 
 }

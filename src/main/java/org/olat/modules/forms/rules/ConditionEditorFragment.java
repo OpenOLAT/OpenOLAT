@@ -19,9 +19,7 @@
  */
 package org.olat.modules.forms.rules;
 
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.modules.forms.model.xml.Condition;
-import org.olat.modules.forms.model.xml.Form;
 
 /**
  * 
@@ -29,8 +27,8 @@ import org.olat.modules.forms.model.xml.Form;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ConditionHandler extends RuleHandler {
+public interface ConditionEditorFragment extends RuleEditorFragment {
 	
-	public ConditionEditorFragment getEditorFragment(FormUIFactory uifactory, Condition condition, Form form);
+	public abstract Condition getCondition();
 
 }

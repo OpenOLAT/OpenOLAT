@@ -17,29 +17,26 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.rules.ui;
+package org.olat.modules.forms.rules;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
-import org.olat.modules.forms.model.xml.Condition;
 
 /**
  * 
- * Initial date: 6 Apr 2021<br>
+ * Initial date: 29 Apr 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ConditionEditorFragment {
-	
-	public abstract FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq);
-	
-	public abstract void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event);
+public interface RuleEditorFragment {
 
-	public abstract boolean validateFormLogic(UserRequest ureq);
-	
-	public abstract Condition getCondition();
+	FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq);
+
+	void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event);
+
+	boolean validateFormLogic(UserRequest ureq);
 
 }

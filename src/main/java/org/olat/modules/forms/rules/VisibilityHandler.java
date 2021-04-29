@@ -50,7 +50,7 @@ public class VisibilityHandler implements ActionHandler {
 	}
 	
 	@Override
-	public String getActionType() {
+	public String getHandledType() {
 		return VisibilityAction.TYPE;
 	}
 
@@ -68,7 +68,7 @@ public class VisibilityHandler implements ActionHandler {
 	}
 	
 	@Override
-	public boolean actionsAvailable(Form form) {
+	public boolean isHandleableElementAvailable(Form form) {
 		for (AbstractElement element : form.getElements()) {
 			if (element instanceof Container) {
 				return true;

@@ -27,7 +27,6 @@ import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.rules.ui.ChoiceConditionFragement;
-import org.olat.modules.forms.rules.ui.ConditionEditorFragment;
 
 /**
  * 
@@ -43,7 +42,7 @@ public class ChoiceSelectedHandler implements ConditionHandler {
 	}
 	
 	@Override
-	public String getConditionType() {
+	public String getHandledType() {
 		return ChoiceSelectedCondition.TYPE;
 	}
 
@@ -61,7 +60,7 @@ public class ChoiceSelectedHandler implements ConditionHandler {
 	}
 
 	@Override
-	public boolean conditionsAvailable(Form form) {
+	public boolean isHandleableElementAvailable(Form form) {
 		for (AbstractElement element : form.getElements()) {
 			if (element instanceof SingleChoice) {
 				SingleChoice singleChoice = (SingleChoice)element;

@@ -19,12 +19,8 @@
  */
 package org.olat.modules.forms.rules.ui;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.control.Controller;
 import org.olat.modules.forms.model.xml.Action;
+import org.olat.modules.forms.rules.RuleEditorFragment;
 
 /**
  * 
@@ -32,13 +28,7 @@ import org.olat.modules.forms.model.xml.Action;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ActionEditorFragment {
-	
-	public abstract FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq);
-	
-	public abstract void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event);
-
-	public abstract boolean validateFormLogic(UserRequest ureq);
+public interface ActionEditorFragment extends RuleEditorFragment {
 	
 	public abstract Action getAction();
 

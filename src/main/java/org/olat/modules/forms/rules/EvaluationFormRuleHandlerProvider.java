@@ -31,6 +31,7 @@ import java.util.List;
  */
 public class EvaluationFormRuleHandlerProvider implements RuleHandlerProvider {
 	
+	private final List<RuleHandler> ruleHandlers;
 	private final List<ConditionHandler> conditionHandlers;
 	private final List<ActionHandler> actionHandlers;
 	
@@ -40,6 +41,15 @@ public class EvaluationFormRuleHandlerProvider implements RuleHandlerProvider {
 		
 		actionHandlers = new ArrayList<>(1);
 		actionHandlers.add(new VisibilityHandler());
+		
+		ruleHandlers = new ArrayList<>(conditionHandlers.size() + actionHandlers.size());
+		ruleHandlers.addAll(conditionHandlers);
+		ruleHandlers.addAll(actionHandlers);
+	}
+
+	@Override
+	public List<RuleHandler> getRuleHandlers() {
+		return ruleHandlers;
 	}
 
 	@Override

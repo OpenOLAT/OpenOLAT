@@ -29,6 +29,8 @@ import java.util.Collection;
  */
 public interface RuleHandlerProvider {
 	
+	public Collection<RuleHandler> getRuleHandlers();
+	
 	public Collection<ConditionHandler> getConditionHandlers();
 
 	public Collection<ActionHandler> getActionHandlers();
