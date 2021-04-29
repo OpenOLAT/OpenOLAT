@@ -43,6 +43,8 @@ import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
+import org.olat.modules.ceditor.ui.PageEditorUIFactory;
 import org.olat.modules.forms.model.xml.Action;
 import org.olat.modules.forms.model.xml.ChoiceSelectedCondition;
 import org.olat.modules.forms.model.xml.Condition;
@@ -78,6 +80,7 @@ public class EvaluationFormRulesController extends FormBasicController {
 
 	public EvaluationFormRulesController(UserRequest ureq, WindowControl wControl, Form form, RuleHandlerProvider ruleHandlerProvider) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
+		setTranslator(Util.createPackageTranslator(PageEditorUIFactory.class, getLocale(), getTranslator()));
 		this.form = form;
 		this.ruleHandlerProvider = ruleHandlerProvider;
 		

@@ -33,6 +33,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerSettings;
+import org.olat.modules.ceditor.ui.PageEditorUIFactory;
 
 /**
  * 
@@ -204,7 +205,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 
 	private void renderHoverText(StringOutput sb, ContentEditorContainerComponent cmp, Translator translator) {
 		String name = cmp.getContainerSettings().getName();
-		if (cmp.isRuleLinkEnabled() || StringHelper.containsNonWhitespace(name)) {
+		if (cmp.isRuleLinkEnabled() || cmp.supportsName()) {
 			sb.append("<div class='o_hover_text_wrapper'><div class='o_hover_text'>");
 			if (cmp.isRuleLinkEnabled()) {
 				sb.append("<div>");
@@ -212,12 +213,13 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 				sb.append(translator.translate("container.rule"));
 				sb.append("</div>");
 			}
-			if (StringHelper.containsNonWhitespace(name)) {
-				sb.append("<div>");
-				sb.append("<i class='o_icon o_icon_name'> </i> ");
-				sb.append(translator.translate("container.name.ref", new String[] { Formatter.truncate(name, 20) } ));
-				sb.append("</div>");
-			}
+			String displayName = StringHelper.containsNonWhitespace(name)
+					? Formatter.truncate(name, 20)
+					: StringHelper.escapeHtml(PageEditorUIFactory.formatUntitled(translator, cmp.getElementId()));
+			sb.append("<div>");
+			sb.append("<i class='o_icon o_icon_name'> </i> ");
+			sb.append(translator.translate("container.name.ref", new String[] { displayName } ));
+			sb.append("</div>");
 			sb.append("</div></div>");
 		}
 	}

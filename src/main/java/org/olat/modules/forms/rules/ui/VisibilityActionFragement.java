@@ -35,6 +35,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.ui.PageEditorUIFactory;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Action;
 import org.olat.modules.forms.model.xml.Container;
@@ -82,7 +83,7 @@ public class VisibilityActionFragement implements ActionEditorFragment {
 				Container container = (Container)element;
 				String value = StringHelper.containsNonWhitespace(container.getContainerSettings().getName())
 						? container.getContainerSettings().getName()
-						: RulesUIFactory.formatUntitled(translator, container.getId());
+						: PageEditorUIFactory.formatUntitled(translator, container.getId());
 				value = Formatter.truncate(value, 40);
 				conditionKV.add(KeyValues.entry(container.getId(), value));
 			}

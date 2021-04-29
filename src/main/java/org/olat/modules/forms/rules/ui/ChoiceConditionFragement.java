@@ -39,6 +39,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.ui.PageEditorUIFactory;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.ChoiceSelectedCondition;
 import org.olat.modules.forms.model.xml.Condition;
@@ -89,14 +90,14 @@ public class ChoiceConditionFragement implements ConditionEditorFragment {
 				SingleChoice singleChoice = (SingleChoice)element;
 				String value = StringHelper.containsNonWhitespace(singleChoice.getName())
 						? singleChoice.getName()
-						: RulesUIFactory.formatUntitled(translator, singleChoice.getId());
+						: PageEditorUIFactory.formatUntitled(translator, singleChoice.getId());
 				value = Formatter.truncate(value, 23);
 				conditionKV.add(KeyValues.entry(singleChoice.getId(), value));
 			} else if (element instanceof MultipleChoice) {
 				MultipleChoice multipleChoice = (MultipleChoice)element;
 				String value = StringHelper.containsNonWhitespace(multipleChoice.getName())
 						? multipleChoice.getName()
-						: RulesUIFactory.formatUntitled(translator, multipleChoice.getId());
+						: PageEditorUIFactory.formatUntitled(translator, multipleChoice.getId());
 				value = Formatter.truncate(value, 23);
 				conditionKV.add(KeyValues.entry(multipleChoice.getId(), value));
 			}

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.rules.ui;
+package org.olat.modules.ceditor.ui;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -28,14 +28,14 @@ import org.olat.core.util.StringHelper;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RulesUIFactory {
+public class PageEditorUIFactory {
 	
 	public static String formatUntitled(Translator translator, String original) {
 		String shortened = original;
 		if (!StringHelper.containsNonWhitespace(original)) {
 			shortened = "";
-		} else if (original.length() > 8) {
-			shortened = original.substring(0, 7);
+		} else if (original.length() > 9) {
+			shortened = original.substring(0, 8);
 		}
 		return translator.translate("untitled", new String[] { shortened } );
 	}
