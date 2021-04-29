@@ -153,3 +153,7 @@ create table o_lti_key (
 
 create index idx_lti_kid_idx on o_lti_key (l_key_id);
 
+
+-- Document editor
+alter table o_de_access add column o_edit_start_date timestamp default null;
+

@@ -241,6 +241,11 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	public Access updatetExpiresAt(Access access, Date expiresAt) {
 		return accessDao.updateExpiresAt(access, expiresAt);
 	}
+	
+	@Override
+	public Access updateEditStart(Access access) {
+		return accessDao.updateEditStartDate(access, new Date());
+	}
 
 	@Override
 	public Access updateMode(Access access, Mode mode) {

@@ -116,6 +116,8 @@ public interface DocEditorService {
 	public Access updateMode(Access access, Mode mode);
 
 	public Access updatetExpiresAt(Access access, Date expiresAt);
+	
+	public Access updateEditStart(Access access);
 
 	public void deleteAccess(Access access);
 

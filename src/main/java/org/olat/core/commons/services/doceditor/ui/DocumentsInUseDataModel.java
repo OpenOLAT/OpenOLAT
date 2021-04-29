@@ -91,6 +91,7 @@ implements SortableFlexiTableDataModel<DocumentsInUseRow>, FilterableFlexiTableM
 			case app: return row.getApp();
 			case edit: return row.getMode();
 			case opened: return row.getOpened();
+			case editStart: return row.getEditStartDate();
 			default: return null;
 		}
 		}
@@ -108,7 +109,8 @@ implements SortableFlexiTableDataModel<DocumentsInUseRow>, FilterableFlexiTableM
 		fileName("table.header.file.name"),
 		app("table.header.app"),
 		edit("table.header.edit"),
-		opened("table.header.opened");
+		opened("table.header.opened"),
+		editStart("table.header.edit.start");
 		
 		private final String i18nKey;
 		

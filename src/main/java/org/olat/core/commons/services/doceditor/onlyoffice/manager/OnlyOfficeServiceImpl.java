@@ -249,6 +249,15 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		
 		LockResult lock = lock(vfsLeaf, identity);
 		
+		if (lock != null) {
+			AccessSearchParams params = new AccessSearchParams();
+			params.setEditorType(OnlyOfficeEditor.TYPE);
+			params.setMode(Mode.EDIT);
+			params.setMetadataKey(vfsLeaf.getMetaInfo().getKey());
+			params.setIdentityKey(identity.getKey());
+			documentEditorServie.getAccesses(params).forEach(access -> documentEditorServie.updateEditStart(access));
+		}
+		
 		return lock != null;
 	}
 	

@@ -91,6 +91,7 @@ public class DocumentsInUseListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocumentsInUseCols.app));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocumentsInUseCols.edit));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocumentsInUseCols.opened));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DocumentsInUseCols.editStart));
 		
 		dataModel = new DocumentsInUseDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);

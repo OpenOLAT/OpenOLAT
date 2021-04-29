@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.ui;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -54,8 +55,12 @@ public class DocumentsInUseRow extends UserPropertiesRow {
 		return access.getMode();
 	}
 
-	public Object getOpened() {
+	public Date getOpened() {
 		return access.getCreationDate();
+	}
+	
+	public Date getEditStartDate() {
+		return access.getEditStartDate();
 	}
 
 }

@@ -79,6 +79,7 @@ public class AccessDAOTest extends OlatTestCase {
 		softly.assertThat(access.getCreationDate()).isNotNull();
 		softly.assertThat(access.getLastModified()).isNotNull();
 		softly.assertThat(access.getMode()).isEqualTo(Mode.EDIT);
+		softly.assertThat(access.getEditStartDate()).isNull();
 		softly.assertThat(access.isVersionControlled()).isEqualTo(versionControlled);
 		softly.assertThat(access.isDownload()).isFalse();
 		softly.assertThat(access.getExpiresAt()).isCloseTo(expiresAt, 2000);
@@ -99,6 +100,20 @@ public class AccessDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(access.getExpiresAt()).isCloseTo(expiresIn24Hours, 2000);
+	}
+	
+	@Test
+	public void shouldUpdateEditStartDate() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor");
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
+		Access access = sut.createAccess(vfsMetadata, identity, random(), Mode.EDIT, true, true, new Date());
+		dbInstance.commitAndCloseSession();
+		
+		Date startDate = Date.from(Instant.now().plus(Duration.ofHours(2)));
+		access = sut.updateEditStartDate(access, startDate);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(access.getEditStartDate()).isCloseTo(startDate, 2000);
 	}
 	
 	@Test

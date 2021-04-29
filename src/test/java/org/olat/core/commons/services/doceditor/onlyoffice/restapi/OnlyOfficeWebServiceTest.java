@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
@@ -114,7 +115,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		Identity user1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity user2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		
-		DocEditorConfigs docEditorConfigs = DocEditorConfigs.builder().build(vfsLeaf);
+		DocEditorConfigs docEditorConfigs = DocEditorConfigs.builder().withMode(Mode.EDIT).build(vfsLeaf);
 		Access access1 = docEditorService.createAccess(user1, Roles.authorRoles(), docEditorConfigs);
 		docEditorService.createAccess(user2, Roles.authorRoles(), docEditorConfigs);
 		ApiConfig apiConfig1 = onlyOfficeService.getApiConfig(vfsLeaf.getMetaInfo(), user1, Mode.EDIT, false, true, null);
@@ -157,10 +158,19 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		softly.assertThat(onlyOfficeService.isLockedForMe(vfsLeaf, user2))
 				.as("User 1 started editing: the file should be loackable for other users in OnlyOffice")
 				.isFalse();
-		softly.assertThat(docEditorService.getAccesses(accessSearchParams))
+		dbInstance.commitAndCloseSession(); // Why is a commit necessary?
+		List<Access> accesses = docEditorService.getAccesses(accessSearchParams);
+		softly.assertThat(accesses)
 				.as("User 1 started editing: still two accesses should exist.")
 				.hasSize(2);
-		
+		Access accessUser1 = accesses.stream().filter(access -> access.getIdentity().getKey().equals(user1.getKey())).findFirst().get();
+		softly.assertThat(accessUser1.getEditStartDate())
+				.as("User 1 started editing: Access User 1 has to have an edit start date.")
+				.isNotNull();
+		Access accessUser2 = accesses.stream().filter(access -> access.getIdentity().getKey().equals(user2.getKey())).findFirst().get();
+		softly.assertThat(accessUser2.getEditStartDate())
+				.as("User 1 started editing: Access User 2 schould not have an edit start date.")
+				.isNull();
 		
 		// Second user opens same file in OnlyOffice for editing
 		// Callback: CallbackImpl [actions=[ActionImpl [type=1, userid=openolat.limmat.user1]], forcesavetype=null, key=9228803b-cfb6-423b-973a-f90228a6bda5-20210128133145, status=1, url=null, users=[openolat.limmat.administrator, openolat.limmat.user1]]
@@ -181,6 +191,19 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		softly.assertThat(docEditorService.getAccesses(accessSearchParams))
 				.as("User 2 started editing in 1st window: still two accesses should exist.")
 				.hasSize(2);
+		dbInstance.commitAndCloseSession(); // Why is a commit necessary?
+		accesses = docEditorService.getAccesses(accessSearchParams);
+		softly.assertThat(accesses)
+				.as("User 1 started editing: still two accesses should exist.")
+				.hasSize(2);
+		accessUser1 = accesses.stream().filter(access -> access.getIdentity().getKey().equals(user1.getKey())).findFirst().get();
+		softly.assertThat(accessUser1.getEditStartDate())
+				.as("User 2 started editing: Access User 1 has to have an edit start date.")
+				.isNotNull();
+		accessUser2 = accesses.stream().filter(access -> access.getIdentity().getKey().equals(user2.getKey())).findFirst().get();
+		softly.assertThat(accessUser2.getEditStartDate())
+				.as("User 2 started editing: Access User 2 has to have an edit start date")
+				.isNotNull();
 		
 		
 		// Second user opens same file in OnlyOffice for editing in a second browser window

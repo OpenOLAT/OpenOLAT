@@ -1944,6 +1944,7 @@ create table o_de_access (
    o_editor_type varchar(64) not null,
    o_expires_at timestamp not null,
    o_mode varchar(64) not null,
+   o_edit_start_date date,
    o_version_controlled number default 0 not null,
    o_download number default 0,
    fk_metadata number(20) not null,

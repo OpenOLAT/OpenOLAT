@@ -41,6 +41,8 @@ public interface Access extends AccessRef, ModifiedInfo, CreateInfo {
 	
 	Mode getMode();
 	
+	Date getEditStartDate();
+	
 	boolean isVersionControlled();
 	
 	boolean isDownload();

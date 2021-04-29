@@ -74,6 +74,9 @@ public class AccessImpl implements Access, Persistable {
 	@Enumerated(EnumType.STRING)
 	@Column(name="o_mode", nullable=false, insertable=true, updatable=true)
 	private Mode mode;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="o_edit_start_date", nullable=true, insertable=true, updatable=true)
+	private Date editStartDate;
 	@Column(name="o_version_controlled", nullable=false, insertable=true, updatable=false)
 	private boolean versionControlled;
 	@Column(name="o_download", nullable=false, insertable=true, updatable=false)
@@ -139,6 +142,15 @@ public class AccessImpl implements Access, Persistable {
 
 	public void setMode(Mode mode) {
 		this.mode = mode;
+	}
+
+	@Override
+	public Date getEditStartDate() {
+		return editStartDate;
+	}
+
+	public void setEditStartDate(Date editStartDate) {
+		this.editStartDate = editStartDate;
 	}
 
 	@Override

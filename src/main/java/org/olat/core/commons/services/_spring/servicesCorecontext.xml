@@ -121,7 +121,7 @@
 		<!-- Cleaning job for document editor access -->
 	<bean id="documentAccessDeletionTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="documentAccessDeletionJob.${cluster.singleton.services}" />
-		<property name="cronExpression" value="* 24 * * * ?" /> <!-- Every hour at xx:24:00 -->
+		<property name="cronExpression" value="34 * * * * ?" /> <!-- Every hour at xx:xx:34 -->
 		<property name="startDelay" value="10000" />
 	</bean>
 

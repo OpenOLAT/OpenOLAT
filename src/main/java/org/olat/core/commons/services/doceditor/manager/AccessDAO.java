@@ -82,6 +82,16 @@ public class AccessDAO {
 		return access;
 	}
 	
+	public Access updateEditStartDate(Access access, Date editStartDate) {
+		if (access instanceof AccessImpl) {
+			AccessImpl accessImpl = (AccessImpl) access;
+			accessImpl.setLastModified(new Date());
+			accessImpl.setEditStartDate(editStartDate);
+			return dbInstance.getCurrentEntityManager().merge(accessImpl);
+		}
+		return access;
+	}
+	
 	public Access updateMode(Access access, Mode mode) {
 		if (access instanceof AccessImpl) {
 			AccessImpl accessImpl = (AccessImpl) access;
