@@ -22,10 +22,13 @@ package org.olat.ims.lti13.ui;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
@@ -33,9 +36,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Platform;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
+import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,12 +54,17 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 	
 	private TextElement deploymentIdEl;
 	private SingleSelection platformsEl;
+	private SingleSelection publicKeyTypeEl;
+	private TextElement publicKeyEl;
+	private StaticTextElement publicKeyUrlEl;
 	
 	private RepositoryEntry entry;
 	private BusinessGroup businessGroup;
 	private LTI13SharedToolDeployment deployment;
 	private final List<LTI13Platform> platforms;
-	
+
+	@Autowired
+	private LTI13Module lti13Module;
 	@Autowired
 	private LTI13Service lti13Service;
 	
@@ -65,6 +75,7 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		this.businessGroup = businessGroup;
 		platforms = lti13Service.getPlatforms();
 		initForm(ureq);
+		updatePlatformPublicKeys();
 	}
 	
 	public LTI13EditSharedToolDeploymentController(UserRequest ureq, WindowControl wControl,
@@ -73,6 +84,7 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		this.deployment = deployment;
 		platforms = lti13Service.getPlatforms();
 		initForm(ureq);
+		updatePlatformPublicKeys();
 	}
 
 	@Override
@@ -84,6 +96,7 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		
 		platformsEl = uifactory.addDropdownSingleselect("deployment.platform", formLayout,
 				platformsValues.keys(), platformsValues.values(), null);
+		platformsEl.addActionListener(FormEvent.ONCHANGE);
 		if(deployment != null && platformsValues.containsKey(deployment.getKey().toString())) {
 			platformsEl.select(deployment.getKey().toString(), true);
 			platformsEl.setEnabled(false);
@@ -94,6 +107,25 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		String deploymentId = deployment == null ? null : deployment.getDeploymentId();
 		deploymentIdEl = uifactory.addTextElement("deployment.id", 255, deploymentId, formLayout);
 		deploymentIdEl.setMandatory(true);
+		
+		uifactory.addSpacerElement("setup", formLayout, false);
+		
+		String loginInitiationUrl = lti13Module.getToolLoginInitiationUri();
+		uifactory.addStaticTextElement("tool.login.initiation", loginInitiationUrl, formLayout);
+		String loginRedirectUrl = lti13Module.getToolLoginRedirectUri();
+		uifactory.addStaticTextElement("tool.login.redirection", loginRedirectUrl, formLayout);
+		
+		KeyValues kValues = new KeyValues();
+		kValues.add(KeyValues.entry(PublicKeyType.KEY.name(), translate("tool.public.key.type.key")));
+		kValues.add(KeyValues.entry(PublicKeyType.URL.name(), translate("tool.public.key.type.url")));
+		publicKeyTypeEl = uifactory.addDropdownSingleselect("tool.public.key.type", "tool.public.key.type", formLayout, kValues.keys(), kValues.values());
+		publicKeyTypeEl.addActionListener(FormEvent.ONCHANGE);
+		publicKeyTypeEl.select(kValues.keys()[0], true);
+		
+		publicKeyEl = uifactory.addTextAreaElement("tool.public.key.value", "tool.public.key.value", -1, 15, 60, false, true, true, "", formLayout);
+		publicKeyEl.setEnabled(false);
+		publicKeyUrlEl = uifactory.addStaticTextElement("tool.public.key.url", "", formLayout);
+		publicKeyUrlEl.setVisible(false);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -115,6 +147,35 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(publicKeyTypeEl == source) {
+			updatePublicKeyUI();
+		} else if(platformsEl == source) {
+			updatePlatformPublicKeys();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updatePlatformPublicKeys() {
+		LTI13Platform platform = getSelectedPlatform();
+		if(platform == null) {
+			publicKeyEl.setValue("");
+			publicKeyUrlEl.setValue("");
+		} else {
+			publicKeyEl.setValue(platform.getPublicKey());
+			publicKeyUrlEl.setValue(platform.getPublicKeyUrl());
+		}
+	}
+	
+	private void updatePublicKeyUI() {
+		if(!publicKeyTypeEl.isOneSelected()) return;
+		
+		String selectedKey = publicKeyTypeEl.getSelectedKey();
+		publicKeyEl.setVisible(PublicKeyType.KEY.name().equals(selectedKey));
+		publicKeyUrlEl.setVisible(PublicKeyType.URL.name().equals(selectedKey));
 	}
 
 	@Override
