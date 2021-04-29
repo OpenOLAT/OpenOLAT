@@ -25,6 +25,7 @@ import org.olat.modules.forms.model.xml.ChoiceSelectedCondition;
 import org.olat.modules.forms.model.xml.Condition;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.MultipleChoice;
+import org.olat.modules.forms.model.xml.Rule;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.rules.ui.ChoiceConditionFragement;
 
@@ -75,6 +76,15 @@ public class ChoiceSelectedHandler implements ConditionHandler {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public boolean isElementHandled(Form form, AbstractElement element) {
+		return form.getRules().stream()
+				.map(Rule::getCondition)
+				.filter(condition -> condition instanceof ChoiceSelectedCondition)
+				.map(condition -> ((ChoiceSelectedCondition)condition).getElementId())
+				.anyMatch(elementId -> elementId.equals(element.getId()));
 	}
 
 }

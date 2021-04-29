@@ -35,6 +35,10 @@ public interface PageEditorProvider extends PageProvider {
 	
 	public PageElement appendPageElementAt(PageElement element, int index);
 	
+	public boolean isRemoveConfirmation(PageElement element);
+
+	public String getRemoveConfirmationI18nKey();
+	
 	public void removePageElement(PageElement element);
 
 	public void moveUpPageElement(PageElement element);

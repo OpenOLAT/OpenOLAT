@@ -77,6 +77,15 @@ public class VisibilityHandler implements ActionHandler {
 		return false;
 	}
 	
+	@Override
+	public boolean isElementHandled(Form form, AbstractElement element) {
+		return form.getRules().stream()
+				.map(Rule::getAction)
+				.filter(action -> action instanceof VisibilityAction)
+				.map(action -> ((VisibilityAction)action).getElementId())
+				.anyMatch(elementId -> elementId.equals(element.getId()));
+	}
+	
 	
 	public static void registerListeners(RulesEngine rulesEngine, Form form, List<ExecutionFragment> fragments) {
 		for (AbstractElement abstractElement : form.getElements()) {

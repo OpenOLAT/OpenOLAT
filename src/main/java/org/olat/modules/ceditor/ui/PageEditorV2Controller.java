@@ -84,6 +84,7 @@ public class PageEditorV2Controller extends BasicController {
 	private CloseableModalController cmc;
 	private PageElementAddController addCtrl;
 	private AddElementsController addElementsCtrl;
+	private DeleteConfirmationController deleteConfirmationCtrl;
 	private CloseableCalloutWindowController addCalloutCtrl;
 	
 	private int counter;
@@ -184,6 +185,12 @@ public class PageEditorV2Controller extends BasicController {
 				doAddElement(ureq, aee.getReferenceComponent(), aee.getHandler(),
 						aee.getTarget(), aee.getContainerColumn());
 			}
+		} else if(deleteConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doDeleteElement(ureq, deleteConfirmationCtrl.getFragment(), false);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(addCalloutCtrl == source) {
 			cleanUp();
 		} else if(cmc == source) {
@@ -198,6 +205,7 @@ public class PageEditorV2Controller extends BasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(addElementsCtrl);
 		removeAsListenerAndDispose(addCalloutCtrl);
 		removeAsListenerAndDispose(addCtrl);
@@ -223,7 +231,7 @@ public class PageEditorV2Controller extends BasicController {
 			OpenAddElementEvent aee = (OpenAddElementEvent)event;
 			openAddElementCallout(ureq, aee.getDispatchId(), aee.getComponent(), aee.getTarget(), aee.getColumn());
 		} else if(event instanceof DeleteElementEvent) {
-			doDeleteElement(ureq, ((DeleteElementEvent)event).getComponent());
+			doDeleteElement(ureq, ((DeleteElementEvent)event).getComponent(), true);
 		} else if(event instanceof MoveUpElementEvent) {
 			doMoveUpElement(ureq, ((MoveUpElementEvent)event).getComponent());
 		} else if(event instanceof MoveDownElementEvent) {
@@ -428,20 +436,40 @@ public class PageEditorV2Controller extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void doDeleteElement(UserRequest ureq, ContentEditorFragment fragment) {
+	private void doDeleteElement(UserRequest ureq, ContentEditorFragment fragment, boolean confirm) {
 		List<Component> ancestors = ComponentHelper.findAncestorsOrSelfByID(editorCmp, fragment);
 		int index = ancestors.indexOf(fragment);
 		if(index == 0 && ancestors.size() >= 2) {// the root component is always the editor itself
-			provider.removePageElement(fragment.getElement());
-			Component parent = ancestors.get(index + 1);
-			if(parent == editorCmp) {
-				editorCmp.removeRootComponent(fragment);
-			} else if(parent instanceof ContentEditorContainerComponent) {
-				ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
-				container.removeElementAt(fragment);
+			if (confirm && provider.isRemoveConfirmation(fragment.getElement())) {
+				doDeleteConfirmation(ureq, fragment);
+			} else {
+				doDeleteElement(ureq, fragment, ancestors, index);
 			}
-			updateImportButtonVisibility();
 		}
+	}
+
+	private void doDeleteConfirmation(UserRequest ureq, ContentEditorFragment fragment) {
+		deleteConfirmationCtrl = new DeleteConfirmationController(ureq, getWindowControl(), getTranslator(),
+				provider.getRemoveConfirmationI18nKey(), fragment);
+		listenTo(deleteConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), null, deleteConfirmationCtrl.getInitialComponent(),
+				true, translate("delete.element"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doDeleteElement(UserRequest ureq, ContentEditorFragment fragment, List<Component> ancestors,
+			int index) {
+		provider.removePageElement(fragment.getElement());
+		Component parent = ancestors.get(index + 1);
+		if(parent == editorCmp) {
+			editorCmp.removeRootComponent(fragment);
+		} else if(parent instanceof ContentEditorContainerComponent) {
+			ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
+			container.removeElementAt(fragment);
+		}
+		updateImportButtonVisibility();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	

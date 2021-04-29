@@ -52,7 +52,6 @@ import org.olat.modules.forms.model.xml.VisibilityAction;
 import org.olat.modules.forms.rules.ActionHandler;
 import org.olat.modules.forms.rules.ConditionEditorFragment;
 import org.olat.modules.forms.rules.ConditionHandler;
-import org.olat.modules.forms.rules.EvaluationFormRuleHandlerProvider;
 import org.olat.modules.forms.rules.RuleHandlerProvider;
 
 /**
@@ -77,10 +76,10 @@ public class EvaluationFormRulesController extends FormBasicController {
 	private EmptyState noRulesPossible;
 
 
-	public EvaluationFormRulesController(UserRequest ureq, WindowControl wControl, Form form) {
+	public EvaluationFormRulesController(UserRequest ureq, WindowControl wControl, Form form, RuleHandlerProvider ruleHandlerProvider) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.form = form;
-		ruleHandlerProvider = new EvaluationFormRuleHandlerProvider();
+		this.ruleHandlerProvider = ruleHandlerProvider;
 		
 		initForm(ureq);
 	}

@@ -901,6 +901,16 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 
 		@Override
+		public boolean isRemoveConfirmation(PageElement element) {
+			return false;
+		}
+
+		@Override
+		public String getRemoveConfirmationI18nKey() {
+			return null;
+		}
+
+		@Override
 		public void removePageElement(PageElement element) {
 			if(element instanceof PagePart) {
 				portfolioService.removePagePart(page, (PagePart)element);

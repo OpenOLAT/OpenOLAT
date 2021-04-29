@@ -37,5 +37,7 @@ public interface RuleHandler {
 	boolean accepts(AbstractElement element);
 
 	boolean isHandleableElementAvailable(Form form);
+	
+	boolean isElementHandled(Form form, AbstractElement element);
 
 }

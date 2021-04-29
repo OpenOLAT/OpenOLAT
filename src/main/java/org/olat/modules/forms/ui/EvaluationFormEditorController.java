@@ -67,6 +67,8 @@ import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.Rule;
 import org.olat.modules.forms.model.xml.VisibilityAction;
+import org.olat.modules.forms.rules.EvaluationFormRuleHandlerProvider;
+import org.olat.modules.forms.rules.RuleHandlerProvider;
 import org.olat.modules.forms.rules.ui.EvaluationFormRulesController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 
@@ -92,6 +94,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 	private boolean changes = false;
 	private final boolean restrictedEdit;
 	private final boolean restrictedEditWeight;
+	private final RuleHandlerProvider ruleHandlerProvider;
 	
 	public EvaluationFormEditorController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
 			File formFile, DataStorage storage, boolean restrictedEdit, boolean restrictedEditWeight) {
@@ -101,6 +104,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 		this.storage = storage;
 		this.restrictedEdit = restrictedEdit;
 		this.restrictedEditWeight = restrictedEditWeight;
+		this.ruleHandlerProvider = new EvaluationFormRuleHandlerProvider();
 		if(formFile.exists()) {
 			form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 		} else {
@@ -174,7 +178,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 	}
 	
 	private void doOpenRules(UserRequest ureq) {
-		rulesCtrl = new EvaluationFormRulesController(ureq, getWindowControl(), form);
+		rulesCtrl = new EvaluationFormRulesController(ureq, getWindowControl(), form, ruleHandlerProvider);
 		listenTo(rulesCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), rulesCtrl.getInitialComponent(),
 				true, translate("rules"));
@@ -285,6 +289,21 @@ public class EvaluationFormEditorController extends BasicController implements T
 				persistForm();
 			}
 			return element;
+		}
+
+		@Override
+		public boolean isRemoveConfirmation(PageElement element) {
+			if(element instanceof AbstractElement) {
+				AbstractElement abstractElement = (AbstractElement)element;
+				return ruleHandlerProvider.getRuleHandlers().stream()
+						.anyMatch(handler -> handler.isElementHandled(form, abstractElement));
+			}
+			return false;
+		}
+		
+		@Override
+		public String getRemoveConfirmationI18nKey() {
+			return "confirm.remove.element.in.rule";
 		}
 
 		@Override
