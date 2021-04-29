@@ -159,6 +159,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		};
 		
 		failedType = uifactory.addDropdownSingleselect("scform.failedtype", formLayout, failedTypeKeys, failedTypeValues, null);
+		failedType.setVisible(failedType.isSelected(0));
 		failedType.addActionListener(FormEvent.ONCLICK);
 		FailedEvaluationType failedTypeValue = sc.getFailedType() == null ? FailedEvaluationType.failedAsNotPassed : sc.getFailedType();
 		boolean failedSelected = false;
