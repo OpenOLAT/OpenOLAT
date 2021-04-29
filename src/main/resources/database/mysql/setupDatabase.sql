@@ -2467,6 +2467,7 @@ create table o_lti_tool (
    l_public_key_url varchar(2000),
    l_public_key_type varchar(16),
    l_initiate_login_url varchar(2000),
+   l_redirect_url varchar(2000),
    primary key (id)
 );
 

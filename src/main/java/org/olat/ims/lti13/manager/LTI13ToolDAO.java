@@ -42,7 +42,8 @@ public class LTI13ToolDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public LTI13Tool createTool(String toolName, String toolUrl, String clientId, String initiateLoginUrl, LTI13ToolType type) {
+	public LTI13Tool createTool(String toolName, String toolUrl, String clientId,
+			String initiateLoginUrl, String redirectUrl, LTI13ToolType type) {
 		LTI13ToolImpl tool = new LTI13ToolImpl();
 		tool.setCreationDate(new Date());
 		tool.setLastModified(tool.getCreationDate());
@@ -51,6 +52,7 @@ public class LTI13ToolDAO {
 		tool.setToolUrl(toolUrl);
 		tool.setToolTypeEnum(type);
 		tool.setInitiateLoginUrl(initiateLoginUrl);
+		tool.setRedirectUrl(redirectUrl);
 		dbInstance.getCurrentEntityManager().persist(tool);
 		return tool;
 	}

@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.imsglobal.basiclti.BasicLTIUtil;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -112,6 +113,7 @@ public class LTIConfigForm extends FormBasicController {
 	private TextElement publicKeyEl;
 	private TextElement publicKeyUrlEl;
 	private TextElement initiateLoginUrlEl;
+	private TextElement redirectUrlEl;
 	
 	private MultipleSelectionElement skipLaunchPageEl;
 	private MultipleSelectionElement skipAcceptLaunchPageEl;
@@ -184,6 +186,8 @@ public class LTIConfigForm extends FormBasicController {
 	private String[] heightValues;
 	private KeyValues userPropKeysValues;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private LTIModule ltiModule;
 	@Autowired
@@ -368,6 +372,9 @@ public class LTIConfigForm extends FormBasicController {
 		
 		String initiateLoginUrl = tool == null ? null : tool.getInitiateLoginUrl();
 		initiateLoginUrlEl = uifactory.addTextElement("config.initiate.login.url", "config.initiate.login.url", 255, initiateLoginUrl, formLayout);
+		String redirectUrl = tool == null ? null : tool.getRedirectUrl();
+		redirectUrlEl = uifactory.addTextAreaElement("config.redirect.url", "config.redirect.url", -1, 4, 60, false, false, true, redirectUrl, formLayout);
+		redirectUrlEl.setHelpTextKey("config.redirect.url.hint", null);
 	}
 	
 	private void updateLtiVersion() {
@@ -385,11 +392,24 @@ public class LTIConfigForm extends FormBasicController {
 			publicKeyEl.setValue(null);
 			publicKeyUrlEl.setValue(null);
 			initiateLoginUrlEl.setValue(null);
+			redirectUrlEl.setValue(null);
 		} else if(StringHelper.isLong(versionKey)) {
 			tool = lti13Service.getToolByKey(Long.valueOf(versionKey));
 			boolean configurable = tool.getToolTypeEnum() == LTI13ToolType.EXTERNAL;
-
-			thost.setValue(tool.getToolUrl());
+			
+			// be nice and try to save the data
+			String targetUrl = null;
+			if(toolDeployement != null && toolDeployement.getTool().equals(tool)) {
+				targetUrl = toolDeployement.getTargetUrl();
+			}
+			if(targetUrl == null && backupToolDeployement != null && backupToolDeployement.getTool().equals(tool)) {
+				targetUrl = backupToolDeployement.getTargetUrl();
+			}
+			if(StringHelper.containsNonWhitespace(targetUrl)) {
+				thost.setValue(targetUrl);
+			} else {
+				thost.setValue(tool.getToolUrl());
+			}
 			clientIdEl.setValue(tool.getClientId());
 			clientIdEl.setEnabled(false);
 			publicKeyTypeEl.select(tool.getPublicKeyTypeEnum().name(), true);
@@ -400,6 +420,8 @@ public class LTIConfigForm extends FormBasicController {
 			publicKeyUrlEl.setEnabled(configurable);
 			initiateLoginUrlEl.setValue(tool.getInitiateLoginUrl());
 			initiateLoginUrlEl.setEnabled(configurable);
+			redirectUrlEl.setValue(tool.getRedirectUrl());
+			redirectUrlEl.setEnabled(configurable);
 			
 			if(toolDeployement != null && !toolDeployement.getTool().equals(tool)) {
 				backupToolDeployement = toolDeployement;
@@ -433,6 +455,8 @@ public class LTIConfigForm extends FormBasicController {
 		publicKeyUrlEl.setEnabled(!sharedTool);
 		initiateLoginUrlEl.setVisible(lti13);
 		initiateLoginUrlEl.setEnabled(!sharedTool);
+		redirectUrlEl.setVisible(lti13);
+		redirectUrlEl.setEnabled(!sharedTool);
 		
 		// LTI 1.1
 		tkey.setVisible(!lti13);
@@ -750,6 +774,29 @@ public class LTIConfigForm extends FormBasicController {
 			allOk &= validateFloat(cutValueEl);
 			allOk &= validateFloat(scaleFactorEl);
 		}
+		
+		//lti 1.3
+		allOk &= validateTextElement(initiateLoginUrlEl, 2000, true);
+		allOk &= validateTextElement(redirectUrlEl, 2000, false);
+		
+		return allOk;
+	}
+	
+	private boolean validateTextElement(TextElement el, int maxLength, boolean mandatory) {
+		boolean allOk = true;
+
+		el.clearError();
+		if(el.isVisible() && el.isEnabled()) {
+			String val = el.getValue();
+			if(!StringHelper.containsNonWhitespace(val) && mandatory) {
+				el.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(StringHelper.containsNonWhitespace(val) && val.length() > maxLength) {
+				el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
+				allOk &= false;
+			}
+		}
+		
 		return allOk;
 	}
 	
@@ -866,16 +913,19 @@ public class LTIConfigForm extends FormBasicController {
 		String targetUrl = thost.getValue();
 		String clientId = clientIdEl.getValue();
 		String initiateLoginUrl = initiateLoginUrlEl.getValue();
+		String redirectUrl = redirectUrlEl.getValue();
 		
 		boolean canUpdateTool = tool == null || LTI13ToolType.EXTERNAL.equals(tool.getToolTypeEnum());
 		if(tool == null) {
-			tool = lti13Service.createExternalTool(courseEntry.getDisplayname(), targetUrl, clientId, initiateLoginUrl, LTI13ToolType.EXTERNAL);
-		} else {
+			tool = lti13Service.createExternalTool(courseEntry.getDisplayname(), targetUrl, clientId,
+					initiateLoginUrl, redirectUrl, LTI13ToolType.EXTERNAL);
+		} else if(canUpdateTool) {
 			tool.setToolUrl(targetUrl);
 		}
 		
 		if(canUpdateTool) {
-			tool.setInitiateLoginUrl(initiateLoginUrlEl.getValue());
+			tool.setInitiateLoginUrl(initiateLoginUrl);
+			tool.setRedirectUrl(redirectUrl);
 			
 			PublicKeyType publicKeyType = PublicKeyType.valueOf(publicKeyTypeEl.getSelectedKey());
 			tool.setPublicKeyTypeEnum(publicKeyType);
@@ -896,6 +946,8 @@ public class LTIConfigForm extends FormBasicController {
 		if(toolDeployement == null || !toolDeployement.getTool().equals(tool)) {
 			toolDeployement = lti13Service.createToolDeployment(targetUrl, tool, courseEntry, subIdent);
 		} else {
+			dbInstance.commit();// make sure the tool is persisted
+			toolDeployement = lti13Service.getToolDeploymentByKey(toolDeployement.getKey());
 			toolDeployement.setTargetUrl(targetUrl);
 		}
 		deploymentIdEl.setValue(toolDeployement.getDeploymentId());
@@ -930,6 +982,8 @@ public class LTIConfigForm extends FormBasicController {
 		toolDeployement.setSkipLaunchPage(skipLaunchPage);
 
 		toolDeployement = lti13Service.updateToolDeployment(toolDeployement);
+		tool = toolDeployement.getTool();
+		tool.getKey();// prevent lazy loading exception
 		
 		config.setStringValue(CONFIGKEY_13_DEPLOYMENT_KEY, toolDeployement.getKey().toString());
 		getUpdateConfigCommon();

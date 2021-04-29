@@ -226,8 +226,8 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public LTI13Tool createExternalTool(String toolName, String toolUrl, String clientId, String initiateLoginUrl, LTI13ToolType type) {
-		return lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, type);
+	public LTI13Tool createExternalTool(String toolName, String toolUrl, String clientId, String initiateLoginUrl, String redirectUrls, LTI13ToolType type) {
+		return lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, redirectUrls, type);
 	}
 
 	@Override

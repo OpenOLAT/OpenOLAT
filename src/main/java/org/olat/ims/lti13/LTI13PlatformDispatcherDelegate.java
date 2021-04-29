@@ -143,15 +143,42 @@ public class LTI13PlatformDispatcherDelegate {
 			Claims loginHint = (Claims)loginHintJwt.getBody();
 			Long deploymentKey = loginHint.get("deploymentKey", Long.class);
 			LTI13ToolDeployment deployment = lti13Service.getToolDeploymentByKey(deploymentKey);
-			
-			Map<String,String> params = new HashMap<>();
-			params.put("state", state);
-			String idToken = generateIdToken(identity, loginHint, deployment, nonce);
-			params.put("id_token", idToken);
-			sendFormRedirect(request, response, redirectUri, params);
+			if(isRedirectUriAllowed(redirectUri, deployment)) {
+				Map<String,String> params = new HashMap<>();
+				params.put("state", state);
+				String idToken = generateIdToken(identity, loginHint, deployment, nonce);
+				params.put("id_token", idToken);
+				sendFormRedirect(request, response, redirectUri, params);
+			} else {
+				DispatcherModule.sendBadRequest("Unregistered redirect_uri " + redirectUri, response);
+			}
 		} else {
 			DispatcherModule.sendBadRequest("", response);
 		}
+	}
+	
+	private boolean isRedirectUriAllowed(String redirectUri, LTI13ToolDeployment deployment) {
+		if(deployment == null || deployment.getTool() == null) return false;
+		
+		LTI13Tool tool = deployment.getTool();
+		if(!StringHelper.containsNonWhitespace(tool.getRedirectUrl())) {
+			return true;
+		}
+		String[] urls = tool.getRedirectUrl().split("[\\r?\\n]");
+		for(String url:urls) {
+			if(isRedirectUriAllowed(redirectUri, url)) {
+				return true;
+			}
+		}
+		log.warn("LTI Redirect URI not allowed {} for tool: {} with urls: {} ", redirectUri, tool.getKey(), urls);
+		return false;
+	}
+	
+	private boolean isRedirectUriAllowed(String redirectUri, String referenceUri) {
+		if(redirectUri.equals(referenceUri)) {
+			return true;
+		}
+		return false;
 	}
 	
 	private Jwt<?,?> loginHint(String loginHint) {

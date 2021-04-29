@@ -64,6 +64,10 @@ public interface LTI13Tool extends CreateInfo, ModifiedInfo {
 	
 	public void setInitiateLoginUrl(String url);
 	
+	public String getRedirectUrl();
+
+	public void setRedirectUrl(String redirectUrl);
+	
 	public enum PublicKeyType {
 		URL,
 		KEY

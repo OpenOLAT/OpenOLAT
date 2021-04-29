@@ -50,8 +50,9 @@ public class LTI13ToolDAOTest extends OlatTestCase {
 		String toolName = "LTI 1.3 spring demo";
 		String toolUrl = "https://www.openolat.com/tool";
 		String clientId = UUID.randomUUID().toString();
-		String initiateLoginUrl = "https://www.openolat.com/lti/api/login";
-		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, LTI13ToolType.EXTERNAL);
+		String initiateLoginUrl = "https://www.openolat.com/lti/api/login_init";
+		String redirectUrl = "https://www.openolat.com/lti/api/login";
+		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, redirectUrl, LTI13ToolType.EXTERNAL);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(tool);
@@ -63,6 +64,7 @@ public class LTI13ToolDAOTest extends OlatTestCase {
 		Assert.assertEquals(toolUrl, tool.getToolUrl());
 		Assert.assertEquals(clientId, tool.getClientId());
 		Assert.assertEquals(initiateLoginUrl, tool.getInitiateLoginUrl());
+		Assert.assertEquals(redirectUrl, tool.getRedirectUrl());
 		Assert.assertEquals("www.openolat.com", tool.getToolDomain());
 	}
 	
@@ -72,7 +74,7 @@ public class LTI13ToolDAOTest extends OlatTestCase {
 		String toolUrl = "https://www.openolat.com/lti";
 		String clientId = UUID.randomUUID().toString();
 		String initiateLoginUrl = "https://www.openolat.com/lti/api/login";
-		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, LTI13ToolType.EXTERNAL);
+		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, null, LTI13ToolType.EXTERNAL);
 		dbInstance.commitAndCloseSession();
 		
 		List<LTI13Tool> tools = lti13ToolDao.getTools(LTI13ToolType.EXTERNAL);

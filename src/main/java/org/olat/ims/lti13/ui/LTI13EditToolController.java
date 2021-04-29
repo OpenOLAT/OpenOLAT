@@ -54,6 +54,7 @@ public class LTI13EditToolController extends FormBasicController {
 	private TextElement publicKeyEl;
 	private TextElement publicKeyUrlEl;
 	private TextElement initiateLoginUrlEl;
+	private TextElement redirectUrlEl;
 	
 	private LTI13Tool tool;
 	private final String clientId;
@@ -88,8 +89,10 @@ public class LTI13EditToolController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String toolName = tool == null ? null : tool.getToolName();
 		toolNameEl = uifactory.addTextElement("tool.name", "tool.name", 255, toolName, formLayout);
+		toolNameEl.setMandatory(true);
 		String toolUrl = tool == null ? null : tool.getToolUrl();
 		toolUrlEl = uifactory.addTextElement("tool.url", "tool.url", 255, toolUrl, formLayout);
+		toolUrlEl.setMandatory(true);
 
 		uifactory.addStaticTextElement("tool.client.id", clientId, formLayout);
 		
@@ -113,6 +116,11 @@ public class LTI13EditToolController extends FormBasicController {
 		
 		String initiateLoginUrl = tool == null ? null : tool.getInitiateLoginUrl();
 		initiateLoginUrlEl = uifactory.addTextElement("tool.initiate.login.url", "tool.initiate.login.url", 255, initiateLoginUrl, formLayout);
+		initiateLoginUrlEl.setMandatory(true);
+		
+		String redirectUrl = tool == null ? null : tool.getRedirectUrl();
+		redirectUrlEl = uifactory.addTextAreaElement("tool.redirect.url", "tool.redirect.url", -1, 4, 60, false, false, true, redirectUrl, formLayout);
+		redirectUrlEl.setHelpTextKey("tool.redirect.url.hint", null);
 		
 		uifactory.addSpacerElement("platform", formLayout, false);
 		
@@ -164,10 +172,25 @@ public class LTI13EditToolController extends FormBasicController {
 			allOk  &= false;
 		}
 		
-		initiateLoginUrlEl.clearError();
-		if(!StringHelper.containsNonWhitespace(initiateLoginUrlEl.getValue())) {
-			initiateLoginUrlEl.setErrorKey("form.legende.mandatory", null);
-			allOk  &= false;
+		allOk &= validateTextElement(toolNameEl, 255, true);
+		allOk &= validateTextElement(toolUrlEl, 255, true);
+		allOk &= validateTextElement(initiateLoginUrlEl, 2000, true);
+		allOk &= validateTextElement(redirectUrlEl, 2000, false);
+		
+		return allOk;
+	}
+	
+	private boolean validateTextElement(TextElement el, int maxLength, boolean mandatory) {
+		boolean allOk = true;
+
+		el.clearError();
+		String val = el.getValue();
+		if(!StringHelper.containsNonWhitespace(val) && mandatory) {
+			el.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(StringHelper.containsNonWhitespace(val) && val.length() > maxLength) {
+			el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
+			allOk &= false;
 		}
 		
 		return allOk;
@@ -186,13 +209,15 @@ public class LTI13EditToolController extends FormBasicController {
 		String toolName = toolNameEl.getValue();
 		String toolUrl = toolUrlEl.getValue();
 		String initiateLoginUrl = initiateLoginUrlEl.getValue();
+		String redirectUrl = redirectUrlEl.getValue();
 		
 		if(tool == null) {
-			tool = lti13Service.createExternalTool(toolName, toolUrl, clientId, initiateLoginUrl, toolType);
+			tool = lti13Service.createExternalTool(toolName, toolUrl, clientId, initiateLoginUrl, redirectUrl, toolType);
 		} else {
 			tool.setToolName(toolName);
 			tool.setToolUrl(toolUrl);
 			tool.setInitiateLoginUrl(initiateLoginUrl);
+			tool.setRedirectUrl(redirectUrl);
 			tool.setClientId(clientId);
 		}
 		

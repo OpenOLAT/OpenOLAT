@@ -66,7 +66,7 @@ public class LTI13AssessmentEntryDAOTest extends OlatTestCase {
 		String toolUrl = "https://www.openolat.assessment/tool";
 		String clientId = UUID.randomUUID().toString();
 		String initiateLoginUrl = "https://www.openolat.com/lti/api/login";
-		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, LTI13ToolType.EXTERNAL);
+		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, null, LTI13ToolType.EXTERNAL);
 		
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-as-author-1");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-as-participant-1");

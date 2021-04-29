@@ -84,6 +84,8 @@ public class LTI13ToolImpl implements LTI13Tool, Persistable {
     
     @Column(name="l_initiate_login_url", nullable=false, insertable=true, updatable=true)
 	private String initiateLoginUrl;
+    @Column(name="l_redirect_url", nullable=true, insertable=true, updatable=true)
+ 	private String redirectUrl;
 	
 	@Override
 	public Long getKey() {
@@ -188,7 +190,8 @@ public class LTI13ToolImpl implements LTI13Tool, Persistable {
 	public String getPublicKeyUrl() {
 		return publicKeyUrl;
 	}
-	
+
+	@Override
 	public void setPublicKeyUrl(String publicKeyUrl) {
 		this.publicKeyUrl = publicKeyUrl;
 	}
@@ -197,7 +200,8 @@ public class LTI13ToolImpl implements LTI13Tool, Persistable {
 	public PublicKeyType getPublicKeyTypeEnum() {
 		return publicKeyType == null ? PublicKeyType.KEY : PublicKeyType.valueOf(publicKeyType);
 	}
-	
+
+	@Override
 	public void setPublicKeyTypeEnum(PublicKeyType publicKeyType) {
 		this.publicKeyType = publicKeyType == null ? null : publicKeyType.name();
 	}
@@ -218,6 +222,16 @@ public class LTI13ToolImpl implements LTI13Tool, Persistable {
 	@Override
 	public void setInitiateLoginUrl(String initiateLoginUrl) {
 		this.initiateLoginUrl = initiateLoginUrl;
+	}
+
+	@Override
+	public String getRedirectUrl() {
+		return redirectUrl;
+	}
+
+	@Override
+	public void setRedirectUrl(String redirectUrl) {
+		this.redirectUrl = redirectUrl;
 	}
 
 	@Override

@@ -206,7 +206,7 @@ public class LTI13ServiceTest extends OlatTestCase {
 		String clientId = UUID.randomUUID().toString();
 		String issuer = "https://n.openolat.com";
 		String ident = UUID.randomUUID().toString();
-		LTI13Tool tool = lti13Service.createExternalTool("Tool 1", issuer, clientId, "https://login", LTI13ToolType.EXTERNAL);
+		LTI13Tool tool = lti13Service.createExternalTool("Tool 1", issuer, clientId, "https://login", null, LTI13ToolType.EXTERNAL);
 		LTI13ToolDeployment deployment = lti13Service.createToolDeployment("https://target", tool, entry, ident);
 		dbInstance.commitAndCloseSession();
 		
@@ -226,7 +226,7 @@ public class LTI13ServiceTest extends OlatTestCase {
 		String clientId = UUID.randomUUID().toString();
 		String issuer = "https://n.openolat.com";
 		String ident = UUID.randomUUID().toString();
-		LTI13Tool tool = lti13Service.createExternalTool("Tool template 1", issuer, clientId, "https://login", LTI13ToolType.EXT_TEMPLATE);
+		LTI13Tool tool = lti13Service.createExternalTool("Tool template 1", issuer, clientId, "https://login", null, LTI13ToolType.EXT_TEMPLATE);
 		LTI13ToolDeployment deployment = lti13Service.createToolDeployment("https://target", tool, entry, ident);
 		dbInstance.commitAndCloseSession();
 		
@@ -250,9 +250,9 @@ public class LTI13ServiceTest extends OlatTestCase {
 		String issuer = "https://n.openolat.com";
 		String identToDelete = UUID.randomUUID().toString();
 		String ident = UUID.randomUUID().toString();
-		LTI13Tool templateTool = lti13Service.createExternalTool("Tool template 2", issuer, clientId, "https://login", LTI13ToolType.EXT_TEMPLATE);
-		LTI13Tool tool1 = lti13Service.createExternalTool("Tool template 3", issuer, clientId, "https://login", LTI13ToolType.EXTERNAL);
-		LTI13Tool tool2 = lti13Service.createExternalTool("Tool template 4", issuer, clientId, "https://login", LTI13ToolType.EXTERNAL);
+		LTI13Tool templateTool = lti13Service.createExternalTool("Tool template 2", issuer, clientId, "https://login", null, LTI13ToolType.EXT_TEMPLATE);
+		LTI13Tool tool1 = lti13Service.createExternalTool("Tool template 3", issuer, clientId, "https://login", "https://login/init", LTI13ToolType.EXTERNAL);
+		LTI13Tool tool2 = lti13Service.createExternalTool("Tool template 4", issuer, clientId, "https://login", "https://login/init", LTI13ToolType.EXTERNAL);
 		
 		LTI13ToolDeployment deployment1 = lti13Service.createToolDeployment("https://target1", templateTool, entry, identToDelete);
 		LTI13ToolDeployment deployment2 = lti13Service.createToolDeployment("https://target2", tool1, entry, identToDelete);
