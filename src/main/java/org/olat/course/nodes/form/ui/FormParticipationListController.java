@@ -195,7 +195,7 @@ public class FormParticipationListController extends FormBasicController impleme
 
 	private void loadModel() {
 		List<Identity> coachedIdentities = formManager.getCoachedIdentities(coachCourseEnv);
-		Map<Long, EvaluationFormParticipationStatus> identityKeyToStatus = formManager.getParticipations(survey)
+		Map<Long, EvaluationFormParticipationStatus> identityKeyToStatus = formManager.getParticipations(survey, null, false)
 				.stream()
 				.collect(Collectors.toMap(
 						participation -> participation.getExecutor().getKey(), 

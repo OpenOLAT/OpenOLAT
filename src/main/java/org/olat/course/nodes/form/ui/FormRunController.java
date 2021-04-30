@@ -68,7 +68,7 @@ public class FormRunController extends BasicController {
 		EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdent);
 		if (checkDeadline()) {
 			EvaluationFormParticipation participation = formManager.loadOrCreateParticipation(survey, getIdentity());
-			EvaluationFormSession session = formManager.loadOrCreateSesssion(participation);
+			EvaluationFormSession session = formManager.loadOrCreateSession(participation);
 			executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, FormCourseNode.EMPTY_STATE);
 			listenTo(executionCtrl);
 			putInitialPanel(executionCtrl.getInitialComponent());

@@ -45,6 +45,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -158,12 +159,13 @@ public class FormManagerImpl implements FormManager {
 	}
 
 	@Override
-	public List<EvaluationFormParticipation> getParticipations(EvaluationFormSurvey survey) {
-		return evaluationFormManager.loadParticipations(survey, null, false);
+	public List<EvaluationFormParticipation> getParticipations(EvaluationFormSurvey survey,
+			EvaluationFormParticipationStatus status, boolean fetchExecutor) {
+		return evaluationFormManager.loadParticipations(survey, status, fetchExecutor);
 	}
 
 	@Override
-	public EvaluationFormSession loadOrCreateSesssion(EvaluationFormParticipation participation) {
+	public EvaluationFormSession loadOrCreateSession(EvaluationFormParticipation participation) {
 		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 		if (session == null) {
 			session = evaluationFormManager.createSession(participation);
@@ -210,7 +212,7 @@ public class FormManagerImpl implements FormManager {
 		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentifier(courseNode, courseEntry);
 		EvaluationFormSurvey survey = loadSurvey(surveyIdent);
 		EvaluationFormParticipation participation = loadParticipation(survey, identity);
-		EvaluationFormSession session = participation != null? loadOrCreateSesssion(participation): null;
+		EvaluationFormSession session = participation != null? loadOrCreateSession(participation): null;
 		
 		MailTemplate mailTemplate = formMailing.getConfirmationTemplate(courseEntry, courseNode, identity, session);
 		formMailing.addFormPdfAttachment(mailTemplate, courseNode, userCourseEnv);

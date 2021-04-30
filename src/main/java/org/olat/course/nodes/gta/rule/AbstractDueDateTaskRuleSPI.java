@@ -44,13 +44,12 @@ import org.olat.course.nodes.gta.GTARelativeToDates;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.reminder.rule.AbstractDueDateRuleSPI;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.reminder.IdentitiesProviderRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
-import org.olat.modules.reminder.rule.LaunchUnit;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -64,7 +63,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractDueDateTaskRuleSPI implements IdentitiesProviderRuleSPI {
+public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI {
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -247,55 +246,5 @@ public abstract class AbstractDueDateTaskRuleSPI implements IdentitiesProviderRu
 		
 		return identities;
 	}
-	
-	protected Date now() {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
-	
-	protected boolean isNear(Date dueDate, Date now, ReminderRuleImpl r) {
-		int value = Integer.parseInt(r.getRightOperand());
-		String unit = r.getRightUnit();
-		return near(dueDate, now, value, LaunchUnit.valueOf(unit));
-	}
-	
-	private boolean near(Date date, Date now, int distance, LaunchUnit unit) {
-		double between = -1;
-		switch(unit) {
-			case day:
-				between = daysBetween(now, date);
-				break;
-			case week:
-				between = weeksBetween(now, date);
-				break;
-			case month:
-				between = monthsBetween(now, date);
-				break;
-			case year:
-				between = yearsBetween(now, date);
-				break;
-		}
-		// 0.1 to let +- 2 hours to match
-		return  between <= distance || between - 0.1 <= distance || between < 0.0;
-	}
-	
-	private double daysBetween(Date d1, Date d2) {
-        return ((d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d));
-	}
-	
-	private double weeksBetween(Date d1, Date d2) {
-        return ((d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d * 7d));
-	}
-	
-	private double monthsBetween(Date d1, Date d2) {
-        return ((d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d * 30d));
-	}
-	
-	private double yearsBetween(Date d1, Date d2) {
-        return ((d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d * 365d));
-	}
-	
 	
 }

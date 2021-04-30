@@ -78,7 +78,7 @@ public class FormParticipationController extends BasicController {
 		EvaluationFormParticipation participation = formManager.loadParticipation(survey,
 				coachedCourseEnv.getIdentityEnvironment().getIdentity());
 		if (participation != null) {
-			EvaluationFormSession session = formManager.loadOrCreateSesssion(participation);
+			EvaluationFormSession session = formManager.loadOrCreateSession(participation);
 			if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
 				executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false,
 						FormCourseNode.EMPTY_STATE);

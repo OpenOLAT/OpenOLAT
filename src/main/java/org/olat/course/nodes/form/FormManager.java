@@ -29,6 +29,7 @@ import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
@@ -70,9 +71,10 @@ public interface FormManager {
 
 	public EvaluationFormParticipation loadOrCreateParticipation(EvaluationFormSurvey survey, Identity identity);
 
-	public List<EvaluationFormParticipation> getParticipations(EvaluationFormSurvey survey);
+	public List<EvaluationFormParticipation> getParticipations(EvaluationFormSurvey survey,
+			EvaluationFormParticipationStatus status, boolean fetchExecutor);
 
-	public EvaluationFormSession loadOrCreateSesssion(EvaluationFormParticipation participation);
+	public EvaluationFormSession loadOrCreateSession(EvaluationFormParticipation participation);
 
 	public EvaluationFormSession getDoneSession(EvaluationFormSurvey survey, Identity identity);
 
