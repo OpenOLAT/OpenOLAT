@@ -206,7 +206,7 @@ public class CourseEditorPageFragment {
 		browser.findElement(createNodeButton).click();
 		OOGraphene.waitModalDialog(browser);
 		
-		By nodeBy = By.xpath("//div[@id='o_course_editor_choose_nodetype']//a[contains(@class,'o_sel_course_editor_node-" + nodeAlias + "')]");
+		By nodeBy = By.cssSelector("div.modal-dialog div#o_course_editor_choose_nodetype a.o_sel_course_editor_node-" + nodeAlias);
 		OOGraphene.moveAndClick(nodeBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return assertOnNodeTitle();
