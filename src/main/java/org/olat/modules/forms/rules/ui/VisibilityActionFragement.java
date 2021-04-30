@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.rules.ui;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
@@ -41,8 +42,6 @@ import org.olat.modules.forms.model.xml.Action;
 import org.olat.modules.forms.model.xml.Container;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.VisibilityAction;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 

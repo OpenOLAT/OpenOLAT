@@ -83,13 +83,13 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.FileStorage;
-import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -134,8 +134,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import uk.ac.reload.diva.util.ZipUtils;
 
 /**
  * 
@@ -1177,12 +1175,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String dir = templatesStorage.generateDir();
 		VFSContainer templateDir = templatesStorage.getContainer(dir);
 		try {
-			File targetFolder = ((LocalFolderImpl)templateDir).getBasefile();
-			ZipUtils.unpackZip(file, targetFolder);
+			ZipUtil.unzipStrict(file, templateDir);
 			template.setName(name);
 			template.setPath(dir + "index.html");
 			return true;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("", e);
 			return false;
 		}
@@ -1191,7 +1188,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private boolean addPdfTemplate(String name, File file, CertificateTemplateImpl template, Identity savedBy) {
 		String dir = templatesStorage.generateDir();
 		VFSContainer templateDir = templatesStorage.getContainer(dir);
-		
 		
 		VFSLeaf templateLeaf;
 		String renamedName = VFSManager.rename(templateDir, name);

@@ -20,6 +20,7 @@
 package org.olat.group.ui.main;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +60,6 @@ import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Initial date: Nov 13, 2020<br>

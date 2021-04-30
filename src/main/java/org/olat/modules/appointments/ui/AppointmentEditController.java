@@ -24,6 +24,7 @@ import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.getSelectedTemplate;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.isWebcamLayoutAvailable;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -73,8 +74,6 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 

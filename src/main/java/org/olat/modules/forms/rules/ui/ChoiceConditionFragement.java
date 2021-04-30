@@ -22,6 +22,7 @@ package org.olat.modules.forms.rules.ui;
 import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.util.ArrayHelper.emptyStrings;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,8 +48,6 @@ import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.rules.ConditionEditorFragment;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 

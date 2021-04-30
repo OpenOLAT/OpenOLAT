@@ -21,6 +21,7 @@ package org.olat.repository.ui.author;
 
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +29,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.id.Identity;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Initial date: Jan 3, 2021<br>
