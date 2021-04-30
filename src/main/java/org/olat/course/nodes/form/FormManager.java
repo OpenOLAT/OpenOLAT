@@ -74,6 +74,8 @@ public interface FormManager {
 
 	public EvaluationFormSession loadOrCreateSesssion(EvaluationFormParticipation participation);
 
+	public EvaluationFormSession getDoneSession(EvaluationFormSurvey survey, Identity identity);
+
 	public void onQuickSave(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Double completion);
 
 	public void onExecutionFinished(CourseNode courseNode, UserCourseEnvironment userCourseEnv);

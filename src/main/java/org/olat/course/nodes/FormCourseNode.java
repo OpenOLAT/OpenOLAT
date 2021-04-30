@@ -93,6 +93,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 			.build();
 
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repository.softkey";
+	public static final String CONFIG_KEY_PARTICIPATION_DEADLINE = "participation.deadline";
 	public static final String CONFIG_KEY_CONFIRMATION_ENABLED = "confirmation.enabled";
 
 	public FormCourseNode() {
@@ -175,14 +176,6 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		return StatusDescriptionHelper.sort(statusDescs);
-	}
-	
-	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
-		ModuleConfiguration config = getModuleConfiguration();
-		if (isNewNode) {
-			//
-		}
 	}
 
 	@Override

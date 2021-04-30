@@ -20,12 +20,14 @@
 package org.olat.course.nodes.form.ui;
 
 import java.io.File;
+import java.util.Date;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -68,6 +70,7 @@ public class FormConfigController extends FormBasicController {
 	private FormLink chooseLink;
 	private FormLink replaceLink;
 	private FormLink editLink;
+	private DateChooser participationDeadlineEl;
 	private MultipleSelectionElement confirmationEl;
 	
 	private CloseableModalController cmc;
@@ -108,6 +111,10 @@ public class FormConfigController extends FormBasicController {
 		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, "btn btn-default o_xsmall");
 		editLink = uifactory.addFormLink("edit.edit", buttonsCont, "btn btn-default o_xsmall");
 		
+		Date participationDeadline = config.getDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
+		participationDeadlineEl = uifactory.addDateChooser("edit.participation.deadline", participationDeadline, formLayout);
+		participationDeadlineEl.addActionListener(FormEvent.ONCHANGE);
+		
 		confirmationEl = uifactory.addCheckboxesVertical("edit.confirmation.enabled", formLayout, ON_KEYS,
 				TranslatorHelper.translateAll(getTranslator(), ON_KEYS), 1);
 		confirmationEl.addActionListener(FormEvent.ONCHANGE);
@@ -147,6 +154,8 @@ public class FormConfigController extends FormBasicController {
 			doEditevaluationForm(ureq);
 		} else if (source == evaluationFormLink) {
 			doPreviewEvaluationForm(ureq);
+		} else if (source == participationDeadlineEl) {
+			setParticipationDeadline(ureq);
 		} else if (source == confirmationEl) {
 			setConfirmation(ureq);
 		}
@@ -229,6 +238,11 @@ public class FormConfigController extends FormBasicController {
 		previewCtr.addDisposableChildController(controller);
 		previewCtr.activate();
 		listenTo(previewCtr);
+	}
+	
+	private void setParticipationDeadline(UserRequest ureq) {
+		config.setDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE, participationDeadlineEl.getDate());
+		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 	
 	private void setConfirmation(UserRequest ureq) {

@@ -19,12 +19,16 @@
  */
 package org.olat.course.nodes.form.ui;
 
+import java.util.Date;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -45,7 +49,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FormRunController extends BasicController {
 	
-	private final EvaluationFormExecutionController executionCtrl;
+	private EvaluationFormExecutionController executionCtrl;
+	private MessageController messageCtrl;
 	
 	private final FormCourseNode courseNode;
 	private final UserCourseEnvironment userCourseEnv;
@@ -61,11 +66,26 @@ public class FormRunController extends BasicController {
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
 		EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdent);
-		EvaluationFormParticipation participation = formManager.loadOrCreateParticipation(survey, getIdentity());
-		EvaluationFormSession session = formManager.loadOrCreateSesssion(participation);
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, FormCourseNode.EMPTY_STATE);
-		listenTo(executionCtrl);
-		putInitialPanel(executionCtrl.getInitialComponent());
+		if (checkDeadline()) {
+			EvaluationFormParticipation participation = formManager.loadOrCreateParticipation(survey, getIdentity());
+			EvaluationFormSession session = formManager.loadOrCreateSesssion(participation);
+			executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, FormCourseNode.EMPTY_STATE);
+			listenTo(executionCtrl);
+			putInitialPanel(executionCtrl.getInitialComponent());
+		} else {
+			EvaluationFormSession session = formManager.getDoneSession(survey, getIdentity());
+			if (session != null) {
+				executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, FormCourseNode.EMPTY_STATE);
+				listenTo(executionCtrl);
+				putInitialPanel(executionCtrl.getInitialComponent());
+			} else {
+				String title = translate("participation.deadline.over.title");
+				String text = translate("participation.deadline.over.text");
+				messageCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, text);
+				listenTo(messageCtrl);
+				putInitialPanel(messageCtrl.getInitialComponent());
+			}
+		}
 	}
 
 	@Override
@@ -89,6 +109,11 @@ public class FormRunController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	private boolean checkDeadline() {
+		Date deadline = courseNode.getModuleConfiguration().getDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
+		return deadline == null || deadline.after(new Date());
 	}
 
 	private void doExecutionFinished(UserRequest ureq) {

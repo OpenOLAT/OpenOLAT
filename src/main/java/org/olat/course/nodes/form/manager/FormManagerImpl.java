@@ -46,6 +46,7 @@ import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilter;
@@ -168,6 +169,18 @@ public class FormManagerImpl implements FormManager {
 			session = evaluationFormManager.createSession(participation);
 		}
 		return session;
+	}
+	
+	@Override
+	public EvaluationFormSession getDoneSession(EvaluationFormSurvey survey, Identity identity) {
+		EvaluationFormParticipation participation = loadParticipation(survey, identity);
+		if (participation != null) {
+			EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
+			if (EvaluationFormSessionStatus.done == session.getEvaluationFormSessionStatus()) {
+				return session;
+			}
+		}
+		return null;
 	}
 
 	@Override
