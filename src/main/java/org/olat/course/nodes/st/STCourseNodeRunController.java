@@ -58,7 +58,6 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -126,7 +125,6 @@ public class STCourseNodeRunController extends BasicController {
 		String peekviewChildNodesConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, null);
 		List<String> peekviewChildNodes =  (peekviewChildNodesConfig == null ? new ArrayList<>() : Arrays.asList(peekviewChildNodesConfig.split(",")));
 		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-				.withFilter(AccessibleFilter.create())
 				.build()
 				.getNodeById(stCourseNode.getIdent());
 		int chdCnt = courseTreeNode == null ? 0 : courseTreeNode.getChildCount();
@@ -173,7 +171,7 @@ public class STCourseNodeRunController extends BasicController {
 					children.add(child);
 					childViewController = new PeekViewWrapperController(ureq, wControl, child, childPeekViewController, accessible);
 					listenTo(childViewController); // auto-dispose controller
-					myContent.put("childView_" + child.getIdent(), childViewController.getInitialComponent());
+					myContent.put("childView_".concat(child.getIdent()), childViewController.getInitialComponent());
 				}
 			}
 		}

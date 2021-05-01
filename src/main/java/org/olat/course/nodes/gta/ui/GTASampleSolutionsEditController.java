@@ -202,6 +202,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			
 			if(event == Event.DONE_EVENT) {
 				gtaManager.addSolution(newSolution, courseEnv, gtaNode);
+				fireEvent(ureq, Event.DONE_EVENT);
 				updateModel(ureq);
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
