@@ -182,8 +182,7 @@ public class CourseWebService {
 	@Path("calendar")
 	public CalWebService getCourseCalendarWebService(@Context HttpServletRequest request) {
 		if(calendarModule.isEnabled()
-				&& (calendarModule.isEnableCourseToolCalendar() || calendarModule.isEnableCourseElementCalendar())
-				&& course.getCourseConfig().isCalendarEnabled()) {
+				&& (calendarModule.isEnableCourseToolCalendar() || calendarModule.isEnableCourseElementCalendar())) {
 			UserRequest ureq = getUserRequest(request);
 			Roles roles = ureq.getUserSession().getRoles();
 			

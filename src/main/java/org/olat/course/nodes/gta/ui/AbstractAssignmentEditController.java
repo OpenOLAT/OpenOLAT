@@ -247,6 +247,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			
 			if(event == Event.DONE_EVENT) {
 				gtaManager.addTaskDefinition(newTask, courseEnv, gtaNode);
+				fireEvent(ureq, Event.DONE_EVENT);
 				updateModel(ureq);
 			} 
 		} else if(confirmDeleteCtrl == source) {
