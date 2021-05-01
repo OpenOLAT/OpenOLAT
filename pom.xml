@@ -63,7 +63,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.3.6</org.springframework.version>
-		<org.hibernate.version>5.4.30.Final</org.hibernate.version>
+		<org.hibernate.version>5.4.31.Final</org.hibernate.version>
 		<apache.cxf>3.4.3</apache.cxf>
 		<apache.pdfbox>2.0.23</apache.pdfbox>
 		<apache.poi>5.0.0</apache.poi>
@@ -78,7 +78,7 @@
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.2</version.drone>
-		<activemq.version>5.16.1</activemq.version>
+		<activemq.version>5.16.2</activemq.version>
 		<qtiworks.version>1.0.22</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -436,7 +436,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.47.1</version>
+				    <version>3.48.0</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -2094,7 +2094,7 @@
 		<dependency>
 			<groupId>com.lmax</groupId>
 			<artifactId>disruptor</artifactId>
-			<version>3.4.3</version>
+			<version>3.4.4</version>
 		</dependency>
 
 		<!-- basic LTI stuff for lti demo: http://www.imsglobal.org/toolsinteroperability2.cfm -->
