@@ -453,7 +453,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		Dropdown editDropdown = new Dropdown(sectionId.concat("_dropdown"), null, false, getTranslator());
 		editDropdown.setElementCssClass("o_sel_pf_section_tools");
 		editDropdown.setOrientation(DropdownOrientation.right);
-		editDropdown.setIconCSS("o_icon o_icon-fw o_icon-lg o_icon_actions");
+		editDropdown.setIconCSS("o_icon o_icon-fw o_icon-lg o_icon_settings");
 		
 		if(secCallback.canCloseSection(section)) {
 			if(SectionStatus.isClosed(section)) {
