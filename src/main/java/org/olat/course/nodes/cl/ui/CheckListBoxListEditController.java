@@ -253,7 +253,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 
 		Boolean sum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
 		Integer cut = (Integer)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE);
-		if (sum.booleanValue() && cut.intValue() > list.getNumOfCheckbox()) {
+		if ((sum != null && sum.booleanValue()) && (cut != null && cut.intValue() > list.getNumOfCheckbox())) {
 			config.set(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE, Integer.valueOf(list.getNumOfCheckbox()));
 			showWarning("error.cut.adjusted", new String[] {String.valueOf(list.getNumOfCheckbox())});
 		}
