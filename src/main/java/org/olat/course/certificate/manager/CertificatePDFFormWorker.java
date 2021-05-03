@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.Normalizer;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -41,6 +42,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.pdf.PdfDocument;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
@@ -274,7 +276,14 @@ public class CertificatePDFFormWorker {
 			if (value == null) {
 				field.setValue("");
 			} else {
-				field.setValue(value);
+				value = PdfDocument.cleanCharacters(value);
+		    	try {
+					field.setValue(value);
+				} catch (IllegalArgumentException e) {
+					log.warn("Cannot set PDF field value: {}", value, e);
+					field.setValue(Normalizer.normalize(value, Normalizer.Form.NFKD)
+							.replaceAll("\\p{InCombiningDiacriticalMarks}+",""));
+				}
 			}
 
 			field.setReadOnly(true);
