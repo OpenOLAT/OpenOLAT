@@ -218,9 +218,14 @@ public class PdfDocument {
     }
     
     public static String cleanString(String string) {
-    	return string.replace('\n', ' ')
+    	String text = string.replace('\n', ' ')
     			.replace('\r', ' ')
-    			.replace('\t', ' ')
+    			.replace('\t', ' ');
+    	return cleanCharacters(text);
+    }
+    
+    public static String cleanCharacters(String string) {
+    	return string.replace("\u00AD", "")
     			.replace('\u00A0', ' ')
     			.replace('\u2212', '-');
     }
@@ -230,6 +235,7 @@ public class PdfDocument {
     	try {
 			stream.showText(cleanedText);
 		} catch (IllegalArgumentException e) {
+			log.warn("Cannot show PDF text: {}", text, e);
 			stream.showText(Normalizer.normalize(cleanedText, Normalizer.Form.NFKD)
 					.replaceAll("\\p{InCombiningDiacriticalMarks}+",""));
 		}
