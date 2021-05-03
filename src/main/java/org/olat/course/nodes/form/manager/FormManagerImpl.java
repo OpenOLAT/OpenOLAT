@@ -184,6 +184,12 @@ public class FormManagerImpl implements FormManager {
 		}
 		return null;
 	}
+	
+	@Override
+	public List<EvaluationFormSession> getDoneSessions(EvaluationFormSurvey survey) {
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
+		return evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
+	}
 
 	@Override
 	public void onQuickSave(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Double competion) {

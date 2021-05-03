@@ -112,6 +112,7 @@ public class FormParticipationTableModel extends DefaultFlexiTableDataModel<Form
 		if(col >= 0 && col < ParticipationCols.values().length) {
 			switch(COLS[col]) {
 				case status: return row.getStatus();
+				case submissionDate: return row.getSubmissionDate();
 				default: return "ERROR";
 			}
 		}
@@ -125,7 +126,8 @@ public class FormParticipationTableModel extends DefaultFlexiTableDataModel<Form
 	}
 	
 	public enum ParticipationCols implements FlexiSortableColumnDef {
-		status("table.header.status");
+		status("table.header.status"),
+		submissionDate("table.header.submission.date");
 		
 		private final String i18nKey;
 

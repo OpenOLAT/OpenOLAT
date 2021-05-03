@@ -20,8 +20,10 @@
 package org.olat.course.nodes.form.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -62,6 +64,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilterFactory;
@@ -159,6 +162,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.status, new ParticipationStatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.submissionDate));
 		
 		dataModel = new FormParticipationTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -195,16 +199,27 @@ public class FormParticipationListController extends FormBasicController impleme
 
 	private void loadModel() {
 		List<Identity> coachedIdentities = formManager.getCoachedIdentities(coachCourseEnv);
-		Map<Long, EvaluationFormParticipationStatus> identityKeyToStatus = formManager.getParticipations(survey, null, false)
+		Map<Long, EvaluationFormParticipation> identityKeyToParticipations = formManager.getParticipations(survey, null, false)
 				.stream()
 				.collect(Collectors.toMap(
 						participation -> participation.getExecutor().getKey(), 
-						EvaluationFormParticipation::getStatus));
+						Function.identity()));
+		Map<Long, Date> participationKeyToSubmissionDate = formManager.getDoneSessions(survey)
+				.stream()
+				.collect(Collectors.toMap(
+						session -> session.getParticipation().getKey(),
+						EvaluationFormSession::getSubmissionDate));
 		
 		List<FormParticipationRow> rows = new ArrayList<>(coachedIdentities.size());
 		for (Identity identiy: coachedIdentities) {
 			FormParticipationRow row = new FormParticipationRow(identiy, userPropertyHandlers, getLocale());
-			row.setStatus(identityKeyToStatus.get(identiy.getKey()));
+			EvaluationFormParticipation participation = identityKeyToParticipations.get(identiy.getKey());
+			if (participation != null) {
+				row.setStatus(participation.getStatus());
+				if (EvaluationFormParticipationStatus.done == participation.getStatus()) {
+					row.setSubmissionDate(participationKeyToSubmissionDate.get(participation.getKey()));
+				}
+			}
 			rows.add(row);
 		}
 		

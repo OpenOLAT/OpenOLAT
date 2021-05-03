@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.form.ui;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -37,6 +38,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class FormParticipationRow extends UserPropertiesRow {
 	
 	private EvaluationFormParticipationStatus status;
+	private Date submissionDate;
 	
 	public FormParticipationRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
@@ -48,6 +50,14 @@ public class FormParticipationRow extends UserPropertiesRow {
 
 	public void setStatus(EvaluationFormParticipationStatus status) {
 		this.status = status;
+	}
+
+	public Date getSubmissionDate() {
+		return submissionDate;
+	}
+
+	public void setSubmissionDate(Date submissionDate) {
+		this.submissionDate = submissionDate;
 	}
 
 }
