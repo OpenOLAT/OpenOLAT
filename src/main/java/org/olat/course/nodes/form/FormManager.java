@@ -74,6 +74,11 @@ public interface FormManager {
 	public List<EvaluationFormParticipation> getParticipations(EvaluationFormSurvey survey,
 			EvaluationFormParticipationStatus status, boolean fetchExecutor);
 
+	public void reopenParticipation(EvaluationFormParticipation participation);
+
+	public void deleteParticipation(EvaluationFormParticipation participation, FormCourseNode courseNode,
+			UserCourseEnvironment userCourseEnv);
+
 	public EvaluationFormSession loadOrCreateSession(EvaluationFormParticipation participation);
 
 	public EvaluationFormSession getDoneSession(EvaluationFormSurvey survey, Identity identity);

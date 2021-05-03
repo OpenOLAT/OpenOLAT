@@ -163,6 +163,33 @@ public class FormManagerImpl implements FormManager {
 			EvaluationFormParticipationStatus status, boolean fetchExecutor) {
 		return evaluationFormManager.loadParticipations(survey, status, fetchExecutor);
 	}
+	
+	@Override
+	public void reopenParticipation(EvaluationFormParticipation participation) {
+		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
+		evaluationFormManager.reopenSession(session);
+	}
+	
+	@Override
+	public void deleteParticipation(EvaluationFormParticipation participation, FormCourseNode courseNode,
+			UserCourseEnvironment userCourseEnv) {
+		evaluationFormManager.deleteParticipations(Collections.singletonList(participation));
+		
+		AssessmentManager assessmentManager = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		AssessmentEntry assessmentEntry = assessmentManager.getAssessmentEntry(courseNode, participation.getExecutor());
+		if (assessmentEntry != null) {
+			assessmentEntry.setCurrentRunCompletion(null);
+			assessmentEntry.setCurrentRunStatus(null);
+			assessmentEntry.setCompletion(null);
+			assessmentEntry.setAssessmentStatus(null);
+			assessmentEntry.setFullyAssessed(null);
+			assessmentManager.updateAssessmentEntry(assessmentEntry);
+		}
+		
+		log.info(Tracing.M_AUDIT, "Form data deleted: {}, course node {}, participant {}", 
+				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+				courseNode.getIdent(), participation.getExecutor());
+	}
 
 	@Override
 	public EvaluationFormSession loadOrCreateSession(EvaluationFormParticipation participation) {

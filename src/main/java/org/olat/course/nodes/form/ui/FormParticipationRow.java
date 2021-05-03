@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.user.UserPropertiesRow;
@@ -39,6 +40,7 @@ public class FormParticipationRow extends UserPropertiesRow {
 	
 	private EvaluationFormParticipationStatus status;
 	private Date submissionDate;
+	private FormLink toolsLink;
 	
 	public FormParticipationRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
@@ -58,6 +60,14 @@ public class FormParticipationRow extends UserPropertiesRow {
 
 	public void setSubmissionDate(Date submissionDate) {
 		this.submissionDate = submissionDate;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 
 }

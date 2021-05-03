@@ -56,15 +56,15 @@ public class FormResetDataConfirmationController extends FormBasicController {
 		formLayout.add("confirm", confirmCont);
 		confirmCont.setRootForm(mainForm);
 		
-		String message = translate("reset.data.message", new String[] {String.valueOf(allSessions), String.valueOf(doneSessions)} );
+		String message = translate("reset.all.message", new String[] {String.valueOf(allSessions), String.valueOf(doneSessions)} );
 		flc.contextPut("message", message);
 		
-		String[] conformationValues = new String[] { translate("reset.data.check") };
+		String[] conformationValues = new String[] { translate("reset.all.check") };
 		confirmationEl = uifactory.addCheckboxesHorizontal("confirm.delete", "", confirmCont, confirmationKeys, conformationValues);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		confirmCont.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("reset.data.button", buttonLayout);
+		uifactory.addFormSubmitButton("reset.all.button", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
@@ -74,7 +74,7 @@ public class FormResetDataConfirmationController extends FormBasicController {
 		
 		confirmationEl.clearError();
 		if(!confirmationEl.isAtLeastSelected(1)) {
-			confirmationEl.setErrorKey("reset.data.confirmation.error", null);
+			confirmationEl.setErrorKey("reset.all.confirmation.error", null);
 			allOk &= false;
 		}
 		

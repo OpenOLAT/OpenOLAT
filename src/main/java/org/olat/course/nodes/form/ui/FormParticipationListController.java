@@ -30,6 +30,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -44,12 +45,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
@@ -87,7 +94,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	private static final String ORES_TYPE_IDENTITY = "Identity";
 	private static final String CMD_SELECT = "select";
 	
-	private FormLink resetButton;
+	private FormLink resetAllButton;
 	private FormLink excelButton;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private FormParticipationTableModel dataModel;
@@ -97,11 +104,16 @@ public class FormParticipationListController extends FormBasicController impleme
 	private CloseableModalController cmc;
 	private FormParticipationController particpationCtrl;
 	private FormResetDataConfirmationController resetDataConfirmationCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private ToolsController toolsCtrl;
+	private DialogBoxController resetParticipationCtrl;
+	private DialogBoxController reopenParticipationCtrl;
 	
 	private final FormCourseNode courseNode;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final RepositoryEntry courseEntry;
 	private final EvaluationFormSurvey survey;
+	private int counter = 0;
 
 	@Autowired
 	private FormManager formManager;
@@ -115,7 +127,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	
 	public FormParticipationListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			FormCourseNode courseNode, UserCourseEnvironment coachCourseEnv) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, "participation_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
@@ -140,8 +152,8 @@ public class FormParticipationListController extends FormBasicController impleme
 		formLayout.add(buttonsTopCont);
 			
 		if (coachCourseEnv.isAdmin()) {
-			resetButton = uifactory.addFormLink("reset.data", buttonsTopCont, Link.BUTTON); 
-			resetButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			resetAllButton = uifactory.addFormLink("reset.all", buttonsTopCont, Link.BUTTON); 
+			resetAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		}
 		
 		excelButton = uifactory.addFormLink("excel.export", buttonsTopCont, Link.BUTTON); 
@@ -163,6 +175,11 @@ public class FormParticipationListController extends FormBasicController impleme
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.status, new ParticipationStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.submissionDate));
+		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ParticipationCols.tools);
+		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-lg");
+		toolsColumn.setExportable(false);
+		toolsColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(toolsColumn);
 		
 		dataModel = new FormParticipationTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -219,6 +236,12 @@ public class FormParticipationListController extends FormBasicController impleme
 				if (EvaluationFormParticipationStatus.done == participation.getStatus()) {
 					row.setSubmissionDate(participationKeyToSubmissionDate.get(participation.getKey()));
 				}
+				
+				String linkName = "tools-" + counter++;
+				FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
+				toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
+				toolsLink.setUserObject(participation);
+				row.setToolsLink(toolsLink);
 			}
 			rows.add(row);
 		}
@@ -238,16 +261,40 @@ public class FormParticipationListController extends FormBasicController impleme
 					doSelect(ureq, row);
 				}
 			}
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if(cmd != null && cmd.startsWith("tools-")) {
+				EvaluationFormParticipation participation = (EvaluationFormParticipation)link.getUserObject();
+				doOpenTools(ureq, participation, link);
+			}
 		} else if (source == excelButton) {
 			doExport(ureq);
-		} else if (source == resetButton) {
+		} else if (source == resetAllButton) {
 			doConfirmDeleteAllData(ureq);
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		 if (source == resetDataConfirmationCtrl) {
+		if (toolsCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if(toolsCalloutCtrl != null) {
+					toolsCalloutCtrl.deactivate();
+					cleanUp();
+				}
+			}
+		} else if (source == resetParticipationCtrl) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				EvaluationFormParticipation participation = (EvaluationFormParticipation)resetParticipationCtrl.getUserObject();
+				doResetParticipation(participation);
+			}
+		} else if (source == reopenParticipationCtrl) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				EvaluationFormParticipation participation = (EvaluationFormParticipation)reopenParticipationCtrl.getUserObject();
+				doReopenParticipation(participation);
+			}
+		} else if (source == resetDataConfirmationCtrl) {
 			if (event == Event.DONE_EVENT) {
 				doDeleteAllData();
 			}
@@ -259,8 +306,12 @@ public class FormParticipationListController extends FormBasicController impleme
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(resetDataConfirmationCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		resetDataConfirmationCtrl = null;
+		toolsCalloutCtrl = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 
@@ -277,18 +328,35 @@ public class FormParticipationListController extends FormBasicController impleme
 	private void doSelect(UserRequest ureq, FormParticipationRow row) {
 		removeAsListenerAndDispose(particpationCtrl);
 		
-		Identity coachedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-		String fullName = userManager.getUserDisplayName(coachedIdentity);
-		
-		OLATResourceable identityOres = OresHelper.createOLATResourceableInstance(ORES_TYPE_IDENTITY, coachedIdentity.getKey());
+		OLATResourceable identityOres = OresHelper.createOLATResourceableInstance(ORES_TYPE_IDENTITY, row.getIdentityKey());
 		WindowControl bwControl = addToHistory(ureq, identityOres, null);
 		
-		IdentityEnvironment identityEnv = new IdentityEnvironment();
-		identityEnv.setIdentity(coachedIdentity);
-		UserCourseEnvironment coachedCourseEnv = new UserCourseEnvironmentImpl(identityEnv, coachCourseEnv.getCourseEnvironment());
+		UserCourseEnvironment coachedCourseEnv = getUserCourseEnvironment(row.getIdentityKey());
 		particpationCtrl = new FormParticipationController(ureq, bwControl, courseNode, coachedCourseEnv);
 		listenTo(particpationCtrl);
+		
+		String fullName = userManager.getUserDisplayName(row.getIdentityKey());
 		stackPanel.pushController(fullName, particpationCtrl);
+	}
+	
+	private UserCourseEnvironment getUserCourseEnvironment(Long identityKey) {
+		Identity coachedIdentity = securityManager.loadIdentityByKey(identityKey);
+		IdentityEnvironment identityEnv = new IdentityEnvironment();
+		identityEnv.setIdentity(coachedIdentity);
+		return new UserCourseEnvironmentImpl(identityEnv, coachCourseEnv.getCourseEnvironment());
+	}
+	
+	private void doOpenTools(UserRequest ureq, EvaluationFormParticipation participation, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), participation);
+		listenTo(toolsCtrl);
+	
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
 	}
 
 	private void doExport(UserRequest ureq) {
@@ -303,7 +371,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		resetDataConfirmationCtrl = new FormResetDataConfirmationController(ureq, getWindowControl(), allSessions, doneSessions);
 		listenTo(resetDataConfirmationCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				resetDataConfirmationCtrl.getInitialComponent(), true, translate("reset.data.title"), true);
+				resetDataConfirmationCtrl.getInitialComponent(), true, translate("reset.all.title"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -311,6 +379,71 @@ public class FormParticipationListController extends FormBasicController impleme
 	private void doDeleteAllData() {
 		formManager.deleteAllData(survey, courseNode, coachCourseEnv);
 		loadModel();
+	}
+	
+	private void doConfirmReset(UserRequest ureq, EvaluationFormParticipation participation) {
+		String title = translate("reset.title");
+		String text = translate("reset.text");
+		resetParticipationCtrl = activateYesNoDialog(ureq, title, text, resetParticipationCtrl);
+		resetParticipationCtrl.setUserObject(participation);
+	}
+	
+	private void doResetParticipation(EvaluationFormParticipation participation) {
+		formManager.deleteParticipation(participation, courseNode, coachCourseEnv);
+		loadModel();
+	}
+	
+	private void doConfirmReopen(UserRequest ureq, EvaluationFormParticipation participation) {
+		String title = translate("reopen.title");
+		String text = translate("reopen.text");
+		reopenParticipationCtrl = activateYesNoDialog(ureq, title, text, resetParticipationCtrl);
+		reopenParticipationCtrl.setUserObject(participation);
+	}
+	
+	private void doReopenParticipation(EvaluationFormParticipation participation) {
+		formManager.reopenParticipation(participation);
+		loadModel();
+	}
+	
+	
+	private class ToolsController extends BasicController {
+		
+		private Link reopenLink;
+		private Link resetLink;
+		
+		private final EvaluationFormParticipation participation;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, EvaluationFormParticipation participation) {
+			super(ureq, wControl);
+			this.participation = participation;
+			
+			VelocityContainer mainVC = createVelocityContainer("participation_tools");
+			
+			if (EvaluationFormParticipationStatus.done == participation.getStatus()) {
+				reopenLink = LinkFactory.createLink("reopen", "reopen", getTranslator(), mainVC, this, Link.LINK);
+				reopenLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reopen");
+			}
+			resetLink = LinkFactory.createLink("reset", "reset", getTranslator(), mainVC, this, Link.LINK);
+			resetLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void doDispose() {
+			//
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			this.fireEvent(ureq, Event.DONE_EVENT);
+			if(reopenLink == source) {
+				doConfirmReopen(ureq, participation);
+			} else if(resetLink == source) {
+				doConfirmReset(ureq, participation);
+			}
+		}
+		
 	}
 
 }
