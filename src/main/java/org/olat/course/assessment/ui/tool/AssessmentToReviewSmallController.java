@@ -140,6 +140,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(false);
 		tableEl.setCustomizeColumns(false);
+		tableEl.setEmptyTableSettings("waiting.review.emtpy", null, "o_icon_correction");
 	}
 	
 	private void loadModel() {

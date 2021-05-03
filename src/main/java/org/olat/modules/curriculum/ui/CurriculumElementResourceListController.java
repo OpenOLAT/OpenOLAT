@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
@@ -108,13 +109,6 @@ public class CurriculumElementResourceListController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)) {
-			addResourcesButton = uifactory.addFormLink("add.resources", formLayout, Link.BUTTON);
-			addResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-		
-			removeResourcesButton = uifactory.addFormLink("remove.resources", formLayout, Link.BUTTON);
-		}
-
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.ac, new RepositoryEntryACColumnDescriptor()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.repoEntry, new TypeRenderer()));
@@ -138,6 +132,22 @@ public class CurriculumElementResourceListController extends FormBasicController
 		tableEl.setMultiSelect(true);
 		tableEl.setCssDelegate(this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-resource-list");
+				
+		// special rights for managers
+		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)) {
+			// 1) add
+			addResourcesButton = uifactory.addFormLink("add.resources", formLayout, Link.BUTTON);
+			addResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");		
+			// 2) remove
+			removeResourcesButton = uifactory.addFormLink("remove.resources", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(removeResourcesButton);
+			// empty behavior
+			tableEl.setEmptyTableSettings("table.resources.empty", "table.resources.empty.hint", "o_CourseModule_icon", "add.resources", "o_icon_add", true);
+		} else {			
+			// default empty message with out create hint
+			tableEl.setEmptyTableSettings("table.resources.empty", null, "o_CourseModule_icon");
+		}
+		
 	}
 
 	@Override
@@ -217,6 +227,8 @@ public class CurriculumElementResourceListController extends FormBasicController
 				if("select".equals(se.getCommand())) {
 					doSelectRepositoryEntry(ureq, tableModel.getObject(se.getIndex()));
 				}
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doChooseResources(ureq);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCel
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -164,7 +165,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
-		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
+		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element", "add.curriculum", "o_icon_add", true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-manage");
 	}
 	
@@ -324,6 +325,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				doSearch((FlexiTableSearchEvent)event);
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doNewCurriculum(ureq);
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;

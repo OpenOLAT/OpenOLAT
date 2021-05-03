@@ -137,7 +137,7 @@ public class DataCollectionListController extends FormBasicController implements
 		tableEl = uifactory.addTableElement(getWindowControl(), "dataCollections", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_qual_dc_list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-data-collection");
-		tableEl.setEmtpyTableMessageKey("data.collection.empty.table");
+		tableEl.setEmptyTableSettings("table.search.empty", "table.search.empty.hint", FlexiTableElement.TABLE_EMPTY_ICON);
 		tableEl.setSearchEnabled(true);
 		tableEl.setExtendedSearch(searchCtrl);
 	}

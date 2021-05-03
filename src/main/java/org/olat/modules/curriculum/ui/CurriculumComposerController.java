@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
@@ -224,8 +225,12 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setRootCrumb(new CurriculumCrumb(curriculum.getDisplayName()));
 		tableEl.setCustomizeColumns(true);
-		tableEl.setElementCssClass("o_curriculum_el_listing");
-		tableEl.setEmptyTableSettings("table.curriculum.element.empty", null, "o_icon_curriculum_element");
+		tableEl.setElementCssClass("o_curriculum_el_listing");		
+		if(secCallback.canNewCurriculumElement()) {
+			tableEl.setEmptyTableSettings("table.curriculum.element.empty", "table.curriculum.element.empty.hint", "o_icon_curriculum_element", "add.curriculum.element", "o_icon_add", true);
+		} else {			
+			tableEl.setEmptyTableSettings("table.curriculum.element.empty", null, "o_icon_curriculum_element");
+		}
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(40);
@@ -476,6 +481,8 @@ public class CurriculumComposerController extends FormBasicController implements
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				tableEl.reset(false, true, true);// only reload
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doNewCurriculumElement(ureq);
 			} else {
 				doFocus();
 			}
