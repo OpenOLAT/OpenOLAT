@@ -260,6 +260,10 @@ public class FormParticipationListController extends FormBasicController impleme
 					doSelect(ureq, row);
 				}
 			}
+		} else if (source == excelButton) {
+			doExport(ureq);
+		} else if (source == resetAllButton) {
+			doConfirmDeleteAllData(ureq);
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -267,10 +271,7 @@ public class FormParticipationListController extends FormBasicController impleme
 				EvaluationFormParticipation participation = (EvaluationFormParticipation)link.getUserObject();
 				doOpenTools(ureq, participation, link);
 			}
-		} else if (source == excelButton) {
-			doExport(ureq);
-		} else if (source == resetAllButton) {
-			doConfirmDeleteAllData(ureq);
+
 		}
 	}
 
