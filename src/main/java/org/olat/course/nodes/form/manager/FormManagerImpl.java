@@ -32,11 +32,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -165,30 +167,33 @@ public class FormManagerImpl implements FormManager {
 	}
 	
 	@Override
-	public void reopenParticipation(EvaluationFormParticipation participation) {
+	public void reopenParticipation(EvaluationFormParticipation participation, CourseNode courseNode, CourseEnvironment courseEnv) {
 		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
-		evaluationFormManager.reopenSession(session);
+		if (session != null && EvaluationFormSessionStatus.done == session.getEvaluationFormSessionStatus()) {
+			evaluationFormManager.reopenSession(session);
+			
+			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
+					participation.getExecutor(), courseEnv);
+			// Unfortunately we do not know the exact progress
+			courseAssessmentService.updateCompletion(courseNode, assessedUserCourseEnv, Double.valueOf(0.5),
+					AssessmentEntryStatus.inProgress, Role.coach);
+			
+			log.info(Tracing.M_AUDIT, "Form reopend: {}, course node {}, participant {}", 
+					courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent(), participation.getExecutor());
+		}
 	}
 	
 	@Override
-	public void deleteParticipation(EvaluationFormParticipation participation, FormCourseNode courseNode,
-			UserCourseEnvironment userCourseEnv) {
+	public void deleteParticipation(EvaluationFormParticipation participation, CourseNode courseNode, CourseEnvironment courseEnv) {
 		evaluationFormManager.deleteParticipations(Collections.singletonList(participation));
 		
-		AssessmentManager assessmentManager = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		AssessmentEntry assessmentEntry = assessmentManager.getAssessmentEntry(courseNode, participation.getExecutor());
-		if (assessmentEntry != null) {
-			assessmentEntry.setCurrentRunCompletion(null);
-			assessmentEntry.setCurrentRunStatus(null);
-			assessmentEntry.setCompletion(null);
-			assessmentEntry.setAssessmentStatus(null);
-			assessmentEntry.setFullyAssessed(null);
-			assessmentManager.updateAssessmentEntry(assessmentEntry);
-		}
+		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
+				participation.getExecutor(), courseEnv);
+		courseAssessmentService.updateCompletion(courseNode, assessedUserCourseEnv, Double.valueOf(0.0),
+				AssessmentEntryStatus.notStarted, Role.coach);
 		
 		log.info(Tracing.M_AUDIT, "Form data deleted: {}, course node {}, participant {}", 
-				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-				courseNode.getIdent(), participation.getExecutor());
+				courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent(), participation.getExecutor());
 	}
 
 	@Override

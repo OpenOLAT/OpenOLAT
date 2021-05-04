@@ -58,17 +58,16 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.ui.FormParticipationTableModel.ParticipationCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -331,19 +330,14 @@ public class FormParticipationListController extends FormBasicController impleme
 		OLATResourceable identityOres = OresHelper.createOLATResourceableInstance(ORES_TYPE_IDENTITY, row.getIdentityKey());
 		WindowControl bwControl = addToHistory(ureq, identityOres, null);
 		
-		UserCourseEnvironment coachedCourseEnv = getUserCourseEnvironment(row.getIdentityKey());
+		Identity coachedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+		UserCourseEnvironment coachedCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
+				coachedIdentity, coachCourseEnv.getCourseEnvironment());
 		particpationCtrl = new FormParticipationController(ureq, bwControl, courseNode, coachedCourseEnv);
 		listenTo(particpationCtrl);
 		
 		String fullName = userManager.getUserDisplayName(row.getIdentityKey());
 		stackPanel.pushController(fullName, particpationCtrl);
-	}
-	
-	private UserCourseEnvironment getUserCourseEnvironment(Long identityKey) {
-		Identity coachedIdentity = securityManager.loadIdentityByKey(identityKey);
-		IdentityEnvironment identityEnv = new IdentityEnvironment();
-		identityEnv.setIdentity(coachedIdentity);
-		return new UserCourseEnvironmentImpl(identityEnv, coachCourseEnv.getCourseEnvironment());
 	}
 	
 	private void doOpenTools(UserRequest ureq, EvaluationFormParticipation participation, FormLink link) {
@@ -389,7 +383,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	}
 	
 	private void doResetParticipation(EvaluationFormParticipation participation) {
-		formManager.deleteParticipation(participation, courseNode, coachCourseEnv);
+		formManager.deleteParticipation(participation, courseNode, coachCourseEnv.getCourseEnvironment());
 		loadModel();
 	}
 	
@@ -401,7 +395,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	}
 	
 	private void doReopenParticipation(EvaluationFormParticipation participation) {
-		formManager.reopenParticipation(participation);
+		formManager.reopenParticipation(participation, courseNode, coachCourseEnv.getCourseEnvironment());
 		loadModel();
 	}
 	

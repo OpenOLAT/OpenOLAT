@@ -26,6 +26,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -74,10 +75,9 @@ public interface FormManager {
 	public List<EvaluationFormParticipation> getParticipations(EvaluationFormSurvey survey,
 			EvaluationFormParticipationStatus status, boolean fetchExecutor);
 
-	public void reopenParticipation(EvaluationFormParticipation participation);
+	public void reopenParticipation(EvaluationFormParticipation participation, CourseNode courseNode, CourseEnvironment courseEnv);
 
-	public void deleteParticipation(EvaluationFormParticipation participation, FormCourseNode courseNode,
-			UserCourseEnvironment userCourseEnv);
+	public void deleteParticipation(EvaluationFormParticipation participation, CourseNode courseNode, CourseEnvironment courseEnv);
 
 	public EvaluationFormSession loadOrCreateSession(EvaluationFormParticipation participation);
 
