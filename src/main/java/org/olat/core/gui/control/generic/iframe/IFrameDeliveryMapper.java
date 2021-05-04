@@ -351,15 +351,15 @@ public class IFrameDeliveryMapper implements Mapper {
 		try(HtmlOutput sb = new HtmlOutput(docType, themeBaseUri, page.length() + 1000)) {
 			if (docType != null) sb.append(docType).append("\n");
 			if (parser.getXhtmlNamespaces() == null) {
-				sb.append("<!DOCTYPE HTML><html style=\"height: 100%;\" lang=\"de-DE\"><head>");
+				sb.append("<!DOCTYPE HTML><html><head>");
 			} else {
-				sb.append(parser.getXhtmlNamespaces());
-				sb.append("<head>\n<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\"/>");//neded to allow body onload attribute
+				sb.append(parser.getXhtmlNamespaces())
+				  .append("<head>\n<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\"/>");//neded to allow body onload attribute
 			}
 			//<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-			/* sb.append("\n<meta http-equiv=\"content-type\" content=\"").append(mimetype).append("\"");
+			sb.append("\n<meta http-equiv=\"content-type\" content=\"").append(mimetype).append("\"");
 			if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
-			sb.append(">");*/
+			sb.append(">");
 			
 			if(openolatCss != null && openolatCss.booleanValue()) {
 				sb.appendOpenolatCss();
@@ -395,7 +395,7 @@ public class IFrameDeliveryMapper implements Mapper {
 			if(prototypeEnabled != null && prototypeEnabled.booleanValue()) {
 				sb.appendPrototype();
 			}
-			/*
+			
 			// Load some iframe.js helper code
 			sb.append("\n<script>\n");
 			// Set the iframe id. Important to set before iframe.js is loaded.
@@ -404,7 +404,6 @@ public class IFrameDeliveryMapper implements Mapper {
 			sb.append("\n</script>");
 			sb.appendStaticJs("js/openolat/iframe.js");
 			sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
-			
 	
 			if (parser.getHtmlContent().length() > 0) {
 				sb.append("\n<script>\n");
@@ -429,7 +428,6 @@ public class IFrameDeliveryMapper implements Mapper {
 				
 				sb.append("\n</script>");
 			}
-			*/		
 	
 			String origHTMLHead = parser.getHtmlHead();
 			// jsMath brute force approach to render latex formulas: add library if
