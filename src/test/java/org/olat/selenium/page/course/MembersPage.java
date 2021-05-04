@@ -173,7 +173,7 @@ public class MembersPage {
 	 * @return Itself
 	 */
 	public MembersPage openMembership(String name) {
-		By toolBy = By.xpath("//div//tr[td/a[text()[contains(.,'" + name+ "')]]]/td/a[i[contains(@class,'o_icon_actions')]]");
+		By toolBy = By.xpath("//div//tr[td/a[text()[contains(.,'" + name+ "')]]]/td/a[i[contains(@class,'o_icon_actions o_icon-fws')]]");
 		OOGraphene.waitElement(toolBy, browser);
 		browser.findElement(toolBy).click();
 		OOGraphene.waitCallout(browser);

@@ -136,7 +136,7 @@ public class CourseReminderListController extends FormBasicController implements
 		for(ReminderInfos reminder:reminders) {
 			
 			FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolsLink.setElementCssClass("o_sel_course_reminder_tools");
 			toolsLink.setTitle(translate("tools"));
 

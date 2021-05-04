@@ -497,7 +497,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 			
 			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		
 			AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, grader,
 					currentStart, currentCompletion, toolsLink, userPropertyHandlers, getLocale());

@@ -899,7 +899,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	
 	protected void forgeLinks(MemberRow row) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 		

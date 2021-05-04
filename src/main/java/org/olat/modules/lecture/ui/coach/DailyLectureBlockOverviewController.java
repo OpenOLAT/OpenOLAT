@@ -327,7 +327,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		
 		String linkName = "tools-" + counter++;
 		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
+		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsLink.setUserObject(row);
 		flc.add(linkName, toolsLink);
 		row.setTools(toolsLink);

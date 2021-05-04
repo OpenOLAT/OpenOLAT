@@ -82,7 +82,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		mainVC = createVelocityContainer("taxonomy_level_overview");
 		
 		actionButton = LinkFactory.createButton("actions", mainVC, this);
-		actionButton.setIconLeftCSS("o_icon o_icon_actions");
+		actionButton.setIconLeftCSS("o_icon o_icon_actions o_icon-fws");
 		
 		tabPane = new TabbedPane("tabs", ureq.getLocale());
 		tabPane.setElementCssClass("o_sel_taxonomy_level_tabs");

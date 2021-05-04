@@ -214,7 +214,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	protected void loadModel(List<LectureBlockRow> blocks) {
 		for(LectureBlockRow row:blocks) {
 			FormLink toolsLink = uifactory.addFormLink("tools_" + (counter++), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions");
+			toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions o_icon-fws");
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}

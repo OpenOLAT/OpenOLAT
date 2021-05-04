@@ -227,7 +227,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	
 	private CurriculumElementSearchRow forgeRow(CurriculumElementSearchInfos element) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		
 		FormLink resourcesLink = null;
 		if(element.getNumOfResources() > 0) {

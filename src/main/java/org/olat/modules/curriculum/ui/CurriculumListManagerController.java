@@ -218,7 +218,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	 */
 	private CurriculumRow forgeManagedRow(CurriculumInfos curriculum, boolean canManage) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		CurriculumRow row = new CurriculumRow(curriculum, toolsLink, canManage);
 		toolsLink.setUserObject(row);
 		return row;

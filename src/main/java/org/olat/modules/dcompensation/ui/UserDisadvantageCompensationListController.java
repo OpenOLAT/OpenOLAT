@@ -129,7 +129,7 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(CompensationCols.tools);
 		toolsCol.setAlwaysVisible(true);
 		toolsCol.setExportable(false);
-		toolsCol.setIconHeader("o_icon o_icon-lg o_icon_actions");
+		toolsCol.setIconHeader("o_icon o_icon-lg o_icon_actions o_icon-fws");
 		columnsModel.addFlexiColumnModel(toolsCol);
 		
 		tableModel = new UserDisadvantageCompensationTableModel(columnsModel);
@@ -161,7 +161,7 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 		for(DisadvantageCompensation compensation:compensations) {
 			String creatorFullName = userManager.getUserDisplayName(compensation.getCreator());
 			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 
 			UserDisadvantageCompensationRow row = new UserDisadvantageCompensationRow(compensation, creatorFullName, toolsLink);
 			rows.add(row);

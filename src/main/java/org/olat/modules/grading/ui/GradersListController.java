@@ -174,7 +174,7 @@ public class GradersListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.absence, new GraderAbsenceLeaveCellRenderer(getTranslator())));
 		
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(GradersCol.tools);
-		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-lg");
+		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsCol.setHeaderLabel(translate("table.header.tools"));
 		toolsCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsCol);
@@ -205,7 +205,7 @@ public class GradersListController extends FormBasicController {
 		// tools
 		String linkName = "tools-" + counter++;
 		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
+		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsLink.setUserObject(row);
 		flc.add(linkName, toolsLink);
 		row.setToolsLink(toolsLink);

@@ -267,7 +267,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			withPublish = true;
 			if(recordingsHandler.canDeleteRecordings() && recordingsHandler.allowPermanentRecordings()) {
 				DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(BRecordingsCols.tools);
-				toolsCol.setIconHeader("o_icon o_icon_actions o_icon-lg");
+				toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
 				columnsModel.addFlexiColumnModel(toolsCol);
 				withTools = true;
 			} else if(recordingsHandler.canDeleteRecordings()) {
@@ -314,7 +314,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				FormLink toolsLink = uifactory.addFormLink("tools-".concat(recId),
 						"tools", "", tableEl, Link.LINK | Link.NONTRANSLATED);
 				toolsLink.setAriaLabel(translate("table.header.actions"));
-				toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
+				toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 				toolsLink.setUserObject(row);
 				row.setToolsLink(toolsLink);
 			}

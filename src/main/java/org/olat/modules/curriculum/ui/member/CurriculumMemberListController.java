@@ -277,7 +277,7 @@ public class CurriculumMemberListController extends FormBasicController implemen
 				member.getFirstTime(), member.getAverageCompletion());
 		
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 		

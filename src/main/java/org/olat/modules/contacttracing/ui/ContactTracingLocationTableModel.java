@@ -148,7 +148,7 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
         toolLinks = new HashMap<>();
         for (ContactTracingLocation location : objects) {
             FormLink toolsLink = new FormLinkImpl("tools-" + objects.indexOf(location), ACTIONS_CMD, "", Link.NONTRANSLATED);
-            toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+            toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
             toolsLink.setUserObject(location);
 
             toolLinks.put(location, toolsLink);
@@ -223,7 +223,7 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
         guest("contact.tracing.cols.guest"),
         registrations("contact.tracing.cols.registrations"),
         url("contact.tracing.cols.url"),
-        settings("contact.tracing.cols.settings", "o_icon o_icon-lg o_icon_actions");
+        settings("contact.tracing.cols.settings", "o_icon o_icon-lg o_icon_actions o_icon-fws");
 
         private final String i18nHeaderKey;
         private final String iconHeader;

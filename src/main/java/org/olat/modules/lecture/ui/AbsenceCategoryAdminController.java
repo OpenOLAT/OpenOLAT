@@ -120,7 +120,7 @@ public class AbsenceCategoryAdminController extends FormBasicController {
 		for(AbsenceCategory category:categories) {
 			String linkName = "tools-" + counter++;
 			FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
-			toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
+			toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolsLink.setUserObject(category);
 			flc.add(linkName, toolsLink);
 			rows.add(new AbsenceCategoryRow(category, toolsLink));

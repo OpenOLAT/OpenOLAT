@@ -175,7 +175,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.status, new ParticipationStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.submissionDate));
 		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ParticipationCols.tools);
-		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-lg");
+		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsColumn.setExportable(false);
 		toolsColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsColumn);
@@ -238,7 +238,7 @@ public class FormParticipationListController extends FormBasicController impleme
 				
 				String linkName = "tools-" + counter++;
 				FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
-				toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
+				toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 				toolsLink.setUserObject(participation);
 				row.setToolsLink(toolsLink);
 			}

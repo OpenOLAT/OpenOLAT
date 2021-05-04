@@ -204,7 +204,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			ManifestMetadataBuilder metadata = model.getMetadata(itemRef);
 			
 			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			CorrectionAssessmentItemRow itemRow = new CorrectionAssessmentItemRow(itemRef, assessmentItem, metadata, toolsLink);
 			toolsLink.setUserObject(itemRow);
 			itemRows.add(itemRow);

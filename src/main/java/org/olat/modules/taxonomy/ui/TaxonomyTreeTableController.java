@@ -213,7 +213,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private TaxonomyLevelRow forgeRow(TaxonomyLevel taxonomyLevel) {
 		//tools
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		TaxonomyLevelRow row = new TaxonomyLevelRow(taxonomyLevel, toolsLink);
 		toolsLink.setUserObject(row);
 		return row;
