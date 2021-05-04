@@ -109,7 +109,7 @@ public abstract class CurriculumElementListController extends FormBasicControlle
 
 		tableModel = new CurriculumElementListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, true, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("curriculum.element.empty.table");
+		tableEl.setEmptyTableMessageKey("curriculum.element.empty.table");
 		tableEl.setAndLoadPersistedPreferences(ureq, getTablePrefsKey());
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);

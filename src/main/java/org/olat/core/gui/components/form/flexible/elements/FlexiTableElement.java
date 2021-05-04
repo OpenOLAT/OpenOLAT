@@ -479,7 +479,7 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 * 
 	 * @param i18key
 	 */
-	public void setEmtpyTableMessageKey(String i18key);
+	public void setEmptyTableMessageKey(String i18key);
 
 	/**
 	 * Configure the empty table screen with custom message, hint text and

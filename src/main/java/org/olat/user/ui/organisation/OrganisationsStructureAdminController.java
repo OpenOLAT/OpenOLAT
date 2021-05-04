@@ -126,7 +126,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_organisations_listing");
-		tableEl.setEmtpyTableMessageKey("table.organisation.empty");
+		tableEl.setEmptyTableMessageKey("table.organisation.empty");
 		tableEl.setRootCrumb(new RootCrumb(translate("table.tree.root")));
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(true);

@@ -85,7 +85,7 @@ public class AdobeConnectShareDocumentsController extends FormBasicController {
 		contentTableEl = uifactory.addTableElement(getWindowControl(), "meetingContents", contentModel, 24, false, getTranslator(), formLayout);
 		contentTableEl.setCustomizeColumns(false);
 		contentTableEl.setMultiSelect(true);
-		contentTableEl.setEmtpyTableMessageKey("no.contents");
+		contentTableEl.setEmptyTableMessageKey("no.contents");
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", formLayout);

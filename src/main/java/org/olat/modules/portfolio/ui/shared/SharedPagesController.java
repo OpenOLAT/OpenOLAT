@@ -174,7 +174,7 @@ public class SharedPagesController extends FormBasicController implements Activa
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_binder_shared_bookmark_pages_listing");
-		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
 		tableEl.setPageSize(24);
 		tableEl.setAndLoadPersistedPreferences(ureq, "shared-bookmark-pages-v2");
 		

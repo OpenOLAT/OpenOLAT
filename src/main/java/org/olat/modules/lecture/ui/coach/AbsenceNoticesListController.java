@@ -184,7 +184,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setNumOfRowsEnabled(true);
-		tableEl.setEmtpyTableMessageKey("empty.absences.list");
+		tableEl.setEmptyTableMessageKey("empty.absences.list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "absences-list-v3-" + tableId + "-" + secCallback.viewAs());
 		
 		if(authorizedEnabled && secCallback.canAuthorizeAbsence()) {

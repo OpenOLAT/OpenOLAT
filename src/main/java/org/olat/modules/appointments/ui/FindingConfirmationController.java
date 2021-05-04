@@ -120,7 +120,7 @@ public class FindingConfirmationController extends FormBasicController {
 		usersTableModel = new UserRestrictionTableModel(columnsModel, getLocale()); 
 		usersTableEl = uifactory.addTableElement(getWindowControl(), "users", usersTableModel, 20, false, getTranslator(), formLayout);
 		usersTableEl.setAndLoadPersistedPreferences(ureq, "finding.confirmation.v2");
-		usersTableEl.setEmtpyTableMessageKey("finding.confirmation.empty.table");
+		usersTableEl.setEmptyTableMessageKey("finding.confirmation.empty.table");
 		usersTableEl.setSelectAllEnable(true);
 		usersTableEl.setMultiSelect(true);
 		

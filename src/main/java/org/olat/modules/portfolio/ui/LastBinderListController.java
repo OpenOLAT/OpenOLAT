@@ -92,7 +92,7 @@ public class LastBinderListController extends FormBasicController implements Fle
 		tableEl.setSearchEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_portfolio_last_binders");
-		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("binder_row");

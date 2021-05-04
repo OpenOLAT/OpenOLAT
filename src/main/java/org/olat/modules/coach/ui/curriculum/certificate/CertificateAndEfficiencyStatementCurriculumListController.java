@@ -231,7 +231,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
         tableEl.setElementCssClass("o_curriculumtable");
         tableEl.setCustomizeColumns(true);
-        tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
+        tableEl.setEmptyTableMessageKey("table.curriculum.empty");
         tableEl.setCssDelegate(this);
         tableEl.setFilters("activity", getFilters(), false);
         tableEl.setSelectedFilterKey(CurriculumElementWithViewsDataModel.FilterKeys.withStatementOnly.name());

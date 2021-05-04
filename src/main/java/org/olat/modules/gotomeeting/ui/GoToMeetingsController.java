@@ -85,7 +85,7 @@ public class GoToMeetingsController extends FormBasicController {
 
 		upcomingTableModel = new GoToMeetingTableModel(columnsModel);
 		upcomingTableEl = uifactory.addTableElement(getWindowControl(), "upcomingmeetings", upcomingTableModel, getTranslator(), formLayout);
-		upcomingTableEl.setEmtpyTableMessageKey("table.empty");
+		upcomingTableEl.setEmptyTableMessageKey("table.empty");
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), true));

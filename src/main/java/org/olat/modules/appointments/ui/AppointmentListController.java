@@ -252,7 +252,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		dataModel = new AppointmentDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, getPersistedPreferencesId());
-		tableEl.setEmtpyTableMessageKey("table.empty.appointments");
+		tableEl.setEmptyTableMessageKey("table.empty.appointments");
 
 		tableEl.setElementCssClass("o_appointments o_list");
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);

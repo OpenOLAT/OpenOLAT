@@ -251,7 +251,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 
 		tableModel = new QTI21AssessmentTestSessionTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("results.empty");
+		tableEl.setEmptyTableMessageKey("results.empty");
 		tableEl.setCssDelegate(tableModel);
 
 		if(reSecurity.isEntryAdmin() && !readOnly) {

@@ -83,7 +83,7 @@ public class BigBlueButtonAdminServersController extends FormBasicController {
 		
 		serversTableEl = uifactory.addTableElement(getWindowControl(), "servers", serversTableModel, 10, false, getTranslator(), formLayout);
 		serversTableEl.setCustomizeColumns(true);
-		serversTableEl.setEmtpyTableMessageKey("bigbluebutton.servers.empty");
+		serversTableEl.setEmptyTableMessageKey("bigbluebutton.servers.empty");
 		
 		List<FlexiTableFilter> filters = new ArrayList<>();
 		filters.add(new FlexiTableFilter(translate("filter.all.instances"), "all"));

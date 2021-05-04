@@ -156,7 +156,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 		tableModel = new TaxonomyLevelCompetenceTableModel(columnsModel); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmtpyTableMessageKey("table.competence.empty");
+		tableEl.setEmptyTableMessageKey("table.competence.empty");
 		tableEl.setMultiSelect(multiSelect);
 		tableEl.setAndLoadPersistedPreferences(ureq, "tax-level-competences-v2");
 	}

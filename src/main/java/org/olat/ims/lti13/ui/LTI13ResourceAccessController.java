@@ -139,7 +139,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmtpyTableMessageKey("tools.empty");
+		tableEl.setEmptyTableMessageKey("tools.empty");
 		tableEl.setAndLoadPersistedPreferences(ureq, "lti13-tools-admin");
 	}
 	

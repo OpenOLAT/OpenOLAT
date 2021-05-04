@@ -68,7 +68,7 @@ public class RatingMetadataController extends FormBasicController {
 		ratingInfosModel = new RatingInfosDataModel(ratingInfosColumnsModel);
 		ratingInfosTable = uifactory.addTableElement(getWindowControl(), "details_ratings", ratingInfosModel, getTranslator(), formLayout);
 		ratingInfosTable.setCustomizeColumns(false);
-		ratingInfosTable.setEmtpyTableMessageKey("rating.empty.table");
+		ratingInfosTable.setEmptyTableMessageKey("rating.empty.table");
 
 	}
 	

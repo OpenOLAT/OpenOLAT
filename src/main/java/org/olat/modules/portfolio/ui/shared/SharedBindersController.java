@@ -166,7 +166,7 @@ public class SharedBindersController extends FormBasicController implements Acti
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_binder_shared_items_listing");
-		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
 		tableEl.setPageSize(24);
 		tableEl.setAndLoadPersistedPreferences(ureq, "shared-items-v2");
 		

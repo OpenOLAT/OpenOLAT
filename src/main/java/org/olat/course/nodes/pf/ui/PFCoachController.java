@@ -281,7 +281,7 @@ public class PFCoachController extends FormBasicController implements Controller
 		dropboxTable.setSortSettings(options);
 		initFilters();
 		dropboxTable.setAndLoadPersistedPreferences(ureq, "participant-folder_coach-v2");
-		dropboxTable.setEmtpyTableMessageKey("table.empty");
+		dropboxTable.setEmptyTableMessageKey("table.empty");
 		
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

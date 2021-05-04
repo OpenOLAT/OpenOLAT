@@ -196,7 +196,7 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		dataModel = new AppointmentInputDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "appointments-duplicate");
-		tableEl.setEmtpyTableMessageKey("table.empty.appointments");
+		tableEl.setEmptyTableMessageKey("table.empty.appointments");
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 	}

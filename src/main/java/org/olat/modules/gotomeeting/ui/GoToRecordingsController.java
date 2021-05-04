@@ -86,7 +86,7 @@ public class GoToRecordingsController extends FormBasicController {
 		}
 		tableModel.setObjects(recordings);
 		tableEl = uifactory.addTableElement(getWindowControl(), "recordings", tableModel, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("recordings.empty");
+		tableEl.setEmptyTableMessageKey("recordings.empty");
 		tableEl.setCustomizeColumns(false);
 	}
 

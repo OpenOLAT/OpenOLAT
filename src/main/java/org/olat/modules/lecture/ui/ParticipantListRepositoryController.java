@@ -210,7 +210,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		int pageSize = printView ? 32000 : 20;
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, pageSize, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(!printView);
-		tableEl.setEmtpyTableMessageKey("empty.table.participant.list");
+		tableEl.setEmptyTableMessageKey("empty.table.participant.list");
 		tableEl.setSortSettings(options);
 		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry-v2");
 	}

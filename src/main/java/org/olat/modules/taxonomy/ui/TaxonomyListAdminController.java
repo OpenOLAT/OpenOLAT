@@ -119,7 +119,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		tableEl.setSearchEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_taxonomy_listing");
-		tableEl.setEmtpyTableMessageKey("table.taxonomy.empty");
+		tableEl.setEmptyTableMessageKey("table.taxonomy.empty");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("taxonomy_row");

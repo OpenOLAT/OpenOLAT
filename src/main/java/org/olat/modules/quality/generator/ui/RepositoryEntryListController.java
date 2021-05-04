@@ -107,7 +107,7 @@ public abstract class RepositoryEntryListController extends FormBasicController 
 
 		tableModel = new RepositoryEntryListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, true, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("repository.entry.empty.table");
+		tableEl.setEmptyTableMessageKey("repository.entry.empty.table");
 		tableEl.setAndLoadPersistedPreferences(ureq, getTablePrefKey());
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);

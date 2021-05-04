@@ -91,7 +91,7 @@ public class AdvanceOrderController extends FormBasicController {
 
 		dataModel = new AdvanceOrderDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("table.advanceOrder.empty");
+		tableEl.setEmptyTableMessageKey("table.advanceOrder.empty");
 		tableEl.setAndLoadPersistedPreferences(ureq, "advance-orders");
 		
 		initFilters();

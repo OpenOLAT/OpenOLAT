@@ -135,7 +135,7 @@ public class ContactTracingReportGeneratorStep2 extends BasicStep {
             tableEl.setSelectAllEnable(true);
             tableEl.setShowAllRowsEnabled(true);
             tableEl.setCustomizeColumns(false);
-            tableEl.setEmtpyTableMessageKey("contact.tracing.location.table.empty");
+            tableEl.setEmptyTableMessageKey("contact.tracing.location.table.empty");
             tableEl.setAndLoadPersistedPreferences(ureq, ContactTracingReportGeneratorStep2Controller.class.getCanonicalName());
         }
 

@@ -111,7 +111,7 @@ public class TaxonomyImportStep2 extends BasicStep {
 			tableElement = uifactory.addTableElement(getWindowControl(), "table", reviewTableModel, 20, false, getTranslator(), formLayout);
 			tableElement.setSearchEnabled(true);
 			tableElement.setCustomizeColumns(true);
-			tableElement.setEmtpyTableMessageKey("table.taxonomy.level.empty");
+			tableElement.setEmptyTableMessageKey("table.taxonomy.level.empty");
 			tableElement.setNumOfRowsEnabled(true);
 			tableElement.setExportEnabled(false);
 			tableElement.setPageSize(20);

@@ -128,7 +128,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		serversTableEl.setCustomizeColumns(false);
 		serversTableEl.setNumOfRowsEnabled(false);
 		serversTableEl.setLabel("bigbluebutton.servers", null);
-		serversTableEl.setEmtpyTableMessageKey("bigbluebutton.servers.empty");
+		serversTableEl.setEmptyTableMessageKey("bigbluebutton.servers.empty");
 		
 		addServerButton = uifactory.addFormLink("add.server", formLayout, Link.BUTTON);
 		

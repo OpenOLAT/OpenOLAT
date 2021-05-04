@@ -108,7 +108,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		
 		model = new CurriculumElementTypesTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "types", model, 25, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("table.type.empty");
+		tableEl.setEmptyTableMessageKey("table.type.empty");
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-el-types");
 	}
 	

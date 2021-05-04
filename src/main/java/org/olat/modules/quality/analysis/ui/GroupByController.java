@@ -498,7 +498,7 @@ public abstract class GroupByController extends FormBasicController implements F
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", getModel(), getTranslator(), flc);
 		tableEl.setElementCssClass("o_qual_hm o_qual_trend");
-		tableEl.setEmtpyTableMessageKey("heatmap.empty");
+		tableEl.setEmptyTableMessageKey("heatmap.empty");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setFooter(hasFooter());

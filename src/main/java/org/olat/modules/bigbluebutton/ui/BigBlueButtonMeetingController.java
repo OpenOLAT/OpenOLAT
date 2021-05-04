@@ -277,7 +277,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		
 		recordingTableModel = new BigBlueButtonRecordingTableModel(columnsModel, bigBlueButtonModule.isRecordingsPermanent(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "recordings", recordingTableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("no.recordings");
+		tableEl.setEmptyTableMessageKey("no.recordings");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 	}

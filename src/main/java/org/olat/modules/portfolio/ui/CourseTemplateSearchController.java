@@ -92,7 +92,7 @@ public class CourseTemplateSearchController extends FormBasicController {
 		model = new CourseTemplateSearchDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmtpyTableMessageKey("no.binders.template.available");
+		tableEl.setEmptyTableMessageKey("no.binders.template.available");
 	}
 
 	@Override

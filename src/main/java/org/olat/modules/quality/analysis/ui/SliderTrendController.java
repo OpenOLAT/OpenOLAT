@@ -135,7 +135,7 @@ public class SliderTrendController extends FormBasicController {
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), flc);
 		tableEl.setElementCssClass("o_qual_trend");
-		tableEl.setEmtpyTableMessageKey("slider.trend.empty");
+		tableEl.setEmptyTableMessageKey("slider.trend.empty");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 	}

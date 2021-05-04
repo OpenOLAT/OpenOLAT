@@ -2017,7 +2017,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public void setEmtpyTableMessageKey(String i18key) {
+	public void setEmptyTableMessageKey(String i18key) {
 		setEmptyTableSettings(i18key, null, TABLE_EMPTY_ICON);
 	}
 

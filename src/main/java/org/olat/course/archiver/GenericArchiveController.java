@@ -126,7 +126,7 @@ public class GenericArchiveController extends FormBasicController {
 			tableEl.setCustomizeColumns(false);
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
-			tableEl.setEmtpyTableMessageKey("nodesoverview.nonodes");
+			tableEl.setEmptyTableMessageKey("nodesoverview.nonodes");
 			
 			selectButton = uifactory.addFormLink("archive", formLayout, Link.BUTTON);
 			if(withOptions) {

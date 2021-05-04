@@ -79,7 +79,7 @@ public class PoolsMetadataController extends FormBasicController {
 		poolInfosModel = new PoolInfosDataModel(poolInfosColumnsModel);
 		poolInfosTable = uifactory.addTableElement(getWindowControl(), "details_pools", poolInfosModel, getTranslator(), formLayout);
 		poolInfosTable.setCustomizeColumns(false);
-		poolInfosTable.setEmtpyTableMessageKey("sharing.pools.empty.table");
+		poolInfosTable.setEmptyTableMessageKey("sharing.pools.empty.table");
 	}
 	
 	@Override

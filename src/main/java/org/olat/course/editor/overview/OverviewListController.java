@@ -197,7 +197,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		tableEl.setElementCssClass("o_course_edit_overview_table o_course_editor_legend");
 		tableEl.setCssDelegate(this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course-editor-overview");
-		tableEl.setEmtpyTableMessageKey("table.empty");
+		tableEl.setEmptyTableMessageKey("table.empty");
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);

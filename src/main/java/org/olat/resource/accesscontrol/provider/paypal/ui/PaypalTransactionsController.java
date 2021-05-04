@@ -106,7 +106,7 @@ public class PaypalTransactionsController extends FormBasicController implements
 		
 		dataModel = new PaypalTransactionDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "results", dataModel, 25, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("paypal.transactions.empty");
+		tableEl.setEmptyTableMessageKey("paypal.transactions.empty");
 		tableEl.setCustomizeColumns(true);
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);

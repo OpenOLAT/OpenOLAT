@@ -264,7 +264,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		FlexiTableElement table = uifactory.addTableElement(getWindowControl(), "table", model, paging, false, getTranslator(), formLayout);
 		table.setAndLoadPersistedPreferences(ureq, "participant-lectures-overview");
 		table.setCustomizeColumns(false);
-		table.setEmtpyTableMessageKey("empty.lectures.list");
+		table.setEmptyTableMessageKey("empty.lectures.list");
 		table.setFooter(true);
 		return new AggregatedTable(table, model);
 	}

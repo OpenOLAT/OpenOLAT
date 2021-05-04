@@ -194,7 +194,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
-		tableEl.setEmtpyTableMessageKey("cockpit.lectures.day.list");
+		tableEl.setEmptyTableMessageKey("cockpit.lectures.day.list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "daily-lecture-blocks-overview-v2");
 		
 		initCloseButton(formLayout);

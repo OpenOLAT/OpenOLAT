@@ -262,7 +262,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		tableEl.setCustomizeColumns(true);
 		String cssClass = "o_binder_page_listing " + (flatList ? "o_binder_page_flat_listing" : "o_binder_page_tree_listing");
 		tableEl.setElementCssClass(cssClass);
-		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
 		tableEl.setPageSize(24);
 		rowVC.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		rowVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);

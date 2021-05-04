@@ -126,7 +126,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-analysis");
-		tableEl.setEmtpyTableMessageKey("analysis.table.empty");
+		tableEl.setEmptyTableMessageKey("analysis.table.empty");
 		
 		VelocityContainer row = createVelocityContainer("analysis_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container

@@ -207,7 +207,7 @@ public class MediaCenterController extends FormBasicController
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("media_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container

@@ -194,7 +194,7 @@ public class BinderListController extends FormBasicController
 		tableEl.setSearchEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_portfolio_listing");
-		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("binder_row");

@@ -241,7 +241,7 @@ public class MSStatisticController extends FormBasicController {
 		dataModel = new MSStatisticDataModel(columnsModel, translate("tool.stats.table.footer"), getLocale());
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), flc);
-		tableEl.setEmtpyTableMessageKey("tool.stats.empty");
+		tableEl.setEmptyTableMessageKey("tool.stats.empty");
 		tableEl.setCustomizeColumns(false);
 		tableEl.setSortSettings(options);
 		tableEl.setExportEnabled(true);

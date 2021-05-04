@@ -87,7 +87,7 @@ public class SearchResourceListController extends StepFormBasicController {
 		tableModel = new RepositoryFlexiTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "resources", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "graders-resources");
-		tableEl.setEmtpyTableMessageKey("resources.noresources");
+		tableEl.setEmptyTableMessageKey("resources.noresources");
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);
 	}

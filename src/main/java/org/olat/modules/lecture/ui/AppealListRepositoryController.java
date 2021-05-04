@@ -187,7 +187,7 @@ public class AppealListRepositoryController extends FormBasicController {
 				LectureBlockAppealStatus.rejected.name()));
 		tableEl.setFilters("filer", filters, true);
 		tableEl.setExportEnabled(true);
-		tableEl.setEmtpyTableMessageKey("empty.appeals.list");
+		tableEl.setEmptyTableMessageKey("empty.appeals.list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "appeal-roll-call-v2");
 
 		if(secCallback.canApproveAppeal()) {

@@ -259,7 +259,7 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 		contentTableEl = uifactory.addTableElement(getWindowControl(), "meetingContents", contentModel, 24, false, getTranslator(), formLayout);
 		contentTableEl.setCustomizeColumns(false);
 		contentTableEl.setNumOfRowsEnabled(false);
-		contentTableEl.setEmtpyTableMessageKey("no.shared.contents");
+		contentTableEl.setEmptyTableMessageKey("no.shared.contents");
 	}
 	
 	private void loadModel() {

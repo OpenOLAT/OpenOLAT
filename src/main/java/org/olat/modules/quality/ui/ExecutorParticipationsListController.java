@@ -110,7 +110,7 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		tableEl = uifactory.addTableElement(getWindowControl(), "user-participations", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_qual_exec_list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-executor-participation");
-		tableEl.setEmtpyTableMessageKey("executor.participation.empty.table");
+		tableEl.setEmptyTableMessageKey("executor.participation.empty.table");
 	}
 	
 	@Override

@@ -191,7 +191,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		tableEl.setSortSettings(options);
 		tableEl.setCustomizeColumns(withPrint);
 		tableEl.setAndLoadPersistedPreferences(ureq, "participant-roll-call-appeal");
-		tableEl.setEmtpyTableMessageKey("empty.repository.entry.lectures");
+		tableEl.setEmptyTableMessageKey("empty.repository.entry.lectures");
 		
 		List<FlexiTableFilter> filters = new ArrayList<>();
 		filters.add(new FlexiTableFilter(translate("filter.showAll"), "showAll", true));

@@ -139,7 +139,7 @@ public class ParticipationListController extends FormBasicController implements 
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "participations", dataModel, 25, true, getTranslator(), flc);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-participations");
-		tableEl.setEmtpyTableMessageKey("participation.empty.table");
+		tableEl.setEmptyTableMessageKey("participation.empty.table");
 		if (secCallback.canRevomeParticipation()) {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);

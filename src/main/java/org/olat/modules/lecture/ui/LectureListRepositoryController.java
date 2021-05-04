@@ -168,7 +168,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
-		tableEl.setEmtpyTableMessageKey("empty.table.lectures.blocks.admin");
+		tableEl.setEmptyTableMessageKey("empty.table.lectures.blocks.admin");
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), false));

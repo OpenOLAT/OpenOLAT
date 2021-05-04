@@ -79,7 +79,7 @@ public class SharesMetadataController extends FormBasicController {
 		sharesModel = new SharesDataModel(sharesColumnsModel);
 		sharesTable = uifactory.addTableElement(getWindowControl(), "details_shares", sharesModel, getTranslator(), formLayout);
 		sharesTable.setCustomizeColumns(false);
-		sharesTable.setEmtpyTableMessageKey("sharing.shares.empty.table");
+		sharesTable.setEmptyTableMessageKey("sharing.shares.empty.table");
 	}
 	
 	@Override

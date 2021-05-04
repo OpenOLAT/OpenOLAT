@@ -133,7 +133,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		dataModel = new OrdersDataModel(dataSource, getLocale(), userManager, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setEmtpyTableMessageKey("table.order.empty");
+		tableEl.setEmptyTableMessageKey("table.order.empty");
 
 		List<FlexiTableFilter> filters = new ArrayList<>();
 		filters.add(new FlexiTableFilter(translate("order.status.payed"), OrderStatus.PAYED.name()));

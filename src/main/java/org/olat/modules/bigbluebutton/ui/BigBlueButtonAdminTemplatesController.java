@@ -100,7 +100,7 @@ public class BigBlueButtonAdminTemplatesController extends FormBasicController {
 		
 		tableModel = new BigBlueButtonTemplateTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "templates", tableModel, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("no.template.configured");
+		tableEl.setEmptyTableMessageKey("no.template.configured");
 		tableEl.setAndLoadPersistedPreferences(ureq, "bigbluebutton-connect-edit-templates-list");
 	}
 

@@ -171,7 +171,7 @@ public class ContactTracingLocationListController extends FormBasicController {
         tableEl.setMultiSelect(true);
         tableEl.setSelectAllEnable(true);
         tableEl.setShowAllRowsEnabled(true);
-        tableEl.setEmtpyTableMessageKey("contact.tracing.location.table.empty");
+        tableEl.setEmptyTableMessageKey("contact.tracing.location.table.empty");
         tableEl.setAndLoadPersistedPreferences(ureq, ContactTracingLocationListController.class.getCanonicalName());
 
         // Create link to add a new location and import locations

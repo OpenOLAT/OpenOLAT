@@ -378,7 +378,7 @@ public class EditMembershipStep2 extends BasicStep {
 			}
 			
 			FlexiTableElement tableElement = uifactory.addTableElement(getWindowControl(), "editMembershipReviewTable", tableModel, -1, false, getTranslator(), formLayout);
-			tableElement.setEmtpyTableMessageKey("review.no.changes");
+			tableElement.setEmptyTableMessageKey("review.no.changes");
 			tableElement.setCustomizeColumns(false);		
 			
 			

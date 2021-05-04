@@ -91,7 +91,7 @@ public class QuestionOriginReportTableController extends FormBasicController {
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-resource-list");
-		tableEl.setEmtpyTableMessageKey("search.empty");
+		tableEl.setEmptyTableMessageKey("search.empty");
 		
 		generateReportButton = uifactory.addFormLink("report.question.to.course", "report.question.to.course", null, formLayout, Link.BUTTON);
 	}

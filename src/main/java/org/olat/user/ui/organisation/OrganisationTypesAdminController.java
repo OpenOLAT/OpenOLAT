@@ -90,7 +90,7 @@ public class OrganisationTypesAdminController extends FormBasicController implem
 		
 		model = new OrganisationTypesDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "types", model, 25, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("table.organisation.type.empty");
+		tableEl.setEmptyTableMessageKey("table.organisation.type.empty");
 		tableEl.setAndLoadPersistedPreferences(ureq, "org-types");
 	}
 	

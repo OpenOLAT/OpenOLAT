@@ -118,7 +118,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 		dataModel = new GeneratorDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-generator");
-		tableEl.setEmtpyTableMessageKey("generator.empty.table");
+		tableEl.setEmptyTableMessageKey("generator.empty.table");
 		loadModel();
 	}
 

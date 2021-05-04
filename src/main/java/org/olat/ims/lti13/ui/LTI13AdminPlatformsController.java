@@ -87,7 +87,7 @@ public class LTI13AdminPlatformsController extends FormBasicController {
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmtpyTableMessageKey("platforms.empty");
+		tableEl.setEmptyTableMessageKey("platforms.empty");
 		tableEl.setAndLoadPersistedPreferences(ureq, "lti13-platforms-admin");
 	}
 

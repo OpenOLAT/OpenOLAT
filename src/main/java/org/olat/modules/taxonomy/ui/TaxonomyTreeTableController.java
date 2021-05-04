@@ -158,7 +158,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_taxonomy_level_listing");
-		tableEl.setEmtpyTableMessageKey("table.taxonomy.level.empty");
+		tableEl.setEmptyTableMessageKey("table.taxonomy.level.empty");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(24);

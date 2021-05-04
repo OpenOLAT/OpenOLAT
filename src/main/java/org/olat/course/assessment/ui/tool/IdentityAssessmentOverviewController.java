@@ -284,7 +284,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		tableModel = new IdentityAssessmentOverviewTableModel(columnsModel); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 250, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setEmtpyTableMessageKey("nodesoverview.emptylist");
+		tableEl.setEmptyTableMessageKey("nodesoverview.emptylist");
 		tableEl.setBordered(true);
 		tableEl.setNumOfRowsEnabled(false);
 		
