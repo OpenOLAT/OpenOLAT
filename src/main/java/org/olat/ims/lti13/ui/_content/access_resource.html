@@ -1,5 +1,11 @@
 <fieldset class="o_form form-horizontal o_sel_lti_access_configuration">
 	<legend>$r.translate("access.lti13.title")</legend>
+	
+	<div class="o_warning">
+		<i class="o_icon o_icon-fw o_icon_warn"> </i>
+		$r.translate("warn.beta.feature")
+	</div>
+	
 	<div class="o_button_group o_button_group_right">
 	#if($r.available("add.deployment"))
 		$r.render("add.deployment")

@@ -1,5 +1,10 @@
 <div class="clearfix">
 	$r.render("segments")<br>	
+	
+	<div class="o_warning">
+		<i class="o_icon o_icon-fw o_icon_warn"> </i>
+		$r.translate("warn.beta.feature")
+	</div>
 		
 	#if($r.available("segmentCmp"))
 		$r.render("segmentCmp")

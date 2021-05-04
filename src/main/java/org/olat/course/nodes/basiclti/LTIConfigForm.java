@@ -456,7 +456,7 @@ public class LTIConfigForm extends FormBasicController {
 		initiateLoginUrlEl.setVisible(lti13);
 		initiateLoginUrlEl.setEnabled(!sharedTool);
 		redirectUrlEl.setVisible(lti13);
-		redirectUrlEl.setEnabled(!sharedTool);
+		redirectUrlEl.setEnabled(!sharedTool);		
 		
 		// LTI 1.1
 		tkey.setVisible(!lti13);
@@ -472,6 +472,9 @@ public class LTIConfigForm extends FormBasicController {
 		boolean sizeVisible = !newWindow || !lti13;
 		heightEl.setVisible(sizeVisible);
 		widthEl.setVisible(sizeVisible); 
+		
+		// Show beta info
+		setFormInfo(lti13 ? "warn.beta.feature" : null);
 	}
 	
 	protected void initLti10Form(FormItemContainer formLayout) {
