@@ -148,7 +148,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ATDCols.select.i18nKey(), ATDCols.select.ordinal(), "select",
 				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer(translate("select"), "select", true, true, "btn btn-primary", "o_icon o_icon_submit", null), 
+						new StaticFlexiCellRenderer(translate("select.edit"), "select", true, true, "btn btn-primary", "o_icon o_icon_submit", null), 
 						new StaticFlexiCellRenderer(translate("select"), "select", "btn btn-primary", "o_icon o_icon_submit"))));
 		
 		taskModel = new AvailableTaskTableModel(columnsModel);
@@ -179,6 +179,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 			}
 			
 			boolean editableSubmission = submissionTemplate
+					&& gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_EMBBEDED_EDITOR)
 					&& docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), getFileSuffix(filename), Mode.EDIT, true, false);
 			
 			FormLink descriptionLink = null;
