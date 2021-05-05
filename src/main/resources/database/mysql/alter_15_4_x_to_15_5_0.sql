@@ -156,3 +156,8 @@ create index idx_lti_kid_idx on o_lti_key (l_key_id);
 
 -- Document editor
 alter table o_de_access add column o_edit_start_date datetime default null;
+
+
+-- BigBlueButton
+alter table o_bbb_server add column b_manual_only bool default false not null;
+

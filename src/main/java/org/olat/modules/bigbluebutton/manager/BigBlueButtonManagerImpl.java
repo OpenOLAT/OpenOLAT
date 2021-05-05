@@ -582,14 +582,22 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		}
 	}
 	
-	public BigBlueButtonServer getAvailableServer() {
+	/**
+	 * Returns an enabled, not selection manual only server based on the
+	 * load of the pool of available servers.
+	 * 
+	 * @return A BigBlueButton server or null
+	 */
+	private BigBlueButtonServer getLoadBalancedServer() {
 		List<BigBlueButtonServer> servers = getServers();
 		List<BigBlueButtonServer> availableServers = servers.stream()
 				.filter(BigBlueButtonServer::isEnabled)
+				.filter(s -> !s.isManualOnly())
 				.collect(Collectors.toList());
 		if(availableServers.isEmpty()) {
 			return null;
-		} else if(availableServers.size() == 1) {
+		}
+		if(availableServers.size() == 1) {
 			return availableServers.get(0);
 		}
 		return getBigBlueButtonServer(servers);
@@ -994,7 +1002,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			return meeting;
 		}
 		
-		BigBlueButtonServer availableServer = getAvailableServer();
+		BigBlueButtonServer availableServer = getLoadBalancedServer();
 		if(availableServer == null) {
 			return meeting;
 		}

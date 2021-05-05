@@ -120,6 +120,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigServerCols.url));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigServerCols.enabled));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigServerCols.manualOnly));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 		serversTableModel = new BigBlueButtonConfigurationServersTableModel(columnsModel, getLocale());

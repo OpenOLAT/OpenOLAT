@@ -52,6 +52,10 @@ public interface BigBlueButtonServer extends ModifiedInfo, CreateInfo {
 
 	public void setEnabled(boolean enabled);
 	
+	public boolean isManualOnly();
+	
+	public void setManualOnly(boolean manualOnly);
+	
 	public Double getCapacityFactory();
 
 	public void setCapacityFactory(Double capacityFactory);

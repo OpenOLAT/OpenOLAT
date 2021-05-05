@@ -71,6 +71,8 @@ public class BigBlueButtonServerImpl implements Persistable, BigBlueButtonServer
 	private Double capacityFactory;
 	@Column(name="b_enabled", nullable=false, insertable=true, updatable=true)
 	private boolean enabled;
+	@Column(name="b_manual_only", nullable=false, insertable=true, updatable=true)
+	private boolean manualOnly;
 
 	@Override
 	public Long getKey() {
@@ -148,6 +150,16 @@ public class BigBlueButtonServerImpl implements Persistable, BigBlueButtonServer
 	@Override
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+	}
+
+	@Override
+	public boolean isManualOnly() {
+		return manualOnly;
+	}
+
+	@Override
+	public void setManualOnly(boolean manualOnly) {
+		this.manualOnly = manualOnly;
 	}
 
 	@Override

@@ -54,10 +54,10 @@ public class EditBigBlueButtonServerController extends FormBasicController {
 
 	private FormLink checkLink;
 	private TextElement urlEl;
-	//private TextElement recordingUrlEl;
 	private TextElement sharedSecretEl;
 	private TextElement capacityFactorEl;
 	private MultipleSelectionElement enabledEl;
+	private MultipleSelectionElement manualOnlyEl;
 
 	private BigBlueButtonServer server;
 	private String replacedSharedSecretValue;
@@ -93,11 +93,6 @@ public class EditBigBlueButtonServerController extends FormBasicController {
 		sharedSecretEl.setAutocomplete("new-password");
 		sharedSecretEl.setMandatory(true);
 		
-		//String recordingUrl = server == null ? null : server.getRecordingUrl();
-		//recordingUrlEl = uifactory.addTextElement("bbb.recording.url", "option.recordingurl", 255, recordingUrl, formLayout);
-		//recordingUrlEl.setDisplaySize(60);
-		//recordingUrlEl.setExampleKey("option.baseurl.example", null);
-		
 		String capacityFactor = server == null || server.getCapacityFactory() == null
 				? "1.0" : server.getCapacityFactory().toString();
 		capacityFactorEl = uifactory.addTextElement("bbb.capacity", "option.capacity.factory", 255, capacityFactor, formLayout);
@@ -107,6 +102,9 @@ public class EditBigBlueButtonServerController extends FormBasicController {
 		String[] onValues = new String[] { translate("enabled") };
 		enabledEl = uifactory.addCheckboxesVertical("option.enabled.server", formLayout, onKeys, onValues, 1);
 		enabledEl.select(onKeys[0], server == null || server.isEnabled());
+
+		manualOnlyEl = uifactory.addCheckboxesVertical("option.manual.only", formLayout, onKeys, new String[] { "" }, 1);
+		manualOnlyEl.select(onKeys[0], server != null && server.isManualOnly());
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -262,6 +260,7 @@ public class EditBigBlueButtonServerController extends FormBasicController {
 		}
 		
 		server.setEnabled(enabledEl.isAtLeastSelected(1));
+		server.setManualOnly(manualOnlyEl.isAtLeastSelected(1));
 		server.setCapacityFactory(getCapacityFactory());
 		server = bigBlueButtonManager.updateServer(server);
 		fireEvent(ureq, Event.DONE_EVENT);

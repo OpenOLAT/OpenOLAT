@@ -61,8 +61,8 @@ implements SortableFlexiTableDataModel<BigBlueButtonServer> {
 	public Object getValueAt(BigBlueButtonServer row, int col) {
 		switch(COLS[col]) {
 			case url: return row.getUrl();
-			case recordingUrl: return row.getRecordingUrl();
 			case enabled: return Boolean.valueOf(row.isEnabled());
+			case manualOnly: return Boolean.valueOf(row.isManualOnly());
 			default: return "ERROR";
 		}
 	}
@@ -75,8 +75,8 @@ implements SortableFlexiTableDataModel<BigBlueButtonServer> {
 	public enum ConfigServerCols implements FlexiSortableColumnDef {
 		
 		url("table.header.server.url"),
-		recordingUrl("table.header.server.recording"),
-		enabled("table.header.server.enabled");
+		enabled("table.header.server.enabled"),
+		manualOnly("table.header.server.manual.only");
 		
 		private final String i18nHeaderKey;
 		

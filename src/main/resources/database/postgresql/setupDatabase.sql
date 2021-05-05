@@ -1234,6 +1234,7 @@ create table o_bbb_server (
    b_shared_secret varchar(255),
    b_recording_url varchar(255),
    b_enabled bool default true,
+   b_manual_only bool default false not null,
    b_capacity_factor decimal,
    primary key (id)
 );

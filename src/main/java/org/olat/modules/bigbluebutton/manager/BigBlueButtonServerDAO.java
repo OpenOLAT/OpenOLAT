@@ -48,6 +48,7 @@ public class BigBlueButtonServerDAO {
 		server.setRecordingUrl(recordingUrl);
 		server.setSharedSecret(sharedSecret);
 		server.setEnabled(true);
+		server.setManualOnly(false);
 		server.setCapacityFactory(1.0d);
 		dbInstance.getCurrentEntityManager().persist(server);
 		return server;
