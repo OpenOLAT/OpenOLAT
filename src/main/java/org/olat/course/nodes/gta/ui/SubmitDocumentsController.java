@@ -109,6 +109,8 @@ class SubmitDocumentsController extends FormBasicController {
 	
 	private boolean open = true;
 	private final boolean readOnly;
+	private final boolean externalEditor;
+	private final boolean embeddedEditor;
 	private final Date deadline;
 	
 	@Autowired
@@ -120,8 +122,8 @@ class SubmitDocumentsController extends FormBasicController {
 	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask, File documentsDir,
 			VFSContainer documentsContainer, int minDocs, int maxDocs, GTACourseNode cNode, CourseEnvironment courseEnv,
-			boolean readOnly, Date deadline, String docI18nKey, VFSContainer copySourceContainer, String copyEnding,
-			String copyI18nKey) {
+			boolean readOnly, boolean externalEditor, boolean embeddedEditor, Date deadline, String docI18nKey,
+			VFSContainer copySourceContainer, String copyEnding, String copyI18nKey) {
 		super(ureq, wControl, "documents");
 		this.assignedTask = assignedTask;
 		this.documentsDir = documentsDir;
@@ -132,6 +134,8 @@ class SubmitDocumentsController extends FormBasicController {
 		this.docI18nKey = docI18nKey;
 		this.deadline = deadline;
 		this.readOnly = readOnly;
+		this.externalEditor = externalEditor;
+		this.embeddedEditor = embeddedEditor;
 		this.copyEnding = copyEnding;
 		this.copyI18nKey = copyI18nKey;
 		this.config = cNode.getModuleConfiguration();
@@ -159,13 +163,13 @@ class SubmitDocumentsController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(config.getBooleanSafe(GTACourseNode.GTASK_EXTERNAL_EDITOR)) {
+		if(externalEditor) {
 			uploadDocButton = uifactory.addFormLink("upload.document", formLayout, Link.BUTTON);
 			uploadDocButton.setIconLeftCSS("o_icon o_icon_upload");
 			uploadDocButton.setElementCssClass("o_sel_course_gta_submit_file");
 			uploadDocButton.setVisible(!readOnly);
 		}
-		if(config.getBooleanSafe(GTACourseNode.GTASK_EMBBEDED_EDITOR)) {
+		if(embeddedEditor) {
 			createDocButton = uifactory.addFormLink("open.editor", formLayout, Link.BUTTON);
 			createDocButton.setIconLeftCSS("o_icon o_icon_edit");
 			createDocButton.setElementCssClass("o_sel_course_gta_create_doc");
@@ -184,8 +188,10 @@ class SubmitDocumentsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.date.i18nKey(), DocCols.date.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.createdBy.i18nKey(), DocCols.createdBy.ordinal()));
 		
-		String openI18n = readOnly? "table.header.view": "table.header.edit";
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(openI18n, DocCols.mode.ordinal(), "open", new ModeCellRenderer("open")));
+		if (embeddedEditor) {
+			String openI18n = readOnly? "table.header.view": "table.header.edit";
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(openI18n, DocCols.mode.ordinal(), "open", new ModeCellRenderer("open")));
+		}
 		if(!readOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.metadata", translate("table.header.metadata"), "metadata"));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.delete", translate("table.header.delete"), "delete"));
@@ -203,6 +209,8 @@ class SubmitDocumentsController extends FormBasicController {
 	private boolean canCopy(UserRequest ureq) {
 		if (copySourceContainer == null) return false;
 		
+		// Copy is only allowed if the document can be edited with a document editor.
+		// If you want change this, you can't open the copied document in a new window directly after copy.
 		Collection<String> copySuffixes = GTAUIFactory.getCopySuffix(getIdentity(), ureq.getUserSession().getRoles());
 		if (copySuffixes.isEmpty()) return false;
 		

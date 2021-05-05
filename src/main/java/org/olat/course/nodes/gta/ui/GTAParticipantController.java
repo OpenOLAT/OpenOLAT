@@ -313,7 +313,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		int minDocs = config.getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
 		int maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
 		submitDocCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer,
-				minDocs, maxDocs, gtaNode, courseEnv, userCourseEnv.isCourseReadOnly(), deadline, "document", null, null, null);
+				minDocs, maxDocs, gtaNode, courseEnv, userCourseEnv.isCourseReadOnly(),
+				config.getBooleanSafe(GTACourseNode.GTASK_EXTERNAL_EDITOR),
+				config.getBooleanSafe(GTACourseNode.GTASK_EMBBEDED_EDITOR), deadline, "document", null, null, null);
 		listenTo(submitDocCtrl);
 		mainVC.put("submitDocs", submitDocCtrl.getInitialComponent());
 		
