@@ -64,7 +64,7 @@
 		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.3.3</org.springframework.version>
 		<org.hibernate.version>5.4.28.Final</org.hibernate.version>
-		<apache.cxf>3.4.2</apache.cxf>
+		<apache.cxf>3.4.3</apache.cxf>
 		<apache.pdfbox>2.0.22</apache.pdfbox>
 		<apache.poi>4.1.2</apache.poi>
 		<apache.log4j>2.14.0</apache.log4j>
@@ -1858,7 +1858,7 @@
 		<dependency>
 			<groupId>org.openolat</groupId>
 			<artifactId>viterows</artifactId>
-			<version>9.1.2</version>
+			<version>10.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openolat</groupId>

@@ -618,7 +618,7 @@ public class ViteroManager implements UserDataDeletable {
 			user.setEmail(olatUser.getProperty(UserConstants.EMAIL, null));
 			user.setPassword("changeme");
 			int customerId =viteroModule.getCustomerId();
-			user.getCustomeridlist().add(String.valueOf(customerId));
+			user.getCustomeridlist().add(Integer.valueOf(customerId));
 
 			//optional
 			String language = identity.getUser().getPreferences().getLanguage();
