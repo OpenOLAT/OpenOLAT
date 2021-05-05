@@ -38,7 +38,6 @@
 						// SCO was not finished, go to the next step now
 						var flatCmis = window.API.renderCommitCMI(true);
 						var flatCmisString = JSON.stringify(flatCmis);
-						console.log("LMSTimeout 2");
 						$r.openJavaScriptCommand("LMSTimeout"), 'command', command, 'ignore-validating-error', 'oo-ignore-validating-errors', 'scoId', '${scoId}', 'cmis', flatCmisString);
 					}
 				}, 1900);
