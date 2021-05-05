@@ -122,6 +122,7 @@ div.o_table_flexi div.o_table_flexi_leaf  {
 a.o_orderby, a.o_orderby:hover {
 	color: $o-table-header-color;
 	text-decoration: none;
+	white-space: nowrap;
 
 	&.o_orderby_asc::after, &.o_orderby_desc::after {
 		font-family: FontAwesome;
