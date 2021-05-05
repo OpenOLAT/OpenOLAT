@@ -92,14 +92,9 @@ public class BulkScoreController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		int numOfItemSessions = numberOfSessions();
-		String infoI18nKey;
-		if(numOfItemSessions == 1) {
-			infoI18nKey = (mode == Mode.ADD) ? "point.add.info" : "point.set.info";
-		} else {
-			infoI18nKey = (mode == Mode.ADD) ? "point.add.infos" : "point.set.infos";
-		}
-		setFormInfo(infoI18nKey, new String[] { Integer.toString(numOfItemSessions) } );
+		String questionTitle = assessmentItem.getTitle();
+		String infoI18nKey = (mode == Mode.ADD) ? "point.add.info" : "point.set.info";
+		setFormInfo(infoI18nKey, new String[] { questionTitle } );
 		
 		String i18nKey = (mode == Mode.ADD) ? "points.to.add" : "points.to.set";
 		pointsEl = uifactory.addTextElement("points", i18nKey, 8, null, formLayout);
@@ -113,26 +108,6 @@ public class BulkScoreController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		String submitI18nKey = (mode == Mode.ADD) ? "point.add" : "point.set";
 		uifactory.addFormSubmitButton("apply", submitI18nKey, buttonsCont);
-	}
-	
-	private int numberOfSessions() {
-		int count = 0;
-		
-		AssessmentItemRef itemRef = itemRow.getItemRef();
-		List<Identity> assessedIdentities = model.getAssessedIdentities();
-		for(Identity assessedIdentity: assessedIdentities) {
-			TestSessionState testSessionState = model.getTestSessionStates().get(assessedIdentity);
-			AssessmentTestSession candidateSession = model.getLastSessions().get(assessedIdentity);
-			if(candidateSession != null && testSessionState != null) {
-				List<TestPlanNode> nodes = testSessionState.getTestPlan().getNodes(itemRef.getIdentifier());
-				if(nodes.size() == 1) {
-					count++;
-				}
-			}
-		}
-		
-		return count;
-		
 	}
 
 	@Override
@@ -149,21 +124,16 @@ public class BulkScoreController extends FormBasicController {
 			try {
 				// check with the parse algorithm of BigDecimal first
 				new BigDecimal(pointsEl.getValue()).doubleValue();
-	
 				double score = Double.parseDouble(pointsEl.getValue());
-				boolean boundariesOk = true;
-				if(minScore != null && score < minScore.doubleValue()) {
-					boundariesOk &= false;
-				}
-				if(maxScore != null && score > maxScore.doubleValue()) {
-					boundariesOk &= false;
-				}
-				
-				if(!boundariesOk) {
+				if(mode == Mode.ADD && score < 0.000001d) {
+					allOk &= false;
+					pointsEl.setErrorKey("correction.min.max.score.zero", null);
+				} else if((minScore != null && score < minScore.doubleValue())
+						|| (maxScore != null && score > maxScore.doubleValue())) {
+					allOk &= false;
 					pointsEl.setErrorKey("correction.min.max.score",
 							new String[] { AssessmentHelper.getRoundedScore(minScore),  AssessmentHelper.getRoundedScore(maxScore) });
 				}
-				allOk &= boundariesOk;
 			} catch (NumberFormatException e) {
 				logWarn("Cannot parse the score: " + pointsEl.getValue(), null);
 				pointsEl.setErrorKey("error.double.format", null);
@@ -248,20 +218,23 @@ public class BulkScoreController extends FormBasicController {
 		}
 	}
 	
-	private void evaluateScore(AssessmentItemSession itemSession, BigDecimal score) {
+	private void evaluateScore(AssessmentItemSession itemSession, BigDecimal points) {
 		if(mode == Mode.ADD) {
-			BigDecimal manualScore = itemSession.getManualScore();
-			if(manualScore != null) {
-				BigDecimal endScore = manualScore.add(score);
+			BigDecimal currentScore = itemSession.getManualScore();
+			if(currentScore == null) {
+				currentScore = itemSession.getScore();
+			}
+			if(currentScore != null) {
+				BigDecimal endScore = currentScore.add(points);
 				if(maxScore != null && maxScore.doubleValue() < endScore.doubleValue()) {
 					endScore = BigDecimal.valueOf(maxScore);
 				}
 				itemSession.setManualScore(endScore);
-			} else {
-				itemSession.setManualScore(score);
+			} else if(points.doubleValue() > 0.0d) {
+				itemSession.setManualScore(points);
 			}
 		} else if(mode == Mode.SET) {
-			itemSession.setManualScore(score);
+			itemSession.setManualScore(points);
 		}
 	}
 	
