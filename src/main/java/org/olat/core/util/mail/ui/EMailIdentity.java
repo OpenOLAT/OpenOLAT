@@ -99,6 +99,11 @@ public class EMailIdentity implements Identity {
 		return null;
 	}
 
+	@Override
+	public Date getDeletionEmailDate() {
+		return null;
+	}
+
 	private class EMailUser implements User, ModifiedInfo {
 
 		private static final long serialVersionUID = 7260225880639460228L;

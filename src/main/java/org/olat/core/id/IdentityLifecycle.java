@@ -47,5 +47,7 @@ public interface IdentityLifecycle {
 	public Date getReactivationDate();
 	
 	public Date getExpirationDate();
+	
+	public Date getDeletionEmailDate();
 
 }

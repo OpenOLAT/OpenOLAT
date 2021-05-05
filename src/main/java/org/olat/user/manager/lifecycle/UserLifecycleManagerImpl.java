@@ -147,9 +147,17 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	@Override
 	public long getDaysUntilDeletion(IdentityLifecycle identity, Date referenceDate) {
 		if(identity == null || identity.getInactivationDate() == null) return -1;
-		
-		Date inactivationDate = identity.getInactivationDate();
-		long days = userModule.getNumberOfInactiveDayBeforeDeletion() - CalendarUtils.numOfDays(referenceDate, inactivationDate);
+
+		long days;
+		int numOfDaysBeforeEmail = userModule.getNumberOfDayBeforeDeletionMail();
+		boolean sendMailBeforeDeletion = userModule.isMailBeforeDeletion() && numOfDaysBeforeEmail > 0;
+		if(sendMailBeforeDeletion && identity.getDeletionEmailDate() != null) {
+			Date deletionEmailDate = identity.getDeletionEmailDate(); 
+			days = numOfDaysBeforeEmail - CalendarUtils.numOfDays(referenceDate, deletionEmailDate);
+		} else {
+			Date inactivationDate = identity.getInactivationDate();
+			days = userModule.getNumberOfInactiveDayBeforeDeletion() - CalendarUtils.numOfDays(referenceDate, inactivationDate);
+		} 
 		return days > 0l ? days : 1l;
 	}
 	

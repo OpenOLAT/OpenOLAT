@@ -134,6 +134,11 @@ public class UpdateIdentity implements Identity {
 	public Date getExpirationDate() {
 		return expirationDate;
 	}
+	
+	@Override
+	public Date getDeletionEmailDate() {
+		return identity.getDeletionEmailDate();
+	}
 
 	@Override
 	public int hashCode() {

@@ -173,6 +173,11 @@ public final class PreviewIdentity implements Identity, User {
 	public Date getExpirationDate() {
 		return null;
 	}
+	
+	@Override
+	public Date getDeletionEmailDate() {
+		return null;
+	}
 
 	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
