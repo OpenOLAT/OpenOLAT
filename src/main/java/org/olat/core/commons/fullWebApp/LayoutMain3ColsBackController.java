@@ -50,6 +50,7 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 	private VelocityContainer backVC;
 	private Link backLink;
 	private boolean fullScreen = false;
+	private boolean deactivateOnBack = true;
 
 	private ChiefController thebaseChief;
 
@@ -87,16 +88,14 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 		putInitialPanel(backVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLink) {
 			// remove the preview workflow from the stack and notify listeners
 			// about the back click
-			deactivate();// fxdiff FXOLAT-116: SCORM improvements
+			if(this.deactivateOnBack) {
+				deactivate();
+			}
 			fireEvent(ureq, Event.BACK_EVENT);
 		}
 	}
@@ -140,12 +139,21 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 	@Override
 	protected void doDispose() {
 		// child controller autodisposed
-		thebaseChief=null;
+		thebaseChief = null;
+	}
+	
+	public boolean isDeactivateOnBack() {
+		return deactivateOnBack;
+	}
+
+	public void setDeactivateOnBack(boolean deactivateOnBack) {
+		this.deactivateOnBack = deactivateOnBack;
 	}
 
 	//
 	// Methods from the 3 col layout:
 	//
+	
 	@Override
 	public void hideCol1(boolean hide) {
 		this.layoutCtr.hideCol1(hide);
@@ -156,30 +164,37 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 		this.layoutCtr.hideCol2(hide);
 	}
 
+	@Override
 	public void hideCol3(boolean hide) {
 		// ignore this: col3 is mandatory
 	}
 
+	@Override
 	public void setCol1(Component col1Component) {
 		this.layoutCtr.setCol1(col1Component);
 	}
 
+	@Override
 	public void setCol2(Component col2Component) {
 		this.layoutCtr.setCol2(col2Component);
 	}
 
+	@Override
 	public void setCol3(Component col3Component) {
 		this.layoutCtr.setCol3(col3Component);
 	}
 
+	@Override
 	public void addCssClassToMain(String cssClass) {
 		this.layoutCtr.addCssClassToMain(cssClass);
 	}
 
+	@Override
 	public void addDisposableChildController(Controller toBedisposedControllerOnDispose) {
 		this.layoutCtr.addDisposableChildController(toBedisposedControllerOnDispose);
 	}
 
+	@Override
 	public void removeCssClassFromMain(String cssClass) {
 		this.layoutCtr.removeCssClassFromMain(cssClass);
 	}

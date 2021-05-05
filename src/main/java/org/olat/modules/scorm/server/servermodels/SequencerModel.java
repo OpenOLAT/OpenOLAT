@@ -29,17 +29,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.logging.log4j.Logger;
 import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Parent;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.modules.scorm.ISettingsHandler;
 
-import uk.ac.reload.jdom.XMLDocument;
 
 /**
  * This class is responsible for creating the xml file which persists the
@@ -88,7 +86,7 @@ public class SequencerModel extends XMLDocument {
 	 * 
 	 * @param file
 	 */
-	public SequencerModel(File file, ISettingsHandler settings) {
+	public SequencerModel(File file) {
 		if (!file.exists()) {
 			super.setFile(file);
 			init();

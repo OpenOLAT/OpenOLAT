@@ -46,8 +46,7 @@ import java.util.Hashtable;
 
 import org.jdom.Document;
 import org.jdom.Namespace;
-
-import uk.ac.reload.jdom.XMLUtils;
+import org.olat.modules.scorm.server.servermodels.XMLUtils;
 
 
 /**

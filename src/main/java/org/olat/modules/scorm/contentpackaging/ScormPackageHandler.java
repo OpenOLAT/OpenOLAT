@@ -30,14 +30,11 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.modules.scorm.ISettingsHandler;
+import org.olat.modules.scorm.SettingsHandler;
 import org.olat.modules.scorm.server.servermodels.CMI_DataModel;
 import org.olat.modules.scorm.server.servermodels.SequencerModel;
+import org.olat.modules.scorm.server.servermodels.XMLDocument;
 
-import uk.ac.reload.diva.util.GeneralUtils;
-import uk.ac.reload.jdom.XMLDocument;
-import uk.ac.reload.moonunit.contentpackaging.CP_Core;
-import uk.ac.reload.moonunit.contentpackaging.SCORM12_Core;
 
 /**
  * The ScormPackageHandler Class. A class used to parse a scorm imsmanifest.xml
@@ -72,7 +69,7 @@ public class ScormPackageHandler extends XMLDocument {
 	 */
 	protected SCORM12_Core _scormCore;
 
-	private ISettingsHandler settings;
+	private SettingsHandler settings;
 	
 	/**
 	 * Default Constructor
@@ -81,11 +78,11 @@ public class ScormPackageHandler extends XMLDocument {
 	 * @throws JDOMException
 	 * @throws IOException
 	 */
-	public ScormPackageHandler(ISettingsHandler settings) throws JDOMException, IOException {
+	public ScormPackageHandler(SettingsHandler settings) throws JDOMException, IOException {
 		this.settings = settings;
 		// Load the Document
 		loadDocument(settings.getManifestFile());
-		_sequencerModel = new SequencerModel(new File(settings.getScoItemSequenceFilePath()),settings);
+		_sequencerModel = new SequencerModel(new File(settings.getScoItemSequenceFilePath()));
 		_scormCore = new SCORM12_Core(this);
 	}
 

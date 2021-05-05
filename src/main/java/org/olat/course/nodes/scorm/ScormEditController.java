@@ -43,7 +43,6 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
@@ -80,7 +79,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Felix Jost
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class ScormEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
+public class ScormEditController extends ActivateableTabbableDefaultController {
 
 	public static final String PANE_TAB_CPCONFIG = "pane.tab.cpconfig";
 	private static final String PANE_TAB_DELIVERY = "pane.tab.delivery";
@@ -244,8 +243,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
 				ScormAPIandDisplayController previewController = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(),
-						showMenu, null, cpRoot, null, course.getResourceableId().toString(), ScormConstants.SCORM_MODE_BROWSE,
-						ScormConstants.SCORM_MODE_NOCREDIT, true, null, true, fullWindow, false, true, null);				
+						showMenu, cpRoot, null, course.getResourceableId().toString(), ScormConstants.SCORM_MODE_BROWSE,
+						ScormConstants.SCORM_MODE_NOCREDIT, null, true, fullWindow, false, true, null);				
 				// configure some display options
 				boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
 				previewController.showNavButtons(showNavButtons);
@@ -374,7 +373,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 
 	@Override
 	protected void doDispose() {
-    //child controllers registered with listenTo() get disposed in BasicController
+		//
 	}
 
 	@Override

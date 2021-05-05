@@ -232,6 +232,15 @@ public class URLBuilder {
 		commandParameters(sb, new NameValuePair(Form.FORM_CSRF, csrfToken));
 		return sb;
 	}
+	
+	public StringOutput openXHRScormEvent(StringOutput sb, NameValuePair... commands) {
+		sb.append("o_XHRScormEvent('").append(uriPrefix);
+		encodeParams(sb, AJAXFlags.MODE_TOBGIFRAME);
+		sb.append("/'");
+		commandParameters(sb, commands);
+		commandParameters(sb, new NameValuePair(Form.FORM_CSRF, csrfToken));
+		return sb;
+	}
 
 	public StringOutput getXHRNoResponseEvent(StringOutput sb, String urlEnding, NameValuePair... commands) {
 		return openXHRNoResponseEvent(sb, urlEnding, commands).append(");");

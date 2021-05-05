@@ -54,7 +54,10 @@
 		<Logger name="org.olat.ldap" additivity="false" level="info">
             <AppenderRef ref="Console" />
         </Logger>
-		<Logger name="org.olat.ims.lti13" additivity="false" level="debug">
+		<Logger name="org.olat.ims.lti13" additivity="false" level="info">
+            <AppenderRef ref="Console" />
+        </Logger>
+		<Logger name="org.olat.modules.scorm" additivity="false" level="info">
             <AppenderRef ref="Console" />
         </Logger>
 		<AsyncRoot level="info">

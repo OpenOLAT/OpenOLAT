@@ -1724,6 +1724,37 @@ function o_XHRWikiEvent(link) {
 	return false;
 }
 
+function o_XHRScormEvent(targetUrl) {
+	var data = new Object();
+	if(arguments.length > 1) {
+		var argLength = arguments.length;
+		for(var i=1; i<argLength; i=i+2) {
+			if(argLength > i+1) {
+				data[arguments[i]] = arguments[i+1];
+			}
+		}
+	}
+
+	jQuery.ajax(targetUrl,{
+		type:'POST',
+		data: data,
+		cache: false,
+		dataType: 'json',
+		success: function(responseData, textStatus, jqXHR) {
+			try {
+				o_ainvoke(responseData);
+			} catch(e) {
+				if(window.console) console.log(e);
+			} finally {
+				o_afterserver();
+			}
+		},
+		error: o_onXHRError
+	})
+	
+	return false;
+}
+
 function o_XHREvent(targetUrl, dirtyCheck, push) {
 	if(dirtyCheck && isFlexiFormDirty()) {
 		// Copy function arguments and set the dirtyCheck to false for execution in callback.

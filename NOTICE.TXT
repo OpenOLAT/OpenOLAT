@@ -138,6 +138,7 @@ This product uses software based on the MIT License
 * iFrame Resizer (MIT License) [https://github.com/davidjbradshaw/iframe-resizer]
 * Dragula (MIT License) [https://github.com/bevacqua/dragula]
 * tabOverride (MIT License) [https://github.com/wjbryant/taboverride]
+* scorm-again (MIT License) [https://github.com/jcputney/scorm-again]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License
@@ -161,7 +162,6 @@ This product uses software based on the Lesser General Public License (LGPL)
 * Hibernate (GNU Lesser General Public License Version 2.1) [http://www.hibernate.org]
 * BeanShell (GNU LESSER GENERAL PUBLIC LICENSE) [http://www.beanshell.org]
 * Jmep (GNU Lesser Public License) [http://jmep.tigris.org]
-* gnu-regexp (GNU Lesser General Public License) [http://savannah.gnu.org/projects/gnu-regexp]
 * JAMWiki (GNU Lesser General Public License) [http://jamwiki.org/wiki/en]
 * XOM (GNU Lesser General Public License) [http://www.xom.nu]
 * TinyMCE WYSIWYG HTML editor (LGPL) [http://tinymce.moxiecode.com]
@@ -183,9 +183,7 @@ This product uses software based on the General Public License (GPL)
 
 -----------------------------------------------------------------------
 This product uses software based on the CDDL
-* Jersey (CDDL 1.1 and GPL 2 with CPE) [http://jersey.java.net]
 * jsr311-api (CDDL License) [http://jsr311.java.net]
-* Grizzly (CDDL) [http://grizzly.java.net]
 * jaxws (CDDL) [https://jax-ws.java.net]
 
 -----------------------------------------------------------------------
@@ -201,9 +199,6 @@ This product uses software based on specific License
 * cos (Jason Hunter License see src/main/webapp/WEB-INF/lib/licenses/cos.license.txt)
 * org.json (see src/main/webapp/WEB-INF/lib/licenses/json.license.txt) [http://json.org/java]
 * SAC (W3C Software License) [http://www.w3.org/TR/SAC]
-* SCORM API adaper by the ISN (International Relations and Security Network) at ETH Zurich [http://www.isn.ethz.ch/]
-  Author: Matthai Kurian <matthai.kurian@ethz.ch>
-  pfplms-scorm (see src/main/webapp/WEB-INF/lib/licenses/PfPLMS-API-adapter-core.license.txt)
 * xpp3 (see src/main/webapp/WEB-INF/lib/licenses/xpp3-license.txt) [http://www.extreme.indiana.edu/xgws/xsoap/xpp]
 * asm (see src/main/webapp/WEB-INF/lib/licenses/asm-license.txt) [http://asm.ow2.org]
 * JTA (see src/main/webapp/WEB-INF/lib/licenses/jta.licence.txt) [http://www.oracle.com/technetwork/java/javaee/jta]

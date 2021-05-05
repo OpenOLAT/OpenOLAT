@@ -35,7 +35,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.modules.scorm.contentpackaging.NoItemFoundException;
 import org.olat.modules.scorm.contentpackaging.ScormPackageHandler;
 
-public class SettingsHandlerImpl implements ISettingsHandler {
+public class SettingsHandler {
 	private final String storagePath;
 	private String filePath;
 	private final String username;
@@ -59,7 +59,7 @@ public class SettingsHandlerImpl implements ISettingsHandler {
 	 * @param lesson_mode
 	 * @param credit_mode
 	 */
-	public SettingsHandlerImpl(String repositoryPath, String repoId, String courseId, String storagePath, String username, String userid,
+	public SettingsHandler(String repositoryPath, String repoId, String courseId, String storagePath, String username, String userid,
 			String lesson_mode, String credit_mode, int controllerHashCode) {
 		if (repoId == null && courseId == null) throw new AssertException("repositoryId and courseId are null but at leaset one should be a valid id");
 		this.controllerHashCode = controllerHashCode;
@@ -96,13 +96,13 @@ public class SettingsHandlerImpl implements ISettingsHandler {
 				try {
 					pm.buildSettings();
 				} catch (NoItemFoundException e) {
-					throw new OLATRuntimeException(SettingsHandlerImpl.class, "Problem loading the reload-settings.xml file. No item found in scorm item sequence file!",e);
+					throw new OLATRuntimeException(SettingsHandler.class, "Problem loading the reload-settings.xml file. No item found in scorm item sequence file!",e);
 				}
 			}
 		} catch (JDOMException e) {
-			throw new OLATRuntimeException(SettingsHandlerImpl.class, "Problem loading the reload-settings.xml file.",e);
+			throw new OLATRuntimeException(SettingsHandler.class, "Problem loading the reload-settings.xml file.",e);
 		} catch (IOException e) {
-			throw new OLATRuntimeException(SettingsHandlerImpl.class, "Problem loading the reload-settings.xml file.",e);
+			throw new OLATRuntimeException(SettingsHandler.class, "Problem loading the reload-settings.xml file.",e);
 		}
 		return sequenceFile;
 	}

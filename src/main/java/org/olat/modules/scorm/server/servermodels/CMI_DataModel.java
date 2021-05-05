@@ -49,7 +49,6 @@ import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 
-import uk.ac.reload.jdom.XMLDocument;
 
 /**
  * Class to create a new sco CMI JDOM datamodel which will be

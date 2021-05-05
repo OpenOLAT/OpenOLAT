@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.modules.scorm.ISettingsHandler;
 import org.olat.modules.scorm.manager.ScormManager;
 import org.olat.modules.scorm.server.sequence.SequenceManager;
 import org.olat.modules.scorm.server.servermodels.SequencerModel;
@@ -69,7 +68,7 @@ public class LMSDataHandler {
 	 * @param theCourse an instance to a scorm manager
 	 * @param inputBean
 	 */
-	public LMSDataHandler(ScormManager theCourse, LMSDataFormBean inputBean, ISettingsHandler settings) {
+	public LMSDataHandler(ScormManager theCourse, LMSDataFormBean inputBean) {
 		_inputBean = inputBean;
 		this.theCourse = theCourse;
 	}
@@ -112,10 +111,12 @@ public class LMSDataHandler {
 
 			if (_inputBean.getDataAsMap() != null) {
 				cmiStrings = convertTo2dArray(_inputBean.getDataAsMap());
+				// save the data to XML
 				updateClientModel(itemId, cmiStrings);
 			} else {
 				// get the cmi data string into correct format
 				cmiStrings = formatCmiDataResults(_inputBean.getData());
+				// save the data to XML
 				updateClientModel(itemId, cmiStrings);
 			}
 			// cmiStrings = formatCmiDataResults("");
@@ -368,7 +369,9 @@ public class LMSDataHandler {
 	}
 
 	/**
-	 * Wrapper method from SequenceManager
+	 * Wrapper method from SequenceManager.<br>
+	 * Will write at the end the SCO data in the XML itemId.xml<br>
+	 * ScormManager>SequenceManager>ItemSequence>ScoDocument>save
 	 * 
 	 * @param itemId
 	 * @param cmiStrings
@@ -382,21 +385,6 @@ public class LMSDataHandler {
 	}
 
 	protected void generatePrereqBean() {
-	// not needed
-	// HttpSession session = ScormLaunch.getHttpSession();
-	// StatusBean sb = new StatusBean(getPreReqStrings());
-	// System.out.println("from generatePrereqBean()");
-	// String[][] strArr = getPreReqStrings();
-	// if(strArr != null){
-	// for(int i=0;i<strArr.length;i++){
-	// System.out.println("");
-	// for(int j=0;j<strArr[i].length;j++){
-	// System.out.print(strArr[i][j] + " : ");
-	// }
-	//	
-	// }
-	// }
-	// System.out.println("from generatePrereqBean() end");
-	// session.setAttribute("prereqBean", sb);
+		// 
 	}
 }

@@ -1,28 +1,50 @@
 <div class="o_scorm">
-	## on Mozilla the return value from the scorm RTE engine gets written into this dvi element
-	<div id="apiReturnHandler" style="position:absolute; top: 0; left: -1000px; visibility:hidden;"></div>
-	## load SCORM API functions and XmlRequestObject stuff
 	<script>
-		var olatCommandUri = "$scormCallbackUri";
-		var frameId = "$frameId";
-		var blancURL = "$r.staticLink("blanc.html")";
-		var lastRequest = new Date().getTime();
-		## method to send a ping to the framework to draw itself after finish
-		function pingAfterFinish() { 
-			window.suppressOlatOnUnloadOnce = true;
-			try {
-				$r.javaScriptCommand('ping');
-			} catch(e) {
-				if(window.console) console.log(e);
+		var settings = {
+			autocommit: true,
+			autocommitSeconds: 60,
+			asyncCommit: true,
+			logLevel: 4,
+			dataCommitFormat: "flattened",
+			lmsCommitUrl: "${scormAgainCallbackUri}/${scoId}.json"	
+		};
+		window.API = new Scorm12API(settings);
+		window.API.currentScoId = "${scoId}";
+		#if($r.isNotNull($startCmis))
+		window.API.loadFromFlattenedJSON($startCmis);
+		#end
+		window.API.on("LMSInitialize", function() {
+			$r.backgroundCommand("LMSInitialize");
+		});
+		window.API.on("LMSFinish", function() {
+			var flatCmis = window.API.renderCommitCMI(true);
+			var flatCmisString = JSON.stringify(flatCmis);
+			$r.openScormCommand("LMSFinish"), 'cmis', flatCmisString);
+		});
+		
+		function o_unloadSCO(command, currentScoId, nextScoId) {
+			var iframeDoc = document.getElementById("${frameId}").contentDocument;
+			iframeDoc.location.replace("about:blank");
+			iframeDoc = null;
+			
+			if((window.API.currentState == 0 || window.API.currentState == 2) && window.API.currentScoId === currentScoId) {
+				// SCO was not initialized or is already finished, go to the next step now
+				var flatCmis = window.API.renderCommitCMI(true);
+				var flatCmisString = JSON.stringify(flatCmis);
+				$r.openScormCommand("LMSTimeout"), 'command', command, 'ignore-validating-error', 'oo-ignore-validating-error', 'scoId', '${scoId}', 'cmis', flatCmisString);
+			} else {
+				setTimeout(function() {
+					if(window.API.currentState == 1 && window.API.currentScoId === currentScoId) {
+						// SCO was not finished, go to the next step now
+						var flatCmis = window.API.renderCommitCMI(true);
+						var flatCmisString = JSON.stringify(flatCmis);
+						console.log("LMSTimeout 2");
+						$r.openJavaScriptCommand("LMSTimeout"), 'command', command, 'ignore-validating-error', 'oo-ignore-validating-errors', 'scoId', '${scoId}', 'cmis', flatCmisString);
+					}
+				}, 1900);
 			}
 		}
 	</script>
-	<script>
-		var jsHttpRequest = new scormApiRequest(olatCommandUri);
-		//todo:gs:c On some sco's the first attempt to call the RTE fails, sending a dummy call is a workaroud for this
-		passApiCall("initcall","empty","empty");
-	</script>
-
 	#if($showNavButtons)
 		$r.render("scoTopButtons")
 	#end

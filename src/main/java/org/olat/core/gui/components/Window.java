@@ -159,6 +159,12 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	/** The parameter value for the case where the event doesn't need to trigger a response */
 	public static final String NO_RESPONSE_VALUE_MARKER = "oo-no-response";
 	
+	/** The parameter name for the case where the event doesn't need to trigger a response */
+	public static final String IGNORE_VALIDATING_ERROR_PARAMETER_MARKER = "ignore-validating-error";
+
+	/** The parameter value for the case where the event doesn't need to trigger a response */
+	public static final String IGNORE_VALIDATING_ERROR_RESPONSE_VALUE_MARKER = "oo-ignore-validating-error";
+	
 	private String uriPrefix;
 	private final String csrfToken;
 	private ComponentCollection contentPane;
@@ -410,6 +416,9 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							String cTimest = target.getTimestamp();
 							String urlCTimest = ureq.getComponentTimestamp();
 							validForDispatching = cTimest.equals(urlCTimest);
+							if(!validForDispatching) {
+								System.out.println();
+							}
 							if (!validForDispatching && isDebugLog) { 
 								log.debug("Invalid timestamp: ureq.compid:"+ureq.getComponentID()+" ureq.win-ts:"+ureq.getTimestampID()+" ureq.comp-ts:"+ureq.getComponentTimestamp() + " target.timestamp:" + cTimest + " target=" + target);
 							}
@@ -419,8 +428,10 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							if (isDebugLog) log.debug("no ajax dispatch: component not found (target=null)");
 							validForDispatching = false;
 							//check no response call
-							String noResponseMarker = ureq.getParameter("no-response");
-							if("oo-no-response".equals(noResponseMarker)) {
+							String noResponseMarker = ureq.getParameter(NO_RESPONSE_PARAMETER_MARKER);
+							String ignoreValidatingMarker = ureq.getParameter(IGNORE_VALIDATING_ERROR_PARAMETER_MARKER);
+							if(NO_RESPONSE_VALUE_MARKER.equals(noResponseMarker)
+									|| IGNORE_VALIDATING_ERROR_RESPONSE_VALUE_MARKER.equals(ignoreValidatingMarker)) {
 								return;
 							}
 						}

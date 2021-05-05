@@ -110,8 +110,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, File fileRoot) {
 		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, null);
-		
-		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID		
 	}
 	
 	/**
@@ -154,6 +152,8 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	public IFrameDisplayController(final UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String frameId,
 			OLATResourceable contextResourceable, DeliveryOptions options, boolean persistMapper, boolean randomizeMapper) {
 		super(ureq, wControl);
+
+		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID		
 		
 		//register this object for textMarking on/off events
 		if (contextResourceable != null) {

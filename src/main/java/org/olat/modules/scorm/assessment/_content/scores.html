@@ -1,6 +1,4 @@
-<p>
-	$r.render("summary")
-	#if($r.available("resetButton"))
-		$r.render("resetButton")
-	#end
-</p>
+$r.render("summary")
+#if($r.available("resetButton"))
+	<div class="o_button_group">$r.render("resetButton")</div>
+#end
