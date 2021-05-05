@@ -104,7 +104,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		  .append(" ident.status as ident_Status,")
 		  .append(" ident.inactivationDate as ident_iDate,")
 		  .append(" ident.reactivationDate as ident_rDate,")
-		  .append(" ident.expirationDate as ident_eDate,");
+		  .append(" ident.expirationDate as ident_eDate,")
+		  .append(" ident.deletionEmailDate as ident_deDate,");
 		writeUserProperties("user", sb, userPropertyHandlers);
 		sb.append(" user.key as ident_user_id")
 		  .append(" from ").append(IdentityImpl.class.getCanonicalName()).append(" as ident ")
@@ -130,6 +131,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			Date inactivationDate = (Date)rawObject[pos++];
 			Date reactivationDate = (Date)rawObject[pos++];
 			Date expirationDate = (Date)rawObject[pos++];
+			Date deletionEmailDate = (Date)rawObject[pos++];
 
 			String[] userProperties = new String[numOfProperties];
 			for(int i=0; i<numOfProperties; i++) {
@@ -137,7 +139,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			}
 
 			rows.add(new IdentityPropertiesRow(identityKey, creationDate, lastLogin, status,
-					inactivationDate, reactivationDate, expirationDate,
+					inactivationDate, reactivationDate, expirationDate, deletionEmailDate,
 					userPropertyHandlers, userProperties, locale));
 		}
 		return rows;

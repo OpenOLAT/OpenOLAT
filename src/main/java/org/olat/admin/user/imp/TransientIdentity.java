@@ -152,6 +152,11 @@ public class TransientIdentity implements Identity, User {
 	}
 
 	@Override
+	public Date getDeletionEmailDate() {
+		return null;
+	}
+
+	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return super.equals(persistable);
 	}

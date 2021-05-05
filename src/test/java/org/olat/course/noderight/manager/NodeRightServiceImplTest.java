@@ -784,6 +784,11 @@ public class NodeRightServiceImplTest {
 			}
 
 			@Override
+			public Date getDeletionEmailDate() {
+				return null;
+			}
+
+			@Override
 			public boolean equalsByPersistableKey(Persistable persistable) {
 				return false;
 			}
