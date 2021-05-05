@@ -2040,7 +2040,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			if (emptyPrimaryActionIconCSS != null) {
 				emptyTablePrimaryActionButton.setIconLeftCSS("o_icon o_icon-fw " + emptyPrimaryActionIconCSS);
 			}
-			emptyTablePrimaryActionButton.setAriaLabel(translator.translate(emptyPrimaryActionKey));
+			emptyTablePrimaryActionButton.setAriaLabel(emptyPrimaryActionKey);
 			components.put("rEmtpyTablePrimaryActionButton", emptyTablePrimaryActionButton);			
 			if(getRootForm() != null) {
 				rootFormAvailable(emptyTablePrimaryActionButton);

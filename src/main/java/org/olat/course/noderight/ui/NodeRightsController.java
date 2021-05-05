@@ -286,12 +286,12 @@ public class NodeRightsController extends FormBasicController {
 			}
 			row.setName(name);
 
-			DateChooser startEl = uifactory.addDateChooser(EL_NAME_START + counter++, grant.getStart(), wrapper.getContainer());
+			DateChooser startEl = uifactory.addDateChooser(EL_NAME_START + counter++, null, grant.getStart(), wrapper.getContainer());
 			startEl.setDateChooserTimeEnabled(true);
 			startEl.addActionListener(FormEvent.ONCHANGE);
 			startEl.setUserObject(row);
 			row.setStartEl(startEl);
-			DateChooser endEl = uifactory.addDateChooser(EL_NAME_END + counter++, grant.getEnd(), wrapper.getContainer());
+			DateChooser endEl = uifactory.addDateChooser(EL_NAME_END + counter++, null, grant.getEnd(), wrapper.getContainer());
 			endEl.setDateChooserTimeEnabled(true);
 			endEl.addActionListener(FormEvent.ONCHANGE);
 			endEl.setUserObject(row);

@@ -532,7 +532,6 @@ class ImportStep00 extends BasicStep {
 					.map(d -> d.getText(getLocale()))
 					.collect(Collectors.toList());
 			textContainer.contextPut("passwordRules", passwordRules);
-			textContainer.contextPut("passwordIntro", translate("form.password.validation.rules", new String[] { }));
 			
 			textAreaElement = uifactory.addTextAreaElement("importform", "form.importdata", -1, 10, 100, false, false, true, "", formLayout);
 			textAreaElement.setMandatory(true);
