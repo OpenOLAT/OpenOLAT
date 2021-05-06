@@ -30,6 +30,7 @@ import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -55,7 +56,8 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TitleHandler implements EvaluationFormElementHandler, PageElementStore<TitleElement>, SimpleAddPageElementHandler, EvaluationFormReportHandler {
+public class TitleHandler implements EvaluationFormElementHandler, PageElementStore<TitleElement>,
+		SimpleAddPageElementHandler, CloneElementHandler, EvaluationFormReportHandler {
 
 	private static final AtomicInteger idGenerator = new AtomicInteger();
 	
@@ -96,6 +98,18 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 		part.setId(UUID.randomUUID().toString());
 		part.setContent(content);
 		return part;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof Title) {
+			Title title = (Title)element;
+			Title clone = new Title();
+			clone.setId(UUID.randomUUID().toString());
+			clone.setContent(title.getContent());
+			return clone;
+		}
+		return null;
 	}
 
 	@Override

@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementRenderingHints;
@@ -53,7 +54,8 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TableHandler implements EvaluationFormElementHandler, PageElementStore<TableElement>, SimpleAddPageElementHandler, EvaluationFormReportHandler {
+public class TableHandler implements EvaluationFormElementHandler, PageElementStore<TableElement>,
+		SimpleAddPageElementHandler, CloneElementHandler, EvaluationFormReportHandler {
 
 	@Override
 	public String getType() {
@@ -103,6 +105,19 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 		Table table = new Table();
 		table.setId(UUID.randomUUID().toString());
 		return table;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof Table) {
+			Table table = (Table)element;
+			Table clone = new Table();
+			clone.setId(UUID.randomUUID().toString());
+			clone.setContent(table.getContent());
+			clone.setLayoutOptions(table.getLayoutOptions());
+			return clone;
+		}
+		return null;
 	}
 
 	@Override

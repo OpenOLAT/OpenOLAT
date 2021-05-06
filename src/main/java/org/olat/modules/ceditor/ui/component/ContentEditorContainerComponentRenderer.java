@@ -98,6 +98,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		
 		renderClose(sb, cmp, containerUbu, translator);
 		renderDelete(sb, cmp, containerUbu, translator);
+		renderDuplicate(sb, cmp, containerUbu, translator);
 		renderContainerColumnLinks(sb, cmp, containerUbu, translator);
 		renderNameLink(sb, cmp, containerUbu, translator);
 		renderRuleLink(sb, cmp, containerUbu, translator);

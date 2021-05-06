@@ -17,20 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.ceditor;
+package org.olat.modules.ceditor.ui.event;
+
+import org.olat.core.gui.control.Event;
+import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 
 /**
  * 
- * Initial date: 14 déc. 2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 03.05.2021<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface PageEditorSecurityCallback {
+public class CloneElementEvent extends Event {
+
+	private static final long serialVersionUID = -713217668951785012L;
 	
-	public boolean canCloneElement();
+	private final ContentEditorFragment component;
 	
-	public boolean canDeleteElement();
+	public CloneElementEvent(ContentEditorFragment component) {
+		super("ce-clone-element");
+		this.component = component;
+	}
 	
-	public boolean canMoveUpAndDown();
+	public ContentEditorFragment getComponent() {
+		return component;
+	}
 
 }

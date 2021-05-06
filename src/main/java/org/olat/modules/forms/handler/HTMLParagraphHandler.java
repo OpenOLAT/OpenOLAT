@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -56,7 +57,7 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageElementStore<HTMLElement>, SimpleAddPageElementHandler, EvaluationFormReportHandler {
+public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageElementStore<HTMLElement>, SimpleAddPageElementHandler, CloneElementHandler, EvaluationFormReportHandler {
 
 	@Override
 	public String getType() {
@@ -95,6 +96,19 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 		part.setId(UUID.randomUUID().toString());
 		part.setContent(content);
 		return part;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof HTMLParagraph) {
+			HTMLParagraph htmlParagraph = (HTMLParagraph)element;
+			HTMLParagraph clone = new HTMLParagraph();
+			clone.setId(UUID.randomUUID().toString());
+			clone.setContent(htmlParagraph.getContent());
+			clone.setLayoutOptions(htmlParagraph.getLayoutOptions());
+			return clone;
+		}
+		return null;
 	}
 
 	@Override

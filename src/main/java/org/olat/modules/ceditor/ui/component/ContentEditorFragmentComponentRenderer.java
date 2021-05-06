@@ -97,6 +97,7 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 
 		renderClose(sb, cmp, fragmentUbu, translator);
 		renderDelete(sb, cmp, fragmentUbu, translator);
+		renderDuplicate(sb, cmp, fragmentUbu, translator);
 		
 		List<Link> additionalTools = cmp.getAdditionalTools();
 		if(additionalTools != null && !additionalTools.isEmpty()) {

@@ -38,6 +38,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.ui.PageElementTarget;
+import org.olat.modules.ceditor.ui.event.CloneElementEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
 import org.olat.modules.ceditor.ui.event.EditElementEvent;
@@ -61,6 +62,7 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	
 	private boolean editMode = false;
 	private boolean moveable = false;
+	private boolean cloneable = false;
 	private boolean deleteable = false;
 	private Controller editorPart;
 	private final PageElement pageElement;
@@ -81,6 +83,16 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 	public void setEditMode(boolean editMode) {
 		this.editMode = editMode;
 		doEditFragment(null, editMode);
+	}
+
+	@Override
+	public boolean isCloneable() {
+		return cloneable;
+	}
+
+	@Override
+	public void setCloneable(boolean cloneable) {
+		this.cloneable = cloneable;
 	}
 
 	@Override
@@ -149,6 +161,9 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 				case "save_element":
 					doCloseEditFragment();
 					fireEvent(ureq, new SaveElementEvent(this));
+					break;
+				case "clone_element":
+					fireEvent(ureq, new CloneElementEvent(this));
 					break;
 				case "delete_element":
 					fireEvent(ureq, new DeleteElementEvent(this));

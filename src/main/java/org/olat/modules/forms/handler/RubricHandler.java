@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.handler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -26,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementRenderingHints;
@@ -36,6 +39,7 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
+import org.olat.modules.forms.model.xml.StepLabel;
 import org.olat.modules.forms.ui.RubricController;
 import org.olat.modules.forms.ui.RubricEditorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
@@ -49,7 +53,7 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
+public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, CloneElementHandler {
 	
 	private final boolean restrictedEdit;
 	private final boolean restrictedEditWheight;
@@ -108,6 +112,54 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 		slider.setWeight(1);
 		rubric.getSliders().add(slider);
 		return rubric;
+	}
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof Rubric) {
+			Rubric rubric = (Rubric)element;
+			Rubric clone = new Rubric();
+			clone.setId(UUID.randomUUID().toString());
+			clone.setMandatory(rubric.isMandatory());
+			clone.setEnd(rubric.getEnd());
+			clone.setLowerBoundInsufficient(rubric.getLowerBoundInsufficient());
+			clone.setLowerBoundNeutral(rubric.getLowerBoundNeutral());
+			clone.setLowerBoundSufficient(rubric.getLowerBoundSufficient());
+			clone.setName(rubric.getName());
+			clone.setNameDisplays(new ArrayList<>(rubric.getNameDisplays()));
+			clone.setNoResponseEnabled(rubric.isNoResponseEnabled());
+			clone.setScaleType(rubric.getScaleType());
+			clone.setSliderType(rubric.getSliderType());
+			clone.setStart(rubric.getStart());
+			clone.setStartGoodRating(rubric.isStartGoodRating());
+			clone.setSteps(rubric.getSteps());
+			clone.setUpperBoundInsufficient(rubric.getUpperBoundInsufficient());
+			clone.setUpperBoundNeutral(rubric.getUpperBoundNeutral());
+			clone.setUpperBoundSufficient(rubric.getUpperBoundSufficient());
+			if (rubric.getStepLabels() != null) {
+				List<StepLabel> clonedLabels = new ArrayList<>(rubric.getStepLabels().size());
+				clone.setStepLabels(clonedLabels);
+				for (StepLabel stepLabel : rubric.getStepLabels()) {
+					StepLabel clonedLabel = new StepLabel();
+					clonedLabel.setId(UUID.randomUUID().toString());
+					clonedLabel.setLabel(stepLabel.getLabel());
+					clonedLabels.add(clonedLabel);
+				}
+			}
+			if (rubric.getSliders() != null) {
+				List<Slider> clonedSliders = new ArrayList<>(rubric.getSliders().size());
+				clone.setSliders(clonedSliders);
+				for (Slider slider : rubric.getSliders()) {
+					Slider clonedSlider = new Slider();
+					clonedSlider.setId(UUID.randomUUID().toString());
+					clonedSlider.setEndLabel(slider.getEndLabel());
+					clonedSlider.setStartLabel(slider.getStartLabel());
+					clonedSlider.setWeight(slider.getWeight());
+					clonedSliders.add(clonedSlider);
+				}
+			}
+			return clone;
+		}
+		return null;
 	}
 
 	@Override

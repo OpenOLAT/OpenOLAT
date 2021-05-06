@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.handler;
 
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -26,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementRenderingHints;
@@ -46,7 +48,7 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SessionInformationsHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
+public class SessionInformationsHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, CloneElementHandler {
 	
 	private final boolean restrictedEdit;
 	
@@ -106,6 +108,21 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 		informations.setId(UUID.randomUUID().toString());
 		informations.setObligation(Obligation.optional);
 		return informations;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof SessionInformations) {
+			SessionInformations sessionInformations = (SessionInformations)element;
+			SessionInformations clone = new SessionInformations();
+			clone.setId(UUID.randomUUID().toString());
+			if (sessionInformations.getInformationTypes() != null) {
+				clone.setInformationTypes(new ArrayList<>(sessionInformations.getInformationTypes()));
+			}
+			clone.setObligation(sessionInformations.getObligation());
+			return clone;
+		}
+		return null;
 	}
 
 }

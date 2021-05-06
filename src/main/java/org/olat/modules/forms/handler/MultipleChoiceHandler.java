@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementRenderingHints;
@@ -50,7 +51,7 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MultipleChoiceHandler  implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
+public class MultipleChoiceHandler  implements EvaluationFormElementHandler, SimpleAddPageElementHandler, CloneElementHandler {
 	
 	private final boolean restrictedEdit;
 	
@@ -110,6 +111,28 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 		choices.addNotPresent(choice);
 		multipleChoice.setChoices(choices);
 		return multipleChoice;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof MultipleChoice) {
+			MultipleChoice multipleChoice = (MultipleChoice)element;
+			MultipleChoice clone = new MultipleChoice();
+			clone.setId(UUID.randomUUID().toString());
+			clone.setMandatory(multipleChoice.isMandatory());
+			clone.setName(multipleChoice.getName());
+			clone.setPresentation(multipleChoice.getPresentation());
+			clone.setWithOthers(multipleChoice.isWithOthers());
+			clone.setChoices(new Choices());
+			for (Choice choice : multipleChoice.getChoices().asList()) {
+				Choice clonedChoice = new Choice();
+				clonedChoice.setId(UUID.randomUUID().toString());
+				clonedChoice.setValue(choice.getValue());
+				clone.getChoices().addNotPresent(clonedChoice);
+			}
+			return clone;
+		}
+		return null;
 	}
 
 	@Override

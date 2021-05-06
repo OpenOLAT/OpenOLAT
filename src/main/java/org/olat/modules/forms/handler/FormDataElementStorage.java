@@ -67,4 +67,16 @@ public class FormDataElementStorage implements DataStorage {
 		metadata.setStoragePath("");
 		return metadata;
 	}
+
+	@Override
+	public StoredData copy(StoredData original, StoredData copy) throws IOException {
+		File imageFile = getFile(original);
+		String cloneFileName = FileUtils.rename(imageFile);
+		File cloneFile = new File(imageFile.getParent(), cloneFileName);
+		
+		Files.copy(imageFile.toPath(), cloneFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		copy.setRootFilename(cloneFile.getName());
+		copy.setStoragePath(original.getStoragePath());
+		return copy;
+	}
 }

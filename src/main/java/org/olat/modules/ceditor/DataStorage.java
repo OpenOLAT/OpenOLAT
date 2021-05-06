@@ -43,5 +43,16 @@ public interface DataStorage {
 	 * @return 
 	 */
 	public StoredData save(String filename, File file, StoredData metadata) throws IOException;
+	
+	/**
+	 * The method will copy the file from the origin to a new file in the same
+	 * folder with a unique name.
+	 * 
+	 * @param original
+	 * @param copy 
+	 * @return the copy StoredDate with enriched data
+	 * @throws IOException
+	 */
+	public StoredData copy(StoredData original, StoredData copy) throws IOException;
 
 }

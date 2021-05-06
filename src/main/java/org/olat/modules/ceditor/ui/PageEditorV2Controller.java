@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -40,6 +41,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.component.ComponentTraverser;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageEditorProvider;
 import org.olat.modules.ceditor.PageEditorSecurityCallback;
@@ -47,6 +49,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.ui.component.ContentEditorComponent;
 import org.olat.modules.ceditor.ui.component.ContentEditorContainerComponent;
@@ -54,6 +57,7 @@ import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 import org.olat.modules.ceditor.ui.component.ContentEditorFragmentComponent;
 import org.olat.modules.ceditor.ui.event.AddElementEvent;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.ceditor.ui.event.CloneElementEvent;
 import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
@@ -67,6 +71,7 @@ import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
 import org.olat.modules.ceditor.ui.event.SaveElementEvent;
+import org.olat.modules.forms.model.xml.Container;
 
 /**
  * 
@@ -91,6 +96,7 @@ public class PageEditorV2Controller extends BasicController {
 	private final PageEditorProvider provider;
 	private final PageEditorSecurityCallback secCallback;
 	private Map<String,PageElementHandler> handlerMap = new HashMap<>();
+	private Map<String,CloneElementHandler> cloneHandlerMap = new HashMap<>();
 	
 	public PageEditorV2Controller(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
 			PageEditorSecurityCallback secCallback, Translator fallbackTranslator) {
@@ -100,8 +106,11 @@ public class PageEditorV2Controller extends BasicController {
 
 		for(PageElementHandler handler:provider.getAvailableHandlers()) {
 			handlerMap.put(handler.getType(), handler);
+			if (handler instanceof CloneElementHandler) {
+				cloneHandlerMap.put(handler.getType(), (CloneElementHandler)handler);
+			}
 		}
-
+		
 		mainVC = createVelocityContainer("page_editor");
 		
 		editorCmp = new ContentEditorComponent("page_editor_v2");
@@ -230,6 +239,8 @@ public class PageEditorV2Controller extends BasicController {
 		} else if(event instanceof OpenAddElementEvent) {
 			OpenAddElementEvent aee = (OpenAddElementEvent)event;
 			openAddElementCallout(ureq, aee.getDispatchId(), aee.getComponent(), aee.getTarget(), aee.getColumn());
+		} else if(event instanceof CloneElementEvent) {
+			doCloneElement(ureq, ((CloneElementEvent)event).getComponent());
 		} else if(event instanceof DeleteElementEvent) {
 			doDeleteElement(ureq, ((DeleteElementEvent)event).getComponent(), true);
 		} else if(event instanceof MoveUpElementEvent) {
@@ -436,6 +447,56 @@ public class PageEditorV2Controller extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
+	private void doCloneElement(UserRequest ureq, ContentEditorFragment fragment) {
+		ContentEditorFragment clonedFragment = doCloneAndAddElement(ureq, fragment);
+		
+		doCloneContainerElements(ureq, clonedFragment, fragment.getElement());
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	private ContentEditorFragment doCloneAndAddElement(UserRequest ureq, ContentEditorFragment fragment) {
+		PageElement element = fragment.getElement();
+		
+		CloneElementHandler cloneHandler = cloneHandlerMap.get(element.getType());
+		if (cloneHandler == null) {
+			logError("Cannot find a cloneable handler of type: " + element.getType(), null);
+			return null;
+		}
+		
+		PageElement clonedElement = cloneHandler.clonePageElement(element);
+		ContentEditorFragment clonedFragment = null;
+		if (clonedElement != null) {
+			clonedFragment = doAddPageElement(ureq, clonedElement, fragment, PageElementTarget.below, 0);
+		}
+		return clonedFragment;
+	}
+
+	private void doCloneContainerElements(UserRequest ureq, ContentEditorFragment clonedFragment, PageElement originalElement) {
+		if (clonedFragment != null && originalElement instanceof Container) {
+			Map<String, ? extends PageElement> idToElement = provider.getElements().stream()
+					.collect(Collectors.toMap(PageElement::getId, Function.identity()));
+			List<ContainerColumn> columns = ((Container)originalElement).getContainerSettings().getColumns();
+			for (int columnIndex = 0; columnIndex < columns.size(); columnIndex++) {
+				for (String elementId : columns.get(columnIndex).getElementIds()) {
+					PageElement innerElementToClone = idToElement.get(elementId);
+					if (innerElementToClone != null) {
+						CloneElementHandler innerCloneHandler = cloneHandlerMap.get(innerElementToClone.getType());
+						if (innerCloneHandler == null) {
+							logError("Cannot find a cloneable handler of type: " + innerElementToClone.getType(), null);
+							continue;
+						}
+						
+						PageElement innerClonedElement = innerCloneHandler.clonePageElement(innerElementToClone);
+						if (innerClonedElement != null) {
+							ContentEditorFragment innerClonedFragment = doAddPageElementInContainer(ureq, clonedFragment, innerClonedElement, columnIndex);
+							doCloneContainerElements(ureq, innerClonedFragment, innerElementToClone);
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	private void doDeleteElement(UserRequest ureq, ContentEditorFragment fragment, boolean confirm) {
 		List<Component> ancestors = ComponentHelper.findAncestorsOrSelfByID(editorCmp, fragment);
 		int index = ancestors.indexOf(fragment);
@@ -617,6 +678,7 @@ public class PageEditorV2Controller extends BasicController {
 		} else {
 			cmp = new ContentEditorFragmentComponent(cmpId, element, editorPart);
 		}
+		cmp.setCloneable(secCallback.canCloneElement() && cloneHandlerMap.containsKey(element.getType()));
 		cmp.setDeleteable(secCallback.canDeleteElement());
 		cmp.setMoveable(secCallback.canMoveUpAndDown());
 		cmp.addListener(this);

@@ -21,16 +21,12 @@ package org.olat.modules.ceditor;
 
 /**
  * 
- * Initial date: 14 déc. 2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 2 May 2021<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface PageEditorSecurityCallback {
-	
-	public boolean canCloneElement();
-	
-	public boolean canDeleteElement();
-	
-	public boolean canMoveUpAndDown();
+public interface CloneElementHandler {
+
+	public PageElement clonePageElement(PageElement element);
 
 }

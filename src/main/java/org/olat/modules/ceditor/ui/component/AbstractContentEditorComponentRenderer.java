@@ -107,4 +107,16 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 			  .append("'><i class='o_icon o_icon-sm o_icon_delete_item'> </i> <span>").append(translator.translate("delete")).append("</span></a>");
 		}
 	}
+	
+	protected void renderDuplicate(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
+		if(cmp.isCloneable()) {
+			sb.append("<a id='o_ccclone_").append(cmp.getDispatchID()).append("' ")
+				  .append("href='javascript:;' onclick=\"");// add elements directly in container
+			ubu.buildXHREvent(sb, "", false, true,
+					new NameValuePair(VelocityContainer.COMMAND_ID, "clone_element"),
+					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
+			sb.append(" return false;\" class='o_sel_clone_element' title='").append(translator.translate("duplicate"))
+			  .append("'><i class='o_icon o_icon-sm o_icon_copy'> </i> <span>").append(translator.translate("duplicate")).append("</span></a>");
+		}
+	}
 }

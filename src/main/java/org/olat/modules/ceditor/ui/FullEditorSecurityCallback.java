@@ -30,7 +30,12 @@ import org.olat.modules.ceditor.PageEditorSecurityCallback;
  *
  */
 public class FullEditorSecurityCallback implements PageEditorSecurityCallback {
-
+	
+	@Override
+	public boolean canCloneElement() {
+		return true;
+	}
+	
 	@Override
 	public boolean canDeleteElement() {
 		return true;

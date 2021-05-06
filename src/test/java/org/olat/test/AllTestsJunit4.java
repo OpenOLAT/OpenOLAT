@@ -552,6 +552,7 @@ import org.junit.runners.Suite;
 	org.olat.login.validation.PasswordValidationRuleFactoryTest.class,
 	org.olat.modules.assessment.model.OverridableImplTest.class,
 	org.olat.modules.card2brain.manager.Card2BrainManagerImplTest.class,
+	org.olat.modules.ceditor.CloneElementHandlerTest.class,
 	org.olat.modules.edubase.manager.EdubaseManagerImplTest.class,
 	org.olat.modules.edusharing.manager.EdusharingHtmlServiceImplTest.class,
 	org.olat.modules.edusharing.manager.EdusharingSecurityImplTest.class,

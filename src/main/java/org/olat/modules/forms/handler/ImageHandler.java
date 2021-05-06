@@ -19,11 +19,17 @@
  */
 package org.olat.modules.forms.handler;
 
+import java.io.IOException;
+import java.util.UUID;
+
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.Tracing;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageElement;
@@ -33,11 +39,14 @@ import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.ImageElement;
+import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.ceditor.ui.ImageEditorController;
 import org.olat.modules.ceditor.ui.ImageRunController;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.model.xml.FileStoredData;
+import org.olat.modules.forms.model.xml.Image;
 import org.olat.modules.forms.ui.ImageUploadController;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
@@ -53,7 +62,10 @@ import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ImageHandler implements EvaluationFormElementHandler, PageElementStore<ImageElement>, InteractiveAddPageElementHandler, EvaluationFormReportHandler {
+public class ImageHandler implements EvaluationFormElementHandler, PageElementStore<ImageElement>,
+		InteractiveAddPageElementHandler, CloneElementHandler, EvaluationFormReportHandler {
+
+	private static final Logger log = Tracing.createLoggerFor(ImageHandler.class);
 	
 	private final DataStorage dataStorage;
 	
@@ -107,6 +119,26 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new ImageUploadController(ureq, wControl, this, dataStorage);
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof Image) {
+			Image image = (Image)element;
+			Image clone = new Image();
+			clone.setId(UUID.randomUUID().toString());
+			clone.setContent(image.getContent());
+			clone.setLayoutOptions(image.getLayoutOptions());
+			try {
+				StoredData clonedStoreData = new FileStoredData();
+				clonedStoreData = dataStorage.copy(image.getStoredData(), clonedStoreData);
+				clone.setStoredData(clonedStoreData);
+				return clone;
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+		return null;
 	}
 
 	@Override

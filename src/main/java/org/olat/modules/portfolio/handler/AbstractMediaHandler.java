@@ -243,5 +243,10 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 		public StoredData save(String filename, File file, StoredData metadata) throws IOException {
 			throw new OLATRuntimeException("Not implemented");
 		}
+
+		@Override
+		public StoredData copy(StoredData original, StoredData copy) throws IOException {
+			throw new OLATRuntimeException("Not implemented");
+		}
 	}
 }

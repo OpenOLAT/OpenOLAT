@@ -28,6 +28,8 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
+import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementRenderingHints;
@@ -35,6 +37,7 @@ import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.ContainerElement;
+import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.ContainerEditorController;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.forms.SessionFilter;
@@ -52,7 +55,8 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ContainerHandler implements EvaluationFormElementHandler, PageElementStore<ContainerElement>, SimpleAddPageElementHandler, EvaluationFormReportHandler {
+public class ContainerHandler implements EvaluationFormElementHandler, PageElementStore<ContainerElement>,
+		SimpleAddPageElementHandler, CloneElementHandler, EvaluationFormReportHandler {
 
 	private final Controller ruleLinkController;
 
@@ -95,6 +99,22 @@ public class ContainerHandler implements EvaluationFormElementHandler, PageEleme
 		Container container = new Container();
 		container.setId(UUID.randomUUID().toString());
 		return container;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof Container) {
+			Container container = (Container)element;
+			Container clone = new Container();
+			clone.setId(UUID.randomUUID().toString());
+			ContainerSettings containerSettings = container.getContainerSettings();
+			// We do not clone the elements of the container. They are cloned in the controller.
+			containerSettings.getColumns().forEach(column -> column.getElementIds().clear());
+			String settingsXml = ContentEditorXStream.toXml(containerSettings);
+			clone.setLayoutOptions(settingsXml);
+			return clone;
+		}
+		return null;
 	}
 
 	@Override

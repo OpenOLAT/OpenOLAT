@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -47,7 +48,7 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TextInputHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
+public class TextInputHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, CloneElementHandler {
 	
 	private final boolean restrictedEdit;
 	
@@ -97,6 +98,24 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 		part.setSingleRow(false);
 		part.setRows(12);
 		return part;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof TextInput) {
+			TextInput textInput = (TextInput)element;
+			TextInput clone = new TextInput();
+			clone.setId(UUID.randomUUID().toString());
+			clone.setDate(textInput.isDate());
+			clone.setMandatory(textInput.isMandatory());
+			clone.setNumeric(textInput.isNumeric());
+			clone.setNumericMax(textInput.getNumericMax());
+			clone.setNumericMin(textInput.getNumericMin());
+			clone.setRows(textInput.getRows());
+			clone.setSingleRow(textInput.isSingleRow());
+			return clone;
+		}
+		return null;
 	}
 
 	@Override

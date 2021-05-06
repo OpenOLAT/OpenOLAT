@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementRenderingHints;
@@ -47,7 +48,7 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DisclaimerHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
+public class DisclaimerHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, CloneElementHandler {
 
 	private final boolean restrictedEdit;
 	
@@ -112,6 +113,19 @@ public class DisclaimerHandler implements EvaluationFormElementHandler, SimpleAd
 		disclaimer.setAgreement(agreement);
 		disclaimer.setText(text);
 		return disclaimer;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof Disclaimer) {
+			Disclaimer disclaimer = (Disclaimer)element;
+			Disclaimer clone = new Disclaimer();
+			clone.setId(UUID.randomUUID().toString());
+			clone.setAgreement(disclaimer.getAgreement());
+			clone.setText(disclaimer.getText());
+			return clone;
+		}
+		return null;
 	}
 
 }

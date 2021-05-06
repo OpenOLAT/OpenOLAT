@@ -28,6 +28,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementComponent;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -51,7 +52,8 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SpacerHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, EvaluationFormReportHandler {
+public class SpacerHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, CloneElementHandler,
+		EvaluationFormReportHandler {
 	
 	private static final AtomicInteger idGenerator = new AtomicInteger();
 
@@ -94,6 +96,18 @@ public class SpacerHandler implements EvaluationFormElementHandler, SimpleAddPag
 		part.setId(UUID.randomUUID().toString());
 		part.setContent(content);
 		return part;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof Spacer) {
+			Spacer spacer = (Spacer)element;
+			Spacer clone = new Spacer();
+			clone.setId(UUID.randomUUID().toString());
+			clone.setContent(spacer.getContent());
+			return clone;
+		}
+		return null;
 	}
 
 	@Override

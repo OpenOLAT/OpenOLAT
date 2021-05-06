@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -49,7 +50,7 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
+public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, CloneElementHandler {
 
 	private final boolean restrictedEdit;
 	
@@ -99,6 +100,20 @@ public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAd
 		part.setMandatory(false);
 		part.setMaxUploadSizeKB(evaluationFormModule.getMaxFileUploadLimitKB());
 		return part;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof FileUpload) {
+			FileUpload fileUpload = (FileUpload)element;
+			FileUpload clone = new FileUpload();
+			clone.setId(UUID.randomUUID().toString());
+			clone.setMandatory(fileUpload.isMandatory());
+			clone.setMaxUploadSizeKB(fileUpload.getMaxUploadSizeKB());
+			clone.setMimeTypeSetKey(fileUpload.getMimeTypeSetKey());
+			return clone;
+		}
+		return null;
 	}
 
 	@Override

@@ -39,6 +39,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.ContainerEditorController;
 import org.olat.modules.ceditor.ui.PageElementTarget;
+import org.olat.modules.ceditor.ui.event.CloneElementEvent;
 import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
@@ -62,6 +63,7 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 
 	private boolean editMode = false;
 	private boolean moveable = false;
+	private boolean cloneable = false;
 	private boolean deleteable = false;
 	private boolean ruleLinkEnabled = false;
 	
@@ -103,6 +105,9 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 				case "save_element":
 				case "close_edit_fragment":
 					doCloseEditFragment();
+					break;
+				case "clone_element":
+					fireEvent(ureq, new CloneElementEvent(this));
 					break;
 				case "delete_element":
 					fireEvent(ureq, new DeleteElementEvent(this));
@@ -175,6 +180,15 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 		}
 	}
 	
+	@Override
+	public boolean isCloneable() {
+		return cloneable;
+	}
+
+	@Override
+	public void setCloneable(boolean cloneable) {
+		this.cloneable = cloneable;
+	}
 
 	@Override
 	public boolean isDeleteable() {
