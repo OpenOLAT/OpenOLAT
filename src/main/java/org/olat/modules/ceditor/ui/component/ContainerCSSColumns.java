@@ -32,7 +32,7 @@ public class ContainerCSSColumns {
 	
 	public static List<String> getCssColumns(int columns) {
 		switch(columns) {
-			case 1: return getCssColumns("", 1);
+			case 1: return getCssColumns("col-xs-12", 1);
 			case 2: return getCssColumns("col-md-6 col-xs-12", 2);
 			case 3: return getCssColumns("col-md-4 col-xs-12", 3);
 			case 4: return getCssColumns("col-md-3 col-xs-12", 4);

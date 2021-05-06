@@ -263,7 +263,7 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 		/* bug in web-kit: does not work when draging from outside */
 		border: $o-panel-placeholder-border-width dotted $o-editor-hover-border-color;    
 	}
-	&:hover .o_hover_text {
+	&:hover > .o_hover_text_wrapper > .o_hover_text {
 		visibility:visible;
 	}
 	.o_hover_text_wrapper {
