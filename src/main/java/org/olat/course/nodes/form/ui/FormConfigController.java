@@ -107,16 +107,17 @@ public class FormConfigController extends FormBasicController {
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		chooseLink = uifactory.addFormLink("edit.choose", buttonsCont, "btn btn-default o_xsmall");
-		chooseLink.setElementCssClass("o_sel_survey_choose_repofile");
 		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, "btn btn-default o_xsmall");
 		editLink = uifactory.addFormLink("edit.edit", buttonsCont, "btn btn-default o_xsmall");
 		
 		Date participationDeadline = config.getDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
 		participationDeadlineEl = uifactory.addDateChooser("edit.participation.deadline", participationDeadline, formLayout);
+		participationDeadlineEl.setDateChooserTimeEnabled(true);
 		participationDeadlineEl.addActionListener(FormEvent.ONCHANGE);
 		
 		confirmationEl = uifactory.addCheckboxesVertical("edit.confirmation.enabled", formLayout, ON_KEYS,
 				TranslatorHelper.translateAll(getTranslator(), ON_KEYS), 1);
+		confirmationEl.setHelpTextKey("edit.confirmation.help", null);
 		confirmationEl.addActionListener(FormEvent.ONCHANGE);
 		boolean confirmationEnabled = config.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_ENABLED);
 		confirmationEl.select(confirmationEl.getKey(0), confirmationEnabled);
