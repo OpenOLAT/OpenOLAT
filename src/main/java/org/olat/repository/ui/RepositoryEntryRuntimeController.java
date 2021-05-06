@@ -919,7 +919,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 	}
 	
-	protected final void doClose(UserRequest ureq) {
+	protected void doClose(UserRequest ureq) {
 		// Now try to go back to place that is attacked to (optional) root back business path
 		getWindowControl().getWindowBackOffice().getWindow().getDTabs()
 			.closeDTab(ureq, re.getOlatResource(), launchedFromPoint);

@@ -22,6 +22,7 @@ package org.olat.modules.scorm;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.repository.RepositoryEntry;
@@ -62,5 +63,23 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == getRuntimeController()) {
+			if(event == Event.BACK_EVENT) {
+				super.doClose(ureq);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void doClose(UserRequest ureq) {
+		Controller runCtrl = getRuntimeController();
+		if(runCtrl instanceof ScormAPIandDisplayController) {
+			((ScormAPIandDisplayController)runCtrl).doBack(ureq);
+		}
 	}
 }

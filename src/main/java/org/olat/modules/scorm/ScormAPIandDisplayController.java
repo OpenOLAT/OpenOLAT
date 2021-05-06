@@ -404,7 +404,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 * 
 	 * @param ureq The user request
 	 */
-	private void doBack(UserRequest ureq) {
+	protected void doBack(UserRequest ureq) {
 		if(BACK_PSEUDO_SCO.equals(requestScoId)) {
 			// force close
 			fireEvent(ureq, Event.CLOSE_EVENT);
