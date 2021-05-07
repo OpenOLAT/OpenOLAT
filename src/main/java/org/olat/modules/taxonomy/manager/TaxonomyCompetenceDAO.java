@@ -311,6 +311,17 @@ public class TaxonomyCompetenceDAO {
 				.setParameter("levelKey", level.getKey())
 				.executeUpdate();
 	}
+	
+	public int deleteCompetences(List<? extends TaxonomyLevelRef> levels) {
+		String q = "delete from ctaxonomycompetence as competence where competence.taxonomyLevel.key in :levelKeys";
+		
+		List<Long> levelKeys = levels.stream().map(level -> level.getKey()).collect(Collectors.toList());
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("levelKeys", levelKeys)
+				.executeUpdate();
+	}
 
 	public int deleteCompetences(Identity identity) {
 		String q = "delete from ctaxonomycompetence as competence where competence.identity.key=:identityKey";

@@ -21,6 +21,7 @@ package org.olat.modules.portfolio.model;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -64,7 +65,7 @@ public class PortfolioPageToTaxonomyCompetenceImpl implements PortfolioPageToTax
 	@JoinColumn(name = "fk_pf_page", nullable = false, insertable = true, updatable = false)
 	private Page portfolioPage;
 
-	@ManyToOne(targetEntity = TaxonomyCompetenceImpl.class, fetch = FetchType.LAZY, optional = false)
+	@ManyToOne(targetEntity = TaxonomyCompetenceImpl.class, fetch = FetchType.LAZY, optional = false, cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "fk_tax_competence", nullable = false, insertable = true, updatable = false)
 	private TaxonomyCompetence taxonomyCompetence;
 	

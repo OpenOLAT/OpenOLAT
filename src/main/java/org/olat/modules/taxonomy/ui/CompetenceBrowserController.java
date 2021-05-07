@@ -149,6 +149,7 @@ public class CompetenceBrowserController extends FormBasicController {
 			if (event instanceof FlexiTableSearchEvent) {
 				if (event.getCommand().equals(FlexiTableSearchEvent.RESET.getCommand())) {
 					tableModel.filter(null, null);
+					tableEl.reset();
 				} else {
 					tableModel.filter(tableEl.getQuickSearchString(), null);
 				}

@@ -57,7 +57,7 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if (StringHelper.containsNonWhitespace(searchString)) {
-			List<CompetenceBrowserTableRow> filteredRows = backupRows.stream().filter(row -> row.containsSearch(searchString)).collect(Collectors.toList());
+			List<CompetenceBrowserTableRow> filteredRows = backupRows.stream().filter(row -> row.containsSearch(searchString.toLowerCase())).collect(Collectors.toList());
 			List<CompetenceBrowserTableRow> filteredRowsWithParents = new ArrayList<>(filteredRows);
 			
 			for (CompetenceBrowserTableRow row : filteredRows) {

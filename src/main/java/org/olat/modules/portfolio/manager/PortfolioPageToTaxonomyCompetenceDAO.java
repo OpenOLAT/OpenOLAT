@@ -33,6 +33,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.PortfolioPageToTaxonomyCompetenceImpl;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -114,21 +115,46 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 		}
 	}
 	
+	public void deleteRelation(TaxonomyCompetence taxonomyCompetence) {
+		StringBuilder sb = new StringBuilder(256);
+		
+		sb.append("select rel from pfpagetotaxonomycompetence rel")
+		  .append(" where rel.taxonomyCompetence.key = :competenceKey");
+		
+		List<PortfolioPageToTaxonomyCompetence> relationsToDelete = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioPageToTaxonomyCompetence.class)
+				.setParameter("competenceKey", taxonomyCompetence.getKey())
+				.getResultList();
+		
+		for(PortfolioPageToTaxonomyCompetence relationToDelete:relationsToDelete) {
+			dbInstance.getCurrentEntityManager().remove(relationToDelete);
+		}
+	}
+	
+	public void deleteRelationsByLevelType(TaxonomyLevelType levelType) {
+		StringBuilder sb = new StringBuilder(256);
+		
+		sb.append("select rel from pfpagetotaxonomycompetence rel")
+		  .append(" inner join rel.taxonomyCompetence.taxonomyLevel as level")
+		  .append(" inner join level.type as type")
+		  .append(" where type.key = :typeKey");
+		
+		
+		List<PortfolioPageToTaxonomyCompetence> relationsToDelete = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioPageToTaxonomyCompetence.class)
+				.setParameter("typeKey", levelType.getKey())
+				.getResultList();
+		
+		for(PortfolioPageToTaxonomyCompetence relationToDelete:relationsToDelete) {
+			dbInstance.getCurrentEntityManager().remove(relationToDelete);
+		}
+	}
+	
 	public void deleteRelation(Page portfolioPage) {
 		StringBuilder sb = new StringBuilder(256);
 		
 		sb.append("select rel from pfpagetotaxonomycompetence rel")
 		  .append(" where rel.portfolioPage.key = :pageKey");
-		
-		StringBuilder qb = new StringBuilder(256);
-		qb.append("select competence from pfpagetotaxonomycompetence rel")
-		  .append(" inner join rel.taxonomyCompetence as competence")
-		  .append(" where rel.portfolioPage.key = :pageKey");
-		
-		List<TaxonomyCompetence> competencesToDelete = dbInstance.getCurrentEntityManager()
-				.createQuery(qb.toString(), TaxonomyCompetence.class)
-				.setParameter("pageKey", portfolioPage.getKey())
-				.getResultList();
 		
 		List<PortfolioPageToTaxonomyCompetence> relationsToDelete = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), PortfolioPageToTaxonomyCompetence.class)
@@ -137,10 +163,6 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 		
 		for(PortfolioPageToTaxonomyCompetence relationToDelete:relationsToDelete) {
 			dbInstance.getCurrentEntityManager().remove(relationToDelete);
-		}
-		
-		for (TaxonomyCompetence competenceToDelete : competencesToDelete) {
-			dbInstance.getCurrentEntityManager().remove(competenceToDelete);
 		}
 	}
 	

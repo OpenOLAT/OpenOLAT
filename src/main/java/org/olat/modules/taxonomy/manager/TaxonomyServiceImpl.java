@@ -30,6 +30,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.portfolio.manager.PortfolioPageToTaxonomyCompetenceDAO;
 import org.olat.modules.quality.manager.QualityDataCollectionDAO;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
@@ -76,6 +77,10 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	private TaxonomyCompetenceAuditLogDAO taxonomyCompetenceAuditLogDao;
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
+	@Autowired
+	private PortfolioPageToTaxonomyCompetenceDAO portfolioPageToTaxonomyCompetenceDAO;
+	@Autowired
+	private TaxonomyCompetenceDAO taxonomyCompetenceDAO;
 	
 	@Override
 	public Taxonomy createTaxonomy(String identifier, String displayName, String description, String externalId) {
@@ -156,6 +161,9 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 
 	@Override
 	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level) {
+		if (level.getType() != null) {
+			checkLevelTypeCompetences(level.getType());
+		}
 		return taxonomyLevelDao.updateTaxonomyLevel(level);
 	}
 
@@ -240,13 +248,24 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	
 	@Override
 	public TaxonomyLevelType updateTaxonomyLevelType(TaxonomyLevelType leveltype) {
+		checkLevelTypeCompetences(leveltype);
+		
 		return taxonomyLevelTypeDao.updateTaxonomyLevelType(leveltype);
 	}
 
 	@Override
 	public TaxonomyLevelType updateTaxonomyLevelType(TaxonomyLevelType leveltype, List<TaxonomyLevelType> allowSubTypes) {
 		taxonomyLevelTypeToTypeDao.setAllowedSubType(leveltype, allowSubTypes);
+		
+		checkLevelTypeCompetences(leveltype);
+		
 		return taxonomyLevelTypeDao.updateTaxonomyLevelType(leveltype);
+	}
+	
+	public void checkLevelTypeCompetences(TaxonomyLevelType levelType) {
+		if (!levelType.isAllowedAsCompetence()) {			
+			portfolioPageToTaxonomyCompetenceDAO.deleteRelationsByLevelType(levelType);
+		}
 	}
 
 	@Override
@@ -355,6 +374,7 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 
 	@Override
 	public void removeTaxonomyLevelCompetence(TaxonomyCompetence competence) {
+		portfolioPageToTaxonomyCompetenceDAO.deleteRelation(competence);
 		taxonomyCompetenceDao.deleteCompetence(competence);
 	}
 

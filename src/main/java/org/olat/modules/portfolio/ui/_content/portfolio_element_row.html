@@ -127,7 +127,7 @@
 #if(${row.isPage()})
 <div class="o_portfolio_page o_block_large">
 	<div class="#if($r.isNotNull($row.assignment)) o_portfolio_assignments #end  o_block#if($row.imageAlign == "background" && $r.isNotNull($row.imageUrl))_imagebg #end" #if($row.imageAlign == "background" && $r.isNotNull($row.imageUrl)) style="background-image: url('$mapperThumbnailUrl/${row.imageUrl}')" #end>
-		<h4><i class="o_icon o_icon-fw o_icon_pf_page"> </i> $r.escapeHtml($row.title)
+		<h4 class="#if($row.imageAlign == "background" && $r.isNotNull($row.imageUrl)) o_strech_bg #end"><i class="o_icon o_icon-fw o_icon_pf_page"> </i> $r.escapeHtml($row.title)
 			#if($r.isTrue($userInfos))<small>$userInfosRenderer.renderPortfolioElementRow($row)</small> #end
 			<span class="o_xsmall o_labeled_light ${row.getStatusCss()} pull-right">
 				<i class="o_icon ${row.getStatusIconCss()} o_icon-fw" title="$r.translate("page.status"): $r.translate("$row.getPageStatusI18nKey()")"> </i>

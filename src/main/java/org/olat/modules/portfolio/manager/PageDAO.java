@@ -108,6 +108,8 @@ public class PageDAO {
 			((PageBodyImpl)body).setUsage(count + 1);
 			body = dbInstance.getCurrentEntityManager().merge(body);
 			page.setBody(body);
+			page.setImagePath(pageDelegate.getImagePath());
+			page.setImageAlignment(pageDelegate.getImageAlignment());
 		} else {
 			page.setBody(createAndPersistPageBody(1, null));
 		}

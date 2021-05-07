@@ -219,7 +219,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 		tableEl = uifactory.addTableElement(getWindowControl(), "competences_overview", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "competences_overview");
-		tableEl.setSearchEnabled(true);
+		tableEl.setSearchEnabled(false);
 		tableEl.setEmptyTableSettings("competences.empty.table", null, "o_icon_competences");
 				
 		// Set rootcrumb
