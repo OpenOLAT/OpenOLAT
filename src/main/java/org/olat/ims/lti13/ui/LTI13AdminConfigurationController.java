@@ -74,7 +74,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("External platforms");
+		setFormContextHelp("LTI Integrations");
 		
 		String[] enabledValues = new String[]{ translate("enabled") };
 		
@@ -153,21 +153,23 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		organisationsEl.clearError();
-		if(!organisationsEl.isOneSelected()) {
-			organisationsEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
 		deploymentRolesForEntriesEl.clearError();
-		if(!deploymentRolesForEntriesEl.isAtLeastSelected(1)) {
-			deploymentRolesForEntriesEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
 		deploymentRolesForGroupsEl.clearError();
-		if(!deploymentRolesForGroupsEl.isAtLeastSelected(1)) {
-			deploymentRolesForGroupsEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
+		if(moduleEnabled.isAtLeastSelected(1)) {
+			if(!organisationsEl.isOneSelected()) {
+				organisationsEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		
+			if(!deploymentRolesForEntriesEl.isAtLeastSelected(1)) {
+				deploymentRolesForEntriesEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+			
+			if(!deploymentRolesForGroupsEl.isAtLeastSelected(1)) {
+				deploymentRolesForGroupsEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
 		}
 		
 		return allOk;
