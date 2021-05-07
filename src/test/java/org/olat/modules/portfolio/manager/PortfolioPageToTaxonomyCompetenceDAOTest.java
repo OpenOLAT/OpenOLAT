@@ -29,13 +29,13 @@ import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioPageToTaxonomyCompetence;
 import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
@@ -56,6 +56,8 @@ public class PortfolioPageToTaxonomyCompetenceDAOTest extends OlatTestCase {
 	private TaxonomyLevel level1;
 	private TaxonomyLevel level2;
 	private TaxonomyLevel level3;
+	private TaxonomyLevelType type1;
+	private TaxonomyLevelType type2;
 	
 	@Autowired
 	private DB dbInstance;
@@ -67,8 +69,6 @@ public class PortfolioPageToTaxonomyCompetenceDAOTest extends OlatTestCase {
 	private PortfolioPageToTaxonomyCompetenceDAO portfolioPageToTaxonomyCompetenceDAO;
 	@Autowired
 	private PortfolioService portfolioService;
-	@Autowired
-	private PortfolioV2Module portfolioModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
@@ -91,8 +91,12 @@ public class PortfolioPageToTaxonomyCompetenceDAOTest extends OlatTestCase {
 		this.taxonomy = taxonomyService.createTaxonomy("taxonomy", "taxonomy", null, null);
 		dbInstance.commitAndCloseSession();
 		
-		this.level1 = taxonomyLevelDAO.createTaxonomyLevel("l1", "level1", null, null, null, null, null, this.taxonomy);
-		this.level2 = taxonomyLevelDAO.createTaxonomyLevel("l2", "level2", null, null, null, null, null, this.taxonomy);
+		this.type1 = taxonomyService.createTaxonomyLevelType("T1", "Type 1", "", null, true, taxonomy);
+		this.type2 = taxonomyService.createTaxonomyLevelType("T2", "Type 2", "", null, false, taxonomy);
+		
+		
+		this.level1 = taxonomyLevelDAO.createTaxonomyLevel("l1", "level1", null, null, null, null, type1, this.taxonomy);
+		this.level2 = taxonomyLevelDAO.createTaxonomyLevel("l2", "level2", null, null, null, null, type2, this.taxonomy);
 		this.level3 = taxonomyLevelDAO.createTaxonomyLevel("l3", "level3", null, null, null, null, null, this.taxonomy);
 		dbInstance.commitAndCloseSession();
 	}
@@ -135,5 +139,25 @@ public class PortfolioPageToTaxonomyCompetenceDAOTest extends OlatTestCase {
 		competences = portfolioService.getRelatedCompetences(page, true);
 		
 		Assert.assertEquals(0, competences.size());
+	}
+	
+	@Test
+	public void deleteRelationsByType() {
+		TaxonomyCompetence competence1 = taxonomyCompetenceDAO.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level1, identity, null);
+		TaxonomyCompetence competence2 = taxonomyCompetenceDAO.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level2, identity, null);
+		TaxonomyCompetence competence3 = taxonomyCompetenceDAO.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level3, identity, null);
+		
+		portfolioPageToTaxonomyCompetenceDAO.createRelation(page, competence1);
+		portfolioPageToTaxonomyCompetenceDAO.createRelation(page, competence2);
+		portfolioPageToTaxonomyCompetenceDAO.createRelation(page, competence3);
+		
+		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(page, true);
+		Assert.assertEquals(3, competences.size());
+		
+		portfolioPageToTaxonomyCompetenceDAO.deleteRelationsByLevelType(type1);
+		portfolioPageToTaxonomyCompetenceDAO.deleteRelationsByLevelType(type2);
+		
+		competences = portfolioService.getRelatedCompetences(page, true);
+		Assert.assertEquals(2, competences.size());
 	}
 }

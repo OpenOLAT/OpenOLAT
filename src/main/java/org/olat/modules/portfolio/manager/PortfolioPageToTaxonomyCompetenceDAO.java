@@ -132,6 +132,10 @@ public class PortfolioPageToTaxonomyCompetenceDAO {
 	}
 	
 	public void deleteRelationsByLevelType(TaxonomyLevelType levelType) {
+		if (levelType == null || levelType.isAllowedAsCompetence()) {
+			return;
+		}
+		
 		StringBuilder sb = new StringBuilder(256);
 		
 		sb.append("select rel from pfpagetotaxonomycompetence rel")
