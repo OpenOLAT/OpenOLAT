@@ -166,7 +166,10 @@ public class DropboxController extends BasicController {
 		if (!previewMode) {
 			VFSContainer fDropbox = getDropBox(ureq.getIdentity());
 			int numFiles = fDropbox.getItems().size();
-			if (numFiles > 0) myContent.contextPut("numfiles", new String[] {Integer.toString(numFiles)});
+			if (numFiles > 0) {
+				myContent.contextPut("numfiles", new String[] {Integer.toString(numFiles)});
+				myContent.contextPut("filelist", fDropbox.getItems());
+			}
 			
 		} else {
 			myContent.contextPut("numfiles", "0");
@@ -290,6 +293,7 @@ public class DropboxController extends BasicController {
 				if (success) {
 					int numFiles = fDropbox.getItems(new VFSSystemItemFilter()).size();
 					myContent.contextPut("numfiles", new String[] {Integer.toString(numFiles)});
+					myContent.contextPut("filelist", fDropbox.getItems());
 					// assemble confirmation
 					String confirmation = getConfirmation(ureq, fOut.getName());
 					// send email if necessary

@@ -109,29 +109,22 @@ public class MailTemplateForm extends FormBasicController {
 	
 	@Override
 	public boolean validateFormLogic (UserRequest ureq) {
-		// validate only when sendMail is enabled
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		subjectElem.clearError();
+		bodyElem.clearError();
 		if (mandatoryEmail || sendMail.isSelected(0)) {
 			if (subjectElem.getValue().trim().length() == 0) {
 				subjectElem.setErrorKey("mailtemplateform.error.emptyfield", null);
-				return false;
+				allOk &= false;
 			}
 			
 			if (bodyElem.getValue().trim().length() == 0) {
 				bodyElem.setErrorKey("mailtemplateform.error.emptyfield", null);
-				return false;
-			}
-			
-			if (subjectElem.getValue().indexOf("#") != -1) {
-					subjectElem.setErrorKey("mailtemplateform.error.velocity", null);
-					return false;
-			}
-			
-			if (bodyElem.getValue().indexOf("#") != -1) {
-				bodyElem.setErrorKey("mailtemplateform.error.velocity", null);
-				return false;
+				allOk &= false;
 			}
 		}
-		return true;
+		return allOk;
 	}
 	
 	@Override

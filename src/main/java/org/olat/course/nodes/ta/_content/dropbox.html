@@ -12,7 +12,10 @@
 		<div class="panel-body">
 			<p>
 			#if($numfiles)
-				<i>$r.translate("dropbox.files", $numfiles)</i>
+				<i>$r.translate("dropbox.files", $numfiles)</i><br/>
+				#foreach($file in $filelist)
+					$file.getName()</br>
+				#end
 			#else
 				<i>$r.translate("dropbox.nofiles")</i>
 			#end
