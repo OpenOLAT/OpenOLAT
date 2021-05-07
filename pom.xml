@@ -162,6 +162,7 @@
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
+										<exclude>**/scorm/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -200,6 +201,7 @@
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
+										<exclude>**/scorm/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -328,6 +330,7 @@
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
+										<exclude>**/scorm/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -370,6 +373,7 @@
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
+										<exclude>**/scorm/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -1952,7 +1956,6 @@
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom</artifactId>
 			<version>1.1.3</version>
-			<!-- used by reload-jdom (SCORM) -->
 		</dependency>
 		<dependency>
 			<groupId>org.dom4j</groupId>
@@ -1969,26 +1972,6 @@
 			<groupId>jgrapht</groupId>
 			<artifactId>jgrapht</artifactId>
 			<version>0.6.0</version>
-		</dependency>
-		<dependency>
-			<groupId>reload-diva</groupId>
-			<artifactId>reload-diva</artifactId>
-			<version>reload_dist255-diva.jar</version>
-		</dependency>
-		<dependency>
-			<groupId>reload-dweezil</groupId>
-			<artifactId>reload-dweezil</artifactId>
-			<version>reload_dist255-dweezil.jar</version>
-		</dependency>
-		<dependency>
-			<groupId>reload-jdom</groupId>
-			<artifactId>reload-jdom</artifactId>
-			<version>reload_dist255-jdom.jar</version>
-		</dependency>
-		<dependency>
-			<groupId>reload-moonunit</groupId>
-			<artifactId>reload-moonunit</artifactId>
-			<version>reload_dist255-moonunit.jar</version>
 		</dependency>
 		<!-- Start dependency to qtiworks -->
 		<dependency>
@@ -2049,18 +2032,6 @@
 					<artifactId>jdom</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>ch.ethz</groupId>
-			<artifactId>pfplms-scorm</artifactId>
-			<version>unknown</version>
-			<classifier>patched</classifier><!-- patched version of scorm adapter: 
-				contact: matthai.kurian@gmail.com -->
-		</dependency>
-		<dependency><!-- used by SCORM -->
-			<groupId>gnu-regexp</groupId>
-			<artifactId>gnu-regexp</artifactId>
-			<version>1.1.4</version>
 		</dependency>
 		<!-- logging stuff -->	
 		<dependency>

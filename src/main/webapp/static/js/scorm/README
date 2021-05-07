@@ -1,0 +1,5 @@
+Scorm-again after v. 1.5.4
+
+Changes:
+On line l.9946: CMIStatus: '^(passed|completed|failed|incomplete|browsed)$', I add |not attempted
+I bumped the size of CMIString4096 from 4k to 1M

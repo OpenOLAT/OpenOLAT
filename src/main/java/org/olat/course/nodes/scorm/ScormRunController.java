@@ -26,7 +26,6 @@
 package org.olat.course.nodes.scorm;
 
 import java.io.File;
-import java.util.Properties;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -45,7 +44,6 @@ import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -66,12 +64,12 @@ import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.scorm.ScormAPICallback;
 import org.olat.modules.scorm.ScormAPIandDisplayController;
 import org.olat.modules.scorm.ScormCPManifestTreeModel;
 import org.olat.modules.scorm.ScormConstants;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
+import org.olat.modules.scorm.events.FinishEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author Felix Jost
  */
-public class ScormRunController extends BasicController implements ScormAPICallback, GenericEventListener, ConfigurationChangedListener {
+public class ScormRunController extends BasicController implements GenericEventListener, ConfigurationChangedListener {
 
 	private ModuleConfiguration config;
 	private File cpRoot;
@@ -172,7 +170,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		}
 	}
 
-	// <OLATCE-289>
 	/**
 	 * @return true if attempts of the user are equal to the maximum number of
 	 *         attempts.
@@ -188,8 +185,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		return maxAttemptsReached;
 	}
 
-	// </OLATCE-289>
-
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
@@ -198,20 +193,26 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == scormDispC) { // just pass on the event.
-			// <OLATCE-289>
 			if (event.equals(Event.BACK_EVENT)) {
 				if (maxAttemptsReached()) {
 					startPage.contextPut("maxAttemptsReached", Boolean.TRUE);
 				}
 				doStartPage(ureq);
+			} else if(Event.CLOSE_EVENT == event) {
+				doStartPage(null);
+				scormDispC.close();
+			} else if(event instanceof FinishEvent) {
+				doStartPage(null);
+				if (config.getBooleanSafe(ScormEditController.CONFIG_CLOSE_ON_FINISH, false)) {
+					scormDispC.close();
+				}
 			} else {
-				// </OLATCE-289>
 				doStartPage(ureq);
 				fireEvent(ureq, event);
 			}
 		} else if (source == null) { // external source
 			if (event instanceof TreeEvent) {
-				scormDispC.switchToPage((TreeEvent) event);
+				scormDispC.doGoToSco((TreeEvent)event);
 			}
 		} else if (source == chooseScormRunMode) {
 			doLaunch(ureq, true);
@@ -303,15 +304,13 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// else cpRoot is already set (save some db access if the user opens /
 		// closes / reopens the cp from the same CPRuncontroller instance)
 
-		String courseId;
 		boolean showMenu = config.getBooleanSafe(ScormEditController.CONFIG_SHOWMENU, true);
 		final boolean fullWindow = config.getBooleanSafe(ScormEditController.CONFIG_FULLWINDOW, true);
 
 		if (isPreview) {
-			courseId = Long.toString(CodeHelper.getRAMUniqueID());
-			scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
-					cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-					true, null, doActivate, fullWindow, false, true, deliveryOptions);
+			scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
+					cpRoot, null, null, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
+					null, doActivate, fullWindow, false, true, deliveryOptions);
 		} else {
 			boolean attemptsIncremented = false;
 			if (userCourseEnv.isParticipant()) {
@@ -323,25 +322,24 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 				}
 			}
 			
-			courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
-
+			String courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
 			if (isAssessable) {
 				// When a SCORE is transfered, the run mode is hardcoded 
-				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
+				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow,
+						ScormConstants.SCORM_MODE_CREDIT, assessableType, doActivate, fullWindow,
 						attemptsIncremented, false, deliveryOptions);
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
 				// When not assessible users can choose between normal mode where data is stored...
-				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
+				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow,
+						ScormConstants.SCORM_MODE_CREDIT, assessableType, doActivate, fullWindow,
 						attemptsIncremented, false, deliveryOptions);
 			} else {
 				// ... and preview mode where no data is stored
-				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
+				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-						false, assessableType, doActivate, fullWindow, attemptsIncremented, false, deliveryOptions);
+						assessableType, doActivate, fullWindow, attemptsIncremented, false, deliveryOptions);
 			}
 			
 		}
@@ -360,19 +358,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		}
 		listenTo(scormDispC);
 		// the scormDispC activates itself
-	}
-
-	@Override
-	public void lmsCommit(String olatSahsId, Properties scoreProp, Properties lessonStatusProp) {
-		//
-	}
-
-	@Override
-	public void lmsFinish(String olatSahsId, Properties scoreProp, Properties lessonStatusProp) {
-		doStartPage(null);
-		if (config.getBooleanSafe(ScormEditController.CONFIG_CLOSE_ON_FINISH, false)) {
-			scormDispC.close();
-		}
 	}
 
 	/**

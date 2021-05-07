@@ -73,7 +73,7 @@ public class ScormAssessmentManager {
 		VFSItem reloadSettingsFile = scoDirectory.resolve(RELOAD_SETTINGS_FILE);
 		if(reloadSettingsFile instanceof LocalFileImpl) {
 			LocalFileImpl fileImpl = (LocalFileImpl)reloadSettingsFile;
-			return new SequencerModel(fileImpl.getBasefile(), null);
+			return new SequencerModel(fileImpl.getBasefile());
 		} else if (reloadSettingsFile != null) {
 			throw new OLATRuntimeException(this.getClass(), "Programming error, SCORM results must be file based", null);
 		}

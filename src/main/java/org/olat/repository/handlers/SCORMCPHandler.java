@@ -191,9 +191,9 @@ public class SCORMCPHandler extends FileHandler {
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 						.updateUserCourseInformations(res, uureq.getIdentity());
 					File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
-					return CoreSpringFactory.getImpl(ScormMainManager.class).createScormAPIandDisplayController(uureq, wwControl, true, null, cpRoot,
+					return CoreSpringFactory.getImpl(ScormMainManager.class).createScormAPIandDisplayController(uureq, wwControl, true, cpRoot,
 							res.getResourceableId(), null, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-							false, null, false, false, false, reSecurity.isEntryAdmin(), null);
+							null, false, false, false, reSecurity.isEntryAdmin(), null);
 			});
 	}
 	

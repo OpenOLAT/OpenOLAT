@@ -53,6 +53,8 @@ import org.olat.ims.resources.IMSEntityResolver;
 */
 public class ScormCPManifestTreeModel extends GenericTreeModel {
 
+	private static final long serialVersionUID = 1L;
+	
 	private Element rootElement;
 	private Map<String,String>	nsuris = new HashMap<>(2);
 	private Map<String,GenericTreeNode> hrefToTreeNode = new HashMap<>();

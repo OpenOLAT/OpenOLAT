@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.modules.scorm.ISettingsHandler;
+import org.olat.modules.scorm.SettingsHandler;
 import org.olat.modules.scorm.server.servermodels.SequencerModel;
 
 import bsh.EvalError;
@@ -52,16 +52,16 @@ public class PrerequisiteManager {
 	/**
 	 * the disk version of the model
 	 */
-	protected SequencerModel _sequencerModel;
+	private SequencerModel _sequencerModel;
 
-	private ISettingsHandler settings;
+	private SettingsHandler settings;
 
 	/**
 	 * Constructor which allows the disk model to be loaded into the manager
 	 * 
 	 * @param org
 	 */
-	public PrerequisiteManager(String org, ISettingsHandler settings) {
+	public PrerequisiteManager(String org, SettingsHandler settings) {
 		this.settings = settings;
 		if (!populateFromDisk(org)) {
 			log.error("could not load in tracking model: " + org);
@@ -75,8 +75,8 @@ public class PrerequisiteManager {
 	 * @param org
 	 * @return true is successful
 	 */
-	protected boolean populateFromDisk(String org) {
-		_sequencerModel = new SequencerModel(settings.getScoItemSequenceFile(), settings);
+	private boolean populateFromDisk(String org) {
+		_sequencerModel = new SequencerModel(settings.getScoItemSequenceFile());
 		_prereqTable = _sequencerModel.getItemsAsHash(org);
 		return (_prereqTable != null);
 	}
@@ -140,7 +140,6 @@ public class PrerequisiteManager {
 				if (aToken.indexOf("=") == -1 && aToken.indexOf("<>") == -1) {
 					// get boolean status
 					if (!doesItemExist(aToken)) {
-						// System.out.println("item does not exist"+ aToken);
 						return true;// identifer does not exist, so junk.
 					}
 					// item exists in prerequisites table. Has it been completed
@@ -158,7 +157,7 @@ public class PrerequisiteManager {
 					i.set(anToken.replaceAll("-", "_"), getStatus(anToken));
 				}
 			}
-			// System.out.println("0. "+prereq);
+			
 			prereq = prereq.replaceAll("-", "_");
 			prereq = prereq.replaceAll("&", "&&");
 			prereq = prereq.replaceAll("\\|", "||");
@@ -168,7 +167,7 @@ public class PrerequisiteManager {
 			prereq = prereq.replaceAll("\\\"", "\")");
 			prereq = prereq.replaceAll("\\^", "=\\\"");
 			prereq = prereq.replaceAll("=", ".equals(");
-			// System.out.println("1. "+prereq);
+			
 			if (prereq.indexOf("@") != -1) {
 				List<String> v = new ArrayList<>();
 				StringBuilder sb = new StringBuilder();
@@ -232,22 +231,22 @@ public class PrerequisiteManager {
 	}
 
 	/**
-	 * A utillity method for testing purposes - prints out the current state of
+	 * A utility method for testing purposes - prints out the current state of
 	 * the prerequisites table.
 	 */
 	public void showPreReqTable() {
-		System.out.println("-----------------------");
-		System.out.println("-------prereq table ---");
-		System.out.println("-----------------------");
+		log.debug("-----------------------");
+		log.debug("-------prereq table ---");
+		log.debug("-----------------------");
 		if (_prereqTable != null) {
 			Iterator<String> keys = _prereqTable.keySet().iterator();
 			while (keys.hasNext()) {
 				String scoID = keys.next();
 				String theStatus = _prereqTable.get(scoID);
-				System.out.println("SCO ID: " + scoID + "  status: " + theStatus);
+				log.debug("SCO ID: {} status: {}", scoID, theStatus);
 			}
 		}
-		System.out.println("-----------------------\n\n");
+		log.debug("-----------------------\n\n");
 	}
 
 	/**
@@ -274,28 +273,18 @@ public class PrerequisiteManager {
 		// make sure there is an even number of quotes
 		int quoteCount = countOccurences(aprereq, "\"");
 		if (quoteCount % 2 != 0) {
-			// System.out.println("odd number of quotes" + quoteCount);
 			return false;
 		}
-		/*
-		 * // Sets not yet supported // make sure there is an even number of opening
-		 * and closing curly braces int openCurlyCount = countOccurences(aprereq,
-		 * "{"); int closeCurlyCount = countOccurences(aprereq, "}"); if
-		 * (openCurlyCount != closeCurlyCount){ //System.out.println("incorrect
-		 * number of opening and closing curly brackets: " //+ openCurlyCount + " :" +
-		 * closeCurlyCount); return false; }
-		 */
+
 		// make sure there is an even number of opening and closing bracketss
 		int openBracketCount = countOccurences(aprereq, "(");
 		int closeBracketCount = countOccurences(aprereq, ")");
 		if (openBracketCount != closeBracketCount) {
-			// System.out.println("incorrect number of opening and closing brackets: "
 			// + openBracketCount + " :" + closeBracketCount);
 			return false;
 		}
 		// if illegal chars found
 		if (matcher.find()) {
-			// System.out.println("illegal string");
 			return false;
 		}
 		return true;

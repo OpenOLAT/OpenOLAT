@@ -29,19 +29,18 @@ import java.io.File;
 import java.io.IOException;
 
 import org.jdom.JDOMException;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.modules.scorm.contentpackaging.NoItemFoundException;
 import org.olat.modules.scorm.contentpackaging.ScormPackageHandler;
 
-public class SettingsHandlerImpl implements ISettingsHandler {
+public class SettingsHandler {
 	private final String storagePath;
-	private String filePath;
+	private final String filePath;
 	private final String username;
 	private final String userid;
-	private String repoId;
-	private String courseId;
+
 	private String cmi_lesson_mode;
 	private String cmi_credit_mode;
 	private File sequenceFile;
@@ -59,22 +58,55 @@ public class SettingsHandlerImpl implements ISettingsHandler {
 	 * @param lesson_mode
 	 * @param credit_mode
 	 */
-	public SettingsHandlerImpl(String repositoryPath, String repoId, String courseId, String storagePath, String username, String userid,
+	public SettingsHandler(String repositoryPath, String repoId, String courseId, String storagePath, String username, String userid,
 			String lesson_mode, String credit_mode, int controllerHashCode) {
-		if (repoId == null && courseId == null) throw new AssertException("repositoryId and courseId are null but at leaset one should be a valid id");
 		this.controllerHashCode = controllerHashCode;
-		this.repoId = repoId;
-		this.courseId = courseId;
 		this.storagePath = storagePath;
 		this.username = username;
 		this.userid = userid;
 		this.cmi_lesson_mode = lesson_mode;
 		this.cmi_credit_mode = credit_mode;
-		setFilePath();
+		// after properties set
+		filePath = buildFilePath(repoId, courseId);
 		//this file holds information of the SCO's like 'completed' or 'browsed' and ...
-		sequenceFile = new File(getFilePath() + "/reload-settings.xml");
-		manifestFile = new File(repositoryPath + "/imsmanifest.xml");
-		
+		sequenceFile = new File(getFilePath(), "reload-settings.xml");
+		manifestFile = new File(repositoryPath, "imsmanifest.xml");
+	}
+	
+	/**
+	 * @return a string either to the userhome or the olat temp dir.
+	 */
+	private String buildFilePath(String repoId, String courseId) {
+		if (cmi_lesson_mode.equals(ScormConstants.SCORM_MODE_BROWSE) || cmi_lesson_mode.equals(ScormConstants.SCORM_MODE_REVIEW)) {
+			StringBuilder tempPath = new StringBuilder();
+			tempPath.append(WebappHelper.getTmpDir())
+			  .append("/tmp").append(WebappHelper.getInstanceId()).append("scorm/")
+			  .append(controllerHashCode).append("/")
+			  .append(userid).append("/");
+			if(courseId != null) {
+				tempPath.append(courseId);
+			}
+			if(repoId != null) {
+				tempPath.append(repoId);
+			}
+			if(courseId == null && repoId == null) {
+				tempPath.append(Long.toString(CodeHelper.getForeverUniqueID()));
+			}
+			return tempPath.toString();
+		} else {
+			StringBuilder path = new StringBuilder();
+			path.append(storagePath);
+			path.append("/scorm/");
+			path.append(userid);
+			path.append("/");
+			if(courseId != null) {
+				path.append(courseId);
+			}
+			if(repoId != null) {
+				path.append(repoId);
+			}
+			return path.toString();
+		}
 	}
 
 	/**
@@ -96,13 +128,13 @@ public class SettingsHandlerImpl implements ISettingsHandler {
 				try {
 					pm.buildSettings();
 				} catch (NoItemFoundException e) {
-					throw new OLATRuntimeException(SettingsHandlerImpl.class, "Problem loading the reload-settings.xml file. No item found in scorm item sequence file!",e);
+					throw new OLATRuntimeException(SettingsHandler.class, "Problem loading the reload-settings.xml file. No item found in scorm item sequence file!",e);
 				}
 			}
 		} catch (JDOMException e) {
-			throw new OLATRuntimeException(SettingsHandlerImpl.class, "Problem loading the reload-settings.xml file.",e);
+			throw new OLATRuntimeException(SettingsHandler.class, "Problem loading the reload-settings.xml file.",e);
 		} catch (IOException e) {
-			throw new OLATRuntimeException(SettingsHandlerImpl.class, "Problem loading the reload-settings.xml file.",e);
+			throw new OLATRuntimeException(SettingsHandler.class, "Problem loading the reload-settings.xml file.",e);
 		}
 		return sequenceFile;
 	}
@@ -119,34 +151,21 @@ public class SettingsHandlerImpl implements ISettingsHandler {
 	 * @see ISettingsHandler#getScoDataModelFile(java.lang.String)
 	 */
 	public File getScoDataModelFile(String itemId) {
-		return (new File(getFilePath() + "/" + itemId + ".xml"));
+		return (new File(getFilePath(), itemId + ".xml"));
 	}
 
-
-	/**
-	 * @see org.olat.modules.scorm.ISettingsHandler#getStudentName()
-	 */
 	public String getStudentName() {
 		return username;
 	}
 
-	/**
-	 * @see org.olat.modules.scorm.ISettingsHandler#getStudentId()
-	 */
 	public String getStudentId() {
 		return userid;
 	}
 
-	/**
-	 * @see org.olat.modules.scorm.ISettingsHandler#getLessonMode()
-	 */
 	public String getLessonMode() {
 		return cmi_lesson_mode;
 	}
 
-	/**
-	 * @see org.olat.modules.scorm.ISettingsHandler#getCreditMode()
-	 */
 	public String getCreditMode() {
 		return cmi_credit_mode;
 	}
@@ -156,39 +175,5 @@ public class SettingsHandlerImpl implements ISettingsHandler {
 	 */
 	public String getFilePath(){ 
 		return filePath;
-	}
-	/**
-	 * @return a string either to the userhome or the olat temp dir.
-	 */
-	private void setFilePath() {
-		if (cmi_lesson_mode.equals(ScormConstants.SCORM_MODE_BROWSE) || cmi_lesson_mode.equals(ScormConstants.SCORM_MODE_REVIEW)) {
-			if(courseId == null) courseId = "";
-			if(repoId == null) repoId = "";
-			StringBuilder tempPath = new StringBuilder();
-			tempPath.append(WebappHelper.getTmpDir())
-			  .append("/tmp").append(WebappHelper.getInstanceId()).append("scorm/")
-			  .append(controllerHashCode).append("/")
-			  .append(userid).append("/");
-			if(courseId != null) tempPath.append(courseId);
-			if(repoId != null) tempPath.append(repoId);
-			filePath =  tempPath.toString();
-		} else {
-			StringBuilder path = new StringBuilder();
-			path.append(storagePath);
-			path.append("/scorm/");
-			path.append(userid);
-			path.append("/");
-			if(courseId != null) path.append(courseId);
-			if(repoId != null) path.append(repoId);
-			filePath =  path.toString();
-		}
-	}
-
-	/**
-	 * 
-	 *
-	 */
-	public void saveFiles() {
-	//
 	}
 }

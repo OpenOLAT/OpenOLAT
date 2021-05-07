@@ -102,15 +102,9 @@ public class ScormResultDetailsController extends BasicController {
 		summaryTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("summary.column.header.duration", 1, null, ureq.getLocale()));
 		summaryTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("summary.column.header.assesspoints", 2, null, ureq.getLocale()));
 		summaryTableCtr.addColumnDescriptor(new StaticColumnDescriptor("sel", "summary.column.header.details", getTranslator().translate("select")));
-
-		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
-
-		String username = assessedUserCourseEnv.getIdentityEnvironment().getIdentity().getName();
-		// <OLATCE-289>
-		Map<Date, List<CmiData>> rawDatas = ScormAssessmentManager.getInstance().visitScoDatasMultiResults(username, courseEnv, node);
-		summaryTableCtr.setTableDataModel(new SummaryTableDataModelMultiResults(rawDatas));
-		// </OLATCE-289>
 		listenTo(summaryTableCtr);
+		
+		loadModel();
 		
 		main.put("summary", summaryTableCtr.getInitialComponent());
 		if(!coachCourseEnv.isCourseReadOnly()) {
@@ -119,6 +113,13 @@ public class ScormResultDetailsController extends BasicController {
 		}
 
 		putInitialPanel(main);
+	}
+	
+	private void loadModel() {
+		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+		String username = assessedUserCourseEnv.getIdentityEnvironment().getIdentity().getName();
+		Map<Date, List<CmiData>> rawDatas = ScormAssessmentManager.getInstance().visitScoDatasMultiResults(username, courseEnv, node);
+		summaryTableCtr.setTableDataModel(new SummaryTableDataModelMultiResults(rawDatas));
 	}
 
 	@Override
@@ -173,6 +174,7 @@ public class ScormResultDetailsController extends BasicController {
 				CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
 				ScormAssessmentManager.getInstance().deleteResults(username, courseEnv, node);
 				fireEvent(ureq, Event.DONE_EVENT);
+				loadModel();
 			}
 		}
 	}

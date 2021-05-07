@@ -243,6 +243,12 @@ public class VelocityRenderDecorator implements Closeable {
 		return "";
 	}
 	
+	public String openScormCommand(String command) {
+		renderer.getUrlBuilder().openXHRScormEvent(target,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command));
+		return "";
+	}
+	
 	/**
 	 * 
 	 * @param command

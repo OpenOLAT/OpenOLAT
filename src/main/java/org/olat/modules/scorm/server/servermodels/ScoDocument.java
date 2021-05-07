@@ -36,9 +36,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
-import org.olat.modules.scorm.ISettingsHandler;
-
-import uk.ac.reload.jdom.XMLDocument;
+import org.olat.modules.scorm.SettingsHandler;
 
 /**
  * ScoDocument. A class that allows us to read in a CMI datamodel for a
@@ -98,12 +96,12 @@ public class ScoDocument extends XMLDocument {
 	protected static final String INTERACTIONS_COUNT = "cmi.interactions._count";
 
 	protected String _totalTimeHolder;
-	private ISettingsHandler settings;
+	private SettingsHandler settings;
 
 	/**
 	 * Default constuctor
 	 */
-	public ScoDocument(ISettingsHandler settings) {
+	public ScoDocument(SettingsHandler settings) {
 		this.settings = settings;
 	}
 
@@ -483,7 +481,6 @@ public class ScoDocument extends XMLDocument {
 	 * @param scoElementsPreUpdate
 	 */
 	public void doLmsCommit(String[][] scoElementsPreUpdate) {
-		// System.out.println("reloadScoDocuement - dolmscommit is called");
 		String[][] scoElements = doFinalPreUpdate(scoElementsPreUpdate, false);
 		Vector<String[]> objectives = new Vector<>();
 		Vector<String[]> interactions = new Vector<>();

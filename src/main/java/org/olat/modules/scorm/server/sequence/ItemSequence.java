@@ -70,18 +70,18 @@
 package org.olat.modules.scorm.server.sequence;
 
 
-import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.modules.scorm.ISettingsHandler;
-import org.olat.modules.scorm.server.servermodels.ScoDocument;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import uk.ac.reload.moonunit.contentpackaging.SCORM12_Core;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.modules.scorm.SettingsHandler;
+import org.olat.modules.scorm.contentpackaging.SCORM12_Core;
+import org.olat.modules.scorm.server.servermodels.ScoDocument;
+
 /**
  * A class used to house a single item from a scorm package.  It should
  * only contain items that actually reference something. Here we store
@@ -105,12 +105,12 @@ public class ItemSequence {
     private String _scormType;
     // If this item is a sco, then we will associate it with a ScoDocument
     private ScoDocument _scoDataModel;
-		private ISettingsHandler settings;
+	private final SettingsHandler settings;
 
     /**
      * Constructor
      */
-    public ItemSequence(ISettingsHandler settings) {
+    public ItemSequence(SettingsHandler settings) {
     	this.settings = settings;
     }
            

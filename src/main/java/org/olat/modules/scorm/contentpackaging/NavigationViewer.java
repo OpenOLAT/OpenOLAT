@@ -29,11 +29,9 @@ import java.util.List;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.modules.scorm.ISettingsHandler;
+import org.olat.modules.scorm.SettingsHandler;
 import org.olat.modules.scorm.server.servermodels.SequencerModel;
-
-import uk.ac.reload.jdom.XMLDocument;
-import uk.ac.reload.moonunit.contentpackaging.SCORM12_Core;
+import org.olat.modules.scorm.server.servermodels.XMLDocument;
 
 /**
  * A class used to interrogate the manifest. Used to show the tree in the
@@ -51,14 +49,14 @@ public class NavigationViewer extends XMLDocument {
 	/**
 	 * Our instance of core scorm methods
 	 */
-	protected SCORM12_Core _scormCore;
+	private SCORM12_Core _scormCore;
 
 	/**
 	 * An instance of the disk version of the sequencer model.
 	 */
-	protected SequencerModel _sequencerModel;
+	private SequencerModel _sequencerModel;
 
-	private ISettingsHandler settings;
+	private SettingsHandler settings;
 
 	/**
 	 * Accessor method to return the scomrCore instance.
@@ -75,11 +73,11 @@ public class NavigationViewer extends XMLDocument {
 	 * @param file
 	 * @throws Exception
 	 */
-	public NavigationViewer(ISettingsHandler settings) throws Exception {
+	public NavigationViewer(SettingsHandler settings) throws Exception {
 		this.settings = settings;
 		super.loadDocument(settings.getManifestFile());
 		_scormCore = new SCORM12_Core(this);
-		_sequencerModel = new SequencerModel(settings.getScoItemSequenceFile(), settings);
+		_sequencerModel = new SequencerModel(settings.getScoItemSequenceFile());
 	}
 
 	/**
@@ -114,7 +112,7 @@ public class NavigationViewer extends XMLDocument {
 	 */
 	public boolean hasManifestChanged() {
 		String manifestTimeStamp = Long.toString(getFile().lastModified());
-		SequencerModel sequence = new SequencerModel(settings.getScoItemSequenceFile(), settings);
+		SequencerModel sequence = new SequencerModel(settings.getScoItemSequenceFile());
 		String storedLastModified = sequence.getManifestModifiedDate();
 		return (manifestTimeStamp.equals(storedLastModified));
 	}

@@ -26,7 +26,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.olat.modules.scorm.ISettingsHandler;
+import org.olat.modules.scorm.SettingsHandler;
 
 /**
  * A class used to figure out the sequencing for a package. It has methods which
@@ -65,14 +65,14 @@ public class SequenceManager {
 	 * Our prerequisite manager instance
 	 */
 	private PrerequisiteManager _prereqManager;
-	private ISettingsHandler settings;
+	private SettingsHandler settings;
 
 	/**
 	 * Default constructor
 	 * 
 	 * @param org
 	 */
-	public SequenceManager(String org, ISettingsHandler settings) {
+	public SequenceManager(String org, SettingsHandler settings) {
 		this.settings = settings;
 		_prereqManager = new PrerequisiteManager(org, settings);
 	}
@@ -94,13 +94,8 @@ public class SequenceManager {
 			boolean answer = _prereqManager.canLaunchItem(id, preReqs);
 			if (answer) {
 				// FIXME:gs:b scorm manager is not yet constructed so i do net get the
-				// logger yet
-				// log.debug("item " + id + " is not completed");
-				// System.out.println("item " + id + " is not completed");
 				return id;
 			}
-			// log.debug("item " + id + " is completed");
-			// System.out.println("item " + id + " is completed");
 		}
 		return COURSE_COMPLETED;
 	}

@@ -110,12 +110,12 @@ public class ScormMainManager {
 	 * @param creditMode add null for the default value or "credit", "no-credit"
 	 */
 	public ScormAPIandDisplayController createScormAPIandDisplayController(UserRequest ureq, WindowControl wControl,
-			boolean showMenu, ScormAPICallback apiCallback, File cpRoot, Long scormResourceId, String courseId,
-			String lessonMode, String creditMode, boolean previewMode, String assessableType, boolean activate,
+			boolean showMenu, File cpRoot, Long scormResourceId, String courseId,
+			String lessonMode, String creditMode, String assessableType, boolean activate,
 			boolean fullWindow, boolean attemptsIncremented, boolean randomizeDelivery, DeliveryOptions deliveryOptions) {
 		
-		ScormAPIandDisplayController ctrl= new ScormAPIandDisplayController(ureq, wControl, showMenu, apiCallback, cpRoot,
-				scormResourceId, courseId, lessonMode, creditMode, previewMode, assessableType, activate, fullWindow,
+		ScormAPIandDisplayController ctrl= new ScormAPIandDisplayController(ureq, wControl, showMenu, cpRoot,
+				scormResourceId, courseId, lessonMode, creditMode, assessableType, activate, fullWindow,
 				attemptsIncremented, randomizeDelivery, deliveryOptions);
 		
 		DeliveryOptions config = ctrl.getDeliveryOptions();
