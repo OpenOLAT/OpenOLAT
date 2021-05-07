@@ -95,7 +95,7 @@ public class TopicHeaderController extends BasicController {
 			descriptionCont.setDomReplacementWrapperRequired(false);
 			descriptionCont.contextPut("description", AppointmentsUIFactory.lineBreakToBr(topic.getDescription()));
 			descriptionCtrl = new ToggleBoxController(ureq, getWindowControl(), topic.getKey().toString(),
-					translate("topic.description.opened"), translate("topic.description.closed"), descriptionCont);
+					translate("topic.description.closed"), translate("topic.description.opened"), descriptionCont);
 			mainVC.put("description", descriptionCtrl.getInitialComponent());
 		} else {
 			mainVC.remove("description");
