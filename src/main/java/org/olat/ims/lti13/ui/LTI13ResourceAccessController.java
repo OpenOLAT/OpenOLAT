@@ -47,6 +47,7 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.group.BusinessGroup;
 import org.olat.ims.lti13.LTI13Module;
+import org.olat.ims.lti13.LTI13Roles;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
 import org.olat.ims.lti13.ui.LTI13SharedToolDeploymentsTableModel.SharedToolsCols;
@@ -97,17 +98,22 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		super(ureq, wControl, "access_resource");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.businessGroup = businessGroup;
-		allowedToAddDeployment = allowedToAddDeployments(ureq, lti13Module.getDeploymentRolesListForRepositoryEntries());
+		allowedToAddDeployment = allowedToAddDeployments(ureq, lti13Module.getDeploymentRolesListForBusinessGroups());
 
 		initForm(ureq);
 		loadModel();
 	}
 	
-	private boolean allowedToAddDeployments(UserRequest ureq, List<OrganisationRoles> rolesAllowedTo) {
+	private boolean allowedToAddDeployments(UserRequest ureq, List<LTI13Roles> rolesAllowedTo) {
 		Roles roles = ureq.getUserSession().getRoles();
-		for(OrganisationRoles role:rolesAllowedTo) {
-			if(roles.hasRole(role)) {
+		for(LTI13Roles role:rolesAllowedTo) {
+			if(OrganisationRoles.isValue(role.name()) && roles.hasRole(OrganisationRoles.valueOf(role.name()))) {
 				return true;
+			}
+			if(LTI13Roles.groupCoach == role) {
+				return businessGroup != null;
+			} else if(LTI13Roles.groupCoachAndAuthor == role) {
+				return businessGroup != null && roles.hasRole(OrganisationRoles.author);
 			}
 		}
 		return false;

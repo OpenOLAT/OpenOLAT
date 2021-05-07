@@ -257,8 +257,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		// set up the components
 		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
 		toolbarPanel.setInvisibleCrumb(0); // show root (course) level
-		toolbarPanel.setShowCloseLink(!assessmentLock, !assessmentLock);
-		toolbarPanel.getBackLink().setEnabled(!assessmentLock);
+		
+		boolean ltiLaunched = isLtiLaunched(ureq);
+		boolean showCloseLink = !assessmentLock && !ltiLaunched;
+		toolbarPanel.setShowCloseLink(showCloseLink, showCloseLink);
+		toolbarPanel.getBackLink().setEnabled(showCloseLink);
 		putInitialPanel(toolbarPanel);
 		onSecurityReloaded(ureq);
 		doRun(ureq, this.reSecurity);
@@ -282,6 +285,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		return lock != null && !reSec.isOwner() && !reSec.isEntryAdmin()
 				&& lock.getResourceableId().equals(resource.getResourceableId())
 				&& lock.getResourceableTypeName().equals(resource.getResourceableTypeName());
+	}
+	
+	protected boolean isLtiLaunched(UserRequest ureq) {
+		UserSession usess = ureq.getUserSession();
+		return usess != null && usess.getSessionInfo() != null && "LTI".equalsIgnoreCase(usess.getSessionInfo().getAuthProvider());
 	}
 	
 	protected final void reloadSecurity(UserRequest ureq) {

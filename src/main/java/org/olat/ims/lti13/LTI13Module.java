@@ -22,7 +22,6 @@ package org.olat.ims.lti13;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.helpers.Settings;
@@ -135,7 +134,7 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(PROP_DEPLOYMENT_ROLES_REPOSITORY_ENTRY, deploymentRoles, true);
 	}
 	
-	public List<OrganisationRoles> getDeploymentRolesListForRepositoryEntries() {
+	public List<LTI13Roles> getDeploymentRolesListForRepositoryEntries() {
 		return toRoles(getDeploymentRolesForRepositoryEntries());
 	}
 
@@ -148,17 +147,17 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(PROP_DEPLOYMENT_ROLES_BUSINESS_GROUP, deploymentRoles, true);
 	}
 	
-	public List<OrganisationRoles> getDeploymentRolesListForBusinessGroups() {
+	public List<LTI13Roles> getDeploymentRolesListForBusinessGroups() {
 		return toRoles(getDeploymentRolesForBusinessGroups());
 	}
 	
-	private List<OrganisationRoles> toRoles(String roles) {
-		List<OrganisationRoles> roleList = new ArrayList<>(5);
+	private List<LTI13Roles> toRoles(String roles) {
+		List<LTI13Roles> roleList = new ArrayList<>(5);
 		if(StringHelper.containsNonWhitespace(roles)) {
 			String[] values = roles.split("[,]");
 			for(String value:values) {
-				if(OrganisationRoles.valid(value)) {
-					roleList.add(OrganisationRoles.valueOf(value));
+				if(LTI13Roles.valid(value)) {
+					roleList.add(LTI13Roles.valueOf(value));
 				}
 			}
 		}

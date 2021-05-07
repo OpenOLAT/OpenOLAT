@@ -22,7 +22,6 @@ package org.olat.ims.lti13.ui;
 import java.util.Collection;
 import java.util.List;
 
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
 import org.olat.core.gui.UserRequest;
@@ -41,6 +40,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.lti13.LTI13Module;
+import org.olat.ims.lti13.LTI13Roles;
 import org.olat.user.ui.organisation.OrganisationAdminController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -87,28 +87,28 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		initOrganisationsEl(formLayout);
 		
 		KeyValues rolesEntriesValues = new KeyValues();
-		rolesEntriesValues.add(KeyValues.entry(OrganisationRoles.user.name(), translate("role.user")));
-		rolesEntriesValues.add(KeyValues.entry(OrganisationRoles.author.name(), translate("role.author")));
-		rolesEntriesValues.add(KeyValues.entry(OrganisationRoles.learnresourcemanager.name(), translate("role.learnresourcemanager")));
-		rolesEntriesValues.add(KeyValues.entry(OrganisationRoles.administrator.name(), translate("role.administrator")));
+		rolesEntriesValues.add(KeyValues.entry(LTI13Roles.author.name(), translate("role.author.plus")));
+		rolesEntriesValues.add(KeyValues.entry(LTI13Roles.learnresourcemanager.name(), translate("role.learnresourcemanager")));
+		rolesEntriesValues.add(KeyValues.entry(LTI13Roles.administrator.name(), translate("role.administrator")));
 		deploymentRolesForEntriesEl = uifactory.addCheckboxesVertical("lti13.deployment.roles.entries", formLayout,
 				rolesEntriesValues.keys(), rolesEntriesValues.values(), 1);
-		List<OrganisationRoles> rolesForEntries = lti13Module.getDeploymentRolesListForRepositoryEntries();
-		for(OrganisationRoles role:rolesForEntries) {
+		List<LTI13Roles> rolesForEntries = lti13Module.getDeploymentRolesListForRepositoryEntries();
+		for(LTI13Roles role:rolesForEntries) {
 			if(rolesEntriesValues.containsKey(role.name())) {
 				deploymentRolesForEntriesEl.select(role.name(), true);
 			}
 		}
 		
 		KeyValues rolesGroupsValues = new KeyValues();
-		rolesGroupsValues.add(KeyValues.entry(OrganisationRoles.user.name(), translate("role.user")));
-		rolesGroupsValues.add(KeyValues.entry(OrganisationRoles.author.name(), translate("role.author")));
-		rolesGroupsValues.add(KeyValues.entry(OrganisationRoles.groupmanager.name(), translate("role.groupmanager")));
-		rolesGroupsValues.add(KeyValues.entry(OrganisationRoles.administrator.name(), translate("role.administrator")));
+		rolesGroupsValues.add(KeyValues.entry(LTI13Roles.groupCoach.name(), translate("role.group.coach")));
+		rolesGroupsValues.add(KeyValues.entry(LTI13Roles.groupCoachAndAuthor.name(), translate("role.group.coach.author")));
+		rolesGroupsValues.add(KeyValues.entry(LTI13Roles.author.name(), translate("role.author")));
+		rolesGroupsValues.add(KeyValues.entry(LTI13Roles.groupmanager.name(), translate("role.groupmanager")));
+		rolesGroupsValues.add(KeyValues.entry(LTI13Roles.administrator.name(), translate("role.administrator")));
 		deploymentRolesForGroupsEl = uifactory.addCheckboxesVertical("lti13.deployment.roles.groups", formLayout,
 				rolesGroupsValues.keys(), rolesGroupsValues.values(), 1);
-		List<OrganisationRoles> rolesForGroups = lti13Module.getDeploymentRolesListForBusinessGroups();
-		for(OrganisationRoles role:rolesForGroups) {
+		List<LTI13Roles> rolesForGroups = lti13Module.getDeploymentRolesListForBusinessGroups();
+		for(LTI13Roles role:rolesForGroups) {
 			if(rolesGroupsValues.containsKey(role.name())) {
 				deploymentRolesForGroupsEl.select(role.name(), true);
 			}
@@ -204,7 +204,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 	private String toString(Collection<String> selectedKeys) {
 		StringBuilder sb = new StringBuilder();
 		for(String selectedKey:selectedKeys)  {
-			if(OrganisationRoles.valid(selectedKey)) {
+			if(LTI13Roles.valid(selectedKey)) {
 				if(sb.length() > 0) {
 					sb.append(",");
 				}

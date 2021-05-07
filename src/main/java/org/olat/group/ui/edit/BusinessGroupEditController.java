@@ -97,6 +97,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 	private BusinessGroupEditAccessController tabAccessCtrl;
 	
 	private int membersTab;
+	private final String type;
 
 	/**
 	 * Never call this constructor directly, use the BGControllerFactory instead!!
@@ -111,6 +112,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 	public BusinessGroupEditController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		this.toolbarPanel = toolbarPanel;
+		type = businessGroup.getTechnicalType();
 		
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
 		//            basically forcing any logging action called within the bg editor to be of type 'admin'
@@ -202,7 +204,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		//resources (optional)
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean resourceEnabled = roles.isAdministrator() || roles.isGroupManager() || roles.isAuthor() || hasResources;
-		if(resourceEnabled) {
+		if(resourceEnabled && BusinessGroup.BUSINESS_TYPE.equals(type)) {
 			tabbedPane.addTab(ureq, translate("group.edit.tab.resources"), uureq -> {
 				if(resourceController == null) {
 					resourceController = new BusinessGroupEditResourceController(uureq, getWindowControl(), currBusinessGroup);
@@ -225,7 +227,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 	}
 
 	private BusinessGroupEditAccessController getAccessController(UserRequest ureq) {
-		if(tabAccessCtrl == null && acModule.isEnabled()) { 
+		if(tabAccessCtrl == null && acModule.isEnabled() && BusinessGroup.BUSINESS_TYPE.equals(type)) { 
 			tabAccessCtrl = new BusinessGroupEditAccessController(ureq, getWindowControl(), currBusinessGroup);
 			if(BusinessGroupManagedFlag.isManaged(currBusinessGroup, BusinessGroupManagedFlag.bookings)
 					&& tabAccessCtrl.getNumOfBookingConfigurations() == 0) {
