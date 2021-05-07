@@ -74,6 +74,8 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormContextHelp("External platforms");
+		
 		String[] enabledValues = new String[]{ translate("enabled") };
 		
 		moduleEnabled = uifactory.addCheckboxesHorizontal("lti13.module.enabled", formLayout, ENABLED_KEY, enabledValues);

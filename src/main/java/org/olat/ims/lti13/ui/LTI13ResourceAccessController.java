@@ -122,6 +122,11 @@ public class LTI13ResourceAccessController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("access.lti13.title");
+		if(entry == null) {
+			setFormContextHelp("Share groups");
+		} else {
+			setFormContextHelp("Share courses");
+		}
 		
 		if(allowedToAddDeployment) {
 			addDeploymentButton = uifactory.addFormLink("add.deployment", formLayout, Link.BUTTON);
@@ -145,7 +150,11 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setEmptyTableMessageKey("tools.empty");
+		if(entry == null) {
+			tableEl.setEmptyTableMessageKey("tools.empty.groups");
+		} else {
+			tableEl.setEmptyTableMessageKey("tools.empty.entries");
+		}
 		tableEl.setAndLoadPersistedPreferences(ureq, "lti13-tools-admin");
 	}
 	
