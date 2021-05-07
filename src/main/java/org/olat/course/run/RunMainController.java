@@ -280,6 +280,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// it is to correctly apply external links using course-internal links via javascript
 		coursemain.contextPut("courserepokey", courseRepositoryEntry.getKey());
 		
+		String educationalTypeIdentifier = courseRepositoryEntry.getEducationalType() != null
+				? courseRepositoryEntry.getEducationalType().getIdentifier()
+				: null;
+		coursemain.contextPut("educationalTypeIdentifier", educationalTypeIdentifier);
+		
 		// if a disclaimer is enabled, show it first
 		disclaimerAccepted = !courseModule.isDisclaimerEnabled()
 				|| !course.getCourseEnvironment().getCourseConfig().isDisclaimerEnabled() 
