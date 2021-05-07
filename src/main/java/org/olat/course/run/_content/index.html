@@ -1,6 +1,11 @@
 <script>
 /* <![CDATA[ */
 o_info.course_id="$courserepokey";
+#if($educationalTypeIdentifier)
+	o_info.educational_type_identifier="$educationalTypeIdentifier";
+#else
+	delete o_info.educational_type_identifier;
+#end
 ## o_activateCourseNode is called from functions.js gotonode() method and implements 
 ## the activation of the given node id in the course run structure
 function o_activateCourseNode(nodeid) {
