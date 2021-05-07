@@ -1465,8 +1465,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	}
 	
 	private void processNotificationEvent(NotificationEvent event) {
-		// Only check if not in assessment mode and not in fullscreen mode
-		if (lockResource == null && (getScreenMode() == null || !getScreenMode().isWishFullScreen())
+		// Only check if not in assessment mode and not in full screen mode
+		if (lockResource == null && (getScreenMode() == null || !(getScreenMode().isFullScreen() || getScreenMode().isWishFullScreen()))
 				&& getIdentity() != null) {
 			Translator translator = Util.createPackageTranslator(event.getI18nPackage(), getLocale());
 			String message = translator.translate(event.getI18nKey(), event.getArguments());
