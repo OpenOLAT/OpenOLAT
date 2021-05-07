@@ -65,7 +65,9 @@ import org.olat.course.noderight.NodeRightService;
 import org.olat.course.noderight.NodeRightType;
 import org.olat.course.noderight.ui.NodeRightGrantDataModel.GrantCols;
 import org.olat.course.noderight.ui.NodeRightGrantDataModel.NodeRightGrantRow;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,6 +109,9 @@ public class NodeRightsController extends FormBasicController {
 	private NodeRightService nodeRightService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	
 
 	public NodeRightsController(UserRequest ureq, WindowControl wControl, CourseGroupManager courseGroupManager,
 			List<NodeRightType> types, ModuleConfiguration moduleConfigs, String contextHelp) {
@@ -279,6 +284,12 @@ public class NodeRightsController extends FormBasicController {
 			} else if (grant.getRole() != null && roles.contains(grant.getRole())) {
 				name = translateRole(grant.getRole());
 				row.setType(translate("grant.type.role"));
+			} else if (grant.getBusinessGroupRef() != null) {
+				BusinessGroup group = businessGroupService.loadBusinessGroup(grant.getBusinessGroupRef().getKey());
+				if (group != null) {
+					name = group.getName();
+					row.setType(translate("grant.type.group"));
+				}
 			}
 			
 			if (!StringHelper.containsNonWhitespace(name)) {
