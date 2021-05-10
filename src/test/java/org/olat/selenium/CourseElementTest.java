@@ -250,7 +250,6 @@ public class CourseElementTest extends Deployments {
 		// direct jump in SCORM content
 		ScormPage.getScormPage(browser)
 			.passVerySimpleScorm()
-			.back()
 			.assertOnScormPassed()
 			.assertOnScormScore(33);
 	}

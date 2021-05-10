@@ -439,7 +439,7 @@ public class AssessmentTest extends Deployments {
 		scorm
 			.start()
 			.passVerySimpleScorm()
-			.back();
+			.assertOnScormScore(33);
 		
 		WebElement scormH2Back = ryomouBrowser.findElement(scormH2By);
 		Assert.assertEquals(scormNodeTitle, scormH2Back.getText().trim());

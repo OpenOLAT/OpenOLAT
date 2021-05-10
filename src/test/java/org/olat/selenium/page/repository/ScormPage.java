@@ -19,12 +19,9 @@
  */
 package org.olat.selenium.page.repository;
 
-import java.util.List;
-
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * Drive the SCORM page
@@ -77,18 +74,6 @@ public class ScormPage {
 		OOGraphene.waitingALittleBit();
 		
 		browser.switchTo().defaultContent();
-		
-		for(int i=0; i<50; i++) {
-			By rootNodeBy = By.cssSelector("span.o_tree_link.o_tree_l0 a");
-			browser.findElement(rootNodeBy).click();
-			
-			By scormCompletedBadgeBy = By.cssSelector("span.badge.o_scorm_completed");
-			List<WebElement> completedEls = browser.findElements(scormCompletedBadgeBy);
-			if(completedEls.size() > 0) {
-				break;
-			}
-			OOGraphene.waitingALittleLonger();
-		}
 		return this;
 	}
 	
@@ -101,7 +86,7 @@ public class ScormPage {
 	 */
 	public ScormPage assertOnScormScore(int score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_personal')]//tr[contains(@class,'o_score')]/td[contains(text(),'" + score + "')]");
-		OOGraphene.waitElement(resultsBy, 5, browser);
+		OOGraphene.waitElement(resultsBy, browser);
 		return this;
 	}
 	

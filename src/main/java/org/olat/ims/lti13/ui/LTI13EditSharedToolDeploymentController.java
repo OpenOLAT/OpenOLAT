@@ -97,6 +97,7 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		platformsEl = uifactory.addDropdownSingleselect("deployment.platform", formLayout,
 				platformsValues.keys(), platformsValues.values(), null);
 		platformsEl.addActionListener(FormEvent.ONCHANGE);
+		platformsEl.setMandatory(true);
 		if(deployment != null && platformsValues.containsKey(deployment.getKey().toString())) {
 			platformsEl.select(deployment.getKey().toString(), true);
 			platformsEl.setEnabled(false);
@@ -182,6 +183,18 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		publicKeyTypeEl.clearError();
+		if(!publicKeyTypeEl.isOneSelected()) {
+			publicKeyTypeEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+
+		platformsEl.clearError();
+		if(!platformsEl.isOneSelected()) {
+			platformsEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		deploymentIdEl.clearError();
 		if(!StringHelper.containsNonWhitespace(deploymentIdEl.getValue())) {
 			deploymentIdEl.setErrorKey("form.legende.mandatory", null);
@@ -217,11 +230,13 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 	}
 	
 	private LTI13Platform getSelectedPlatform() {
-		String selectedKey = platformsEl.getSelectedKey();
 		LTI13Platform selectedPlatform = null;
-		for(LTI13Platform platform:platforms) {
-			if(selectedKey.equals(platform.getKey().toString())) {
-				selectedPlatform = platform;
+		if(platformsEl.isOneSelected()) {
+			String selectedKey = platformsEl.getSelectedKey();
+			for(LTI13Platform platform:platforms) {
+				if(selectedKey.equals(platform.getKey().toString())) {
+					selectedPlatform = platform;
+				}
 			}
 		}
 		return selectedPlatform;
