@@ -19,8 +19,11 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.io.File;
 import java.util.Date;
 
+import org.olat.basesecurity.AuthHelper;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,11 +40,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -54,16 +61,19 @@ import org.olat.course.nodes.bigbluebutton.BigBlueButtonEditController;
 import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.dispatcher.AuthenticatedDispatcher;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.manager.AvatarMapper;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.user.DisplayPortraitManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -77,11 +87,13 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 	private TextElement nameEl;
 	private TextElement passwordEl;
 	private FormLink joinButton;
+	private FormLink loginButton;
 	private MultipleSelectionElement acknowledgeRecordingEl;
 
+	private String avatarUrl;
 	private boolean readOnly = false;
 	private boolean moderatorStartMeeting;
-	private final boolean allowedToMeet;
+	private final MeetinSecurity allowedToMeet;
 	private BigBlueButtonMeeting meeting;
 	private OLATResourceable meetingOres;
 	
@@ -95,6 +107,8 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 	private BigBlueButtonManager bigBlueButtonManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private DisplayPortraitManager displayPortraitManager;
 
 	public BigBlueButtonGuestJoinController(UserRequest ureq, WindowControl wControl, BigBlueButtonMeeting meeting) {
 		super(ureq, wControl, "guest_join");
@@ -147,10 +161,14 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		passwordEl = uifactory.addTextElement("meeting.guest.password", 64, "", formLayout);
 		passwordEl.setVisible(!end && meeting != null && StringHelper.containsNonWhitespace(meeting.getPassword()));
 		
-		joinButton = uifactory.addFormLink("meeting.join.button", formLayout, Link.BUTTON_LARGE);
+		joinButton = uifactory.addFormLink("meeting.join.button", translate("meeting.join.button"), null, formLayout,
+				Link.BUTTON_LARGE | Link.NONTRANSLATED);
 		joinButton.setElementCssClass("o_sel_bbb_guest_join");
 		joinButton.setVisible(!end);
 		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
+		
+		loginButton = uifactory.addFormLink("meeting.login", formLayout, Link.LINK);
+		loginButton.setElementCssClass("o_sel_bbb_guest_login");
 		
 		KeyValues acknowledgeKeyValue = new KeyValues();
 		acknowledgeKeyValue.add(KeyValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
@@ -167,21 +185,28 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 	
 	private void updateButtonsAndStatus() {
 		boolean isEnded = isEnded();
-		boolean accessible = isAccessible();
+		boolean accessible = isAccessible(allowedToMeet);
 		boolean disabled = isDisabled();
 		flc.contextPut("disabled", Boolean.valueOf(disabled));
 		flc.contextPut("ended", Boolean.valueOf(isEnded));
 		flc.contextPut("notStarted", Boolean.TRUE);
-		flc.contextPut("allowedToMeet", Boolean.valueOf(allowedToMeet));
+		flc.contextPut("allowedToMeet", Boolean.valueOf(allowedToMeet.isAllowed()));
 		// only change from invisible to visible
 		if(!joinButton.isVisible()) {
-			joinButton.setVisible(allowedToMeet && accessible && !disabled);
+			joinButton.setVisible(allowedToMeet.isAllowed() && accessible && !disabled);
 		}
-		joinButton.setEnabled(allowedToMeet && accessible && !disabled);
+		joinButton.setEnabled(allowedToMeet.isAllowed() && accessible && !disabled);
 	
-		if(allowedToMeet && accessible && !disabled) {
+		if(allowedToMeet.isAllowed() && accessible && !disabled) {
 			boolean running = bigBlueButtonManager.isMeetingRunning(meeting);
-			if(!running && moderatorStartMeeting) {
+			if(allowedToMeet.isModerator() || allowedToMeet.isAdmin()) {
+				flc.contextPut("notStarted", Boolean.FALSE);
+				if(!running && moderatorStartMeeting) {
+					joinButton.setI18nKey(translate("meeting.start.button"));
+				} else {
+					joinButton.setI18nKey(translate("meeting.join.button"));
+				}
+			} else if(!running && moderatorStartMeeting) {
 				flc.contextPut("notStarted", Boolean.TRUE);
 				joinButton.setEnabled(false);
 			} else {
@@ -194,11 +219,10 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		// update button style to indicate that the user must now press to start
 		joinButton.setPrimary(joinButton.isEnabled());
 		acknowledgeRecordingEl.setVisible(joinButton.isEnabled() && BigBlueButtonUIHelper.isRecord(meeting));
-
 	}
 	
-	private boolean isAllowedToMeet(UserRequest ureq) {
-		if(meeting == null) return false;
+	private MeetinSecurity isAllowedToMeet(UserRequest ureq) {
+		if(meeting == null) return new MeetinSecurity(false, false, false);
 
 		UserSession usess = ureq.getUserSession();
 		IdentityEnvironment identEnv = usess.getIdentityEnvironment();
@@ -208,7 +232,7 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 				RepositoryEntry re = meeting.getEntry();
 				externalUsersAllowed &= re.getEntryStatus() == RepositoryEntryStatusEnum.published;
 			}
-			return externalUsersAllowed;
+			return new MeetinSecurity(externalUsersAllowed, false, false);
 		} else if(meeting.getEntry() != null) {
 			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), identEnv.getRoles(), meeting.getEntry());
 			if(reSecurity.canLaunch()) {
@@ -221,14 +245,15 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 							.withFilter(AccessibleFilter.create())
 							.build()
 							.getNodeById(meeting.getSubIdent());
-					return courseTreeNode.isVisible();
+					return new MeetinSecurity(courseTreeNode.isVisible(), reSecurity.isAdministrator() || reSecurity.isOwner(), reSecurity.isCoach());
 				}
-				return true;
+				return new MeetinSecurity(true, reSecurity.isAdministrator() || reSecurity.isOwner(), reSecurity.isCoach());
 			}
 		} else if(meeting.getBusinessGroup() != null) {
-			return businessGroupService.isIdentityInBusinessGroup(getIdentity(), meeting.getBusinessGroup());
+			boolean member = businessGroupService.isIdentityInBusinessGroup(getIdentity(), meeting.getBusinessGroup());
+			return new MeetinSecurity(member, false, false);
 		}
-		return false;
+		return new MeetinSecurity(false, false, false);
 	}
 	
 	private boolean isModeratorStartMeeting() {
@@ -254,14 +279,14 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		return meeting != null && meeting.getServer() != null && !meeting.getServer().isEnabled();
 	}
 	
-	private boolean isAccessible() {
+	private boolean isAccessible(MeetinSecurity security) {
 		if(meeting == null) return false;
 		if(meeting.isPermanent()) {
 			return bigBlueButtonModule.isPermanentMeetingEnabled();
 		}
 
 		Date now = new Date();
-		Date start = meeting.getStartDate();
+		Date start = (security.isAdmin() || security.isModerator()) ? meeting.getStartWithLeadTime() : meeting.getStartDate();
 		Date end = meeting.getEndWithFollowupTime();
 		return !((start != null && start.compareTo(now) >= 0) || (end != null && end.compareTo(now) <= 0));
 	}
@@ -281,7 +306,10 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		nameEl.clearError();
-		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
+		UserSession usess = ureq.getUserSession();
+		if(usess != null && usess.isAuthenticated() && usess.getRoles() != null && !usess.getRoles().isGuestOnly()) {
+			// name is not mandatory if logged in
+		} else if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
 			nameEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		} else if(nameEl.getValue().length() > 64) {
@@ -328,25 +356,89 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(joinButton == source && validateFormLogic(ureq)) {
 			doJoin(ureq);
+		} else if(loginButton == source) {
+			doLogin(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
 	private void doJoin(UserRequest ureq) {
-		if(!allowedToMeet) return;
+		if(!allowedToMeet.isAllowed()) return;
 		
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		String pseudo = nameEl.getValue();
 
+		String aUrl = null;
+		Identity identity = null;
 		BigBlueButtonAttendeeRoles role;
 		UserSession usess = ureq.getUserSession();
 		if(getIdentity() == null || usess.getRoles() == null) {
 			role = BigBlueButtonAttendeeRoles.external;
-		} else {
+		} else if(usess.getRoles().isGuestOnly()) {
 			role = BigBlueButtonAttendeeRoles.guest;
+		} else {
+			if(allowedToMeet.isAdmin() || allowedToMeet.isModerator()) {
+				role = BigBlueButtonAttendeeRoles.moderator;
+			} else {
+				role = BigBlueButtonAttendeeRoles.viewer;
+			}
+			identity = getIdentity();
+			aUrl = getAvatarUrl();
 		}
-		String url = bigBlueButtonManager.join(meeting, null, pseudo, null, role, null, errors);
+		
+		String url = bigBlueButtonManager.join(meeting, identity, pseudo, aUrl, role, null, errors);
 		MediaResource resource = new RedirectMediaResource(url);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private String getAvatarUrl() {
+		if(avatarUrl == null) {
+			File portraitFile = displayPortraitManager.getBigPortrait(getIdentity());
+			if(portraitFile != null) {
+				String rnd = "r" + getIdentity().getKey() + CodeHelper.getRAMUniqueID();
+				avatarUrl = Settings.createServerURI()
+						+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFile), 5 * 60 * 60)
+						+ "/" + portraitFile.getName();
+			}
+		}
+		return avatarUrl;
+	}
+	
+	private void doLogin(UserRequest ureq) {
+		UserSession usess = ureq.getUserSession();
+		IdentityEnvironment identEnv = usess.getIdentityEnvironment();
+		if(identEnv.getIdentity() == null && identEnv.getRoles() == null) {
+			String url = "https://kivik.frentix.com/olat/bigbluebutton/102682586984907";
+			usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_REDIRECT_URL, url);
+			ureq.getDispatchResult().setResultingMediaResource(
+					new RedirectMediaResource(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault()));
+		} else if(identEnv.getRoles().isGuestOnly()) {
+			AuthHelper.doLogout(ureq);
+		}
+	}
+	
+	private static class MeetinSecurity {
+		
+		private final boolean allowed;
+		private final boolean admin;
+		private final boolean moderator;
+		
+		public MeetinSecurity(boolean allowed,  boolean admin, boolean moderator) {
+			this.allowed = allowed;
+			this.admin = admin;
+			this.moderator = moderator;
+		}
+
+		public boolean isAllowed() {
+			return allowed;
+		}
+
+		public boolean isAdmin() {
+			return admin;
+		}
+
+		public boolean isModerator() {
+			return moderator;
+		}	
 	}
 }

@@ -55,6 +55,10 @@
 		
 		<div class=o_button_group>
 			$r.render("meeting.join.button")
+			#if($r.visible("meeting.login")) 
+				<br>$r.translate("or")<br>
+				$r.render("meeting.login")
+			#end
 		</div>
 	#end
 #else

@@ -82,7 +82,8 @@ import org.olat.login.LoginModule;
 public class AuthenticatedDispatcher implements Dispatcher {
 	private static final Logger log = Tracing.createLoggerFor(AuthenticatedDispatcher.class);
 	
-	protected static final String AUTHDISPATCHER_BUSINESSPATH = "AuthDispatcher:businessPath";
+	public static final String AUTHDISPATCHER_BUSINESSPATH = "AuthDispatcher:businessPath";
+	public static final String AUTHDISPATCHER_REDIRECT_URL = "AuthDispatcher:redirectUrl";
 	
 	protected static final String QUESTIONMARK = "?";
 	protected static final String GUEST = "guest";
@@ -127,7 +128,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		if (!auth) {
 			String guestAccess = ureq.getParameter(GUEST);
 			if (guestAccess == null || !CoreSpringFactory.getImpl(LoginModule.class).isGuestLoginEnabled()) {
-				String businessPath = extractBusinessPath( ureq, request, uriPrefix);
+				String businessPath = extractBusinessPath(ureq, request, uriPrefix);
 				if(businessPath != null) {
 					usess.putEntryInNonClearedStore(AUTHDISPATCHER_BUSINESSPATH, businessPath);
 				}
@@ -175,9 +176,12 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			}
 			
 			sessionInfo.setLastClickTime();
-			
+
+			String redirectUrl = (String) usess.removeEntryFromNonClearedStore(AUTHDISPATCHER_REDIRECT_URL);
 			String businessPath = (String) usess.removeEntryFromNonClearedStore(AUTHDISPATCHER_BUSINESSPATH);
-			if (businessPath != null) {
+			if (redirectUrl != null) {
+				DispatcherModule.redirectTo(response, redirectUrl);
+			} else if (businessPath != null) {
 				processBusinessPath(businessPath, ureq, usess);
 			} else if (ureq.isValidDispatchURI()) {
 				// valid uri for dispatching (has timestamp, componentid and windowid)
