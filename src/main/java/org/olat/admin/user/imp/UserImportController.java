@@ -39,7 +39,6 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -107,6 +106,8 @@ public class UserImportController extends BasicController {
 	private DB dbInstance;
 	@Autowired
 	private UserManager um;
+	@Autowired
+	private I18nManager i18nManager;
 	@Autowired
 	private MailManager mailService;
 	@Autowired
@@ -383,16 +384,18 @@ public class UserImportController extends BasicController {
 	}
 	
 	private MailTemplate createMailTemplateForNewIdentity(Identity identity, TransientIdentity transientIdentity) {
+		String username = securityManager.findAuthenticationName(identity);
+
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		String[] bodyArgs = new String[] {
-				identity.getName(),														// 0
-				identity.getUser().getProperty(UserConstants.FIRSTNAME, null),			// 1
-				identity.getUser().getProperty(UserConstants.LASTNAME, null),			// 2
-				UserManager.getInstance().getUserDisplayEmail(identity, getLocale()),	// 3
-				Settings.getServerContextPathURI(),										// 4
-				transientIdentity.getPassword()											// 5
+				username,														// 0
+				identity.getUser().getProperty(UserConstants.FIRSTNAME, null),	// 1
+				identity.getUser().getProperty(UserConstants.LASTNAME, null),	// 2
+				um.getUserDisplayEmail(identity, getLocale()),					// 3
+				Settings.getServerContextPathURI(),								// 4
+				transientIdentity.getPassword()									// 5
 		};
-		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
+		Locale locale = i18nManager.getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(UserImportController.class, locale);
 
 		String subject = translator.translate("mail.new.identity.subject");
@@ -436,7 +439,7 @@ public class UserImportController extends BasicController {
 		
 		MailPackage mailing = new MailPackage(sendmail);
 		businessGroupService.updateMemberships(getIdentity(), changes, mailing);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 	}
 	
 	public static class ImportReport {
