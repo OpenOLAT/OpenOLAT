@@ -163,7 +163,7 @@ public interface AppointmentsService {
 
 	public Appointment removeBBBMeeting(Appointment appointment);
 
-	public String joinBBBMeeting(Appointment appointment, Identity identity, BigBlueButtonErrors errors);
+	public String joinBBBMeeting(Appointment appointment, Identity identity, String avatarURL, BigBlueButtonErrors errors);
 
 	public void syncBBBRecorings(Topic topic);
 

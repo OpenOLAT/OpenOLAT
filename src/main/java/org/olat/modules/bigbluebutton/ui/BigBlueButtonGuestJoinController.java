@@ -345,7 +345,7 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		} else {
 			role = BigBlueButtonAttendeeRoles.guest;
 		}
-		String url = bigBlueButtonManager.join(meeting, null, pseudo, role, null, errors);
+		String url = bigBlueButtonManager.join(meeting, null, pseudo, null, role, null, errors);
 		MediaResource resource = new RedirectMediaResource(url);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}

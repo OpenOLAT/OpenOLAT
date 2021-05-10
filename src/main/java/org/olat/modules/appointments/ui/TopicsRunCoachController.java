@@ -21,6 +21,7 @@ package org.olat.modules.appointments.ui;
 
 import static java.util.Collections.emptyList;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,7 +61,9 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -79,6 +82,7 @@ import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
+import org.olat.modules.bigbluebutton.manager.AvatarMapper;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
@@ -87,6 +91,7 @@ import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.ui.TeamsMeetingEvent;
 import org.olat.modules.teams.ui.TeamsUIHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -122,6 +127,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	private ContextualSubscriptionController subscriptionCtrl;
 	private StepsMainRunController wizard;
 	
+	private String avatarUrl;
 	private final RepositoryEntry entry;
 	private final String subIdent;
 	private final AppointmentsSecurityCallback secCallback;
@@ -133,6 +139,8 @@ public class TopicsRunCoachController extends FormBasicController {
 	private AppointmentsService appointmentsService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private DisplayPortraitManager displayPortraitManager;
 
 	public TopicsRunCoachController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback) {
@@ -755,8 +763,18 @@ public class TopicsRunCoachController extends FormBasicController {
 			wrapper.getAcknowledgeRecordingEl().clearError();
 		}
 		
+		if(avatarUrl == null) {
+			File portraitFile = displayPortraitManager.getBigPortrait(getIdentity());
+			if(portraitFile != null) {
+				String rnd = "r" + getIdentity().getKey() + CodeHelper.getRAMUniqueID();
+				avatarUrl = Settings.createServerURI()
+						+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFile), 5 * 60 * 60)
+						+ "/" + portraitFile.getName();
+			}
+		}
+		
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
-		String meetingUrl = appointmentsService.joinBBBMeeting(appointment, getIdentity(), errors);
+		String meetingUrl = appointmentsService.joinBBBMeeting(appointment, getIdentity(), avatarUrl, errors);
 		redirectTo(meetingUrl, errors);
 	}
 	

@@ -866,7 +866,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	}
 
 	@Override
-	public String joinBBBMeeting(Appointment appointment, Identity identity, BigBlueButtonErrors errors) {
+	public String joinBBBMeeting(Appointment appointment, Identity identity, String avatarURL, BigBlueButtonErrors errors) {
 		// Check server
 		if (!isBigBlueButtonEnabled()) {
 			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.serverDisabled));
@@ -889,7 +889,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		}
 		
 		BigBlueButtonAttendeeRoles role = organizer? BigBlueButtonAttendeeRoles.moderator: BigBlueButtonAttendeeRoles.viewer;
-		return bigBlueButtonManager.join(appointment.getBBBMeeting(), identity, null, role, null, errors);
+		return bigBlueButtonManager.join(appointment.getBBBMeeting(), identity, null, avatarURL, role, null, errors);
 	}
 
 	@Override
