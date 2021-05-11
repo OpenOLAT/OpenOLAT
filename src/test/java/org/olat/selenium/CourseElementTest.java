@@ -68,6 +68,7 @@ import org.olat.selenium.page.course.STConfigurationPage;
 import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.course.SinglePage;
 import org.olat.selenium.page.course.SinglePageConfigurationPage;
+import org.olat.selenium.page.course.TeamsPage;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
@@ -2158,10 +2159,11 @@ public class CourseElementTest extends Deployments {
 	}
 	
 	
-
 	/**
+	 * An author creates a course with a course element of type BigBlueButton,
+	 * add a meeting in the edit list, go the meetings list and goes to the page
+	 * dedicated to join the meeting.
 	 * 
-	 * @param loginPage
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
@@ -2216,9 +2218,75 @@ public class CourseElementTest extends Deployments {
 			.assertOnJoin();
 	}
 	
+	
+	/**
+	 * An author creates a course with a course element of type Microsoft Teams,
+	 * add a meeting in the edit list, go the meetings list and goes to the page
+	 * dedicated to the meeting. The selenium works without teams to be configured
+	 * and wait for the configuration errors.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithTeams()
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Teams-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		String nodeTitle = "Teams-1";
+		//create a course element of type CP with the CP that we create above
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("msteams")
+			.nodeTitle(nodeTitle);
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		courseEditor
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+		String meetingName = "Teams meeting";
+		TeamsPage teams = new TeamsPage(browser);
+		teams
+			.assertOnRuntime()
+			.selectEditMeetingsList()
+			.addSingleMeeting(meetingName, "Classroom")
+			.assertOnList(meetingName)
+			.selectMeetingsList()
+			.assertOnList(meetingName)
+			.selectMeeting(meetingName)
+			.assertOnMeeting(meetingName);
+		
+		// Teams is not configured, errors
+		OOGraphene.closeErrorBox(browser);
+		
+		teams
+			.assertOnJoinDisabled();
+	}
+	
 
 	/**
-	 * An author create a course with an appointment course element, add a topic,
+	 * An author creates a course with an appointment course element, add a topic,
 	 * add herself to the appointment and confirm the event.
 	 * 
 	 * @throws IOException
