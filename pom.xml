@@ -254,6 +254,7 @@
 												<include>${basedir}/target/jquery/jquery/qti/jquery.positionObject.min.js</include>
 												<include>${basedir}/target/jquery/jquery/qti/jquery.selectPoint.min.js</include>
 												<include>${basedir}/target/jquery/jquery/qti/jquery.slider.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.qtiCopyPaste.min.js</include>
 											</includes>
 										</aggregation>
 										<aggregation>

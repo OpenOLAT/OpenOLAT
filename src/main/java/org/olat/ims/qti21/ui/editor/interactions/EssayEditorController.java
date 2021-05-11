@@ -24,9 +24,11 @@ import java.io.File;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -49,9 +51,13 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 public class EssayEditorController extends FormBasicController {
 	
 	private TextElement titleEl;
+	private TextElement lengthEl;
+	private TextElement heightEl;
+	private TextElement minWordsEl;
+	private TextElement maxWordsEl;
 	private TextElement placeholderEl;
-	private TextElement lengthEl, heightEl, minWordsEl, maxWordsEl;
 	private RichTextElement textEl;
+	private SingleSelection  copyPasteEl;
 
 	private final File itemFile;
 	private final File rootDirectory;
@@ -124,7 +130,19 @@ public class EssayEditorController extends FormBasicController {
 		String maxStrings = getValue(itemBuilder.getMaxStrings());
 		maxWordsEl = uifactory.addTextElement("max.strings", "essay.max.strings", -1, maxStrings, formLayout);
 		maxWordsEl.setEnabled(!restrictedEdit && !readOnly);
-
+		
+		//copy/paste
+		KeyValues keys = new KeyValues();
+		keys.add(KeyValues.entry("yes", translate("yes")));
+		keys.add(KeyValues.entry("no", translate("no")));
+		copyPasteEl = uifactory.addRadiosHorizontal("copy.paste", "essay.copy.paste", formLayout, keys.keys(), keys.values());
+		copyPasteEl.setEnabled(!restrictedEdit && !readOnly);
+		if(itemBuilder.isCopyPasteDisabled()) {
+			copyPasteEl.select("no", true);
+		} else {
+			copyPasteEl.select("yes", true);
+		}
+		
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
@@ -159,6 +177,12 @@ public class EssayEditorController extends FormBasicController {
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
 			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		copyPasteEl.clearError();
+		if(!copyPasteEl.isOneSelected()) {
+			copyPasteEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 
@@ -206,6 +230,9 @@ public class EssayEditorController extends FormBasicController {
 		//question
 		String questionText = textEl.getRawValue();
 		itemBuilder.setQuestion(questionText);
+		
+		boolean copyPasteDisabled = copyPasteEl.isSelected(1);
+		itemBuilder.setCopyPasteDisabled(copyPasteDisabled);
 		
 		itemBuilder.setPlaceholder(placeholderEl.getValue());
 		if(!restrictedEdit) {

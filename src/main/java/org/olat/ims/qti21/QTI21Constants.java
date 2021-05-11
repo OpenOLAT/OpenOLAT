@@ -165,6 +165,8 @@ public class QTI21Constants {
 	
 	public static final String CSS_HOTSPOT_DISABLE_SHADOW =  "hotspot-noshadow";
 	
+	public static final String CSS_ESSAY_DISABLE_COPYPASTE =  "essay-nocopypaste";
+	
 	public enum HotspotLayouts {
 		
 		standard(""),

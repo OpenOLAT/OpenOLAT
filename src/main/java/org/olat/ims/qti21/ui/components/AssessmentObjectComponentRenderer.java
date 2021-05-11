@@ -1260,6 +1260,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	protected void renderExtendedTextBox(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
 			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString) {
 		
+		List<String> cssClasses = interaction.getClassAttr();
+		boolean copyPasteDisabled = cssClasses != null && cssClasses.contains(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE);
+		
 		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
 		boolean ended = component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode());
 		int expectedLines = interaction.getExpectedLines() == null ? 6 : interaction.getExpectedLines().intValue();
@@ -1330,7 +1333,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			  .append("  dispId:'").append(component.getQtiItem().getFormDispatchId()).append("',\n")
 			  .append("  eventIdField:'").append(form.getEventFieldId()).append("',\n")
 			  .append("  csrf:'").append(renderer.getRenderer().getCsrfToken()).append("',\n")
-			  .append(" }).tabOverride();\n")
+			  .append(" })").append(".qtiCopyPaste()", copyPasteDisabled).append(".tabOverride();\n")
 			  .append("})\n")
 			  .append(FormJSHelper.getJSEnd());
 		}

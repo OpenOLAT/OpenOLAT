@@ -33,6 +33,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
@@ -179,6 +180,24 @@ public class EssayAssessmentItemBuilder extends LobAssessmentItemBuilder {
 		extendedTextInteraction.setMaxStrings(maxStrings);
 	}
 	
+	public boolean isCopyPasteDisabled() {
+		List<String> classes = extendedTextInteraction.getClassAttr();
+		return classes != null && classes.contains(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE);
+	}
+
+	public void setCopyPasteDisabled(boolean copyPasteDisabled) {
+		List<String> cssClassses = extendedTextInteraction.getClassAttr();
+		cssClassses = cssClassses == null ? new ArrayList<>() : new ArrayList<>(cssClassses);
+		if(copyPasteDisabled) {
+			if(!cssClassses.contains(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE)) {
+				cssClassses.add(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE);
+			}
+		} else {
+			cssClassses.remove(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE);
+		}
+		extendedTextInteraction.setClassAttr(cssClassses);
+	}
+
 	@Override
 	protected void buildResponseAndOutcomeDeclarations() {
 		ResponseDeclaration responseDeclaration =

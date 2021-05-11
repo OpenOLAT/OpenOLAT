@@ -112,7 +112,7 @@ public abstract class AssessmentItemBuilder {
 			if(defaultValue != null) {
 				Value minScoreValue = defaultValue.evaluate();
 				if(minScoreValue instanceof FloatValue) {
-					Double minScore = new Double(((FloatValue)minScoreValue).doubleValue());
+					Double minScore = Double.valueOf(((FloatValue)minScoreValue).doubleValue());
 					minScoreBuilder = new ScoreBuilder(minScore, outcomeDeclaration);
 				}
 			}
@@ -126,7 +126,7 @@ public abstract class AssessmentItemBuilder {
 			if(defaultValue != null) {
 				Value maxScoreValue = defaultValue.evaluate();
 				if(maxScoreValue instanceof FloatValue) {
-					Double maxScore = new Double(((FloatValue)maxScoreValue).doubleValue());
+					Double maxScore = Double.valueOf(((FloatValue)maxScoreValue).doubleValue());
 					maxScoreBuilder = new ScoreBuilder(maxScore, outcomeDeclaration);
 				}
 			}
