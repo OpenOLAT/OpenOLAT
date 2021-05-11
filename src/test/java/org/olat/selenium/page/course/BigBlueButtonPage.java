@@ -19,9 +19,12 @@
  */
 package org.olat.selenium.page.course;
 
+import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 /**
@@ -71,13 +74,22 @@ public class BigBlueButtonPage {
 	 * @return Itself
 	 */
 	public BigBlueButtonPage addSingleMeeting(String name, String template) {
+		addSingleMeeting();
+		editMeeting(name, template);
+		return saveMeeting();
+	}
+	
+	public BigBlueButtonPage addSingleMeeting() {
 		openCreateDropDown();
 		
 		By addSingleMeetingBy = By.cssSelector("a.o_sel_bbb_single_meeting_add");
 		OOGraphene.waitElement(addSingleMeetingBy, browser);
 		browser.findElement(addSingleMeetingBy).click();
 		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
 		
+	public BigBlueButtonPage editMeeting(String name, String template) {
 		By nameBy = By.cssSelector(".o_sel_bbb_edit_meeting_name input[type='text']");
 		OOGraphene.waitElement(nameBy, browser);
 		browser.findElement(nameBy).sendKeys(name);
@@ -85,11 +97,35 @@ public class BigBlueButtonPage {
 		By templateBy = By.cssSelector(".o_sel_bbb_edit_meeting select#o_fiomeeting_template_SELBOX");
 		new Select(browser.findElement(templateBy)).selectByVisibleText(template);
 		OOGraphene.waitBusy(browser);
-		
+		return this;
+	}
+	
+	/**
+	 * Check if the external URL is  present in the meeting editor.
+	 * 
+	 * @return Itself
+	 */
+	public BigBlueButtonPage assertEditMeetingExternalUrl() {
+		By externalUrlBy = By.xpath("//div[contains(@class,'o_sel_bbb_edit_meeting_guest')]//div[contains(@class,'o_form_example')]/div[text()[contains(.,'http')]]");
+		OOGraphene.waitElement(externalUrlBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Retrieve the external URL of the meeting.
+	 * 
+	 * @return An URL
+	 */
+	public String getExternalUrl() {
+		By externalUrlBy = By.id("externalusersmeetingurl");
+		WebElement externalUrlEl = browser.findElement(externalUrlBy);
+		return externalUrlEl.getAttribute("value");
+	}
+	
+	public BigBlueButtonPage saveMeeting() {
 		By saveBy = By.cssSelector("fieldset.o_sel_bbb_edit_meeting button.btn.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
-		
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
@@ -162,6 +198,48 @@ public class BigBlueButtonPage {
 	public BigBlueButtonPage assertOnJoin() {
 		By joinBy = By.cssSelector("div.o_sel_bbb_meeting a.btn.o_sel_bbb_join");
 		OOGraphene.waitElement(joinBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Check if the user is on the meeting page for guest, and
+	 * the  join button is disabled.
+	 * 
+	 * @return Itself
+	 */
+	public BigBlueButtonPage assertOnWaitGuestMeeting() {
+		By joinBy = By.cssSelector("div.o_bbb_guest_join_box a.disabled.o_sel_bbb_guest_join");
+		OOGraphene.waitElementSlowly(joinBy, 10, browser);
+		By nameBy = By.cssSelector("div.o_bbb_guest_join_box input[type='text']");
+		OOGraphene.waitElement(nameBy, browser);
+		return this;
+	}
+	
+	public BigBlueButtonPage assertOnGuestJoinMeetingActive() {
+		By joinBy = By.cssSelector("div.o_bbb_guest_join_box a.btn.btn-primary.o_sel_bbb_guest_join");
+		OOGraphene.waitElementSlowly(joinBy, 10, browser);
+		return this;
+	}
+	
+	public BigBlueButtonPage loginToGuestJoin(UserVO user) {
+		By toLoginBy = By.cssSelector("div.o_bbb_guest_join_box a.o_sel_bbb_guest_login");
+		OOGraphene.waitElement(toLoginBy, browser);
+		browser.findElement(toLoginBy).click();
+		OOGraphene.waitElementSlowly(LoginPage.loginFormBy, 10, browser);
+		
+		//fill login form
+		By usernameId = By.id("o_fiooolat_login_name");
+		OOGraphene.waitElement(usernameId, browser);//wait the login page
+		WebElement usernameInput = browser.findElement(usernameId);
+		usernameInput.sendKeys(user.getLogin());
+		By passwordId = By.id("o_fiooolat_login_pass");
+		WebElement passwordInput = browser.findElement(passwordId);
+		passwordInput.sendKeys(user.getPassword());
+		
+		By loginBy = By.id("o_fiooolat_login_button");
+		browser.findElement(loginBy).click();
+		
+		
 		return this;
 	}
 

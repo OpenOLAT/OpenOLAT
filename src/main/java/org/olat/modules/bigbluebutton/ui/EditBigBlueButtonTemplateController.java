@@ -110,6 +110,8 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_bbb_edit_template");
+		
 		String name = template == null ? "" : template.getName();
 		nameEl = uifactory.addTextElement("template.name", "template.name", 128, name, formLayout);
 		nameEl.setMandatory(true);
@@ -134,6 +136,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 
 		boolean enable = template == null || template.isEnabled();
 		enableEl = uifactory.addCheckboxesHorizontal("template.enabled", "template.enabled", formLayout, onKeys, new String[] { "" });
+		enableEl.setElementCssClass("o_sel_bbb_template_enable");
 		enableEl.select(onKeys[0], enable);
 		
 		/* ----------- */
@@ -144,6 +147,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		
 		boolean external = template != null && template.isExternalUsersAllowed();
 		externalEl = uifactory.addCheckboxesHorizontal("template.external.enabled", "template.external.enabled", formLayout, onKeys, new String[] { "" });
+		externalEl.setElementCssClass("o_sel_bbb_template_external");
 		externalEl.select(onKeys[0], external);
 		
 		KeyValues rolesKeyValues = new KeyValues();

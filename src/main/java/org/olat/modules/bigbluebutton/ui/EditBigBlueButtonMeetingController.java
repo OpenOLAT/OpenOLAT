@@ -339,12 +339,14 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		String[] guestValues = new String[] { translate("meeting.guest.on") };
 		guestEl = uifactory.addCheckboxesHorizontal("meeting.guest", formLayout, onKeys, guestValues);
+		guestEl.setElementCssClass("o_sel_bbb_edit_meeting_guest");
 		guestEl.setVisible(entry != null && entry.isGuests());
 		guestEl.select(onKeys[0], meeting != null && meeting.isGuest());
 		guestEl.setEnabled(editable);
 		
 		String externalLink = meeting == null ? CodeHelper.getForeverUniqueID() + "" : meeting.getReadableIdentifier();
 		externalLinkEl = uifactory.addTextElement("meeting.external.users", 64, externalLink, formLayout);
+		externalLinkEl.setElementCssClass("o_sel_bbb_edit_meeting_guest");
 		externalLinkEl.setPlaceholderKey("meeting.external.users.empty", null);
 		externalLinkEl.setHelpTextKey("meeting.external.users.help", null);
 		externalLinkEl.addActionListener(FormEvent.ONCHANGE);

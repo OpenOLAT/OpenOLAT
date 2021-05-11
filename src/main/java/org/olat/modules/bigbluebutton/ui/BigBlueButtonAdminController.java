@@ -73,15 +73,20 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		if(!configurationReadOnly) {
 			configurationLink = LinkFactory.createLink("account.configuration", mainVC, this);
+			configurationLink.setElementCssClass("o_sel_bbb_configuration");
 			segmentView.addSegment(configurationLink, true);
 		}
 		serversLink = LinkFactory.createLink("servers.title", mainVC, this);
+		serversLink.setElementCssClass("o_sel_bbb_servers");
 		segmentView.addSegment(serversLink, false);
 		templatesLink = LinkFactory.createLink("templates.title", mainVC, this);
+		templatesLink.setElementCssClass("o_sel_bbb_templates");
 		segmentView.addSegment(templatesLink, false);
 		meetingsLink = LinkFactory.createLink("meetings.title", mainVC, this);
+		meetingsLink.setElementCssClass("o_sel_bbb_meetings");
 		segmentView.addSegment(meetingsLink, false);
 		calendarLink = LinkFactory.createLink("calendar.title", mainVC, this);
+		calendarLink.setElementCssClass("o_sel_bbb_calendar");
 		segmentView.addSegment(calendarLink, false);
 		
 		if(configurationReadOnly) {

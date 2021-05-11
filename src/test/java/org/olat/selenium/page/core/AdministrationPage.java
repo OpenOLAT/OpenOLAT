@@ -22,6 +22,7 @@ package org.olat.selenium.page.core;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.selenium.page.course.BigBlueButtonSettingsPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LectureAdminSettingsPage;
 import org.olat.selenium.page.qpool.QuestionPoolAdminPage;
@@ -82,6 +83,14 @@ public class AdministrationPage {
 		By systemLinkBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'eAssessmentParent')]");
 		OOGraphene.waitElement(systemLinkBy, browser);
 		browser.findElement(systemLinkBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public AdministrationPage selectExternalTools() {
+		By externalToolsLinkBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'externalToolsParent')]");
+		OOGraphene.waitElement(externalToolsLinkBy, browser);
+		browser.findElement(externalToolsLinkBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -185,5 +194,15 @@ public class AdministrationPage {
 		OOGraphene.waitBusy(browser);
 		
 		return new TaxonomyAdminPage(browser).assertOnTaxonomyList();
+	}
+	
+	public BigBlueButtonSettingsPage openBigBlueButtonSettings() {
+		selectExternalTools();
+		
+		By bibBlueButtonBy = By.cssSelector(".o_sel_bigbluebutton span.o_tree_level_label_leaf>a");
+		OOGraphene.waitElement(bibBlueButtonBy, browser);
+		browser.findElement(bibBlueButtonBy).click();
+		OOGraphene.waitBusy(browser);
+		return new BigBlueButtonSettingsPage(browser);
 	}
 }

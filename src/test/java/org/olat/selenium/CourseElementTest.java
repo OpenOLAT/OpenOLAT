@@ -2218,6 +2218,101 @@ public class CourseElementTest extends Deployments {
 			.assertOnJoin();
 	}
 	
+
+	/**
+	 * First an administrator enables a template with external URL.<br>
+	 * Than an author creates a course with a course element of type BigBlueButton,
+	 * add a meeting in the edit list, go the meetings list and select the meeting
+	 * where she picks the external URL. Log out, navigate to the external
+	 * URL, check the login button and use it.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithBigBlueButtonGuestLogin()
+	throws IOException, URISyntaxException {
+		// open meeting for guest
+		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
+		adminLoginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		NavigationPage.load(browser)
+			.openAdministration()
+			.openBigBlueButtonSettings()
+			.selectTemplates()
+			.editTemplate("Interview")
+			.enableTemplate()
+			.enableGuestLink()
+			.save();
+
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-BBB-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		String nodeTitle = "BBB Guest-2";
+		//create a course element of type CP with the CP that we create above
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("bigbluebutton")
+			.nodeTitle(nodeTitle);
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		courseEditor
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+		String meetingName = "Quick meeting";
+		BigBlueButtonPage bigBlueButton = new BigBlueButtonPage(browser);
+		bigBlueButton
+			.assertOnRuntime()
+			.selectEditMeetingsList()
+			.addSingleMeeting()
+			.editMeeting(meetingName, "Interview")
+			.assertEditMeetingExternalUrl()
+			.saveMeeting()
+			.assertOnList(meetingName)
+			.selectMeetingsList()
+			.assertOnList(meetingName)
+			.selectMeeting(meetingName)
+			.assertOnMeeting(meetingName);
+		
+		String externalUrl = bigBlueButton.getExternalUrl();
+		
+		// log out
+		new UserToolsPage(browser)
+			.logout();
+		// return to login
+		LoginPage.load(browser, deploymentUrl)
+			.assertOnLoginPage();
+		
+		browser.navigate().to(externalUrl);
+		
+		bigBlueButton = new BigBlueButtonPage(browser);
+		bigBlueButton
+			.assertOnWaitGuestMeeting()
+			.loginToGuestJoin(author)
+			.assertOnGuestJoinMeetingActive();
+	}
+	
 	
 	/**
 	 * An author creates a course with a course element of type Microsoft Teams,

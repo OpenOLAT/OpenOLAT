@@ -44,6 +44,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.User;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -92,6 +93,7 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 
 	private String avatarUrl;
 	private boolean readOnly = false;
+	private boolean authenticated = false;
 	private boolean moderatorStartMeeting;
 	private final MeetinSecurity allowedToMeet;
 	private BigBlueButtonMeeting meeting;
@@ -115,6 +117,8 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		this.meeting = meeting;
 		moderatorStartMeeting = isModeratorStartMeeting();
 		allowedToMeet = isAllowedToMeet(ureq);
+		UserSession usess = ureq.getUserSession();
+		authenticated = getIdentity() != null && usess.getRoles() != null && !usess.getRoles().isGuestOnly();
 		initForm(ureq);
 		updateButtonsAndStatus();
 
@@ -156,6 +160,10 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		}
 		
 		nameEl = uifactory.addTextElement("meeting.guest.pseudo", 128, "", formLayout);
+		if(authenticated) {
+			nameEl.setValue(getName());
+			nameEl.setEnabled(false);
+		}
 
 		boolean end = isEnded();
 		passwordEl = uifactory.addTextElement("meeting.guest.password", 64, "", formLayout);
@@ -169,12 +177,26 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		
 		loginButton = uifactory.addFormLink("meeting.login", formLayout, Link.LINK);
 		loginButton.setElementCssClass("o_sel_bbb_guest_login");
+		loginButton.setVisible(!authenticated);
 		
 		KeyValues acknowledgeKeyValue = new KeyValues();
 		acknowledgeKeyValue.add(KeyValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
 		acknowledgeRecordingEl = uifactory.addCheckboxesHorizontal("meeting.acknowledge.recording", null, formLayout,
 				acknowledgeKeyValue.keys(), acknowledgeKeyValue.values());
 		acknowledgeRecordingEl.setVisible(!end && BigBlueButtonUIHelper.isRecord(meeting));
+	}
+	
+	private String getName() {
+		User user = getIdentity().getUser();
+		StringBuilder sb = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(user.getFirstName())) {
+			sb.append(user.getFirstName());
+		}
+		if(StringHelper.containsNonWhitespace(user.getLastName())) {
+			if(sb.length() > 0) sb.append(" ");
+			sb.append(user.getLastName());
+		}
+		return sb.toString();
 	}
 	
 	private void reloadButtonsAndStatus() {
@@ -408,8 +430,9 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		UserSession usess = ureq.getUserSession();
 		IdentityEnvironment identEnv = usess.getIdentityEnvironment();
 		if(identEnv.getIdentity() == null && identEnv.getRoles() == null) {
-			String url = "https://kivik.frentix.com/olat/bigbluebutton/102682586984907";
+			String url = Settings.getServerContextPathURI() + "/bigbluebutton/" + meeting.getReadableIdentifier();
 			usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_REDIRECT_URL, url);
+			usess.removeEntryFromNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_BUSINESSPATH);
 			ureq.getDispatchResult().setResultingMediaResource(
 					new RedirectMediaResource(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault()));
 		} else if(identEnv.getRoles().isGuestOnly()) {
