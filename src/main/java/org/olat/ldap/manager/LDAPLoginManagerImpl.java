@@ -113,6 +113,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	
 	private static final Logger log = Tracing.createLoggerFor(LDAPLoginManagerImpl.class);
 
+	private static final String MULTI_VALUES_SEPARATOR = ",";// same as GenericSelectionPropertyHandler.KEY_DELIMITER
 	private static final String TIMEOUT_KEY = "com.sun.jndi.ldap.connect.timeout";
 	private static boolean batchSyncIsRunning = false;
 	private static Date lastSyncDate = null; // first sync is always a full sync
@@ -503,8 +504,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	 *          (OLATProperty,LDAPValue)
 	 * @param identity Identity to sync
 	 */
-	@Override
-	public Identity syncUser(Map<String, String> olatPropertyMap, IdentityRef identityRef) {
+	private Identity syncUser(Map<String, String> olatPropertyMap, IdentityRef identityRef) {
 		if (identityRef == null) {
 			log.warn("Identiy is null - should not happen");
 			return null;
@@ -587,9 +587,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			return null;
 		}
 		
-		String uid = getAttributeValue(userAttributes.get(syncConfiguration
+		String uid = getSingleAttributeValue(userAttributes.get(syncConfiguration
 				.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)));
-		String email = getAttributeValue(userAttributes.get(syncConfiguration.getOlatPropertyToLdapAttribute(UserConstants.EMAIL)));
+		String email = getSingleAttributeValue(userAttributes.get(syncConfiguration.getOlatPropertyToLdapAttribute(UserConstants.EMAIL)));
 		// Lookup user
 		if (securityManager.findIdentityByLogin(uid) != null) {
 			log.warn("Can't create user with username='{}', this username does already exist in the database", uid);
@@ -667,13 +667,14 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	 *         property has changed. NULL is returned it no attributes have to be synced
 	 */
 	@SuppressWarnings("unchecked")
-	public Map<String, String> prepareUserPropertyForSync(Attributes attributes, Identity identity) {
+	private Map<String, String> prepareUserPropertyForSync(Attributes attributes, Identity identity) {
 		Map<String, String> olatPropertyMap = new HashMap<>();
 		User user = identity.getUser();
 		NamingEnumeration<Attribute> neAttrs = (NamingEnumeration<Attribute>) attributes.getAll();
 		try {
 			while (neAttrs.hasMore()) {
 				Attribute attr = neAttrs.next();
+				
 				String olatProperty = mapLdapAttributeToOlatProperty(attr.getID());
 				if(olatProperty == null) {
 					continue;
@@ -690,10 +691,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				}
 			}
 			if (olatPropertyMap.size() == 1 && olatPropertyMap.get(LDAPConstants.LDAP_USER_IDENTIFYER) != null) {
-				log.debug("propertymap for identity " + identity.getKey() + " contains only userID, NOTHING TO SYNC!");
+				log.debug("propertymap for identity {} contains only userID, NOTHING TO SYNC!", identity.getKey());
 				return null;
 			} else {
-				log.debug("propertymap for identity " + identity.getKey() + " contains " + olatPropertyMap.size() + " items (" + olatPropertyMap.keySet() + ") to be synced later on");
+				log.debug("propertymap for identity {} contains {} items ({}) to be synced later on",
+						identity.getKey(), olatPropertyMap.size(), olatPropertyMap.keySet());
 				return olatPropertyMap;
 			}
 
@@ -725,11 +727,40 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	 * 
 	 * @throws NamingException
 	 */
-	private String getAttributeValue(Attribute attribute) {
+	private String getSingleAttributeValue(Attribute attribute) {
 		if(attribute == null) return null;
 		
 		try {
 			return (String)attribute.get();
+		} catch (NamingException e) {
+			log.error("NamingException when trying to get attribute value for attribute::{}", attribute, e);
+			return null;
+		}
+	}
+	
+	private String getAttributeValue(Attribute attribute) {
+		if(attribute == null) return null;
+
+		try {
+			int valueSize = attribute.size();
+			if(valueSize == 0) {
+				return null;
+			}
+			if(valueSize == 1) {
+				return (String)attribute.get();
+			}
+			
+			StringBuilder sb = new StringBuilder(64);
+			for(NamingEnumeration<?> values=attribute.getAll(); values.hasMore(); ) {
+				if(sb.length() > 0) sb.append(MULTI_VALUES_SEPARATOR);
+				
+				Object val = values.next();
+				if(val != null) {
+					sb.append(val.toString());
+				}
+			}
+
+			return sb.toString();
 		} catch (NamingException e) {
 			log.error("NamingException when trying to get attribute value for attribute::{}", attribute, e);
 			return null;
@@ -878,7 +909,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		
 		String token = null;
 		for(String loginAttribute:loginAttributes) {
-			String loginToken = getAttributeValue(attrs.get(loginAttribute.trim()));
+			String loginToken = getSingleAttributeValue(attrs.get(loginAttribute.trim()));
 			if(StringHelper.containsNonWhitespace(loginToken)) {
 				Authentication ldapAuth = authenticationDao.getAuthentication(loginToken, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 				if(ldapAuth != null) {
@@ -891,7 +922,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			}
 		}
 
-		String uid = getAttributeValue(attrs.get(uidAttribute));
+		String uid = getSingleAttributeValue(attrs.get(uidAttribute));
 		Authentication ldapAuth = authenticationDao.getAuthentication(uid, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		if(ldapAuth != null) {
 			if(StringHelper.containsNonWhitespace(token) && !token.equals(ldapAuth.getAuthusername())) {
@@ -1308,7 +1339,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			try {
 				Attributes userAttrs = ldapUser.getAttributes();
 				String uidProp = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
-				user = getAttributeValue(userAttrs.get(uidProp));
+				user = getSingleAttributeValue(userAttrs.get(uidProp));
 				Identity identity = findIdentityByLdapAuthentication(userAttrs, errors);
 				if (identity != null) {
 					Map<String, String> changedAttrMap = prepareUserPropertyForSync(userAttrs, identity);

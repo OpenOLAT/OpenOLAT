@@ -316,6 +316,25 @@ uid: cbraben
 userPassword: olat
 modifyTimestamp: 20100630180000Z
 
+dn: uid=vferro,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Valeria Ferro
+givenname: Valeria
+labeleduri: https://www.openolat.com/vferro
+mail: valeria.ferro@openolat.com
+mobile: 0791234567
+mobile: 0797654321
+mobile: 0787654321
+preferredname: Valeria
+o: Informatik
+sn: Ferro
+uid: vferro
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
 dn: cn=ldaplearning,ou=groups,dc=olattest,dc=org
 objectclass: top
 objectclass: groupOfNames

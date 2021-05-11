@@ -462,6 +462,19 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void syncMultiValues() throws LDAPException {
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		Identity id = securityManager.findIdentityByLogin("vferro");
+		Assert.assertNotNull(id);
+		Assert.assertEquals("Valeria", id.getUser().getFirstName());
+		Assert.assertEquals("Ferro", id.getUser().getLastName());
+		Assert.assertEquals("0791234567,0797654321,0787654321", id.getUser().getProperty("genericTextProperty", null));
+	}
+	
+	@Test
 	public void getIdentitiesDeletedInLdap() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 		Identity orphan = JunitTestHelper.createAndPersistIdentityAsRndUser("ldap-orphan");
