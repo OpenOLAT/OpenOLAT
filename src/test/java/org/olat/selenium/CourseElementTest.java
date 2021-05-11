@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,6 +44,7 @@ import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.ContactPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
+import org.olat.selenium.page.course.AppointmentPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.BigBlueButtonPage;
 import org.olat.selenium.page.course.CheckListConfigPage;
@@ -2212,6 +2214,64 @@ public class CourseElementTest extends Deployments {
 			.selectMeeting(meetingName)
 			.assertOnMeeting(meetingName)
 			.assertOnJoin();
+	}
+	
+
+	/**
+	 * An author create a course with an appointment course element, add a topic,
+	 * add herself to the appointment and confirm the event.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithAppointment()
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "App-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//create a course element of type appointment
+		String nodeTitle = "App-Week";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		CoursePageFragment course = courseEditor
+			.createNode("appointments")
+			.nodeTitle(nodeTitle)
+			.autoPublish();
+		
+		course
+			.clickTree()
+			.assertWithTitle(nodeTitle);
+		
+		String topicTitle = "Author topic";
+		Date topicDate = new Date();
+		int day = AppointmentPage.getDay(topicDate);
+		
+		AppointmentPage appointment = new AppointmentPage(browser);
+		appointment
+			.addTopic(topicTitle)
+			.saveTopic()
+			.assertOnTopic(topicTitle)
+			.addUser(day)
+			.searchUserByFirstName(author)
+			.selectAll()
+			.choose();
+		
+		appointment
+			.assertOnConfirmAppointment(day)
+			.confirmAppointment(day);
 	}
 	
 	

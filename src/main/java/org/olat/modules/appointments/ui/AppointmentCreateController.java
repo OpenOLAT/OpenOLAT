@@ -197,21 +197,25 @@ public class AppointmentCreateController extends FormBasicController {
 		if (topic == null) {
 			// Topic
 			titleEl = uifactory.addTextElement("topic.title", "topic.title", 128, null, formLayout);
+			titleEl.setElementCssClass("o_sel_app_topic_title");
 			titleEl.setMandatory(true);
 			
 			descriptionEl = uifactory.addTextAreaElement("topic.description", "topic.description", 2000, 3, 72, false,
 					false, null, formLayout);
+			descriptionEl.setElementCssClass("o_sel_app_topic_description");
 			
 			// Configs
 			KeyValues typeKV = new KeyValues();
 			typeKV.add(entry(Topic.Type.enrollment.name(), translate("topic.type.enrollment")));
 			typeKV.add(entry(Topic.Type.finding.name(), translate("topic.type.finding")));
 			typeEl = uifactory.addRadiosHorizontal("topic.type", formLayout, typeKV.keys(), typeKV.values());
+			typeEl.setElementCssClass("o_sel_app_topic_type");
 			typeEl.select(Topic.Type.enrollment.name(), true);
 			typeEl.addActionListener(FormEvent.ONCHANGE);
 			
 			configurationEl = uifactory.addCheckboxesVertical("topic.configuration", formLayout, emptyStrings(),
 					emptyStrings(), 1);
+			configurationEl.setElementCssClass("o_sel_app_topic_description");
 			configurationEl.addActionListener(FormEvent.ONCHANGE);
 			
 			// Organizer
@@ -926,7 +930,7 @@ public class AppointmentCreateController extends FormBasicController {
 		wrapper.setStartEl(startEl);
 		
 		String duration = next.getDuration() != null? next.getDuration().toString(): null;
-		TextElement durationEl = uifactory.addTextElement(CMD_DURATION + counter++, 4, duration, startDurationCont);
+		TextElement durationEl = uifactory.addTextElement(CMD_DURATION + counter++, null, 4, duration, startDurationCont);
 		durationEl.setDisplaySize(1);
 		durationEl.addActionListener(FormEvent.ONCHANGE);
 		durationEl.setUserObject(wrapper);
