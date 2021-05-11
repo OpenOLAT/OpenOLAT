@@ -168,6 +168,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	}
 	
 	private void initAvatarUrl() {
+		if(!bigBlueButtonModule.isAvatarEnabled()) return;
+		
 		File portraitFile = displayPortraitManager.getBigPortrait(getIdentity());
 		if(portraitFile != null) {
 			String rnd = "r" + getIdentity().getKey() + CodeHelper.getRAMUniqueID();

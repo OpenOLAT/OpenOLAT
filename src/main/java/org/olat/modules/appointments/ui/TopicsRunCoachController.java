@@ -81,6 +81,7 @@ import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.appointments.TopicRef;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.manager.AvatarMapper;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
@@ -139,6 +140,8 @@ public class TopicsRunCoachController extends FormBasicController {
 	private AppointmentsService appointmentsService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private DisplayPortraitManager displayPortraitManager;
 
@@ -763,7 +766,7 @@ public class TopicsRunCoachController extends FormBasicController {
 			wrapper.getAcknowledgeRecordingEl().clearError();
 		}
 		
-		if(avatarUrl == null) {
+		if(avatarUrl == null && bigBlueButtonModule.isAvatarEnabled()) {
 			File portraitFile = displayPortraitManager.getBigPortrait(getIdentity());
 			if(portraitFile != null) {
 				String rnd = "r" + getIdentity().getKey() + CodeHelper.getRAMUniqueID();
