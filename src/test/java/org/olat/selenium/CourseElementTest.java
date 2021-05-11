@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,6 +44,7 @@ import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.ContactPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
+import org.olat.selenium.page.course.AppointmentPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.BigBlueButtonPage;
 import org.olat.selenium.page.course.CheckListConfigPage;
@@ -66,6 +68,7 @@ import org.olat.selenium.page.course.STConfigurationPage;
 import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.course.SinglePage;
 import org.olat.selenium.page.course.SinglePageConfigurationPage;
+import org.olat.selenium.page.course.TeamsPage;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
@@ -2156,10 +2159,11 @@ public class CourseElementTest extends Deployments {
 	}
 	
 	
-
 	/**
+	 * An author creates a course with a course element of type BigBlueButton,
+	 * add a meeting in the edit list, go the meetings list and goes to the page
+	 * dedicated to join the meeting.
 	 * 
-	 * @param loginPage
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
@@ -2212,6 +2216,130 @@ public class CourseElementTest extends Deployments {
 			.selectMeeting(meetingName)
 			.assertOnMeeting(meetingName)
 			.assertOnJoin();
+	}
+	
+	
+	/**
+	 * An author creates a course with a course element of type Microsoft Teams,
+	 * add a meeting in the edit list, go the meetings list and goes to the page
+	 * dedicated to the meeting. The selenium works without teams to be configured
+	 * and wait for the configuration errors.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithTeams()
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Teams-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		String nodeTitle = "Teams-1";
+		//create a course element of type CP with the CP that we create above
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("msteams")
+			.nodeTitle(nodeTitle);
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		courseEditor
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+		String meetingName = "Teams meeting";
+		TeamsPage teams = new TeamsPage(browser);
+		teams
+			.assertOnRuntime()
+			.selectEditMeetingsList()
+			.addSingleMeeting(meetingName, "Classroom")
+			.assertOnList(meetingName)
+			.selectMeetingsList()
+			.assertOnList(meetingName)
+			.selectMeeting(meetingName)
+			.assertOnMeeting(meetingName);
+		
+		// Teams is not configured, errors
+		OOGraphene.closeErrorBox(browser);
+		
+		teams
+			.assertOnJoinDisabled();
+	}
+	
+
+	/**
+	 * An author creates a course with an appointment course element, add a topic,
+	 * add herself to the appointment and confirm the event.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithAppointment()
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "App-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//create a course element of type appointment
+		String nodeTitle = "App-Week";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		CoursePageFragment course = courseEditor
+			.createNode("appointments")
+			.nodeTitle(nodeTitle)
+			.autoPublish();
+		
+		course
+			.clickTree()
+			.assertWithTitle(nodeTitle);
+		
+		String topicTitle = "Author topic";
+		Date topicDate = new Date();
+		int day = AppointmentPage.getDay(topicDate);
+		
+		AppointmentPage appointment = new AppointmentPage(browser);
+		appointment
+			.addTopic(topicTitle)
+			.saveTopic()
+			.assertOnTopic(topicTitle)
+			.addUser(day)
+			.searchUserByFirstName(author)
+			.selectAll()
+			.choose();
+		
+		appointment
+			.assertOnConfirmAppointment(day)
+			.confirmAppointment(day);
 	}
 	
 	

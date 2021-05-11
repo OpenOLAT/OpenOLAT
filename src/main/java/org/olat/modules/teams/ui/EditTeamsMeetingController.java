@@ -121,6 +121,8 @@ public class EditTeamsMeetingController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_teams_edit_meeting");
+		
 		String subject = meeting == null ? "" : meeting.getSubject();
 		subjectEl = uifactory.addTextElement("meeting.subject", "meeting.subject", 128, subject, formLayout);
 		subjectEl.setElementCssClass("o_sel_teams_edit_meeting_subject");

@@ -171,6 +171,7 @@ public class TopicsRunCoachController extends FormBasicController {
 		if (secCallback.canCreateTopic()) {
 			createButton = uifactory.addFormLink("create.topic", formLayout, Link.BUTTON);
 			createButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+			createButton.setElementCssClass("o_sel_app_add_topic");
 		}
 	}
 	
