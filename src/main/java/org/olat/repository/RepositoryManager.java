@@ -2152,6 +2152,10 @@ public class RepositoryManager {
 		return repositoryEntryEducationalTypeDao.create(identifier);
 	}
 	
+	public RepositoryEntryEducationalType updateEducationalType(RepositoryEntryEducationalType educationalType) {
+		return repositoryEntryEducationalTypeDao.save(educationalType);
+	}
+	
 	public List<RepositoryEntryEducationalType> getAllEducationalTypes() {
 		return repositoryEntryEducationalTypeDao.loadAll();
 	}

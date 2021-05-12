@@ -60,6 +60,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.condition.additionalconditions.AdditionalConditionManager;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -87,6 +89,7 @@ public class NavigationHandler implements Disposable {
 
 	private final UserCourseEnvironment userCourseEnv;
 	private final boolean previewMode;
+	private long lastPublicationCheckTimestamp;
 	
 	private String selectedCourseNodeId;
 	private VisibilityFilter filter;
@@ -103,10 +106,17 @@ public class NavigationHandler implements Disposable {
 	 * @param previewMode
 	 */
 	public NavigationHandler(UserCourseEnvironment userCourseEnv, VisibilityFilter filter, boolean previewMode) {
+		lastPublicationCheckTimestamp = userCourseEnv.getCourseEnvironment().getLastPublicationTimestamp();
 		this.userCourseEnv = userCourseEnv;
 		this.previewMode = previewMode;
 		this.filter = filter;
 		CoreSpringFactory.autowireObject(this);
+	}
+	
+	public boolean checkPublicationTimestamp() {
+		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+		long cacheTimestamp = course.getEditorTreeModel().getLatestPublishTimestamp();
+		return lastPublicationCheckTimestamp >= cacheTimestamp;
 	}
 
 	/**
@@ -272,6 +282,8 @@ public class NavigationHandler implements Disposable {
 	}
 	
 	public NodeClickedRef reloadTreeAfterChanges(CourseNode courseNode, String selectedNodeId) {
+		lastPublicationCheckTimestamp = userCourseEnv.getCourseEnvironment().getCurrentTimeMillis();
+		
 		GenericTreeModel treeModel = createTreeModel();
 		TreeNode treeNode = treeModel.getNodeById(courseNode.getIdent());
 		NodeClickedRef nclr = null;
@@ -296,9 +308,7 @@ public class NavigationHandler implements Disposable {
 	private NodeClickedRef doEvaluateJumpTo(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			ControllerEventListener listeningController, String nodecmd, String nodeSubCmd, Controller currentNodeController) {
 		NodeClickedRef nclr;
-		if (log.isDebugEnabled()){
-			log.debug("evaluateJumpTo courseNode = " + courseNode.getIdent() + ", " + courseNode.getShortName());
-		}
+		log.debug("evaluateJumpTo courseNode = {}, {}", courseNode.getIdent(), courseNode.getShortName());
 
 		GenericTreeModel treeModel = createTreeModel();
 
@@ -364,7 +374,7 @@ public class NavigationHandler implements Disposable {
 				// type: class of node; key = node.getIdent;
 				
 				Class<CourseNode> oresC = CourseNode.class; // don't use the concrete instance since for the course: to jump to a coursenode with a given id is all there is to know
-				Long oresK = new Long(Long.parseLong(courseNode.getIdent()));
+				Long oresK = Long.valueOf(courseNode.getIdent());
 				final OLATResourceable ores = OresHelper.createOLATResourceableInstance(oresC, oresK);
 				
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);

@@ -105,36 +105,53 @@ public class ForumNotificationsHandler implements NotificationsHandler {
 				
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), getTitleItem(p, translator), null);
 				for (Message mInfo : mInfos) {
-					String title = mInfo.getTitle();
-					Identity creator = mInfo.getCreator();
-					Identity modifier = mInfo.getModifier();
-					Date modDate = mInfo.getLastModified();
+
+					Date creationDate = mInfo.getCreationDate();
+					Date modificationDate = mInfo.getModificationDate();
+					if(compareDate.before(creationDate) || (modificationDate != null && compareDate.before(modificationDate))) {
 					
-					String name;
-					if(modifier != null) {
-						if(modifier.equals(creator) && StringHelper.containsNonWhitespace(mInfo.getPseudonym())) {
-							name = mInfo.getPseudonym();
+						String title = mInfo.getTitle();
+						Identity creator = mInfo.getCreator();
+						Identity modifier = mInfo.getModifier();
+						
+						String name;
+						final String descKey;
+						final Date modDate;
+						if(modificationDate != null) {
+							modDate = modificationDate;
+							descKey = "notifications.entry.modified";
+							if(modifier != null) {
+								if(modifier.equals(creator) && StringHelper.containsNonWhitespace(mInfo.getPseudonym())) {
+									name = mInfo.getPseudonym();
+								} else {
+									name = NotificationHelper.getFormatedName(modifier);
+								}
+							} else {
+								name = "<Unkown>";// The case is not possible
+							}
 						} else {
-							name = NotificationHelper.getFormatedName(modifier);
+							modDate = creationDate;
+							descKey = "notifications.entry";
+
+							if(StringHelper.containsNonWhitespace(mInfo.getPseudonym())) {
+								name = mInfo.getPseudonym();
+							} else if(mInfo.isGuest()) {
+								name = translator.translate("anonymous.poster");
+							} else {
+								name = NotificationHelper.getFormatedName(creator);
+							}
 						}
-					} else if(StringHelper.containsNonWhitespace(mInfo.getPseudonym())) {
-						name = mInfo.getPseudonym();
-					} else if(mInfo.isGuest()) {
-						name = translator.translate("anonymous.poster");
-					} else {
-						name = NotificationHelper.getFormatedName(creator);
+						
+						final String desc = translator.translate(descKey, new String[] { title, name });
+						String urlToSend = null;
+						String businessPath = null;
+						if(p.getBusinessPath() != null) {
+							businessPath = businessControlString + mInfo.getKey().toString() + "]";
+							urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+						}
+						SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, ForumUIFactory.CSS_ICON_CLASS_MESSAGE);
+						si.addSubscriptionListItem(subListItem);
 					}
-					final String descKey = "notifications.entry" + (mInfo.getCreationDate().equals(mInfo.getLastModified()) ? "" : ".modified");
-					final String desc = translator.translate(descKey, new String[] { title, name });
-					String urlToSend = null;
-					String businessPath = null;
-					if(p.getBusinessPath() != null) {
-						businessPath = businessControlString + mInfo.getKey().toString() + "]";
-						urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-					}
-					
-					SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, ForumUIFactory.CSS_ICON_CLASS_MESSAGE);
-					si.addSubscriptionListItem(subListItem);
 				}
 			} else {
 				si = notificationsManager.getNoSubscriptionInfo();

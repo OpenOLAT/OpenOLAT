@@ -35,6 +35,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -57,12 +58,12 @@ public class PersistingCoursePropertyManager implements CoursePropertyManager {
 
 	private NarrowedPropertyManager pm;
 	private Map<Long,String> anonymizerMap;
-	private OLATResourceable ores;
+	private final OLATResourceable ores;
 	private static Random random = new Random(System.currentTimeMillis());
 
 	private PersistingCoursePropertyManager(OLATResourceable course) {
-		this.ores = course;
-		pm = NarrowedPropertyManager.getInstance(course);
+		ores = OresHelper.clone(course);
+		pm = NarrowedPropertyManager.getInstance(ores);
 		// Initialize identity anonymizer map
 		anonymizerMap = new HashMap<>();
 	}
@@ -78,44 +79,28 @@ public class PersistingCoursePropertyManager implements CoursePropertyManager {
 		return new PersistingCoursePropertyManager(course);
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#createCourseNodePropertyInstance(org.olat.course.nodes.CourseNode,
-	 *      org.olat.core.id.Identity, org.olat.group.BusinessGroup,
-	 *      java.lang.String, java.lang.Float, java.lang.Long, java.lang.String,
-	 *      java.lang.String)
-	 */
+	@Override
 	public Property createCourseNodePropertyInstance(CourseNode node, Identity identity, BusinessGroup group, String name, Float floatValue,
 			Long longValue, String stringValue, String textValue) {
 		String myCategory = buildCourseNodePropertyCategory(node);
 		return pm.createPropertyInstance(identity, group, myCategory, name, floatValue, longValue, stringValue, textValue);
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#deleteProperty(org.olat.properties.Property)
-	 */
+	@Override
 	public void deleteProperty(Property p) {
 		pm.deleteProperty(p);
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#saveProperty(org.olat.properties.Property)
-	 */
+	@Override
 	public void saveProperty(Property p) {
 		pm.saveProperty(p);
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#updateProperty(org.olat.properties.Property)
-	 */
+	@Override
 	public void updateProperty(Property p) {
 		pm.updateProperty(p);
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#listCourseNodeProperties(org.olat.course.nodes.CourseNode,
-	 *      org.olat.core.id.Identity, org.olat.group.BusinessGroup,
-	 *      java.lang.String)
-	 */
 	@Override
 	public List<Property> listCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
 		String myCategory = buildCourseNodePropertyCategory(node);
@@ -128,22 +113,12 @@ public class PersistingCoursePropertyManager implements CoursePropertyManager {
 		return pm.countProperties(identity, grp, myCategory, name);
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#findCourseNodeProperties(org.olat.course.nodes.CourseNode,
-	 *      org.olat.core.id.Identity, org.olat.group.BusinessGroup,
-	 *      java.lang.String)
-	 */
 	@Override
 	public List<Property> findCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
 		String myCategory = buildCourseNodePropertyCategory(node);
 		return pm.findProperties(identity, grp, myCategory, name);
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#findCourseNodeProperty(org.olat.course.nodes.CourseNode,
-	 *      org.olat.core.id.Identity, org.olat.group.BusinessGroup,
-	 *      java.lang.String)
-	 */
 	@Override
 	public Property findCourseNodeProperty(CourseNode node, Identity identity, BusinessGroup grp, String name) {
 		String myCategory = buildCourseNodePropertyCategory(node);
@@ -168,10 +143,7 @@ public class PersistingCoursePropertyManager implements CoursePropertyManager {
 		return pm.findProperties(identities, myCategory, name);
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#deleteNodeProperties(org.olat.course.nodes.CourseNode,
-	 *      java.lang.String)
-	 */
+	@Override
 	public void deleteNodeProperties(CourseNode courseNode, String name) {
 		if (courseNode == null) { throw new AssertException("courseNode can not be null when deleting course node properties"); }
 		pm.deleteProperties(null, null, buildCourseNodePropertyCategory(courseNode), name);

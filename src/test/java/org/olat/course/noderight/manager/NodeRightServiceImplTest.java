@@ -45,6 +45,7 @@ import org.olat.core.id.User;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.auditing.UserNodeAuditManager;
@@ -843,6 +844,16 @@ public class NodeRightServiceImplTest {
 		@Override
 		public boolean isPreview() {
 			return false;
+		}
+		
+		@Override
+		public ICourse updateCourse() {
+			return null;
+		}
+
+		@Override
+		public long getLastPublicationTimestamp() {
+			return -1;
 		}
 
 		@Override

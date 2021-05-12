@@ -234,7 +234,7 @@ public class Form {
 			doInitRequestParameter(ureq);
 		}
 		
-		String csrfToken = getRequestParameter(Form.FORM_CSRF);
+		String csrfToken = getRequestParameter(ureq, Form.FORM_CSRF);
 		if(csrfProtection && (csrfToken == null || !csrfToken.equals(ureq.getUserSession().getCsrfToken()))) {
 			log.warn("CSRF mismatch");
 			if(CoreSpringFactory.getImpl(CSPModule.class).isCsrfEnabled()) {
@@ -245,8 +245,8 @@ public class Form {
 			}
 		}
 
-		String dispatchUri = getRequestParameter("dispatchuri");
-		String dispatchAction = getRequestParameter("dispatchevent");
+		String dispatchUri = getRequestParameter(ureq, "dispatchuri");
+		String dispatchAction = getRequestParameter(ureq, "dispatchevent");
 		boolean invalidDispatchUri = dispatchUri == null || dispatchUri.equals(FORM_UNDEFINED);
 		boolean invalidDispatchAct = dispatchAction == null || dispatchAction.equals(FORM_UNDEFINED);
 		boolean implicitFormSubmit = false;//see also OLAT-3141
@@ -537,8 +537,18 @@ public class Form {
 	 */
 	public String getRequestParameter(String key) {
 		String[] values = requestParams.get(key);
-		if (values != null) return values[0];
-		else return null;
+		if (values != null) {
+			return values[0];
+		}
+		return null;
+	}
+	
+	public String getRequestParameter(UserRequest ureq, String key) {
+		String[] values = requestParams.get(key);
+		if (values != null) {
+			return values[0];
+		}
+		return ureq.getParameter(key);
 	}
 
 	/**

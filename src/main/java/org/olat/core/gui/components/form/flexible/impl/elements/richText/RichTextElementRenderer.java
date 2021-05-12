@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextElementImpl.TextModeState;
+import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -38,6 +39,8 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSContainer;
 
 /**
  * 
@@ -213,6 +216,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		}
 		
 		Integer currentHeight = teC.getCurrentHeight();
+		String uploadUrl = getImageUploadURL(renderer, teC, ubu);
 		
 		sb.append("<input type='hidden' id='rtinye_").append(teC.getFormDispatchId()).append("' name='rtinye_").append(teC.getFormDispatchId()).append("' value='' />");
 		sb.append("<script>\n");
@@ -223,6 +227,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		sb.append(" setTimeout(function() { jQuery('#").append(domID).append("').tinymce({\n")//delay for firefox + tinymce 4.5 + jQuery 3.3.1
 		  .append("    selector: '#").append(domID).append("',\n")
 		  .append("    script_url: '").append(baseUrl).append("',\n");
+		if(uploadUrl != null) {
+			sb.append("    images_upload_url: '").append(uploadUrl).append("',\n");
+		}
 		if(currentHeight != null && currentHeight.intValue() > 20) {
 			sb.append("    height: ").append(currentHeight).append(",\n");
 		}
@@ -251,6 +258,22 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append("  });\n")
 		  .append("}, 1);\n")// end timeout
 		  .append("</script>\n");
+	}
+	
+	private String getImageUploadURL(Renderer renderer, RichTextElementComponent teC, URLBuilder ubu) {
+		RichTextElementImpl te = teC.getRichTextElementImpl();
+		RichTextConfiguration configuration = te.getEditorConfiguration();
+		VFSContainer baseContainer = configuration.getLinkBrowserBaseContainer();
+		if(baseContainer != null && baseContainer.canWrite() == VFSConstants.YES && te.getRootForm().isMultipartEnabled()) {
+			StringOutput su = new StringOutput();
+			Component rootCmp = te.getRootForm().getInitialComponent();
+			URLBuilder rubu = ubu.createCopyFor(rootCmp);
+			
+			rubu.buildURI(su, new String[] { Form.FORMID, "_csrf", "dispatchevent", "dispatchuri" },
+					new String[] { Form.FORMCMD, renderer.getCsrfToken(), "2", teC.getFormDispatchId() }, null, AJAXFlags.MODE_NORMAL, false);
+			return su.toString();
+		}
+		return null;
 	}
 	
 	private void renderTinyMCETextarea(StringOutput sb, String domID, RichTextElementComponent teC) {

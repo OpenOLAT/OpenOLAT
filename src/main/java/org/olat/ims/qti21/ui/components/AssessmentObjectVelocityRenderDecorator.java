@@ -388,8 +388,10 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			List<Identifier> choiceOrders = itemSessionState.getShuffledInteractionChoiceOrder(interaction.getResponseIdentifier());
 
 			choices = new ArrayList<>();
-			for(Identifier choiceOrder:choiceOrders) {
-				choices.add(interaction.getSimpleChoice(choiceOrder));
+			if(choiceOrders != null) {
+				for(Identifier choiceOrder:choiceOrders) {
+					choices.add(interaction.getSimpleChoice(choiceOrder));
+				}
 			}
 		} else {
 			choices = interaction.getSimpleChoices();

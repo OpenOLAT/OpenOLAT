@@ -346,6 +346,8 @@ public class HTMLEditorController extends FormBasicController implements Activat
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		flc.getRootForm().setMultipartEnabled(true);
 		if (fileToLargeError != null) {
 			VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
 			vc.contextPut("fileToLargeError", fileToLargeError);

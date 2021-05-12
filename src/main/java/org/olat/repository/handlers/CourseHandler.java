@@ -238,6 +238,11 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, newCourseResource,
 				RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
+		
+		NodeAccessType nodeAccessType = course.getCourseConfig().getNodeAccessType();
+		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		re = repositoryManager.setTechnicalType(re, nodeAccessType.getType());
+		DBFactory.getInstance().commit();
 
 		// create empty run structure
 		course = CourseFactory.openCourseEditSession(course.getResourceableId());

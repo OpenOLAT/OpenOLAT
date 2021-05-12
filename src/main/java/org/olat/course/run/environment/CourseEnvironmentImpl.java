@@ -28,6 +28,8 @@ package org.olat.course.run.environment;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentManager;
@@ -50,7 +52,7 @@ import org.olat.resource.OLATResource;
  */
 public class CourseEnvironmentImpl implements CourseEnvironment {
 
-	private final PersistingCourseImpl course;
+	private PersistingCourseImpl course;
 	private final PersistingCourseGroupManager cgm;
 	private final CoursePropertyManager propertyManager;
 	private final AssessmentManager assessmentManager;
@@ -79,6 +81,16 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 	@Override
 	public void updateCourseEntry(RepositoryEntry courseEntry) {
 		cgm.updateRepositoryEntry(courseEntry);
+	}
+
+	@Override
+	public ICourse updateCourse() {
+		course = (PersistingCourseImpl)CourseFactory.loadCourse(cgm.getCourseEntry());
+		return course;
+	}
+	@Override
+	public long getLastPublicationTimestamp() {
+		return course.getEditorTreeModel().getLatestPublishTimestamp();
 	}
 
 	@Override
