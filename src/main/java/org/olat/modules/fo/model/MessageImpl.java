@@ -253,6 +253,7 @@ public class MessageImpl implements CreateInfo, Persistable, Message {
 		return modificationDate;
 	}
 
+	@Override
 	public void setModificationDate(Date modificationDate) {
 		this.modificationDate = modificationDate;
 	}

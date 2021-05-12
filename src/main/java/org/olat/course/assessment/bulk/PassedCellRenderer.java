@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.filter.FilterFactory;
 
 /**
  * 
@@ -39,11 +40,19 @@ public class PassedCellRenderer implements FlexiCellRenderer {
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof Boolean) {
 			Boolean passed = (Boolean)cellValue;
+			String msg;
 			if(passed.booleanValue()) {
-				target.append(translator.translate("passed.true"));
+				msg = translator.translate("passed.true");
 			} else {
-				target.append(translator.translate("passed.false"));
-			}	
+				msg = translator.translate("passed.false");
+			}
+			
+			if(renderer != null) {
+				target.append(msg);
+			} else {
+				msg = FilterFactory.getHtmlTagsFilter().filter(msg);
+				target.append(msg.trim());
+			}
 		}
 	}
 }

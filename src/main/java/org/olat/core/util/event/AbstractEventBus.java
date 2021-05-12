@@ -172,8 +172,8 @@ public abstract class AbstractEventBus implements EventBus {
 						}
 					}, ThreadLocalUserActivityLoggerInstaller.createEmptyUserActivityLogger());
 				}
-			} catch (RuntimeException e) {
-				log.error("Error while sending generic event: "+liArr[i], e);
+			} catch (Exception e) {
+				log.error("Error while sending generic event: {}", liArr[i], e);
 			}
 		}
 	}
