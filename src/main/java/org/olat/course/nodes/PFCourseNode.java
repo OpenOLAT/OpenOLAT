@@ -233,7 +233,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 			runCtrl = new PFCoachController(ureq, wControl, this, userCourseEnv);
 		} else {
 			runCtrl = new PFParticipantController(ureq, wControl, this, userCourseEnv,
-					userCourseEnv.getIdentityEnvironment().getIdentity(), false, false);
+					userCourseEnv.getIdentityEnvironment().getIdentity(), null, false, false);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_pf_icon");
 		return new NodeRunConstructionResult(ctrl);

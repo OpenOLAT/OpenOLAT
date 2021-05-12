@@ -64,6 +64,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.FileSystemExport;
 import org.olat.course.nodes.pf.manager.PFManager;
+import org.olat.course.nodes.pf.manager.PFView;
 import org.olat.course.nodes.pf.ui.DropBoxTableModel.DropBoxCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -192,11 +193,11 @@ public class PFCoachController extends FormBasicController implements Controller
 				SelectionEvent se = (SelectionEvent)event;
 				DropBoxRow currentObject = tableModel.getObject(se.getIndex());
 				if ("drop.box".equals(se.getCommand())){
-					doSelectParticipantFolder (ureq, currentObject.getIdentity());
+					doSelectParticipantFolder(ureq, currentObject.getIdentity(), PFView.displayDrop);
 				} else if ("return.box".equals(se.getCommand())){
-					doSelectParticipantFolder (ureq, currentObject.getIdentity());
+					doSelectParticipantFolder(ureq, currentObject.getIdentity(), PFView.displayReturn);
 				} else if ("open.box".equals(se.getCommand())){
-					doSelectParticipantFolder (ureq, currentObject.getIdentity());
+					doSelectParticipantFolder(ureq, currentObject.getIdentity(), null);
 				} else if ("firstName".equals(se.getCommand()) || "lastName".equals(se.getCommand())) {
 					doOpenHomePage(ureq, currentObject.getIdentity());
 				} 
@@ -206,11 +207,11 @@ public class PFCoachController extends FormBasicController implements Controller
 		}
 	}
 	
-	private void doSelectParticipantFolder (UserRequest ureq, UserPropertiesRow row) {
+	private void doSelectParticipantFolder (UserRequest ureq, UserPropertiesRow row, PFView view) {
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		removeAsListenerAndDispose(pfParticipantController);
 		pfParticipantController = new PFParticipantController(ureq, getWindowControl(), pfNode,
-				userCourseEnv, assessedIdentity, true, false);
+				userCourseEnv, assessedIdentity, view, true, false);
 		listenTo(pfParticipantController);
 		flc.put("single", pfParticipantController.getInitialComponent());
 	}

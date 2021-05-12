@@ -62,7 +62,7 @@ public class PFParticipantController extends BasicController {
 	private PFManager pfManager;
 
 	public PFParticipantController(UserRequest ureq, WindowControl wControl, PFCourseNode pfNode,
-			UserCourseEnvironment userCourseEnv, Identity assessedIdentity, boolean isCoach, boolean readOnly) {
+			UserCourseEnvironment userCourseEnv, Identity assessedIdentity, PFView view, boolean isCoach, boolean readOnly) {
 
 		super(ureq, wControl);	
 		mainVC = createVelocityContainer("participant");
@@ -90,7 +90,7 @@ public class PFParticipantController extends BasicController {
 		}
 		//CourseFreeze
 
-		pfView = pfManager.providePFView(pfNode);
+		pfView = view == null ? pfManager.providePFView(pfNode) : view;
 		String path;
 		switch(pfView) {
 			case displayDrop:
