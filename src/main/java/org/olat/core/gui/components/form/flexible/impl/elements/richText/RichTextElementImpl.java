@@ -20,23 +20,31 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement;
 import org.olat.core.gui.control.Disposable;
+import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 
 /**
  * 
@@ -224,6 +232,8 @@ public class RichTextElementImpl extends AbstractTextElement implements
 			getRootForm().fireFormEvent(ureq, new FormEvent(cmd, this, FormEvent.ONCLICK));
 			component.setDirty(false);
 		}
+		
+		uploadDraggedFiles(ureq);
 
 		if(paramId.equals(dispatchUri)) {
 			if(TextMode.formatted.name().equals(cmd)) {
@@ -237,6 +247,30 @@ public class RichTextElementImpl extends AbstractTextElement implements
 				component.setDirty(false);
 			}
 		}
+	}
+	
+	private void uploadDraggedFiles(UserRequest ureq) {
+		Set<String> fileKeys = getRootForm().getRequestMultipartFilesSet();
+		if(fileKeys == null || fileKeys.isEmpty() || fileKeys.size() != 1) return;
+		
+		String key = fileKeys.iterator().next();
+		String name = getRootForm().getRequestMultipartFileName(key);
+		File file = getRootForm().getRequestMultipartFile(key);
+		VFSContainer baseContainer = configuration.getLinkBrowserBaseContainer();
+		VFSItem item = baseContainer.resolve(name);
+		
+		VFSLeaf newFile = null;
+		if(item == null) {
+			newFile = baseContainer.createChildLeaf(name);
+		} else {
+			name = VFSManager.rename(baseContainer, name);
+			newFile = baseContainer.createChildLeaf(name);
+		}	
+		VFSManager.copyContent(file, newFile, ureq.getIdentity());
+		JSONObject response = new JSONObject();
+		response.put("location", newFile.getName());
+		JSONMediaResource fileResponse = new JSONMediaResource(response, "UTF-8");
+		ureq.getDispatchResult().setResultingMediaResource(fileResponse);
 	}
 
 	@Override
