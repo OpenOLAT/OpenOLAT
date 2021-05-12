@@ -40,7 +40,11 @@ public class PassedOverridenCellRenderer implements FlexiCellRenderer {
 		if(cellValue instanceof Boolean) {
 			Boolean passed = (Boolean)cellValue;
 			if(passed.booleanValue()) {
-				target.append(translator.translate("passed.overriden"));
+				if(renderer != null) {
+					target.append(translator.translate("passed.overriden"));
+				} else {
+					target.append(translator.translate("passed.overriden.text"));
+				}
 			}	
 		}
 	}
