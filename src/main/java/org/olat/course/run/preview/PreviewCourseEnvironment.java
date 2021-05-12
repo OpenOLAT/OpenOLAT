@@ -29,6 +29,7 @@ import java.util.Date;
 
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.auditing.UserNodeAuditManager;
@@ -82,6 +83,16 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 	@Override
 	public void updateCourseEntry(RepositoryEntry courseEntry) {
 		//
+	}
+
+	@Override
+	public ICourse updateCourse() {
+		return null;
+	}
+
+	@Override
+	public long getLastPublicationTimestamp() {
+		return -1;
 	}
 
 	@Override

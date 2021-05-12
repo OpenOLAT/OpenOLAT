@@ -408,6 +408,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private CourseNode updateAfterChanges(CourseNode courseNode, String selectedNodeId) {
 		if(currentCourseNode == null) return null;
 		
+		if(!uce.getCourseEnvironment().isPreview()) {
+			course = uce.getCourseEnvironment().updateCourse();
+		}
+		
 		CourseNode newCurrentCourseNode;
 		NodeClickedRef nclr = navHandler.reloadTreeAfterChanges(courseNode, selectedNodeId);
 		if(nclr == null) {
@@ -903,9 +907,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 
 	/**
-	 * implementation of listener which listens to publish events
-	 * 
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
+	 * Implementation of listener which listens to publish events
 	 */
 	@Override
 	public void event(Event event) {	
@@ -1038,6 +1040,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			return;
 		}
 		
+		if(!navHandler.checkPublicationTimestamp()) {
+			reloadOnActivate();
+		}
+		
 		ContextEntry firstEntry = entries.get(0);
 		String type = firstEntry.getOLATResourceable().getResourceableTypeName();
 		if("CourseNode".equalsIgnoreCase(type) || "Part".equalsIgnoreCase(type)) {
@@ -1066,6 +1072,19 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					activateable.activate(ureq, entries, state);
 				}
 			}
+		}
+	}
+	
+	private void reloadOnActivate() {
+		try {
+			CourseNode courseNode = getCurrentCourseNode();
+			String selectedNodeId = luTree.getSelectedNodeId();
+			if(courseNode != null && selectedNodeId != null) {
+				currentCourseNode = updateAfterChanges(courseNode, selectedNodeId);
+				needsRebuildAfter = false;
+			}
+		} catch (Exception e) {
+			logError("", e);
 		}
 	}
 

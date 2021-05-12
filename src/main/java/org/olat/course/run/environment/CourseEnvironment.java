@@ -27,6 +27,7 @@ package org.olat.course.run.environment;
 
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.auditing.UserNodeAuditManager;
@@ -77,6 +78,11 @@ public interface CourseEnvironment {
 	 * @param courseEntry
 	 */
 	public void updateCourseEntry(RepositoryEntry courseEntry);
+	
+	
+	public ICourse updateCourse();
+	
+	public long getLastPublicationTimestamp();
 	
 
 	/**
