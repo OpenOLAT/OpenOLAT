@@ -155,6 +155,8 @@ public class EducationalTypeEditController extends FormBasicController {
 		String cssClass = cssClassEl.getValue();
 		type.setCssClass(cssClass);
 		
+		repositoryManager.updateEducationalType(type);
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
