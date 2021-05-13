@@ -269,8 +269,8 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			Component rootCmp = te.getRootForm().getInitialComponent();
 			URLBuilder rubu = ubu.createCopyFor(rootCmp);
 			
-			rubu.buildURI(su, new String[] { Form.FORMID, "_csrf", "dispatchevent", "dispatchuri" },
-					new String[] { Form.FORMCMD, renderer.getCsrfToken(), "2", teC.getFormDispatchId() }, null, AJAXFlags.MODE_NORMAL, false);
+			rubu.buildURI(su, new String[] { Form.FORMID, "_csrf", "dispatchevent", "dispatchuri", "imageupload" },
+					new String[] { Form.FORMCMD, renderer.getCsrfToken(), "2", teC.getFormDispatchId(), teC.getFormDispatchId() }, null, AJAXFlags.MODE_NORMAL, false);
 			return su.toString();
 		}
 		return null;
