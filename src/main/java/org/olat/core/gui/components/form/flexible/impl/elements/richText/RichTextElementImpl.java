@@ -205,6 +205,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		String sizeParamId = "rtinye_".concat(paramId);
 		String size = getRootForm().getRequestParameter(sizeParamId);
 		String browser = getRootForm().getRequestParameter("browser");
+		String imageUpload = getRootForm().getRequestParameter(ureq, "imageupload");
 		
 		if(StringHelper.containsNonWhitespace(submitValue)) {
 			if(renderingMode == TextMode.oneLine) {
@@ -233,7 +234,9 @@ public class RichTextElementImpl extends AbstractTextElement implements
 			component.setDirty(false);
 		}
 		
-		uploadDraggedFiles(ureq);
+		if(StringHelper.containsNonWhitespace(imageUpload) && paramId.equals(imageUpload)) {
+			uploadDraggedFiles(ureq);
+		}
 
 		if(paramId.equals(dispatchUri)) {
 			if(TextMode.formatted.name().equals(cmd)) {
