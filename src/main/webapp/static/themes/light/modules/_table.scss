@@ -139,6 +139,9 @@ a.o_orderby, a.o_orderby:hover {
 	}
 }
 
+.o_row_selected {
+	background: $o-table-row-selected-color !important;	
+}
 .o_table_row_count {
 	padding-top:6px;
 	padding-bottom:6px;

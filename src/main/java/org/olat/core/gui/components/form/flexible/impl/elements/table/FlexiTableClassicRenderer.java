@@ -251,9 +251,14 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		target.append("<tr id='").append(rowIdPrefix).append(row).append("'");
 		if(ftE.getCssDelegate() != null) {
 			String cssClass = ftE.getCssDelegate().getRowCssClass(FlexiTableRendererType.classic, row);
+			target.append(" class='");
 			if(StringHelper.containsNonWhitespace(cssClass)) {
-				target.append(" class='").append(cssClass).append("'");
+				target.append(cssClass);
 			}
+			if(ftE.isMultiSelectedIndex(row)) {
+				target.append(" o_row_selected");				
+			}
+			target.append("'");
 		}
 		target.append(">");
 				
@@ -261,6 +266,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			target.append("<td class='o_multiselect'>")
 			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'")
 			      .append(" onclick=\"javascript:")
+			      .append("jQuery('#").append(rowIdPrefix).append(row).append("').toggleClass('o_row_selected');")
 			      .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
 			    		  new NameValuePair("chkbox", Integer.toString(row))))
 				  .append(";\"");	 

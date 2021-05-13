@@ -65,6 +65,7 @@ class MultiSelectColumnDescriptor implements ColumnDescriptor {
 			if (readonly){
 				sb.append(" readonly=\"readonly\" disabled=\"disabled\"");
 			}
+			sb.append(" onclick=\"javascript:jQuery('#o_table").append(table.hashCode()).append(" tbody tr:nth-of-type(").append(row+1).append(")').toggleClass('o_row_selected');\"");
 			sb.append(CLOSE_HTML_TAG);
 			// workaround: value of disabled checkboxes will not be returned on submit
 			if (readonly && checked) {

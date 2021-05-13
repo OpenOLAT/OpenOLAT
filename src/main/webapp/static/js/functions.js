@@ -2137,9 +2137,11 @@ function o_table_toggleCheck(ref, checked) {
 		tb_checkboxes.checked = checked;
 	}
 	else {
+		var rows = jQuery('#' + ref + ' tbody tr');
 		var i;
 		for (i=0; i < len; i++) {
 			tb_checkboxes[i].checked=checked;
+			jQuery(rows[i]).toggleClass('o_row_selected', checked);
 		}
 	}
 }
