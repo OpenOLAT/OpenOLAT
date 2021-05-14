@@ -134,6 +134,11 @@
 										$topic.getServerWarning()
 									</div>
 								#end
+								#if($r.isNotNull($topic.getMeetingWarning()))
+									<div class="o_warning">
+										$topic.getMeetingWarning()
+									</div>
+								#end
 								#if($r.isNotNull($topic.getJoinLinkName()))
 									<div class="o_button_group">
 										$r.render($topic.getJoinLinkName())

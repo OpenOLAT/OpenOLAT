@@ -99,6 +99,12 @@
 						</div>
 					#end
 					
+					#if($r.isNotNull($topic.getMeetingWarning()))
+						<div class="o_warning o_bbb_warning">
+							$topic.getMeetingWarning()
+						</div>
+					#end
+					
 					#if($r.visible($topic.getAcknowledgeName()))
 						<div class="o_warning o_bbb_warning">
 							<h4>$r.translate("meeting.acknowledge.recording.explain.title")</h4>
