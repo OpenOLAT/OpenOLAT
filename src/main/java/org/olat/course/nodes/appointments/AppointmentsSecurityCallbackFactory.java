@@ -120,12 +120,26 @@ public class AppointmentsSecurityCallbackFactory {
 			boolean participation = isParticipation(participations);
 			boolean organizer = isOrganizer(organizers);
 			if (participation || organizer) {
-				Date now = new Date();
-				Date start = organizer ? meeting.getStartWithLeadTime() : meeting.getStartDate();
 				Date end = meeting.getEndWithFollowupTime();
-				return !((start != null && start.compareTo(now) >= 0) || (end != null && end.compareTo(now) <= 0));
+				return end == null || end.compareTo(new Date()) >= 0;
 			}
 			return false;
+		}
+
+		@Override
+		public boolean isMeetingOpen(Appointment appointment, Collection<Organizer> organizers) {
+			if (readOnly 
+					|| appointment == null
+					|| appointment.getBBBMeeting() == null
+					|| Appointment.Status.confirmed != appointment.getStatus()) {
+				return false;
+			}
+			
+			BigBlueButtonMeeting meeting = appointment.getBBBMeeting();
+			Date now = new Date();
+			Date start = isOrganizer(organizers) ? meeting.getStartWithLeadTime() : meeting.getStartDate();
+			Date end = meeting.getEndWithFollowupTime();
+			return !((start != null && start.compareTo(now) >= 0) || (end != null && end.compareTo(now) <= 0));
 		}
 
 		@Override
