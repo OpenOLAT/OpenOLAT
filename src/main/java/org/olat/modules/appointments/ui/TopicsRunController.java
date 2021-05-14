@@ -365,7 +365,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 		if (serverDisabled) {
 			wrapper.setServerWarning(translate("error.serverDisabled"));
 		}
-		boolean meetingOpen = secCallback.isMeetingOpen(appointment, wrapper.getOrganizers());
+		boolean meetingOpen = secCallback.isBBBMeetingOpen(appointment, wrapper.getOrganizers());
 		if (!serverDisabled && !meetingOpen) {
 			wrapper.setMeetingWarning(translate("error.meeting.not.open"));
 		}
@@ -414,9 +414,15 @@ public class TopicsRunController extends FormBasicController implements Activate
 	}
 	
 	private void wrapTeamsMeeting(TopicWrapper wrapper) {
+		boolean meetingOpen = secCallback.isTeamsMeetingOpen(wrapper.getAppointment(), wrapper.getOrganizers());
+		if (!meetingOpen) {
+			wrapper.setMeetingWarning(translate("error.meeting.not.open"));
+		}
+		
 		FormLink joinButton = uifactory.addFormLink("join" + counter++, CMD_JOIN, "meeting.join.button", null, flc, Link.BUTTON_LARGE);
 		joinButton.setNewWindow(true, true, true);
 		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
+		joinButton.setEnabled(meetingOpen);
 		joinButton.setPrimary(joinButton.isEnabled());
 		joinButton.setUserObject(wrapper);
 		wrapper.setJoinLinkName(joinButton.getName());
