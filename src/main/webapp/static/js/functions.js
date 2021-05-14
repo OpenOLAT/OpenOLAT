@@ -199,6 +199,8 @@ var BLoader = {
 /**
  * The BFormatter object can be used to :
  * - formatt latex formulas using jsMath
+ * - align multiple tables with the same columns to match the column width
+ * - format bytes to human readable format
  *
  * 18.06.2009 gnaegi@frentix.com 
  */
@@ -2177,6 +2179,52 @@ function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll) 
 		if(window.console)  console.log(e);
 	}
 }
+
+/*
+ * Table and other element scrolling overflow indicator: show little shadow 
+ * left and right when there is some invisible content
+ */
+function o_initScrollableOverflowIndicator(domId) {
+	// keep outside the listener function scope to lookup only once and not for every scroll event 
+	var scrollableWrapperEl = jQuery('#' + domId);
+	var scrollableEl = jQuery('#' + domId + ' .o_scrollable');
+	var leftVisible = false;	// keep state to prevent dom queries
+	var rightVisible = false;
+	
+	// add right scroll indicator if the element has overflow
+	if (scrollableEl.prop('scrollWidth') > scrollableEl.width()) {
+		scrollableWrapperEl.addClass('o_scrollable_right'); 
+		rightVisible = true;
+	}
+	
+	// add scroll listener
+	scrollableEl.scroll(function() {
+		if (scrollableEl.scrollLeft() == 0) {
+			// 1: at the very left
+			if (leftVisible) {
+				scrollableWrapperEl.removeClass('o_scrollable_left');
+				leftVisible = false;
+			}
+		} else if ( scrollableEl.width() + scrollableEl.scrollLeft() >= scrollableEl.prop('scrollWidth')) {
+			// 2: at the very right. use greater than to work also with scrollbar bouncing
+			if (rightVisible) {
+				scrollableWrapperEl.removeClass('o_scrollable_right');
+				rightVisible = false;
+			}		
+		} else {
+			// 3: somewhere in between
+			if (!leftVisible) {
+				scrollableWrapperEl.addClass('o_scrollable_left');
+				leftVisible = true;
+			}
+			if (!rightVisible) {
+				scrollableWrapperEl.addClass('o_scrollable_right');
+				rightVisible = true;
+			}		
+		}	
+	});
+}
+
 
 /*
  * For menu tree

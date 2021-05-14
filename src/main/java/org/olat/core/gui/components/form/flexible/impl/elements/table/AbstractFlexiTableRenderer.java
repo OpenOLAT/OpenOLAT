@@ -75,8 +75,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			if (wrapperSelector != null) {
 				sb.append(" id='").append(wrapperSelector).append("'");
 			}
-			sb.append("><table id=\"").append(id).append("\" class=\"table table-condensed table-striped table-hover")
-			  .append(" table-bordered", ftE.isBordered()).append("\">");
+			String scrollableWrapperId = "o_scroll_" + id;
+			sb.append("><div class='o_scrollable_wrapper' id=\"").append(scrollableWrapperId).append("\"><div class='o_scrollable'>")
+				.append("<table id=\"").append(id).append("\" class=\"table table-condensed table-striped table-hover").append(" table-bordered", ftE.isBordered()).append("\">");
 			
 			//render headers
 			renderHeaders(sb, ftC, translator);
@@ -91,7 +92,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderBody(renderer, sb, ftC, ubu, translator, renderResult);
 			sb.append("</tbody>");
 			
-			sb.append("</table>");
+			sb.append("</table></div></div>"); // END o_scrollable_wrapper and o_scrollable
+			
 			renderFooterButtons(sb, ftC, translator);
 			renderFooterGroupedButtons(renderer, sb, ftC, ubu, translator, renderResult, args);
 			//draggable
@@ -111,8 +113,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		          .append("});\n")
 				  .append("</script>\n");
 			}
-			
-			sb.append("</div>");
+			sb.append("</div>"); // END o_table_wrapper
+			// Initialize the scrolling overflow indicator code
+			sb.append("<script>o_initScrollableOverflowIndicator('").append(scrollableWrapperId).append("');</script>");
 		}
 		
 		//source

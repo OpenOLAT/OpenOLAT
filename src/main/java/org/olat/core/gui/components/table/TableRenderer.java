@@ -92,21 +92,28 @@ public class TableRenderer extends DefaultComponentRenderer {
 		}
 
 		// Render table wrapper and table
+		
+
+		
 		String formName = renderMultiselectForm(target, source, ubu, iframePostEnabled);
+		String scrollableWrapperId = "o_scroll_" + table.getDispatchID();
 		target.append("<div class=\"o_table_wrapper\" id=\"o_table_wrapper_").append(table.hashCode()).append("\">")
+			  .append("<div class='o_scrollable_wrapper' id=\"").append(scrollableWrapperId).append("\"><div class='o_scrollable'>")
 		      .append("<table id=\"o_table").append(table.hashCode()).append("\" class=\"o_table table table-striped table-condensed table-hover")
 		      .append(" table-bordered", table.isDisplayTableGrid())
 		      .append("\">");		
 		appendHeaderLinks(target, translator, table, cols, iframePostEnabled, ubu);
 		appendDataRows(renderer, target, ubu, table, iframePostEnabled, cols, selRowUnSelectable, selRowId, startRowId, endRowId);
-		target.append("</table><div class='o_table_footer'>");
+		target.append("</table></div></div><div class='o_table_footer'>");
 		appendTablePageing(target, translator, table, rows, resultsPerPage, currentPageId, usePageing, iframePostEnabled, ubu);
 		appendMultiselectFormActions(target, formName, translator, table);
 		target.append("</div></div>")
 		// lastly close multiselect
 	         .append("</form>");
+		// Initialize the scrolling overflow indicator code
+		target.append("<script>o_initScrollableOverflowIndicator('").append(scrollableWrapperId).append("');</script>");
 		appendViewportResizeJsFix(target, source, rows, usePageing);
-		
+	
 		if (log.isDebugEnabled()) {
 			long duration = System.currentTimeMillis() - start;
 			log.debug("Perf-Test: render takes " + duration);

@@ -64,16 +64,6 @@
 		 font-weight: bold;
 	}
 
-	/* make table always responsive, meaning span entire width with scrollbar in case of overflow
-	   note: bootstrapt table-responsive does the same but only for small viewports 
-	 */
-	width: 100%;
-	margin-bottom: 15px;
-	overflow-y: hidden;
-	overflow-x: auto;
-	-ms-overflow-style: -ms-autohiding-scrollbar;
-	-webkit-overflow-scrolling: touch;
-
 	.table {
 		margin-bottom: 0;
 	}

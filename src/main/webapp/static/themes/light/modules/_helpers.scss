@@ -402,6 +402,56 @@
     	cursor: grabbing;
     }
  }
+
+/* Horizontal scrolling indicator 
+ * show/no-show of scrolling indicator as shadow effects on the left and right side
+ * is controlled by setting the opacity via the corresponding class via JS. 
+ * See function o_initScrollableOverflowIndicator
+ */ 
+.o_scrollable_wrapper {
+	overflow: hidden;
+	position: relative;
+
+	&.o_scrollable_right:after,
+	&.o_scrollable_left:before {
+		opacity: 1;	
+		will-change: opacity;
+	}
+	&:after {
+		right: -10px;
+	}
+	&:before {
+		left: -10px;
+	}
+	
+	&:before,
+	&:after {
+		/* the scrolling indicator DOM elements are always there but opaque */
+		bottom: 0px;
+		content: '';
+		pointer-events: none;
+		position: absolute;
+		top: 20px;
+		box-shadow: 0 3px 8px 0 rgba(0,0,0,0.2);
+		opacity: 0;
+		transition: 0.3s opacity;
+		width: 10px;	
+		z-index:2;
+	}
+}
+.o_scrollable {
+	/* make table always responsive, meaning span entire width with scrollbar in case of overflow
+	   note: bootstrapt table-responsive does the same but only for small viewports 
+	 */
+	width: 100%;
+	position: relative; 
+	overflow-y: hidden;
+	overflow-x: auto;
+	-ms-overflow-style: -ms-autohiding-scrollbar;
+	-webkit-overflow-scrolling: touch;
+}
+
+
  
  /* misc */
  .o_hidden {
