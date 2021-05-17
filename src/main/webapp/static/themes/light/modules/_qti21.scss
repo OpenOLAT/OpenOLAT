@@ -105,6 +105,10 @@ ul.sessionControl {
 	font-style: italic;
 	color: $gray-light;
 	padding: 5px;
+	
+	p {
+		margin: 0;
+	}
 }
 
 /* Position object */

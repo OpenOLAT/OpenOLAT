@@ -483,7 +483,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 	private AssessmentItemBuilder initUploadEditors(UserRequest ureq, AssessmentItem item) {
 		UploadAssessmentItemBuilder uploadItemBuilder = new UploadAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new UploadEditorController(ureq, getWindowControl(), uploadItemBuilder,
-				rootDirectory, rootContainer, itemFile, readOnly);
+				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit, readOnly);
 		listenTo(scoreEditor);
