@@ -397,6 +397,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_xing:before { content: $fa-var-xing; color: #cfdc00;}
 .o_icon_linkedin:before { content: $fa-var-linkedin-square; color: #0e76a8;}
 
+/* Disabled icons */
+.o_disabled>.o_icon_delete:before { color: $o-content-disabled-color; }
+
 /* repository type icons */
 .o_BinderTemplate_icon:before { content: $fa-var-briefcase; }
 .o_CourseModule_icon:before, .o_course_icon:before { content: $fa-var-cube; }

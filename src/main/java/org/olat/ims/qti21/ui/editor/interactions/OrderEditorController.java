@@ -236,6 +236,12 @@ public class OrderEditorController extends FormBasicController implements SyncAs
 			allOk &= false;
 		}
 		
+		answersCont.clearError();
+		if(choiceWrappers.isEmpty()) {
+			answersCont.setErrorKey("error.atleast.one.choice", null);
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 
@@ -322,10 +328,12 @@ public class OrderEditorController extends FormBasicController implements SyncAs
 	
 	private void recalculateUpDownLinks() {
 		int numOfChoices = choiceWrappers.size();
+		boolean canRemove = choiceWrappers.size() > 1;
 		for(int i=0; i<numOfChoices; i++) {
 			SimpleChoiceWrapper choiceWrapper = choiceWrappers.get(i);
 			choiceWrapper.getUp().setEnabled(i != 0 && !restrictedEdit && !readOnly);
 			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1) && !restrictedEdit && !readOnly);
+			choiceWrapper.getRemove().setEnabled(canRemove && !restrictedEdit && !readOnly);
 		}
 	}
 
