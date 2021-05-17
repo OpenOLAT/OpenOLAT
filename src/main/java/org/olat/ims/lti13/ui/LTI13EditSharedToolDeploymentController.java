@@ -210,8 +210,11 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 	private boolean validateUniqueDeployment() {
 		String deploymentId = deploymentIdEl.getValue();
 		LTI13Platform selectedPlatform = getSelectedPlatform();
-		LTI13SharedToolDeployment savedDeployment = lti13Service.getSharedToolDeployment(deploymentId, selectedPlatform);
-		return savedDeployment == null || savedDeployment.equals(deployment);
+		if(selectedPlatform != null) {
+			LTI13SharedToolDeployment savedDeployment = lti13Service.getSharedToolDeployment(deploymentId, selectedPlatform);
+			return savedDeployment == null || savedDeployment.equals(deployment);
+		}
+		return true;// no platform makes an error before
 	}
 
 	@Override
