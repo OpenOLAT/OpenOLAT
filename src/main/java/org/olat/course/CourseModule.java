@@ -73,6 +73,8 @@ public class CourseModule extends AbstractSpringModule {
 	private boolean disclaimerEnabled;
 	@Value("${course.type.default}")
 	private String courseTypeDefault;
+	@Value("${course.archive.log.table.on.delete:true}")
+	private String archiveLogTableOnDelete;
 	
 	// Repository types
 	public static final String ORES_TYPE_COURSE = OresHelper.calculateTypeName(CourseModule.class);
@@ -239,4 +241,14 @@ public class CourseModule extends AbstractSpringModule {
 	public void setCourseTypeDefault(String courseTypeDefault) {
 		this.courseTypeDefault = courseTypeDefault;
 	}
+
+	public boolean isArchiveLogTableOnDelete() {
+		return "true".equals(archiveLogTableOnDelete);
+	}
+
+	public void setArchiveLogTableOnDelete(String archiveLogTableOnDelete) {
+		this.archiveLogTableOnDelete = archiveLogTableOnDelete;
+	}
+	
+	
 }

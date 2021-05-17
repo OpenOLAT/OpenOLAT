@@ -707,10 +707,13 @@ public class CourseFactory {
 	 * @param locale
 	 * @param identity
 	 */
-	public static void archiveCourse(OLATResourceable res, String charset, Locale locale, Identity identity, Roles roles) {
+	public static void archiveCourseToDelete(OLATResourceable res, String charset, Locale locale, Identity identity, Roles roles) {
 		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
 		PersistingCourseImpl course = (PersistingCourseImpl) loadCourse(res);
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(identity, course.getCourseTitle());
+		
+		boolean archiveCourseLog = CoreSpringFactory.getImpl(CourseModule.class)
+				.isArchiveLogTableOnDelete();
 		
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		boolean isAdministrator = roles.isAdministrator()
@@ -718,7 +721,7 @@ public class CourseFactory {
 		boolean isOresOwner = repositoryService.hasRole(identity, courseRe, GroupRoles.owner.name());
 		boolean isOresInstitutionalManager = roles.isLearnResourceManager()
 				&& repositoryService.hasRoleExpanded(identity, courseRe, OrganisationRoles.learnresourcemanager.name());
-		archiveCourse(identity, course, charset, locale, exportDirectory, isAdministrator, isOresOwner, isOresInstitutionalManager);
+		archiveCourse(identity, course, charset, locale, exportDirectory, archiveCourseLog, isAdministrator, isOresOwner, isOresInstitutionalManager);
 	}
 
 	/**
@@ -730,7 +733,8 @@ public class CourseFactory {
 	 * @param locale
 	 * @param identity
 	 */
-	public static void archiveCourse(Identity archiveOnBehalfOf, ICourse course, String charset, Locale locale, File exportDirectory, boolean isAdministrator, boolean... oresRights) {
+	private static void archiveCourse(Identity archiveOnBehalfOf, ICourse course, String charset, Locale locale, File exportDirectory,
+			boolean archiveCourseLog, boolean isAdministrator, boolean... oresRights) {
 		// archive course results overview
 		List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
 		List<CourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
@@ -747,27 +751,29 @@ public class CourseFactory {
 		Visitor archiveV = new NodeArchiveVisitor(locale, course, exportDirectory, charset);
 		TreeVisitor tv = new TreeVisitor(archiveV, course.getRunStructure().getRootNode(), true);
 		tv.visitAll();
+		
 		// archive all course log files
-		//OLATadmin gets all logfiles independent of the visibility configuration
-		boolean isOresOwner = (oresRights.length > 0)?oresRights[0]:false;
-		boolean isOresInstitutionalManager = (oresRights.length > 1)?oresRights[1]:false;
-
-		boolean aLogV = isOresOwner || isOresInstitutionalManager || isAdministrator;
-		boolean uLogV = isAdministrator;
-		boolean sLogV = isOresOwner || isOresInstitutionalManager || isAdministrator;
-
-		// make an intermediate commit here to make sure long running course log export doesn't
-		// cause db connection timeout to be triggered
-		// rework when backgroundjob infrastructure exists
-		DBFactory.getInstance().intermediateCommit();
-		CoreSpringFactory.getImpl(AsyncExportManager.class).asyncArchiveCourseLogFiles(archiveOnBehalfOf,
-				course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, null, null);
+		if(archiveCourseLog) {
+			// administrator gets all log files independent of the visibility configuration
+			boolean isOresOwner = (oresRights.length > 0)?oresRights[0]:false;
+			boolean isOresInstitutionalManager = (oresRights.length > 1)?oresRights[1]:false;
+	
+			boolean aLogV = isOresOwner || isOresInstitutionalManager || isAdministrator;
+			boolean uLogV = isAdministrator;
+			boolean sLogV = isOresOwner || isOresInstitutionalManager || isAdministrator;
+	
+			// make an intermediate commit here to make sure long running course log export doesn't
+			// cause db connection timeout to be triggered
+			// rework when backgroundjob infrastructure exists
+			DBFactory.getInstance().intermediateCommit();
+			CoreSpringFactory.getImpl(AsyncExportManager.class).asyncArchiveCourseLogFiles(archiveOnBehalfOf,
+					course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, null, null);
+		}
 
 		course.getCourseEnvironment().getCourseGroupManager().archiveCourseGroups(exportDirectory);
 
 		CoreSpringFactory.getImpl(ChatLogHelper.class).archive(course, exportDirectory);
 		DBFactory.getInstance().commitAndCloseSession();
-
 	}
 
 	/**
