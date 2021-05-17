@@ -7,6 +7,9 @@
 	#o_main_container {
 		background: $o-main-inner-bg;
 		
+		/* keep space for #o_toplink */
+		padding-bottom: $line-height-computed * 2;
+		
 		#o_main_left {
 			float: left;
 			z-index: 2;
