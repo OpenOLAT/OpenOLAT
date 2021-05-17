@@ -106,6 +106,7 @@ public class TrueFalseEditorController extends FormBasicController {
 		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
 		initForm(ureq);
+		recalculateDeleteButtons();
 	}
 
 	@Override
@@ -198,6 +199,13 @@ public class TrueFalseEditorController extends FormBasicController {
 		wrappers.add(wrapper);
 	}
 	
+	private void recalculateDeleteButtons() {
+		boolean canDelete = sourceWrappers.size() > 1;
+		for(SourceWrapper sourceWrapper:sourceWrappers) {
+			sourceWrapper.getDeleteButton().setVisible(canDelete && !restrictedEdit && !readOnly);
+		}
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -208,10 +216,18 @@ public class TrueFalseEditorController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 
 		commitTemporaryAssociations(ureq);
-		for(SourceWrapper sourceWrapper:sourceWrappers) {
-			sourceWrapper.setErrorSingleChoice(false);
-			List<String> answers = temporaryAssociations.get(sourceWrapper.getIdentifierString());
-			sourceWrapper.setErrorSingleChoice(answers == null || answers.size() != 1);
+		if(sourceWrappers.isEmpty()) {
+			answersCont.setErrorKey("error.atleast.one.answer", null);
+			allOk &= false;
+		} else {
+			for(SourceWrapper sourceWrapper:sourceWrappers) {
+				sourceWrapper.setErrorSingleChoice(false);
+				List<String> answers = temporaryAssociations.get(sourceWrapper.getIdentifierString());
+				if(answers == null || answers.size() != 1) {
+					sourceWrapper.setErrorSingleChoice(true);
+					allOk &= false;
+				}
+			}
 		}
 
 		return allOk;
@@ -222,12 +238,14 @@ public class TrueFalseEditorController extends FormBasicController {
 		if(addRowButton == source) {
 			commitTemporaryAssociations(ureq);
 			doAddSourceRow(ureq);
+			recalculateDeleteButtons();
 		} else if(source instanceof FormLink) {
 			FormLink button = (FormLink)source;
 			if("delete".equals(button.getCmd())) {
 				commitTemporaryAssociations(ureq);
 				SourceWrapper associationWrapper = (SourceWrapper)button.getUserObject();
 				doDeleteAssociableChoice(associationWrapper);
+				recalculateDeleteButtons();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

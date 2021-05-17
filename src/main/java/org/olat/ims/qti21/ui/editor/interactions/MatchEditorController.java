@@ -116,6 +116,7 @@ public class MatchEditorController extends FormBasicController {
 		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
 		initForm(ureq);
+		recalculateDeleteButtons();
 	}
 
 	@Override
@@ -256,6 +257,18 @@ public class MatchEditorController extends FormBasicController {
 		wrappers.add(wrapper);
 	}
 	
+	private void recalculateDeleteButtons() {
+		boolean canDeleteSources = sourceWrappers.size() > 1;
+		for(MatchWrapper sourceWrapper:sourceWrappers) {
+			sourceWrapper.getDeleteButton().setVisible(canDeleteSources && !restrictedEdit && !readOnly);
+		}
+		
+		boolean canDeleteTargets = targetWrappers.size() > 1;
+		for(MatchWrapper targetWrapper:targetWrappers) {
+			targetWrapper.getDeleteButton().setVisible(canDeleteTargets && !restrictedEdit && !readOnly);
+		}
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -263,9 +276,18 @@ public class MatchEditorController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		//clear errors
+		answersCont.clearError();
+		if(sourceWrappers.isEmpty()) {
+			answersCont.setErrorKey("error.atleast.one.source", null);
+			allOk &= false;
+		} else if(targetWrappers.isEmpty()) {
+			answersCont.setErrorKey("error.atleast.one.target", null);
+			allOk &= false;
+		}
+		
 		for(MatchWrapper sourceWrapper:sourceWrappers) {
 			sourceWrapper.setErrorSingleChoice(false);
 		}
@@ -279,7 +301,7 @@ public class MatchEditorController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -287,9 +309,11 @@ public class MatchEditorController extends FormBasicController {
 		if(addColumnButton == source) {
 			commitTemporaryAssociations(ureq);
 			doAddTargetColumn(ureq);
+			recalculateDeleteButtons();
 		} else if(addRowButton == source) {
 			commitTemporaryAssociations(ureq);
 			doAddSourceRow(ureq);
+			recalculateDeleteButtons();
 		} else if(singleMultiEl == source) {
 			commitTemporaryAssociations(ureq);
 			doSwitchMatchMax();
@@ -299,6 +323,7 @@ public class MatchEditorController extends FormBasicController {
 				commitTemporaryAssociations(ureq);
 				MatchWrapper associationWrapper = (MatchWrapper)button.getUserObject();
 				doDeleteAssociableChoice(associationWrapper);
+				recalculateDeleteButtons();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
