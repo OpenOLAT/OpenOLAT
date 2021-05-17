@@ -65,7 +65,7 @@ public class EntriesPage {
 	}
 	
 	public EntryPage selectPageInTableFlatView(String title) {
-		By selectBy = By.xpath("//div[contains(@class,'o_binder_page_listing')]/table//td/a[contains(text(),'" + title + "')]");
+		By selectBy = By.xpath("//div[contains(@class,'o_binder_page_listing')]//table//td/a[contains(text(),'" + title + "')]");
 		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
 		return new EntryPage(browser);
@@ -86,7 +86,7 @@ public class EntriesPage {
 	 * @return Itself
 	 */
 	public EntriesPage assertOnPageTableFlatView(String title) {
-		By pageTitleBy = By.xpath("//div[contains(@class,'o_binder_page_listing')]/table//a[contains(text(),'" + title + "')]");
+		By pageTitleBy = By.xpath("//div[contains(@class,'o_binder_page_listing')]//table//a[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(pageTitleBy, browser);
 		List<WebElement> pageTitleEls = browser.findElements(pageTitleBy);
 		Assert.assertEquals(1, pageTitleEls.size());

@@ -150,7 +150,7 @@ public class MemberListPage {
 	 * @return Itself
 	 */
 	public MemberListPage assertOnPeekview(int row, int number) {
-		By rowBy = By.xpath("//div[contains(@class,'o_portlet_table')]//div[@class='o_table_wrapper']/table/tbody/tr[" + row + "]/td[contains(text(),'" + number+ "')]");
+		By rowBy = By.xpath("//div[contains(@class,'o_portlet_table')]//div[@class='o_table_wrapper']/div/div/table/tbody/tr[" + row + "]/td[contains(text(),'" + number+ "')]");
 		OOGraphene.waitElement(rowBy, browser);
 		return this;
 	}

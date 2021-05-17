@@ -106,7 +106,7 @@ public class MembersWizardPage {
 		searchMemberForm(user, admin);
 
 		// select the identity
-		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_flexi')]/table//tr[td[text()[contains(.,'" + user.getFirstName() + "')]]]/td/a[contains(@onclick,'select')]");
+		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_flexi')]//table//tr[td[text()[contains(.,'" + user.getFirstName() + "')]]]/td/a[contains(@onclick,'select')]");
 		OOGraphene.waitElement(selectAll, browser);
 		if(browser instanceof FirefoxDriver) {
 			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar

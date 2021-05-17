@@ -86,7 +86,7 @@ public class CheckListConfigPage {
 	 * @return Itself
 	 */
 	public CheckListConfigPage assertOnCheckboxInList(String title) {
-		By checkboxBy = By.xpath("//fieldset[contains(@class,'o_sel_cl_edit_checklist')]//div[contains(@class,'o_table_flexi')]/table//td[contains(text(),'" + title + "')]");
+		By checkboxBy = By.xpath("//fieldset[contains(@class,'o_sel_cl_edit_checklist')]//div[contains(@class,'o_table_flexi')]//table//td[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(checkboxBy, browser);
 		return this;
 	}

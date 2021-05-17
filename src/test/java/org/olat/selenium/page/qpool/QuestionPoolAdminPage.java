@@ -119,7 +119,7 @@ public class QuestionPoolAdminPage {
 	}
 	
 	public QuestionPoolAdminPage assertLevelInList(String level) {
-		By levelBy = By.xpath("//div[contains(@class,'o_table_flexi')]/table//td[text()[contains(.,'" + level + "')]]");
+		By levelBy = By.xpath("//div[contains(@class,'o_table_flexi')]//table//td[text()[contains(.,'" + level + "')]]");
 		OOGraphene.waitElement(levelBy, browser);
 		return this;
 	}
