@@ -95,7 +95,7 @@ public class CatalogSettingsController extends FormBasicController {
 		model = new CategoriesListModel(new ArrayList<>(), columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 200, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmptyTableMessageKey("no.catalog.entries");
+		tableEl.setEmptyTableSettings("no.catalog.entries" ,"no.catalog.entries.hint", "o_icon_catalog");
 	}
 	
 	@Override
