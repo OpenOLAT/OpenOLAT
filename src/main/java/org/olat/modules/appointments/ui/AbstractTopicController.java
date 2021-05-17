@@ -24,10 +24,11 @@ import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.util.ArrayHelper.emptyStrings;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,11 +45,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Organizer;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight;
 import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,9 +70,11 @@ public abstract class AbstractTopicController extends FormBasicController {
 	protected SingleSelection typeEl;
 	protected MultipleSelectionElement configurationEl;
 	protected MultipleSelectionElement organizerEl;
-	protected TopicLight initialTopic;
+	
+	private final TopicLight initialTopic;
+	private final OrganizerCandidateSupplier organizerCandidateSupplier;
+	protected Set<Identity> organizerCandidates;
 	protected List<Organizer> organizers;
-	protected List<Identity> coaches;
 	protected boolean multiParticipationsSelected;
 	protected boolean coachConfirmationSelected;
 	protected boolean participationVisible;
@@ -83,20 +86,25 @@ public abstract class AbstractTopicController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public AbstractTopicController(UserRequest ureq, WindowControl wControl, TopicLight initialTopic) {
+	public AbstractTopicController(UserRequest ureq, WindowControl wControl, TopicLight initialTopic,
+			OrganizerCandidateSupplier organizerCandidateSupplier) {
 		super(ureq, wControl);
 		this.initialTopic = initialTopic;
+		this.organizerCandidateSupplier = organizerCandidateSupplier;
 	}
 	
-	public AbstractTopicController(UserRequest ureq, WindowControl wControl, Form rootForm, TopicLight initialTopic) {
+	public AbstractTopicController(UserRequest ureq, WindowControl wControl, Form rootForm, TopicLight initialTopic,
+			OrganizerCandidateSupplier organizerCandidateSupplier) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		this.initialTopic = initialTopic;
+		this.organizerCandidateSupplier = organizerCandidateSupplier;
 	}
 
 	protected void init(UserRequest ureq) {
 		organizers = getCurrentOrganizers();
-		coaches = repositoryService.getMembers(getRepositoryEntry(), RepositoryEntryRelationType.all,
-				GroupRoles.coach.name());
+		List<Identity> loadedOrganizerCandidates = organizerCandidateSupplier.getOrganizerCandidates();
+		loadedOrganizerCandidates.addAll(organizers.stream().map(Organizer::getIdentity).collect(Collectors.toList()));
+		organizerCandidates = new HashSet<>(loadedOrganizerCandidates);
 		
 		multiParticipationsSelected = initialTopic.isMultiParticipation();
 		coachConfirmationSelected = !initialTopic.isAutoConfirmation();
@@ -143,15 +151,15 @@ public abstract class AbstractTopicController extends FormBasicController {
 		configurationEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// Organizers
-		KeyValues coachesKV = new KeyValues();
-		for (Identity coach : coaches) {
-			coachesKV.add(entry(coach.getKey().toString(), userManager.getUserDisplayName(coach.getKey())));
+		KeyValues organizerCandidateKV = new KeyValues();
+		for (Identity organizerCandidate : organizerCandidates) {
+			organizerCandidateKV.add(entry(organizerCandidate.getKey().toString(), userManager.getUserDisplayName(organizerCandidate.getKey())));
 		}
-		coachesKV.sort(VALUE_ASC);
-		organizerEl = uifactory.addCheckboxesDropdown("organizer", "organizer", formLayout, coachesKV.keys(), coachesKV.values());
+		organizerCandidateKV.sort(VALUE_ASC);
+		organizerEl = uifactory.addCheckboxesDropdown("organizer", "organizer", formLayout, organizerCandidateKV.keys(), organizerCandidateKV.values());
 		for (Organizer organizer : organizers) {
 			Long organizerKey = organizer.getIdentity().getKey();
-			if (coaches.stream().anyMatch(coach -> organizerKey.equals(coach.getKey()))) {
+			if (organizerCandidates.stream().anyMatch(organizerCandidate -> organizerKey.equals(organizerCandidate.getKey()))) {
 				organizerEl.select(organizerKey.toString(), true);
 			}
 		}
@@ -242,7 +250,7 @@ public abstract class AbstractTopicController extends FormBasicController {
 	
 	public Collection<Identity> getOrganizers() {
 		Collection<String> selectedOrganizerKeys = organizerEl.getSelectedKeys();
-		return coaches.stream()
+		return organizerCandidates.stream()
 				.filter(i -> selectedOrganizerKeys.contains(i.getKey().toString()))
 				.collect(Collectors.toList());
 	}

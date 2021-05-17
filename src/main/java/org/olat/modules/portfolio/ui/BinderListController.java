@@ -307,7 +307,7 @@ public class BinderListController extends FormBasicController
 		String toolsLinkId = "tools_" + (++counter);
 		FormLink toolsLink = uifactory.addFormLink(toolsLinkId, "tools", null, null, flc, Link.LINK | Link.NONTRANSLATED);
 		toolsLink.getComponent().setCustomDisplayText("");
-		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws");
+		toolsLink.setIconRightCSS("o_icon o_icon_settings");
 		
 		VFSLeaf image = portfolioService.getPosterImageLeaf(binderRow);
 		BinderRow row = new BinderRow(binderRow, image, openLink, toolsLink);

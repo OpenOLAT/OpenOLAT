@@ -75,6 +75,7 @@ import org.olat.modules.appointments.AppointmentSearchParams;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Organizer;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
@@ -132,6 +133,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	private final RepositoryEntry entry;
 	private final String subIdent;
 	private final AppointmentsSecurityCallback secCallback;
+	private final OrganizerCandidateSupplier organizerCandidateSupplier;
 	private Set<Long> acknowlededRecordings = new HashSet<>();
 	private int counter;
 	private Set<Long> showAllParticipationsTopicKeys = new HashSet<>();
@@ -146,13 +148,15 @@ public class TopicsRunCoachController extends FormBasicController {
 	private DisplayPortraitManager displayPortraitManager;
 
 	public TopicsRunCoachController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback) {
+			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback,
+			OrganizerCandidateSupplier organizerCandidateSupplier) {
 		super(ureq, wControl, "topics_run_coach");
 		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.secCallback = secCallback;
+		this.organizerCandidateSupplier = organizerCandidateSupplier;
 		
 		if (secCallback.canSubscribe()) {
 			PublisherData publisherData = appointmentsService.getPublisherData(entry, subIdent);
@@ -424,15 +428,19 @@ public class TopicsRunCoachController extends FormBasicController {
 	private void wrapMBBBeeting(TopicWrapper wrapper, Appointment appointment) {
 		wrapper.setBbb(true);
 		BigBlueButtonMeeting meeting = appointment.getBBBMeeting();
-		boolean disabled = isDisabled(meeting);
-		if (disabled) {
+		boolean serverDisabled = isServerDisabled(meeting);
+		if (serverDisabled) {
 			wrapper.setServerWarning(translate("error.serverDisabled"));
+		}
+		boolean meetingOpen = secCallback.isBBBMeetingOpen(appointment, wrapper.getOrganizers());
+		if (!serverDisabled && !meetingOpen) {
+			wrapper.setMeetingWarning(translate("error.meeting.not.open"));
 		}
 		
 		FormLink joinButton = uifactory.addFormLink("join" + counter++, CMD_JOIN, "meeting.join.button", null, flc, Link.BUTTON_LARGE);
 		joinButton.setNewWindow(true, true, true);
 		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
-		joinButton.setEnabled(!disabled);
+		joinButton.setEnabled(!serverDisabled && meetingOpen);
 		joinButton.setPrimary(joinButton.isEnabled());
 		joinButton.setUserObject(wrapper);
 		wrapper.setJoinLinkName(joinButton.getName());
@@ -472,15 +480,22 @@ public class TopicsRunCoachController extends FormBasicController {
 		wrapper.setRecordingLinkNames(recordingLinkNames);
 	}
 	
-	private boolean isDisabled(BigBlueButtonMeeting meeting) {
+	private boolean isServerDisabled(BigBlueButtonMeeting meeting) {
 		return meeting != null && meeting.getServer() != null && !meeting.getServer().isEnabled();
 	}
 	
 	private void wrapTeamsMeeting(TopicWrapper wrapper) {
 		wrapper.setBbb(true);
+		
+		boolean meetingOpen = secCallback.isTeamsMeetingOpen(wrapper.getAppointment(), wrapper.getOrganizers());
+		if (!meetingOpen) {
+			wrapper.setMeetingWarning(translate("error.meeting.not.open"));
+		}
+		
 		FormLink joinButton = uifactory.addFormLink("join" + counter++, CMD_JOIN, "meeting.join.button", null, flc, Link.BUTTON_LARGE);
 		joinButton.setNewWindow(true, true, true);
 		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
+		joinButton.setEnabled(meetingOpen);
 		joinButton.setPrimary(joinButton.isEnabled());
 		joinButton.setUserObject(wrapper);
 		wrapper.setJoinLinkName(joinButton.getName());
@@ -649,7 +664,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	}
 	
 	private void doAddTopic(UserRequest ureq) {
-		topicCreateCtrl = new AppointmentCreateController(ureq, getWindowControl(), entry, subIdent);
+		topicCreateCtrl = new AppointmentCreateController(ureq, getWindowControl(), entry, subIdent, organizerCandidateSupplier);
 		listenTo(topicCreateCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", topicCreateCtrl.getInitialComponent(), true,
@@ -671,7 +686,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	}
 
 	private void doEditTopic(UserRequest ureq, Topic topic) {
-		topicEditCtrl = new TopicEditController(ureq, getWindowControl(), topic);
+		topicEditCtrl = new TopicEditController(ureq, getWindowControl(), topic, organizerCandidateSupplier);
 		listenTo(topicEditCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", topicEditCtrl.getInitialComponent(), true,
@@ -708,7 +723,7 @@ public class TopicsRunCoachController extends FormBasicController {
 
 	private void doDuplicateTopic(UserRequest ureq, Topic topic) {
 		removeAsListenerAndDispose(wizard);
-		wizard = new StepsMainRunController(ureq, getWindowControl(), new DuplicateTopic1Step(ureq, topic),
+		wizard = new StepsMainRunController(ureq, getWindowControl(), new DuplicateTopic1Step(ureq, topic, organizerCandidateSupplier),
 				new DuplicateTopicCallback(), null, translate("duplicate.topic.title"), "");
 		listenTo(wizard);
 		getWindowControl().pushAsModalDialog(wizard.getInitialComponent());
@@ -872,6 +887,7 @@ public class TopicsRunCoachController extends FormBasicController {
 		private boolean bbb;
 		private String joinLinkName;
 		private String serverWarning;
+		private String meetingWarning;
 		private List<String> recordingLinkNames;
 
 		public TopicWrapper(Topic topic) {
@@ -1060,6 +1076,14 @@ public class TopicsRunCoachController extends FormBasicController {
 
 		public void setServerWarning(String serverWarning) {
 			this.serverWarning = serverWarning;
+		}
+
+		public String getMeetingWarning() {
+			return meetingWarning;
+		}
+
+		public void setMeetingWarning(String meetingWarning) {
+			this.meetingWarning = meetingWarning;
 		}
 
 		public List<String> getRecordingLinkNames() {

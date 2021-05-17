@@ -27,6 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight;
 import org.olat.modules.appointments.ui.DuplicateTopicCallback.DuplicationContext;
@@ -43,7 +44,8 @@ public class DuplicateTopic1StepController extends StepFormBasicController {
 
 	private final DuplicationContext context;
 
-	public DuplicateTopic1StepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, Topic sourceTopic) {
+	public DuplicateTopic1StepController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			StepsRunContext runContext, Topic sourceTopic, OrganizerCandidateSupplier organizerCandidateSupplier) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		
 		context = DuplicateTopicCallback.getDuplicationContext(runContext);
@@ -53,7 +55,7 @@ public class DuplicateTopic1StepController extends StepFormBasicController {
 		TopicLight topic = DuplicateTopicCallback.toTransientTopic(sourceTopic);
 		context.setTopic(topic);
 		
-		editCtrl = new DuplicateTopicEditController(ureq, wControl, rootForm, topic, sourceTopic);
+		editCtrl = new DuplicateTopicEditController(ureq, wControl, rootForm, topic, sourceTopic, organizerCandidateSupplier);
 		listenTo(editCtrl);
 		
 		initForm(ureq);

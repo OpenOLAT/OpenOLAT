@@ -260,12 +260,16 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		answersCont.clearError();
 		if(!restrictedEdit) {
 			String correctAnswer = ureq.getParameter("correct");
-			if(!StringHelper.containsNonWhitespace(correctAnswer)) {
+			if(choiceWrappers.isEmpty()) {
+				allOk &= false;
+				answersCont.setErrorKey("error.atleast.one.answer", null);
+			} else if(!StringHelper.containsNonWhitespace(correctAnswer)) {
 				allOk &= false;
 				answersCont.setErrorKey("error.need.correct.answer", null);
 			}
 		}
 		validateScoreOfCorrectAnswer();// the validation is not mandatory, issue onnly a warning
+		
 		
 		return allOk;
 	}
@@ -392,10 +396,12 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	
 	private void recalculateUpDownLinks() {
 		int numOfChoices = choiceWrappers.size();
+		boolean canRemove = choiceWrappers.size() > 1;
 		for(int i=0; i<numOfChoices; i++) {
 			SimpleChoiceWrapper choiceWrapper = choiceWrappers.get(i);
 			choiceWrapper.getUp().setEnabled(i != 0 && !restrictedEdit && !readOnly);
 			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1) && !restrictedEdit && !readOnly);
+			choiceWrapper.getRemove().setEnabled(canRemove && !restrictedEdit && !readOnly);
 		}
 	}
 
@@ -404,7 +410,11 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		private final SimpleChoice choice;
 		private final RichTextElement answerEl;
 		private final FlowFormItem answerReadOnlyEl;
-		private final FormLink removeLink, addLink, upLink, downLink;
+		
+		private final FormLink upLink;
+		private final FormLink addLink;
+		private final FormLink downLink;
+		private final FormLink removeLink;
 		
 		private final Identifier choiceIdentifier;
 		

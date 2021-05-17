@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.modules.appointments.ui.AppointmentsMainController;
 import org.olat.repository.RepositoryEntry;
 
@@ -40,10 +41,10 @@ public class AppointmentsRunController extends BasicController {
 	private Controller appointmentsMainCtrl;
 
 	public AppointmentsRunController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent,
-			AppointmentsSecurityCallback secCallback) {
+			AppointmentsSecurityCallback secCallback, OrganizerCandidateSupplier organizerCandidateSupplier) {
 		super(ureq, wControl);
 		
-		appointmentsMainCtrl = new AppointmentsMainController(ureq, wControl, entry, subIdent, secCallback);
+		appointmentsMainCtrl = new AppointmentsMainController(ureq, wControl, entry, subIdent, secCallback, organizerCandidateSupplier);
 		putInitialPanel(appointmentsMainCtrl.getInitialComponent());
 	}
 

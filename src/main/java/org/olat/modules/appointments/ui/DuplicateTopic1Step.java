@@ -27,6 +27,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.modules.appointments.Topic;
 
 /**
@@ -38,10 +39,12 @@ import org.olat.modules.appointments.Topic;
 public class DuplicateTopic1Step extends BasicStep {
 
 	private final Topic sourceTopic;
+	private final OrganizerCandidateSupplier organizerCandidateSupplier;
 
-	public DuplicateTopic1Step(UserRequest ureq, Topic sourceTopic) {
+	public DuplicateTopic1Step(UserRequest ureq, Topic sourceTopic, OrganizerCandidateSupplier organizerCandidateSupplier) {
 		super(ureq);
 		this.sourceTopic = sourceTopic;
+		this.organizerCandidateSupplier = organizerCandidateSupplier;
 		setTranslator(Util.createPackageTranslator(DuplicateTopic1StepController.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("duplicate.topic.topic.title", "duplicate.topic.topic.title");
 		setNextStep(new DuplicateTopic2Step(ureq, sourceTopic));
@@ -54,7 +57,7 @@ public class DuplicateTopic1Step extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new DuplicateTopic1StepController(ureq, wControl, form, runContext, sourceTopic);
+		return new DuplicateTopic1StepController(ureq, wControl, form, runContext, sourceTopic, organizerCandidateSupplier);
 	}
 
 }

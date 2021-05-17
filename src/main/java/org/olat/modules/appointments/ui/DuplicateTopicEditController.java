@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.appointments.Organizer;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight;
 import org.olat.repository.RepositoryEntryRef;
@@ -40,8 +41,9 @@ public class DuplicateTopicEditController extends AbstractTopicController {
 
 	private final Topic sourceTopic;
 
-	public DuplicateTopicEditController(UserRequest ureq, WindowControl wControl, Form rootForm, TopicLight topic, Topic sourceTopic) {
-		super(ureq, wControl, rootForm, topic);
+	public DuplicateTopicEditController(UserRequest ureq, WindowControl wControl, Form rootForm, TopicLight topic,
+			Topic sourceTopic, OrganizerCandidateSupplier organizerCandidateSupplier) {
+		super(ureq, wControl, rootForm, topic, organizerCandidateSupplier);
 		this.sourceTopic = sourceTopic;
 		init(ureq);
 	}
