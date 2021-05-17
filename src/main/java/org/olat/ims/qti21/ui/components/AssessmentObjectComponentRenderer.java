@@ -1176,20 +1176,20 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	}
 	
 	protected void renderExtendedTextBox(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
-			ItemSessionState itemSessionState, ExtendedTextInteraction interaction) {
+			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, Translator translator) {
 		
 		ResponseData responseInput = getResponseInput(itemSessionState, interaction.getResponseIdentifier());
 		ResponseDeclaration responseDeclaration = getResponseDeclaration(assessmentItem, interaction.getResponseIdentifier());
 		Cardinality cardinality = responseDeclaration == null ? null : responseDeclaration.getCardinality();
 		if(cardinality != null && (cardinality.isRecord() || cardinality.isSingle())) {
 			String responseInputString = extractSingleCardinalityResponseInput(responseInput);
-			renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString);
+			renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString, translator);
 		} else {
 			if(interaction.getMaxStrings() != null) {
 				int maxStrings = interaction.getMaxStrings().intValue();
 				for(int i=0; i<maxStrings; i++) {
 					String responseInputString = extractResponseInputAt(responseInput, i);
-					renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString);
+					renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString, translator);
 				}	
 			} else {
 				// <xsl:with-param name="stringsCount" select="if (exists($responseValue)) then max(($minStrings, qw:get-cardinality-size($responseValue))) else $minStrings"/>
@@ -1203,7 +1203,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				for(int i=0; i<stringCounts; i++) {
 					String responseInputString = extractResponseInputAt(responseInput, i);
 					renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction,
-							responseInputString);
+							responseInputString, translator);
 				}
 			}
 		}
@@ -1257,8 +1257,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	    </textarea>
 	  </xsl:template>
 	*/
-	protected void renderExtendedTextBox(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
-			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString) {
+	protected final void renderExtendedTextBox(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
+			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString, Translator translator) {
 		
 		List<String> cssClasses = interaction.getClassAttr();
 		boolean copyPasteDisabled = cssClasses != null && cssClasses.contains(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE);
@@ -1333,7 +1333,16 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			  .append("  dispId:'").append(component.getQtiItem().getFormDispatchId()).append("',\n")
 			  .append("  eventIdField:'").append(form.getEventFieldId()).append("',\n")
 			  .append("  csrf:'").append(renderer.getRenderer().getCsrfToken()).append("',\n")
-			  .append(" })").append(".qtiCopyPaste()", copyPasteDisabled).append(".tabOverride();\n")
+			  .append(" })");
+			if(copyPasteDisabled) {
+				String errorHeader = translator.translate("essay.copypaste.disabled.header");
+				String errorMessage = translator.translate("essay.copypaste.disabled");
+				sb.append(".qtiCopyPaste({\n")
+				  .append("  errorHeader:'").append(StringHelper.escapeJavaScript(errorHeader)).append("',")
+				  .append("  errorMessage:'").append(StringHelper.escapeJavaScript(errorMessage)).append("'")
+				  .append("})\n");
+			}
+			sb.append(".tabOverride();\n")
 			  .append("})\n")
 			  .append(FormJSHelper.getJSEnd());
 		}

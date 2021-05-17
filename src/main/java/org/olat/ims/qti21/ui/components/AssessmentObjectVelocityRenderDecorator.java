@@ -756,7 +756,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	
 	public String renderExtendedTextBox(ExtendedTextInteraction interaction) {
 		avc.getHTMLRendererSingleton()
-			.renderExtendedTextBox(renderer, target, avc, assessmentItem, itemSessionState, interaction);
+			.renderExtendedTextBox(renderer, target, avc, assessmentItem, itemSessionState, interaction, translator);
 		return "";
 	}
 	
