@@ -194,7 +194,7 @@ public class AppointmentsSecurityCallbackFactory {
 
 		@Override
 		public boolean canSubscribe() {
-			return coach;
+			return admin || coach;
 		}
 		
 	}

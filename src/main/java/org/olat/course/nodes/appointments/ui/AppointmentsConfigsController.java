@@ -21,41 +21,62 @@ package org.olat.course.nodes.appointments.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.modules.appointments.AppointmentsSecurityCallback;
-import org.olat.modules.appointments.OrganizerCandidateSupplier;
-import org.olat.modules.appointments.ui.AppointmentsMainController;
-import org.olat.repository.RepositoryEntry;
+import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.noderight.ui.NodeRightsController;
+import org.olat.course.nodes.AppointmentsCourseNode;
 
 /**
  * 
- * Initial date: 14 Apr 2020<br>
+ * Initial date: 17 May 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AppointmentsRunController extends BasicController {
+public class AppointmentsConfigsController extends BasicController {
+	
+	private Controller configCtrl;
+	private Controller nodeRightCtrl;
 
-	private Controller appointmentsMainCtrl;
-
-	public AppointmentsRunController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent,
-			AppointmentsSecurityCallback secCallback, OrganizerCandidateSupplier organizerCandidateSupplier) {
+	public AppointmentsConfigsController(UserRequest ureq, WindowControl wControl, AppointmentsCourseNode courseNode,
+			CourseGroupManager courseGroupManager) {
 		super(ureq, wControl);
 		
-		appointmentsMainCtrl = new AppointmentsMainController(ureq, wControl, entry, subIdent, secCallback, organizerCandidateSupplier);
-		putInitialPanel(appointmentsMainCtrl.getInitialComponent());
+		VelocityContainer mainVC = createVelocityContainer("configs");
+		
+		configCtrl = new AppointmentsConfigController(ureq, wControl, courseNode);
+		listenTo(configCtrl);
+		mainVC.put("config", configCtrl.getInitialComponent());
+		
+		nodeRightCtrl = new NodeRightsController(ureq, getWindowControl(), courseGroupManager,
+				AppointmentsCourseNode.NODE_RIGHT_TYPES, courseNode.getModuleConfiguration(), null);
+		listenTo(nodeRightCtrl);
+		mainVC.put("rights", nodeRightCtrl.getInitialComponent());
+		
+		putInitialPanel(mainVC);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == configCtrl) {
+			fireEvent(ureq, event);
+		} else if (source == nodeRightCtrl) {
+			fireEvent(ureq, event);
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void doDispose() {
-		//
+		
 	}
 
 }

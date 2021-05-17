@@ -72,6 +72,7 @@ import org.olat.modules.appointments.AppointmentSearchParams;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Organizer;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
@@ -125,6 +126,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	private final RepositoryEntry entry;
 	private final String subIdent;
 	private final AppointmentsSecurityCallback secCallback;
+	private final OrganizerCandidateSupplier organizerCandidateSupplier;
 	private Set<Long> acknowlededRecordings = new HashSet<>();
 	private int counter;
 	private Set<Long> showAllParticipationsTopicKeys = new HashSet<>();
@@ -135,13 +137,15 @@ public class TopicsRunCoachController extends FormBasicController {
 	private UserManager userManager;
 
 	public TopicsRunCoachController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback) {
+			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback,
+			OrganizerCandidateSupplier organizerCandidateSupplier) {
 		super(ureq, wControl, "topics_run_coach");
 		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.secCallback = secCallback;
+		this.organizerCandidateSupplier = organizerCandidateSupplier;
 		
 		if (secCallback.canSubscribe()) {
 			PublisherData publisherData = appointmentsService.getPublisherData(entry, subIdent);
@@ -649,7 +653,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	}
 	
 	private void doAddTopic(UserRequest ureq) {
-		topicCreateCtrl = new AppointmentCreateController(ureq, getWindowControl(), entry, subIdent);
+		topicCreateCtrl = new AppointmentCreateController(ureq, getWindowControl(), entry, subIdent, organizerCandidateSupplier);
 		listenTo(topicCreateCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", topicCreateCtrl.getInitialComponent(), true,
@@ -671,7 +675,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	}
 
 	private void doEditTopic(UserRequest ureq, Topic topic) {
-		topicEditCtrl = new TopicEditController(ureq, getWindowControl(), topic);
+		topicEditCtrl = new TopicEditController(ureq, getWindowControl(), topic, organizerCandidateSupplier);
 		listenTo(topicEditCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", topicEditCtrl.getInitialComponent(), true,
@@ -708,7 +712,7 @@ public class TopicsRunCoachController extends FormBasicController {
 
 	private void doDuplicateTopic(UserRequest ureq, Topic topic) {
 		removeAsListenerAndDispose(wizard);
-		wizard = new StepsMainRunController(ureq, getWindowControl(), new DuplicateTopic1Step(ureq, topic),
+		wizard = new StepsMainRunController(ureq, getWindowControl(), new DuplicateTopic1Step(ureq, topic, organizerCandidateSupplier),
 				new DuplicateTopicCallback(), null, translate("duplicate.topic.title"), "");
 		listenTo(wizard);
 		getWindowControl().pushAsModalDialog(wizard.getInitialComponent());

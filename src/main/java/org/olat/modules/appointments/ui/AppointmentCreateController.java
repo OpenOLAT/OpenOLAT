@@ -36,7 +36,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -62,6 +61,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.AppointmentsService;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -75,8 +75,6 @@ import org.olat.modules.teams.ui.EditTeamsMeetingController;
 import org.olat.modules.teams.ui.TeamsMeetingsCalendarController;
 import org.olat.modules.teams.ui.TeamsUIHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -143,7 +141,7 @@ public class AppointmentCreateController extends FormBasicController {
 	private RepositoryEntry entry;
 	private String subIdent;
 	private Topic topic;
-	private List<Identity> coaches;
+	private List<Identity> organizerCandidates;
 	private AppointmentInputType appointmentInputType;
 	private List<BigBlueButtonMeetingTemplate> templates;
 	private List<AppointmentWrapper> startDurationWrappers = new ArrayList<>();
@@ -156,20 +154,17 @@ public class AppointmentCreateController extends FormBasicController {
 	@Autowired
 	private AppointmentsService appointmentsService;
 	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
 	private UserManager userManager;
 
 	public AppointmentCreateController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			String subIdent) {
+			String subIdent, OrganizerCandidateSupplier organizerCandidateSupplier) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(EditTeamsMeetingController.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.subIdent = subIdent;
+		this.organizerCandidates = organizerCandidateSupplier.getOrganizerCandidates();
 		this.appointmentInputType = AppointmentInputType.startDuration;
-		
-		coaches = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.coach.name());
 		
 		initForm(ureq);
 		updateUI();
@@ -219,13 +214,16 @@ public class AppointmentCreateController extends FormBasicController {
 			configurationEl.addActionListener(FormEvent.ONCHANGE);
 			
 			// Organizer
-			KeyValues coachesKV = new KeyValues();
-			for (Identity coach : coaches) {
-				coachesKV.add(entry(coach.getKey().toString(), userManager.getUserDisplayName(coach.getKey())));
+			KeyValues organizerCandidateSupplierKV = new KeyValues();
+			for (Identity organizerCandidate : organizerCandidates) {
+				organizerCandidateSupplierKV.add(entry(
+						organizerCandidate.getKey().toString(),
+						userManager.getUserDisplayName(organizerCandidate.getKey())));
 			}
-			coachesKV.sort(VALUE_ASC);
-			organizerEl = uifactory.addCheckboxesDropdown("organizer", "organizer", formLayout, coachesKV.keys(), coachesKV.values());
-			organizerEl.setVisible(!coaches.isEmpty());
+			organizerCandidateSupplierKV.sort(VALUE_ASC);
+			organizerEl = uifactory.addCheckboxesDropdown("organizer", "organizer", formLayout,
+					organizerCandidateSupplierKV.keys(), organizerCandidateSupplierKV.values());
+			organizerEl.setVisible(!organizerCandidates.isEmpty());
 			
 			if (organizerEl.isVisible()) {
 				String defaultOrganizerKey = getIdentity().getKey().toString();
@@ -770,7 +768,7 @@ public class AppointmentCreateController extends FormBasicController {
 
 	private void doSaveOrganizers() {
 		Collection<String> selectedOrganizerKeys = organizerEl.getSelectedKeys();
-		List<Identity> selectedOrganizers = coaches.stream()
+		List<Identity> selectedOrganizers = organizerCandidates.stream()
 				.filter(i -> selectedOrganizerKeys.contains(i.getKey().toString()))
 				.collect(Collectors.toList());
 		appointmentsService.updateOrganizers(topic, selectedOrganizers);

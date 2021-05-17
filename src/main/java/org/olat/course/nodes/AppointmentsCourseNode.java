@@ -54,6 +54,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.AppointmentsService;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -73,7 +74,9 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	public static final String ICON_CSS = "o_appointment_icon";
 	
 	// configuration
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
+	public static final String CONFIG_KEY_ORGANIZER_OWNER = "organizer.ower";
+	public static final String CONFIG_KEY_ORGANIZER_COACH = "organizer.coach";
 	
 	private static final String LEGACY_COACH_EDIT_TOPIC = "coach.edit.topic";
 	private static final String LEGACY_COACH_EDIT_APPOINTMENT = "coach.edit.appointment";
@@ -127,7 +130,8 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 			AppointmentsSecurityCallback secCallback = AppointmentsSecurityCallbackFactory
 					.create(getModuleConfiguration(), userCourseEnv);
 			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			controller = new AppointmentsRunController(ureq, wControl, entry, getIdent(), secCallback);
+			OrganizerCandidateSupplier organizerCandidateSupplier = new CourseNodeOrganizerCandidateSupplier(entry, this);
+			controller = new AppointmentsRunController(ureq, wControl, entry, getIdent(), secCallback, organizerCandidateSupplier);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, ICON_CSS);
 		return new NodeRunConstructionResult(ctrl);
@@ -190,6 +194,10 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 			// Remove legacy
 			config.remove(LEGACY_COACH_EDIT_TOPIC);
 			config.remove(LEGACY_COACH_EDIT_APPOINTMENT);
+		}
+		if (version < 3) {
+			config.setBooleanEntry(CONFIG_KEY_ORGANIZER_OWNER, false);
+			config.setBooleanEntry(CONFIG_KEY_ORGANIZER_COACH, true);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

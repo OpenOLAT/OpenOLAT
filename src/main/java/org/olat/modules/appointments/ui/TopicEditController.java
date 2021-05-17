@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.appointments.Organizer;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight.Type;
@@ -43,8 +44,8 @@ public class TopicEditController extends AbstractTopicController {
 	
 	private Topic topic;
 
-	public TopicEditController(UserRequest ureq, WindowControl wControl, Topic topic) {
-		super(ureq, wControl, topic);
+	public TopicEditController(UserRequest ureq, WindowControl wControl, Topic topic, OrganizerCandidateSupplier organizerCandidateSupplier) {
+		super(ureq, wControl, topic, organizerCandidateSupplier);
 		this.topic = topic;
 		init(ureq);
 	}

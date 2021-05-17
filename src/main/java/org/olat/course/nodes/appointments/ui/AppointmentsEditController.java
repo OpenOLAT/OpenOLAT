@@ -28,7 +28,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.noderight.ui.NodeRightsController;
 import org.olat.course.nodes.AppointmentsCourseNode;
 
 /**
@@ -49,9 +48,7 @@ public class AppointmentsEditController extends ActivateableTabbableDefaultContr
 		super(ureq, wControl);
 		
 		CourseGroupManager courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
-		configCtrl = new NodeRightsController(ureq, getWindowControl(), courseGroupManager,
-				AppointmentsCourseNode.NODE_RIGHT_TYPES, courseNode.getModuleConfiguration(),
-				"Administration and Organisation#_terminvergabe");
+		configCtrl = new AppointmentsConfigsController(ureq, wControl, courseNode, courseGroupManager);
 		listenTo(configCtrl);
 	}
 	

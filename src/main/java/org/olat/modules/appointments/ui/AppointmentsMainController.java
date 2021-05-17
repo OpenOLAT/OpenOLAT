@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -44,7 +45,7 @@ public class AppointmentsMainController extends BasicController {
 	private final Controller topicsCtrl;
 
 	public AppointmentsMainController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent,
-			AppointmentsSecurityCallback secCallback) {
+			AppointmentsSecurityCallback secCallback, OrganizerCandidateSupplier organizerCandidateSupplier) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("main");
@@ -55,7 +56,7 @@ public class AppointmentsMainController extends BasicController {
 		if (secCallback.canSelectAppointments()) {
 			topicsCtrl = new TopicsRunController(ureq, wControl, stackPanel, entry, subIdent, secCallback);
 		} else {
-			topicsCtrl = new TopicsRunCoachController(ureq, wControl, stackPanel, entry, subIdent, secCallback);
+			topicsCtrl = new TopicsRunCoachController(ureq, wControl, stackPanel, entry, subIdent, secCallback, organizerCandidateSupplier);
 		}
 		listenTo(topicsCtrl);
 		stackPanel.pushController("topics", topicsCtrl);
