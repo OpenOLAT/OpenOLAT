@@ -78,6 +78,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 	private LTI13SharedToolDeploymentController viewDeploymentCtrl;
 	private LTI13EditSharedToolDeploymentController addDeploymentCtrl;
 	private LTI13EditSharedToolDeploymentController editDeploymentCtrl;
+	private ConfirmDeleteSharedToolDeploymentController confirmDeleteCtrl;
 
 	@Autowired
 	private LTI13Module lti13Module;
@@ -144,6 +145,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("view", translate("view"), "view"));
 		if(allowedToAddDeployment) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 		}
 		
 		tableModel = new LTI13SharedToolDeploymentsTableModel(columnsModel, getLocale());
@@ -178,7 +180,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(editDeploymentCtrl == source || addDeploymentCtrl == source) {
+		if(editDeploymentCtrl == source || addDeploymentCtrl == source || confirmDeleteCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
@@ -219,6 +221,8 @@ public class LTI13ResourceAccessController extends FormBasicController {
 					doEditDeployment(ureq, tableModel.getObject(se.getIndex()));
 				} else if("view".equals(se.getCommand())) {
 					doViewDeployment(ureq, tableModel.getObject(se.getIndex()));
+				} else if("delete".equals(se.getCommand())) {
+					doConfirmDeleteDeployment(ureq, tableModel.getObject(se.getIndex()));
 				}
 			}
 		}
@@ -250,6 +254,18 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		
 		String title = translate("edit.tool", new String[] { deployment.getPlatform().getIssuer() });
 		cmc = new CloseableModalController(getWindowControl(), "close", editDeploymentCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doConfirmDeleteDeployment(UserRequest ureq, LTI13SharedToolDeployment deployment) {
+		if(guardModalController(confirmDeleteCtrl)) return;
+
+		confirmDeleteCtrl = new ConfirmDeleteSharedToolDeploymentController(ureq, getWindowControl(), deployment);
+		listenTo(confirmDeleteCtrl);
+		
+		String title = translate("delete.deployment", new String[] { deployment.getPlatform().getIssuer() });
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

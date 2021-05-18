@@ -99,7 +99,7 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		platformsEl.addActionListener(FormEvent.ONCHANGE);
 		platformsEl.setMandatory(true);
 		if(deployment != null && platformsValues.containsKey(deployment.getKey().toString())) {
-			platformsEl.select(deployment.getKey().toString(), true);
+			platformsEl.select(deployment.getPlatform().getKey().toString(), true);
 			platformsEl.setEnabled(false);
 		} else if(platformsValues.size() > 0) {
 			platformsEl.select(platformsValues.keys()[0], true);

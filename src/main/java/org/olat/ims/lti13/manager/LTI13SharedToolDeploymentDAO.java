@@ -136,6 +136,24 @@ public class LTI13SharedToolDeploymentDAO {
 				&& firstKey.get(0).intValue() > 0;
 	}
 	
+	/**
+	 * The query doesn't fetch anything.
+	 * 
+	 * @param deploymentKey The deployment key
+	 * @return A deployment or null if not found
+	 */
+	public LTI13SharedToolDeployment loadByKey(Long deploymentKey) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select deployment from ltisharedtooldeployment deployment")
+		  .append(" where deployment.key=:deploymentKey");
+		
+		List<LTI13SharedToolDeployment> deployments = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), LTI13SharedToolDeployment.class)
+			.setParameter("deploymentKey", deploymentKey)
+			.getResultList();
+		return deployments == null || deployments.isEmpty() ? null : deployments.get(0);
+	}
+	
 	public void deleteSharedDeployment(LTI13SharedToolDeployment deployment) {
 		dbInstance.getCurrentEntityManager().remove(deployment);
 	}
