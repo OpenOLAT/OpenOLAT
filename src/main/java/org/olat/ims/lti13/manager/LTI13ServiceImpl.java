@@ -326,6 +326,14 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
+	public void deleteSharedToolDeployment(LTI13SharedToolDeployment deployment) {
+		deployment = sharedToolDeploymentDao.loadByKey(deployment.getKey());
+		if(deployment != null) {
+			sharedToolDeploymentDao.deleteSharedDeployment(deployment);
+		}
+	}
+
+	@Override
 	public List<LTI13SharedToolDeployment> getSharedToolDeployments(BusinessGroupRef businessGroup) {
 		return sharedToolDeploymentDao.getSharedToolDeployment(businessGroup);
 	}

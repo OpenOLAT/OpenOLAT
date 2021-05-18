@@ -105,6 +105,8 @@ public interface LTI13Service {
 	public LTI13SharedToolDeployment updateSharedToolDeployment(LTI13SharedToolDeployment deployment);
 	
 	public LTI13SharedToolDeployment getSharedToolDeployment(String deploymentId, LTI13Platform platform);
+
+	public void deleteSharedToolDeployment(LTI13SharedToolDeployment deployment);
 	
 	public void updateSharedToolServiceEndpoint(String contextId, ServiceType type, String endpointUrl, LTI13SharedToolDeployment deployment);
 	

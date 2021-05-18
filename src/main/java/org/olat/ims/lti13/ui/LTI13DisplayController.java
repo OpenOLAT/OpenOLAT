@@ -27,6 +27,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.ui.LTIDisplayContentController;
@@ -85,9 +86,13 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 
 		// launch data
 		LTI13Tool tool = toolDeployment.getTool();
+		String targetLinkUri = tool.getToolUrl();
+		if(StringHelper.containsNonWhitespace(toolDeployment.getTargetUrl())) {
+			targetLinkUri = toolDeployment.getTargetUrl();
+		}
 		mainVC.contextPut("initiateLoginUrl", tool.getInitiateLoginUrl());
 		mainVC.contextPut("iss", lti13Module.getPlatformIss());
-		mainVC.contextPut("target_link_uri", tool.getToolUrl());
+		mainVC.contextPut("target_link_uri", targetLinkUri);
 		mainVC.contextPut("login_hint", loginHint);
 		mainVC.contextPut("lti_message_hint", getIdentity().getKey().toString());
 		mainVC.contextPut("client_id", tool.getClientId());
