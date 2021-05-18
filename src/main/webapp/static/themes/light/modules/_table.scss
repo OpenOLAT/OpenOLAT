@@ -19,6 +19,7 @@
 		
 		.o_multiselect {
 			width: 20px;
+			text-align: center;
 		}
 	}
 	
@@ -66,6 +67,7 @@
 
 	.table {
 		margin-bottom: 0;
+		border-collapse: separate; /* fix FF border problem with sticky cols below */ 
 	}
 	
 	th {
@@ -74,6 +76,42 @@
 			text-decoration: none;
 		}
 	}
+	/* action cols must have a minimum width to users can touch it */
+	.o_col_action {
+		.o_icon_actions {
+			width: 25px;
+		}
+	}
+
+	/* sticky first (checkboxes) and last (actions) columns on scrolling */
+	.o_col_sticky_left {	
+		position: sticky;
+		left: 0;
+		background: white;
+	}
+	.o_col_sticky_right {
+		position: sticky;
+		right: 0;
+		background: white;	
+	}
+	/* fix striped and hover bg colors for sticky columns */
+	.table-striped {
+  		> tbody > tr:nth-child(odd) {
+  			.o_col_sticky_right,
+  			.o_col_sticky_left {		
+		    	background-color: $table-bg-accent;
+		    }
+		}
+  	}
+  	.table-hover {
+  		> tbody > tr:hover {
+  			.o_col_sticky_right,
+  			.o_col_sticky_left {		
+    			background-color: $table-bg-hover;
+  			}
+		}
+	}
+
 }
 
 .o_table_search {
@@ -213,5 +251,7 @@ a.o_orderby, a.o_orderby:hover {
 .o_table_header_fw {
 	width: 40px;
 }
+
+
 
 	

@@ -69,6 +69,16 @@ public interface FlexiColumnModel {
 	
 	public int getColumnIndex();
 	
+	/**
+	 * @return The CSS classes for this column headers and cells or NULL
+	 */
+	public String getColumnCssClass();
+
+	/**
+	 * Set optional CSS classes for this column headers and cells or NULL
+	 */
+	public void setColumnCssClass(String columnCssClass);
+
 	public String getAction();
 
 	public int getAlignment();

@@ -67,6 +67,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -461,7 +462,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				new BooleanCellRenderer(new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit")), null));
 			editColumn.setExportable(false);
 			columnsModel.addFlexiColumnModel(editColumn);
-			DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(Cols.tools.i18nKey(), Cols.tools.ordinal());
+			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(Cols.tools.i18nKey(), Cols.tools.ordinal());
 			toolsColumn.setExportable(false);
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
