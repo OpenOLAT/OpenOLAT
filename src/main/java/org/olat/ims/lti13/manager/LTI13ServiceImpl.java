@@ -201,7 +201,6 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			sharedToolDeploymentDao.deleteSharedDeployment(sharedDeployment);
 		}
 		dbInstance.commit();
-		//TODO lti lti13SharedToolDao.deleteSharedTools(group);
 		return true;
 	}
 
@@ -329,6 +328,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	public void deleteSharedToolDeployment(LTI13SharedToolDeployment deployment) {
 		deployment = sharedToolDeploymentDao.loadByKey(deployment.getKey());
 		if(deployment != null) {
+			lti13SharedToolServiceDao.deleteSharedToolServices(deployment);
 			sharedToolDeploymentDao.deleteSharedDeployment(deployment);
 		}
 	}
