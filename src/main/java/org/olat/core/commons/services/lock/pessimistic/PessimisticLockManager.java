@@ -54,7 +54,7 @@ public class PessimisticLockManager implements InitializingBean {
 	private static final Logger log = Tracing.createLoggerFor(PessimisticLockManager.class);
 	
 
-	private final String ASSET_INSERT_LOCK = "SYS_plock_global";
+	private static final String ASSET_INSERT_LOCK = "SYS_plock_global";
 	private boolean initDone = false;
 	
 	private final DB dbInstance;
@@ -82,10 +82,10 @@ public class PessimisticLockManager implements InitializingBean {
 				.createNamedQuery("loadByPLockByAsset", PLock.class)
 				.setParameter("asset", asset)
 				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
-				.setHint("javax.persistence.lock.timeout", new Integer(30000))
+				.setHint("javax.persistence.lock.timeout", Integer.valueOf(30000))
 				.getResultList();
 
-		if (res.size() == 0) {
+		if (res.isEmpty()) {
 			return null; 
 		} else {
 			return res.get(0);

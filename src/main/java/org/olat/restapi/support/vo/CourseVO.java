@@ -241,6 +241,11 @@ public class CourseVO {
 	}
 	
 	@Override
+	public String toString() {
+		return "CourseVO[key=" + key + ":externalId=" + externalId + ":display=" + displayName + "]";
+	}
+	
+	@Override
 	public int hashCode() {
 		return key == null ? 24348 : key.hashCode();
 	}
