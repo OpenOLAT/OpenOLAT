@@ -78,7 +78,7 @@
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
 		<activemq.version>5.16.0</activemq.version>
-		<qtiworks.version>1.0.22</qtiworks.version>
+		<qtiworks.version>1.0.23</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -2132,7 +2132,7 @@
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
-			<version>1.4.16</version>
+			<version>1.4.17</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.mail</groupId>
