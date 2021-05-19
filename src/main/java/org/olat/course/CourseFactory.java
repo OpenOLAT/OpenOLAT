@@ -919,9 +919,9 @@ public class CourseFactory {
 				modifyCourseEvent = modifyCourseEvents.remove(resourceableId);
 				if(modifyCourseEvent != null) {
 					PersistingCourseImpl course = getCourseEditSession(resourceableId);
-			    if(course!=null) {
-			    	updateCourseInCache(resourceableId, course);
-			    }
+					if(course!=null) {
+						updateCourseInCache(resourceableId, course);
+					}
 				}
 			}
 		}

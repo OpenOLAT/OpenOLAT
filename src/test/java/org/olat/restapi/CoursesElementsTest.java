@@ -328,8 +328,8 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		GroupVO groupVo = new GroupVO();
 		groupVo.setName("hello");
 		groupVo.setDescription("hello description");
-		groupVo.setMinParticipants(new Integer(-1));
-		groupVo.setMaxParticipants(new Integer(-1));
+		groupVo.setMinParticipants(Integer.valueOf(-1));
+		groupVo.setMaxParticipants(Integer.valueOf(-1));
 		
 		URI newGroupUri = getCoursesUri().path(course.getKey().toString()).path("groups").build();
 		HttpPut newGrpMethod = conn.createPut(newGroupUri, MediaType.APPLICATION_JSON, true);
@@ -449,7 +449,7 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		.queryParam("enableAssignment", Boolean.FALSE)
 		.queryParam("enableScoring", Boolean.TRUE)
 		.queryParam("grantScoring", Boolean.TRUE)
-		.queryParam("scoreMin", new Float(1.5))
+		.queryParam("scoreMin", Float.valueOf(1.5f))
 		.queryParam("scoreMax", 10)
 		.build();
 		HttpPut taskConfigMethod = conn.createPut(taskConfigUri, MediaType.APPLICATION_JSON, true);
@@ -593,8 +593,8 @@ public class CoursesElementsTest extends OlatRestTestCase {
 			.queryParam("showScoreProgress", Boolean.TRUE)
 			.queryParam("showSectionsOnly", Boolean.TRUE)
 			.queryParam("summaryPresentation", AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED)
-			.queryParam("startDate", new Long(1280444400))//new Date(1280444400))
-			.queryParam("endDate", new Long(1293667200))//new Date(1293667200))
+			.queryParam("startDate", Long.valueOf(1280444400))//new Date(1280444400))
+			.queryParam("endDate", Long.valueOf(1293667200))//new Date(1293667200))
 			.build();
 		HttpPut testConfigMethod = conn.createPut(testConfigUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse testConfigCode = conn.execute(testConfigMethod);
