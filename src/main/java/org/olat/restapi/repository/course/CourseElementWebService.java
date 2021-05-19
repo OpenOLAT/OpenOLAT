@@ -47,6 +47,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -70,6 +71,9 @@ import org.olat.course.nodes.ta.TaskController;
 import org.olat.course.nodes.tu.TUConfigForm;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -80,6 +84,7 @@ import org.olat.restapi.support.vo.CourseNodeVO;
 import org.olat.restapi.support.vo.elements.SurveyConfigVO;
 import org.olat.restapi.support.vo.elements.TaskConfigVO;
 import org.olat.restapi.support.vo.elements.TestConfigVO;
+import org.olat.restapi.support.vo.elements.TestReportConfigVO;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -1896,12 +1901,12 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 */
 	@GET
 	@Path("test/{nodeId}/configuration")
-	@Operation(summary = "Retrieve configuration", description = "Retrieves configuration of the survey course node")
+	@Operation(summary = "Retrieve configuration", description = "Retrieves configuration of the test course node")
 	@ApiResponse(responseCode = "200", description = "The course node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course or task node not found")
+	@ApiResponse(responseCode = "404", description = "The course node was not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTestConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId) {
 		
@@ -1910,6 +1915,14 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		CourseNode courseNode = getParentNode(course, nodeId).getCourseNode();
 		//build configuration with fallback to default values
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
+		RepositoryEntry testRe = courseNode.getReferencedRepositoryEntry();
+		if(testRe == null) {
+			return Response.noContent().build();
+		}
+		
+		QTI21DeliveryOptions deliveryOptions = CoreSpringFactory.getImpl(QTI21Service.class)
+				.getDeliveryOptions(testRe);
+
 		Boolean allowCancel = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_ENABLECANCEL);
 		config.setAllowCancel(allowCancel == null ? false : allowCancel);
 		Boolean allowNavi = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_ENABLEMENU);
@@ -1920,10 +1933,19 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		config.setSequencePresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SEQUENCE, AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM));
 		Boolean showNavi = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_DISPLAYMENU);
 		config.setShowNavigation(showNavi == null ? true : showNavi);
-		Boolean showQuestionTitle = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_QUESTIONTITLE);
-		config.setShowQuestionTitle(showQuestionTitle == null ? true : showQuestionTitle);
-		Boolean showResFinish = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
-		config.setShowResultsAfterFinish(showResFinish == null ? true : showResFinish);
+		boolean showQuestionTitle = moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, deliveryOptions.isShowTitles());
+		config.setShowQuestionTitle(showQuestionTitle);
+		
+	
+		// report 
+		Boolean showResHomepage = moduleConfig.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
+		config.setShowResultsOnHomepage(showResHomepage != null && showResHomepage.booleanValue());// default false
+		
+		boolean showScoreInfo = moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
+		config.setShowScoreInfo(showScoreInfo);
+		
+		Boolean showResFinish = moduleConfig.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
+		config.setShowResultsAfterFinish(showResFinish == null || showResFinish.booleanValue());// default true
 		String showResDate = (String)moduleConfig.get(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
 		config.setShowResultsDependendOnDate(showResDate == null ? IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS : showResDate);
 		config.setShowResultsStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE));
@@ -1932,19 +1954,91 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		config.setShowResultsPassedEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
 		config.setShowResultsFailedStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
 		config.setShowResultsFailedEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
-		Boolean showResHomepage = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
-		config.setShowResultsOnHomepage(showResHomepage == null ? false : showResHomepage);
-		Boolean showScoreInfo = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
-		config.setShowScoreInfo(showScoreInfo == null ? true : showScoreInfo);
-		Boolean showQuestionProgress = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_QUESTIONPROGRESS);
-		config.setShowQuestionProgress(showQuestionProgress == null ? true : showQuestionProgress);
-		Boolean showScoreProgress = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_SCOREPROGRESS);
-		config.setShowScoreProgress(showScoreProgress == null ? true : showScoreProgress);
-		Boolean showSectionsOnly = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_RENDERMENUOPTION);
-		config.setShowSectionsOnly(showSectionsOnly == null ? false : showSectionsOnly);
+		
 		config.setSummeryPresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT));
 		
+		//
+		boolean configRef = moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
+		boolean showQuestionProgress = configRef ? deliveryOptions.isDisplayQuestionProgress() : moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONPROGRESS,  deliveryOptions.isDisplayQuestionProgress());
+		config.setShowQuestionProgress(showQuestionProgress);
+		boolean showScoreProgress = configRef ? deliveryOptions.isDisplayScoreProgress() : moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_SCOREPROGRESS, deliveryOptions.isDisplayScoreProgress());
+		config.setShowScoreProgress(showScoreProgress);
+
 		return Response.ok(config).build();
+	}
+	
+	@GET
+	@Path("test/{nodeId}/configuration/report")
+	@Operation(summary = "Retrieve configuration of report", description = "Retrieves configuration of the reports of the test course node")
+	@ApiResponse(responseCode = "200", description = "The course node configuration", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course node was not found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getTestReportConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId) {
+		
+		TestReportConfigVO config = new TestReportConfigVO();
+		ICourse course = CoursesWebService.loadCourse(courseId);
+		CourseNode courseNode = getParentNode(course, nodeId).getCourseNode();
+		//build configuration with fallback to default values
+		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
+		
+		// report 
+		Boolean showResHomepage = moduleConfig.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
+		config.setShowResultsOnHomepage(showResHomepage != null && showResHomepage.booleanValue());// default false
+		
+		boolean showScoreInfo = moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
+		config.setShowScoreInfo(showScoreInfo);
+		
+		Boolean showResFinish = moduleConfig.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
+		config.setShowResultsAfterFinish(showResFinish == null || showResFinish.booleanValue());// default true
+		String showResDate = (String)moduleConfig.get(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
+		config.setShowResultsDependendOnDate(showResDate == null ? IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS : showResDate);
+		config.setShowResultsStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE));
+		config.setShowResultsEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE));
+		config.setShowResultsPassedStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
+		config.setShowResultsPassedEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
+		config.setShowResultsFailedStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
+		config.setShowResultsFailedEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
+		
+		config.setSummaryPresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT));
+
+		return Response.ok(config).build();
+	}
+	
+	@PUT
+	@Path("test/{nodeId}/configuration/report")
+	@Operation(summary = "Update the configuration of report", description = "Update the configuration of the reports in the test course node")
+	@ApiResponse(responseCode = "200", description = "The course node configuration", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course node was not found")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response putTestReportConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, TestReportConfigVO config,
+			@Context HttpServletRequest request) {
+		FullConfigDelegate delegate = new TestReportFullConfig(config);
+		attachNodeConfig(courseId, nodeId, delegate, request);
+		return getTestReportConfiguration(courseId, nodeId);
+	}
+	
+	@POST
+	@Path("test/{nodeId}/configuration/report")
+	@Operation(summary = "Update the configuration of report", description = "Update the configuration of the reports in the test course node")
+	@ApiResponse(responseCode = "200", description = "The course node configuration", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course node was not found")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response postTestReportConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, TestReportConfigVO config,
+			@Context HttpServletRequest request) {
+		FullConfigDelegate delegate = new TestReportFullConfig(config);
+		attachNodeConfig(courseId, nodeId, delegate, request);
+		return getTestReportConfiguration(courseId, nodeId);
 	}
 	
 	public class ExternalPageCustomConfig implements CustomConfigDelegate {
@@ -2234,6 +2328,51 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 	}
 	
+
+	public class TestReportFullConfig implements FullConfigDelegate {
+		
+		private final TestReportConfigVO reportConfig;
+		
+		public TestReportFullConfig(TestReportConfigVO reportConfig) {
+			this.reportConfig = reportConfig;
+		}
+
+		@Override
+		public boolean isValid() {
+			return reportConfig.getSummaryPresentation() == null || QTI21AssessmentResultsOptions.parseString(reportConfig.getSummaryPresentation()) != null;
+		}
+		
+		@Override
+		public boolean isApplicable(ICourse course, CourseNode courseNode) {
+			return courseNode instanceof IQTESTCourseNode;
+		}
+
+		@Override
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) { 
+			if(reportConfig.getShowResultsOnHomepage() != null) {
+				moduleConfig.set(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, reportConfig.getShowResultsOnHomepage());
+			}
+			if(reportConfig.getShowResultsAfterFinish() != null) {
+				moduleConfig.set(IQEditController.CONFIG_KEY_RESULT_ON_FINISH, reportConfig.getShowResultsAfterFinish());
+			}
+			if(reportConfig.getShowScoreInfo() != null) {
+				moduleConfig.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, reportConfig.getShowScoreInfo());
+			}
+			if(reportConfig.getSummaryPresentation() != null) {
+				moduleConfig.set(IQEditController.CONFIG_KEY_SUMMARY, reportConfig.getSummaryPresentation());
+			}
+			if(reportConfig.getShowResultsDependendOnDate() != null) {
+				moduleConfig.set(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, reportConfig.getShowResultsDependendOnDate());
+				moduleConfig.set(IQEditController.CONFIG_KEY_RESULTS_START_DATE, reportConfig.getShowResultsStartDate());
+				moduleConfig.set(IQEditController.CONFIG_KEY_RESULTS_END_DATE, reportConfig.getShowResultsEndDate());
+				moduleConfig.set(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE, reportConfig.getShowResultsPassedStartDate());
+				moduleConfig.set(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE, reportConfig.getShowResultsPassedEndDate());
+				moduleConfig.set(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE, reportConfig.getShowResultsFailedStartDate());
+				moduleConfig.set(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE, reportConfig.getShowResultsFailedEndDate());
+			} 
+		}
+	}
+	
 	public class TestFullConfig implements FullConfigDelegate {
 		
 		private final Boolean allowCancel;
@@ -2387,7 +2526,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			}
 			if (points != null) {
 				moduleConfig.set(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, true);
-				moduleConfig.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, new Float(0));
+				moduleConfig.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, Float.valueOf(0.0f));
 				moduleConfig.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, points);
 			}
 			TACourseNode taskNode = (TACourseNode) newNode;

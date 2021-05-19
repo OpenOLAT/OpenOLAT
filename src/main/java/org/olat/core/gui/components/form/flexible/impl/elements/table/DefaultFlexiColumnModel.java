@@ -37,6 +37,7 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	private String headerTooltip;
 	private String iconHeader;
 	private Integer headerAlignment;
+	private String columnCssClass;
 	private String columnKey;
 	private int columnIndex;
 
@@ -383,6 +384,14 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 		this.footerCellRenderer = footerCellRenderer;
 	}
 
-	
+	@Override
+	public String getColumnCssClass() {
+		return this.columnCssClass;
+	}
+
+	@Override
+	public void setColumnCssClass(String columnCssClass) {
+		this.columnCssClass = columnCssClass;
+	}
 
 }

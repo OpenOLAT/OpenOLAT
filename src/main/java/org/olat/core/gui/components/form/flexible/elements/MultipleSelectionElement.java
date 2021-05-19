@@ -29,6 +29,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+
 
 
 /**
@@ -142,6 +145,17 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 */
 	public void setAjaxOnly(boolean ajaxOnlyMode);
 	
+	public boolean isDropdownHiddenEventEnabled();
+
+	/**
+	 * Set true to fire a DropdownHiddenEvent if the dropdown was closed in the GUI.
+	 * Other precondition for the event are:
+	 *   - Layout.dropdown
+	 *   - setAjaxOnly(true)
+	 *
+	 * @param dropdownHiddenEventEnabled
+	 */
+	public void setDropdownHiddenEventEnabled(boolean dropdownHiddenEventEnabled);
 
 	public boolean isEvaluationOnlyVisible();
 	
@@ -151,5 +165,15 @@ public interface MultipleSelectionElement extends SelectionElement {
 		horizontal,
 		vertical,
 		dropdown
+	}
+	
+	public static class DropdownHiddenEvent extends FormEvent {
+		
+		private static final long serialVersionUID = -4715215567000172935L;
+		
+		public DropdownHiddenEvent(FormItem formItem) {
+			super("dropdown-hidden", formItem, FormEvent.ONCLICK);
+		}
+		
 	}
 }

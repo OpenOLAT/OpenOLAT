@@ -62,7 +62,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
-		<org.springframework.version>5.3.6</org.springframework.version>
+		<org.springframework.version>5.3.7</org.springframework.version>
 		<org.hibernate.version>5.4.31.Final</org.hibernate.version>
 		<apache.cxf>3.4.3</apache.cxf>
 		<apache.pdfbox>2.0.23</apache.pdfbox>
@@ -72,14 +72,14 @@
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
 		<io.undertow>2.2.7.Final</io.undertow>
 		<jackson.version>2.12.3</jackson.version>
-		<org.mysql.version>8.0.24</org.mysql.version>
+		<org.mysql.version>8.0.25</org.mysql.version>
 		<org.postgresql.version>42.2.20</org.postgresql.version>
-		<org.infinispan.version>12.1.1.Final</org.infinispan.version>
+		<org.infinispan.version>12.1.3.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.2</version.drone>
 		<activemq.version>5.16.2</activemq.version>
-		<qtiworks.version>1.0.22</qtiworks.version>
+		<qtiworks.version>1.0.23</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -2304,7 +2304,7 @@
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
-			<version>1.4.16</version>
+			<version>1.4.17</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.mail</groupId>

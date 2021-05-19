@@ -159,8 +159,8 @@ public class CoursesInfosWebService {
 	@Path("{courseId}")
 	@Operation(summary = "Get course informations", description = "Get course informations viewable by the authenticated user")
 	@ApiResponse(responseCode = "200", description = "Course informations", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) })	
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseInfoVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseInfoVO.class)) })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseInfo(@PathParam("courseId") Long courseId,
 			@Context HttpServletRequest httpRequest) {

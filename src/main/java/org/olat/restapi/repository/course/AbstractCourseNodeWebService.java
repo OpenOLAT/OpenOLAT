@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -131,13 +132,17 @@ public abstract class AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		CourseNode courseNode = getParentNode(course, nodeId).getCourseNode();
+		CourseEditorTreeNode editorCourseNode = getParentNode(course, nodeId);
+		if(editorCourseNode == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		CourseNode courseNode = editorCourseNode.getCourseNode();
 		if(courseNode == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		
-		if(!config.isApplicable(course, courseNode))
+		if(!config.isApplicable(course, courseNode)) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		}
 		
 		CourseEditSession editSession = null;
 		try {
@@ -147,13 +152,14 @@ public abstract class AbstractCourseNodeWebService {
 			}
 			ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 			config.configure(course, courseNode, moduleConfig);
-			
+			course.getEditorTreeModel().nodeConfigChanged(editorCourseNode);
 			return Response.ok().build();
 		} catch(Exception ex) {
 			log.error("Error while adding an enrolment building block", ex);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		} finally {
 			saveAndCloseCourse(editSession);
+			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}
 	
@@ -196,7 +202,6 @@ public abstract class AbstractCourseNodeWebService {
 		return vo;
 	}
 	
-	//fxdiff FXOLAT-122: course management
 	private CourseNodeVO updateCourseNode(String nodeId, String shortTitle, String longTitle, String learningObjectives,
 			String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate delegateConfig, CourseEditSession editSession) {
 
@@ -228,7 +233,7 @@ public abstract class AbstractCourseNodeWebService {
 			ModuleConfiguration moduleConfig = updatedNode.getModuleConfiguration();
 			delegateConfig.configure(course, updatedNode, moduleConfig);
 		}
-		course.getEditorTreeModel().nodeConfigChanged(updateEditorNode);		
+		course.getEditorTreeModel().nodeConfigChanged(updateEditorNode);
 		CourseEditorTreeNode editorNode = course.getEditorTreeModel().getCourseEditorNodeContaining(updatedNode);
 		CourseNodeVO vo = get(updatedNode);
 		vo.setParentId(editorNode.getParent() == null ? null: editorNode.getParent().getIdent());

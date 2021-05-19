@@ -65,9 +65,15 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		MultipleSelectionElementImpl stF = stC.getMultipleSelectionElement();
 		long listId = CodeHelper.getRAMUniqueID();
 		long buttonTitleId = CodeHelper.getRAMUniqueID();
+		String buttonGroupId = "o_" + Long.toString(CodeHelper.getRAMUniqueID());
+		
 		sb.append("<div ");
 		appendIdIfRequired(sb, stC).append(">");
-		sb.append("<div class='button-group");
+		sb.append("<div");
+		if (stF.isDropdownHiddenEventEnabled()) {
+			sb.append(" id='").append(buttonGroupId).append("'");
+		}
+		sb.append(" class='button-group");
 		if (stF.getFormRequestEval().isTrue()) {
 			// The menu should be open, if the component is dirty after a listener event
 			sb.append(" open");
@@ -164,6 +170,17 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append("</ul>");
 		sb.append("</div>");
 		sb.append("</div>");
+		
+		if(stC.isEnabled() && stF.isDropdownHiddenEventEnabled()) {
+			sb.append("<script>");
+			sb.append("/* <![CDATA[ */");
+			sb.append("jQuery('#").append(buttonGroupId).append("').on('hidden.bs.dropdown', function() {");
+			sb.append(FormJSHelper.getXHRNFFnCallFor(stF.getRootForm(), stC.getFormDispatchId(), 1,
+					new NameValuePair("dropdown-hidden", "true"))).append(";");
+			sb.append("});");
+			sb.append("/* ]]> */");
+			sb.append("</script>");
+		}
 	}
 	
 	private StringBuilder getJsSetButtonText(MultipleSelectionElementImpl stF, long buttonTitleId, long listId) {

@@ -335,6 +335,35 @@ public class LTI13ServiceTest extends OlatTestCase {
 		Assert.assertEquals(businessGroup.getBaseGroup(), rels.get(0).getGroup());
 	}
 	
+	@Test
+	public void deleteSharedToolDeployment() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-coach-1");
+		
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(coach, "LTI service group", "Group with LTI 1.3",
+				LTI13Service.LTI_GROUP_TYPE, -1, -1, false, false, null);
+		String clientId = UUID.randomUUID().toString();
+		String issuer = "https://sg2.openolat.com";
+		LTI13Platform platform = lti13Service.createTransientPlatform(LTI13PlatformScope.PRIVATE);
+		platform.setClientId(clientId);
+		platform.setIssuer(issuer);
+		platform.setAuthorizationUri(issuer + "/mod/lti/auth.php");
+		platform.setTokenUri(issuer + "/mod/lti/token.php");
+		platform.setJwkSetUri(issuer + "/mod/lti/certs.php");
+		platform = lti13Service.updatePlatform(platform);
+		LTI13SharedToolDeployment deployment = lti13Service
+				.createSharedToolDeployment(UUID.randomUUID().toString(), platform, null, businessGroup);
+		lti13Service.updateSharedToolServiceEndpoint(clientId, ServiceType.lineitem, issuer, deployment);
+		lti13Service.updateSharedToolServiceEndpoint(clientId, ServiceType.lineitems, issuer, deployment);
+		lti13Service.updateSharedToolServiceEndpoint(clientId, ServiceType.nrps, issuer, deployment);
+		dbInstance.commitAndCloseSession();
+
+		lti13Service.deleteSharedToolDeployment(deployment);
+		dbInstance.commit();
+		
+		List<LTI13SharedToolDeployment> deployments = lti13Service.getSharedToolDeployments(businessGroup);
+		Assert.assertTrue(deployments.isEmpty());
+	}
+	
 	private LTI13Platform createPlatform(String issuer, String clientId) {
 		LTI13Platform platform = lti13Service.createTransientPlatform(LTI13PlatformScope.PRIVATE);
 		platform.setClientId(clientId);

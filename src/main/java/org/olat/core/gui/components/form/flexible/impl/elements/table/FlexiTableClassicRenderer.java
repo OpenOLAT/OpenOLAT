@@ -59,7 +59,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		if(ftE.isMultiSelect()) {
 			String dispatchId = ftE.getFormDispatchId();			
 			String formName = ftE.getRootForm().getFormName();
-			target.append("<th class='o_multiselect o_table_checkall'>");
+			target.append("<th class='o_multiselect o_table_checkall o_col_sticky_left'>");
 			// 1a) Select all feature enabled
 			if(ftE.isSelectAllEnable()) {
 				// Concept: there are three states: 
@@ -159,7 +159,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			String title =  fcm.getHeaderTooltip();
 			sb.append(" title=\"").appendHtmlEscaped(title).append("\"");
 		} 
-		if (fcm.getSortKey() != null || fcm.getHeaderAlignment() != null) {
+		if (fcm.getSortKey() != null || fcm.getHeaderAlignment() != null || (fcm.getColumnCssClass() != null)) {
 			sb.append(" class='");
 			// append sort key to make column width set via css
 			if (fcm.getSortKey() != null) {
@@ -168,6 +168,10 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			if (fcm.getHeaderAlignment() != null) {
 				String alignmentCssClass = getAlignmentCssClass(fcm.getHeaderAlignment());
 				sb.append(" ").append(alignmentCssClass);
+			}
+			if (fcm.getColumnCssClass() != null) {
+				String colCssClass = fcm.getColumnCssClass();
+				sb.append(" ").append(colCssClass);
 			}
 			sb.append("'");
 		}
@@ -263,7 +267,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		target.append(">");
 				
 		if(ftE.isMultiSelect()) {
-			target.append("<td class='o_multiselect'>")
+			target.append("<td class='o_multiselect o_col_sticky_left'>")
 			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'")
 			      .append(" onclick=\"javascript:")
 			      .append("jQuery('#").append(rowIdPrefix).append(row).append("').toggleClass('o_row_selected');")
@@ -329,8 +333,12 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		String cssClass = getAlignmentCssClass(alignment);
 
 		target.append("<td class=\"").append(cssClass).append(" ")
-		  .append("o_dnd_label", ftE.getColumnIndexForDragAndDropLabel() == fcm.getColumnIndex())
-		  .append("\">");
+		  .append("o_dnd_label", ftE.getColumnIndexForDragAndDropLabel() == fcm.getColumnIndex());
+		if (fcm.getColumnCssClass() != null) {
+			String colCss = fcm.getColumnCssClass();
+			target.append(" ").append(colCss);
+		}
+		target.append("\">");
 		
 		int columnIndex = fcm.getColumnIndex();
 		Object cellValue = columnIndex >= 0 ? 
