@@ -89,10 +89,16 @@
 		left: 0;
 		background: white;
 	}
+	.o_scrollable_left .o_col_sticky_left {
+		border-right: 1px solid $table-border-color;
+	}
 	.o_col_sticky_right {
 		position: sticky;
 		right: 0;
 		background: white;	
+	}
+	.o_scrollable_right .o_col_sticky_right {
+		border-left: 1px solid $table-border-color;
 	}
 	/* fix striped and hover bg colors for sticky columns */
 	.table-striped {
