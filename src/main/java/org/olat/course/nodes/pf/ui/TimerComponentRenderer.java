@@ -50,13 +50,14 @@ public class TimerComponentRenderer extends DefaultComponentRenderer {
 				double hours = remaingTime / (60d * 60d * 1000d);
 				long lhours = (long)hours;
 				double minutes = (hours - lhours) * 60d;
-				long lminutes = Math.round(Math.ceil(minutes));
+				String shours = toString(lhours);
+				String sminutes = toString(Math.round(Math.ceil(minutes)));
 				
 				String url = ubu.getJavascriptURI();
 	
-				sb.append("<span class='o_timer_hours'>").append(lhours).append("</span> ")
+				sb.append("<span class='o_timer_hours'>").append(shours).append("</span> ")
 				  .append(translator.translate("msg.period.hours.short"))
-				  .append(" <span class='o_timer_minutes'>").append(lminutes).append("</span> ")
+				  .append(" <span class='o_timer_minutes'>").append(sminutes).append("</span> ")
 				  .append(translator.translate("msg.period.minutes.short"));
 				sb.append("<script>")
 				  .append("jQuery(function() {\n")
@@ -70,5 +71,10 @@ public class TimerComponentRenderer extends DefaultComponentRenderer {
 			}
 		}
 		sb.append("</strong>");
+	}
+	
+	private String toString(long time) {
+		return (time < 10 ? "0" : "") + time;
+		
 	}
 }

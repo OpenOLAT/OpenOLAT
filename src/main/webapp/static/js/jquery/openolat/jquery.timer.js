@@ -47,8 +47,8 @@
     		minutes = 0;
     	}
     	var hoursEl = document.querySelector("#" + wrapperId + " .o_timer_hours");
-    	hoursEl.innerHTML = hours;
+    	hoursEl.innerHTML = (hours < 10 ? "0" : "") + hours;
     	var minutesEl = document.querySelector("#" + wrapperId + " .o_timer_minutes");
-    	minutesEl.innerHTML = minutes;
+    	minutesEl.innerHTML = (minutes < 10 ? "0" : "") + minutes;
     }
 }( jQuery ));
