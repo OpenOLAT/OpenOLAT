@@ -61,6 +61,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	private String[] original = null;
 	private boolean ajaxOnlyMode = false;
 	private boolean evaluationOnlyVisible = false;
+	private boolean dropdownHiddenEventEnabled = false;
 	private boolean originalIsDefined = false;
 	private boolean escapeHtml = true;
 	private boolean domReplacementWrapperRequired = true;
@@ -114,6 +115,16 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	@Override
 	public void setEvaluationOnlyVisible(boolean onlyVisible) {
 		evaluationOnlyVisible = onlyVisible;
+	}
+
+	@Override
+	public boolean isDropdownHiddenEventEnabled() {
+		return dropdownHiddenEventEnabled;
+	}
+
+	@Override
+	public void setDropdownHiddenEventEnabled(boolean dropdownHiddenEventEnabled) {
+		this.dropdownHiddenEventEnabled = dropdownHiddenEventEnabled;
 	}
 
 	public Layout getLayout() {
@@ -277,14 +288,19 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	public void evalFormRequest(UserRequest ureq) {
 		Form form = getRootForm();
 		if(isAjaxOnly()) {
+			String dropDownHidden = form.getRequestParameter("dropdown-hidden");
 			String dispatchuri = form.getRequestParameter("dispatchuri");
 			if(dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
-				String key = form.getRequestParameter("achkbox");
-				String checked = form.getRequestParameter("checked");
-				if("true".equals(checked)) {
-					selected.add(key);
-				} else if("false".equals(checked)) {
-					selected.remove(key);
+				if (dropDownHidden != null && Boolean.parseBoolean(dropDownHidden) && !form.hasAlreadyFired()) {
+					getRootForm().fireFormEvent(ureq, new DropdownHiddenEvent(this));
+				} else {
+					String key = form.getRequestParameter("achkbox");
+					String checked = form.getRequestParameter("checked");
+					if("true".equals(checked)) {
+						selected.add(key);
+					} else if("false".equals(checked)) {
+						selected.remove(key);
+					}
 				}
 			}
 		} else if(evaluationOnlyVisible && !isVisible()) {
