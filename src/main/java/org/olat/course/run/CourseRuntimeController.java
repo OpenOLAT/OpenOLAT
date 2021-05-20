@@ -325,34 +325,38 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(uce != null) {
 			uce.setUserRoles(reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach(), reSecurity.isCoach(), reSecurity.isParticipant());
 			if(reSecurity.isPrincipal() || reSecurity.isMasterCoach()) {
-				uce.setCourseReadOnly(Boolean.TRUE);
+				uce.setCourseReadOnlyByRole(Boolean.TRUE);
+				uce.setCourseReadOnlyByStatus(reSecurity.isReadOnly());
 			} else if(reSecurity.isReadOnly()) {
+				uce.setCourseReadOnlyByRole(Boolean.FALSE);
 				if(overrideReadOnly) {
-					uce.setCourseReadOnly(Boolean.FALSE);
+					uce.setCourseReadOnlyByStatus(Boolean.FALSE);
 				} else {
-					uce.setCourseReadOnly(Boolean.TRUE);
+					uce.setCourseReadOnlyByStatus(Boolean.TRUE);
 				}
 			} else {
-				uce.setCourseReadOnly(Boolean.FALSE);
+				uce.setCourseReadOnlyByRole(Boolean.FALSE);
+				uce.setCourseReadOnlyByStatus(Boolean.FALSE);
 			}
 			uce.getScoreAccounting().evaluateAll(true);
 		}
 		
-		courseRightsCache = new HashMap<>();
+		Map<String,Boolean> rightsCache = new HashMap<>();
 		Role currentRole = reSecurity.getCurrentRole();
 		if((Role.participant == currentRole || Role.coach == currentRole) && !isGuestOnly) {
 			GroupRoles role = GroupRoles.valueOf(currentRole.name());
 			List<String> rights = cgm.getRights(getIdentity(), role);
-			courseRightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_GROUPMANAGEMENT)));
-			courseRightsCache.put(CourseRights.RIGHT_MEMBERMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_MEMBERMANAGEMENT)));
-			courseRightsCache.put(CourseRights.RIGHT_COURSEEDITOR, Boolean.valueOf(rights.contains(CourseRights.RIGHT_COURSEEDITOR)));
-			courseRightsCache.put(CourseRights.RIGHT_ARCHIVING, Boolean.valueOf(rights.contains(CourseRights.RIGHT_ARCHIVING)));
-			courseRightsCache.put(CourseRights.RIGHT_ASSESSMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_ASSESSMENT)));
-			courseRightsCache.put(CourseRights.RIGHT_ASSESSMENT_MODE, Boolean.valueOf(rights.contains(CourseRights.RIGHT_ASSESSMENT_MODE)));
-			courseRightsCache.put(CourseRights.RIGHT_GLOSSARY, Boolean.valueOf(rights.contains(CourseRights.RIGHT_GLOSSARY)));
-			courseRightsCache.put(CourseRights.RIGHT_STATISTICS, Boolean.valueOf(rights.contains(CourseRights.RIGHT_STATISTICS)));
-			courseRightsCache.put(CourseRights.RIGHT_DB, Boolean.valueOf(rights.contains(CourseRights.RIGHT_DB)));
+			rightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_GROUPMANAGEMENT)));
+			rightsCache.put(CourseRights.RIGHT_MEMBERMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_MEMBERMANAGEMENT)));
+			rightsCache.put(CourseRights.RIGHT_COURSEEDITOR, Boolean.valueOf(rights.contains(CourseRights.RIGHT_COURSEEDITOR)));
+			rightsCache.put(CourseRights.RIGHT_ARCHIVING, Boolean.valueOf(rights.contains(CourseRights.RIGHT_ARCHIVING)));
+			rightsCache.put(CourseRights.RIGHT_ASSESSMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_ASSESSMENT)));
+			rightsCache.put(CourseRights.RIGHT_ASSESSMENT_MODE, Boolean.valueOf(rights.contains(CourseRights.RIGHT_ASSESSMENT_MODE)));
+			rightsCache.put(CourseRights.RIGHT_GLOSSARY, Boolean.valueOf(rights.contains(CourseRights.RIGHT_GLOSSARY)));
+			rightsCache.put(CourseRights.RIGHT_STATISTICS, Boolean.valueOf(rights.contains(CourseRights.RIGHT_STATISTICS)));
+			rightsCache.put(CourseRights.RIGHT_DB, Boolean.valueOf(rights.contains(CourseRights.RIGHT_DB)));
 		}
+		courseRightsCache = Map.copyOf(rightsCache);
 	}
 
 	private boolean hasCourseRight(String right) {
@@ -364,7 +368,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		RunMainController run = getRunMainController();
 		UserCourseEnvironmentImpl uce = run == null ? null : run.getUce();
 		if(uce != null && uce.isCourseReadOnly() && overrideReadOnly) {
-			uce.setCourseReadOnly(Boolean.FALSE);
+			uce.setCourseReadOnlyByStatus(Boolean.FALSE);
 		}
 		return uce;
 	}
@@ -1784,7 +1788,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				WindowControl swControl = addToHistory(ureq, ores, null);
 				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
 						.getSecurityCallback(reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR), reSecurity.isMasterCoach(), false,
-								getUserCourseEnvironment().isCourseReadOnly());
+								getUserCourseEnvironment().getCourseReadOnlyDetails());
 				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, getRepositoryEntry(), secCallback);
 				listenTo(ctrl);
 				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);

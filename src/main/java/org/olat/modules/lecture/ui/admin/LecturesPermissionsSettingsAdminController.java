@@ -50,6 +50,7 @@ public class LecturesPermissionsSettingsAdminController extends FormBasicControl
 	private MultipleSelectionElement masterCoachCanAuthorizeAbsenceEl;
 	private MultipleSelectionElement masterCoachCanSeeAppealEl;
 	private MultipleSelectionElement masterCoachCanAuthorizeAppealEl;
+	private MultipleSelectionElement masterCoachCanReopenLectureBlocksEl;
 	
 	private MultipleSelectionElement participantCanNoticeEl;
 	
@@ -80,6 +81,7 @@ public class LecturesPermissionsSettingsAdminController extends FormBasicControl
 		masterCoachCanAuthorizeAbsenceEl = uifactory.addCheckboxesHorizontal("lecture.mastercoach.can.authorize.absence", formLayout, onKeys, onValues);
 		masterCoachCanSeeAppealEl = uifactory.addCheckboxesHorizontal("lecture.mastercoach.can.see.appeal", formLayout, onKeys, onValues);
 		masterCoachCanAuthorizeAppealEl = uifactory.addCheckboxesHorizontal("lecture.mastercoach.can.authorize.appeal", formLayout, onKeys, onValues);
+		masterCoachCanReopenLectureBlocksEl = uifactory.addCheckboxesHorizontal("lecture.mastercoach.can.reopen.lecture.blocks", formLayout, onKeys, onValues);
 
 		uifactory.addSpacerElement("space-1", formLayout, true);
 		
@@ -104,6 +106,7 @@ public class LecturesPermissionsSettingsAdminController extends FormBasicControl
 		initializeValue(masterCoachCanAuthorizeAbsenceEl, lectureModule.isMasterCoachCanAuthorizedAbsence(), authorizedAbsenceEnabled);
 		initializeValue(masterCoachCanSeeAppealEl, lectureModule.isMasterCoachCanSeeAppeal(), appealEnabled);
 		initializeValue(masterCoachCanAuthorizeAppealEl, lectureModule.isMasterCoachCanAuthorizedAppeal(), appealEnabled);
+		initializeValue(masterCoachCanReopenLectureBlocksEl, lectureModule.isMasterCoachCanReopenLectureBlocks(), true);
 		
 		initializeValue(participantCanNoticeEl, lectureModule.isParticipantCanNotice(), appealEnabled);
 	}
@@ -136,6 +139,7 @@ public class LecturesPermissionsSettingsAdminController extends FormBasicControl
 		lectureModule.setMasterCoachCanAuthorizedAbsence(authorizedAbsenceEnabled && masterCoachCanAuthorizeAbsenceEl.isAtLeastSelected(1));
 		lectureModule.setMasterCoachCanSeeAppeal(appealEnabled && masterCoachCanSeeAppealEl.isAtLeastSelected(1));
 		lectureModule.setMasterCoachCanAuthorizedAppeal(appealEnabled && masterCoachCanAuthorizeAppealEl.isAtLeastSelected(1));
+		lectureModule.setMasterCoachCanReopenLectureBlocks(appealEnabled && masterCoachCanReopenLectureBlocksEl.isAtLeastSelected(1));
 
 		lectureModule.setParticipantCanNotice(participantCanNoticeEl.isAtLeastSelected(1));
 	}

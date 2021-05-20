@@ -958,7 +958,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			Roles roles = securityManager.getRoles(assessedIdentity);
 			
 			IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
-			UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
+			UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
+					coachCourseEnv.getCourseReadOnlyDetails());
 			assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
 			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
@@ -1000,7 +1001,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
-		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
+		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
+				coachCourseEnv.getCourseReadOnlyDetails());
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(cNode, assessedUserCourseEnv);

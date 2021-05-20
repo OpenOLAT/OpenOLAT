@@ -186,17 +186,10 @@ public class CourseWebService {
 			UserRequest ureq = getUserRequest(request);
 			Roles roles = ureq.getUserSession().getRoles();
 			
-			IdentityEnvironment ienv = new IdentityEnvironment();
-			ienv.setIdentity(ureq.getIdentity());
-			ienv.setRoles(roles);
-			
+			IdentityEnvironment ienv = new IdentityEnvironment(ureq.getIdentity(), roles);
 			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq.getIdentity(), roles, courseEntry);
-
-			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment(), null,
-					null, null, null,
-					reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach(), reSecurity.isParticipant(),
-					reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach());
+			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment(), null, null, null, null, reSecurity);
 			CalSecurityCallback secCallback = CalSecurityCallbackFactory.createCourseCalendarCallback(userCourseEnv);
 			KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, secCallback);
 			return new CalWebService(wrapper);

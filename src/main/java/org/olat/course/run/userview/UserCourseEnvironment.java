@@ -131,6 +131,8 @@ public interface UserCourseEnvironment {
 	
 	public boolean isCourseReadOnly();
 	
+	public CourseReadOnlyDetails getCourseReadOnlyDetails();
+	
 	/**
 	 * Check if the user has an efficiency statement or a certificate. The method
 	 * doesn't check if the efficiency statement or the certificate are configured
@@ -140,5 +142,6 @@ public interface UserCourseEnvironment {
 	 * @return
 	 */
 	public boolean hasEfficiencyStatementOrCertificate(boolean update);
+	
 
 }

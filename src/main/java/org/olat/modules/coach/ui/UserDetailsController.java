@@ -156,9 +156,7 @@ public class UserDetailsController extends BasicController implements Activateab
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, entry);
 		CourseEnvironment courseEnvironment = CourseFactory.loadCourse(entry).getCourseEnvironment();
 		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), courseEnvironment, getWindowControl(),
-				null, null, null,
-				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach(), reSecurity.isParticipant(),
-				reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach());
+				null, null, null, reSecurity);
 	}
 
 	@Override

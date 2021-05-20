@@ -64,6 +64,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String MASTERCOACH_CAN_AUTHORIZED_ABSENCE = "mastercoach.can.authorized.absence";
 	private static final String MASTERCOACH_CAN_SEE_APPEAL = "mastercoach.can.see.appeal";
 	private static final String MASTERCOACH_CAN_AUTHORIZED_APPEAL = "mastercoach.can.authorized.appeal";
+	private static final String MASTERCOACH_CAN_REOPEN_LECTURE_BLOCKS = "mastercoach.can.reopen.lecture.blocks";
 
 	private static final String PARTICIPANT_CAN_NOTICE = "participant.can.notice";
 	
@@ -122,6 +123,10 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean masterCoachCanSeeAppeal;
 	@Value("${lecture.mastercoach.can.authorized.appeal:true}")
 	private boolean masterCoachCanAuthorizedAppeal;
+	@Value("${lecture.mastercoach.can.reopen.lecture.blocks:true}")
+	private boolean masterCoachCanReopenLectureBlocks;
+	
+	
 
 	@Value("${lecture.participant.can.notice:false}")
 	private boolean participantCanNotice;
@@ -277,6 +282,11 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		String masterCoachCanAuthorizedAppealObj = getStringPropertyValue(MASTERCOACH_CAN_AUTHORIZED_APPEAL, true);
 		if(StringHelper.containsNonWhitespace(masterCoachCanAuthorizedAppealObj)) {
 			masterCoachCanAuthorizedAppeal = "true".equals(masterCoachCanAuthorizedAppealObj);
+		}
+		
+		String masterCoachCanReopenLectureBlocksObj = getStringPropertyValue(MASTERCOACH_CAN_REOPEN_LECTURE_BLOCKS, true);
+		if(StringHelper.containsNonWhitespace(masterCoachCanReopenLectureBlocksObj)) {
+			masterCoachCanReopenLectureBlocks = "true".equals(masterCoachCanReopenLectureBlocksObj);
 		}
 		
 		String participantCanNoticeObj = getStringPropertyValue(PARTICIPANT_CAN_NOTICE, true);
@@ -528,6 +538,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(MASTERCOACH_CAN_AUTHORIZED_APPEAL, Boolean.toString(enable), true);
 	}
 	
+	public boolean isMasterCoachCanReopenLectureBlocks() {
+		return masterCoachCanReopenLectureBlocks;
+	}
+
+	public void setMasterCoachCanReopenLectureBlocks(boolean enable) {
+		this.masterCoachCanReopenLectureBlocks = enable;
+		setStringProperty(MASTERCOACH_CAN_REOPEN_LECTURE_BLOCKS, Boolean.toString(enable), true);
+	}
+
 	public boolean isParticipantCanNotice() {
 		return participantCanNotice;
 	}

@@ -64,6 +64,7 @@ import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.course.run.userview.CourseReadOnlyDetails;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -747,6 +748,11 @@ public class NodeRightServiceImplTest {
 		@Override
 		public boolean isCourseReadOnly() {
 			return false;
+		}
+
+		@Override
+		public CourseReadOnlyDetails getCourseReadOnlyDetails() {
+			return new CourseReadOnlyDetails(Boolean.FALSE, Boolean.FALSE);
 		}
 
 		@Override
