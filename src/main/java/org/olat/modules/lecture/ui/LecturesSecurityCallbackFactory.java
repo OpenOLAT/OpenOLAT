@@ -175,7 +175,7 @@ public class LecturesSecurityCallbackFactory {
 			// same permissions as dispensations
 			if(viewAs == LectureRoles.participant) {
 				return false;
-			} else if(teacherRole || adminRole) {
+			} else if((teacherRole && lectureModule.isTeacherCanRecordNotice()) || adminRole) {
 				return true;
 			} else if(masterCoachRole) {
 				return lectureModule.isMasterCoachCanRecordNotice();
@@ -198,7 +198,7 @@ public class LecturesSecurityCallbackFactory {
 				return lectureModule.isParticipantCanNotice();
 			}
 			
-			if(teacherRole || adminRole) {
+			if((teacherRole && lectureModule.isTeacherCanRecordNotice()) || adminRole) {
 				return true;
 			} else if(masterCoachRole) {
 				return lectureModule.isMasterCoachCanRecordNotice();

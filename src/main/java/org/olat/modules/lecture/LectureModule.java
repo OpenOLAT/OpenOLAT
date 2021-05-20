@@ -58,6 +58,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String TEACHER_CAN_AUTHORIZED_ABSENCE = "teacher.can.authorized.absence";
 	private static final String TEACHER_CAN_SEE_APPEAL = "teacher.can.see.appeal";
 	private static final String TEACHER_CAN_AUTHORIZED_APPEAL = "teacher.can.authorized.appeal";
+	private static final String TEACHER_CAN_RECORD_NOTICE = "teacher.can.record.notice";
 	
 	private static final String MASTERCOACH_CAN_SEE_ABSENCE = "mastercoach.can.see.absence";
 	private static final String MASTERCOACH_CAN_RECORD_NOTICE = "mastercoach.can.record.notice";
@@ -112,6 +113,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean teacherCanSeeAppeal;
 	@Value("${lecture.teacher.can.authorized.appeal:false}")
 	private boolean teacherCanAuthorizedAppeal;
+	@Value("${lecture.teacher.can.record.notice:true}")
+	private boolean teacherCanRecordNotice;
 	
 	@Value("${lecture.mastercoach.can.see.absence:true}")
 	private boolean masterCoachCanSeeAbsence;
@@ -257,6 +260,11 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		String teacherCanAuthorizedAppealObj = getStringPropertyValue(TEACHER_CAN_AUTHORIZED_APPEAL, true);
 		if(StringHelper.containsNonWhitespace(teacherCanAuthorizedAppealObj)) {
 			teacherCanAuthorizedAppeal = "true".equals(teacherCanAuthorizedAppealObj);
+		}
+		
+		String teacherCanRecordNoticeObj = getStringPropertyValue(TEACHER_CAN_RECORD_NOTICE, true);
+		if(StringHelper.containsNonWhitespace(teacherCanRecordNoticeObj)) {
+			teacherCanRecordNotice = "true".equals(teacherCanRecordNoticeObj);
 		}
 		
 		String masterCoachCanSeeAbsenceObj = getStringPropertyValue(MASTERCOACH_CAN_SEE_ABSENCE, true);
@@ -493,6 +501,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(TEACHER_CAN_AUTHORIZED_APPEAL, Boolean.toString(enable), true);
 	}
 	
+	public boolean isTeacherCanRecordNotice() {
+		return teacherCanRecordNotice;
+	}
+
+	public void setTeacherCanRecordNotice(boolean enable) {
+		this.teacherCanRecordNotice = enable;
+		setStringProperty(TEACHER_CAN_RECORD_NOTICE, Boolean.toString(enable), true);
+	}
+
 	public boolean isMasterCoachCanSeeAbsence() {
 		return masterCoachCanSeeAbsence;
 	}
