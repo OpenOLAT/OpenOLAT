@@ -98,6 +98,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private SingleSelection submissionDeadlineRelToEl;
 	private SingleSelection solutionVisibleRelToEl;
 	private SingleSelection solutionVisibleToAllEl;
+	private FormLayoutContainer documentsCont;
+	private MultipleSelectionElement coachAllowedUploadEl;
 	
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
@@ -139,7 +141,9 @@ public class GTAWorkflowEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initTypeForm(formLayout);
-		initStepForm(formLayout, ureq);
+		initStepForm(formLayout);
+		initDocumentsForm(formLayout);
+		initButtonsForm(formLayout, ureq);
 	}
 	
 	private void initTypeForm(FormItemContainer formLayout) {
@@ -217,7 +221,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		}
 	}
 	
-	private void initStepForm(FormItemContainer formLayout, UserRequest ureq) {
+	private void initStepForm(FormItemContainer formLayout) {
 		//Steps
 		stepsCont = FormLayoutContainer.createDefaultFormLayout("steps", getTranslator());
 		stepsCont.setFormTitle(translate("task.steps.title"));
@@ -418,14 +422,6 @@ public class GTAWorkflowEditController extends FormBasicController {
 		gradingEl.addActionListener(FormEvent.ONCHANGE);
 		boolean grading = config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
 		gradingEl.select(onKeys[0], grading);
-		
-		//save
-		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonCont.setRootForm(mainForm);
-		buttonCont.setElementCssClass("o_sel_course_gta_save_workflow");
-		stepsCont.add(buttonCont);
-		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("save", "save", buttonCont);
 	}
 	
 	private String[] getSolutionVisibleToAllValues() {
@@ -433,6 +429,36 @@ public class GTAWorkflowEditController extends FormBasicController {
 			optional ? translate("sample.solution.visible.all.optional") : translate("sample.solution.visible.all"),
 			translate("sample.solution.visible.upload")
 		};
+	}
+	
+	private void initDocumentsForm(FormItemContainer formLayout) {
+		documentsCont = FormLayoutContainer.createDefaultFormLayout("documents", getTranslator());
+		documentsCont.setFormTitle(translate("task.documents.title"));
+		documentsCont.setRootForm(mainForm);
+		formLayout.add(documentsCont);
+		
+		//coach allowed to upload documents
+		String[] onValues = new String[]{ translate("task.manage.documents.coach") };
+		coachAllowedUploadEl = uifactory.addCheckboxesVertical("coachTasks", "task.manage.documents", documentsCont, onKeys, onValues, 1);
+		boolean coachUpload = config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false);
+		if(coachUpload) {
+			coachAllowedUploadEl.select(onKeys[0], true);
+		}
+		
+		updateDocuments();
+	}
+	
+	private void initButtonsForm(FormItemContainer formLayout, UserRequest ureq) {
+		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonswrapper", getTranslator());
+		buttonsWrapperCont.setRootForm(mainForm);
+		formLayout.add(buttonsWrapperCont);
+		
+		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonCont.setRootForm(mainForm);
+		buttonCont.setElementCssClass("o_sel_course_gta_save_workflow");
+		buttonsWrapperCont.add(buttonCont);
+		uifactory.addFormSubmitButton("save", "save", buttonCont);
+		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 	
 	@Override
@@ -592,6 +618,11 @@ public class GTAWorkflowEditController extends FormBasicController {
 		}
 
 		config.setBooleanEntry(GTACourseNode.GTASK_GRADING, gradingEl.isAtLeastSelected(1));
+		
+		if (documentsCont.isVisible()) {
+			boolean coachUploadAllowed = coachAllowedUploadEl.isAtLeastSelected(1);
+			config.setBooleanEntry(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, coachUploadAllowed);
+		}
 	}
 	
 	private void setRelativeDates(TextElement daysEl, String daysKey, SingleSelection relativeToEl, String relativeToKey) {
@@ -614,12 +645,14 @@ public class GTAWorkflowEditController extends FormBasicController {
 			updateSubmissionDeadline();
 		} else if(taskAssignmentEl == source) {
 			updateAssignmentDeadline();
+			updateDocuments();
 		} else if(relativeDatesEl == source) {
 			updateAssignmentDeadline();
 			updateSubmissionDeadline();
 			updateSolutionDeadline();
 		} else if(sampleEl == source || solutionVisibleAfterEl == source || optionalEl == source) {
 			updateSolutionDeadline();
+			updateDocuments();
 		} else if (reviewEl == source) {
 			updateRevisions();
 		} else if(chooseGroupButton == source) {
@@ -726,6 +759,11 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean review = reviewEl.isAtLeastSelected(1);
 		revisionEl.setVisible(review);
 		revisionEl.select(onKeys[0], review);
+	}
+	
+	private void updateDocuments() {
+		boolean visible = taskAssignmentEl.isAtLeastSelected(1) && sampleEl.isAtLeastSelected(1);
+		documentsCont.setVisible(visible);
 	}
 	
 	@Override

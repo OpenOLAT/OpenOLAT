@@ -22,7 +22,6 @@ package org.olat.course.nodes.gta.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -46,13 +45,11 @@ public class GTAAssignmentEditController extends AbstractAssignmentEditControlle
 	private static final String[] typeKeys = new String[] { GTACourseNode.GTASK_ASSIGNEMENT_TYPE_MANUAL, GTACourseNode.GTASK_ASSIGNEMENT_TYPE_AUTO };
 	private static final String[] previewKeys = new String[] { "enabled", "disabled" };
 	private static final String[] samplingKeys = new String[] { GTACourseNode.GTASK_SAMPLING_UNIQUE, GTACourseNode.GTASK_SAMPLING_REUSE };
-	private static final String[] onKeys = new String[] { "on" };
 	
 	private RichTextElement textEl;
 	private SingleSelection typeEl;
 	private SingleSelection previewEl;
 	private SingleSelection samplingEl;
-	private MultipleSelectionElement coachAllowedTasksEl;
 
 	public GTAAssignmentEditController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, ModuleConfiguration config, CourseEnvironment courseEnv, boolean readOnly) {
@@ -70,15 +67,6 @@ public class GTAAssignmentEditController extends AbstractAssignmentEditControlle
 		configCont.setElementCssClass("o_sel_course_gta_task_config_form");
 		configCont.setRootForm(mainForm);
 		formLayout.add(configCont);
-		
-		//coach allowed to upload tasks
-		String[] onValues = new String[]{ "" };
-		coachAllowedTasksEl = uifactory.addCheckboxesVertical("coachTasks", "task.coach.allowed.upload", configCont, onKeys, onValues, 1);
-		coachAllowedTasksEl.addActionListener(FormEvent.ONCHANGE);
-		boolean coachUpload = config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false);
-		if(coachUpload) {
-			coachAllowedTasksEl.select(onKeys[0], true);
-		}
 		
 		//task assignment configuration
 		String[] typeValues = new String[]{
@@ -143,9 +131,6 @@ public class GTAAssignmentEditController extends AbstractAssignmentEditControlle
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean coachUploadAllowed = coachAllowedTasksEl.isAtLeastSelected(1);
-		config.setBooleanEntry(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, coachUploadAllowed);
-		
 		//assignment type
 		String type = typeEl.isSelected(0) ? GTACourseNode.GTASK_ASSIGNEMENT_TYPE_MANUAL : GTACourseNode.GTASK_ASSIGNEMENT_TYPE_AUTO;
 		config.setStringValue(GTACourseNode.GTASK_ASSIGNEMENT_TYPE, type);
