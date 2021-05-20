@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +55,8 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -77,6 +80,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,6 +105,8 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private GroupAssessmentController assessmentCtrl;
+	private CloseableCalloutWindowController assessmentDocsCalloutCtrl;
+	private EditAssessmentDocumentController assessmentDocsCtrl;
 	private CloseableCalloutWindowController commentCalloutCtrl;
 
 	private TaskList taskList;
@@ -112,7 +118,9 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private final UserCourseEnvironment coachCourseEnv;
 	private final boolean withScore;
 	private final boolean withPassed;
+	private final boolean withDocs;
 	private final boolean withComment;
+	private ICourse course;
 	
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -143,6 +151,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(gtaNode);
 		withScore = Mode.none != assessmentConfig.getScoreMode();
 		withPassed = Mode.none != assessmentConfig.getPassedMode();
+		withDocs = assessmentConfig.hasIndividualAsssessmentDocuments();
 		withComment = assessmentConfig.hasComment();
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -215,6 +224,9 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		if(withScore) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.scoreVal.i18nKey(), Cols.scoreVal.ordinal()));
 		}
+		if (withDocs) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.assessmentDocsVal.i18nKey(), Cols.assessmentDocsVal.ordinal()));
+		}
 		if(withComment) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.commentVal.i18nKey(), Cols.commentVal.ordinal()));
 		}
@@ -248,6 +260,21 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 			
 			if(withPassed && entry != null) {
 				row.setPassed(entry.getPassed());
+			}
+			
+			if(withDocs) {
+				if (course == null) {
+					course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+				}
+				UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
+				List<File> currentAssessmentDocs = courseAssessmentService.getIndividualAssessmentDocuments(gtaNode, userCourseEnv);
+				if(!currentAssessmentDocs.isEmpty()) {
+					FormLink assessmentDocsTooltipLink = uifactory.addFormLink("docs-" + CodeHelper.getRAMUniqueID(),
+							"assessment.docs", "assessment.docs", null, flc, Link.LINK);
+					assessmentDocsTooltipLink.setIconLeftCSS("o_icon o_icon_files");
+					assessmentDocsTooltipLink.setUserObject(row);
+					row.setAssessmentDocsTooltipLink(assessmentDocsTooltipLink);
+				}
 			}
 			
 			if(withComment) {
@@ -307,7 +334,10 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 			doReopenAssessment(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
-			if("comment".equals(link.getCmd())) {
+			if("assessment.docs".equals(link.getCmd())) {
+				AssessmentRow row = (AssessmentRow)link.getUserObject();
+				doAssessmentDocs(ureq, row);
+			} else if("comment".equals(link.getCmd())) {
 				AssessmentRow row = (AssessmentRow)link.getUserObject();
 				doComment(ureq, row);
 			}
@@ -344,6 +374,20 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", assessmentCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doAssessmentDocs(UserRequest ureq, AssessmentRow row) {
+		removeAsListenerAndDispose(assessmentDocsCalloutCtrl);
+		removeAsListenerAndDispose(assessmentDocsCtrl);
+		
+		OLATResource courseOres = courseEnv.getCourseGroupManager().getCourseResource();
+		assessmentDocsCtrl = new EditAssessmentDocumentController(ureq, getWindowControl(), courseOres, gtaNode, row, true);
+		listenTo(assessmentDocsCtrl);
+		assessmentDocsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				assessmentDocsCtrl.getInitialComponent(), row.getAssessmentDocsTooltipLink().getFormDispatchId(),
+				"", true, "");
+		listenTo(assessmentDocsCalloutCtrl);
+		assessmentDocsCalloutCtrl.activate();
 	}
 	
 	private void doComment(UserRequest ureq, AssessmentRow row) {

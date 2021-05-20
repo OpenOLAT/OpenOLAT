@@ -1,0 +1,7 @@
+#if($r.isNotEmpty($documents))
+<ul class="form-static list-unstyled o_assessment_docs"">
+	#foreach($document in $documents)
+	<li><a href="$mapperUri/$r.encodeUrl($document.filename)" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($document.filename)"> </i> $r.escapeHtml($document.label)</a> #if($r.visible($document.deleteButton))$r.render($document.deleteButton)#end</li>
+	#end
+</ul>
+#end

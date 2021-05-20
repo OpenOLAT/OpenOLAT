@@ -101,28 +101,21 @@ public class MSEditFormController extends FormBasicController {
 
 	private final String title;
 	private final String helpUrl;
-	private final boolean withIndividualAssessmentDocs;
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
 	
 	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, NodeAccessType nodeAccessType) {
-		this(ureq, wControl, modConfig, nodeAccessType, null, null, true);
+		this(ureq, wControl, modConfig, nodeAccessType, null, null);
 	}
 	
 	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, NodeAccessType nodeAccessType,
 			String title, String helpUrl) {
-		this(ureq, wControl, modConfig, nodeAccessType, title, helpUrl, true);
-	}
-	
-	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, NodeAccessType nodeAccessType,
-			String title, String helpUrl, boolean withIndividualAssessmentDocs) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.modConfig = modConfig;
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		this.title = title;
 		this.helpUrl = helpUrl;
-		this.withIndividualAssessmentDocs = withIndividualAssessmentDocs;
 		trueFalseKeys = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
 		passedTypeValues = new String[] { translate("form.passedtype.cutval"), translate("form.passedtype.manual") };
 		initForm(ureq);
@@ -168,7 +161,7 @@ public class MSEditFormController extends FormBasicController {
 		// ...minimum value...
 		Float min = (Float) modConfig.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 		if (min == null) {
-			min = new Float(0.0);
+			min = Float.valueOf(0);
 		}
 		minVal = uifactory.addTextElement("form.min", "form.min", 8, min.toString(), formLayout);
 		minVal.setDisplaySize(5);
@@ -177,7 +170,7 @@ public class MSEditFormController extends FormBasicController {
 		
 		Float max = (Float) modConfig.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		if (max == null) {
-			max = new Float(0.0);
+			max = Float.valueOf(0);
 		}
 		// ...and maximum value input.
 		maxVal = uifactory.addTextElement("form.max", "form.max", 8, max.toString(), formLayout);
@@ -207,7 +200,7 @@ public class MSEditFormController extends FormBasicController {
 		}
 
 		// ...and the passing grade input field.
-		if (cut == null) cut = new Float(0.0);
+		if (cut == null) cut = Float.valueOf(0);
 		cutVal = uifactory.addTextElement("form.cut", "form.cut", 8, cut.toString(), formLayout);
 		cutVal.setDisplaySize(5);
 		cutVal.setRegexMatchCheck(scoreRex, "form.error.wrongFloat");
@@ -233,7 +226,6 @@ public class MSEditFormController extends FormBasicController {
 		if(docsCf) {
 			individualAssessmentDocsFlag.select("xx", true);
 		}
-		individualAssessmentDocsFlag.setVisible(withIndividualAssessmentDocs);
 
 		uifactory.addSpacerElement("spacer4", formLayout, false);
 
@@ -356,8 +348,8 @@ public class MSEditFormController extends FormBasicController {
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, sf);
 		if (sf.booleanValue()) {
 			// do min/max value
-			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, new Float(minVal.getValue()));
-			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, new Float(maxVal.getValue()));
+			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, Float.valueOf(minVal.getValue()));
+			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, Float.valueOf(maxVal.getValue()));
 		} else {
 			// remove old config
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_SCORE_MIN);
@@ -369,9 +361,9 @@ public class MSEditFormController extends FormBasicController {
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, pf);
 		if (pf.booleanValue()) {
 			// do cut value
-			Boolean cf = new Boolean(displayType.getSelectedKey());
+			Boolean cf = Boolean.valueOf(displayType.getSelectedKey());
 			if (cf.booleanValue()) {
-				moduleConfiguration.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, new Float(cutVal.getValue()));
+				moduleConfiguration.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, Float.valueOf(cutVal.getValue()));
 			} else {
 				// remove old config
 				moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);

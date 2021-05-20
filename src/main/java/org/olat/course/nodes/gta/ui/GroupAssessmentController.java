@@ -19,18 +19,25 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -50,10 +57,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.media.FileMediaResource;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -61,6 +72,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.tool.AssessmentForm.DocumentWrapper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
@@ -95,17 +107,23 @@ public class GroupAssessmentController extends FormBasicController {
 	private TextElement groupScoreEl, groupCommentEl;
 	private SingleSelection userVisibilityEl;
 	private MultipleSelectionElement groupPassedEl, applyToAllEl;
+	private FormLayoutContainer groupDocsLayoutCont;
+	private FileElement groupUploadDocsEl;
 	
+	private EditAssessmentDocumentController editAssessmentDocsCtrl;
+	private CloseableCalloutWindowController assessmentDocsCalloutCtrl;
 	private EditCommentController editCommentCtrl;
 	private CloseableCalloutWindowController commentCalloutCtrl;
 	
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private Float cutValue;
-	private final boolean withScore, withPassed, withComment;
+	private final boolean withScore, withPassed, withDocs, withComment;
 	private final GTACourseNode gtaNode;
 	private final RepositoryEntry courseEntry;
 	private final BusinessGroup assessedGroup;
+	private File assessmentDocsTmpDir;
+	private int counter = 0;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -127,11 +145,15 @@ public class GroupAssessmentController extends FormBasicController {
 		this.courseEntry = courseEntry;
 		this.assessedGroup = assessedGroup;
 
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);;
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		withScore = Mode.none != assessmentConfig.getScoreMode();
 		withPassed = Mode.none != assessmentConfig.getPassedMode();
 		if(withPassed) {
 			cutValue = assessmentConfig.getCutValue();
+		}
+		withDocs = assessmentConfig.hasIndividualAsssessmentDocuments();
+		if (withDocs) {
+			 assessmentDocsTmpDir = FileUtils.createTempDir("gtaassessmentdocs", null, null);
 		}
 		withComment = assessmentConfig.hasComment();
 		
@@ -173,13 +195,25 @@ public class GroupAssessmentController extends FormBasicController {
 			groupScoreEl.setElementCssClass("o_sel_course_gta_group_score");
 		}
 		
+		if(withDocs) {
+			String mapperUri = registerCacheableMapper(ureq, null, new DocumentMapper());
+			String page = velocity_root + "/individual_assessment_docs.html"; 
+			groupDocsLayoutCont = FormLayoutContainer.createCustomFormLayout("assessment.docs", getTranslator(), page);
+			groupDocsLayoutCont.setLabel("assessment.docs", null);
+			groupDocsLayoutCont.contextPut("mapperUri", mapperUri);
+			groupGradingCont.add(groupDocsLayoutCont);
+			
+			groupUploadDocsEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "assessment.docs2", null, groupGradingCont);
+			groupUploadDocsEl.addActionListener(FormEvent.ONCHANGE);
+		}
+		
 		if(withComment) {
 			String comment = "";
 			groupCommentEl = uifactory.addTextAreaElement("usercomment", "group.comment", 2500, 5, 40, true, false, comment, groupGradingCont);
 			groupCommentEl.setElementCssClass("o_sel_course_gta_group_comment");
 		}
 		
-		if(withPassed || withScore || withComment) {
+		if(withPassed || withScore || withComment || withDocs) {
 			String[] userVisibilityValues = new String[]{ translate("user.visibility.visible"), translate("user.visibility.hidden") };
 			userVisibilityEl = uifactory.addRadiosHorizontal("user.visibility", "user.visibility", groupGradingCont, userVisibilityKeys, userVisibilityValues);
 		}
@@ -215,10 +249,14 @@ public class GroupAssessmentController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.scoreEl.i18nKey(), Cols.scoreEl.ordinal()));
 		}
 		
+		if(withDocs) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.assessmentDocsEl.i18nKey(), Cols.assessmentDocsEl.ordinal()));
+		}
+
 		if(withComment) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.commentEl.i18nKey(), Cols.commentEl.ordinal()));
 		}
-
+		
 		model = new GroupAssessmentModel(gtaNode, userPropertyHandlers, getLocale(), columnsModel);
 		table = uifactory.addTableElement(getWindowControl(), "group-list", model, getTranslator(), formLayout);
 		table.setCustomizeColumns(true);
@@ -236,8 +274,10 @@ public class GroupAssessmentController extends FormBasicController {
 		if(modelInfos.isSame()) {
 			applyToAllEl.select(onKeys[0], true);
 			table.setVisible(false);
+			model.getObjects().forEach(row -> row.getPassedEl().setVisible(false));
 			
 			if(groupPassedEl != null) {
+				groupPassedEl.setEvaluationOnlyVisible(true);
 				groupPassedEl.setVisible(true);
 				Boolean passed = modelInfos.getPassed();
 				groupPassedEl.select(onKeys[0], passed != null && passed.booleanValue());
@@ -252,6 +292,18 @@ public class GroupAssessmentController extends FormBasicController {
 					groupScoreEl.setValue("");
 				}
 			}
+			
+			if(groupDocsLayoutCont != null) {
+				groupDocsLayoutCont.setVisible(true);
+				for (File assessmentDoc : modelInfos.getAssessmentDocs()) {
+					File targetFile = new File(assessmentDocsTmpDir, assessmentDoc.getName());
+					FileUtils.copyFileToFile(assessmentDoc, targetFile, false);
+					updateAssessmentDocsUI();
+				}
+			}
+			if(groupUploadDocsEl != null) {
+				groupUploadDocsEl.setVisible(true);
+			}
 			if(groupCommentEl != null) {
 				groupCommentEl.setVisible(true);
 				String comment = modelInfos.getComment();
@@ -259,26 +311,33 @@ public class GroupAssessmentController extends FormBasicController {
 					groupCommentEl.setValue(comment);
 				}
 			}
-			
-			if(userVisibilityEl != null) {
-				userVisibilityEl.setVisible(true);
-				if(modelInfos.getUserVisible() == null || modelInfos.getUserVisible().booleanValue()) {
-					userVisibilityEl.select(userVisibilityKeys[0], true);
-				} else {
-					userVisibilityEl.select(userVisibilityKeys[1], true);
-				}
-			}
 		} else {
 			applyToAllEl.select(onKeys[0], false);
 			table.setVisible(true);
+			model.getObjects().forEach(row -> row.getPassedEl().setVisible(true));
 			if(groupPassedEl != null) {
 				groupPassedEl.setVisible(false);
 			}
 			if(groupScoreEl != null) {
 				groupScoreEl.setVisible(false);
 			}
+			if(groupDocsLayoutCont != null) {
+				groupDocsLayoutCont.setVisible(false);
+			}
+			if(groupUploadDocsEl != null) {
+				groupUploadDocsEl.setVisible(false);
+			}
 			if(groupCommentEl != null) {
 				groupCommentEl.setVisible(false);
+			}
+		}
+		
+		if(userVisibilityEl != null) {
+			userVisibilityEl.setVisible(true);
+			if(modelInfos.getUserVisible() == null || modelInfos.getUserVisible().booleanValue()) {
+				userVisibilityEl.select(userVisibilityKeys[0], true);
+			} else {
+				userVisibilityEl.select(userVisibilityKeys[1], true);
 			}
 		}
 		
@@ -288,6 +347,27 @@ public class GroupAssessmentController extends FormBasicController {
 		} else {
 			flc.contextRemove("duplicateWarning");
 		}
+	}
+	
+	private void updateAssessmentDocsUI() {
+		if(groupDocsLayoutCont == null) return;
+		
+		File[] documents = assessmentDocsTmpDir.listFiles();
+		List<DocumentWrapper> wrappers = new ArrayList<>(documents.length);
+		for (File document : documents) {
+			DocumentWrapper wrapper = new DocumentWrapper(document);
+			wrappers.add(wrapper);
+			
+			FormLink deleteButton = uifactory.addFormLink("delete_doc_" + (++counter), "delete", null, groupDocsLayoutCont, Link.BUTTON_XSMALL);
+			deleteButton.setUserObject(wrappers);
+			wrapper.setDeleteButton(deleteButton);
+		}
+		groupDocsLayoutCont.contextPut("documents", wrappers);
+	}
+	
+	private void doDeleteGroupAssessmentDoc(File document) {
+		FileUtils.deleteFile(document);
+		updateAssessmentDocsUI();
 	}
 	
 	/**
@@ -311,6 +391,8 @@ public class GroupAssessmentController extends FormBasicController {
 		StringBuilder duplicateWarning = new StringBuilder();
 		Float scoreRef = null;
 		Boolean passedRef = null;
+		List<File> assessmentDocsRef = null;
+		String assessmentdDocsHashRef = null;
 		String commentRef = null;
 		Boolean userVisibleRef = null;
 		
@@ -357,6 +439,7 @@ public class GroupAssessmentController extends FormBasicController {
 			if(withPassed && cutValue == null) {
 				Boolean passed = scoreEval.getPassed();
 				MultipleSelectionElement passedEl = uifactory.addCheckboxesHorizontal("check" + count, null, flc, onKeys, onValues);
+				passedEl.setEvaluationOnlyVisible(true);
 				if(passed != null && passed.booleanValue()) {
 					passedEl.select(onKeys[0], passed.booleanValue());
 				}
@@ -364,6 +447,29 @@ public class GroupAssessmentController extends FormBasicController {
 				if(count == 0) {
 					passedRef = passed;
 				} else if(!same(passedRef, passed)) {
+					same = false;
+				}
+			}
+			
+			if(withDocs) {
+				FormLink assessmentDocsLink = uifactory.addFormLink("docs-" + CodeHelper.getRAMUniqueID(), "assessment.docs", "assessment.docs", null, flc, Link.LINK);
+				assessmentDocsLink.setUserObject(row);
+				row.setAssessmentDocsEditLink(assessmentDocsLink);
+				
+				UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
+				List<File> currentAssessmentDocs = courseAssessmentService.getIndividualAssessmentDocuments(gtaNode, userCourseEnv);
+				String assessmentdDocsHash = getAssessmentdDocsHashRef(currentAssessmentDocs);
+				
+				if(currentAssessmentDocs.isEmpty()) {
+					assessmentDocsLink.setIconLeftCSS("o_icon o_filetype_file");
+				} else {
+					assessmentDocsLink.setIconLeftCSS("o_icon o_icon_files");
+				}
+				
+				if(count == 0) {
+					assessmentDocsRef = currentAssessmentDocs;
+					assessmentdDocsHashRef = assessmentdDocsHash;
+				} else if(!same(assessmentdDocsHashRef, assessmentdDocsHash)) {
 					same = false;
 				}
 			}
@@ -405,7 +511,7 @@ public class GroupAssessmentController extends FormBasicController {
 		model.setObjects(rows);
 		table.reset();
 		
-		return new ModelInfos(same, scoreRef, passedRef, commentRef, userVisibleRef, duplicateWarning.toString());
+		return new ModelInfos(same, scoreRef, passedRef, assessmentDocsRef, commentRef, userVisibleRef, duplicateWarning.toString());
 	}
 	
 	private boolean same(Object reference, Object value) {
@@ -417,15 +523,33 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 		return same;
 	}
+	
+	private String getAssessmentdDocsHashRef(List<File> currentAssessmentDocs) {
+		// Best effort algorithm to compare by file names and size
+		return currentAssessmentDocs.stream()
+				.sorted(Comparator.comparing(File::getName))
+				.map(file -> file.getName() + "," + file.getName())
+				.collect(Collectors.joining(","));
+	}
 
 	@Override
 	protected void doDispose() {
-		//
+		if(assessmentDocsTmpDir != null && assessmentDocsTmpDir.exists()) {
+			FileUtils.deleteDirsAndFiles(assessmentDocsTmpDir, true, true);
+		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(commentCalloutCtrl == source) {
+		if(assessmentDocsCalloutCtrl == source) {
+			cleanUp();
+		} else if(editAssessmentDocsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				table.reset();
+			}
+			assessmentDocsCalloutCtrl.deactivate();
+			cleanUp();
+		} else if(commentCalloutCtrl == source) {
 			cleanUp();
 		} else if(editCommentCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -438,8 +562,12 @@ public class GroupAssessmentController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(assessmentDocsCalloutCtrl);
+		removeAsListenerAndDispose(editAssessmentDocsCtrl);
 		removeAsListenerAndDispose(commentCalloutCtrl);
 		removeAsListenerAndDispose(editCommentCtrl);
+		assessmentDocsCalloutCtrl = null;
+		editAssessmentDocsCtrl = null;
 		commentCalloutCtrl = null;
 		editCommentCtrl = null;
 	}
@@ -449,14 +577,27 @@ public class GroupAssessmentController extends FormBasicController {
 		if(applyToAllEl == source) {
 			boolean allGroup = applyToAllEl.isAtLeastSelected(1);
 			table.setVisible(!allGroup);
+			model.getObjects().forEach(row -> row.getPassedEl().setVisible(!allGroup));
 			if(groupPassedEl != null) {
 				groupPassedEl.setVisible(allGroup);
 			}
 			if(groupScoreEl != null) {
 				groupScoreEl.setVisible(allGroup);
 			}
+			if(groupDocsLayoutCont != null) {
+				groupDocsLayoutCont.setVisible(allGroup);
+			}
+			if(groupUploadDocsEl != null) {
+				groupUploadDocsEl.setVisible(allGroup);
+			}
 			if(groupCommentEl != null) {
 				groupCommentEl.setVisible(allGroup);
+			}
+		} else if(groupUploadDocsEl == source) {
+			if(groupUploadDocsEl.getUploadFile() != null && StringHelper.containsNonWhitespace(groupUploadDocsEl.getUploadFileName())) {
+				groupUploadDocsEl.moveUploadFileTo(assessmentDocsTmpDir);
+				updateAssessmentDocsUI();
+				groupUploadDocsEl.reset();
 			}
 		} else if(source == saveAndDoneButton) {
 			if(validateFormLogic(ureq)) {
@@ -465,9 +606,15 @@ public class GroupAssessmentController extends FormBasicController {
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
-			if("comment".equals(link.getCmd())) {
+			if("assessment.docs".equals(link.getCmd())) {
+				AssessmentRow row = (AssessmentRow)link.getUserObject();
+				doEditAssessmentDocs(ureq, row);
+			} else if("comment".equals(link.getCmd())) {
 				AssessmentRow row = (AssessmentRow)link.getUserObject();
 				doEditComment(ureq, row);
+			} else if(link.getCmd() != null && link.getCmd().startsWith("delete_doc_")) {
+				DocumentWrapper wrapper = (DocumentWrapper)link.getUserObject();
+				doDeleteGroupAssessmentDoc(wrapper.getDocument());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -598,7 +745,23 @@ public class GroupAssessmentController extends FormBasicController {
 			}
 			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 		}
-
+		
+		if (withDocs) {
+			File[] assessmentDocs = assessmentDocsTmpDir.listFiles();
+			for (AssessmentRow row:rows) {
+				UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
+				List<File> currentAssessmentDocs = courseAssessmentService.getIndividualAssessmentDocuments(gtaNode, userCourseEnv);
+				for (File currentAssessmentDoc : currentAssessmentDocs) {
+					courseAssessmentService.removeIndividualAssessmentDocument(gtaNode, currentAssessmentDoc,
+							userCourseEnv, getIdentity());
+				}
+				for (File assessmentDoc : assessmentDocs) {
+					courseAssessmentService.addIndividualAssessmentDocument(gtaNode, assessmentDoc,
+							assessmentDoc.getName(), userCourseEnv, getIdentity());
+				}
+			}
+		}
+		
 		if(withComment) {
 			String comment = groupCommentEl.getValue();
 			if(StringHelper.containsNonWhitespace(comment)) {
@@ -613,6 +776,19 @@ public class GroupAssessmentController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doEditAssessmentDocs(UserRequest ureq, AssessmentRow row) {
+		removeAsListenerAndDispose(assessmentDocsCalloutCtrl);
+		
+		OLATResource courseOres = courseEntry.getOlatResource();
+		editAssessmentDocsCtrl = new EditAssessmentDocumentController(ureq, getWindowControl(), courseOres, gtaNode, row, false);
+		listenTo(editAssessmentDocsCtrl);
+		assessmentDocsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				editAssessmentDocsCtrl.getInitialComponent(), row.getAssessmentDocsEditLink().getFormDispatchId(),
+				"", true, "");
+		listenTo(assessmentDocsCalloutCtrl);
+		assessmentDocsCalloutCtrl.activate();
 	}
 	
 	private void doEditComment(UserRequest ureq, AssessmentRow row) {
@@ -634,13 +810,16 @@ public class GroupAssessmentController extends FormBasicController {
 		private final boolean same;
 		private final Float score;
 		private final Boolean passed;
+		private final List<File> assessmentDocs;
 		private final String comment;
 		private final Boolean userVisible;
 		
-		public ModelInfos(boolean same, Float score, Boolean passed, String comment, Boolean userVisible, String duplicates) {
+		public ModelInfos(boolean same, Float score, Boolean passed, List<File> assessmentDocs, String comment,
+				Boolean userVisible, String duplicates) {
 			this.same = same;
 			this.score = score;
 			this.passed = passed;
+			this.assessmentDocs = assessmentDocs;
 			this.comment = comment;
 			this.userVisible = userVisible;
 			this.duplicates = duplicates;
@@ -658,6 +837,10 @@ public class GroupAssessmentController extends FormBasicController {
 			return passed;
 		}
 		
+		public List<File> getAssessmentDocs() {
+			return assessmentDocs;
+		}
+
 		public String getComment() {
 			return comment;
 		}
@@ -668,6 +851,29 @@ public class GroupAssessmentController extends FormBasicController {
 
 		public String getDuplicates() {
 			return duplicates;
+		}
+	}
+	
+	public class DocumentMapper implements Mapper {
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			if(StringHelper.containsNonWhitespace(relPath)) {
+				if(relPath.startsWith("/")) {
+					relPath = relPath.substring(1, relPath.length());
+				}
+			
+				@SuppressWarnings("unchecked")
+				List<DocumentWrapper> wrappers = (List<DocumentWrapper>)groupDocsLayoutCont.contextGet("documents");
+				if(wrappers != null) {
+					for(DocumentWrapper wrapper:wrappers) {
+						if(relPath.equals(wrapper.getFilename())) {
+							return new FileMediaResource(wrapper.getDocument(), true);
+						}
+					}
+				}
+			}
+			return new NotFoundMediaResource();
 		}
 	}
 }

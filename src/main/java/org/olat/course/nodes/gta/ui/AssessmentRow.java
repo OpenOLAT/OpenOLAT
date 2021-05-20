@@ -45,6 +45,8 @@ public class AssessmentRow {
 	
 	private TextElement scoreEl;
 	private MultipleSelectionElement passedEl;
+	private FormLink assessmentDocsTooltipLink;
+	private FormLink assessmentDocsEditLink;
 	private FormLink commentTooltipLink, commentEditLink;
 	
 	private String score;
@@ -85,6 +87,22 @@ public class AssessmentRow {
 
 	public void setPassed(Boolean passed) {
 		this.passed = passed;
+	}
+
+	public FormLink getAssessmentDocsTooltipLink() {
+		return assessmentDocsTooltipLink;
+	}
+
+	public void setAssessmentDocsTooltipLink(FormLink assessmentDocsTooltipLink) {
+		this.assessmentDocsTooltipLink = assessmentDocsTooltipLink;
+	}
+
+	public FormLink getAssessmentDocsEditLink() {
+		return assessmentDocsEditLink;
+	}
+
+	public void setAssessmentDocsEditLink(FormLink assessmentDocsEditLink) {
+		this.assessmentDocsEditLink = assessmentDocsEditLink;
 	}
 
 	public String getComment() {

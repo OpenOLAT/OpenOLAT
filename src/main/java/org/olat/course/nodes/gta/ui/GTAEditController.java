@@ -32,7 +32,6 @@ import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
-import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -226,8 +225,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	}
 
 	public MSEditFormController createManualAssessmentCtrl(UserRequest ureq) {
-		boolean singleIdentityTask = GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE));
 		return new MSEditFormController(ureq, getWindowControl(), config, nodeAccessType,
-				translate("pane.tab.grading"), "Three Steps to Your Task#_task_configuration", singleIdentityTask);
+				translate("pane.tab.grading"), "Three Steps to Your Task#_task_configuration");
 	}
 }

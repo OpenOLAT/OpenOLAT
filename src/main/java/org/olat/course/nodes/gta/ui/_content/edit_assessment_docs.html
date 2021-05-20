@@ -1,0 +1,15 @@
+#if($r.isNotEmpty($documents))
+<ul class="form-static list-unstyled #if(!$r.available("upload")) o_assessment_docs #end">
+	#foreach($document in $documents)
+	<li><a href="$mapperUri/$r.encodeUrl($document.filename)" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($document.filename)"> </i> $r.escapeHtml($document.label)</a> #if($r.visible($document.deleteButton))$r.render($document.deleteButton)#end</li>
+	#end
+</ul>
+#end
+#if($r.available("upload"))
+	$r.render("upload")
+#end
+#if($r.available("save"))
+	<div class="o_button_group">
+		$r.render("save") $r.render("cancel")
+	</div>
+#end

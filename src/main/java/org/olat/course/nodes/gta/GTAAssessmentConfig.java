@@ -67,7 +67,7 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	
 	@Override
 	public boolean hasIndividualAsssessmentDocuments() {
-		if (hasNoGrading || isAssessedBusinessGroups()) return false;
+		if (hasNoGrading) return false;
 		
 		return super.hasIndividualAsssessmentDocuments();
 	}
