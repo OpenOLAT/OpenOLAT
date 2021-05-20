@@ -71,16 +71,22 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	
 	private final WindowControl windowControl;
 	
-	private Boolean admin, coach, participant, allUsersParticipant;
-	private Boolean adminAnyCourse, coachAnyCourse, participantAnyCourse;
+	private Boolean admin;
+	private Boolean coach;
+	private Boolean participant;
+	private Boolean allUsersParticipant;
+	private Boolean adminAnyCourse;
+	private Boolean coachAnyCourse;
+	private Boolean participantAnyCourse;
 	
 	private Boolean certification;
-	private Boolean courseReadOnly;
+	private Boolean courseReadOnlyByStatus;
+	private Boolean courseReadOnlyByRole;
 	
 	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment) {
-		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null, null);
+		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null, null, null);
 		if(courseEnvironment != null && courseEnvironment.getCourseGroupManager().getCourseEntry().getEntryStatus() != null) {
-			courseReadOnly = courseEnvironment.getCourseGroupManager().getCourseEntry().getEntryStatus().decommissioned();
+			courseReadOnlyByStatus = courseEnvironment.getCourseGroupManager().getCourseEntry().getEntryStatus().decommissioned();
 		}
 	}
 
@@ -92,17 +98,27 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	 * @param scoreAccounting Fix the score accounting implementation
 	 */
 	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment, ScoreAccounting scoreAccounting) {
-		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null, null);
+		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null, null, null);
 		this.scoreAccounting = scoreAccounting;
 	}
 	
-	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment, Boolean courseReadOnly) {
-		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null, courseReadOnly);
+	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment,
+			CourseReadOnlyDetails courseReadOnlyDetails) {
+		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null,
+				courseReadOnlyDetails.getByStatus(), courseReadOnlyDetails.getByRole());
 	}
 	
 	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment, WindowControl windowControl,
 			List<BusinessGroup> coachedGroups, List<BusinessGroup> participatingGroups, List<BusinessGroup> waitingLists,
-			Boolean coach, Boolean admin, Boolean participant, Boolean courseReadOnly) {
+			RepositoryEntrySecurity reSecurity) {
+		this(identityEnvironment, courseEnvironment, windowControl, coachedGroups, participatingGroups, waitingLists,
+				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() , reSecurity.isParticipant(),
+				reSecurity.isReadOnly(), reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach());
+	}
+	
+	private UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment, WindowControl windowControl,
+			List<BusinessGroup> coachedGroups, List<BusinessGroup> participatingGroups, List<BusinessGroup> waitingLists,
+			Boolean coach, Boolean admin, Boolean participant, Boolean courseReadOnlyByStatus, Boolean courseReadOnlyByRole) {
 		this.courseEnvironment = courseEnvironment;
 		this.identityEnvironment = identityEnvironment;
 		this.conditionInterpreter = new ConditionInterpreter(this);
@@ -113,7 +129,8 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		this.admin = admin;
 		this.participant = participant;
 		this.windowControl = windowControl;
-		this.courseReadOnly = courseReadOnly;
+		this.courseReadOnlyByStatus = courseReadOnlyByStatus;
+		this.courseReadOnlyByRole = courseReadOnlyByRole;
 	}
 
 	public static UserCourseEnvironmentImpl load(UserRequest ureq, ICourse course, RepositoryEntrySecurity reSecurity, WindowControl wControl) {
@@ -138,9 +155,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		}
 
 		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(), wControl,
-				coachedGroups, participatedGroups, waitingLists,
-				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() , reSecurity.isParticipant(),
-				reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach());
+				coachedGroups, participatedGroups, waitingLists, reSecurity);
 	}
 	
 	@Override
@@ -355,11 +370,29 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 
 	@Override
 	public boolean isCourseReadOnly() {
-		return courseReadOnly != null && courseReadOnly.booleanValue();
+		return (courseReadOnlyByStatus != null && courseReadOnlyByStatus.booleanValue())
+				|| (courseReadOnlyByRole != null && courseReadOnlyByRole.booleanValue());
 	}
 	
-	public void setCourseReadOnly(Boolean courseReadOnly) {
-		this.courseReadOnly = courseReadOnly;
+	@Override
+	public CourseReadOnlyDetails getCourseReadOnlyDetails() {
+		return new CourseReadOnlyDetails(courseReadOnlyByStatus, courseReadOnlyByRole);
+	}
+
+	public Boolean getCourseReadOnlyByStatus() {
+		return courseReadOnlyByStatus;
+	}
+	
+	public Boolean getCourseReadOnlyByRole() {
+		return courseReadOnlyByRole;
+	}
+	
+	public void setCourseReadOnlyByStatus(Boolean readOnly) {
+		courseReadOnlyByStatus = readOnly;
+	}
+	
+	public void setCourseReadOnlyByRole(Boolean readOnly) {
+		courseReadOnlyByRole = readOnly;
 	}
 	
 	@Override

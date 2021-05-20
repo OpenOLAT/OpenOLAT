@@ -44,12 +44,14 @@ public class LecturesPermissionsSettingsAdminController extends FormBasicControl
 	private MultipleSelectionElement teacherCanAuthorizeAbsenceEl;
 	private MultipleSelectionElement teacherCanSeeAppealEl;
 	private MultipleSelectionElement teacherCanAuthorizeAppealEl;
+	private MultipleSelectionElement teacherCanRecordNoticeEl;
 	
 	private MultipleSelectionElement masterCoachCanSeeAbsenceEl;
 	private MultipleSelectionElement masterCoachCanRecordNoticeEl;
 	private MultipleSelectionElement masterCoachCanAuthorizeAbsenceEl;
 	private MultipleSelectionElement masterCoachCanSeeAppealEl;
 	private MultipleSelectionElement masterCoachCanAuthorizeAppealEl;
+	private MultipleSelectionElement masterCoachCanReopenLectureBlocksEl;
 	
 	private MultipleSelectionElement participantCanNoticeEl;
 	
@@ -72,6 +74,7 @@ public class LecturesPermissionsSettingsAdminController extends FormBasicControl
 		teacherCanAuthorizeAbsenceEl = uifactory.addCheckboxesHorizontal("lecture.teacher.can.authorize.absence", formLayout, onKeys, onValues);
 		teacherCanSeeAppealEl = uifactory.addCheckboxesHorizontal("lecture.teacher.can.see.appeal", formLayout, onKeys, onValues);
 		teacherCanAuthorizeAppealEl = uifactory.addCheckboxesHorizontal("lecture.teacher.can.authorize.appeal", formLayout, onKeys, onValues);
+		teacherCanRecordNoticeEl = uifactory.addCheckboxesHorizontal("lecture.teacher.can.record.notice", formLayout, onKeys, onValues);
 		
 		uifactory.addSpacerElement("space-1", formLayout, true);
 		
@@ -80,6 +83,7 @@ public class LecturesPermissionsSettingsAdminController extends FormBasicControl
 		masterCoachCanAuthorizeAbsenceEl = uifactory.addCheckboxesHorizontal("lecture.mastercoach.can.authorize.absence", formLayout, onKeys, onValues);
 		masterCoachCanSeeAppealEl = uifactory.addCheckboxesHorizontal("lecture.mastercoach.can.see.appeal", formLayout, onKeys, onValues);
 		masterCoachCanAuthorizeAppealEl = uifactory.addCheckboxesHorizontal("lecture.mastercoach.can.authorize.appeal", formLayout, onKeys, onValues);
+		masterCoachCanReopenLectureBlocksEl = uifactory.addCheckboxesHorizontal("lecture.mastercoach.can.reopen.lecture.blocks", formLayout, onKeys, onValues);
 
 		uifactory.addSpacerElement("space-1", formLayout, true);
 		
@@ -98,12 +102,14 @@ public class LecturesPermissionsSettingsAdminController extends FormBasicControl
 		initializeValue(teacherCanAuthorizeAbsenceEl, lectureModule.isTeacherCanAuthorizedAbsence(), authorizedAbsenceEnabled);
 		initializeValue(teacherCanSeeAppealEl, lectureModule.isTeacherCanSeeAppeal(), appealEnabled);
 		initializeValue(teacherCanAuthorizeAppealEl, lectureModule.isTeacherCanAuthorizedAppeal(), appealEnabled);
+		initializeValue(teacherCanRecordNoticeEl, lectureModule.isTeacherCanRecordNotice(), true);
 		
 		initializeValue(masterCoachCanSeeAbsenceEl, lectureModule.isMasterCoachCanSeeAbsence(), true);
 		initializeValue(masterCoachCanRecordNoticeEl, lectureModule.isMasterCoachCanRecordNotice(), true);
 		initializeValue(masterCoachCanAuthorizeAbsenceEl, lectureModule.isMasterCoachCanAuthorizedAbsence(), authorizedAbsenceEnabled);
 		initializeValue(masterCoachCanSeeAppealEl, lectureModule.isMasterCoachCanSeeAppeal(), appealEnabled);
 		initializeValue(masterCoachCanAuthorizeAppealEl, lectureModule.isMasterCoachCanAuthorizedAppeal(), appealEnabled);
+		initializeValue(masterCoachCanReopenLectureBlocksEl, lectureModule.isMasterCoachCanReopenLectureBlocks(), true);
 		
 		initializeValue(participantCanNoticeEl, lectureModule.isParticipantCanNotice(), appealEnabled);
 	}
@@ -130,12 +136,14 @@ public class LecturesPermissionsSettingsAdminController extends FormBasicControl
 		lectureModule.setTeacherCanAuthorizedAbsence(authorizedAbsenceEnabled && teacherCanAuthorizeAbsenceEl.isAtLeastSelected(1));
 		lectureModule.setTeacherCanSeeAppeal(appealEnabled && teacherCanSeeAppealEl.isAtLeastSelected(1));
 		lectureModule.setTeacherCanAuthorizedAppeal(appealEnabled && teacherCanAuthorizeAppealEl.isAtLeastSelected(1));
+		lectureModule.setTeacherCanRecordNotice(teacherCanRecordNoticeEl.isAtLeastSelected(1));
 		
 		lectureModule.setMasterCoachCanSeeAbsence(masterCoachCanSeeAbsenceEl.isAtLeastSelected(1));
 		lectureModule.setMasterCoachCanRecordNotice(masterCoachCanRecordNoticeEl.isAtLeastSelected(1));
 		lectureModule.setMasterCoachCanAuthorizedAbsence(authorizedAbsenceEnabled && masterCoachCanAuthorizeAbsenceEl.isAtLeastSelected(1));
 		lectureModule.setMasterCoachCanSeeAppeal(appealEnabled && masterCoachCanSeeAppealEl.isAtLeastSelected(1));
 		lectureModule.setMasterCoachCanAuthorizedAppeal(appealEnabled && masterCoachCanAuthorizeAppealEl.isAtLeastSelected(1));
+		lectureModule.setMasterCoachCanReopenLectureBlocks(appealEnabled && masterCoachCanReopenLectureBlocksEl.isAtLeastSelected(1));
 
 		lectureModule.setParticipantCanNotice(participantCanNoticeEl.isAtLeastSelected(1));
 	}

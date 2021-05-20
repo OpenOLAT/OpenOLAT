@@ -54,7 +54,8 @@ public class LecturesMainController extends MainLayoutBasicController implements
 		content.setToolbarAutoEnabled(true);
 		
 		// TODO principal
-		LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager, false);
+		LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
+				.getSecurityCallback(true, false, false, LectureRoles.lecturemanager);
 		lectureCoachingCtrl = new LecturesCoachingController(ureq, getWindowControl(), content, secCallback);
 		listenTo(lectureCoachingCtrl);
 		

@@ -189,6 +189,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		
 		if(authorizedEnabled && secCallback.canAuthorizeAbsence()) {
 			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
 			authorizeButton = uifactory.addFormLink("absences.batch.authorize", formLayout, Link.BUTTON);
 			authorizeButton.setVisible(false);
 		}

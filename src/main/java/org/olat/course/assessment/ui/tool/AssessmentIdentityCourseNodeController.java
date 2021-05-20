@@ -102,7 +102,8 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
-		assessedUserCourseEnvironment = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
+		assessedUserCourseEnvironment = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
+				coachCourseEnv.getCourseReadOnlyDetails());
 		assessedUserCourseEnvironment.getScoreAccounting().evaluateAll();
 		
 		addLoggingResourceable(LoggingResourceable.wrap(course));

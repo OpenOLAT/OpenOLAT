@@ -413,9 +413,7 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 			} else {
 				IdentityEnvironment ienv = new IdentityEnvironment(identity, roles);
 				ienv.setAttributes(new HashMap<>());
-				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment(), null, null, null, null,
-						reSecurity.isCourseCoach() || reSecurity.isGroupCoach(), reSecurity.isEntryAdmin(), reSecurity.isCourseParticipant() || reSecurity.isGroupParticipant(),
-						false);
+				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment(), null, null, null, null, reSecurity);
 				// Build an evaluation tree
 				NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 				TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)

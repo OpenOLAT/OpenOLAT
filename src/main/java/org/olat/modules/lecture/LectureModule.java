@@ -58,12 +58,14 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String TEACHER_CAN_AUTHORIZED_ABSENCE = "teacher.can.authorized.absence";
 	private static final String TEACHER_CAN_SEE_APPEAL = "teacher.can.see.appeal";
 	private static final String TEACHER_CAN_AUTHORIZED_APPEAL = "teacher.can.authorized.appeal";
+	private static final String TEACHER_CAN_RECORD_NOTICE = "teacher.can.record.notice";
 	
 	private static final String MASTERCOACH_CAN_SEE_ABSENCE = "mastercoach.can.see.absence";
 	private static final String MASTERCOACH_CAN_RECORD_NOTICE = "mastercoach.can.record.notice";
 	private static final String MASTERCOACH_CAN_AUTHORIZED_ABSENCE = "mastercoach.can.authorized.absence";
 	private static final String MASTERCOACH_CAN_SEE_APPEAL = "mastercoach.can.see.appeal";
 	private static final String MASTERCOACH_CAN_AUTHORIZED_APPEAL = "mastercoach.can.authorized.appeal";
+	private static final String MASTERCOACH_CAN_REOPEN_LECTURE_BLOCKS = "mastercoach.can.reopen.lecture.blocks";
 
 	private static final String PARTICIPANT_CAN_NOTICE = "participant.can.notice";
 	
@@ -111,6 +113,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean teacherCanSeeAppeal;
 	@Value("${lecture.teacher.can.authorized.appeal:false}")
 	private boolean teacherCanAuthorizedAppeal;
+	@Value("${lecture.teacher.can.record.notice:true}")
+	private boolean teacherCanRecordNotice;
 	
 	@Value("${lecture.mastercoach.can.see.absence:true}")
 	private boolean masterCoachCanSeeAbsence;
@@ -122,6 +126,10 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean masterCoachCanSeeAppeal;
 	@Value("${lecture.mastercoach.can.authorized.appeal:true}")
 	private boolean masterCoachCanAuthorizedAppeal;
+	@Value("${lecture.mastercoach.can.reopen.lecture.blocks:true}")
+	private boolean masterCoachCanReopenLectureBlocks;
+	
+	
 
 	@Value("${lecture.participant.can.notice:false}")
 	private boolean participantCanNotice;
@@ -254,6 +262,11 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 			teacherCanAuthorizedAppeal = "true".equals(teacherCanAuthorizedAppealObj);
 		}
 		
+		String teacherCanRecordNoticeObj = getStringPropertyValue(TEACHER_CAN_RECORD_NOTICE, true);
+		if(StringHelper.containsNonWhitespace(teacherCanRecordNoticeObj)) {
+			teacherCanRecordNotice = "true".equals(teacherCanRecordNoticeObj);
+		}
+		
 		String masterCoachCanSeeAbsenceObj = getStringPropertyValue(MASTERCOACH_CAN_SEE_ABSENCE, true);
 		if(StringHelper.containsNonWhitespace(masterCoachCanSeeAbsenceObj)) {
 			masterCoachCanSeeAbsence = "true".equals(masterCoachCanSeeAbsenceObj);
@@ -277,6 +290,11 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		String masterCoachCanAuthorizedAppealObj = getStringPropertyValue(MASTERCOACH_CAN_AUTHORIZED_APPEAL, true);
 		if(StringHelper.containsNonWhitespace(masterCoachCanAuthorizedAppealObj)) {
 			masterCoachCanAuthorizedAppeal = "true".equals(masterCoachCanAuthorizedAppealObj);
+		}
+		
+		String masterCoachCanReopenLectureBlocksObj = getStringPropertyValue(MASTERCOACH_CAN_REOPEN_LECTURE_BLOCKS, true);
+		if(StringHelper.containsNonWhitespace(masterCoachCanReopenLectureBlocksObj)) {
+			masterCoachCanReopenLectureBlocks = "true".equals(masterCoachCanReopenLectureBlocksObj);
 		}
 		
 		String participantCanNoticeObj = getStringPropertyValue(PARTICIPANT_CAN_NOTICE, true);
@@ -483,6 +501,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(TEACHER_CAN_AUTHORIZED_APPEAL, Boolean.toString(enable), true);
 	}
 	
+	public boolean isTeacherCanRecordNotice() {
+		return teacherCanRecordNotice;
+	}
+
+	public void setTeacherCanRecordNotice(boolean enable) {
+		this.teacherCanRecordNotice = enable;
+		setStringProperty(TEACHER_CAN_RECORD_NOTICE, Boolean.toString(enable), true);
+	}
+
 	public boolean isMasterCoachCanSeeAbsence() {
 		return masterCoachCanSeeAbsence;
 	}
@@ -528,6 +555,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(MASTERCOACH_CAN_AUTHORIZED_APPEAL, Boolean.toString(enable), true);
 	}
 	
+	public boolean isMasterCoachCanReopenLectureBlocks() {
+		return masterCoachCanReopenLectureBlocks;
+	}
+
+	public void setMasterCoachCanReopenLectureBlocks(boolean enable) {
+		this.masterCoachCanReopenLectureBlocks = enable;
+		setStringProperty(MASTERCOACH_CAN_REOPEN_LECTURE_BLOCKS, Boolean.toString(enable), true);
+	}
+
 	public boolean isParticipantCanNotice() {
 		return participantCanNotice;
 	}

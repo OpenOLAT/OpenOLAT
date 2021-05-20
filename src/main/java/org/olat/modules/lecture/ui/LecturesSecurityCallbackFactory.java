@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.ui;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.course.run.userview.CourseReadOnlyDetails;
 import org.olat.modules.lecture.LectureModule;
 
 /**
@@ -30,7 +31,8 @@ import org.olat.modules.lecture.LectureModule;
  */
 public class LecturesSecurityCallbackFactory {
 	
-	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole, boolean readOnly) {
+	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole,
+			CourseReadOnlyDetails readOnly) {
 		LectureRoles viewAs;
 		if(adminRole) {
 			viewAs = LectureRoles.lecturemanager;
@@ -41,11 +43,23 @@ public class LecturesSecurityCallbackFactory {
 		} else {
 			viewAs = LectureRoles.participant;
 		}
-		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, viewAs, readOnly);
+		boolean readOnlyByStatus = readOnly.getByStatus() != null && readOnly.getByStatus().booleanValue();
+		boolean readOnlyByRole = readOnly.getByRole() != null && readOnly.getByRole().booleanValue();
+		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole,
+				viewAs, readOnlyByStatus, readOnlyByRole);
 	}
 	
-	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole, LectureRoles viewAs, boolean readOnly) {
-		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, viewAs, readOnly);
+	/**
+	 * A not readonly security callback
+	 * @param adminRole
+	 * @param masterCoachRole
+	 * @param teacherRole
+	 * @param viewAs
+	 * @return
+	 */
+	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole,
+			LectureRoles viewAs) {
+		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, viewAs, false, false);
 	}
 	
 	private static class LecturesSecurityCallbackImpl implements LecturesSecurityCallback {
@@ -53,37 +67,48 @@ public class LecturesSecurityCallbackFactory {
 		private final boolean adminRole;
 		private final boolean masterCoachRole;
 		private final boolean teacherRole;
-		private final boolean readOnly;
+		private final boolean courseReadOnlyByStatus;
+		private final boolean courseReadOnlyByRole;
 		
 		private final LectureRoles viewAs;
 		private LectureModule lectureModule;
 		
-		public LecturesSecurityCallbackImpl(boolean adminRole, boolean masterCoachRole, boolean teacherRole, LectureRoles viewAs, boolean readOnly) {
+		public LecturesSecurityCallbackImpl(boolean adminRole, boolean masterCoachRole, boolean teacherRole, LectureRoles viewAs,
+				boolean readOnlyByStatus, boolean readOnlyByRole) {
 			this.adminRole = adminRole;
 			this.masterCoachRole = masterCoachRole;
 			this.teacherRole = teacherRole;
 			this.viewAs = viewAs;
-			this.readOnly = readOnly;
+			this.courseReadOnlyByStatus = readOnlyByStatus;
+			this.courseReadOnlyByRole = readOnlyByRole;
 			lectureModule = CoreSpringFactory.getImpl(LectureModule.class);
+		}
+		
+		public boolean isReadOnly()  {
+			return courseReadOnlyByStatus || courseReadOnlyByRole;
 		}
 
 		@Override
 		public boolean canNewLectureBlock() {
-			if(readOnly) return false;
+			if(isReadOnly()) return false;
 			
 			return adminRole;
 		}
 
 		@Override
 		public boolean canReopenLectureBlock() {
-			if(readOnly) return false;
-			
+			if(masterCoachRole && lectureModule.isMasterCoachCanReopenLectureBlocks() && !courseReadOnlyByStatus) {
+				return true;
+			}
+			if(isReadOnly()) {
+				return false;
+			}
 			return adminRole;
 		}
 
 		@Override
 		public boolean canChangeRates() {
-			if(readOnly) return false;
+			if(isReadOnly()) return false;
 			
 			return adminRole;
 		}
@@ -108,7 +133,7 @@ public class LecturesSecurityCallbackFactory {
 
 		@Override
 		public boolean canApproveAppeal() {
-			if(readOnly) return false;
+			if(isReadOnly()) return false;
 			
 			if(adminRole) {
 				return true;
@@ -125,14 +150,14 @@ public class LecturesSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditConfiguration() {
-			if(readOnly) return false;
+			if(isReadOnly()) return false;
 			
 			return adminRole;
 		}
 
 		@Override
 		public boolean canAuthorizeAbsence() {
-			if(readOnly) return false;
+			if(isReadOnly()) return false;
 			
 			if(adminRole) {
 				return true;
@@ -143,14 +168,14 @@ public class LecturesSecurityCallbackFactory {
 		
 		@Override
 		public boolean canAddAbsences() {
-			if(!lectureModule.isAbsenceNoticeEnabled() || readOnly) {
+			if(!lectureModule.isAbsenceNoticeEnabled() || isReadOnly()) {
 				return false;
 			}
 			
 			// same permissions as dispensations
 			if(viewAs == LectureRoles.participant) {
 				return false;
-			} else if(teacherRole || adminRole) {
+			} else if((teacherRole && lectureModule.isTeacherCanRecordNotice()) || adminRole) {
 				return true;
 			} else if(masterCoachRole) {
 				return lectureModule.isMasterCoachCanRecordNotice();
@@ -165,7 +190,7 @@ public class LecturesSecurityCallbackFactory {
 
 		@Override
 		public boolean canAddNoticeOfAbsences() {
-			if(!lectureModule.isAbsenceNoticeEnabled() || readOnly) {
+			if(!lectureModule.isAbsenceNoticeEnabled() || isReadOnly()) {
 				return false;
 			}
 			
@@ -173,7 +198,7 @@ public class LecturesSecurityCallbackFactory {
 				return lectureModule.isParticipantCanNotice();
 			}
 			
-			if(teacherRole || adminRole) {
+			if((teacherRole && lectureModule.isTeacherCanRecordNotice()) || adminRole) {
 				return true;
 			} else if(masterCoachRole) {
 				return lectureModule.isMasterCoachCanRecordNotice();
@@ -183,14 +208,14 @@ public class LecturesSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditAbsenceNotices() {
-			if(readOnly) return false;
+			if(isReadOnly()) return false;
 			
 			return viewAs == LectureRoles.teacher || viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach;
 		}
 
 		@Override
 		public boolean canDeleteAbsenceNotices() {
-			if(readOnly) return false;
+			if(isReadOnly()) return false;
 			
 			return viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach;
 		}
