@@ -431,8 +431,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 			dropdown.setCarretIconCSS("o_icon o_icon-lg o_icon_commands");
 			dropdown.setOrientation(DropdownOrientation.right);
 			dropdown.setUserObject(row);
-			dropdown.setEmbbeded(true);
-			dropdown.setExpandContentHeight(true); 
 			row.setCommandDropdown(dropdown);
 		}
 		return dropdown;
