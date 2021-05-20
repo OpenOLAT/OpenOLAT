@@ -287,12 +287,16 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		Form form = getRootForm();
+		boolean dropDownHiddenReq = false;
 		if(isAjaxOnly()) {
 			String dropDownHidden = form.getRequestParameter("dropdown-hidden");
 			String dispatchuri = form.getRequestParameter("dispatchuri");
 			if(dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
-				if (dropDownHidden != null && Boolean.parseBoolean(dropDownHidden) && !form.hasAlreadyFired()) {
-					getRootForm().fireFormEvent(ureq, new DropdownHiddenEvent(this));
+				if (dropDownHidden != null && Boolean.parseBoolean(dropDownHidden)) {
+					dropDownHiddenReq = true;
+					if (!form.hasAlreadyFired()) {
+						getRootForm().fireFormEvent(ureq, new DropdownHiddenEvent(this));
+					}
 				} else {
 					String key = form.getRequestParameter("achkbox");
 					String checked = form.getRequestParameter("checked");
@@ -329,7 +333,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			selected = updatedSelected;
 		}
 		String dispatchuri = form.getRequestParameter("dispatchuri");
-		if(dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+		if(dispatchuri != null && dispatchuri.equals(component.getFormDispatchId()) && !dropDownHiddenReq) {
 			formRequestEval = new ConsumableBoolean(true);
 		}
 	}

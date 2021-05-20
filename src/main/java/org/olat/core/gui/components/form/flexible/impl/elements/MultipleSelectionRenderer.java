@@ -175,8 +175,8 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append("<script>");
 			sb.append("/* <![CDATA[ */");
 			sb.append("jQuery('#").append(buttonGroupId).append("').on('hidden.bs.dropdown', function() {");
-			sb.append(FormJSHelper.getXHRNFFnCallFor(stF.getRootForm(), stC.getFormDispatchId(), 1,
-					new NameValuePair("dropdown-hidden", "true"))).append(";");
+			sb.append(FormJSHelper.getXHRFnCallFor(stF.getRootForm(), stC.getFormDispatchId(), 1, false, false, false,
+				new NameValuePair("dropdown-hidden", "true"))).append(";");
 			sb.append("});");
 			sb.append("/* ]]> */");
 			sb.append("</script>");
