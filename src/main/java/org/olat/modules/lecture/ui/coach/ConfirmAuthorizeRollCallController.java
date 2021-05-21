@@ -31,6 +31,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.AbsenceNotice;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
+import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.user.UserManager;
@@ -38,22 +41,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 30 août 2019<br>
+ * Initial date: 21 mai 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ConfirmAuthorizeAbsenceNoticeController extends FormBasicController {
+public class ConfirmAuthorizeRollCallController extends FormBasicController {
 	
-	private final List<AbsenceNotice> notices;
+	private final List<LectureBlockRollCall> rollCalls;
 	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private LectureService lectureService;
 	
-	public ConfirmAuthorizeAbsenceNoticeController(UserRequest ureq, WindowControl wControl, List<AbsenceNotice> notices) {
+	public ConfirmAuthorizeRollCallController(UserRequest ureq, WindowControl wControl, List<LectureBlockRollCall> rollCalls) {
 		super(ureq, wControl, "authorize_notices", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
-		this.notices = new ArrayList<>(notices);
+		this.rollCalls = new ArrayList<>(rollCalls);
 		initForm(ureq);
 	}
 
@@ -62,8 +65,8 @@ public class ConfirmAuthorizeAbsenceNoticeController extends FormBasicController
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			StringBuilder sb = new StringBuilder();
-			for(AbsenceNotice notice:notices) {
-				String fullName = userManager.getUserDisplayName(notice.getIdentity());
+			for(LectureBlockRollCall rollCall:rollCalls) {
+				String fullName = userManager.getUserDisplayName(rollCall.getIdentity());
 				if(sb.indexOf(fullName) < 0) {
 					if(sb.length() > 0) sb.append("; ");
 					sb.append(fullName);
@@ -89,8 +92,18 @@ public class ConfirmAuthorizeAbsenceNoticeController extends FormBasicController
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		for(AbsenceNotice notice:notices) {
-			lectureService.updateAbsenceNoticeAuthorization(notice, getIdentity(), Boolean.TRUE, getIdentity());
+		for(LectureBlockRollCall rollCall:rollCalls) {
+			AbsenceNotice absenceNotice = rollCall.getAbsenceNotice();
+			if(absenceNotice != null) {
+				lectureService.updateAbsenceNoticeAuthorization(absenceNotice, getIdentity(), Boolean.TRUE, getIdentity());
+			} else {
+				LectureBlock lectureBlock = rollCall.getLectureBlock();
+				String before = lectureService.toAuditXml(rollCall);
+				rollCall.setAbsenceAuthorized(Boolean.TRUE);
+				rollCall = lectureService.updateRollCall(rollCall);
+				lectureService.auditLog(LectureBlockAuditLog.Action.updateAuthorizedAbsence, before, lectureService.toAuditXml(rollCall),
+						"true", lectureBlock, rollCall, lectureBlock.getEntry(), rollCall.getIdentity(), getIdentity());
+			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

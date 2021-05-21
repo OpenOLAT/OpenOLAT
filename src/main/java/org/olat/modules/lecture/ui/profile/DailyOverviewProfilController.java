@@ -33,7 +33,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
-import org.olat.modules.lecture.ui.coach.DailyAbsencesController;
+import org.olat.modules.lecture.ui.coach.DailyAbsenceNoticesController;
 import org.olat.modules.lecture.ui.coach.DailyLectureBlockOverviewController;
 import org.olat.modules.lecture.ui.coach.DayChooserController;
 import org.olat.modules.lecture.ui.event.ChangeDayEvent;
@@ -49,7 +49,7 @@ public class DailyOverviewProfilController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	private final DayChooserController dayChooserCtrl;
-	private final DailyAbsencesController absencesListCtrl;
+	private final DailyAbsenceNoticesController absencesListCtrl;
 	private final DailyLectureBlockOverviewController lectureBlocksCtrl;
 	
 	public DailyOverviewProfilController(UserRequest ureq, WindowControl wControl,
@@ -65,7 +65,7 @@ public class DailyOverviewProfilController extends BasicController {
 		listenTo(lectureBlocksCtrl);
 		mainVC.put("lectureBlocks", lectureBlocksCtrl.getInitialComponent());
 		
-		absencesListCtrl = new DailyAbsencesController(ureq, getWindowControl(), getCurrentDate(), profiledIdentity, secCallback);
+		absencesListCtrl = new DailyAbsenceNoticesController(ureq, getWindowControl(), getCurrentDate(), profiledIdentity, secCallback);
 		listenTo(absencesListCtrl);
 		mainVC.put("absences", absencesListCtrl.getInitialComponent());
 

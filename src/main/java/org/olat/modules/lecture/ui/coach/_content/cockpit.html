@@ -36,12 +36,19 @@
 			</h3>
 		</div>	
 	#end
-	#if($r.visible("absences"))
+	#if($r.visible("absenceRollCalls"))
 	<div class="clearfix">
 		<h4>$r.translate("cockpit.absences")</h4>
-		$r.render("absences")
+		$r.render("absenceRollCalls")
 	</div>
 	#end
+	#if($r.visible("absenceNotices"))
+	<div class="clearfix">
+		<h4>$r.translate("cockpit.absence.notices")</h4>
+		$r.render("absenceNotices")
+	</div>
+	#end
+	
 </fieldset>
 
 #end

@@ -461,6 +461,7 @@ public interface LectureService {
 	public List<LectureBlockRollCallAndCoach> getLectureBlockAndRollCalls(LectureBlockRollCallSearchParameters searchParams);
 	
 	
+	
 	/**
 	 * Create a roll call with some settings.
 	 * 

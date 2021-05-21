@@ -53,6 +53,7 @@ import org.olat.modules.lecture.ui.wizard.AbsenceNoticeFinishStepCallback;
  */
 public class DispensationsController extends BasicController {
 
+	private Link addAbsenceButton;
 	private Link addDispensationButton;
 	private Link addNoticeOfAbsenceButton;
 	private final VelocityContainer mainVC;
@@ -98,7 +99,7 @@ public class DispensationsController extends BasicController {
 		this.secCallback = secCallback;
 		this.withAddAbsence = withAddAbsence;
 		
-		searchParams.addTypes(AbsenceNoticeType.notified, AbsenceNoticeType.dispensation);
+		searchParams.addTypes(AbsenceNoticeType.absence, AbsenceNoticeType.notified, AbsenceNoticeType.dispensation);//TODO absences
 		searchParams.setViewAs(getIdentity(), ureq.getUserSession().getRoles(), secCallback.viewAs());
 		searchParams.setLinkedToRollCall(false);
 		searchParams.setStartDate(CalendarUtils.startOfDay(currentDate));
@@ -108,8 +109,9 @@ public class DispensationsController extends BasicController {
 		searchCtrl = new AbsenceNoticeSearchController(ureq, getWindowControl(), currentDate);
 		listenTo(searchCtrl);
 		boolean showUserProperties = profiledIdentity == null;
+		boolean authorizedEnabled = true;//TODO absences (imported from AbsencesController)
 		noticesListCtlr = new AbsenceNoticesListController(ureq, getWindowControl(),
-				null, false, secCallback, showUserProperties, "notices");
+				null, authorizedEnabled, secCallback, showUserProperties, "notices");
 		listenTo(noticesListCtlr);
 		
 		mainVC = createVelocityContainer("dispensations");
@@ -117,7 +119,10 @@ public class DispensationsController extends BasicController {
 			mainVC.put("search", searchCtrl.getInitialComponent());
 		}
 		mainVC.put("noticesList", noticesListCtlr.getInitialComponent());
-
+		
+		addAbsenceButton = LinkFactory.createButton("add.absence", mainVC, this);
+		addAbsenceButton.setIconLeftCSS("o_icon o_icon_add");
+		addAbsenceButton.setVisible(withAddAbsence && secCallback.canAddAbsences());
 		addDispensationButton = LinkFactory.createButton("add.dispensation", mainVC, this);
 		addDispensationButton.setIconLeftCSS("o_icon o_icon_add");
 		addDispensationButton.setVisible(withAddAbsence && secCallback.canAddDispensations());
@@ -159,7 +164,9 @@ public class DispensationsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == addDispensationButton) {
+		if(source == addAbsenceButton) {
+			doAddNotice(ureq, AbsenceNoticeType.absence);
+		} else if(source == addDispensationButton) {
 			doAddNotice(ureq, AbsenceNoticeType.dispensation);
 		} else if(source == addNoticeOfAbsenceButton) {
 			doAddNotice(ureq, AbsenceNoticeType.notified);
@@ -189,7 +196,9 @@ public class DispensationsController extends BasicController {
 		StepRunnerCallback cancel = new AbsenceNoticeCancelStepCallback(noticeWrapper);
 		
 		String title = translate("add.dispensation.title");
-		if(type == AbsenceNoticeType.notified) {
+		if(type == AbsenceNoticeType.absence) {
+			title = translate("add.absence.title");//TODO absences
+		} else if(type == AbsenceNoticeType.notified) {
 			title = translate("add.notice.absence.title");
 		}
 		

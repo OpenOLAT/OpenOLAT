@@ -41,7 +41,7 @@ import org.olat.modules.lecture.ui.event.SelectLectureIdentityEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DailyAbsencesController extends BasicController {
+public class DailyAbsenceNoticesController extends BasicController {
 	
 	private final AbsenceNoticeSearchParameters searchParams = new AbsenceNoticeSearchParameters();
 	
@@ -57,7 +57,7 @@ public class DailyAbsencesController extends BasicController {
 	 * @param profiledIdentity An optional user to focus on
 	 * @param secCallback The security callback of the user
 	 */
-	public DailyAbsencesController(UserRequest ureq, WindowControl wControl, Date currentDate, Identity profiledIdentity, LecturesSecurityCallback secCallback) {
+	public DailyAbsenceNoticesController(UserRequest ureq, WindowControl wControl, Date currentDate, Identity profiledIdentity, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl);
 		searchParams.addTypes(AbsenceNoticeType.values());
 		searchParams.setStartDate(CalendarUtils.startOfDay(currentDate));
