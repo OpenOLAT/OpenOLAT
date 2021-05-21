@@ -75,7 +75,8 @@ public class LecturesCockpitController extends BasicController implements Activa
 	private final VelocityContainer mainVC;
 	private final List<Link> pendingLecturesLink = new ArrayList<>();
 	
-	private DailyAbsencesController absencesListCtrl;
+	private DailyAbsenceRollCallsController absenceRollCallsCtrl;
+	private DailyAbsenceNoticesController absenceNoticesListCtrl;
 	private final DayChooserController dayChooserCtrl;
 	private DailyLectureBlockOverviewController lectureBlocksCtrl;
 
@@ -109,10 +110,14 @@ public class LecturesCockpitController extends BasicController implements Activa
 		}
 		
 		if(lectureModule.isAbsenceNoticeEnabled()) {
-			absencesListCtrl = new DailyAbsencesController(ureq, getWindowControl(), getCurrentDate(), null, secCallback);
-			listenTo(absencesListCtrl);
-			mainVC.put("absences", absencesListCtrl.getInitialComponent());
+			absenceNoticesListCtrl = new DailyAbsenceNoticesController(ureq, getWindowControl(), getCurrentDate(), null, secCallback);
+			listenTo(absenceNoticesListCtrl);
+			mainVC.put("absenceNotices", absenceNoticesListCtrl.getInitialComponent());
 		}
+		
+		absenceRollCallsCtrl = new DailyAbsenceRollCallsController(ureq, getWindowControl(), getCurrentDate(), secCallback);
+		listenTo(absenceRollCallsCtrl);
+		mainVC.put("absenceRollCalls", absenceRollCallsCtrl.getInitialComponent());
 		
 		mainVC.contextPut("pendingLectures", pendingLecturesLink);
 
@@ -155,7 +160,7 @@ public class LecturesCockpitController extends BasicController implements Activa
 				ChangeDayEvent cde = (ChangeDayEvent)event;
 				doChangeCurrentDate(cde.getDate());
 			}
-		} else if(source == absencesListCtrl) {
+		} else if(source == absenceNoticesListCtrl) {
 			if(event instanceof SelectLectureIdentityEvent) {
 				fireEvent(ureq, event);
 			}
@@ -196,8 +201,8 @@ public class LecturesCockpitController extends BasicController implements Activa
 		if(lectureBlocksCtrl != null) {
 			lectureBlocksCtrl.loadModel();
 		}
-		if(absencesListCtrl != null) {
-			absencesListCtrl.reloadModel();
+		if(absenceNoticesListCtrl != null) {
+			absenceNoticesListCtrl.reloadModel();
 		}
 		loadPendingLectureBlocks();
 	}
@@ -281,9 +286,11 @@ public class LecturesCockpitController extends BasicController implements Activa
 		if(lectureBlocksCtrl != null) {
 			lectureBlocksCtrl.setCurrentDate(date);
 		}
-		if(absencesListCtrl != null) {
-			absencesListCtrl.setCurrentDate(date);
+		if(absenceNoticesListCtrl != null) {
+			absenceNoticesListCtrl.setCurrentDate(date);
 		}
+		absenceRollCallsCtrl.setCurrentDate(date);
+
 		updateCurrentDate();
 	}
 }

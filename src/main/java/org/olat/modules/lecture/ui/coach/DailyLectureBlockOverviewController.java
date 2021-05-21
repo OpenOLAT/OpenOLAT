@@ -158,7 +158,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(new LectureBlockTimesCellRenderer(getLocale()));
+		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(new LectureBlockTimesCellRenderer(true, getLocale()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.times, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.entry, "open.course"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.lectureBlock));

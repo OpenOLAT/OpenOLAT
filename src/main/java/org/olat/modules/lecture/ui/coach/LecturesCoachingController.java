@@ -63,6 +63,7 @@ public class LecturesCoachingController extends BasicController implements Activ
 	private Link appealsLink;
 	private Link absenceLink;
 	private Link dispensationLink;
+	private Link absenceDeprecatedLink;
 	private final Link cockpitLink;
 	private final Link lecturesLink;
 	private final Link lecturesSearchLink;
@@ -73,7 +74,8 @@ public class LecturesCoachingController extends BasicController implements Activ
 	private final LecturesSecurityCallback secCallback;
 	
 	private AppealsController appealsController;
-	private AbsencesController absencesController;
+	private AbsencesController absencesDeprecatedController;
+	private AbsenceRollCallsController absencesController;
 	private LecturesSearchController reportController;
 	private MultiSearchesController searchesController;
 	private LecturesCockpitController cockpitController;
@@ -99,6 +101,10 @@ public class LecturesCoachingController extends BasicController implements Activ
 		if(lectureModule.isAbsenceNoticeEnabled()) {
 			absenceLink = LinkFactory.createLink("coach.absence", mainVC, this);
 			segmentView.addSegment(absenceLink, false);
+			
+			//TODO absences absenceDeprecatedLink = LinkFactory.createLink("coach.absence.deprecated", mainVC, this);
+			//segmentView.addSegment(absenceDeprecatedLink, false);
+			
 			dispensationLink = LinkFactory.createLink("coach.dispensation", mainVC, this);
 			segmentView.addSegment(dispensationLink, false);
 		}
@@ -192,6 +198,8 @@ public class LecturesCoachingController extends BasicController implements Activ
 					doOpenLectures(ureq);
 				} else if(clickedLink == absenceLink) {
 					doAbsences(ureq);
+				} else if(clickedLink == absenceDeprecatedLink) {
+					doAbsencesDeprecated(ureq);
 				} else if(clickedLink == dispensationLink) {
 					doDispenses(ureq);
 				} else if(clickedLink == appealsLink) {
@@ -237,7 +245,7 @@ public class LecturesCoachingController extends BasicController implements Activ
 	private void doAbsences(UserRequest ureq) {
 		if(absencesController == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Absences"), null);
-			absencesController = new AbsencesController(ureq, swControl, getCurrentDate(), secCallback);
+			absencesController = new AbsenceRollCallsController(ureq, swControl, getCurrentDate(), secCallback);
 			listenTo(absencesController);
 		} else {
 			absencesController.reloadModels();
@@ -246,6 +254,18 @@ public class LecturesCoachingController extends BasicController implements Activ
 		mainVC.put("segmentCmp", absencesController.getInitialComponent());  
 	}
 	
+	private void doAbsencesDeprecated(UserRequest ureq) {
+		if(absencesDeprecatedController == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Absences"), null);
+			absencesDeprecatedController = new AbsencesController(ureq, swControl, getCurrentDate(), secCallback);
+			listenTo(absencesDeprecatedController);
+		} else {
+			absencesDeprecatedController.reloadModels();
+		}
+		addToHistory(ureq, absencesDeprecatedController);
+		mainVC.put("segmentCmp", absencesDeprecatedController.getInitialComponent());  
+	}
+
 	private void doDispenses(UserRequest ureq) {
 		if(dispensationsController == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Dispenses"), null);

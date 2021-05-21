@@ -192,6 +192,7 @@ public class AppealListRepositoryController extends FormBasicController {
 
 		if(secCallback.canApproveAppeal()) {
 			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
 			batchUpdateButton = uifactory.addFormLink("appeal.batch.update", formLayout, Link.BUTTON);
 			batchUpdateButton.setVisible(false);
 		}

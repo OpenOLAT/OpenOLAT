@@ -41,9 +41,11 @@ import org.olat.modules.lecture.ui.coach.DailyLectureBlockRow;
 public class LectureBlockTimesCellRenderer implements FlexiCellRenderer {
 	
 	private final Formatter format;
+	private final boolean showTimeOnly;
 	
-	public LectureBlockTimesCellRenderer(Locale locale) {
+	public LectureBlockTimesCellRenderer(boolean showTimeOnly, Locale locale) {
 		format = Formatter.getInstance(locale);
+		this.showTimeOnly = showTimeOnly;
 	}
 
 	@Override
@@ -67,6 +69,10 @@ public class LectureBlockTimesCellRenderer implements FlexiCellRenderer {
 	}
 	
 	private void render(StringOutput target, Date start, Date end) {
+		if(!showTimeOnly) {
+			target.append(format.formatDate(start)).append(" ");
+		}
+
 		if(start != null) {
 			target.append(format.formatTimeShort(start));
 		}

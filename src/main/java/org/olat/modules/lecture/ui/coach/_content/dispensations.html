@@ -3,8 +3,11 @@
 	#if($r.available("search"))
 		$r.render("search")
 	#end
-	#if($r.available("add.dispensation") || $r.available("add.notice.absence"))
+	#if($r.available("add.absence") || $r.available("add.dispensation") || $r.available("add.notice.absence"))
 		<div class="o_button_group o_button_group_right"><div class="btn-group">
+		#if($r.available("add.absence"))
+			$r.render("add.absence")
+		#end
 		#if($r.available("add.dispensation"))
 			$r.render("add.dispensation")
 		#end

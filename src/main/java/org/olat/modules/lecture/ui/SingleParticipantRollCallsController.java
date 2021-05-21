@@ -164,7 +164,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.entry));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.lecturesBlock));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.times, new LectureBlockTimesCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.times, new LectureBlockTimesCellRenderer(true, getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.teacher, new TextFlexiCellRenderer(EscapeMode.antisamy)));
 		
 		boolean canViewAuthorizedAbsences = secCallbacks.values()

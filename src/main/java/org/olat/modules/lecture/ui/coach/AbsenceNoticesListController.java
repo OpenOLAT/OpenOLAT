@@ -191,7 +191,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
 			authorizeButton = uifactory.addFormLink("absences.batch.authorize", formLayout, Link.BUTTON);
-			authorizeButton.setVisible(false);
+			tableEl.addBatchButton(authorizeButton);
 		}
 	}
 	
@@ -299,9 +299,6 @@ public class AbsenceNoticesListController extends FormBasicController {
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-		if(authorizeButton != null) {
-			authorizeButton.setVisible(tableModel.getRowCount() > 0);
-		}
 	}
 	
 	private AbsenceNoticeRow forgeRow(AbsenceNotice notice) {
