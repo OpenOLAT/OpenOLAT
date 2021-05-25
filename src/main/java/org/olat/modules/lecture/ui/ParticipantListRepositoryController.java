@@ -151,6 +151,9 @@ public class ParticipantListRepositoryController extends FormBasicController {
 				layoutCont.getFormItemComponent().contextPut("withPrint", Boolean.TRUE);
 			}
 			layoutCont.contextPut("printCommand", Boolean.valueOf(printView));
+			layoutCont.contextPut("authorizedAbsenceEnabled", Boolean.valueOf(authorizedAbsenceEnabled));
+			layoutCont.contextPut("absenceNoticeEnabled", Boolean.valueOf(absenceNoticeEnabled));
+			layoutCont.contextPut("rollCallEnabled", Boolean.valueOf(rollCallEnabled));
 		}
 
 		FlexiTableSortOptions options = new FlexiTableSortOptions();

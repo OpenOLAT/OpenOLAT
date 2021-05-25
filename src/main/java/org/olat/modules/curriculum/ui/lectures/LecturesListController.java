@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -115,6 +116,12 @@ public class LecturesListController extends FormBasicController implements Expor
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("authorizedAbsenceEnabled", Boolean.valueOf(authorizedAbsenceEnabled));
+			layoutCont.contextPut("absenceNoticeEnabled", Boolean.valueOf(absenceNoticeEnabled));
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, StatsCols.id));
 		

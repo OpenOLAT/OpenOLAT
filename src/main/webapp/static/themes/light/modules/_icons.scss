@@ -628,6 +628,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_lectures_attended:before { content: $fa-var-circle; color: $brand-success; }
 .o_lectures_authorized:before { content: $fa-var-circle; color: $brand-warning; }
 .o_lectures_absent:before { content: $fa-var-circle; color: $brand-danger; }
+.o_lectures_dispensed:before { content: $fa-var-circle; color: $brand-info; }
 .o_absences_col_warning:before { content: $fa-var-warning; }
 .o_absences_col_alert:before { content: $fa-var-exclamation-circle; }
 
