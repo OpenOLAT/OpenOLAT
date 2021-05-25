@@ -29,6 +29,9 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.manager.PageDAO;
+import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -44,9 +47,14 @@ public class OLATUpgrade_15_5_1 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_15.5.1";
 	private static final String ADD_MISSING_ENTRY_TECHNICAL_TYPE = "ADD MISSING ENTRY TECHNICAL TYPE";
+	private static final String COPY_PORTFOLIO_PAGE_EDITABLE_FLAG = "COPY PORTFOLIO PAGE EDITABLE FLAG";
+
+	private static final int BATCH_SIZE = 2;
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private PageDAO pageDao;
 
 	public OLATUpgrade_15_5_1() {
 		super();
@@ -69,6 +77,7 @@ public class OLATUpgrade_15_5_1 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		allOk &= addMissingEntryTechnicalType(upgradeManager, uhd);
+		allOk &= editablePageFlag(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -79,8 +88,57 @@ public class OLATUpgrade_15_5_1 extends OLATUpgrade {
 		}
 		return allOk;
 	}
-
 	
+	private boolean editablePageFlag(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(COPY_PORTFOLIO_PAGE_EDITABLE_FLAG)) {
+			try {
+				List<Page> pages;
+				do {
+					pages = getPages(0, BATCH_SIZE);
+					for(Page page:pages) {
+						makePageNotEditable(page);
+					}
+				} while(pages.size() == BATCH_SIZE);
+				dbInstance.commitAndCloseSession();
+				log.info("Pass the editable flag to copied portfolio pages.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(COPY_PORTFOLIO_PAGE_EDITABLE_FLAG, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void makePageNotEditable(Page page) {
+		if(page.isEditable()) return;
+		
+		List<Page> linkedPages = pageDao.getPagesBySharedBody(page);
+		for(Page linkedPage:linkedPages) {
+			if(linkedPage.isEditable()) {
+				((PageImpl)linkedPage).setEditable(false);
+				pageDao.updatePage(linkedPage);
+			}
+		}
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private List<Page> getPages(int firstResult, int maxResults) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select page from pfpage page")
+		  .append(" inner join pfpage copypage on (copypage.body.key=page.body.key and copypage.editable=true)")
+		  .append(" where page.editable=false")
+		  .append(" order by page.key");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Page.class)
+			.setFirstResult(firstResult)
+			.setMaxResults(maxResults)
+			.getResultList();
+	}
 	
 	private boolean addMissingEntryTechnicalType(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;

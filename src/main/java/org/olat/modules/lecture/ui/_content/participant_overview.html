@@ -5,8 +5,7 @@
 #if(($r.isNotNull($withPrint) && $withPrint) || $r.available("log"))
 	<div class="o_button_group o_button_group_right">
 	#if($r.isNotNull($withPrint) && $withPrint)
-		<script>
-/* <![CDATA[ */ 
+<script>
 function print() {
 	try {
 		var ww = window.open("$r.commandURI("print")", "$winid", "height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location=no,scrollbars=1");
@@ -15,8 +14,7 @@ function print() {
 		if(window.console) console.log('Error when trying to dock div id::$r.getId("undck")');
 	}
 }
-/* ]]> */
-		</script>
+</script>
 		<a class="btn btn-default" href="javascript:print()" title="$r.translate("print")"><i class="o_icon o_icon_print"> </i> $r.translate("print")</a>
 	#end
 	#if($r.available("log"))
@@ -38,6 +36,9 @@ function print() {
 	#if($r.isTrue($authorizedAbsenceEnabled))
 	<li><i class="o_icon o_lectures_authorized"> </i> $r.translate("table.legend.authorized")</li>
 	<li><i class="o_icon o_lectures_absent"> </i> $r.translate("table.legend.unauthorized")</li>
+		#if($r.isTrue($absenceNoticeEnabled))
+		<li><i class="o_icon o_lectures_dispensed"> </i> $r.translate("table.legend.dispensed")</li>
+		#end
 	#else
 	<li><i class="o_icon o_lectures_absent"> </i> $r.translate("table.legend.absent")</li>
 	#end

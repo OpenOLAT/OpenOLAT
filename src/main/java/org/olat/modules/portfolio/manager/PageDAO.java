@@ -100,7 +100,6 @@ public class PageDAO {
 		page.setSummary(summary);
 		page.setImagePath(imagePath);
 		page.setImageAlignment(align);
-		page.setEditable(editable);
 		page.setBaseGroup(groupDao.createGroup());
 		if(pageDelegate != null) {
 			PageBody body = pageDelegate.getBody();
@@ -110,8 +109,10 @@ public class PageDAO {
 			page.setBody(body);
 			page.setImagePath(pageDelegate.getImagePath());
 			page.setImageAlignment(pageDelegate.getImageAlignment());
+			page.setEditable(pageDelegate.isEditable());
 		} else {
 			page.setBody(createAndPersistPageBody(1, null));
+			page.setEditable(editable);
 		}
 		if(section != null) {
 			page.setSection(section);

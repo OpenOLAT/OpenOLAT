@@ -232,6 +232,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("authorizedAbsenceEnabled", authorizedAbsenceEnabled);
+			layoutCont.contextPut("absenceNoticeEnabled", absenceNoticeEnabled);
 			layoutCont.contextPut("aggregatedElements", containerIds);
 			if(!aggregatedElements.isEmpty()) {
 				layoutCont.contextPut("aggregatedElementsTitle", translate("lectures.with.curriculum"));
