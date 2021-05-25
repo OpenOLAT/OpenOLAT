@@ -136,6 +136,10 @@ public interface BigBlueButtonMeetingTemplate extends ModifiedInfo, CreateInfo {
 
 	public void setLockSettingsLockOnJoinConfigurable(Boolean lockSettingsLockOnJoinConfigurable);
 	
+	public JoinPolicyEnum getJoinPolicyEnum();
+	
+	public void setJoinPolicyEnum(JoinPolicyEnum policy);
+	
 	public List<BigBlueButtonTemplatePermissions> getPermissions();
 	
 	public void setPermissions(List<BigBlueButtonTemplatePermissions> roles);

@@ -70,6 +70,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
+import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.modules.bigbluebutton.manager.SlidesContainerMapper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -100,6 +101,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private SingleSelection serverEl;
 	private SingleSelection recordEl;
 	private SingleSelection publishingEl;
+	private SingleSelection joinPolicyEl;
 	private MultipleSelectionElement guestEl;
 	private TextElement externalLinkEl;
 	private MultipleSelectionElement passwordEnableEl;
@@ -337,6 +339,15 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 		layoutEl.setVisible(layoutEl.getKeys().length > 1);
 		
+		KeyValues joinKeyValues = new KeyValues();
+		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.disabled.name(), translate("join.users.control.disabled")));
+		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.guestsApproval.name(), translate("join.users.control.guests")));
+		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.allUsersApproval.name(), translate("join.users.control.users")));
+		joinPolicyEl = uifactory.addDropdownSingleselect("template.join.policy", "template.join.policy", formLayout,
+				joinKeyValues.keys(), joinKeyValues.values());
+		JoinPolicyEnum joinPolicy = meeting == null ? JoinPolicyEnum.disabled : meeting.getJoinPolicyEnum();
+		joinPolicyEl.select(joinPolicy.name(), true);
+		
 		String[] guestValues = new String[] { translate("meeting.guest.on") };
 		guestEl = uifactory.addCheckboxesHorizontal("meeting.guest", formLayout, onKeys, guestValues);
 		guestEl.setVisible(entry != null && entry.isGuests());
@@ -362,8 +373,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
+		boolean meetingExists = meeting != null && meeting.getKey() != null;
 		BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
-				templates, meeting != null && meeting.getKey() != null);
+				templates, meetingExists);
+		BigBlueButtonUIHelper.updateJoinPolicy(templateEl, joinPolicyEl, templates, meetingExists);
 		
 		if(mode == Mode.dates) {
 			Date startDate = meeting == null ? new Date() : meeting.getStartDate();
@@ -525,17 +538,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			allOk &= BigBlueButtonUIHelper.validateTime(followupTimeEl, 15l);
 		}
 		
-		templateEl.clearError();
-		if(!templateEl.isOneSelected()) {
-			templateEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
-		serverEl.clearError();
-		if(!serverEl.isOneSelected()) {
-			serverEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
+		allOk &= validateSingleSelection(templateEl);
+		allOk &= validateSingleSelection(serverEl);
 		
 		// dates ok
 		if(allOk) {
@@ -557,14 +561,23 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		publishingEl.clearError();
-		if(!publishingEl.isOneSelected()) {
-			publishingEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
+		allOk &= validateSingleSelection(publishingEl);
+		allOk &= validateSingleSelection(joinPolicyEl);
 		
 		allOk &= validateSlidesSize();
 
+		return allOk;
+	}
+	
+	private boolean validateSingleSelection(SingleSelection el) {
+		boolean allOk = true;
+		
+		el.clearError();
+		if(!el.isOneSelected()) {
+			el.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 	
@@ -611,10 +624,12 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(templateEl == source) {
+			boolean meetingExists = meeting != null && meeting.getKey() != null;
 			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
-					templates, meeting != null && meeting.getKey() != null);
+					templates, meetingExists);
 			boolean webcamAvailable = isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
+			BigBlueButtonUIHelper.updateJoinPolicy(templateEl, joinPolicyEl, templates, meetingExists);
 		} else if(recordEl == source || passwordEnableEl == source) {
 			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
 					templates, meeting != null && meeting.getKey() != null);
@@ -696,7 +711,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		boolean guests = guestEl.isVisible() && guestEl.isAtLeastSelected(1);
 		meeting.setGuest(guests);
-
+		
+		JoinPolicyEnum joinPolicy = JoinPolicyEnum.secureValueOf(joinPolicyEl.getSelectedKey());
+		meeting.setJoinPolicyEnum(joinPolicy);
+		
 		if(layoutEl.isVisible() && layoutEl.isOneSelected()) {
 			BigBlueButtonMeetingLayoutEnum layout = BigBlueButtonMeetingLayoutEnum.secureValueOf(layoutEl.getSelectedKey());
 			meeting.setMeetingLayout(layout);

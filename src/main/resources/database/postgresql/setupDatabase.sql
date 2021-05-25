@@ -1221,6 +1221,7 @@ create table o_bbb_template (
    b_lock_set_lock_on_join bool default null,
    b_lock_set_lock_on_join_conf bool default null,
    b_permitted_roles varchar(255) default null,
+   b_join_policy varchar(32) default 'disabled' not null,
    b_guest_policy varchar(32) default null,
    primary key (id)
 );
@@ -1265,6 +1266,7 @@ create table o_bbb_meeting (
    b_directory varchar(64) default null,
    b_recordings_publishing varchar(16) default 'auto',
    b_record bool default null,
+   b_join_policy varchar(32) default 'disabled' not null,
    fk_creator_id int8,
    fk_entry_id int8 default null,
    a_sub_ident varchar(64) default null,

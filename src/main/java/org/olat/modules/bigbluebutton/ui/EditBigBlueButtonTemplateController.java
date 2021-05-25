@@ -41,6 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
+import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -67,6 +68,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 	
 	private SingleSelection recordEl;
 	private SingleSelection breakoutEl;
+	private SingleSelection joinPolicyEl;
 	private SingleSelection muteOnStartEl;
 	private SingleSelection autoStartRecordingEl;
 	private SingleSelection allowStartStopRecordingEl;
@@ -145,6 +147,18 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		boolean external = template != null && template.isExternalUsersAllowed();
 		externalEl = uifactory.addCheckboxesHorizontal("template.external.enabled", "template.external.enabled", formLayout, onKeys, new String[] { "" });
 		externalEl.select(onKeys[0], external);
+		
+		KeyValues joinKeyValues = new KeyValues();
+		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.disabled.name(), translate("join.users.control.disabled")));
+		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.guestsApproval.name(), translate("join.users.control.guests")));
+		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.allUsersApproval.name(), translate("join.users.control.users")));
+		joinPolicyEl = uifactory.addDropdownSingleselect("template.join.policy", "template.join.policy", formLayout,
+				joinKeyValues.keys(), joinKeyValues.values());
+		if(template != null && template.getJoinPolicyEnum() != null) {
+			joinPolicyEl.select(template.getJoinPolicyEnum().name(), true);
+		} else {
+			joinPolicyEl.select(JoinPolicyEnum.disabled.name(), true);
+		}
 		
 		KeyValues rolesKeyValues = new KeyValues();
 		for(BigBlueButtonTemplatePermissions role:BigBlueButtonTemplatePermissions.values()) {
@@ -384,6 +398,9 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		} else {
 			template.setMaxDuration(null);
 		}
+		
+		JoinPolicyEnum joinPolicy = JoinPolicyEnum.valueOf(joinPolicyEl.getSelectedKey());
+		template.setJoinPolicyEnum(joinPolicy);
 
 		boolean record = getSelected(recordEl);
 		template.setRecord(record);

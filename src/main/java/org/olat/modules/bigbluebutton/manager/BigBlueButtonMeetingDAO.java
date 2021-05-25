@@ -37,6 +37,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
+import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -68,6 +69,7 @@ public class BigBlueButtonMeetingDAO {
 		meeting.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
 		
 		meeting.setGuest(false);
+		meeting.setJoinPolicyEnum(JoinPolicyEnum.disabled);
 		// ID for OO internal dispatcher (guest access). BBB does not now this ID. 
 		meeting.setIdentifier(UUID.randomUUID().toString());
 		

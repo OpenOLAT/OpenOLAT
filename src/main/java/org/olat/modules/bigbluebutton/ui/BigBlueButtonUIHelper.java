@@ -51,7 +51,8 @@ public class BigBlueButtonUIHelper {
 	
 	public static void updateTemplateInformations(SingleSelection templateEl, FormItem externalLinkEl,
 			MultipleSelectionElement passwordEnableEl, TextElement passwordEl,
-			SingleSelection publishingEl, SingleSelection recordEl, List<BigBlueButtonMeetingTemplate> templates, boolean meetingExists) {
+			SingleSelection publishingEl, SingleSelection recordEl,
+			List<BigBlueButtonMeetingTemplate> templates, boolean meetingExists) {
 		templateEl.setExampleKey(null, null);
 		if(templateEl.isOneSelected()) {
 			BigBlueButtonMeetingTemplate template = getSelectedTemplate(templateEl, templates);
@@ -155,6 +156,16 @@ public class BigBlueButtonUIHelper {
 		}
 		
 		layoutEl.setVisible(layoutEl.getKeys().length > 1);
+	}
+	
+	public static void updateJoinPolicy(SingleSelection templateEl, SingleSelection joinPolicyEl,
+			List<BigBlueButtonMeetingTemplate> templates, boolean meetingExists) {
+		if(templateEl.isOneSelected()) {
+			BigBlueButtonMeetingTemplate template = getSelectedTemplate(templateEl, templates);
+			if(template != null && template.getJoinPolicyEnum() != null && !meetingExists) {
+				joinPolicyEl.select(template.getJoinPolicyEnum().name(), true);
+			}
+		}
 	}
 	
 	public static boolean validatePassword(MultipleSelectionElement passwordEnableEl, TextElement passwordEl) {
