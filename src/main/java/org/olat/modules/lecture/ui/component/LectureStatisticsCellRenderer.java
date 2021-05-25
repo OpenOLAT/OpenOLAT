@@ -43,14 +43,16 @@ public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
 			long attended = stats.getTotalAttendedLectures();
 			long absent = stats.getTotalAbsentLectures();
 			long authorizedAbsent = stats.getTotalAuthorizedAbsentLectures();
-			render(target, total, attended, absent, authorizedAbsent);
+			long dispensed = stats.getTotalDispensationLectures();
+			render(target, total, attended, absent, authorizedAbsent, dispensed);
 		}
 	}
 	
-	private void render(StringOutput target, long total, long attended, long absent, long authorizedAbsent) {
-		long attendedPercent = (attended == 0) ? 0 : Math.round(100.0f * ((double)attended / (double)total));
-		long absentPercent = (absent == 0) ? 0 :  Math.round(100.0f * ((double)absent / (double)total));
-		long authorizedAbsentPercent = (authorizedAbsent == 0) ? 0 :  Math.round(100.0f * ((double)authorizedAbsent / (double)total));
+	private void render(StringOutput target, long total, long attended, long absent, long authorizedAbsent, long dispensed) {
+		long attendedPercent = (attended == 0l) ? 0l : Math.round(100.0d * ((double)attended / (double)total));
+		long absentPercent = (absent == 0l) ? 0l :  Math.round(100.0d * ((double)absent / (double)total));
+		long authorizedAbsentPercent = (authorizedAbsent == 0l) ? 0l :  Math.round(100.0d * ((double)authorizedAbsent / (double)total));
+		long dispensedPercent = (dispensed == 0l) ? 0l :  Math.round(100.0d * ((double)dispensed / (double)total));
 		
 		target.append("<div class='progress'>");
 		//attended
@@ -64,6 +66,12 @@ public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
 	      .append("' aria-valuemin='0' aria-valuemax='").append(total)
 	      .append("' style='width: ").append(authorizedAbsentPercent).append("%;'>")
 	      .append("<span class='sr-only'>").append(authorizedAbsentPercent).append("%</span></div>");
+		
+		// dispensed
+		target.append("<div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='").append(dispensed)
+	      .append("' aria-valuemin='0' aria-valuemax='").append(total)
+	      .append("' style='width: ").append(dispensedPercent).append("%;'>")
+	      .append("<span class='sr-only'>").append(dispensedPercent).append("%</span></div>");
 		
 		//absent
 		target.append("<div class='progress-bar progress-bar-danger' role='progressbar' aria-valuenow='").append(absent)

@@ -71,6 +71,7 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 			case plannedLectures: return positive(row.getTotalPersonalPlannedLectures());
 			case attendedLectures: return positive(row.getTotalAttendedLectures());
 			case authorizedAbsentLectures: return positive(row.getTotalAuthorizedAbsentLectures());
+			case dispensedLectures: return positive(row.getTotalDispensationLectures());
 			case unauthorizedAbsentLectures:
 			case absentLectures: return positive(row.getTotalAbsentLectures());
 			case progress: return row;
@@ -103,6 +104,7 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 			case plannedLectures: return positive(totalStatistics.getPersonalPlannedLectures());
 			case attendedLectures: return positive(totalStatistics.getAttendedLectures());
 			case authorizedAbsentLectures: return positive(totalStatistics.getAuthorizedAbsentLectures());
+			case dispensedLectures: return positive(totalStatistics.getDispensedLectures());
 			case unauthorizedAbsentLectures:
 			case absentLectures: return positive(totalStatistics.getAbsentLectures());
 			case rate: return totalStatistics.getRate();
@@ -131,6 +133,7 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 		attendedLectures("table.header.attended.lectures"),
 		unauthorizedAbsentLectures("table.header.unauthorized.absence"),
 		authorizedAbsentLectures("table.header.authorized.absence"),
+		dispensedLectures("table.header.dispensation"),
 		absentLectures("table.header.absent.lectures"),
 		progress("table.header.progress"),
 		rateWarning("table.header.rate.warning"),

@@ -54,6 +54,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String STATUS_CANCELLED_ENABLED = "lecture.status.cancelled.enabled";
 	private static final String AUTHORIZED_ABSENCE_ENABLED = "lecture.authorized.absence.enabled";
 	private static final String AUTHORIZED_ABSENCE_ATTENDANT_ENABLED = "lecture.authorized.absence.as.attendant";
+	private static final String DISPENSATION_ATTENDANT_ENABLED = "lecture.dispensation.as.attendant";
 	
 	private static final String TEACHER_CAN_AUTHORIZED_ABSENCE = "teacher.can.authorized.absence";
 	private static final String TEACHER_CAN_SEE_APPEAL = "teacher.can.see.appeal";
@@ -104,6 +105,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean authorizedAbsenceEnabled;
 	@Value("${lecture.authorized.absence.as.attendant:false}")
 	private boolean countAuthorizedAbsenceAsAttendant;
+	@Value("${lecture.dispensation.as.attendant:false}")
+	private boolean countDispensationAsAttendant;
 	@Value("${lecture.absence.default.authorized:false}")
 	private boolean absenceDefaultAuthorized;
 	
@@ -240,6 +243,11 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		String authorizedAbsenceAttendantEnabledObj = getStringPropertyValue(AUTHORIZED_ABSENCE_ATTENDANT_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(authorizedAbsenceAttendantEnabledObj)) {
 			countAuthorizedAbsenceAsAttendant = "true".equals(authorizedAbsenceAttendantEnabledObj);
+		}
+		
+		String dispensationAttendantEnabledObj = getStringPropertyValue(DISPENSATION_ATTENDANT_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(dispensationAttendantEnabledObj)) {
+			countDispensationAsAttendant = "true".equals(dispensationAttendantEnabledObj);
 		}
 
 		String absenceDefaultAuthorizedObj = getStringPropertyValue(ABSENCE_DEFAULT_AUTHORIZED, true);
@@ -463,6 +471,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setCountAuthorizedAbsenceAsAttendant(boolean enable) {
 		this.countAuthorizedAbsenceAsAttendant = enable;
 		setStringProperty(AUTHORIZED_ABSENCE_ATTENDANT_ENABLED, Boolean.toString(enable), true);
+	}
+	
+	public boolean isCountDispensationAsAttendant() {
+		return countDispensationAsAttendant;
+	}
+
+	public void setCountDispensationAsAttendant(boolean enable) {
+		this.countDispensationAsAttendant = enable;
+		setStringProperty(DISPENSATION_ATTENDANT_ENABLED, Boolean.toString(enable), true);
 	}
 
 	public boolean isAbsenceDefaultAuthorized() {

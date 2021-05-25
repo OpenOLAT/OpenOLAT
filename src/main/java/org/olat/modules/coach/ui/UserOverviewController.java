@@ -291,12 +291,12 @@ public class UserOverviewController extends BasicController implements Activatea
 		}
 
 		if (roleSecurityCallback.canViewEfficiencyStatements()) {
-			List<CurriculumRef> curriculumRefs = curriculumService.getMyActiveCurriculumRefs(mentee);
 			CurriculumSecurityCallback curriculumSecurityCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
 
 			certificatesTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("statements"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_STATEMENTS), null);
-				certificateAndEfficiencyStatementWrapperController = new CertificateAndEfficiencyStatementWrapperController(uureq, bwControl, stackPanel, mentee, curriculumSecurityCallback, roleSecurityCallback, curriculumRefs, statEntry);
+				certificateAndEfficiencyStatementWrapperController = new CertificateAndEfficiencyStatementWrapperController(uureq, bwControl, stackPanel, mentee,
+						curriculumSecurityCallback, roleSecurityCallback);
 				listenTo(certificateAndEfficiencyStatementWrapperController);
 				return certificateAndEfficiencyStatementWrapperController;
 			});

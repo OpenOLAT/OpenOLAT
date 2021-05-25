@@ -41,12 +41,14 @@ public class LectureBlockStatistics {
 	private long totalAttendedLectures = 0l;
 	private long totalAbsentLectures = 0l;
 	private long totalAuthorizedAbsentLectures = 0l;
+	private long totalDispensationLectures = 0l;
 	private double attendanceRate;
 
 	private final boolean calculateRate;
 	private final double requiredRate;
 	
-	public LectureBlockStatistics(Long identityKey, Long lectureBlockKey, Long repoKey, String displayName, String externalRef, boolean calculateRate, double requiredRate) {
+	public LectureBlockStatistics(Long identityKey, Long lectureBlockKey, Long repoKey, String displayName, String externalRef,
+			boolean calculateRate, double requiredRate) {
 		this.repoKey = repoKey;
 		this.displayName = displayName;
 		this.externalRef = externalRef;
@@ -138,6 +140,16 @@ public class LectureBlockStatistics {
 	public void addTotalAuthorizedAbsentLectures(long lectures) {
 		if(lectures > 0) {
 			totalAuthorizedAbsentLectures += lectures;
+		}
+	}
+	
+	public long getTotalDispensationLectures() {
+		return totalDispensationLectures;
+	}
+
+	public void addTotalDispensationLectures(long lectures) {
+		if(lectures > 0) {
+			totalDispensationLectures = lectures;
 		}
 	}
 

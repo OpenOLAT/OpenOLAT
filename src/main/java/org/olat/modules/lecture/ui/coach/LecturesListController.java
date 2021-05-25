@@ -80,6 +80,7 @@ public class LecturesListController extends FormBasicController {
 	
 	private int count = 0;
 	private final String propsIdentifier;
+	private final boolean absenceNoticeEnabled;
 	private final boolean authorizedAbsenceEnabled;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private List<LectureBlockIdentityStatistics> statistics;
@@ -105,6 +106,7 @@ public class LecturesListController extends FormBasicController {
 		this.showExport = showExport;
 		this.showRepositoryEntry = showRepositoryEntry;
 		this.userPropertyHandlers = userPropertyHandlers;
+		absenceNoticeEnabled = lectureModule.isAbsenceNoticeEnabled();
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		initForm(ureq);
 		loadModel();
@@ -137,6 +139,9 @@ public class LecturesListController extends FormBasicController {
 		if(authorizedAbsenceEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.unauthorizedAbsenceLectures));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.authorizedAbsenceLectures));
+			if(absenceNoticeEnabled) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.dispensedLectures));
+			}
 		} else {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.absentLectures));
 		}

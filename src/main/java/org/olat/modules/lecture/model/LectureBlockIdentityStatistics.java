@@ -91,6 +91,7 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 		clone.addTotalAbsentLectures(getTotalAbsentLectures());
 		clone.addTotalAttendedLectures(getTotalAttendedLectures());
 		clone.addTotalAuthorizedAbsentLectures(getTotalAuthorizedAbsentLectures());
+		clone.addTotalDispensationLectures(getTotalDispensationLectures());
 		clone.addTotalEffectiveLectures(getTotalEffectiveLectures());		
 		clone.addTotalLectureBlocks(getTotalLectureBlocks());
 		clone.addTotalPersonalPlannedLectures(getTotalPersonalPlannedLectures());
@@ -106,6 +107,7 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 		clone.addTotalAbsentLectures(getTotalAbsentLectures());
 		clone.addTotalAttendedLectures(getTotalAttendedLectures());
 		clone.addTotalAuthorizedAbsentLectures(getTotalAuthorizedAbsentLectures());
+		clone.addTotalDispensationLectures(getTotalDispensationLectures());
 		clone.addTotalEffectiveLectures(getTotalEffectiveLectures());		
 		clone.addTotalLectureBlocks(getTotalLectureBlocks());
 		clone.addTotalPersonalPlannedLectures(getTotalPersonalPlannedLectures());
@@ -119,6 +121,7 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 		addTotalAbsentLectures(statistics.getTotalAbsentLectures());
 		addTotalAttendedLectures(statistics.getTotalAttendedLectures());
 		addTotalAuthorizedAbsentLectures(statistics.getTotalAuthorizedAbsentLectures());
+		addTotalDispensationLectures(statistics.getTotalDispensationLectures());
 		addTotalEffectiveLectures(statistics.getTotalEffectiveLectures());		
 		addTotalLectureBlocks(statistics.getTotalLectureBlocks());
 		addTotalPersonalPlannedLectures(statistics.getTotalPersonalPlannedLectures());

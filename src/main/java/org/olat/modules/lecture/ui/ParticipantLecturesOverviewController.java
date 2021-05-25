@@ -105,6 +105,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private final boolean withTitle;
 	private final boolean withSelect;
 	private final Identity assessedIdentity;
+	private final boolean absenceNoticeEnabled;
 	private final boolean authorizedAbsenceEnabled;
 	private final boolean withCurriculumAggregation;
 	private final List<RepositoryEntryRef> filterByEntries;
@@ -144,6 +145,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		this.assessedIdentity = assessedIdentity;
 		this.filterByEntries = filterByEntries;
 		this.withCurriculumAggregation = withCurriculumAggregation;
+		absenceNoticeEnabled = lectureModule.isAbsenceNoticeEnabled();
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		if(curriculumModule.isEnabled() && withCurriculumAggregation) {
 			aggregatedElements = loadAggregation();
@@ -247,6 +249,9 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		if(authorizedAbsenceEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.unauthorizedAbsentLectures));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.authorizedAbsentLectures));
+			if(absenceNoticeEnabled) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.dispensedLectures));
+			}
 		} else {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.absentLectures));
 		}
@@ -262,7 +267,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		ParticipantLecturesDataModel model = new ParticipantLecturesDataModel(columnsModel, getTranslator(), getLocale()); 
 		int paging = withPrint ? 20 : -1;
 		FlexiTableElement table = uifactory.addTableElement(getWindowControl(), "table", model, paging, false, getTranslator(), formLayout);
-		table.setAndLoadPersistedPreferences(ureq, "participant-lectures-overview");
+		table.setAndLoadPersistedPreferences(ureq, "participant-lectures-overview-v2");
 		table.setCustomizeColumns(false);
 		table.setEmptyTableMessageKey("empty.lectures.list");
 		table.setFooter(true);
