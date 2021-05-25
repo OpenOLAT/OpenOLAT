@@ -80,6 +80,7 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 	private LectureBlockRollCallSearchParameters searchParams;
 	
 	private final boolean showTimeOnly;
+	private final boolean absenceNoticeEnabled;
 	private final boolean absenceDefaultAuthorized;
 	private final boolean authorizedAbsenceEnabled;
 	private final LecturesSecurityCallback secCallback;
@@ -109,6 +110,7 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 		
 		absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		absenceNoticeEnabled = lectureModule.isAbsenceNoticeEnabled();
 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_USAGE_IDENTIFIER, isAdministrativeUser);
@@ -142,8 +144,12 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.lectureBlockName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.lectureBlockLocation));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.absentLectures));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.authorizedAbsence));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.absenceNotice));
+		if(authorizedAbsenceEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.authorizedAbsence));
+		}
+		if(absenceNoticeEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.absenceNotice));
+		}
 		
 		tableModel = new LecturesAbsenceRollCallsTableModel(columnsModel, userPropertyHandlers, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);

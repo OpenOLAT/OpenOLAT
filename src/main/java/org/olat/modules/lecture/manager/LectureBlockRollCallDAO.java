@@ -357,9 +357,9 @@ public class LectureBlockRollCallDAO {
 		if(searchParams.getHasAbsence() != null) {
 			sb.and();
 			if(searchParams.getHasAbsence().booleanValue()) {
-				sb.append("rollcall.lecturesAbsentNumber>0");
+				sb.append("(rollcall.lecturesAbsentNumber>0 or rollcall.absenceNotice.key is not null)");
 			} else {
-				sb.append("(rollcall.lecturesAbsentNumber = 0 or rollcall.lecturesAbsentNumber is null)");
+				sb.append("((rollcall.lecturesAbsentNumber = 0 or rollcall.lecturesAbsentNumber is null) and rollcall.absenceNotice.key is null)");
 			}
 		}
 		

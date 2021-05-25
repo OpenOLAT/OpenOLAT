@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.id.User;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -51,8 +52,11 @@ implements SortableFlexiTableDataModel<LectureAbsenceRollCallRow> {
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<LectureAbsenceRollCallRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			setObjects(rows);
+		}
 	}
 
 	@Override
