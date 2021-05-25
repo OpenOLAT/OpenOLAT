@@ -38,7 +38,7 @@ public class LectureBlockRollCallSearchParameters {
 	private Boolean closed;
 	private Boolean hasAbsence;
 	private Boolean hasSupervisorNotificationDate;
-	
+
 	private Long rollCallKey;
 	private Long lectureBlockKey;
 	

@@ -45,6 +45,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNotice;
+import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAppealStatus;
 import org.olat.modules.lecture.LectureBlockAuditLog;
@@ -356,9 +357,9 @@ public class LectureBlockRollCallDAO {
 		if(searchParams.getHasAbsence() != null) {
 			sb.and();
 			if(searchParams.getHasAbsence().booleanValue()) {
-				sb.append("rollcall.lecturesAbsentNumber>0");
+				sb.append("(rollcall.lecturesAbsentNumber>0 or rollcall.absenceNotice.key is not null)");
 			} else {
-				sb.append("(rollcall.lecturesAbsentNumber = 0 or rollcall.lecturesAbsentNumber is null)");
+				sb.append("((rollcall.lecturesAbsentNumber = 0 or rollcall.lecturesAbsentNumber is null) and rollcall.absenceNotice.key is null)");
 			}
 		}
 		
@@ -545,7 +546,8 @@ public class LectureBlockRollCallDAO {
 	}
 	
 	public List<LectureBlockStatistics> getStatistics(IdentityRef identity, RepositoryEntryStatusEnum[] entryStatus,
-			boolean authorizedAbsenceEnabled, boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant,
+			boolean authorizedAbsenceEnabled, boolean absenceDefaultAuthorized,
+			boolean countAuthorizedAbsenceAsAttendant, boolean countDispensationAsAttendant,
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 		QueryBuilder sb = new QueryBuilder(5000);
 		sb.append("select call.key as callKey, ")
@@ -554,6 +556,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  call.absenceAuthorized as absenceAuthorized,")
 		  .append("  notice.key as absenceNoticeKey,")
 		  .append("  notice.absenceAuthorized as absenceNoticeAuthorized,")
+		  .append("  notice.type as absenceNoticeType,")
 		  .append("  block.key as blockKey,")
 		  .append("  block.compulsory as compulsory,")
 		  .append("  block.plannedLecturesNumber as blockPlanned,")
@@ -613,6 +616,7 @@ public class LectureBlockRollCallDAO {
 			}
 			Long absenceNoticeKey = (Long)rawObject[pos++];
 			Boolean absenceNoticeAuthorized = (Boolean)rawObject[pos++];
+			String absenceNoticeType = (String)rawObject[pos++];
 			
 			Long lectureBlockKey = (Long)rawObject[pos++];
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
@@ -648,20 +652,20 @@ public class LectureBlockRollCallDAO {
 			appendStatistics(entryStatistics, compulsory, status,
 					rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent, absenceAuthorized,
-					absenceNoticeKey, absenceNoticeAuthorized, absenceDefaultAuthorized,
+					absenceNoticeKey, absenceNoticeAuthorized, absenceNoticeType, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
 					firstAdmissionDate, now);
 		});
 
 		List<LectureBlockStatistics> statisticsList = new ArrayList<>(stats.values());
-		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant);
+		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant, countDispensationAsAttendant);
 		return statisticsList;
 	}
 	
 	public List<LectureBlockIdentityStatistics> getStatistics(LectureStatisticsSearchParameters params,
 			List<UserPropertyHandler> userPropertyHandlers, Identity identity,
 			boolean authorizedAbsenceEnabled,
-			boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant,
+			boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant, boolean countDispensationAsAttendant,
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 		
 		QueryBuilder sb = new QueryBuilder(2048);
@@ -672,6 +676,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  call.absenceAuthorized as absenceAuthorized,")
 		  .append("  notice.key as absenceNoticeKey,")
 		  .append("  notice.absenceAuthorized as absenceNoticeAuthorized,")
+		  .append("  notice.type as absenceNoticeType,")
 		  .append("  block.key as blockKey,")
 		  .append("  block.compulsory as compulsory,")
 		  .append("  block.plannedLecturesNumber as blockPlanned,")
@@ -830,6 +835,7 @@ public class LectureBlockRollCallDAO {
 			}
 			Long absenceNoticeKey = (Long)rawObject[pos++];
 			Boolean absenceNoticeAuthorized = (Boolean)rawObject[pos++];
+			String absenceNoticeType = (String)rawObject[pos++];
 
 			Long lectureBlockKey = (Long)rawObject[pos++];
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
@@ -880,7 +886,7 @@ public class LectureBlockRollCallDAO {
 			appendStatistics(entryStatistics, compulsory, status,
 					rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent, absenceAuthorized,
-					absenceNoticeKey, absenceNoticeAuthorized, absenceDefaultAuthorized,
+					absenceNoticeKey, absenceNoticeAuthorized, absenceNoticeType, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
 					firstAdmissionDate, now);
 			
@@ -890,7 +896,7 @@ public class LectureBlockRollCallDAO {
 		});
 		
 		List<LectureBlockIdentityStatistics> statisticsList = new ArrayList<>(stats.values());
-		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant);
+		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant, countDispensationAsAttendant);
 		return statisticsList;
 	}
 	
@@ -964,7 +970,7 @@ public class LectureBlockRollCallDAO {
 
 	public List<LectureBlockStatistics> getStatistics(RepositoryEntry entry,
 			RepositoryEntryLectureConfiguration config, boolean authorizedAbsenceEnabled,
-			boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant,
+			boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant, boolean countDispensationAsAttendant,
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 		
 		StringBuilder sb = new StringBuilder();
@@ -975,6 +981,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  call.absenceAuthorized as absenceAuthorized,")
 		  .append("  notice.key as absenceNoticeKey,")
 		  .append("  notice.absenceAuthorized as absenceNoticeAuthorized,")
+		  .append("  notice.type as absenceNoticeType,")
 		  .append("  block.key as blockKey,")
 		  .append("  block.compulsory as compulsory,")
 		  .append("  block.plannedLecturesNumber as blockPlanned,")
@@ -1032,6 +1039,7 @@ public class LectureBlockRollCallDAO {
 			}
 			Long absenceNoticeKey = (Long)rawObject[pos++];
 			Boolean absenceNoticeAuthorized = (Boolean)rawObject[pos++];
+			String absenceNoticeType = (String)rawObject[pos++];
 
 			Long lectureBlockKey = (Long)rawObject[pos++];
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
@@ -1061,29 +1069,36 @@ public class LectureBlockRollCallDAO {
 			appendStatistics(entryStatistics, compulsory, status,
 					rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent,
-					absenceAuthorized, absenceNoticeKey, absenceNoticeAuthorized, absenceDefaultAuthorized,
+					absenceAuthorized, absenceNoticeKey, absenceNoticeAuthorized, absenceNoticeType, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
 					firstAdmissionDate, now);
 		});
 		
 		List<LectureBlockStatistics> statisticsList = new ArrayList<>(stats.values());
-		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant);
+		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant, countDispensationAsAttendant);
 		return statisticsList;
 	}
 	
-	private void calculateAttendanceRate(List<? extends LectureBlockStatistics> statisticsList, boolean countAuthorizedAbsenceAsAttendant) {
+	private void calculateAttendanceRate(List<? extends LectureBlockStatistics> statisticsList,
+			boolean countAuthorizedAbsenceAsAttendant, boolean countDispenseAsAttendant) {
 		for(LectureBlockStatistics statistics:statisticsList) {
-			calculateAttendanceRate(statistics, countAuthorizedAbsenceAsAttendant);
+			calculateAttendanceRate(statistics, countAuthorizedAbsenceAsAttendant, countDispenseAsAttendant);
 		}
 	}
 
-	protected void calculateAttendanceRate(LectureBlockStatistics statistics, boolean countAuthorizedAbsenceAsAttendant) {
+	protected void calculateAttendanceRate(LectureBlockStatistics statistics,
+			boolean countAuthorizedAbsenceAsAttendant, boolean countDispenseAsAttendant) {
 		long totalAttendedLectures = statistics.getTotalAttendedLectures();
 		long totalAbsentLectures = statistics.getTotalAbsentLectures();
 		if(countAuthorizedAbsenceAsAttendant) {
 			totalAttendedLectures += statistics.getTotalAuthorizedAbsentLectures();
+			totalAttendedLectures += statistics.getTotalDispensationLectures();
+		} else if(countDispenseAsAttendant) {
+			totalAbsentLectures += statistics.getTotalAuthorizedAbsentLectures();
+			totalAttendedLectures += statistics.getTotalDispensationLectures();
 		} else {
 			totalAbsentLectures += statistics.getTotalAuthorizedAbsentLectures();
+			totalAbsentLectures += statistics.getTotalDispensationLectures();
 		}
 		if(totalAbsentLectures < 0) {
 			totalAbsentLectures = 0;
@@ -1147,7 +1162,7 @@ public class LectureBlockRollCallDAO {
 	private void appendStatistics(LectureBlockStatistics statistics, boolean compulsory, String blockStatus,
 			Date rollCallEndDate, String rollCallStatus,
 			Long lecturesAttended, Long lecturesAbsent, Boolean absenceAuthorized,
-			Long absenceNoticeKey, Boolean absenceNoticeAuthorized, boolean absenceDefaultAuthorized,
+			Long absenceNoticeKey, Boolean absenceNoticeAuthorized, String absenceNoticeType, boolean absenceDefaultAuthorized,
 			Long plannedLecturesNumber, Long effectiveLecturesNumber,
 			Date firstAdmissionDate, Date now) {
 		if(!compulsory) return;// not compulsory blocks are simply ignored
@@ -1170,7 +1185,9 @@ public class LectureBlockRollCallDAO {
 					numOfLectures = plannedLecturesNumber.longValue();
 				}
 				
-				if(absenceNoticeAuthorized != null) {
+				if(AbsenceNoticeType.dispensation.name().equals(absenceNoticeType)) {
+					statistics.addTotalDispensationLectures(numOfLectures);
+				} else if(absenceNoticeAuthorized != null) {
 					if(absenceAuthorized.booleanValue()) {
 						statistics.addTotalAuthorizedAbsentLectures(numOfLectures);
 					} else {
@@ -1221,19 +1238,21 @@ public class LectureBlockRollCallDAO {
 	}
 	
 	public AggregatedLectureBlocksStatistics aggregatedStatistics(List<? extends LectureBlockStatistics> statisticsList,
-			boolean countAuthorizedAbsenceAsAttendant) {
+			boolean countAuthorizedAbsenceAsAttendant, boolean countDispensationAsAttendant) {
 		
-		long totalPersonalPlannedLectures = 0;
-		long totalAttendedLectures = 0;
-		long totalAuthorizedAbsentLectures = 0;
-		long totalAbsentLectures = 0;
+		long totalPersonalPlannedLectures = 0l;
+		long totalAttendedLectures = 0l;
+		long totalAuthorizedAbsentLectures = 0l;
+		long totalDispensedLectures = 0l;
+		long totalAbsentLectures = 0l;
 		
-		long attendedForRate = 0;
-		long absentForRate = 0;
+		long attendedForRate = 0l;
+		long absentForRate = 0l;
 
 		for(LectureBlockStatistics statistics:statisticsList) {
 			totalPersonalPlannedLectures += statistics.getTotalPersonalPlannedLectures();
 			totalAuthorizedAbsentLectures += statistics.getTotalAuthorizedAbsentLectures();
+			totalDispensedLectures += statistics.getTotalDispensationLectures();
 			totalAttendedLectures += statistics.getTotalAttendedLectures();
 			totalAbsentLectures += statistics.getTotalAbsentLectures();
 			
@@ -1241,8 +1260,13 @@ public class LectureBlockRollCallDAO {
 			absentForRate += statistics.getTotalAbsentLectures();
 			if(countAuthorizedAbsenceAsAttendant) {
 				attendedForRate += statistics.getTotalAuthorizedAbsentLectures();
+				attendedForRate += statistics.getTotalDispensationLectures();
+			} else if(countDispensationAsAttendant) {
+				absentForRate += statistics.getTotalAuthorizedAbsentLectures();
+				attendedForRate += statistics.getTotalDispensationLectures();
 			} else {
 				absentForRate += statistics.getTotalAuthorizedAbsentLectures();
+				absentForRate += statistics.getTotalDispensationLectures();
 			}
 		}
 		
@@ -1261,7 +1285,8 @@ public class LectureBlockRollCallDAO {
 			currentRate = attendedForRate / ((double)attendedForRate + (double)absentForRate);
 		}
 		
-		return new AggregatedLectureBlocksStatistics(totalPersonalPlannedLectures, totalAttendedLectures, totalAuthorizedAbsentLectures, totalAbsentLectures,
+		return new AggregatedLectureBlocksStatistics(totalPersonalPlannedLectures, totalAttendedLectures,
+				totalAuthorizedAbsentLectures, totalDispensedLectures, totalAbsentLectures,
 				rate, currentRate);
 	}
 	

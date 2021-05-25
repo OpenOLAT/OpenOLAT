@@ -36,6 +36,7 @@ import javax.persistence.TemporalType;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -43,6 +44,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
+import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -116,6 +118,8 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	private String attendeePassword;
 	@Column(name="b_moderator_pw", nullable=false, insertable=true, updatable=false)
 	private String moderatorPassword;
+	@Column(name="b_join_policy", nullable=false, insertable=true, updatable=true)
+	private String joinPolicy;
 	
 	@Column(name="b_main_presenter", nullable=true, insertable=true, updatable=true)
 	private String mainPresenter;
@@ -399,6 +403,31 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	@Override
 	public void setRecord(Boolean record) {
 		this.record = record;
+	}
+	
+	public String getJoinPolicy() {
+		return joinPolicy;
+	}
+
+	public void setJoinPolicy(String joinPolicy) {
+		this.joinPolicy = joinPolicy;
+	}
+
+	@Override
+	public JoinPolicyEnum getJoinPolicyEnum() {
+		if(StringHelper.containsNonWhitespace(joinPolicy)) {
+			return JoinPolicyEnum.valueOf(joinPolicy);
+		}
+		return null;
+	}
+
+	@Override
+	public void setJoinPolicyEnum(JoinPolicyEnum policy) {
+		if(policy == null) {
+			setJoinPolicy(null);
+		} else {
+			setJoinPolicy(policy.name());
+		}
 	}
 
 	@Override

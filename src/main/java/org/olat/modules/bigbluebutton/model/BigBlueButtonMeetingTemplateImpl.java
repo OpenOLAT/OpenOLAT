@@ -37,6 +37,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.GuestPolicyEnum;
+import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 
 /**
  * 
@@ -119,6 +120,9 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	private Boolean lockSettingsLockOnJoin;
 	@Column(name="b_lock_set_lock_on_join_conf", nullable=true, insertable=true, updatable=true)
 	private Boolean lockSettingsLockOnJoinConfigurable;
+	
+	@Column(name="b_join_policy", nullable=false, insertable=true, updatable=true)
+	private String joinPolicy;
 	
 	@Column(name="b_permitted_roles", nullable=true, insertable=true, updatable=true)
 	private String permittedRoles;
@@ -401,6 +405,31 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	@Override
 	public void setLockSettingsLockOnJoinConfigurable(Boolean lockSettingsLockOnJoinConfigurable) {
 		this.lockSettingsLockOnJoinConfigurable = lockSettingsLockOnJoinConfigurable;
+	}
+
+	public String getJoinPolicy() {
+		return joinPolicy;
+	}
+
+	public void setJoinPolicy(String joinPolicy) {
+		this.joinPolicy = joinPolicy;
+	}
+
+	@Override
+	public JoinPolicyEnum getJoinPolicyEnum() {
+		if(StringHelper.containsNonWhitespace(joinPolicy)) {
+			return JoinPolicyEnum.valueOf(joinPolicy);
+		}
+		return null;
+	}
+
+	@Override
+	public void setJoinPolicyEnum(JoinPolicyEnum policy) {
+		if(policy == null) {
+			setJoinPolicy(null);
+		} else {
+			setJoinPolicy(policy.name());
+		}
 	}
 
 	public String getPermittedRoles() {

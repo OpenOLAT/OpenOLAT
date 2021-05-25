@@ -31,11 +31,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
-import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.ui.ProgressValue;
 import org.olat.modules.curriculum.CurriculumElementStatus;
-import org.olat.modules.lecture.model.LectureBlockStatistics;
 
 /**
  * 
@@ -48,7 +46,6 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 	private static final ElementViewCols[] COLS = ElementViewCols.values();
 	
 	private ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap;
-	private ConcurrentMap<IdentityRepositoryEntryKey, LectureBlockStatistics> lecturesStatisticsMap;
 
 	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
@@ -165,23 +162,6 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 			case lastModification: return curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getLastModified() : null;
 			case lastUserModified: return curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getLastUserModified() : null;
 			case lastCoachModified: return curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getLastCoachModified() : null;
-			case plannedLectures: {
-				LectureBlockStatistics statistics = getLectureBlockStatistics(curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry() : null);
-				return statistics == null ? null : statistics.getTotalPersonalPlannedLectures();
-			}
-			case attendedLectures: {
-				LectureBlockStatistics statistics = getLectureBlockStatistics(curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry() : null);
-				return statistics == null ? null : statistics.getTotalAttendedLectures();
-			}
-			case unauthorizedAbsenceLectures:
-			case absentLectures: {
-				LectureBlockStatistics statistics = getLectureBlockStatistics(curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry() : null);
-				return statistics == null ? null : statistics.getTotalAbsentLectures();
-			}
-			case authorizedAbsenceLectures: {
-				LectureBlockStatistics statistics = getLectureBlockStatistics(curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry() : null);
-				return statistics == null ? null : statistics.getTotalAuthorizedAbsentLectures();
-			}
 			case efficiencyStatement:
 				return curriculum.getEfficiencyStatementEntry() != null;
 			default: return "ERROR";
@@ -196,24 +176,9 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		return null;
 	}
 
-	private LectureBlockStatistics getLectureBlockStatistics(EfficiencyStatementEntry entry) {
-		if(lecturesStatisticsMap != null) {
-			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(entry);
-			return lecturesStatisticsMap.get(key);
-		}
-		return null;
-	}
-
 	public void setObjects(List<CurriculumTreeWithViewsRow> objects, ConcurrentMap<IdentityResourceKey, CertificateLight> certificates) {
-		setObjects(objects, certificates, null);
-	}
-
-	public void setObjects(List<CurriculumTreeWithViewsRow> objects,
-						   ConcurrentMap<IdentityResourceKey, CertificateLight> certificates,
-						   ConcurrentMap<IdentityRepositoryEntryKey, LectureBlockStatistics> lecturesStatisticsMap) {
 		setObjects(objects);
 		this.certificateMap = certificates;
-		this.lecturesStatisticsMap = lecturesStatisticsMap;
 	}
 
 	@Override
@@ -241,11 +206,6 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		lastModification("table.header.lastScoreDate"),
 		lastUserModified("table.header.lastUserModificationDate"),
 		lastCoachModified("table.header.lastCoachModificationDate"),
-		plannedLectures("table.header.planned.lectures"),
-		attendedLectures("table.header.attended.lectures"),
-		absentLectures("table.header.absent.lectures"),
-		unauthorizedAbsenceLectures("table.header.unauthorized.absence"),
-		authorizedAbsenceLectures("table.header.authorized.absence"),
 		efficiencyStatement("table.header.show"),
 		deleteEfficiencyStatement("table.action.delete"),
 		artefact("table.header.artefact");

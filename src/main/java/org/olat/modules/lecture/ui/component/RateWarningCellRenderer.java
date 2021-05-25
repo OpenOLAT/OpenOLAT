@@ -47,8 +47,9 @@ public class RateWarningCellRenderer implements FlexiCellRenderer {
 		
 		if(cellValue instanceof LectureBlockStatistics) {
 			LectureBlockStatistics stats = (LectureBlockStatistics)cellValue;
-			if(stats.isCalculateRate() && stats.getTotalPersonalPlannedLectures() > 0 &&
-					(stats.getTotalAbsentLectures() > 0 || stats.getTotalAttendedLectures() > 0 || stats.getTotalAuthorizedAbsentLectures() > 0)) {
+			if(stats.isCalculateRate() && stats.getTotalPersonalPlannedLectures() > 0l &&
+					(stats.getTotalAbsentLectures() > 0l || stats.getTotalAttendedLectures() > 0l
+							|| stats.getTotalAuthorizedAbsentLectures() > 0l || stats.getTotalDispensationLectures() > 0l)) {
 				double attendanceRate = stats.getAttendanceRate();
 				double requiredRate = stats.getRequiredRate();
 				

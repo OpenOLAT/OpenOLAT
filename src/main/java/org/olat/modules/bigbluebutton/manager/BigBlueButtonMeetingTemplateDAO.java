@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingTemplateImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,7 @@ public class BigBlueButtonMeetingTemplateDAO {
 		template.setSystem(system);
 		template.setEnabled(true);
 		template.setExternalId(externalId);
+		template.setJoinPolicyEnum(JoinPolicyEnum.disabled);
 		dbInstance.getCurrentEntityManager().persist(template);
 		return template;
 	}

@@ -46,6 +46,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDataModel<EfficiencyStatementEntry> implements SortableFlexiTableDataModel<EfficiencyStatementEntry> {
 	
+	private static final Columns[] COLS = Columns.values();
 	private ConcurrentMap<IdentityRepositoryEntryKey, Double> completionsMap;
 	private ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap;
 	private ConcurrentMap<IdentityRepositoryEntryKey, LectureBlockStatistics> lecturesStatisticsMap;
@@ -78,8 +79,8 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 	@Override
 	public Object getValueAt(EfficiencyStatementEntry entry, int col) {
 
-		if(col >= 0 && col < Columns.values().length) {
-			switch(Columns.getValueAt(col)) {
+		if(col >= 0 && col < COLS.length) {
+			switch(COLS[col]) {
 				case repoName: {
 					RepositoryEntry re = entry.getCourse();
 					return re.getDisplayname();
@@ -134,15 +135,23 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 					LectureBlockStatistics statistics = getLectureBlockStatistics(entry);
 					return statistics == null ? null : statistics.getTotalAbsentLectures();
 				}
-				case authorizedAbsenceLectures: {
-					LectureBlockStatistics statistics = getLectureBlockStatistics(entry);
-					return statistics == null ? null : statistics.getTotalAuthorizedAbsentLectures();
-				}
+				case authorizedAbsenceLectures: return getAuthorizedAbsenceLectures(entry);
+				case dispensedLectures: return getTotalDispensationLectures(entry);
 			}
 		}
 		
 		int propPos = col - UserListController.USER_PROPS_OFFSET;
 		return entry.getIdentityProp(propPos);
+	}
+	
+	private Long getAuthorizedAbsenceLectures(EfficiencyStatementEntry entry) {
+		LectureBlockStatistics statistics = getLectureBlockStatistics(entry);
+		return statistics == null ? null : statistics.getTotalAuthorizedAbsentLectures();
+	}
+	
+	private Long getTotalDispensationLectures(EfficiencyStatementEntry entry) {
+		LectureBlockStatistics statistics = getLectureBlockStatistics(entry);
+		return statistics == null ? null : statistics.getTotalDispensationLectures();
 	}
 	
 	private CertificateLight getCertificate(EfficiencyStatementEntry entry) {
@@ -204,7 +213,8 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		attendedLectures("table.header.attended.lectures"),
 		absentLectures("table.header.absent.lectures"),
 		unauthorizedAbsenceLectures("table.header.unauthorized.absence"),
-		authorizedAbsenceLectures("table.header.authorized.absence");
+		authorizedAbsenceLectures("table.header.authorized.absence"),
+		dispensedLectures("table.header.dispensation");
 		
 		private final String i18nKey;
 		

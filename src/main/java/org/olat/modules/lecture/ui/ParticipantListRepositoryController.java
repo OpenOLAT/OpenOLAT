@@ -91,6 +91,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	private final double defaultRate;
 	private final boolean rateEnabled;
 	private final boolean rollCallEnabled;
+	private final boolean absenceNoticeEnabled;
 	private final boolean authorizedAbsenceEnabled;
 	
 	private final boolean printView;
@@ -133,6 +134,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			defaultRate = lectureModule.getRequiredAttendanceRateDefault();
 			rollCallEnabled = lectureModule.isRollCallDefaultEnabled();
 		}
+		absenceNoticeEnabled = lectureModule.isAbsenceNoticeEnabled();
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 
 		initForm(ureq);
@@ -179,6 +181,9 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			if(authorizedAbsenceEnabled) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.unauthorizedAbsenceLectures));
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.authorizedAbsenceLectures));
+				if(absenceNoticeEnabled) {
+					columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.dispensedLectures));
+				}
 			} else {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.absentLectures,
 						new LongCellRenderer("o_sel_absences")));
@@ -212,7 +217,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		tableEl.setExportEnabled(!printView);
 		tableEl.setEmptyTableMessageKey("empty.table.participant.list");
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry-v2");
+		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry-v3");
 	}
 	
 	private void loadModel() {

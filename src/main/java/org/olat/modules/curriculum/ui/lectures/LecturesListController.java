@@ -75,6 +75,7 @@ public class LecturesListController extends FormBasicController implements Expor
 	private TooledStackedPanel toolbarPanel;
 	
 	private final String propsIdentifier;
+	private final boolean absenceNoticeEnabled;
 	private final boolean authorizedAbsenceEnabled;
 	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
@@ -107,6 +108,8 @@ public class LecturesListController extends FormBasicController implements Expor
 		this.curriculumElement = curriculumElement;
 		this.userPropertyHandlers = userPropertyHandlers;
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		absenceNoticeEnabled = lectureModule.isAbsenceNoticeEnabled();
+		lectureModule.isAbsenceNoticeEnabled();
 		initForm(ureq);
 	}
 
@@ -128,6 +131,9 @@ public class LecturesListController extends FormBasicController implements Expor
 		if(authorizedAbsenceEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.unauthorizedAbsenceLectures));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.authorizedAbsenceLectures));
+			if(absenceNoticeEnabled) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.dispensedLectures));
+			}
 		} else {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.absentLectures));
 		}

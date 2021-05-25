@@ -78,6 +78,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 	private SingleSelection layoutEl;
 	private SingleSelection recordEl;
 	private SingleSelection publishingEl;
+	private SingleSelection joinPolicyEl;
 
 	private RecurringMeetingsContext meetingsContext;
 	private List<BigBlueButtonMeetingTemplate> templates;
@@ -290,12 +291,9 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		
 		allOk &= validateTime(leadTimeEl, 15l);
 		allOk &= validateTime(followupTimeEl, 15l);
-		
-		templateEl.clearError();
-		if(!templateEl.isOneSelected()) {
-			endTimeEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
+
+		allOk &= validateSingleSelection(templateEl);
+		allOk &= validateSingleSelection(joinPolicyEl);
 		
 		// dates ok
 		if(allOk) {
@@ -310,6 +308,18 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 			nameEl.setErrorKey("form.invalidchar.noamp", null);
 			allOk &= false;
 		}
+		return allOk;
+	}
+	
+	private boolean validateSingleSelection(SingleSelection el) {
+		boolean allOk = true;
+		
+		el.clearError();
+		if(!el.isOneSelected()) {
+			el.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 	
@@ -387,6 +397,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 					templates, false);
 			boolean webcamAvailable = isWebcamLayoutAvailable(BigBlueButtonUIHelper.getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
+			BigBlueButtonUIHelper.updateJoinPolicy(templateEl, joinPolicyEl, templates, false);
 		} else if(recordEl == source || passwordEnableEl == source) {
 			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
 					templates, false);

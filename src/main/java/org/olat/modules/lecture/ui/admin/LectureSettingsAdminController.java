@@ -75,6 +75,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private MultipleSelectionElement partiallyDoneEnabledEl;
 	private MultipleSelectionElement authorizedAbsenceEnableEl;
 	private MultipleSelectionElement absenceDefaultAuthorizedEl;
+	private MultipleSelectionElement countDispensationAsAttendantEl;
 	private MultipleSelectionElement countAuthorizedAbsenceAsAttendantEl;
 	private MultipleSelectionElement syncTeachersCalendarEnableEl;
 	private MultipleSelectionElement syncCourseCalendarEnableEl;
@@ -171,9 +172,12 @@ public class LectureSettingsAdminController extends FormBasicController {
 		authorizedAbsenceEnableEl.setElementCssClass("o_sel_lecture_autorized_absence");
 		authorizedAbsenceEnableEl.addActionListener(FormEvent.ONCHANGE);
 		countAuthorizedAbsenceAsAttendantEl = uifactory.addCheckboxesHorizontal("lecture.count.authorized.absence.attendant", globalCont, onKeys, onValues);
+		countAuthorizedAbsenceAsAttendantEl.addActionListener(FormEvent.ONCHANGE);
+		countDispensationAsAttendantEl = uifactory.addCheckboxesHorizontal("lecture.count.dispensation.attendant", globalCont, onKeys, onValues);
+
 		absenceDefaultAuthorizedEl = uifactory.addCheckboxesHorizontal("lecture.absence.default.authorized", globalCont, onKeys, onValues);
 		courseOwnersCanViewAllCoursesInCurriculumEl = uifactory.addCheckboxesHorizontal("lecture.owner.can.view.all.curriculum.elements", globalCont, onKeys, onValues);
-
+		
 		// appeal enabled
 		appealAbsenceEnableEl = uifactory.addCheckboxesHorizontal("lecture.appeal.absence.enabled", globalCont, onKeys, onValues);
 		appealAbsenceEnableEl.addActionListener(FormEvent.ONCHANGE);
@@ -276,6 +280,12 @@ public class LectureSettingsAdminController extends FormBasicController {
 		} else {
 			countAuthorizedAbsenceAsAttendantEl.uncheckAll();
 		}
+		if(lectureModule.isCountDispensationAsAttendant()) {
+			countDispensationAsAttendantEl.select(onKeys[0], true);
+		} else {
+			countDispensationAsAttendantEl.uncheckAll();
+		}
+		
 		if(lectureModule.isAbsenceDefaultAuthorized()) {
 			absenceDefaultAuthorizedEl.select(onKeys[0], true);
 		} else {
@@ -358,6 +368,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		reminderPeriodEl.setVisible(reminderEnableEl.isVisible() && reminderEnableEl.isAtLeastSelected(1));
 		
 		countAuthorizedAbsenceAsAttendantEl.setVisible(authorizedAbsenceEnableEl.isVisible() && authorizedAbsenceEnableEl.isAtLeastSelected(1));
+		countDispensationAsAttendantEl.setVisible(countAuthorizedAbsenceAsAttendantEl.isVisible() && !countAuthorizedAbsenceAsAttendantEl.isAtLeastSelected(1));
 	}
 	
 	@Override
@@ -436,7 +447,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 			}
 			updateUI();
 		} else if(appealAbsenceEnableEl == source || reminderEnableEl == source
-				|| authorizedAbsenceEnableEl == source || enableAssessmentModeEl == source) {
+				|| authorizedAbsenceEnableEl == source || enableAssessmentModeEl == source
+				|| countAuthorizedAbsenceAsAttendantEl == source) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -476,11 +488,12 @@ public class LectureSettingsAdminController extends FormBasicController {
 			lectureModule.setStatusPartiallyDoneEnabled(partiallyDoneEnabledEl.isAtLeastSelected(1));
 			lectureModule.setStatusCancelledEnabled(statusEnabledEl.isAtLeastSelected(1));
 			
-			boolean authorizedAbsenceenabled = authorizedAbsenceEnableEl.isAtLeastSelected(1);
-			lectureModule.setAuthorizedAbsenceEnabled(authorizedAbsenceEnableEl.isAtLeastSelected(1));
-			lectureModule.setCountAuthorizedAbsenceAsAttendant(authorizedAbsenceenabled && countAuthorizedAbsenceAsAttendantEl.isAtLeastSelected(1));
-			
-			
+			boolean authorizedAbsenceEnabled = authorizedAbsenceEnableEl.isAtLeastSelected(1);
+			lectureModule.setAuthorizedAbsenceEnabled(authorizedAbsenceEnabled);
+			boolean countAuthorizedAbsenceAsAttendant = authorizedAbsenceEnabled && countAuthorizedAbsenceAsAttendantEl.isAtLeastSelected(1);
+			lectureModule.setCountAuthorizedAbsenceAsAttendant(countAuthorizedAbsenceAsAttendant);
+			lectureModule.setCountDispensationAsAttendant(!countAuthorizedAbsenceAsAttendant && countDispensationAsAttendantEl.isAtLeastSelected(1));
+		
 			lectureModule.setOwnerCanViewAllCoursesInCurriculum(courseOwnersCanViewAllCoursesInCurriculumEl.isAtLeastSelected(1));
 			
 			lectureModule.setAbsenceAppealEnabled(appealAbsenceEnableEl.isAtLeastSelected(1));

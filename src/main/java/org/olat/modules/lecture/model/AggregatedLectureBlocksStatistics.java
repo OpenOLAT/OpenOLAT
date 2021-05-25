@@ -30,15 +30,17 @@ public class AggregatedLectureBlocksStatistics {
 	private final long personalPlannedLectures;
 	private final long attendedLectures;
 	private final long authorizedAbsentLectures;
+	private final long dispensedLectures;
 	private final long absentLectures;
 	private final double rate;
 	private final double currentRate;
 	
 	public AggregatedLectureBlocksStatistics(long personalPlannedLectures, long attendedLectures,
-			long authorizedAbsentLectures, long absentLectures, double rate, double currentRate) {
+			long authorizedAbsentLectures, long dispensedLectures, long absentLectures, double rate, double currentRate) {
 		this.personalPlannedLectures = personalPlannedLectures;
 		this.attendedLectures = attendedLectures;
 		this.authorizedAbsentLectures = authorizedAbsentLectures;
+		this.dispensedLectures = dispensedLectures;
 		this.absentLectures = absentLectures;
 		this.rate = rate;
 		this.currentRate = currentRate;
@@ -48,13 +50,16 @@ public class AggregatedLectureBlocksStatistics {
 		return personalPlannedLectures;
 	}
 	
-	
 	public long getAttendedLectures() {
 		return attendedLectures;
 	}
 	
 	public long getAuthorizedAbsentLectures() {
 		return authorizedAbsentLectures;
+	}
+	
+	public long getDispensedLectures() {
+		return dispensedLectures;
 	}
 	
 	public long getAbsentLectures() {

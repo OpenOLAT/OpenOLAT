@@ -94,6 +94,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.GuestPolicyEnum;
+import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
@@ -184,7 +185,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 				Boolean.FALSE, Boolean.FALSE, 	// notes, layout
 				Boolean.TRUE, 					// breakout
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // user list, join-lock, lock configurable
-				GuestPolicyEnum.ALWAYS_ACCEPT, true, templates);
+				JoinPolicyEnum.disabled, true, templates);
 		
 		// Traditional classroom setting with many participants. Only presenter has video
 		defaultTemplate("sys-classes", "Classroom", 10, 30, 240,
@@ -195,7 +196,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 				Boolean.FALSE, Boolean.FALSE, 	// notes, layout
 				Boolean.TRUE, 					// breakout
 				Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, // user list, join-lock, lock configurable
-				GuestPolicyEnum.ALWAYS_ACCEPT, true, templates);
+				JoinPolicyEnum.disabled, true, templates);
 		
 		// Mixed setup, some with webcams, some without. 
 		defaultTemplate("sys-cafe", "Cafe", 5, 15, 240,
@@ -206,7 +207,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 				Boolean.FALSE, Boolean.FALSE, 	// notes, layout
 				Boolean.TRUE, 					// breakout
 				Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, // user list, join-lock, lock configurable 
-				GuestPolicyEnum.ALWAYS_ACCEPT, false, templates);
+				JoinPolicyEnum.disabled, false, templates);
 		
 		// Interview situation, face-to-face meeting
 		defaultTemplate("sys-interview", "Interview", 5, 2, 240,
@@ -217,7 +218,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 				Boolean.FALSE, Boolean.FALSE, 	// notes, layout
 				Boolean.FALSE, 					// breakout
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // user list, join-lock, lock configurable
-				GuestPolicyEnum.ALWAYS_ACCEPT, false, templates);
+				JoinPolicyEnum.disabled, false, templates);
 		
 		// Exam monitoring. Participants have video but only presenter can see the video
 		defaultTemplate("sys-assessment", "Assessment", 1, 30, 240,
@@ -228,7 +229,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 				Boolean.TRUE,  Boolean.TRUE, 	// notes, layout
 				Boolean.FALSE, 					// breakout
 				Boolean.TRUE,  Boolean.TRUE, Boolean.FALSE, // user list, join-lock, lock configurable
-				GuestPolicyEnum.ALWAYS_ACCEPT, false, templates);
+				JoinPolicyEnum.disabled, false, templates);
 
 	}
 	
@@ -241,7 +242,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			Boolean lockSettingsDisableNote, Boolean lockSettingsLockedLayout,
 			Boolean breakoutRoomsEnabled,
 			Boolean lockSettingsHideUserList, Boolean lockSettingsLockOnJoin, Boolean lockSettingsLockOnJoinConfigurable,
-			GuestPolicyEnum guestPolicy, boolean enabled, List<BigBlueButtonMeetingTemplate> templates) {
+			JoinPolicyEnum joinPolicy, boolean enabled, List<BigBlueButtonMeetingTemplate> templates) {
 		
 		BigBlueButtonMeetingTemplate template = templates.stream()
 				.filter(tpl -> externalId.equals(tpl.getExternalId()))
@@ -275,7 +276,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		template.setLockSettingsLockOnJoin(lockSettingsLockOnJoin);
 		template.setLockSettingsLockOnJoinConfigurable(lockSettingsLockOnJoinConfigurable);
 
-		template.setGuestPolicyEnum(guestPolicy);
+		template.setJoinPolicyEnum(joinPolicy);
+		template.setGuestPolicyEnum(GuestPolicyEnum.ALWAYS_ACCEPT);
 		template.setEnabled(enabled);
 		bigBlueButtonMeetingTemplateDao.updateTemplate(template);
 	}
@@ -956,6 +958,18 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			.optionalParameter("userID", userId)
 			.optionalParameter("avatarURL", avatarUrl);
 		
+		boolean guestFlag;
+		if(moderator) {
+			guestFlag = false;
+		} else if(JoinPolicyEnum.guestsApproval.equals(meeting.getJoinPolicyEnum()) && guest) {
+			guestFlag = true;
+		} else if(JoinPolicyEnum.allUsersApproval.equals(meeting.getJoinPolicyEnum())) {
+			guestFlag = true;
+		} else {
+			guestFlag = false;
+		}
+		uriBuilder.parameter("guest", Boolean.toString(guestFlag));
+		
 		if(BigBlueButtonMeetingLayoutEnum.webcam.equals(meeting.getMeetingLayout())) {
 			uriBuilder
 				.optionalParameter("userdata-bbb_auto_swap_layout", "true")
@@ -1046,6 +1060,18 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			long duration = 1 + (Math.abs(end - start) / (60l * 1000l));// + 1 to compensate rounding error
 			uriBuilder.optionalParameter("duration", Long.toString(duration));
 		}
+		
+		GuestPolicyEnum guestPolicy;
+		if(JoinPolicyEnum.disabled.equals(meeting.getJoinPolicyEnum())) {
+			guestPolicy = GuestPolicyEnum.ALWAYS_ACCEPT;
+		} else if(JoinPolicyEnum.guestsApproval.equals(meeting.getJoinPolicyEnum())	
+				|| JoinPolicyEnum.allUsersApproval.equals(meeting.getJoinPolicyEnum())) {
+			guestPolicy = GuestPolicyEnum.ASK_MODERATOR;
+		} else {
+			guestPolicy = GuestPolicyEnum.ALWAYS_ACCEPT;
+		}
+		uriBuilder
+			.optionalParameter("guestPolicy", guestPolicy.name());
 
 		if(template != null) {
 			boolean record = template.getRecord() != null && template.getRecord().booleanValue();
@@ -1073,9 +1099,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 				// lock settings undocumented
 				.optionalParameter("lockSettingsHideUserList", template.getLockSettingsHideUserList())
 				.optionalParameter("lockSettingsLockOnJoin", template.getLockSettingsLockOnJoin())
-				.optionalParameter("lockSettingsLockOnJoinConfigurable", template.getLockSettingsLockOnJoinConfigurable())
-				// guest policy
-				.optionalParameter("guestPolicy", GuestPolicyEnum.ALWAYS_ACCEPT.name());
+				.optionalParameter("lockSettingsLockOnJoinConfigurable", template.getLockSettingsLockOnJoinConfigurable());
 		}
 		
 		// metadata

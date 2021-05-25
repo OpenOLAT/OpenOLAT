@@ -38,9 +38,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.modules.coach.RoleSecurityCallback;
-import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.curriculum.CurriculumModule;
-import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,11 +63,10 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
     private VelocityContainer content;
 
     @Autowired
-    CurriculumModule curriculumModule;
+    private CurriculumModule curriculumModule;
 
     public CertificateAndEfficiencyStatementWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity mentee,
-    		CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback,
-    		List<CurriculumRef> curriculumRefs, StudentStatEntry statEntry) {
+    		CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback) {
         super(ureq, wControl);
 
         this.stackPanel = stackPanel;
