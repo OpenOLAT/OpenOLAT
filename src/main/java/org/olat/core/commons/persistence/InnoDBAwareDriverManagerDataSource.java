@@ -80,6 +80,7 @@ public class InnoDBAwareDriverManagerDataSource extends DriverManagerDataSource 
 			}
 			result.close();
 		} catch (SQLException e) {
+			log.error("", e);
 			if (e.getMessage().contains("doesn't exist")) {
 				log.info(Tracing.M_AUDIT, "o_plock table does not yet exist, will check transaction support on next startup");
 			} else {
