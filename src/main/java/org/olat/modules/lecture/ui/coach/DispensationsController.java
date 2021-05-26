@@ -196,7 +196,7 @@ public class DispensationsController extends BasicController {
 		
 		String title = translate("add.dispensation.title");
 		if(type == AbsenceNoticeType.absence) {
-			title = translate("add.absence.title");//TODO absences
+			title = translate("add.absence.title");
 		} else if(type == AbsenceNoticeType.notified) {
 			title = translate("add.notice.absence.title");
 		}

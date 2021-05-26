@@ -120,6 +120,8 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 */
 	public void setVisible(Set<String> keys, boolean isEnabled);
 	
+	public void setCssClass(String key, String cssClass);
+	
 	/**
 	 * Enable / disable the escaping of the content. Use with cautious as disabling escaping
 	 * disable a protection against XSS attack.
