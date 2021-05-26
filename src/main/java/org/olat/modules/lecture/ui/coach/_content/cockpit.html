@@ -28,13 +28,6 @@
 			$r.render("lectureBlocks")
 		#end
 	</div>
-	#else
-		<div class="o_empty_state">
-			<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_icon_calendar"></i></div>
-			<h3 class="o_empty_msg">
-				$r.translate("cockpit.lectures.day.list")
-			</h3>
-		</div>	
 	#end
 	#if($r.visible("absenceRollCalls"))
 	<div class="clearfix">

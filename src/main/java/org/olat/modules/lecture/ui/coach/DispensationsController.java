@@ -99,7 +99,7 @@ public class DispensationsController extends BasicController {
 		this.secCallback = secCallback;
 		this.withAddAbsence = withAddAbsence;
 		
-		searchParams.addTypes(AbsenceNoticeType.absence, AbsenceNoticeType.notified, AbsenceNoticeType.dispensation);//TODO absences
+		searchParams.addTypes(AbsenceNoticeType.absence, AbsenceNoticeType.notified, AbsenceNoticeType.dispensation);
 		searchParams.setViewAs(getIdentity(), ureq.getUserSession().getRoles(), secCallback.viewAs());
 		searchParams.setLinkedToRollCall(false);
 		searchParams.setStartDate(CalendarUtils.startOfDay(currentDate));
@@ -109,9 +109,8 @@ public class DispensationsController extends BasicController {
 		searchCtrl = new AbsenceNoticeSearchController(ureq, getWindowControl(), currentDate);
 		listenTo(searchCtrl);
 		boolean showUserProperties = profiledIdentity == null;
-		boolean authorizedEnabled = true;//TODO absences (imported from AbsencesController)
 		noticesListCtlr = new AbsenceNoticesListController(ureq, getWindowControl(),
-				null, authorizedEnabled, secCallback, showUserProperties, "notices");
+				null, true, secCallback, showUserProperties, "notices");
 		listenTo(noticesListCtlr);
 		
 		mainVC = createVelocityContainer("dispensations");

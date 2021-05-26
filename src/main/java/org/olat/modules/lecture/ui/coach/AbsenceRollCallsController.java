@@ -70,6 +70,7 @@ public class AbsenceRollCallsController extends BasicController {
 		mainVC.put("noticesList", rollCallsCtlr.getInitialComponent());
 		
 		putInitialPanel(mainVC);
+		reloadModels();
 	}
 	
 	@Override
