@@ -189,20 +189,9 @@ public class FullCalendarMapper implements Mapper {
 		return jsonEvent;
 	}
 	
-	private String getColor(String cssClass) {
-		if(StringHelper.containsNonWhitespace(cssClass) && cssClass.startsWith("o_cal_")) {
-			return cssClass.substring(6, cssClass.length());
-		}
-		return null;
-	}
-	
 	private void applyClassNames(JSONObject jsonEvent, KalendarRenderWrapper cal)
 	throws JSONException {
 		jsonEvent.put("className", cal.getCssClass());
-		String color = getColor(cal.getCssClass());
-		if(StringHelper.containsNonWhitespace(color)) {
-			jsonEvent.put("color", color);
-		}
 	}
 	
 	private void applyManagedClassNames(JSONObject jsonEvent, KalendarEvent event, KalendarRenderWrapper cal)
@@ -211,19 +200,8 @@ public class FullCalendarMapper implements Mapper {
 		if(StringHelper.containsNonWhitespace(cal.getCssClass())) {
 			if(cal.getKalendar().hasManagedEvents()) {
 				if(!event.isManaged()) {
+					// Overrides calendar color
 					jsonEvent.put("color", "steelblue");
-				} else {
-					classNames.append(cal.getCssClass());
-					String color = getColor(cal.getCssClass());
-					if(StringHelper.containsNonWhitespace(color)) {
-						jsonEvent.put("color", color);
-					}
-				}
-			} else {
-				classNames.append(cal.getCssClass());
-				String color = getColor(cal.getCssClass());
-				if(StringHelper.containsNonWhitespace(color)) {
-					jsonEvent.put("color", color);
 				}
 			}
 		} 
