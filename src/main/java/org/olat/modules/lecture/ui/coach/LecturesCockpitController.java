@@ -123,7 +123,9 @@ public class LecturesCockpitController extends BasicController implements Activa
 
 		putInitialPanel(mainVC);
 		updateCurrentDate();
-		loadPendingLectureBlocks();
+		if(viewAsTeacher) {
+			loadPendingLectureBlocks();//only viewed as teacher
+		}
 	}
 	
 	public Date getCurrentDate() {

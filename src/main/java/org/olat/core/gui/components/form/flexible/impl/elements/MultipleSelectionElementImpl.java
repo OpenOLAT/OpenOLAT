@@ -394,7 +394,17 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			setEnabled(key, isEnabled);
 		}
 	}
+
 	
+	@Override
+	public void setCssClass(String key, String cssClass) {
+		for(CheckboxElement check : component.getCheckComponents()) {
+			if(check.getKey().equals(key)) {
+				check.setCssClass(cssClass);
+			}
+		}
+	}
+
 	@Override
 	public Set<String> getKeys() {
 		return new HashSet<>(Arrays.asList(keys));

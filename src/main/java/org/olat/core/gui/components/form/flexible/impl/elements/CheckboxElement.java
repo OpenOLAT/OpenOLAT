@@ -37,7 +37,7 @@ class CheckboxElement {
 	private final MultipleSelectionElementImpl selectionWrapper;
 	private final int which;
 	private final String name;
-	private final String cssClass;
+	private String cssClass;
 	
 	private boolean enabled = true;
 	private boolean visible;
@@ -124,6 +124,10 @@ class CheckboxElement {
 	
 	public String getCssClass() {
 		return cssClass;
+	}
+	
+	public void setCssClass(String cssClass) {
+		this.cssClass = cssClass;
 	}
 	
 	public String getIconLeftCSS() {

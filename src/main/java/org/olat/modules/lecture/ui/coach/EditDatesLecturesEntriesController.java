@@ -56,6 +56,7 @@ import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
+import org.olat.modules.lecture.model.LectureBlockWithNotice;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
@@ -426,6 +427,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		allOk &= validate(entriesEl);
 		
 		datesEl.clearError();
+		clearMarkColissions();
 		if(prolongateButton != null) {
 			prolongateButton.setVisible(false);
 		}
@@ -443,10 +445,56 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 					prolongateButton.setVisible(true);
 					prolongateButton.setUserObject(notices);
 				}
+				if(entriesEl.isVisible()) {
+					markEntriesCollisions(notices);
+				} else if(lectureBlocksEl.isVisible()) {
+					markLectureBlocksCollisions(notices);
+				}
 			}
 		}
 
 		return allOk;
+	}
+	
+	private void clearMarkColissions() {
+		Set<String> lectureBlocksKeys = lectureBlocksEl.getKeys();
+		for(String lectureBlocksKey:lectureBlocksKeys) {
+			lectureBlocksEl.setCssClass(lectureBlocksKey, null);
+		}
+		Set<String> entriesKeys = entriesEl.getKeys();
+		for(String entryKey:entriesKeys) {
+			entriesEl.setCssClass(entryKey, null);
+		}
+	}
+	
+	private void markEntriesCollisions(List<AbsenceNotice> notices) {
+		List<LectureBlockWithNotice> noticeToLectureBlocks = lectureService.getLectureBlocksWithAbsenceNotices(notices);
+		Set<String> collisionKeys = noticeToLectureBlocks.stream()
+				.filter(noticeToLectureBlock -> noticeToLectureBlock.getEntry() != null)
+				.map(noticeToLectureBlock -> noticeToLectureBlock.getEntry().getKey().toString())
+				.collect(Collectors.toSet());
+		
+		Set<String> entriesKeys = entriesEl.getKeys();
+		for(String entryKey:entriesKeys) {
+			String cssClass = collisionKeys.contains(entryKey) ? "o_checkbox_error" : null;
+			entriesEl.setCssClass(entryKey, cssClass);
+		}
+		entriesEl.getComponent().setDirty(true);
+	}
+	
+	private void markLectureBlocksCollisions(List<AbsenceNotice> notices) {
+		List<LectureBlockWithNotice> noticeToLectureBlocks = lectureService.getLectureBlocksWithAbsenceNotices(notices);
+		Set<String> collisionKeys = noticeToLectureBlocks.stream()
+				.filter(noticeToLectureBlock -> noticeToLectureBlock.getLectureBlock() != null)
+				.map(noticeToLectureBlock -> noticeToLectureBlock.getLectureBlock().getKey().toString())
+				.collect(Collectors.toSet());
+
+		Set<String> lectureBlocksKeys = lectureBlocksEl.getKeys();
+		for(String lectureBlocksKey:lectureBlocksKeys) {
+			String cssClass = collisionKeys.contains(lectureBlocksKey) ? "o_checkbox_error" : null;
+			lectureBlocksEl.setCssClass(lectureBlocksKey, cssClass);
+		}
+		lectureBlocksEl.getComponent().setDirty(true);
 	}
 	
 	private boolean validate(MultipleSelectionElement el) {

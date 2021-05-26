@@ -49,7 +49,7 @@ public class OLATUpgrade_15_5_1 extends OLATUpgrade {
 	private static final String ADD_MISSING_ENTRY_TECHNICAL_TYPE = "ADD MISSING ENTRY TECHNICAL TYPE";
 	private static final String COPY_PORTFOLIO_PAGE_EDITABLE_FLAG = "COPY PORTFOLIO PAGE EDITABLE FLAG";
 
-	private static final int BATCH_SIZE = 2;
+	private static final int BATCH_SIZE = 500;
 	
 	@Autowired
 	private DB dbInstance;

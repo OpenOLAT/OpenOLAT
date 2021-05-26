@@ -310,6 +310,10 @@
 	}
 }
 
+/* checkbox */
+.checkbox label.o_checkbox_error {
+	color: $state-danger-text;
+}
 
 /* choice element */
 .o_choice_checkrow,
