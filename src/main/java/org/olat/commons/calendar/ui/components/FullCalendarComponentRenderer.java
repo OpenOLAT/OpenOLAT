@@ -159,8 +159,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 				}
 				if(count++ != 0) sb.append(",");
 				sb.append("{\n")
-				  .append("   url:'").append(fcC.getMapperUrl()).append("/").append(calId).append(".json',\n")
-				  .append("   color:'").append(color).append("'\n")
+				  .append("   url:'").append(fcC.getMapperUrl()).append("/").append(calId).append(".json'")
 				  .append("}");
 			}
 		}
