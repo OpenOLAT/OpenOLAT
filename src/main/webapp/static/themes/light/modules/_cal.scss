@@ -3,63 +3,62 @@ $o-cal-color-width : 20px;
 
 /* calender colors for events: must be the last thing in the file !! */
 .o_cal_orange { background: #ffc266; border-color: #ff9900; color: #5D5D5D; }
-.o_cal_orange .o_cal_wv_event_header {background: #ff9900;}
+.o_cal_orange .fc-list-event-dot {border-color: #ffc266;}
 .o_cal_orange a { color: #5D5D5D ! important; } 
 .o_cal_class.o_cal_orange { border-left: $o-cal-color-width solid #ffc266;}
 
 .o_cal_green { background: #66c266; border-color: #009900; color: #FFF; }
-.o_cal_green .o_cal_wv_event_header {background: #009900;}
+.o_cal_green .fc-list-event-dot {border-color: #66c266;}
 .o_cal_green a { color: #FFF ! important; } 
 .o_cal_class.o_cal_green { border-left: $o-cal-color-width solid #66c266;}
 
 .o_cal_blue { background: #4d6e9f; border-color: #2e5894; color: #FFF;}
-.o_cal_blue .o_cal_wv_event_header {background: #2e5894;}
+.o_cal_blue .fc-list-event-dot {border-color: #4d6e9f;}
 .o_cal_blue a { color: #FFF ! important; } 
 .o_cal_class.o_cal_blue { border-left: $o-cal-color-width solid #4d6e9f;}
 
 .o_cal_yellow { background: #ffe066; border-color: #ffcc00; color: #5D5D5D; }
-.o_cal_yellow .o_cal_wv_event_header {background: #ffcc00;}
+.o_cal_yellow .fc-list-event-dot {border-color: #ffe066;}
 .o_cal_yellow a { color: #5D5D5D! important; }
 .o_cal_class.o_cal_yellow { border-left: $o-cal-color-width solid #ffe066;}
 
 .o_cal_red { background: #c26666; border-color: #990000; color: #FFF; }
-.o_cal_red .o_cal_wv_event_header {background: #990000;}
+.o_cal_red .fc-list-event-dot {border-color: #c26666;}
 .o_cal_red a { color: #FFF ! important; }
 .o_cal_class.o_cal_red { border-left: $o-cal-color-width solid #c26666;}
 
 .o_cal_rebeccapurple { background: #663399; border-color: #663399; color: #FFF; }
-.o_cal_rebeccapurple .o_cal_wv_event_header {background: #663399;}
+.o_cal_rebeccapurple .fc-list-event-dot {border-color: #663399;}
 .o_cal_rebeccapurple a { color: #FFF ! important; }
 .o_cal_class.o_cal_rebeccapurple { border-left: $o-cal-color-width solid #663399;}
 
-
 .o_cal_fuchsia { background: #FF00FF; border-color: #dd00dd; color: #FFF; }
-.o_cal_fuchsia .o_cal_wv_event_header {background: #FF00FF;}
+.o_cal_fuchsia .fc-list-event-dot {border-color: #FF00FF;}
 .o_cal_fuchsia a { color: #FFF ! important; } 
 .o_cal_class.o_cal_fuchsia { border-left: $o-cal-color-width solid #FF00FF;}
 
 .o_cal_olive { background: #808000; border-color: #636300; color: #FFF; }
-.o_cal_olive .o_cal_wv_event_header {background: #808000;}
+.o_cal_olive .fc-list-event-dot {border-color: #808000;}
 .o_cal_olive a { color: #FFF ! important; } 
 .o_cal_class.o_cal_olive { border-left: $o-cal-color-width solid #808000;}
 
 .o_cal_navy { background: #000080; border-color: #000057; color: #FFF; }
-.o_cal_navy .o_cal_wv_event_header {background: #000080;}
+.o_cal_navy .fc-list-event-dot {border-color: #000080;}
 .o_cal_navy a { color: #FFF ! important; } 
 .o_cal_class.o_cal_navy { border-left: $o-cal-color-width solid #000080;}
 
 .o_cal_maroon { background: #800000; border-color: #740000; color: #FFF; }
-.o_cal_maroon .o_cal_wv_event_header {background: #800000;}
+.o_cal_maroon .fc-list-event-dot {border-color: #800000;}
 .o_cal_maroon a { color: #FFF ! important; } 
 .o_cal_class.o_cal_maroon { border-left: $o-cal-color-width solid #800000;}
 
 .o_cal_lime { background: #00FF00; border-color: #00e200; color: #004d00; }
-.o_cal_lime .o_cal_wv_event_header {background: #00FF00;}
+.o_cal_lime .fc-list-event-dot {border-color: #00FF00;}
 .o_cal_lime a { color: #004d00 ! important; } 
 .o_cal_class.o_cal_lime { border-left: $o-cal-color-width solid #00FF00;}
 
 .o_cal_grey { background: #DDDAAA; border-color: #5D5D5D; color: #FFF; }
-.o_cal_grey .o_cal_wv_event_header {background: #5D5D5D;}
+.o_cal_grey .fc-list-event-dot {border-color: #DDDAAA;}
 .o_cal_grey a { color: #FFF ! important; }
 .o_cal_class.o_cal_grey { border-left: $o-cal-color-width solid #DDDAAA;}				
 
