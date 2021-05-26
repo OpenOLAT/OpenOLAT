@@ -284,15 +284,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 			/* Handle immediate end of test session */
 			testSessionController.setCurrentRequestTimestamp(ureq.getRequestTimestamp());
-	        if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
-	        		immediateEndTestSession(ureq);
-	        		mainVC = createVelocityContainer("end");
-	        } else {
-	        		mainVC = createVelocityContainer("run");
-	        		initQtiWorks(ureq);
-	        		if(!deliveryOptions.isShowTitles()) {
-	        			initNumbering();
-	        		}
+			if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
+	        	immediateEndTestSession(ureq);
+	        	mainVC = createVelocityContainer("end");
+			} else {
+	        	mainVC = createVelocityContainer("run");
+	        	initQtiWorks(ureq);
+	        	if(!deliveryOptions.isShowTitles()) {
+	        		initNumbering();
+	        	}
 	        }
 	        
 	        OLATResourceable sessionOres = OresHelper
@@ -1703,6 +1703,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	                CandidateTestEventType.EXIT_DUE_TIME_LIMIT, testSessionState, notificationRecorder);
 	        candidateAuditLogger.logCandidateEvent(candidateTestEvent);
 	        this.lastEvent = candidateTestEvent;
+
+	        getWindowControl().setInfo(translate("timelimit.finish.title"), translate("timelimit.finish.text"));
         }
         
         doExitTest(ureq);

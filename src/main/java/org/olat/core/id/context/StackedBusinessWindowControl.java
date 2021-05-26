@@ -120,6 +120,11 @@ public class StackedBusinessWindowControl implements WindowControl {
 	}
 
 	@Override
+	public void setInfo(String title, String text) {
+		origWControl.setInfo(title, text);
+	}
+
+	@Override
 	public void setWarning(String string) {
 		origWControl.setWarning(string);
 	}

@@ -83,7 +83,12 @@ public class ErrorWindowControl implements WindowControl {
 	public void setInfo(String string) {
 		this.info = string;
 	}
-	
+
+	@Override
+	public void setInfo(String title, String text) {
+		this.info = text;
+	}
+
 	public String getError() {
 		return error;
 	}

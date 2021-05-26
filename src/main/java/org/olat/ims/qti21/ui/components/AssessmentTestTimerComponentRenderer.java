@@ -48,20 +48,16 @@ public class AssessmentTestTimerComponentRenderer extends DefaultComponentRender
 			AssessmentObjectFormItem qtiRun = atf.getQtiRun();
 			Form form = atf.getRootForm();
 
-			sb.append("<div id='o_c").append(cmp.getDispatchID()).append("'><div id='o_qti_assessment_test_timer' class='clearfix'><i class='o_icon o_icon_timelimit'> </i> ");
-			String[] attrs = new String[] {
-					"<span class='o_qti_timer'></span>",			// 0 The count down place holder
-					"<span class='o_qti_timer_duration'></span>",	// 1 Test time limit
-					qtiWorksStatus.getAssessmentTestEndTime()		// 2 End time formatted hh:mm
-				};
-			sb.append(translator.translate("timelimit.running", attrs))
+			sb.append("<div id='o_c").append(cmp.getDispatchID()).append("'><div id='o_qti_assessment_test_timer' class='clearfix o_hours'><i class='o_icon o_icon_timelimit'> </i> ")
+			  .append("<strong><span class='o_qti_timer_hour'></span> <span class='o_qti_timer_label_hour'>").append(translator.translate("timelimit.short.hour")).append("</span>")
+			  .append(" <span class='o_qti_timer_minute'></span> <span class='o_qti_timer_label_minute'>").append(translator.translate("timelimit.short.minute")).append("</span>")
+			  .append(" <span class='o_qti_timer_second'></span> <span class='o_qti_timer_label_second'>").append(translator.translate("timelimit.short.second")).append("</span>")
+			  .append("</strong> \u007C ")
+			  .append(translator.translate("timelimit.ending.at", new String[] { qtiWorksStatus.getAssessmentTestEndTime() }))
 			  .append("<span class='o_qti_times_up' style='display:none;'>").append(translator.translate("timelimit.finished")).append("</span>")
-			  .append("<span class='o_qti_times_message o_10_minutes' style='display:none;'><i class='o_icon o_icon_timelimit_start'> </i> ").append(translator.translate("timelimit.10.minutes")).append("</span>")
-			  .append("<span class='o_qti_times_message o_5_minutes' style='display:none;'><i class='o_icon o_icon_timelimit_half'> </i> ").append(translator.translate("timelimit.5.minutes")).append("</span>")
-			  .append("<span class='o_qti_times_message o_panic' style='display:none;'><i class='o_icon o_icon_timelimit_end'> </i> ").append(translator.translate("timelimit.1.minute")).append("</span>")
+			  .append("<span class='o_qti_times_message o_5_minutes' style='display:none;'><i class='o_icon o_icon_warning'> </i> ").append(translator.translate("timelimit.5.minutes.message")).append("</span>")
 			  .append("</div>")
 			  .append("<script>")
-			  .append("/*<![CDATA[ */\n")
 			  .append("jQuery(function() {\n")
 			  .append("  jQuery('#o_qti_assessment_test_timer').qtiTimer({\n")
 			  .append("    testDuration:").append(qtiWorksStatus.getAssessmentTestDuration()).append(",\n")
@@ -69,10 +65,10 @@ public class AssessmentTestTimerComponentRenderer extends DefaultComponentRender
 			  .append("    formName: '").append(form.getFormName()).append("',\n")//form name
 			  .append("    dispIdField: '").append(form.getDispatchFieldId()).append("',\n")//form dispatch id
 			  .append("    dispId: '").append(qtiRun.getFormDispatchId()).append("',\n")//item id
-			  .append("    eventIdField: '").append(form.getEventFieldId()).append("'\n") // form eventFieldId
+			  .append("    eventIdField: '").append(form.getEventFieldId()).append("',\n") // form eventFieldId
+			  .append("    csrfToken: '").append(renderer.getCsrfToken()).append("'\n") // form eventFieldId
 			  .append("  })\n")
 			  .append("});\n")
-			  .append("/* ]]> */\n")
 			  .append("</script>\n")
 			  .append("</div>");
 		}

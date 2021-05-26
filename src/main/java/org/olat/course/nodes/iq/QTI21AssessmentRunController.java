@@ -99,6 +99,8 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
+import org.olat.modules.dcompensation.DisadvantageCompensation;
+import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -158,6 +160,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
+	@Autowired
+	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	public QTI21AssessmentRunController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, QTICourseNode courseNode) {
@@ -250,12 +254,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.contextPut("attemptsConfig", Boolean.FALSE);
 		}
 		// configure date period
-		mainVC.contextPut("blockDate", Boolean.valueOf(blockedBasedOnDate()));
+		boolean blockedBasedOnDate = blockedBasedOnDate(ureq);
+		mainVC.contextPut("blockDate", Boolean.valueOf(blockedBasedOnDate));
 		// time limit
-		Long timeLimit = getAssessmentTestMaxTimeLimit();
-		if(timeLimit != null) {
-			mainVC.contextPut("timeLimit", Formatter.formatHourAndSeconds(timeLimit.longValue() * 1000l));
-		}
+		initTimeLimits();
 
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		if (assessmentConfig.isAssessable()) {
@@ -362,32 +364,77 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 	}
 	
-	private boolean blockedBasedOnDate() {
+	/**
+	 * 
+	 * @param timeLimit The time limit in seconds
+	 */
+	private void initTimeLimits() {
+		Long timeLimitInSeconds = getAssessmentTestMaxTimeLimit();
+		if(timeLimitInSeconds != null && timeLimitInSeconds.longValue() > 0l) {
+			long lhours = timeLimitInSeconds / 3600;
+			String minutes = Long.toString((timeLimitInSeconds % 3600) / 60);
+			if(lhours == 0) {
+				mainVC.contextPut("timeLimitMessage", translate("block.time.limit.minute",
+						new String[] { minutes }));
+			} else {
+				String hours = Long.toString(lhours);
+				mainVC.contextPut("timeLimitMessage", translate("block.time.limit.hour",
+						new String[] { hours, minutes }));
+			}
+			mainVC.contextPut("timeLimit", Formatter.formatHourAndSeconds(timeLimitInSeconds * 1000l));
+		}
+		
+		if(courseNode != null && userCourseEnv != null) {
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			DisadvantageCompensation compensation = disadvantageCompensationService
+					.getActiveDisadvantageCompensation(getIdentity(), courseEntry, courseNode.getIdent());
+			if(compensation != null && compensation.getExtraTime() != null) {
+				int extraMinutes = compensation.getExtraTime().intValue() / 60;
+				mainVC.contextPut("disadvantageCompensationMessage", translate("block.disadvantage.compensation",
+						new String[] { Integer.toString(extraMinutes) }));
+			}
+		}
+	}
+	
+	private boolean blockedBasedOnDate(UserRequest ureq) {
 		mainVC.contextRemove("startTestDate");
 		mainVC.contextRemove("endTestDate");
 		
 		boolean dependOnDate = config.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, false);
+		boolean blocked = false;
 		if(dependOnDate) {
 			Date startTestDate = config.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
 			if(startTestDate != null) {
 				Formatter formatter = Formatter.getInstance(getLocale());
-				mainVC.contextPut("startTestDate", formatter.formatDateAndTime(startTestDate));
+				String start = formatter.formatDateAndTime(startTestDate);
+				mainVC.contextPut("startTestDate", start);
 				
 				Date endTestDate = config.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
+				String end = null;
 				if(endTestDate != null) {
-					mainVC.contextPut("endTestDate", formatter.formatDateAndTime(endTestDate));
+					end = formatter.formatDateAndTime(startTestDate);
+					mainVC.contextPut("endTestDate", end);
 				}
-				Date now = new Date();
+				
+				Date now = ureq.getRequestTimestamp();
 				if(startTestDate.after(now)) {
-					return true;
-				}
-	
-				if(endTestDate != null && endTestDate.before(now)) {
-					return true;
+					blocked = true;
+					if(end != null) {
+						mainVC.contextPut("startDateMessage", translate("block.before.dates.start.end", new String[] { start, end }));
+					} else {
+						mainVC.contextPut("startDateMessage", translate("block.before.dates.start", new String[] { start }));
+					}
+				} else if(endTestDate != null) {
+					if(endTestDate.before(now)) {
+						blocked = true;
+						mainVC.contextPut("startDateMessage", translate("block.after.dates.end", new String[] { end }));
+					} else {
+						mainVC.contextPut("startDateMessage", translate("block.during.dates.end", new String[] { end }));
+					}
 				}
 			}
 		}
-		return false;
+		return blocked;
 	}
 	
 	private void checkChats(UserRequest ureq) {

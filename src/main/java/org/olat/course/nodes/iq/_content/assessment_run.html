@@ -162,14 +162,16 @@
 	<div class="o_statusinfo">$r.translate("attempts.nomoreattempts")</div>		
 	$r.render("disclaimer")
 #elseif($blockDate)
-	<div class="o_statusinfo">#if($r.isNotNull($endTestDate))
-		$r.translate("block.dates.start.end", $startTestDate, $endTestDate) 
-	#else
-		$r.translate("block.dates.start", $startTestDate)
+	<div class="o_statusinfo">#if($r.isNotNull($startDateMessage))
+		<p><i class="o_icon o_icon-fw o_icon_time"> </i> $startDateMessage</p>
 	#end
-	#if($r.isNotEmpty($timeLimit))
-		<br>$r.translate("time.limit.test.explain", $timeLimit)
-	#end</div>
+	#if($r.isNotEmpty($timeLimitMessage))
+		<p><i class="o_icon o_icon-fw o_icon_timelimit_start"> </i> $timeLimitMessage</p>
+	#end
+	#if($r.isNotEmpty($disadvantageCompensationMessage))
+		<p><i class="o_icon o_icon-fw o_icon_disadvantage_compensation"> </i> $disadvantageCompensationMessage </p>
+	#end
+	</div>
 	$r.render("disclaimer")
 #else
 	$r.render("disclaimer")
@@ -179,13 +181,14 @@
 		<div class="o_statusinfo">
 			<p>$r.translate("Intro.test")</p>
 			<p>$r.translate("info.assessment")</p>
-			#if($r.isNotNull($endTestDate))
-				<p>$r.translate("block.dates.start.end", $startTestDate, $endTestDate)</p>
-			#elseif($r.isNotNull($startTestDate))
-				<p>$r.translate("block.dates.start", $startTestDate)</p>
+			#if($r.isNotNull($startDateMessage))
+			<p><i class="o_icon o_icon-fw o_icon_time"> </i> $startDateMessage</p>
 			#end
-			#if($r.isNotEmpty($timeLimit))
-				<p>$r.translate("time.limit.test.explain", $timeLimit)</p>
+			#if($r.isNotEmpty($timeLimitMessage))
+			<p><i class="o_icon o_icon-fw o_icon_timelimit_start"> </i> $timeLimitMessage</p>
+			#end
+			#if($r.isNotEmpty($disadvantageCompensationMessage))
+			<p><i class="o_icon o_icon-fw o_icon_disadvantage_compensation"> </i> $disadvantageCompensationMessage </p>
 			#end
 			#if ($hasChatWindowOpen)
 			<p>$r.translate("close.chat.windows.for.test")</p>

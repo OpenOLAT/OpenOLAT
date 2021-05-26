@@ -35,12 +35,21 @@ public class GUIMessage {
 	private String info;
 	private String warn;
 	private String error;
+	private String title;
 
 	/**
 	 * Constructor for GUIMessage.
 	 */
 	public GUIMessage() {
 		super();
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	/**

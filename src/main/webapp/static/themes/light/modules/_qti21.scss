@@ -305,40 +305,40 @@ span.o_qti_gaptext_score_alternative {
 }
 
 #o_qti_assessment_test_timer {
-	border: 1px solid $o-qti-run-infos-border-color;
-	border-radius: $o-qti-run-infos-border-radius;
 	padding: $padding-large-vertical;
 	margin: 0 15px 1em 15px;
 	
-	.o_qti_timer {
-		
+	&.o_hours {
+		background-color: $o-box-info-bg;
+		border-left: $o-box-border-left-size solid $o-box-info-color;
+		.o_qti_timer_second, .o_qti_timer_label_second {
+			display: none;
+		}
 	}
-	
+	&.o_60_minutes {
+		background-color: $o-box-info-bg;
+		border-left: $o-box-border-left-size solid $o-box-info-color;
+		.o_qti_timer_hour, .o_qti_timer_label_hour, .o_qti_timer_second, .o_qti_timer_label_second {
+			display: none;
+		}
+	}
 	&.o_10_minutes {
 		background-color: $o-box-warning-bg;
+		border-left: $o-box-border-left-size solid $o-box-warning-color;
+		.o_qti_timer_hour, .o_qti_timer_label_hour, .o_qti_timer_second, .o_qti_timer_label_second {
+			display: none;
+		}
 	}
 	&.o_5_minutes {
 		background-color: $o-box-error-bg;
-	}
-	&.o_panic {
-		background-color: darken($o-box-error-bg, 25%);
-	}
-	
-	&.o_15_seconds {
-		background-color: $o-box-warning-bg;
-	}
-	&.o_panic {
-		background-color: $o-box-error-bg;
+		border-left: $o-box-border-left-size solid $o-box-error-color;
+		.o_qti_timer_hour, .o_qti_timer_label_hour  {
+			display: none;
+		}
 	}
 	
-	.o_qti_times_up {
+	.o_qti_times_up, .o_qti_times_message {
 		padding-left: 2em;
-		font-weight: bold;
-	}
-	
-	.o_qti_times_message {
-		padding-left: 2em;
-		font-weight: bold;
 	}
 }
 

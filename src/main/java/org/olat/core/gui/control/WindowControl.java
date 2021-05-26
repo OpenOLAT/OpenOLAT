@@ -93,9 +93,16 @@ public interface WindowControl {
 	public void pop();
 
 	/**
-	 * @param string
+	 * @param string The text
 	 */
 	public void setInfo(String string);
+	
+	/**
+	 * 
+	 * @param title The title
+	 * @param text The text
+	 */
+	public void setInfo(String title, String text);
 
 	/**
 	 * @param string

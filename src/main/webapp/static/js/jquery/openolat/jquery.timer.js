@@ -34,7 +34,7 @@
     
     function timesUp(settings) {
     	if(jQuery('#' + settings.wrapperId).length > 0 && settings.endUrl != null && settings.endUrl.length > 0) {
-    		o_XHREvent(settings.endUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'timesUp', '_csrf', );
+    		o_XHREvent(settings.endUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'timesUp');
     	}
     }
     

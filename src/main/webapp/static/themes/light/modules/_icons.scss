@@ -391,6 +391,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_video:before { content: $fa-var-film; }
 .o_icon_visitingcard.o_icon_waiting:before { content: $fa-var-clock-o; }
 .o_icon_warn:before { content: $fa-var-exclamation-triangle; color: $brand-warning;}
+.o_icon_warning:before { content: $fa-var-exclamation-triangle; }
 .o_icon_width_expand:before { content: $fa-var-expand; }
 .o_icon_width_collapse:before { content: $fa-var-compress; } 
 .o_icon_wizard:before { content: $fa-var-magic; }
