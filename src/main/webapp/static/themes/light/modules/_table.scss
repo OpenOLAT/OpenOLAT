@@ -84,22 +84,32 @@
 	}
 
 	/* sticky first (checkboxes) and last (actions) columns on scrolling */
-	.o_col_sticky_left {	
+	.o_col_sticky_left,
+	.o_col_sticky_right {	
 		position: sticky;
-		left: 0;
 		background: white;
+		z-index: 1; /* above normal columns that are positioned */
+		transition: 0.3s background;
+	}
+	.o_col_sticky_left {
+		left: 0;
 	}
 	.o_scrollable_left .o_col_sticky_left {
-		border-right: 1px solid $table-border-color;
+		box-shadow: 2px 0 2px -2px darken($table-border-color,10%);
+    	background-color: rgb(250,250,250);
+	}
+	.o_multiselect.o_table_checkall.o_col_sticky_left {
+		z-index: 2;		/* make select-all menu appear above sticky columns */
 	}
 	.o_col_sticky_right {
-		position: sticky;
 		right: 0;
-		background: white;	
 	}
 	.o_scrollable_right .o_col_sticky_right {
-		border-left: 1px solid $table-border-color;
+		box-shadow: -2px 0 2px -2px darken($table-border-color,10%);
+    	background-color: rgb(250,250,250);
 	}
+		
+	
 	/* fix striped and hover bg colors for sticky columns */
 	.table-striped {
   		> tbody > tr:nth-child(odd) {
@@ -107,6 +117,20 @@
   			.o_col_sticky_left {		
 		    	background-color: $table-bg-accent;
 		    }
+		}
+	}
+	.o_scrollable_right .table-striped {
+  		> tbody > tr:nth-child(odd) {
+  			.o_col_sticky_right {		
+		    	background-color: rgb(245,245,245);
+		    }
+		}
+  	}
+	.o_scrollable_left .table-striped {
+  		> tbody > tr:nth-child(odd) {
+  			.o_col_sticky_left {		
+		    	background-color: rgb(245,245,245);		    
+			}
 		}
   	}
   	.table-hover {
@@ -117,7 +141,6 @@
   			}
 		}
 	}
-
 }
 
 .o_table_search {

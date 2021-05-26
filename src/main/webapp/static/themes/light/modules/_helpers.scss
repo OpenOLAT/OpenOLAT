@@ -436,7 +436,7 @@
 		opacity: 0;
 		transition: 0.3s opacity;
 		width: 10px;	
-		z-index:2;
+		z-index:3; /* needed to appear over sticky table columns */
 	}
 }
 .o_scrollable {
