@@ -198,14 +198,13 @@ public class FullCalendarMapper implements Mapper {
 	throws JSONException {
 		StringBuilder classNames = new StringBuilder(32);
 		if(StringHelper.containsNonWhitespace(cal.getCssClass())) {
-			if(cal.getKalendar().hasManagedEvents()) {
-				if(!event.isManaged()) {
-					// Overrides calendar color
-					jsonEvent.put("color", "steelblue");
-				}
+			if(cal.getKalendar().hasManagedEvents() && !event.isManaged()) {
+				// Overrides calendar color
+				jsonEvent.put("color", "steelblue");
 			}
 		} 
-
+		
+		classNames.append(cal.getCssClass());
 		if(event.isManaged()) {
 			classNames.append(" o_cal_event_managed");
 		} else {
