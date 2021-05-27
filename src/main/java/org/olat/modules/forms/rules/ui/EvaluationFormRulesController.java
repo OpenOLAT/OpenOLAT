@@ -289,8 +289,8 @@ public class EvaluationFormRulesController extends FormBasicController {
 	private void updateRulesPossibleUI(boolean showSaveButton) {
 		boolean rulesPossible = !ruleEls.isEmpty();
 		if (!rulesPossible) {
-			rulesPossible = ruleHandlerProvider.getRuleHandlers().stream()
-					.anyMatch(handler -> handler.isHandleableElementAvailable(form));
+			rulesPossible = ruleHandlerProvider.getConditionHandlers().stream().anyMatch(handler -> handler.isHandleableElementAvailable(form))
+					&& ruleHandlerProvider.getActionHandlers().stream().anyMatch(handler -> handler.isHandleableElementAvailable(form));
 		}
 		rulesCont.contextPut("noRulesPossible", Boolean.valueOf(!rulesPossible));
 		saveButton.setVisible(showSaveButton || rulesPossible);
