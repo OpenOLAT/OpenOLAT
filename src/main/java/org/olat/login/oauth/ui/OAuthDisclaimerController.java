@@ -27,6 +27,7 @@ import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -74,7 +75,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	
 	public OAuthDisclaimerController(UserRequest ureq, WindowControl wControl,
 			OAuthUser user, OAuthSPI provider) {
-		super(ureq, wControl);
+		super(ureq, wControl, "disclaimer");
 		setTranslator(Util.createPackageTranslator(RegistrationForm2.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 
@@ -85,6 +86,8 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(provider == null) return;
+		
 		disclaimerController = new DisclaimerController(ureq, getWindowControl(), null, false);
 		listenTo(disclaimerController);
 		
@@ -96,7 +99,9 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener,	UserRequest ureq) {
-		//
+		if(provider == null && formLayout instanceof FormLayoutContainer) {
+			((FormLayoutContainer)formLayout).contextPut("noProvider", Boolean.TRUE);
+		}
 	}
 
 	@Override

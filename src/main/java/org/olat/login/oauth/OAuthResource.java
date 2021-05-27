@@ -97,10 +97,11 @@ public class OAuthResource implements MediaResource {
 	public static void redirect(OAuthSPI oauthProvider, HttpServletResponse httpResponse, HttpSession httpSession) {
 		//Configure
 		try {
-			@SuppressWarnings("resource") // this need to be used afeter the redirect
+			@SuppressWarnings("resource") // this need to be used after the redirect
 			OAuthService service = oauthProvider.getScribeProvider();
 			httpSession.setAttribute(OAuthConstants.OAUTH_SERVICE, service);
 			httpSession.setAttribute(OAuthConstants.OAUTH_SPI, oauthProvider);
+			httpSession.setMaxInactiveInterval(900);
 			
 			if(service instanceof OAuth20Service) {
 				OAuth20Service oauthService = (OAuth20Service)service;
