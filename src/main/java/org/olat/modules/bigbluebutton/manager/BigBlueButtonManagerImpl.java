@@ -917,7 +917,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	public String join(BigBlueButtonMeeting meeting, Identity identity, String pseudo, BigBlueButtonAttendeeRoles role, Boolean isRunning, BigBlueButtonErrors errors) {
 		String joinUrl = null;
 		boolean moderator = role == BigBlueButtonAttendeeRoles.moderator;
-		boolean guest = false;
+		boolean guest = (role == BigBlueButtonAttendeeRoles.guest || role == BigBlueButtonAttendeeRoles.external);
 		
 		if(isRunning != null && isRunning.booleanValue() && meeting.getServer() != null) {
 			joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, pseudo, moderator, guest);

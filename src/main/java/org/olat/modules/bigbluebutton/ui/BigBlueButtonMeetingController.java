@@ -626,7 +626,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, BigBlueButtonAttendeeRoles.moderator, null, errors);
 			delayEvent(new BigBlueButtonEvent(meeting.getKey(), getIdentity().getKey()));
 		} else if(!moderatorStartMeeting) {
-			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.external;
+			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.viewer;
 			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, role, null, errors);
 		} else if(bigBlueButtonManager.isMeetingRunning(meeting)) {
 			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.viewer;
