@@ -414,13 +414,7 @@ public class QTI21WordExport implements MediaResource {
 					responseIdentifier = attributes.getValue("responseidentifier");
 					break;
 				case "simplechoice":
-					Table currentTable = getCurrentTable();
-					if(currentTable == null) {
-						currentTable = startTable();
-					}
-					currentTable.addRowEl();
-					currentTable.addCellEl(factory.createTableCell("E9EAF2", 4560, Unit.pct), 1);
-					simpleChoiceIdentifier = attributes.getValue("identifier");
+					startSimpleChoice(attributes);
 					break;
 				case "textentryinteraction":
 					startTextEntryInteraction(tag, attributes);
@@ -543,6 +537,16 @@ public class QTI21WordExport implements MediaResource {
 				}
 			}
 		}
+
+		private void startSimpleChoice(Attributes attributes) {
+			Table currentTable = getCurrentTable();
+			if(currentTable == null) {
+				currentTable = startTable(Columns.valueOf(8468, 745));
+			}
+			currentTable.addRowEl();
+			currentTable.addCellEl(factory.createTableCell("E9EAF2", 8468, Unit.pct), 1);
+			simpleChoiceIdentifier = attributes.getValue("identifier");
+		}
 		
 		private void endSimpleChoice() {
 			if(hasTextToFlush()) {
@@ -550,7 +554,7 @@ public class QTI21WordExport implements MediaResource {
 				currentParagraph = addContent(currentParagraph);
 			}
 			
-			Element checkboxCell = factory.createTableCell(null, 369, Unit.pct);
+			Element checkboxCell = factory.createTableCell(null, 745, Unit.pct);
 			Node checkboxNode = getCurrentTable().addCellEl(checkboxCell, 1);
 			
 			boolean checked = false;
