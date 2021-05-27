@@ -436,6 +436,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	public void endTable() {
 		if(!tableStack.isEmpty()) {
 			Table currentTable = tableStack.removeLast();
+			currentTable.closeTable();
 			addContent(currentTable.getTableEl());
 			if(!tableStack.isEmpty()) {
 				Element emptyParagraph = factory.createParagraphEl();
@@ -636,6 +637,14 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		
 		public Columns getColumns() {
 			return columns;
+		}
+		
+		public void closeTable() {
+			if(columns == null && nextCol > 0) {
+				int width = (int)(9212.0d / nextCol);
+				columns = Columns.sameWidthColumns(nextCol, width);
+				factory.appendTableGrid(tableEl, columns);
+			}
 		}
 		
 		public Node addRowEl() {

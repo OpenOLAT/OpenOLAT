@@ -759,7 +759,11 @@ public class OpenXMLDocument {
 	 */
 	public Element createTable(int tableWidth, Columns columns) {
 		Element tableEl = createTable(tableWidth);
-		
+		appendTableGrid(tableEl, columns);
+		return tableEl;
+	}
+	
+	public void appendTableGrid(Element tableEl, Columns columns) {
 		NodeList gridPrefs = tableEl.getElementsByTagName("w:tblGrid");
 		Element tableGridEl = (Element)gridPrefs.item(0);
 		//table grid
@@ -768,8 +772,6 @@ public class OpenXMLDocument {
 				createGridCol(w, tableGridEl);
 			}
 		}
-		
-		return tableEl;
 	}
 	
 	public Element createTableRow() {
@@ -1883,6 +1885,14 @@ public class OpenXMLDocument {
 				return new Columns(new Integer[0]);
 			}
 			return new Columns(width);
+		}
+		
+		public static Columns sameWidthColumns(int numOfColums, int width) {
+			Integer[] cols = new Integer[numOfColums];
+			for(int i=numOfColums; i-->0; ) {
+				cols[i] = width;
+			}
+			return new Columns(cols);
 		}
 	}
 	
