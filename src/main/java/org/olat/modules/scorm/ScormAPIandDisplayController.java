@@ -60,7 +60,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -140,10 +139,10 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 		this.username = ureq.getIdentity().getName();
 		if (!lesson_mode.equals(ScormConstants.SCORM_MODE_NORMAL) && !lesson_mode.equals(ScormConstants.SCORM_MODE_REVIEW) && !lesson_mode.equals(ScormConstants.SCORM_MODE_BROWSE)) {
-			throw new AssertException("Wrong parameter for constructor, only 'normal', 'browse' or 'review' are allowed for lesson_mode");
+			//throw new AssertException("Wrong parameter for constructor, only 'normal', 'browse' or 'review' are allowed for lesson_mode");
 		}
 		if (!credit_mode.equals("credit") && !credit_mode.equals("no-credit")) {
-			throw new AssertException("Wrong parameter for constructor, only 'credit' or 'no-credit' are allowed for credit_mode");
+			//throw new AssertException("Wrong parameter for constructor, only 'credit' or 'no-credit' are allowed for credit_mode");
 		}
 		
 		scorm_lesson_mode = lesson_mode;
@@ -425,7 +424,9 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			executeBack(ureq);
 		} else if(requestScoId != null) {
 			TreeNode tn = treeModel.getNodeByScormItemId(requestScoId);
-			setSco(requestScoId, tn, true);
+			if(tn != null) {
+				setSco(requestScoId, tn, true);
+			}
 		}
 	}
 	
