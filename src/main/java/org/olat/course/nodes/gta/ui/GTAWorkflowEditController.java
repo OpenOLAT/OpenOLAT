@@ -762,7 +762,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	}
 	
 	private void updateDocuments() {
-		boolean visible = taskAssignmentEl.isAtLeastSelected(1) && sampleEl.isAtLeastSelected(1);
+		boolean visible = taskAssignmentEl.isAtLeastSelected(1) || sampleEl.isAtLeastSelected(1);
 		documentsCont.setVisible(visible);
 	}
 	
