@@ -21,9 +21,12 @@ package org.olat.course.editor.overview;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 
@@ -46,6 +49,12 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	private Date end;
 	private String translatedTrigger;
 	private AssessmentConfig assessmentConfig;
+	private LearningPathConfigs learningPathConfigs;
+	private DateChooser startChooser;
+	private DateChooser endChooser;
+	private SingleSelection obligationChooser;
+	private SingleSelection resourceChooser;
+	
 	
 	public OverviewRow(CourseEditorTreeNode editorNode, int recursionLevel) {
 		this.editorNode = editorNode;
@@ -156,5 +165,44 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	public void setAssessmentConfig(AssessmentConfig assessmentConfig) {
 		this.assessmentConfig = assessmentConfig;
 	}
-
+	
+	public LearningPathConfigs getLearningPathConfigs() {
+		return learningPathConfigs;
+	}
+	
+	public void setLearningPathConfigs(LearningPathConfigs learningPathConfigs) {
+		this.learningPathConfigs = learningPathConfigs;
+	}
+	
+	public DateChooser getStartChooser() {
+		return startChooser;
+	}
+	
+	public void setStartChooser(DateChooser startChooser) {
+		this.startChooser = startChooser;
+	}
+	
+	public DateChooser getEndChooser() {
+		return endChooser;
+	}
+	
+	public void setEndChooser(DateChooser endChooser) {
+		this.endChooser = endChooser;
+	}
+	
+	public SingleSelection getObligationChooser() {
+		return obligationChooser;
+	}
+	
+	public void setObligationChooser(SingleSelection obligationChooser) {
+		this.obligationChooser = obligationChooser;
+	}
+	
+	public SingleSelection getResourceChooser() {
+		return resourceChooser;
+	}
+	
+	public void setResourceChooser(SingleSelection resourceChooser) {
+		this.resourceChooser = resourceChooser;
+	}
 }

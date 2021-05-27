@@ -81,7 +81,7 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 			}
 		};
 		// The link component that is used by this form element
-		cancelLink = LinkFactory.createButton("cancel",
+		cancelLink = LinkFactory.createButton(name,
 				(VelocityContainer) formLayoutContainer.getComponent(),
 				dispatchLinkController);
 		cancelLink.setSuppressDirtyFormWarning(true);
@@ -130,6 +130,7 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.Cancel#setCustomDisabledLinkCSS(java.lang.String)
 	 */
+	@Override
 	public void setCustomDisabledLinkCSS(String customDisabledLinkCSS) {
 		cancelLink.setCustomDisabledLinkCSS(customDisabledLinkCSS);
 	}
@@ -137,6 +138,7 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.Cancel#setCustomEnabledLinkCSS(java.lang.String)
 	 */
+	@Override
 	public void setCustomEnabledLinkCSS(String customEnabledLinkCSS) {
 		cancelLink.setCustomEnabledLinkCSS(customEnabledLinkCSS);
 	}
@@ -152,6 +154,7 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.Cancel#setI18nKey(java.lang.String)
 	 */
+	@Override
 	public void setI18nKey(String i18n) {
 		cancelLink.setCustomDisplayText(translator.translate(i18n));
 	}
@@ -159,6 +162,7 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 	/**
 	 * @see org.olat.core.gui.control.Disposable#dispose()
 	 */
+	@Override
 	public void dispose() {
 		if (dispatchLinkController != null) {
 			dispatchLinkController.dispose();

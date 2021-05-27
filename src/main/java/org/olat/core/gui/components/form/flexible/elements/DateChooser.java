@@ -45,6 +45,16 @@ public interface DateChooser extends TextElement {
 	 */
 	public void setDate(Date date);
 	
+	/**
+	 * @return The initial date. Used to compare the difference between the new and initial date.
+	 */
+	public Date getInitialDate();
+	
+	/*+
+	 * Set the initial date. Used to compare the difference between the new and initial date.
+	 */
+	public void setInitialDate(Date initialDate);
+	
 	public Date getSecondDate();
 	
 	public void setSecondDate(Date date);

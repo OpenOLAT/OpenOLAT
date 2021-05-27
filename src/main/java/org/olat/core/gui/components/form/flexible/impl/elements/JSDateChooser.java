@@ -75,6 +75,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	private int secondHour;
 	private String secondValue;
 	private DateChooser defaultDateValue;
+	private Date initialDate;
 	
 	public JSDateChooser(String name, Locale locale) {
 		this(null, name, null, locale);
@@ -267,6 +268,16 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		}
 	}
 
+	@Override
+	public Date getInitialDate() {
+		return initialDate;
+	}
+	
+	@Override
+	public void setInitialDate(Date initialDate) {
+		this.initialDate = initialDate;
+	}
+	
 	public String getSeparator() {
 		return separatorI18nKey;
 	}

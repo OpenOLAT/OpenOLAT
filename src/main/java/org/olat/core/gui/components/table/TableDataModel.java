@@ -26,7 +26,9 @@
 
 package org.olat.core.gui.components.table;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Description: <br>
@@ -53,6 +55,18 @@ public interface TableDataModel<T> {
 	public Object getValueAt(int row, int col);
 
 	public T getObject(int row);
+	
+	public default List<T> getObjects(final Set<Integer> rows) {
+		List<T> results = new ArrayList<>();
+		
+		for (int row : rows) {
+			if (!results.contains(getObject(row))) {
+				results.add(getObject(row));
+			}
+		}
+		
+		return results;
+	}
 
 	public void setObjects(List<T> objects);
 

@@ -234,6 +234,15 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	public boolean isSelected(int which) {
 		return which == getSelected();
 	}
+	
+	@Override
+	public boolean isKeySelected(String key) {
+		if (selectedIndex > -1) {
+			return keys[selectedIndex].equals(key);
+		} else {
+			return false;
+		}
+	}
 
 	@Override
 	public void select(String key, boolean select) {

@@ -35,6 +35,7 @@ import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -105,17 +106,19 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	
 	private FormLink backLink;
 	private FormLink searchButton;
+	private FormLink selectUsersButton;
 	private TextElement loginEl;
 	private Map <String,FormItem>propFormItems;
 	private FlexiTableElement tableEl;
 	private UserSearchFlexiTableModel userTableModel;
 	private FormLayoutContainer autoCompleterContainer;
 	
-	private final boolean multiSelection;
-	private final boolean isAdministrativeUser;
-	private final List<UserPropertyHandler> userSearchFormPropertyHandlers;
-	private final List<Organisation> searchableOrganisations;
-	private final GroupRoles repositoryEntryRole;
+	private boolean showSelectUsersButton;
+	private boolean multiSelection;
+	private boolean isAdministrativeUser;
+	private List<UserPropertyHandler> userSearchFormPropertyHandlers;
+	private List<Organisation> searchableOrganisations;
+	private GroupRoles repositoryEntryRole;
 
 	@Autowired
 	private UserManager userManager;
@@ -134,6 +137,21 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm, GroupRoles repositoryEntryRole, boolean multiSelection) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "usersearchext", rootForm);
+		
+		init(ureq, wControl, repositoryEntryRole, multiSelection, false);
+
+		initForm(ureq);
+	}
+	
+	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, GroupRoles repositoryEntryRole, boolean multiSelection) {
+		super(ureq, wControl, "usersearchext");
+		
+		init(ureq, wControl, repositoryEntryRole, multiSelection, true);
+		
+		initForm(ureq);
+	}
+	
+	private void init(UserRequest ureq, WindowControl wControl, GroupRoles repositoryEntryRole, boolean multiSelection, boolean showSelectButton) {
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserSearchFlexiController.class, getLocale(), getTranslator()));
 
@@ -156,8 +174,8 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		ListProvider provider = new UserSearchListProvider(searchableOrganisations, repositoryEntryRole);
 		setListProvider(provider);
 		setAllowNewValues(false);
-
-		initForm(ureq);
+		
+		this.showSelectUsersButton = showSelectButton;
 	}
 
 	@Override
@@ -240,6 +258,11 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			tableEl.setCustomizeColumns(false);
 			tableEl.setMultiSelect(multiSelection);
 			tableEl.setSelectAllEnable(multiSelection);
+			
+			if (showSelectUsersButton) {
+				selectUsersButton = uifactory.addFormLink("select", formLayout);
+				tableEl.addBatchButton(selectUsersButton);
+			}
 
 			layoutCont.put("userTable", tableEl.getComponent());
 		}
@@ -360,6 +383,8 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 				getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
 				doSearch();
 			}
+		} else if (source == selectUsersButton) {
+			fireEvent(ureq, new MultiIdentityChosenEvent(userTableModel.getObjects(tableEl.getMultiSelectedIndex())));
 		} else if (tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;

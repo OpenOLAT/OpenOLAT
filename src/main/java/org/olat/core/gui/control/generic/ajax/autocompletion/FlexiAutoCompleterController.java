@@ -120,6 +120,10 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		super(ureq, wControl, layout, customLayoutPageName, externalMainForm);
 	}
 	
+	protected FlexiAutoCompleterController(UserRequest ureq, WindowControl wControl, String customLayoutPageName) {
+		super(ureq, wControl, customLayoutPageName);
+	}
+	
 	protected void setListProvider(ListProvider provider) {
 		this.gprovider = provider;
 	}
@@ -180,6 +184,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == flc.getComponent()) {
 			String value = getSearchValue(ureq);

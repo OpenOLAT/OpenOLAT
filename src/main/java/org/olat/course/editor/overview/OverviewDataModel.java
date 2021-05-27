@@ -97,6 +97,10 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			case individualAsssessmentDocuments: return row.getAssessmentConfig().isAssessable()
 					? Boolean.valueOf(row.getAssessmentConfig().hasIndividualAsssessmentDocuments())
 					: null;
+			case startChooser: return row.getStartChooser();
+			case endChooser: return row.getEndChooser();
+			case obligationChooser: return row.getObligationChooser();
+			case resourceChooser: return row.getResourceChooser();
 			default: return null;
 		}
 	}
@@ -128,7 +132,11 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 		passesCut("table.header.passed.cut"),
 		ignoreInCourseAssessment("table.header.ignore.in.course.assessment"),
 		comment("table.header.comment"),
-		individualAsssessmentDocuments("table.header.individual.documents");
+		individualAsssessmentDocuments("table.header.individual.documents"),
+		startChooser("table.header.start"),
+		endChooser("table.header.end"),
+		obligationChooser("table.header.obligation"),
+		resourceChooser("table.header.resource");
 		
 		private final String i18nKey;
 		

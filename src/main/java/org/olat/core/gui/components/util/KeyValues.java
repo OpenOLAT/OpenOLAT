@@ -36,6 +36,14 @@ public class KeyValues {
 	
 	private List<KeyValue> keyValues = new ArrayList<>();
 	
+	public KeyValues(KeyValue... keyValues) {
+		if (keyValues != null && keyValues.length != 0) {
+			for (KeyValue keyValue : keyValues) {
+				add(keyValue);
+			}
+		}
+	}
+	
 	public static KeyValue entry(String key, String value) {
 		return new KeyValue(key, value);
 	}
@@ -49,6 +57,21 @@ public class KeyValues {
 	public void add(KeyValue keyValue) {
 		remove(keyValue.getKey());
 		keyValues.add(keyValue);
+	}
+	
+	/**
+	 * Adds an array of key / value pairs
+	 * 
+	 * @param keyValues
+	 */
+	public void add(KeyValue... keyValues) {
+		if (keyValues == null || keyValues.length == 0) {
+			return;
+		}
+		
+		for (KeyValue keyValue : keyValues) {
+			add(keyValue);
+		}
 	}
 
 	public void addAll(KeyValues additionalKeyValues) {

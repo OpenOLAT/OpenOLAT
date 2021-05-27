@@ -134,6 +134,7 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
+import org.olat.repository.ui.author.copy.CopyRepositoryEntryController;
 import org.olat.repository.wizard.RepositoryWizardProvider;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;

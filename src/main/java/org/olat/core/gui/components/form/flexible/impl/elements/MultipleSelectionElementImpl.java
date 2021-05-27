@@ -225,6 +225,11 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		String key = getKey(which);
 		return selected.contains(key);
 	}
+	
+	@Override
+	public boolean isKeySelected(String key) {
+		return selected.contains(key);
+	}
 
 	@Override
 	public void select(String key, boolean select) {

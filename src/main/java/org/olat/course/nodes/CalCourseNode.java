@@ -160,6 +160,12 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 		super.postImportCopyConditions(envMapper);
 		postImportCondition(preConditionEdit, envMapper);
 	}
+	
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
+		super.postCopy(envMapper, processType, course, sourceCrourse);
+		
+	}
 
 	@Override
 	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {

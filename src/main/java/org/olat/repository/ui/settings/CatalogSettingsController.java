@@ -30,7 +30,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -57,7 +56,7 @@ public class CatalogSettingsController extends FormBasicController {
 	
 	private FormLink addToCatalogLink;
 	private FlexiTableElement tableEl;
-	private CategoriesListModel model;
+	private CatalogListModel model;
 
 	private CloseableModalController cmc;
 	private Controller catalogAdddController;
@@ -92,7 +91,7 @@ public class CatalogSettingsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("catalog.path", 0));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", translate("remove"), "remove"));
 		
-		model = new CategoriesListModel(new ArrayList<>(), columnsModel);
+		model = new CatalogListModel(new ArrayList<>(), columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 200, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setEmptyTableSettings("no.catalog.entries" ,"no.catalog.entries.hint", "o_icon_catalog");
@@ -181,33 +180,5 @@ public class CatalogSettingsController extends FormBasicController {
 		model.setObjects(catalogEntries);
 		flc.contextPut("hasContent", Boolean.valueOf(!catalogEntries.isEmpty()));
 		tableEl.reset();
-	}
-
-	private class CategoriesListModel extends DefaultFlexiTableDataModel<CatalogEntry> {
-
-		public CategoriesListModel(List<CatalogEntry> catalogEntries, FlexiTableColumnModel columnModel) {
-			super(catalogEntries, columnModel);
-		}
-
-		@Override
-		public DefaultFlexiTableDataModel<CatalogEntry> createCopyWithEmptyList() {
-			return new CategoriesListModel(new ArrayList<CatalogEntry>(), getTableColumnModel());
-		}
-
-		@Override
-		public Object getValueAt(int row, int col) {
-			CatalogEntry catEntry = getObject(row);
-			if(col == 0) {
-				// calculate cat entry path: travel up to the root node
-				String path = "";
-				CatalogEntry tempEntry = catEntry;
-				while (tempEntry != null) {
-					path = "/" + tempEntry.getName() + path;
-					tempEntry = tempEntry.getParent();
-				}
-				return path;
-			}
-			return "ERROR";
-		}
 	}
 }

@@ -39,6 +39,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.resource.OLATResource;
 
 
@@ -61,6 +62,8 @@ public interface RepositoryService {
 			OLATResource resource, RepositoryEntryStatusEnum status, Organisation organisation);
 
 	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname);
+	
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, CopyCourseContext copyContext);
 	
 	public boolean canCopy(RepositoryEntry entryToCopy, Identity identity);
 

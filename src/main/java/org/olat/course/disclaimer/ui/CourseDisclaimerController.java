@@ -75,13 +75,15 @@ public class CourseDisclaimerController extends FormBasicController {
 
 	private boolean disclaimer1Enabled = false;
 	private boolean disclaimer2Enabled = false;
-	private boolean showSaveButton;
 
 	private RepositoryEntry repositoryEntry;
 
 	private CloseableModalController cmc;
 	private CourseDisclaimerUpdateConfirmController revokeConfirmController;
 	private CourseDisclaimerUpdateConfirmController removeConfirmController;
+	
+	private boolean usedInWizard = false;
+	private boolean saveConfig = true;
 
 	@Autowired
 	private CourseDisclaimerManager disclaimerManager;
@@ -99,7 +101,6 @@ public class CourseDisclaimerController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 
 		this.repositoryEntry = entry;
-		this.showSaveButton = true;
 		this.onValues = new String[]{ translate("enabled") };
 
 		initForm(ureq);
@@ -114,7 +115,6 @@ public class CourseDisclaimerController extends FormBasicController {
 	 * @param wControl
 	 * @param externalForm
 	 * @param entry
-	 * @param showSaveButton
 	 */
 	public CourseDisclaimerController(UserRequest ureq, WindowControl wControl, Form externalForm, RepositoryEntry entry) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, externalForm);
@@ -122,8 +122,8 @@ public class CourseDisclaimerController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 
 		this.repositoryEntry = entry;
-		this.showSaveButton = false;
 		this.onValues = new String[]{ translate("enabled") };
+		this.usedInWizard = true;
 
 		initForm(ureq);
 		loadData();
@@ -134,7 +134,9 @@ public class CourseDisclaimerController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("course.disclaimer.headline");
+		if (!usedInWizard) {
+			setFormTitle("course.disclaimer.headline");
+		}
 		setFormContextHelp("Course Settings#_course_disclaimer");
 		
 		// Enable and disable the disclaimers
@@ -183,7 +185,7 @@ public class CourseDisclaimerController extends FormBasicController {
 		disclaimer2Label2El = uifactory.addTextElement("course.disclaimer.2.label.2", "course.disclaimer.label.2", 255, "", formLayout);
 
 		// Spacer and Submit
-		if (showSaveButton) {
+		if (!usedInWizard) {
 			uifactory.addFormSubmitButton("submit", formLayout);
 			uifactory.addSpacerElement("course.disclaimer.spacer.bottom", formLayout, true);
 		}	
@@ -191,13 +193,15 @@ public class CourseDisclaimerController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (disclaimerManager.hasAnyEntry(repositoryEntry)) {
-			if (!disclaimer1Enabled && !disclaimer2Enabled) {
-				// Ask whether existing entries should be deleted
-				askForRemoval(ureq);
+		if (saveConfig) {
+			if (disclaimerManager.hasAnyEntry(repositoryEntry)) {
+				if (!disclaimer1Enabled && !disclaimer2Enabled) {
+					// Ask whether existing entries should be deleted
+					askForRemoval(ureq);
+				}
 			}
+			saveConfig(ureq);
 		}
-		saveConfig(ureq);
 	}
 
 	@Override
@@ -342,7 +346,7 @@ public class CourseDisclaimerController extends FormBasicController {
 			spacer.setVisible(false);
 		}
 		
-		enableAndContentSpacer.setVisible(showSaveButton || disclaimer1Enabled || disclaimer2Enabled);
+		enableAndContentSpacer.setVisible(!usedInWizard || disclaimer1Enabled || disclaimer2Enabled);
 	}
 
 	private void loadData() {
@@ -379,6 +383,30 @@ public class CourseDisclaimerController extends FormBasicController {
 		}
 		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(2, 2))) {
 			disclaimer2Label2El.setValue(courseConfig.getDisclaimerLabel(2, 2));
+		}
+	}
+	
+	public void loadDataFromContext(CourseDisclaimerContext context) {
+		saveConfig = false;
+		
+		if (context == null) {
+			loadData();
+		} else {
+			disclaimer1Enabled = context.isTermsOfUseEnabled();
+			disclaimer2Enabled = context.isDataProtectionEnabled();
+
+			disclaimer1CheckBoxEl.select(onKeys[0], disclaimer1Enabled);
+			disclaimer2CheckBoxEl.select(onKeys[0], disclaimer2Enabled);
+
+			disclaimer1TitleEl.setValue(context.getTermsOfUseTitle());
+			disclaimer1TermsEl.setValue(context.getTermsOfUseContent());
+			disclaimer1Label1El.setValue(context.getTermsOfUseLabel1());
+			disclaimer1Label2El.setValue(context.getTermsOfUseLabel2());
+
+			disclaimer2TitleEl.setValue(context.getDataProtectionTitle());
+			disclaimer2TermsEl.setValue(context.getDataProtectionContent());
+			disclaimer2Label1El.setValue(context.getDataProtectionLabel1());
+			disclaimer2Label2El.setValue(context.getDataProtectionLabel2());
 		}
 	}
 

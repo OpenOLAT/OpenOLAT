@@ -54,11 +54,13 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
 	 */
+	@Override
 	public abstract int getColumnCount();
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getRowCount()
 	 */
+	@Override
 	public int getRowCount() {
 		return objects == null ? 0 : objects.size();
 	}
@@ -75,6 +77,7 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
+	@Override
 	public abstract Object getValueAt(int row, int col);
 
 	/**
@@ -82,6 +85,7 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	 * 
 	 * @param objects The objects to set
 	 */
+	@Override
 	public void setObjects(List<U> objects) {
 		this.objects = objects;
 	}
@@ -90,9 +94,11 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	 * @param row
 	 * @return
 	 */
+	@Override
 	public U getObject(final int row) {
 		return objects.get(row);
 	}
+	
 
 	/**
 	 * Return the objects as marked in the BitSet.
@@ -136,6 +142,7 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 		return objects;
 	}
 
+	@Override
 	public Object createCopyWithEmptyList() {
 		throw new AssertException("createCopyWithEmptyList not implemented for model:" + this.getClass().getName()); 
 	}

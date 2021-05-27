@@ -18,7 +18,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.ui.author;
+package org.olat.repository.ui.author.copy;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;

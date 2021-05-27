@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -68,7 +67,6 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -83,8 +81,8 @@ import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.repository.ui.author.ConfirmCloseController;
 import org.olat.repository.ui.author.ConfirmDeleteSoftlyController;
-import org.olat.repository.ui.author.CopyRepositoryEntryController;
 import org.olat.repository.ui.author.RepositoryMembersController;
+import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
@@ -118,7 +116,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private CloseableModalController cmc;
 	protected Controller accessController;
 	private OrdersAdminController ordersCtlr;
-	private CopyRepositoryEntryController copyCtrl;
+	private CopyRepositoryEntryWrapperController copyWrapperCtrl;
 	private ConfirmCloseController confirmCloseCtrl;
 	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
 	private RepositoryEntryDetailsController detailsCtrl;
@@ -816,16 +814,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				doClose(ureq);
 				cleanUp();
 			}
-		} else if(copyCtrl == source) {
-			cmc.deactivate();
-			if (event == Event.DONE_EVENT) {
-				RepositoryEntryRef copy = copyCtrl.getCopiedEntry();
-				String businessPath = "[RepositoryEntry:" + copy.getKey() + "][EditDescription:0]";
-				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-				
-				EntryChangedEvent e = new EntryChangedEvent(getRepositoryEntry(), getIdentity(), Change.added, "runtime");
-				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
-			}
+		} else if (source == copyWrapperCtrl) {
 			cleanUp();
 		} else if(confirmCloseCtrl == source) {
 			cmc.deactivate();
@@ -845,20 +834,20 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(accessController);
 		removeAsListenerAndDispose(confirmCloseCtrl);
+		removeAsListenerAndDispose(copyWrapperCtrl);
 		removeAsListenerAndDispose(detailsCtrl);
 		removeAsListenerAndDispose(editorCtrl);
 		removeAsListenerAndDispose(ordersCtlr);
-		removeAsListenerAndDispose(copyCtrl);
 		removeAsListenerAndDispose(cmc);
 		
 		membersEditController = null;
 		confirmDeleteCtrl = null;
 		accessController = null;
 		confirmCloseCtrl = null;
+		copyWrapperCtrl = null;
 		detailsCtrl = null;
 		editorCtrl = null;
 		ordersCtlr = null;
-		copyCtrl = null;
 		cmc = null;
 	}
 	
@@ -1076,16 +1065,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void doCopy(UserRequest ureq) {
-		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(copyCtrl);
+		removeAsListenerAndDispose(copyWrapperCtrl);
 
-		copyCtrl = new CopyRepositoryEntryController(ureq, getWindowControl(), re);
-		listenTo(copyCtrl);
-		
-		String title = translate("details.copy");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), copyCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
+		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re);
+		listenTo(copyWrapperCtrl);
 	}
 	
 	private void doDownload(UserRequest ureq) {

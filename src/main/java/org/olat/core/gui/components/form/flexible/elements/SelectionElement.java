@@ -57,6 +57,12 @@ public interface SelectionElement extends FormItem, FormBaseComponentIdProvider{
 	 * @return boolean 
 	 */
 	public boolean isSelected(int which);
+	
+	/**
+	 * @param key
+	 * @return boolean
+	 */
+	public boolean isKeySelected(String key);
 
 	/**
 	 * @param key

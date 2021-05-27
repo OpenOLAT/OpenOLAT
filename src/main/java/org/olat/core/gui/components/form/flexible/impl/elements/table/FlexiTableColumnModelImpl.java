@@ -57,6 +57,17 @@ public class FlexiTableColumnModelImpl implements FlexiTableColumnModel {
 	public void addFlexiColumnModel(FlexiColumnModel columnModel) {
 		columnModelList.add(columnModel);
 	}
+	
+	@Override
+	public void addFlexiColumnModel(FlexiColumnModel... columnModels) {
+		if (columnModels == null || columnModels.length == 0) {
+			return;
+		}
+		
+		for (FlexiColumnModel columnModel : columnModels) {
+			columnModelList.add(columnModel);
+		}
+	}
 
 	@Override
 	public void clear() {

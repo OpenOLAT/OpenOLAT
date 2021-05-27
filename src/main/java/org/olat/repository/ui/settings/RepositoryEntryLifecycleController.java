@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -49,6 +50,8 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.ExecutionType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -69,6 +72,8 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	private FormLayoutContainer privateDatesCont;
 	
 	private RepositoryEntry repositoryEntry;
+	
+	private boolean usedInWizard;
 
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -88,6 +93,14 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		this.repositoryEntry = entry;
 		initForm(ureq);
 	}
+	
+	public RepositoryEntryLifecycleController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
+		super(ureq, wControl, LAYOUT_DEFAULT_2_10, null, rootForm);
+		setBasePackage(RepositoryService.class);
+		this.repositoryEntry = entry;
+		this.usedInWizard = true;
+		initForm(ureq);
+	}
 
 	/**
 	 * @return Returns the repositoryEntry.
@@ -100,7 +113,9 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormContextHelp("Set up info page");
 		formLayout.setElementCssClass("o_sel_edit_repositoryentry");
-		setFormTitle("details.execution.title");
+		if (!usedInWizard) {
+			setFormTitle("details.execution.title");
+		}
 
 		initLifecycle(formLayout);
 		
@@ -109,12 +124,14 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 
-		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
-		formLayout.add("buttonContainer", buttonContainer);
-		buttonContainer.setElementCssClass("o_sel_repo_save_details");
-		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
-		FormSubmit submit = uifactory.addFormSubmitButton("submit", buttonContainer);
-		submit.setVisible(!managed);
+		if (!usedInWizard) {
+			FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
+			formLayout.add("buttonContainer", buttonContainer);
+			buttonContainer.setElementCssClass("o_sel_repo_save_details");
+			uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
+			FormSubmit submit = uifactory.addFormSubmitButton("submit", buttonContainer);
+			submit.setVisible(!managed);
+		}
 	}
 	
 	private void initLifecycle(FormItemContainer formLayout) {
@@ -262,57 +279,120 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String type = "none";
-		if(dateTypesEl.isOneSelected()) {
-			type = dateTypesEl.getSelectedKey();
-		}
-		
-		if("none".equals(type)) {
-			repositoryEntry.setLifecycle(null);
-		} else if("public".equals(type)) {
-			String key = publicDatesEl.getSelectedKey();
-			if(StringHelper.isLong(key)) {
-				Long cycleKey = Long.parseLong(key);
-				RepositoryEntryLifecycle cycle = lifecycleDao.loadById(cycleKey);
+		if (!usedInWizard) {
+			String type = "none";
+			if(dateTypesEl.isOneSelected()) {
+				type = dateTypesEl.getSelectedKey();
+			}
+			
+			if("none".equals(type)) {
+				repositoryEntry.setLifecycle(null);
+			} else if("public".equals(type)) {
+				String key = publicDatesEl.getSelectedKey();
+				if(StringHelper.isLong(key)) {
+					Long cycleKey = Long.parseLong(key);
+					RepositoryEntryLifecycle cycle = lifecycleDao.loadById(cycleKey);
+					repositoryEntry.setLifecycle(cycle);
+				}
+			} else if("private".equals(type)) {
+				Date start = startDateEl.getDate();
+				Date end = endDateEl.getDate();
+				RepositoryEntryLifecycle cycle = repositoryEntry.getLifecycle();
+				if(cycle == null || !cycle.isPrivateCycle()) {
+					String softKey = "lf_" + repositoryEntry.getSoftkey();
+					cycle = lifecycleDao.create(repositoryEntry.getDisplayname(), softKey, true, start, end);
+				} else {
+					cycle.setValidFrom(start);
+					cycle.setValidTo(end);
+					cycle = lifecycleDao.updateLifecycle(cycle);
+				}
 				repositoryEntry.setLifecycle(cycle);
 			}
-		} else if("private".equals(type)) {
-			Date start = startDateEl.getDate();
-			Date end = endDateEl.getDate();
-			RepositoryEntryLifecycle cycle = repositoryEntry.getLifecycle();
-			if(cycle == null || !cycle.isPrivateCycle()) {
-				String softKey = "lf_" + repositoryEntry.getSoftkey();
-				cycle = lifecycleDao.create(repositoryEntry.getDisplayname(), softKey, true, start, end);
+	
+			String loc = location.getValue().trim();
+			repositoryEntry.setLocation(loc);
+	
+			repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,
+					repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
+					repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
+					repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
+					repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, null,
+					repositoryEntry.getEducationalType());
+			if(repositoryEntry == null) {
+				showWarning("repositoryentry.not.existing");
+				fireEvent(ureq, Event.CLOSE_EVENT);
 			} else {
-				cycle.setValidFrom(start);
-				cycle.setValidTo(end);
-				cycle = lifecycleDao.updateLifecycle(cycle);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+				MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, getIdentity(), Change.modifiedDescription, "authoring");
+				CoordinatorManager.getInstance().getCoordinator().getEventBus()
+					.fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 			}
-			repositoryEntry.setLifecycle(cycle);
-		}
-
-		String loc = location.getValue().trim();
-		repositoryEntry.setLocation(loc);
-
-		repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,
-				repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
-				repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
-				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
-				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, null,
-				repositoryEntry.getEducationalType());
-		if(repositoryEntry == null) {
-			showWarning("repositoryentry.not.existing");
-			fireEvent(ureq, Event.CLOSE_EVENT);
-		} else {
-			fireEvent(ureq, Event.CHANGED_EVENT);
-			MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, getIdentity(), Change.modifiedDescription, "authoring");
-			CoordinatorManager.getInstance().getCoordinator().getEventBus()
-				.fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 		}
 	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	public boolean saveToContext(UserRequest ureq, CopyCourseContext context) {
+		if (validateFormLogic(ureq)) {
+			context.setLocation(location.getValue().trim());
+			
+			switch(dateTypesEl.getSelectedKey()) {
+				case "none":
+					context.setExecutionType(ExecutionType.none);
+					break;
+				case "public":
+					context.setExecutionType(ExecutionType.semester);
+					context.setSemesterKey(Long.parseLong(publicDatesEl.getSelectedKey()));
+					break;
+				case "private":
+					context.setExecutionType(ExecutionType.beginAndEnd);
+					context.setBeginDate(startDateEl.getDate());
+					context.setEndDate(endDateEl.getDate());
+					break;
+			}
+			
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public void loadFromContext(CopyCourseContext context) {
+		if (context.getLocation() != null) {
+			location.setValue(context.getLocation());
+		}
+		
+		if (context.getExecutionType() != null) {
+			switch (context.getExecutionType()) {
+				case none:
+					dateTypesEl.select("none", true);
+					break;
+				case beginAndEnd: 
+					dateTypesEl.select("private", true);
+					break;
+				case semester: 
+					dateTypesEl.select("public", true);
+					break;
+			}
+		}
+		
+		if (dateTypesEl.getSelectedKey() != null) {
+			switch (dateTypesEl.getSelectedKey()) {
+				case "private": 
+					startDateEl.setDate(context.getBeginDate());
+					endDateEl.setDate(context.getEndDate());
+					break;
+				case "public": 
+					if (context.getSemesterKey() != null) {
+						publicDatesEl.select(context.getSemesterKey().toString(), true);
+					}
+					break;
+			}
+		}
+		
+		updateDatesVisibility();
 	}
 }

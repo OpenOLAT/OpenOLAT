@@ -47,6 +47,8 @@ public interface FlexiTableColumnModel {
 	 */
 	public void addFlexiColumnModel(FlexiColumnModel columnModel);
 	
+	public void addFlexiColumnModel(FlexiColumnModel... columnModels);
+	
 	/**
 	 * Remove all columns
 	 */
