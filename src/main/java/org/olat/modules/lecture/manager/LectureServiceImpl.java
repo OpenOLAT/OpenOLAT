@@ -1025,8 +1025,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public List<LectureBlockRollCallAndCoach> getLectureBlockAndRollCalls(LectureBlockRollCallSearchParameters searchParams) {
-		return lectureBlockRollCallDao.getLectureBlockAndRollCalls(searchParams);
+	public List<LectureBlockRollCallAndCoach> getLectureBlockAndRollCalls(LectureBlockRollCallSearchParameters searchParams,
+			String teacherSeaparator) {
+		return lectureBlockRollCallDao.getLectureBlockAndRollCalls(searchParams, teacherSeaparator);
 	}
 
 	@Override

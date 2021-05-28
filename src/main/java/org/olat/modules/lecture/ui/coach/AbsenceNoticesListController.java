@@ -64,6 +64,7 @@ import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.AbsenceNoticeSearchParameters;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.AbsenceNoticeInfos;
 import org.olat.modules.lecture.model.LectureBlockWithNotice;
@@ -131,12 +132,14 @@ public class AbsenceNoticesListController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
 	private LectureService lectureService;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
 	public AbsenceNoticesListController(UserRequest ureq, WindowControl wControl, Date currentDate,
-			boolean authorizedEnabled, LecturesSecurityCallback secCallback, boolean withUserProperties,
+			LecturesSecurityCallback secCallback, boolean withUserProperties,
 			String tableId) {
 		super(ureq, wControl, "absences_list", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -144,8 +147,8 @@ public class AbsenceNoticesListController extends FormBasicController {
 		this.secCallback = secCallback;
 		this.currentDate = currentDate;
 		wholeDateDefault = (currentDate == null);
-		this.authorizedEnabled = authorizedEnabled;
 		this.withUserProperties = withUserProperties;
+		authorizedEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_USAGE_IDENTIFIER, isAdministrativeUser);
@@ -167,6 +170,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 				unauthorizedKeys, unauthorizedValues);
 		unauthorizedFilterEl.addActionListener(FormEvent.ONCHANGE);
 		unauthorizedFilterEl.select(unauthorizedKeys[0], true);
+		unauthorizedFilterEl.setVisible(authorizedEnabled);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoticeCols.id));
@@ -184,7 +188,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setNumOfRowsEnabled(true);
-		tableEl.setEmptyTableMessageKey("empty.absences.list");
+		tableEl.setEmptyTableMessageKey("empty.notices.list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "absences-list-v3-" + tableId + "-" + secCallback.viewAs());
 		
 		if(authorizedEnabled && secCallback.canAuthorizeAbsence()) {

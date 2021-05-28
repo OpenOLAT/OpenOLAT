@@ -45,6 +45,7 @@ import org.olat.course.noderight.NodeRightService;
 import org.olat.course.noderight.NodeRightType;
 import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.appointments.AppointmentsSecurityCallbackFactory;
+import org.olat.course.nodes.appointments.CourseNodeOrganizerCandidateSupplier;
 import org.olat.course.nodes.appointments.ui.AppointmentsEditController;
 import org.olat.course.nodes.appointments.ui.AppointmentsPeekViewController;
 import org.olat.course.nodes.appointments.ui.AppointmentsRunController;
@@ -127,10 +128,10 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			AppointmentsSecurityCallback secCallback = AppointmentsSecurityCallbackFactory
-					.create(getModuleConfiguration(), userCourseEnv);
 			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			OrganizerCandidateSupplier organizerCandidateSupplier = new CourseNodeOrganizerCandidateSupplier(entry, this);
+			AppointmentsSecurityCallback secCallback = AppointmentsSecurityCallbackFactory
+					.create(getModuleConfiguration(), userCourseEnv, organizerCandidateSupplier);
 			controller = new AppointmentsRunController(ureq, wControl, entry, getIdent(), secCallback, organizerCandidateSupplier);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, ICON_CSS);

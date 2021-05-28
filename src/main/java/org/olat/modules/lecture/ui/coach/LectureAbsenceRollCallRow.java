@@ -37,16 +37,18 @@ public class LectureAbsenceRollCallRow {
 	private final LectureBlockRollCall rollCall;
 	private final LectureBlock lectureBlock;
 	private final AbsenceNotice absenceNotice;
+	private final String teachers;
 	
 	private Boolean authorized;
 	
 	private FormLink noticeLink;
 	
-	public LectureAbsenceRollCallRow(LectureBlock lectureBlock, LectureBlockRollCall rollCall, AbsenceNotice absenceNotice) {
+	public LectureAbsenceRollCallRow(LectureBlock lectureBlock, LectureBlockRollCall rollCall, AbsenceNotice absenceNotice, String teachers) {
 		this.rollCall = rollCall;
 		this.identity = rollCall.getIdentity();
 		this.lectureBlock = lectureBlock;
 		this.absenceNotice = absenceNotice;
+		this.teachers = teachers;
 	}
 	
 	public LectureBlockRollCall getRollCall() {
@@ -63,6 +65,10 @@ public class LectureAbsenceRollCallRow {
 	
 	public Identity getIdentity() {
 		return identity;
+	}
+	
+	public String getTeachers() {
+		return teachers;
 	}
 
 	public FormLink getNoticeLink() {

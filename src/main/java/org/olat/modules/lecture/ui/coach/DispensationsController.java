@@ -110,7 +110,7 @@ public class DispensationsController extends BasicController {
 		listenTo(searchCtrl);
 		boolean showUserProperties = profiledIdentity == null;
 		noticesListCtlr = new AbsenceNoticesListController(ureq, getWindowControl(),
-				null, true, secCallback, showUserProperties, "notices");
+				null, secCallback, showUserProperties, "notices");
 		listenTo(noticesListCtlr);
 		
 		mainVC = createVelocityContainer("dispensations");

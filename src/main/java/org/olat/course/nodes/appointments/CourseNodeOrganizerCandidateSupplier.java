@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes;
+package org.olat.course.nodes.appointments;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.course.nodes.AppointmentsCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.repository.RepositoryEntry;

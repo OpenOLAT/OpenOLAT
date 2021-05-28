@@ -30,8 +30,6 @@ import java.util.List;
  */
 public interface AppointmentsSecurityCallback {
 	
-	public boolean canEditTopics();
-	
 	public boolean canCreateTopic();
 	
 	public boolean canEditTopic(Collection<Organizer> organizers);
@@ -52,7 +50,7 @@ public interface AppointmentsSecurityCallback {
 	
 	public boolean isTeamsMeetingOpen(Appointment appointment, Collection<Organizer> organizers);
 	
-	public boolean canSubscribe();
+	public boolean canSubscribe(Collection<Organizer> organizers);
 
 	
 }
