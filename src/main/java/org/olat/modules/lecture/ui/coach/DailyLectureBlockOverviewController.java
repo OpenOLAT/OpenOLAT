@@ -129,7 +129,9 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		
 		this.currentDate = currentDate;
 		this.secCallback = secCallback;
-		rollCallSecCallback = new RollCallSecurityCallbackImpl(false, secCallback.viewAs() == LectureRoles.teacher, null, lectureModule);
+		boolean teacher = secCallback.viewAs() == LectureRoles.teacher;
+		boolean masterCoach = secCallback.viewAs() == LectureRoles.mastercoach;
+		rollCallSecCallback = new RollCallSecurityCallbackImpl(false, masterCoach, teacher, null, lectureModule);
 		this.profiledIdentity = profiledIdentity;
 		formatter = Formatter.getInstance(getLocale());
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();

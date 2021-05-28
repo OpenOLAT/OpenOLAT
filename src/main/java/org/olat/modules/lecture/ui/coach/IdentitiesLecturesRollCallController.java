@@ -140,7 +140,9 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		format = Formatter.getInstance(getLocale());
 		this.lectureBlocks = new ArrayList<>(lectureBlocksMap.keySet());
 		reversedLectureBlocksMap = reverse(lectureBlocks);
-		rollCallSecCallback = new RollCallSecurityCallbackImpl(false, secCallback.viewAs() == LectureRoles.teacher, null, lectureModule);
+		boolean teacher = secCallback.viewAs() == LectureRoles.teacher;
+		boolean masterCoach = secCallback.viewAs() == LectureRoles.mastercoach;
+		rollCallSecCallback = new RollCallSecurityCallbackImpl(false, masterCoach, teacher, null, lectureModule);
 		
 		Collections.sort(this.lectureBlocks, new LectureBlockStartDateComparator());
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());

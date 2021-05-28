@@ -130,8 +130,9 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		Map<LectureBlock,RollCallSecurityCallback> secCallbackMap = new HashMap<>();
 		for(LectureBlock lectureBlock:lectureBlocks) {
 			boolean entryAdmin = false; // TODO absences
-			boolean teacher = true; // TODO absences
-			RollCallSecurityCallback secCallback = new RollCallSecurityCallbackImpl(entryAdmin, teacher, lectureBlock, lectureModule);
+			boolean masterCoach = false;
+			boolean teacher = true;
+			RollCallSecurityCallback secCallback = new RollCallSecurityCallbackImpl(entryAdmin, masterCoach, teacher, lectureBlock, lectureModule);
 			secCallbackMap.put(lectureBlock, secCallback);
 		}
 		return secCallbackMap;

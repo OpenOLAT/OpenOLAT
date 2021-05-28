@@ -403,6 +403,10 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	}
 	
 	private RollCallSecurityCallback getRollCallSecurityCallback(LectureBlock block, boolean iamTeacher) {
-		return new RollCallSecurityCallbackImpl(admin, iamTeacher, block, lectureModule);
+		boolean masterCoach = false;
+		if(!admin) {
+			masterCoach = lectureService.isMasterCoach(block, getIdentity());
+		}
+		return new RollCallSecurityCallbackImpl(admin, masterCoach, iamTeacher, block, lectureModule);
 	}
 }

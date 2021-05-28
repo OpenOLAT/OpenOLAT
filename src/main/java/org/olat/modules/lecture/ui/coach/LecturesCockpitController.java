@@ -239,7 +239,8 @@ public class LecturesCockpitController extends BasicController implements Activa
 	
 	private RollCallSecurityCallback getRollCallSecurityCallback(LectureBlock block) {
 		boolean teacher = secCallback.viewAs() == LectureRoles.teacher;
-		return new RollCallSecurityCallbackImpl(false, teacher, block, lectureModule);
+		boolean masterCoach = secCallback.viewAs() == LectureRoles.mastercoach;
+		return new RollCallSecurityCallbackImpl(false, masterCoach, teacher, block, lectureModule);
 	}
 	
 	private void loadPendingLectureBlocks() {
