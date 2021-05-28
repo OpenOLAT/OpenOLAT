@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -38,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -55,6 +57,7 @@ import org.olat.modules.lecture.model.LectureBlockRollCallAndCoach;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.coach.LecturesAbsenceRollCallsTableModel.AbsenceCallCols;
+import org.olat.modules.lecture.ui.component.LectureAbsenceRollCallCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockTimesCellRenderer;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -125,6 +128,7 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 				unauthorizedKeys, unauthorizedValues);
 		unauthorizedFilterEl.addActionListener(FormEvent.ONCHANGE);
 		unauthorizedFilterEl.select(unauthorizedKeys[0], true);
+		unauthorizedFilterEl.setVisible(authorizedAbsenceEnabled);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AbsenceCallCols.id));
@@ -141,9 +145,11 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.lectureBlockDate, new LectureBlockTimesCellRenderer(showTimeOnly, getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AbsenceCallCols.externalRef, "open.course"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.entry, "open.course"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.lectureBlockName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.lectureBlockName, "open.lecture"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.lectureBlockLocation));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.absentLectures));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AbsenceCallCols.teachers, new TextFlexiCellRenderer(EscapeMode.antisamy)));
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.absentLectures, new LectureAbsenceRollCallCellRenderer()));
 		if(authorizedAbsenceEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AbsenceCallCols.authorizedAbsence));
 		}
@@ -166,7 +172,8 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 	
 	protected void loadModel() {
 		boolean unauthorizedOnly = unauthorizedFilterEl.isSelected(1);
-		List<LectureBlockRollCallAndCoach> rollCalls = lectureService.getLectureBlockAndRollCalls(searchParams);
+		String separator = translate("user.fullname.separator");
+		List<LectureBlockRollCallAndCoach> rollCalls = lectureService.getLectureBlockAndRollCalls(searchParams, separator);
 		List<LectureAbsenceRollCallRow> rows = new ArrayList<>(rollCalls.size());
 		for(LectureBlockRollCallAndCoach rollCall:rollCalls) {
 			boolean authorized = isAuthorized(rollCall);
@@ -183,7 +190,7 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 	private LectureAbsenceRollCallRow forgeRow(LectureBlockRollCallAndCoach call, boolean authorized) {
 		AbsenceNotice notice = call.getAbsenceNotice();
 		LectureBlockRollCall rollCall = call.getRollCall();
-		LectureAbsenceRollCallRow row = new LectureAbsenceRollCallRow(rollCall.getLectureBlock(), rollCall, notice);
+		LectureAbsenceRollCallRow row = new LectureAbsenceRollCallRow(rollCall.getLectureBlock(), rollCall, notice, call.getCoach());
 		if(notice != null) {
 			FormLink noticeLink = uifactory.addFormLink("notice_" + rollCall.getKey(), "notice", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 			noticeLink.setIconRightCSS("o_icon o_icon_info o_icon-lg");
@@ -270,6 +277,9 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 				if("open.course".equals(cmd)) {
 					LectureAbsenceRollCallRow row = tableModel.getObject(se.getIndex());
 					doOpenCourseLectures(ureq, row);
+				} else if("open.lecture".equals(cmd)) {
+					LectureAbsenceRollCallRow row = tableModel.getObject(se.getIndex());
+					doOpenCourseLecture(ureq, row);
 				}
 			}
 		} else if(source instanceof FormLink) {
@@ -289,6 +299,12 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 	private void doOpenCourseLectures(UserRequest ureq, LectureAbsenceRollCallRow row) {
 		Long repoKey = row.getLectureBlock().getEntry().getKey();
 		String businessPath = "[RepositoryEntry:" + repoKey + "][Lectures:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void doOpenCourseLecture(UserRequest ureq, LectureAbsenceRollCallRow row) {
+		Long repoKey = row.getLectureBlock().getEntry().getKey();
+		String businessPath = "[RepositoryEntry:" + repoKey + "][Lectures:0][LectureBlock:" + row.getLectureBlock().getKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	

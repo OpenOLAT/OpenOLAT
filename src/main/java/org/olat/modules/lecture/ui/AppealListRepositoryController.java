@@ -220,7 +220,8 @@ public class AppealListRepositoryController extends FormBasicController {
 			searchParams.setAppealStatus(status);
 		}
 
-		List<LectureBlockRollCallAndCoach> rollCallsWithCoach = lectureService.getLectureBlockAndRollCalls(searchParams);
+		String separator = translate("user.fullname.separator");
+		List<LectureBlockRollCallAndCoach> rollCallsWithCoach = lectureService.getLectureBlockAndRollCalls(searchParams, separator);
 		List<AppealRollCallRow> rows = new ArrayList<>(rollCallsWithCoach.size());
 		for(LectureBlockRollCallAndCoach rollCallWithCoach:rollCallsWithCoach) {
 			rows.add(new AppealRollCallRow(rollCallWithCoach, userPropertyHandlers, getLocale()));

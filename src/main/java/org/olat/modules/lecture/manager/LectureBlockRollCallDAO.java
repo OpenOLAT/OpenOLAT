@@ -300,9 +300,19 @@ public class LectureBlockRollCallDAO {
 		return rollCalls != null && !rollCalls.isEmpty() ? rollCalls.get(0) : null;
 	}
 	
-	public List<LectureBlockRollCallAndCoach> getLectureBlockAndRollCalls(LectureBlockRollCallSearchParameters searchParams) {
+	public List<LectureBlockRollCallAndCoach> getLectureBlockAndRollCalls(LectureBlockRollCallSearchParameters searchParams, String teacherSeaparator) {
 		List<LectureBlockRollCall> rollCalls = getRollCalls(searchParams);
-		Map<Long,String> coaches = getCoaches(searchParams.getEntry(), ", ");
+		Map<Long,String> coaches;
+		if(searchParams.getEntry() != null) {
+			coaches = getCoaches(searchParams.getEntry(), teacherSeaparator);
+		} else {
+			Set<Long> blocksKeys = rollCalls.stream()
+					.map(LectureBlockRollCall::getLectureBlock)
+					.map(LectureBlock::getKey)
+					.collect(Collectors.toSet());
+			coaches = getCoaches(blocksKeys, teacherSeaparator);
+		}
+
 		List<LectureBlockRollCallAndCoach> blockAndRollCalls = new ArrayList<>(rollCalls.size());
 		for(LectureBlockRollCall rollCall:rollCalls) {
 			LectureBlock block = rollCall.getLectureBlock();
@@ -332,6 +342,39 @@ public class LectureBlockRollCallDAO {
 		List<Object[]> rawCoachs = dbInstance.getCurrentEntityManager()
 				.createQuery(sc.toString(), Object[].class)
 				.setParameter("repoEntryKey", entry.getKey())
+				.getResultList();
+		Map<Long,String> coaches = new HashMap<>();
+		for(Object[] rawCoach:rawCoachs) {
+			Long blockKey = (Long)rawCoach[0];
+			Identity coach = (Identity)rawCoach[1];
+			String fullname = userManager.getUserDisplayName(coach);
+			if(coaches.containsKey(blockKey)) {
+				fullname = coaches.get(blockKey) + " " + teacherSeaparator + " " + fullname;
+			}
+			coaches.put(blockKey, fullname);
+		}
+		return coaches;
+	}
+	
+	private Map<Long,String> getCoaches(Set<Long> blockKeys, String teacherSeaparator) {
+		if(blockKeys == null || blockKeys.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		
+		// append the coaches
+		StringBuilder sc = new StringBuilder(256);
+		sc.append("select block.key, coach")
+		  .append(" from lectureblock block")
+		  .append(" inner join block.teacherGroup tGroup")
+		  .append(" inner join tGroup.members membership")
+		  .append(" inner join membership.identity coach")
+		  .append(" inner join fetch coach.user usercoach")
+		  .append(" where membership.role='").append("teacher").append("' and block.key in (:blockKeys)");
+		
+		//get all, it's quick
+		List<Object[]> rawCoachs = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), Object[].class)
+				.setParameter("blockKeys", new ArrayList<>(blockKeys))
 				.getResultList();
 		Map<Long,String> coaches = new HashMap<>();
 		for(Object[] rawCoach:rawCoachs) {

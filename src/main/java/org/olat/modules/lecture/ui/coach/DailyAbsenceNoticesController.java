@@ -67,7 +67,7 @@ public class DailyAbsenceNoticesController extends BasicController {
 			searchParams.setParticipant(profiledIdentity);
 		}
 		noticesListCtlr = new AbsenceNoticesListController(ureq, getWindowControl(),
-				currentDate, true, secCallback, true, "daily");
+				currentDate, secCallback, true, "daily");
 		listenTo(noticesListCtlr);
 		
 		mainVC = createVelocityContainer("daily_absences");
