@@ -147,7 +147,8 @@ public class TopicsRunCoachController extends FormBasicController {
 		this.secCallback = secCallback;
 		this.organizerCandidateSupplier = organizerCandidateSupplier;
 		
-		if (secCallback.canSubscribe()) {
+		List<Organizer> organizers = appointmentsService.getOrganizers(entry, subIdent);
+		if (secCallback.canSubscribe(organizers)) {
 			PublisherData publisherData = appointmentsService.getPublisherData(entry, subIdent);
 			SubscriptionContext subContext = appointmentsService.getSubscriptionContext(entry, subIdent);
 			subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, publisherData, true);

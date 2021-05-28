@@ -32,6 +32,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.Organizer;
+import org.olat.modules.appointments.OrganizerCandidateSupplier;
 import org.olat.modules.appointments.Participation;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.teams.TeamsMeeting;
@@ -45,8 +46,8 @@ import org.olat.modules.teams.TeamsMeeting;
 public class AppointmentsSecurityCallbackFactory {
 	
 	public static final AppointmentsSecurityCallback create(ModuleConfiguration config,
-			UserCourseEnvironment userCourseEnv) {
-		return new UserAppointmentsSecurityCallback(config, userCourseEnv);
+			UserCourseEnvironment userCourseEnv, OrganizerCandidateSupplier organizerCandidateSupplier) {
+		return new UserAppointmentsSecurityCallback(config, userCourseEnv, organizerCandidateSupplier);
 	}
 	
 	private static class UserAppointmentsSecurityCallback implements AppointmentsSecurityCallback {
@@ -58,22 +59,20 @@ public class AppointmentsSecurityCallbackFactory {
 		private final boolean coachCanEditAppointment;
 		private final boolean participant;
 		private final boolean readOnly;
+		private final boolean organizerCandidate;
 
-		public UserAppointmentsSecurityCallback(ModuleConfiguration config, UserCourseEnvironment userCourseEnv) {
+		public UserAppointmentsSecurityCallback(ModuleConfiguration config, UserCourseEnvironment userCourseEnv,
+				OrganizerCandidateSupplier organizerCandidateSupplier) {
 			this.identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 			this.admin = userCourseEnv.isAdmin();
 			this.coach = userCourseEnv.isCoach();
 			this.participant = userCourseEnv.isParticipant();
 			this.readOnly = userCourseEnv.isCourseReadOnly();
+			this.organizerCandidate = organizerCandidateSupplier.getOrganizerCandidates().contains(this.identity);
 			
 			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
 			this.coachCanEditTopic = nodeRightService.isGranted(config, userCourseEnv, AppointmentsCourseNode.EDIT_TOPIC);
 			this.coachCanEditAppointment = nodeRightService.isGranted(config, userCourseEnv, AppointmentsCourseNode.EDIT_APPOINTMENT);
-		}
-
-		@Override
-		public boolean canEditTopics() {
-			return admin;
 		}
 
 		@Override
@@ -97,6 +96,8 @@ public class AppointmentsSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditAppointment(Collection<Organizer> organizers) {
+			if (readOnly) return false;
+			
 			return admin || (coachCanEditAppointment && isOrganizer(organizers));
 		}
 
@@ -181,6 +182,13 @@ public class AppointmentsSecurityCallbackFactory {
 			Date end = meeting.getEndWithFollowupTime();
 			return !((start != null && start.compareTo(now) >= 0) || (end != null && end.compareTo(now) <= 0));
 		}
+
+		@Override
+		public boolean canSubscribe(Collection<Organizer> organizers) {
+			if (readOnly) return false;
+			
+			return organizerCandidate || isOrganizer(organizers);
+		}
 		
 		private boolean isOrganizer(Collection<Organizer> organizers) {
 			return organizers.stream()
@@ -190,11 +198,6 @@ public class AppointmentsSecurityCallbackFactory {
 		private boolean isParticipation(Collection<Participation> participations) {
 			return participations.stream()
 					.anyMatch(p -> p.getIdentity().getKey().equals(identity.getKey()));
-		}
-
-		@Override
-		public boolean canSubscribe() {
-			return admin || coach;
 		}
 		
 	}
