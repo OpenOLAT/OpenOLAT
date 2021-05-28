@@ -15,7 +15,6 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 	background-color: $o-radial-progress-circle-bg;
 	border-radius: 50%;
 	font-size: $o-radial-progress-percentage-font-size;
-	overflow: visible;
 	
 	/* fix display issues in print and behave like an image tag*/
 	display: inline-block;
@@ -276,13 +275,6 @@ $o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size
 	}
 	.inset .percentage .number span {
 		color: $o-radial-progress-percentage-warning-color;
-	}
-}
-
- /* fix overflow rule from table.scss (iOS) */
-.o_table_wrapper {
-	.o_progress.o_progress_inline {
-		position: absolute;
 	}
 }
 
