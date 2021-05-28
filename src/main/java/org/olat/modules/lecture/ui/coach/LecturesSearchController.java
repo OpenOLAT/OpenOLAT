@@ -177,7 +177,8 @@ public class LecturesSearchController extends BasicController implements Activat
 		
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(lectureBlock);
 		List<Identity> participants = lectureService.getParticipants(reloadedBlock);
-		RollCallSecurityCallback rollCallSecCallback = new RollCallSecurityCallbackImpl(secCallback.canReopenLectureBlock(), false, reloadedBlock, lectureModule);
+		RollCallSecurityCallback rollCallSecCallback = new RollCallSecurityCallbackImpl(secCallback.canReopenLectureBlock(), secCallback.canReopenLectureBlock(),
+				false, reloadedBlock, lectureModule);
 		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(),
 				reloadedBlock, participants, rollCallSecCallback, false);
 		listenTo(rollCallCtrl);

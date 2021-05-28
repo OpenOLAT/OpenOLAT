@@ -36,13 +36,16 @@ import org.olat.modules.lecture.RollCallSecurityCallback;
 public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 
 	private final boolean repoAdmin;
+	private final boolean masterCoach;
 	private final boolean teacher;
 	private LectureBlock lectureBlock;
 	private final LectureModule lectureModule;
 	
-	public RollCallSecurityCallbackImpl(boolean repoAdmin, boolean teacher, LectureBlock lectureBlock, LectureModule lectureModule) {
+	public RollCallSecurityCallbackImpl(boolean repoAdmin, boolean masterCoach, boolean teacher,
+			LectureBlock lectureBlock, LectureModule lectureModule) {
 		this.repoAdmin = repoAdmin;
 		this.teacher = teacher;
+		this.masterCoach = masterCoach;
 		this.lectureBlock = lectureBlock;
 		this.lectureModule = lectureModule;
 	}
@@ -106,7 +109,7 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 	
 	@Override
 	public boolean canReopen() {
-		return repoAdmin && (isClosed() || isCancelled());
+		return (repoAdmin || masterCoach) && (isClosed() || isCancelled());
 	}
 
 	private boolean isBlockEditable() {

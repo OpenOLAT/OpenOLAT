@@ -451,7 +451,11 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	}
 
 	private RollCallSecurityCallback getRollCallSecurityCallback(LectureBlock block) {
-		return new RollCallSecurityCallbackImpl(admin, true, block, lectureModule);
+		boolean masterCoach = false;
+		if(!admin) {
+			masterCoach = lectureService.isMasterCoach(block, getIdentity());
+		}
+		return new RollCallSecurityCallbackImpl(admin, masterCoach, true, block, lectureModule);
 	}
 
 	private class ToolsController extends BasicController {

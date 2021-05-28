@@ -860,6 +860,22 @@ public class LectureBlockDAO {
 		return query.getResultList();
 	}
 	
+	public boolean isMasterCoach(LectureBlockRef block, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select mastercoachs.key from lectureblock block")
+		  .append(" inner join block.groups as blockToGroup")
+		  .append(" inner join blockToGroup.group as bGroup")
+		  .append(" inner join bGroup.members mastercoachs on (mastercoachs.role='").append(CurriculumRoles.mastercoach.name()).append("')")
+		  .append(" where block.key=:blockKey and mastercoachs.identity.key=:identityKey");
+		
+		List<Long> masterCoachs = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("blockKey", block.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+		return masterCoachs != null && masterCoachs.size() > 0 && masterCoachs.get(0) != null;
+	}
+	
 	public List<Identity> getParticipants(LectureBlockRef block) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct ident from lectureblock block")
