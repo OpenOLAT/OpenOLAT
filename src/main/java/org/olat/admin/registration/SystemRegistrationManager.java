@@ -142,7 +142,7 @@ public class SystemRegistrationManager implements InitializingBean {
 		}
 		
 		String csvCoordinates = null;
-		try(CloseableHttpClient client = httpClientService.getThreadSafeHttpClient(true)) {
+		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true)) {
 			URIBuilder uriBuilder = new URIBuilder("http://maps.google.com/maps/geo");
 			List<NameValuePair> nvps = new ArrayList<>(5);
 			nvps.add(new BasicNameValuePair("q",textLocation));
@@ -181,7 +181,7 @@ public class SystemRegistrationManager implements InitializingBean {
 	protected void sendRegistrationData() {
 		HttpPut method = null;
 
-		try(CloseableHttpClient client = httpClientService.getThreadSafeHttpClient(true)) {
+		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true)) {
 			// Do it optimistic and try to generate the XML message. If the message
 			// doesn't contain anything, the user does not want to register this
 			// instance

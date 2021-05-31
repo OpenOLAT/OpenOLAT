@@ -46,7 +46,7 @@ public interface HttpClientService {
 	 * @param redirect If redirect is allowed
 	 * @return CloseableHttpClient
 	 */
-	public CloseableHttpClient getThreadSafeHttpClient(boolean redirect);
+	public CloseableHttpClient createThreadSafeHttpClient(boolean redirect);
 	
 	/**
 	 * Creates a thread safe http client.
@@ -58,7 +58,7 @@ public interface HttpClientService {
 	 * @param redirect If redirect is allowed
 	 * @return CloseableHttpClient
 	 */
-	public CloseableHttpClient getThreadSafeHttpClient(String host, int port, String user, String password, boolean redirect);
+	public CloseableHttpClient createThreadSafeHttpClient(String host, int port, String user, String password, boolean redirect);
 	
 	
 

@@ -117,7 +117,7 @@ public class YoutubeProvider extends AbstractSpringModule implements ConfigOnOff
 		
 		YoutubeMetadata data = null;		
 		HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.class);
-		try(CloseableHttpClient client = httpClientService.getThreadSafeHttpClient(true);
+		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true);
 				CloseableHttpResponse response = client.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200) {

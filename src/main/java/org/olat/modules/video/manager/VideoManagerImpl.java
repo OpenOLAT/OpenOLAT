@@ -930,7 +930,7 @@ public class VideoManagerImpl implements VideoManager {
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "image/jpg");
 		
-		try(CloseableHttpClient httpClient = httpClientService.getThreadSafeHttpClient(true);
+		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true);
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			download(response, posterFile);	
 		} catch(Exception e) {
@@ -963,7 +963,7 @@ public class VideoManagerImpl implements VideoManager {
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "video/mp4");
 		
-		try(CloseableHttpClient httpClient = httpClientService.getThreadSafeHttpClient(true);
+		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true);
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			download(response, videoFile);	
 		} catch(Exception e) {

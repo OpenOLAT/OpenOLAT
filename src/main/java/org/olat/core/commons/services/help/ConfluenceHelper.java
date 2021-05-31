@@ -199,7 +199,7 @@ public class ConfluenceHelper {
 				new Thread() {
 					@Override
 					public void run() {
-						try(CloseableHttpClient httpClient = httpClientService.getThreadSafeHttpClient(false)) {
+						try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(false)) {
 							// Phase 1: lookup alias redirect
 							HttpGet httpMethod = new HttpGet(aliasUrl);
 							httpMethod.setHeader("User-Agent", Settings.getFullVersionInfo());
