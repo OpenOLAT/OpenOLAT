@@ -44,6 +44,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.course.nodes.adobeconnect.compatibility.MeetingCompatibilityDate;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
@@ -92,6 +93,8 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 	protected AdobeConnectModule adobeConnectModule;
 	@Autowired
 	private AdobeConnectMeetingDAO adobeConnectMeetingDao;
+	@Autowired
+	private HttpClientService httpClientService;
 	
 	private AdobeConnectSPI getAdapter() {
 		String providerId = adobeConnectModule.getProviderId();
@@ -585,15 +588,13 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 
 	@Override
 	public boolean checkConnection(String url, String login, String password, AdobeConnectErrors error) {
-		dbInstance.commit();
-		
 		boolean allOk = false;
 		
 		String common = buildUrl(url, null) + "?action=common-info";
 		
 		BreezeSession session = null;
 		HttpGet commonGet = new HttpGet(common);
-		try(CloseableHttpClient httpClient = adobeConnectModule.httpClientBuilder().build();
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
 			CloseableHttpResponse response = httpClient.execute(commonGet)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200) {
@@ -613,7 +614,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			request += "&session" + session.getSession();
 			get.setHeader(new BasicHeader("Cookie", AbstractAdobeConnectProvider.COOKIE + session.getSession()));
 		}
-		try(CloseableHttpClient httpClient = adobeConnectModule.httpClientBuilder().build();
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
 			CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {

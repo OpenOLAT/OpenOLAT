@@ -21,7 +21,6 @@ package org.olat.modules.adobeconnect.manager;
 
 import static org.olat.modules.adobeconnect.manager.AdobeConnectUtils.orDefault;
 
-
 import java.util.List;
 
 import javax.ws.rs.core.UriBuilder;
@@ -74,7 +73,7 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 		List<AdobeConnectPrincipal> users = null;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = buildHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode == 200 || statusCode == 201) {
@@ -101,7 +100,7 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 		List<AdobeConnectPrincipal> users = null;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = buildHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode == 200 || statusCode == 201) {
@@ -131,7 +130,7 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 		BreezeSession session = null;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = buildHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode == 200) {

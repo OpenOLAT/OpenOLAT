@@ -8,7 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
   
-	<context:component-scan base-package="org.olat.core.util.session,org.olat.core.util.vfs,org.olat.core.util.i18n" />
+	<context:component-scan base-package="org.olat.core.util.httpclient,org.olat.core.util.session,org.olat.core.util.vfs,org.olat.core.util.i18n" />
 
 	<bean id="codeHelper" class="org.olat.core.util.CodeHelper" >
 		<constructor-arg value="${node.id}" />
@@ -105,8 +105,6 @@
 		<property name="nodeId" value="${node.id}"/>
 	</bean>
 
-	<bean id="httpClientFactory" class="org.olat.core.util.httpclient.HttpClientFactory" destroy-method="destroy"/>
-	
 	<!--  gui prefs via database -->
 	<bean id="core.preferences.PreferencesStorage"
 		class="org.olat.core.util.prefs.db.DbStorage"  />

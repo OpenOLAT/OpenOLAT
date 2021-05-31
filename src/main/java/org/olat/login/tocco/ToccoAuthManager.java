@@ -39,7 +39,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.httpclient.HttpClientFactory;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.login.auth.AuthenticationSPI;
 import org.olat.login.validation.ValidationResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +64,8 @@ public class ToccoAuthManager implements AuthenticationSPI {
 	private ToccoLoginModule toccoLoginModule;
 	@Autowired
 	private WebDAVAuthManager webDAVAuthManager;
+	@Autowired
+	private HttpClientService httpClientService;
 
 	@Override
 	public List<String> getProviderNames() {
@@ -72,7 +74,7 @@ public class ToccoAuthManager implements AuthenticationSPI {
 
 	@Override
 	public Identity authenticate(String login, String password) {
-		try(CloseableHttpClient httpclient = HttpClientFactory.getHttpClientInstance(false)) {
+		try(CloseableHttpClient httpclient = httpClientService.getThreadSafeHttpClient(false)) {
 			String serverUrl = toccoLoginModule.getToccoServerUrl();
 			URL loginUri = new URL(serverUrl);
 			HttpPost loginPost = new HttpPost(loginUri.toURI());

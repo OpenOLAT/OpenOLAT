@@ -46,16 +46,16 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.httpclient.HttpClientFactory;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
@@ -100,6 +100,8 @@ public class SystemRegistrationManager implements InitializingBean {
 	@Autowired
 	private Scheduler scheduler;
 	@Autowired
+	private HttpClientService httpClientService;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -140,7 +142,7 @@ public class SystemRegistrationManager implements InitializingBean {
 		}
 		
 		String csvCoordinates = null;
-		try(CloseableHttpClient client = HttpClientFactory.getHttpClientInstance(true)) {
+		try(CloseableHttpClient client = httpClientService.getThreadSafeHttpClient(true)) {
 			URIBuilder uriBuilder = new URIBuilder("http://maps.google.com/maps/geo");
 			List<NameValuePair> nvps = new ArrayList<>(5);
 			nvps.add(new BasicNameValuePair("q",textLocation));
@@ -179,7 +181,7 @@ public class SystemRegistrationManager implements InitializingBean {
 	protected void sendRegistrationData() {
 		HttpPut method = null;
 
-		try(CloseableHttpClient client = HttpClientFactory.getHttpClientInstance(true)) {
+		try(CloseableHttpClient client = httpClientService.getThreadSafeHttpClient(true)) {
 			// Do it optimistic and try to generate the XML message. If the message
 			// doesn't contain anything, the user does not want to register this
 			// instance
@@ -206,11 +208,11 @@ public class SystemRegistrationManager implements InitializingBean {
 			HttpResponse response = client.execute(method);
 			int status = response.getStatusLine().getStatusCode();
 			if(status == HttpStatus.SC_CREATED) {
-				log.info("Successfully registered OLAT installation on openolat.org server, thank you for your support!");
+				log.info("Successfully registered OpenOlat installation on openolat.org server, thank you for your support!");
 				String registrationKey = EntityUtils.toString(response.getEntity());
 				registrationModule.setSecretKey(registrationKey);
 			} else if (status == HttpStatus.SC_NOT_MODIFIED || status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED) {
-				log.info("Successfully registered OLAT installation on openolat.org server, thank you for your support!");
+				log.info("Successfully registered OpenOlat installation on openolat.org server, thank you for your support!");
 			} else if (status == HttpStatus.SC_NOT_FOUND) {
 				log.error("Registration server not found: " + response.getStatusLine().toString());
 			} else if(status == HttpStatus.SC_NO_CONTENT){

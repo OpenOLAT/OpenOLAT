@@ -36,14 +36,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
@@ -68,6 +66,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -141,6 +140,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private CalendarManager calendarManager;
 	@Autowired
 	private TaskExecutorManager taskManager;
+	@Autowired
+	private HttpClientService httpClientService;
 	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
@@ -1253,9 +1254,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		HttpEntity myEntity = new StringEntity(payload, cType);
 		post.setEntity(myEntity);
 		
-		RequestConfig requestConfig = getRequestConfiguration();
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create()
-				.setDefaultRequestConfig(requestConfig)
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClientBuilder()
 				.disableAutomaticRetries()
 				.build();
 				CloseableHttpResponse response = httpClient.execute(post)) {
@@ -1272,9 +1271,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private Document sendGetRequest(BigBlueButtonUriBuilder builder, BigBlueButtonErrors errors) {
 		URI uri = builder.build();
 		HttpGet get = new HttpGet(uri);
-		RequestConfig requestConfig = getRequestConfiguration();
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create()
-				.setDefaultRequestConfig(requestConfig)
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClientBuilder()
 				.disableAutomaticRetries()
 				.build();
 				CloseableHttpResponse response = httpClient.execute(get)) {
@@ -1286,14 +1283,6 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			log.error("Cannot send: {}", uri, e);
 			return null;
 		}
-	}
-	
-	private RequestConfig getRequestConfiguration() {
-		return RequestConfig.copy(RequestConfig.DEFAULT)
-				.setConnectTimeout(bigBlueButtonModule.getHttpConnectTimeout())
-				.setConnectionRequestTimeout(bigBlueButtonModule.getHttpConnectRequestTimeout())
-				.setSocketTimeout(bigBlueButtonModule.getHttpSocketTimeout())
-				.build();
 	}
 	
 	private static class ServerLoadComparator implements Comparator<BigBlueButtonServerInfos> {

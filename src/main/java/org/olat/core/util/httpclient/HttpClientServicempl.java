@@ -26,6 +26,7 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.RedirectStrategy;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -35,49 +36,53 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
+import org.olat.core.commons.persistence.DB;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
- * <h3>Description:</h3>
- * The HttpClientFactory creates multithreaded jakarta commons HttpClients that
- * feature SSL capability with support for unsigned SSL certificates. <br>
- * When using HttpClient in OLAT you must use this factory and never use new
- * HttpClient() directly since this would not be thread save.
- * <p>
+ * 
  * Initial Date: 21.03.2007 <br>
  * 
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
-public class HttpClientFactory {
+@Service
+public class HttpClientServicempl implements HttpClientService {
 	
-	/**
-	 * [used by Spring]
-	 */
-	public void destroy() {
-		//nothing to do
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private HttpClientModule httpClientModule;
+	
+	@Override
+	public HttpClientBuilder createHttpClientBuilder() {
+		dbInstance.commit();// free connection
+		
+		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
+				.setConnectTimeout(httpClientModule.getHttpConnectTimeout())
+				.setConnectionRequestTimeout(httpClientModule.getHttpConnectRequestTimeout())
+				.setSocketTimeout(httpClientModule.getHttpSocketTimeout())
+				.build();
+		return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig);
+	}
+	
+	@Override
+	public CloseableHttpClient createHttpClient() {
+		return createHttpClientBuilder().build();
+	}
+	
+	@Override
+	public CloseableHttpClient getThreadSafeHttpClient(boolean redirect) {
+		return getThreadSafeHttpClient(null, -1, null, null, redirect);
 	}
 
-	/**
-	 * 
-	 * @param redirect If redirect is allowed
-	 * @return CloseableHttpClient
-	 */
-	public static CloseableHttpClient getHttpClientInstance(boolean redirect) {
-		return getHttpClientInstance(null, -1, null, null, redirect);
-	}
-
-	/**
-	 * 
-	 * @param host For basic authentication
-	 * @param port For basic authentication
-	 * @param user For basic authentication
-	 * @param password For basic authentication
-	 * @param redirect If redirect is allowed
-	 * @return CloseableHttpClient
-	 */
-	public static CloseableHttpClient getHttpClientInstance(String host, int port, String user, String password, boolean redirect) {
+	@Override
+	public CloseableHttpClient getThreadSafeHttpClient(String host, int port, String user, String password, boolean redirect) {
+		dbInstance.commit();// free connection
+		
 		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
 		SocketConfig.Builder socketConfigBuilder = SocketConfig.copy(SocketConfig.DEFAULT);
-		socketConfigBuilder.setSoTimeout(10000);
+		socketConfigBuilder.setSoTimeout(httpClientModule.getHttpSocketTimeout());
 		cm.setDefaultSocketConfig(socketConfigBuilder.build());
 
 		HttpClientBuilder clientBuilder = HttpClientBuilder.create()
@@ -108,4 +113,5 @@ public class HttpClientFactory {
 			return null;
 		}
 	}
+	
 }

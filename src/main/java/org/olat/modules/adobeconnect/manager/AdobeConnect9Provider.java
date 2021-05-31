@@ -52,7 +52,7 @@ import org.springframework.stereotype.Service;
 public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 	
 	private static final Logger log = Tracing.createLoggerFor(AdobeConnect9Provider.class);
-
+	
 	@Override
 	public String getId() {
 		return "connect9";
@@ -133,7 +133,7 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 		URI uri = builder.build();
 		BreezeSession session = null;
 		HttpGet getInfo = new HttpGet(uri);
-		try(CloseableHttpClient httpClient = buildHttpClient();
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
 			CloseableHttpResponse response = httpClient.execute(getInfo)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {

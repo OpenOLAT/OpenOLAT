@@ -31,7 +31,6 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.pdf.PdfSPI;
@@ -50,6 +49,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -74,6 +74,9 @@ public class AthenaPdfSPI extends AbstractSpringModule implements PdfSPI {
 	private String serviceUrl;
 	@Value("${athena.pdf.key:arachnys-weaver}")
 	private String serviceKey;
+	
+	@Autowired
+	private HttpClientService httpClientService;
 	
 	@Autowired
 	public AthenaPdfSPI(CoordinatorManager coordinatorManager) {
@@ -150,8 +153,7 @@ public class AthenaPdfSPI extends AbstractSpringModule implements PdfSPI {
 	}
 
 	private void render(String key, String rootFilename, OutputStream out) {
-		HttpClientBuilder builder = HttpClientBuilder.create();
-		try(CloseableHttpClient httpclient = builder.build()) {
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClient()) {
 			
 			StringBuilder sb = new StringBuilder(128);
 			sb.append(serviceUrl);
