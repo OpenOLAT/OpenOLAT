@@ -1995,16 +1995,24 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		config.setShowResultsAfterFinish(showResFinish == null || showResFinish.booleanValue());// default true
 		String showResDate = (String)moduleConfig.get(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
 		config.setShowResultsDependendOnDate(showResDate == null ? IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS : showResDate);
-		config.setShowResultsStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE));
-		config.setShowResultsEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE));
-		config.setShowResultsPassedStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
-		config.setShowResultsPassedEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
-		config.setShowResultsFailedStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
-		config.setShowResultsFailedEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
+		config.setShowResultsStartDate(getDateSecure(moduleConfig, IQEditController.CONFIG_KEY_RESULTS_START_DATE));
+		config.setShowResultsEndDate(getDateSecure(moduleConfig, IQEditController.CONFIG_KEY_RESULTS_END_DATE));
+		config.setShowResultsPassedStartDate(getDateSecure(moduleConfig, IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
+		config.setShowResultsPassedEndDate(getDateSecure(moduleConfig, IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
+		config.setShowResultsFailedStartDate(getDateSecure(moduleConfig, IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
+		config.setShowResultsFailedEndDate(getDateSecure(moduleConfig, IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
 		
 		config.setSummaryPresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT));
 
 		return Response.ok(config).build();
+	}
+	
+	private Date getDateSecure(ModuleConfiguration moduleConfig, String key) {
+		Object obj = moduleConfig.get(key);
+		if(obj instanceof Date) {
+			return (Date)obj;
+		}
+		return moduleConfig.getDateValue(key);
 	}
 	
 	@PUT
