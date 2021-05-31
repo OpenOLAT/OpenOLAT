@@ -96,7 +96,7 @@ public class IframeTunnelController extends BasicController implements Cloneable
 		} else { // tunnel
 			Identity ident = ureq.getIdentity();
 			String ipAddress = ureq.getUserSession().getSessionInfo().getFromIP();
-			httpClientInstance = httpClientService.getThreadSafeHttpClient(host, port.intValue(), user, pass, true);
+			httpClientInstance = httpClientService.createThreadSafeHttpClient(host, port.intValue(), user, pass, true);
 			Mapper mapper = new TunnelMapper(proto, host, port, startUri, ipAddress, ident, httpClientInstance);
 			String amapPath = registerMapper(ureq, mapper);
 			String alluri = amapPath + startUri;

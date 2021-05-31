@@ -72,12 +72,12 @@ public class HttpClientServicempl implements HttpClientService {
 	}
 	
 	@Override
-	public CloseableHttpClient getThreadSafeHttpClient(boolean redirect) {
-		return getThreadSafeHttpClient(null, -1, null, null, redirect);
+	public CloseableHttpClient createThreadSafeHttpClient(boolean redirect) {
+		return createThreadSafeHttpClient(null, -1, null, null, redirect);
 	}
 
 	@Override
-	public CloseableHttpClient getThreadSafeHttpClient(String host, int port, String user, String password, boolean redirect) {
+	public CloseableHttpClient createThreadSafeHttpClient(String host, int port, String user, String password, boolean redirect) {
 		dbInstance.commit();// free connection
 		
 		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();

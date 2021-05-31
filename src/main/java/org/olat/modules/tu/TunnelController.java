@@ -71,7 +71,7 @@ public class TunnelController extends DefaultController implements CloneableCont
 		String pass = (String)config.get(TUConfigForm.CONFIGKEY_PASS);
 		String host = (String)config.get(TUConfigForm.CONFIGKEY_HOST);
 		Integer port = (Integer)config.get(TUConfigForm.CONFIGKEY_PORT);
-		httpClientInstance = httpClientService.getThreadSafeHttpClient(host, port.intValue(), user, pass, true);
+		httpClientInstance = httpClientService.createThreadSafeHttpClient(host, port.intValue(), user, pass, true);
 
 		tuc = new TunnelComponent("tuc", config, httpClientInstance, ureq);
 		main.put("tuc", tuc);
