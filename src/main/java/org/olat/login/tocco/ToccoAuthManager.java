@@ -74,7 +74,7 @@ public class ToccoAuthManager implements AuthenticationSPI {
 
 	@Override
 	public Identity authenticate(String login, String password) {
-		try(CloseableHttpClient httpclient = httpClientService.getThreadSafeHttpClient(false)) {
+		try(CloseableHttpClient httpclient = httpClientService.createThreadSafeHttpClient(false)) {
 			String serverUrl = toccoLoginModule.getToccoServerUrl();
 			URL loginUri = new URL(serverUrl);
 			HttpPost loginPost = new HttpPost(loginUri.toURI());
