@@ -25,14 +25,13 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.modules.edusharing.EdusharingException;
 import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.modules.edusharing.EdusharingProperties;
@@ -55,15 +54,11 @@ class EdusharingHttpClient {
 	
 	private static final Logger log = Tracing.createLoggerFor(EdusharingHttpClient.class);
 	
-	private static final int TIMEOUT_5000_MILLIS = 5000;
-	private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()
-			.setSocketTimeout(TIMEOUT_5000_MILLIS)
-			.setConnectTimeout(TIMEOUT_5000_MILLIS)
-			.setConnectionRequestTimeout(TIMEOUT_5000_MILLIS)
-			.build();
 	
 	@Autowired
 	private EdusharingModule edusharingModule;
+	@Autowired
+	private HttpClientService httpClientService;
 
 	EdusharingProperties getMetadata() throws EdusharingException {
 		// Usually LMS uses the metadata from format=lms. But usually LMS are
@@ -72,7 +67,7 @@ class EdusharingHttpClient {
 		String url = edusharingModule.getBaseUrl() + "metadata?format=repository";
 		HttpGet request = new HttpGet(url);
 		
-		try (CloseableHttpClient httpClient = HttpClients.createDefault();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode == 200) {
@@ -139,8 +134,7 @@ class EdusharingHttpClient {
 	private EdusharingResponse getEdusharingResponse(String url) throws IOException, ClientProtocolException {
 		log.debug("edu-sharing: get from " + url);
 		HttpGet request = new HttpGet(url);
-		request.setConfig(REQUEST_CONFIG);
-		CloseableHttpClient httpClient = HttpClients.createDefault();
+		CloseableHttpClient httpClient = httpClientService.createHttpClient();
 		CloseableHttpResponse httpResponse = httpClient.execute(request);
 		logUnsuccessful(httpResponse, url);
 		return new EdusharingHttpResponse(httpClient, httpResponse);

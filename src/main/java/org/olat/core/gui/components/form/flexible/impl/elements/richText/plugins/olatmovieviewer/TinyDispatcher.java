@@ -25,16 +25,17 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 
 /**
  * 
@@ -61,7 +62,8 @@ public class TinyDispatcher implements Dispatcher {
 
 		String nanooId = ureq.getParameter("nanooId");
 		if(ureq.getUserSession().isAuthenticated() && StringHelper.containsNonWhitespace(nanooId) && nanooId.length() > 5) {
-			try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+			HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.class);
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
 				String url = "https://www.nanoo.tv/services/oembed?url=https%3A//nanoo.tv/link/v/" + nanooId + "&format=json";
 				HttpGet get = new HttpGet(url);
 				get.addHeader("Accept", "application/json");

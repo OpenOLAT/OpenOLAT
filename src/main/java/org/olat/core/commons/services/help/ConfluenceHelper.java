@@ -30,13 +30,14 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.httpclient.HttpClientFactory;
+import org.olat.core.util.httpclient.HttpClientService;
 
 /**
  * Helper to create openolat confluence help links.  
@@ -188,6 +189,7 @@ public class ConfluenceHelper {
 			// exit here with null. Next time the page is loaded the translated
 			// page will be in the cache. 
 			
+			HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.class);
 			// Do this only once per 30 mins per page. Confluence might be down
 			// or another user already trigger the fetch.
 			Date lastTrial = translatTrials.get(aliasUrl);
@@ -197,7 +199,7 @@ public class ConfluenceHelper {
 				new Thread() {
 					@Override
 					public void run() {
-						try(CloseableHttpClient httpClient = HttpClientFactory.getHttpClientInstance(false)) {
+						try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(false)) {
 							// Phase 1: lookup alias redirect
 							HttpGet httpMethod = new HttpGet(aliasUrl);
 							httpMethod.setHeader("User-Agent", Settings.getFullVersionInfo());

@@ -23,7 +23,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
@@ -32,10 +31,11 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.ims.lti13.LTI13JsonUtil;
 
 /**
@@ -86,9 +86,8 @@ public class LTI13RequestUtil {
 		HttpEntity myEntity = new StringEntity(payloadString, cType);
 		method.setEntity(myEntity);
 
-		RequestConfig requestConfig = getRequestConfiguration();
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create()
-				.setDefaultRequestConfig(requestConfig)
+		try(CloseableHttpClient httpClient = CoreSpringFactory.getImpl(HttpClientService.class)
+				.createHttpClientBuilder()
 				.disableAutomaticRetries()
 				.build();
 				CloseableHttpResponse response = httpClient.execute(method)) {
@@ -108,9 +107,8 @@ public class LTI13RequestUtil {
 		get.addHeader("Authorization", "Bearer " + accessToken);
 		get.addHeader("Accept", accept);
 
-		RequestConfig requestConfig = getRequestConfiguration();
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create()
-				.setDefaultRequestConfig(requestConfig)
+		try(CloseableHttpClient httpClient = CoreSpringFactory.getImpl(HttpClientService.class)
+				.createHttpClientBuilder()
 				.disableAutomaticRetries()
 				.build();
 				CloseableHttpResponse response = httpClient.execute(get)) {
@@ -122,14 +120,6 @@ public class LTI13RequestUtil {
 			log.error("Cannot send: {}", uri, e);
 			return null;
 		}
-	}
-	
-	private static RequestConfig getRequestConfiguration() {
-		return RequestConfig.copy(RequestConfig.DEFAULT)
-				.setConnectTimeout(30000)
-				.setConnectionRequestTimeout(30000)
-				.setSocketTimeout(30000)
-				.build();
 	}
 
 }

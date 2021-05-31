@@ -31,13 +31,14 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.httpclient.HttpClientFactory;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.LOMDuration;
@@ -115,7 +116,8 @@ public class YoutubeProvider extends AbstractSpringModule implements ConfigOnOff
 		HttpGet get = new HttpGet(googleUrl);
 		
 		YoutubeMetadata data = null;		
-		try(CloseableHttpClient client = HttpClientFactory.getHttpClientInstance(true);
+		HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.class);
+		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true);
 				CloseableHttpResponse response = client.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200) {

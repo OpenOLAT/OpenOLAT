@@ -53,6 +53,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -87,7 +88,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	@Autowired
 	private OnlyOfficeSecurityService onlyOfficeSecurityService;
 	@Autowired
-	private OnlyOfficeHttpClientCreator httpClientCreator;
+	private HttpClientService httpClientService;
 	@Autowired
 	private DocEditorService documentEditorServie;
 	@Autowired
@@ -339,7 +340,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		String autorization = "Bearer " + token;
 		HttpGet request = new HttpGet(url);
 		request.addHeader("Authorization", autorization);
-		try (CloseableHttpClient httpClient = httpClientCreator.create();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			if (httpResponse.getStatusLine().getStatusCode() == 200) {
 				InputStream content = httpResponse.getEntity().getContent();

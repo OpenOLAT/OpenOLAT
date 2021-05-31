@@ -26,10 +26,10 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.ims.lti.LTIManager;
 import org.olat.modules.card2brain.Card2BrainManager;
 import org.olat.modules.card2brain.Card2BrainModule;
@@ -52,11 +52,12 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 
 	@Autowired
 	private Card2BrainModule card2brainModule;
-
 	@Autowired
 	private LTIManager ltiManager;
+	@Autowired
+	private HttpClientService httpClientService;
 
-	ObjectMapper mapper;
+	private ObjectMapper mapper;
 
 	public Card2BrainManagerImpl() {
 		mapper = new ObjectMapper();
@@ -69,7 +70,7 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 		String url = String.format(card2brainModule.getPeekViewUrl(), alias);
 
 		HttpGet request = new HttpGet(url);
-		try(CloseableHttpClient httpclient = HttpClients.createDefault();
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClient();
 				CloseableHttpResponse response = httpclient.execute(request);) {
 			setOfFlashcardExists = isSetOfFlashcardExisting(response);
 		} catch(Exception e) {

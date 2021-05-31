@@ -37,9 +37,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.core.util.httpclient.HttpClientFactory;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.course.nodes.tu.TUConfigForm;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<BR>
@@ -57,11 +58,9 @@ public class TunnelController extends DefaultController implements CloneableCont
 	private VelocityContainer main;
 	private CloseableHttpClient httpClientInstance;
 	
-	/**
-	 * Constructor for a tunnel component wrapper controller
-	 * @param ureq
-	 * @param config the module configuration
-	 */
+	@Autowired
+	private HttpClientService httpClientService;
+	
 	public TunnelController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
 		super(wControl);
 		this.config = config;
@@ -72,33 +71,24 @@ public class TunnelController extends DefaultController implements CloneableCont
 		String pass = (String)config.get(TUConfigForm.CONFIGKEY_PASS);
 		String host = (String)config.get(TUConfigForm.CONFIGKEY_HOST);
 		Integer port = (Integer)config.get(TUConfigForm.CONFIGKEY_PORT);
-		httpClientInstance = HttpClientFactory.getHttpClientInstance(host, port.intValue(), user, pass, true);
+		httpClientInstance = httpClientService.createThreadSafeHttpClient(host, port.intValue(), user, pass, true);
 
 		tuc = new TunnelComponent("tuc", config, httpClientInstance, ureq);
 		main.put("tuc", tuc);
 		setInitialComponent(main);
 	}
 
-	/** 
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do
 	}
 
-	/** 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		IOUtils.closeQuietly(httpClientInstance);
 		tuc = null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.clone.CloneableController#cloneController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller cloneController(UserRequest ureq, WindowControl control) {
 		return new TunnelController(ureq, control, config);
