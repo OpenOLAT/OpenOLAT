@@ -35,7 +35,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
@@ -44,6 +43,7 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
 import org.olat.course.nodes.livestream.LiveStreamModule;
@@ -78,6 +78,8 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 	private UrlTemplateDAO urlTemplateDao;
 	@Autowired
 	private LaunchDAO launchDao;
+	@Autowired
+	private HttpClientService httpClientService;
 
 	@Override
 	public ScheduledExecutorService getScheduler() {
@@ -272,7 +274,7 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 
 	private boolean isStreaming(String url) {
 		HttpGet request = new HttpGet(url);
-		try(CloseableHttpClient httpclient = HttpClients.createDefault();
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClient();
 			CloseableHttpResponse response = httpclient.execute(request);) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if (statusCode == HttpStatus.SC_OK) {

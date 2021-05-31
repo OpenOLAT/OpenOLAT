@@ -68,7 +68,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
-import org.olat.core.util.httpclient.HttpClientFactory;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -163,6 +163,8 @@ public class VideoManagerImpl implements VideoManager {
 	private Scheduler scheduler;
 	@Autowired
 	private ImageService imageHelper;
+	@Autowired
+	private HttpClientService httpClientService;
 
 	/**
 	 * get the configured posterframe
@@ -928,7 +930,7 @@ public class VideoManagerImpl implements VideoManager {
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "image/jpg");
 		
-		try(CloseableHttpClient httpClient = HttpClientFactory.getHttpClientInstance(true);
+		try(CloseableHttpClient httpClient = httpClientService.getThreadSafeHttpClient(true);
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			download(response, posterFile);	
 		} catch(Exception e) {
@@ -961,7 +963,7 @@ public class VideoManagerImpl implements VideoManager {
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "video/mp4");
 		
-		try(CloseableHttpClient httpClient = HttpClientFactory.getHttpClientInstance(true);
+		try(CloseableHttpClient httpClient = httpClientService.getThreadSafeHttpClient(true);
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			download(response, videoFile);	
 		} catch(Exception e) {

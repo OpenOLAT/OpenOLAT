@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -38,16 +37,16 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.gotomeeting.GoToMeeting;
@@ -93,6 +92,8 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	private GoToRegistrantDAO registrantDao;
 	@Autowired
 	private GoToMeetingModule goToMeetingModule;
+	@Autowired
+	private HttpClientService httpClientService;
 
 
 	@Override
@@ -642,16 +643,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	}
 	
 	private GoToResponse execute(HttpUriRequest request) {
-		dbInstance.commit();// free connection
-		
-		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
-				.setConnectTimeout(goToMeetingModule.getHttpConnectTimeout())
-				.setConnectionRequestTimeout(goToMeetingModule.getHttpConnectRequestTimeout())
-				.setSocketTimeout(goToMeetingModule.getHttpSocketTimeout())
-				.build();
-		
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
-				
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
 				CloseableHttpResponse response = httpClient.execute(request)) {
 			int status = response.getStatusLine().getStatusCode();
 			HttpEntity entity = response.getEntity();

@@ -28,8 +28,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.olat.core.commons.services.sms.MessagesSPI;
@@ -38,10 +38,10 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -71,6 +71,9 @@ public class WebSMSProvider extends AbstractSpringModule implements MessagesSPI 
 	private String password;
 	
 	private boolean test = false;
+	
+	@Autowired
+	private HttpClientService httpClientService;
 	
 	@Autowired
 	public WebSMSProvider(CoordinatorManager coordinatorManager) {
@@ -159,7 +162,7 @@ public class WebSMSProvider extends AbstractSpringModule implements MessagesSPI 
 		HttpEntity smsEntity = new StringEntity(objectStr, ContentType.APPLICATION_JSON);
 		send.setEntity(smsEntity);
 		
-		try(CloseableHttpClient httpclient = HttpClientBuilder.create()
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClientBuilder()
 				.setDefaultCredentialsProvider(provider)
 				.build();
 				CloseableHttpResponse response = httpclient.execute(send)) {

@@ -49,6 +49,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaMapper;
@@ -76,7 +77,7 @@ public class OnlyOfficeConversionServiceImpl implements OnlyOfficeConversionServ
 	@Autowired
 	private OnlyOfficeSecurityService onlyOfficeSecurityService;
 	@Autowired
-	private OnlyOfficeHttpClientCreator httpClientCreator;
+	private HttpClientService httpClientService;
 	@Autowired
 	private MapperService mapperService;
 
@@ -172,7 +173,7 @@ public class OnlyOfficeConversionServiceImpl implements OnlyOfficeConversionServ
 		request.setEntity(requestEntity);
 
 		ConversionResult conversionResult = null;
-		try (CloseableHttpClient client = httpClientCreator.create();
+		try (CloseableHttpClient client = httpClientService.createHttpClient();
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of create thumbnail request: {}", statusCode);
@@ -199,7 +200,7 @@ public class OnlyOfficeConversionServiceImpl implements OnlyOfficeConversionServ
 		boolean thumbnailCreated = false;
 		
 		HttpGet downLoadRequest = new HttpGet(fileUrl);
-		try (CloseableHttpClient httpClient = httpClientCreator.create();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
 				CloseableHttpResponse httpResponse = httpClient.execute(downLoadRequest);) {
 			if (httpResponse.getStatusLine().getStatusCode() == 200) {
 				InputStream content = httpResponse.getEntity().getContent();

@@ -35,8 +35,8 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.logging.log4j.Logger;
 import org.imsglobal.basiclti.BasicLTIUtil;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -45,10 +45,10 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.ims.lti.LTIContext;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.LTIOutcome;
@@ -75,6 +75,8 @@ public class LTIManagerImpl implements LTIManager {
 	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private HttpClientService httpClientService;
 
 	@Override
 	public LTIOutcome createOutcome(Identity identity, OLATResource resource,
@@ -326,7 +328,7 @@ public class LTIManagerImpl implements LTIManager {
 				.collect(Collectors.toList());
 
 		// make the http request and evaluate the result
-		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+		try (CloseableHttpClient httpclient = httpClientService.createHttpClient()) {
 			HttpPost request = new HttpPost(url);
 			HttpEntity postParams = new UrlEncodedFormEntity(urlParameters);
 			request.setEntity(postParams);

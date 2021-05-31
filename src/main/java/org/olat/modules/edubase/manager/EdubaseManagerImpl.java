@@ -25,11 +25,9 @@ import java.net.SocketTimeoutException;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
@@ -38,6 +36,7 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.modules.edubase.BookDetails;
@@ -64,12 +63,13 @@ public class EdubaseManagerImpl implements EdubaseManager {
 	private static final Logger log = Tracing.createLoggerFor(EdubaseManagerImpl.class);
 
 	private static final String USER_ID_CONCAT = "#";
-	private static final int TIMEOUT_5000_MILLIS = 5000;
 
 	@Autowired
 	private EdubaseModule edubaseModule;
 	@Autowired
 	private LoginModule loginModul;
+	@Autowired
+	private HttpClientService httpClientService;
 
 	@Override
 	public boolean validateBookId(String url) {
@@ -175,16 +175,9 @@ public class EdubaseManagerImpl implements EdubaseManager {
 	public BookDetails fetchBookDetails(String bookId) {
 		BookDetails infoReponse = new BookDetailsImpl();
 
-		RequestConfig requestConfig = RequestConfig.custom()
-				  .setSocketTimeout(TIMEOUT_5000_MILLIS)
-				  .setConnectTimeout(TIMEOUT_5000_MILLIS)
-				  .setConnectionRequestTimeout(TIMEOUT_5000_MILLIS)
-				  .build();
-
 		String url = String.format(edubaseModule.getInfoverUrl(), bookId);
 		HttpGet request = new HttpGet(url);
-		request.setConfig(requestConfig);
-		try (CloseableHttpClient httpClient = HttpClients.createDefault();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
 			ObjectMapper objectMapper = new ObjectMapper();

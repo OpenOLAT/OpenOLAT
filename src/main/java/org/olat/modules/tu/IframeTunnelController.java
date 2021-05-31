@@ -40,9 +40,10 @@ import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.httpclient.HttpClientFactory;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.course.nodes.tu.TUConfigForm;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *   Initial Date: 09.01.2006
@@ -61,14 +62,10 @@ public class IframeTunnelController extends BasicController implements Cloneable
 	
 	private CloseableHttpClient httpClientInstance; // package local for performance only
 	private ModuleConfiguration config;
+	
+	@Autowired
+	private HttpClientService httpClientService;
 
-	/**
-	 * Constructor for a tunnel component wrapper controller
-	 * 
-	 * @param ureq the userrequest
-	 * @param wControl the windowcontrol
-	 * @param config the module configuration
-	 */
 	public IframeTunnelController(UserRequest ureq, WindowControl wControl, final ModuleConfiguration config) {
 		super(ureq, wControl);
 		// use iframe translator for generic iframe title text
@@ -99,7 +96,7 @@ public class IframeTunnelController extends BasicController implements Cloneable
 		} else { // tunnel
 			Identity ident = ureq.getIdentity();
 			String ipAddress = ureq.getUserSession().getSessionInfo().getFromIP();
-			httpClientInstance = HttpClientFactory.getHttpClientInstance(host, port.intValue(), user, pass, true);
+			httpClientInstance = httpClientService.getThreadSafeHttpClient(host, port.intValue(), user, pass, true);
 			Mapper mapper = new TunnelMapper(proto, host, port, startUri, ipAddress, ident, httpClientInstance);
 			String amapPath = registerMapper(ureq, mapper);
 			String alluri = amapPath + startUri;
@@ -117,26 +114,17 @@ public class IframeTunnelController extends BasicController implements Cloneable
 		putInitialPanel(myContent);		
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		IOUtils.closeQuietly(httpClientInstance);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.clone.CloneableController#cloneController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
+	@Override
 	public Controller cloneController(UserRequest ureq, WindowControl control) {
 		return new IframeTunnelController(ureq, control, config);
 	}
