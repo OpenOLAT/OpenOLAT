@@ -66,7 +66,6 @@ import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.TimeZone;
-import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.parameter.TzId;
@@ -80,6 +79,7 @@ import net.fortuna.ical4j.model.property.Version;
 import net.fortuna.ical4j.model.property.XProperty;
 import net.fortuna.ical4j.util.ResourceLoader;
 import net.fortuna.ical4j.util.Strings;
+import net.fortuna.ical4j.validate.ValidationException;
 
 
 /**
@@ -461,8 +461,8 @@ public class ICalServlet extends HttpServlet {
 			
 			java.util.Calendar excCal = java.util.Calendar.getInstance();
 
-			Parameter dateParameter = event.getProperties().getProperty(Property.DTSTART)
-					.getParameters().getParameter(Value.DATE.getName());
+			Parameter dateParameter = ((Property) event.getProperties().getProperty(Property.DTSTART))
+					.getParameter(Value.DATE.getName());
 			boolean dateOnly = dateParameter != null;
 
 			DateList newDateList = dateOnly ? new DateList(Value.DATE) : new DateList();

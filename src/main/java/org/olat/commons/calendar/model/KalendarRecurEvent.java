@@ -73,6 +73,7 @@ public class KalendarRecurEvent extends KalendarEvent {
 		setLastModified(event.getLastModified());
 		setKalendar(event.getCalendar());
 		setLocation(event.getLocation());
+		setColor(event.getColor());
 		setManagedFlags(event.getManagedFlags());
 		setNumParticipants(event.getNumParticipants());
 		setParticipants(event.getParticipants());

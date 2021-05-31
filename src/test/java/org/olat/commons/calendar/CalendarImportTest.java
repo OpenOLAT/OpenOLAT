@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.logging.Tracing;
 
@@ -52,6 +53,11 @@ import net.fortuna.ical4j.model.property.RecurrenceId;
 public class CalendarImportTest {
 
 	private static final Logger log = Tracing.createLoggerFor(CalendarImportTest.class);
+	
+	@Before
+	public void setUp() {
+		System.setProperty("net.fortuna.ical4j.timezone.cache.impl", "net.fortuna.ical4j.util.MapTimeZoneCache");
+	}
 	
 	@Test
 	public void testImportMonthFromOutlook() throws IOException, ParserException {

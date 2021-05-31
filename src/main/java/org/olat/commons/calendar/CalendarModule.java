@@ -78,6 +78,8 @@ public class CalendarModule extends AbstractSpringModule {
 	
 	@Override
 	public void init() {
+		// infinispan as JCache throw some exception. So we use the internal cache implementation
+		System.setProperty("net.fortuna.ical4j.timezone.cache.impl", "net.fortuna.ical4j.util.MapTimeZoneCache");
 		//some computers have no Internet access, the host can be down and we must get the default time zone
 		System.setProperty("net.fortuna.ical4j.timezone.update.enabled", "false");
 		System.setProperty(CompatibilityHints.KEY_RELAXED_UNFOLDING, "true");

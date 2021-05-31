@@ -52,6 +52,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -64,7 +65,6 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.Cacher;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -73,7 +73,7 @@ import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import net.fortuna.ical4j.data.CalendarOutputter;
-import net.fortuna.ical4j.model.ValidationException;
+import net.fortuna.ical4j.validate.ValidationException;
 
 
 public class ICalFileCalendarManagerTest extends OlatTestCase {
@@ -713,6 +713,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 
 		// thread 1
 		Thread thread1 = new Thread() {
+			@Override
 			public void run() {
 				try {
 					// 1. load calendar
@@ -746,6 +747,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 
 		// thread 2
 		Thread thread2 = new Thread() {
+			@Override
 			public void run() {
 				try {
 					// 1. load calendar
@@ -823,6 +825,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 
 		// thread 1
 		Thread thread1 = new Thread() {
+			@Override
 			public void run() {
 				try {
 					// 1. load calendar
@@ -856,6 +859,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		
 		// thread 2
 		Thread thread2 = new Thread() {
+			@Override
 			public void run() {
 				try {
 					Kalendar calendar = calendarManager.getPersonalCalendar(test).getKalendar();
@@ -935,6 +939,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 
 		// thread 1
 		Thread thread1 = new Thread() {
+			@Override
 			public void run() {
 				try {
 					// 1. load calendar
@@ -968,6 +973,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		
 		// thread 2
 		Thread thread2 = new Thread() {
+			@Override
 			public void run() {
 				try {
 					Kalendar calendar = calendarManager.getPersonalCalendar(test).getKalendar();

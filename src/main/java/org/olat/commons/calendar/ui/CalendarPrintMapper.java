@@ -208,7 +208,7 @@ public class CalendarPrintMapper implements Mapper {
 			&& !eventWrapper.getKalendarRenderWrapper().isPrivateEventsVisible()) {
 			return;
 		}
-
+		
 		// Show all PUBLIC and FREEBUSY events
 		String escapedSubject = Formatter.escWithBR(event.getSubject()).toString();
 		escapedSubject = escapedSubject.replace('\r', ' ');

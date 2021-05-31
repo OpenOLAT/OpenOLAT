@@ -33,7 +33,7 @@ import java.util.List;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarUtils;
 
-import net.fortuna.ical4j.model.Recur;
+import net.fortuna.ical4j.model.Recur.Frequency;
 
 public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 
@@ -41,10 +41,10 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	public static final int CLASS_X_FREEBUSY = 1;
 	public static final int CLASS_PUBLIC = 2;
 	
-	public static final String DAILY = Recur.DAILY;
-	public static final String WEEKLY = Recur.WEEKLY;
-	public static final String MONTHLY = Recur.MONTHLY;
-	public static final String YEARLY = Recur.YEARLY;
+	public static final String DAILY = Frequency.DAILY.name();
+	public static final String WEEKLY = Frequency.WEEKLY.name();
+	public static final String MONTHLY = Frequency.MONTHLY.name();
+	public static final String YEARLY = Frequency.YEARLY.name();
 	public static final String WORKDAILY = "WORKDAILY";
 	public static final String BIWEEKLY = "BIWEEKLY";
 	
@@ -61,6 +61,7 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	private Date immutableBegin, immutableEnd;
 	private boolean isAllDayEvent;
 	private String location;
+	private String color;
 	private List<KalendarEventLink> kalendarEventLinks;
 	private long created, lastModified;
 	private String createdBy;
@@ -274,6 +275,14 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 
 	public void setLocation(String location) {
 		this.location = location;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
 	}
 
 	public Kalendar getCalendar() {

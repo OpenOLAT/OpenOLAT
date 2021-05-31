@@ -33,34 +33,54 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 
 
 public class CalendarColorChooserController extends BasicController {
 
 	private String choosenColor;
-	private final CalendarPersonalConfigurationRow row;
+	private CalendarPersonalConfigurationRow row;
 
 	private static final String[] colors = new String[]{
 		"o_cal_green", "o_cal_lime", "o_cal_blue", "o_cal_orange", "o_cal_fuchsia",
 		"o_cal_yellow", "o_cal_red", "o_cal_rebeccapurple", "o_cal_navy", "o_cal_olive",
 		"o_cal_maroon", "o_cal_grey"
 	};
+	
+	public static boolean colorExists(String color) {
+		if (StringHelper.containsNonWhitespace(color)) {
+			for (String colorClass : colors) {
+				if (colorClass.equalsIgnoreCase(color)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	public CalendarColorChooserController(UserRequest ureq, WindowControl wControl,
 			CalendarPersonalConfigurationRow row) {
 		super(ureq, wControl);
-		
 		this.row = row;
+		init(row.getCssClass());
+	}
+
+	public CalendarColorChooserController(UserRequest ureq, WindowControl wControl, String currentColor) {
+		super(ureq, wControl);
+		init(currentColor);
+	}
+	
+	private void init(String currentColor) {
 		VelocityContainer colorVC = createVelocityContainer("calEdit", "calColor");
 		for(String color:colors) {
-			addColor(color, row.getCssClass(), colorVC);
+			addColor(color, currentColor, colorVC);
 		}
 		putInitialPanel(colorVC);
 	}
 	
 	private void addColor(String css, String currentCssSelection, VelocityContainer colorVC) {
 		Link colorLink = LinkFactory.createCustomLink(css, "selc", "", Link.NONTRANSLATED, colorVC, this);
-		if (currentCssSelection.equals(css)){
+		if (css.equals(currentCssSelection)){
 			colorLink.setIconLeftCSS("o_icon o_cal_colorchooser_selected");
 		} else {
 			colorLink.setIconLeftCSS("o_icon");

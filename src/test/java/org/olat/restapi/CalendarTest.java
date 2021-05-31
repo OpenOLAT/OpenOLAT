@@ -533,6 +533,7 @@ public class CalendarTest extends OlatRestTestCase {
 		event.setExternalId(random());
 		event.setExternalSource(random());
 		event.setLocation(random());
+		event.setColor(random());
 		event.setManagedFlags(CalendarManagedFlag.description.name());
 		event.setLiveStreamUrl(random());
 
@@ -553,6 +554,7 @@ public class CalendarTest extends OlatRestTestCase {
 		softly.assertThat(kalendarEvent.getDescription()).isEqualTo(event.getDescription());
 		softly.assertThat(kalendarEvent.getExternalId()).isEqualTo(event.getExternalId());
 		softly.assertThat(kalendarEvent.getLocation()).isEqualTo(event.getLocation());
+		softly.assertThat(kalendarEvent.getColor()).isEqualTo(event.getColor());
 		softly.assertThat(kalendarEvent.getManagedFlags()).containsExactly(CalendarManagedFlag.description);
 		softly.assertThat(kalendarEvent.getLiveStreamUrl()).isEqualTo(event.getLiveStreamUrl());
 		

@@ -49,6 +49,7 @@ public class CalendarWSHelper {
 	protected static void transfer(EventVO event, KalendarEvent kalEvent) {
 		kalEvent.setDescription(event.getDescription());
 		kalEvent.setLocation(event.getLocation());
+		kalEvent.setColor(event.getColor());
 		kalEvent.setManagedFlags(CalendarManagedFlag.toEnum(event.getManagedFlags()));
 		kalEvent.setAllDayEvent(event.isAllDayEvent());
 		kalEvent.setLiveStreamUrl(event.getLiveStreamUrl());

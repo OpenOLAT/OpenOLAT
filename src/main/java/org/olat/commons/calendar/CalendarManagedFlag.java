@@ -40,6 +40,7 @@ public enum CalendarManagedFlag {
 		subject(details, all),
 		description(details, all),
 		location(details, all),
+		color(details, all),
 		dates(details, all),
 		classification(all),
 		links(all),

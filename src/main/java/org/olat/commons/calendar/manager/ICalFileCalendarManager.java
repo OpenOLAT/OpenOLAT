@@ -100,6 +100,7 @@ import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Clazz;
+import net.fortuna.ical4j.model.property.Color;
 import net.fortuna.ical4j.model.property.Contact;
 import net.fortuna.ical4j.model.property.Created;
 import net.fortuna.ical4j.model.property.Description;
@@ -480,7 +481,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	protected Calendar buildCalendar(Kalendar kalendar) {
 		Calendar calendar = new Calendar();
 		// add standard propeties
-		calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+		calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 3.1//EN"));
 		calendar.getProperties().add(Version.VERSION_2_0);
 		calendar.getProperties().add(CalScale.GREGORIAN);
 		for (Iterator<KalendarEvent> iter = kalendar.getEvents().iterator(); iter.hasNext();) {
@@ -584,6 +585,12 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// location
 		if (kEvent.getLocation() != null) {
 			vEventProperties.add(new Location(kEvent.getLocation()));
+		}
+		
+		if (kEvent.getColor() != null) {
+			Color color = new Color();
+			color.setValue(kEvent.getColor());
+			vEventProperties.add(color);
 		}
 		
 		if(kEvent.getDescription() != null) {
@@ -726,15 +733,18 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// end
 		Date end = null;
 		if (dur != null) {
-			end = dur.getDuration().getTime(start);
-		} else if(event.getEndDate() != null) { 
 			end = event.getEndDate().getDate();
+		} else if(event.getEndDate(false) != null) { 
+			end = event.getEndDate(false).getDate();
 		}
 
 		// check all day event first
 		boolean isAllDay = false;
-		Parameter dateParameter = event.getProperties().getProperty(Property.DTSTART)
-				.getParameters().getParameter(Value.DATE.getName());
+		Parameter dateParameter = null;
+		Object allDayProperty = event.getProperties().getProperty(Property.DTSTART);
+		if (allDayProperty instanceof Property) {
+			dateParameter = ((Property) allDayProperty).getParameter(Value.DATE.getName());
+		}
 		if (dateParameter != null) {
 			isAllDay = true;
 			
@@ -782,6 +792,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			else if (sClass.equals(ICAL_CLASS_PUBLIC.getValue())) iClassification = KalendarEvent.CLASS_PUBLIC;
 			calEvent.setClassification(iClassification);
 		}
+		
 		// created/last modified
 		Created created = event.getCreated();
 		if (created != null) {
@@ -807,6 +818,11 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		Location location = event.getLocation();
 		if (location != null) {
 			calEvent.setLocation(location.getValue());
+		}
+		
+		Object colorProperty = event.getProperties().getProperty(Color.PROPERTY_NAME);
+		if (colorProperty instanceof Property) {
+			calEvent.setColor( ((Property) colorProperty).getValue());
 		}
 		
 		// links if any
@@ -1418,7 +1434,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	private final List<KalendarRecurEvent> getRecurringEventsInPeriod(KalendarEvent kEvent,
 			Date periodStart, Date periodEnd, List<Date> recurringIdDates, TimeZone userTz) {
 		VEvent vEvent = getVEvent(kEvent);
-		if(vEvent.getEndDate() == null || vEvent.getStartDate().getDate().after(vEvent.getEndDate().getDate())) {
+		if(vEvent.getEndDate(false) == null || vEvent.getStartDate().getDate().after(vEvent.getEndDate().getDate())) {
 			return Collections.emptyList();
 		}
 		

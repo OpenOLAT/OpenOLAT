@@ -35,6 +35,7 @@ import org.json.JSONObject;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.ui.CalendarColorChooserController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.JSONMediaResource;
@@ -155,7 +156,7 @@ public class FullCalendarMapper implements Mapper {
 		if(fcC.isDifferentiateManagedEvents()) {
 			applyManagedClassNames(jsonEvent, event, cal);
 		} else if(StringHelper.containsNonWhitespace(cal.getCssClass())) {
-			applyClassNames(jsonEvent, cal);
+			applyClassNames(jsonEvent, event, cal);
 		}
 		if(fcC.isDifferentiateLiveStreams()) {
 			applyLiveStreamClass(jsonEvent, event);
@@ -189,9 +190,9 @@ public class FullCalendarMapper implements Mapper {
 		return jsonEvent;
 	}
 	
-	private void applyClassNames(JSONObject jsonEvent, KalendarRenderWrapper cal)
+	private void applyClassNames(JSONObject jsonEvent, KalendarEvent event, KalendarRenderWrapper cal)
 	throws JSONException {
-		jsonEvent.put("className", cal.getCssClass());
+		jsonEvent.put("className", getCssClass(event, cal));
 	}
 	
 	private void applyManagedClassNames(JSONObject jsonEvent, KalendarEvent event, KalendarRenderWrapper cal)
@@ -204,13 +205,30 @@ public class FullCalendarMapper implements Mapper {
 			}
 		} 
 		
-		classNames.append(cal.getCssClass());
+		classNames.append(getCssClass(event, cal));
 		if(event.isManaged()) {
 			classNames.append(" o_cal_event_managed");
 		} else {
 			classNames.append(" o_cal_event_not_managed");
 		}
 		jsonEvent.put("className", classNames.toString());
+	}
+	
+	private String getCssClass(KalendarEvent event, KalendarRenderWrapper cal) {
+		if (StringHelper.containsNonWhitespace(event.getColor())) {
+			String eventColor = "o_cal_".concat(event.getColor());
+			if (CalendarColorChooserController.colorExists(eventColor)) {
+				StringBuilder sb = new StringBuilder();
+				sb.append(eventColor);
+				String calCssClass = cal.getCssClass();
+				if(StringHelper.containsNonWhitespace(calCssClass) && calCssClass.startsWith("o_cal_")) {
+					sb.append(" o_cal_sec ").append(calCssClass).append("_sec");
+				}
+				return sb.toString();
+			}
+		}
+		
+		return cal.getCssClass();
 	}
 
 	private void applyLiveStreamClass(JSONObject jsonEvent, KalendarEvent event) throws JSONException {

@@ -39,6 +39,7 @@ public class EventVO {
 	private String subject;
 	private String description;
 	private String location;
+	private String color;
 	private String calendarId;
 	
 	private Date begin;
@@ -55,6 +56,7 @@ public class EventVO {
 			"subject(details, all)",
 			"description(details, all)",
 			"location(details, all)",
+			"color(details, all)",
 			"dates(details, all)",
 			"classification(all)",
 			"links(all)",
@@ -73,6 +75,7 @@ public class EventVO {
 		subject = event.getSubject();
 		description = event.getDescription();
 		location = event.getLocation();
+		color = event.getColor();
 		begin = event.getBegin();
 		end = event.getEnd();
 		allDayEvent = event.isAllDayEvent();
@@ -118,6 +121,14 @@ public class EventVO {
 
 	public void setLocation(String location) {
 		this.location = location;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
 	}
 
 	public Date getBegin() {

@@ -163,7 +163,7 @@ public class CalendarUtils {
 		if (rule != null) {
 			try {
 				Recur recur = new Recur(rule);
-				String frequency = recur.getFrequency();
+				String frequency = recur.getFrequency().name();
 				WeekDayList wdl = recur.getDayList();
 				Integer interval = recur.getInterval();
 				if((wdl != null && !wdl.isEmpty())) {
