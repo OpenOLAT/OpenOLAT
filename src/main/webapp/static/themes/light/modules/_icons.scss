@@ -456,7 +456,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_pf_icon:before { content: $fa-var-inbox; }
 .o_blog_icon:before { content: $fa-var-bullhorn; }
 .o_ep_icon:before { content: $fa-var-briefcase; }
-.o_ep_icon_v1:before { content: $fa-var-puzzle-piece; }
 .o_iqtest_icon:before { content: $fa-var-pencil-square-o; }
 .o_iqself_icon:before { content: $fa-var-pencil-square-o; }
 .o_iqsurv_icon:before { content: $fa-var-meh-o; }
@@ -568,6 +567,15 @@ $fa-css-prefix: "o_icon" !default;
 .o_forum_one_icon:before { content: $fa-var-eye; }
 .o_forum_marked_icon:before { content: $fa-var-bookmark; }
 .o_forum_new_icon:before { content: $fa-var-asterisk; }
+
+/* drawing tool */
+.o_icon_draw_align-bottom:before { content: '\E805'; font-family: openolat; }
+.o_icon_draw_align-left:before { content: '\E806'; font-family: openolat; }
+.o_icon_draw_align-right:before { content: '\E807'; font-family: openolat; }
+.o_icon_draw_align-top:before { content: '\E808'; font-family: openolat; }
+.o_icon_draw_distribute-h:before { content: '\E809'; font-family: openolat; }
+.o_icon_draw_distribute-v:before { content: '\E80a'; font-family: openolat; }
+.o_icon_draw_equal-size:before { content: '\E80b'; font-family: openolat; }
 
 /* tests icons */
 .o_mi_qpool_import:before { content: $fa-var-database; }
