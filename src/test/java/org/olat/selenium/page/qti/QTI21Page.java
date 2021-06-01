@@ -636,6 +636,21 @@ public class QTI21Page {
 	public QTI21Page answerUpload(File file) {
 		By inputBy = By.cssSelector(".uploadInteraction input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
+		return answerUploadedFile(file);
+	}
+	
+	public QTI21Page answerUploadedFile(File file) {
+		String filename = file.getName();
+		int lastIndex = filename.lastIndexOf('.');
+		if(lastIndex >= 0) {
+			filename = filename.substring(0, lastIndex);
+		}
+		
+		By uploadedFileBy = By.xpath("//div[@class='o_file_upload']/div[@class='o_file_meta']/a[@class='o_file'][text()[contains(.,'" + filename + "')]]");
+		OOGraphene.waitElement(uploadedFileBy, browser);
+		
+		By deleteFileBy = By.xpath("//div[@class='o_file_upload'][div[@class='o_file_meta']/a[@class='o_file'][text()[contains(.,'" + filename + "')]]]/div[@class='o_file_actions']/a[contains(@onclick,'deleteResponse')]");
+		OOGraphene.waitElement(deleteFileBy, browser);
 		return this;
 	}
 	
@@ -954,26 +969,30 @@ public class QTI21Page {
 	 * @return Itself
 	 */
 	public QTI21Page assertOnAssessmentResultUpload(String name) {
-		By uploadBy = By.xpath("//div[contains(@class,'o_assessment_test_results')]//div[contains(@class,'uploadInteraction')]/a[contains(@href,'" + name + "')]");
-		OOGraphene.waitElement(uploadBy, 5, browser);
+		By uploadBy = By.xpath("//div[@class='o_file_upload']/div[@class='o_file_meta']/a[@class='o_file'][text()[contains(.,'" + name + "')]]");
+		OOGraphene.waitElement(uploadBy, browser);
+		
+		By deleteFileBy = By.xpath("//div[@class='o_file_upload'][div[@class='o_file_meta']/a[@class='o_file'][text()[contains(.,'" + name + "')]]]/div[@class='o_file_actions']/a[contains(@onclick,'deleteResponse')]");
+		List<WebElement> deleteEls = browser.findElements(deleteFileBy);
+		Assert.assertTrue(deleteEls.isEmpty());
 		return this;
 	}
 	
 	public QTI21Page assertOnAssessmentResultEssay(String text) {
 		By uploadBy = By.xpath("//div[contains(@class,'o_assessment_test_results')]//div[contains(@class,'extendedTextInteraction')]/div[contains(text(),'" + text + "')]");
-		OOGraphene.waitElement(uploadBy, 5, browser);
+		OOGraphene.waitElement(uploadBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnDrawing() {
 		By drawingBy = By.className("drawingInteraction");
-		OOGraphene.waitElement(drawingBy, 5, browser);
+		OOGraphene.waitElement(drawingBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnAssessmentTestFeedback(String feedback) {
 		By feedbackBy = By.xpath("//div[contains(@class,'o_info')]/h3[contains(text(),'" + feedback + "')]");
-		OOGraphene.waitElement(feedbackBy, 5, browser);
+		OOGraphene.waitElement(feedbackBy, browser);
 		List<WebElement> feedbackEls = browser.findElements(feedbackBy);
 		Assert.assertEquals(1, feedbackEls.size());
 		return this;

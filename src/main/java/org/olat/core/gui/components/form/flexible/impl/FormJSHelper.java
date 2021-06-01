@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -55,12 +56,25 @@ public class FormJSHelper {
 	 * create for example an
 	 * <code>onclick="o_ffEvent('ofo_1377','ofo_1377_dispatchuri','o_fi1399','ofo_1377_eventval','1')"</code>
 	 * 
-	 * @param form
-	 * @param id
-	 * @param actions
+	 * @param form The form
+	 * @param id The id fo the target component
+	 * @param actions The action
 	 * @return
 	 */
-	public static StringBuilder getRawJSFor(Form form, String id, int actions, NameValuePair... pairs) {
+	public static StringBuilder getRawJSFor(Form form, String id, int actions) {
+		return getRawJSFor(form, id, actions, false, null);
+	}
+	
+	/**
+	 * 
+	 * @param form The form
+	 * @param id The id
+	 * @param actions The action
+	 * @param newWindow true if a new window is wanted
+	 * @param tmpCommand Write a temporary cid in the form submit
+	 * @return The on... event with the o_ffEvent call
+	 */
+	public static StringBuilder getRawJSFor(Form form, String id, int actions, boolean newWindow, String tmpCommand) {
 		StringBuilder sb = new StringBuilder(64);
 		// find correct action! only one action supported
 		for (int i = FormEvent.ON_DOTDOTDOT.length - 1; i >= 0; i--) {
@@ -69,7 +83,7 @@ public class FormJSHelper {
 			if (actions - FormEvent.ON_DOTDOTDOT[i] == 0) {
 				sb.append(" on").append(EXTJSACTIONS[i]);// javascript action
 				sb.append("=\"");
-				sb.append(getJSFnCallFor(form, id, i, pairs));
+				sb.append(getJSFnCallFor(form, id, i, newWindow, tmpCommand));
 				sb.append("\"");
 				break;
 			}
@@ -77,7 +91,11 @@ public class FormJSHelper {
 		return sb;
 	}
 
-	public static String getJSFnCallFor(Form form, String id, int actionIndex, NameValuePair... pairs) {
+	public static String getJSFnCallFor(Form form, String id, int actionIndex) {
+		return getJSFnCallFor(form, id, actionIndex, false, null);
+	}
+
+	public static String getJSFnCallFor(Form form, String id, int actionIndex, boolean newWindow, String tmpCommand) {
 		StringBuilder sb = new StringBuilder(64);
 		sb.append("o_ffEvent('")
 		  .append(form.getFormName()).append("','")
@@ -86,14 +104,12 @@ public class FormJSHelper {
 		  .append(form.getEventFieldId()).append("','")
 		  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
 		  .append("'");
-		if(pairs != null && pairs.length > 0) {
-			for(NameValuePair pair:pairs) {
-				if(pair != null) {
-					sb.append(",'")
-					  .append(pair.getName()).append("','")
-					  .append(pair.getValue())
-					  .append("'");
-				}
+		if(newWindow || StringHelper.containsNonWhitespace(tmpCommand)) {
+			sb.append(",").append(newWindow).append(",");
+			if(StringHelper.containsNonWhitespace(tmpCommand)) {
+				sb.append("'").append(tmpCommand).append("'");
+			} else {
+				sb.append("null");
 			}
 		}
 		sb.append(")");

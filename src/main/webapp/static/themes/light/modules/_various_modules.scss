@@ -283,6 +283,35 @@ ul.o_dropdown {
 	}
 }
 
+/* File download */
+.o_file_upload {
+	border-bottom: 1px solid $o-file-upload-border-bottom-color;
+	max-width: 600px;
+	display: grid;
+  	grid-template-columns: auto 4em;
+	
+	.o_file_meta {
+		margin-right: 4em;
+	
+		.o_file {
+			display: block;
+		}
+		.o_file_date, .o_file_type, .o_file_size {
+			text-transform: uppercase;
+			color: $text-muted;
+		}
+		.o_file_type:before, .o_file_size:before {
+			content: "\007C";
+			padding: 0 5px;
+		}
+	}
+	
+	.o_file_actions a {
+		font-size: 2em;
+		vertical-align: bottom;
+	}
+}
+
 /* notifications and subscription */
 .o_notifications_news_wrapper {
 	.o_notifications_news_subscription {

@@ -81,6 +81,7 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 			fileResponseMap = Collections.emptyMap();
 		}
 		
+		// Used for hints
 		if(source instanceof FormLink) {
 			FormLink button = (FormLink)source;
 			String cmd = button.getCmd();
@@ -112,7 +113,7 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 		fireResponse(ureq, source, stringResponseMap, fileResponseMap, candidateComment);
 	}
 	
-	protected void processTemporaryResponse(UserRequest ureq) {
+	protected void processPartialTemporaryResponse(UserRequest ureq) {
 		Map<Identifier, ResponseInput> stringResponseMap = extractStringResponseData();
 
 		String cmd = ureq.getParameter("tmpResponse");
@@ -132,10 +133,27 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 			stringResponseMap.put(responseIdentifier, stringResponseData);
 		}
 		
-		fireTemporaryResponse(ureq, stringResponseMap);
+		firePartialTemporaryResponse(ureq, stringResponseMap);
 	}
 	
-	protected abstract void fireTemporaryResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap);
+	protected void processFullTemporaryResponse(UserRequest ureq) {
+		Map<Identifier, ResponseInput> stringResponseMap = extractStringResponseData();
+		Map<Identifier, ResponseInput> fileResponseMap;
+		if(mainForm.isMultipartEnabled()) {
+			fileResponseMap = extractFileResponseData();
+		} else {
+			fileResponseMap = Collections.emptyMap();
+		}
+
+		String candidateComment = extractComment();
+		fireFullTemporaryResponse(ureq, stringResponseMap, fileResponseMap, candidateComment);
+	}
+	
+	protected abstract void firePartialTemporaryResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap);
+	
+	protected abstract void fireFullTemporaryResponse(UserRequest ureq,
+			Map<Identifier, ResponseInput> stringResponseMap, Map<Identifier, ResponseInput> fileResponseMap,
+			String comment);
 	
 	protected abstract void fireResponse(UserRequest ureq, FormItem source,
 			Map<Identifier, ResponseInput> stringResponseMap, Map<Identifier, ResponseInput> fileResponseMap,

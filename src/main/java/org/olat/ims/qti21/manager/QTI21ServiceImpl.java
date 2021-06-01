@@ -801,6 +801,11 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
+	public void deleteAssessmentResponse(AssessmentResponse assessmentResponse) {
+		testResponseDao.deleteResponse(assessmentResponse);
+	}
+
+	@Override
 	public void recordTestAssessmentResponses(AssessmentItemSession itemSession, Collection<AssessmentResponse> responses) {
 		if(itemSession instanceof Persistable) {
 			testResponseDao.save(responses);

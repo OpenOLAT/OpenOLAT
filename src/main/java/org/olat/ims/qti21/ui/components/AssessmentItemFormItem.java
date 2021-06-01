@@ -22,6 +22,8 @@ package org.olat.ims.qti21.ui.components;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.back;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.close;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.exit;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.fullTmpResponse;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.deleteResponse;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.next;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resethard;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resetsoft;
@@ -129,7 +131,7 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 		String uri = ureq.getModuleURI();
 		if(uri == null) {
 			QTIWorksAssessmentItemEvent event = null;
-			String cmd = ureq.getParameter("cid");
+			String cmd = getRootForm().getRequestParameter(ureq, "cid");
 			if(StringHelper.containsNonWhitespace(cmd)) {
 				switch(QTIWorksAssessmentItemEvent.Event.valueOf(cmd)) {
 					case solution:
@@ -144,10 +146,15 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 					case close:
 						event = new QTIWorksAssessmentItemEvent(close, this);
 						break;
-					case tmpResponse: {
+					case tmpResponse:
 						event = new QTIWorksAssessmentItemEvent(tmpResponse, this);
 						break;
-					}
+					case fullTmpResponse:
+						event = new QTIWorksAssessmentItemEvent(fullTmpResponse, this);
+						break;
+					case deleteResponse:
+						event = new QTIWorksAssessmentItemEvent(deleteResponse, ureq.getParameter("responseIdentifier"), this);
+						break;
 					case exit:
 						event = new QTIWorksAssessmentItemEvent(exit, this);
 						break;

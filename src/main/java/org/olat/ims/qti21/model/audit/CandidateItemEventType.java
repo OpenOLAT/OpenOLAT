@@ -61,6 +61,12 @@ public enum CandidateItemEventType {
 
     /** Attempt made, some responses bound unsuccessfully */
     RESPONSE_BAD,
+    
+    /** No attempt but the response is saved */
+    RESPONSE_TEMPORARY,
+    
+    /** The response of an interaction is deleted */
+    RESPONSE_REMOVED,
 
     /** Candidate has re-initialised the session (i.e. template processing has been redone) */
     REINIT,

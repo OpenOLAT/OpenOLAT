@@ -921,9 +921,10 @@ $o-cal-desc-background-color	: $o-toolbar-bg-color !default;
 
 
 /* Files and Folders */
-$o-files-size-okay				: #61E868;
-$o-files-size-warning			: #FFB100;
-$o-files-size-large				: #E82A0C;
+$o-files-size-okay					: #61E868;
+$o-files-size-warning				: #FFB100;
+$o-files-size-large					: #E82A0C;
+$o-file-upload-border-bottom-color	: $text-muted;
 
 /* Contact tracing */
 $o-ct-confirmation-bg-color		: limegreen;

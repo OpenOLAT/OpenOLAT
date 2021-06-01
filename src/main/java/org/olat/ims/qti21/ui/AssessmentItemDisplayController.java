@@ -73,6 +73,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
+import uk.ac.ed.ph.jqtiplus.exception.ResponseBindingException;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
@@ -320,7 +322,13 @@ public class AssessmentItemDisplayController extends BasicController implements 
 				handleResponses(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
 				break;
 			case tmpResponse:
-				handleTemporaryResponses(ureq, qe.getStringResponseMap());
+				handleTemporaryResponses(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
+				break;
+			case fullTmpResponse:
+				handleTemporaryResponses(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
+				break;
+			case deleteResponse:
+				deleteResponse(qe.getSubCommand());
 				break;
 			case close:
 				endSession(ureq);
@@ -521,7 +529,43 @@ public class AssessmentItemDisplayController extends BasicController implements 
         updateSessionFinishedStatus(ureq);	
 	}
 	
-	public void handleTemporaryResponses(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap) {
+
+	private void deleteResponse(String responseIdentifier) {
+		/* Retrieve current JQTI state and set up JQTI controller */
+		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+		ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
+
+		/* Make sure an attempt is allowed */
+		if (itemSessionState.isEnded()) {
+			candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.RESPONSES_NOT_EXPECTED, null);
+			logError("RESPONSES_NOT_EXPECTED", null);
+			return;
+		}
+		
+		Identifier rIdentifier = qtiWorksCtrl.getResponseIdentifierFromUniqueId(responseIdentifier);
+		itemSessionController.unbindResponse(rIdentifier);
+		
+        String assessmentItemIdentifier = resolvedAssessmentItem.getRootNodeLookup()
+        		.extractIfSuccessful().getIdentifier();
+		itemSession = qtiService
+				.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier);
+        
+        Map<Identifier, AssessmentResponse> candidateResponseMap = qtiService.getAssessmentResponses(itemSession);
+        Map<Identifier, AssessmentResponse> removedCandidateResponseMap = new HashMap<>();
+        AssessmentResponse assessmentResponse = candidateResponseMap.get(rIdentifier);
+		if(assessmentResponse != null) {
+			qtiService.deleteAssessmentResponse(assessmentResponse);
+			removedCandidateResponseMap.put(rIdentifier, assessmentResponse);
+		}
+		
+		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, itemSession, testEntry, entry,
+				CandidateItemEventType.RESPONSE_REMOVED, itemSessionState, notificationRecorder);
+		candidateAuditLogger.logCandidateEvent(candidateEvent, removedCandidateResponseMap);
+		lastEvent = candidateEvent;
+	}
+	
+	public void handleTemporaryResponses(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap,
+			Map<Identifier,ResponseInput> fileResponseMap, String candidateComment) {
 
 		/* Retrieve current JQTI state and set up JQTI controller */
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
@@ -539,24 +583,48 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		 * it's worth the effort.
 		 */
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
+		final Map<Identifier, File> fileSubmissionMap = new HashMap<>();
 		final Map<Identifier, AssessmentResponse> assessmentResponseDataMap = new HashMap<>();
+		mapStringResponseData(stringResponseMap, responseDataMap, fileSubmissionMap);
+		mapFileResponseDate(fileResponseMap, responseDataMap, fileSubmissionMap);
 
-		if (stringResponseMap!=null) {
-			for (final Entry<Identifier, ResponseInput> stringResponseEntry : stringResponseMap.entrySet()) {
-				Identifier identifier = stringResponseEntry.getKey();
-				ResponseInput responseData = stringResponseEntry.getValue();
-				if(responseData instanceof StringInput) {
-					responseDataMap.put(identifier, new StringResponseData(((StringInput)responseData).getResponseData()));
-				}
-			}
-		}
- 
 		final Date timestamp = ureq.getRequestTimestamp();
 
+        String assessmentItemIdentifier = resolvedAssessmentItem.getRootNodeLookup()
+        		.extractIfSuccessful().getIdentifier();
+		itemSession = qtiService
+				.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier);
+        
+		List<Interaction> interactions = itemSessionController.getInteractions();
+		Map<Identifier,Interaction> interactionMap = new HashMap<>();
+		for(Interaction interaction:interactions) {
+			interactionMap.put(interaction.getResponseIdentifier(), interaction);
+		}
+		
+        Map<Identifier, AssessmentResponse> candidateResponseMap = qtiService.getAssessmentResponses(itemSession);
+        for (Entry<Identifier, ResponseData> responseEntry : responseDataMap.entrySet()) {
+            Identifier responseIdentifier = responseEntry.getKey();
+            ResponseData responseData = responseEntry.getValue();
+            mapCandidateResponse(responseIdentifier, responseData, itemSession, candidateResponseMap, fileSubmissionMap);
+            
+            itemSessionState.setRawResponseData(responseIdentifier, responseData);
+            
+            try {
+                Interaction interaction = interactionMap.get(responseIdentifier);
+                interaction.bindResponse(itemSessionController, responseData);
+            } catch (final ResponseBindingException e) {
+               //
+            }
+        }
+        
+        /* Copy uncommitted responses over */
+        for (final Entry<Identifier, Value> uncommittedResponseEntry : itemSessionState.getUncommittedResponseValues().entrySet()) {
+            final Identifier identifier = uncommittedResponseEntry.getKey();
+            final Value value = uncommittedResponseEntry.getValue();
+            itemSessionState.setResponseValue(identifier, value);
+        }
 
 		/* Attempt to bind responses */
-		boolean allResponsesValid = false;
-		boolean allResponsesBound = false;
 		try {
 			itemSessionController.bindResponses(timestamp, responseDataMap);
 		} catch (final QtiCandidateStateException e) {
@@ -567,15 +635,29 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			logError("", e);
 			return;
 		}
+		
+		if (candidateComment != null) {
+			try {
+				itemSessionController.setCandidateComment(timestamp, candidateComment);
+			} catch (final QtiCandidateStateException e) {
+				candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANDIDATE_COMMENT_FORBIDDEN, e);
+				logError("CANDIDATE_COMMENT_FORBIDDEN", null);
+				return;
+			} catch (final RuntimeException e) {
+				logError("", e);
+				return;
+			}
+		}
 
-		/* Record resulting attempt and event */
-		final CandidateItemEventType eventType = allResponsesBound ?
-				(allResponsesValid ? CandidateItemEventType.ATTEMPT_VALID : CandidateItemEventType.RESPONSE_INVALID)
-				: CandidateItemEventType.RESPONSE_BAD;
 		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, itemSession, testEntry, entry,
-	                eventType, itemSessionState, notificationRecorder);
+				CandidateItemEventType.RESPONSE_TEMPORARY, itemSessionState, notificationRecorder);
 		candidateAuditLogger.logCandidateEvent(candidateEvent, assessmentResponseDataMap);
 		lastEvent = candidateEvent;
+		
+		AssessmentResult assessmentResult = computeItemAssessmentResult(ureq);
+		synchronized(this) {
+			qtiService.recordItemAssessmentResult(candidateSession, assessmentResult, candidateAuditLogger);
+		}
 	}
 	
 	public void handleResponses(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap,
@@ -598,41 +680,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		 */
 		final Map<Identifier,File> fileSubmissionMap = new HashMap<>();
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
-		if (stringResponseMap != null) {
-			for (final Entry<Identifier, ResponseInput> stringResponseEntry : stringResponseMap.entrySet()) {
-				Identifier identifier = stringResponseEntry.getKey();
-				ResponseInput responseData = stringResponseEntry.getValue();
-				if(responseData instanceof StringInput) {
-					responseDataMap.put(identifier, new StringResponseData(((StringInput)responseData).getResponseData()));
-				} else if(responseData instanceof Base64Input) {
-					//only used from drawing interaction
-					Base64Input fileInput = (Base64Input)responseData;
-					String filename = "submitted_image.png";
-					File storedFile = qtiService.importFileSubmission(candidateSession, filename, fileInput.getResponseData());
-                    responseDataMap.put(identifier, new FileResponseData(storedFile, fileInput.getContentType(), storedFile.getName()));
-                    fileSubmissionMap.put(identifier, storedFile);
-				} else if(responseData instanceof FileInput) {
-					FileInput fileInput = (FileInput)responseData;
-					File storedFile = qtiService.importFileSubmission(candidateSession, fileInput.getMultipartFileInfos());
-                    responseDataMap.put(identifier, new FileResponseData(storedFile, fileInput.getContentType(), storedFile.getName()));
-                    fileSubmissionMap.put(identifier, storedFile);
-				}
-			}
-		}
- 
-        if (fileResponseMap!=null) {
-            for (final Entry<Identifier, ResponseInput> fileResponseEntry : fileResponseMap.entrySet()) {
-                final Identifier identifier = fileResponseEntry.getKey();
-                final FileInput multipartFile = (FileInput)fileResponseEntry.getValue();
-                if (!multipartFile.isEmpty()) {
-                    File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile.getMultipartFileInfos());
-                	final FileResponseData fileResponseData = new FileResponseData(storedFile, multipartFile.getContentType(), multipartFile.getFileName());
-                    responseDataMap.put(identifier, fileResponseData);
-                    fileSubmissionMap.put(identifier, storedFile);
-                }
-            }
-        }
-        
+		mapStringResponseData(stringResponseMap, responseDataMap, fileSubmissionMap);
+		mapFileResponseDate(fileResponseMap, responseDataMap, fileSubmissionMap);
+       
         String assessmentItemIdentifier = resolvedAssessmentItem.getRootNodeLookup()
         		.extractIfSuccessful().getIdentifier();
 		itemSession = qtiService
@@ -642,32 +692,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         for (Entry<Identifier, ResponseData> responseEntry : responseDataMap.entrySet()) {
             Identifier responseIdentifier = responseEntry.getKey();
             ResponseData responseData = responseEntry.getValue();
-            AssessmentResponse candidateItemResponse;
-            if(candidateResponseMap.containsKey(responseIdentifier)) {
-            	candidateItemResponse = candidateResponseMap.get(responseIdentifier);
-            } else {
-            	candidateItemResponse = qtiService
-            		.createAssessmentResponse(candidateSession, itemSession, responseIdentifier.toString(), ResponseLegality.VALID, responseData.getType());
-            }
-		
-            switch (responseData.getType()) {
-                case STRING: {
-                	List<String> data = ((StringResponseData) responseData).getResponseData();
-                	String stringuifiedResponse = ResponseFormater.format(data);
-                    candidateItemResponse.setStringuifiedResponse(stringuifiedResponse);
-                    break;
-                }
-                case FILE: {
-                	if(fileSubmissionMap.get(responseIdentifier) != null) {
-                		File storedFile = fileSubmissionMap.get(responseIdentifier);
-                		candidateItemResponse.setStringuifiedResponse(storedFile.getName());
-                	}
-                    break;
-                }
-                default:
-                    throw new OLATRuntimeException("Unexpected switch case: " + responseData.getType());
-            }
-            candidateResponseMap.put(responseIdentifier, candidateItemResponse);
+            mapCandidateResponse(responseIdentifier, responseData, itemSession, candidateResponseMap, fileSubmissionMap);
         }
 
 		/* Submit comment (if provided)
@@ -734,6 +759,78 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		collectOutcomeVariablesForItemSession(itemResult);
         /* Persist CandidateResponse entities */
         qtiService.recordTestAssessmentResponses(itemSession, candidateResponseMap.values());
+	}
+	
+	private void mapCandidateResponse(Identifier responseIdentifier, ResponseData responseData, AssessmentItemSession itemSession,
+			Map<Identifier, AssessmentResponse> candidateResponseMap, Map<Identifier,File> fileSubmissionMap) {
+		
+		AssessmentResponse candidateItemResponse;
+        if(candidateResponseMap.containsKey(responseIdentifier)) {
+        	candidateItemResponse = candidateResponseMap.get(responseIdentifier);
+        } else {
+        	candidateItemResponse = qtiService
+        		.createAssessmentResponse(candidateSession, itemSession, responseIdentifier.toString(), ResponseLegality.VALID, responseData.getType());
+        }
+	
+        switch (responseData.getType()) {
+            case STRING: {
+            	List<String> data = ((StringResponseData) responseData).getResponseData();
+            	String stringuifiedResponse = ResponseFormater.format(data);
+                candidateItemResponse.setStringuifiedResponse(stringuifiedResponse);
+                break;
+            }
+            case FILE: {
+            	if(fileSubmissionMap.get(responseIdentifier) != null) {
+            		File storedFile = fileSubmissionMap.get(responseIdentifier);
+            		candidateItemResponse.setStringuifiedResponse(storedFile.getName());
+            	}
+                break;
+            }
+            default:
+                throw new OLATRuntimeException("Unexpected switch case: " + responseData.getType());
+        }
+        candidateResponseMap.put(responseIdentifier, candidateItemResponse);
+	}
+	
+	private void mapStringResponseData(Map<Identifier, ResponseInput> stringResponseMap,
+		Map<Identifier, ResponseData> responseDataMap, Map<Identifier,File> fileSubmissionMap) {
+		if (stringResponseMap != null) {
+			for (final Entry<Identifier, ResponseInput> stringResponseEntry : stringResponseMap.entrySet()) {
+				Identifier identifier = stringResponseEntry.getKey();
+				ResponseInput responseData = stringResponseEntry.getValue();
+				if(responseData instanceof StringInput) {
+					responseDataMap.put(identifier, new StringResponseData(((StringInput)responseData).getResponseData()));
+				} else if(responseData instanceof Base64Input) {
+					//only used from drawing interaction
+					Base64Input fileInput = (Base64Input)responseData;
+					String filename = "submitted_image.png";
+					File storedFile = qtiService.importFileSubmission(candidateSession, filename, fileInput.getResponseData());
+                    responseDataMap.put(identifier, new FileResponseData(storedFile, fileInput.getContentType(), storedFile.getName()));
+                    fileSubmissionMap.put(identifier, storedFile);
+				} else if(responseData instanceof FileInput) {
+					FileInput fileInput = (FileInput)responseData;
+					File storedFile = qtiService.importFileSubmission(candidateSession, fileInput.getMultipartFileInfos());
+                    responseDataMap.put(identifier, new FileResponseData(storedFile, fileInput.getContentType(), storedFile.getName()));
+                    fileSubmissionMap.put(identifier, storedFile);
+				}
+			}
+		}
+	}
+	
+	private void mapFileResponseDate(Map<Identifier, ResponseInput> fileResponseMap,
+			Map<Identifier, ResponseData> responseDataMap, Map<Identifier,File> fileSubmissionMap) {
+		if (fileResponseMap!=null) {
+			for (final Entry<Identifier, ResponseInput> fileResponseEntry : fileResponseMap.entrySet()) {
+				final Identifier identifier = fileResponseEntry.getKey();
+				final FileInput multipartFile = (FileInput)fileResponseEntry.getValue();
+				if (!multipartFile.isEmpty()) {
+					File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile.getMultipartFileInfos());
+					final FileResponseData fileResponseData = new FileResponseData(storedFile, multipartFile.getContentType(), storedFile.getName());
+					responseDataMap.put(identifier, fileResponseData);
+					fileSubmissionMap.put(identifier, storedFile);
+				}
+			}
+		}
 	}
 	
 	private void collectOutcomeVariablesForItemSession(ItemResult resultNode) {
@@ -1064,7 +1161,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 				if(event instanceof QTIWorksAssessmentItemEvent) {
 					QTIWorksAssessmentItemEvent qwaie = (QTIWorksAssessmentItemEvent)event;
 					if(qwaie.getEvent() == QTIWorksAssessmentItemEvent.Event.tmpResponse) {
-						processTemporaryResponse(ureq);
+						processPartialTemporaryResponse(ureq);
+					} else if(qwaie.getEvent() == QTIWorksAssessmentItemEvent.Event.fullTmpResponse) {
+						processFullTemporaryResponse(ureq);
 					} else if(qwaie.getEvent() == QTIWorksAssessmentItemEvent.Event.timesUp) {
 						timerEl.setAlreadyEnded(true);
 						fireEvent(ureq, event);
@@ -1084,8 +1183,16 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		}
 
 		@Override
-		protected void fireTemporaryResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap) {
-			fireEvent(ureq, new QTIWorksAssessmentItemEvent(QTIWorksAssessmentItemEvent.Event.tmpResponse, stringResponseMap, null, null, null));
+		protected void firePartialTemporaryResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap) {
+			fireEvent(ureq, new QTIWorksAssessmentItemEvent(QTIWorksAssessmentItemEvent.Event.tmpResponse,
+					stringResponseMap, null, null, null));
+		}
+
+		@Override
+		protected void fireFullTemporaryResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap,
+				Map<Identifier, ResponseInput> fileResponseMap, String comment) {
+			fireEvent(ureq, new QTIWorksAssessmentItemEvent(QTIWorksAssessmentItemEvent.Event.fullTmpResponse,
+					stringResponseMap, fileResponseMap, comment, null));
 		}
 
 		@Override

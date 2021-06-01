@@ -21,8 +21,10 @@ package org.olat.ims.qti21.ui.components;
 
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.renderValue;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -31,18 +33,24 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
+import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent;
 
 import uk.ac.ed.ph.jqtiplus.attribute.value.StringMultipleAttribute;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
@@ -72,6 +80,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.Prompt;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.SliderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.StringInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.GapChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.GapImg;
@@ -157,6 +166,19 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			return candidateSession == null ? "" : candidateSession.getKey().toString();
 		}
 		return "";
+	}
+	
+	public String ffXHREvent(String key, String value) {
+		Form theForm = avc.getQtiItem().getRootForm();
+		String elementId = "o_fi".concat(avc.getDispatchID());
+		return FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, true, true, new NameValuePair(key, value));
+	}
+	
+	public String ffXHREvent(String key1, String value1, String key2, String value2) {
+		Form theForm = avc.getQtiItem().getRootForm();
+		String elementId = "o_fi".concat(avc.getDispatchID());
+		return FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, true, true,
+				new NameValuePair(key1, value1), new NameValuePair(key2, value2));
 	}
 	
 	public String appendFlexiFormDirty(String id) {
@@ -768,6 +790,74 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			}
 		}
 		return "";
+	}
+	
+	public String getFullTemporaryResponseEvent() {
+		String id = FormBaseComponentIdProvider.DISPPREFIX.concat(avc.getDispatchID()); 
+		return FormJSHelper.getJSFnCallFor(avc.getQtiItem().getRootForm(), id, 2,
+				false, QTIWorksAssessmentTestEvent.Event.fullTmpResponse.name());
+	}
+	
+	public int getNumOfUploadInteractions() {
+		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		int numOfUploads = 0;
+		for(Interaction interaction:interactions) {
+			if(interaction instanceof UploadInteraction) {
+				numOfUploads++;
+			}
+		}
+		return numOfUploads;
+	}
+	
+	public int getIndexOfUploadInteraction(Object responseIdentifier) {
+		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		int index = 0;
+		for(Interaction interaction:interactions) {
+			if(responseIdentifier.equals(interaction.getResponseIdentifier())) {
+				break;
+			}
+			if(interaction instanceof UploadInteraction) {
+				index++;
+			}
+		}
+		return index + 1;
+	}
+	
+	public String getUploadDate(Identifier responseIdentifier) {
+		File file = getUploadFile(responseIdentifier);
+		if(file != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(file.lastModified());
+			return formatDateAndTime(cal.getTime());
+		}
+		return "";
+	}
+	
+	public String getUploadExtension(Identifier responseIdentifier) {
+		File file = getUploadFile(responseIdentifier);
+		if(file != null) {
+			return FileUtils.getFileSuffix(file.getName());
+		}
+		return "";
+	}
+	
+	public String getUploadSize(Identifier responseIdentifier) {
+		File file = getUploadFile(responseIdentifier);
+		if(file != null) {
+			return Formatter.formatBytes(file.length());
+		}
+		return "";
+	}
+	
+	private File getUploadFile(Identifier responseIdentifier) {
+		if(responseIdentifier == null) return null;
+		
+		Value val = getResponseValue(responseIdentifier);
+		if(val instanceof FileValue) {
+			FileValue fileValue = (FileValue)val;
+			return fileValue.getFile();
+		}
+		return null;
 	}
 	
 	public String escapeForJavascriptString(String text) {

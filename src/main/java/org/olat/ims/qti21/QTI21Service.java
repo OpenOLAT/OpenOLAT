@@ -423,6 +423,8 @@ public interface QTI21Service {
 	
 	public Map<Identifier, AssessmentResponse> getAssessmentResponses(AssessmentItemSession assessmentItemSession);
 	
+	public void deleteAssessmentResponse(AssessmentResponse assessmentResponse);
+	
 	public void recordTestAssessmentResponses(AssessmentItemSession assessmentItemSession, Collection<AssessmentResponse> responses);
 	
 

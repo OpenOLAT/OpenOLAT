@@ -1,5 +1,7 @@
 #set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
+#set($numOfUploads = $r.getNumOfUploadInteractions())
+#set($uploadIndex = $r.getIndexOfUploadInteraction($interaction.responseIdentifier))
 
 <input name="qtiworks_uploadpresented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName">
@@ -7,44 +9,50 @@
 	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 	
-    #if($r.notEmpty($responseValue))
-		## Already uploaded something, so show file and ability to replace it
-		#if($r.isItemSessionOpen())
-		<div class="o_items_container_help">
-			<p><i class="o_icon o_icon_help"> </i> $r.translate("upload.explanation")</p>
-		</div>
-		<div class="o_form">
-			<div class="o_fileinput">
-				<input id="oo_${responseIdentifier}" class="form-control o_realchooser" type="file" name="qtiworks_uploadresponse_${responseIdentifier}"  onchange="b_handleFileUploadFormChange(this, this.form.fake_oo_${responseIdentifier}, this.form.upload);" />
-				<div class="o_fakechooser input-group">
-					<input class="form-control" name="fake_oo_${responseIdentifier}" value="${responseValue.fileName}">
-					<span class="input-group-addon"><a href="javascript:;"><i class="o_icon o_icon_upload"> </i></a></span>
-				</div>
-			</div>
-		</div>	
-		#else
-			<a href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank"><i class="o_icon $r.getFiletypeIconCss($responseValue.fileName)"> </i> $responseValue.fileName</a>
-		#end
+	#if($r.isTrue($isCorrectionSolution) || $r.isTrue($isSolutionMode))
+		<div class="o_note">$r.translate("warning.no.solution")</div>
 	#else
-		## Nothing uploaded yet
-		#if($r.isItemSessionOpen())
-		<div class="o_items_container_help">
-			<p><i class="o_icon o_icon_help"> </i> $r.translate("upload.explanation")</p>
-		</div>
-		<div class="o_form">
-			<div class="o_fileinput">
-				<input id="oo_${responseIdentifier}" class="form-control o_realchooser" type="file" name="qtiworks_uploadresponse_${responseIdentifier}" onchange="b_handleFileUploadFormChange(this, this.form.fake_oo_${responseIdentifier}, this.form.upload);" />
-				<div class="o_fakechooser input-group">
-					<input class="form-control" name="fake_oo_${responseIdentifier}">
-					<span class="input-group-addon"><a href="javascript:;"><i class="o_icon o_icon_upload"> </i></a></span>
+
+		#if($r.isNotEmpty($numOfUploads) && $numOfUploads > 1)
+		<label for="oo_${responseIdentifier}">$r.translate("upload.label", $uploadIndex, $numOfUploads)</label>
+		#else
+		<label for="oo_${responseIdentifier}">$r.translate("upload.label.unique")</label>
+		#end
+		
+	    #if($r.notEmpty($responseValue))
+			## Already uploaded something, so show file and ability to replace it
+	
+			<div class="o_file_upload">
+				<div class="o_file_meta"><a class="o_file" href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank">$responseValue.fileName</a>
+					<span class="o_file_date">${r.getUploadDate($interaction.responseIdentifier)}</span><span class="o_file_type">${r.getUploadExtension($interaction.responseIdentifier)}</span><span class="o_file_size">${r.getUploadSize($interaction.responseIdentifier)}</span></div>
+				<div class="o_file_actions">
+				<a href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank">
+					<i class="o_icon o_icon_download"> </i></a>
+			#if($r.isItemSessionOpen())
+				<a href="javascript:;" onclick="$r.ffXHREvent("cid","deleteResponse","responseIdentifier","${responseIdentifier}");"><i class="o_icon o_icon_pf_trash"> </i></a>
+			#end
 				</div>
 			</div>
-		</div>
 		#else
-			<input id="oo_${responseIdentifier}" class="form-control o_disabled" name="qtiworks_uploadresponse_${responseIdentifier}" disabled="disabled"/>
+			## Nothing uploaded yet
+			#if($r.isItemSessionOpen())
+			<div class="o_form">
+				<div class="o_fileinput">
+					<input id="oo_${responseIdentifier}" class="form-control o_realchooser" type="file" name="qtiworks_uploadresponse_${responseIdentifier}" onchange="b_handleFileUploadFormChange(this, this.form.fake_oo_${responseIdentifier}, this.form.upload); $r.getFullTemporaryResponseEvent();" />
+					<div class="o_fakechooser input-group">
+						<input class="form-control" name="fake_oo_${responseIdentifier}">
+						<span class="input-group-addon"><a href="javascript:;"><i class="o_icon o_icon_upload"> </i></a></span>
+					</div>
+				</div>
+			</div>
+			#else
+			<div class="o_file_upload">
+				<p class="o_file_no_upload">$r.translate("upload.no.file")</p>
+			</div>
+			#end
 		#end
+		
+		$r.appendFlexiFormDirty("oo_${responseIdentifier}")
 	#end
-	
-	$r.appendFlexiFormDirty("oo_${responseIdentifier}")
 </div>
 

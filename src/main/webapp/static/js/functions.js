@@ -1361,16 +1361,16 @@ function showerror(e) {
 // parameter submitted is the action value triggering the submit.
 // A 'submit' is not the same as 'submit and validate'. if the form should validate
 // is defined by the triggered component.
-function o_ffEvent(formNam, dispIdField, dispId, eventIdField, eventInt){
+function o_ffEvent(formNam, dispIdField, dispId, eventIdField, eventInt, newWindow, tcid) {
 	//set hidden fields and submit form
-	var dispIdEl, defDispId,eventIdEl,defEventId;
-
-	dispIdEl = document.getElementById(dispIdField);
-	defDispId = dispIdEl.value;
-	dispIdEl.value=dispId;
-	eventIdEl = document.getElementById(eventIdField);
-	defEventId = eventIdEl.value;
-	eventIdEl.value=eventInt;
+	var dispIdEl = document.getElementById(dispIdField);
+	var defDispId = dispIdEl.value;
+	dispIdEl.value = dispId;
+	var eventIdEl = document.getElementById(eventIdField);
+	var defEventId = eventIdEl.value;
+	eventIdEl.value = eventInt;
+	var tCmdEl = null;
+	
 	// manually execute onsubmit method - calling submit itself does not trigger onsubmit event!
 	var form = jQuery('#' + formNam);
 	var formValid = true;
@@ -1389,13 +1389,16 @@ function o_ffEvent(formNam, dispIdField, dispId, eventIdField, eventInt){
 			formValid = false;
 		});
 	if (formValid) {
-		if(arguments.length > 4) {
-			for(var j=4; j<arguments.length; j++) {
-				if(arguments[j] == "oo-opennewwindow-oo") {
-					o_info.newWindow = window.open("","_blank");
-					o_info.newWindow.blur();
-				}
-			}
+		if(newWindow) {
+			o_info.newWindow = window.open("","_blank");
+			o_info.newWindow.blur();
+		}
+		if(tcid) {
+			tCmdEl = jQuery('<input>', {
+    			type: 'hidden',
+				id: 'oo-tmp-command',
+				name: 'cid',
+				value: tcid }).appendTo(form);
 		}
 		
 		var enctype = form.attr('enctype');
@@ -1407,6 +1410,9 @@ function o_ffEvent(formNam, dispIdField, dispId, eventIdField, eventInt){
 	}
 	dispIdEl.value = defDispId;
 	eventIdEl.value = defEventId;
+	if(tCmdEl != null) {
+		tCmdEl.remove();
+	}
 }
 
 function o_IQEvent(formNam){

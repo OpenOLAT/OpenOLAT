@@ -96,6 +96,10 @@ public class AssessmentResponseDAO {
 		}
 	}
 	
+	public void deleteResponse(AssessmentResponse response) {
+		dbInstance.getCurrentEntityManager().remove(response);
+	}
+	
 	/**
 	 * Check if there are some responses from a terminated session.
 	 * 
