@@ -3,7 +3,7 @@
 	<div class="o_note">$r.translate("limit.count.info", $limit)</div>
 #end
 #if($r.isNotEmpty($msg))
-	<div class="$msgCssClass"><i class="o_icon o_icon_time"> </i> #if($r.available("timer"))$r.render("timer")#end $msg</div>
+	<div class="$msgCssClass"><i class="o_icon o_icon-lg o_icon_time"> </i> #if($r.available("timer"))$r.render("timer")#end $msg</div>
 #end
 #if ($r.available("contextualSubscription"))
 	$r.render("contextualSubscription")

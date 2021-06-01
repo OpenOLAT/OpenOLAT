@@ -49,7 +49,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 *
 */
 public class PFParticipantController extends BasicController {
-
+	
+	private static final long TWO_DAYS_IN_MILLISEC = 2l * 24l * 60l * 60l * 1000l;
+	private static final long ONE_DAY_IN_MILLISEC = 24l * 60l * 60l * 1000l;
+	
 	private TimerComponent timerCmp;
 	private VelocityContainer mainVC;
 	private FolderRunController folderRunController;
@@ -109,20 +112,17 @@ public class PFParticipantController extends BasicController {
 		
 		putInitialPanel(mainVC);	
 	}
-	
-	private static final long TWO_DAYS_IN_MILLISEC = 2l * 24l * 60l * 60l * 1000l;
-	private static final long ONE_DAY_IN_MILLISEC = 24l * 60l * 60l * 1000l;
-	
-	
+
 	private void initLimitMessages(UserRequest ureq) {
 		if (pfNode.hasLimitCountConfigured()) {
 			mainVC.contextPut("limit", pfNode.getLimitCount());			
 		}
 		
-		Date start = pfNode.getDateStart();
-		Date end = pfNode.getDateEnd();
-		Date now = ureq.getRequestTimestamp();
-		if(start != null && end != null) {
+		if(pfNode.hasDropboxTimeFrameConfigured() && pfNode.getDateStart() != null && pfNode.getDateEnd() != null) {
+			Date start = pfNode.getDateStart();
+			Date end = pfNode.getDateEnd();
+			Date now = ureq.getRequestTimestamp();
+
 			Formatter formatter = Formatter.getInstance(getLocale());
 			String[] args = new String[] {
 				formatter.formatDate(start), 		// 0 start date
