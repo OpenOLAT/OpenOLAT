@@ -481,6 +481,8 @@ public class LectureBlockRollCallDAO {
 		if(searchParams.getAppealStatus() != null && !searchParams.getAppealStatus().isEmpty()) {
 			sb.and().append("rollcall.appealStatusString in (:appealStatus)");
 		}
+		
+		//TODO search
 
 		TypedQuery<LectureBlockRollCall> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockRollCall.class);

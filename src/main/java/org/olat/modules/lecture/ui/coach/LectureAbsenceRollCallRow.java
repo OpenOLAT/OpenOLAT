@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui.coach;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
@@ -73,6 +74,10 @@ public class LectureAbsenceRollCallRow {
 	
 	public Identity getIdentity() {
 		return identity;
+	}
+	
+	public User getUser() {
+		return identity == null ? null : identity.getUser();
 	}
 	
 	public String getTeachers() {

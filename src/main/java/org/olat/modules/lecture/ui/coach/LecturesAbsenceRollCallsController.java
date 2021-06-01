@@ -46,6 +46,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.ui.UserListController;
 import org.olat.modules.lecture.AbsenceNotice;
@@ -59,6 +60,7 @@ import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.coach.LecturesAbsenceRollCallsTableModel.AbsenceCallCols;
 import org.olat.modules.lecture.ui.component.LectureAbsenceRollCallCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockTimesCellRenderer;
+import org.olat.modules.lecture.ui.filter.LectureBlockRollCallAndCoachFilter;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,6 +177,15 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 		String separator = translate("user.fullname.separator");
 		List<LectureBlockRollCallAndCoach> rollCalls = lectureService.getLectureBlockAndRollCalls(searchParams, separator);
 		List<LectureAbsenceRollCallRow> rows = new ArrayList<>(rollCalls.size());
+		
+		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			final LectureBlockRollCallAndCoachFilter filter = new LectureBlockRollCallAndCoachFilter(searchParams.getSearchString(),
+					userPropertyHandlers, getLocale());
+			rollCalls = rollCalls.stream()
+					.filter(filter)
+					.collect(Collectors.toList());
+		}
+		
 		for(LectureBlockRollCallAndCoach rollCall:rollCalls) {
 			boolean authorized = isAuthorized(rollCall);
 			if(unauthorizedOnly && authorized) {
