@@ -190,7 +190,7 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 	private LectureAbsenceRollCallRow forgeRow(LectureBlockRollCallAndCoach call, boolean authorized) {
 		AbsenceNotice notice = call.getAbsenceNotice();
 		LectureBlockRollCall rollCall = call.getRollCall();
-		LectureAbsenceRollCallRow row = new LectureAbsenceRollCallRow(rollCall.getLectureBlock(), rollCall, notice, call.getCoach());
+		LectureAbsenceRollCallRow row = new LectureAbsenceRollCallRow(call.getLectureBlock(), call.getEntry(), rollCall, notice, call.getCoach());
 		if(notice != null) {
 			FormLink noticeLink = uifactory.addFormLink("notice_" + rollCall.getKey(), "notice", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 			noticeLink.setIconRightCSS("o_icon o_icon_info o_icon-lg");

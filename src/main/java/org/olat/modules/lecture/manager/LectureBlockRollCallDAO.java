@@ -316,9 +316,10 @@ public class LectureBlockRollCallDAO {
 		List<LectureBlockRollCallAndCoach> blockAndRollCalls = new ArrayList<>(rollCalls.size());
 		for(LectureBlockRollCall rollCall:rollCalls) {
 			LectureBlock block = rollCall.getLectureBlock();
+			RepositoryEntry entry = block.getEntry();
 			AbsenceNotice absenceNotice = rollCall.getAbsenceNotice();
 			String coach = coaches.get(block.getKey());
-			blockAndRollCalls.add(new LectureBlockRollCallAndCoach(coach, block, rollCall, absenceNotice));
+			blockAndRollCalls.add(new LectureBlockRollCallAndCoach(coach, block, entry, rollCall, absenceNotice));
 		}
 		return blockAndRollCalls;
 	}
@@ -395,6 +396,7 @@ public class LectureBlockRollCallDAO {
 		  .append(" inner join fetch rollcall.identity ident")
 		  .append(" inner join fetch ident.user user")
 		  .append(" inner join fetch rollcall.lectureBlock block")
+		  .append(" inner join fetch block.entry entry")
 		  .append(" left join fetch rollcall.absenceNotice notice");
 
 		if(searchParams.getHasAbsence() != null) {

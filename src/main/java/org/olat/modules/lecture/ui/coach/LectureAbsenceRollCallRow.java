@@ -24,6 +24,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -37,15 +38,18 @@ public class LectureAbsenceRollCallRow {
 	private final LectureBlockRollCall rollCall;
 	private final LectureBlock lectureBlock;
 	private final AbsenceNotice absenceNotice;
+	private final RepositoryEntry entry;
 	private final String teachers;
 	
 	private Boolean authorized;
 	
 	private FormLink noticeLink;
 	
-	public LectureAbsenceRollCallRow(LectureBlock lectureBlock, LectureBlockRollCall rollCall, AbsenceNotice absenceNotice, String teachers) {
+	public LectureAbsenceRollCallRow(LectureBlock lectureBlock, RepositoryEntry entry, LectureBlockRollCall rollCall,
+			AbsenceNotice absenceNotice, String teachers) {
 		this.rollCall = rollCall;
 		this.identity = rollCall.getIdentity();
+		this.entry = entry;
 		this.lectureBlock = lectureBlock;
 		this.absenceNotice = absenceNotice;
 		this.teachers = teachers;
@@ -61,6 +65,10 @@ public class LectureAbsenceRollCallRow {
 	
 	public AbsenceNotice getAbsenceNotice() {
 		return absenceNotice;
+	}
+	
+	public RepositoryEntry getEntry() {
+		return entry;
 	}
 	
 	public Identity getIdentity() {
