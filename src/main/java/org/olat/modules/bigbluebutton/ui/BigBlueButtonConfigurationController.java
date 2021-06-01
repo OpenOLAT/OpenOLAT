@@ -66,6 +66,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	private MultipleSelectionElement moduleEnabled;
 	private MultipleSelectionElement enabledForEl;
 	private MultipleSelectionElement permanentForEl;
+	private MultipleSelectionElement avatarEl;
 	private SingleSelection recordingsHandlerEl;
 	private MultipleSelectionElement recordingPermanentEl;
 	private TextElement slidesUploadLimitEl;
@@ -116,6 +117,9 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		
 		permanentForEl = uifactory.addCheckboxesHorizontal("enable.permanent.meeting", formLayout, ENABLED_KEY, enabledValues);
 		permanentForEl.select(ENABLED_KEY[0], bigBlueButtonModule.isPermanentMeetingEnabled());
+		
+		avatarEl = uifactory.addCheckboxesHorizontal("enable.avatar", formLayout, ENABLED_KEY, enabledValues);
+		avatarEl.select(ENABLED_KEY[0], bigBlueButtonModule.isAvatarEnabled());
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigServerCols.url));
@@ -278,6 +282,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		if(enabled) {
 			bigBlueButtonModule.setCoursesEnabled(enabledForEl.isSelected(0));
 			bigBlueButtonModule.setAppointmentsEnabled(enabledForEl.isSelected(1));
+			bigBlueButtonModule.setAvatarEnabled(avatarEl.isAtLeastSelected(1));
 			bigBlueButtonModule.setGroupsEnabled(enabledForEl.isSelected(2));
 			bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
 			bigBlueButtonModule.setRecordingHandlerId(recordingsHandlerEl.getSelectedKey());

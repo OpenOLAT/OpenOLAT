@@ -46,6 +46,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_GROUP_ENABLED = "vc.bigbluebutton.groups";
 	private static final String PROP_COURSE_ENABLED = "vc.bigbluebutton.courses";
 	private static final String PROP_APPOINTMENTS_ENABLED = "vc.bigbluebutton.appointments";
+	private static final String PROP_AVATAR_ENABLED = "vc.bigbluebutton.avatar";
 	private static final String PROP_SECRET = "vc.bigbluebutton.secret";
 	private static final String PROP_SHARED_SECRET = "vc.bigbluebutton.shared.secret";
 	private static final String PROP_PROTOCOL = "vc.bigbluebutton.protocol";
@@ -82,6 +83,8 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private String coursesEnabled;
 	@Value("${vc.bigbluebutton.appointments:true}")
 	private String appointmentsEnabled;
+	@Value("${vc.bigbluebutton.avatar:true}")
+	private String avatarEnabled;
 	@Value("${vc.bigbluebutton.secret}")
 	private String secret;
 	@Value("${vc.bigbluebutton.shared.secret}")
@@ -136,6 +139,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		groupsEnabled = getStringPropertyValue(PROP_GROUP_ENABLED, groupsEnabled);
 		coursesEnabled = getStringPropertyValue(PROP_COURSE_ENABLED, coursesEnabled);
 		appointmentsEnabled = getStringPropertyValue(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled);
+		avatarEnabled = getStringPropertyValue(PROP_AVATAR_ENABLED, avatarEnabled);
 
 		String maxUploadSizeObj = getStringPropertyValue(PROP_MAX_UPLOAD_SIZE, maxUploadSize.toString());
 		if(StringHelper.containsNonWhitespace(maxUploadSizeObj)) {
@@ -191,6 +195,15 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	public void setAppointmentsEnabled(boolean enabled) {
 		appointmentsEnabled = enabled ? "true" : "false";
 		setStringProperty(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled, true);
+	}
+	
+	public boolean isAvatarEnabled() {
+		return "true".equals(avatarEnabled);
+	}
+
+	public void setAvatarEnabled(boolean enabled) {
+		avatarEnabled = enabled ? "true" : "false";
+		setStringProperty(PROP_AVATAR_ENABLED, avatarEnabled, true);
 	}
 	
 	public URI getBigBlueButtonURI() {

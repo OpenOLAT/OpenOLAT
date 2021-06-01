@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -57,6 +58,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -77,10 +79,12 @@ import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsHandler;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
+import org.olat.modules.bigbluebutton.manager.AvatarMapper;
 import org.olat.modules.bigbluebutton.manager.SlidesContainerMapper;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRecordingTableModel.BRecordingsCols;
+import org.olat.user.DisplayPortraitManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -90,7 +94,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class BigBlueButtonMeetingController extends FormBasicController implements GenericEventListener {
+
+	private static final int EXPIRATION_TIME = 5 * 60 * 60;// 10 minutes
 	
+	private String avatarUrl;
 	private final boolean readOnly;
 	private final boolean moderator;
 	private final boolean administrator;
@@ -127,6 +134,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
+	@Autowired
+	private DisplayPortraitManager displayPortraitManager;
 	
 	public BigBlueButtonMeetingController(UserRequest ureq, WindowControl wControl,
 			BigBlueButtonMeeting meeting, BigBlueButtonMeetingDefaultConfiguration configuration,
@@ -142,6 +151,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), meetingOres);
 		moderatorStartMeeting = configuration.isModeratorStartMeeting();
 		
+		initAvatarUrl();
 		initForm(ureq);
 		updateButtonsAndStatus();
 		loadRecordingsModel();
@@ -155,6 +165,18 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initJoinForm(formLayout);
 		initRecordings(formLayout);
+	}
+	
+	private void initAvatarUrl() {
+		if(!bigBlueButtonModule.isAvatarEnabled()) return;
+		
+		File portraitFile = displayPortraitManager.getBigPortrait(getIdentity());
+		if(portraitFile != null) {
+			String rnd = "r" + getIdentity().getKey() + CodeHelper.getRAMUniqueID();
+			avatarUrl = Settings.createServerURI()
+					+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFile), EXPIRATION_TIME)
+					+ "/" + portraitFile.getName();
+		}
 	}
 	
 	private void initJoinForm(FormItemContainer formLayout) {
@@ -623,14 +645,14 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		String meetingUrl = null;
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		if(moderator || administrator) {
-			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, BigBlueButtonAttendeeRoles.moderator, null, errors);
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, avatarUrl, BigBlueButtonAttendeeRoles.moderator, null, errors);
 			delayEvent(new BigBlueButtonEvent(meeting.getKey(), getIdentity().getKey()));
 		} else if(!moderatorStartMeeting) {
 			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.viewer;
-			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, role, null, errors);
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, avatarUrl, role, null, errors);
 		} else if(bigBlueButtonManager.isMeetingRunning(meeting)) {
 			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.viewer;
-			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, role, Boolean.TRUE, errors);
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, avatarUrl, role, Boolean.TRUE, errors);
 		}
 		redirectTo(meetingUrl, errors);
 	}

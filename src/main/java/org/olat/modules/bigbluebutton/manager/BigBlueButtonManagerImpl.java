@@ -915,17 +915,18 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 
 	@Override
-	public String join(BigBlueButtonMeeting meeting, Identity identity, String pseudo, BigBlueButtonAttendeeRoles role, Boolean isRunning, BigBlueButtonErrors errors) {
+	public String join(BigBlueButtonMeeting meeting, Identity identity, String pseudo, String avatarUrl,
+			BigBlueButtonAttendeeRoles role, Boolean isRunning, BigBlueButtonErrors errors) {
 		String joinUrl = null;
 		boolean moderator = role == BigBlueButtonAttendeeRoles.moderator;
 		boolean guest = (role == BigBlueButtonAttendeeRoles.guest || role == BigBlueButtonAttendeeRoles.external);
 		
 		if(isRunning != null && isRunning.booleanValue() && meeting.getServer() != null) {
-			joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, pseudo, moderator, guest);
+			joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, pseudo, avatarUrl, moderator, guest);
 		} else {
 			meeting = getMeetingWithServer(meeting);
 			if(createBigBlueButtonMeeting(meeting, errors)) {
-				joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, pseudo, moderator, guest);
+				joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, pseudo, avatarUrl, moderator, guest);
 			}
 		}
 		if(StringHelper.containsNonWhitespace(joinUrl)) {
@@ -940,7 +941,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		return joinUrl;
 	}
 	
-	private String buildJoinUrl(BigBlueButtonMeeting meeting, BigBlueButtonServer server, Identity identity, String pseudo, boolean moderator, boolean guest) {
+	private String buildJoinUrl(BigBlueButtonMeeting meeting, BigBlueButtonServer server, Identity identity,
+			String pseudo, String avatarUrl, boolean moderator, boolean guest) {
 		String password = moderator ? meeting.getModeratorPassword() : meeting.getAttendeePassword();
 		
 		String userId = null;
@@ -954,7 +956,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			.parameter("meetingID", meeting.getMeetingId())
 			.parameter("fullName", getFullName(identity, pseudo))
 			.parameter("password", password)
-			.optionalParameter("userID", userId);
+			.optionalParameter("userID", userId)
+			.optionalParameter("avatarURL", avatarUrl);
 		
 		boolean guestFlag;
 		if(moderator) {
