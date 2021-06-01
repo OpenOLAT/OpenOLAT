@@ -80,8 +80,8 @@ public class ToccoAuthManager implements AuthenticationSPI {
 			HttpPost loginPost = new HttpPost(loginUri.toURI());
 			
 			List<NameValuePair> pairList = new ArrayList<>();
-			pairList.add(new BasicNameValuePair("username", "openolat"));
-			pairList.add(new BasicNameValuePair("password", "fxOO2021!"));
+			pairList.add(new BasicNameValuePair("username", login));
+			pairList.add(new BasicNameValuePair("password", password));
 			HttpEntity myEntity = new UrlEncodedFormEntity(pairList, "UTF-8");
 			loginPost.setEntity(myEntity);
 

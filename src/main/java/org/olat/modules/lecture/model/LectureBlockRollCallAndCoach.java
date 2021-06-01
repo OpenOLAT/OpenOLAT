@@ -22,6 +22,7 @@ package org.olat.modules.lecture.model;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -33,18 +34,25 @@ public class LectureBlockRollCallAndCoach {
 	
 	private String coach;
 	private final LectureBlock block;
+	private final RepositoryEntry entry;
 	private final AbsenceNotice absenceNotice;
 	private final LectureBlockRollCall rollCall;
 	
-	public LectureBlockRollCallAndCoach(String coach, LectureBlock block, LectureBlockRollCall rollCall, AbsenceNotice absenceNotice) {
+	public LectureBlockRollCallAndCoach(String coach, LectureBlock block, RepositoryEntry entry,
+			LectureBlockRollCall rollCall, AbsenceNotice absenceNotice) {
 		this.coach = coach;
 		this.block = block;
+		this.entry = entry;
 		this.rollCall = rollCall;
 		this.absenceNotice = absenceNotice;
 	}
 
 	public LectureBlock getLectureBlock() {
 		return block;
+	}
+	
+	public RepositoryEntry getEntry() {
+		return entry;
 	}
 
 	public LectureBlockRollCall getRollCall() {

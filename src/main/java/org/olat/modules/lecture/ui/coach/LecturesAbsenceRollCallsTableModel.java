@@ -74,8 +74,8 @@ implements SortableFlexiTableDataModel<LectureAbsenceRollCallRow> {
 				case lectureBlockName: return row.getLectureBlock().getTitle();
 				case lectureBlockLocation: return row.getLectureBlock().getLocation();
 				case teachers: return row.getTeachers();
-				case externalRef: return row.getLectureBlock().getEntry().getExternalRef();
-				case entry: return row.getLectureBlock().getEntry().getDisplayname();
+				case externalRef: return row.getEntry().getExternalRef();
+				case entry: return row.getEntry().getDisplayname();
 				case authorizedAbsence: return row.getAuthorized();
 				case absentLectures: return row.getRollCall().getLecturesAbsentNumber();
 				case absenceNotice: return row.getNoticeLink();

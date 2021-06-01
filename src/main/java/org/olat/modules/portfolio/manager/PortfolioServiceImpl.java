@@ -1722,6 +1722,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 	
 	@Override
 	public Page linkPageBody(Page newPage, Page existingPage) {
-		return pageDao.linkPageBody(newPage, existingPage);
+		newPage = pageDao.linkPageBody(newPage, existingPage);
+		if(newPage.getSection() != null) {
+			newPage.getSection().getBinder();
+		}
+		return newPage;
 	}	
 }
