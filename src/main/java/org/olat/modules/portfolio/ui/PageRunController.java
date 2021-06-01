@@ -746,7 +746,8 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 		
 		Page selectedPage = ((PageSelectionEvent) event).getPage();
-		this.page = portfolioService.linkPageBody(page, selectedPage);		
+		page = portfolioService.linkPageBody(page, selectedPage);
+		dirtyMarker = true;
 		
 		cmc.deactivate();
 		cleanUp();
