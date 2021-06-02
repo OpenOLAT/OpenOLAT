@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -618,6 +619,15 @@ public class CourseFactory {
 		 if (publishTreeModel.hasPublishableChanges()) {
 			 List<String>nodeToPublish = new ArrayList<>();
 			 visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
+			 
+			 //only add selection if changes were possible
+			 for(Iterator<String> selectionIt=nodeToPublish.iterator(); selectionIt.hasNext(); ) {
+				String ident = selectionIt.next();
+				TreeNode node = publishProcess.getPublishTreeModel().getNodeById(ident);
+				if(!publishTreeModel.isSelectable(node)) {
+					selectionIt.remove();
+				}
+			 }
 
 			 publishProcess.createPublishSetFor(nodeToPublish);
 			 PublishSetInformations set = publishProcess.testPublishSet(locale);
