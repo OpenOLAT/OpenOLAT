@@ -593,8 +593,10 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			coordinatedAssessmentMode.updatePlannedAssessedIdentitiesKeys(assessedIdentitiesKeys);
 		} else if(coordinatedAssessmentMode.getNumPlanned() == 0) {
 			AssessmentMode mode = assessmentModeManager.getAssessmentModeById(assessmentModeKey);
-			assessedIdentitiesKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
-			coordinatedAssessmentMode.updatePlannedAssessedIdentitiesKeys(assessedIdentitiesKeys);
+			if(mode != null) {
+				assessedIdentitiesKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
+				coordinatedAssessmentMode.updatePlannedAssessedIdentitiesKeys(assessedIdentitiesKeys);
+			}
 		}
 		return coordinatedAssessmentMode;
 	}

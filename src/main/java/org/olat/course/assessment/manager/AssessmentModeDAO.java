@@ -40,7 +40,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
-import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroupRef;
@@ -320,9 +319,10 @@ public class AssessmentModeDAO {
 	}
 	
 	public void delete(AssessmentMode assessmentMode) {
-		AssessmentModeImpl refMode = dbInstance.getCurrentEntityManager()
-				.getReference(AssessmentModeImpl.class, assessmentMode.getKey());
-		dbInstance.getCurrentEntityManager().remove(refMode);
+		AssessmentMode refMode = getAssessmentModeById(assessmentMode.getKey());
+		if(refMode != null) {
+			dbInstance.getCurrentEntityManager().remove(refMode);
+		}
 	}
 	
 	/**
