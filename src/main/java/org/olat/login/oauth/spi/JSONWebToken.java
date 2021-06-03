@@ -72,6 +72,7 @@ public class JSONWebToken {
 			int secondIndex = accessToken.indexOf('.', firstIndex + 1);
 			String header = StringHelper.decodeBase64(accessToken.substring(0, firstIndex));
 			String payload = decodeBase64(accessToken.substring(firstIndex + 1, secondIndex));
+			log.debug("JWT Payload: {}", payload);
 			JSONObject jsonPayload = new JSONObject(payload);
 			return new JSONWebToken(header, payload, jsonPayload);
 		} catch (JSONException e) {
