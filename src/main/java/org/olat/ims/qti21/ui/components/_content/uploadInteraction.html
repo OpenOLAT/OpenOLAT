@@ -23,7 +23,7 @@
 			## Already uploaded something, so show file and ability to replace it
 	
 			<div class="o_file_upload">
-				<div class="o_file_meta"><a class="o_file" href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank">$responseValue.fileName</a>
+				<div class="o_file_meta o_nowrap"><a class="o_file o_nowrap" href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank">$responseValue.fileName</a>
 					<span class="o_file_date">${r.getUploadDate($interaction.responseIdentifier)}</span><span class="o_file_type">${r.getUploadExtension($interaction.responseIdentifier)}</span><span class="o_file_size">${r.getUploadSize($interaction.responseIdentifier)}</span></div>
 				<div class="o_file_actions">
 				<a href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank">
