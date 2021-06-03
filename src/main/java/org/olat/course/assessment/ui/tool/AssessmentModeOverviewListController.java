@@ -335,7 +335,11 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 
 	private void doStart(AssessmentModeOverviewRow row) {
 		AssessmentMode mode = asssessmentModeManager.getAssessmentModeById(row.getAssessmentMode().getKey());
-		assessmentModeCoordinationService.startAssessment(mode);
+		if(mode == null) {
+			showWarning("warning.assessment.mode.already.deleted");
+		} else {
+			assessmentModeCoordinationService.startAssessment(mode);
+		}
 		loadModel();
 	}
 	
@@ -343,13 +347,18 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		if(guardModalController(stopCtrl)) return;
 
 		AssessmentMode mode = asssessmentModeManager.getAssessmentModeById(row.getAssessmentMode().getKey());
-		stopCtrl = new ConfirmStopAssessmentModeController(ureq, getWindowControl(), mode);
-		listenTo(stopCtrl);
-		
-		String title = translate("confirm.stop.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", stopCtrl.getInitialComponent(), true, title, true);
-		cmc.activate();
-		listenTo(cmc);
+		if(mode == null) {
+			showWarning("warning.assessment.mode.already.deleted");
+			loadModel();
+		} else {
+			stopCtrl = new ConfirmStopAssessmentModeController(ureq, getWindowControl(), mode);
+			listenTo(stopCtrl);
+			
+			String title = translate("confirm.stop.title");
+			cmc = new CloseableModalController(getWindowControl(), "close", stopCtrl.getInitialComponent(), true, title, true);
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 
 	private void doJumpTo(UserRequest ureq, CourseNode node) {

@@ -203,13 +203,19 @@ public class StopAssessmentWarningController extends BasicController {
 	private void doConfirmStop(UserRequest ureq, AssessmentMode mode) {
 		if(guardModalController(stopCtrl)) return;
 		
-		stopCtrl = new ConfirmStopAssessmentModeController(ureq, getWindowControl(), mode);
-		listenTo(stopCtrl);
-
-		String title = translate("confirm.stop.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", stopCtrl.getInitialComponent(), true, title, true);
-		cmc.activate();
-		listenTo(cmc);
+		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
+		if(mode == null) {
+			showWarning("warning.assessment.mode.already.deleted");
+			doAfterStop(ureq);
+		} else {
+			stopCtrl = new ConfirmStopAssessmentModeController(ureq, getWindowControl(), mode);
+			listenTo(stopCtrl);
+	
+			String title = translate("confirm.stop.title");
+			cmc = new CloseableModalController(getWindowControl(), "close", stopCtrl.getInitialComponent(), true, title, true);
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 	
 	private void doAfterStop(UserRequest ureq) {
