@@ -1874,6 +1874,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		//build configuration with fallback to default values
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		
+		// update module
+		CourseNode parent = courseNode.getParent() instanceof CourseNode? (CourseNode)courseNode.getParent(): null;
+		courseNode.updateModuleConfigDefaults(false, parent);
+		
 		// report 
 		Boolean showResHomepage = moduleConfig.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		config.setShowResultsOnHomepage(showResHomepage != null && showResHomepage.booleanValue());// default false
@@ -1883,8 +1887,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		
 		Boolean showResFinish = moduleConfig.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
 		config.setShowResultsAfterFinish(showResFinish == null || showResFinish.booleanValue());// default true
-		String showResDate = (String)moduleConfig.get(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
-		config.setShowResultsDependendOnDate(showResDate == null ? IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS : showResDate);
+		String showResDate = moduleConfig.getStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS);  
+		config.setShowResultsDependendOnDate(showResDate);
 		config.setShowResultsStartDate(getDateSecure(moduleConfig, IQEditController.CONFIG_KEY_RESULTS_START_DATE));
 		config.setShowResultsEndDate(getDateSecure(moduleConfig, IQEditController.CONFIG_KEY_RESULTS_END_DATE));
 		config.setShowResultsPassedStartDate(getDateSecure(moduleConfig, IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
@@ -2248,13 +2252,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) { 
 			if(reportConfig.getShowResultsOnHomepage() != null) {
-				moduleConfig.set(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, reportConfig.getShowResultsOnHomepage());
+				moduleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, reportConfig.getShowResultsOnHomepage());
 			}
 			if(reportConfig.getShowResultsAfterFinish() != null) {
-				moduleConfig.set(IQEditController.CONFIG_KEY_RESULT_ON_FINISH, reportConfig.getShowResultsAfterFinish());
+				moduleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_FINISH, reportConfig.getShowResultsAfterFinish());
 			}
 			if(reportConfig.getShowScoreInfo() != null) {
-				moduleConfig.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, reportConfig.getShowScoreInfo());
+				moduleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLESCOREINFO, reportConfig.getShowScoreInfo());
 			}
 			if(reportConfig.getSummaryPresentation() != null) {
 				moduleConfig.set(IQEditController.CONFIG_KEY_SUMMARY, reportConfig.getSummaryPresentation());
