@@ -819,10 +819,6 @@ $o-step-meta-size			: $font-size-small !default;
 
 
 /* Radial progress component */
-/* more 3-style 
-$o-radial-progress-circle-bg			: $progress-bg !default;
-$o-radial-progress-shadow				: 6px 6px 10px rgba(0,0,0,0.1) !default;
-*/
 $o-radial-progress-circle-size			: 120px !default;
 $o-radial-progress-circle-size-sm		: 60px !default;
 $o-radial-progress-circle-size-lg		: 180px !default;
@@ -830,8 +826,6 @@ $o-radial-progress-circle-size-inline	: $line-height-computed !default;
 $o-radial-progress-circle-bg			: #eee !default;
 $o-radial-progress-circle-color			: $progress-bar-bg !default;
 $o-radial-progress-inset-color			: #fff !default;
-$o-radial-progress-transition-length	: 1s !default;
-$o-radial-progress-shadow				: none !default;
 $o-radial-progress-number-color			: $progress-bar-bg !default;
 $o-radial-progress-addon-color			: $text-muted !default;
 $o-radial-progress-margin 				: 10px !default;

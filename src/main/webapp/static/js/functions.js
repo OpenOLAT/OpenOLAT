@@ -2461,6 +2461,37 @@ function o_doPrint() {
 
 
 /*
+ * Animate radial progress bar
+ * @radialProgessDomSelector for the radial-progress element
+ * @percent the final percentage of the progress, (0 <= percentage <= 100)
+ */
+function o_animateRadialProgress(radialProgessDomSelector, percent) {
+	try {
+		// Set progress on wrapper in case the animation does not work
+		jQuery(radialProgessDomSelector).attr('data-progress', percent);
+		// animate the progress bar
+		var radialBarEl = document.querySelector(radialProgessDomSelector + ' svg .radial-bar');		 
+		var anim = radialBarEl.animate(
+			[{
+			 strokeDasharray: '0 100'
+	        },{
+			 strokeDasharray: percent + ' 100'
+		    }],{
+	         duration: 600,
+	         direction: 'normal',
+	         fill: 'forwards',
+	         easing: 'ease-in-out',
+	         playbackRate : 1
+	    });
+		anim.play();		
+		anim.playbackRate = 1;		
+	} catch(e) {
+		if(window.console) console.log(e, url);
+	}
+}
+
+
+/*
  * Attach event listeners to enable inline translation tool hover links
  */ 
 function b_attach_i18n_inline_editing() {

@@ -1,74 +1,61 @@
-/* based on code found here: 
-https://medium.com/@andsens/radial-progress-indicator-using-css-a917b80c43f9
-http://jsfiddle.net/andsens/mLA7X/
-https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
+/* 
+Radial progress bar and pie chart
+
+Concept: 
+- Radial progress is rendered as an SVG with two circles. 
+	- First circle is for the background color of the circle
+	- Second circle is for the progress bar color
+	- When the progress bar circle has the full width the radial progress becomes a pie-chart
+	- The progress bar is controlled by a data-progress attribute on the radial-progress wrapper
+- The percentage element is a regular DOM element placed over the SVG
+	- Contains the percent number and some add-on text
+	- an contain a background icon for success and failure on a ::before element
+- The progress can be animated using the Web Animations API with this function: 
+	o_animateRadialProgress(radialProgressDomSelector, percent);
+- Be aware of the print override styles in the _print.scss
+- Based on code found here:
+	https://www.smashingmagazine.com/2015/07/designing-simple-pie-charts-with-css/
 */
 
 /* Standard size */
 $o-radial-progress-inset-size			: $o-radial-progress-circle-size * 0.75 !default; // 90px
 $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 !default; // 22px
-.radial-progress {	
-			
+.radial-progress {				
 	margin: $o-radial-progress-margin;
 	width: $o-radial-progress-circle-size;
 	height: $o-radial-progress-circle-size;
-	background-color: $o-radial-progress-circle-bg;
-	border-radius: 50%;
 	font-size: $o-radial-progress-percentage-font-size;
 	
-	/* fix display issues in print and behave like an image tag*/
+	/* fix display issues in print and behave like an image tag */
 	display: inline-block;
 	position: relative;
-
-	.circle {
-		display: block;
-		.mask, .fill, .shadow {
-			display: block;
-			width: 100%;
-			height: 100%;
-			position: absolute;
-			border-radius: 50%;
-		}
-		.shadow {
-			box-shadow: $o-radial-progress-shadow inset;
-		}
-		.mask, .fill {
-			-webkit-backface-visibility: hidden;
-			transition: -webkit-transform $o-radial-progress-transition-length;
-			transition: -ms-transform $o-radial-progress-transition-length;
-			transition: transform $o-radial-progress-transition-length;
-			border-radius: 50%;
-		}
-		.mask {
-			clip: rect(0px, $o-radial-progress-circle-size, $o-radial-progress-circle-size, $o-radial-progress-circle-size/2);
-			.fill {
-				clip: rect(0px, $o-radial-progress-circle-size/2, $o-radial-progress-circle-size, 0px);
-				background-color: $o-radial-progress-circle-color;
-			}
-		}
+	
+	svg {
+  		width: 100%; 
+  		height: 100%;
+  		transform: rotate(-90deg); /* start on top */
+  		border-radius: 50%;
+  		fill: $o-radial-progress-inset-color;
 	}
-	.inset {
-		display: block;
-		width: $o-radial-progress-inset-size;
-		height: $o-radial-progress-inset-size;
-		position: absolute;
-		border-radius: 50%;
-		margin-left: ($o-radial-progress-circle-size - $o-radial-progress-inset-size)/2;
-		margin-top: ($o-radial-progress-circle-size - $o-radial-progress-inset-size)/2;
-		overflow: hidden;
-		background-color: $o-radial-progress-inset-color;
-		box-shadow: $o-radial-progress-shadow;
-		font-size: $o-radial-progress-inset-size - 10px; /* for bgIcon */
-		line-height: $o-radial-progress-inset-size - 10px;
-		text-align: center;
-		
-		.bgIcon {
-			position: absolute;
-			top: 5px;
-			left: -5px;
-			opacity: 0;
-			transition: opacity 0;
-			transition-delay: $o-radial-progress-transition-length;
+	.radial-bg {
+	  fill: transparent;
+	  stroke: $o-radial-progress-circle-bg;
+	}
+	.radial-bar {
+	  fill: transparent;
+	  stroke: $o-radial-progress-circle-color;
+	  stroke-dasharray: 0 100; /* for 0% */
+	}			
+	
+	/* progress bar size and no size for pie style */
+	.radial-bg,
+	.radial-bar {
+		stroke-width: 8;
+	}
+	&.radial-progress-pie {
+		.radial-bg,
+		.radial-bar {
+			stroke-width: 32;
 		}
 	}
 			
@@ -108,28 +95,29 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 				}					
 			}
 		}
+	
+		/* background icons for passed/failed */	
+		&:before {
+			font-size: $o-radial-progress-circle-size * 0.7;
+		}		
 	}
 
 	$increment: 180deg / 100;
 	@for $i from 0 through 100 {
 		&[data-progress="#{$i}"] {
-			.circle {
-				.mask.full, .fill {
-					-webkit-transform: rotate($increment * $i);
-					-ms-transform: rotate($increment * $i);
-					transform: rotate($increment * $i);
-				}
-				.fill.fix {
-					-webkit-transform: rotate($increment * $i * 2);
-					-ms-transform: rotate($increment * $i * 2);
-					transform: rotate($increment * $i * 2);
-				}
+			svg .radial-bar {
+	  			stroke-dasharray: $i 100; /* for 0% */
 			}
 		}
 	}
-	&:not([data-progress="0"]) {
-		.inset .bgIcon {
-			opacity: 1;
+	&[data-progress="0"] {
+		svg .radial-bar {
+			fill: none;
+			stroke: none;
+			stroke-dasharray: none;
+		}
+		.percentage:before {
+			display: none;
 		}
 	}
 
@@ -138,102 +126,51 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 	}		
 }
 	
-
 /* small variant */
 $o-radial-progress-inset-size-sm				: $o-radial-progress-circle-size-sm * 0.75 !default;
 $o-radial-progress-percentage-font-size-sm		: $o-radial-progress-circle-size-sm * 0.24 !default;
 .radial-progress-sm {
-
 	width: $o-radial-progress-circle-size-sm;
 	height: $o-radial-progress-circle-size-sm;
 	font-size: $o-radial-progress-percentage-font-size-sm;
-	
-	.circle {
-		.mask {
-			clip: rect(0px, $o-radial-progress-circle-size-sm, $o-radial-progress-circle-size-sm, $o-radial-progress-circle-size-sm/2);
-			.fill {
-				clip: rect(0px, $o-radial-progress-circle-size-sm/2, $o-radial-progress-circle-size-sm, 0px);
-			}
-		}
-	}
-	.inset {
-		width: $o-radial-progress-inset-size-sm;
-		height: $o-radial-progress-inset-size-sm;
-		margin-left: ($o-radial-progress-circle-size-sm - $o-radial-progress-inset-size-sm)/2;
-		margin-top: ($o-radial-progress-circle-size-sm - $o-radial-progress-inset-size-sm)/2;
-		font-size: $o-radial-progress-inset-size - 10px; /* for bgIcon */
-		line-height: $o-radial-progress-inset-size-sm - 10px;
-		font-size: $o-radial-progress-inset-size-sm - 5px;
-		.bgIcon {
-			position: absolute;
-			top: 5px;
-		}
-	}
+
+	.percentage:before {
+		font-size: $o-radial-progress-circle-size-sm * 0.7;
+	}		
 }
+
 
 /* large variant */
 $o-radial-progress-inset-size-lg				: $o-radial-progress-circle-size-lg * 0.75 !default;
 $o-radial-progress-percentage-font-size-lg		: $o-radial-progress-circle-size-lg * 0.18 !default;
-.radial-progress-lg {
 
+.radial-progress-lg {
 	width: $o-radial-progress-circle-size-lg;
 	height: $o-radial-progress-circle-size-lg;
 	font-size: $o-radial-progress-percentage-font-size-lg;
-	
-	.circle {
-		.mask {
-			clip: rect(0px, $o-radial-progress-circle-size-lg, $o-radial-progress-circle-size-lg, $o-radial-progress-circle-size-lg/2);
-			.fill {
-				clip: rect(0px, $o-radial-progress-circle-size-lg/2, $o-radial-progress-circle-size-lg, 0px);
-			}
-		}
-	}
-	.inset {
-		width: $o-radial-progress-inset-size-lg;
-		height: $o-radial-progress-inset-size-lg;
-		margin-left: ($o-radial-progress-circle-size-lg - $o-radial-progress-inset-size-lg)/2;
-		margin-top: ($o-radial-progress-circle-size-lg - $o-radial-progress-inset-size-lg)/2;
-		font-size: $o-radial-progress-inset-size-lg - 20px;
-		line-height: $o-radial-progress-inset-size-lg - 10px;
-		.bgIcon {
-			position: absolute;
-			top: 5px;
-		}
-	}
+
+	.percentage:before {
+		font-size: $o-radial-progress-circle-size-lg * 0.7;
+	}		
 }
+
 
 /* inline variant */
 $o-radial-progress-inset-size-inline				: $o-radial-progress-circle-size-inline * 0.70 !default;
 $o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size-inline * 0.18 !default;
 .radial-progress-inline {
-
 	width: $o-radial-progress-circle-size-inline;
 	height: $o-radial-progress-circle-size-inline;
-
+	font-size: $o-radial-progress-percentage-font-size-inline;
 	margin: 0;
 	vertical-align: bottom;
-	display: inline-block;
 	
-	.circle {
-		.mask {
-			clip: rect(0px, $o-radial-progress-circle-size-inline, $o-radial-progress-circle-size-inline, $o-radial-progress-circle-size-inline/2);
-			.fill {
-				clip: rect(0px, $o-radial-progress-circle-size-inline/2, $o-radial-progress-circle-size-inline, 0px);
-			}
-		}
-	}
-	.inset {
-		width: $o-radial-progress-inset-size-inline;
-		height: $o-radial-progress-inset-size-inline;
-		margin-left: ($o-radial-progress-circle-size-inline - $o-radial-progress-inset-size-inline)/2;
-		margin-top: ($o-radial-progress-circle-size-inline - $o-radial-progress-inset-size-inline)/2;
-		.bgIcon {
-			display: none;
-		}
-	}
+	.percentage:before {
+		display: none;
+	}		
 }
 
-/* pie style without inset*/
+/* pie style*/
 .radial-progress-pie {
 	.percentage .centeredWrapper {
 		.number,
@@ -246,34 +183,34 @@ $o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size
 
 /* color variants */
 .radial-progress-success {
-	.circle .mask .fill, .circle .fill {
-		background-color: $o-radial-progress-circle-success-color;
+	.radial-bar {
+	  stroke: $o-radial-progress-circle-success-color;
 	}
-	.inset .percentage .number span {
+	&:not(.radial-progress-pie) .percentage .number {
 		color: $o-radial-progress-percentage-success-color;
 	}
 }
 .radial-progress-info {
-	.circle .mask .fill, .circle .fill {
-		background-color: $o-radial-progress-circle-info-color;
+	.radial-bar {
+	  stroke: $o-radial-progress-circle-info-color;
 	}
-	.inset .percentage .number span {
+	&:not(.radial-progress-pie) .percentage .number {
 		color: $o-radial-progress-percentage-info-color;
 	}
 }
 .radial-progress-danger {
-	.circle .mask .fill, .circle .fill {
-		background-color: $o-radial-progress-circle-danger-color;
+	.radial-bar {
+	  stroke: $o-radial-progress-circle-danger-color;
 	}
-	.inset .percentage .number span {
+	&:not(.radial-progress-pie) .percentage .number {
 		color: $o-radial-progress-percentage-danger-color;
 	}
 }
 .radial-progress-warning {
-	.circle .mask .fill, .circle .fill {
-		background-color: $o-radial-progress-circle-warning-color;
+	.radial-bar {
+	  stroke: $o-radial-progress-circle-warning-color;
 	}
-	.inset .percentage .number span {
+	&:not(.radial-progress-pie) .percentage .number {
 		color: $o-radial-progress-percentage-warning-color;
 	}
 }
@@ -282,6 +219,7 @@ $o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size
 $o-radial-progress-circle-size-toolbar				: $o-toolbar-height-md + 8px !default;
 $o-radial-progress-inset-size-toolbar				: $o-radial-progress-circle-size-toolbar - 8px !default;
 $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !default;
+
 .o_toolbar .o_tool .o_progress {
 	width: $o-toolbar-height-md;
 	height: $o-toolbar-height-md - 4px;
@@ -289,34 +227,16 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 	display: inline-block;
 	overflow: visible; /* fix overflow rule from toolbar.scss */
 	
-	
 	.radial-progress {
 		width: $o-radial-progress-circle-size-toolbar;
 		height: $o-radial-progress-circle-size-toolbar;
 		font-size: $o-radial-progress-percentage-font-size-toolbar;
-		
+
 		position: absolute;
 		top: -5px;
 		left: 0;
 		margin: 0;
-	
-		.circle {
-			.mask {
-				clip: rect(0px, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar/2);
-				.fill {
-					clip: rect(0px, $o-radial-progress-circle-size-toolbar/2, $o-radial-progress-circle-size-toolbar, 0px);
-				}
-			}
-		}
-		.inset {
-			width: $o-radial-progress-inset-size-toolbar;
-			height: $o-radial-progress-inset-size-toolbar;
-			margin-left: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
-			margin-top: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
-			font-size: $o-radial-progress-inset-size-toolbar;
-			line-height: $o-radial-progress-inset-size-toolbar;
-			background: $o-toolbar-bg-color;
-		}
+		
 		.percentage {
 			.centeredWrapper {
 				.number {
@@ -335,15 +255,19 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 			.o_progress_label {
 				display: none;
 			}
+			&:before {
+				font-size: $o-radial-progress-circle-size-toolbar * 0.7;
+			}		
 		}
 	}
-		
 }
+
+
 @media (max-width: $screen-sm-max) { 
 	.o_toolbar .o_tool .o_progress,
 	.o_coursetable.o_rendertype_custom .o_completion .o_progress {
 		width: $o-toolbar-height-sm;
-		height: $o-toolbar-height-sm - 4px;
+		height: $o-toolbar-height-sm - 4px;		
 		.radial-progress {
 			$o-radial-progress-circle-size-toolbar				: $o-toolbar-height-sm + 6px;
 			$o-radial-progress-inset-size-toolbar				: $o-radial-progress-circle-size-toolbar - 6px;
@@ -352,24 +276,11 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 			width: $o-radial-progress-circle-size-toolbar;
 			height: $o-radial-progress-circle-size-toolbar;
 			font-size: $o-radial-progress-percentage-font-size-toolbar;			
-			top: -3px;
-		
-			.circle {
-				.mask {
-					clip: rect(0px, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar/2);
-					.fill {
-						clip: rect(0px, $o-radial-progress-circle-size-toolbar/2, $o-radial-progress-circle-size-toolbar, 0px);
-					}
-				}
-			}
-			.inset {
-				width: $o-radial-progress-inset-size-toolbar;
-				height: $o-radial-progress-inset-size-toolbar;
-				margin-left: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
-				margin-top: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
-				font-size: $o-radial-progress-inset-size-toolbar;
-				line-height: $o-radial-progress-inset-size-toolbar;			
-			}
+			top: -3px;	
+				
+			.percentage:before {
+				font-size: $o-radial-progress-circle-size-toolbar * 0.7;
+			}	
 		}
 	}
 	/* fix positioning in course listing */
@@ -384,6 +295,7 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 	}
 }
 
+
 @media (max-width: $screen-xs-max) { 
 	.o_toolbar .o_tool .o_progress,
 	.o_coursetable.o_rendertype_custom .o_completion .o_progress {
@@ -397,23 +309,6 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 			height: $o-radial-progress-circle-size-toolbar;
 			top: -2px;
 		
-			.circle {
-				.mask {
-					clip: rect(0px, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar/2);
-					.fill {
-						clip: rect(0px, $o-radial-progress-circle-size-toolbar/2, $o-radial-progress-circle-size-toolbar, 0px);
-					}
-				}
-			}
-			.inset {
-				width: $o-radial-progress-inset-size-toolbar;
-				height: $o-radial-progress-inset-size-toolbar;
-				margin-left: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
-				margin-top: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
-				&:after {
-					display: none;
-				}
-			}
 			.percentage {
 				display: none;
 			}
@@ -423,14 +318,17 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 
 /* special rendering in course list table */
 .o_coursetable.o_rendertype_classic .o_progress .radial-progress {
-	@extend .radial-progress, .radial-progress-inline;
-	/* remove unwanted stuff */
-	.inset:after {
-		display: none;
-	}
+	width: $o-radial-progress-circle-size-inline;
+	height: $o-radial-progress-circle-size-inline;
+	font-size: $o-radial-progress-percentage-font-size-inline;
+		
+	margin: 0;
+	vertical-align: bottom;
+	
 	.percentage {
-		position: relative;
+		position: absolute;
 		left: $o-radial-progress-circle-size-inline * 1.4;
+		top: 0;
 		.number {
 			font-size: $o-content-font-size-base;
 			line-height: $o-content-line-height-base;
@@ -440,29 +338,39 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 		.addon {
 			display: none;
 		}
+		&:before {
+			display: none;
+		}
 	}
 }	
 
-
-
 /* Styles with background images triggered by element css class */
 .o_progress_failed, .o_progress_passed {	
-	.inset:after {
+	.percentage {
+		z-index: 1;	
+	}
+	.percentage:before {
+		position: absolute;
+		z-index: -1;
+		width: 100%;
+		height: 100%;
+		line-height: 120%;
 		@extend .o_icon; 
 	}
-	.radial-progress-inline .inset {
+		
+	.radial-progress-inline .percentage {
 		display: none;	
 	}
-	.radial-progress-toolbar .inset {
+	.radial-progress-toolbar .percentage {
 		font-size: $o-toolbar-height-md;
 		line-height: $o-toolbar-height-md;
 	}
 }
-.o_progress_failed .inset:after {
+.o_progress_failed .percentage:before {
 	content: $fa-var-times; 
 	color: #efe5e5;
 }
-.o_progress_passed .inset:after {
+.o_progress_passed .percentage:before {
 	content: $fa-var-check; 
 	color: #e5efe5;
 }

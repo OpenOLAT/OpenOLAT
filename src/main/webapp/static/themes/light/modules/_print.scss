@@ -154,31 +154,15 @@
 		page-break-inside : avoid;
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
-		background-color: #eee !important;
-		.circle .mask .fill {
-			-webkit-print-color-adjust: exact;
-			color-adjust: exact;
-			background-color: #000 !important;
+		
+		&.o_progress_failed .percentage:before {
+			color: #efe5e5 !important;
 		}
-		.inset {
-			-webkit-print-color-adjust: exact;
-			color-adjust: exact;
-			background-color: #fff !important;
-			
-			.bgIcon {
-				opacity: 0.3;
-				transition: opacity 0.3;
-			}
-			.bgIcon:before, .o_icon_progress_danger:before, .o_icon_progress_success:before {
-				opacity: 0.3;
-				transition: opacity 0.3;
-				color: #777 !important;
-			}
+		&.o_progress_passed .percentage:before {
+			color: #e5efe5 !important;
 		}
-		&:not([data-progress="0"]) .inset .bgIcon {
-			opacity: 0.3;
-			transition: opacity 0.3;
-			color: #777 !important;
+		&[data-progress="0"] .percentage:before {
+			display: none;
 		}
 	}
 	

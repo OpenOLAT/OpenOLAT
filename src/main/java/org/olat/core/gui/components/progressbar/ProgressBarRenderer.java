@@ -220,14 +220,13 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		}
 		target.append(")'>");
 		
-		// 2) Circle (the outer colored circle)
-		target.append("<span class='circle'><span class='mask full'><span class='fill'></span></span>")
-			.append("<span class='mask half'><span class='fill'></span><span class='fill fix'></span></span>")
-			.append("<span class='shadow'></span></span>");
+		// 2) Circle
+		target.append("<svg viewBox='0 0 32 32'>")
+			.append("<circle r='16' cx='16' cy='16' class='radial-bg'/>")
+			.append("<circle r='16' cx='16' cy='16' class='radial-bar'/>")
+			.append("</svg>");
 		
-		// 3a) Inset (the inner circle)
-		target.append("<span class='inset'></span>", ProgressBar.RenderStyle.radial.equals(ubar.getRenderStyle()));
-
+		// 3) Text
 		if (renderLabels && !ProgressBar.RenderSize.inline.equals(ubar.getRenderSize())) {
 			target.append("<span class='percentage'><span class='centeredWrapper'>");
 			if (ubar.isPercentagesEnabled()) {
@@ -249,16 +248,13 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			}
 			target.append("</span></span>");
 		}
-		 
-		// 3b) else: without inset it does pie style rendering
-
-
-		// Animation is done via JS, no stypes supported 
+		
+		// Animation is done via JS, no stripes supported 
 		if (ubar.isProgressAnimationEnabled()) {
 			target.append("<script>")
 				.append("setTimeout(function() {")
-				.append("jQuery('#o_c").append(ubar.getDispatchID()).append(" .radial-progress').attr('data-progress','").append(Math.round(percent)).append("');")
-				.append(" },100);")
+				.append("	o_animateRadialProgress('#o_c").append(ubar.getDispatchID()).append(" .radial-progress', ").append(Math.round(percent)).append(");")
+				.append("});")
 				.append("</script>");
 		}
 		
