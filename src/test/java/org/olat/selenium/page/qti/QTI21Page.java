@@ -646,10 +646,10 @@ public class QTI21Page {
 			filename = filename.substring(0, lastIndex);
 		}
 		
-		By uploadedFileBy = By.xpath("//div[@class='o_file_upload']/div[@class='o_file_meta']/a[@class='o_file'][text()[contains(.,'" + filename + "')]]");
+		By uploadedFileBy = By.xpath("//div[@class='o_file_upload']/div[contains(@class,'o_file_meta')]/a[contains(@class,'o_file')][text()[contains(.,'" + filename + "')]]");
 		OOGraphene.waitElement(uploadedFileBy, browser);
 		
-		By deleteFileBy = By.xpath("//div[@class='o_file_upload'][div[@class='o_file_meta']/a[@class='o_file'][text()[contains(.,'" + filename + "')]]]/div[@class='o_file_actions']/a[contains(@onclick,'deleteResponse')]");
+		By deleteFileBy = By.xpath("//div[@class='o_file_upload'][div[contains(@class,'o_file_meta')]/a[contains(@class,'o_file')][text()[contains(.,'" + filename + "')]]]/div[@class='o_file_actions']/a[contains(@onclick,'deleteResponse')]");
 		OOGraphene.waitElement(deleteFileBy, browser);
 		return this;
 	}
@@ -969,10 +969,10 @@ public class QTI21Page {
 	 * @return Itself
 	 */
 	public QTI21Page assertOnAssessmentResultUpload(String name) {
-		By uploadBy = By.xpath("//div[@class='o_file_upload']/div[@class='o_file_meta']/a[@class='o_file'][text()[contains(.,'" + name + "')]]");
+		By uploadBy = By.xpath("//div[@class='o_file_upload']/div[contains(@class,'o_file_meta')]/a[contains(@class,'o_file')][text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(uploadBy, browser);
 		
-		By deleteFileBy = By.xpath("//div[@class='o_file_upload'][div[@class='o_file_meta']/a[@class='o_file'][text()[contains(.,'" + name + "')]]]/div[@class='o_file_actions']/a[contains(@onclick,'deleteResponse')]");
+		By deleteFileBy = By.xpath("//div[@class='o_file_upload'][div[contains(@class,'o_file_meta')]/a[contains(@class,'o_file')][text()[contains(.,'" + name + "')]]]/div[@class='o_file_actions']/a[contains(@onclick,'deleteResponse')]");
 		List<WebElement> deleteEls = browser.findElements(deleteFileBy);
 		Assert.assertTrue(deleteEls.isEmpty());
 		return this;
