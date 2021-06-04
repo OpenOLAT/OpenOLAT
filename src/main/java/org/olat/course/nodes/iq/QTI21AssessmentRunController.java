@@ -78,10 +78,10 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
@@ -974,7 +974,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			finalOptions.setDisplayMaxScoreItem(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTION_MAX_SCORE, testOptions.isDisplayMaxScoreItem()));
 			finalOptions.setDisplayScoreProgress(config.getBooleanSafe(IQEditController.CONFIG_KEY_SCOREPROGRESS, testOptions.isDisplayScoreProgress()));
 			finalOptions.setHideFeedbacks(config.getBooleanSafe(IQEditController.CONFIG_KEY_HIDE_FEEDBACKS, testOptions.isHideFeedbacks()));
-			finalOptions.setAssessmentResultsOptions(QTI21AssessmentResultsOptions.parseString(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT)));
+			finalOptions.setAssessmentResultsOptions(QTI21AssessmentResultsOptions.parseString(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT)));
 			finalOptions.setShowMenu(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLEMENU, testOptions.isShowMenu()));
 			finalOptions.setAllowAnonym(config.getBooleanSafe(IQEditController.CONFIG_ALLOW_ANONYM, testOptions.isAllowAnonym()));
 			finalOptions.setDigitalSignature(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, testOptions.isDigitalSignature()));
@@ -982,9 +982,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 		
 		
-		if(!AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT.equals(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY))) {
+		if(!QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT.equals(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY))) {
 			//if this setting is set, override the summary
-			finalOptions.setAssessmentResultsOptions(QTI21AssessmentResultsOptions.parseString(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT)));
+			finalOptions.setAssessmentResultsOptions(QTI21AssessmentResultsOptions.parseString(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT)));
 		}
 		Boolean assessmentResultOnFinish = config.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
 		if(assessmentResultOnFinish != null) {

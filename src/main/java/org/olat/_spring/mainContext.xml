@@ -24,7 +24,6 @@
 
 	<import resource="classpath:/org/olat/collaboration/_spring/collaborationToolsContext.xml"/>
 	<import resource="classpath:/org/olat/commons/calendar/_spring/calendarContext.xml"/>
-	<import resource="classpath:/org/olat/commons/servlets/_spring/staticContext.xml"/>
 
 	<import resource="classpath:/org/olat/course/_spring/courseContext.xml"/>
 

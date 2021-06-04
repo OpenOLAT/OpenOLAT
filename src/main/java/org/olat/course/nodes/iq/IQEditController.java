@@ -31,7 +31,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
@@ -46,7 +45,7 @@ import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.ui.GradingInformationsController;
@@ -55,13 +54,13 @@ import org.olat.repository.RepositoryManager;
 
 /**
  * Description:<BR/>
- * Edit controller for the qti test, selftest and survey course node
+ * Edit controller for the QTI 2.1 test and selftest
  * <P/>
  * Initial Date:  Oct 13, 2004
  *
  * @author Felix Jost
  */
-public class IQEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
+public class IQEditController extends ActivateableTabbableDefaultController {
 
 	private static final String PANE_TAB_IQLAYOUTCONFIG = "pane.tab.iqconfig.layout";
 	
@@ -213,7 +212,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		this.course = course;
 		this.courseNode = courseNode;
 		
-		type = AssessmentInstance.QMD_ENTRY_TYPE_ASSESS;
+		type = QTI21Constants.QMD_ENTRY_TYPE_ASSESS;
 		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_TEST;
 		paneKeys = new String[]{paneTabIQConfiguration};
 		// put some default values
@@ -247,7 +246,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		this.course = course;
 		this.courseNode = courseNode;
 		
-		type = AssessmentInstance.QMD_ENTRY_TYPE_SELF;
+		type = QTI21Constants.QMD_ENTRY_TYPE_SELF;
 		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_SELF;
 		paneKeys = new String[]{paneTabIQConfiguration};
 		// put some default values
@@ -278,7 +277,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		this.course = course;
 		this.courseNode = courseNode;
 		
-		type = AssessmentInstance.QMD_ENTRY_TYPE_SURVEY;
+		type = QTI21Constants.QMD_ENTRY_TYPE_SURVEY;
 		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_SURV;
 		paneKeys = new String[]{paneTabIQConfiguration};
 
@@ -298,7 +297,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		listenTo(configurationCtrl);
 		layoutConfigurationCtrl = new IQLayoutConfigurationController(ureq, getWindowControl(), course, courseNode, type);
 		listenTo(layoutConfigurationCtrl);	
-		if (AssessmentInstance.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
+		if (QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
 			highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), moduleConfiguration);
 			listenTo(highScoreNodeConfigController);
 		}
@@ -339,7 +338,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(paneTabIQConfiguration), configurationCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_IQLAYOUTCONFIG), layoutConfigurationCtrl.getInitialComponent());
-		if (AssessmentInstance.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
+		if (QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
 			tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 		}
 		tabbedPane.addTab(translate(PANE_TAB_GRADING_INFOS) , gradingInfosCtrl.getInitialComponent());

@@ -19,9 +19,9 @@
  */
 package org.olat.ims.qti21.ui.statistics;
 
-import static org.olat.ims.qti.statistics.ui.StatisticFormatter.duration;
-import static org.olat.ims.qti.statistics.ui.StatisticFormatter.format;
-import static org.olat.ims.qti.statistics.ui.StatisticFormatter.getModeString;
+import static org.olat.ims.qti21.ui.statistics.StatisticFormatter.duration;
+import static org.olat.ims.qti21.ui.statistics.StatisticFormatter.format;
+import static org.olat.ims.qti21.ui.statistics.StatisticFormatter.getModeString;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,11 +56,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
-import org.olat.ims.qti.statistics.QTIType;
-import org.olat.ims.qti.statistics.model.StatisticAssessment;
-import org.olat.ims.qti.statistics.ui.QTI12AssessmentStatisticsController.ItemInfos;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.AssessmentItemStatistic;
+import org.olat.ims.qti21.model.statistics.StatisticAssessment;
 import org.olat.modules.assessment.ui.UserFilterController;
 import org.olat.modules.assessment.ui.event.UserFilterEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +78,6 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	
 	private UserFilterController filterCtrl;
 	
-	private QTIType type;
 	private QTICourseNode courseNode;
 	private final QTI21StatisticResourceResult resourceResult;
 	
@@ -95,7 +92,6 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		this.stackPanel = stackPanel;
 		this.resourceResult = resourceResult;
 		courseNode = resourceResult.getTestCourseNode();
-		type = resourceResult.getType();
 
 		mainVC = createVelocityContainer("statistics_assessment_test");
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
@@ -155,29 +151,21 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	}
 	
 	private Float getMaxScoreSetting(QTICourseNode testNode) {
-		Float maxScoreSetting = null;
-		if(QTIType.qtiworks.equals(type)) {
-			maxScoreSetting = testNode instanceof IQTESTCourseNode
+		return testNode instanceof IQTESTCourseNode
 					? courseAssessmentService.getAssessmentConfig(courseNode).getMaxScore()
 					: null;
-		}
-		return maxScoreSetting;
 	}
 	
 	private Float getCutValueSetting(QTICourseNode testNode) {
-		Float cutValueSetting = null;
-		if(QTIType.qtiworks.equals(type)) {
-			cutValueSetting = testNode instanceof IQTESTCourseNode
+		return testNode instanceof IQTESTCourseNode
 					? courseAssessmentService.getAssessmentConfig(courseNode).getCutValue()
 					: null;
-		}
-		return cutValueSetting;
 	}
 
 	private void initCourseNodeInformation(StatisticAssessment stats) {
 		mainVC.contextPut("numOfParticipants", stats.getNumOfParticipants());
 	
-		mainVC.contextPut("type", QTIType.qtiworks);
+		mainVC.contextPut("type", "qtiworks");
 		mainVC.contextPut("numOfPassed", stats.getNumOfPassed());
 		mainVC.contextPut("numOfFailed", stats.getNumOfFailed());
 
@@ -299,5 +287,24 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		label += "_" + Formatter.formatDatetimeFilesystemSave(new Date()) + ".xlsx";
 		MediaResource resource = new QTI21StatisticsResource(resourceResult, label, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	public static class ItemInfos {
+		
+		private final String label;
+		private final String text;
+		
+		public ItemInfos(String label, String text) {
+			this.label = label;
+			this.text = text;
+		}
+
+		public String getLabel() {
+			return label;
+		}
+
+		public String getText() {
+			return text;
+		}
 	}
 }

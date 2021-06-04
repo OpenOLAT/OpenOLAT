@@ -63,10 +63,8 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.properties.IdentityAnonymizerCallback;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.ims.qti.export.QTIArchiver;
-import org.olat.ims.qti.export.QTIExportFormatter;
-import org.olat.ims.qti.export.helper.IdentityAnonymizerCallback;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -144,6 +142,9 @@ public class QTI21ArchiveFormat {
 	
 	private static final Logger log = Tracing.createLoggerFor(QTI21ArchiveFormat.class);
 	
+
+	public static final String TEST_USER_PROPERTIES = "org.olat.ims.qti.export.QTIExportFormatterCSVType1";
+	
 	private Translator translator;
 	
 	private ResolvedAssessmentTest resolvedAssessmentTest;
@@ -181,10 +182,9 @@ public class QTI21ArchiveFormat {
 			exportConfig = searchParams.getArchiveOptions().getExportFormat();
 		}
 		
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(QTIArchiver.TEST_USER_PROPERTIES, true);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(TEST_USER_PROPERTIES, true);
 		
 		translator = Util.createPackageTranslator(QTI21RuntimeController.class, locale);
-		translator = Util.createPackageTranslator(QTIExportFormatter.class, locale, translator);
 		translator = userManager.getPropertyHandlerTranslator(translator);
 		initInteractionWriters();
 	}

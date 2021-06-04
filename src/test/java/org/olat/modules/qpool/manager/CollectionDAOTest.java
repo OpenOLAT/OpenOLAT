@@ -30,7 +30,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
@@ -65,9 +64,10 @@ public class CollectionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createCollection() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-" + UUID.randomUUID());
-		collectionDao.createCollection("My first collection", id);
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Coll-Onwer-");
+		QuestionItemCollection collection = collectionDao.createCollection("My first collection", id);
 		dbInstance.commit();
+		Assert.assertNotNull(collection);
 	}
 	
 	@Test
@@ -93,12 +93,13 @@ public class CollectionDAOTest extends OlatTestCase {
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-2-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 2", id);
-		QuestionItem item = questionDao.createAndPersist(null, "NGC 89", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item = questionDao.createAndPersist(null, "NGC 89", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		dbInstance.commitAndCloseSession();
 		
 		//add the item to the collection
-		collectionDao.addItemToCollection(item, singletonList(coll));
+		boolean added = collectionDao.addItemToCollection(item, singletonList(coll));
 		dbInstance.commit();//check if it's alright
+		Assert.assertTrue(added);
 	}
 	
 	@Test
@@ -107,8 +108,8 @@ public class CollectionDAOTest extends OlatTestCase {
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-4-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 4", id);
-		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 99", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 101", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 99", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 101", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		collectionDao.addItemToCollection(item1, singletonList(coll));
 		collectionDao.addItemToCollection(item2, singletonList(coll));
 		dbInstance.commit();//check if it's alright
@@ -142,7 +143,7 @@ public class CollectionDAOTest extends OlatTestCase {
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-4-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 8", id);
-		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 103", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 103", "IMS QTI 1.2", Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 104", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		collectionDao.addItemToCollection(item1, singletonList(coll));
 		collectionDao.addItemToCollection(item2, singletonList(coll));
@@ -167,8 +168,8 @@ public class CollectionDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-4-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll1 = collectionDao.createCollection("NGC collection 8", id);
 		QuestionItemCollection coll2 = collectionDao.createCollection("NGC collection 9", id);
-		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 103", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 104", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 103", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 104", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		collectionDao.addItemToCollection(item1, singletonList(coll1));
 		collectionDao.addItemToCollection(item1, singletonList(coll2));
 		collectionDao.addItemToCollection(item2, singletonList(coll1));
@@ -209,8 +210,8 @@ public class CollectionDAOTest extends OlatTestCase {
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Coll-Onwer-4-");
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 10", id);
-		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 107", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 108", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 107", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 108", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		collectionDao.addItemToCollection(item1, singletonList(coll));
 		collectionDao.addItemToCollection(item2, singletonList(coll));
 		dbInstance.commit();

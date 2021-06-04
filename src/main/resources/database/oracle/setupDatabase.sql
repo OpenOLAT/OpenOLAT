@@ -162,25 +162,6 @@ CREATE TABLE o_noti_pub (
 );
 
 
-CREATE TABLE o_qtiresultset (
-  resultset_id number(20) NOT NULL,
-  version number(20) NOT NULL,
-  lastmodified date NOT NULL,
-  creationdate date,
-  identity_id number(20) NOT NULL,
-  olatresource_fk number(20) NOT NULL,
-  olatresourcedetail varchar2(255 char) NOT NULL,
-  assessmentid number(20) NOT NULL,
-  repositoryref_fk number(20) NOT NULL,
-  ispassed number,
-  score float,
-  duration number(20),
-  issuspended number,
-  fullyassessed number,
-  PRIMARY KEY (resultset_id)
-);
-
-
 CREATE TABLE o_bs_identity (
   id number(20) NOT NULL,
   version number(20) NOT NULL,
@@ -496,22 +477,6 @@ CREATE TABLE o_noti_sub (
   subenabled number default 1,
   PRIMARY KEY (publisher_id),
   CONSTRAINT u_o_noti_sub UNIQUE (fk_publisher, fk_identity)
-);
-
-
-CREATE TABLE o_qtiresult (
-  result_id number(20) NOT NULL,
-  version number(20) NOT NULL,
-  lastmodified date NOT NULL,
-  creationdate date,
-  itemident varchar2(255 char) NOT NULL,
-  answer varchar2(4000),
-  duration number(20),
-  score float,
-  tstamp date NOT NULL,
-  ip varchar2(255 char),
-  resultset_fk number(20),
-  PRIMARY KEY (result_id)
 );
 
 
@@ -3865,19 +3830,6 @@ alter table o_noti_sub add constraint FK4FB8F04749E53702 foreign key (fk_publish
 create index FK4FB8F04749E53702 on o_noti_sub (fk_publisher);
 alter table o_noti_sub add constraint FK4FB8F0476B1F22F8 foreign key (fk_identity) references o_bs_identity (id);
 create index FK4FB8F0476B1F22F8 on o_noti_sub (fk_identity);
-
--- qti
-alter table o_qtiresultset add constraint FK14805D0F5259603C foreign key (identity_id) references o_bs_identity (id);
-create index FK14805D0F5259603C on o_qtiresultset (identity_id);
-
-create index oresdetindex on o_qtiresultset (olatresourcedetail);
-create index oresindex on o_qtiresultset (olatresource_fk);
-create index reprefindex on o_qtiresultset (repositoryref_fk);
-create index assindex on o_qtiresultset (assessmentid);
-
-alter table o_qtiresult add constraint FK3563E67340EF401F foreign key (resultset_fk) references o_qtiresultset (resultset_id);
-create index FK3563E67340EF401F on o_qtiresult (resultset_fk);
-create index itemindex on o_qtiresult (itemident);
 
 -- catalog entry
 alter table o_catentry add constraint FKF4433C2C7B66B0D0 foreign key (parent_id) references o_catentry (id);

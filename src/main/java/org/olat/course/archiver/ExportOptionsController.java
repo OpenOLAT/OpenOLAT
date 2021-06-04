@@ -27,10 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
-import org.olat.ims.qti.export.OptionsChooseForm;
 
 /**
  * user interface to determine export config
@@ -48,12 +45,11 @@ public class ExportOptionsController extends FormBasicController {
 
 	private MultipleSelectionElement downloadOptionsEl;
 	
-	private String[] optionKeys, optionVals;
+	private String[] optionKeys;
+	private String[] optionVals;
 	
 	public ExportOptionsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		Translator fallback = Util.createPackageTranslator(OptionsChooseForm.class, getLocale());
-		setTranslator(Util.createPackageTranslator(getTranslator(), fallback, getLocale()));
 		
 		optionKeys = new String[]{ITEMCOLS, POSCOL, POINTCOL, TIMECOLS, COMMENTCOL };
 		optionVals = new String[] {

@@ -24,9 +24,9 @@ import java.util.Date;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
-import org.olat.ims.qti.qpool.QTIMetadataConverter;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.pool.QTI21MetadataConverter;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemEditable;
@@ -50,7 +50,7 @@ class ManifestMetadataItemized implements QuestionItem, QuestionItemEditable {
 	
 	private final ManifestMetadataBuilder metadataBuilder;
 	
-	private final QTIMetadataConverter metadataConverter;
+	private final QTI21MetadataConverter metadataConverter;
 	
 	private String lang;
 	private String directory;
@@ -72,7 +72,7 @@ class ManifestMetadataItemized implements QuestionItem, QuestionItemEditable {
 		
 		this.metadataBuilder = metadataBuilder;
 		this.lang = lang;
-		metadataConverter = new QTIMetadataConverter(itemTypeDao, educationalContextDao, qpoolService);
+		metadataConverter = new QTI21MetadataConverter(itemTypeDao, educationalContextDao, qpoolService);
 		if(StringHelper.containsNonWhitespace(metadataBuilder.getClassificationTaxonomy())) {
 			taxonomyLevel = metadataConverter.toTaxonomy(metadataBuilder.getClassificationTaxonomy());
 		}

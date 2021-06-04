@@ -25,7 +25,6 @@ import java.util.Date;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
@@ -122,7 +121,7 @@ public class ItemWrapper implements QuestionItemView {
 
 	@Override
 	public boolean isReviewableFormat() {
-		return !QTIConstants.QTI_12_FORMAT.equals(getFormat());
+		return !"IMS QTI 1.2".equals(getFormat());
 	}
 
 	@Override

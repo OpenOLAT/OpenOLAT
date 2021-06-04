@@ -23,7 +23,6 @@ import java.beans.Transient;
 import java.util.Collection;
 
 import org.olat.core.util.StringHelper;
-import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 
 /**
@@ -122,10 +121,10 @@ public class QTI21AssessmentResultsOptions {
 	public static QTI21AssessmentResultsOptions parseString(String value) {
 		if(StringHelper.containsNonWhitespace(value)) {
 			switch(value) {
-				case AssessmentInstance.QMD_ENTRY_SUMMARY_NONE: return noOptions();
-				case AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT: return new QTI21AssessmentResultsOptions(true, false, false, false, false);
-				case AssessmentInstance.QMD_ENTRY_SUMMARY_SECTION: return new QTI21AssessmentResultsOptions(true, true, false, false, false);
-				case AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED: return allOptions();
+				case QTI21Constants.QMD_ENTRY_SUMMARY_NONE: return noOptions();
+				case QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT: return new QTI21AssessmentResultsOptions(true, false, false, false, false);
+				case QTI21Constants.QMD_ENTRY_SUMMARY_SECTION: return new QTI21AssessmentResultsOptions(true, true, false, false, false);
+				case QTI21Constants.QMD_ENTRY_SUMMARY_DETAILED: return allOptions();
 				default: {
 					boolean metadata = value.contains(METADATA);
 					boolean sections = value.contains(SECTION_SUMMARY);

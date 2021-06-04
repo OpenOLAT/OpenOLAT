@@ -53,12 +53,10 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.PodcastFileResource;
-import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
-import org.olat.modules.iq.IQManager;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -88,8 +86,6 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 	private FeedManager feedManager;
 	@Autowired
 	private QTI21Service qtiService;
-	@Autowired
-	private IQManager iqManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -319,14 +315,6 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 						updateAssessmentEntry(assessmentEntry);
 						changeSet.add(assessmentEntry.getIdentity());
 					}
-				}
-			} else {
-				long olatResource = entry.getOlatResource().getResourceableId().longValue();
-				QTIResultSet rset = iqManager.getLastResultSet(assessmentEntry.getIdentity(), olatResource, courseNode.getIdent());
-				if(rset != null && rset.getLastModified() != null ) {
-					assessmentEntry.setLastUserModified(rset.getLastModified());
-					updateAssessmentEntry(assessmentEntry);
-					changeSet.add(assessmentEntry.getIdentity());
 				}
 			}
 		}

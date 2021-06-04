@@ -167,6 +167,29 @@ public class QTI21Constants {
 	
 	public static final String CSS_ESSAY_DISABLE_COPYPASTE =  "essay-nocopypaste";
 	
+
+	public static final String QMD_ENTRY_SUMMARY_NONE = "summaryNone";
+	
+	public static final String QMD_ENTRY_SUMMARY_COMPACT = "summaryCompact";
+	
+	public static final String QMD_ENTRY_SUMMARY_DETAILED = "summaryDetailed";
+	
+	public static final String QMD_ENTRY_SUMMARY_SECTION = "summarySection";
+	
+	
+	public static final String QMD_LABEL_SEQUENCE = "qmd_navigatorpagetype";
+	
+	public static final String QMD_ENTRY_SEQUENCE_SECTION = "sectionPage";
+	
+	public static final String QMD_ENTRY_SEQUENCE_ITEM = "itemPage";
+	
+	
+	public static final String QMD_ENTRY_TYPE_ASSESS = "Assessment";
+	
+	public static final String QMD_ENTRY_TYPE_SELF = "Self-Assessment";
+	
+	public static final String QMD_ENTRY_TYPE_SURVEY = "Survey";
+	
 	public enum HotspotLayouts {
 		
 		standard(""),

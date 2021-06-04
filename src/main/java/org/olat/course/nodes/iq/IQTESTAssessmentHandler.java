@@ -44,8 +44,6 @@ import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.group.BusinessGroup;
-import org.olat.ims.qti.QTI12ResultDetailsController;
-import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -106,9 +104,6 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 		RepositoryEntry ref = courseNode.getReferencedRepositoryEntry();
 		if(ref != null) {
 			OLATResource resource = ref.getOlatResource();
-			Long courseResourceableId = assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId();
-			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-			
 			if(ImsQTI21Resource.TYPE_NAME.equals(resource.getResourceableTypeName())) {
 				if (courseNode instanceof IQTESTCourseNode) {
 					IQTESTCourseNode iqtestNode = (IQTESTCourseNode)courseNode;
@@ -116,16 +111,12 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 					detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, (TooledStackedPanel) stackPanel,
 							courseEntry, iqtestNode, coachCourseEnv, assessedUserCourseEnv);
 				}
-			} else if(QTIResourceTypeModule.isOnyxTest(ref.getOlatResource())) {
-				Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
-				detailsCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
 			} else {
-				detailsCtrl = new QTI12ResultDetailsController(ureq, wControl, courseResourceableId,
-						courseNode.getIdent(), coachCourseEnv, assessedIdentity, ref,
-						AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
+				Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+				detailsCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.qti12"));
 			}	
 		}
-		return detailsCtrl != null? detailsCtrl: new BlankController(ureq, wControl);
+		return detailsCtrl != null ? detailsCtrl : new BlankController(ureq, wControl);
 	}
 
 	@Override

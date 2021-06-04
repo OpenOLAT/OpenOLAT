@@ -305,7 +305,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	
 	@Test
 	public void testImportTest() throws IOException, URISyntaxException {
-		URL cpUrl = RepositoryEntriesTest.class.getResource("qti-demo.zip");
+		URL cpUrl = RepositoryEntriesTest.class.getResource("qti21-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
@@ -317,9 +317,9 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		HttpEntity entity = MultipartEntityBuilder.create()
 				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
 				.addBinaryBody("file", cp, ContentType.APPLICATION_OCTET_STREAM, cp.getName())
-				.addTextBody("filename", "qti-demo.zip")
-				.addTextBody("resourcename", "QTI demo")
-				.addTextBody("displayname", "QTI demo")
+				.addTextBody("filename", "qti21-demo.zip")
+				.addTextBody("resourcename", "QTI 2.1 demo")
+				.addTextBody("displayname", "QTI 2.1 demo")
 				.build();
 		method.setEntity(entity);
 		
@@ -332,42 +332,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(key);
 		assertNotNull(re);
 		assertNotNull(re.getOlatResource());
-		assertEquals("QTI demo", re.getDisplayname());
-		log.info(re.getOlatResource().getResourceableTypeName());
-		
-		conn.shutdown();
-	}
-	
-	@Test
-	public void testImportQuestionnaire() throws IOException, URISyntaxException {
-		URL cpUrl = RepositoryEntriesTest.class.getResource("questionnaire-demo.zip");
-		assertNotNull(cpUrl);
-		File cp = new File(cpUrl.toURI());
-
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
-		
-		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		HttpEntity entity = MultipartEntityBuilder.create()
-				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-				.addBinaryBody("file", cp, ContentType.APPLICATION_OCTET_STREAM, cp.getName())
-				.addTextBody("filename", "questionnaire-demo.zip")
-				.addTextBody("resourcename", "Questionnaire demo")
-				.addTextBody("displayname", "Questionnaire demo")
-				.build();
-		method.setEntity(entity);
-		
-		HttpResponse response = conn.execute(method);
-		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-		RepositoryEntryVO vo = conn.parse(response, RepositoryEntryVO.class);
-		assertNotNull(vo);
-		
-		Long key = vo.getKey();
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(key);
-		assertNotNull(re);
-		assertNotNull(re.getOlatResource());
-		assertEquals("Questionnaire demo", re.getDisplayname());
+		assertEquals("QTI 2.1 demo", re.getDisplayname());
 		log.info(re.getOlatResource().getResourceableTypeName());
 		
 		conn.shutdown();

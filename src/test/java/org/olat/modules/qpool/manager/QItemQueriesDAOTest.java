@@ -41,7 +41,6 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
-import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
@@ -117,9 +116,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getFavoritItems() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-item-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 253", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItem item3 = questionDao.createAndPersist(id, "NGC 292", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 253", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item3 = questionDao.createAndPersist(id, "NGC 292", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		markManager.setMark(item1, id, null, "[QuestionItem:" + item1 + "]");
 		markManager.setMark(item2, id, null, "[QuestionItem:" + item2 + "]");
 		dbInstance.commitAndCloseSession();
@@ -154,8 +153,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getFavoritItems_orderBy() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-item-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 253", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 253", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		markManager.setMark(item1, id, null, "[QuestionItem:" + item1 + "]");
 		markManager.setMark(item2, id, null, "[QuestionItem:" + item2 + "]");
 		dbInstance.commitAndCloseSession();
@@ -180,8 +179,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		//create a collection with 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
-		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
-		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
+		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 92", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 97", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		collectionDao.addItemToCollection(item1, singletonList(coll));
 		collectionDao.addItemToCollection(item2, singletonList(coll));
 		dbInstance.commit();//check if it's alright
@@ -216,7 +215,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		//create a collection with 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
-		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
+		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		collectionDao.addItemToCollection(item, singletonList(coll));
 		dbInstance.commit();//check if it's alright
 		
@@ -244,7 +243,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		//create a collection with 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3c-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3c", id);
-		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
+		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		collectionDao.addItemToCollection(item, singletonList(coll));
 		dbInstance.commit();//check if it's alright
 		
@@ -269,8 +268,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	public void getItemsByAuthor() {
 		//create an author with 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-2-");
-		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
@@ -306,8 +305,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	public void getItemsByAuthor_orderBy() {
 		//create an author with 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-2-");
-		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(item1);
 		Assert.assertNotNull(item2);
@@ -331,7 +330,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	public void getItemsByOwner() {
 		//create an author with 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwner-and-only-2-");
-		QuestionItem item = questionDao.createAndPersist(id, "NGC 7837", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item = questionDao.createAndPersist(id, "NGC 7837", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commitAndCloseSession();
 
 		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
@@ -349,7 +348,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	public void getItemsByOwner_negativeTest() {
 		//create an author with 2 items
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-29-");
-		QuestionItem item = questionDao.createAndPersist(id, "NGC 7838", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item = questionDao.createAndPersist(id, "NGC 7838", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(item);
 
@@ -368,7 +367,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		//create a pool
 		String poolTitle = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, poolTitle, true);
-		QuestionItem item = questionItemDao.createAndPersist(id, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item = questionItemDao.createAndPersist(id, "Galaxy", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
 		dbInstance.commitAndCloseSession();
 
@@ -379,7 +378,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		List<QuestionItemView> items = qItemQueriesDao.getItems(params, 0 , -1);
 		Assert.assertNotNull(items);
 		Assert.assertEquals(1, items.size());
-		Assert.assertTrue(items.get(0).getKey().equals(item.getKey()));
+		Assert.assertEquals(item.getKey(), items.get(0).getKey());
 		//count
 		int numOfItems = qItemQueriesDao.countItems(params);
 		Assert.assertEquals(1, numOfItems);
@@ -391,7 +390,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		//create a pool
 		String poolTitle = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, poolTitle, true);
-		QuestionItem item = questionItemDao.createAndPersist(id, "Mega cluster of galaxies", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item = questionItemDao.createAndPersist(id, "Mega cluster of galaxies", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
 		dbInstance.commitAndCloseSession();
 
@@ -418,7 +417,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 				-1, -1, false, false, false, false, false);
 		BusinessGroup group2 = businessGroupDao.createAndPersist(id, "gdao-2", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
-		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-3", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-3", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commit();
 		
 		//share them
@@ -449,7 +448,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QShare-2-" + UUID.randomUUID());
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao-3", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
-		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-3", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-3", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commit();
 		
 		//share them
@@ -479,8 +478,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QShare-1-" + UUID.randomUUID());
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
-		QuestionItem item1 = questionDao.createAndPersist(id, "Share-Item-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "Share-Item-2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "Share-Item-1", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "Share-Item-2", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commit();
 		
 		//share them
@@ -512,13 +511,13 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void shouldCountAllItemsWithFilter() {
 		Identity owner1 = createRandomIdentity();
-		questionDao.createAndPersist(owner1, "QPool 1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		questionDao.createAndPersist(owner1, "QPool 2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		questionDao.createAndPersist(owner1, "QPool 1", "IMS QTI 1.2", Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		questionDao.createAndPersist(owner1, "QPool 2", "IMS QTI 1.2", Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		createRandomItem(owner1);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
-		params.setFormat(QTIConstants.QTI_12_FORMAT);
+		params.setFormat("IMS QTI 1.2");
 		int countItems = qItemQueriesDao.countItems(params);
 		
 		assertThat(countItems).isEqualTo(2);
@@ -569,18 +568,18 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void shouldGetAllItemsByFormat() {
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = questionDao.createAndPersist(owner1, "QPool 1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItem item12 = questionDao.createAndPersist(owner1, "QPool 2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item11 = questionDao.createAndPersist(owner1, "QPool 1", "IMS QTI 1.2", Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item12 = questionDao.createAndPersist(owner1, "QPool 2", "IMS QTI 1.2", Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		QuestionItem item13 = createRandomItem(owner1);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
-		params.setFormat(QTIConstants.QTI_12_FORMAT);
+		params.setFormat("IMS QTI 1.2");
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, 0, -1);
 		
 		assertThat(loadedItems).hasSize(2);
 		assertThat(keysOf(loadedItems))
-				.containsOnlyElementsOf(keysOf(item11, item12))
+				.containsExactlyInAnyOrder(item11.getKey(), item12.getKey())
 				.doesNotContainAnyElementsOf(keysOf(item13));
 	}
 	
@@ -946,7 +945,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	}
 
 	private Identity createRandomIdentity() {
-		return JunitTestHelper.createAndPersistIdentityAsUser("qitems-" + UUID.randomUUID().toString());
+		return JunitTestHelper.createAndPersistIdentityAsRndUser("qitems");
 	}
 
 	private QuestionItemImpl createRandomItem(Identity owner) {

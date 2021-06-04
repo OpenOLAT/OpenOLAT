@@ -1415,12 +1415,6 @@ function o_ffEvent(formNam, dispIdField, dispId, eventIdField, eventInt, newWind
 	}
 }
 
-function o_IQEvent(formNam){
-	if (document.forms[formNam].onsubmit()) {
-		document.forms[formNam].submit();
-	}
-}
-
 function o_TableMultiActionEvent(formNam, action){
 	var mActionIdEl = jQuery('#o_mai_' + formNam);
 	mActionIdEl.val(action);

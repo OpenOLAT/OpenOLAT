@@ -85,7 +85,7 @@ public class IQPreviewController extends BasicController {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cn);
 				Float cutValue = assessmentConfig.getCutValue();
 				boolean passed = score >= (cutValue == null ? 0 : cutValue.floatValue());
-				ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), new Boolean(passed));
+				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), Boolean.valueOf(passed));
 				boolean incrementUserAttempts = true;
 				courseAssessmentService.updateScoreEvaluation(cn, sceval, userCourseEnv, ureq.getIdentity(),
 						incrementUserAttempts, Role.user);
@@ -94,9 +94,6 @@ public class IQPreviewController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 	// nothing to dispose

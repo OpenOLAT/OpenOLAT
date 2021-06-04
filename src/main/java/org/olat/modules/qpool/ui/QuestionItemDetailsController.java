@@ -53,7 +53,6 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
-import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolSPI;
@@ -260,7 +259,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		copyItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_copy");
 		commandDropdown.addComponent(copyItemLink);
 		
-		if (QTIConstants.QTI_12_FORMAT.equals(metadatasCtrl.getItem().getFormat()) && valid) {
+		if ("IMS QTI 1.2".equals(metadatasCtrl.getItem().getFormat()) && valid) {
 			if(availableConversionFormats(metadatasCtrl.getItem()).isEmpty()) {
 				mainVC.contextPut("deprecatedForm", Boolean.TRUE);
 			} else {

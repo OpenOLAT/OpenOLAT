@@ -33,7 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
-import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItem2Pool;
@@ -154,7 +154,7 @@ public class PoolDAOTest extends OlatTestCase {
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
-		QuestionItem item = questionDao.createAndPersist(owner, "Shared-Item-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionDao.createAndPersist(owner, "Shared-Item-1", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		questionDao.share(item, group.getResource());
 
 		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
@@ -193,7 +193,7 @@ public class PoolDAOTest extends OlatTestCase {
 		Pool pool = poolDao.createPool(null, poolName, true);
 		Assert.assertNotNull(pool);
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		Assert.assertNotNull(item);
 		dbInstance.commitAndCloseSession();
 		
@@ -209,7 +209,7 @@ public class PoolDAOTest extends OlatTestCase {
 		Pool pool = poolDao.createPool(null, poolName, true);
 		Assert.assertNotNull(pool);
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		Assert.assertNotNull(item);
 		dbInstance.commitAndCloseSession();
 		
@@ -246,8 +246,8 @@ public class PoolDAOTest extends OlatTestCase {
 		String name2 = "NGC-" + UUID.randomUUID().toString();
 		Pool pool2 = poolDao.createPool(null, name2, true);
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		QuestionItem item1 = questionItemDao.createAndPersist(id, "Cluster of stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
-		QuestionItem item2 = questionItemDao.createAndPersist(id, "Nebula", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item1 = questionItemDao.createAndPersist(id, "Cluster of stars", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item2 = questionItemDao.createAndPersist(id, "Nebula", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 
 		poolDao.addItemToPool(item1, Collections.singletonList(pool1), false);
 		poolDao.addItemToPool(item1, Collections.singletonList(pool2), false);
@@ -295,7 +295,7 @@ public class PoolDAOTest extends OlatTestCase {
 		Pool pool1 = poolDao.createPool(null, poolName, true);
 		Pool pool2 = poolDao.createPool(null, poolName, true);
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		List<Pool> pools = new ArrayList<>(2);
 		pools.add(pool1);
 		pools.add(pool2);
@@ -315,7 +315,7 @@ public class PoolDAOTest extends OlatTestCase {
 		Pool pool1 = poolDao.createPool(null, poolName, true);
 		Pool pool2 = poolDao.createPool(null, poolName + "-b", true);
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		poolDao.addItemToPool(item, Collections.singletonList(pool1), false);
 		poolDao.addItemToPool(item, Collections.singletonList(pool2), true);
 		dbInstance.commitAndCloseSession();
@@ -335,7 +335,7 @@ public class PoolDAOTest extends OlatTestCase {
 		String poolName = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, poolName, true);
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		QuestionItem item = questionItemDao.createAndPersist(id, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionItemDao.createAndPersist(id, "Galaxy", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
 		dbInstance.commitAndCloseSession();
 		

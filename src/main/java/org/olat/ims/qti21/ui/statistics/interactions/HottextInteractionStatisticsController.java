@@ -26,8 +26,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
-import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
+import org.olat.ims.qti21.model.statistics.StatisticsItem;
 import org.olat.ims.qti21.ui.components.FlowComponent;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 

@@ -19,19 +19,8 @@
  */
 package org.olat.course.nodes.iq;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
-import org.olat.core.logging.Tracing;
 import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.ims.qti.fileresource.SurveyFileResource;
-import org.olat.ims.qti.fileresource.TestFileResource;
-import org.olat.ims.qti.process.ImsRepositoryResolver;
-import org.olat.ims.qti.process.Resolver;
-import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -39,40 +28,10 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service
+//TODO qti delete
 public class QTIResourceTypeModule {
-	
-	private static final Logger log = Tracing.createLoggerFor(QTIResourceTypeModule.class);
-	
-	private static final Map<Long,Boolean> onyxMap = new ConcurrentHashMap<>();
 	
 	public static boolean isQtiWorks(final OLATResourceable res) {
 		return ImsQTI21Resource.TYPE_NAME.equals(res.getResourceableTypeName());
-	}
-	
-	public static boolean isOnyxTest(final OLATResourceable res) {
-		if (res.getResourceableTypeName().equals(TestFileResource.TYPE_NAME) ||
-				res.getResourceableTypeName().equals(SurveyFileResource.TYPE_NAME)) {
-			Long resourceId = res.getResourceableId();
-			Boolean onyx = onyxMap.get(resourceId);
-			if(onyx == null) {
-				onyx = Boolean.FALSE;
-				try {
-					final Resolver resolver = new ImsRepositoryResolver(res);
-					// search for qti.xml, it not exists for qti2
-					if (resolver.getQTIDocument() == null) {
-						onyx = Boolean.TRUE;
-					} else {
-						onyx = Boolean.FALSE;
-					}
-				} catch(OLATRuntimeException e) {
-					log.error("", e);
-				}
-				onyxMap.put(resourceId, onyx);
-			}
-			return onyx.booleanValue();
-		} else {
-			return false;
-		}
 	}
 }

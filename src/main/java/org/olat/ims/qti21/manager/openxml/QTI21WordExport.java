@@ -60,8 +60,6 @@ import org.olat.core.util.openxml.OpenXMLDocumentWriter;
 import org.olat.core.util.openxml.OpenXMLGraphic;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.ims.qti.editor.beecom.objects.Item;
-import org.olat.ims.qti.export.QTIWordExport;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -132,7 +130,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  */
 public class QTI21WordExport implements MediaResource {
 	
-	private static final Logger log = Tracing.createLoggerFor(QTIWordExport.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21WordExport.class);
 	
 	private String encoding;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
@@ -251,16 +249,6 @@ public class QTI21WordExport implements MediaResource {
 		} catch (Exception e) {
 			log.error("", e);
 		}
-	}
-
-	public static void renderAlienItem(Item item, OpenXMLDocument document, Translator translator) {
-		String title = item.getTitle();
-		if(!StringHelper.containsNonWhitespace(title)) {
-			title = item.getLabel();
-		}
-		document.appendHeading1(title, null);
-		String notSupported = translator.translate("info.alienitem");
-		document.appendText(notSupported, true, Style.bold);
 	}
 	
 	public void renderAssessmentSection(AssessmentSection assessmentSection, OpenXMLDocument document, boolean withResponses, Translator translator) {

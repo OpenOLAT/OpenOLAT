@@ -41,7 +41,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.ModuleConfiguration;
@@ -59,7 +59,6 @@ public class IQLayoutConfigurationController extends BasicController {
 
 	private VelocityContainer myContent;
 
-	private IQ12LayoutEditForm mod12ConfigForm;
 	private QTI21EditLayoutForm mod21ConfigForm;
 	private SecuritySettingsForm pageSecurityCtrl;
 	private LinkFileCombiCalloutController combiLinkCtr;
@@ -119,38 +118,30 @@ public class IQLayoutConfigurationController extends BasicController {
 		updateEditController(ureq);
 		
 		switch(type) {
-			case AssessmentInstance.QMD_ENTRY_TYPE_ASSESS:
+			case QTI21Constants.QMD_ENTRY_TYPE_ASSESS:
 				myContent.contextPut("repEntryTitle", translate("choosenfile.test"));
 				break;
-			case AssessmentInstance.QMD_ENTRY_TYPE_SELF:
+			case QTI21Constants.QMD_ENTRY_TYPE_SELF:
 				myContent.contextPut("repEntryTitle", translate("choosenfile.self"));
 				break;
-			case AssessmentInstance.QMD_ENTRY_TYPE_SURVEY:
+			case QTI21Constants.QMD_ENTRY_TYPE_SURVEY:
 				myContent.contextPut("repEntryTitle", translate("choosenfile.surv"));
 				break;
 		}
 	}
 	
 	protected void updateEditController(UserRequest ureq) {
-		removeAsListenerAndDispose(mod12ConfigForm);
 		removeAsListenerAndDispose(mod21ConfigForm);
-		mod12ConfigForm = null;
 		mod21ConfigForm = null;
 		
 		RepositoryEntry re = getIQReference();
-		if(re == null) {
-			myContent.remove("iqeditform");
-		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+		if(re != null && ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 			QTI21DeliveryOptions deliveryOptions =  qti21service.getDeliveryOptions(re);
 			mod21ConfigForm = new QTI21EditLayoutForm(ureq, getWindowControl(), moduleConfiguration, re, deliveryOptions);
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
-		} else if(QTIResourceTypeModule.isOnyxTest(re.getOlatResource())) {
-			myContent.remove("iqeditform");
 		} else {
-			mod12ConfigForm = new IQ12LayoutEditForm(ureq, getWindowControl(), moduleConfiguration);
-			listenTo(mod12ConfigForm);
-			myContent.put("iqeditform", mod12ConfigForm.getInitialComponent());
+			myContent.remove("iqeditform");
 		}
 	}
 
@@ -182,7 +173,7 @@ public class IQLayoutConfigurationController extends BasicController {
 				combiLinkCtr.setAllowEditorRelativeLinks(allowRelativeLinks);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (source == mod12ConfigForm || source == mod21ConfigForm) {
+		} else if (source == mod21ConfigForm) {
 			if (event == Event.DONE_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}

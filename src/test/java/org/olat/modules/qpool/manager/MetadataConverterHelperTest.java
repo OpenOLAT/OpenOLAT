@@ -27,7 +27,7 @@ import javax.xml.bind.JAXBException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.LOMDuration;
@@ -93,7 +93,7 @@ public class MetadataConverterHelperTest extends OlatTestCase {
 	@Test
 	public void serializeQuestionItem() {
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
-		QuestionItem item = questionDao.createAndPersist(null, "Stars", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		QuestionItem item = questionDao.createAndPersist(null, "Stars", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
 		Assert.assertNotNull(item);
 	}
 }

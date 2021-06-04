@@ -48,8 +48,8 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.wizard.AssessmentModeDefaults;
 import org.olat.course.wizard.IQTESTCourseNodeContext;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Module;
@@ -360,8 +360,8 @@ public class QTI21EditForm extends FormBasicController {
 		passedEndDateElement.setDate(passedEndDate);
 		
 		QTI21AssessmentResultsOptions resultsOptions = deliveryOptions.getAssessmentResultsOptions();
-		if(!AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT.equals(modConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY))) {
-			resultsOptions = QTI21AssessmentResultsOptions.parseString(modConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT));
+		if(!QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT.equals(modConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY))) {
+			resultsOptions = QTI21AssessmentResultsOptions.parseString(modConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT));
 		}
 		
 		showResultsOnFinishEl = uifactory.addCheckboxesHorizontal("resultOnFinish", "qti.form.results.onfinish", formLayout, onKeys, onValues);
@@ -806,10 +806,10 @@ public class QTI21EditForm extends FormBasicController {
 				String options = QTI21AssessmentResultsOptions.toString(assessmentResultsOnFinishEl.getSelectedKeys());
 				modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, options);
 			} else {
-				modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_NONE);
+				modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, QTI21Constants.QMD_ENTRY_SUMMARY_NONE);
 			}
 		} else {
-			modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_NONE);
+			modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, QTI21Constants.QMD_ENTRY_SUMMARY_NONE);
 		}
 	}
 	

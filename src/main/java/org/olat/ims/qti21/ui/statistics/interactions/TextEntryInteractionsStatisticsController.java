@@ -31,7 +31,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
-import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
@@ -87,19 +86,17 @@ public class TextEntryInteractionsStatisticsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		
+		//
 	}
 	
 	private Series getFIB() {
 		List<AbstractTextEntryInteractionStatistics> processedAnswers = qtiStatisticsManager
 				.getTextEntryInteractionsStatistic(itemRef.getIdentifier().toString(), assessmentItem, interactions, resourceResult.getSearchParams());
-
-		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 
 		int i = 0;
-		String cssColor = survey ? "bar_default" : "bar_green";
-		String color = survey ? null : "green";
+		String cssColor = "bar_green";
+		String color = "green";
 		BarSeries d1 = new BarSeries(cssColor, color, null);
 		List<ResponseInfos> responseInfos = new ArrayList<>();
 		for (AbstractTextEntryInteractionStatistics entry : processedAnswers) {
@@ -122,7 +119,7 @@ public class TextEntryInteractionsStatisticsController extends BasicController {
 			}
 			
 			Float score = entry.getPoints() == null ? null : entry.getPoints().floatValue();
-			responseInfos.add(new ResponseInfos(label, text.toString(), null, entry.getWrongAnswers(), score, true, survey, ExplanationType.standard));
+			responseInfos.add(new ResponseInfos(label, text.toString(), null, entry.getWrongAnswers(), score, true, false, ExplanationType.standard));
 		}
 		
 		List<BarSeries> serieList = Collections.singletonList(d1);

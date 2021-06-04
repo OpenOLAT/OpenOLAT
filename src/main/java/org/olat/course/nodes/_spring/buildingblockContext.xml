@@ -126,7 +126,7 @@
 		<property name="order" value="181" />
 	</bean>
 
-	<bean id="iqtest" class="org.olat.course.nodes.iq.IQTESTCourseNodeConfiguration" scope="prototype" depends-on="qtiResultManager">
+	<bean id="iqtest" class="org.olat.course.nodes.iq.IQTESTCourseNodeConfiguration" scope="prototype">
 		<property name="enabled" value="${course.node.test.enabled}" />
 		<property name="order" value="150" />
 	</bean>

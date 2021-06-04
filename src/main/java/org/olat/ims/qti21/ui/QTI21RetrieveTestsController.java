@@ -39,7 +39,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentHelper;
@@ -49,7 +48,6 @@ import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupService;
-import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
@@ -97,7 +95,6 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	public QTI21RetrieveTestsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			AssessmentToolOptions asOptions, IQTESTCourseNode courseNode) {
 		super(ureq, wControl, "retrieve_tests");
-		setTranslator(Util.createPackageTranslator(QTIResultManager.class, getLocale(), getTranslator()));
 
 		this.courseNode = courseNode;
 		identities = getIdentities(asOptions, courseEnv);
@@ -112,7 +109,6 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	public QTI21RetrieveTestsController(UserRequest ureq, WindowControl wControl,
 			AssessmentTestSession session, IQTESTCourseNode courseNode) {
 		super(ureq, wControl, "retrieve_tests");
-		setTranslator(Util.createPackageTranslator(QTIResultManager.class, getLocale(), getTranslator()));
 		this.courseNode = courseNode;
 		identities = Collections.singletonList(session.getIdentity());
 		sessions = Collections.singletonList(session);
@@ -124,7 +120,6 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	public QTI21RetrieveTestsController(UserRequest ureq, WindowControl wControl, RepositoryEntry  assessedEntry,
 			AssessmentToolOptions asOptions) {
 		super(ureq, wControl, "retrieve_tests");
-		setTranslator(Util.createPackageTranslator(QTIResultManager.class, getLocale(), getTranslator()));
 		this.assessedEntry = assessedEntry;
 		identities = getIdentities(asOptions, null);
 		sessions = qtiService.getRunningAssessmentTestSession(assessedEntry, null, assessedEntry);

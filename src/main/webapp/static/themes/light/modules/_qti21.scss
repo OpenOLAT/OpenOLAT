@@ -758,6 +758,14 @@ tr.choiceinteraction {
 	border-bottom: 3px solid white;
 }
 
+table.table.o_qti_item_kprim>thead>tr>th, table.table.o_qti_item_kprim>tbody>tr>td, {
+	border:none;
+}
+
+td.o_qti_item_kprim_input, th.o_qti_item_kprim_input {
+	text-align:center;
+}
+
 table.o_qti_item_kprim {
 	td.o_qti_item_kprim_input_correct {
 		background-color: $o-qti-match-kprim-correct-bg;

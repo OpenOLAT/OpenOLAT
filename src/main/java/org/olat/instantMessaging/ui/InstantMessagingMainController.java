@@ -51,7 +51,7 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.iq.AssessmentEvent;
-import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.course.nodes.iq.AssessmentInstance;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessageNotification;
 import org.olat.instantMessaging.InstantMessagingEvent;

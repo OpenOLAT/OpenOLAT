@@ -65,7 +65,6 @@ public class ResponseFormater {
 	/**
 	 * Unquotes special characters in the QTIResult answer texts.
 	 * 
-	 * @see org.olat.modules.iq.IQManager#quoteSpecialQTIResultCharacters(String)
 	 * @param string
 	 * @return The unquoted sting
 	 */

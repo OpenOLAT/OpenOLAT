@@ -64,7 +64,6 @@ import org.olat.course.nodes.COCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.nodes.FOCourseNode;
-import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.SPCourseNode;
@@ -73,14 +72,13 @@ import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.TUCourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
-import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.support.vo.CourseNodeVO;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
-import org.olat.restapi.support.vo.elements.SurveyConfigVO;
 import org.olat.restapi.support.vo.elements.TaskConfigVO;
 import org.olat.restapi.support.vo.elements.TestConfigVO;
 import org.olat.test.OlatRestTestCase;
@@ -534,17 +532,17 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertEquals(enNode.getParentId(), course.getEditorRootNodeId());
 		
 		//create a test node
-		URL qtiDemoUrl = CoursesElementsTest.class.getResource("qti-demo.zip");
+		URL qtiDemoUrl = CoursesElementsTest.class.getResource("qti21-demo.zip");
 		assertNotNull(qtiDemoUrl);
 		File qtiFile = new File(qtiDemoUrl.toURI());
-		Assert.assertEquals(7518, qtiFile.length());
+		Assert.assertEquals(4071, qtiFile.length());
 
 		URI repoEntriesUri = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut qtiRepoMethod = conn.createPut(repoEntriesUri, MediaType.APPLICATION_JSON, true);
 		HttpEntity entity = MultipartEntityBuilder.create()
 				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
 				.addBinaryBody("file", qtiFile, ContentType.APPLICATION_OCTET_STREAM, qtiFile.getName())
-				.addTextBody("filename", "qti-demo.zip")
+				.addTextBody("filename", "qti21-demo.zip")
 				.addTextBody("resourcename", "QTI demo")
 				.addTextBody("displayname", "QTI demo")
 				.build();
@@ -583,7 +581,7 @@ public class CoursesElementsTest extends OlatRestTestCase {
 			.queryParam("allowNavigation", Boolean.TRUE)
 			.queryParam("allowSuspend", Boolean.TRUE)
 			.queryParam("numAttempts", 10)
-			.queryParam("sequencePresentation", AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM)
+			.queryParam("sequencePresentation", QTI21Constants.QMD_ENTRY_SEQUENCE_ITEM)
 			.queryParam("showNavigation", Boolean.TRUE)
 			.queryParam("showQuestionTitle", Boolean.TRUE)
 			.queryParam("showResultsAfterFinish", Boolean.TRUE)
@@ -592,7 +590,7 @@ public class CoursesElementsTest extends OlatRestTestCase {
 			.queryParam("showScoreInfo", Boolean.TRUE)
 			.queryParam("showScoreProgress", Boolean.TRUE)
 			.queryParam("showSectionsOnly", Boolean.TRUE)
-			.queryParam("summaryPresentation", AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED)
+			.queryParam("summaryPresentation", QTI21Constants.QMD_ENTRY_SUMMARY_DETAILED)
 			.queryParam("startDate", Long.valueOf(1280444400))//new Date(1280444400))
 			.queryParam("endDate", Long.valueOf(1293667200))//new Date(1293667200))
 			.build();
@@ -605,73 +603,9 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		testConfigCode = conn.execute(getTestConfig);
 		assertTrue(testConfigCode.getStatusLine().getStatusCode() == 200 || testConfigCode.getStatusLine().getStatusCode() == 201);
 		TestConfigVO testConfig = conn.parse(testConfigCode, TestConfigVO.class);
-		assertTrue(testConfig.getNumAttempts() == 10);
+		Assert.assertEquals(Integer.valueOf(10), testConfig.getNumAttempts());
 		assertTrue(testConfig.getAllowCancel());
-		assertTrue(testConfig.getSummeryPresentation().equals(AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED));
-		
-		//create a survey node
-		URL newSurveyUrl = CoursesElementsTest.class.getResource("questionnaire-demo.zip");
-		assertNotNull(newSurveyUrl);
-		File surveyFile = new File(newSurveyUrl.toURI());
-
-		URI repoEntriesUri2 = UriBuilder.fromUri(getContextURI()).path("repo").path("entries").build();
-		HttpPut surveyRepoMethod = conn.createPut(repoEntriesUri2, MediaType.APPLICATION_JSON, true);
-		HttpEntity surveyEntity = MultipartEntityBuilder.create()
-				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-				.addBinaryBody("file", surveyFile, ContentType.APPLICATION_OCTET_STREAM, surveyFile.getName())
-				.addTextBody("filename", "questionnaire-demo.zip")
-				.addTextBody("resourcename", "Questionnaire demo")
-				.addTextBody("displayname", "Questionnaire demo")
-				.build();
-		surveyRepoMethod.setEntity(surveyEntity);
-		HttpResponse surveyRepoCode = conn.execute(surveyRepoMethod);
-		assertTrue(surveyRepoCode.getStatusLine().getStatusCode() == 200 || surveyRepoCode.getStatusLine().getStatusCode() == 201);
-		
-		RepositoryEntryVO newSurveyVO = conn.parse(surveyRepoCode, RepositoryEntryVO.class);
-		assertNotNull(newSurveyVO);
-		
-		Long surveyKey = newSurveyVO.getKey();
-		RepositoryEntry surveyRE = RepositoryManager.getInstance().lookupRepositoryEntry(surveyKey);
-		assertNotNull(surveyRE);
-		assertNotNull(surveyRE.getOlatResource());
-		assertEquals("Questionnaire demo", surveyRE.getDisplayname());
-		
-		URI newSurveyUri = getElementsUri(course).path("survey")
-		.queryParam("parentNodeId", course.getEditorRootNodeId())
-		.queryParam("position", "9").queryParam("shortTitle", "Survey-0")
-		.queryParam("longTitle", "Survey-long-0")
-		.queryParam("objectives", "Survey-objectives-0")
-		.queryParam("surveyResourceableId", surveyKey).build();
-		HttpPut newSurveyMethod = conn.createPut(newSurveyUri, MediaType.APPLICATION_JSON, true);
-		HttpResponse newSurveyCode = conn.execute(newSurveyMethod);
-		assertTrue(newSurveyCode.getStatusLine().getStatusCode() == 200 || newSurveyCode.getStatusLine().getStatusCode() == 201);
-		CourseNodeVO surveyNode = conn.parse(newSurveyCode, CourseNodeVO.class);
-		assertNotNull(surveyNode);
-		assertNotNull(surveyNode.getId());
-		assertEquals(surveyNode.getShortTitle(), "Survey-0");
-		assertEquals(surveyNode.getParentId(), course.getEditorRootNodeId());
-		
-		//configure survey node
-		URI surveykConfigUri = getElementsUri(course).path("survey/"+surveyNode.getId()+"/configuration")
-		.queryParam("allowCancel", Boolean.TRUE)
-		.queryParam("allowNavigation", Boolean.TRUE)
-		.queryParam("allowSuspend", Boolean.TRUE)
-		.queryParam("sequencePresentation", AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM)
-		.queryParam("showNavigation", Boolean.TRUE)
-		.queryParam("showQuestionTitle", Boolean.TRUE)
-		.queryParam("showSectionsOnly", Boolean.TRUE)
-		.build();
-		HttpPut surveyConfigMethod = conn.createPut(surveykConfigUri, MediaType.APPLICATION_JSON, true);
-		HttpResponse surveyConfigCode = conn.execute(surveyConfigMethod);
-		assertTrue(surveyConfigCode.getStatusLine().getStatusCode() == 200 || surveyConfigCode.getStatusLine().getStatusCode() == 201);
-		EntityUtils.consume(surveyConfigCode.getEntity());
-
-		HttpGet getSurveyConfig = conn.createGet(surveykConfigUri, MediaType.APPLICATION_JSON, true);
-		surveyConfigCode = conn.execute(getSurveyConfig);
-		assertTrue(surveyConfigCode.getStatusLine().getStatusCode() == 200 || surveyConfigCode.getStatusLine().getStatusCode() == 201);
-		SurveyConfigVO surveyConfig = conn.parse(surveyConfigCode, SurveyConfigVO.class);
-		assertNotNull(surveyConfig);
-		assertTrue(surveyConfig.getAllowCancel());
+		assertTrue(testConfig.getSummeryPresentation().equals(QTI21Constants.QMD_ENTRY_SUMMARY_DETAILED));
 		
 		//create an external page node
 		URI newTUUri = getElementsUri(course).path("externalpage")
@@ -696,7 +630,7 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		//summary check
 		ICourse realCourse = CourseFactory.loadCourse(course.getKey());
 		TreeNode realRoot = realCourse.getEditorTreeModel().getRootNode();
-		assertEquals(11, realRoot.getChildCount());
+		Assert.assertEquals(10, realRoot.getChildCount());
 		
 		//structure
 		CourseEditorTreeNode child = (CourseEditorTreeNode)realRoot.getChildAt(0);
@@ -743,13 +677,8 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		childNode = child.getCourseNode();
 		assertTrue(childNode instanceof IQTESTCourseNode);
 		
-		//survey
-		child = (CourseEditorTreeNode) realRoot.getChildAt(9);
-		childNode = child.getCourseNode();
-		assertTrue(childNode instanceof IQSURVCourseNode);
-		
 		//external page
-		child = (CourseEditorTreeNode) realRoot.getChildAt(10);
+		child = (CourseEditorTreeNode) realRoot.getChildAt(9);
 		childNode = child.getCourseNode();
 		assertTrue(childNode instanceof TUCourseNode);
 		
@@ -770,7 +699,6 @@ public class CoursesElementsTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	//fxdiff FXOLAT-122: course management
 	public void testUpdateRootNodeCoursePost() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		

@@ -30,7 +30,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
-import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
 import org.olat.ims.qti21.ui.components.FlowComponent;
@@ -101,7 +100,6 @@ public class KPrimStatisticsController extends BasicController {
 		List<KPrimStatistics> statisticResponses = qtiStatisticsManager
 				.getKPrimStatistics(itemRef.getIdentifier().toString(), assessmentItem, interaction, resourceResult.getSearchParams());
 
-		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 		List<SimpleMatchSet> matchSets = interaction.getSimpleMatchSets();
 		SimpleMatchSet fourMatchSet = matchSets.get(0);
@@ -135,15 +133,15 @@ public class KPrimStatisticsController extends BasicController {
 					mainVC.put(textName, text);
 				}
 			}
-			responseInfos.add(new ResponseInfos(label, text, null, correctRight, survey, ExplanationType.kprim));
+			responseInfos.add(new ResponseInfos(label, text, null, correctRight, false, ExplanationType.kprim));
 		}
 		
 		List<BarSeries> serieList = new ArrayList<>(3);
 		serieList.add(d1);
 		serieList.add(d2);
 		serieList.add(d3);
-		Series series = new Series(serieList, responseInfos, numOfParticipants, !survey);
-		series.setChartType(survey ? SeriesFactory.BAR_ANSWERED : SeriesFactory.BAR_CORRECT_WRONG_NOT);
+		Series series = new Series(serieList, responseInfos, numOfParticipants, true);
+		series.setChartType(SeriesFactory.BAR_CORRECT_WRONG_NOT);
 		series.setItemCss("o_mi_qtikprim");
 		return series;
 	}

@@ -32,7 +32,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.OrderStatistics;
 import org.olat.ims.qti21.ui.components.FlowComponent;
@@ -105,7 +104,6 @@ public class OrderInteractionStatisticsController extends BasicController {
 		BarSeries d2 = new BarSeries("bar_red", "red", translate("answer.false"));
 		BarSeries d3 = new BarSeries("bar_grey", "grey", translate("answer.noanswer"));
 		
-		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 	
 		int i = 0;
@@ -123,18 +121,16 @@ public class OrderInteractionStatisticsController extends BasicController {
 			d2.add(incorrect, label);
 			d3.add(notAnswered, label);
 
-			responseInfos.add(new ResponseInfos(label, text, null, true, survey, ExplanationType.ordered));
+			responseInfos.add(new ResponseInfos(label, text, null, true, false, ExplanationType.ordered));
 		}
 
 		List<BarSeries> serieList = new ArrayList<>(3);
 		serieList.add(d1);
-		if(!survey) {
-			serieList.add(d2);
-			serieList.add(d3);
-		}
+		serieList.add(d2);
+		serieList.add(d3);
 		
-		Series series = new Series(serieList, responseInfos, numOfParticipants, !survey);
-		series.setChartType(survey ? SeriesFactory.BAR_ANSWERED : SeriesFactory.BAR_CORRECT_WRONG_NOT);
+		Series series = new Series(serieList, responseInfos, numOfParticipants, true);
+		series.setChartType(SeriesFactory.BAR_CORRECT_WRONG_NOT);
 		series.setItemCss("o_qti_orderitem");
 		return series;
 	}

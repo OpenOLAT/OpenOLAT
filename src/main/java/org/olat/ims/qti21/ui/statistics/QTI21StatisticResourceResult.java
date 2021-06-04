@@ -43,12 +43,11 @@ import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.statistic.StatisticResourceNode;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.ims.qti.statistics.QTIType;
-import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.statistics.StatisticAssessment;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.repository.RepositoryEntry;
@@ -103,10 +102,6 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 
 		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
 		qtiStatisticsManager = CoreSpringFactory.getImpl(QTI21StatisticsManager.class);
-	}
-	
-	public QTIType getType() {
-		return QTIType.qtiworks;
 	}
 
 	public RepositoryEntry getCourseEntry() {

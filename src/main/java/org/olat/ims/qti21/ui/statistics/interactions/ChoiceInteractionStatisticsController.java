@@ -31,11 +31,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
-import org.olat.ims.qti.statistics.QTIType;
-import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
+import org.olat.ims.qti21.model.statistics.StatisticsItem;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.SeriesFactory;
@@ -120,7 +119,6 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 	private Series getSingleChoice() {
 		List<ChoiceStatistics> statisticResponses = getChoiceInteractionStatistics();
 	
-		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 		List<Identifier> correctAnswers = CorrectResponsesUtil.getCorrectIdentifierResponses(assessmentItem, interaction);
 		
@@ -136,24 +134,19 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 			boolean correct = correctAnswers.contains(choice.getIdentifier());
 
 			Float points;
-			String cssColor;
-			if(survey) {
-				points = null;
-				cssColor = "bar_default";
+			Double mappedValue = CorrectResponsesUtil.getMappedValue(assessmentItem, interaction, choice);
+			if(mappedValue != null) {
+				points = mappedValue.floatValue();
 			} else {
-				Double mappedValue = CorrectResponsesUtil.getMappedValue(assessmentItem, interaction, choice);
-				if(mappedValue != null) {
-					points = mappedValue.floatValue();
-				} else {
-					points = correct ? 1.0f : 0.0f; //response.getPoints();
-				}
-				cssColor = correct ? "bar_green" : "bar_red";
+				points = correct ? 1.0f : 0.0f; //response.getPoints();
 			}
+			String cssColor = correct ? "bar_green" : "bar_red";
+		
 
 			String label = Integer.toString(++i);
 			d1.add(ansCount, label, cssColor);
 
-			responseInfos.add(new ResponseInfos(label, text, points, correct, survey));
+			responseInfos.add(new ResponseInfos(label, text, points, correct, false));
 		}
 		
 		if(numOfResults != numOfParticipants) {
@@ -161,7 +154,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 			if(notAnswered > 0) {
 				String label = Integer.toString(++i);
 				String text = translate("user.not.answer");
-				responseInfos.add(new ResponseInfos(label, text, null, null, null, false, survey, ExplanationType.standard));
+				responseInfos.add(new ResponseInfos(label, text, null, null, null, false, false, ExplanationType.standard));
 				d1.add(notAnswered, label, "bar_grey");
 			}
 		}
@@ -180,7 +173,6 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 		BarSeries d2 = new BarSeries("bar_red", "red", translate("answer.false"));
 		BarSeries d3 = new BarSeries("bar_grey", "grey", translate("answer.noanswer"));
 		
-		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 		int notAnswered = numOfParticipants - (itemStats == null ? 0 : itemStats.getNumOfResults());
 		List<Identifier> correctAnswers = CorrectResponsesUtil.getCorrectIdentifierResponses(assessmentItem, interaction);
@@ -196,10 +188,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 			double rightA;
 			double wrongA;
 			
-			if (survey) {
-				rightA = answersPerAnswerOption;
-				wrongA = 0d;
-			} else if (correct) {
+			if (correct) {
 				rightA = answersPerAnswerOption;
 				wrongA = numOfParticipants - notAnswered - answersPerAnswerOption;
 			} else {
@@ -214,28 +203,22 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 			d3.add(notAnswered, label);
 			
 			Float pointsObj;
-			if(survey) {
-				pointsObj = null;
+			Double mappedValue = CorrectResponsesUtil.getMappedValue(assessmentItem, interaction, choice);
+			if(mappedValue != null) {
+				pointsObj = mappedValue.floatValue();
 			} else {
-				Double mappedValue = CorrectResponsesUtil.getMappedValue(assessmentItem, interaction, choice);
-				if(mappedValue != null) {
-					pointsObj = mappedValue.floatValue();
-				} else {
-					pointsObj = correct ? 1.0f : 0.0f;
-				}
+				pointsObj = correct ? 1.0f : 0.0f;
 			}
-			responseInfos.add(new ResponseInfos(label, text, pointsObj, correct, survey));
+			responseInfos.add(new ResponseInfos(label, text, pointsObj, correct, false));
 		}
 
 		List<BarSeries> serieList = new ArrayList<>(3);
 		serieList.add(d1);
-		if(!survey) {
-			serieList.add(d2);
-			serieList.add(d3);
-		}
+		serieList.add(d2);
+		serieList.add(d3);
 		
-		Series series = new Series(serieList, responseInfos, numOfParticipants, !survey);
-		series.setChartType(survey ? SeriesFactory.BAR_ANSWERED : SeriesFactory.BAR_CORRECT_WRONG_NOT);
+		Series series = new Series(serieList, responseInfos, numOfParticipants, true);
+		series.setChartType(SeriesFactory.BAR_CORRECT_WRONG_NOT);
 		series.setItemCss("o_qti_scitem");
 		return series;
 	}

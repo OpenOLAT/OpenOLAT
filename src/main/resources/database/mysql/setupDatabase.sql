@@ -149,23 +149,7 @@ create table if not exists o_noti_pub (
    latestnews datetime not null,
    primary key (publisher_id)
 );
-create table if not exists o_qtiresultset (
-   resultset_id bigint not null,
-   version mediumint unsigned not null,
-   lastmodified datetime not null,
-   creationdate datetime,
-   identity_id bigint not null,
-   olatresource_fk bigint not null,
-   olatresourcedetail varchar(255) not null,
-   assessmentid bigint not null,
-   repositoryref_fk bigint not null,
-   ispassed bit,
-   issuspended bit default 0,
-   fullyassessed bit default 0,
-   score FLOAT(65,30),
-   duration bigint,
-   primary key (resultset_id)
-);
+
 create table if not exists o_bs_identity (
    id bigint not null,
    version mediumint unsigned not null,
@@ -457,20 +441,6 @@ create table if not exists o_noti_sub (
    subenabled bit default 1,
    primary key (publisher_id),
    unique (fk_publisher, fk_identity)
-);
-create table if not exists o_qtiresult (
-   result_id bigint not null,
-   version mediumint unsigned not null,
-   lastmodified datetime not null,
-   creationdate datetime,
-   itemident varchar(255) not null,
-   answer longtext,
-   duration bigint,
-   score FLOAT(65,30),
-   tstamp datetime not null,
-   ip varchar(255),
-   resultset_fk bigint,
-   primary key (result_id)
 );
 create table if not exists o_bs_policy (
    id bigint not null,
@@ -3599,8 +3569,6 @@ alter table o_message ENGINE = InnoDB;
 alter table o_temporarykey ENGINE = InnoDB;
 alter table o_bs_authentication ENGINE = InnoDB;
 alter table o_bs_authentication_history ENGINE = InnoDB;
-alter table o_qtiresult ENGINE = InnoDB;
-alter table o_qtiresultset ENGINE = InnoDB;
 alter table o_bs_identity ENGINE = InnoDB;
 alter table o_csp_log ENGINE = InnoDB;
 alter table o_olatresource ENGINE = InnoDB;
@@ -3917,17 +3885,6 @@ create index name_idx on o_noti_pub (resname, resid, subident);
 
 alter table o_noti_sub add constraint FK4FB8F04749E53702 foreign key (fk_publisher) references o_noti_pub (publisher_id);
 alter table o_noti_sub add constraint FK4FB8F0476B1F22F8 foreign key (fk_identity) references o_bs_identity (id);
-
--- qti
-alter table o_qtiresultset add constraint FK14805D0F5259603C foreign key (identity_id) references o_bs_identity (id);
-
-create index oresdetindex on o_qtiresultset (olatresourcedetail);
-create index oresindex on o_qtiresultset (olatresource_fk);
-create index reprefindex on o_qtiresultset (repositoryref_fk);
-create index assindex on o_qtiresultset (assessmentid);
-
-alter table o_qtiresult add constraint FK3563E67340EF401F foreign key (resultset_fk) references o_qtiresultset (resultset_id);
-create index itemindex on o_qtiresult (itemident);
 
 -- catalog entry
 alter table o_catentry add constraint FKF4433C2C7B66B0D0 foreign key (parent_id) references o_catentry (id);

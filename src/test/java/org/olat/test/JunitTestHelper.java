@@ -336,7 +336,7 @@ public class JunitTestHelper {
 	public static RepositoryEntry deployDemoCourse(Identity initialAuthor) {		
 		RepositoryEntry re = null;
 		try {
-			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Demo-Kurs-7.1.zip");
+			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Demo-Kurs-16.0.zip");
 			re = deployCourse(initialAuthor, "Demo-Kurs-7.1", RepositoryEntryStatusEnum.published, true, false, courseUrl);
 		} catch (Exception e) {
 			log.error("", e);

@@ -37,7 +37,7 @@ import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
-import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
@@ -76,8 +76,8 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-rm-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdrm", "gdrm-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
-		QuestionItem item1 = questionDao.createAndPersist(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "Share-item-rm-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "Share-item-rm-1", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "Share-item-rm-1", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		dbInstance.commit();
 		//share them
 		questionDao.share(item1, group.getResource());
@@ -102,8 +102,8 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		//create an user with 2 items
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Owner-3-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 92", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 97", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		dbInstance.commit();
 		
 		//load the items of the collection

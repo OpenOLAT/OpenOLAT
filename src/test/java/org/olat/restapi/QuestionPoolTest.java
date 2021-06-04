@@ -48,7 +48,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
@@ -119,7 +119,7 @@ public class QuestionPoolTest extends OlatRestTestCase {
 	public void getAuthors() throws IOException, URISyntaxException {
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-1");
-		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -140,7 +140,7 @@ public class QuestionPoolTest extends OlatRestTestCase {
 	public void getAuthor() throws IOException, URISyntaxException {
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-2");
-		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -160,7 +160,7 @@ public class QuestionPoolTest extends OlatRestTestCase {
 	public void addAuthor() throws IOException, URISyntaxException {
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-1");
-		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		Identity coAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-1");
 
 		RestConnection conn = new RestConnection();
@@ -184,7 +184,7 @@ public class QuestionPoolTest extends OlatRestTestCase {
 	public void removeAuthor() throws IOException, URISyntaxException {
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-1");
-		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		Identity coAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-1");
 		List<Identity> authors = Collections.singletonList(coAuthor);
 		questionItemDao.addAuthors(authors, item);

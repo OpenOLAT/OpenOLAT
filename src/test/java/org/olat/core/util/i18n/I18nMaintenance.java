@@ -110,7 +110,7 @@ public class I18nMaintenance {
 		}
 	}
 	
-	private List<String> pathWithKeys(final Path root) {
+	protected static final List<String> pathWithKeys(final Path root) {
 		try {
 			final List<String> pathList = new ArrayList<>();
 			Files.walkFileTree(root, new SimpleFileVisitor<Path>() {

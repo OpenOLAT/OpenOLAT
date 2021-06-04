@@ -51,6 +51,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -72,9 +73,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.ims.qti.resultexport.QTI12ResultsExportMediaResource;
-import org.olat.ims.qti.statistics.ui.QTI12PullTestsToolController;
-import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
@@ -215,16 +213,15 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			extraTimeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
 		}
 		boolean qti21 = isTestQTI21();
-		boolean onyx = !qti21 && QTIResourceTypeModule.isOnyxTest(testEntry.getOlatResource());
 		
-		statsButton = uifactory.addFormLink("button.stats", formLayout, Link.BUTTON);
-		statsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
+		if(qti21) {
+			statsButton = uifactory.addFormLink("button.stats", formLayout, Link.BUTTON);
+			statsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
+		}
 		
 		if(!coachCourseEnv.isCourseReadOnly()) {
-			if(!onyx) {
-				pullButton = uifactory.addFormLink("retrieve.tests.title", formLayout, Link.BUTTON);
-				pullButton.setIconLeftCSS("o_icon o_icon_pull");
-			}
+			pullButton = uifactory.addFormLink("retrieve.tests.title", formLayout, Link.BUTTON);
+			pullButton.setIconLeftCSS("o_icon o_icon_pull");
 
 			if(qti21) {
 				if(assessmentCallback.isAdmin()) {
@@ -245,7 +242,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			}
 		}
 		
-		if(!onyx) {
+		if(qti21) {
 			exportResultsButton = uifactory.addFormLink("button.export", formLayout, Link.BUTTON);
 			exportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
 		}
@@ -256,12 +253,6 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(isTestQTI21()) {
 			return qtiService.isRunningAssessmentTestSession(getCourseRepositoryEntry(),
 					courseNode.getIdent(), getReferencedRepositoryEntry(), identities.getIdentities());
-		} else if(!identities.isEmpty()) {
-			for(Identity assessedIdentity:identities.getIdentities()) {
-				if(((IQTESTCourseNode)courseNode).isQTI12TestRunning(assessedIdentity, getCourseEnvironment())) {
-					return true;
-				}
-			}
 		}
 		return false;
 	}
@@ -490,8 +481,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				resource = new QTI21ResultsExportMediaResource(courseEnv, identities.getIdentities(), identities.isWithNonParticipants(),
 						(IQTESTCourseNode)courseNode, "", getLocale());
 			} else {
-				resource = new QTI12ResultsExportMediaResource(courseEnv, identities.getIdentities(),
-						(IQTESTCourseNode)courseNode, "", getLocale());
+				resource = new NotFoundMediaResource();
 			}
 			ureq.getDispatchResult().setResultingMediaResource(resource);
 		} else {
@@ -613,16 +603,15 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
 			retrieveConfirmationCtr = new QTI21RetrieveTestsController(ureq, getWindowControl(),
 					courseEnv, asOptions, (IQTESTCourseNode)courseNode);
+			listenTo(retrieveConfirmationCtr);
+			
+			String title = translate("tool.pull");
+			cmc = new CloseableModalController(getWindowControl(), null, retrieveConfirmationCtr.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
 		} else {
-			retrieveConfirmationCtr = new QTI12PullTestsToolController(ureq, getWindowControl(),
-					courseEnv, asOptions, (IQTESTCourseNode)courseNode);
+			showWarning("error.qti12");
 		}
-		listenTo(retrieveConfirmationCtr);
-		
-		String title = translate("tool.pull");
-		cmc = new CloseableModalController(getWindowControl(), null, retrieveConfirmationCtr.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
 	}
 	
 	private void doConfirmResetData(UserRequest ureq) {
@@ -638,17 +627,15 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 	
 	private void doLaunchStatistics(UserRequest ureq) {
-		Controller statisticsCtrl;
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
 		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
-			statisticsCtrl = new QTI21StatisticsToolController(ureq, getWindowControl(), 
+			Controller statisticsCtrl = new QTI21StatisticsToolController(ureq, getWindowControl(), 
 					stackPanel, getCourseEnvironment(), getOptions(), (IQTESTCourseNode)courseNode);
+			listenTo(statisticsCtrl);
+			stackPanel.pushController(translate("button.stats"), statisticsCtrl);
 		} else {
-			statisticsCtrl = new QTI12StatisticsToolController(ureq, getWindowControl(),
-					stackPanel, getCourseEnvironment(), getOptions(), (IQTESTCourseNode)courseNode);
+			showWarning("error.qti12");
 		}
-		listenTo(statisticsCtrl);
-		stackPanel.pushController(translate("button.stats"), statisticsCtrl);
 	}
 	
 	private void doConfirmExtraTime(UserRequest ureq) {

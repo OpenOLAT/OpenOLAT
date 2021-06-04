@@ -22,8 +22,6 @@ package org.olat.ims.qti21;
 
 import java.util.List;
 
-import org.olat.ims.qti.statistics.model.StatisticAssessment;
-import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.AssessmentItemStatistic;
@@ -32,6 +30,8 @@ import org.olat.ims.qti21.model.statistics.HotspotChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
 import org.olat.ims.qti21.model.statistics.MatchStatistics;
 import org.olat.ims.qti21.model.statistics.OrderStatistics;
+import org.olat.ims.qti21.model.statistics.StatisticAssessment;
+import org.olat.ims.qti21.model.statistics.StatisticsItem;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;

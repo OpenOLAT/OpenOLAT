@@ -48,7 +48,6 @@ import org.olat.core.util.PathUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XMLFactories;
 import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.ims.qti.qpool.QTIMetadataConverter;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
@@ -338,7 +337,7 @@ public class QTI21ImportProcessor {
 		
 		String taxonomyPath = metadata.getTaxonomyPath();
 		if(StringHelper.containsNonWhitespace(taxonomyPath)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qEduContextDao, qpoolService);
+			QTI21MetadataConverter converter = new QTI21MetadataConverter(qItemTypeDao, qEduContextDao, qpoolService);
 			TaxonomyLevel taxonomyLevel = converter.toTaxonomy(taxonomyPath);
 			poolItem.setTaxonomyLevel(taxonomyLevel);
 		}
@@ -346,7 +345,7 @@ public class QTI21ImportProcessor {
 		//educational
 		String level = metadata.getLevel();
 		if(StringHelper.containsNonWhitespace(level)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qEduContextDao, qpoolService);
+			QTI21MetadataConverter converter = new QTI21MetadataConverter(qItemTypeDao, qEduContextDao, qpoolService);
 			QEducationalContext educationalContext = converter.toEducationalContext(level);
 			poolItem.setEducationalContext(educationalContext);
 		}
@@ -383,7 +382,7 @@ public class QTI21ImportProcessor {
 	private void createLicense(QuestionItemImpl poolItem, AssessmentItemMetadata metadata) {
 		String license = metadata.getLicense();
 		String licensor = metadata.getCreator();
-		QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qEduContextDao, qpoolService);
+		QTI21MetadataConverter converter = new QTI21MetadataConverter(qItemTypeDao, qEduContextDao, qpoolService);
 		converter.createLicense(poolItem, license, licensor);
 	}
 	

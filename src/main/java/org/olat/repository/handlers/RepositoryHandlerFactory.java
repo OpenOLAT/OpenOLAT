@@ -91,6 +91,10 @@ public class RepositoryHandlerFactory {
 		registerHandler(new WebDocumentHandler(MovieFileResource.TYPE_NAME), 10021);
 		registerHandler(new WebDocumentHandler(AnimationFileResource.TYPE_NAME), 10022);
 		registerHandler(new WebDocumentHandler(FileResource.GENERIC_TYPE_NAME), 10100);
+		
+		// Legacy
+		registerHandler(new QTISurveyHandler(), 10);
+		registerHandler(new QTITestHandler(), 10);
 	}
 
 	public static void registerHandler(RepositoryHandler handler, int order) {

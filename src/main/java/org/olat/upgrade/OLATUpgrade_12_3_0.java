@@ -40,9 +40,6 @@ import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.nodes.dialog.DialogElementsManager;
 import org.olat.course.nodes.dialog.model.DialogElementImpl;
-import org.olat.ims.qti.QTIConstants;
-import org.olat.ims.qti.editor.QTIEditHelper;
-import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.docpool.DocumentPoolModule;
@@ -206,11 +203,8 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 			case QTI21Constants.QTI_21_FORMAT:
 				title = getTitleQTI21(item);
 				break;
-			case QTIConstants.QTI_12_FORMAT:
-				title = getTitleQTI12(item);
-				break;
 			default:
-				log.warn("QPool item has no valid format for title migration: " + item.getFormat() + ", " + item);
+				log.warn("QPool item has no valid format for title migration: {}, {}", item.getFormat(), item);
 		}
 		return title;
 	}
@@ -226,18 +220,7 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 			
 			return resolvedAssessmentItem.getRootNodeLookup().getRootNodeHolder().getRootNode().getTitle();
 		} catch (NullPointerException e) {
-			log.warn("Cannot read files from dir: " + item.getDirectory());
-		}
-		return null;
-	}
-
-	private String getTitleQTI12(QuestionItemImpl item) {
-		try {
-			VFSLeaf leaf = qpoolService.getRootLeaf(item);
-			Item xmlItem = QTIEditHelper.readItemXml(leaf);
-			return xmlItem.getTitle();
-		} catch (NullPointerException e) {
-			log.warn("Cannot read files from dir: " + item.getDirectory());
+			log.warn("Cannot read files from dir: {}", item.getDirectory());
 		}
 		return null;
 	}

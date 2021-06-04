@@ -4,6 +4,9 @@
 	.bar_default_light { fill: $o-d3chart-light; }
 	.bar_default, .bubble_default { fill: $o-d3chart-default; }
 	.bar_default_dark { fill: $o-d3chart-dark; }
+	.bar_green { fill: $brand-success; }
+	.bar_red { fill: $brand-danger; }
+	.bar_grey { fill: lightgrey; }
 
 	.axis { font: 12px sans-serif; }
 
@@ -11,5 +14,10 @@
 		fill: none;
 		stroke: #000;
 		shape-rendering: crispEdges;
+	}
+	
+	
+	circle.bubble_green {
+		fill: $brand-success;
 	}
 }

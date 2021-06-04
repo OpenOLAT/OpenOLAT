@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -56,12 +55,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XMLFactories;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.ims.qti.QTIConstants;
-import org.olat.ims.qti.editor.QTIEditHelper;
-import org.olat.ims.qti.editor.QTIEditorPackage;
-import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti21.QTI21Constants;
-import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
@@ -150,21 +144,11 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public boolean isCompatible(String filename, File file) {
-		boolean ok = new AssessmentItemFileResourceValidator().validate(filename, file);
-		return ok;
+		return new AssessmentItemFileResourceValidator().validate(filename, file);
 	}
 	
 	@Override
 	public boolean isConversionPossible(QuestionItemShort item) {
-		if(QTIConstants.QTI_12_FORMAT.equals(item.getFormat())) {
-			VFSLeaf leaf = qpoolService.getRootLeaf(item);
-			if(leaf == null) {
-				return false;
-			} else {
-				Item qtiItem = QTIEditHelper.readItemXml(leaf);
-				return qtiItem != null && !qtiItem.isAlient();
-			}
-		}
 		return false;
 	}
 
@@ -200,7 +184,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 					parser.setFeature("http://xml.org/sax/features/validation", false);
 					parser.parse(new InputSource(is));
 				} catch (Exception e) {
-					log.error("Cannot read the XML file of the question item: " + leaf, e);
+					log.error("Cannot read the XML file of the question item: {}", leaf, e);
 				}
 				return handler.toString();
 			}
@@ -249,7 +233,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		if(QTI21Constants.QTI_21_FORMAT.equals(format.getFormat())) {
 			return new QTI21ExportTestResource("UTF-8", locale, items, this);
 		} else if(DefaultExportFormat.DOCX_EXPORT_FORMAT.getFormat().equals(format.getFormat())) {
-			return new QTI12And21PoolWordExport(items, I18nModule.getDefaultLocale(), "UTF-8", questionItemDao, qpoolFileStorage);
+			return new QTI21PoolWordExport(items, I18nModule.getDefaultLocale(), "UTF-8", questionItemDao);
 		}
 		return null;
 	}
@@ -281,30 +265,6 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public QuestionItem convert(Identity owner, QuestionItemShort itemToConvert, Locale locale) {
-		if(QTIConstants.QTI_12_FORMAT.equals(itemToConvert.getFormat())) {
-			VFSLeaf leaf = qpoolService.getRootLeaf(itemToConvert);
-			if(leaf == null) {
-				return null;
-			} else {
-				Item qtiItem = QTIEditHelper.readItemXml(leaf);
-				if(qtiItem != null && !qtiItem.isAlient()) {
-					QuestionItemImpl original = questionItemDao.loadById(itemToConvert.getKey());
-					QuestionItemImpl copy = questionItemDao.copy(original);
-					copy.setTitle(original.getTitle());
-					copy.setFormat(getFormat());
-					
-					VFSContainer originalDir = qpoolFileStorage.getContainer(original.getDirectory());
-					File copyDir = qpoolFileStorage.getDirectory(copy.getDirectory());
-
-					QTI12To21Converter converter = new QTI12To21Converter(copyDir, locale);
-					if(converter.convert(copy, qtiItem, originalDir)) {
-						questionItemDao.persist(owner, copy);
-						return copy;
-					}
-				}
-			}
-		}
-
 		return null;
 	}
 
@@ -493,7 +453,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			fullItemMap.put(fullItem.getKey(), fullItem);
 		}
 		
-		//reorder the fullItems;
+		//reorder the full items
 		List<QuestionItemFull> reorderedFullItems = new ArrayList<>(fullItems.size());
 		for(QuestionItemShort item:items) {
 			QuestionItemFull itemFull = fullItemMap.get(item.getKey());
@@ -502,22 +462,6 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			}
 		}
 		return reorderedFullItems;
-	}
-	
-	/**
-	 * Convert from QTI 1.2 to 2.1
-	 * 
-	 * @param qtiEditorPackage
-	 */
-	public boolean convertFromEditorPackage(QTIEditorPackage qtiEditorPackage, File unzippedDirRoot, Locale locale, QTI21DeliveryOptions qti21Options) {
-		try {
-			QTI12To21Converter converter = new QTI12To21Converter(unzippedDirRoot, locale);
-			converter.convert(qtiEditorPackage, qti21Options);
-			return true;
-		} catch (URISyntaxException e) {
-			log.error("", e);
-			return false;
-		}
 	}
 	
 	private List<Long> toKeys(List<? extends QuestionItemShort> items) {

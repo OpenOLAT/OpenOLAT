@@ -31,7 +31,6 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
-import org.olat.ims.qti.export.helper.IdentityAnonymizerCallback;
 import org.olat.properties.Property;
 
 /**

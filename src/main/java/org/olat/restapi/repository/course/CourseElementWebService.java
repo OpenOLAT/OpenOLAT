@@ -70,8 +70,8 @@ import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.nodes.ta.TaskController;
 import org.olat.course.nodes.tu.TUConfigForm;
 import org.olat.course.tree.CourseEditorTreeNode;
-import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.ModuleConfiguration;
@@ -1077,116 +1077,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	}
 	
 	/**
-	 * Attaches an survey building block.
-	 * 
-	 * @param courseId The course resourceable's id
-	 * @param parentNodeId The node's id which will be the parent of this assessment
-	 * @param position The node's position relative to its sibling nodes (optional)
-	 * @param shortTitle The node short title
-	 * @param longTitle The node long title
-	 * @param objectives The node learning objectives
-	 * @param visibilityExpertRules The rules to view the node (optional)
-	 * @param accessExpertRules The rules to access the node (optional)
-	 * @param request The HTTP request
-	 * @return
-	 */
-	@POST
-	@Path("survey/{nodeId}")
-	@Operation(summary = "Attaches an survey building block", description = "Attaches an survey building block")
-	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachSurveyPost(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("surveyResourceableId") Long surveyResourceableId, @Context HttpServletRequest request) {
-		
-		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryEntry surveyRepoEntry = rm.lookupRepositoryEntry(surveyResourceableId);
-		if(surveyRepoEntry == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-		CustomConfigDelegate config = CustomConfigFactory.getSurveyCustomConfig(surveyRepoEntry);
-		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
-	}
-	
-	/**
-	 * Attaches an survey building block.
-	 * 
-	 * @param courseId The course resourceable's id
-	 * @param parentNodeId The node's id which will be the parent of this assessment
-	 * @param position The node's position relative to its sibling nodes (optional)
-	 * @param shortTitle The node short title
-	 * @param longTitle The node long title
-	 * @param objectives The node learning objectives
-	 * @param visibilityExpertRules The rules to view the node (optional)
-	 * @param accessExpertRules The rules to access the node (optional)
-	 * @param request The HTTP request
-	 * @return
-	 */
-	@POST
-	@Path("survey")
-	@Operation(summary = "Attaches an survey building block", description = "Attaches an survey building block")
-	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachSurveyPost(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@QueryParam("surveyResourceableId") Long surveyResourceableId, @Context HttpServletRequest request) {
-		return attachSurvey(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, surveyResourceableId, request);
-	}
-	
-	/**
-	 * Attaches an survey building block.
-	 * 
-	 * @param courseId The course resourceable's id
-	 * @param parentNodeId The node's id which will be the parent of this assessment
-	 * @param position The node's position relative to its sibling nodes (optional)
-	 * @param shortTitle The node short title
-	 * @param longTitle The node long title
-	 * @param objectives The node learning objectives
-	 * @param visibilityExpertRules The rules to view the node (optional)
-	 * @param accessExpertRules The rules to access the node (optional)
-	 * @param request The HTTP request
-	 * @return
-	 */
-	@PUT
-	@Path("survey")
-	@Operation(summary = "Attaches an survey building block", description = "Attaches an survey building block")
-	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachSurvey(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@QueryParam("surveyResourceableId") Long surveyResourceableId, @Context HttpServletRequest request) {
-		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryEntry surveyRepoEntry = rm.lookupRepositoryEntry(surveyResourceableId);
-		if(surveyRepoEntry == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-		CustomConfigDelegate config = CustomConfigFactory.getSurveyCustomConfig(surveyRepoEntry);
-		
-		return attach(courseId, parentNodeId, "iqsurv", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
-	}
-	
-	/**
 	 * Update an external page building block.
 	 * 
 	 * @param courseId The course resourceable's id
@@ -1672,7 +1562,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("allowCancel") @DefaultValue("false") Boolean allowCancel,
 			@QueryParam("allowNavigation") @DefaultValue("false") Boolean allowNavigation,
 			@QueryParam("allowSuspend") @DefaultValue("false") Boolean allowSuspend,
-			@QueryParam("sequencePresentation") @DefaultValue(AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM) String sequencePresentation,
+			@QueryParam("sequencePresentation") @DefaultValue(QTI21Constants.QMD_ENTRY_SEQUENCE_ITEM) String sequencePresentation,
 			@QueryParam("showNavigation") @DefaultValue("true") Boolean showNavigation,
 			@QueryParam("showQuestionTitle") @DefaultValue("true") Boolean showQuestionTitle,
 			@QueryParam("showSectionsOnly") @DefaultValue("false") Boolean showSectionsOnly,
@@ -1712,7 +1602,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("allowCancel") @DefaultValue("false") Boolean allowCancel,
 			@QueryParam("allowNavigation") @DefaultValue("false") Boolean allowNavigation,
 			@QueryParam("allowSuspend") @DefaultValue("false") Boolean allowSuspend,
-			@QueryParam("sequencePresentation") @DefaultValue(AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM) String sequencePresentation,
+			@QueryParam("sequencePresentation") @DefaultValue(QTI21Constants.QMD_ENTRY_SEQUENCE_ITEM) String sequencePresentation,
 			@QueryParam("showNavigation") @DefaultValue("true") Boolean showNavigation,
 			@QueryParam("showQuestionTitle") @DefaultValue("true") Boolean showQuestionTitle,
 			@QueryParam("showSectionsOnly") @DefaultValue("false") Boolean showSectionsOnly,
@@ -1760,7 +1650,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		config.setAllowNavigation(allowNavi == null ? false : allowNavi);
 		Boolean allowSuspend = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_ENABLESUSPEND);
 		config.setAllowSuspend(allowSuspend == null ? false : allowSuspend);
-		config.setSequencePresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SEQUENCE, AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM));
+		config.setSequencePresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SEQUENCE, QTI21Constants.QMD_ENTRY_SEQUENCE_ITEM));
 		Boolean showNavi = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_DISPLAYMENU);
 		config.setShowNavigation(showNavi == null ? true : showNavi);
 		Boolean showQuestionTitle = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_QUESTIONTITLE);
@@ -1813,7 +1703,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("allowNavigation") @DefaultValue("false") Boolean allowNavigation,
 			@QueryParam("allowSuspend") @DefaultValue("false") Boolean allowSuspend,
 			@QueryParam("numAttempts") @DefaultValue("0") int numAttempts,
-			@QueryParam("sequencePresentation") @DefaultValue(AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM) String sequencePresentation,
+			@QueryParam("sequencePresentation") @DefaultValue(QTI21Constants.QMD_ENTRY_SEQUENCE_ITEM) String sequencePresentation,
 			@QueryParam("showNavigation") @DefaultValue("true") Boolean showNavigation,
 			@QueryParam("showQuestionTitle") @DefaultValue("true") Boolean showQuestionTitle,
 			@QueryParam("showResultsAfterFinish") @DefaultValue("true") Boolean showResultsAfterFinish,
@@ -1823,7 +1713,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("showQuestionProgress") @DefaultValue("true") Boolean showQuestionProgress,
 			@QueryParam("showScoreProgress") @DefaultValue("true") Boolean showScoreProgress,
 			@QueryParam("showSectionsOnly") @DefaultValue("false") Boolean showSectionsOnly,
-			@QueryParam("summaryPresentation") @DefaultValue(AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT) String summaryPresentation,
+			@QueryParam("summaryPresentation") @DefaultValue(QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT) String summaryPresentation,
 			@QueryParam("startDate") Long startDate, @QueryParam("endDate") Long endDate,
 			@Context HttpServletRequest request) {
 		return addTestConfiguration(courseId, nodeId, allowCancel, allowNavigation, allowSuspend, numAttempts, sequencePresentation, showNavigation, showQuestionTitle, showResultsAfterFinish, showResultsDependendOnDate, showResultsOnHomepage, showScoreInfo, showQuestionProgress, showScoreProgress, showSectionsOnly, summaryPresentation, startDate, endDate, request);
@@ -1871,7 +1761,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("allowNavigation") @DefaultValue("false") Boolean allowNavigation,
 			@QueryParam("allowSuspend") @DefaultValue("false") Boolean allowSuspend,
 			@QueryParam("numAttempts") @DefaultValue("0") int numAttempts,
-			@QueryParam("sequencePresentation") @DefaultValue(AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM) String sequencePresentation,
+			@QueryParam("sequencePresentation") @DefaultValue(QTI21Constants.QMD_ENTRY_SEQUENCE_ITEM) String sequencePresentation,
 			@QueryParam("showNavigation") @DefaultValue("true") Boolean showNavigation,
 			@QueryParam("showQuestionTitle") @DefaultValue("true") Boolean showQuestionTitle,
 			@QueryParam("showResultsAfterFinish") @DefaultValue("true") Boolean showResultsAfterFinish,
@@ -1881,7 +1771,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("showQuestionProgress") @DefaultValue("true") Boolean showQuestionProgress,
 			@QueryParam("showScoreProgress") @DefaultValue("true") Boolean showScoreProgress,
 			@QueryParam("showSectionsOnly") @DefaultValue("false") Boolean showSectionsOnly,
-			@QueryParam("summaryPresentation") @DefaultValue(AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT) String summaryPresentation,
+			@QueryParam("summaryPresentation") @DefaultValue(QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT) String summaryPresentation,
 			@QueryParam("startDate") Long startDate, @QueryParam("endDate") Long endDate,
 			@Context HttpServletRequest request) {
 		
@@ -1930,7 +1820,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		Boolean allowSuspend = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_ENABLESUSPEND);
 		config.setAllowSuspend(allowSuspend == null ? false : allowSuspend);
 		config.setNumAttempts(moduleConfig.getIntegerSafe(IQEditController.CONFIG_KEY_ATTEMPTS, 0));
-		config.setSequencePresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SEQUENCE, AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM));
+		config.setSequencePresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SEQUENCE, QTI21Constants.QMD_ENTRY_SEQUENCE_ITEM));
 		Boolean showNavi = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_DISPLAYMENU);
 		config.setShowNavigation(showNavi == null ? true : showNavi);
 		boolean showQuestionTitle = moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, deliveryOptions.isShowTitles());
@@ -1955,7 +1845,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		config.setShowResultsFailedStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
 		config.setShowResultsFailedEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
 		
-		config.setSummeryPresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT));
+		config.setSummeryPresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT));
 		
 		//
 		boolean configRef = moduleConfig.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
@@ -2002,7 +1892,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		config.setShowResultsFailedStartDate(getDateSecure(moduleConfig, IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
 		config.setShowResultsFailedEndDate(getDateSecure(moduleConfig, IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
 		
-		config.setSummaryPresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT));
+		config.setSummaryPresentation(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT));
 
 		return Response.ok(config).build();
 	}

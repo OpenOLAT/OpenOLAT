@@ -19,8 +19,8 @@
  */
 package org.olat.ims.qti21.ui.statistics;
 
-import static org.olat.ims.qti.statistics.ui.StatisticFormatter.duration;
-import static org.olat.ims.qti.statistics.ui.StatisticFormatter.formatTwo;
+import static org.olat.ims.qti21.ui.statistics.StatisticFormatter.duration;
+import static org.olat.ims.qti21.ui.statistics.StatisticFormatter.formatTwo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +34,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
-import org.olat.ims.qti.statistics.QTIType;
-import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.statistics.StatisticsItem;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.statistics.interactions.HotspotInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.HottextInteractionStatisticsController;
@@ -208,8 +207,6 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 	}
 	
 	protected StatisticsItem initItemStatistics() {
-		boolean survey = QTIType.survey.equals(resourceResult.getType());
-		
 		double maxScore = 0.0d;
 		Double maxScoreSettings = QtiNodesExtractor.extractMaxScore(item);
 		if(maxScoreSettings != null) {
@@ -220,22 +217,17 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 				.getAssessmentItemStatistics(itemRef.getIdentifier().toString(), maxScore, searchParams);
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 		
-		if(survey) {
-			long notAnswered = numOfParticipants - itemStats.getNumOfResults();
-			mainVC.contextPut("notAnswered", notAnswered);
-		} else {
-			long rightAnswers = itemStats.getNumOfCorrectAnswers();
-			long wrongAnswers = itemStats.getNumOfIncorrectAnswers();
-			long notAnswered = numOfParticipants - rightAnswers - wrongAnswers;
+		long rightAnswers = itemStats.getNumOfCorrectAnswers();
+		long wrongAnswers = itemStats.getNumOfIncorrectAnswers();
+		long notAnswered = numOfParticipants - rightAnswers - wrongAnswers;
 
-			mainVC.contextPut("maxScore", maxScore);
-			mainVC.contextPut("rightAnswers", rightAnswers);
-			mainVC.contextPut("wrongAnswers", wrongAnswers);
-			mainVC.contextPut("notAnswered", notAnswered);
-			mainVC.contextPut("itemDifficulty", formatTwo(itemStats.getDifficulty()));
-			mainVC.contextPut("averageScore", formatTwo(itemStats.getAverageScore()));
-			mainVC.contextPut("numOfParticipants", numOfParticipants);
-		}
+		mainVC.contextPut("maxScore", maxScore);
+		mainVC.contextPut("rightAnswers", rightAnswers);
+		mainVC.contextPut("wrongAnswers", wrongAnswers);
+		mainVC.contextPut("notAnswered", notAnswered);
+		mainVC.contextPut("itemDifficulty", formatTwo(itemStats.getDifficulty()));
+		mainVC.contextPut("averageScore", formatTwo(itemStats.getAverageScore()));
+		mainVC.contextPut("numOfParticipants", numOfParticipants);
 		mainVC.contextPut("averageDuration", duration(itemStats.getAverageDuration()));
 		return itemStats;
 	}

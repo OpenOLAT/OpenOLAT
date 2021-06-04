@@ -20,15 +20,12 @@
 package org.olat.course.nodes.iq;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -45,8 +42,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.vfs.VFSConstants;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -57,17 +52,8 @@ import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.ims.qti.QTIModule;
-import org.olat.ims.qti.QTIResult;
-import org.olat.ims.qti.QTIResultManager;
-import org.olat.ims.qti.editor.beecom.objects.Assessment;
-import org.olat.ims.qti.editor.beecom.objects.Item;
-import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
-import org.olat.ims.qti.editor.beecom.objects.Section;
-import org.olat.ims.qti.fileresource.SurveyFileResource;
-import org.olat.ims.qti.fileresource.TestFileResource;
-import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Module;
@@ -79,8 +65,6 @@ import org.olat.ims.qti21.ui.QTI21OverrideOptions;
 import org.olat.ims.qti21.ui.event.RestartEvent;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grading.GradingService;
-import org.olat.modules.iq.IQManager;
-import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -100,9 +84,6 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 public class IQConfigurationController extends BasicController {
 
 	private static final String VC_CHOSENTEST = "chosentest";
-	
-	private static final String[] QTI_21_AND_12_RESOURCE = new String[] { TestFileResource.TYPE_NAME,
-			ImsQTI21Resource.TYPE_NAME };
 	private static final String[] QTI_21_RESOURCE = new String[] { ImsQTI21Resource.TYPE_NAME };
 
 	private VelocityContainer myContent;
@@ -116,12 +97,10 @@ public class IQConfigurationController extends BasicController {
 
 	private Controller previewLayoutCtr;
 	private CloseableModalController cmc;
-	private IQEditReplaceWizard replaceWizard;
 	private AssessmentTestDisplayController previewQTI21Ctrl;
 	private ReferencableEntriesSearchController searchController;
 	private ConfirmChangeResourceController confirmChangeResourceCtrl;
 	
-	private IQ12EditForm mod12ConfigForm;
 	private QTI21EditForm mod21ConfigForm;
 	
 	private String type;
@@ -130,11 +109,9 @@ public class IQConfigurationController extends BasicController {
 	private AbstractAccessableCourseNode courseNode;
 
 	@Autowired
-	private IQManager iqManager;
-	@Autowired
-	private QTIModule qtiModule;
-	@Autowired
 	private QTI21Module qti21Module;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private QTI21Service qti21service;
 	@Autowired
@@ -191,13 +168,13 @@ public class IQConfigurationController extends BasicController {
 		updateEditController(ureq, false);
 		
 		switch(type) {
-			case AssessmentInstance.QMD_ENTRY_TYPE_ASSESS:
+			case QTI21Constants.QMD_ENTRY_TYPE_ASSESS:
 				myContent.contextPut("repEntryTitle", translate("choosenfile.test"));
 				break;
-			case AssessmentInstance.QMD_ENTRY_TYPE_SELF:
+			case QTI21Constants.QMD_ENTRY_TYPE_SELF:
 				myContent.contextPut("repEntryTitle", translate("choosenfile.self"));
 				break;
-			case AssessmentInstance.QMD_ENTRY_TYPE_SURVEY:
+			case QTI21Constants.QMD_ENTRY_TYPE_SURVEY:
 				myContent.contextPut("repEntryTitle", translate("choosenfile.surv"));
 				chooseTestButton.setCustomDisplayText(translate("command.createSurvey"));
 				break;
@@ -211,9 +188,7 @@ public class IQConfigurationController extends BasicController {
 	 * @param replacedTest Set true if the test was replaced by a new one.
 	 */
 	protected void updateEditController(UserRequest ureq, boolean replacedTest) {
-		removeAsListenerAndDispose(mod12ConfigForm);
 		removeAsListenerAndDispose(mod21ConfigForm);
-		mod12ConfigForm = null;
 		mod21ConfigForm = null;
 		
 		RepositoryEntry re = getIQReference();
@@ -252,19 +227,9 @@ public class IQConfigurationController extends BasicController {
 			mod21ConfigForm.update(re);
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
-		} else if(QTIResourceTypeModule.isOnyxTest(re.getOlatResource())) {
-			myContent.remove("iqeditform");
-			showError("error.onyx");
 		} else {
-			boolean hasEssay = needManualCorrectionQTI12(re);
-			if(replacedTest) {// set some default settings in case the user don't save the next panel
-				moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, hasEssay ? "manual" : "auto");
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-			mod12ConfigForm = new IQ12EditForm(ureq, getWindowControl(), moduleConfiguration, hasEssay);
-			mod12ConfigForm.update(re.getOlatResource());
-			listenTo(mod12ConfigForm);
-			myContent.put("iqeditform", mod12ConfigForm.getInitialComponent());
+			myContent.remove("iqeditform");
+			showError("error.qti12");
 		}
 	}
 
@@ -274,11 +239,8 @@ public class IQConfigurationController extends BasicController {
 	 * @return
 	 */
 	private boolean isEditable(RepositoryEntry re) {
-		boolean isOnyx = QTIResourceTypeModule.isOnyxTest(re.getOlatResource());
-		if (isOnyx) {
-			return false;
-		}
-		return repositoryService.hasRoleExpanded(getIdentity(), re,
+		return ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())
+				&& repositoryService.hasRoleExpanded(getIdentity(), re,
 				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
 				GroupRoles.owner.name());
 	}
@@ -293,9 +255,9 @@ public class IQConfigurationController extends BasicController {
 			RepositoryEntry re = courseNode.getReferencedRepositoryEntry();
 			if(re == null) {
 				showError("error.test.undefined.long", courseNode.getShortTitle());
-			} else if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SELF)) {
+			} else if(type.equals(QTI21Constants.QMD_ENTRY_TYPE_SELF)) {
 				doChangeSelfTest(ureq);
-			} else if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS) || type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {
+			} else if(type.equals(QTI21Constants.QMD_ENTRY_TYPE_ASSESS) || type.equals(QTI21Constants.QMD_ENTRY_TYPE_SURVEY)) {
 				doChangeTestAndSurvey(ureq, re);
 			}	
 		} else if (editTestButton == source) {
@@ -325,30 +287,6 @@ public class IQConfigurationController extends BasicController {
 				doChangeResource(urequest, newEntry);
 			}
 			cmc.deactivate();
-		} else if (source == replaceWizard) {
-			if(event == Event.CANCELLED_EVENT) {
-				cmc.deactivate();
-			} else if(event == Event.DONE_EVENT) {
-				cmc.deactivate();
-				String repositorySoftKey = (String) moduleConfiguration.get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-				Long repKey = repositoryManager.lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
-				QTIResultManager.getInstance().deleteAllResults(course.getResourceableId(), courseNode.getIdent(), repKey);
-				IQEditController.removeIQReference(moduleConfiguration);
-				VFSStatus isDeleted = iqManager.removeQtiSerFiles(course.getResourceableId(), courseNode.getIdent());
-				if (!isDeleted.equals(VFSConstants.YES)) {
-					// couldn't removed qtiser files
-					logWarn("Couldn't removed course node folder! Course resourceable id: " + course.getResourceableId() + ", Course node ident: " + courseNode.getIdent(), null);
-				}
-				
-				RepositoryEntry re = replaceWizard.getSelectedRepositoryEntry();
-				boolean needManualCorrection = checkManualCorrectionNeeded(re);
-				doIQReference(urequest, re, needManualCorrection);
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == mod12ConfigForm) {
-			if (event == Event.DONE_EVENT) {
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
 		} else if (source == mod21ConfigForm) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
@@ -419,30 +357,19 @@ public class IQConfigurationController extends BasicController {
 		removeAsListenerAndDispose(previewQTI21Ctrl);
 		
 		RepositoryEntry re = getIQReference();
-		if(re != null) {
-			if(QTIResourceTypeModule.isOnyxTest(re.getOlatResource())) {
-				showError("error.onyx");
-			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
-				cleanUpQti21PreviewSession();//clean up last session
-				// need to clean up the assessment test session
-				QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
-				QTI21OverrideOptions overrideOptions = QTI21OverrideOptions.nothingOverriden();
-				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				previewQTI21Ctrl = new AssessmentTestDisplayController(ureq, getWindowControl(), new InMemoryOutcomeListener(),
-						re, courseEntry, courseNode.getIdent(),
-						deliveryOptions, overrideOptions, true, true, true);
-				listenTo(previewQTI21Ctrl);
-				stackPanel.pushController(translate("preview"), previewQTI21Ctrl);
-			} else {
-				if (qtiModule.isRunEnabled()) {
-					long courseResId = course.getResourceableId().longValue();
-					Controller previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), courseResId, courseNode.getIdent(), null);
-					previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewController);
-					stackPanel.pushController(translate("preview"), previewLayoutCtr);
-				} else {
-					showError("error.qti12");
-				}
-			}
+		if(re != null && ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+			cleanUpQti21PreviewSession();//clean up last session
+			// need to clean up the assessment test session
+			QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
+			QTI21OverrideOptions overrideOptions = QTI21OverrideOptions.nothingOverriden();
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			previewQTI21Ctrl = new AssessmentTestDisplayController(ureq, getWindowControl(), new InMemoryOutcomeListener(),
+					re, courseEntry, courseNode.getIdent(),
+					deliveryOptions, overrideOptions, true, true, true);
+			listenTo(previewQTI21Ctrl);
+			stackPanel.pushController(translate("preview"), previewQTI21Ctrl);
+		} else {
+			showError("error.qti12");
 		}
 	}
 	
@@ -462,16 +389,11 @@ public class IQConfigurationController extends BasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(searchController);
 		
-		if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {
-			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
-					SurveyFileResource.TYPE_NAME, translate("command.chooseSurvey"));
-		} else { // test and selftest use same repository resource type
-			String[] types = qtiModule.isRunEnabled() ? QTI_21_AND_12_RESOURCE : QTI_21_RESOURCE;
-			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types,
-					translate("command.chooseTest"));
-		}			
+		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+				QTI_21_RESOURCE, translate("command.chooseTest"));		
 		listenTo(searchController);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("command.chooseRepFile"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				searchController.getInitialComponent(), true, translate("command.chooseRepFile"));
 		cmc.activate();
 	}
 	
@@ -479,8 +401,7 @@ public class IQConfigurationController extends BasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(searchController);
 		
-		String[] types = qtiModule.isRunEnabled() ? QTI_21_AND_12_RESOURCE : QTI_21_RESOURCE;
-		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseTest"));
+		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, QTI_21_RESOURCE, translate("command.chooseTest"));
 		listenTo(searchController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent());
@@ -492,106 +413,26 @@ public class IQConfigurationController extends BasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(searchController);
 		
-		String[] types;
-		if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {//test
-			types = qtiModule.isRunEnabled() ? QTI_21_AND_12_RESOURCE : QTI_21_RESOURCE;
-		} else {//survey
-			types = new String[]{ SurveyFileResource.TYPE_NAME };
-		}
-		
-		if (moduleConfiguration.get(IQEditController.CONFIG_KEY_TYPE_QTI) == null) {
-			updateQtiType(re);
-		}
-
-		int onyxSuccess = 0;
-		if (moduleConfiguration.get(IQEditController.CONFIG_KEY_TYPE_QTI) != null && moduleConfiguration.get(IQEditController.CONFIG_KEY_TYPE_QTI).equals(IQEditController.CONFIG_VALUE_QTI2)) {
-			if (courseNode.getClass().equals(IQSURVCourseNode.class)) {
-				File surveyDir = new File(course.getCourseEnvironment().getCourseBaseContainer()
-						.getBasefile() + File.separator + courseNode.getIdent() + File.separator);
-				if (surveyDir != null && surveyDir.exists() && surveyDir.listFiles().length > 0) {
-					onyxSuccess = surveyDir.listFiles().length;
-				}
-			} else {
-				onyxSuccess = QTIResultManager.getInstance().countResults(course.getResourceableId(), courseNode.getIdent(), re.getKey());
-			}
-		}
-	
-		if (moduleConfiguration.get(IQEditController.CONFIG_KEY_TYPE_QTI) != null
-				&& moduleConfiguration.get(IQEditController.CONFIG_KEY_TYPE_QTI).equals(IQEditController.CONFIG_VALUE_QTI2)
-				&& onyxSuccess > 0) {
-			showError("error.onyx");
-		} else {
-			
-			List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), re.getKey(), null, 1);
-			// test was passed from an user
-			boolean passed = (results != null && !results.isEmpty()) ? true : false;
-			// test was started and not passed
-			// it exists partly results for this test
-			List<Identity> identitiesWithQtiSerEntry = iqManager.getIdentitiesWithQtiSerEntry(course.getResourceableId(), courseNode.getIdent());
-			if(passed || !identitiesWithQtiSerEntry.isEmpty()) {
-				List<Identity> learners = new ArrayList<>();
-				for(QTIResult result : results) {
-					Identity identity = result.getResultSet().getIdentity();
-					if(identity != null && !learners.contains(identity)){
-						learners.add(identity);
-					}
-				}
-				// add identities with qti.ser entry
-				for (Identity identity : identitiesWithQtiSerEntry) {
-					if(!learners.contains(identity)) {
-						learners.add(identity);
-					}
-				}
-				replaceWizard = new IQEditReplaceWizard(ureq, getWindowControl(), course, courseNode, types, learners, results, identitiesWithQtiSerEntry.size());
-				replaceWizard.addControllerListener(this);
+		String[] types = QTI_21_RESOURCE;
+		if(!ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+			showError("error.qti12");
+		} else {				
+			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseTest"));
+			listenTo(searchController);
 				
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), replaceWizard.getInitialComponent());
-				cmc.activate();
-			} else {
-				if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {//test					
-					searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseTest"));
-				} else {//survey
-					searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseSurvey"));
-				}
-				listenTo(searchController);
-				
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent());
-				cmc.activate();
-			}
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent());
+			listenTo(cmc);
+			cmc.activate();
 		}	
 	}
 
-	/**
-	 * This method updates the QTI Type in the editortreemodel.
-	 * 
-	 * @param re Needed to check if this Test is of QTI Type 2.1
-	 */
-	private void updateQtiType(RepositoryEntry re) {
-		if (QTIResourceTypeModule.isOnyxTest(re.getOlatResource())) {
-			moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);
-		} else if(QTIResourceTypeModule.isQtiWorks(re.getOlatResource())) {
-			moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
-		} else {
-			moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI1);
-		}
-	}
-
 	private boolean checkManualCorrectionNeeded(RepositoryEntry re) {
-		if(QTIResourceTypeModule.isOnyxTest(re.getOlatResource())) {
-			return false;
-		}
 		if(courseNode instanceof IQSURVCourseNode || courseNode instanceof IQSELFCourseNode) {
 			//nothing to do
-		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
-			if(needManualCorrectionQTI21(re)) {
-				showWarning("warning.test.with.essay");
-				return true;
-			}
-		} else {
-			if(needManualCorrectionQTI12(re)) {
-				showWarning("warning.test.with.essay");
-				return true;
-			}
+		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())
+				&&needManualCorrectionQTI21(re)) {
+			showWarning("warning.test.with.essay");
+			return true;
 		}
 		return false;
 	}
@@ -615,79 +456,48 @@ public class IQConfigurationController extends BasicController {
 		return deliveryOptions.getPassedType(cutValue);
 	}
 	
-	private boolean needManualCorrectionQTI12(RepositoryEntry re) {
-		boolean needManualCorrection = false;
-		QTIDocument doc = TestFileResource.getQTIDocument(re.getOlatResource());
-		if(doc != null && doc.getAssessment() != null) {
-			Assessment ass = doc.getAssessment();
-			//Sections with their Items
-			List<Section> sections = ass.getSections();
-			for (Section section:sections) {
-				List<Item> items = section.getItems();
-				for (Item item:items) {
-					String ident = item.getIdent();
-					if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
-						needManualCorrection = true;
-						break;
-					}
-				}
-			}
-		}
-		return needManualCorrection;
-	}
-	
 	private void doIQReference(UserRequest urequest, RepositoryEntry re, boolean manualCorrection) {
 		// repository search controller done				
-		if (re != null) {
-			if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(re.getOlatResource(), null)) {
-				LockResult lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(re.getOlatResource(), urequest.getIdentity(), null, getWindow());
-				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lockResult.getOwner());
-				showError("error.entry.locked", fullName);
-				if(lockResult.isSuccess()) {
-					//improbable concurrency security
-					CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockResult);
-				}
-			} else {
-				if(editTestButton != null) {
-					myContent.remove(editTestButton);
-				}
-
-				IQEditController.setIQReference(re, moduleConfiguration);
-				String displayName = StringHelper.escapeHtml(re.getDisplayname());
-				previewLink = LinkFactory.createCustomLink("command.preview.link", "command.preview", displayName, Link.NONTRANSLATED, myContent, this);
-				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
-				previewLink.setCustomEnabledLinkCSS("o_preview");
-				previewLink.setTitle(getTranslator().translate("command.preview"));
-				previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
-				previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
-				myContent.contextPut("dontRenderRepositoryButton", Boolean.valueOf(true));
-				// If of type test, get min, max, cut - put in module config and push
-				// to velocity
-				
-				boolean isOnyx = QTIResourceTypeModule.isOnyxTest(re.getOlatResource());
-				myContent.contextPut("isOnyx", Boolean.valueOf(isOnyx));
-				if(isOnyx) {
-					myContent.contextPut("onyxDisplayName", displayName);
-					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);
-				} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
-					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
-					if (isEditable(re)) {
-						editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
-					}
-				} else {
-					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI1);
-					if (isEditable(re)) {
-						editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
-					}
-				}
-				
-				if(manualCorrection) {
-					myContent.contextPut(IQEditController.CONFIG_CORRECTION_MODE, "manual");
-				} else {
-					myContent.contextPut(IQEditController.CONFIG_CORRECTION_MODE, "auto");
-				}
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+		if (re == null) return;
+		
+		if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(re.getOlatResource(), null)) {
+			LockResult lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(re.getOlatResource(), urequest.getIdentity(), null, getWindow());
+			String fullName = userManager.getUserDisplayName(lockResult.getOwner());
+			showError("error.entry.locked", fullName);
+			if(lockResult.isSuccess()) {
+				//improbable concurrency security
+				CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockResult);
 			}
+		} else if(!ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+			showError("error.qti12");
+		} else {
+			if(editTestButton != null) {
+				myContent.remove(editTestButton);
+			}
+
+			IQEditController.setIQReference(re, moduleConfiguration);
+			String displayName = StringHelper.escapeHtml(re.getDisplayname());
+			previewLink = LinkFactory.createCustomLink("command.preview.link", "command.preview", displayName, Link.NONTRANSLATED, myContent, this);
+			previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
+			previewLink.setCustomEnabledLinkCSS("o_preview");
+			previewLink.setTitle(getTranslator().translate("command.preview"));
+			previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
+			previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
+			myContent.contextPut("dontRenderRepositoryButton", Boolean.valueOf(true));
+			// If of type test, get min, max, cut - put in module config and push
+			// to velocity
+
+			moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
+			if (isEditable(re)) {
+				editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
+			}
+			
+			if(manualCorrection) {
+				myContent.contextPut(IQEditController.CONFIG_CORRECTION_MODE, "manual");
+			} else {
+				myContent.contextPut(IQEditController.CONFIG_CORRECTION_MODE, "auto");
+			}
+			fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 	}
 

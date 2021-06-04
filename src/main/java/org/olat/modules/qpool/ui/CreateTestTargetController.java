@@ -29,7 +29,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.ui.events.ExportFormatSelectionEvent;
@@ -42,10 +41,8 @@ import org.olat.modules.qpool.ui.events.ExportFormatSelectionEvent;
  */
 public class CreateTestTargetController extends BasicController {
 
-	public static final String FORMAT_QTI_12 = "create.test.format.qti12";
 	public static final String FORMAT_QTI_21 = "create.test.format.qti21";
 	
-	private final Link formatQti12;
 	private final Link formatQti21;
 	
 	private final Set<ExportFormatOptions> exportFormats;
@@ -55,8 +52,6 @@ public class CreateTestTargetController extends BasicController {
 		this.exportFormats = exportFormats;
 		
 		VelocityContainer mainVC = createVelocityContainer("create_test_target");
-		formatQti12 = LinkFactory.createLink(FORMAT_QTI_12, mainVC, this);
-		formatQti12.setUserObject(QTIConstants.QTI_12_FORMAT);
 		formatQti21 = LinkFactory.createLink(FORMAT_QTI_21, mainVC, this);
 		formatQti21.setUserObject(QTI21Constants.QTI_21_FORMAT);
 		putInitialPanel(mainVC);
@@ -64,7 +59,7 @@ public class CreateTestTargetController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == formatQti12 || source == formatQti21) {
+		if(source == formatQti21) {
 			Link link = (Link) source;
 			String format = (String) link.getUserObject();
 			ExportFormatOptions exportFormat = getExportFormat(format);

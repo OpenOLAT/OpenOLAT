@@ -30,10 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -46,18 +44,14 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
-import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.nodes.INode;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -65,15 +59,12 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
-import org.olat.course.nodes.iq.CourseIQSecurityCallback;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQPreviewController;
-import org.olat.course.nodes.iq.IQRunController;
 import org.olat.course.nodes.iq.IQTESTAssessmentConfig;
 import org.olat.course.nodes.iq.IQTESTCoachRunController;
 import org.olat.course.nodes.iq.IQTESTLearningPathNodeHandler;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
-import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -85,25 +76,8 @@ import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.ims.qti.QTIModule;
-import org.olat.ims.qti.QTIResultManager;
-import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
-import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
-import org.olat.ims.qti.export.QTIExportFormatter;
-import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
-import org.olat.ims.qti.export.QTIExportItemFormatConfig;
-import org.olat.ims.qti.export.QTIExportItemFormatDelegate;
-import org.olat.ims.qti.export.QTIExportKPRIMItemFormatConfig;
-import org.olat.ims.qti.export.QTIExportMCQItemFormatConfig;
-import org.olat.ims.qti.export.QTIExportManager;
-import org.olat.ims.qti.export.QTIExportSCQItemFormatConfig;
-import org.olat.ims.qti.fileresource.TestFileResource;
-import org.olat.ims.qti.process.AssessmentInstance;
-import org.olat.ims.qti.process.FilePersister;
-import org.olat.ims.qti.resultexport.QTI12ResultsExportMediaResource;
-import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
-import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
@@ -122,7 +96,6 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.grading.GradingService;
-import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
@@ -194,28 +167,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				} else {
 					controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
 				}
-			} else if(QTIResourceTypeModule.isOnyxTest(ores)) {
+			} else  {
 				Translator transe = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
-				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.onyx"));
-			} else {
-				//QTI 1.2
-				QTIModule qtiModule = CoreSpringFactory.getImpl(QTIModule.class);
-				if (qtiModule.isRunEnabled()) {
-					TestFileResource fr = new TestFileResource();
-					fr.overrideResourceableId(ores.getResourceableId());
-					if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
-						AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-						IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
-						controller = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this, testEntry);
-					} else {
-						String title = trans.translate("editor.lock.title");
-						String message = trans.translate("editor.lock.message");
-						controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-					}
-				} else {
-					Translator transe = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
-					controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.qti12"));
-				}
+				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.qti12"));
 			}
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_iqtest_icon");
@@ -337,30 +291,20 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		Controller controller;
-		ModuleConfiguration config = getModuleConfiguration();
-		boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
-		if (onyx) {
+		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
+		if (ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
+			controller = new IQPreviewController(ureq, wControl, userCourseEnv, this);
+		} else {
 			Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
-		} else {
-			controller = new IQPreviewController(ureq, wControl, userCourseEnv, this);
-		}
+		} 
 		return controller;
-	}
-
-	public boolean isQTI12TestRunning(Identity assessedIdentity, CourseEnvironment courseEnv) {
-		String resourcePath = courseEnv.getCourseResourceableId() + File.separator + getIdent();
-		FilePersister qtiPersister = new FilePersister(assessedIdentity, resourcePath);
-		return qtiPersister.exists();
 	}
 
 	@Override
 	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, StatisticType type) {
 		if(!isStatisticTypeAllowed(type)) return null;
-		
-		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", courseId);
 		
 		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
 		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
@@ -374,9 +318,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			return new QTI21StatisticResourceResult(qtiTestEntry, courseEntry, this, searchParams, secCallback);
 		}
 		
-		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(courseOres.getResourceableId(), getIdent());
-		searchParams.setLimitToGroups(options.getParticipantsGroups());
-		return new QTIStatisticResourceResult(courseOres, this, qtiTestEntry, searchParams);
+		return null;
 	}
 	
 	@Override
@@ -508,18 +450,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 
 	@Override
-	public String informOnDelete(Locale locale, ICourse course) {
-		// Check if there are qtiresults for this test
-		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-		Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
-		if (QTIResultManager.getInstance().hasResultSets(course.getResourceableId(), this.getIdent(), repKey)) {
-			Translator trans = Util.createPackageTranslator(IQRunController.class, locale);
-			return trans.translate("info.nodedelete");
-		}
-		return null;
-	}
-
-	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);
 		
@@ -527,13 +457,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		// 1) Delete all properties: score, passed, log, comment, coach_comment,
 		// attempts
 		pm.deleteNodeProperties(this, null);
-		// 2) Delete all qtiresults for this node (QTI 1.2 + qtiworks)
-		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
-		if(re != null) {
-			QTIResultManager.getInstance().deleteAllResults(course.getResourceableId(), getIdent(), re.getKey());
-		}
-		// 3) Delete all assessment test sessions (QTI 2.1)
+		// 2) Delete all assessment test sessions (QTI 2.1)
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class).deleteAllUserTestSessionsByCourse(courseEntry, getIdent());
 	}
@@ -543,8 +467,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			ZipOutputStream exportStream, String archivePath, String charset) {
 		
 		String repositorySoftKey = (String)getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-		Long courseResourceableId = course.getResourceableId();
-
+		
 		// 1) prepare result export
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		try {
@@ -554,10 +477,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				return false;
 			}
 			
-			boolean onyx = QTIResourceTypeModule.isOnyxTest(re.getOlatResource());
-			if (onyx) {
-				return true;
-			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+			if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				// 2a) create export resource
 				List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
 				new QTI21ResultsExportMediaResource(courseEnv, identities, true, this, archivePath, locale).exportTestResults(exportStream);
@@ -567,25 +487,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, searchParams);
 				qaf.exportCourseElement(exportStream, archivePath);
 				return true;	
-			} else {
-				// 2b) create export resource
-				List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
-				new QTI12ResultsExportMediaResource(courseEnv, identities, this, archivePath, locale).exportTestResults(exportStream);
-				// excel results
-				String shortTitle = getShortTitle();
-				QTIExportManager qem = QTIExportManager.getInstance();
-				QTIExportFormatter qef = new QTIExportFormatterCSVType1(locale, "\t", "\"", "\r\n", false);
-				if (options != null && options.getExportFormat() != null) {
-					Map<Class<?>, QTIExportItemFormatConfig> itemConfigs = new HashMap<>();
-					Class<?>[] itemTypes = new Class<?>[] {QTIExportSCQItemFormatConfig.class, QTIExportMCQItemFormatConfig.class,
-						QTIExportKPRIMItemFormatConfig.class, QTIExportFIBItemFormatConfig.class, QTIExportEssayItemFormatConfig.class};
-					for (Class<?> itemClass : itemTypes) {
-						itemConfigs.put(itemClass, new QTIExportItemFormatDelegate(options.getExportFormat()));						
-					}
-					qef.setMapWithExportItemConfigs(itemConfigs);
-				}
-				return qem.selectAndExportResults(qef, courseResourceableId, shortTitle, getIdent(), re, exportStream, archivePath, locale, ".xls");
 			}
+			return false;
 		} catch (IOException e) {
 			log.error("", e);
 			return false;
@@ -615,19 +518,14 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		if(withReferences && rie.anyExportedPropertiesAvailable()) {
 			File file = rie.importGetExportedFile();
 			RepositoryHandler handlerQTI21 = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
-
-			RepositoryEntry re;
 			if(handlerQTI21.acceptImport(file, "repo.zip").isValid()) {
-				re = handlerQTI21.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+				RepositoryEntry re = handlerQTI21.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 						rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
-
 				getModuleConfiguration().set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
+				IQEditController.setIQReference(re, getModuleConfiguration());
 			} else {
-				RepositoryHandler handlerQTI = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
-				re = handlerQTI.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-						rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
+				IQEditController.removeIQReference(getModuleConfiguration());
 			}
-			IQEditController.setIQReference(re, getModuleConfiguration());
 		} else {
 			IQEditController.removeIQReference(getModuleConfiguration());
 		}
@@ -694,9 +592,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		if (isNewNode) {
 			// add default module configuration
 			config.set(IQEditController.CONFIG_KEY_ENABLEMENU, Boolean.TRUE);
-			config.set(IQEditController.CONFIG_KEY_SEQUENCE, AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM);
-			config.set(IQEditController.CONFIG_KEY_TYPE, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
-			config.set(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT);
+			config.set(IQEditController.CONFIG_KEY_SEQUENCE, QTI21Constants.QMD_ENTRY_SEQUENCE_ITEM);
+			config.set(IQEditController.CONFIG_KEY_TYPE, QTI21Constants.QMD_ENTRY_TYPE_ASSESS);
+			config.set(IQEditController.CONFIG_KEY_SUMMARY, QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT);
 			config.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, Boolean.TRUE);
 			config.set(IQEditController.CONFIG_KEY_CONFIG_REF, Boolean.TRUE);
 		} else {
