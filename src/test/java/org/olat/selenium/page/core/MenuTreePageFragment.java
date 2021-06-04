@@ -24,6 +24,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -53,7 +54,13 @@ public class MenuTreePageFragment {
 	public MenuTreePageFragment selectRoot() {
 		By rootNodeBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l0')]/a");
 		OOGraphene.waitElement(rootNodeBy, browser);
-		browser.findElement(rootNodeBy).click();
+		try {
+			browser.findElement(rootNodeBy).click();
+		} catch (StaleElementReferenceException e) {
+			// the tree can be updated asynchronously, give a second chance
+			OOGraphene.waitingALittleBit();
+			browser.findElement(rootNodeBy).click();
+		}
 		OOGraphene.waitBusy(browser);
 		By rootNodeActiveBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l0')][contains(@class,'active')]/a");
 		OOGraphene.waitElement(rootNodeActiveBy, browser);
@@ -63,7 +70,13 @@ public class MenuTreePageFragment {
 	public MenuTreePageFragment selectWithTitle(String title) {
 		By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li/div/span[contains(@class,'o_tree_link')]/a[span[contains(text(),'" + title + "')]]");
 		OOGraphene.waitElement(linkBy, browser);
-		browser.findElement(linkBy).click();
+		try {
+			browser.findElement(linkBy).click();
+		} catch (StaleElementReferenceException e) {
+			// the tree can be updated asynchronously, give a second chance
+			OOGraphene.waitingALittleBit();
+			browser.findElement(linkBy).click();
+		}
 		OOGraphene.waitBusy(browser);
 		By activeLinkBy = By.xpath("//div[contains(@class,'o_tree')]//li[contains(@class,'active')]/div/span[contains(@class,'o_tree_link')][contains(@class,'active')]/a[span[contains(text(),'" + title + "')]]");
 		OOGraphene.waitElement(activeLinkBy, browser);

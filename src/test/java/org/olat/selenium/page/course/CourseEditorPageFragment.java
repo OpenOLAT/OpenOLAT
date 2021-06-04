@@ -548,7 +548,7 @@ public class CourseEditorPageFragment {
 	public PublisherPageFragment publish() {
 		OOGraphene.waitElement(publishButtonBy, browser);
 		browser.findElement(publishButtonBy).click();
-		OOGraphene.waitBusyAndScrollTop(browser);
+		OOGraphene.waitModalWizard(browser);
 		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_nodes"), browser);
 		return new PublisherPageFragment(browser);
 	}
