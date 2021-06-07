@@ -51,7 +51,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiC
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
@@ -86,7 +85,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
 *
 */
-public class PFCoachController extends FormBasicController implements ControllerEventListener {
+public class PFCoachController extends FormBasicController {
 	
 	protected static final String USER_PROPS_ID = PFCoachController.class.getCanonicalName();
 
@@ -96,8 +95,11 @@ public class PFCoachController extends FormBasicController implements Controller
 	
 	private PFCourseNode pfNode;
 	
-	private FormLink downloadLink, uploadLink, uploadAllLink;
 	private Link backLink;
+	private FormLink uploadLink;
+	private FormLink downloadLink;
+	private FormLink uploadAllLink;
+	private TimerComponent timerCmp;
 	private DropBoxTableModel tableModel;
 	private FlexiTableElement dropboxTable;
 	
@@ -105,7 +107,6 @@ public class PFCoachController extends FormBasicController implements Controller
 	private PFFileUploadController pfFileUploadCtr;
 	private PFParticipantController pfParticipantController; 
 	private HomePageDisplayController homePageDisplayController;
-	private ContextualSubscriptionController contextualSubscriptionCtr;
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -142,6 +143,8 @@ public class PFCoachController extends FormBasicController implements Controller
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLink) {
 			back();
+		} else if(timerCmp == source) {
+			timerCmp = PFUIHelper.initTimeframeMessage(ureq, pfNode, flc.getFormItemComponent(), this, getTranslator());
 		}
 		super.event(ureq, source, event);		
 	}
@@ -177,13 +180,13 @@ public class PFCoachController extends FormBasicController implements Controller
 		if (source == uploadLink) {
 			doOpenUploadController(ureq, false);
 		} else if (source == uploadAllLink) {
-			if (dropboxTable.getMultiSelectedIndex().size() > 0) {				
+			if (!dropboxTable.getMultiSelectedIndex().isEmpty()) {				
 				doOpenUploadController(ureq, true);
 			} else {
 				showWarning("table.no.selection");
 			}
 		} else if (source == downloadLink) {
-			if (dropboxTable.getMultiSelectedIndex().size() > 0) {
+			if (!dropboxTable.getMultiSelectedIndex().isEmpty()) {
 				downloadFromSelection(ureq);				
 			} else {
 				showWarning("table.no.selection");
@@ -225,11 +228,13 @@ public class PFCoachController extends FormBasicController implements Controller
 			SubscriptionContext subsContext = new SubscriptionContext(course, pfNode.getIdent());
 			PublisherData publisherData = new PublisherData(OresHelper.calculateTypeName(PFCourseNode.class),
 					String.valueOf(course.getResourceableId()), businessPath);
-			contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext,
+			ContextualSubscriptionController contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext,
 					publisherData);
 			listenTo(contextualSubscriptionCtr);
 			layoutCont.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
 			backLink = LinkFactory.createLinkBack(layoutCont.getFormItemComponent(), this);
+			
+			timerCmp = PFUIHelper.initTimeframeMessage(ureq, pfNode, layoutCont.getFormItemComponent(), this, getTranslator());
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -378,6 +383,9 @@ public class PFCoachController extends FormBasicController implements Controller
 	}
 	
 	private void doOpenUploadController (UserRequest ureq, boolean uploadToAll) {
+		removeControllerListener(pfFileUploadCtr);
+		removeControllerListener(cmc);
+		
 		pfFileUploadCtr = new PFFileUploadController(ureq, getWindowControl(), uploadToAll);
 		listenTo(pfFileUploadCtr);
 		
@@ -387,7 +395,10 @@ public class PFCoachController extends FormBasicController implements Controller
 		cmc.activate();
 	}
 	
-	private void doOpenHomePage (UserRequest ureq, UserPropertiesRow row) {		
+	private void doOpenHomePage (UserRequest ureq, UserPropertiesRow row) {
+		removeControllerListener(homePageDisplayController);
+		removeControllerListener(cmc);
+		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), assessedIdentity, new HomePageConfig());
 		listenTo(homePageDisplayController);
@@ -401,8 +412,10 @@ public class PFCoachController extends FormBasicController implements Controller
 	private void cleanUpCMC(){
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(pfFileUploadCtr);
+		removeAsListenerAndDispose(homePageDisplayController);
 		cmc = null;
 		pfFileUploadCtr = null;
+		homePageDisplayController = null;
 	}
 	
 	private void back() {

@@ -43,9 +43,14 @@ import org.olat.course.nodes.PFCourseNode;
 */
 public class PFEditFormController extends FormBasicController {
 	
-	private SelectionElement studentDropBox, teacherDropBox, alterFiles, limitFileCount, timeFrame;
+	private SelectionElement timeFrame;
+	private SelectionElement alterFiles;
+	private SelectionElement limitFileCount;
+	private SelectionElement studentDropBox;
+	private SelectionElement teacherDropBox;
 	private TextElement fileCount;
-	private JSDateChooser dateStart, dateEnd;
+	private JSDateChooser dateStart;
+	private JSDateChooser dateEnd;
 	private SpacerElement spacerEl;
 	
 	private PFCourseNode pfNode;
@@ -108,7 +113,7 @@ public class PFEditFormController extends FormBasicController {
 		applyModuleConfig();
 	}
 	
-	private void applyModuleConfig () {
+	private void applyModuleConfig() {
 		boolean hasStudentBox = pfNode.hasParticipantBoxConfigured();
 		studentDropBox.select("xx", hasStudentBox);
 		alterFiles.select("xx", pfNode.hasAlterFileConfigured());
@@ -123,7 +128,7 @@ public class PFEditFormController extends FormBasicController {
 		timeFrame.select("xx", hasTimeFrame);
 		timeFrame.setVisible(hasStudentBox);
 		dateStart.setDate(pfNode.getDateStart());
-		dateStart.setVisible(hasTimeFrame);		
+		dateStart.setVisible(hasTimeFrame);
 		dateEnd.setDate(pfNode.getDateEnd());
 		dateEnd.setVisible(hasTimeFrame);
 		teacherDropBox.select("xx", pfNode.hasCoachBoxConfigured());		
@@ -180,8 +185,6 @@ public class PFEditFormController extends FormBasicController {
 		}
 		return true;
 	}
-	
-	
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -254,7 +257,6 @@ public class PFEditFormController extends FormBasicController {
 
 	@Override
 	protected void doDispose() {
-
+		//
 	}
-
 }

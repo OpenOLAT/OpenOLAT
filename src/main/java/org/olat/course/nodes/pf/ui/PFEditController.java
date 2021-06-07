@@ -24,7 +24,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
@@ -35,7 +34,7 @@ import org.olat.course.nodes.PFCourseNode;
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
 *
 */
-public class PFEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
+public class PFEditController extends ActivateableTabbableDefaultController {
 	
 	private static final String PANE_TAB_CONFIGURATION = "pane.tab.configuration";
 	private static final String[] paneKeys = { PANE_TAB_CONFIGURATION };

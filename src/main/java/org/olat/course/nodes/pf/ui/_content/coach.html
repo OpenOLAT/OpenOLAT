@@ -8,6 +8,11 @@
 		$r.render("contextualSubscription")
 	</div>
 	#end
+	
+	#if($r.isNotEmpty($msg))
+	<div class="$msgCssClass"><i class="o_icon o_icon-lg o_icon_time"> </i> #if($r.available("timer"))$r.render("timer")#end $msg</div>
+	#end
+
 	$r.render("table")
 	#if($hasParticipants)
 		$r.render("buttons")

@@ -105,7 +105,6 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 		return false;
 	}
 	
-	
 	public void updateModuleConfig(boolean participantbox, boolean coachbox, boolean alterfile,
 			boolean limitcount,	int filecount, boolean timeframe, Date start, Date end) {
 		ModuleConfiguration config = getModuleConfiguration();
@@ -119,9 +118,12 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		config.setBooleanEntry(CONFIG_KEY_TIMEFRAME, timeframe);
-		if (timeframe){
+		if (timeframe) {
 			config.set(CONFIG_KEY_DATESTART, start);
 			config.set(CONFIG_KEY_DATEEND, end);	
+		} else {
+			config.remove(CONFIG_KEY_DATESTART);
+			config.remove(CONFIG_KEY_DATEEND);	
 		}
 	}
 	
@@ -185,13 +187,13 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	public Date getDateStart() {
 		ModuleConfiguration config = getModuleConfiguration();
 		return config.getBooleanEntry(CONFIG_KEY_DATESTART) != null ? 
-				config.getDateValue(CONFIG_KEY_DATESTART) : new Date();
+				config.getDateValue(CONFIG_KEY_DATESTART) : null;
 	}
 	
 	public Date getDateEnd() {
 		ModuleConfiguration config = getModuleConfiguration();
 		return config.getBooleanEntry(CONFIG_KEY_DATEEND) != null ? 
-				config.getDateValue(CONFIG_KEY_DATEEND) : new Date();
+				config.getDateValue(CONFIG_KEY_DATEEND) : null;
 	}
 	
 

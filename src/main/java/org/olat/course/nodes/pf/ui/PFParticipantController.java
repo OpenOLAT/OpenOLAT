@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.pf.ui;
 
-import java.util.Date;
-
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -33,7 +31,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.PFCourseNode;
@@ -50,8 +47,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 */
 public class PFParticipantController extends BasicController {
 	
-	private static final long TWO_DAYS_IN_MILLISEC = 2l * 24l * 60l * 60l * 1000l;
-	private static final long ONE_DAY_IN_MILLISEC = 24l * 60l * 60l * 1000l;
 	
 	private TimerComponent timerCmp;
 	private VelocityContainer mainVC;
@@ -118,51 +113,7 @@ public class PFParticipantController extends BasicController {
 			mainVC.contextPut("limit", pfNode.getLimitCount());			
 		}
 		
-		if(pfNode.hasDropboxTimeFrameConfigured() && pfNode.getDateStart() != null && pfNode.getDateEnd() != null) {
-			Date start = pfNode.getDateStart();
-			Date end = pfNode.getDateEnd();
-			Date now = ureq.getRequestTimestamp();
-
-			Formatter formatter = Formatter.getInstance(getLocale());
-			String[] args = new String[] {
-				formatter.formatDate(start), 		// 0 start date
-				formatter.formatTimeShort(start), 	// 1 start time
-				formatter.formatDate(end),			// 2 end date
-				formatter.formatTimeShort(end)		// 3 end time
-			};
-			
-			String i18nKey;
-			String cssClass;
-			if(now.before(start)) {
-				cssClass = "o_info";
-				i18nKey = "msg.period.before";
-			} else if(now.after(start) && now.before(end)) {
-				long timeDiff = end.getTime() - now.getTime();
-				if(timeDiff <= 0) {
-					cssClass = "o_info";
-					i18nKey = "msg.period.after";
-				} else if(timeDiff > TWO_DAYS_IN_MILLISEC) {// 2 days		
-					cssClass = "o_info";
-					i18nKey = "msg.period.within";
-				} else if(timeDiff > ONE_DAY_IN_MILLISEC) {				
-					cssClass = "o_warning";
-					i18nKey = "msg.period.within";
-				} else {
-					cssClass = "o_error";
-					i18nKey = "msg.period.within.oneday";
-					timerCmp = new TimerComponent("timer", end);
-					timerCmp.addListener(this);
-					mainVC.put("timer", timerCmp);
-				}
-			} else {
-				cssClass = "o_info";
-				i18nKey = "msg.period.after";
-			}
-			
-			String msg = translate(i18nKey, args);
-			mainVC.contextPut("msg", msg);
-			mainVC.contextPut("msgCssClass", cssClass);
-		}
+		timerCmp = PFUIHelper.initTimeframeMessage(ureq, pfNode, mainVC, this, getTranslator());
 	}
 	
 	private void initFolderController(UserRequest ureq, String path) {

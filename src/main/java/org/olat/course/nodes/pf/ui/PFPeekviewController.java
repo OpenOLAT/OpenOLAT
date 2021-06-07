@@ -33,7 +33,6 @@ import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -50,7 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
 *
 */
-public class PFPeekviewController extends BasicController implements Controller {
+public class PFPeekviewController extends BasicController {
 	
 	// comparator to sort the messages list by creation date
 	private static final Comparator<VFSLeaf> dateSortingComparator = (leaf1, leaf2) ->
