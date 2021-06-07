@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -128,7 +129,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.aggregated));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.feed.i18nKey(), ConfigCols.feed.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.tools.i18nKey(), ConfigCols.tools.ordinal()));
+		columnsModel.addFlexiColumnModel(new StickyActionColumnModel(ConfigCols.tools));
 		
 		model = new CalendarPersonalConfigurationDataModel(columnsModel);
 		List<CalendarPersonalConfigurationRow> rows = new ArrayList<>(calendars.size());

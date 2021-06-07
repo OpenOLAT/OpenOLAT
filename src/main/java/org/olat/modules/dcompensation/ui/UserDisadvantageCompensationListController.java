@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -126,7 +127,7 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompensationCols.status,
 				new StatusCellRenderer(getTranslator())));
 		
-		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(CompensationCols.tools);
+		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CompensationCols.tools);
 		toolsCol.setAlwaysVisible(true);
 		toolsCol.setExportable(false);
 		toolsCol.setIconHeader("o_icon o_icon-lg o_icon_actions o_icon-fws");

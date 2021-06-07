@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -110,7 +111,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.recordedMetadataTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.recordedTime));
 		
-		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(GEntryCol.tools);
+		StickyActionColumnModel toolsCol = new StickyActionColumnModel(GEntryCol.tools);
 		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsCol.setHeaderLabel(translate("table.header.tools"));
 		toolsCol.setAlwaysVisible(true);

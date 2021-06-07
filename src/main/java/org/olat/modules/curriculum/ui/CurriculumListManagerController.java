@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -155,7 +156,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		editCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(editCol);
 		if(secCallback.canEditCurriculum()) {
-			DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(CurriculumCols.tools);
+			StickyActionColumnModel toolsCol = new StickyActionColumnModel(CurriculumCols.tools);
 			toolsCol.setExportable(false);
 			toolsCol.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(toolsCol);

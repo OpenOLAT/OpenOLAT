@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -158,7 +159,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		editColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(editColumn);
 			
-		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(BlockCols.tools);
+		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(BlockCols.tools);
 		toolsColumn.setExportable(false);
 		toolsColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsColumn);

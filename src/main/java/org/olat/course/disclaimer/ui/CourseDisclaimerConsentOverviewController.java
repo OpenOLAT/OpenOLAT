@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -168,7 +169,7 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, ConsentCols.consent));
 
-		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(ConsentCols.tools.i18nHeaderKey(), ConsentCols.tools.ordinal());
+		StickyActionColumnModel toolsCol = new StickyActionColumnModel(ConsentCols.tools);
 		toolsCol.setExportable(false);
 		toolsCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsCol);

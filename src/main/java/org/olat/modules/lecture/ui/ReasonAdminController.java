@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -102,7 +103,7 @@ public class ReasonAdminController extends FormBasicController {
 				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
 		editColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(editColumn);
-		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ReasonCols.tools);
+		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(ReasonCols.tools);
 		toolsColumn.setExportable(false);
 		toolsColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsColumn);

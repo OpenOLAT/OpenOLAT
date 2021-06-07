@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -215,7 +216,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		zoomColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(zoomColumn);
 		if(secCallback.canEditCurriculumElements() || (!managed && secCallback.canManagerCurriculumElementsUsers())) {
-			DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ElementCols.tools);
+			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(ElementCols.tools);
 			toolsColumn.setExportable(false);
 			toolsColumn.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(toolsColumn);

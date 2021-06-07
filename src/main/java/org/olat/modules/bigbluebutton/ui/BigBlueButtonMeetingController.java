@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.KeyValues;
@@ -288,7 +289,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.publish));
 			withPublish = true;
 			if(recordingsHandler.canDeleteRecordings() && recordingsHandler.allowPermanentRecordings()) {
-				DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(BRecordingsCols.tools);
+				StickyActionColumnModel toolsCol = new StickyActionColumnModel(BRecordingsCols.tools);
 				toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
 				columnsModel.addFlexiColumnModel(toolsCol);
 				withTools = true;

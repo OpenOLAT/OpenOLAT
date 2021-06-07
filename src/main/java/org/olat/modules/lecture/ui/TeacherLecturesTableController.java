@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -176,7 +177,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		// set sort key even though we do not sort - added as css classes to column headers for styling
 		detailsCol.setSortKey(TeachCols.details.name());
 		columnsModel.addFlexiColumnModel(detailsCol);
-		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(TeachCols.tools);
+		StickyActionColumnModel toolsCol = new StickyActionColumnModel(TeachCols.tools);
 		toolsCol.setSortable(false);
 		columnsModel.addFlexiColumnModel(toolsCol);
 		

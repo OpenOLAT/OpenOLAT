@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -102,7 +103,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit")));
 		editColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(editColumn);
-		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(TypesCols.tools);
+		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(TypesCols.tools);
 		toolsColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(toolsColumn);
 		

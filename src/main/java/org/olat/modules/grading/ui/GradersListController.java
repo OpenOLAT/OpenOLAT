@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -173,7 +174,7 @@ public class GradersListController extends FormBasicController {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.absence, new GraderAbsenceLeaveCellRenderer(getTranslator())));
 		
-		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(GradersCol.tools);
+		StickyActionColumnModel toolsCol = new StickyActionColumnModel(GradersCol.tools);
 		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsCol.setHeaderLabel(translate("table.header.tools"));
 		toolsCol.setAlwaysVisible(true);

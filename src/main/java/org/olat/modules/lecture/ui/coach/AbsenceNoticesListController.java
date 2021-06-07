@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -225,7 +226,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoticeCols.reason));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoticeCols.details));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoticeCols.type));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoticeCols.tools));
+		columnsModel.addFlexiColumnModel(new StickyActionColumnModel(NoticeCols.tools));
 	}
 	
 	protected void reloadModel() {
