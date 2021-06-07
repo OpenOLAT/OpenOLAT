@@ -4,9 +4,15 @@
 	<thead>
 		<tr>
 			#foreach($targetChoice in $targetChoices)
-				<th class="o_sel_match_target_${foreach.index}" style="border-top: none;">${targetChoice.getChoiceText()}</th>
+				<th scope="col" class="o_sel_match_target_${foreach.index}" style="border-top: none;">#if($foreach.index == 0)
+					$r.translate("match.unanswered")
+				#elseif($foreach.index == 1)
+					$r.translate("match.true")
+				#else
+					$r.translate("match.false")
+				#end</th>
 			#end
-			<th style="border-top: none;"> </th>
+			<th scope="col" style="border-top: none;"> </th>
 		</tr>
 	</thead>
 	<tbody>
@@ -25,7 +31,7 @@
 					#end
 				</td>
 			#end
-			<th class="o_sel_match_source_${foreach.index}">
+			<th scope="row" class="o_sel_match_source_${foreach.index}">
 				#if($r.visible($sourceChoice.text))
 					$r.render(${sourceChoice.getText()})
 				#else

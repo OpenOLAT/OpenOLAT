@@ -242,12 +242,19 @@ span.o_qti_gaptext_score_alternative {
 		font-family: $font-family-monospace;
 	}
 	
-	.o_qti_essay_last_save {
+	.o_qti_essay_infos>.o_qti_essay_save {
 		padding: 2px 2px;
 		font-style: italic;
 		font-size: 90%;
-		text-align:right;
+		text-align:left;
 	}
+}
+
+.extendedTextInteraction .o_qti_essay_infos>.o_qti_essay_count {
+	padding: 2px 2px;
+	font-weight: bold;
+	font-size: 90%;
+	text-align:right;
 }
 
 .extendedTextInteraction div.form-control.textarea_disabled {

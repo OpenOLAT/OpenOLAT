@@ -1323,6 +1323,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			  .append("oo_").append(responseUniqueId).append(".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
 			  .append(FormJSHelper.getJSEnd());
 			
+			String[] wordPlaceholder = new String[] { "xxx" };
 			Form form = component.getQtiItem().getRootForm();
 			sb.append(FormJSHelper.getJSStart())
 			  .append("jQuery(function() {\n")
@@ -1342,7 +1343,11 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				  .append("  errorMessage:'").append(StringHelper.escapeJavaScript(errorMessage)).append("'")
 				  .append("})\n");
 			}
-			sb.append(".tabOverride();\n")
+			sb.append(".qtiCountWord({\n")
+			  .append("  responseUniqueId:'").append(responseUniqueId).append("',\n")
+			  .append("  labelSingular:'").append(translator.translate("word.count", wordPlaceholder)).append("',\n")
+			  .append("  labelPlural:'").append(translator.translate("word.count.plural", wordPlaceholder)).append("'\n")
+			  .append(" }).tabOverride();\n")
 			  .append("})\n")
 			  .append(FormJSHelper.getJSEnd());
 		}

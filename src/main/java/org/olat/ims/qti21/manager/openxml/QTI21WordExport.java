@@ -1129,13 +1129,16 @@ public class QTI21WordExport implements MediaResource {
 			getCurrentTable().addRowEl();
 			
 			// horizontal headers
-			for(SimpleAssociableChoice choice:horizontalAssociableChoices) {
-				Element answerCell = getCurrentTable().addCellEl(factory.createTableCell("E9EAF2", columnWidthPct, Unit.pct), 1);
-				appendSimpleAssociableChoice(choice, answerCell);
-			}
+			Element noAnswerCell = getCurrentTable().addCellEl(factory.createTableCell("E9EAF2", columnWidthPct, Unit.pct), 1);
+			noAnswerCell.appendChild(factory.createParagraphEl(translator.translate("match.unanswered")));
+			Element rightAnswerCell = getCurrentTable().addCellEl(factory.createTableCell("E9EAF2", columnWidthPct, Unit.pct), 1);
+			rightAnswerCell.appendChild(factory.createParagraphEl(translator.translate("match.true")));
+			Element wrongAnswerCell = getCurrentTable().addCellEl(factory.createTableCell("E9EAF2", columnWidthPct, Unit.pct), 1);
+			wrongAnswerCell.appendChild(factory.createParagraphEl(translator.translate("match.false")));
+			
 			// white corner
 			Node emptyCell = getCurrentTable().addCellEl(factory.createTableCell(null, halfTableWidthDxa, Unit.dxa), 1);
-			emptyCell.appendChild(factory.createParagraphEl(""));		
+			emptyCell.appendChild(factory.createParagraphEl(""));
 			getCurrentTable().closeRow();
 
 			for(SimpleAssociableChoice choice:verticalAssociableChoices) {

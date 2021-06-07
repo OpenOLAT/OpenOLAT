@@ -2,6 +2,7 @@
 #set($responseDeclaration = $r.getResponseDeclaration($interaction.responseIdentifier))
 #set($minStrings = $r.getMinStrings($interaction))
 #set($maxStrings = $r.getMaxStrings($interaction))
+#set($numOfWords = $r.getWordCount($interaction))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName">
@@ -16,11 +17,11 @@
 	#end
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
 		<div class="o_warning badResponse">
-		#if($interaction.minStrings > 0 && $interaction.maxStrings > 0)
+		#if($r.isNotNull($interaction.minStrings) && $r.isNotNull($interaction.maxStrings) && $interaction.minStrings > 0 && $interaction.maxStrings > 0)
 			$r.translate("error.input.extendedText.min.max", $interaction.minStrings, $interaction.maxStrings)
-		#elseif($interaction.minStrings > 0)
+		#elseif($r.isNotNull($interaction.minStrings) && $interaction.minStrings > 0)
 			$r.translate("error.input.extendedText.min", $interaction.minStrings)
-		#elseif($interaction.maxStrings > 0)
+		#elseif($r.isNotNull($interaction.maxStrings) && $interaction.maxStrings > 0)
 			$r.translate("error.input.extendedText.max", $interaction.maxStrings)
 		#end
 
@@ -34,6 +35,21 @@
 	#end
 
 	$r.renderExtendedTextBox($interaction)
-	<div class='o_qti_essay_last_save' style='display:none'>$r.translate("last.saved") <span class='o_qti_essay_last_save-time'></span></div>
+	#if($r.isFalse($isSolutionMode))
+	<div class='o_qti_essay_infos'>
+		<div class="col-sm-6 o_qti_essay_save">
+			<span class='o_qti_essay_last_save' style='display:none'>$r.translate("last.saved") <span class='o_qti_essay_last_save-time'></span></span>
+		</div>
+		<div class="col-sm-6 o_qti_essay_count"><span class='o_qti_essay_word_count'><span class='o_qti_essay_num_of_words'>#if(${numOfWords} > 1)$r.translate("word.count.plural", $numOfWords) #else $r.translate("word.count", $numOfWords) #end</span>
+			#if($r.isNotNull($interaction.minStrings) && $r.isNotNull($interaction.maxStrings) && $interaction.minStrings > 0 && $interaction.maxStrings > 0)
+				$r.translate("info.input.extendedText.min.max", $interaction.minStrings, $interaction.maxStrings)
+			#elseif($r.isNotNull($interaction.minStrings) && $interaction.minStrings > 0)
+				$r.translate("info.input.extendedText.min", $interaction.minStrings)
+			#elseif($r.isNotNull($interaction.maxStrings) && $interaction.maxStrings > 0)
+				$r.translate("info.input.extendedText.max", $interaction.maxStrings)
+			#end
+		</span></div>
+	</div>
+	#end
 </div>
 
