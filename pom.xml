@@ -79,7 +79,7 @@
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.2</version.drone>
 		<activemq.version>5.16.2</activemq.version>
-		<qtiworks.version>1.0.23</qtiworks.version>
+		<qtiworks.version>1.0.25</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -254,6 +254,7 @@
 												<include>${basedir}/target/jquery/jquery/qti/jquery.positionObject.min.js</include>
 												<include>${basedir}/target/jquery/jquery/qti/jquery.selectPoint.min.js</include>
 												<include>${basedir}/target/jquery/jquery/qti/jquery.slider.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.countWords.min.js</include>
 											</includes>
 										</aggregation>
 										<aggregation>

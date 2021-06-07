@@ -1176,20 +1176,20 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	}
 	
 	protected void renderExtendedTextBox(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
-			ItemSessionState itemSessionState, ExtendedTextInteraction interaction) {
+			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, Translator translator) {
 		
 		ResponseData responseInput = getResponseInput(itemSessionState, interaction.getResponseIdentifier());
 		ResponseDeclaration responseDeclaration = getResponseDeclaration(assessmentItem, interaction.getResponseIdentifier());
 		Cardinality cardinality = responseDeclaration == null ? null : responseDeclaration.getCardinality();
 		if(cardinality != null && (cardinality.isRecord() || cardinality.isSingle())) {
 			String responseInputString = extractSingleCardinalityResponseInput(responseInput);
-			renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString);
+			renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString, translator);
 		} else {
 			if(interaction.getMaxStrings() != null) {
 				int maxStrings = interaction.getMaxStrings().intValue();
 				for(int i=0; i<maxStrings; i++) {
 					String responseInputString = extractResponseInputAt(responseInput, i);
-					renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString);
+					renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString, translator);
 				}	
 			} else {
 				// <xsl:with-param name="stringsCount" select="if (exists($responseValue)) then max(($minStrings, qw:get-cardinality-size($responseValue))) else $minStrings"/>
@@ -1203,7 +1203,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				for(int i=0; i<stringCounts; i++) {
 					String responseInputString = extractResponseInputAt(responseInput, i);
 					renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction,
-							responseInputString);
+							responseInputString, translator);
 				}
 			}
 		}
@@ -1258,7 +1258,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	  </xsl:template>
 	*/
 	protected void renderExtendedTextBox(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
-			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString) {
+			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString, Translator translator) {
 		
 		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
 		boolean ended = component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode());
@@ -1320,6 +1320,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			  .append("oo_").append(responseUniqueId).append(".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
 			  .append(FormJSHelper.getJSEnd());
 			
+			String[] wordPlaceholder = new String[] { "xxx" };
 			Form form = component.getQtiItem().getRootForm();
 			sb.append(FormJSHelper.getJSStart())
 			  .append("jQuery(function() {\n")
@@ -1330,6 +1331,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			  .append("  dispId:'").append(component.getQtiItem().getFormDispatchId()).append("',\n")
 			  .append("  eventIdField:'").append(form.getEventFieldId()).append("',\n")
 			  .append("  csrf:'").append(renderer.getRenderer().getCsrfToken()).append("',\n")
+			  .append(" }).qtiCountWord({\n")
+			  .append("  responseUniqueId:'").append(responseUniqueId).append("',\n")
+			  .append("  labelSingular:'").append(translator.translate("word.count", wordPlaceholder)).append("',\n")
+			  .append("  labelPlural:'").append(translator.translate("word.count.plural", wordPlaceholder)).append("'\n")
 			  .append(" }).tabOverride();\n")
 			  .append("})\n")
 			  .append(FormJSHelper.getJSEnd());

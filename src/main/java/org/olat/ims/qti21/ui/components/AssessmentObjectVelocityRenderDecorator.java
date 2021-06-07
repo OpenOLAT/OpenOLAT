@@ -19,6 +19,9 @@
  */
 package org.olat.ims.qti21.ui.components;
 
+import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.exists;
+import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.extractResponseInputAt;
+import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.getCardinalitySize;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.renderValue;
 
 import java.io.IOException;
@@ -291,6 +294,45 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String getMaxStrings(ExtendedTextInteraction interaction) {
 		Integer maxStrings = interaction.getMaxStrings();
 		return maxStrings == null ? "()" : Integer.toString(maxStrings);
+	}
+	
+	public Integer getWordCount(ExtendedTextInteraction interaction) {
+		int numOfWords = 0;
+		try {
+			ResponseData responseInput = AssessmentRenderFunctions.getResponseInput(itemSessionState, interaction.getResponseIdentifier());
+			ResponseDeclaration responseDeclaration = AssessmentRenderFunctions.getResponseDeclaration(assessmentItem, interaction.getResponseIdentifier());
+			Cardinality cardinality = responseDeclaration == null ? null : responseDeclaration.getCardinality();
+			
+			if(cardinality != null && (cardinality.isRecord() || cardinality.isSingle())) {
+				String responseInputString = extractSingleCardinalityResponseInput(responseInput);
+				numOfWords = ExtendedTextInteraction.countWords(responseInputString);
+			} else {
+				if(interaction.getMaxStrings() != null) {
+					int maxStrings = interaction.getMaxStrings().intValue();
+					for(int i=0; i<maxStrings; i++) {
+						String responseInputString = extractResponseInputAt(responseInput, i);
+						numOfWords += ExtendedTextInteraction.countWords(responseInputString);
+					}	
+				} else {
+					// <xsl:with-param name="stringsCount" select="if (exists($responseValue)) then max(($minStrings, qw:get-cardinality-size($responseValue))) else $minStrings"/>
+					int stringCounts = interaction.getMinStrings();
+					Value responseValue = AssessmentRenderFunctions
+							.getResponseValue(assessmentItem, itemSessionState, interaction.getResponseIdentifier(), renderer.isSolutionMode());
+					if(exists(responseValue)) {
+						stringCounts = java.lang.Math.max(interaction.getMinStrings(), getCardinalitySize(responseValue));	
+					}
+					
+					for(int i=0; i<stringCounts; i++) {
+						String responseInputString = extractResponseInputAt(responseInput, i);
+						numOfWords += ExtendedTextInteraction.countWords(responseInputString);
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		
+		return numOfWords;
 	}
 	
 	public List<SimpleAssociableChoice> getVisibleAssociableChoices(AssociateInteraction interaction) {
@@ -756,7 +798,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	
 	public String renderExtendedTextBox(ExtendedTextInteraction interaction) {
 		avc.getHTMLRendererSingleton()
-			.renderExtendedTextBox(renderer, target, avc, assessmentItem, itemSessionState, interaction);
+			.renderExtendedTextBox(renderer, target, avc, assessmentItem, itemSessionState, interaction, translator);
 		return "";
 	}
 	

@@ -272,6 +272,7 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.order.js");
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.positionObject.js");
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.selectPoint.js");
+			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.countWords.js");
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.slider.js");
 		} else {
 			jsa.addRequiredStaticJsFile("js/dragula/dragula.min.js");

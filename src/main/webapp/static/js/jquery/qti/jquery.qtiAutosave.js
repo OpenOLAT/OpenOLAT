@@ -40,8 +40,8 @@
 	    					var minutes = now.getMinutes()
 	    	    			var lastSaved = hours + ":" + (minutes < 10 ? "0" : "") + minutes;
 	    	    			var containerEl = jQuery('#' + wrapperId).parent().get(0);
-	    	    			jQuery('div.o_qti_essay_last_save', containerEl).css('display','block');
-	    	    			jQuery('span.o_qti_essay_last_save-time', containerEl).html(lastSaved);
+	    	    			jQuery('.o_qti_essay_last_save', containerEl).css('display','block');
+	    	    			jQuery('.o_qti_essay_last_save-time', containerEl).html(lastSaved);
 	    				}
 	    			})
 	    		} else {
