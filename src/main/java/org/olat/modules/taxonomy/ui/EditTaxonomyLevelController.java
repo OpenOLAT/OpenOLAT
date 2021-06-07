@@ -254,7 +254,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			TaxonomyLevel selectedParentLevel = null;
 			if(parentLevel == null) {
 				if(pathEl != null && pathEl.isEnabled() && pathEl.isOneSelected() && !"-".equals(pathEl.getSelectedKey())) {
-					TaxonomyLevelRef ref = new TaxonomyLevelRefImpl(new Long(pathEl.getSelectedKey()));
+					TaxonomyLevelRef ref = new TaxonomyLevelRefImpl(Long.valueOf(pathEl.getSelectedKey()));
 					selectedParentLevel = taxonomyService.getTaxonomyLevel(ref);
 				}
 			} else {

@@ -26,8 +26,8 @@ package org.olat.modules.taxonomy;
  */
 public enum TaxonomyCompetenceLinkLocations {
 	PORTFOLIO("competence.location.portfolio"),					// Used in Portfolio
-	MANUAL_INTERNAL("competences.location.manual.internal"),	// Used in Useradministration
-	MANUAL_EXTERNAL("competences.location.manual.external"),	// Used in REST API
+	MANUAL_INTERNAL("competence.location.manual.internal"),		// Used in user administration
+	MANUAL_EXTERNAL("competence.location.manual.external"),		// Used in REST API
 	UNDEFINED("competence.location.undefined");					// Fallback
 	
 	private final String i18nKey;

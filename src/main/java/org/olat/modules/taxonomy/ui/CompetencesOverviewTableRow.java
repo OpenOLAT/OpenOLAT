@@ -129,12 +129,10 @@ public class CompetencesOverviewTableRow implements FlexiTreeTableNode {
 			} else if (competence.getLinkLocation().equals(TaxonomyCompetenceLinkLocations.UNDEFINED)) {
 				if (translator != null ) {
 					return translator.translate(competence.getLinkLocation().i18nKey());
-				} else {
-					return competence.getLinkLocation().name();
 				}
-			} else {
-				return "ERROR";
+				return competence.getLinkLocation().name();
 			}
+			return "";
 		} else if (level != null) {
 			return level.getDisplayName();
 		} else if (taxonomy!= null) {
