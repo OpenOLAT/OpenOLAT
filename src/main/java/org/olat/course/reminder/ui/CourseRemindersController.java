@@ -135,7 +135,7 @@ public class CourseRemindersController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("RemindersLogs", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			reminderLogsCtrl = new CourseReminderLogsController(ureq, bwControl, repositoryEntry, toolbarPanel);
+			reminderLogsCtrl = new CourseReminderLogsController(ureq, bwControl, repositoryEntry);
 			listenTo(reminderLogsCtrl);
 		} else {
 			reminderLogsCtrl.updateModel();

@@ -60,12 +60,21 @@ public interface ReminderService {
 	public void delete(Reminder reminder);
 	
 	/**
-	 * This send the reminders to the target identities within the rules
-	 * and if the reminder was not already sent.
+	 * Get all identities matching the reminder rules.
+	 * The method returns an identity even if it was already reminded.
+	 *
+	 * @param reminder
+	 * @return
+	 */
+	public List<Identity> getIdentities(Reminder reminder);
+	
+	/**
+	 * This send the reminders to the target identities within the rules.
 	 * 
 	 * @param reminder
+	 * @param resend 
 	 */
-	public MailerResult sendReminder(Reminder reminder);
+	public MailerResult sendReminder(Reminder reminder, boolean resend);
 	
 	/**
 	 * This send reminder, without any check.

@@ -136,6 +136,9 @@
 .o_button_group_top {
 	margin-top: 0;
 }
+.o_button_group_bottom {
+	margin-bottom: 0;
+}
 /* use as wrapper when buttons should be right aligned next to a title */
 .o_header_with_buttons {
 	@include clearfix();

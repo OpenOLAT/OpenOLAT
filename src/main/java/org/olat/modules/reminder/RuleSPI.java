@@ -19,6 +19,8 @@
  */
 package org.olat.modules.reminder;
 
+import java.util.Locale;
+
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.repository.RepositoryEntry;
 
@@ -30,8 +32,17 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface RuleSPI {
 	
+	/**
+	 * The lowest value is the top most entry in the selection list.
+	 * After every 100th value a spacer is inserted.
+	 * @return
+	 */
+	public int getSortValue();
+	
 	public String getLabelI18nKey();
 	
+	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale);
+
 	/**
 	 * @param entry SPIs may be enabled depending on course configurations.
 	 */

@@ -22,12 +22,15 @@ package org.olat.course.reminder.rule;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -64,8 +67,37 @@ public class PassedRuleSPI implements FilterRuleSPI {
 	private ReminderRuleDAO helperDao;
 
 	@Override
+	public int getSortValue() {
+		return 302;
+	}
+	
+	@Override
 	public String getLabelI18nKey() {
 		return "rule.passed";
+	}
+	
+	@Override
+	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale) {
+		if (rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			Translator translator = Util.createPackageTranslator(PassedRuleEditor.class, locale);
+			String nodeIdent = r.getLeftOperand();
+			String status = r.getRightOperand();
+			
+			ICourse course = CourseFactory.loadCourse(entry);
+			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
+			if (courseNode == null) {
+				return null;
+			}
+			
+			String[] args = new String[] { courseNode.getShortTitle(), courseNode.getIdent() };
+			if ("passed".equals(status)) {
+				return translator.translate("rule.passed.passed", args);
+			} else if("failed".equals(status)) {
+				return translator.translate("rule.passed.failed", args);
+			}
+		}
+		return null;
 	}
 
 	@Override

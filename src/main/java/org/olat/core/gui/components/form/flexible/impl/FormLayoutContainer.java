@@ -440,6 +440,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formLayoutContainer.contextPut("off_desc", description);
 	}
 	
+	public void setFormInfo(String info) {
+		formLayoutContainer.contextPut("off_info", info);
+	}
+	
 	public void setFormWarning(String warning) {
 		formLayoutContainer.contextPut("off_warn", warning);
 	}

@@ -21,9 +21,12 @@ package org.olat.course.reminder.rule;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -34,6 +37,7 @@ import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.modules.reminder.rule.AbstractLaunchDateRuleSPI;
+import org.olat.modules.reminder.rule.LaunchUnit;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,6 +57,38 @@ public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI {
 	@Override
 	public String getLabelI18nKey() {
 		return "rule.initial.attempts.date";
+	}
+	
+	@Override
+	public int getSortValue() {
+		return 300;
+	}
+	
+	@Override
+	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale) {
+		if (rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			Translator translator = Util.createPackageTranslator(InitialAttemptsRuleEditor.class, locale);
+			String currentUnit = r.getRightUnit();
+			String currentValue = r.getRightOperand();
+			String nodeIdent = r.getLeftOperand();
+			
+			try {
+				LaunchUnit.valueOf(currentUnit);
+			} catch (Exception e) {
+				return null;
+			}
+			
+			ICourse course = CourseFactory.loadCourse(entry);
+			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
+			if (courseNode == null) {
+				return null;
+			}
+			
+			String[] args = new String[] { courseNode.getShortTitle(), courseNode.getIdent(), currentValue };
+			return translator.translate("rule.initial.attempt.date." + currentUnit, args);
+		}
+		return null;
 	}
 
 	@Override
@@ -75,8 +111,7 @@ public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI {
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 
 			return helperDao.getInitialAttemptDates(entry, courseNode, identities);
-		} else {
-			return null;
 		}
+		return null;
 	}
 }

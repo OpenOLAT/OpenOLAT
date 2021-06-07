@@ -140,7 +140,16 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			
 		}
 		
-		// 2) Regular columns
+		// 2) Collapsible details
+		if (ftE.hasDetailsRenderer()) {
+			target.append("<th>");
+			target.append("<div title=\"").append(translator.translate("form.details")).append("\">");
+			target.append("<i class='o_icon o_icon-lg o_icon_table_details_show' aria-hidden='true'> </i>");
+			target.append("</div>");
+			target.append("</th>");
+		}
+		
+		// 3) Regular columns
 		int cols = columnModel.getColumnCount();
 		for(int i=0; i<cols; i++) {
 			FlexiColumnModel fcm = columnModel.getColumnModel(i);
@@ -283,6 +292,20 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			}
 			target.append("/></td>");
 		}
+		
+		if(ftE.hasDetailsRenderer()) {
+			String collapseIcon = ftE.isDetailsExpended(row)? "o_icon_table_details_hide": "o_icon_table_details_show";
+			target.append("<td>");
+			target.append("<div title=\"").append(translator.translate("form.details")).append("\">");
+			target.append("<a href='javascript:;' onclick=\"");
+			target.append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
+					new NameValuePair("details", Integer.toString(row))));
+			target.append(";\"");
+			target.append(" return false;\">");
+			target.append("<i class='o_icon o_icon-lg ").append(collapseIcon).append("'> </i>");
+			target.append("</a>");
+			target.append("</td>");
+			}
 				
 		for (int j = 0; j<numOfCols; j++) {
 			FlexiColumnModel fcm = columnsModel.getColumnModel(j);
@@ -313,7 +336,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			if(ftE.isMultiSelect()) {
 				target.append("<td></td>");
 			}
-			target.append("<td colspan='").append(numOfColumns).append("'>");
+			target.append("<td colspan='").append(numOfColumns + 1).append("'>");
 
 			container.getHTMLRendererSingleton().render(renderer, target, container, ubu, translator, renderResult, null);
 			container.contextRemove("row");

@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -172,9 +173,6 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		DefaultFlexiColumnModel quickViewCol = new DefaultFlexiColumnModel("quickview", "<i class='o_icon o_icon_quickview'> </i>", "quick-view");
-		quickViewCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(quickViewCol);
 		DefaultFlexiColumnModel markCol = new DefaultFlexiColumnModel(Cols.mark);
 		markCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(markCol);
@@ -337,21 +335,15 @@ public abstract class AbstractItemListController extends FormBasicController
 					if(row != null) {
 						doSelect(ureq, row);
 					}
-				} else if("quick-view".equals(se.getCommand())) {
-					int rowIndex = se.getIndex();
-					if(rowIndex >= 0) {
-						if(itemsTable.isDetailsExpended(rowIndex)) {
-							itemsTable.collapseDetails(rowIndex);
-						} else {
-							itemsTable.collapseAllDetails();
-							ItemRow row = getModel().getObject(rowIndex);
-							if(row != null) {
-								itemsTable.expandDetails(rowIndex);
-					    			QuestionItem item = qpoolService.loadItemById(row.getKey());
-					    			previewCtrl.updateItem(ureq, item);
-					    			quickViewMetadataCtrl.setItem(ureq, item);
-							}
-						}
+				}
+			} else if(event instanceof DetailsToggleEvent) {
+				DetailsToggleEvent dte = (DetailsToggleEvent)event;
+				if (dte.isVisible()) {
+					ItemRow row = getModel().getObject(dte.getRowIndex());
+					if(row != null) {
+						QuestionItem item = qpoolService.loadItemById(row.getKey());
+						previewCtrl.updateItem(ureq, item);
+						quickViewMetadataCtrl.setItem(ureq, item);
 					}
 				}
 			}

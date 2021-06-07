@@ -23,10 +23,14 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -42,6 +46,8 @@ import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
+import org.olat.modules.reminder.rule.LaunchUnit;
+import org.olat.modules.reminder.ui.ReminderAdminController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -61,10 +67,48 @@ public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI {
 	private FormManager formManager;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
-
+	
+	@Override
+	public int getSortValue() {
+		return 1100;
+	}
+	
 	@Override
 	public String getLabelI18nKey() {
 		return "rule.form.participation";
+	}
+	
+	@Override
+	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale) {
+		if (rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			Translator translator = Util.createPackageTranslator(ReminderAdminController.class, locale);
+			translator = Util.createPackageTranslator(FormBeforeDueDateRuleEditor.class, locale, translator);
+			String currentUnit = r.getRightUnit();
+			String currentValue = r.getRightOperand();
+			String nodeIdent = r.getLeftOperand();
+			
+			try {
+				LaunchUnit.valueOf(currentUnit);
+			} catch (Exception e) {
+				return null;
+			}
+			
+			ICourse course = CourseFactory.loadCourse(entry);
+			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
+			if (courseNode == null) {
+				return null;
+			}
+			
+			Date dueDate = courseNode.getModuleConfiguration().getDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
+			
+			String deadline = dueDate != null
+					? Formatter.getInstance(locale).formatDateAndTime(dueDate)
+					: translator.translate("missing.value");
+			String[] args = new String[] { courseNode.getShortTitle(), courseNode.getIdent(), currentValue, deadline };
+			return translator.translate("rule.participation." + currentUnit, args);
+		}
+		return null;
 	}
 
 	@Override

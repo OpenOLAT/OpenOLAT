@@ -34,10 +34,16 @@ public class ReminderRow {
 	
 	private final ReminderInfos reminder;
 	private final FormLink toolsLink;
+	private final FormLink emailLink;
+	private final FormLink sendLink;
+	private final String rulesComponentName;
 	
-	public ReminderRow(ReminderInfos reminder, FormLink toolsLink) {
+	public ReminderRow(ReminderInfos reminder, FormLink toolsLink, FormLink emailLink, FormLink sendLink, String rulesComponentName) {
 		this.reminder = reminder;
 		this.toolsLink = toolsLink;
+		this.emailLink = emailLink;
+		this.sendLink = sendLink;
+		this.rulesComponentName = rulesComponentName;
 	}
 	
 	public Long getKey() {
@@ -71,4 +77,17 @@ public class ReminderRow {
 	public FormLink getToolsLink() {
 		return toolsLink;
 	}
+
+	public FormLink getEmailLink() {
+		return emailLink;
+	}
+	
+	public FormLink getSendLink() {
+		return sendLink;
+	}
+
+	public String getRulesComponentName() {
+		return rulesComponentName;
+	}
+
 }

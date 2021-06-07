@@ -87,6 +87,12 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	public void setRowRenderer(VelocityContainer renderer, FlexiTableComponentDelegate componentDelegate);
 	
 	/**
+	 * Enable to show details of multiple rows in the table. If disabled, the behavior is like an accordion.
+	 * @param multiDetails
+	 */
+	public void setMultiDetails(boolean multiDetails);
+	
+	/**
 	 * Set the details renderer used by the classic renderer type.
 	 * @param rowRenderer
 	 * @param componentDelegate

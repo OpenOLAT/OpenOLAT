@@ -649,6 +649,16 @@ div.o_assessment_mode_row {
 .o_reminder_rule {
 	padding: 5px 0;
 }
+.o_reminder_rules_view {
+	td {
+		padding: $o-reminder-cell-padding;
+	}
+	.o_marker {
+		color: $o-reminder-marker-color;
+		background-color: $o-reminder-marker-bg-color;
+		padding: $o-reminder-marker-padding;
+	}
+}
 
 /* Segmented view wrapper */
 .o_segments.btn-group a span {

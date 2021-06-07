@@ -21,11 +21,14 @@ package org.olat.course.reminder.rule;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -55,8 +58,41 @@ public class AttemptsRuleSPI implements FilterRuleSPI {
 	private ReminderRuleDAO helperDao;
 
 	@Override
+	public int getSortValue() {
+		return 301;
+	}
+	
+	@Override
 	public String getLabelI18nKey() {
 		return "rule.attempts";
+	}
+	
+	@Override
+	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale) {
+		if (rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			Translator translator = Util.createPackageTranslator(AttemptsRuleEditor.class, locale);
+			String nodeIdent = r.getLeftOperand();
+			String operator = r.getOperator();
+			String attempts = r.getRightOperand();
+			
+			ICourse course = CourseFactory.loadCourse(entry);
+			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
+			if (courseNode == null) {
+				return null;
+			}
+			
+			String[] args = new String[] { courseNode.getShortTitle(), courseNode.getIdent(), attempts };
+			switch(operator) {
+				case "<": return translator.translate("rule.attempts.less", args);
+				case "<=": return translator.translate("rule.attempts.less.equals", args);
+				case "=": return translator.translate("rule.attempts.equals", args);
+				case "=>": return translator.translate("rule.attempts.greater.equals", args);
+				case ">": return translator.translate("rule.attempts.greater", args);
+				case "!=": return translator.translate("rule.attempts.not.equals", args);
+			}
+		}
+		return null;
 	}
 
 	@Override

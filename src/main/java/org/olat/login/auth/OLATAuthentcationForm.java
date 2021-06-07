@@ -108,7 +108,7 @@ public class OLATAuthentcationForm extends FormBasicController {
 		login.setDisplaySize(20);
 		pass.setDisplaySize(20);
 		
-		uifactory.addFormSubmitButton(mainForm.getFormId() + "_button", "login.button", "login.button", formLayout);
+		uifactory.addFormSubmitButton(mainForm.getFormId() + "_button", "login.button", "login.button", null, formLayout);
 		
 		// turn off the dirty message when leaving the login form without loggin in (e.g. pressing guest login)
 		flc.getRootForm().setHideDirtyMarkingMessage(true);

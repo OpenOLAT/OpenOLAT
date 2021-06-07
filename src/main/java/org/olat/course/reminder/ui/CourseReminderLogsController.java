@@ -41,10 +41,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
@@ -70,9 +71,8 @@ public class CourseReminderLogsController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
 	private CourseSendReminderTableModel tableModel;
-	private final TooledStackedPanel toolbarPanel;
 	
-	private CourseReminderEditController reminderEditCtrl; 
+	private StepsMainRunController wizardCtrl;
 	
 	private final RepositoryEntry repositoryEntry;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -86,11 +86,9 @@ public class CourseReminderLogsController extends FormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
-	public CourseReminderLogsController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry repositoryEntry, TooledStackedPanel toolbarPanel) {
+	public CourseReminderLogsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, "send_reminder_list");
 		this.repositoryEntry = repositoryEntry;
-		this.toolbarPanel = toolbarPanel;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -166,20 +164,19 @@ public class CourseReminderLogsController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(reminderEditCtrl == source) {
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				//do
+		if (wizardCtrl == source) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				updateModel();
 			}
-			toolbarPanel.popController(reminderEditCtrl);
+			getWindowControl().pop();
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(reminderEditCtrl);
-		reminderEditCtrl = null;
+		removeAsListenerAndDispose(wizardCtrl);
+		wizardCtrl = null;
 	}
 
 	@Override
@@ -201,13 +198,21 @@ public class CourseReminderLogsController extends FormBasicController {
 	}
 	
 	private void doOpenReminder(UserRequest ureq, SentReminderRow row) {
-		removeAsListenerAndDispose(reminderEditCtrl);
+		removeAsListenerAndDispose(wizardCtrl);
 		
 		Reminder reminder = reminderService.loadByKey(row.getReminderKey());
-		reminderEditCtrl = new CourseReminderEditController(ureq, getWindowControl(), reminder);
-		listenTo(reminderEditCtrl);
-		
-		toolbarPanel.pushController(translate("edit.reminder"), reminderEditCtrl);	
+		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder),
+				doSaveReminder(), null, translate("edit.reminder"), "");
+		listenTo(wizardCtrl);
+		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
+	}
+	
+	private StepRunnerCallback doSaveReminder() {
+		return (uureq, control, runContext) -> {
+			Reminder reminder = (Reminder)runContext.get(RulesEditStep.CONTEXT_KEY);
+			reminderService.save(reminder);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
 	}
 	
 	private void doResend(SentReminderRow row) {

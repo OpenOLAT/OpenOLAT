@@ -226,7 +226,7 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 			noAppointmentsEl.setVisible(false);
 		}
 		
-		submitButton.setI18nKey(getSubmitI18nKey());
+		submitButton.setI18nKey(getSubmitI18nKey(), null);
 	}
 	
 	private boolean hasFreeParticipations(Appointment appointment,

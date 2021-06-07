@@ -31,6 +31,7 @@ public class ReminderInfos {
 	
 	private final Long key;
 	private final String description;
+	private final String configuration;
 	private final String sendTime;
 	private final Long creatorKey;
 	private final String creator;
@@ -38,13 +39,13 @@ public class ReminderInfos {
 	private final Date lastModified;
 	private final int numOfRemindersSent;
 	
-	public ReminderInfos(Long key, Date creationDate, Date lastModified,
-			String description, String sendTime, Long creatorKey, String creator,
-			int numOfRemindersSent) {
+	public ReminderInfos(Long key, Date creationDate, Date lastModified, String description, String configuration,
+			String sendTime, Long creatorKey, String creator, int numOfRemindersSent) {
 		this.key = key;
 		this.creationDate = creationDate;
 		this.lastModified = lastModified;
 		this.description = description;
+		this.configuration = configuration;
 		this.sendTime = sendTime;
 		this.creatorKey = creatorKey;
 		this.creator = creator;
@@ -59,6 +60,10 @@ public class ReminderInfos {
 		return description;
 	}
 	
+	public String getConfiguration() {
+		return configuration;
+	}
+
 	public String getSendTime() {
 		return sendTime;
 	}

@@ -22,12 +22,15 @@ package org.olat.course.reminder.rule;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -65,8 +68,41 @@ public class ScoreRuleSPI implements FilterRuleSPI {
 	private ReminderRuleDAO helperDao;
 
 	@Override
+	public int getSortValue() {
+		return 303;
+	}
+	
+	@Override
 	public String getLabelI18nKey() {
 		return "rule.score";
+	}
+	
+	@Override
+	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale) {
+		if (rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			Translator translator = Util.createPackageTranslator(ScoreRuleEditor.class, locale);
+			String nodeIdent = r.getLeftOperand();
+			String operator = r.getOperator();
+			String score = r.getRightOperand();
+			
+			ICourse course = CourseFactory.loadCourse(entry);
+			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
+			if (courseNode == null) {
+				return null;
+			}
+			
+			String[] args = new String[] { courseNode.getShortTitle(), courseNode.getIdent(), score };
+			switch(operator) {
+				case "<": return translator.translate("rule.score.less", args);
+				case "<=": return translator.translate("rule.score.less.equals", args);
+				case "=": return translator.translate("rule.score.equals", args);
+				case "=>": return translator.translate("rule.score.greater.equals", args);
+				case ">": return translator.translate("rule.score.greater", args);
+				case "!=": return translator.translate("rule.score.not.equals", args);
+			}
+		}
+		return null;
 	}
 
 	@Override

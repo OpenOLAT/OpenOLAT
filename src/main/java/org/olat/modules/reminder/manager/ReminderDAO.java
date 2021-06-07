@@ -166,7 +166,7 @@ public class ReminderDAO {
 	
 	public List<ReminderInfos> getReminderInfos(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select rem.key, rem.description, rem.sendTime, rem.creationDate, rem.lastModified, rem.creator.key,")
+		sb.append("select rem.key, rem.description, rem.configuration, rem.sendTime, rem.creationDate, rem.lastModified, rem.creator.key,")
 		  .append(" (select count(sentrem.key) from sentreminder sentrem")
 		  .append("    where sentrem.reminder.key=rem.key")
 		  .append(" ) as numOfRemindersSent ")
@@ -182,18 +182,19 @@ public class ReminderDAO {
 		for(Object[] result:results) {
 			Long key = (Long)result[0];
 			String desc = (String)result[1];
-			String sendTime = (String)result[2];
-			Date creationDate = (Date)result[3];
-			Date lastModified = (Date)result[4];
-			Long creatorKey = (Long)result[5];
+			String configuration = (String)result[2];
+			String sendTime = (String)result[3];
+			Date creationDate = (Date)result[4];
+			Date lastModified = (Date)result[5];
+			Long creatorKey = (Long)result[6];
 			String creator = userManager.getUserDisplayName(creatorKey);
 			int numOfRemindersSent = 0;
-			if(result[6] != null) {
-				numOfRemindersSent = ((Number)result[6]).intValue();
+			if(result[7] != null) {
+				numOfRemindersSent = ((Number)result[7]).intValue();
 			}
 
-			infos.add(new ReminderInfos(key, creationDate, lastModified,
-					desc, sendTime, creatorKey, creator, numOfRemindersSent));
+			infos.add(new ReminderInfos(key, creationDate, lastModified, desc, configuration, sendTime, creatorKey,
+					creator, numOfRemindersSent));
 		}
 		return infos;
 	}

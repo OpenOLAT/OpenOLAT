@@ -46,23 +46,26 @@ import org.olat.core.util.ValidationStatus;
 public class FormSubmit extends FormButton implements Submit{
 	
 	private String i18nKey;
+	private String[] i18nArgs;
 	private FormButtonComponent component;
 
 	public FormSubmit(String name, String i18nKey) {
-		this(null, name, i18nKey);
+		this(null, name, i18nKey, null);
 	}
 	
-	public FormSubmit(String id, String name, String i18nKey) {
+	public FormSubmit(String id, String name, String i18nKey, String[] i18nArgs) {
 		super(id, name);
 		if(!StringHelper.containsNonWhitespace(i18nKey)){
 			throw new AssertException("i18nKey must not be null");
 		}
 		this.i18nKey = i18nKey;
+		this.i18nArgs = i18nArgs;
 		this.action = FormEvent.ONCLICK;
 	}
 
-	public void setI18nKey(String i18nKey) {
+	public void setI18nKey(String i18nKey, String[] i18nArgs) {
 		this.i18nKey = i18nKey;
+		this.i18nArgs = i18nArgs;
 		getComponent().setDirty(true);
 	}
 
@@ -111,7 +114,7 @@ public class FormSubmit extends FormButton implements Submit{
 	 */
 	@Override
 	String getTranslated(){
-		return getTranslator().translate(i18nKey);
+		return getTranslator().translate(i18nKey, i18nArgs);
 	}
 
 

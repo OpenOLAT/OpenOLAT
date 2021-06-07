@@ -21,7 +21,10 @@ package org.olat.modules.reminder.rule;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RepositoryEntryRuleSPI;
@@ -42,15 +45,39 @@ import org.springframework.stereotype.Service;
 @Service
 public class RepositoryEntryLifecycleAfterValidFromRuleSPI implements RepositoryEntryRuleSPI  {
 
-
 	@Override
 	public String getLabelI18nKey() {
 		return "rule.lifecycle.validfrom";
 	}
 	
 	@Override
+	public int getSortValue() {
+		return 2;
+	}
+	
+	@Override
 	public ReminderRule clone(ReminderRule rule, CourseEnvironmentMapper envMapper) {
 		return rule.clone();
+	}
+	
+	@Override
+	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale) {
+		if (rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			Translator translator = Util.createPackageTranslator(RepositoryEntryLifecycleAfterValidRuleEditor.class, locale);
+			String currentUnit = r.getRightUnit();
+			String currentValue = r.getRightOperand();
+			
+			try {
+				LaunchUnit.valueOf(currentUnit);
+			} catch (Exception e) {
+				return null;
+			}
+			
+			String[] args = new String[] { currentValue };
+			return translator.translate("rule.lifecycle.validfrom." + currentUnit, args);
+		}
+		return null;
 	}
 	
 	@Override

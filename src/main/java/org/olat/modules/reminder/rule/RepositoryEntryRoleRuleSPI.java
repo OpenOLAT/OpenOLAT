@@ -21,15 +21,19 @@ package org.olat.modules.reminder.rule;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.modules.reminder.IdentitiesProviderRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
+import org.olat.modules.reminder.ui.RepositoryEntryLifecycleAfterValidRuleEditor;
 import org.olat.modules.reminder.ui.RepositoryEntryRoleEditor;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -50,8 +54,31 @@ public class RepositoryEntryRoleRuleSPI implements IdentitiesProviderRuleSPI  {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
 	@Override
+	public int getSortValue() {
+		return 101;
+	}
+	
+	@Override
 	public String getLabelI18nKey() {
 		return "rule.course.role";
+	}
+	
+	@Override
+	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale) {
+		if (rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			Translator translator = Util.createPackageTranslator(RepositoryEntryLifecycleAfterValidRuleEditor.class, locale);
+			String currentRoles = r.getRightOperand();
+			
+			try {
+				Roles.valueOf(currentRoles);
+			} catch (Exception e) {
+				return null;
+			}
+			
+			return translator.translate("rule.course.role." + currentRoles);
+		}
+		return null;
 	}
 
 	@Override

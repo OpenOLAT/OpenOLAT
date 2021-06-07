@@ -21,9 +21,12 @@ package org.olat.course.reminder.rule;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -52,10 +55,33 @@ public class LearningProgressRuleSPI implements FilterRuleSPI {
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;
-
+	
+	@Override
+	public int getSortValue() {
+		return 6;
+	}
+	
 	@Override
 	public String getLabelI18nKey() {
 		return "rule.learning.progress";
+	}
+
+	@Override
+	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale) {
+		if (rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			Translator translator = Util.createPackageTranslator(LearningProgressEditor.class, locale);
+			String operator = r.getOperator();
+			String percent = r.getRightOperand();
+			switch(operator) {
+				case "<": return translator.translate("rule.learning.progress.less", new String[] {percent});
+				case "<=": return translator.translate("rule.learning.progress.less.equals", new String[] {percent});
+				case "=": return translator.translate("rule.learning.progress.equals", new String[] {percent});
+				case "=>": return translator.translate("rule.learning.progress.greater.equals", new String[] {percent});
+				case ">": return translator.translate("rule.learning.progress.greater", new String[] {percent});
+			}
+		}
+		return null;
 	}
 
 	@Override

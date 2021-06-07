@@ -148,6 +148,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private Object selectedObj;
 	private boolean allSelectedNeedLoadOfWholeModel = false;
 	private Map<Integer,Object> multiSelectedIndex;
+	private boolean multiDetails = false;
 	private Set<Integer> detailsIndex;
 	private List<String> conditionalQueries;
 	private Set<Integer> enabledColumnIndex = new HashSet<>();
@@ -378,10 +379,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public VelocityContainer getRowRenderer() {
 		return rowRenderer;
 	}
-	
-	public VelocityContainer getDetailsRenderer() {
-		return detailsRenderer;
-	}
 
 	public FlexiTableComponentDelegate getComponentDelegate() {
 		return componentDelegate;
@@ -393,6 +390,23 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.componentDelegate = componentDelegate;
 	}
 	
+	public boolean isMultiDetails() {
+		return multiDetails;
+	}
+
+	@Override
+	public void setMultiDetails(boolean multiDetails) {
+		this.multiDetails = multiDetails;
+	}
+	
+	public boolean hasDetailsRenderer() {
+		return detailsRenderer != null;
+	}
+	
+	public VelocityContainer getDetailsRenderer() {
+		return detailsRenderer;
+	}
+
 	@Override
 	public void setDetailsRenderer(VelocityContainer detailsRenderer, FlexiTableComponentDelegate componentDelegate) {
 		this.detailsRenderer = detailsRenderer;
@@ -719,7 +733,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public void expandDetails(int row) {
-		if(detailsIndex == null) {
+		if(detailsIndex == null || !multiDetails) {
 			detailsIndex = new HashSet<>();
 		}
 		detailsIndex.add(row);
@@ -913,6 +927,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String filter = form.getRequestParameter("filter");
 		String pagesize = form.getRequestParameter("pagesize");
 		String checkbox = form.getRequestParameter("chkbox");
+		String details = form.getRequestParameter("details");
 		String removeFilter = form.getRequestParameter("rm-filter");
 		String resetQuickSearch = form.getRequestParameter("reset-search");
 		String removeExtendedFilter = form.getRequestParameter("rm-extended-filter");
@@ -927,6 +942,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			evalSearchRequest(ureq);
 		} else if(StringHelper.containsNonWhitespace(checkbox)) {
 			toogleSelectIndex(checkbox);
+		} else if(StringHelper.containsNonWhitespace(details)) {
+			toogleDetails(details, ureq);
 		} else if(StringHelper.containsNonWhitespace(page)) {
 			int p = Integer.parseInt(page);
 			setPage(p);
@@ -1868,6 +1885,33 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			}
 		}
 		updateSelectAllToggle();
+	}
+	
+	protected void toogleDetails(String rowIndex, UserRequest ureq) {
+		if(detailsIndex == null) {
+			detailsIndex = new HashSet<>();
+		}
+		
+		try {
+			Integer row = Integer.valueOf(rowIndex);
+			if(detailsIndex.contains(row)) {
+				detailsIndex.remove(row);
+				if(detailsIndex.isEmpty()) {
+					detailsIndex = null;
+				}
+				component.setDirty(true);
+				getRootForm().fireFormEvent(ureq, new DetailsToggleEvent(this, row, false));
+			} else {
+				if (!multiDetails && !detailsIndex.isEmpty()) {
+					detailsIndex.clear();
+				}
+				detailsIndex.add(row);
+				component.setDirty(true);
+				getRootForm().fireFormEvent(ureq, new DetailsToggleEvent(this, row, true));
+			}
+		} catch (NumberFormatException e) {
+			//can happen
+		}
 	}
 
 	@Override

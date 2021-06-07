@@ -206,13 +206,18 @@ public class ReminderServiceImpl implements ReminderService {
 		Date now = new Date();
 		List<Reminder> reminders = reminderDao.getReminders(now);
 		for(Reminder reminder:reminders) {
-			sendReminder(reminder);
+			sendReminder(reminder, false);
 		}
+	}
+	
+	@Override
+	public List<Identity> getIdentities(Reminder reminder) {
+		return ruleEngine.evaluate(reminder, true);
 	}
 
 	@Override
-	public MailerResult sendReminder(Reminder reminder) {
-		List<Identity> identitiesToRemind = ruleEngine.evaluate(reminder, false);
+	public MailerResult sendReminder(Reminder reminder, boolean resend) {
+		List<Identity> identitiesToRemind = ruleEngine.evaluate(reminder, resend);
 		return sendReminder(reminder, identitiesToRemind);
 	}
 	

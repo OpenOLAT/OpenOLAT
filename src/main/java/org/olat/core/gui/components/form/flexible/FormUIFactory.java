@@ -1265,7 +1265,7 @@ public class FormUIFactory {
 	 * @return the new form button
 	 */
 	public FormSubmit addFormSubmitButton(String name, String i18nKey, FormItemContainer formLayout) {
-		return addFormSubmitButton(null, name, i18nKey, formLayout);
+		return addFormSubmitButton(null, name, i18nKey, null, formLayout);
 	}
 	
 	/**
@@ -1274,11 +1274,12 @@ public class FormUIFactory {
 	 * @param id A fix identifier for state-less behavior, must be unique or null
 	 * @param name the button name (identifier) 
 	 * @param i18nKey The display key
+	 * @param i18nArgs 
 	 * @param formItemContiner The container where to add the button
 	 * @return the new form button
 	 */
-	public FormSubmit addFormSubmitButton(String id, String name, String i18nKey, FormItemContainer formLayout) {
-		FormSubmit subm = new FormSubmit(id, name, i18nKey);
+	public FormSubmit addFormSubmitButton(String id, String name, String i18nKey, String[] i18nArgs, FormItemContainer formLayout) {
+		FormSubmit subm = new FormSubmit(id, name, i18nKey, i18nArgs);
 		formLayout.add(subm);
 		return subm;
 	}
