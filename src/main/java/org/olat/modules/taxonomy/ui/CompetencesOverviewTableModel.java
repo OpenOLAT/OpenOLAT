@@ -36,6 +36,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  */
 public class CompetencesOverviewTableModel extends DefaultFlexiTreeTableDataModel<CompetencesOverviewTableRow> implements SortableFlexiTableDataModel<CompetencesOverviewTableRow> {
 
+	private static final CompetencesOverviewCols[] COLS = CompetencesOverviewCols.values();
+	
 	public CompetencesOverviewTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
@@ -66,7 +68,7 @@ public class CompetencesOverviewTableModel extends DefaultFlexiTreeTableDataMode
 
 	@Override
 	public Object getValueAt(CompetencesOverviewTableRow row, int col) {
-		switch (CompetencesOverviewCols.values()[col]) {
+		switch (COLS[col]) {
 			case key: return row.getKey();
 			case competence: return row.getDisplayName();
 			case resource: return row.getResource();
