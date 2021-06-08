@@ -123,7 +123,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		super(ureq, wControl, LAYOUT_CUSTOM, "acces_and_booking", rootForm);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
-		this.readOnly = true;
+		this.readOnly = false;
 		embbeded = true;
 		status = true;
 		guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
