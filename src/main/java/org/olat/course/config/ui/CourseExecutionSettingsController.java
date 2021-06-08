@@ -48,22 +48,22 @@ public class CourseExecutionSettingsController extends BasicController {
 	@Autowired
 	private LectureModule lectureModule;
 	
-	public CourseExecutionSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public CourseExecutionSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("execution_settings");
 		
-		lifecycleCtrl = new RepositoryEntryLifecycleController(ureq, getWindowControl(), entry);
+		lifecycleCtrl = new RepositoryEntryLifecycleController(ureq, getWindowControl(), entry, readOnly);
 		listenTo(lifecycleCtrl);
 		mainVC.put("lifecycle", lifecycleCtrl.getInitialComponent());
 		
 		if(lectureModule.isEnabled()) {
-			lectureSettingsCtrl = new LectureRepositorySettingsController(ureq, getWindowControl(), entry);
+			lectureSettingsCtrl = new LectureRepositorySettingsController(ureq, getWindowControl(), entry, readOnly);
 			listenTo(lectureSettingsCtrl);
 			mainVC.put("lectures", lectureSettingsCtrl.getInitialComponent());
 		}
 		
-		nodeAccessSettingsCtrl = new NodeAccessSettingsController(ureq, wControl, entry);
+		nodeAccessSettingsCtrl = new NodeAccessSettingsController(ureq, wControl, entry, readOnly);
 		listenTo(nodeAccessSettingsCtrl);
 		mainVC.put("nodeAccess", nodeAccessSettingsCtrl.getInitialComponent());
 		

@@ -94,6 +94,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	
 	protected final Roles roles;
 	protected RepositoryEntry entry;
+	protected final boolean readOnly;
 	private List<OrganisationRef> organisations;
 	
 	@Autowired
@@ -108,6 +109,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		roles = ureq.getUserSession().getRoles();
 		this.stackPanel = stackPanel;
 		this.entry = entry;
+		this.readOnly = entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted || entry.getEntryStatus() == RepositoryEntryStatusEnum.trash;
 		mainPanel = putInitialPanel(new Panel("empty"));
 		
 		status = new Dropdown("settings.toolbox.status", "cif.status", false, getTranslator());
@@ -293,7 +295,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	protected void doOpenInfos(UserRequest ureq) {
 		entry = repositoryService.loadByKey(entry.getKey());
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Info"), null);
-		infoCtrl = new RepositoryEntryInfoController(ureq, swControl, entry);
+		infoCtrl = new RepositoryEntryInfoController(ureq, swControl, entry, readOnly);
 		listenTo(infoCtrl);
 		mainPanel.setContent(infoCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(infoLink);
@@ -302,7 +304,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	protected void doOpenMetadata(UserRequest ureq) {
 		entry = repositoryService.loadByKey(entry.getKey());
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Metadata"), null);
-		metadataCtrl = new RepositoryEntryMetadataController(ureq, swControl, entry);
+		metadataCtrl = new RepositoryEntryMetadataController(ureq, swControl, entry, readOnly);
 		listenTo(metadataCtrl);
 		mainPanel.setContent(metadataCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(metadataLink);
@@ -311,7 +313,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	protected void doOpenAccess(UserRequest ureq) {
 		entry = repositoryService.loadByKey(entry.getKey());
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Access"), null);
-		accessCtrl = new AuthoringEditAccessController(ureq, swControl, entry);
+		accessCtrl = new AuthoringEditAccessController(ureq, swControl, entry, readOnly);
 		listenTo(accessCtrl);
 		mainPanel.setContent(accessCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(accessLink);
@@ -320,7 +322,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	protected void doOpenCatalog(UserRequest ureq) {
 		entry = repositoryService.loadByKey(entry.getKey());
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Catalog"), null);
-		catalogCtrl = new CatalogSettingsController(ureq, swControl, entry);
+		catalogCtrl = new CatalogSettingsController(ureq, swControl, entry, readOnly);
 		listenTo(catalogCtrl);
 		mainPanel.setContent(catalogCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(catalogLink);

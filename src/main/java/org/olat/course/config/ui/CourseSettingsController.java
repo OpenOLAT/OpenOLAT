@@ -195,21 +195,25 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 	}
 	
 	private void doOpenExecutionSettings(UserRequest ureq) {
+		removeAsListenerAndDispose(executionSettingsCtrl);
+		
 		entry = repositoryService.loadByKey(entry.getKey());
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Execution"), null);
-		executionSettingsCtrl = new CourseExecutionSettingsController(ureq, swControl, entry);
+		executionSettingsCtrl = new CourseExecutionSettingsController(ureq, swControl, entry, readOnly);
 		listenTo(executionSettingsCtrl);
 		mainPanel.setContent(executionSettingsCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(executionSettingsLink);
 	}
 	
 	private void doOpenLayout(UserRequest ureq) {
+		removeControllerListener(layoutCtrl);
+		
 		ICourse course = CourseFactory.loadCourse(entry);
 		boolean managedLayout = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.layout);
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Layout"), null);
 		layoutCtrl = new CourseLayoutGeneratorController(ureq, swControl, entry, courseConfig,
-		  		course.getCourseEnvironment(), !managedLayout);
+		  		course.getCourseEnvironment(), !managedLayout, readOnly);
 		
 		listenTo(layoutCtrl);
 		mainPanel.setContent(layoutCtrl.getInitialComponent());
@@ -217,38 +221,46 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 	}
 	
 	private void doOpenToolbarSettings(UserRequest ureq) {
+		removeControllerListener(toolbarCtrl);
+		
 		ICourse course = CourseFactory.loadCourse(entry);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Toolbar"), null);
-		toolbarCtrl = new CourseToolbarController(ureq, swControl, entry, course);
+		toolbarCtrl = new CourseToolbarController(ureq, swControl, entry, course, readOnly);
 		listenTo(toolbarCtrl);
 		mainPanel.setContent(toolbarCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(toolbarLink);
 	}
 	
 	private void doOpenAssessmentSettings(UserRequest ureq) {
+		removeControllerListener(assessmentSettingsCtrl);
+		
 		ICourse course = CourseFactory.loadCourse(entry);
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Assessment"), null);
-		assessmentSettingsCtrl = new CourseAssessmentSettingsController(ureq, swControl, entry, courseConfig, true);
+		assessmentSettingsCtrl = new CourseAssessmentSettingsController(ureq, swControl, entry, courseConfig, !readOnly);
 		listenTo(assessmentSettingsCtrl);
 		mainPanel.setContent(assessmentSettingsCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(assessmentLink);
 	}
 	
 	private void doOpenOptions(UserRequest ureq) {
+		removeControllerListener(optionsCtrl);
+		
 		ICourse course = CourseFactory.loadCourse(entry);
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Options"), null);
-		optionsCtrl = new CourseOptionsController(ureq, swControl, entry, courseConfig, true);
+		optionsCtrl = new CourseOptionsController(ureq, swControl, entry, courseConfig, !readOnly);
 		listenTo(optionsCtrl);
 		mainPanel.setContent(optionsCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(optionsLink);
 	}
 	
 	private void doOpenDisclaimer(UserRequest ureq) {
+		removeControllerListener(courseDisclaimerCtrl);
+		
 		entry = repositoryService.loadByKey(entry.getKey());
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Disclaimer"), null);
-		courseDisclaimerCtrl = new CourseDisclaimerController(ureq, swControl, entry);
+		courseDisclaimerCtrl = new CourseDisclaimerController(ureq, swControl, entry, readOnly);
 		listenTo(courseDisclaimerCtrl);
 		mainPanel.setContent(courseDisclaimerCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(disclaimerLink);

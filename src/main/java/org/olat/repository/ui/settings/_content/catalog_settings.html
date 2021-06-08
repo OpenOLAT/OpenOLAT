@@ -5,8 +5,10 @@
 	<div class="o_info">$r.translate("info.catalog.entries")</div>
 	<div class="o_warning">$r.render("infos")</div>
 	#end
+	#if($r.visible("details.catadd"))
 	<div class="o_button_group o_button_group_right">
 		$r.render("details.catadd")
 	</div>
+	#end
 	$r.render("table")
 </fieldset>

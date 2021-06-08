@@ -82,6 +82,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	private static final int picUploadlimitKB = 5120;
 	private static final int movieUploadlimitKB = 102400;
 
+	private final boolean readOnly;
 	private VFSContainer mediaContainer;
 	private RepositoryEntry repositoryEntry;
 
@@ -109,10 +110,11 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	 * @param wControl
 	 * @param sourceEntry
 	 */
-	public RepositoryEntryInfoController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public RepositoryEntryInfoController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl);
 		setBasePackage(RepositoryService.class);
 		this.repositoryEntry = entry;
+		this.readOnly = readOnly;
 		initForm(ureq);
 	}
 
@@ -133,10 +135,10 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		displayName = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, repositoryEntry.getDisplayname(), formLayout);
 		displayName.setDisplaySize(30);
 		displayName.setMandatory(true);
-		displayName.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.title));
+		displayName.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.title) && !readOnly);
 		
 		String extRef = repositoryEntry.getExternalRef();
-		if(StringHelper.containsNonWhitespace(repositoryEntry.getManagedFlagsString())) {
+		if(StringHelper.containsNonWhitespace(repositoryEntry.getManagedFlagsString()) || readOnly) {
 			if(StringHelper.containsNonWhitespace(extRef)) {
 				uifactory.addStaticTextElement("cif.externalref", extRef, formLayout);
 			}
@@ -156,7 +158,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		String desc = (repositoryEntry.getDescription() != null ? repositoryEntry.getDescription() : " ");
 		description = uifactory.addRichTextElementForStringData("cif.description", "cif.description",
 				desc, 10, -1, false, mediaContainer, null, formLayout, usess, getWindowControl());
-		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
+		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description) && !readOnly);
 		description.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		description.getEditorConfiguration().setPathInStatusBar(false);
 		EdusharingProvider provider = new RepositoryEdusharingProvider(repositoryEntry, "repository-info");
@@ -179,7 +181,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			fileUpload.setPreview(usess, true);
 			fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());
 		}
-		fileUpload.setVisible(!managed);
+		fileUpload.setVisible(!managed && !readOnly);
 		fileUpload.limitToMimeType(imageMimeTypes, "cif.error.mimetype", new String[]{ imageMimeTypes.toString()} );
 
 		VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
@@ -193,14 +195,15 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			movieUpload.setPreview(usess, true);
 			movieUpload.setInitialFile(((LocalFileImpl)movie).getBasefile());
 		}
-		movieUpload.setVisible(!managed);
+		movieUpload.setVisible(!managed && !readOnly);
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
+		buttonContainer.setVisible(!readOnly);
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 		FormSubmit submit = uifactory.addFormSubmitButton("submit", buttonContainer);
-		submit.setVisible(!managed);
+		submit.setVisible(!managed && !readOnly);
 	}
 	
 	private void initCourse(FormItemContainer formLayout, UserSession usess) {
@@ -210,6 +213,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		objectives.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.objectives));
 		objectives.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		objectives.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		objectives.setEnabled(!readOnly);
 		
 		String req = (repositoryEntry.getRequirements() != null ? repositoryEntry.getRequirements() : " ");
 		requirements = uifactory.addRichTextElementForStringData("cif.requirements", "cif.requirements",
@@ -218,6 +222,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		requirements.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		requirements.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		requirements.setMaxLength(2000);
+		requirements.setEnabled(!readOnly);
 		
 		String cred = (repositoryEntry.getCredits() != null ? repositoryEntry.getCredits() : " ");
 		credits = uifactory.addRichTextElementForStringData("cif.credits", "cif.credits",
@@ -226,6 +231,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		credits.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		credits.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		credits.setMaxLength(2000);
+		credits.setEnabled(!readOnly);
 	}
 
 	@Override

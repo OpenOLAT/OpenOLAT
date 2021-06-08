@@ -133,6 +133,7 @@ public class CourseToolbarController extends FormBasicController {
 	
 	private LockResult lockEntry;
 	private final boolean editable;
+	private final boolean readOnly;
 	private RepositoryEntry entry;
 	private final ICourse course;
 	private CourseConfig courseConfig;
@@ -153,7 +154,7 @@ public class CourseToolbarController extends FormBasicController {
 	private BigBlueButtonModule bigBlueButtonModule;
 		
 	public CourseToolbarController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, ICourse course) {
+			RepositoryEntry entry, ICourse course, boolean readOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(BCCourseNodeConfigController.class, getLocale(), getTranslator()));
 		onValues = new String[] {translate("on")};
@@ -169,7 +170,8 @@ public class CourseToolbarController extends FormBasicController {
 		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
 				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
-		editable = (lockEntry != null && lockEntry.isSuccess());
+		editable = (lockEntry != null && lockEntry.isSuccess()) && !readOnly;
+		this.readOnly = readOnly;
 		
 		initForm(ureq);
 		
@@ -384,13 +386,16 @@ public class CourseToolbarController extends FormBasicController {
 
 		toolbarEl.setEnabled(editable && canHideToolbar);
 		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		FormSubmit saveButton = uifactory.addFormSubmitButton("save", buttonsCont);
-		saveButton.setElementCssClass("o_sel_settings_save");
-		saveButton.setEnabled(editable);
+		if(!readOnly) {
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			buttonsCont.setRootForm(mainForm);
+			formLayout.add(buttonsCont);
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+			if(editable) {
+				FormSubmit saveButton = uifactory.addFormSubmitButton("save", buttonsCont);
+				saveButton.setElementCssClass("o_sel_settings_save");
+			}
+		}
 		
 		updateUI();
 		updateToolbar();

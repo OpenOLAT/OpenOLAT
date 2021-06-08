@@ -83,6 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryMetadataController extends FormBasicController {
 
+	private final boolean readOnly;
 	private ResourceLicense license;
 	private RepositoryEntry repositoryEntry;
 	private Set<TaxonomyLevel> taxonomyLevels;
@@ -122,10 +123,11 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	 * @param wControl
 	 * @param sourceEntry
 	 */
-	public RepositoryEntryMetadataController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public RepositoryEntryMetadataController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl);
 		setBasePackage(RepositoryService.class);
 		this.repositoryEntry = entry;
+		this.readOnly = readOnly;
 		initForm(ureq);
 	}
 
@@ -175,6 +177,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 
 		authors = uifactory.addTextElement("cif.authors", "cif.authors", 255, repositoryEntry.getAuthors(), formLayout);
 		authors.setDisplaySize(60);
+		authors.setEnabled(!readOnly);
 		
 		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyTreeKey)) {
@@ -193,12 +196,15 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			if (educationalType != null && Arrays.asList(educationalTypeEl.getKeys()).contains(educationalType.getIdentifier())) {
 				educationalTypeEl.select(educationalType.getIdentifier(), true);
 			}
+			educationalTypeEl.setEnabled(!readOnly);
 		}
 		
 		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), formLayout);
+		language.setEnabled(!readOnly);
 		
 		expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", 100, repositoryEntry.getExpenditureOfWork(), formLayout);
 		expenditureOfWork.setExampleKey("details.expenditureOfWork.example", null);
+		expenditureOfWork.setEnabled(!readOnly);
 		
 		uifactory.addSpacerElement("spacer2", formLayout, false);
 		
@@ -216,12 +222,15 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 				licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
 			}
 			licenseEl.addActionListener(FormEvent.ONCHANGE);
+			licenseEl.setEnabled(!readOnly);
 			
 			licensorEl = uifactory.addTextElement("cif.licensor", 1000, license.getLicensor(), formLayout);
+			licensorEl.setEnabled(!readOnly);
 
 			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
 			licenseFreetextEl = uifactory.addTextAreaElement("cif.freetext", 4, 72, freetext, formLayout);
 			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
+			licenseFreetextEl.setEnabled(!readOnly);
 
 			RepositoryHandler repositoryHandler = repositoryHandlerFactory.getRepositoryHandler(repositoryEntry);
 			List<License> elementsLicenses = repositoryHandler.getElementsLicenses(repositoryEntry);
@@ -238,9 +247,10 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
+		buttonContainer.setVisible(!readOnly);
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 		FormSubmit submit = uifactory.addFormSubmitButton("submit", buttonContainer);
-		submit.setVisible(!managed);
+		submit.setVisible(!managed && !readOnly);
 	}
 	
 	private void buildLicensesList(StringBuilder sb, List<License> elementsLicenses) {
@@ -268,6 +278,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		taxonomyLevelEl = uifactory.addCheckboxesDropdown("taxonomyLevels", "cif.taxonomy.levels", formLayout,
 				keyValues.keys(), keyValues.values(), null, null);
 		RepositoyUIFactory.selectTaxonomyLevels(taxonomyLevelEl, taxonomyLevels);
+		taxonomyLevelEl.setEnabled(!readOnly);
 	}
 	
 	@Override

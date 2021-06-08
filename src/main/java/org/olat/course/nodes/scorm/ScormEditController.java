@@ -211,7 +211,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CONFIG_DELIVERY_OPTIONS);
 		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions,
-				"Course Element: SCORM Learning Content#_scorm_layout", parentConfig);
+				"Course Element: SCORM Learning Content#_scorm_layout", parentConfig, false);
 		listenTo(deliveryOptionsCtrl);
 
 		main.setContent(cpConfigurationVc);

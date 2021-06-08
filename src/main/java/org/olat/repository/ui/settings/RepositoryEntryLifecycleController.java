@@ -68,6 +68,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	private DateChooser endDateEl;
 	private FormLayoutContainer privateDatesCont;
 	
+	private final boolean readOnly;
 	private RepositoryEntry repositoryEntry;
 
 	@Autowired
@@ -82,10 +83,11 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	 * @param wControl
 	 * @param sourceEntry
 	 */
-	public RepositoryEntryLifecycleController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public RepositoryEntryLifecycleController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl);
 		setBasePackage(RepositoryService.class);
 		this.repositoryEntry = entry;
+		this.readOnly = readOnly;
 		initForm(ureq);
 	}
 
@@ -105,7 +107,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		initLifecycle(formLayout);
 		
 		location = uifactory.addTextElement("cif.location", "cif.location", 255, repositoryEntry.getLocation(), formLayout);
-		location.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.location));
+		location.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.location) && !readOnly);
 		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 
@@ -114,7 +116,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 		FormSubmit submit = uifactory.addFormSubmitButton("submit", buttonContainer);
-		submit.setVisible(!managed);
+		submit.setVisible(!managed && !readOnly);
 	}
 	
 	private void initLifecycle(FormItemContainer formLayout) {
@@ -133,6 +135,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 			dateTypesEl.select("public", true);
 		}
 		dateTypesEl.addActionListener(FormEvent.ONCHANGE);
+		dateTypesEl.setEnabled(!readOnly);
 
 		List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
 		List<RepositoryEntryLifecycle> filteredCycles = new ArrayList<>();
@@ -164,6 +167,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 				publicValues[count++] = sb.toString();
 		}
 		publicDatesEl = uifactory.addDropdownSingleselect("cif.public.dates", formLayout, publicKeys, publicValues, null);
+		publicDatesEl.setEnabled(!readOnly);
 
 		String privateDatePage = velocity_root + "/cycle_dates.html";
 		privateDatesCont = FormLayoutContainer.createCustomFormLayout("private.date", getTranslator(), privateDatePage);
@@ -173,8 +177,10 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		
 		startDateEl = uifactory.addDateChooser("date.start", "cif.date.start", null, privateDatesCont);
 		startDateEl.setElementCssClass("o_sel_repo_lifecycle_validfrom");
+		startDateEl.setEnabled(!readOnly);
 		endDateEl = uifactory.addDateChooser("date.end", "cif.date.end", null, privateDatesCont);
 		endDateEl.setElementCssClass("o_sel_repo_lifecycle_validto");
+		endDateEl.setEnabled(!readOnly);
 		
 		if(repositoryEntry.getLifecycle() != null) {
 			RepositoryEntryLifecycle lifecycle = repositoryEntry.getLifecycle();

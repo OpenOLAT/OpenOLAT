@@ -70,6 +70,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 	private LTI13SharedToolDeploymentsTableModel tableModel;
 	
 	private RepositoryEntry entry;
+	private final boolean readOnly;
 	private BusinessGroup businessGroup;
 	private final boolean allowedToAddDeployment;
 
@@ -85,10 +86,11 @@ public class LTI13ResourceAccessController extends FormBasicController {
 	@Autowired
 	private LTI13Service lti13Service;
 
-	public LTI13ResourceAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public LTI13ResourceAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl, "access_resource");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
+		this.readOnly = readOnly;
 		allowedToAddDeployment = allowedToAddDeployments(ureq, lti13Module.getDeploymentRolesListForRepositoryEntries());
 
 		initForm(ureq);
@@ -99,6 +101,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		super(ureq, wControl, "access_resource");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.businessGroup = businessGroup;
+		this.readOnly = false;
 		allowedToAddDeployment = allowedToAddDeployments(ureq, lti13Module.getDeploymentRolesListForBusinessGroups());
 
 		initForm(ureq);
@@ -129,12 +132,14 @@ public class LTI13ResourceAccessController extends FormBasicController {
 			setFormContextHelp("Share courses");
 		}
 		
-		if(allowedToAddDeployment) {
-			addDeploymentButton = uifactory.addFormLink("add.deployment", formLayout, Link.BUTTON);
-			addDeploymentButton.setIconLeftCSS("o_icon o_icon_add");
-		} else {
-			askForDeploymentButton = uifactory.addFormLink("ask.deployment", formLayout, Link.BUTTON);
-			askForDeploymentButton.setIconLeftCSS("o_icon o_icon_add");
+		if(!readOnly) {
+			if(allowedToAddDeployment) {
+				addDeploymentButton = uifactory.addFormLink("add.deployment", formLayout, Link.BUTTON);
+				addDeploymentButton.setIconLeftCSS("o_icon o_icon_add");
+			} else {
+				askForDeploymentButton = uifactory.addFormLink("ask.deployment", formLayout, Link.BUTTON);
+				askForDeploymentButton.setIconLeftCSS("o_icon o_icon_add");
+			}
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -143,7 +148,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SharedToolsCols.clientId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SharedToolsCols.deploymentId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("view", translate("view"), "view"));
-		if(allowedToAddDeployment) {
+		if(allowedToAddDeployment && !readOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 		}

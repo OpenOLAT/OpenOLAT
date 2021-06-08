@@ -116,7 +116,7 @@ public class BinderSettingsController extends RepositoryEntrySettingsController 
 		WindowControl swControl = addToHistory(ureq, ores, null);
 
 		Binder binder = portfolioService.getBinderByResource(entry.getOlatResource());
-		deliveryOptionsCtrl = new BinderDeliveryOptionsController(ureq, swControl, binder);
+		deliveryOptionsCtrl = new BinderDeliveryOptionsController(ureq, swControl, binder, readOnly);
 		listenTo(deliveryOptionsCtrl);
 		mainPanel.setContent(deliveryOptionsCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(optionsLink);

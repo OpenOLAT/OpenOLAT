@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -86,6 +87,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private TextElement maxAttemptsEl;
 	
 	private boolean changes;
+	private final boolean readOnly;
 	private final RepositoryEntry testEntry;
 	private final QTI21DeliveryOptions deliveryOptions;
 	
@@ -94,8 +96,9 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	@Autowired
 	private QTI21Service qtiService;
 	
-	public QTI21DeliveryOptionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry) {
+	public QTI21DeliveryOptionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry, boolean readOnly) {
 		super(ureq, wControl);
+		this.readOnly = readOnly;
 		this.testEntry = testEntry;
 		deliveryOptions = qtiService.getDeliveryOptions(testEntry);
 		initForm(ureq);
@@ -121,61 +124,81 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		settingTypeEl = uifactory.addDropdownSingleselect("settings.type", "settings.type", null, profileCont, settingTypeKeys, settingTypeValues, null);
 		settingTypeEl.setDomReplacementWrapperRequired(false);
 		settingTypeEl.enableNoneSelection(translate("qti.form.setting.choose"));
+		settingTypeEl.setEnabled(!readOnly);
 		
 		chooseProfileButton = uifactory.addFormLink("settings.choose.profile", profileCont, Link.BUTTON);
+		chooseProfileButton.setEnabled(!readOnly);
 		
-		uifactory.addSpacerElement("profile.spacer", formLayout, false);
+		SpacerElement profilSpacer = uifactory.addSpacerElement("profile.spacer", formLayout, false);
+		profilSpacer.setEnabled(!readOnly);
 
 		limitAttemptsEl = uifactory.addCheckboxesHorizontal("limitAttempts", "qti.form.limit.attempts", formLayout, onKeys, onValues);
 		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
+		limitAttemptsEl.setEnabled(!readOnly);
 		
 		maxAttemptsEl = uifactory.addTextElement("maxAttempts", "qti.form.attempts", 8, "", formLayout);	
 		maxAttemptsEl.setDisplaySize(2);
+		maxAttemptsEl.setEnabled(!readOnly);
 		
 		blockAfterSuccessEl = uifactory.addCheckboxesHorizontal("blockAfterSuccess", "qti.form.block.afterSuccess", formLayout, onKeys, onValues);
+		blockAfterSuccessEl.setEnabled(!readOnly);
 
 		allowAnonymEl = uifactory.addCheckboxesHorizontal("allowAnonym", "qti.form.allow.anonym", formLayout, onKeys, onValues);
 		allowAnonymEl.setHelpText(translate("qti.form.allow.anonym.hint"));
 		allowAnonymEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
+		allowAnonymEl.setEnabled(!readOnly);
 	
 		hideLmsEl = uifactory.addCheckboxesHorizontal("hide.lms", "qti.form.hide.lms", formLayout, onKeys, onValues);
+		hideLmsEl.setEnabled(!readOnly);
 		
 		showTitlesEl = uifactory.addCheckboxesHorizontal("showTitles", "qti.form.questiontitle", formLayout, onKeys, onValues);
+		showTitlesEl.setEnabled(!readOnly);
 
 		showMenuEl = uifactory.addCheckboxesHorizontal("showMenu", "qti.form.menudisplay", formLayout, onKeys, onValues);
 		showMenuEl.setElementCssClass("o_sel_qti_show_menu");
+		showMenuEl.setEnabled(!readOnly);
 
 		personalNotesEl = uifactory.addCheckboxesHorizontal("personalNotes", "qti.form.auto.memofield", formLayout, onKeys, onValues);
 		personalNotesEl.setHelpText(translate("qti.form.auto.memofield.hint"));
 		personalNotesEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
 		personalNotesEl.setElementCssClass("o_sel_qti_personal_notes");
+		personalNotesEl.setEnabled(!readOnly);
 
 		displayQuestionProgressEl = uifactory.addCheckboxesHorizontal("questionProgress", "qti.form.questionprogress", formLayout, onKeys, onValues);
 		displayQuestionProgressEl.setElementCssClass("o_sel_qti_progress_questions");
+		displayQuestionProgressEl.setEnabled(!readOnly);
 
 		displayScoreProgressEl = uifactory.addCheckboxesHorizontal("scoreProgress", "qti.form.scoreprogress", formLayout, onKeys, onValues);
 		displayScoreProgressEl.setElementCssClass("o_sel_qti_progress_score");
+		displayScoreProgressEl.setEnabled(!readOnly);
 		
 		displayMaxScoreItemEl = uifactory.addCheckboxesHorizontal("maxScoreItem", "qti.form.max.score.item", formLayout, onKeys, onValues);
 		displayMaxScoreItemEl.setElementCssClass("o_sel_qti_progress_max_score_item");
+		displayMaxScoreItemEl.setEnabled(!readOnly);
 
 		enableSuspendEl = uifactory.addCheckboxesHorizontal("suspend", "qti.form.enablesuspend", formLayout, onKeys, onValues);
 		enableSuspendEl.setElementCssClass("o_sel_qti_enable_suspend");
+		enableSuspendEl.setEnabled(!readOnly);
 
 		enableCancelEl = uifactory.addCheckboxesHorizontal("cancel", "qti.form.enablecancel", formLayout, onKeys, onValues);
 		enableCancelEl.setElementCssClass("o_sel_qti_enable_cancel");
+		enableCancelEl.setEnabled(!readOnly);
 		
 		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature.test.option", formLayout, onKeys, onValues);
 		digitalSignatureEl.setVisible(qtiModule.isDigitalSignatureEnabled());
 		digitalSignatureEl.addActionListener(FormEvent.ONCHANGE);
+		digitalSignatureEl.setEnabled(!readOnly);
 		digitalSignatureMailEl = uifactory.addCheckboxesHorizontal("digital.signature.mail", "digital.signature.mail.test.option", formLayout, onKeys, onValues);
+		digitalSignatureMailEl.setEnabled(!readOnly);
 		
 		showFeedbacksEl = uifactory.addCheckboxesHorizontal("showFeedbacks", "qti.form.showfeedbacks", formLayout, onKeys, onValues);
 		showFeedbacksEl.setElementCssClass("o_sel_qti_show_feedbacks");
+		showFeedbacksEl.setEnabled(!readOnly);
 		
 		showResultsOnFinishEl = uifactory.addCheckboxesHorizontal("resultOnFiniish", "qti.form.results.onfinish", formLayout, onKeys, onValues);
 		showResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 		showResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results");
+		showResultsOnFinishEl.setEnabled(!readOnly);
 		
 		String[] resultsOptionsValues = new String[] {
 				translate("qti.form.summary.metadata"), translate("qti.form.summary.sections"),
@@ -187,11 +210,14 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		assessmentResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
 		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
 		assessmentResultsOnFinishEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#overview_results");
+		assessmentResultsOnFinishEl.setEnabled(!readOnly);
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add(buttonsLayout);
-		uifactory.addFormSubmitButton("save", buttonsLayout);
+		if(!readOnly) {
+			uifactory.addFormSubmitButton("save", buttonsLayout);
+		}
 	}
 	
 	private void applyDeliveryOptions(QTI21DeliveryOptions options) {

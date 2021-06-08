@@ -55,15 +55,17 @@ public class AuthoringEditAccessController extends BasicController {
 	private AuthoringEditAccessAndBookingController accessAndBookingCtrl;
 	
 	private RepositoryEntry entry;
+	private final boolean readOnly;
 	
 	@Autowired
 	private LTI13Module lti13Module;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	
-	public AuthoringEditAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public AuthoringEditAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl);
 		this.entry = entry;
+		this.readOnly = readOnly;
 		
 		mainVC = createVelocityContainer("editproptabpub");
 		initAccessAndBooking(ureq);
@@ -120,9 +122,9 @@ public class AuthoringEditAccessController extends BasicController {
 	}
 	
 	private void initAccessAndBooking(UserRequest ureq) {
-		removeAsListenerAndDispose(authorAccessCtrl);
+		removeAsListenerAndDispose(accessAndBookingCtrl);
 		
-		accessAndBookingCtrl = new AuthoringEditAccessAndBookingController(ureq, getWindowControl(), entry);
+		accessAndBookingCtrl = new AuthoringEditAccessAndBookingController(ureq, getWindowControl(), entry, readOnly);
 		listenTo(accessAndBookingCtrl);
 		mainVC.put("accessAndBooking", accessAndBookingCtrl.getInitialComponent());
 	}
@@ -144,7 +146,7 @@ public class AuthoringEditAccessController extends BasicController {
 	private void initAuthorAccess(UserRequest ureq) {
 		removeAsListenerAndDispose(authorAccessCtrl);
 		
-		authorAccessCtrl = new AuthoringEditAuthorAccessController(ureq, getWindowControl(), entry);
+		authorAccessCtrl = new AuthoringEditAuthorAccessController(ureq, getWindowControl(), entry, readOnly);
 		listenTo(authorAccessCtrl);
 		mainVC.put("authorAccess", authorAccessCtrl.getInitialComponent());
 	}
@@ -152,7 +154,7 @@ public class AuthoringEditAccessController extends BasicController {
 	private void initLTI13Access(UserRequest ureq) {
 		removeAsListenerAndDispose(lti13AccessCtrl);
 		
-		lti13AccessCtrl = new LTI13ResourceAccessController(ureq, getWindowControl(), entry);
+		lti13AccessCtrl = new LTI13ResourceAccessController(ureq, getWindowControl(), entry, readOnly);
 		listenTo(lti13AccessCtrl);
 		mainVC.put("lti13Access", lti13AccessCtrl.getInitialComponent());
 	}

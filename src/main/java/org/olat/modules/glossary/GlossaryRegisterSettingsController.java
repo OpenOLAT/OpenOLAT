@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GlossaryRegisterSettingsController extends FormBasicController {
 
+	private final boolean readOnly;
 	private OLATResource olatresource;
 	private MultipleSelectionElement regOnOff;
 	private LocalFolderImpl glossaryFolder;
@@ -53,8 +54,9 @@ public class GlossaryRegisterSettingsController extends FormBasicController {
 	@Autowired
 	private GlossaryItemManager glossaryItemManager;
 
-	public GlossaryRegisterSettingsController(UserRequest ureq, WindowControl control, OLATResource resource) {
+	public GlossaryRegisterSettingsController(UserRequest ureq, WindowControl control, OLATResource resource, boolean readOnly) {
 		super(ureq, control);
+		this.readOnly = readOnly;
 		this.olatresource = resource;
 		glossaryFolder = glossaryManager.getGlossaryRootFolder(olatresource);
 	
@@ -90,6 +92,7 @@ public class GlossaryRegisterSettingsController extends FormBasicController {
 		
 		regOnOff = uifactory.addCheckboxesHorizontal("register.onoff", formLayout, regKeys, regValues);
 		regOnOff.addActionListener(FormEvent.ONCLICK);
+		regOnOff.setEnabled(!readOnly);
 		
 		Properties glossProps = glossaryItemManager.getGlossaryConfig(glossaryFolder);
 		String configuredStatus = glossProps.getProperty(GlossaryItemManager.REGISTER_ONOFF);

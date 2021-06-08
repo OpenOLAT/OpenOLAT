@@ -132,7 +132,11 @@ public class CPSettingsController extends RepositoryEntrySettingsController {
 			OLATResource resource = entry.getOlatResource();
 			LocalFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(resource);
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Quota"), null);
-			quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, swControl), cpRoot.getRelPath(), true, false);
+			if(readOnly) {
+				quotaCtrl = quotaManager.getQuotaViewInstance(ureq, swControl, cpRoot.getRelPath());
+			} else {
+				quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, swControl), cpRoot.getRelPath(), true, false);
+			}
 			listenTo(quotaCtrl);
 			mainPanel.setContent(quotaCtrl.getInitialComponent());
 			buttonsGroup.setSelectedButton(quotaLink);
@@ -144,7 +148,7 @@ public class CPSettingsController extends RepositoryEntrySettingsController {
 		CPPackageConfig cpConfig = cpManager.getCPPackageConfig(resource);
 		DeliveryOptions config = cpConfig == null ? null : cpConfig.getDeliveryOptions();
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Layout"), null);
-		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq,swControl), config, "Knowledge Transfer#_cp_layout");
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq,swControl), config, "Knowledge Transfer#_cp_layout", readOnly);
 		deliveryOptionsCtrl.addControllerListener((uureq, source, event) -> {
 			if(source == deliveryOptionsCtrl
 					&& (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {

@@ -54,6 +54,7 @@ public class AuthoringEditAuthorAccessController extends FormBasicController {
 
 	private RepositoryEntry entry;
 	private final boolean embedded;
+	private final boolean readOnly;
 	
 	/**
 	 * The details form is initialized with data collected from entry and
@@ -62,10 +63,11 @@ public class AuthoringEditAuthorAccessController extends FormBasicController {
 	 * resourceable to initialize correctly (c.f. RepositoryAdd workflow). The
 	 * typeName may be null.
 	 */
-	public AuthoringEditAuthorAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public AuthoringEditAuthorAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		this.entry = entry;	
+		this.entry = entry;
+		this.readOnly = readOnly;
 		embedded = false;
 		initForm(ureq);
 		initFormData();
@@ -74,7 +76,8 @@ public class AuthoringEditAuthorAccessController extends FormBasicController {
 	public AuthoringEditAuthorAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		this.entry = entry;	
+		this.entry = entry;
+		this.readOnly = false;
 		embedded = true;
 		initForm(ureq);
 		initFormData();
@@ -130,13 +133,13 @@ public class AuthoringEditAuthorAccessController extends FormBasicController {
 		}
 		
 		canReference = uifactory.addCheckboxesVertical("cif_canReference", "cif.author.can", formLayout, yesKeys, new String[] { translate("cif.canReference") }, 1);
-		canReference.setEnabled(!managedSettings && !closedOrDeleted);
+		canReference.setEnabled(!managedSettings && !closedOrDeleted && !readOnly);
 		canReference.setElementCssClass("o_repo_with_explanation");
 		canCopy = uifactory.addCheckboxesVertical("cif_canCopy", null, formLayout, yesKeys, new String[] { translate("cif.canCopy") }, 1);
-		canCopy.setEnabled(!managedSettings && !closedOrDeleted);
+		canCopy.setEnabled(!managedSettings && !closedOrDeleted && !readOnly);
 		canCopy.setElementCssClass("o_repo_with_explanation");
 		canDownload = uifactory.addCheckboxesVertical("cif_canDownload", null, formLayout, yesKeys, new String[] { translate("cif.canDownload") }, 1);
-		canDownload.setEnabled(!managedSettings && !closedOrDeleted);
+		canDownload.setEnabled(!managedSettings && !closedOrDeleted && !readOnly);
 		canDownload.setElementCssClass("o_repo_with_explanation");
 		canDownload.setVisible(supportsDownload);
 		
@@ -144,7 +147,7 @@ public class AuthoringEditAuthorAccessController extends FormBasicController {
 		StaticTextElement explainAccessEl = uifactory.addStaticTextElement("rentry.access.author.explain", null, explainAccess, formLayout);
 		explainAccessEl.setElementCssClass("o_repo_explanation");
 
-		if (!embedded && (!managedAccess || !managedSettings)) {
+		if (!embedded && (!managedAccess || !managedSettings) && !readOnly) {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			formLayout.add(buttonsCont);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());

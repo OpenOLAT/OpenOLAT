@@ -179,7 +179,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 			addCustomFileConfigToView(ureq);
 		}
 
-		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, "Knowledge Transfer#_splayout");
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, "Knowledge Transfer#_splayout", false);
 		listenTo(deliveryOptionsCtrl);
 
 		// Find assessable children nodes
