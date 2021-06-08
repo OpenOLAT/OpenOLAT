@@ -164,7 +164,7 @@ public class QuestionPoolPage {
 	}
 	
 	public QuestionPoolPage openQuickView(String title) {
-		By quickViewBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td/a[text()[contains(.,'" + title + "')]]]/td/a[contains(@onclick,'quick-view')]");
+		By quickViewBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td/a[text()[contains(.,'" + title + "')]]]/td/div/a[contains(@onclick,'tt-details')]");
 		OOGraphene.waitElement(quickViewBy, browser);
 		browser.findElement(quickViewBy).click();
 		

@@ -130,7 +130,9 @@ public class CourseReminderSendController extends FormBasicController {
 			buttonsCont.setElementCssClass("o_button_group o_button_group_right");
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 			sendAllLink = uifactory.addFormLink("send.all", buttonsCont, Link.BUTTON);
+			sendAllLink.setElementCssClass("o_sel_course_reminder_send_all");
 			sendUnsentLink = uifactory.addFormSubmitButton("send.unsent", buttonsCont);
+			sendUnsentLink.setElementCssClass("o_sel_course_reminder_unsent");
 		}
 	}
 	

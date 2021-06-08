@@ -78,15 +78,22 @@ public class RemindersPage {
 	}
 	
 	/**
-	 * Click in the tools the "Send reminders".
+	 * Click in the tools the "Send reminders to all".
 	 * 
 	 * @return
 	 */
-	public RemindersPage sendReminders() {
+	public RemindersPage sendRemindersToAll() {
 		By sendBy = By.cssSelector("div.o_callout_content ul.o_dropdown a.o_sel_course_reminder_send");
 		OOGraphene.waitElement(sendBy, browser);
 		browser.findElement(sendBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		
+		By sendAllBy = By.cssSelector("div.modal-dialog a.o_sel_course_reminder_send_all");
+		OOGraphene.waitElement(sendAllBy, browser);
+		browser.findElement(sendAllBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -155,6 +162,7 @@ public class RemindersPage {
 		By addReminderBy = By.cssSelector("a.o_sel_add_course_reminder");
 		browser.findElement(addReminderBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalWizard(browser);
 		return this;
 	}
 	
@@ -170,7 +178,7 @@ public class RemindersPage {
 		return this;
 	}
 	
-	public RemindersPage setTimeBasedRule(int pos, String type, int time, String unit) {
+	public RemindersPage setTimeBasedRule(String pos, String type, int time, String unit) {
 		//select type
 		selectRuleType(pos, type);
 		
@@ -195,7 +203,7 @@ public class RemindersPage {
 	 * @param role
 	 * @return
 	 */
-	public RemindersPage setRoleBasedRule(int pos, String type, String role) {
+	public RemindersPage setRoleBasedRule(String pos, String type, String role) {
 		//select type
 		selectRuleType(pos, type);
 		
@@ -215,9 +223,10 @@ public class RemindersPage {
 	 * @param pos
 	 * @return
 	 */
-	public RemindersPage addRule(int pos) {
-		By addRuleBy = By.cssSelector("div.o_sel_row-" + pos + " a.o_sel_course_add_rule");
-		browser.findElement(addRuleBy).click();
+	public RemindersPage addRule(String type) {
+		By selectTypeBy = By.xpath("//div[@id='o_coadd_rule_type_SELBOX']/select[contains(@name,'rule.type')]");
+		WebElement typeSelect = browser.findElement(selectTypeBy);
+		new Select(typeSelect).selectByValue(type);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -230,11 +239,28 @@ public class RemindersPage {
 	 * @param pos
 	 * @param type
 	 */
-	private void selectRuleType(int pos, String type) {
+	private void selectRuleType(String pos, String type) {
 		By selectTypeBy = By.xpath("//div[contains(@class,'o_sel_row-" + pos + "')]//select[contains(@name,'rule.type')]");
 		WebElement typeSelect = browser.findElement(selectTypeBy);
 		new Select(typeSelect).selectByValue(type);
 		OOGraphene.waitBusy(browser);
+	}
+	
+	public RemindersPage nextToReview() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_reminder_rules_view"), browser);
+		return this;
+	}
+	
+	public RemindersPage nextToEmail() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_course_reminder_subject"), browser);
+		return this;
+	}
+	
+	public RemindersPage finish() {
+		OOGraphene.finishStep(browser);
+		return this;
 	}
 	
 	/**

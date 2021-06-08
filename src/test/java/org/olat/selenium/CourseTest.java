@@ -1101,6 +1101,8 @@ public class CourseTest extends Deployments {
 			.assertFirstNameInList(user);
 	}
 	
+
+
 	/**
 	 * An author create a course, set a start and end date for life-cycle.
 	 * It add a participant to the course. It creates a reminder
@@ -1191,17 +1193,19 @@ public class CourseTest extends Deployments {
 		reminders
 			.addReminder()
 			.setDescription(reminderTitle)
+			.setTimeBasedRule("main", "RepositoryEntryLifecycleAfterValidFromRuleSPI", 5, "day")
+			.addRule("RepositoryEntryRoleRuleSPI")
+			.setRoleBasedRule("1", "RepositoryEntryRoleRuleSPI", "participant")
+			.nextToReview()
+			.nextToEmail()
 			.setSubject(reminderTitle)
-			.setTimeBasedRule(1, "RepositoryEntryLifecycleAfterValidFromRuleSPI", 5, "day")
-			.addRule(1)
-			.setRoleBasedRule(2, "RepositoryEntryRoleRuleSPI", "participant")
-			.saveReminder()
+			.finish()
 			.assertOnRemindersList()
 			.assertOnReminderInList(reminderTitle);
 		//send the reminders
 		reminders
 			.openActionMenu(reminderTitle)
-			.sendReminders();
+			.sendRemindersToAll();
 		//check the reminder is send to user
 		reminders
 			.openActionMenu(reminderTitle)
@@ -1218,6 +1222,7 @@ public class CourseTest extends Deployments {
 			.assertLogList(kanu, reminderTitle, true)
 			.assertLogList(author, reminderTitle, false);
 	}
+	
 	
 	/**
 	 * An author creates a course with a structure element. The structure

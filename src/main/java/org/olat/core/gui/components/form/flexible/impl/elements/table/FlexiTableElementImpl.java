@@ -927,7 +927,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String filter = form.getRequestParameter("filter");
 		String pagesize = form.getRequestParameter("pagesize");
 		String checkbox = form.getRequestParameter("chkbox");
-		String details = form.getRequestParameter("details");
+		String details = form.getRequestParameter("tt-details");
 		String removeFilter = form.getRequestParameter("rm-filter");
 		String resetQuickSearch = form.getRequestParameter("reset-search");
 		String removeExtendedFilter = form.getRequestParameter("rm-extended-filter");

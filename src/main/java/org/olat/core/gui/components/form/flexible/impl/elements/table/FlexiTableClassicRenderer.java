@@ -299,13 +299,13 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			target.append("<div title=\"").append(translator.translate("form.details")).append("\">");
 			target.append("<a href='javascript:;' onclick=\"");
 			target.append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
-					new NameValuePair("details", Integer.toString(row))));
+					new NameValuePair("tt-details", Integer.toString(row))));
 			target.append(";\"");
 			target.append(" return false;\">");
 			target.append("<i class='o_icon o_icon-lg ").append(collapseIcon).append("'> </i>");
 			target.append("</a>");
 			target.append("</td>");
-			}
+		}
 				
 		for (int j = 0; j<numOfCols; j++) {
 			FlexiColumnModel fcm = columnsModel.getColumnModel(j);
