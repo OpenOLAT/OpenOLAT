@@ -153,6 +153,11 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	}
 
 	@Override
+	protected void formFinish(UserRequest ureq) {
+		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
