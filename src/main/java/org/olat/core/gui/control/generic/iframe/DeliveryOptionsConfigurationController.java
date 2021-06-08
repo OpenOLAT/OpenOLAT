@@ -61,6 +61,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	private SingleSelection encodingContentEl;
 	private MultipleSelectionElement glossarEl;
 	private String helpPage;
+	private final boolean readOnly;
 
 	private static final String[] jsKeys = new String[] {"none", "jQuery", "prototypejs" };
 	private static final String[] cssKeys = new String[] {"none", "openolat" };
@@ -80,15 +81,17 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	private static final String[] standardModeKeys = new String[]{ "standard", "configured" };
 	private static final String[] inheritKeys = new String[]{ "inherit", "custom"};
 
-	public DeliveryOptionsConfigurationController(UserRequest ureq, WindowControl wControl, DeliveryOptions config, String helpPage) {
-		this(ureq, wControl, config, helpPage, null);
+	public DeliveryOptionsConfigurationController(UserRequest ureq, WindowControl wControl, DeliveryOptions config, String helpPage, boolean readOnly) {
+		this(ureq, wControl, config, helpPage, null, readOnly);
 	}
 
-	public DeliveryOptionsConfigurationController(UserRequest ureq, WindowControl wControl, DeliveryOptions config, String helpPage, DeliveryOptions parentConfig) {
+	public DeliveryOptionsConfigurationController(UserRequest ureq, WindowControl wControl, DeliveryOptions config, String helpPage,
+			DeliveryOptions parentConfig, boolean readOnly) {
 		super(ureq, wControl);
 		this.config = (config == null ? new DeliveryOptions() : config.clone());
 		this.parentConfig = parentConfig;
 		this.helpPage = helpPage;
+		this.readOnly = readOnly;
 		initForm(ureq);
 
 		if(parentConfig != null && config != null && config.getInherit() != null && config.getInherit().booleanValue()) {
@@ -160,6 +163,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		};
 		inheritEl = uifactory.addRadiosVertical("inherit.label", formLayout, inheritKeys, inheritValues);
 		inheritEl.addActionListener(FormEvent.ONCHANGE);
+		inheritEl.setEnabled(!readOnly);
 		if(config != null && config.getInherit() != null && config.getInherit().booleanValue()) {
 			inheritEl.select(inheritKeys[0], true);
 		} else {
@@ -176,6 +180,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			translate("mode.standard"), translate("mode.configured")	
 		};
 		standardModeEl = uifactory.addRadiosVertical("mode", formLayout, standardModeKeys, standardModeValues);
+		standardModeEl.setEnabled(!readOnly);
 		standardModeEl.setHelpTextKey("mode.hover", null);
 		standardModeEl.setHelpUrlForManualPage("Knowledge Transfer#_splayout");
 		standardModeEl.addActionListener(FormEvent.ONCHANGE);
@@ -187,8 +192,10 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		};
 		jsOptionEl = uifactory.addRadiosVertical("option.js", formLayout, jsKeys, jsValues);
 		jsOptionEl.addActionListener(FormEvent.ONCHANGE);
+		jsOptionEl.setEnabled(!readOnly);
 		
 		glossarEl = uifactory.addCheckboxesHorizontal("option.glossary", formLayout, new String[]{"on"}, new String[]{""});
+		glossarEl.setEnabled(!readOnly);
 
 		String[] values = new String[]{ translate("height.auto"), "460px", "480px", 
 				"500px", "520px", "540px", "560px", "580px",
@@ -203,11 +210,13 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		};
 		heightEl = uifactory.addDropdownSingleselect("height", "height.label", formLayout, keys, values, null);
 		heightEl.setExampleKey("automatic.need.js", null);
+		heightEl.setEnabled(!readOnly);
 
 		String[] cssValues = new String[] {
 				translate("option.css.none"), translate("option.css.openolat")
 		};
 		cssOptionEl = uifactory.addRadiosVertical("option.css", formLayout, cssKeys, cssValues);
+		cssOptionEl.setEnabled(!readOnly);
 
 		uifactory.addSpacerElement("spaceman", formLayout, false);
 		
@@ -221,13 +230,17 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		
 		encodingContentEl = uifactory.addDropdownSingleselect("encoContent", "encoding.content", formLayout,
 				contentCharsetKeyValues.keys(), contentCharsetKeyValues.values(), null);
+		encodingContentEl.setEnabled(!readOnly);
 		encodingJSEl = uifactory.addDropdownSingleselect("encoJS", "encoding.js", formLayout,
 				jsCharsetKeyValues.keys(), jsCharsetKeyValues.values(), null);
+		encodingJSEl.setEnabled(!readOnly);
 
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add(buttonsLayout);
-		uifactory.addFormSubmitButton("save", buttonsLayout);
+		if(!readOnly) {
+			uifactory.addFormSubmitButton("save", buttonsLayout);
+		}
 	}
 	
 	private void loadCharsets(KeyValues charsetKeyValues) {
@@ -255,10 +268,10 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	private void updateEnabled() {
 		boolean inherit = (inheritEl.isVisible() && inheritEl.isSelected(0));
 		
-		encodingContentEl.setEnabled(!inherit);
-		encodingJSEl.setEnabled(!inherit);
-		standardModeEl.setEnabled(!inherit);
-		heightEl.setEnabled(!inherit);
+		encodingContentEl.setEnabled(!inherit && !readOnly);
+		encodingJSEl.setEnabled(!inherit && !readOnly);
+		standardModeEl.setEnabled(!inherit && !readOnly);
+		heightEl.setEnabled(!inherit && !readOnly);
 		if(inherit) {
 			//disabled all
 			jsOptionEl.setEnabled(false);
@@ -268,9 +281,9 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		} else {
 			boolean standard = standardModeEl.isSelected(0);
 			boolean jQueryEnabled = jsOptionEl.isSelected(1);
-			jsOptionEl.setEnabled(!standard);
-			cssOptionEl.setEnabled(!standard);
-			glossarEl.setEnabled(!standard && jQueryEnabled);
+			jsOptionEl.setEnabled(!standard && !readOnly);
+			cssOptionEl.setEnabled(!standard && !readOnly);
+			glossarEl.setEnabled(!standard && jQueryEnabled && !readOnly);
 		}
 	}
 	

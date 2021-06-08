@@ -83,6 +83,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
 	private DurationConfirmationController durationConfirmationCtrl;
 	
+	private final boolean readOnly;
 	private final RepositoryEntry courseEntry;
 	private final CourseConfig courseConfig;
 
@@ -91,9 +92,10 @@ public class NodeAccessSettingsController extends FormBasicController {
 	@Autowired
 	private LearningPathService learningPathService;
 	
-	public NodeAccessSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry) {
+	public NodeAccessSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, boolean readOnly) {
 		super(ureq, wControl);
 		this.courseEntry = courseEntry;
+		this.readOnly = readOnly;
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		this.courseConfig = course.getCourseConfig();
 		initForm(ureq);
@@ -107,7 +109,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 				getLocale());
 		uifactory.addStaticTextElement("settings.type", nodeAccessTypeName, formLayout);;
 		
-		if (!LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
+		if (!LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType()) && !readOnly) {
 			FormLayoutContainer migrationCont = FormLayoutContainer.createButtonLayout("migrationButtons", getTranslator());
 			formLayout.add(migrationCont);
 			migrateLink = uifactory.addFormLink("settings.convert", migrationCont, Link.BUTTON);
@@ -121,6 +123,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 					completionKV.keys(), completionKV.values());
 			initCompletionTypeFromConfig();
 			completionEvaluationeEl.addActionListener(FormEvent.ONCHANGE);
+			completionEvaluationeEl.setEnabled(!readOnly);
 		}
 	}
 

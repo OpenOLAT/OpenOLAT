@@ -110,7 +110,11 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 		if (quotaManager.hasQuotaEditRights(ureq.getIdentity(), roles, getOrganisations())) {
 			VFSContainer feedRoot = FileResourceManager.getInstance().getFileResourceRootImpl(entry.getOlatResource());
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Quota"), null);
-			quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, swControl), feedRoot.getRelPath(), true, false);
+			if(readOnly) {
+				quotaCtrl = quotaManager.getQuotaViewInstance(ureq, swControl, feedRoot.getRelPath());
+			} else {
+				quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, swControl), feedRoot.getRelPath(), true, false);
+			}
 			mainPanel.setContent(quotaCtrl.getInitialComponent());
 			buttonsGroup.setSelectedButton(quotaLink);
 		}

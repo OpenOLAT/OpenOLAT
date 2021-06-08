@@ -61,16 +61,18 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 	private ConfirmDeleteOptionController deleteOptionCtrl;
 	
 	private final Binder binder;
+	private final boolean readOnly;
 	private final BinderDeliveryOptions deliveryOptions;
 	
 	@Autowired
 	private PortfolioService portfolioService;
 	
 	 
-	public BinderDeliveryOptionsController(UserRequest ureq, WindowControl wControl, Binder binder) {
+	public BinderDeliveryOptionsController(UserRequest ureq, WindowControl wControl, Binder binder, boolean readOnly) {
 		super(ureq, wControl);
 		
 		this.binder = binder;
+		this.readOnly = readOnly;
 		deliveryOptions = portfolioService.getDeliveryOptions(binder.getOlatResource());
 		 
 		initForm(ureq);
@@ -82,34 +84,39 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 		setFormTitle("portfolio.template.options.title");
 		
 		newEntriesEl = uifactory.addCheckboxesHorizontal("canAddEntries", "allow.new.entries", formLayout, onKeys, onValues);
+		newEntriesEl.setEnabled(!readOnly);
 		if(deliveryOptions.isAllowNewEntries()) {
 			newEntriesEl.select(onKeys[0], true);
 		}
 		
 		deleteBinderEl = uifactory.addCheckboxesHorizontal("canDeleteBinder", "allow.delete.binder", formLayout, onKeys, onValues);
 		deleteBinderEl.addActionListener(FormEvent.ONCHANGE);
+		deleteBinderEl.setEnabled(!readOnly);
 		if(deliveryOptions.isAllowDeleteBinder()) {
 			deleteBinderEl.select(onKeys[0], true);
 		}
 		
 		templatesEl = uifactory.addCheckboxesHorizontal("canTemplates", "allow.templates.folder", formLayout, onKeys, onValues);
 		templatesEl.addActionListener(FormEvent.ONCHANGE);
+		templatesEl.setEnabled(!readOnly);
 		if(deliveryOptions.isAllowTemplatesFolder()) {
 			templatesEl.select(onKeys[0], true);
 		}
 		
 		mandatoryTemplatesPageEl = uifactory.addCheckboxesHorizontal("mandatoryTemplates", "allow.templates.mandatory", formLayout, onKeys, onValues);
 		mandatoryTemplatesPageEl.setVisible(templatesEl.isAtLeastSelected(1));
-		mandatoryTemplatesPageEl.setEnabled(templatesEl.isAtLeastSelected(1));
+		mandatoryTemplatesPageEl.setEnabled(templatesEl.isAtLeastSelected(1) && !readOnly);
 		if(!deliveryOptions.isOptionalTemplateForEntry()) {
 			mandatoryTemplatesPageEl.select(onKeys[0], true);
 		}
 		
-		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsLayout.setRootForm(mainForm);
-		formLayout.add(buttonsLayout);
-		uifactory.addFormCancelButton("cancel", buttonsLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("save", buttonsLayout);
+		if(!readOnly) {
+			FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			buttonsLayout.setRootForm(mainForm);
+			formLayout.add(buttonsLayout);
+			uifactory.addFormCancelButton("cancel", buttonsLayout, ureq, getWindowControl());
+			uifactory.addFormSubmitButton("save", buttonsLayout);
+		}
 	}
 	
 	@Override
@@ -130,7 +137,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 			}
 		} else if(source == templatesEl) {
 			mandatoryTemplatesPageEl.setVisible(templatesEl.isAtLeastSelected(1));
-			mandatoryTemplatesPageEl.setEnabled(templatesEl.isAtLeastSelected(1));
+			mandatoryTemplatesPageEl.setEnabled(templatesEl.isAtLeastSelected(1) && !readOnly);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

@@ -158,6 +158,10 @@ public class OverviewAuthoringController extends BasicController implements Acti
 				if(deletedEntriesCtrl != null) {
 					deletedEntriesCtrl.addDirtyRows(ece.getRepositoryEntryKey());
 				}
+			} else if(ece.getChange() == Change.restored) {
+				if(deletedEntriesCtrl != null) {
+					deletedDirty = true;
+				}
 			}
 		}
 	}
@@ -188,6 +192,11 @@ public class OverviewAuthoringController extends BasicController implements Acti
 				myEntriesCtrl.reloadRows();
 			} else if(myEntriesCtrl != null) {
 				myEntriesCtrl.reloadDirtyRows();
+			}
+			if(deletedDirty && deletedEntriesCtrl != null) {
+				deletedEntriesCtrl.reloadRows();
+			} else if(deletedEntriesCtrl != null) {
+				deletedEntriesCtrl.reloadDirtyRows();
 			}
 			addToHistory(ureq, currentCtrl);
 		} else {

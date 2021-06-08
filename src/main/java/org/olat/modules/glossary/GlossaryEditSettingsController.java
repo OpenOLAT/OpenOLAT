@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GlossaryEditSettingsController extends FormBasicController {
 
+	private final boolean readOnly;
 	private OLATResource olatresource;
 	private MultipleSelectionElement editByUserEnabled;
 	private LocalFolderImpl glossaryFolder;
@@ -54,8 +55,9 @@ public class GlossaryEditSettingsController extends FormBasicController {
 	@Autowired
 	private GlossaryItemManager glossaryItemManager;
 
-	public GlossaryEditSettingsController(UserRequest ureq, WindowControl control, OLATResource resource) {
+	public GlossaryEditSettingsController(UserRequest ureq, WindowControl control, OLATResource resource, boolean readOnly) {
 		super(ureq, control);
+		this.readOnly = readOnly;
 		this.olatresource = resource;
 		glossaryFolder = glossaryManager.getGlossaryRootFolder(olatresource);
 	
@@ -71,6 +73,7 @@ public class GlossaryEditSettingsController extends FormBasicController {
 		
 		editByUserEnabled = uifactory.addCheckboxesHorizontal("edit.onoff", formLayout, regKeys, regValues);
 		editByUserEnabled.addActionListener(FormEvent.ONCLICK);
+		editByUserEnabled.setEnabled(!readOnly);
 		
 		Properties glossProps = glossaryItemManager.getGlossaryConfig(glossaryFolder);
 		String configuredStatus = glossProps.getProperty(GlossaryItemManager.EDIT_USERS);

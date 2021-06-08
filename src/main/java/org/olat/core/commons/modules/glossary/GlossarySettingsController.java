@@ -108,7 +108,7 @@ public class GlossarySettingsController extends RepositoryEntrySettingsControlle
 
 	private void doRegister(UserRequest ureq) {
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("GlossarySettings"), null);
-		glossRegisterSetCtr = new GlossaryRegisterSettingsController(ureq, addToHistory(ureq, swControl), entry.getOlatResource());
+		glossRegisterSetCtr = new GlossaryRegisterSettingsController(ureq, addToHistory(ureq, swControl), entry.getOlatResource(), readOnly);
 		listenTo(glossRegisterSetCtr);
 		mainPanel.setContent(glossRegisterSetCtr.getInitialComponent());
 		buttonsGroup.setSelectedButton(registerLink);
@@ -116,7 +116,7 @@ public class GlossarySettingsController extends RepositoryEntrySettingsControlle
 	
 	private void doPermission(UserRequest ureq) {
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("GlossaryPermissions"), null);
-		glossEditCtr = new GlossaryEditSettingsController(ureq, addToHistory(ureq, swControl), entry.getOlatResource());
+		glossEditCtr = new GlossaryEditSettingsController(ureq, addToHistory(ureq, swControl), entry.getOlatResource(), readOnly);
 		listenTo(glossEditCtr);
 		mainPanel.setContent(glossEditCtr.getInitialComponent());
 		buttonsGroup.setSelectedButton(permissionLink);

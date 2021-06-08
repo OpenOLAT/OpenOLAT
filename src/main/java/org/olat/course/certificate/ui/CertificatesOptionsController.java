@@ -176,8 +176,11 @@ public class CertificatesOptionsController extends FormBasicController {
 		previewTemplateLink.setTarget("preview");
 		
 		certificationCustom1El = uifactory.addTextElement("certificate.custom1", 1000, courseConfig.getCertificateCustom1(), formLayout);
+		certificationCustom1El.setEnabled(editable);
 		certificationCustom2El = uifactory.addTextElement("certificate.custom2", 2000, courseConfig.getCertificateCustom2(), formLayout);
+		certificationCustom2El.setEnabled(editable);
 		certificationCustom3El = uifactory.addTextElement("certificate.custom3", 3000, courseConfig.getCertificateCustom3(), formLayout);
+		certificationCustom3El.setEnabled(editable);
 		
 		boolean reCertificationEnabled = courseConfig.isRecertificationEnabled();
 		reCertificationEl = uifactory.addCheckboxesHorizontal("recertification", formLayout, new String[]{ "xx" }, new String[]{ "" });

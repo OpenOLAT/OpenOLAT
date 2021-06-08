@@ -45,7 +45,6 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -107,6 +106,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private FormLink logoDel;
 	private boolean elWithErrorExists = false;
 	private final boolean editable;
+	private final boolean readOnly;
 	
 	private LockResult lockEntry;
 	private CourseConfig courseConfig;
@@ -119,7 +119,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private CustomConfigManager customCMgr;
 
 	public CourseLayoutGeneratorController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, CourseConfig courseConfig,
-			CourseEnvironment courseEnvironment, boolean editable) {
+			CourseEnvironment courseEnvironment, boolean editable, boolean readOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseSettingsController.class, ureq.getLocale()));
 
 		this.courseEntry = entry;
@@ -127,7 +127,8 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		this.courseEnvironment = courseEnvironment;
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
 				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
-		this.editable = (lockEntry != null && lockEntry.isSuccess()) && editable;
+		this.editable = (lockEntry != null && lockEntry.isSuccess()) && editable && !readOnly;
+		this.readOnly = readOnly;
 		this.onValues = new String[] {translate("on")};
 		
 		// stack the translator to get attribs/elements
@@ -269,13 +270,17 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		breadCrumbEl = uifactory.addCheckboxesHorizontal("breadCrumbIsOn", "chkbx.breadcrumb.onoff", formLayout, onKeys, onValues);
 		breadCrumbEl.select(onKeys[0], courseConfig.isBreadCrumbEnabled());
 		breadCrumbEl.addActionListener(FormEvent.ONCHANGE);
+		breadCrumbEl.setEnabled(editable);
 		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		FormSubmit submit = uifactory.addFormSubmitButton("course.layout.save", buttonsCont);
-		submit.setEnabled(editable);
+		if(!readOnly) {
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			buttonsCont.setRootForm(mainForm);
+			formLayout.add(buttonsCont);
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+			if(editable) {
+				uifactory.addFormSubmitButton("course.layout.save", buttonsCont);
+			}
+		}
 	}
 
 	@Override

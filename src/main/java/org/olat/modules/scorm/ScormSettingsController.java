@@ -110,7 +110,7 @@ public class ScormSettingsController extends RepositoryEntrySettingsController {
 		DeliveryOptions config = scormConfig == null ? null : scormConfig.getDeliveryOptions();
 		final OLATResource resource = entry.getOlatResource();
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Layout"), null);
-		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq, swControl), config, "Knowledge Transfer#_scorm_layout");
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq, swControl), config, "Knowledge Transfer#_scorm_layout", readOnly);
 
 		deliveryOptionsCtrl.addControllerListener((uureq, source, event) -> {
 			if(source == deliveryOptionsCtrl && (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {

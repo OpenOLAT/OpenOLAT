@@ -105,7 +105,7 @@ public class QTI21SettingsController extends RepositoryEntrySettingsController {
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		
-		deliveryOptionsCtrl = new QTI21DeliveryOptionsController(ureq, swControl, entry);
+		deliveryOptionsCtrl = new QTI21DeliveryOptionsController(ureq, swControl, entry, readOnly);
 		listenTo(deliveryOptionsCtrl);
 		mainPanel.setContent(deliveryOptionsCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(qtiOptionsLink);

@@ -90,6 +90,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	private final boolean status;
 	private final boolean embbeded;
 	private final boolean guestSupported;
+	private final boolean readOnly;
 	private RepositoryEntry entry;
 	private List<Organisation> repositoryEntryOrganisations;
 	
@@ -106,10 +107,11 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	@Autowired
 	private OrganisationService organisationService;
 	
-	public AuthoringEditAccessAndBookingController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public AuthoringEditAccessAndBookingController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl, "acces_and_booking");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
+		this.readOnly = readOnly;
 		embbeded = false;
 		status = false;
 		guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
@@ -121,6 +123,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		super(ureq, wControl, LAYOUT_CUSTOM, "acces_and_booking", rootForm);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
+		this.readOnly = true;
 		embbeded = true;
 		status = true;
 		guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
@@ -219,8 +222,10 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		UserSession usess = ureq.getUserSession();
 		initFormOrganisations(accessCont, usess);
 		organisationsEl.setVisible(organisationModule.isEnabled());
+		organisationsEl.setEnabled(!readOnly);
 		initStatus(accessCont);
 		statusEl.setVisible(status);
+		statusEl.setEnabled(!readOnly);
 		
 		String[] accessValues = new String[] {
 				getAccessTranslatedValue("rentry.access.type.private", "rentry.access.type.private.explain", "o_icon_locked"),
@@ -230,6 +235,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		accessEl = uifactory.addRadiosVertical("entry.access.type", "rentry.access.type", accessCont, accessKey, accessValues);
 		accessEl.addActionListener(FormEvent.ONCHANGE);
 		accessEl.setElementCssClass("o_repo_with_explanation");
+		accessEl.setEnabled(!readOnly);
 		if(entry.isAllUsers()) {
 			accessEl.select(accessKey[2], true);
 		} else if(entry.isBookable()) {
@@ -245,6 +251,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		String[] guestValues = new String[] { translate("rentry.access.guest.on") };
 		guestEl = uifactory.addCheckboxesHorizontal("entry.access.guest", "rentry.access.guest", accessCont, onKeys, guestValues);
 		guestEl.setElementCssClass("o_sel_repositoryentry_access_guest o_repo_with_explanation");
+		guestEl.setEnabled(!readOnly);
 		
 		if(entry.isGuests()) {
 			guestEl.select(onKeys[0], true);
@@ -252,10 +259,11 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		
 		explainGuestAccessEl = uifactory.addStaticTextElement("rentry.access.guest.explain", null, explainAccess, accessCont);
 		explainGuestAccessEl.setElementCssClass("o_repo_explanation");
+		explainGuestAccessEl.setEnabled(!readOnly);
 
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		acCtr = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(), entry.getDisplayname(),
-				true, !managedBookings, mainForm);
+				true, !managedBookings && !readOnly, mainForm);
 		listenTo(acCtr);
 		formLayout.add("bookings", acCtr.getInitialFormItem());
 
@@ -264,7 +272,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		formLayout.add("options", optionsCont);
 		initLeaveOption(optionsCont);
 
-		if(!embbeded) {
+		if(!embbeded && !readOnly) {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			buttonsCont.setRootForm(mainForm);
 			formLayout.add("buttons", buttonsCont);
@@ -350,7 +358,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 				leaveEl.select(defaultOption.name(), true);
 			}
 		}
-		leaveEl.setEnabled(!managedLeaving);
+		leaveEl.setEnabled(!managedLeaving && !readOnly);
 	}
 	
 	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
@@ -379,7 +387,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "cif.organisations", formLayout,
 				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]),
 				null, null);
-		organisationsEl.setEnabled(!RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.organisations));
+		organisationsEl.setEnabled(!RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.organisations) && !readOnly);
 		for(Organisation reOrganisation:reOrganisations) {
 			if(keyList.contains(reOrganisation.getKey().toString())) {
 				organisationsEl.select(reOrganisation.getKey().toString(), true);

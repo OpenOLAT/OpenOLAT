@@ -81,6 +81,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	private MultipleSelectionElement enableAssessmentModeEl;
 	
 	private RepositoryEntry entry;
+	private final boolean readOnly;
 	private boolean overrideManaged = false;
 	private final boolean lectureConfigManaged;
 	private boolean overrideModuleDefaults = false;
@@ -95,10 +96,11 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	@Autowired
 	private RepositoryService repositoryService;
 	
-	public LectureRepositorySettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public LectureRepositorySettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl, "repository_settings");
 		
 		this.entry = entry;
+		this.readOnly = readOnly;
 		lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		overrideModuleDefaults = lectureConfig.isOverrideModuleDefault();
 		lectureConfigManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lectureconfig);
@@ -150,7 +152,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("lecture.admin.enabled", formLayout, onKeys, onValues);
-		enableEl.setEnabled(!lectureConfigManaged);
+		enableEl.setEnabled(!lectureConfigManaged && !readOnly);
 		enableEl.setElementCssClass("o_sel_repo_lecture_enable");
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 		if(lectureConfig.isLectureEnabled()) {
@@ -159,7 +161,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		String[] overrideValues = new String[]{ translate("config.override.yes"), translate("config.override.no") };
 		overrideEl = uifactory.addRadiosHorizontal("config.override", formLayout, overrideKeys, overrideValues);
-		overrideEl.setEnabled(!lectureConfigManaged);
+		overrideEl.setEnabled(!lectureConfigManaged && !readOnly);
 		overrideEl.setElementCssClass("o_sel_repo_lecture_override");
 		overrideEl.addActionListener(FormEvent.ONCHANGE);
 		if(lectureConfig.isOverrideModuleDefault()) {
@@ -192,7 +194,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		saveButton = uifactory.addFormSubmitButton("save", buttonsCont);
-		saveButton.setVisible(!lectureConfigManaged || overrideManaged);
+		saveButton.setVisible((!lectureConfigManaged || overrideManaged) && !readOnly);
 	}
 	
 	protected boolean isAllowedToOverrideManaged(UserRequest ureq) {
@@ -234,7 +236,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		} else {
 			el.uncheckAll();
 		}
-		el.setEnabled(overrideModuleDefaults && overrideEl.isEnabled() && (!lectureConfigManaged || overrideManaged));
+		el.setEnabled(overrideModuleDefaults && overrideEl.isEnabled() && (!lectureConfigManaged || overrideManaged) && !readOnly);
 	}
 	
 	private void updateOverrideElement(TextElement el, Integer entryConfig, int defaultValue) {

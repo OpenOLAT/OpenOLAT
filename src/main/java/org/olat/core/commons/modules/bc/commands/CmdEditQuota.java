@@ -69,8 +69,7 @@ public class CmdEditQuota extends BasicController implements FolderCommand, Cont
 		// cleanup old controller first
 		if (quotaEditController != null) quotaEditController.dispose();
 		// create a edit controller
-		quotaEditController = quotaManager.getQuotaEditorInstance(ureq, wControl, currentSecCallback.getQuota().getPath(),
-				false, true);
+		quotaEditController = quotaManager.getQuotaEditorInstance(ureq, wControl, currentSecCallback.getQuota().getPath(), false, true);
 		quotaEditController.addControllerListener(this);
 		if (quotaEditController != null) {
 			putInitialPanel(quotaEditController.getInitialComponent());

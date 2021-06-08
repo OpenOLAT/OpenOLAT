@@ -75,6 +75,7 @@ public class CourseDisclaimerController extends FormBasicController {
 
 	private boolean disclaimer1Enabled = false;
 	private boolean disclaimer2Enabled = false;
+	private final boolean readOnly;
 
 	private RepositoryEntry repositoryEntry;
 
@@ -95,11 +96,12 @@ public class CourseDisclaimerController extends FormBasicController {
 	 * @param wControl
 	 * @param entry
 	 */
-	public CourseDisclaimerController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public CourseDisclaimerController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl);
 		
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 
+		this.readOnly = readOnly;
 		this.repositoryEntry = entry;
 		this.onValues = new String[]{ translate("enabled") };
 
@@ -122,6 +124,7 @@ public class CourseDisclaimerController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 
 		this.repositoryEntry = entry;
+		readOnly = false;
 		this.onValues = new String[]{ translate("enabled") };
 		this.usedInWizard = true;
 
@@ -143,9 +146,11 @@ public class CourseDisclaimerController extends FormBasicController {
 		disclaimer1CheckBoxEl = uifactory.addCheckboxesHorizontal("course.disclaimer.1", formLayout, onKeys, onValues);
 		disclaimer1CheckBoxEl.select(onKeys[0], disclaimer1Enabled);
 		disclaimer1CheckBoxEl.addActionListener(FormEvent.ONCHANGE);
+		disclaimer1CheckBoxEl.setEnabled(!readOnly);
 		disclaimer2CheckBoxEl = uifactory.addCheckboxesHorizontal("course.disclaimer.2", formLayout, onKeys, onValues);
 		disclaimer2CheckBoxEl.select(onKeys[0], disclaimer2Enabled);
 		disclaimer2CheckBoxEl.addActionListener(FormEvent.ONCHANGE);
+		disclaimer2CheckBoxEl.setEnabled(!readOnly);
 
 		enableAndContentSpacer = uifactory.addSpacerElement("course.disclaimer.spacer.1", formLayout, false);
 
@@ -153,18 +158,23 @@ public class CourseDisclaimerController extends FormBasicController {
 		disclaimer1HeaderEl = uifactory.addStaticTextElement("course.disclaimer.1.section", null, translate("course.disclaimer.1"), formLayout);
 		disclaimer1HeaderEl.showLabel(false);
 		disclaimer1HeaderEl.setElementCssClass("o_static_textelement_bold");
+		disclaimer1HeaderEl.setEnabled(!readOnly);
 
 		disclaimer1TitleEl = uifactory.addTextElement("course.disclaimer.1.title", "course.disclaimer.title", 255, translate("course.disclaimer.1.title.value"), formLayout);
 		disclaimer1TitleEl.setMandatory(true);
+		disclaimer1TitleEl.setEnabled(!readOnly);
 
 		disclaimer1TermsEl = uifactory.addRichTextElementForStringDataMinimalistic("course.disclaimer.1.terms", "course.disclaimer.terms", translate("course.disclaimer.1.terms.value"), 10, 0, formLayout, getWindowControl());
 		disclaimer1TermsEl.setMandatory(true);
+		disclaimer1TermsEl.setEnabled(!readOnly);
 
 		disclaimer1Label1El = uifactory.addTextElement("course.disclaimer.1.label.1", "course.disclaimer.label.1", 255, translate("course.disclaimer.label.1.value"), formLayout);
 		disclaimer1Label1El.setMandatory(true);
+		disclaimer1Label1El.setEnabled(!readOnly);
 
 		disclaimer1Label2El = uifactory.addTextElement("course.disclaimer.1.label.2", "course.disclaimer.label.2", 255, "", formLayout);
-
+		disclaimer1Label2El.setEnabled(!readOnly);
+		
 		// Spacer
 		spacer = uifactory.addSpacerElement("course.disclaimer.spacer.2", formLayout, false);
 
@@ -172,20 +182,25 @@ public class CourseDisclaimerController extends FormBasicController {
 		disclaimer2HeaderEl = uifactory.addStaticTextElement("course.disclaimer.2.section", null, translate("course.disclaimer.2"), formLayout);
 		disclaimer2HeaderEl.showLabel(false);
 		disclaimer2HeaderEl.setElementCssClass("o_static_textelement_bold");
+		disclaimer2HeaderEl.setEnabled(!readOnly);
 
 		disclaimer2TitleEl = uifactory.addTextElement("course.disclaimer.2.title", "course.disclaimer.title", 255, translate("course.disclaimer.2.title.value"), formLayout);
 		disclaimer2TitleEl.setMandatory(true);
+		disclaimer2TitleEl.setEnabled(!readOnly);
 
 		disclaimer2TermsEl = uifactory.addRichTextElementForStringDataMinimalistic("course.disclaimer.2.terms", "course.disclaimer.terms", translate("course.disclaimer.2.terms.value"), 10, 0, formLayout, getWindowControl());
 		disclaimer2TermsEl.setMandatory(true);
+		disclaimer2TermsEl.setEnabled(!readOnly);
 
 		disclaimer2Label1El = uifactory.addTextElement("course.disclaimer.2.label.1", "course.disclaimer.label.1", 255, translate("course.disclaimer.label.1.value"), formLayout);
 		disclaimer2Label1El.setMandatory(true);
+		disclaimer2Label1El.setEnabled(!readOnly);
 
 		disclaimer2Label2El = uifactory.addTextElement("course.disclaimer.2.label.2", "course.disclaimer.label.2", 255, "", formLayout);
-
+		disclaimer2Label2El.setEnabled(!readOnly);
+		
 		// Spacer and Submit
-		if (!usedInWizard) {
+		if (!usedInWizard && !readOnly) {
 			uifactory.addFormSubmitButton("submit", formLayout);
 			uifactory.addSpacerElement("course.disclaimer.spacer.bottom", formLayout, true);
 		}	

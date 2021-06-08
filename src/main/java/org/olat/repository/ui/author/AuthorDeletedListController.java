@@ -298,7 +298,7 @@ public class AuthorDeletedListController extends AuthorListController {
 			}
 			
 			if(isManager && !RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete)) {
-				addLink("details.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links);
+				addLink("details.delete.permanently", "delete", "o_icon o_icon-fw o_icon_delete_item", links);
 			}
 
 			mainVC.contextPut("links", links);

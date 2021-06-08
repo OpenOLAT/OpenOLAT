@@ -767,17 +767,27 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 
 			if(!closeManged || !deleteManaged) {
-				// If a resource is closable (currently only course) and
-				// deletable (currently all resources) we offer those two
-				// actions in a separate page, unless both are managed
-				// operations. In that case we don't show anything at all.				
-				// If only one of the two actions are managed, we go to the
-				// separate page as well and show only the relevant action
-				// there.
-				lifeCycleChangeLink = LinkFactory.createToolLink("lifeCycleChange", translate("details.lifecycle.change"), this, "o_icon o_icon-fw o_icon_lifecycle");
-				settingsDropdown.addComponent(lifeCycleChangeLink);
-			} else {				
-				if(!deleteManaged) {
+				if(re.getEntryStatus() == RepositoryEntryStatusEnum.deleted || re.getEntryStatus() == RepositoryEntryStatusEnum.trash) {
+					restoreLink = LinkFactory.createToolLink("restore", "details.restore", this, "o_icon o_icon-fw o_icon_restore");
+					restoreLink.setElementCssClass("o_sel_repo_restore");
+					settingsDropdown.addComponent(restoreLink);
+				} else {
+					// If a resource is closable (currently only course) and
+					// deletable (currently all resources) we offer those two
+					// actions in a separate page, unless both are managed
+					// operations. In that case we don't show anything at all.				
+					// If only one of the two actions are managed, we go to the
+					// separate page as well and show only the relevant action
+					// there.
+					lifeCycleChangeLink = LinkFactory.createToolLink("lifeCycleChange", translate("details.lifecycle.change"), this, "o_icon o_icon-fw o_icon_lifecycle");
+					settingsDropdown.addComponent(lifeCycleChangeLink);
+				}
+			} else if(!deleteManaged) {
+				if(re.getEntryStatus() == RepositoryEntryStatusEnum.deleted || re.getEntryStatus() == RepositoryEntryStatusEnum.trash) {
+					restoreLink = LinkFactory.createToolLink("restore", translate("details.restore"), this, "o_icon o_icon-fw o_icon_restore");
+					restoreLink.setElementCssClass("o_sel_repo_restore");
+					settingsDropdown.addComponent(restoreLink);
+				} else {
 					String type = translate(handler.getSupportedType());
 					String deleteTitle = translate("details.delete.alt", new String[]{ type });
 					deleteLink = LinkFactory.createToolLink("delete", deleteTitle, this, "o_icon o_icon-fw o_icon_delete_item");

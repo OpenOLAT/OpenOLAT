@@ -63,14 +63,16 @@ public class CatalogSettingsController extends FormBasicController {
 	private AccessInformationController infosCtrl;
 	
 	private RepositoryEntry entry;
+	private final boolean readOnly;
 
 	@Autowired
 	private CatalogManager catalogManager;
 	
-	public CatalogSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public CatalogSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl, "catalog_settings");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
+		this.readOnly = readOnly;
 		
 		infosCtrl = new AccessInformationController(ureq, wControl, entry);
 		listenTo(infosCtrl);
@@ -86,6 +88,7 @@ public class CatalogSettingsController extends FormBasicController {
 		addToCatalogLink = uifactory.addFormLink("details.catadd", formLayout, Link.BUTTON);
 		addToCatalogLink.setIconLeftCSS("o_icon o_icon_add");
 		addToCatalogLink.setElementCssClass("o_sel_repo_add_to_catalog");
+		addToCatalogLink.setVisible(!readOnly);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("catalog.path", 0));
