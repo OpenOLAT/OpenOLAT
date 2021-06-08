@@ -129,7 +129,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		if(profileFormController == source) {
 			identityToModify = profileFormController.getIdentityToModify();
 			if(Event.CANCELLED_EVENT.equals(event)) {
-				resetForm(ureq);
+				resetForm(ureq, identityToModify);
 			}
 			if(homePageController != null) {
 				homePageController.updateIdentityToModify(ureq, identityToModify);
@@ -141,7 +141,8 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		super.event(ureq, source, event);
 	}
 	
-	public void resetForm(UserRequest ureq) {
+	public void resetForm(UserRequest ureq, Identity identity) {
+		this.identityToModify = identity;
 		removeAsListenerAndDispose(profileFormController);
 		removeAsListenerAndDispose(homePageController);
 		profileFormController = null;
