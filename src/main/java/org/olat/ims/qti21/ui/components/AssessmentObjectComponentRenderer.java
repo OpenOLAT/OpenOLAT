@@ -1262,6 +1262,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		List<String> cssClasses = interaction.getClassAttr();
 		boolean copyPasteDisabled = cssClasses != null && cssClasses.contains(QTI21Constants.CSS_ESSAY_DISABLE_COPYPASTE);
+		boolean hasPlaceholder = StringHelper.containsNonWhitespace(interaction.getPlaceholderText());
 		
 		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
 		boolean ended = component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode());
@@ -1273,8 +1274,19 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			sb.append("<div id='oo_").append(responseUniqueId).append("' style='min-height:").append(expectedLines * 1.5).append("em;' class='form-control textarea_disabled o_disabled o_form_element_disabled");
 		} else {
 			sb.append("<textarea id='oo_").append(responseUniqueId).append("' name='qtiworks_response_").append(responseUniqueId).append("'");
-			if(StringHelper.containsNonWhitespace(interaction.getPlaceholderText())) {
-				sb.append(" placeholder=\"").append(StringHelper.escapeHtml(interaction.getPlaceholderText())).append("\"");
+	
+			if(hasPlaceholder || copyPasteDisabled) {
+				sb.append(" placeholder=\"");
+				if(hasPlaceholder) {
+					sb.append(StringHelper.escapeHtml(interaction.getPlaceholderText()));
+				}
+				if(copyPasteDisabled) {
+					if(hasPlaceholder) {
+						sb.append(" &#10;");
+					}
+					sb.append(translator.translate("essay.copypaste.disabled"));
+				}
+				sb.append("\"");
 			}
 			
 			sb.append(" rows='").append(expectedLines).append("'");

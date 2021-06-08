@@ -30,9 +30,6 @@
  		#end
         </div>
 	#end
-	#if($r.hasCssClass($interaction,"essay-nocopypaste"))
-		<p><em>$r.translate("essay.copypaste.disabled")</em></p>
-	#end
 
 	$r.renderExtendedTextBox($interaction)
 	#if($r.isFalse($isSolutionMode))
