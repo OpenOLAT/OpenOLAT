@@ -147,6 +147,7 @@ public class UserNickNameEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String nickName = nickNameEl.getValue();
+		changeableIdentity = securityManager.loadIdentityByKey(changeableIdentity.getKey());
 		changeableIdentity.getUser().setProperty(UserConstants.NICKNAME, nickName);
 		if(userManager.updateUserFromIdentity(changeableIdentity)) {
 			if(changeProvidersEl.isVisible() && changeProvidersEl.isSelected(0)) {

@@ -309,7 +309,7 @@ public class UserAdminController extends BasicController implements Activateable
 				//reload profile data on top
 				editedIdentity = securityManager.loadIdentityByKey(editedIdentity.getKey());
 				exposeUserDataToVC(ureq, editedIdentity);
-				userProfileCtr.resetForm(ureq);
+				userProfileCtr.resetForm(ureq, editedIdentity);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(source == exportDataCtrl) {
