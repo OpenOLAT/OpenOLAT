@@ -416,9 +416,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							String cTimest = target.getTimestamp();
 							String urlCTimest = ureq.getComponentTimestamp();
 							validForDispatching = cTimest.equals(urlCTimest);
-							if(!validForDispatching) {
-								System.out.println();
-							}
 							if (!validForDispatching && isDebugLog) { 
 								log.debug("Invalid timestamp: ureq.compid:"+ureq.getComponentID()+" ureq.win-ts:"+ureq.getTimestampID()+" ureq.comp-ts:"+ureq.getComponentTimestamp() + " target.timestamp:" + cTimest + " target=" + target);
 							}

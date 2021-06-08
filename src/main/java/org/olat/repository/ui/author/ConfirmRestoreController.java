@@ -109,7 +109,6 @@ public class ConfirmRestoreController extends FormBasicController {
 		if(restoreButton == source) {
 			if(validateFormLogic(ureq)) {
 				doCompleteRestore(ureq);
-				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}
 	}

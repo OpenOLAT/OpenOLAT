@@ -83,6 +83,7 @@ import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.repository.ui.author.ConfirmCloseController;
 import org.olat.repository.ui.author.ConfirmDeleteSoftlyController;
+import org.olat.repository.ui.author.ConfirmRestoreController;
 import org.olat.repository.ui.author.CopyRepositoryEntryController;
 import org.olat.repository.ui.author.RepositoryMembersController;
 import org.olat.repository.ui.list.LeavingEvent;
@@ -120,6 +121,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private OrdersAdminController ordersCtlr;
 	private CopyRepositoryEntryController copyCtrl;
 	private ConfirmCloseController confirmCloseCtrl;
+	private ConfirmRestoreController confirmRestoreCtrl;
 	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryMembersController membersEditController;
@@ -136,6 +138,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected Link downloadLink;
 	protected Link deleteLink;
 	protected Link settingsLink;
+	protected Link restoreLink;
 	
 	private Dropdown rolesDropdown;
 	private Link ownerLink;
@@ -550,11 +553,15 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void initToolsMenuDelete(Dropdown toolsDropdown) {
-		if(reSecurity.isEntryAdmin()) {
-			boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
+		boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
+		if(reSecurity.isEntryAdmin() && !deleteManaged) {
 			toolsDropdown.addComponent(new Spacer("close-delete"));
-	
-			if(!deleteManaged) {
+			
+			if(re.getEntryStatus() == RepositoryEntryStatusEnum.deleted || re.getEntryStatus() == RepositoryEntryStatusEnum.trash) {
+				restoreLink = LinkFactory.createToolLink("restore", translate("details.restore"), this, "o_icon o_icon-fw o_icon_restore");
+				restoreLink.setElementCssClass("o_sel_repo_restore");
+				toolsDropdown.addComponent(restoreLink);
+			} else {
 				String type = translate(handler.getSupportedType());
 				String deleteTitle = translate("details.delete.alt", new String[]{ type });
 				deleteLink = LinkFactory.createToolLink("delete", deleteTitle, this, "o_icon o_icon-fw o_icon_delete_item");
@@ -722,6 +729,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			doDownload(ureq);
 		} else if(deleteLink == source) {
 			doDelete(ureq);
+		} else if(restoreLink == source) {
+			doConfirmRestore(ureq);
 		} else if (ownerLink == source) {
 			doSwitchRole(ureq, Role.owner);
 		} else if (administratorLink == source) {
@@ -827,6 +836,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			}
 			cleanUp();
+		} else if(confirmRestoreCtrl == source) {
+			cmc.deactivate();
+			if(event == Event.DONE_EVENT) {
+				doRestore(ureq);
+			}
 		} else if(confirmCloseCtrl == source) {
 			cmc.deactivate();
 			if(event == Event.DONE_EVENT) {
@@ -842,6 +856,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void cleanUp() {		
 		removeAsListenerAndDispose(membersEditController);
+		removeAsListenerAndDispose(confirmRestoreCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(accessController);
 		removeAsListenerAndDispose(confirmCloseCtrl);
@@ -852,6 +867,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		removeAsListenerAndDispose(cmc);
 		
 		membersEditController = null;
+		confirmRestoreCtrl = null;
 		confirmDeleteCtrl = null;
 		accessController = null;
 		confirmCloseCtrl = null;
@@ -1149,6 +1165,32 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doConfirmRestore(UserRequest ureq) {
+		if (!reSecurity.isEntryAdmin()) {
+			throw new OLATSecurityException("Trying to delete, but not allowed: user = " + ureq.getIdentity());
+		}
+		removeAsListenerAndDispose(confirmRestoreCtrl);
+		removeAsListenerAndDispose(cmc);
+
+		List<RepositoryEntry> entriesToRestore = Collections.singletonList(getRepositoryEntry());
+		confirmRestoreCtrl = new ConfirmRestoreController(ureq, getWindowControl(), entriesToRestore);
+		listenTo(confirmRestoreCtrl);
+		
+		String title = translate("tools.restore");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmRestoreCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doRestore(UserRequest ureq) {
+		RepositoryEntry reloadedEntry = loadRepositoryEntry();
+		refreshRepositoryEntry(reloadedEntry);
+		reloadSecurity(ureq);
+		
+		EntryChangedEvent e = new EntryChangedEvent(reloadedEntry, getIdentity(), Change.restored, "runtime");
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 	}
 	
 	protected void launchContent(UserRequest ureq) {
