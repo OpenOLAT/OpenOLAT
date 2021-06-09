@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -192,7 +193,8 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		FormCancel cancelButton = uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		cancelButton.setVisible(!readOnly);
 		saveButton = uifactory.addFormSubmitButton("save", buttonsCont);
 		saveButton.setVisible((!lectureConfigManaged || overrideManaged) && !readOnly);
 	}

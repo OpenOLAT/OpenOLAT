@@ -768,7 +768,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 			if(!closeManged || !deleteManaged) {
 				if(re.getEntryStatus() == RepositoryEntryStatusEnum.deleted || re.getEntryStatus() == RepositoryEntryStatusEnum.trash) {
-					restoreLink = LinkFactory.createToolLink("restore", "details.restore", this, "o_icon o_icon-fw o_icon_restore");
+					restoreLink = LinkFactory.createToolLink("restore", translate("details.restore"), this, "o_icon o_icon-fw o_icon_restore");
 					restoreLink.setElementCssClass("o_sel_repo_restore");
 					settingsDropdown.addComponent(restoreLink);
 				} else {
