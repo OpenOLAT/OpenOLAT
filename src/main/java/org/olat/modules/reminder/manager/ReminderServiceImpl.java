@@ -202,12 +202,8 @@ public class ReminderServiceImpl implements ReminderService {
 	}
 
 	@Override
-	public void remindAll() {
-		Date now = new Date();
-		List<Reminder> reminders = reminderDao.getReminders(now);
-		for(Reminder reminder:reminders) {
-			sendReminder(reminder);
-		}
+	public List<Reminder> getReminders(Date date) {
+		return reminderDao.getReminders(date);
 	}
 
 	@Override

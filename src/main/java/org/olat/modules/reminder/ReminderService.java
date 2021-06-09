@@ -21,6 +21,7 @@ package org.olat.modules.reminder;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -80,7 +81,13 @@ public interface ReminderService {
 	
 	public List<SentReminder> getSentReminders(RepositoryEntryRef entry);
 	
-	public void remindAll();
+	/**
+	 * The list of reminders to send at a specific date.
+	 * 
+	 * @param date The date
+	 * @return A list of reminders
+	 */
+	public List<Reminder> getReminders(Date date);
 	
 	public String toXML(ReminderRules rules);
 	

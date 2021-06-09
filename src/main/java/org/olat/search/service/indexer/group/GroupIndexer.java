@@ -73,7 +73,7 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 		long startTime = System.currentTimeMillis();
 
 		List<BusinessGroup> groupList = businessGroupService.loadAllBusinessGroups();
-		if (log.isDebugEnabled()) log.debug("GroupIndexer groupList.size=" + groupList.size());
+		if (log.isDebugEnabled()) log.debug("GroupIndexer groupList.size={}", groupList.size());
   	
 		// committing here to make sure the loadBusinessGroup below does actually
 		// reload from the database and not only use the session cache 
@@ -82,17 +82,22 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 		DBFactory.getInstance().commitAndCloseSession();
 
 		// loop over all groups
-		for(BusinessGroup businessGroup:groupList){
+		for(BusinessGroup businessGroup:groupList) {
+			if(indexWriter.isInterupted()) {
+				DBFactory.getInstance().commitAndCloseSession();
+				log.info("Groups indexer interrupted");
+				return;
+			}
 			try {
 				// reload the businessGroup here before indexing it to make sure it has not been deleted in the meantime
 				BusinessGroup reloadedBusinessGroup = businessGroupService.loadBusinessGroup(businessGroup);
 				if (reloadedBusinessGroup==null) {
-					log.info("doIndex: businessGroup was deleted while we were indexing. The deleted businessGroup was: "+businessGroup);
+					log.info("doIndex: businessGroup was deleted while we were indexing. The deleted businessGroup was: {}", businessGroup);
 					continue;
 				}
 				businessGroup = reloadedBusinessGroup;
 				
-				if (log.isDebugEnabled()) log.debug("Index BusinessGroup=" + businessGroup);
+				if (log.isDebugEnabled()) log.debug("Index BusinessGroup={}", businessGroup);
 				SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 				searchResourceContext.setBusinessControlFor(businessGroup);
 				Document document = GroupDocument.createDocument(searchResourceContext, businessGroup);
@@ -100,10 +105,10 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 		    // Do index child 
 			  super.doIndex(searchResourceContext, businessGroup, indexWriter);
 			} catch(Exception ex) {
-				log.error("Exception indexing group=" + businessGroup, ex);
+				log.error("Exception indexing group={}", businessGroup, ex);
 				DBFactory.getInstance().rollbackAndCloseSession();
 			} catch (Error err) {
-				log.error("Error indexing group=" + businessGroup, err);
+				log.error("Error indexing group={}", businessGroup, err);
 				DBFactory.getInstance().rollbackAndCloseSession();
 			}
 			DBFactory.getInstance().commitAndCloseSession();
