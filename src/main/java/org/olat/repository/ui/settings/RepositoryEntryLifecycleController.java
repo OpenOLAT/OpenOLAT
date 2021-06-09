@@ -35,7 +35,6 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -127,13 +126,12 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 
-		if (!usedInWizard && !readOnly) {
+		if (!usedInWizard && !readOnly && !managed) {
 			FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 			formLayout.add("buttonContainer", buttonContainer);
 			buttonContainer.setElementCssClass("o_sel_repo_save_details");
 			uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
-			FormSubmit submit = uifactory.addFormSubmitButton("submit", buttonContainer);
-			submit.setVisible(!managed);
+			uifactory.addFormSubmitButton("submit", buttonContainer);
 		}
 	}
 	
