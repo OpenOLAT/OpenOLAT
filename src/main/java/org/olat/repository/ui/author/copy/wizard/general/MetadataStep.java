@@ -58,7 +58,13 @@ public class MetadataStep extends BasicStep {
 		
 		setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("steps.authors.title", null);
+		
+		if (stepCollection == null) {
+			stepCollection = new BasicStepCollection();
+			stepCollection.setTitle(getTranslator(), "steps.general.title");
+		}
 		setStepCollection(stepCollection);
+		
 		setNextStep(GroupStep.create(ureq, stepCollection, steps));
 	}
 
@@ -69,15 +75,15 @@ public class MetadataStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		return new AuthorStepController(ureq, windowControl, form, stepsRunContext);
+		return new MetadataStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class AuthorStepController extends StepFormBasicController {
+	private class MetadataStepController extends StepFormBasicController {
 
 		private TextElement authorsEl;
 		private CopyCourseContext context;
 		
-		public AuthorStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		public MetadataStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT_2_10, null);
 			
 			setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));

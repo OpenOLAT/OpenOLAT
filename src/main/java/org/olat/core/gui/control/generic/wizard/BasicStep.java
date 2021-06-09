@@ -139,4 +139,9 @@ public abstract class BasicStep implements Step {
 	public void setStepCollection(StepCollection stepCollection) {
 		this.stepCollection = stepCollection;
 	}
+	
+	@Override
+	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
+		return new PrevNextFinishConfig(true, !nextStep().equals(NOSTEP), nextStep().equals(NOSTEP));
+	}
 }

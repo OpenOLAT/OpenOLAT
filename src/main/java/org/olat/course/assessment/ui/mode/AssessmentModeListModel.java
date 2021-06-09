@@ -20,10 +20,14 @@
 package org.olat.course.assessment.ui.mode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -39,6 +43,7 @@ import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.model.EnhancedStatus;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.ui.author.copy.wizard.additional.AssessmentModeCopyInfos;
 
 /**
  * 
@@ -53,6 +58,8 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 	
 	private final Translator translator;
 	private final AssessmentModeCoordinationService coordinationService;
+	
+	private Map<AssessmentMode, AssessmentModeCopyInfos> copyInfos = new HashMap<>();
 	
 	public AssessmentModeListModel(FlexiTableColumnModel columnsModel, Translator translator,
 			AssessmentModeCoordinationService coordinationService) {
@@ -87,8 +94,40 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 			case target: return mode.getTargetAudience();
 			case start: return canStart(mode);
 			case stop: return canStop(mode);
+			case nameElement: return getNameElement(mode);
+			case endChooser: return getDateChooser(mode, col);
+			case beginChooser: return getDateChooser(mode, col);
+			
 			default: return "ERROR";
 		}
+	}
+	
+	private TextElement getNameElement(AssessmentMode mode) {
+		if (copyInfos.containsKey(mode)) {
+			return copyInfos.get(mode).getNameElement();
+		}
+		
+		return null;
+	}
+	
+	private DateChooser getDateChooser(AssessmentMode mode, int col) {
+		if (copyInfos.containsKey(mode)) {
+			if (col == Cols.beginChooser.ordinal()) {
+				return copyInfos.get(mode).getBeginDateChooser();
+			} else if (col == Cols.endChooser.ordinal()) {
+				return copyInfos.get(mode).getEndDateChooser();
+			}
+		}
+		
+		return null;
+	}
+	
+	public void setCopyInfos(Map<AssessmentMode, AssessmentModeCopyInfos> copyInfos) {
+		this.copyInfos = copyInfos;
+	}
+	
+	public Map<AssessmentMode, AssessmentModeCopyInfos> getCopyInfos() {
+		return copyInfos;
 	}
 	
 	private boolean canStart(AssessmentMode mode) {
@@ -178,7 +217,10 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		followupTime("table.header.followupTime"),
 		target("table.header.target"),
 		start(""),
-		stop("");
+		stop(""),
+		nameElement("table.header.name"),
+		beginChooser("table.header.begin"),
+		endChooser("table.header.end");
 		
 		private final String i18nKey;
 		

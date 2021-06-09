@@ -91,8 +91,14 @@ public class GroupStep extends BasicStep {
 		super(ureq);
 		
 		setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
-		setStepCollection(stepCollection);
 		setI18nTitleAndDescr("steps.groups.title", null);
+		
+		if (stepCollection == null) {
+			stepCollection = new BasicStepCollection();
+			stepCollection.setTitle(getTranslator(), "steps.general.title");
+		}
+		setStepCollection(stepCollection);
+		
 		setNextStep(OwnersStep.create(ureq, stepCollection, steps));
 	}
 

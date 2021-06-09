@@ -121,9 +121,9 @@ public class CopyCourseWizardController extends BasicController {
 		copyContext.setReminders(hasReminders(sourceEntry));
 		copyContext.setAssessmentModes(hasAssessmentModes(sourceEntry));
 
-        CopyCourseStepsStep copyStepsStep = new CopyCourseStepsStep(ureq, copySteps, copyContext);
+        CopyCourseGeneralStep copyCourseStep = new CopyCourseGeneralStep(ureq, copySteps, copyContext);
         
-        copyWizardController = new StepsMainRunController(ureq, getWindowControl(), copyStepsStep, finish, cancel, translate("course.copy"), null);
+        copyWizardController = new StepsMainRunController(ureq, getWindowControl(), copyCourseStep, finish, cancel, translate("course.copy"), null);
 		
         listenTo(copyWizardController);
         getWindowControl().pushAsModalDialog(copyWizardController.getInitialComponent());

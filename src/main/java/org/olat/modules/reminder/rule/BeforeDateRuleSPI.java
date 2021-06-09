@@ -101,20 +101,51 @@ public class BeforeDateRuleSPI implements RuleSPI {
 		boolean allOk = true;
 		
 		if(rule instanceof ReminderRuleImpl) {
-			ReminderRuleImpl r = (ReminderRuleImpl)rule;
-			String operator = r.getOperator();
-			if(BEFORE.equals(operator) && StringHelper.containsNonWhitespace(r.getRightOperand())) {
-				try {
-					Date date = Formatter.parseDatetime(r.getRightOperand());
-					Date now = new Date();
-					allOk &= now.compareTo(date) <= 0;
-				} catch (ParseException e) {
-					log.error("", e);
-				}
+			Date now = new Date();
+			Date date = getDate(rule);
+			
+			if (date != null) {
+				allOk &= now.compareTo(date) <= 0;
 			}
 		}
 
 		return allOk;
 	}
+	
+	@Override
+	public boolean isDateDependant() {
+		return true;
+	}
 
+	@Override
+	public Date getDate(ReminderRule rule) {
+		if(rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			String operator = r.getOperator();
+			if(BEFORE.equals(operator) && StringHelper.containsNonWhitespace(r.getRightOperand())) {
+				try {
+					return Formatter.parseDatetime(r.getRightOperand());
+				} catch (ParseException e) {
+					log.error("", e);
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public ReminderRule moveDate(ReminderRule rule, CourseEnvironmentMapper envMapper, long dateDifferenceMilliSeconds) {
+		ReminderRule copy = clone(rule, envMapper);
+		Date date = getDate(rule);
+		
+		if (date != null) {
+			date.setTime(date.getTime() + dateDifferenceMilliSeconds);
+		}
+		
+		ReminderRuleImpl ruleImpl = (ReminderRuleImpl) copy;
+		ruleImpl.setRightOperand(Formatter.formatDatetime(date));
+		
+		return ruleImpl;
+	}
 }

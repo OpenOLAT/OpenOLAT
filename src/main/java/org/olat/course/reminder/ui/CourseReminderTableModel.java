@@ -70,6 +70,9 @@ public class CourseReminderTableModel extends DefaultFlexiTableDataModel<Reminde
 			case sendTime: return reminder.getSendTime();
 			case send: return reminder.getSend();
 			case tools: return reminder.getToolsLink();
+			case untilDate: return reminder.getBeforeDateChooser();
+			case afterDate: return reminder.getAfterDateChooser();
+			case descriptionElement: return reminder.getDescriptionElement();
 			default: return "ERROR";
 		}
 	}
@@ -77,6 +80,9 @@ public class CourseReminderTableModel extends DefaultFlexiTableDataModel<Reminde
 	public enum ReminderCols implements FlexiColumnDef {
 		id("table.header.id"),
 		description("table.header.description"),
+		descriptionElement("table.header.description"),
+		afterDate("table.header.date.after"),
+		untilDate("table.header.date.until"),
 		creator("table.header.creator"),
 		creationDate("table.header.creationDate"),
 		lastModified("table.header.lastModified"),

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.reminder;
 
+import java.util.Date;
 import java.util.Locale;
 
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -53,5 +54,16 @@ public interface RuleSPI {
 	public ReminderRule clone(ReminderRule rule, CourseEnvironmentMapper envMapper);
 	
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry);
-
+	
+	default public boolean isDateDependant() {
+		return false;
+	}
+	
+	default public Date getDate(ReminderRule rule) {
+		return null;
+	}
+	
+	default public ReminderRule moveDate(ReminderRule rule, CourseEnvironmentMapper envMapper, long dateDifferenceMilliSeconds) {
+		return null;
+	}
 }

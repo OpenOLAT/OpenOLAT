@@ -83,7 +83,7 @@ public class CoachesStep extends BasicStep {
 		if (steps.isEditCoaches()) {
 			return new CoachesStep(ureq, stepCollection, steps);
 		} else {
-			return ExecutionStep.create(ureq, stepCollection, steps);
+			return CatalogStep.create(ureq, stepCollection, steps);
 		}
 	}
 	
@@ -91,9 +91,15 @@ public class CoachesStep extends BasicStep {
 		super(ureq);
 		
 		setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
-		setStepCollection(stepCollection);
 		setI18nTitleAndDescr("steps.coaches.title", null);
-		setNextStep(ExecutionStep.create(ureq, stepCollection, steps));
+		
+		if (stepCollection == null) {
+			stepCollection = new BasicStepCollection();
+			stepCollection.setTitle(getTranslator(), "steps.general.title");
+		}
+		setStepCollection(stepCollection);
+		
+		setNextStep(CatalogStep.create(ureq, stepCollection, steps));
 	}
 
 	@Override

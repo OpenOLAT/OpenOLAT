@@ -60,7 +60,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseSteps;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseStepsStep;
-import org.olat.repository.ui.author.copy.wizard.general.ReferenceAndTitleStep;
+import org.olat.repository.ui.author.copy.wizard.general.MetadataStep;
 
 /**
  * Initial date: 10.05.2021<br>
@@ -73,7 +73,7 @@ public class GeneralDatesStep extends BasicStep {
 		if (steps.isEditDates()) {
 			return new GeneralDatesStep(ureq, stepCollection, steps);
 		} else {
-			return new ReferenceAndTitleStep(ureq, steps);
+			return MetadataStep.create(ureq, null, steps);
 		}
 	}
 	
@@ -92,12 +92,12 @@ public class GeneralDatesStep extends BasicStep {
 		setStepCollection(stepCollection);
 		
 		// Next step
-		setNextStep(new ReferenceAndTitleStep(ureq, steps));
+		setNextStep(MetadataStep.create(ureq, null, steps));
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return PrevNextFinishConfig.BACK_NEXT;
+		return new PrevNextFinishConfig(true, !nextStep().equals(NOSTEP), nextStep().equals(NOSTEP));
 	}
 
 	@Override
@@ -270,8 +270,10 @@ public class GeneralDatesStep extends BasicStep {
 					moveDates = moveDatesEvent.isMoveDates();
 				}
 				
+				cmc.deactivate();
 				cleanUp();
 			} else if (source == cmc) {
+				cmc.deactivate();
 				cleanUp();
 			}
 		}

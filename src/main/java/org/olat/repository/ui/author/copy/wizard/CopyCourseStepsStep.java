@@ -19,24 +19,30 @@
  */
 package org.olat.repository.ui.author.copy.wizard;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.components.util.KeyValues.KeyValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
-import org.olat.repository.ui.author.copy.wizard.dates.MoveDatesStep;
+import org.olat.repository.ui.author.copy.wizard.dates.GeneralDatesStep;
 
 /**
  * Initial date: 22.02.2021<br>
@@ -45,38 +51,43 @@ import org.olat.repository.ui.author.copy.wizard.dates.MoveDatesStep;
  */
 public class CopyCourseStepsStep extends BasicStep {
 
-	private final CopyCourseContext context;
-	private final CopyCourseSteps steps;
+	public static Step create(UserRequest ureq, CopyCourseSteps steps) {
+		if (steps.isAdvancedMode()) {
+			return new CopyCourseStepsStep(ureq, steps);
+		} else {
+			return GeneralDatesStep.create(ureq, null, steps);
+		}
+	}
+	
+	private CopyCourseSteps steps;
 
-	public CopyCourseStepsStep(UserRequest ureq, CopyCourseSteps steps, CopyCourseContext context) {
+	public CopyCourseStepsStep(UserRequest ureq, CopyCourseSteps steps) {
 		super(ureq);
 
 		this.steps = steps;
-		this.context = context;
-
+		
 		setI18nTitleAndDescr("wizard.copy.course.steps", null);
-		setNextStep(NOSTEP);
+		setNextStep(steps.isEditDates() ? GeneralDatesStep.create(ureq, null, steps) : NOSTEP);
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return PrevNextFinishConfig.NEXT;
+		return new PrevNextFinishConfig(true, !nextStep().equals(NOSTEP), nextStep().equals(NOSTEP));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		stepsRunContext.put(CopyCourseContext.CONTEXT_KEY, context);
-		return new CopyLearningPathCourseStepsStepController(ureq, windowControl, form, stepsRunContext);
+		return new CopyCourseStepsStepController(ureq, windowControl, form, stepsRunContext);
 	}
 
-	private class CopyLearningPathCourseStepsStepController extends StepFormBasicController {
+	private class CopyCourseStepsStepController extends StepFormBasicController {
 
-		private SingleSelection dateSettingsEl;
+		private CopyCourseContext context;
+		
 		private SingleSelection metadataSettingsEl;
 		private SingleSelection groupSettingsEl;
 		private SingleSelection ownerSettingsEl;
 		private SingleSelection coachSettingsEl;
-		private SingleSelection executionSettingsEl;
 		private SingleSelection publicationSettingsEl;
 		private SingleSelection disclaimerSettingsEl;
 
@@ -87,9 +98,14 @@ public class CopyCourseStepsStep extends BasicStep {
 		private SingleSelection lectureBlockSettingsEl;
 		private SingleSelection reminderSettingsEl;
 		private SingleSelection assessmentModeSettingsEl;
+		
+		private List<SingleSelection> allOptions;
+		private FormLink customizeAllLink;
 
-		public CopyLearningPathCourseStepsStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		public CopyCourseStepsStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT_2_10, null);
+			
+			context = (CopyCourseContext) runContext.get(CopyCourseContext.CONTEXT_KEY);
 
 			initForm(ureq);
 		}
@@ -101,11 +117,135 @@ public class CopyCourseStepsStep extends BasicStep {
 
 		@Override
 		protected void formOK(UserRequest ureq) {
-			// Date settings
-			context.setDateCopyType(context.getCopyType(dateSettingsEl.getSelectedKey()));
-			steps.setMoveDates(context.hasStartDate() && dateSettingsEl.getSelectedKey().equals(CopyType.custom.name()));
-			steps.setEditDates(context.hasDateDependantNodes() && dateSettingsEl.getSelectedKey().equals(CopyType.custom.name()));
+			saveStepConfig(ureq);
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		}
 
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			// Create new list for all options
+			allOptions = new ArrayList<>();
+			
+			// Copy options
+			KeyValue copy = new KeyValue(CopyType.copy.name(), translate("options.copy"));
+			KeyValue ignore = new KeyValue(CopyType.ignore.name(), translate("options.ignore"));
+			KeyValue reference = new KeyValue(CopyType.reference.name(), translate("options.reference"));
+			KeyValue customize = new KeyValue(CopyType.custom.name(), translate("options.customize"));
+			KeyValue createNew = new KeyValue(CopyType.createNew.name(), translate("options.empty.resource"));
+			KeyValue configureLater = new KeyValue(CopyType.ignore.name(), translate("options.configure.later"));
+
+			// Metadata settings
+			KeyValues metadataSettings = new KeyValues(copy, customize);
+			metadataSettingsEl = uifactory.addDropdownSingleselect("metadata", formLayout, metadataSettings.keys(), metadataSettings.values());
+			metadataSettingsEl.addActionListener(FormEvent.ONCHANGE);
+			allOptions.add(metadataSettingsEl);
+
+			// Group settings
+			KeyValues groupSettings = new KeyValues(copy, ignore, reference, customize);
+			groupSettingsEl = uifactory.addDropdownSingleselect("groups", formLayout, groupSettings.keys(), groupSettings.values());
+			groupSettingsEl.addActionListener(FormEvent.ONCHANGE);
+			allOptions.add(groupSettingsEl);
+
+			// Owner settings
+			KeyValues ownerSettings = new KeyValues(copy, ignore, customize);
+			ownerSettingsEl = uifactory.addDropdownSingleselect("owners", formLayout, ownerSettings.keys(), ownerSettings.values());
+			ownerSettingsEl.addActionListener(FormEvent.ONCHANGE);
+			allOptions.add(ownerSettingsEl);
+
+			// Coach settings
+			KeyValues coachSettings = new KeyValues(copy, ignore, customize);
+			coachSettingsEl = uifactory.addDropdownSingleselect("coaches", formLayout, coachSettings.keys(), coachSettings.values());
+			coachSettingsEl.addActionListener(FormEvent.ONCHANGE);
+			allOptions.add(coachSettingsEl);
+
+			// Publication settings
+			KeyValues publicationSettings = new KeyValues(copy, ignore, customize);
+			publicationSettingsEl = uifactory.addDropdownSingleselect("publication", formLayout, publicationSettings.keys(), publicationSettings.values());
+			publicationSettingsEl.setHelpTextKey("publication.help", null);
+			publicationSettingsEl.addActionListener(FormEvent.ONCHANGE);
+			allOptions.add(publicationSettingsEl);
+
+			// Disclaimer settings
+			KeyValues disclaimerSettings = new KeyValues(copy, ignore, customize);
+			disclaimerSettingsEl = uifactory.addDropdownSingleselect("disclaimer", formLayout, disclaimerSettings.keys(), disclaimerSettings.values());
+			disclaimerSettingsEl.addActionListener(FormEvent.ONCHANGE);
+			allOptions.add(disclaimerSettingsEl);
+
+			// Node specific settings
+			if (context.hasNodeSpecificSettings()) {
+				uifactory.addSpacerElement("spacer", formLayout, false);
+
+				if (context.hasBlog()) {
+					KeyValues blogSettings = new KeyValues(createNew, reference, configureLater, customize);
+					blogSettingsEl = uifactory.addDropdownSingleselect("blogs", formLayout, blogSettings.keys(), blogSettings.values());
+					blogSettingsEl.setHelpTextKey("blogs.help", null);
+					blogSettingsEl.addActionListener(FormEvent.ONCHANGE);
+					allOptions.add(blogSettingsEl);
+				}
+
+				if (context.hasFolder()) {
+					KeyValues folderSettings = new KeyValues(createNew, reference, configureLater, customize);
+					folderSettingsEl = uifactory.addDropdownSingleselect("folders", formLayout, folderSettings.keys(), folderSettings.values());
+					folderSettingsEl.setHelpTextKey("folders.help", null);
+					folderSettingsEl.addActionListener(FormEvent.ONCHANGE);
+					allOptions.add(folderSettingsEl);
+				}
+
+				if (context.hasWiki()) {
+					KeyValues wikiSettings = new KeyValues(createNew, reference, configureLater, customize);
+					wikiSettingsEl = uifactory.addDropdownSingleselect("wikis", formLayout, wikiSettings.keys(), wikiSettings.values());
+					wikiSettingsEl.setHelpTextKey("wikis.help", null);
+					wikiSettingsEl.addActionListener(FormEvent.ONCHANGE);
+					allOptions.add(wikiSettingsEl);
+				}
+			}
+
+			// Additional settings
+			if (context.hasAdditionalSettings()) {
+				uifactory.addSpacerElement("spacer", formLayout, false);
+
+				// Reminder steps
+				if (context.hasReminders()) {
+					KeyValues reminderSettings = new KeyValues(copy, ignore, customize);
+					reminderSettingsEl = uifactory.addDropdownSingleselect("reminders", formLayout, reminderSettings.keys(), reminderSettings.values());
+					reminderSettingsEl.addActionListener(FormEvent.ONCHANGE);
+					allOptions.add(reminderSettingsEl);
+				}
+
+				// Assessment mode steps
+				if (context.hasAssessmentModes()) {
+					KeyValues assessmentModeSettings = new KeyValues(copy, ignore, customize);
+					assessmentModeSettingsEl = uifactory.addDropdownSingleselect("assessment.modes", formLayout, assessmentModeSettings.keys(), assessmentModeSettings.values());
+					assessmentModeSettingsEl.addActionListener(FormEvent.ONCHANGE);
+					allOptions.add(assessmentModeSettingsEl);
+				}
+
+				// Lecture block steps
+				if (context.hasLectureBlocks()) {
+					KeyValues lectureBlockSettings = new KeyValues(ignore, customize);
+					lectureBlockSettingsEl = uifactory.addDropdownSingleselect("lecture.blocks", formLayout, lectureBlockSettings.keys(), lectureBlockSettings.values());
+					lectureBlockSettingsEl.addActionListener(FormEvent.ONCHANGE);
+					allOptions.add(lectureBlockSettingsEl);
+				}
+			}
+			
+			uifactory.addSpacerElement("spacer", formLayout, false);
+			
+			customizeAllLink = uifactory.addFormLink("customize.all", formLayout, Link.BUTTON_XSMALL);
+		}
+
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if (source == customizeAllLink) {
+				for (SingleSelection option : allOptions) {
+					if (option.containsKey(CopyType.custom.name())) {
+						option.select(CopyType.custom.name(), true);
+					}
+				}
+			}
+		}
+		
+		private void saveStepConfig(UserRequest ureq) {
 			// Metadata settings
 			context.setMetadataCopyType(context.getCopyType(metadataSettingsEl.getSelectedKey()));
 			steps.setEditMetadata(metadataSettingsEl.isKeySelected(CopyType.custom.name()));
@@ -121,10 +261,6 @@ public class CopyCourseStepsStep extends BasicStep {
 			// Coach settings
 			context.setCoachesCopyType(context.getCopyType(coachSettingsEl.getSelectedKey()));
 			steps.setEditCoaches(coachSettingsEl.isKeySelected(CopyType.custom.name()));
-
-			// Execution settings
-			context.setExecutionCopyType(context.getCopyType(executionSettingsEl.getSelectedKey()));
-			steps.setEditExecution(executionSettingsEl.isKeySelected(CopyType.custom.name()));
 
 			// Publication settings
 			context.setCatalogCopyType(context.getCopyType(publicationSettingsEl.getSelectedKey()));
@@ -170,105 +306,8 @@ public class CopyCourseStepsStep extends BasicStep {
 				steps.setEditAssessmentModes(assessmentModeSettingsEl.isKeySelected(CopyType.custom.name()));
 			}
 
-			setNextStep(MoveDatesStep.create(ureq, steps));
+			setNextStep(GeneralDatesStep.create(ureq, null, steps));
 			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
-			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-		}
-
-		@Override
-		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			// Copy options
-			KeyValue copy = new KeyValue(CopyType.copy.name(), translate("options.copy"));
-			KeyValue ignore = new KeyValue(CopyType.ignore.name(), translate("options.ignore"));
-			KeyValue reference = new KeyValue(CopyType.reference.name(), translate("options.reference"));
-			KeyValue customize = new KeyValue(CopyType.custom.name(), translate("options.customize"));
-			KeyValue createNew = new KeyValue(CopyType.createNew.name(), translate("options.empty.resource"));
-			KeyValue configureLater = new KeyValue(CopyType.ignore.name(), translate("options.configure.later"));
-
-			// Date settings
-			KeyValues dateSettings = new KeyValues(copy, customize);
-			dateSettingsEl = uifactory.addDropdownSingleselect("dates", formLayout, dateSettings.keys(), dateSettings.values());
-			dateSettingsEl.setHelpTextKey("dates.help", null);
-
-			// Metadata settings
-			KeyValues metadataSettings = new KeyValues(copy, customize);
-			metadataSettingsEl = uifactory.addDropdownSingleselect("metadata", formLayout, metadataSettings.keys(), metadataSettings.values());
-
-			// Group settings
-			KeyValues groupSettings = new KeyValues(copy, ignore, reference, customize);
-			groupSettingsEl = uifactory.addDropdownSingleselect("groups", formLayout, groupSettings.keys(), groupSettings.values());
-
-			// Owner settings
-			KeyValues ownerSettings = new KeyValues(copy, ignore, customize);
-			ownerSettingsEl = uifactory.addDropdownSingleselect("owners", formLayout, ownerSettings.keys(), ownerSettings.values());
-
-			// Coach settings
-			KeyValues coachSettings = new KeyValues(copy, ignore, customize);
-			coachSettingsEl = uifactory.addDropdownSingleselect("coaches", formLayout, coachSettings.keys(), coachSettings.values());
-
-			// Execution settings
-			KeyValues executionSettings = new KeyValues(copy, customize);
-			executionSettingsEl = uifactory.addDropdownSingleselect("execution", formLayout, executionSettings.keys(), executionSettings.values());
-
-			// Publication settings
-			KeyValues publicationSettings = new KeyValues(copy, ignore, customize);
-			publicationSettingsEl = uifactory.addDropdownSingleselect("publication", formLayout, publicationSettings.keys(), publicationSettings.values());
-			publicationSettingsEl.setHelpTextKey("publication.help", null);
-
-			// Disclaimer settings
-			KeyValues disclaimerSettings = new KeyValues(copy, ignore, customize);
-			disclaimerSettingsEl = uifactory.addDropdownSingleselect("disclaimer", formLayout, disclaimerSettings.keys(), disclaimerSettings.values());
-
-			// Node specific settings
-			if (context.hasNodeSpecificSettings()) {
-				uifactory.addSpacerElement("spacer", formLayout, false);
-
-				if (context.hasBlog()) {
-					KeyValues blogSettings = new KeyValues(createNew, reference, configureLater, customize);
-					blogSettingsEl = uifactory.addDropdownSingleselect("blogs", formLayout, blogSettings.keys(), blogSettings.values());
-					blogSettingsEl.setHelpTextKey("blogs.help", null);
-				}
-
-				if (context.hasFolder()) {
-					KeyValues folderSettings = new KeyValues(createNew, reference, configureLater, customize);
-					folderSettingsEl = uifactory.addDropdownSingleselect("folders", formLayout, folderSettings.keys(), folderSettings.values());
-					folderSettingsEl.setHelpTextKey("folders.help", null);
-				}
-
-				if (context.hasWiki()) {
-					KeyValues wikiSettings = new KeyValues(createNew, reference, configureLater, customize);
-					wikiSettingsEl = uifactory.addDropdownSingleselect("wikis", formLayout, wikiSettings.keys(), wikiSettings.values());
-					wikiSettingsEl.setHelpTextKey("wikis.help", null);
-				}
-			}
-
-			// Additional settings
-			if (context.hasAdditionalSettings()) {
-				uifactory.addSpacerElement("spacer", formLayout, false);
-
-				// Reminder steps
-				if (context.hasReminders()) {
-					KeyValues reminderSettings = new KeyValues(copy, ignore, customize);
-					reminderSettingsEl = uifactory.addDropdownSingleselect("reminders", formLayout, reminderSettings.keys(), reminderSettings.values());
-				}
-
-				// Assessment mode steps
-				if (context.hasAssessmentModes()) {
-					KeyValues assessmentModeSettings = new KeyValues(copy, ignore, customize);
-					assessmentModeSettingsEl = uifactory.addDropdownSingleselect("assessment.modes", formLayout, assessmentModeSettings.keys(), assessmentModeSettings.values());
-				}
-
-				// Lecture block steps
-				if (context.hasLectureBlocks()) {
-					KeyValues lectureBlockSettings = new KeyValues(ignore, customize);
-					lectureBlockSettingsEl = uifactory.addDropdownSingleselect("lecture.blocks", formLayout, lectureBlockSettings.keys(), lectureBlockSettings.values());
-				}
-			}
-		}
-
-		@Override
-		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-
 		}
 	}
 }

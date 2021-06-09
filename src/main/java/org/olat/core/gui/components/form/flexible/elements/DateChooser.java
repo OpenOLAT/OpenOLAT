@@ -55,6 +55,11 @@ public interface DateChooser extends TextElement {
 	 */
 	public void setInitialDate(Date initialDate);
 	
+	/**
+	 * @return Difference in milliseconds between the initial date and newly selected date
+	 */
+	public long getDateDifference();
+	
 	public Date getSecondDate();
 	
 	public void setSecondDate(Date date);

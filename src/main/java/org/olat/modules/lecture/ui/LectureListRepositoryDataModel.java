@@ -71,6 +71,10 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case teachers: return row.getTeachers();
 			case tools: return row.getToolsLink();
 			case assessmentMode: return row.isAssessmentMode();
+			case dateChooser: return row.getDateChooser();
+			case teacherChooser: return row.getTeacherChooser();
+			case locationElement: return row.getLocationElement();
+			case titleElement: return row.getTitleElement();
 			default: return null;
 		}
 	}
@@ -91,7 +95,11 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		tools("table.header.actions"),
 		status("table.header.status"),
 		compulsory("table.header.compulsory.long"),
-		assessmentMode("table.header.assessment.mode");
+		assessmentMode("table.header.assessment.mode"),
+		dateChooser("lecture.date"),
+		teacherChooser("table.header.teachers"),
+		locationElement("lecture.location"),
+		titleElement("lecture.title");
 		
 		private final String i18nKey;
 		

@@ -278,6 +278,17 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		this.initialDate = initialDate;
 	}
 	
+	@Override
+	public long getDateDifference() {
+		Date date = getDate();
+		
+		if (initialDate != null && date != null) {
+			return date.getTime() - initialDate.getTime();
+		}
+		
+		return 0;
+	}
+	
 	public String getSeparator() {
 		return separatorI18nKey;
 	}

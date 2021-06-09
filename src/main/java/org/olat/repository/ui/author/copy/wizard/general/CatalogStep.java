@@ -73,7 +73,13 @@ public class CatalogStep extends BasicStep {
 		
 		setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("steps.catalog.title", null);
+
+		if (stepCollection == null) {
+			stepCollection = new BasicStepCollection();
+			stepCollection.setTitle(getTranslator(), "steps.general.title");
+		}
 		setStepCollection(stepCollection);
+		
 		setNextStep(DisclaimerStep.create(ureq, stepCollection, steps));
 	}
 

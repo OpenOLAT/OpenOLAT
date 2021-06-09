@@ -91,8 +91,14 @@ public class OwnersStep extends BasicStep {
 		super(ureq);
 		
 		setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
-		setStepCollection(stepCollection);
 		setI18nTitleAndDescr("steps.owners.title", null);
+		
+		if (stepCollection == null) {
+			stepCollection = new BasicStepCollection();
+			stepCollection.setTitle(getTranslator(), "steps.general.title");
+		}
+		setStepCollection(stepCollection);
+		
 		setNextStep(CoachesStep.create(ureq, stepCollection, steps));
 	}
 

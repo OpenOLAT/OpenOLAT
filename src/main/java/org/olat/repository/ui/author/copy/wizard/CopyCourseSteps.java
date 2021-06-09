@@ -26,12 +26,13 @@ package org.olat.repository.ui.author.copy.wizard;
  */
 public class CopyCourseSteps {
 	
-	// Date steps
-	private boolean moveDates;
+	public static final String CONTEXT_KEY = CopyCourseSteps.class.getSimpleName();
+	
+	// Advanced mode 
+	private boolean advancedMode;
 	
 	// General steps
 	private boolean editTitleOrReference;
-	private boolean editExecution;
 	private boolean editMetadata;
 	private boolean editGroups;
 	private boolean editCoaches;
@@ -55,23 +56,17 @@ public class CopyCourseSteps {
 	// Lecutre block steps
 	private boolean editLecutreBlocks;
 	
-	public boolean isMoveDates() {
-		return moveDates;
+	public boolean isAdvancedMode() {
+		return advancedMode;
 	}
-	public void setMoveDates(boolean moveDates) {
-		this.moveDates = moveDates;
+	public void setAdvancedMode(boolean advancedMode) {
+		this.advancedMode = advancedMode;
 	}
 	public boolean isEditTitleOrReference() {
 		return editTitleOrReference;
 	}
 	public void setEditTitleOrReference(boolean editTitleOrReference) {
 		this.editTitleOrReference = editTitleOrReference;
-	}
-	public boolean isEditExecution() {
-		return editExecution;
-	}
-	public void setEditExecution(boolean editExecution) {
-		this.editExecution = editExecution;
 	}
 	public boolean isEditMetadata() {
 		return editMetadata;

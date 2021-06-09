@@ -313,6 +313,13 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		flc.add("parentLinks", mainStepTitles);
 	}
 	
+	private void updateButtons() {
+		PrevNextFinishConfig pnfConf = steps.peek().getInitialPrevNextFinishConfig();
+		prevButton.setEnabled(pnfConf.isBackIsEnabled());
+		nextButton.setEnabled(pnfConf.isNextIsEnabled());
+		finishButton.setEnabled(pnfConf.isFinishIsEnabled());
+	}
+	
 	private void addNextStep(StepFormController child, Step nextStep) {
 		activateTitle(++currentStepIndex);
 
@@ -402,6 +409,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 				finishWizard(ureq);
 			} else if (event == StepsEvent.STEPS_CHANGED) {
 				updateTitleItems();
+				updateButtons();
 			}
 		}
 	}

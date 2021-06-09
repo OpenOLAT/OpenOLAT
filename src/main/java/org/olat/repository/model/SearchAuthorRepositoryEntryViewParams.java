@@ -49,7 +49,10 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private String idRefsAndTitle;
 	private String author;
 	private String displayname;
+	private String reference;
 	private String description;
+	
+	private boolean exactSearch;	// Use exact search instead of fuzzy search
 	
 	private OrderBy orderBy;
 	private boolean orderByAsc;
@@ -63,6 +66,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 	public SearchAuthorRepositoryEntryViewParams(IdentityRef identity, Roles roles) {
 		this.identity = identity;
 		this.roles = roles;
+	}
+	
+	public boolean isExactSearch() {
+		return exactSearch;
+	}
+	
+	public void setExactSearch(boolean exactSearch) {
+		this.exactSearch = exactSearch;
 	}
 
 	public String getIdAndRefs() {
@@ -103,6 +114,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setDisplayname(String displayname) {
 		this.displayname = displayname;
+	}
+	
+	public String getReference() {
+		return reference;
+	}
+	
+	public void setReference(String reference) {
+		this.reference = reference;
 	}
 
 	public String getDescription() {

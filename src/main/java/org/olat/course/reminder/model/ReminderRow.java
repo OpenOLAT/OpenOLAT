@@ -21,7 +21,9 @@ package org.olat.course.reminder.model;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.modules.reminder.model.ReminderInfos;
 
 /**
@@ -38,12 +40,22 @@ public class ReminderRow {
 	private final FormLink sendLink;
 	private final String rulesComponentName;
 	
+	
+	// Used in copy wizard
+	private DateChooser beforeDateChooser;
+	private DateChooser afterDateChooser;
+	private TextElement descriptionElement;
+
 	public ReminderRow(ReminderInfos reminder, FormLink toolsLink, FormLink emailLink, FormLink sendLink, String rulesComponentName) {
 		this.reminder = reminder;
 		this.toolsLink = toolsLink;
 		this.emailLink = emailLink;
 		this.sendLink = sendLink;
 		this.rulesComponentName = rulesComponentName;
+	}
+	
+	public ReminderRow(ReminderInfos reminder) {
+		this(reminder, null, null, null, null);
 	}
 	
 	public Long getKey() {
@@ -90,4 +102,27 @@ public class ReminderRow {
 		return rulesComponentName;
 	}
 
+	public DateChooser getBeforeDateChooser() {
+		return beforeDateChooser;
+	}
+	
+	public void setBeforeDateChooser(DateChooser beforeDate) {
+		this.beforeDateChooser = beforeDate;
+	}
+	
+	public DateChooser getAfterDateChooser() {
+		return afterDateChooser;
+	}
+	
+	public void setAfterDateChooser(DateChooser afterDateChooser) {
+		this.afterDateChooser = afterDateChooser;
+	}
+	
+	public TextElement getDescriptionElement() {
+		return descriptionElement;
+	}
+	
+	public void setDescriptionElement(TextElement descriptionElement) {
+		this.descriptionElement = descriptionElement;
+	}
 }

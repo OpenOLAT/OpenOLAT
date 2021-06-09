@@ -257,14 +257,27 @@ public class RepositoryEntryAuthorQueries {
 
 		String displayname = params.getDisplayname();
 		if (StringHelper.containsNonWhitespace(displayname)) {
-			displayname = PersistenceHelper.makeFuzzyQueryString(displayname);
+			if (!params.isExactSearch()) {
+				displayname = PersistenceHelper.makeFuzzyQueryString(displayname);
+			}
 			sb.append(" and ");
 			PersistenceHelper.appendFuzzyLike(sb, "v.displayname", "displayname", dbInstance.getDbVendor());
 		}
 		
+		String reference = params.getReference();
+		if (StringHelper.containsNonWhitespace(reference)) {
+			if (!params.isExactSearch()) {
+				reference = PersistenceHelper.makeFuzzyQueryString(reference);
+			}
+			sb.append(" and ");
+			PersistenceHelper.appendFuzzyLike(sb, "v.externalRef", "externalRef", dbInstance.getDbVendor());
+		}
+		
 		String desc = params.getDescription();
 		if (StringHelper.containsNonWhitespace(desc)) {
-			desc = PersistenceHelper.makeFuzzyQueryString(desc);
+			if (!params.isExactSearch()) {
+				desc = PersistenceHelper.makeFuzzyQueryString(desc);
+			}
 			sb.append(" and ");
 			PersistenceHelper.appendFuzzyLike(sb, "v.description", "desc", dbInstance.getDbVendor());
 		}
@@ -352,6 +365,9 @@ public class RepositoryEntryAuthorQueries {
 		}
 		if (StringHelper.containsNonWhitespace(displayname)) {
 			dbQuery.setParameter("displayname", displayname);
+		}
+		if (StringHelper.containsNonWhitespace(reference)) {
+			dbQuery.setParameter("externalRef", reference);
 		}
 		if (StringHelper.containsNonWhitespace(desc)) {
 			dbQuery.setParameter("desc", desc);

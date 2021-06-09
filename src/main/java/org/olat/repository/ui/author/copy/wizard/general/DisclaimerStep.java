@@ -59,7 +59,13 @@ public class DisclaimerStep extends BasicStep {
 		
 		setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("steps.disclaimer.title", null);
+		
+		if (stepCollection == null) {
+			stepCollection = new BasicStepCollection();
+			stepCollection.setTitle(getTranslator(), "steps.general.title");
+		}
 		setStepCollection(stepCollection);
+		
 		setNextStep(BlogStep.create(ureq, steps));
 	}
 

@@ -19,17 +19,23 @@
  */
 package org.olat.repository.ui.author.copy.wizard;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.editor.overview.OverviewRow;
+import org.olat.course.reminder.model.ReminderRow;
 import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.group.ui.main.BGTableItem;
+import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.ui.author.copy.wizard.additional.AssessmentModeCopyInfos;
 
 /**
  * Initial date: 18.02.2021<br>
@@ -60,14 +66,6 @@ public class CopyCourseContext {
 	private String displayName;
 	private String externalRef;
 	
-	// MoveDatesStep
-	private CopyType dateCopyType;
-	private int shiftDays;
-	private Date newStartDate;
-	private Date releaseDate;
-	private Date dueDate;
-	private long dateDifference;
-	
 	// MetadataStep
 	private CopyType metadataCopyType;
 	private String authors;
@@ -75,23 +73,24 @@ public class CopyCourseContext {
 	// GroupStep
 	private CopyType groupCopyType;
 	private CopyType customGroupCopyType;
-	private List<BGTableItem> groups;
+	private List<BGTableItem> groups = new ArrayList<>();
 	
 	// OwnersStep
 	private CopyType ownersCopyType;
 	private CopyType customOwnersCopyType;
-	private List<Identity> newOwners;
+	private List<Identity> newOwners = new ArrayList<>();
 	
 	// CoachesStep
 	private CopyType coachesCopyType;
 	private CopyType customCoachesCopyType;
-	private List<Identity> newCoaches;
+	private List<Identity> newCoaches = new ArrayList<>();
 	
 	// ExecutionStep
 	private CopyType executionCopyType;
 	private ExecutionType executionType;
 	private Date beginDate;
 	private Date endDate;
+	private long dateDifference;
 	private Long semesterKey;
 	private String location;
 	
@@ -119,14 +118,18 @@ public class CopyCourseContext {
 	// ReminderStep
 	private CopyType reminderCopyType;
 	private CopyType customReminderCopyType;
+	private List<ReminderRow> reminderRows;
 	
 	// AssessmentModeStep
 	private CopyType assessmentModeCopyType;
 	private CopyType customAssessmentModeCopyType;
+	private List<AssessmentMode> assessmentModeRows;
+	private Map<AssessmentMode, AssessmentModeCopyInfos> assessmentCopyInfos;
 	
 	// LectureBlockStep
 	private CopyType lectureBlockCopyType;
 	private CopyType customLectureBlockCopyType;
+	private List<LectureBlockRow> lectureBlockRows;
 	
 	public Identity getExecutingIdentity() {
 		return executingIdentity;
@@ -256,56 +259,6 @@ public class CopyCourseContext {
 		this.externalRef = externalRef;
 	}
 	
-	public CopyType getDateCopyType() {
-		return dateCopyType;
-	}
-
-	public void setDateCopyType(CopyType dateShiftType) {
-		this.dateCopyType = dateShiftType;
-	}
-	
-	public Date getNewStartDate() {
-		if (newStartDate != null) {
-			return newStartDate;
-		} else if (getRepositoryLifeCycle() != null) {
-			return getRepositoryLifeCycle().getValidFrom();
-		} else {
-			return null;
-		}
-	}
-	
-	public void setNewStartDate(Date newStartDate) {
-		this.newStartDate = newStartDate;
-	}
-	
-	public boolean hasStartDate() {
-		return getNewStartDate() != null;
-	}
-
-	public int getShiftDays() {
-		return shiftDays;
-	}
-
-	public void setShiftDays(int shiftDays) {
-		this.shiftDays = shiftDays;
-	}
-
-	public Date getReleaseDate() {
-		return releaseDate;
-	}
-
-	public void setReleaseDate(Date releaseDate) {
-		this.releaseDate = releaseDate;
-	}
-
-	public Date getDueDate() {
-		return dueDate;
-	}
-
-	public void setDueDate(Date dueDate) {
-		this.dueDate = dueDate;
-	}
-	
 	public long getDateDifference() {
 		return dateDifference;
 	}
@@ -421,8 +374,8 @@ public class CopyCourseContext {
 	public Date getBeginDate() {
 		if (beginDate != null) {
 			return beginDate;
-		} else if (newStartDate != null) {
-			return newStartDate;
+		} else if (getRepositoryLifeCycle() != null) {
+			return getRepositoryLifeCycle().getValidFrom();
 		} else {
 			return null;
 		}
@@ -435,14 +388,8 @@ public class CopyCourseContext {
 	public Date getEndDate() {
 		if (endDate != null) {
 			return endDate;
-		} else if (getRepositoryLifeCycle() != null && newStartDate != null) {
-			if (getRepositoryLifeCycle().getValidFrom() != null && getRepositoryLifeCycle().getValidTo() != null) {
-				long dif = newStartDate.getTime() - getRepositoryLifeCycle().getValidFrom().getTime();
-				Date newEndDate = getRepositoryLifeCycle().getValidTo();
-				newEndDate.setTime(newEndDate.getTime() + dif);
-				
-				return newEndDate;
-			}
+		} else if (getRepositoryLifeCycle() != null) {
+			return getRepositoryLifeCycle().getValidTo();
 		}
 		
 		return null;
@@ -578,6 +525,14 @@ public class CopyCourseContext {
 		this.customReminderCopyType = customReminderCopyType;
 	}
 	
+	public List<ReminderRow> getReminderRows() {
+		return reminderRows;
+	}
+	
+	public void setReminderRows(List<ReminderRow> reminderRows) {
+		this.reminderRows = reminderRows;
+	}
+	
 	public CopyType getAssessmentModeCopyType() {
 		return assessmentModeCopyType;
 	}
@@ -591,6 +546,22 @@ public class CopyCourseContext {
 	
 	public void setCustomAssessmentModeCopyType(CopyType customAssessmentModeCopyType) {
 		this.customAssessmentModeCopyType = customAssessmentModeCopyType;
+	}
+	
+	public List<AssessmentMode> getAssessmentModeRows() {
+		return assessmentModeRows;
+	}
+	
+	public void setAssessmentModeRows(List<AssessmentMode> assessmentModeRows) {
+		this.assessmentModeRows = assessmentModeRows;
+	}	
+	
+	public Map<AssessmentMode, AssessmentModeCopyInfos> getAssessmentCopyInfos() {
+		return assessmentCopyInfos;
+	}
+	
+	public void setAssessmentCopyInfos(Map<AssessmentMode, AssessmentModeCopyInfos> assessmentCopyInfos) {
+		this.assessmentCopyInfos = assessmentCopyInfos;
 	}
 	
 	public CopyType getLectureBlockCopyType() {
@@ -608,6 +579,15 @@ public class CopyCourseContext {
 	public void setCustomLectureBlockCopyType(CopyType customLectureBlockCopyType) {
 		this.customLectureBlockCopyType = customLectureBlockCopyType;
 	}
+	
+	public List<LectureBlockRow> getLectureBlockRows() {
+		return lectureBlockRows;
+	}
+	
+	public void setLectureBlockRows(List<LectureBlockRow> lectureBlockRows) {
+		this.lectureBlockRows = lectureBlockRows;
+	}
+	
 	
 	
 	// Helpers

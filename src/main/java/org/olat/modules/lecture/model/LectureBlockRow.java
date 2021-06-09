@@ -19,7 +19,10 @@
  */
 package org.olat.modules.lecture.model;
 
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 
@@ -39,6 +42,11 @@ public class LectureBlockRow implements LectureBlockRef {
 	private boolean assessmentMode;
 	
 	private FormLink toolsLink;
+	
+	private DateChooser dateChooser;
+	private MultipleSelectionElement teacherChooser;
+	private TextElement locationElement;
+	private TextElement titleElement;
 	
 	public LectureBlockRow(LectureBlock lectureBlock, String entryDisplayname, String externalRef,
 			String teachers, boolean iamTeacher, boolean assessmentMode) {
@@ -89,5 +97,37 @@ public class LectureBlockRow implements LectureBlockRef {
 	
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+	
+	public DateChooser getDateChooser() {
+		return dateChooser;
+	}
+	
+	public void setDateChooser(DateChooser dateChooser) {
+		this.dateChooser = dateChooser;
+	}
+	
+	public MultipleSelectionElement getTeacherChooser() {
+		return teacherChooser;
+	}
+	
+	public void setTeacherChooser(MultipleSelectionElement teacherChooser) {
+		this.teacherChooser = teacherChooser;
+	}
+	
+	public TextElement getLocationElement() {
+		return locationElement;
+	}
+	
+	public void setLocationElement(TextElement locationElement) {
+		this.locationElement = locationElement;
+	}
+	
+	public TextElement getTitleElement() {
+		return titleElement;
+	}
+	
+	public void setTitleElement(TextElement titleElement) {
+		this.titleElement = titleElement;
 	}
 }

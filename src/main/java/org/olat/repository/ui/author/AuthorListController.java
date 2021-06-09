@@ -135,6 +135,7 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceU
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryController;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseWizardController;
 import org.olat.repository.wizard.RepositoryWizardProvider;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
@@ -174,6 +175,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private DialogBoxController copyDialogCtrl;
 	private ReferencesController referencesCtrl;
 	private CopyRepositoryEntryController copyCtrl;
+	private CopyCourseWizardController copyCourseCtrl;
 	private ConfirmCloseController closeCtrl;
 	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
 	private ImportRepositoryEntryController importCtrl;

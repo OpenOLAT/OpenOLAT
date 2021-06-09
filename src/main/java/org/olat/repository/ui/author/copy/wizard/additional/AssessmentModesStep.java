@@ -19,11 +19,27 @@
  */
 package org.olat.repository.ui.author.copy.wizard.additional;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.BasicStepCollection;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
@@ -33,8 +49,21 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
+import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.ui.mode.AssessmentModeListController;
+import org.olat.course.assessment.ui.mode.AssessmentModeListModel;
+import org.olat.course.assessment.ui.mode.AssessmentModeListModel.Cols;
+import org.olat.course.assessment.ui.mode.ModeStatusCellRenderer;
+import org.olat.course.assessment.ui.mode.TargetAudienceCellRenderer;
+import org.olat.course.assessment.ui.mode.TimeCellRenderer;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseSteps;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseStepsStep;
+import org.olat.repository.ui.author.copy.wizard.dates.MoveDateConfirmController;
+import org.olat.repository.ui.author.copy.wizard.dates.MoveDatesEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 11.05.2021<br>
@@ -80,27 +109,182 @@ public class AssessmentModesStep extends BasicStep {
 	
 	private class AssessmentModesStepController extends StepFormBasicController {
 
+		private CopyCourseContext context;
+		
+		private FlexiTableElement tableEl;
+		private AssessmentModeListModel model;
+		
+		private CloseableModalController cmc;
+		private MoveDateConfirmController moveDateConfirmController;
+		private boolean askForDateMove = true;
+		private boolean moveDates = false;
+		
+		@Autowired
+		private AssessmentModeManager assessmentModeMgr;
+		@Autowired
+		private AssessmentModeCoordinationService assessmentModeCoordinationService;
+		
 		public AssessmentModesStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
-			super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT_2_10, null);
-			// TODO Auto-generated constructor stub
+			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
+			
+			setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
+			setTranslator(Util.createPackageTranslator(AssessmentModeListController.class, getLocale(), getTranslator()));
+			
+			context = (CopyCourseContext) runContext.get(CopyCourseContext.CONTEXT_KEY);
+			
+			initForm(ureq);
 		}
 
 		@Override
 		protected void doDispose() {
-			// TODO Auto-generated method stub
-			
+			// Nothing to dispose
 		}
 
 		@Override
 		protected void formOK(UserRequest ureq) {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-			
 		}
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			// TODO Auto-generated method stub
+			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.status, new ModeStatusCellRenderer(getTranslator())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.nameElement));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.beginChooser));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.endChooser));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.leadTime, new TimeCellRenderer(getTranslator())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.followupTime, new TimeCellRenderer(getTranslator())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.target, new TargetAudienceCellRenderer(getTranslator())));
 			
+			model = new AssessmentModeListModel(columnsModel, getTranslator(), assessmentModeCoordinationService);
+			tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+			
+			loadModel(formLayout);
+		}
+		
+		private void loadModel(FormItemContainer formLayout) {
+			if (context.getAssessmentCopyInfos() == null || context.getAssessmentModeRows() == null) {
+				// Add items to formLayout -> catch events in formInnerEvent
+				// Set empty page as template -> items are only shown in table
+				FormItemContainer tableItems = FormLayoutContainer.createCustomFormLayout("formItemsTableLayout", getTranslator(), velocity_root + "/table_formitems.html");
+				tableItems.setRootForm(mainForm);
+				formLayout.add(tableItems);
+				
+				List<AssessmentMode> modes = assessmentModeMgr.getAssessmentModeFor(context.getRepositoryEntry());
+				Map<AssessmentMode, AssessmentModeCopyInfos> copyInfos = new HashMap<>();
+				
+				int counter = 0;
+				
+				for (AssessmentMode mode : modes) {
+					TextElement nameElement = uifactory.addTextElement("description_" + counter, -1, mode.getName(), tableItems);
+					DateChooser beginDateChooser = uifactory.addDateChooser("begin_date_" + counter, mode.getBegin(), tableItems);
+					beginDateChooser.addActionListener(FormEvent.ONCHANGE);
+					DateChooser endDateChooser = uifactory.addDateChooser("end_date_" + counter++, mode.getEnd(), tableItems);
+					endDateChooser.addActionListener(FormEvent.ONCHANGE);
+					
+					AssessmentModeCopyInfos copyInfo = new AssessmentModeCopyInfos(nameElement, beginDateChooser, endDateChooser);
+					copyInfos.put(mode, copyInfo);
+					
+				}
+				
+				context.setAssessmentModeRows(modes);
+				context.setAssessmentCopyInfos(copyInfos);
+			}
+			
+			model.setObjects(context.getAssessmentModeRows());
+			model.setCopyInfos(context.getAssessmentCopyInfos());
+			tableEl.reloadData();
+		}
+		
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if (source instanceof DateChooser) {
+				DateChooser sourceDateChooser = (DateChooser) source;
+				boolean hasInitialDate = sourceDateChooser.getInitialDate() != null;
+				
+				if (hasInitialDate) {
+					if (askForDateMove) {
+						doAskForDateMove(ureq, sourceDateChooser);
+					} else if (moveDates) {
+						moveAllDates(sourceDateChooser, model);
+					}
+				} else {
+					sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
+				}
+			}
+		}
+		
+		@Override
+		protected void event(UserRequest ureq, Controller source, Event event) {
+			if (source == moveDateConfirmController) {
+				if (event instanceof MoveDatesEvent) {
+					MoveDatesEvent moveDatesEvent = (MoveDatesEvent) event;
+					
+					if (moveDatesEvent.isMoveDates()) {
+						// Move other dates
+						moveAllDates(moveDatesEvent.getDateChooser(), model);					
+					} 
+					
+					askForDateMove = !moveDatesEvent.isRememberChoice();
+					moveDates = moveDatesEvent.isMoveDates();
+				}
+				
+				cmc.deactivate();
+				cleanUp();
+			} else if (source == cmc) {
+				cmc.deactivate();
+				cleanUp();
+			}
+		}
+		
+		private void doAskForDateMove(UserRequest ureq, DateChooser dateChooser) {
+			if (dateChooser == null || dateChooser.getInitialDate() == null || dateChooser.getDate() == null) {
+				return;
+			}
+			
+			moveDateConfirmController = new MoveDateConfirmController(ureq, getWindowControl(), dateChooser);
+			listenTo(moveDateConfirmController);
+			
+			cmc = new CloseableModalController(getWindowControl(), "close", moveDateConfirmController.getInitialComponent(), true, translate("dates.update.others"));
+			listenTo(cmc);
+			cmc.activate();
+		}
+		
+		private void moveAllDates(DateChooser dateChooser, AssessmentModeListModel model) {	
+			if (dateChooser == null || dateChooser.getInitialDate() == null || dateChooser.getDate() == null) {
+				return;
+			}
+			
+			long difference = dateChooser.getDate().getTime() - dateChooser.getInitialDate().getTime();
+			
+			for (AssessmentMode row : model.getObjects()) {
+				DateChooser beginDateChooser = model.getCopyInfos().get(row).getBeginDateChooser();
+				DateChooser endDateChooser = model.getCopyInfos().get(row).getEndDateChooser();
+				
+				if (beginDateChooser != null && !beginDateChooser.equals(dateChooser) && beginDateChooser.getDate() != null) {
+					Date startDate = beginDateChooser.getInitialDate();
+					startDate.setTime(startDate.getTime() + difference);
+					beginDateChooser.setDate(startDate);
+					beginDateChooser.setInitialDate(startDate);
+				}
+				
+				if (endDateChooser != null && !endDateChooser.equals(dateChooser) && endDateChooser.getDate() != null) {
+					Date endDate = endDateChooser.getInitialDate();
+					endDate.setTime(endDate.getTime() + difference);
+					endDateChooser.setDate(endDate);
+					endDateChooser.setInitialDate(endDate);
+				}
+			}
+			
+			dateChooser.setInitialDate(dateChooser.getDate());
+		}
+		
+		private void cleanUp() {
+			removeAsListenerAndDispose(moveDateConfirmController);
+			removeAsListenerAndDispose(cmc);
+			
+			moveDateConfirmController = null;
+			cmc = null;
 		}
 		
 	}

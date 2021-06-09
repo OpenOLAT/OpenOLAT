@@ -358,6 +358,13 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 					context.setExecutionType(ExecutionType.beginAndEnd);
 					context.setBeginDate(startDateEl.getDate());
 					context.setEndDate(endDateEl.getDate());
+					
+					long difference = startDateEl.getDateDifference();
+					if (difference == 0) {
+						difference = endDateEl.getDateDifference();
+					}
+					context.setDateDifference(difference);
+					
 					break;
 			}
 			
@@ -391,6 +398,11 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 				case "private": 
 					startDateEl.setDate(context.getBeginDate());
 					endDateEl.setDate(context.getEndDate());
+					
+					if (context.getRepositoryLifeCycle() != null) {
+						startDateEl.setInitialDate(context.getRepositoryLifeCycle().getValidFrom());
+						endDateEl.setDate(context.getRepositoryLifeCycle().getValidTo());
+					}
 					break;
 				case "public": 
 					if (context.getSemesterKey() != null) {
