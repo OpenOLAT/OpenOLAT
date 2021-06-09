@@ -137,11 +137,17 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 			repositoryList = repositoryService.loadRepositoryEntries(counter, BATCH_SIZE);
 	
 			for(RepositoryEntry repositoryEntry:repositoryList) {
+				if(indexWriter.isInterupted()) {
+					dbInstance.commitAndCloseSession();
+					log.info("Repository entry indexer interrupted");
+					return;
+				}
+				
 				try {
 					// reload the repositoryEntry here before indexing it to make sure it has not been deleted in the meantime
 					RepositoryEntry reloadedRepositoryEntry = repositoryService.loadByKey(repositoryEntry.getKey());
 					if (reloadedRepositoryEntry==null) {
-						log.info("doIndex: repositoryEntry was deleted while we were indexing. The deleted repositoryEntry was: "+repositoryEntry);
+						log.info("doIndex: repositoryEntry was deleted while we were indexing. The deleted repositoryEntry was: {}", repositoryEntry);
 						continue;
 					}
 					if(repositoryEntry.getEntryStatus() == RepositoryEntryStatusEnum.trash
@@ -149,9 +155,10 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 						continue;
 					}
 					
+					counter++;
 					repositoryEntry = reloadedRepositoryEntry;
 					if (debug) {
-						log.debug("Index repositoryEntry=" + repositoryEntry + "  counter=" + counter++ + " with ResourceableId=" + repositoryEntry.getOlatResource().getResourceableId());
+						log.debug("Index repositoryEntry={} counter={} with ResourceableId={}", repositoryEntry, counter, repositoryEntry.getOlatResource().getResourceableId());
 					}
 					if (!isOnBlacklist(repositoryEntry.getOlatResource().getResourceableId()) ) {
 						SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
@@ -168,18 +175,18 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 						if (repositoryEntryIndexer != null) {
 							repositoryEntryIndexer.doIndex(searchResourceContext, repositoryEntry, indexWriter);
 						} else if (debug) {
-							log.debug("No RepositoryEntryIndexer for " + repositoryEntry.getOlatResource()); // e.g. RepositoryEntry				
+							log.debug("No RepositoryEntryIndexer for {}", repositoryEntry.getOlatResource()); // e.g. RepositoryEntry				
 						}
 					} else {
-						log.warn("RepositoryEntry is on black-list and excluded from search-index, repositoryEntry=" + repositoryEntry);
+						log.warn("RepositoryEntry is on black-list and excluded from search-index, repositoryEntry={}", repositoryEntry);
 					}
 				} catch (Throwable ex) {
-					// create meaninfull debugging output to find repo entry that is somehow broken
+					// create meaningful debugging output to find repository entry that is somehow broken
 					String entryDebug = "NULL";
 					if (repositoryEntry != null) {
 						entryDebug = "resId::" + repositoryEntry.getResourceableId() + " resTypeName::" + repositoryEntry.getResourceableTypeName() + " resName::" + repositoryEntry.getResourcename();
 					}
-					log.warn("Exception=" + ex.getMessage() + " for repo entry " + entryDebug, ex);
+					log.error("For entry: {}", entryDebug, ex);
 					dbInstance.rollbackAndCloseSession();
 				}
 				dbInstance.commitAndCloseSession();
@@ -187,9 +194,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 			counter += repositoryList.size();
 			
 		} while(repositoryList.size() == BATCH_SIZE);
-		if (debug) {
-			log.debug("RepositoryIndexer finished.  counter=" + counter);
-		}
+		log.info("RepositoryIndexer finished. {} entries indexed.", counter);
 	}
 
 	private boolean isOnBlacklist(Long key) {
@@ -204,7 +209,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		boolean debug = log.isDebugEnabled();
-		if (debug) log.debug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles);
+		if (debug) log.debug("checkAccess for businessControl={} identity={}  roles={}", businessControl, identity, roles);
 		
 		Long repositoryKey = contextEntry.getOLATResourceable().getResourceableId();
 		RepositoryEntry repositoryEntry = repositoryService.loadByKey(repositoryKey);
@@ -238,10 +243,10 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 			}
 		}
 	
-		if (debug) log.debug("isOwner=" + reSecurity.isEntryAdmin() + "  isAllowedToLaunch=" + isAllowedToLaunch);
+		if (debug) log.debug("isOwner={}  isAllowedToLaunch={}", reSecurity.isEntryAdmin(), isAllowedToLaunch);
 		if (reSecurity.isEntryAdmin() || reSecurity.canLaunch() || isAllowedToLaunch) {
 			Indexer repositoryEntryIndexer = getRepositoryEntryIndexer(repositoryEntry);
-			if (debug) log.debug("repositoryEntryIndexer=" + repositoryEntryIndexer);
+			if (debug) log.debug("repositoryEntryIndexer={}", repositoryEntryIndexer);
 			if (repositoryEntryIndexer != null) {
 			  return super.checkAccess(contextEntry, businessControl, identity, roles)
 			  		&& repositoryEntryIndexer.checkAccess(contextEntry, businessControl, identity, roles);

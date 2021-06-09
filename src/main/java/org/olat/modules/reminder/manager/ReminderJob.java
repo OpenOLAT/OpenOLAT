@@ -19,11 +19,18 @@
  */
 package org.olat.modules.reminder.manager;
 
+import java.util.Date;
+import java.util.List;
+
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.core.logging.Tracing;
+import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.reminder.ReminderService;
 import org.quartz.DisallowConcurrentExecution;
+import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -34,7 +41,11 @@ import org.quartz.JobExecutionException;
  *
  */
 @DisallowConcurrentExecution
-public class ReminderJob extends JobWithDB {
+public class ReminderJob extends JobWithDB implements InterruptableJob {
+	
+	private static final Logger log = Tracing.createLoggerFor(ReminderJob.class);
+	
+	private boolean cancel = false;
 
 	@Override
 	public void executeWithDB(JobExecutionContext context)
@@ -42,7 +53,24 @@ public class ReminderJob extends JobWithDB {
 		ReminderModule reminderModule = CoreSpringFactory.getImpl(ReminderModule.class);
 		if(reminderModule.isEnabled()) {
 			ReminderService reminderService = CoreSpringFactory.getImpl(ReminderService.class);
-			reminderService.remindAll();
+			
+			log.info("Start sending reminders");
+			Date now = new Date();
+			List<Reminder> reminders = reminderService.getReminders(now);
+			for(Reminder reminder:reminders) {
+				if(cancel) {
+					log.info("Reminders sending cancelled");
+					break;
+				}
+				reminderService.sendReminder(reminder, false);
+			}
+			log.info("Reminders sent");
 		}
+	}
+
+	@Override
+	public void interrupt() {
+		log.info("Reminders interrupted");
+		cancel = true;
 	}
 }

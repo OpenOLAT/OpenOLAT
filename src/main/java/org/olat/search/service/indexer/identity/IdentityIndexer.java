@@ -74,6 +74,12 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 		DBFactory.getInstance().commitAndCloseSession();
   	
 		for (Long identityKey : identityKeys) {
+			if(indexWriter.isInterupted()) {
+				DBFactory.getInstance().commitAndCloseSession();
+				log.info("Identity indexer interrupted");
+				return;
+			}
+			
 			try {
 				// reload the identity here before indexing it to make sure it has not been deleted in the meantime
 				Identity identity = secMgr.loadIdentityByKey(identityKey);
@@ -95,7 +101,7 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 				
 				counter++;
 			} catch (Exception ex) {
-				log.warn("Exception while indexing identity::" + identityKey + ". Skipping this user, try next one.", ex);
+				log.warn("Exception while indexing identity::{}. Skipping this user, try next one.", identityKey, ex);
 				DBFactory.getInstance().rollbackAndCloseSession();
 			}
 			DBFactory.getInstance().commitAndCloseSession();
