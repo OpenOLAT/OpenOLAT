@@ -20,6 +20,9 @@
 
 package org.olat.core.configuration.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.olat.core.configuration.OLATProperty;
 
 
@@ -30,17 +33,18 @@ import org.olat.core.configuration.OLATProperty;
 
 public class OlatPropertiesTableContentRow {
 	
+	private String propertyKey; 
 	private OLATProperty defaultProperty;
 	private OLATProperty overwriteProperty;
 	private OLATProperty systemProperty;
-	private boolean hasRedundantEntry;
-	
-	public OlatPropertiesTableContentRow(OLATProperty olatProperty) {
-		this.defaultProperty = olatProperty;		
-	}
 	
 	public OLATProperty getDefaultProperty() {
 		return defaultProperty;
+	}
+	
+	public void setDefaultProperty(OLATProperty defaultProperty) {
+		this.propertyKey = defaultProperty.getKey();
+		this.defaultProperty = defaultProperty;
 	}
 	
 	public OLATProperty getOverwriteProperty() {
@@ -48,23 +52,62 @@ public class OlatPropertiesTableContentRow {
 	}
 	
 	public void setOverwriteProperty(OLATProperty overwriteProperty) {
+		this.propertyKey = overwriteProperty.getKey();
 		this.overwriteProperty = overwriteProperty;
 	}
-
+	
 	public OLATProperty getSystemProperty() {
 		return systemProperty;
 	}
-
+	
 	public void setSystemProperty(OLATProperty systemProperty) {
+		this.propertyKey = systemProperty.getKey();
 		this.systemProperty = systemProperty;
 	}
 
 	public boolean hasRedundantEntry() {
-		return hasRedundantEntry;
+		Set<String> values = new HashSet<>(3);
+		boolean hasNoRedundantEntry = true; 
+		
+		if (defaultProperty != null) {
+			hasNoRedundantEntry &= values.add(defaultProperty.getValue());
+		}
+		if (overwriteProperty != null) {
+			hasNoRedundantEntry &= values.add(overwriteProperty.getValue());
+		}
+		if (systemProperty != null) {
+			hasNoRedundantEntry &= values.add(systemProperty.getValue());
+		}
+		
+		return !hasNoRedundantEntry;
 	}
-
-	public void setRedundantEntry(boolean hasRedundantEntry) {
-		this.hasRedundantEntry = hasRedundantEntry;
+	
+	public String getPropertyKey() {
+		return propertyKey;
 	}
-
+	
+	public String getDefaultPropertyValue() {
+		if (defaultProperty != null) {
+			return defaultProperty.getValue();
+		}
+		
+		return null;
+	}
+	
+	public String getOverwritePropertyValue() {
+		if (overwriteProperty != null) {
+			return overwriteProperty.getValue();
+		}
+		
+		return null;
+	}
+	
+	public String getSystemPropertyValue() {
+		if (systemProperty != null) {
+			return systemProperty.getValue();
+		}
+		
+		return null;
+	}
+	
 }

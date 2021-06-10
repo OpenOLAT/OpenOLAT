@@ -22,7 +22,9 @@ package org.olat.core.configuration;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -89,7 +91,7 @@ public class SetupPropertiesController extends FormBasicController {
 
 		analyzeProperties();
 		initForm(ureq);
-		loadModel(ureq);
+		loadModel();
 
 	}
 
@@ -103,14 +105,10 @@ public class SetupPropertiesController extends FormBasicController {
 		RedundantEntryIconCellRenderer redundantEntryIconCellRenderer = new RedundantEntryIconCellRenderer();
 
 		DefaultFlexiColumnModel keyColumn = new DefaultFlexiColumnModel(OlatPropertiesTableColumn.key);
-		DefaultFlexiColumnModel defaultValueColumn = new DefaultFlexiColumnModel(
-				OlatPropertiesTableColumn.defaultValue);
-		DefaultFlexiColumnModel overwriteValueColumn = new DefaultFlexiColumnModel(
-				OlatPropertiesTableColumn.overwriteValue);
-		DefaultFlexiColumnModel systemValueColumn = new DefaultFlexiColumnModel(
-				OlatPropertiesTableColumn.systemProperty);
-		DefaultFlexiColumnModel hasRedundantEntryColumn = new DefaultFlexiColumnModel(
-				OlatPropertiesTableColumn.icon);
+		DefaultFlexiColumnModel defaultValueColumn = new DefaultFlexiColumnModel(OlatPropertiesTableColumn.defaultValue);
+		DefaultFlexiColumnModel overwriteValueColumn = new DefaultFlexiColumnModel(OlatPropertiesTableColumn.overwriteValue);
+		DefaultFlexiColumnModel systemValueColumn = new DefaultFlexiColumnModel(OlatPropertiesTableColumn.systemProperty);
+		DefaultFlexiColumnModel hasRedundantEntryColumn = new DefaultFlexiColumnModel(OlatPropertiesTableColumn.icon);
 
 		defaultValueColumn.setCellRenderer(valueCellRenderer);
 		overwriteValueColumn.setCellRenderer(valueCellRenderer);
@@ -125,8 +123,7 @@ public class SetupPropertiesController extends FormBasicController {
 		columnModel.addFlexiColumnModel(hasRedundantEntryColumn);
 
 		defaultPropsTableModel = new OlatPropertiesTableModel(columnModel);
-		defaultPropsTableEl = uifactory.addTableElement(getWindowControl(), "defaultProps", defaultPropsTableModel, 50,
-				false, getTranslator(), formLayout);
+		defaultPropsTableEl = uifactory.addTableElement(getWindowControl(), "defaultProps", defaultPropsTableModel, 50, false, getTranslator(), formLayout);
 		defaultPropsTableEl.setExportEnabled(true);
 		defaultPropsTableEl.setSearchEnabled(true);
 		defaultPropsTableEl.setShowAllRowsEnabled(true);
@@ -148,40 +145,38 @@ public class SetupPropertiesController extends FormBasicController {
 		defaultPropsTableEl.setFilters(null, filters, false);
 	}
 
-	private void loadModel(UserRequest ureq) {
+	private void loadModel() {
 		// Load data
+		Map<String, OlatPropertiesTableContentRow> propertiesMap = new HashMap<>(defaultProperties.size());
 		
-		List<OlatPropertiesTableContentRow> contentRows = new ArrayList<>();
-		defaultProps.forEach(defaultProp -> {
-			OlatPropertiesTableContentRow row = new OlatPropertiesTableContentRow(defaultProp);
-
-			// Check if overwrite property exists for this property
-			overwriteProps.forEach(overwriteProp -> {
-				if (overwriteProp.getKey().equals(defaultProp.getKey())) {
-					if (defaultProp.getValue().equals(overwriteProp.getValue())){
-						row.setRedundantEntry(true);
-					}
-					row.setOverwriteProperty(overwriteProp);
-					return;
-				}
-			});
-
-			// Check if system property exists for this property
-			systemProps.forEach(systemProp -> {
-				if (systemProp.getKey().equals(defaultProp.getKey())) {
-					if (defaultProp.getValue().equals(systemProp.getValue())){
-						row.setRedundantEntry(true);
-					}
-					row.setSystemProperty(systemProp);
-					return;
-				}
-			});
-			
-			contentRows.add(row);
-		});
+		for (OLATProperty defaultProperty : defaultProps) {
+			OlatPropertiesTableContentRow row = new OlatPropertiesTableContentRow();
+			row.setDefaultProperty(defaultProperty);
+			propertiesMap.put(defaultProperty.getKey(), row);
+		}
+		
+		for (OLATProperty overwriteProperty : overwriteProps) {
+			if (propertiesMap.containsKey(overwriteProperty.getKey())) {
+				propertiesMap.get(overwriteProperty.getKey()).setOverwriteProperty(overwriteProperty);
+			} else {
+				OlatPropertiesTableContentRow row = new OlatPropertiesTableContentRow();
+				row.setOverwriteProperty(overwriteProperty);
+				propertiesMap.put(overwriteProperty.getKey(), row);
+			}
+		}
+		
+		for (OLATProperty systemProperty : systemProps) {
+			if (propertiesMap.containsKey(systemProperty.getKey())) {
+				propertiesMap.get(systemProperty.getKey()).setSystemProperty(systemProperty);
+			} else {
+				OlatPropertiesTableContentRow row = new OlatPropertiesTableContentRow();
+				row.setSystemProperty(systemProperty);
+				propertiesMap.put(systemProperty.getKey(), row);
+			}
+		}
 
 		// Set data
-		defaultPropsTableModel.setObjects(contentRows);
+		defaultPropsTableModel.setObjects(new ArrayList<>(propertiesMap.values()));
 		defaultPropsTableEl.reset(true, true, true);
 	}
 

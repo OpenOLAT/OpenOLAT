@@ -21,15 +21,18 @@
 package org.olat.core.configuration.model;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.ui.StudentsTableDataModel;
@@ -40,8 +43,7 @@ import org.olat.modules.coach.ui.StudentsTableDataModel;
  * @author aboeckle, mjenny, alexander.boeckle@frentix.com, http://www.frentix.com
  */
 
-public class OlatPropertiesTableModel extends DefaultFlexiTableDataModel<OlatPropertiesTableContentRow> 
-implements FlexiTableDataModel<OlatPropertiesTableContentRow>, FilterableFlexiTableModel {
+public class OlatPropertiesTableModel extends DefaultFlexiTableDataModel<OlatPropertiesTableContentRow> implements SortableFlexiTableDataModel<OlatPropertiesTableContentRow>, FilterableFlexiTableModel {
 
 	private static final Logger log = Tracing.createLoggerFor(StudentsTableDataModel.class);
 	private List<OlatPropertiesTableContentRow> backup; 
@@ -56,22 +58,17 @@ implements FlexiTableDataModel<OlatPropertiesTableContentRow>, FilterableFlexiTa
 		return getValueAt(olatPropertiesRow, col);
 	}
 	
+	@Override
 	public Object getValueAt(OlatPropertiesTableContentRow row, int col) {
 		switch (OlatPropertiesTableColumn.values()[col]) {
 		case key:
-			return row.getDefaultProperty().getKey();
+			return row.getPropertyKey();
 		case defaultValue:
-			return row.getDefaultProperty().getValue();
+			return row.getDefaultPropertyValue();
 		case overwriteValue:
-			if (row.getOverwriteProperty() != null && row.getOverwriteProperty().getValue() != null) {
-				return row.getOverwriteProperty().getValue();
-			}
-			return "";	
+			return row.getOverwritePropertyValue();
 		case systemProperty:
-			if (row.getSystemProperty() != null && row.getSystemProperty().getValue() != null) {
-				return row.getSystemProperty().getValue();
-			}
-			return "";		
+			return row.getSystemPropertyValue();	
 		case icon:
 			return row.hasRedundantEntry();
 		default:
@@ -82,11 +79,10 @@ implements FlexiTableDataModel<OlatPropertiesTableContentRow>, FilterableFlexiTa
 
 	@Override
 	public DefaultFlexiTableDataModel<OlatPropertiesTableContentRow> createCopyWithEmptyList() {
-		// TODO Auto-generated method stub
-		return null;
+		return new OlatPropertiesTableModel(getTableColumnModel());
 	}
 	
-	public enum OlatPropertiesTableColumn implements FlexiColumnDef {
+	public enum OlatPropertiesTableColumn implements FlexiSortableColumnDef {
 		key("olat.property.key"),
 		defaultValue("olat.property.value"),
 		overwriteValue("olat.property.overwrite.value"),
@@ -103,6 +99,16 @@ implements FlexiTableDataModel<OlatPropertiesTableContentRow>, FilterableFlexiTa
 		@Override 
 		public String i18nHeaderKey() {
 			return i18nHeaderKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 	
@@ -145,7 +151,9 @@ implements FlexiTableDataModel<OlatPropertiesTableContentRow>, FilterableFlexiTa
 				String loweredSearchString = searchString.toLowerCase();
 				filteredList = isFilterApplied ? getObjects() : backup;
 				filteredList = filteredList.stream().filter(entry -> {
-						if(entry.getDefaultProperty() != null && entry.getDefaultProperty().getKey().toLowerCase().contains(loweredSearchString)){
+						if (entry.getPropertyKey().toLowerCase().contains(loweredSearchString)) {
+							return true;
+						} else if(entry.getDefaultProperty() != null && entry.getDefaultProperty().getKey().toLowerCase().contains(loweredSearchString)){
 							return true;
 						} else if(entry.getOverwriteProperty() != null && entry.getOverwriteProperty().getValue().toLowerCase().contains(loweredSearchString)){
 							return true;
@@ -163,6 +171,14 @@ implements FlexiTableDataModel<OlatPropertiesTableContentRow>, FilterableFlexiTa
 			}
 		} else {
 			super.setObjects(backup);
+		}
+	}
+
+	@Override
+	public void sort(SortKey sortKey) {
+		if (sortKey != null) {
+			List<OlatPropertiesTableContentRow> properties = new SortableFlexiTableModelDelegate<OlatPropertiesTableContentRow>(sortKey, this, Locale.GERMAN).sort();
+			super.setObjects(properties);
 		}
 	}
 	
