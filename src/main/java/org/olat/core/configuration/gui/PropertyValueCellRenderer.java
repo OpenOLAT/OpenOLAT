@@ -63,7 +63,7 @@ public class PropertyValueCellRenderer implements FlexiCellRenderer{
 					OlatPropertiesTableContentRow contentRow = (OlatPropertiesTableContentRow) content;
 					
 					if (StringHelper.containsNonWhitespace((String)cellValue)) {
-						if(Arrays.asList(protectedKeys).stream().anyMatch(contentRow.getDefaultProperty().getKey()::contains)) {
+						if(Arrays.asList(protectedKeys).stream().anyMatch(contentRow.getPropertyKey()::contains)) {
 							target.append("*****");
 						} else {
 							target.append("<div class=\"o_admin_property_table_column\">").append((String)cellValue).append("</div>");
