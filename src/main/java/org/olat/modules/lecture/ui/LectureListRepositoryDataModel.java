@@ -72,7 +72,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case tools: return row.getToolsLink();
 			case assessmentMode: return row.isAssessmentMode();
 			case dateChooser: return row.getDateChooser();
-			case teacherChooser: return row.getTeacherChooser();
+			case teacherChooser: return row.getTeacherChooserLink();
 			case locationElement: return row.getLocationElement();
 			case titleElement: return row.getTitleElement();
 			default: return null;

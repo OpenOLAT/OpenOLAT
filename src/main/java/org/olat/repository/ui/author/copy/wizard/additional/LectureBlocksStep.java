@@ -30,7 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -40,10 +40,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.BasicStepCollection;
@@ -53,7 +53,6 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
@@ -120,6 +119,8 @@ public class LectureBlocksStep extends BasicStep {
 		private LectureListRepositoryDataModel tableModel;
 		
 		private CloseableModalController cmc;
+		private CloseableCalloutWindowController calloutCtrl;
+		private LectureBlockTeacherController teacherCtrl;
 		private MoveDateConfirmController moveDateConfirmController;
 		private boolean askForDateMove = true;
 		private boolean moveDates = false;
@@ -186,12 +187,7 @@ public class LectureBlocksStep extends BasicStep {
 			if (context.getLectureBlockRows() == null) {
 				List<LectureBlockWithTeachers> blocks = lectureService.getLectureBlocksWithTeachers(context.getRepositoryEntry());
 				List<LectureBlockRow> rows = new ArrayList<>(blocks.size());
-				
-				KeyValues coaches = new KeyValues();
-				for (Identity coach : context.getNewCoaches()) {
-					coaches.add(KeyValues.entry(coach.getKey().toString(), coach.getUser().getFirstName() + " " + coach.getUser().getLastName()));
-				}
-				
+							
 				for(LectureBlockWithTeachers block:blocks) {
 					LectureBlockRow row = new LectureBlockRow(block.getLectureBlock(), context.getRepositoryEntry().getDisplayname(), context.getRepositoryEntry().getExternalRef(),
 							null, false, block.isAssessmentMode());
@@ -211,15 +207,12 @@ public class LectureBlocksStep extends BasicStep {
 					TextElement titleElement = uifactory.addTextElement("lecture_block_title_" + counter, -1, block.getLectureBlock().getTitle(), tableItems);
 					row.setTitleElement(titleElement);
 					
-					MultipleSelectionElement teachersElement = uifactory.addCheckboxesDropdown("lecture_block_teachers_" + counter++, tableItems);
-					teachersElement.setKeysAndValues(coaches.keys(), coaches.values());
-					for(Identity teacher : block.getTeachers()) {
-						if (coaches.containsKey(teacher.getKey().toString())) {
-							teachersElement.select(teacher.getKey().toString(), true);
-						}
-					}
-					row.setTeacherChooser(teachersElement);
+					FormLink teachersLink = uifactory.addFormLink("lecture_block_teachers_" + counter++, tableItems);
+					teachersLink.setI18nKey("edit.teachers");
+					teachersLink.setUserObject(row);
 					
+					row.setTeacherChooserLink(teachersLink);
+					row.setTeachersList(block.getTeachers());
 					
 					rows.add(row);
 				}
@@ -234,17 +227,30 @@ public class LectureBlocksStep extends BasicStep {
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source instanceof DateChooser) {
-				DateChooser sourceDateChooser = (DateChooser) source;
-				boolean hasInitialDate = sourceDateChooser.getInitialDate() != null;
-				
-				if (hasInitialDate) {
-					if (askForDateMove) {
-						doAskForDateMove(ureq, sourceDateChooser);
-					} else if (moveDates) {
-						moveAllDates(sourceDateChooser, tableModel);
+				if (source.getName().startsWith("lecture_block_date_")) {	
+					DateChooser sourceDateChooser = (DateChooser) source;
+							
+					boolean hasInitialDate = sourceDateChooser.getInitialDate() != null;
+					
+					if (hasInitialDate) {
+						if (askForDateMove) {
+							doAskForDateMove(ureq, sourceDateChooser);
+						} else if (moveDates) {
+							moveAllDates(sourceDateChooser, tableModel);
+						}
+					} else {
+						sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 					}
-				} else {
-					sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
+				}
+			} else if (source instanceof FormLink) {
+				if (source.getName().startsWith("lecture_block_teachers_")) {
+					FormLink sourceLink = (FormLink) source;
+					LectureBlockRow row = (LectureBlockRow) source.getUserObject();
+					
+					teacherCtrl = new LectureBlockTeacherController(ureq, getWindowControl(), context, row);
+					calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), teacherCtrl.getInitialComponent(), sourceLink, null, true, null);
+					calloutCtrl.activate();
+					calloutCtrl.addControllerListener(this);
 				}
 			}
 		}
@@ -269,14 +275,19 @@ public class LectureBlocksStep extends BasicStep {
 			} else if (source == cmc) {
 				cmc.deactivate();
 				cleanUp();
+			} else if (source == calloutCtrl) {
+				teacherCtrl.saveToContext();
+				cleanUp();
 			}
 		}
 		
 		private void cleanUp() {
 			removeAsListenerAndDispose(moveDateConfirmController);
+			removeAsListenerAndDispose(teacherCtrl);
 			removeAsListenerAndDispose(cmc);
 			
 			moveDateConfirmController = null;
+			teacherCtrl = null;
 			cmc = null;
 		}
 		

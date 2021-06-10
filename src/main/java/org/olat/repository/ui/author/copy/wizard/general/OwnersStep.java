@@ -212,7 +212,9 @@ public class OwnersStep extends BasicStep {
 		private void loadData() {
 			if (context.getCustomOwnersCopyType() != null) {
 				ownersCopyModeEl.select(context.getCustomOwnersCopyType().name(), true);
-			}	
+			} else {
+				ownersCopyModeEl.select(CopyType.copy.name(), true);
+			}
 			
 			if (context.getNewOwners() != null) {
 				reloadModel(context.getNewOwners());

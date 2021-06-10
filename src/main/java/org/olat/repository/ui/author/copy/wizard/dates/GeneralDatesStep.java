@@ -240,17 +240,19 @@ public class GeneralDatesStep extends BasicStep {
 					updateVisibility(row);
 				}
 			} else if (source instanceof DateChooser) {
-				DateChooser sourceDateChooser = (DateChooser) source;
-				boolean hasInitialDate = sourceDateChooser.getInitialDate() != null;
-				
-				if (hasInitialDate) {
-					if (askForDateMove) {
-						doAskForDateMove(ureq, sourceDateChooser);
-					} else if (moveDates) {
-						moveAllDates(sourceDateChooser, dataModel);
+				if (source.getName().startsWith("start_") || source.getName().startsWith("end_")) {
+					DateChooser sourceDateChooser = (DateChooser) source;
+					boolean hasInitialDate = sourceDateChooser.getInitialDate() != null;
+					
+					if (hasInitialDate) {
+						if (askForDateMove) {
+							doAskForDateMove(ureq, sourceDateChooser);
+						} else if (moveDates) {
+							moveAllDates(sourceDateChooser, dataModel);
+						}
+					} else {
+						sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 					}
-				} else {
-					sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 				}
 			}
 		}

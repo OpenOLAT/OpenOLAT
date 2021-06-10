@@ -144,6 +144,8 @@ public class WikiStep extends BasicStep {
 		private void loadModel() {
 			if (context.getCustomWikiCopyType() != null) {
 				wikiCopyModeEl.select(context.getCustomWikiCopyType().name(), true);
+			} else {
+				wikiCopyModeEl.select(CopyType.reference.name(), true);
 			}
 		}
 		

@@ -161,6 +161,8 @@ public class CatalogStep extends BasicStep {
 		private void loadData() {
 			if (context.getCustomCatalogCopyType() != null) {
 				catalogCopyModeEl.select(context.getCustomCatalogCopyType().name(), true);
+			} else {
+				catalogCopyModeEl.select(CopyType.copy.name(), true);
 			}
 			
 			List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(context.getRepositoryEntry());

@@ -283,17 +283,19 @@ public class RemindersStep extends BasicStep {
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source instanceof DateChooser) {
-				DateChooser sourceDateChooser = (DateChooser) source;
-				boolean hasInitialDate = sourceDateChooser.getInitialDate() != null;
-				
-				if (hasInitialDate) {
-					if (askForDateMove) {
-						doAskForDateMove(ureq, sourceDateChooser);
-					} else if (moveDates) {
-						moveAllDates(sourceDateChooser, tableModel);
+				if (source.getName().startsWith("before_date_") || source.getName().startsWith("after_date_")) {
+					DateChooser sourceDateChooser = (DateChooser) source;
+					boolean hasInitialDate = sourceDateChooser.getInitialDate() != null;
+					
+					if (hasInitialDate) {
+						if (askForDateMove) {
+							doAskForDateMove(ureq, sourceDateChooser);
+						} else if (moveDates) {
+							moveAllDates(sourceDateChooser, tableModel);
+						}
+					} else {
+						sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 					}
-				} else {
-					sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 				}
 			}
 		}

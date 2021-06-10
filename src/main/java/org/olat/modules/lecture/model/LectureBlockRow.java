@@ -19,10 +19,12 @@
  */
 package org.olat.modules.lecture.model;
 
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 
@@ -44,9 +46,10 @@ public class LectureBlockRow implements LectureBlockRef {
 	private FormLink toolsLink;
 	
 	private DateChooser dateChooser;
-	private MultipleSelectionElement teacherChooser;
+	private FormLink teacherChooserLink;
 	private TextElement locationElement;
 	private TextElement titleElement;
+	private List<Identity> teachersList;
 	
 	public LectureBlockRow(LectureBlock lectureBlock, String entryDisplayname, String externalRef,
 			String teachers, boolean iamTeacher, boolean assessmentMode) {
@@ -107,12 +110,12 @@ public class LectureBlockRow implements LectureBlockRef {
 		this.dateChooser = dateChooser;
 	}
 	
-	public MultipleSelectionElement getTeacherChooser() {
-		return teacherChooser;
+	public FormLink getTeacherChooserLink() {
+		return teacherChooserLink;
 	}
 	
-	public void setTeacherChooser(MultipleSelectionElement teacherChooser) {
-		this.teacherChooser = teacherChooser;
+	public void setTeacherChooserLink(FormLink teacherChooserLink) {
+		this.teacherChooserLink = teacherChooserLink;
 	}
 	
 	public TextElement getLocationElement() {
@@ -129,5 +132,13 @@ public class LectureBlockRow implements LectureBlockRef {
 	
 	public void setTitleElement(TextElement titleElement) {
 		this.titleElement = titleElement;
+	}
+	
+	public List<Identity> getTeachersList() {
+		return teachersList;
+	}
+	
+	public void setTeachersList(List<Identity> teachersList) {
+		this.teachersList = teachersList;
 	}
 }

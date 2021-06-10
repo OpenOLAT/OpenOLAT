@@ -178,8 +178,10 @@ public class AssessmentModesStep extends BasicStep {
 				for (AssessmentMode mode : modes) {
 					TextElement nameElement = uifactory.addTextElement("description_" + counter, -1, mode.getName(), tableItems);
 					DateChooser beginDateChooser = uifactory.addDateChooser("begin_date_" + counter, mode.getBegin(), tableItems);
+					beginDateChooser.setInitialDate(mode.getBegin());
 					beginDateChooser.addActionListener(FormEvent.ONCHANGE);
 					DateChooser endDateChooser = uifactory.addDateChooser("end_date_" + counter++, mode.getEnd(), tableItems);
+					endDateChooser.setInitialDate(mode.getEnd());
 					endDateChooser.addActionListener(FormEvent.ONCHANGE);
 					
 					AssessmentModeCopyInfos copyInfo = new AssessmentModeCopyInfos(nameElement, beginDateChooser, endDateChooser);
@@ -199,17 +201,19 @@ public class AssessmentModesStep extends BasicStep {
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source instanceof DateChooser) {
-				DateChooser sourceDateChooser = (DateChooser) source;
-				boolean hasInitialDate = sourceDateChooser.getInitialDate() != null;
-				
-				if (hasInitialDate) {
-					if (askForDateMove) {
-						doAskForDateMove(ureq, sourceDateChooser);
-					} else if (moveDates) {
-						moveAllDates(sourceDateChooser, model);
+				if (source.getName().startsWith("begin_date_") || source.getName().startsWith("end_date_")) {	
+					DateChooser sourceDateChooser = (DateChooser) source;
+					boolean hasInitialDate = sourceDateChooser.getInitialDate() != null;
+					
+					if (hasInitialDate) {
+						if (askForDateMove) {
+							doAskForDateMove(ureq, sourceDateChooser);
+						} else if (moveDates) {
+							moveAllDates(sourceDateChooser, model);
+						}
+					} else {
+						sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 					}
-				} else {
-					sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 				}
 			}
 		}

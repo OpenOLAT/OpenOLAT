@@ -144,6 +144,8 @@ public class FolderStep extends BasicStep {
 		private void loadModel() {
 			if (context.getCustomFolderCopyType() != null) {
 				folderCopyModeEl.select(context.getCustomFolderCopyType().name(), true);
+			} else {
+				folderCopyModeEl.select(CopyType.reference.name(), true);
 			}
 		}
 	}

@@ -19,7 +19,6 @@
  */
 package org.olat.repository.ui.author.copy.wizard;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -73,17 +72,17 @@ public class CopyCourseContext {
 	// GroupStep
 	private CopyType groupCopyType;
 	private CopyType customGroupCopyType;
-	private List<BGTableItem> groups = new ArrayList<>();
+	private List<BGTableItem> groups;
 	
 	// OwnersStep
 	private CopyType ownersCopyType;
 	private CopyType customOwnersCopyType;
-	private List<Identity> newOwners = new ArrayList<>();
+	private List<Identity> newOwners;
 	
 	// CoachesStep
 	private CopyType coachesCopyType;
 	private CopyType customCoachesCopyType;
-	private List<Identity> newCoaches = new ArrayList<>();
+	private List<Identity> newCoaches;
 	
 	// ExecutionStep
 	private CopyType executionCopyType;

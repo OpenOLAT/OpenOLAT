@@ -143,6 +143,8 @@ public class BlogStep extends BasicStep {
 		private void loadModel() {
 			if (context.getCustomBlogCopyType() != null) {
 				blogCopyModeEl.select(context.getCustomBlogCopyType().name(), true);
+			} else {
+				blogCopyModeEl.select(CopyType.reference.name(), true);
 			}
 		}
 

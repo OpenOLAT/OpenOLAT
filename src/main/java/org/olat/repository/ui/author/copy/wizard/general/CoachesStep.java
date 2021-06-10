@@ -211,6 +211,8 @@ public class CoachesStep extends BasicStep {
 		private void loadData() {
 			if (context.getCustomCoachesCopyType() != null) {
 				coachesCopyModeEl.select(context.getCustomCoachesCopyType().name(), true);
+			} else {
+				coachesCopyModeEl.select(CopyType.copy.name(), true);
 			}
 			
 			if (context.getNewCoaches() != null) {

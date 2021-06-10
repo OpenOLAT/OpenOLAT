@@ -223,6 +223,8 @@ public class GroupStep extends BasicStep {
 		private void loadData() {
 			if (context.getCustomGroupCopyType() != null) {
 				copyGroupsModeEl.select(context.getCustomGroupCopyType().name(), true);
+			} else {
+				copyGroupsModeEl.select(CopyType.reference.name(), true);
 			}
 			
 			if (context.getGroups() != null) {
