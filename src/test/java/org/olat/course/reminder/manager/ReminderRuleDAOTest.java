@@ -24,6 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -188,5 +191,46 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 		assertThat(completions.get(identity2.getKey())).isEqualTo(70);
 	}
 
+	@Test
+	public void shouldLoadLastAttemptDates() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		CourseNode node = new SPCourseNode();
+		String subIdent = node.getIdent();
+		String subIdenOther = random();
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityNotVisited = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityOther = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		
+		AssessmentEntry ae1 = assessmentService.getOrCreateAssessmentEntry(identity1, null, entry, subIdent, Boolean.FALSE, null);
+		Date date1 = (new GregorianCalendar(2020, 2, 3)).getTime();
+		ae1.setLastAttempt(date1);
+		assessmentService.updateAssessmentEntry(ae1);
+		AssessmentEntry ae2 = assessmentService.getOrCreateAssessmentEntry(identity2, null, entry, subIdent, Boolean.FALSE, null);
+		Date date2 = (new GregorianCalendar(2020, 2, 4)).getTime();
+		ae2.setLastAttempt(date2);
+		assessmentService.updateAssessmentEntry(ae2);
+		AssessmentEntry aeOtherEntry = assessmentService.getOrCreateAssessmentEntry(identity1, null, entryOther, subIdent, Boolean.FALSE, null);
+		Date dateOtherEntry = (new GregorianCalendar(2020, 2, 5)).getTime();
+		aeOtherEntry.setLastAttempt(dateOtherEntry);
+		assessmentService.updateAssessmentEntry(aeOtherEntry);
+		AssessmentEntry aeOtherSubIdent = assessmentService.getOrCreateAssessmentEntry(identity1, null, entry, subIdenOther, Boolean.FALSE, null);
+		Date dateOtherSubIdent = (new GregorianCalendar(2020, 2, 6)).getTime();
+		aeOtherSubIdent.setLastAttempt(dateOtherSubIdent);
+		assessmentService.updateAssessmentEntry(aeOtherSubIdent);
+		AssessmentEntry aeOtherIdentity = assessmentService.getOrCreateAssessmentEntry(identityOther, null, entry, subIdent, Boolean.FALSE, null);
+		Date dateOtherIdentity = (new GregorianCalendar(2020, 2, 6)).getTime();
+		aeOtherIdentity.setLastAttempt(dateOtherIdentity);
+		assessmentService.updateAssessmentEntry(aeOtherIdentity);
+		// No attempts
+		assessmentService.getOrCreateAssessmentEntry(identityNotVisited, null, entry, subIdent, Boolean.FALSE, null);
+		
+		Map<Long, Date> lastAttemptsDates = sut.getLastAttemptsDates(entry, node, List.of(identity1, identity2));
+		
+		assertThat(lastAttemptsDates).hasSize(2);
+		assertThat(lastAttemptsDates.get(identity1.getKey())).isCloseTo(date1, 1000);
+		assertThat(lastAttemptsDates.get(identity2.getKey())).isCloseTo(date2, 1000);
+	}
 
 }
