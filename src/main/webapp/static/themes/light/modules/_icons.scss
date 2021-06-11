@@ -122,6 +122,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_delete:before { content: $fa-var-minus-circle; color: #A87E7E;}
 .o_icon_deleted:before { content: $fa-var-trash;}
 .o_icon_details:before { content: $fa-var-lightbulb-o; }
+.o_icon_details_collaps:before { content: $fa-var-angle-up;}
+.o_icon_details_expand:before { content: $fa-var-angle-down;}
 .o_icon_description:before { content: $fa-var-info-circle; }
 .o_icon_dev:before { content: $fa-var-bug;}
 .o_icon_disabled:before { content: $fa-var-circle-o;}
@@ -360,8 +362,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_submit:before { content: $fa-var-check; }
 .o_icon_table:before { content: $fa-var-table; }
 .o_icon_table_custom:before { content: $fa-var-th-list; }
-.o_icon_table_details_show:before { content: $fa-var-angle-down;}
-.o_icon_table_details_hide:before { content: $fa-var-angle-up;}
 .o_icon_table_large:before { content: $fa-var-th-large; }
 .o_icon_tags:before { content: $fa-var-tags; }
 .o_icon_textinput:before { content: $fa-var-align-left; }

@@ -144,7 +144,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		if (ftE.hasDetailsRenderer()) {
 			target.append("<th>");
 			target.append("<div title=\"").append(translator.translate("form.details")).append("\">");
-			target.append("<i class='o_icon o_icon-lg o_icon_table_details_show' aria-hidden='true'> </i>");
+			target.append("<i class='o_icon o_icon-lg o_icon_details_expand' aria-hidden='true'> </i>");
 			target.append("</div>");
 			target.append("</th>");
 		}
@@ -294,13 +294,13 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		}
 		
 		if(ftE.hasDetailsRenderer()) {
-			String collapseIcon = ftE.isDetailsExpended(row)? "o_icon_table_details_hide": "o_icon_table_details_show";
+			String collapseIcon = ftE.isDetailsExpended(row)? "o_icon_details_collaps": "o_icon_details_expand";
 			target.append("<td>");
 			target.append("<div title=\"").append(translator.translate("form.details")).append("\">");
 			target.append("<a href='javascript:;' onclick=\"");
 			target.append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
 					new NameValuePair("tt-details", Integer.toString(row))));
-			target.append(";\"");
+			target.append(";");
 			target.append(" return false;\">");
 			target.append("<i class='o_icon o_icon-lg ").append(collapseIcon).append("'> </i>");
 			target.append("</a>");
