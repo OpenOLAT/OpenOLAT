@@ -73,8 +73,11 @@ public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI {
 
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
-
-			return helperDao.getInitialAttemptDates(entry, courseNode, identities);
+			
+			// We use the last attempt date because, we do not know the first attempt date.
+			// Since the reminder is sent only once, this should not matter (unless a
+			// reminder is explicitly sent multiple times by the admin).
+			return helperDao.getLastAttemptsDates(entry, courseNode, identities);
 		} else {
 			return null;
 		}
