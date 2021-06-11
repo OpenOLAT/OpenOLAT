@@ -47,6 +47,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -441,6 +442,19 @@ public interface CourseNode extends INode, ShortName {
 	 * @param nodeEval
 	 */
 	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval);
+	
+	/**
+	 * The rule provider controls the reminder tab in the course editor.
+	 * If a course node implements this methods, the Event NodeEditController.REMINDER_VISIBILITY_EVENT
+	 * should probably be fired when the configurations have been changed.
+	 * 
+	 * @param course
+	 *
+	 * @return
+	 */
+	public default CourseNodeReminderProvider getReminderProvider(ICourse course) {
+		return null;
+	}
 	
 	public enum Processing {
 		runstructure,

@@ -26,6 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.modules.reminder.Reminder;
 
 /**
@@ -39,10 +40,12 @@ public class RulesEditStep extends BasicStep {
 	public static final String CONTEXT_KEY = "course.reminder";
 	
 	private final Reminder reminder;
+	private final CourseNodeReminderProvider reminderProvider;
 
-	public RulesEditStep(UserRequest ureq, Reminder reminder) {
+	public RulesEditStep(UserRequest ureq, Reminder reminder, CourseNodeReminderProvider reminderProvider) {
 		super(ureq);
 		this.reminder = reminder;
+		this.reminderProvider = reminderProvider;
 		setI18nTitleAndDescr("edit.rules", null);
 		setNextStep(new RulesOverviewStep(ureq));
 		init(ureq);
@@ -64,7 +67,7 @@ public class RulesEditStep extends BasicStep {
 		if (!stepsRunContext.containsKey(CONTEXT_KEY)) {
 			stepsRunContext.put(CONTEXT_KEY, reminder);
 		}
-		return new RulesEditController(ureq, wControl, form, stepsRunContext);
+		return new RulesEditController(ureq, wControl, form, stepsRunContext, reminderProvider);
 	}
 
 }

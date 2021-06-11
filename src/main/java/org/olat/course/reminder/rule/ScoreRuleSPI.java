@@ -40,6 +40,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.ScoreRuleEditor;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -59,7 +60,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class ScoreRuleSPI implements FilterRuleSPI {
+public class ScoreRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 	
 	private static final Logger log = Tracing.createLoggerFor(ScoreRuleSPI.class);
 	private static final double ROUND = 0.000001d;
@@ -176,5 +177,14 @@ public class ScoreRuleSPI implements FilterRuleSPI {
 			case "!=": eval = Math.abs(score - value) > ROUND; break;
 		}
 		return eval;
+	}
+
+	@Override
+	public String getCourseNodeIdent(ReminderRule rule) {
+		if(rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			return r.getLeftOperand();
+		}
+		return null;
 	}
 }

@@ -38,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -58,10 +58,15 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.reminder.CourseNodeReminderProvider;
+import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.model.ReminderRow;
 import org.olat.course.reminder.ui.CourseReminderTableModel.ReminderCols;
 import org.olat.modules.reminder.Reminder;
+import org.olat.modules.reminder.ReminderModule;
+import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
+import org.olat.modules.reminder.RuleSPI;
 import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -79,7 +84,7 @@ public class CourseReminderListController extends FormBasicController
 	private FormLink addButton;
 	private FlexiTableElement tableEl;
 	private CourseReminderTableModel tableModel;
-	private final TooledStackedPanel toolbarPanel;
+	private final BreadcrumbPanel toolbarPanel;
 	
 	private VelocityContainer detailsVC;
 	private CloseableModalController cmc;
@@ -92,23 +97,31 @@ public class CourseReminderListController extends FormBasicController
 	private CourseSendReminderListController sendReminderListCtrl;
 
 	private final AtomicInteger counter = new AtomicInteger();
-	private RepositoryEntry repositoryEntry;
+	private final RepositoryEntry repositoryEntry;
+	private final CourseNodeReminderProvider reminderProvider;
+	private final String infoI18nKey;
 	
 	@Autowired
-	private ReminderService reminderManager;
+	private ReminderModule reminderModule;
+	@Autowired
+	private ReminderService reminderService;
 	
-	public CourseReminderListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, TooledStackedPanel toolbarPanel) {
+	public CourseReminderListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel toolbarPanel,
+			RepositoryEntry repositoryEntry, CourseNodeReminderProvider reminderProvider, String infoI18nKey) {
 		super(ureq, wControl, "reminder_list");
 		this.toolbarPanel = toolbarPanel;
 		this.repositoryEntry = repositoryEntry;
+		this.reminderProvider = reminderProvider;
+		this.infoI18nKey = infoI18nKey;
 		
 		initForm(ureq);
-		updateModel(ureq);
+		reload(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_reminder_list");
+		flc.contextPut("infoI18nKey", infoI18nKey);
 		
 		addButton = uifactory.addFormLink("add.reminder", formLayout, Link.BUTTON);
 		addButton.setIconLeftCSS("o_icon o_icon_add");
@@ -135,33 +148,67 @@ public class CourseReminderListController extends FormBasicController
 		tableEl.setMultiDetails(true);
 	}
 	
+	private void updateUI() {
+		boolean addVisible = reminderProvider.getMainRuleSPITypes() == null || !reminderProvider.getMainRuleSPITypes().isEmpty();
+		addButton.setVisible(addVisible);
+	}
+	
 	private void updateModel(UserRequest ureq) {
-		List<ReminderInfos> reminders = reminderManager.getReminderInfos(repositoryEntry);
+		List<ReminderInfos> reminders = reminderService.getReminderInfos(repositoryEntry);
 		List<ReminderRow> rows = new ArrayList<>(reminders.size());
 		for(ReminderInfos reminder:reminders) {
-			
-			FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolsLink.setElementCssClass("o_sel_course_reminder_tools");
-			toolsLink.setTitle(translate("tools"));
-			
-			FormLink emailLink = uifactory.addFormLink("email_" + counter.incrementAndGet(), "email", "show.email", null, flc, Link.BUTTON);
-			FormLink sendLink = uifactory.addFormLink("send_" + counter.incrementAndGet(), "send", "send", null, flc, Link.BUTTON);
-			
-			Controller rulesCtrl = new RulesViewController(ureq, getWindowControl(), repositoryEntry, reminder.getConfiguration());
-			listenTo(rulesCtrl);
-			String rulesCmpName = "rules_" + counter.incrementAndGet();
-			detailsVC.put(rulesCmpName, rulesCtrl.getInitialComponent());
-			
-			ReminderRow row = new ReminderRow(reminder, toolsLink, emailLink, sendLink, rulesCmpName);
-			toolsLink.setUserObject(row);
-			emailLink.setUserObject(row);
-			sendLink.setUserObject(row);
-			rows.add(row);
+			if (isVisible(reminder)) {
+				FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
+				toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+				toolsLink.setElementCssClass("o_sel_course_reminder_tools");
+				toolsLink.setTitle(translate("tools"));
+				
+				FormLink emailLink = uifactory.addFormLink("email_" + counter.incrementAndGet(), "email", "show.email", null, flc, Link.BUTTON);
+				FormLink sendLink = uifactory.addFormLink("send_" + counter.incrementAndGet(), "send", "send", null, flc, Link.BUTTON);
+				
+				Controller rulesCtrl = new RulesViewController(ureq, getWindowControl(), repositoryEntry, reminder.getConfiguration());
+				listenTo(rulesCtrl);
+				String rulesCmpName = "rules_" + counter.incrementAndGet();
+				detailsVC.put(rulesCmpName, rulesCtrl.getInitialComponent());
+				
+				ReminderRow row = new ReminderRow(reminder, toolsLink, emailLink, sendLink, rulesCmpName);
+				toolsLink.setUserObject(row);
+				emailLink.setUserObject(row);
+				sendLink.setUserObject(row);
+				rows.add(row);
+			}
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(false, false, true);
 		tableEl.setVisible(!rows.isEmpty());
+	}
+	
+	private boolean isVisible(ReminderInfos reminder) {
+		String configuration = reminder.getConfiguration();
+		if (StringHelper.containsNonWhitespace(configuration)) {
+			List<ReminderRule> rules = reminderService.toRules(configuration).getRules();
+			if(rules != null && !rules.isEmpty()) {
+				List<String> nodeIdents = new ArrayList<>(1);
+				for (ReminderRule rule : rules) {
+					RuleSPI ruleSPI = reminderModule.getRuleSPIByType(rule.getType());
+					if (ruleSPI instanceof CourseNodeRuleSPI) {
+						nodeIdents.add(((CourseNodeRuleSPI)ruleSPI).getCourseNodeIdent(rule));
+					}
+				}
+				return reminderProvider.filter(nodeIdents);
+			}
+		}
+		
+		return false;
+	}
+
+	public void reload(UserRequest ureq) {
+		updateModel(ureq);
+		updateUI();
+	}
+	
+	public boolean hasReminders() {
+		return tableModel.getRowCount() > 0;
 	}
 	
 	@Override
@@ -285,8 +332,8 @@ public class CourseReminderListController extends FormBasicController
 
 	private void doAddReminder(UserRequest ureq) {
 		removeAsListenerAndDispose(wizardCtrl);
-		Reminder reminder = reminderManager.createReminder(repositoryEntry, getIdentity());
-		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder),
+		Reminder reminder = reminderService.createReminder(repositoryEntry, getIdentity());
+		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder, reminderProvider),
 				doSaveReminder(), null, translate("new.reminder"), "");
 		listenTo(wizardCtrl);
 		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
@@ -295,7 +342,7 @@ public class CourseReminderListController extends FormBasicController
 	private StepRunnerCallback doSaveReminder() {
 		return (uureq, control, runContext) -> {
 			Reminder reminder = (Reminder)runContext.get(RulesEditStep.CONTEXT_KEY);
-			reminderManager.save(reminder);
+			reminderService.save(reminder);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 	}
@@ -307,7 +354,7 @@ public class CourseReminderListController extends FormBasicController
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 
-		Reminder reminder = reminderManager.loadByKey(reminderKey);
+		Reminder reminder = reminderService.loadByKey(reminderKey);
 		sendReminderListCtrl = new CourseSendReminderListController(ureq, bwControl, reminder);
 		listenTo(sendReminderListCtrl);
 		addToHistory(ureq, sendReminderListCtrl);
@@ -322,29 +369,30 @@ public class CourseReminderListController extends FormBasicController
 	}
 
 	private void doDelete(UserRequest ureq, ReminderRow row) {
-		Reminder reminder = reminderManager.loadByKey(row.getKey());
-		reminderManager.delete(reminder);
+		Reminder reminder = reminderService.loadByKey(row.getKey());
+		reminderService.delete(reminder);
 		updateModel(ureq);
+		fireEvent(ureq, ReminderDeletedEvent.EVENT);
 	}
 
 	private void doEdit(UserRequest ureq, ReminderRow row) {
 		removeAsListenerAndDispose(wizardCtrl);
 		
-		Reminder reminder = reminderManager.loadByKey(row.getKey());
-		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder),
+		Reminder reminder = reminderService.loadByKey(row.getKey());
+		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder, reminderProvider),
 				doSaveReminder(), null, translate("edit.reminder"), "");
 		listenTo(wizardCtrl);
 		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
 	}
 	
 	private void doDuplicate(UserRequest ureq, ReminderRow row) {
-		Reminder reminder = reminderManager.loadByKey(row.getKey());
-		reminderManager.duplicate(reminder, getIdentity());
+		Reminder reminder = reminderService.loadByKey(row.getKey());
+		reminderService.duplicate(reminder, getIdentity());
 		updateModel(ureq);
 	}
 	
 	private void doSend(UserRequest ureq, ReminderRow row) {
-		Reminder reminder = reminderManager.loadByKey(row.getKey());
+		Reminder reminder = reminderService.loadByKey(row.getKey());
 		sendCtrl = new CourseReminderSendController(ureq, getWindowControl(), reminder, false);
 		listenTo(sendCtrl);
 		
@@ -355,13 +403,13 @@ public class CourseReminderListController extends FormBasicController
 	}
 	
 	private void doSend(UserRequest ureq, Reminder reminder, boolean resend) {
-		Reminder relodedReminder = reminderManager.loadByKey(reminder.getKey());
-		reminderManager.sendReminder(relodedReminder, resend);
+		Reminder relodedReminder = reminderService.loadByKey(reminder.getKey());
+		reminderService.sendReminder(relodedReminder, resend);
 		updateModel(ureq);
 	}
 	
 	private void doShowEmail(UserRequest ureq, ReminderRow row) {
-		Reminder reminder = reminderManager.loadByKey(row.getKey());
+		Reminder reminder = reminderService.loadByKey(row.getKey());
 		emailViewCtrl = new EmailViewController(ureq, getWindowControl(), reminder);
 		listenTo(emailViewCtrl);
 		

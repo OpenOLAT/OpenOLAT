@@ -82,8 +82,8 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 		// create edit controller
 		BigBlueButtonEditController childTabCtrl = new BigBlueButtonEditController(ureq, wControl, this);
 		
-		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course, chosenNode,
-				userCourseEnv, childTabCtrl);
+		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, stackPanel, course,
+				chosenNode, userCourseEnv, childTabCtrl);
 		nodeEditCtr.addControllerListener(childTabCtrl);
 		return nodeEditCtr;
 	}

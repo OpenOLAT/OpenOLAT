@@ -110,8 +110,8 @@ public class EdusharingCourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEditorEnv().getCourseGroupManager().getCourseEntry();
 		EdusharingEditController editCtrl = new EdusharingEditController(ureq, wControl, stackPanel, this, courseEntry);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
-		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course, chosenNode,
-				userCourseEnv, editCtrl);
+		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, stackPanel, course,
+				chosenNode, userCourseEnv, editCtrl);
 		nodeEditCtr.addControllerListener(editCtrl);
 		return nodeEditCtr;
 	}

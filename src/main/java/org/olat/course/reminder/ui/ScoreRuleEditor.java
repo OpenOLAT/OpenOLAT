@@ -20,6 +20,7 @@
 package org.olat.course.reminder.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -39,7 +41,9 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.reminder.CourseNodeFragment;
 import org.olat.course.reminder.rule.ScoreRuleSPI;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
@@ -51,7 +55,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ScoreRuleEditor extends RuleEditorFragment {
+public class ScoreRuleEditor extends RuleEditorFragment implements CourseNodeFragment {
 	
 	private static final String[] operatorKeys = new String[]{ "<", "<=", "=", "=>", ">", "!=" };
 	
@@ -93,6 +97,7 @@ public class ScoreRuleEditor extends RuleEditorFragment {
 		
 		List<CourseNode> attemptableNodes = new ArrayList<>();
 		searchScoreableNodes(course.getRunStructure().getRootNode(), attemptableNodes);
+		searchScoreableNodes(course.getEditorTreeModel().getRootNode(), attemptableNodes);
 		
 		String[] nodeKeys = new String[attemptableNodes.size()];
 		String[] nodeValues = new String[attemptableNodes.size()];
@@ -144,15 +149,31 @@ public class ScoreRuleEditor extends RuleEditorFragment {
 	}
 	
 	private void searchScoreableNodes(CourseNode courseNode, List<CourseNode> nodes) {
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if (Mode.none != assessmentConfig.getScoreMode()) {
-			nodes.add(courseNode);
-		}
+		addScoreableNode(nodes, courseNode);
 		
 		for(int i=0; i<courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode)courseNode.getChildAt(i);
 			searchScoreableNodes(child, nodes);
+		}
+	}
+	
+	private void searchScoreableNodes(TreeNode editorTreeNode, List<CourseNode> nodes) {
+		if (editorTreeNode instanceof CourseEditorTreeNode) {
+			CourseNode courseNode = ((CourseEditorTreeNode)editorTreeNode).getCourseNode();
+			addScoreableNode(nodes, courseNode);
+		}
+		
+		for(int i=0; i<editorTreeNode.getChildCount(); i++) {
+			TreeNode child = (TreeNode)editorTreeNode.getChildAt(i);
+			searchScoreableNodes(child, nodes);
+		}
+	}
+
+	private void addScoreableNode(List<CourseNode> nodes, CourseNode courseNode) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (Mode.none != assessmentConfig.getScoreMode() && !nodes.contains(courseNode)) {
+			nodes.add(courseNode);
 		}
 	}
 
@@ -213,4 +234,12 @@ public class ScoreRuleEditor extends RuleEditorFragment {
 		}
 		return configuredRule;
 	}
+
+	@Override
+	public void setCourseNodeIdent(String nodeIdent) {
+		if (Arrays.asList(courseNodeEl.getKeys()).contains(nodeIdent)) {
+			courseNodeEl.select(nodeIdent, true);
+		}
+	}
+	
 }

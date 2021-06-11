@@ -194,7 +194,7 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 		ChecklistEditController editController = new ChecklistEditController(ureq, wControl, this, course);
 		getModuleConfiguration().set(CONF_COURSE_ID, course.getResourceableId());
 		getModuleConfiguration().set(CONF_COURSE_NODE_ID, chosenNode.getIdent());
-		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, course, chosenNode, euce, editController);
+		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, editController);
 		nodeEditController.addControllerListener(editController);
 		return nodeEditController;
 	}

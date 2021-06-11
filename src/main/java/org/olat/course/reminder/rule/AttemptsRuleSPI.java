@@ -33,6 +33,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.AttemptsRuleEditor;
 import org.olat.modules.reminder.FilterRuleSPI;
@@ -50,13 +51,13 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class AttemptsRuleSPI implements FilterRuleSPI {
+public class AttemptsRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 	
 	private static final Logger log = Tracing.createLoggerFor(AttemptsRuleSPI.class);
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;
-
+	
 	@Override
 	public int getSortValue() {
 		return 301;
@@ -149,4 +150,14 @@ public class AttemptsRuleSPI implements FilterRuleSPI {
 		}
 		return eval;
 	}
+	
+	@Override
+	public String getCourseNodeIdent(ReminderRule rule) {
+		if(rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			return r.getLeftOperand();
+		}
+		return null;
+	}
+	
 }

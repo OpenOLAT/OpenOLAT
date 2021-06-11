@@ -74,7 +74,7 @@ public class EdubaseCourseNode extends AbstractAccessableCourseNode {
 			ICourse course, UserCourseEnvironment euce) {
 		EdubaseEditController childTabCntrllr = new EdubaseEditController(ureq, wControl, this);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override

@@ -180,8 +180,8 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 				.createCourseEditController(ureq, wControl, course, this);
 		CourseNode chosenNode = course.getEditorTreeModel()
 				.getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		NodeEditController editController = new NodeEditController(ureq, wControl, course, chosenNode, euce,
-				childTabCntrllr);
+		NodeEditController editController = new NodeEditController(ureq, wControl, stackPanel, course, chosenNode,
+				euce, childTabCntrllr);
 		editController.addControllerListener(childTabCntrllr);
 		return editController;
 	}

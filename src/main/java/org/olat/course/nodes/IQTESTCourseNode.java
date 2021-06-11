@@ -66,6 +66,8 @@ import org.olat.course.nodes.iq.IQTESTCoachRunController;
 import org.olat.course.nodes.iq.IQTESTLearningPathNodeHandler;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.properties.CoursePropertyManager;
+import org.olat.course.reminder.AssessmentReminderProvider;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -134,7 +136,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		TabbableController childTabCntrllr = new IQEditController(ureq, wControl, stackPanel, course, this, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override
@@ -617,6 +619,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	@Override
 	public boolean hasAttemptsConfigured() {
 		return new IQTESTAssessmentConfig(this).hasAttempts();
+	}
+	
+	@Override
+	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+		return new AssessmentReminderProvider(getIdent(), new IQTESTAssessmentConfig(this));
 	}
 
 }

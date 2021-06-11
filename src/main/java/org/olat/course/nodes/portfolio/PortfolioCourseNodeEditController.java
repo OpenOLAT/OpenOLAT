@@ -143,6 +143,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 				scoringController.updateModuleConfiguration(config);
 				updateHighscoreTab();
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 			}
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {

@@ -303,6 +303,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 				// editormaincontroller
 				updateHighscoreTab();
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				fireEvent(urequest, NodeEditController.REMINDER_VISIBILITY_EVENT);
 			}
 		} else if(source == deliveryOptionsCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {

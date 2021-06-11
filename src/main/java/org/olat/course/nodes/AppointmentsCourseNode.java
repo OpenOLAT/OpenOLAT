@@ -106,8 +106,8 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 			ICourse course, UserCourseEnvironment userCourseEnv) {
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		AppointmentsEditController childTabCtrl = new AppointmentsEditController(ureq, wControl, course, this);
-		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course, chosenNode,
-				userCourseEnv, childTabCtrl);
+		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, stackPanel, course,
+				chosenNode, userCourseEnv, childTabCtrl);
 		nodeEditCtr.addControllerListener(childTabCtrl);
 		return nodeEditCtr;
 	}

@@ -77,7 +77,7 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		SPEditController childTabCntrllr = new SPEditController(getModuleConfiguration(), ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 		// special case: listen to sp edit controller, must be informed when the short title is being modified
 		nodeEditController.addControllerListener(childTabCntrllr); 
 		return nodeEditController;

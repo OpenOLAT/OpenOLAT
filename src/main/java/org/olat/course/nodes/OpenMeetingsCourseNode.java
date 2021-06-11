@@ -95,8 +95,8 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 		// create edit controller
 		OpenMeetingsEditController childTabCntrllr = new OpenMeetingsEditController(ureq, wControl, this, course);
 		
-		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course, chosenNode, userCourseEnv,
-				childTabCntrllr);
+		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, stackPanel, course, chosenNode,
+				userCourseEnv, childTabCntrllr);
 		nodeEditCtr.addControllerListener(childTabCntrllr);
 		return nodeEditCtr;
 	}

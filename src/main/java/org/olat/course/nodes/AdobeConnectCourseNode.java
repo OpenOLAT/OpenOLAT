@@ -119,8 +119,8 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 		// create edit controller
 		AdobeConnectEditController childTabCtrl = new AdobeConnectEditController(ureq, wControl, this);
 		
-		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course, chosenNode, userCourseEnv,
-				childTabCtrl);
+		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, stackPanel, course, chosenNode,
+				userCourseEnv, childTabCtrl);
 		nodeEditCtr.addControllerListener(childTabCtrl);
 		return nodeEditCtr;
 	}

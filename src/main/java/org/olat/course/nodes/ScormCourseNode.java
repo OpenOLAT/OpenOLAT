@@ -65,6 +65,8 @@ import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.nodes.scorm.ScormLearningPathNodeHandler;
 import org.olat.course.nodes.scorm.ScormRunController;
 import org.olat.course.properties.CoursePropertyManager;
+import org.olat.course.reminder.AssessmentReminderProvider;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -109,7 +111,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		ScormEditController childTabCntrllr = new ScormEditController(this, ureq, wControl, course);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override
@@ -406,4 +408,10 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 		// I would consider refatoring this and setting up an upgrade task that moves the
 		// folders accordingly
 	}
+	
+	@Override
+	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+		return new AssessmentReminderProvider(getIdent(), new ScormAssessmentConfig(getModuleConfiguration()));
+	}
+	
 }

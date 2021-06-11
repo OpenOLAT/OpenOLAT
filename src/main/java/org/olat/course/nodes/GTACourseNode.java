@@ -82,9 +82,11 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.model.TaskDefinition;
+import org.olat.course.nodes.gta.rule.GTAReminderProvider;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupListController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
 import org.olat.course.nodes.gta.ui.GTARunController;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -791,7 +793,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			ICourse course, UserCourseEnvironment euce) {
 		GTAEditController editCtrl = new GTAEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, editCtrl);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, editCtrl);
 	}
 
 	@Override
@@ -836,6 +838,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		}
 		groups = CoreSpringFactory.getImpl(GTAManager.class).filterBusinessGroups(groups, this);
 		return new GTACoachedGroupListController(ureq, wControl, stackPanel, coachCourseEnv, this, groups);
+	}
+
+	@Override
+	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+		return new GTAReminderProvider(this);
 	}
 
 }

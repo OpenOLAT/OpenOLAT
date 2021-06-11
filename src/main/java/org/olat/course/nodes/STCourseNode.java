@@ -70,6 +70,8 @@ import org.olat.course.nodes.sp.SPPeekviewController;
 import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.nodes.st.STCourseNodeRunController;
 import org.olat.course.nodes.st.STPeekViewController;
+import org.olat.course.nodes.st.STReminderProvider;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreCalculator;
@@ -143,7 +145,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		STCourseNodeEditController childTabCntrllr = new STCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 		// special case: listen to st edit controller, must be informed when the short title is being modified
 		nodeEditController.addControllerListener(childTabCntrllr); 
 		return nodeEditController;
@@ -592,4 +594,18 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		log.debug("there is a config set, use it: {}",  thisConf);
 		return super.getDisplayOption();
 	}
+	
+	@Override
+	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+		// Only supported on root nodes. The STAssessmentHandler needs the course node hierarchy.
+		// We do not have this hierarchy when we are in the editor or the hierarchy is different than
+		// the hierarchy in the run model.
+		
+		boolean root = course.getRunStructure().getRootNode().getIdent().equals(getIdent());
+		if (root) {
+			return new STReminderProvider(this);
+		}
+		return null;
+	}
+	
 }

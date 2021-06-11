@@ -54,7 +54,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	private static final String[] paneKeys = {
 			PANE_TAB_WORKLOW, PANE_TAB_ASSIGNMENT, PANE_TAB_SUBMISSION, PANE_TAB_REVIEW_AND_CORRECTIONS,
-			PANE_TAB_GRADING, PANE_TAB_SOLUTIONS };
+			PANE_TAB_GRADING, PANE_TAB_SOLUTIONS};
 	private int workflowPos, assignmentPos, submissionPos, revisionPos, gradingPos, solutionsPos, highScoreTabPosition;
 	
 	private TabbedPane myTabbedPane;
@@ -155,6 +155,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		if(workflowCtrl == source) {
 			 if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 				updateEnabledDisabledTabs();
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(workflowCtrl);
@@ -197,6 +198,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				manualAssessmentCtrl.updateModuleConfiguration(config);
 				updateEnabledDisabledTabs();
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(manualAssessmentCtrl);
 				manualAssessmentCtrl = createManualAssessmentCtrl(ureq);
@@ -228,4 +230,5 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		return new MSEditFormController(ureq, getWindowControl(), config, nodeAccessType,
 				translate("pane.tab.grading"), "Three Steps to Your Task#_task_configuration");
 	}
+	
 }

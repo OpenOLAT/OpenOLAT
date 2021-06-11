@@ -136,7 +136,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 		TabbableController editCtrl = new FeedNodeEditController(ureq, wControl, stackPanel, translatorPackage, course,
 				this, euce, uiFactory, resourceablTypeName, editHelpUrl);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, editCtrl);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, editCtrl);
 	}
 	
 	@Override

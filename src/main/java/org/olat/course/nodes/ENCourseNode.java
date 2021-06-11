@@ -143,7 +143,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		migrateConfig();
 		ENEditController childTabCntrllr = new ENEditController(getModuleConfiguration(), ureq, wControl, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override

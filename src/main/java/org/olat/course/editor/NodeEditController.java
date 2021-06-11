@@ -27,6 +27,7 @@ package org.olat.course.editor;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -43,8 +44,11 @@ import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.reminder.CourseNodeReminderProvider;
+import org.olat.course.reminder.ui.CourseNodeReminderController;
+import org.olat.course.reminder.ui.ReminderDeletedEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,6 +60,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 	private static final String PANE_TAB_VISIBILITY = "pane.tab.visibility";
 	private static final String PANE_TAB_GENERAL = "pane.tab.general";
+	private static final String PANE_TAB_REMINDER = "pane.tab.reminder";
 	
   /** Configuration key: use spash-scree start page when accessing a course node. Values: true, false **/
   public static final String CONFIG_STARTPAGE = "startpage";
@@ -72,7 +77,6 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
   /** Take the same encoding as the content **/
 	public final static String CONFIG_JS_ENCODING_AUTO = "auto";
 	
-	private CourseNode courseNode;
 	private VelocityContainer descriptionVc;
 
 	private NodeConfigFormController nodeConfigController;
@@ -81,19 +85,28 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	private VisibilityEditController visibilityEditCtrl;
 	private TabbableController nodeAccessCtrl;
 	private TabbableController childTabsCntrllr;
+	private CourseNodeReminderController reminderCtrl;
+	
+	private final CourseNode courseNode;
+	private final CourseNodeReminderProvider reminderProvider;
+	private boolean reminderInitiallyEnabled;
+	private int reminderPos;
 
 	/** Event that signals that the node configuration has been changed * */
 	public static final Event NODECONFIG_CHANGED_EVENT = new Event("nodeconfigchanged");
 	public static final Event NODECONFIG_CHANGED_REFRESH_EVENT = new Event("nodeconfigrefresh");
+	public static final Event REMINDER_VISIBILITY_EVENT = new Event("reminder-visibility");
 	private static final String[] paneKeys = { PANE_TAB_VISIBILITY, PANE_TAB_GENERAL };
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
 
-	public NodeEditController(UserRequest ureq, WindowControl wControl, ICourse course,
-			CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, TabbableController childTabsController) {
+	public NodeEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
+			CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+			TabbableController childTabsController) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
+		RepositoryEntry courseEntry = userCourseEnvironment.getCourseEditorEnv().getCourseGroupManager().getCourseEntry();
 		
 		addLoggingResourceable(LoggingResourceable.wrap(course));
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
@@ -104,11 +117,10 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		// description and metadata component
 		descriptionVc = createVelocityContainer("nodeedit");
 		descriptionVc.setDomReplacementWrapperRequired(false);
-		Long repoKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(course, true);
 		
 		StringBuilder extLink = new StringBuilder();
 		extLink.append(Settings.getServerContextPathURI())
-			.append("/url/RepositoryEntry/").append(repoKey)
+			.append("/url/RepositoryEntry/").append(courseEntry.getKey())
 			.append("/CourseNode/").append(courseNode.getIdent());
 		StringBuilder intLink = new StringBuilder();
 		intLink.append("javascript:parent.gotonode(").append(courseNode.getIdent()).append(")");
@@ -119,7 +131,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		
 		putInitialPanel(descriptionVc);
 
-		nodeConfigController = new NodeConfigFormController(ureq, wControl, courseNode, repoKey);
+		nodeConfigController = new NodeConfigFormController(ureq, wControl, courseNode, courseEntry.getKey());
 		listenTo(nodeConfigController);
 		descriptionVc.put("nodeConfigForm", nodeConfigController.getInitialComponent());
 		
@@ -140,6 +152,13 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 						userCourseEnvironment, course.getEditorTreeModel());
 				listenTo(visibilityEditCtrl);
 			}	
+		}
+		
+		reminderProvider = courseNode.getReminderProvider(course);
+		if (reminderProvider != null) {
+			reminderCtrl = new CourseNodeReminderController(ureq, wControl, stackPanel, courseEntry, reminderProvider);
+			listenTo(reminderCtrl);
+			reminderInitiallyEnabled = isReminderTabEnabled();
 		}
 	}
 
@@ -163,6 +182,12 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			} else if (event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT);
+			} else if (event == REMINDER_VISIBILITY_EVENT && reminderProvider != null) {
+				doUpdateReminderUI(urequest, true);
+			}
+		} else if (source == reminderCtrl) {
+			if (event == ReminderDeletedEvent.EVENT) {
+				doUpdateReminderUI(urequest, false);
 			}
 		} else if (source == nodeConfigController) {
 			if (event == Event.DONE_EVENT) {
@@ -205,6 +230,10 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		if (childTabsCntrllr != null) {
 			childTabsCntrllr.addTabs(tabbedPane);
 		}
+		if (reminderCtrl != null) {
+			reminderPos = tabbedPane.addTab(translate(PANE_TAB_REMINDER), reminderCtrl.getInitialComponent());
+			tabbedPane.setEnabled(reminderPos, reminderInitiallyEnabled);
+		}
 	}
 
 	@Override
@@ -213,6 +242,20 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			return new ActivateableTabbableDefaultController[] { (ActivateableTabbableDefaultController) childTabsCntrllr };
 		}
 		return new ActivateableTabbableDefaultController[] {};
+	}
+
+	private void doUpdateReminderUI(UserRequest ureq, boolean reload) {
+		reminderProvider.refresh();
+		if (reload) {
+			reminderCtrl.reload(ureq);
+		}
+		boolean reminderEnabled = isReminderTabEnabled();
+		myTabbedPane.setEnabled(reminderPos, reminderEnabled);
+	}
+
+	private boolean isReminderTabEnabled() {
+		boolean reminderAddable = reminderProvider.getMainRuleSPITypes() != null && !reminderProvider.getMainRuleSPITypes().isEmpty();
+		return reminderAddable || reminderCtrl.hasReminders();
 	}
 
 }

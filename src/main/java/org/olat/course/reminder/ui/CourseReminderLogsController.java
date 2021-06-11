@@ -51,6 +51,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.reminder.model.SentReminderRow;
 import org.olat.course.reminder.ui.CourseSendReminderTableModel.SendCols;
 import org.olat.modules.reminder.Reminder;
@@ -75,6 +76,7 @@ public class CourseReminderLogsController extends FormBasicController {
 	private StepsMainRunController wizardCtrl;
 	
 	private final RepositoryEntry repositoryEntry;
+	private final CourseNodeReminderProvider reminderProvider;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -86,9 +88,11 @@ public class CourseReminderLogsController extends FormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
-	public CourseReminderLogsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
+	public CourseReminderLogsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
+			CourseNodeReminderProvider reminderProvider) {
 		super(ureq, wControl, "send_reminder_list");
 		this.repositoryEntry = repositoryEntry;
+		this.reminderProvider = reminderProvider;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -201,7 +205,7 @@ public class CourseReminderLogsController extends FormBasicController {
 		removeAsListenerAndDispose(wizardCtrl);
 		
 		Reminder reminder = reminderService.loadByKey(row.getReminderKey());
-		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder),
+		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder, reminderProvider),
 				doSaveReminder(), null, translate("edit.reminder"), "");
 		listenTo(wizardCtrl);
 		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());

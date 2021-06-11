@@ -78,6 +78,8 @@ import org.olat.course.nodes.cl.ui.CheckListRunController;
 import org.olat.course.nodes.iq.IQTESTLearningPathNodeHandler;
 import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.properties.CoursePropertyManager;
+import org.olat.course.reminder.AssessmentReminderProvider;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
@@ -125,7 +127,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		CheckListEditController childTabCntrllr = new CheckListEditController(this, ureq, wControl, course);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override
@@ -646,4 +648,10 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			config.setConfigurationVersion(1);
 		} 
 	}
+
+	@Override
+	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+		return new AssessmentReminderProvider(getIdent(), new CheckListAssessmentConfig(getModuleConfiguration()));
+	}
+	
 }

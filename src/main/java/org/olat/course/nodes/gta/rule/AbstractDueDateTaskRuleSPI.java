@@ -44,6 +44,7 @@ import org.olat.course.nodes.gta.GTARelativeToDates;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.rule.AbstractDueDateRuleSPI;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -63,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI {
+public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI implements CourseNodeRuleSPI {
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -245,6 +246,15 @@ public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI 
 		}
 		
 		return identities;
+	}
+	
+	@Override
+	public String getCourseNodeIdent(ReminderRule rule) {
+		if(rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			return r.getLeftOperand();
+		}
+		return null;
 	}
 	
 }

@@ -430,6 +430,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			} else if (event == Event.DONE_EVENT){
 				scoringController.updateModuleConfiguration(config);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				fireEvent(urequest, NodeEditController.REMINDER_VISIBILITY_EVENT);
 			}
 		} else if (source == dropboxForm) {
 			if (event == Event.CANCELLED_EVENT) {

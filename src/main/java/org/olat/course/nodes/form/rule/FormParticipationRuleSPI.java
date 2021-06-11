@@ -38,6 +38,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.ui.FormBeforeDueDateRuleEditor;
+import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.rule.AbstractDueDateRuleSPI;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -61,7 +62,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI {
+public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI implements CourseNodeRuleSPI {
 
 	@Autowired
 	private FormManager formManager;
@@ -157,6 +158,15 @@ public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI {
 		}
 		
 		return identities;
+	}
+	
+	@Override
+	public String getCourseNodeIdent(ReminderRule rule) {
+		if(rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			return r.getLeftOperand();
+		}
+		return null;
 	}
 
 }

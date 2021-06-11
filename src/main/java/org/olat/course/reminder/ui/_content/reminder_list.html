@@ -1,11 +1,11 @@
 <fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
 	<legend>		
 		$r.contextHelpWithWrapper("Course Reminders")
-		<i class="$off_icon"> </i>
+		<i class="o_icon o_icon_reminder"> </i>
 		$r.translate("reminders")
 	</legend> 
 	<div class="o_info">
-		$r.translate("reminders.intro")
+		$r.translate($infoI18nKey)
 	</div>
 	
 	<div class="o_button_group o_button_group_right">

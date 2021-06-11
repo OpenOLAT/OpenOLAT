@@ -58,6 +58,8 @@ import org.olat.course.nodes.basiclti.LTIConfigForm;
 import org.olat.course.nodes.basiclti.LTIEditController;
 import org.olat.course.nodes.basiclti.LTILearningPathNodeHandler;
 import org.olat.course.nodes.basiclti.LTIRunController;
+import org.olat.course.reminder.AssessmentReminderProvider;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -113,7 +115,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		LTIEditController childTabCntrllr = new LTIEditController(getModuleConfiguration(), ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override
@@ -361,6 +363,11 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 			}
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+	
+	@Override
+	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+		return new AssessmentReminderProvider(getIdent(), new LTIAssessmentConfig(getModuleConfiguration()));
 	}
 
 }

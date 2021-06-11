@@ -20,6 +20,7 @@
 package org.olat.course.reminder.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -39,7 +41,9 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.QTICourseNode;
+import org.olat.course.reminder.CourseNodeFragment;
 import org.olat.course.reminder.rule.AttemptsRuleSPI;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
@@ -51,7 +55,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AttemptsRuleEditor extends RuleEditorFragment {
+public class AttemptsRuleEditor extends RuleEditorFragment implements CourseNodeFragment {
 	
 	private static final String[] operatorKeys = new String[]{ "<", "<=", "=", "=>", ">", "!=" };
 	
@@ -63,7 +67,6 @@ public class AttemptsRuleEditor extends RuleEditorFragment {
 	public AttemptsRuleEditor(ReminderRule rule, RepositoryEntry entry) {
 		super(rule);
 		this.entry = entry;
-		
 	}
 
 	@Override
@@ -94,6 +97,7 @@ public class AttemptsRuleEditor extends RuleEditorFragment {
 		
 		List<CourseNode> attemptableNodes = new ArrayList<>();
 		searchAttemptableNodes(course.getRunStructure().getRootNode(), attemptableNodes);
+		searchAttemptableNodes(course.getEditorTreeModel().getRootNode(), attemptableNodes);
 		
 		String[] nodeKeys = new String[attemptableNodes.size()];
 		String[] nodeValues = new String[attemptableNodes.size()];
@@ -145,20 +149,36 @@ public class AttemptsRuleEditor extends RuleEditorFragment {
 	}
 	
 	private void searchAttemptableNodes(CourseNode courseNode, List<CourseNode> nodes) {
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if (assessmentConfig.hasAttempts()) {
-			nodes.add(courseNode);
-		} else if (courseNode instanceof QTICourseNode) {
-			QTICourseNode assessableCourseNode = (QTICourseNode) courseNode;
-			if (assessableCourseNode.hasAttemptsConfigured()) {
-				nodes.add(courseNode);
-			}
-		}
+		addAttempteableNode(courseNode, nodes);
 		
 		for(int i=0; i<courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode)courseNode.getChildAt(i);
 			searchAttemptableNodes(child, nodes);
+		}
+	}
+	
+	private void searchAttemptableNodes(TreeNode editorTreeNode, List<CourseNode> nodes) {
+		if (editorTreeNode instanceof CourseEditorTreeNode) {
+			CourseNode courseNode = ((CourseEditorTreeNode)editorTreeNode).getCourseNode();
+			addAttempteableNode(courseNode, nodes);
+		}
+		
+		for(int i=0; i<editorTreeNode.getChildCount(); i++) {
+			TreeNode child = (TreeNode)editorTreeNode.getChildAt(i);
+			searchAttemptableNodes(child, nodes);
+		}
+	}
+
+	private void addAttempteableNode(CourseNode courseNode, List<CourseNode> nodes) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (assessmentConfig.hasAttempts() && !nodes.contains(courseNode)) {
+			nodes.add(courseNode);
+		} else if (courseNode instanceof QTICourseNode) {
+			QTICourseNode assessableCourseNode = (QTICourseNode) courseNode;
+			if (assessableCourseNode.hasAttemptsConfigured() && !nodes.contains(courseNode)) {
+				nodes.add(courseNode);
+			}
 		}
 	}
 
@@ -219,4 +239,12 @@ public class AttemptsRuleEditor extends RuleEditorFragment {
 		}
 		return configuredRule;
 	}
+
+	@Override
+	public void setCourseNodeIdent(String nodeIdent) {
+		if (Arrays.asList(courseNodeEl.getKeys()).contains(nodeIdent)) {
+			courseNodeEl.select(nodeIdent, true);
+		}
+	}
+	
 }

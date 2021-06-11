@@ -27,6 +27,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.repository.RepositoryEntry;
 
@@ -73,6 +74,7 @@ public class FormEditController extends ActivateableTabbableDefaultController im
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == configController) {
 			fireEvent(ureq, event);
+			fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 		}
 	}
 

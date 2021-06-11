@@ -68,6 +68,8 @@ import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MinMax;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
+import org.olat.course.reminder.AssessmentReminderProvider;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
@@ -186,7 +188,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		MSCourseNodeEditController childTabCntrllr = new MSCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override
@@ -497,6 +499,11 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 			passed = currentEval.getPassed();
 		}
 		return passed;
+	}
+
+	@Override
+	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+		return new AssessmentReminderProvider(getIdent(), new MSAssessmentConfig(getModuleConfiguration()));
 	}
 	
 }

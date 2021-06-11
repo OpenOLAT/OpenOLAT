@@ -20,6 +20,7 @@
 package org.olat.course.reminder.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -28,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
@@ -36,6 +38,8 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.reminder.CourseNodeFragment;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
@@ -48,7 +52,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class BeforeDueDateRuleEditor extends RuleEditorFragment {
+public abstract class BeforeDueDateRuleEditor extends RuleEditorFragment implements CourseNodeFragment {
 	
 	private static final String[] unitKeys = new String[]{
 		LaunchUnit.day.name(), LaunchUnit.week.name(), LaunchUnit.month.name(), LaunchUnit.year.name()
@@ -92,6 +96,7 @@ public abstract class BeforeDueDateRuleEditor extends RuleEditorFragment {
 		
 		List<CourseNode> attemptableNodes = new ArrayList<>();
 		searchNodesWithDeadlines(course.getRunStructure().getRootNode(), attemptableNodes);
+		searchNodesWithDeadlines(course.getEditorTreeModel().getRootNode(), attemptableNodes);
 		
 		String[] nodeKeys = new String[attemptableNodes.size()];
 		String[] nodeValues = new String[attemptableNodes.size()];
@@ -148,13 +153,29 @@ public abstract class BeforeDueDateRuleEditor extends RuleEditorFragment {
 	}
 	
 	private void searchNodesWithDeadlines(CourseNode courseNode, List<CourseNode> nodes) {
-		if(isNodeWithDeadline(courseNode)) {
-			nodes.add(courseNode);
-		}
+		addNodeWithDeadline(nodes, courseNode);
 		
 		for(int i=0; i<courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode)courseNode.getChildAt(i);
 			searchNodesWithDeadlines(child, nodes);
+		}
+	}
+	
+	private void searchNodesWithDeadlines(TreeNode editorTreeNode, List<CourseNode> nodes) {
+		if (editorTreeNode instanceof CourseEditorTreeNode) {
+			CourseNode courseNode = ((CourseEditorTreeNode)editorTreeNode).getCourseNode();
+			addNodeWithDeadline(nodes, courseNode);
+		}
+		
+		for(int i=0; i<editorTreeNode.getChildCount(); i++) {
+			TreeNode child = (TreeNode)editorTreeNode.getChildAt(i);
+			searchNodesWithDeadlines(child, nodes);
+		}
+	}
+
+	private void addNodeWithDeadline(List<CourseNode> nodes, CourseNode courseNode) {
+		if(isNodeWithDeadline(courseNode) && !nodes.contains(courseNode)) {
+			nodes.add(courseNode);
 		}
 	}
 
@@ -218,4 +239,12 @@ public abstract class BeforeDueDateRuleEditor extends RuleEditorFragment {
 		}
 		return configuredRule;
 	}
+
+	@Override
+	public void setCourseNodeIdent(String nodeIdent) {
+		if (Arrays.asList(courseNodeEl.getKeys()).contains(nodeIdent)) {
+			courseNodeEl.select(nodeIdent, true);
+		}
+	}
+	
 }

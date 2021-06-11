@@ -131,6 +131,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController {
 				config = ltConfigForm.getUpdatedConfig();
 				updateHighscoreTab();
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 				// form valid -> node config valid -> show preview button
 				myContent.contextPut("showPreviewButton", Boolean.TRUE);
 			}

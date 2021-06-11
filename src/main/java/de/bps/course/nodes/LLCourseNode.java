@@ -110,7 +110,7 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 		// needed for DENEditController.isConfigValid()
 		getModuleConfiguration().set(CONF_COURSE_ID, course.getResourceableId());
 		getModuleConfiguration().set(CONF_COURSE_NODE_ID, chosenNode.getIdent());
-		return new NodeEditController(ureq, wControl, course, chosenNode, userCourseEnv, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, userCourseEnv, childTabCntrllr);
 	}
 
 	@Override

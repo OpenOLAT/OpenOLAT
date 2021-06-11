@@ -344,6 +344,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 				stNode.setScoreCalculator(sc);
 				initScoreEasyForm(ureq); // reload form, remove deleted nodes
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 				updateHighscoreTab();
 			} else if (event == Event.CANCELLED_EVENT) { // reload form
 				initScoreEasyForm(ureq);
@@ -367,6 +368,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 				// ..setScoreCalculator(sc) can handle NULL values!
 				stNode.setScoreCalculator(sc);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 				updateHighscoreTab();
 			} else if (event == Event.CANCELLED_EVENT) { // reload form
 				initScoreExpertForm(ureq);

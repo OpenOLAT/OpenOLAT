@@ -81,11 +81,14 @@ import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.ta.ConvertToGTACourseNode;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
+import org.olat.course.nodes.ta.TAAssessmentConfig;
 import org.olat.course.nodes.ta.TACourseNodeEditController;
 import org.olat.course.nodes.ta.TACourseNodeRunController;
 import org.olat.course.nodes.ta.TaskController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
+import org.olat.course.reminder.AssessmentReminderProvider;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
@@ -184,7 +187,7 @@ public class TACourseNode extends GenericCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		TACourseNodeEditController childTabCntrllr = new TACourseNodeEditController(ureq, wControl, course, this, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override
@@ -774,5 +777,10 @@ public class TACourseNode extends GenericCourseNode {
 		postExportCondition(conditionReturnbox, envMapper, backwardsCompatible);
 		postExportCondition(conditionScoring, envMapper, backwardsCompatible);
 		postExportCondition(conditionSolution, envMapper, backwardsCompatible);
+	}
+	
+	@Override
+	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+		return new AssessmentReminderProvider(getIdent(), new TAAssessmentConfig(getModuleConfiguration()));
 	}
 }

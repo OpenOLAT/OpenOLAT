@@ -50,11 +50,13 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.form.FormManager;
+import org.olat.course.nodes.form.rule.FormReminderProvider;
 import org.olat.course.nodes.form.ui.FormEditController;
 import org.olat.course.nodes.form.ui.FormParticipationTableModel;
 import org.olat.course.nodes.form.ui.FormRunCoachController;
 import org.olat.course.nodes.form.ui.FormRunController;
 import org.olat.course.nodes.survey.ui.SurveyEditController;
+import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -143,7 +145,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		TabbableController childTabCtrl	= new FormEditController(ureq, wControl, this, courseEntry);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCtrl);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCtrl);
 	}
 
 	@Override
@@ -263,6 +265,11 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		EvaluationFormSurveyIdentifier surveyIdentifier = formManager.getSurveyIdentifier(this, course);
 		EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdentifier);
 		formManager.deleteSurvey(survey);
+	}
+
+	@Override
+	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+		return new FormReminderProvider(this);
 	}
 
 	public static RepositoryEntry getEvaluationForm(ModuleConfiguration config) {

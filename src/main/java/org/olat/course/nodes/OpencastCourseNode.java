@@ -77,7 +77,7 @@ public class OpencastCourseNode extends AbstractAccessableCourseNode {
 			ICourse course, UserCourseEnvironment euce) {
 		OpencastEditController editCtrl = new OpencastEditController(ureq, wControl, this);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, editCtrl);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, editCtrl);
 	}
 
 	@Override

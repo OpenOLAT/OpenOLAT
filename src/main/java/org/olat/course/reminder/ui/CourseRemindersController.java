@@ -19,6 +19,7 @@
  */
 package org.olat.course.reminder.ui;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -40,6 +41,9 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.reminder.CourseNodeReminderProvider;
+import org.olat.course.reminder.rule.PassedRuleSPI;
+import org.olat.modules.reminder.rule.DateRuleSPI;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -50,6 +54,8 @@ import org.olat.util.logging.activity.LoggingResourceable;
  *
  */
 public class CourseRemindersController extends BasicController implements Activateable2 {
+	
+	private final static CourseNodeReminderProvider COURSE_REMINDER_PROVIDER = new CourseProvider();
 
 	private final Link remindersLink, logsLink;
 	private final VelocityContainer mainVC;
@@ -123,7 +129,8 @@ public class CourseRemindersController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Reminders", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			reminderListCtrl = new CourseReminderListController(ureq, bwControl, repositoryEntry, toolbarPanel);
+			reminderListCtrl = new CourseReminderListController(ureq, bwControl, toolbarPanel, repositoryEntry,
+					COURSE_REMINDER_PROVIDER, "reminders.intro");
 			listenTo(reminderListCtrl);
 		}
 		mainVC.put("segmentCmp", reminderListCtrl.getInitialComponent());
@@ -135,12 +142,44 @@ public class CourseRemindersController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("RemindersLogs", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			reminderLogsCtrl = new CourseReminderLogsController(ureq, bwControl, repositoryEntry);
+			reminderLogsCtrl = new CourseReminderLogsController(ureq, bwControl, repositoryEntry, COURSE_REMINDER_PROVIDER);
 			listenTo(reminderLogsCtrl);
 		} else {
 			reminderLogsCtrl.updateModel();
 		}
 		mainVC.put("segmentCmp", reminderLogsCtrl.getInitialComponent());	
 		addToHistory(ureq, reminderLogsCtrl);
+	}
+	
+	private static final class CourseProvider implements CourseNodeReminderProvider {
+		
+		@Override
+		public String getCourseNodeIdent() {
+			return null;
+		}
+		
+		@Override
+		public boolean filter(Collection<String> nodeIdents) {
+			return true;
+		}
+		
+		@Override
+		public Collection<String> getMainRuleSPITypes() {
+			return null;
+		}
+
+		@Override
+		public String getDefaultMainRuleSPIType(List<String> availableRuleTypes) {
+			if (availableRuleTypes.contains(PassedRuleSPI.class.getSimpleName())) {
+				return DateRuleSPI.class.getSimpleName();
+			}
+			return null;
+		}
+
+		@Override
+		public void refresh() {
+			//
+		}
+		
 	}
 }

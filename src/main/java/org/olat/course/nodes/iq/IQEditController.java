@@ -316,6 +316,7 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 		if (source == configurationCtrl) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				fireEvent(urequest, NodeEditController.REMINDER_VISIBILITY_EVENT);
 				layoutConfigurationCtrl.updateEditController(urequest);
 				updateGradingTab();
 				gradingInfosCtrl.reloadRepositoryEntry(getIQReference(moduleConfiguration, false));

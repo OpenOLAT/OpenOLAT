@@ -31,6 +31,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.InitialAttemptsRuleEditor;
 import org.olat.modules.reminder.ReminderRule;
@@ -49,7 +50,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI {
+public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI implements CourseNodeRuleSPI {
 
 	@Autowired
 	private ReminderRuleDAO helperDao;
@@ -111,6 +112,15 @@ public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI {
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 
 			return helperDao.getInitialAttemptDates(entry, courseNode, identities);
+		}
+		return null;
+	}
+	
+	@Override
+	public String getCourseNodeIdent(ReminderRule rule) {
+		if(rule instanceof ReminderRuleImpl) {
+			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+			return r.getLeftOperand();
 		}
 		return null;
 	}

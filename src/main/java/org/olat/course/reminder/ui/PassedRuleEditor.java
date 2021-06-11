@@ -20,6 +20,7 @@
 package org.olat.course.reminder.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -28,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
@@ -39,7 +41,9 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.reminder.CourseNodeFragment;
 import org.olat.course.reminder.rule.PassedRuleSPI;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
@@ -51,7 +55,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PassedRuleEditor extends RuleEditorFragment {
+public class PassedRuleEditor extends RuleEditorFragment implements CourseNodeFragment {
 	
 	private static final String[] statusKeys = new String[]{ "passed", "failed" };
 	
@@ -62,7 +66,6 @@ public class PassedRuleEditor extends RuleEditorFragment {
 	public PassedRuleEditor(ReminderRule rule, RepositoryEntry entry) {
 		super(rule);
 		this.entry = entry;
-		
 	}
 
 	@Override
@@ -89,6 +92,7 @@ public class PassedRuleEditor extends RuleEditorFragment {
 		
 		List<CourseNode> attemptableNodes = new ArrayList<>();
 		searchPassedNodes(course.getRunStructure().getRootNode(), attemptableNodes);
+		searchPassedNodes(course.getEditorTreeModel().getRootNode(), attemptableNodes);
 		
 		String[] nodeKeys = new String[attemptableNodes.size()];
 		String[] nodeValues = new String[attemptableNodes.size()];
@@ -141,15 +145,32 @@ public class PassedRuleEditor extends RuleEditorFragment {
 	}
 	
 	private void searchPassedNodes(CourseNode courseNode, List<CourseNode> nodes) {
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if (Mode.none != assessmentConfig.getPassedMode()) {
-			nodes.add(courseNode);
-		}
+		addPassedNode(nodes, courseNode);
 		
 		for(int i=0; i<courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode)courseNode.getChildAt(i);
 			searchPassedNodes(child, nodes);
+		}
+	}
+	
+	private void searchPassedNodes(TreeNode editorTreeNode, List<CourseNode> nodes) {
+		if (editorTreeNode instanceof CourseEditorTreeNode) {
+			CourseNode courseNode = ((CourseEditorTreeNode)editorTreeNode).getCourseNode();
+			addPassedNode(nodes, courseNode);
+		}
+
+		
+		for(int i=0; i<editorTreeNode.getChildCount(); i++) {
+			TreeNode child = (TreeNode)editorTreeNode.getChildAt(i);
+			searchPassedNodes(child, nodes);
+		}
+	}
+
+	private void addPassedNode(List<CourseNode> nodes, CourseNode courseNode) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (Mode.none != assessmentConfig.getPassedMode() && !nodes.contains(courseNode)) {
+			nodes.add(courseNode);
 		}
 	}
 
@@ -184,4 +205,12 @@ public class PassedRuleEditor extends RuleEditorFragment {
 		}
 		return configuredRule;
 	}
+
+	@Override
+	public void setCourseNodeIdent(String nodeIdent) {
+		if (Arrays.asList(courseNodeEl.getKeys()).contains(nodeIdent)) {
+			courseNodeEl.select(nodeIdent, true);
+		}
+	}
+	
 }
