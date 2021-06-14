@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
@@ -54,6 +55,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -347,6 +349,9 @@ public class HotspotEditorController extends FormBasicController {
 		if(extendedEditorCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
 				doTransfert(extendedEditorCtrl.getSpots());
+
+				String dirtyOnLoad = FormJSHelper.setFlexiFormDirtyOnLoad(flc.getRootForm());
+				getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(dirtyOnLoad));
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -461,7 +466,7 @@ public class HotspotEditorController extends FormBasicController {
 	
 	private void doOpenExtendedEditor(UserRequest ureq) {
 		String layoutCssClass;
-		if(layoutEl.isOneSelected()) {
+		if(layoutEl.isOneSelected() && StringHelper.containsNonWhitespace(layoutEl.getSelectedKey())) {
 			String selectedLayout = layoutEl.getSelectedKey();
 			layoutCssClass = "o_qti_" + selectedLayout;
 		} else {

@@ -39,10 +39,12 @@
 </div>
 <script>
 jQuery(function() {
+	var scaleFactor = jQuery("#${r.getCId()}_editor").width() / $width;
 	var board = jQuery("#${r.getCId()}_editor").drawingV2({
 		resize: !${restrictedEdit},
 		drag: !${restrictedEdit},
 		selection: '$hotspotSelections',
+		scale: scaleFactor,
 		mixedLabel: '$r.translate("mixed")'
 	});
 	
@@ -63,7 +65,8 @@ jQuery(function() {
 		#end ;
 	#end
 	board.updateButtons()
-	     .updatePositionFields();
+	     .updatePositionFields()
+	     .scale();
 	jQuery("#${r.getCId()}_editor a.o_qti_hotspot_delete").on('click', function(e) {
 		e.stopPropagation();
 		$f.openFfXHREvent(false, false, true), 'delete-hotspot', jQuery(this).data('qti-hotspot'));

@@ -133,7 +133,8 @@ ul.sessionControl {
 .o_qti_hotspots_editor {
 	min-height: 100px;
 	min-width: 400px;
-	background-repeat:no-repeat;
+	background-repeat: no-repeat;
+	background-size: cover;
 	
 	.o_draw_circle.o_hotspot_selected, .o_draw_rectangle.o_hotspot_selected {
 		background-color: $o-drawing-select-bg !important;

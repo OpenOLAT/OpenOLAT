@@ -37,14 +37,30 @@
     		resize: true,
     		drag: true,
     		selection: '',
+    		scale: 1.0,
     		mixedLabel: 'mixed'
-        }, params );
+        }, params);
 		
 		this.divPanel = panels.get(0);
 		this.divPanelId = this.divPanel.getAttribute("id");
 		this.editorPanel = jQuery(".o_qti_hotspots_editor", this.divPanel).get(0);
 		this.canvas = jQuery("canvas", this.editorPanel);
 		this.updateButtons();
+	}
+	
+	DrawingV2.prototype.scale = function() {
+		var newWidth = this.scaleVal(jQuery(this.editorPanel).width());
+		var newHeight = this.scaleVal(jQuery(this.editorPanel).height());
+		jQuery(this.editorPanel).width(newWidth);
+		jQuery(this.editorPanel).height(newHeight);
+	}
+	
+	DrawingV2.prototype.scaleVal = function(val) {
+		return Math.floor(this.settings.scale * val);
+	}
+	
+		DrawingV2.prototype.unscaleVal = function(val) {
+		return Math.floor(val / this.settings.scale);
 	}
 	
 	DrawingV2.prototype.newCircle = function(prefix) {
@@ -86,17 +102,23 @@
 			left = parseInt(parts[0]) - radius - 1;
 			top = parseInt(parts[1]) - radius - 1;
 		}
+		
+		var sHeight = this.scaleVal(height);
+		var sWidth = this.scaleVal(width);
+		var sTop = this.scaleVal(top);
+		var sLeft = this.scaleVal(left);
 
-		var nodes = jQuery("#" + this.divPanelId + " div." + id).height(height + 'px').width(width + 'px')
-			.css('top', top + 'px').css('left', left + 'px');
+		var nodes = jQuery("#" + this.divPanelId + " div." + id).height(sHeight + 'px').width(sWidth + 'px')
+			.css('top', sTop + 'px').css('left', sLeft + 'px');
+		var drawingBoard = this;
 		if(this.settings.resize) {
 			nodes = nodes.resizable({ aspectRatio: true, handles: "all", stop: function(event, ui) {
-				calculateCircleCoords(this);
+				drawingBoard.calculateCircleCoords(this);
 			}});
 		}
 		if(this.settings.drag) {
 			nodes = nodes.draggable({ containment: "parent", scroll: false, stop: function(event, ui) {
-				calculateCircleCoords(this);
+				drawingBoard.calculateCircleCoords(this);
 			}});
 		}
 		
@@ -125,17 +147,23 @@
 			height = parseInt(parts[3]) - top - 3;
 		}
 		
-		var nodes = jQuery("#" + this.divPanelId + " div." + id).height(height + 'px').width(width + 'px')
-			.css('top', top + 'px').css('left', left + 'px');
+		var sHeight = this.scaleVal(height);
+		var sWidth = this.scaleVal(width);
+		var sTop = this.scaleVal(top);
+		var sLeft = this.scaleVal(left);
+		
+		var nodes = jQuery("#" + this.divPanelId + " div." + id).height(sHeight + 'px').width(sWidth + 'px')
+			.css('top', sTop + 'px').css('left', sLeft + 'px');
+		var drawingBoard = this;
 		if(this.settings.resize) {
 			nodes = nodes.resizable({ handles: "all", stop: function(event, ui) {
-				calculateRectangleCoords(this);
+				drawingBoard.calculateRectangleCoords(this);
 			}});
 		}
 
 		if(this.settings.drag) {
 			nodes = nodes.draggable({ containment: "parent", scroll: false, stop: function(event, ui) {
-				calculateRectangleCoords(this);
+				drawingBoard.calculateRectangleCoords(this);
 			}});
 		}
 		
@@ -147,9 +175,9 @@
 	
 	DrawingV2.prototype.getCoords = function(spot) {
 		if(spot.hasClass('o_draw_circle')) {
-			return calculateCircleCoords(spot);
+			return this.calculateCircleCoords(spot);
 		} else if(spot.hasClass('o_draw_rectangle')) {
-			return calculateRectangleCoords(spot);
+			return this.calculateRectangleCoords(spot);
 		}
 	};
 	
@@ -216,22 +244,29 @@
 		return  this;
 	};
 	
-	function calculateCircleCoords(spot) {
+	DrawingV2.prototype.calculateCircleCoords = function(spot) {
 		var id = jQuery(spot).attr('id');
         var position = jQuery(spot).position();
         var radius = parseInt(jQuery(spot).width(), 10) / 2;
-        var coords = (position.left + radius + 1) + "," + (position.top + radius + 1) + "," + radius;
+        var left = this.unscaleVal(position.left + radius + 1);
+        var top = this.unscaleVal(position.top + radius + 1);
+        radius =  this.unscaleVal(radius);
+        var coords = left + "," + top + "," + radius;
         jQuery("#" + id + "_shape").val("circle");
         jQuery("#" + id + "_coords").val(coords);
         return coords;
 	};
 	
-	function calculateRectangleCoords(spot) {
+	DrawingV2.prototype.calculateRectangleCoords = function(spot) {
 		var id = jQuery(spot).attr('id');
         var position = jQuery(spot).position();
         var width = parseInt(jQuery(spot).width(), 10);
         var height = parseInt(jQuery(spot).height(), 10);
-        var coords = (position.left + 1) + "," + (position.top + 1) + "," + (position.left + width + 3) + "," + (position.top + height + 3);
+        var left = this.unscaleVal(position.left + 1);
+        var top = this.unscaleVal(position.top + 1);
+        var right = this.unscaleVal(position.left + width + 3);
+        var bottom = this.unscaleVal(position.top + height + 3);
+        var coords = left + "," + top + "," + right + "," + bottom;
         jQuery("#" + id + "_shape").val("rect");
         jQuery("#" + id + "_coords").val(coords);
         return coords;
