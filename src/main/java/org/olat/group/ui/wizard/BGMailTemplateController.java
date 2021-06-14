@@ -123,9 +123,12 @@ public class BGMailTemplateController extends FormBasicController {
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
-		subjectElem.clearError();
-		bodyElem.clearError();
+		if(subjectElem != null) {
+			subjectElem.clearError();
+		}
+		if(bodyElem != null) {
+			bodyElem.clearError();
+		}
 		if(defaultTemplate.isSelected(0)) {
 			//
 		} else if (mandatoryEmail || sendMail.isSelected(0)) {
