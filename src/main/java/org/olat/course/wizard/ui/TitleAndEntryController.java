@@ -85,6 +85,7 @@ public class TitleAndEntryController extends StepFormBasicController {
 		shortTitleEl = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle",
 				NodeConfigFormController.SHORT_TITLE_MAX_LENGTH, titleContext.getShortTitle(), nodeCont);
 		shortTitleEl.setMandatory(true);
+		shortTitleEl.setNotEmptyCheck("nodeConfigForm.menumust");
 		shortTitleEl.setCheckVisibleLength(true);
 		
 		formLayout.add(referencableCtrl.getInitialFormItem());
@@ -110,19 +111,6 @@ public class TitleAndEntryController extends StepFormBasicController {
 			}
 		}
 		super.event(ureq, source, event);
-	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-		
-		shortTitleEl.clearError();
-		if (!StringHelper.containsNonWhitespace(shortTitleEl.getValue())) {
-			shortTitleEl.setErrorKey("nodeConfigForm.menumust", null);
-			allOk &= false;
-		}
-		
-		return allOk;
 	}
 
 	@Override
