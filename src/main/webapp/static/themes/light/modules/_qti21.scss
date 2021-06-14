@@ -130,10 +130,15 @@ ul.sessionControl {
 }
 
 /* Hotspot */
-#o_qti_hotspots_edit {
+.o_qti_hotspots_editor {
 	min-height: 100px;
 	min-width: 400px;
 	background-repeat:no-repeat;
+	
+	.o_draw_circle.o_hotspot_selected, .o_draw_rectangle.o_hotspot_selected {
+		background-color: $o-drawing-select-bg !important;
+		border-color: $o-drawing-select-border !important;
+	}
 	
 	&.o_qti_hotspot-standard  {
 		.o_draw_circle, .o_draw_rectangle {
@@ -194,6 +199,8 @@ ul.sessionControl {
 			border-color: #ab47cb;
 		}
 	}
+	
+	
 }
 
 div.hotspotInteraction {

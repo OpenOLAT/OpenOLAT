@@ -629,6 +629,10 @@ $o-qti-textEntryInteraction-filled-color				: $o-qti-userselection-color !defaul
 $o-qti-textEntryInteraction-filled-bg				: $o-qti-userselection-bg !default;
 $o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-color !default;
 
+
+$o-qti-textEntryInteraction-filled-bg				: $o-qti-userselection-bg !default;
+$o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-color !default;
+
 /* Video module */
 $o-video-marker-bg-color							: #efefef;
 $o-video-time-marker-default-bg-color				: $brand-info;
@@ -841,6 +845,8 @@ $o-radial-progress-percentage-info-color	: $progress-bar-info-bg !default;
 /* Drawing (border cannot be change without modifications of the jquery plugin and hotspot interaction) */
 $o-drawing-border-color		: $brand-primary;
 $o-drawing-border-width		: 2px !default;
+$o-drawing-select-border	: $brand-primary;
+$o-drawing-select-bg		: transparentize($brand-primary, 0.5) !default;
 
 /* Placeholder panels */
 $o-panel-placeholder-border-width			: 2px !default;

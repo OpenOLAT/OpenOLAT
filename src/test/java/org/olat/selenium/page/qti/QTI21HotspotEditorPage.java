@@ -79,7 +79,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	}
 	
 	public QTI21HotspotEditorPage moveToHotspotEditor() {
-		By editorBy = By.id("o_qti_hotspots_edit");
+		By editorBy = By.className("o_qti_hotspots_editor");
 		OOGraphene.waitElement(editorBy, browser);
 		OOGraphene.moveTo(editorBy, browser);
 		return this;

@@ -49,9 +49,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -69,6 +71,7 @@ import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
+import org.olat.ims.qti21.ui.editor.interactions.HotspotExtendedEditorController.SpotWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
@@ -99,6 +102,7 @@ public class HotspotEditorController extends FormBasicController {
 	private SingleSelection resizeEl;
 	private FormLink newRectButton;
 	private FormLink newCircleButton;
+	private FormLink extendedEditButton;
 	private SingleSelection cardinalityEl;
 	private FormLayoutContainer hotspotsCont;
 	private MultipleSelectionElement responsiveEl;
@@ -121,6 +125,9 @@ public class HotspotEditorController extends FormBasicController {
 	
 	private final String mapperUri;
 	private final String backgroundMapperUri;
+	
+	private CloseableModalController cmc;
+	private HotspotExtendedEditorController extendedEditorCtrl;
 	
 	@Autowired
 	private ImageService imageService;
@@ -214,7 +221,7 @@ public class HotspotEditorController extends FormBasicController {
 		hotspotsCont.setRootForm(mainForm);
 		hotspotsCont.contextPut("mapperUri", backgroundMapperUri);
 		hotspotsCont.contextPut("restrictedEdit", restrictedEdit || readOnly);
-		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/openolat/jquery.drawing.js" });
+		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/openolat/jquery.drawing.v2.js" });
 		formLayout.add(js);
 		formLayout.add(hotspotsCont);
 		
@@ -224,6 +231,9 @@ public class HotspotEditorController extends FormBasicController {
 		newRectButton = uifactory.addFormLink("new.rectangle", "new.rectangle", null, hotspotsCont, Link.BUTTON);
 		newRectButton.setIconLeftCSS("o_icon o_icon-lg o_icon_rectangle");
 		newRectButton.setVisible(!restrictedEdit && !readOnly);
+		extendedEditButton = uifactory.addFormLink("extended.edit.hotspot", "extended.edit.hotspot", null, hotspotsCont, Link.BUTTON);
+		extendedEditButton.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
+		extendedEditButton.setVisible(!restrictedEdit && !readOnly);
 		
 		updateBackground();
 
@@ -321,7 +331,7 @@ public class HotspotEditorController extends FormBasicController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(hotspotsCont.getFormItemComponent() == source) {
+		if(hotspotsCont.getFormItemComponent() == source && extendedEditorCtrl == null) {
 			String cmd = event.getCommand();
 			if("delete-hotspot".equals(cmd)) {
 				doDeleteHotspot(ureq);
@@ -334,7 +344,23 @@ public class HotspotEditorController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(extendedEditorCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
+				doTransfert(extendedEditorCtrl.getSpots());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(extendedEditorCtrl);
+		removeAsListenerAndDispose(cmc);
+		extendedEditorCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -345,6 +371,8 @@ public class HotspotEditorController extends FormBasicController {
 		} else if(newRectButton == source) {
 			createHotspotChoice(Shape.RECT, "50,50,100,100");
 			updateHotspots(ureq);
+		} else if(extendedEditButton == source) {
+			doOpenExtendedEditor(ureq);
 		} else if(backgroundEl == source) {
 			// upload in item directory;
 			if(FileElementEvent.DELETE.equals(event.getCommand())) {
@@ -383,6 +411,40 @@ public class HotspotEditorController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	private void doTransfert(List<SpotWrapper> wrappers) {
+		List<String> correctResponsesIds = new ArrayList<>();
+		Map<String,HotspotWrapper> wrapperMap = new HashMap<>();
+		for(HotspotWrapper wrapper:choiceWrappers) {
+			wrapperMap.put(wrapper.getIdentifier(), wrapper);
+		}
+		
+		for(SpotWrapper wrapper:wrappers) {
+			HotspotWrapper choiceWrapper = wrapperMap.get(wrapper.getIdentifier());
+			if(choiceWrapper != null) {
+				choiceWrapper.setCoords(wrapper.getCoords());
+				wrapperMap.remove(wrapper.getIdentifier());
+			} else {
+				itemBuilder.createHotspotChoice(Identifier.assumedLegal(wrapper.getIdentifier()),
+						Shape.parseShape(wrapper.getShape()), wrapper.getCoords());	
+			}
+			if(wrapper.isCorrect()) {
+				correctResponsesIds.add(wrapper.getIdentifier());
+			}
+		}
+		
+		for(HotspotWrapper wrapper:wrapperMap.values()) {
+			HotspotChoice choiceToDelete = itemBuilder.getHotspotChoice(wrapper.getIdentifier());
+			if(choiceToDelete != null) {
+				itemBuilder.deleteHotspotChoice(choiceToDelete);
+			}
+		}
+		
+		doCorrectAnswers(correctResponsesIds);
+		rebuildWrappersAndCorrectSelection();
+
+		flc.setDirty(true);
+	}
+	
 	private void doMoveHotspot(UserRequest ureq) {
 		if(restrictedEdit || readOnly) return;
 		
@@ -395,6 +457,25 @@ public class HotspotEditorController extends FormBasicController {
 				}
 			}
 		}
+	}
+	
+	private void doOpenExtendedEditor(UserRequest ureq) {
+		String layoutCssClass;
+		if(layoutEl.isOneSelected()) {
+			String selectedLayout = layoutEl.getSelectedKey();
+			layoutCssClass = "o_qti_" + selectedLayout;
+		} else {
+			layoutCssClass = "o_qti_hotspot-standard";
+		}
+		
+		File objectImg = getObjectImage();
+		extendedEditorCtrl = new HotspotExtendedEditorController(ureq, getWindowControl(), itemFile, objectImg, choiceWrappers, layoutCssClass);
+		listenTo(extendedEditorCtrl);
+		
+		String title = translate("extended.edit.hotspot.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", extendedEditorCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doDeleteHotspot(UserRequest ureq) {
@@ -418,18 +499,17 @@ public class HotspotEditorController extends FormBasicController {
 		choiceWrappers.clear();
 		
 		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
-		String[] keys = new String[choices.size()];
-		String[] values = new String[choices.size()];
+		KeyValues keyValues = new KeyValues();
 		for(int i=0; i<choices.size(); i++) {
 			HotspotChoice choice = choices.get(i);
-			keys[i] = choice.getIdentifier().toString();
-			values[i] = Integer.toString(i + 1) + ".";
+			keyValues.add(KeyValues.entry(choice.getIdentifier().toString(), Integer.toString(i + 1) + "."));
 			choiceWrappers.add(new HotspotWrapper(choice, itemBuilder));
 		}
-		correctHotspotsEl.setKeysAndValues(keys, values);
+		correctHotspotsEl.setKeysAndValues(keyValues.keys(), keyValues.values());
 		for(int i=0; i<choices.size(); i++) {
-			if(itemBuilder.isCorrect(choices.get(i))) {
-				correctHotspotsEl.select(keys[i], true);
+			HotspotChoice choice = choices.get(i);
+			if(itemBuilder.isCorrect(choice)) {
+				correctHotspotsEl.select(choice.getIdentifier().toString(), true);
 			}
 		}
 		hotspotsCont.contextPut("hotspots", choiceWrappers);
@@ -458,15 +538,19 @@ public class HotspotEditorController extends FormBasicController {
 		}
 	}
 	
-	private Size updateBackground() {
-		Size size = null;
+	private File getObjectImage() {
 		File objectImg = null;
 		if(backgroundImage != null) {
 			objectImg = backgroundImage;
 		} else if(initialBackgroundImage != null) {
 			objectImg = initialBackgroundImage;
 		}
-		
+		return objectImg;
+	}
+	
+	private Size updateBackground() {
+		Size size = null;
+		File objectImg = getObjectImage();
 		if(objectImg != null) {
 			String relativePath = itemFile.getParentFile().toPath().relativize(objectImg.toPath()).toString();
 			size = imageService.getSize(new LocalFileImpl(objectImg), null);

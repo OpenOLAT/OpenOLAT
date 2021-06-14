@@ -148,6 +148,13 @@ public class FormDecorator {
 		return FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, true, true, new NameValuePair(key, value));
 	}
 	
+	public String openFfXHREvent(boolean dirtyCheck, boolean pushState, boolean submit) {
+		Form theForm = container.getRootForm();
+		String elementId = "o_fi".concat(container.getComponent().getDispatchID());
+		String cmd = FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, dirtyCheck, pushState, submit);
+		return cmd.substring(0, cmd.length() - 1); // remove the last (
+	}
+	
 	public String backgroundCommand(String command, String key, String value) {
 		Form theForm = container.getRootForm();
 		String elementId = "o_fi" + container.getComponent().getDispatchID();
