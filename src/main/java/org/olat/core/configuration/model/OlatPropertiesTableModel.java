@@ -21,7 +21,6 @@
 package org.olat.core.configuration.model;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -32,7 +31,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.ui.StudentsTableDataModel;
@@ -177,7 +175,7 @@ public class OlatPropertiesTableModel extends DefaultFlexiTableDataModel<OlatPro
 	@Override
 	public void sort(SortKey sortKey) {
 		if (sortKey != null) {
-			List<OlatPropertiesTableContentRow> properties = new SortableFlexiTableModelDelegate<OlatPropertiesTableContentRow>(sortKey, this, Locale.GERMAN).sort();
+			List<OlatPropertiesTableContentRow> properties = new OlatPropertiesSortableDelegate(sortKey, this, null).sort();
 			super.setObjects(properties);
 		}
 	}
