@@ -100,42 +100,46 @@ public class CompetenceBrowserController extends FormBasicController {
 		List<CompetenceBrowserTableRow> rows = new ArrayList<>();
 		
 		int linkCounter = 0;
+		List<Taxonomy> linkedTaxonomies = portfolioModule.getLinkedTaxonomies();
 		
-		for (Taxonomy taxonomy : portfolioModule.getLinkedTaxonomies()) {
-			CompetenceBrowserTableRow taxonomyRow = new CompetenceBrowserTableRow(null, taxonomy, null);
-			if (StringHelper.containsNonWhitespace(taxonomyRow.getDescription())) {
-				FormLink taxonomyDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + taxonomyRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
-				taxonomyDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
-				taxonomyDetailsLink.setUserObject(taxonomyRow);
-				taxonomyRow.setDetailsLink(taxonomyDetailsLink);
-			}
-			rows.add(taxonomyRow);
-			
-			for (TaxonomyLevel level : taxonomyService.getTaxonomyLevels(taxonomy)) {
-				CompetenceBrowserTableRow levelRow = new CompetenceBrowserTableRow(null, taxonomy, level);
-				if (StringHelper.containsNonWhitespace(levelRow.getDescription())) {
-					FormLink levelDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
-					levelDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
-					levelDetailsLink.setUserObject(levelRow);
-					levelRow.setDetailsLink(levelDetailsLink);
+		if (linkedTaxonomies != null) {
+			for (Taxonomy taxonomy : linkedTaxonomies) {
+				CompetenceBrowserTableRow taxonomyRow = new CompetenceBrowserTableRow(null, taxonomy, null);
+				if (StringHelper.containsNonWhitespace(taxonomyRow.getDescription())) {
+					FormLink taxonomyDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + taxonomyRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+					taxonomyDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
+					taxonomyDetailsLink.setUserObject(taxonomyRow);
+					taxonomyRow.setDetailsLink(taxonomyDetailsLink);
 				}
-				rows.add(levelRow);
+				rows.add(taxonomyRow);
+				
+				for (TaxonomyLevel level : taxonomyService.getTaxonomyLevels(taxonomy)) {
+					CompetenceBrowserTableRow levelRow = new CompetenceBrowserTableRow(null, taxonomy, level);
+					if (StringHelper.containsNonWhitespace(levelRow.getDescription())) {
+						FormLink levelDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+						levelDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
+						levelDetailsLink.setUserObject(levelRow);
+						levelRow.setDetailsLink(levelDetailsLink);
+					}
+					rows.add(levelRow);
+				}
 			}
 		}
 				
-		
-		// Set parents
-		// Root levels to taxonomy
-		rows.stream().filter(row -> row.getTaxonomyLevel() != null && row.getTaxonomyLevel().getParent() == null)
-					 .forEach(level -> level.setParent(rows.stream().filter(parent -> parent.getTaxonomy() != null && parent.getTaxonomy().getKey().equals(level.getTaxonomy().getKey()))
-							 										.findFirst().orElse(null)));
-		
-		// Levels to level
-		rows.stream().filter(row -> row.getTaxonomyLevel() != null && row.getTaxonomyLevel().getParent() != null)
-				 	 .forEach(level -> level.setParent(rows.stream().filter(parent -> parent.getTaxonomyLevel() != null && parent.getTaxonomyLevel().getKey().equals(level.getTaxonomyLevel().getParent().getKey()))
-					 												.findFirst().orElse(null)));	
-		// Sort rows
-		rows.sort(new FlexiTreeNodeComparator());
+		if (!rows.isEmpty()) {
+			// Set parents
+			// Root levels to taxonomy
+			rows.stream().filter(row -> row.getTaxonomyLevel() != null && row.getTaxonomyLevel().getParent() == null)
+						 .forEach(level -> level.setParent(rows.stream().filter(parent -> parent.getTaxonomy() != null && parent.getTaxonomy().getKey().equals(level.getTaxonomy().getKey()))
+								 										.findFirst().orElse(null)));
+			
+			// Levels to level
+			rows.stream().filter(row -> row.getTaxonomyLevel() != null && row.getTaxonomyLevel().getParent() != null)
+					 	 .forEach(level -> level.setParent(rows.stream().filter(parent -> parent.getTaxonomyLevel() != null && parent.getTaxonomyLevel().getKey().equals(level.getTaxonomyLevel().getParent().getKey()))
+						 												.findFirst().orElse(null)));	
+			// Sort rows
+			rows.sort(new FlexiTreeNodeComparator());
+		}
 		
 		tableModel.setObjects(rows);
 		tableEl.setRootCrumb(rootCrumb);

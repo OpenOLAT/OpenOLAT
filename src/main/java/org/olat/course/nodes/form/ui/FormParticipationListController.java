@@ -64,7 +64,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.ui.FormParticipationTableModel.ParticipationCols;
@@ -165,7 +164,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		int colIndex = FormParticipationTableModel.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-			boolean visible = UserManager.getInstance().isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
+			boolean visible = UserManager.getInstance().isMandatoryUserProperty(FormParticipationTableModel.USAGE_IDENTIFIER, userPropertyHandler);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, CMD_SELECT, true, "userProp-" + colIndex));
 			if(!options.hasDefaultOrderBy()) {
 				options.setDefaultOrderBy(new SortKey("userProp-" + colIndex, true));

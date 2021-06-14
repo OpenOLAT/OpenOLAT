@@ -67,6 +67,7 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
+import org.olat.course.nodes.cl.CLLearningPathNodeHandler;
 import org.olat.course.nodes.cl.CheckListAssessmentConfig;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
@@ -75,8 +76,6 @@ import org.olat.course.nodes.cl.ui.CheckListAssessmentController;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
 import org.olat.course.nodes.cl.ui.CheckListExcelExport;
 import org.olat.course.nodes.cl.ui.CheckListRunController;
-import org.olat.course.nodes.iq.IQTESTLearningPathNodeHandler;
-import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
@@ -225,8 +224,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = Mode.none != new MSAssessmentConfig(getModuleConfiguration()).getScoreMode();
-		boolean isScoreTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
+		boolean hasScore = Mode.none != new CheckListAssessmentConfig(getModuleConfiguration()).getScoreMode();
+		boolean isScoreTrigger = CoreSpringFactory.getImpl(CLLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
 				.isEnabled();
@@ -234,8 +233,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = new MSAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
-		boolean isPassedTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
+		boolean hasPassed = new CheckListAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
+		boolean isPassedTrigger = CoreSpringFactory.getImpl(CLLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
 				.isEnabled();

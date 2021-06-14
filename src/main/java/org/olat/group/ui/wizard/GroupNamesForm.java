@@ -61,6 +61,7 @@ public class GroupNamesForm extends FormBasicController {
 		initForm(ureq);
 	}
 
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		List<String> namesList = new ArrayList<>();
 		String groupNamesString = groupNames.getValue();
@@ -109,7 +110,7 @@ public class GroupNamesForm extends FormBasicController {
 	public Integer getGroupMax() {
 		String result = bgMax.getValue();
 		if (result.length() == 0) return null;
-		return new Integer(Integer.parseInt(result));
+		return Integer.valueOf(result);
 	}
 
 	@Override
