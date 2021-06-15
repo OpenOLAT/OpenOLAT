@@ -1517,6 +1517,8 @@
 					<reuseForks>false</reuseForks>
 					<argLine>-Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
 					<trimStackTrace>false</trimStackTrace>
+					<!-- Sometimes a browser cannot be started -->
+					<rerunFailingTestsCount>1</rerunFailingTestsCount>
 					<systemPropertyVariables>
 						<profile>${test.env}</profile>
 						<test.env.db.name>${test.env.db.name}</test.env.db.name>

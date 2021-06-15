@@ -22,6 +22,8 @@ package org.olat.selenium.page.course;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -37,6 +39,8 @@ import org.openqa.selenium.support.ui.Select;
  *
  */
 public class AssessmentModePage {
+	
+	private static final Logger log = Tracing.createLoggerFor(AssessmentModePage.class);
 	
 	private final WebDriver browser;
 	
@@ -166,7 +170,14 @@ public class AssessmentModePage {
 	
 	public AssessmentModePage waitBackToOpenOlat() {
 		By continueBy = By.xpath("//div[@class='modal-content']//a[contains(@class,'o_sel_assessment_continue')]");
-		OOGraphene.waitElementSlowly(continueBy, 20, browser);
+		try {
+			OOGraphene.waitElementSlowly(continueBy, 20, browser);
+		} catch (NullPointerException e) {// Firefox can send a NPE randomly
+			OOGraphene.takeScreenshot("Assessment_waitBackToOpenOlat", browser);
+			log.error("", e);
+			// try a second time
+			OOGraphene.waitElementSlowly(continueBy, 20, browser);
+		}
 		return this;
 	}
 	
