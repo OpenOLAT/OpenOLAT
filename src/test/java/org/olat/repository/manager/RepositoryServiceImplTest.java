@@ -123,7 +123,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		Identity coachGroup = JunitTestHelper.createAndPersistIdentityAsRndUser("re-soft-");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("re-soft-");
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-del-1");
-		RepositoryEntry re = JunitTestHelper.deployDemoCourse(initialAuthor);
+		RepositoryEntry re = JunitTestHelper.deployBasicCourse(initialAuthor);
 		dbInstance.commitAndCloseSession();
 		
 		//add business group
@@ -182,7 +182,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	@Test
 	public void deleteCoursePermanently() {
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-del-1");
-		RepositoryEntry re = JunitTestHelper.deployDemoCourse(initialAuthor);
+		RepositoryEntry re = JunitTestHelper.deployBasicCourse(initialAuthor);
 		dbInstance.commitAndCloseSession();
 		
 		Roles roles = Roles.authorRoles();

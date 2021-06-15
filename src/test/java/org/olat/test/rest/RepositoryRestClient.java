@@ -76,7 +76,7 @@ public class RepositoryRestClient {
 	
 	public CourseVO deployDemoCourse()
 	throws URISyntaxException, IOException {
-		URL url = ArquillianDeployments.class.getResource("file_resources/Demo-Kurs-7.1.zip");
+		URL url = ArquillianDeployments.class.getResource("file_resources/Demo-Kurs-16.0.zip");
 		File archive = new File(url.toURI());
 		
 		String displayname = "Demo-Kurs-" + UUID.randomUUID().toString();
