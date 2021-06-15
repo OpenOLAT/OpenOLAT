@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
@@ -50,6 +51,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.ims.qti21.QTI21Constants.HotspotLayouts;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
@@ -143,6 +145,9 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		scoreCont.contextPut("mapperUri", backgroundMapperUri);
 		scoreCont.setVisible(assessmentModeEl.isSelected(1));
 		
+		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/openolat/jquery.drawing.v2.js" });
+		formLayout.add(js);
+		
 		updateBackground();
 
 		// Submit Button
@@ -214,6 +219,21 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		}
 
 		scoreCont.contextPut("hotspots", choiceWrappers);
+		
+		HotspotLayouts[] layouts = HotspotLayouts.values();
+		String layoutCssClass = null;
+		for(int i=layouts.length; i-->0; ) {
+			if(itemBuilder.hasHotspotInteractionClass(layouts[i].cssClass())) {
+				layoutCssClass = layouts[i].cssClass();
+			}
+		}
+		
+		if(StringHelper.containsNonWhitespace(layoutCssClass)) {
+			layoutCssClass = "o_qti_" + layoutCssClass;
+		} else {
+			layoutCssClass = "o_qti_hotspot-standard";
+		}
+		scoreCont.contextPut("layoutCssClass", layoutCssClass);
 	}
 	
 	private HotspotChoiceWrapper createHotspotChoiceWrapper(HotspotChoice choice) {
