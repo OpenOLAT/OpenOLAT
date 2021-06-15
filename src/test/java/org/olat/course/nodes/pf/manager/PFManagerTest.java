@@ -74,7 +74,7 @@ public class PFManagerTest extends OlatTestCase {
 		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_PARTICIPANTBOX, true);
 	
 		// import "Demo course" into the bcroot_junittest
-		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(initialAuthor);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(initialAuthor);
 		Long resourceableId = entry.getOlatResource().getResourceableId();
 
 		ICourse course = CourseFactory.loadCourse(resourceableId);
@@ -98,7 +98,7 @@ public class PFManagerTest extends OlatTestCase {
 		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_PARTICIPANTBOX, true);
 	
 		// import "Demo course" into the bcroot_junittest
-		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(initialAuthor);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(initialAuthor);
 		Long resourceableId = entry.getOlatResource().getResourceableId();
 
 		ICourse course = CourseFactory.loadCourse(resourceableId);
@@ -121,7 +121,7 @@ public class PFManagerTest extends OlatTestCase {
 		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_PARTICIPANTBOX, true);
 	
 		// import "Demo course" into the bcroot_junittest
-		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(initialAuthor);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(initialAuthor);
 		Long resourceableId = entry.getOlatResource().getResourceableId();
 
 		ICourse course = CourseFactory.loadCourse(resourceableId);
@@ -158,7 +158,7 @@ public class PFManagerTest extends OlatTestCase {
 		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_PARTICIPANTBOX, true);
 	
 		// import "Demo course" into the bcroot_junittest
-		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(initialAuthor);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(initialAuthor);
 		Long resourceableId = entry.getOlatResource().getResourceableId();
 
 		ICourse course = CourseFactory.loadCourse(resourceableId);
@@ -187,7 +187,7 @@ public class PFManagerTest extends OlatTestCase {
 	public void getParticipants() {
 		//prepare
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-1");
-		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(initialAuthor);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(initialAuthor);
 		// import "Demo course" into the bcroot_junittest
 		Long resourceableId = entry.getOlatResource().getResourceableId();
 
