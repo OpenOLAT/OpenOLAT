@@ -313,6 +313,16 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		log.error("Shared tool with problematic deployment: {} {} (num. of deployments: {})", platform.getKey(), deploymentId, deployments.size());
 		return null;
 	}
+	
+	
+
+	@Override
+	public LTI13SharedToolDeployment getSharedToolDeployment(LTI13SharedToolDeployment deployment) {
+		if(deployment == null || deployment.getKey() == null) {
+			return null;
+		}
+		return sharedToolDeploymentDao.loadByKey(deployment.getKey());
+	}
 
 	@Override
 	public List<LTI13SharedToolDeployment> getSharedToolDeployments(LTI13Platform sharedTool) {

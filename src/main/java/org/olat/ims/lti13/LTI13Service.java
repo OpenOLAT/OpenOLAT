@@ -105,6 +105,14 @@ public interface LTI13Service {
 	public LTI13SharedToolDeployment updateSharedToolDeployment(LTI13SharedToolDeployment deployment);
 	
 	public LTI13SharedToolDeployment getSharedToolDeployment(String deploymentId, LTI13Platform platform);
+	
+	/**
+	 * Reload the deployment with a lot of fetch.
+	 * 
+	 * @param deployment The deployment to reload
+	 * @return The deployment or null if not found.
+	 */
+	public LTI13SharedToolDeployment getSharedToolDeployment(LTI13SharedToolDeployment deployment);
 
 	public void deleteSharedToolDeployment(LTI13SharedToolDeployment deployment);
 	
