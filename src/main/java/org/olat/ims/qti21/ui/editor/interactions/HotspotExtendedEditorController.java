@@ -85,7 +85,11 @@ public class HotspotExtendedEditorController extends FormBasicController {
 			choiceWrappers.add(new SpotWrapper(hotspotWrapper));
 		}
 		this.layoutCssClass = layoutCssClass;
-		size = imageService.getSize(new LocalFileImpl(objectImg), null);
+		if(objectImg != null) {
+			size = imageService.getSize(new LocalFileImpl(objectImg), null);
+		} else {
+			size = new Size(400, 300, false);
+		}
 		backgroundMapperUri = registerMapper(ureq, new BackgroundMapper(itemFile));
 		
 		initForm(ureq);
@@ -112,7 +116,9 @@ public class HotspotExtendedEditorController extends FormBasicController {
 				layoutCont.contextPut("width", 300);
 			}
 			layoutCont.contextPut("hotspotSelections", "");
-			layoutCont.contextPut("filename", objectImg.getName());
+			if(objectImg != null) {
+				layoutCont.contextPut("filename", objectImg.getName());
+			}
 			layoutCont.contextPut("hotspots", choiceWrappers);
 			layoutCont.getFormItemComponent().addListener(this);
 		}
