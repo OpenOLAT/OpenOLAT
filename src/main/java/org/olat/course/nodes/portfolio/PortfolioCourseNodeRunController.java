@@ -39,8 +39,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.messages.MessageController;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.context.BusinessControl;
@@ -123,16 +121,6 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
-			String title = "";
-			if(templateBinder != null) {
-				title = StringHelper.escapeHtml(templateBinder.getTitle());
-			}
-			MessageController coachMessage = MessageUIFactory.createInfoMessage(ureq, getWindowControl(),
-					translate("info.coach.title"), translate("info.coach.text", new String[] { title }));
-			(((FormLayoutContainer) formLayout).getFormItemComponent()).put("coachMessage", coachMessage.getInitialComponent());
-		}
-		
 		infosContainer = FormLayoutContainer.createDefaultFormLayout("infos", getTranslator());
 		infosContainer.setVisible(userCourseEnv.isParticipant());
 		formLayout.add(infosContainer);

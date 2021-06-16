@@ -64,6 +64,7 @@ import org.olat.course.nodes.scorm.ScormAssessmentConfig;
 import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.nodes.scorm.ScormLearningPathNodeHandler;
 import org.olat.course.nodes.scorm.ScormRunController;
+import org.olat.course.nodes.scorm.ScormRunSegmentController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
@@ -122,8 +123,8 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		ScormRunController cprunC = new ScormRunController(getModuleConfiguration(), ureq, userCourseEnv, wControl, this, false);
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, cprunC, this, "o_scorm_icon");
+		Controller cuntCtrl = new ScormRunSegmentController(ureq, wControl, userCourseEnv, this);
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, cuntCtrl, this, "o_scorm_icon");
 		// no inline-in-olat-menu integration possible: no display configuration option
 		return new NodeRunConstructionResult(ctrl);
 	}
@@ -410,7 +411,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new AssessmentReminderProvider(getIdent(), new ScormAssessmentConfig(getModuleConfiguration()));
 	}
 	

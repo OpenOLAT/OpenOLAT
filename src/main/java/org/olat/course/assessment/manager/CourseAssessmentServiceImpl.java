@@ -49,8 +49,10 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -72,6 +74,8 @@ import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -93,6 +97,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	private DB dbInstance;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	
@@ -362,17 +368,44 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
-	public boolean hasCustomIdentityList(CourseNode courseNode) {
-		return getAssessmentHandler(courseNode).hasCustomIdentityList();
-	}
-
-	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
-			AssessmentToolSecurityCallback assessmentCallback) {
-		return getAssessmentHandler(courseNode).getIdentityListController(ureq, wControl, stackPanel, courseNode,
-				courseEntry, group, coachCourseEnv, toolContainer, assessmentCallback);
+			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
+		if (getAssessmentHandler(courseNode).hasCustomIdentityList()) {
+			return getAssessmentHandler(courseNode).getIdentityListController(ureq, wControl, stackPanel, courseNode,
+					courseEntry, group, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
+		}
+		return new IdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, group, courseNode,
+				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
+	}
+	
+	@Override
+	public AssessmentCourseNodeController getCourseNodeRunController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackPanel, CourseNode courseNode, UserCourseEnvironment coachCourseEnv) {
+		RepositoryEntry courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		AssessmentToolSecurityCallback assessmentCallback = createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
+		return getIdentityListController(ureq, wControl, stackPanel, courseNode, courseEntry, null, coachCourseEnv,
+				new AssessmentToolContainer(), assessmentCallback, false);
+	}
+
+	private AssessmentToolSecurityCallback createCourseNodeRunSecurityCallback(UserRequest ureq, UserCourseEnvironment userCourseEnv) {
+		// see CourseRuntimeController.doAssessmentTool(ureq);
+		GroupRoles role = userCourseEnv.isCoach()? GroupRoles.coach: GroupRoles.owner;
+		boolean hasAssessmentRight = userCourseEnv.getCourseEnvironment().getCourseGroupManager()
+				.hasRight(userCourseEnv.getIdentityEnvironment().getIdentity(), CourseRights.RIGHT_ASSESSMENT, role);
+
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
+		boolean admin = userCourseEnv.isAdmin() || hasAssessmentRight;
+
+		boolean nonMembers = reSecurity.isEntryAdmin();
+		List<BusinessGroup> coachedGroups = null;
+		if (reSecurity.isGroupCoach()) {
+			coachedGroups = userCourseEnv.getCoachedGroups();
+		}
+		return new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(),
+				reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups);
 	}
 
 	@Override

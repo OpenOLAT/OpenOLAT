@@ -596,13 +596,11 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		// Only supported on root nodes. The STAssessmentHandler needs the course node hierarchy.
 		// We do not have this hierarchy when we are in the editor or the hierarchy is different than
 		// the hierarchy in the run model.
-		
-		boolean root = course.getRunStructure().getRootNode().getIdent().equals(getIdent());
-		if (root) {
+		if (rootNode) {
 			return new STReminderProvider(this);
 		}
 		return null;

@@ -448,11 +448,11 @@ public interface CourseNode extends INode, ShortName {
 	 * If a course node implements this methods, the Event NodeEditController.REMINDER_VISIBILITY_EVENT
 	 * should probably be fired when the configurations have been changed.
 	 * 
-	 * @param course
+	 * @param rootNode
 	 *
 	 * @return
 	 */
-	public default CourseNodeReminderProvider getReminderProvider(ICourse course) {
+	public default CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return null;
 	}
 	

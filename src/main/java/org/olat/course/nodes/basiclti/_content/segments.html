@@ -1,0 +1,10 @@
+<div class="clearfix">
+	$r.render("segments")
+		
+	#if($cssClass)
+	<div class="$cssClass"></div>
+	#end
+	#if($r.available("segmentCmp"))
+		$r.render("segmentCmp")
+	#end
+</div>

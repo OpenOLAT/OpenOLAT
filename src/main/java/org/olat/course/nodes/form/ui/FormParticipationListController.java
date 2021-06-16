@@ -140,7 +140,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(FormParticipationTableModel.USAGE_IDENTIFIER, isAdministrativeUser);
 		
 		initForm(ureq);
-		loadModel();
+		reload();
 	}
 
 	@Override
@@ -213,7 +213,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		}
 	}
 
-	private void loadModel() {
+	public void reload() {
 		List<Identity> coachedIdentities = formManager.getCoachedIdentities(coachCourseEnv);
 		Map<Long, EvaluationFormParticipation> identityKeyToParticipations = formManager.getParticipations(survey, null, false)
 				.stream()
@@ -246,7 +246,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		}
 		
 		dataModel.setObjects(rows);
-		tableEl.reset(true, true, true);
+		tableEl.reset(false, false, true);
 	}
 	
 	@Override
@@ -373,7 +373,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	
 	private void doDeleteAllData() {
 		formManager.deleteAllData(survey, courseNode, coachCourseEnv);
-		loadModel();
+		reload();
 	}
 	
 	private void doConfirmReset(UserRequest ureq, EvaluationFormParticipation participation) {
@@ -385,7 +385,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	
 	private void doResetParticipation(EvaluationFormParticipation participation) {
 		formManager.deleteParticipation(participation, courseNode, coachCourseEnv.getCourseEnvironment());
-		loadModel();
+		reload();
 	}
 	
 	private void doConfirmReopen(UserRequest ureq, EvaluationFormParticipation participation) {
@@ -397,7 +397,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	
 	private void doReopenParticipation(EvaluationFormParticipation participation) {
 		formManager.reopenParticipation(participation, courseNode, coachCourseEnv.getCourseEnvironment());
-		loadModel();
+		reload();
 	}
 	
 	

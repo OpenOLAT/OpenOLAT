@@ -21,22 +21,27 @@ package org.olat.course.nodes.ms;
 
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.groupsandrights.CourseRights;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
-import org.olat.modules.assessment.ui.AssessmentToolContainer;
-import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntrySecurity;
-import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -45,56 +50,117 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MSCoachRunController extends BasicController {
+public class MSCoachRunController extends BasicController implements Activateable2 {
+	
+	private static final String ORES_TYPE_PARTICIPANTS = "Participants";
+	private static final String ORES_TYPE_REMINDERS = "Reminders";
+	
+	private Link participantsLink;
+	private Link remindersLink;
+	
+	private VelocityContainer mainVC;
+	private SegmentViewComponent segmentView;
 
-	private MSIdentityListCourseNodeController identitityListCtrl;
+	private final TooledStackedPanel participantsPanel;
+	private final AssessmentCourseNodeController participantsCtrl;
+	private CourseNodeReminderRunController remindersCtrl;
 	
 	@Autowired
-	private RepositoryManager repositoryManager;
+	private CourseAssessmentService courseAssessmentService;
 
-	public MSCoachRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, MSCourseNode msCourseNode) {
+	public MSCoachRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
+			MSCourseNode courseNode) {
 		super(ureq, wControl);
-
-		TooledStackedPanel stackPanel = new TooledStackedPanel("msCoachStackPanel", getTranslator(), this);
-		stackPanel.setToolbarAutoEnabled(false);
-		stackPanel.setToolbarEnabled(false);
-		stackPanel.setShowCloseLink(true, false);
-		stackPanel.setCssClass("o_identity_list_stack");
-		putInitialPanel(stackPanel);
 		
-		GroupRoles role = userCourseEnv.isCoach()? GroupRoles.coach: GroupRoles.owner;
-		// see CourseRuntimeController.doAssessmentTool(ureq);
-		boolean hasAssessmentRight = userCourseEnv.getCourseEnvironment().getCourseGroupManager()
-				.hasRight(getIdentity(), CourseRights.RIGHT_ASSESSMENT, role);
+		mainVC = createVelocityContainer("segments");
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setDontShowSingleSegment(true);
 
-		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
-		boolean admin = userCourseEnv.isAdmin() || hasAssessmentRight;
-
-		boolean nonMembers = reSecurity.isEntryAdmin();
-		List<BusinessGroup> coachedGroups = null;
-		if (reSecurity.isGroupCoach()) {
-			coachedGroups = userCourseEnv.getCoachedGroups();
+		participantsPanel = new TooledStackedPanel("participantsPanel", getTranslator(), this);
+		participantsPanel.setToolbarAutoEnabled(false);
+		participantsPanel.setToolbarEnabled(false);
+		participantsPanel.setShowCloseLink(true, false);
+		participantsPanel.setCssClass("o_segment_toolbar o_block_top");
+		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PARTICIPANTS), null);
+		participantsCtrl = courseAssessmentService.getCourseNodeRunController(ureq, swControl, participantsPanel, 
+				courseNode, userCourseEnv);
+		listenTo(participantsCtrl);
+		participantsCtrl.activate(ureq, null, null);
+		participantsPanel.pushController(translate("segment.participants"), participantsCtrl);
+		
+		participantsLink = LinkFactory.createLink("segment.participants", mainVC, this);
+		segmentView.addSegment(participantsLink, true);
+		
+		// Reminders
+		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
+			swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_REMINDERS), null);
+			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl,
+					userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+					courseNode.getReminderProvider(false));
+			listenTo(remindersCtrl);
+			if (remindersCtrl.hasDataOrActions()) {
+				remindersLink = LinkFactory.createLink("segment.reminders", mainVC, this);
+				segmentView.addSegment(remindersLink, false);
+			}
 		}
-		AssessmentToolSecurityCallback secCallBack = new AssessmentToolSecurityCallback(admin, nonMembers,
-				reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups);
-
-		identitityListCtrl = new MSIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, null,
-				msCourseNode, userCourseEnv, new AssessmentToolContainer(), secCallBack, false);
-		listenTo(identitityListCtrl);
-		identitityListCtrl.activate(ureq, null, null);
 		
-		stackPanel.pushController(translate("breadcrumb.users"), identitityListCtrl);
+		doOpenParticipants(ureq);
+		
+		putInitialPanel(mainVC);
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		participantsCtrl.activate(ureq, entries, state);
+		if(entries == null || entries.isEmpty()) return;
+
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenParticipants(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+			segmentView.select(participantsLink);
+		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
+			doOpenReminders(ureq);
+			segmentView.select(remindersLink);
+		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if (source == segmentView) {
+			if (event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = mainVC.getComponent(segmentCName);
+				if (clickedLink == participantsLink) {
+					doOpenParticipants(ureq);
+				} else if (clickedLink == remindersLink) {
+					doOpenReminders(ureq);
+				}
+			}
+		}
+	}
+
 	@Override
 	protected void doDispose() {
 		//
 	}
 	
-	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+	private Activateable2 doOpenParticipants(UserRequest ureq) {
+		participantsCtrl.reload(ureq);
+		addToHistory(ureq, participantsCtrl);
+		if(mainVC != null) {
+			mainVC.put("segmentCmp", participantsPanel);
+		}
+		return participantsCtrl;
+	}
+	
+	private void doOpenReminders(UserRequest ureq) {
+		if (remindersLink != null) {
+			remindersCtrl.reload(ureq);
+			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
+		}
 	}
 
 }

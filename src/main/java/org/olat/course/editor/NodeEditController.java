@@ -154,11 +154,12 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			}	
 		}
 		
-		reminderProvider = courseNode.getReminderProvider(course);
+		boolean rootNode = course.getRunStructure().getRootNode().getIdent().equals(courseNode.getIdent());
+		reminderProvider = courseNode.getReminderProvider(rootNode);
 		if (reminderProvider != null) {
-			reminderCtrl = new CourseNodeReminderController(ureq, wControl, stackPanel, courseEntry, reminderProvider);
+			reminderCtrl = new CourseNodeReminderController(ureq, wControl, stackPanel, courseEntry, reminderProvider, true);
 			listenTo(reminderCtrl);
-			reminderInitiallyEnabled = isReminderTabEnabled();
+			reminderInitiallyEnabled = reminderCtrl.hasDataOrActions();
 		}
 	}
 
@@ -249,13 +250,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		if (reload) {
 			reminderCtrl.reload(ureq);
 		}
-		boolean reminderEnabled = isReminderTabEnabled();
-		myTabbedPane.setEnabled(reminderPos, reminderEnabled);
-	}
-
-	private boolean isReminderTabEnabled() {
-		boolean reminderAddable = reminderProvider.getMainRuleSPITypes() != null && !reminderProvider.getMainRuleSPITypes().isEmpty();
-		return reminderAddable || reminderCtrl.hasReminders();
+		myTabbedPane.setEnabled(reminderPos, reminderCtrl.hasDataOrActions());
 	}
 
 }

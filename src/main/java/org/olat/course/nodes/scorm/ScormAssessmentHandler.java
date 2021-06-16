@@ -94,7 +94,7 @@ public class ScormAssessmentHandler implements AssessmentHandler {
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
-			AssessmentToolSecurityCallback assessmentCallback) {
+			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
 		return null;
 	}
 

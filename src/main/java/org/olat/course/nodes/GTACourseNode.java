@@ -841,7 +841,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new GTAReminderProvider(this);
 	}
 

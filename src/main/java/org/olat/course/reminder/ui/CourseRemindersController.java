@@ -130,7 +130,7 @@ public class CourseRemindersController extends BasicController implements Activa
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			reminderListCtrl = new CourseReminderListController(ureq, bwControl, toolbarPanel, repositoryEntry,
-					COURSE_REMINDER_PROVIDER, "reminders.intro");
+					COURSE_REMINDER_PROVIDER, null);
 			listenTo(reminderListCtrl);
 		}
 		mainVC.put("segmentCmp", reminderListCtrl.getInitialComponent());

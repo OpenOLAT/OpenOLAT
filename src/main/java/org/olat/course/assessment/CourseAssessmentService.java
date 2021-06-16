@@ -281,15 +281,8 @@ public interface CourseAssessmentService {
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);
 	
 	/**
-	 * 
-	 * @return whether this node has a custom controller for the identity list.
-	 */
-	public boolean hasCustomIdentityList(CourseNode courseNode);
-	
-	/**
 	 * Returns the controller with the list of assessed identities for a specific
-	 * course node. Check hasCustomIdentityList(CourseNode courseNode) before invoking
-	 * this method.
+	 * course node.
 	 * 
 	 * @param ureq
 	 * @param wControl
@@ -300,13 +293,30 @@ public interface CourseAssessmentService {
 	 * @param coachCourseEnv
 	 * @param toolContainer
 	 * @param assessmentCallback
+	 * @param showTitle 
 	 * @return
 	 */
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
-			AssessmentToolSecurityCallback assessmentCallback);
-
+			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle);
+	
+	/**
+	 * This is a a convenience method to create the AssessmentCourseNodeController inside the CourseNode run controller.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param stackPanel
+	 * @param courseNode
+	 * @param courseEntry
+	 * @param coachCourseEnv
+	 * @param toolContainer
+	 * 
+	 * @return
+	 */
+	public AssessmentCourseNodeController getCourseNodeRunController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackPanel, CourseNode courseNode, UserCourseEnvironment coachCourseEnv);
+	
 	/**
 	 * Recalculates all AssessmentEvaluation of all users in the course.
 	 *

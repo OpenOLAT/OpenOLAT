@@ -224,7 +224,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			pullButton.setIconLeftCSS("o_icon o_icon_pull");
 
 			if(qti21) {
-				if(assessmentCallback.isAdmin()) {
+				if(getAssessmentCallback().isAdmin()) {
 					resetButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
 					resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
 				}
@@ -262,8 +262,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 
 	@Override
-	protected void loadModel(UserRequest ureq) {
-		super.loadModel(ureq);
+	public void reload(UserRequest ureq) {
+		super.reload(ureq);
 
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
 		boolean timeLimit = ((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(testEntry);
@@ -346,7 +346,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			if(event instanceof PopEvent) {
 				PopEvent pe = (PopEvent)event;
 				if(modelDirty && pe.getController() == correctionIdentitiesCtrl) {
-					loadModel(ureq);
+					reload(ureq);
 				}
 			}
 		}
@@ -360,19 +360,19 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			cleanUp();
 		} else if(retrieveConfirmationCtr == source || resetDataCtrl == source || extraTimeCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadModel(ureq);
+				reload(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(correctionIdentitiesCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(correctionIdentitiesCtrl);
-				loadModel(ureq);				
+				reload(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event instanceof CompleteAssessmentTestSessionEvent) {
 				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
 				doUpdateCourseNode(catse.getTestSessions(), catse.getAssessmentTest(), catse.getStatus());
-				loadModel(ureq);	
+				reload(ureq);
 				stackPanel.popController(correctionIdentitiesCtrl);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event == Event.CHANGED_EVENT) {
@@ -383,10 +383,10 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			if(event instanceof CompleteAssessmentTestSessionEvent) {
 				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
 				doUpdateCourseNode(catse.getTestSessions(), catse.getAssessmentTest(), catse.getStatus());
-				loadModel(ureq);	
+				reload(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event == Event.DONE_EVENT) {
-				loadModel(ureq);
+				reload(ureq);
 			}
 		} else if(reopenForCorrectionCtrl == source) {
 			CorrectionOverviewController correctionCtrl = (CorrectionOverviewController)reopenForCorrectionCtrl.getUserObject();

@@ -55,6 +55,7 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.portfolio.PortfolioAssessmentConfig;
+import org.olat.course.nodes.portfolio.PortfolioCoachRunController;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
@@ -151,7 +152,11 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		} else {
 			RepositoryEntry mapEntry = getReferencedRepositoryEntry();
 			if(mapEntry != null && BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
-				controller = new PortfolioCourseNodeRunController(ureq, wControl, userCourseEnv, this);
+				if (userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
+					controller = new PortfolioCoachRunController(ureq, wControl, userCourseEnv, this);
+				} else {
+					controller = new PortfolioCourseNodeRunController(ureq, wControl, userCourseEnv, this);
+				}
 			} else {
 				Translator trans = Util.createPackageTranslator(PortfolioCourseNodeRunController.class, ureq.getLocale());
 				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.portfolioV1"));
@@ -346,7 +351,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new AssessmentReminderProvider(getIdent(), new PortfolioAssessmentConfig(getModuleConfiguration()));
 	}
 }

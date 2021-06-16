@@ -268,7 +268,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new FormReminderProvider(this);
 	}
 

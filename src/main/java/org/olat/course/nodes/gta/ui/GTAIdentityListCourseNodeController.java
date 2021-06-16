@@ -85,8 +85,8 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 
 	public GTAIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
-			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
-		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback, true);
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
+		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 
 	@Override
@@ -147,8 +147,8 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	}
 
 	@Override
-	protected void loadModel(UserRequest ureq) {
-		super.loadModel(ureq);
+	public void reload(UserRequest ureq) {
+		super.reload(ureq);
 
 		ModuleConfiguration config =  courseNode.getModuleConfiguration();
 		if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE)) && config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
@@ -181,13 +181,13 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(assessmentCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
-				loadModel(ureq);
+				reload(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(bulkAssessmentToolCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
-				loadModel(ureq);
+				reload(ureq);
 			}
 			cleanUp();
 		}

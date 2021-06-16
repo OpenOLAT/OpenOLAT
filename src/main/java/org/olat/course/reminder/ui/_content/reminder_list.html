@@ -5,8 +5,13 @@
 		$r.translate("reminders")
 	</legend> 
 	<div class="o_info">
-		$r.translate($infoI18nKey)
+		$r.translate("reminders.intro")
 	</div>
+	#if($warningI18nKey)
+		<div class="o_warning">
+			$r.translate($warningI18nKey)
+		</div>
+	#end
 	
 	<div class="o_button_group o_button_group_right">
 		$r.render("add.reminder")

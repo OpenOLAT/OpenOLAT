@@ -502,7 +502,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new AssessmentReminderProvider(getIdent(), new MSAssessmentConfig(getModuleConfiguration()));
 	}
 	

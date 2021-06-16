@@ -297,15 +297,8 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresUsers, null, getWindowControl());
 		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(courseNode.getIdent()));
 		WindowControl bbwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, bwControl);
-		if (courseAssessmentService.hasCustomIdentityList(courseNode)) {
-			identityListCtrl = courseAssessmentService.getIdentityListController(ureq, getWindowControl(), stackPanel,
-					courseNode, courseEntry, null, coachCourseEnv, toolContainer, assessmentCallback);
-		} else {
-			identityListCtrl = new IdentityListCourseNodeController(ureq, bbwControl, stackPanel, courseEntry, null,
-					courseNode, coachCourseEnv, toolContainer, assessmentCallback, true);
-		}
-		
-		return identityListCtrl;
+		return courseAssessmentService.getIdentityListController(ureq, bbwControl, stackPanel, courseNode, courseEntry,
+				null, coachCourseEnv, toolContainer, assessmentCallback, true);
 	}
 	
 	private Controller doSelectCourseNodeBusinessGroupsView(UserRequest ureq, CourseNode courseNode) {

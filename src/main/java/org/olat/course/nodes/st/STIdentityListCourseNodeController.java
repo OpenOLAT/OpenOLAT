@@ -86,8 +86,8 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	public STIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
-			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
-		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback, true);
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
+		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 
 	@Override
@@ -132,10 +132,10 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 
 	@Override
-	protected void loadModel(UserRequest ureq) {
+	public void reload(UserRequest ureq) {
 		Map<Long, Date> initialLaunchDates = userInfosMgr
 				.getInitialLaunchDates(getCourseRepositoryEntry().getOlatResource());
-		super.loadModel(ureq);
+		super.reload(ureq);
 		
 		List<AssessedIdentityElementRow> rows = usersTableModel.getObjects();
 		for(AssessedIdentityElementRow row:rows) {
@@ -170,10 +170,8 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			showWarning("bulk.no.selection");
 			return;
 		}
-		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
-			return new AssessmentIdentiesPrintController(lureq, lwControl, courseEntry, coachCourseEnv,
-					assessesIdentityKeys);
-		};
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> new AssessmentIdentiesPrintController(lureq, lwControl, courseEntry, coachCourseEnv,
+				assessesIdentityKeys);
 		String title = getPdfTitle();
 		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator, getWindowControl());
 		ureq.getDispatchResult().setResultingMediaResource(resource);

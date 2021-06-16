@@ -41,6 +41,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Membership;
+import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -58,11 +59,13 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private GTACoachSelectionController coachCtrl;
 	private GTACoachSelectionController markedCtrl;
 	private GTACoachManagementController manageCtrl;
+	private CourseNodeReminderRunController remindersCtrl;
 
 	private Link runLink;
 	private Link coachLink;
 	private Link markedLink;
 	private Link manageLink;
+	private Link remindersLink;
 	private VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
 	
@@ -93,7 +96,17 @@ public class GTARunController extends BasicController implements Activateable2 {
 				manageLink = LinkFactory.createLink("run.manage.coach", mainVC, this);
 				segmentView.addSegment(manageLink, false);
 			}
-
+			
+			if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
+				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Reminders"), null);
+				remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, entry, gtaNode.getReminderProvider(false));
+				listenTo(remindersCtrl);
+				if (remindersCtrl.hasDataOrActions()) {
+					remindersLink = LinkFactory.createLink("run.reminders", mainVC, this);
+					segmentView.addSegment(remindersLink, false);
+				}
+			}
+			
 			doOpenSelectionList(ureq);
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
@@ -143,6 +156,13 @@ public class GTARunController extends BasicController implements Activateable2 {
 					segmentView.select(manageLink);
 				}
 			}
+		} else if("Reminders".equalsIgnoreCase(type)) {
+			if(remindersLink != null) {
+				doOpenReminders(ureq);
+				if(segmentView != null) {
+					segmentView.select(remindersLink);
+				}
+			}
 		} else if("identity".equalsIgnoreCase(type)) {
 			if(getIdentity().getKey().equals(entries.get(0).getOLATResourceable().getResourceableId())) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
@@ -189,6 +209,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 					doOpenMarked(ureq);
 				} else if(clickedLink == manageLink) {
 					doManage(ureq);
+				} else if (clickedLink == remindersLink) {
+					doOpenReminders(ureq);
 				}
 			}
 		}
@@ -296,5 +318,12 @@ public class GTARunController extends BasicController implements Activateable2 {
 		manageCtrl = new GTACoachManagementController(ureq, swControl, userCourseEnv, gtaNode);
 		listenTo(manageCtrl);
 		return manageCtrl;
+	}
+	
+	private void doOpenReminders(UserRequest ureq) {
+		if (remindersLink != null) {
+			remindersCtrl.reload(ureq);
+			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
+		}
 	}
 }

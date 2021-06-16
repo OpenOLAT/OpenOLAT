@@ -57,7 +57,7 @@ import org.olat.course.nodes.basiclti.LTIAssessmentConfig;
 import org.olat.course.nodes.basiclti.LTIConfigForm;
 import org.olat.course.nodes.basiclti.LTIEditController;
 import org.olat.course.nodes.basiclti.LTILearningPathNodeHandler;
-import org.olat.course.nodes.basiclti.LTIRunController;
+import org.olat.course.nodes.basiclti.LTIRunSegmentController;
 import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -66,7 +66,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti13.LTI13Service;
-import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
@@ -141,28 +140,14 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 					String message = trans.translate("guestnoaccess.message");
 					runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 				} else {
-					runCtrl = getRunController(ureq, wControl, userCourseEnv);
+					runCtrl = new LTIRunSegmentController(ureq, wControl, userCourseEnv, this);
 				}
 			} else {
-				runCtrl = getRunController(ureq, wControl, userCourseEnv);
+				runCtrl = new LTIRunSegmentController(ureq, wControl, userCourseEnv, this);
 			}
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_lti_icon");
 		return new NodeRunConstructionResult(ctrl);
-	}
-	
-	public Controller getRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
-		Controller runCtrl;
-		ModuleConfiguration config = getModuleConfiguration();
-		String ltiVersion = config.getStringValue(LTIConfigForm.CONFIGKEY_LTI_VERSION, LTIConfigForm.CONFIGKEY_LTI_11);
-		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {
-			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			LTI13ToolDeployment deployment = CoreSpringFactory.getImpl(LTI13Service.class).getToolDeployment(courseEntry, getIdent());
-			runCtrl = new LTIRunController(ureq, wControl, this, deployment, userCourseEnv);
-		} else {
-			runCtrl = new LTIRunController(ureq, wControl, this, userCourseEnv);
-		}
-		return runCtrl;
 	}
 	
 	public String getUrl() {
@@ -366,7 +351,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new AssessmentReminderProvider(getIdent(), new LTIAssessmentConfig(getModuleConfiguration()));
 	}
 

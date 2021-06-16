@@ -99,7 +99,7 @@ public class CourseReminderListController extends FormBasicController
 	private final AtomicInteger counter = new AtomicInteger();
 	private final RepositoryEntry repositoryEntry;
 	private final CourseNodeReminderProvider reminderProvider;
-	private final String infoI18nKey;
+	private final String warningI18nKey;
 	
 	@Autowired
 	private ReminderModule reminderModule;
@@ -107,12 +107,12 @@ public class CourseReminderListController extends FormBasicController
 	private ReminderService reminderService;
 	
 	public CourseReminderListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel toolbarPanel,
-			RepositoryEntry repositoryEntry, CourseNodeReminderProvider reminderProvider, String infoI18nKey) {
+			RepositoryEntry repositoryEntry, CourseNodeReminderProvider reminderProvider, String warningI18nKey) {
 		super(ureq, wControl, "reminder_list");
 		this.toolbarPanel = toolbarPanel;
 		this.repositoryEntry = repositoryEntry;
 		this.reminderProvider = reminderProvider;
-		this.infoI18nKey = infoI18nKey;
+		this.warningI18nKey = warningI18nKey;
 		
 		initForm(ureq);
 		reload(ureq);
@@ -121,7 +121,9 @@ public class CourseReminderListController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_reminder_list");
-		flc.contextPut("infoI18nKey", infoI18nKey);
+		if (StringHelper.containsNonWhitespace(warningI18nKey)) {
+			flc.contextPut("warningI18nKey", warningI18nKey);
+		}
 		
 		addButton = uifactory.addFormLink("add.reminder", formLayout, Link.BUTTON);
 		addButton.setIconLeftCSS("o_icon o_icon_add");
@@ -364,7 +366,7 @@ public class CourseReminderListController extends FormBasicController
 	
 	private void doConfirmDelete(UserRequest ureq, ReminderRow row) {
 		String desc = StringHelper.escapeHtml(row.getDescription());
-		deleteDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.delete.text", desc), deleteDialogBox);
+		deleteDialogBox = activateYesNoDialog(ureq, translate("dialog.modal.delete.title"), translate("dialog.modal.delete.text", desc), deleteDialogBox);
 		deleteDialogBox.setUserObject(row);
 	}
 

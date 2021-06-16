@@ -21,8 +21,7 @@ package org.olat.course.reminder.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -31,44 +30,38 @@ import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 7 Jun 2021<br>
- * 
+ * Initial date: 14 Jun 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CourseNodeReminderController extends BasicController {
+public class CourseNodeReminderRunController extends BasicController {
 
-	private CourseReminderListController remindersCtrl;
-
-	private final CourseNodeReminderProvider reminderProvider;
-
-	public CourseNodeReminderController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel toolbarPanel,
-			RepositoryEntry repositoryEntry, CourseNodeReminderProvider reminderProvider, boolean editor) {
+	private final TooledStackedPanel stackPanel;
+	private final CourseNodeReminderController remindersCtrl;
+	
+	public CourseNodeReminderRunController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
+			CourseNodeReminderProvider reminderProvider) {
 		super(ureq, wControl);
-		this.reminderProvider = reminderProvider;
-		String warningI18nKey = editor? "node.reminders.publish": null;
-		remindersCtrl = new CourseReminderListController(ureq, wControl, toolbarPanel, repositoryEntry,
-				reminderProvider, warningI18nKey);
+		stackPanel = new TooledStackedPanel("reminderPanel", getTranslator(), this);
+		stackPanel.setToolbarAutoEnabled(false);
+		stackPanel.setToolbarEnabled(false);
+		stackPanel.setShowCloseLink(true, false);
+		stackPanel.setCssClass("o_segment_toolbar o_block_top");
+		putInitialPanel(stackPanel);
+		
+		remindersCtrl = new CourseNodeReminderController(ureq, getWindowControl(), stackPanel, repositoryEntry, reminderProvider, false);
 		listenTo(remindersCtrl);
-
-		putInitialPanel(remindersCtrl.getInitialComponent());
+		
+		stackPanel.pushController(translate("reminders"), remindersCtrl);
 	}
-
+	
 	public void reload(UserRequest ureq) {
 		remindersCtrl.reload(ureq);
+		stackPanel.popUpToRootController(ureq);
 	}
 
 	public boolean hasDataOrActions() {
-		boolean reminderAddable = reminderProvider.getMainRuleSPITypes() != null && !reminderProvider.getMainRuleSPITypes().isEmpty();
-		return reminderAddable || remindersCtrl.hasReminders();
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == remindersCtrl) {
-			fireEvent(ureq, event);
-		}
-		super.event(ureq, source, event);
+		return remindersCtrl.hasDataOrActions();
 	}
 
 	@Override
@@ -78,7 +71,7 @@ public class CourseNodeReminderController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-
+		//
 	}
 
 }

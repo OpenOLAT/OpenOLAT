@@ -622,7 +622,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 	
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new AssessmentReminderProvider(getIdent(), new IQTESTAssessmentConfig(this));
 	}
 

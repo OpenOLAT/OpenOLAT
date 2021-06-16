@@ -72,7 +72,7 @@ import org.olat.course.nodes.cl.CheckListAssessmentConfig;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
-import org.olat.course.nodes.cl.ui.CheckListAssessmentController;
+import org.olat.course.nodes.cl.ui.CheckListCoachRunController;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
 import org.olat.course.nodes.cl.ui.CheckListExcelExport;
 import org.olat.course.nodes.cl.ui.CheckListRunController;
@@ -146,7 +146,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("guestnoaccess.message");
 			ctrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else if(userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
-			ctrl = new CheckListAssessmentController(ureq, wControl, userCourseEnv, ores, this);
+			ctrl = new CheckListCoachRunController(ureq, wControl, userCourseEnv, ores, this);
 		} else {
 			ctrl = new CheckListRunController(ureq, wControl, userCourseEnv, ores, this);
 		}
@@ -649,7 +649,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public CourseNodeReminderProvider getReminderProvider(ICourse course) {
+	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new AssessmentReminderProvider(getIdent(), new CheckListAssessmentConfig(getModuleConfiguration()));
 	}
 	

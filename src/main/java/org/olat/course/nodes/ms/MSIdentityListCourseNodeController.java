@@ -98,7 +98,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			listenTo(bulkAssessmentToolCtrl);
 			formLayout.put("bulk.assessment", bulkAssessmentToolCtrl.getInitialComponent());
 			
-			if (assessmentCallback.isAdmin()) {
+			if (getAssessmentCallback().isAdmin()) {
 				resetButton = uifactory.addFormLink("tool.reset.data", formLayout, Link.BUTTON); 
 				resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
 			}
@@ -120,8 +120,8 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 	
 	@Override
-	protected void loadModel(UserRequest ureq) {
-		super.loadModel(ureq);
+	public void reload(UserRequest ureq) {
+		super.reload(ureq);
 		
 		if (hasEvaluationForm()) {
 			List<EvaluationFormSession> sessions = msService.getSessions(getCourseRepositoryEntry(), courseNode.getIdent());
@@ -166,7 +166,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(source == resetDataCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadModel(ureq);
+				reload(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();

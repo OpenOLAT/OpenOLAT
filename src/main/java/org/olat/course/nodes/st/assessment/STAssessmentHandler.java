@@ -184,9 +184,9 @@ public class STAssessmentHandler implements AssessmentHandler {
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
-			AssessmentToolSecurityCallback assessmentCallback) {
+			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
 		return new STIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, group, courseNode,
-				coachCourseEnv, toolContainer, assessmentCallback);
+				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 
 }

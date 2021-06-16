@@ -141,7 +141,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private final CourseEnvironment courseEnv;
 	protected final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	protected final AssessmentToolSecurityCallback assessmentCallback;
+	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final boolean showTitle;
 	
 	private Link nextLink;
@@ -216,6 +216,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 			.registerFor(this, getIdentity(), courseEntry.getOlatResource());
 	}
 	
+	
+	@Override
+	public AssessmentToolSecurityCallback getAssessmentCallback() {
+		return assessmentCallback;
+	}
+
 	public RepositoryEntry getCourseRepositoryEntry() {
 		return courseEntry;
 	}
@@ -268,6 +274,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("showTitle", showTitle);
 			layoutCont.contextPut("courseNodeTitle", courseNode.getShortTitle());
 			layoutCont.contextPut("courseNodeCssClass", CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
 		
@@ -464,7 +471,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 	}
 	
-	protected void loadModel(@SuppressWarnings("unused") UserRequest ureq) {
+	@Override
+	public void reload(@SuppressWarnings("unused") UserRequest ureq) {
 		SearchAssessedIdentityParams params = getSearchParameters();
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, null);
@@ -637,7 +645,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if(extendedFilters != null) {
 			tableEl.setSelectedExtendedFilters(extendedFilters);
 		}
-		loadModel(ureq);
+		reload(ureq);
 		
 		if(entries != null && !entries.isEmpty()) {
 			ContextEntry entry = entries.get(0);
@@ -678,19 +686,19 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if(currentIdentityCtrl == source) {
 			if(event instanceof AssessmentFormEvent) {
 				AssessmentFormEvent aee = (AssessmentFormEvent)event;
-				loadModel(ureq);
+				reload(ureq);
 				if(aee.isClose()) {
 					stackPanel.popController(currentIdentityCtrl);
 				}
 			} else if(event == Event.CHANGED_EVENT) {
-				loadModel(ureq);
+				reload(ureq);
 			} else if(event == Event.CANCELLED_EVENT) {
-				loadModel(ureq);
+				reload(ureq);
 				stackPanel.popController(currentIdentityCtrl);
 			}
 		} else if(bulkToolsList != null && bulkToolsList.contains(source)) {
 			if(event == Event.CHANGED_EVENT) {
-				loadModel(ureq);
+				reload(ureq);
 			}
 		} else if(changeUserVisibilityCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -709,7 +717,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
 			} else if(event == Event.CHANGED_EVENT) {
-				loadModel(ureq);
+				reload(ureq);
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
 			} else if(event == Event.CLOSE_EVENT) {
@@ -751,7 +759,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 					doSelect(ureq, row);
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
-				loadModel(ureq);
+				reload(ureq);
 			}
 		} else if(bulkDoneButton == source) {
 			doSetDone(ureq);
@@ -878,7 +886,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		if(courseNode.getParent() == null) {
 			currentIdentityCtrl = new AssessmentIdentityCourseController(ureq, bwControl, stackPanel,
-					courseEntry, coachCourseEnv, assessedIdentity, true);
+					courseEntry, coachCourseEnv, assessedIdentity, showTitle);
 		} else {
 			currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
 					courseEntry, courseNode, coachCourseEnv, assessedIdentity, true, showTitle);
@@ -972,7 +980,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 					false, Role.coach);
 			dbInstance.commitAndCloseSession();
 		}
-		loadModel(ureq);
+		reload(ureq);
 	}
 	
 	private void doSetDone(UserRequest ureq) {
@@ -994,7 +1002,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				doSetStatus(assessedIdentity, AssessmentEntryStatus.done, courseNode, course);
 				dbInstance.commitAndCloseSession();
 			}
-			loadModel(ureq);
+			reload(ureq);
 		}
 	}
 	

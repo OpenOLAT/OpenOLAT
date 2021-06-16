@@ -22,8 +22,11 @@ package org.olat.course.assessment.ui.tool;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 
 /**
  * 
@@ -31,10 +34,14 @@ import org.olat.modules.assessment.ui.AssessedIdentityListState;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentCourseNodeController extends Controller {
+public interface AssessmentCourseNodeController extends Controller, Activateable2 {
+	
+	public AssessmentToolSecurityCallback getAssessmentCallback();
 	
 	public AssessedIdentityListState getListState();
 	
 	public List<IdentityRef> getSelectedIdentities();
+	
+	public void reload(UserRequest ureq);
 
 }

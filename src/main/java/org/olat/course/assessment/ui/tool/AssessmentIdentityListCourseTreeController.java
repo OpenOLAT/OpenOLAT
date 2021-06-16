@@ -177,12 +177,9 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 			}
 			currentCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, bwControl, stackPanel,
 					coachCourseEnv, assessmentCallback.isAdmin(), coachedGroups);
-		} else if (courseAssessmentService.hasCustomIdentityList(courseNode)) {
-			currentCtrl = courseAssessmentService.getIdentityListController(ureq, bwControl, stackPanel, courseNode,
-					courseEntry, businessGroup, coachCourseEnv, toolContainer, assessmentCallback);
 		} else {
-			currentCtrl = new IdentityListCourseNodeController(ureq, bwControl, stackPanel, courseEntry, businessGroup,
-					courseNode, coachCourseEnv, toolContainer, assessmentCallback, true);
+			currentCtrl = courseAssessmentService.getIdentityListController(ureq, bwControl, stackPanel, courseNode,
+					courseEntry, businessGroup, coachCourseEnv, toolContainer, assessmentCallback, true);
 		}
 		listenTo(currentCtrl);
 		mainPanel.setContent(currentCtrl.getInitialComponent());
