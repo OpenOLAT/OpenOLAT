@@ -122,6 +122,7 @@ public class CourseReminderSendController extends FormBasicController {
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setSortSettings(options);
+		tableEl.setEmptyTableSettings("send.no.members", null, "o_icon_reminder");
 		
 		if (!readonly) {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -152,6 +153,7 @@ public class CourseReminderSendController extends FormBasicController {
 			rows.add(row);
 		}
 		
+		flc.contextPut("showUnsent", Boolean.valueOf(!identites.isEmpty()));
 		flc.contextPut("all", String.valueOf(identites.size()));
 		int unsent = identites.size() - identityKeyToSendDate.size();
 		if (unsent < 0) {

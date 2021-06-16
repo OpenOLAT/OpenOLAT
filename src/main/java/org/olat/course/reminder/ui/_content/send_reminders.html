@@ -1,6 +1,8 @@
 $r.render("rules")
 <div class="o_block_top">
-$r.translate("send.info", $unsent, $all)
+	#if($showUnsent)
+		$r.translate("send.info", $unsent, $all)
+	#end
 </div>
 $r.render("table")
 #if($r.available("buttons"))
