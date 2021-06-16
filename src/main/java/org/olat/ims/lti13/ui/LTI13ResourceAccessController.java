@@ -254,37 +254,52 @@ public class LTI13ResourceAccessController extends FormBasicController {
 	private void doEditDeployment(UserRequest ureq, LTI13SharedToolDeployment deployment) {
 		if(guardModalController(editDeploymentCtrl)) return;
 
-		editDeploymentCtrl = new LTI13EditSharedToolDeploymentController(ureq, getWindowControl(), deployment);
-		listenTo(editDeploymentCtrl);
-		
-		String title = translate("edit.tool", new String[] { deployment.getPlatform().getIssuer() });
-		cmc = new CloseableModalController(getWindowControl(), "close", editDeploymentCtrl.getInitialComponent(), true, title);
-		cmc.activate();
-		listenTo(cmc);
+		deployment = lti13Service.getSharedToolDeployment(deployment);
+		if(deployment == null) {
+			showWarning("warning.deployment.deleted");
+		} else {
+			editDeploymentCtrl = new LTI13EditSharedToolDeploymentController(ureq, getWindowControl(), deployment);
+			listenTo(editDeploymentCtrl);
+			
+			String title = translate("edit.tool", new String[] { deployment.getPlatform().getIssuer() });
+			cmc = new CloseableModalController(getWindowControl(), "close", editDeploymentCtrl.getInitialComponent(), true, title);
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 	
 	private void doConfirmDeleteDeployment(UserRequest ureq, LTI13SharedToolDeployment deployment) {
 		if(guardModalController(confirmDeleteCtrl)) return;
-
-		confirmDeleteCtrl = new ConfirmDeleteSharedToolDeploymentController(ureq, getWindowControl(), deployment);
-		listenTo(confirmDeleteCtrl);
 		
-		String title = translate("delete.deployment", new String[] { deployment.getPlatform().getIssuer() });
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
-		cmc.activate();
-		listenTo(cmc);
+		deployment = lti13Service.getSharedToolDeployment(deployment);
+		if(deployment == null) {
+			showWarning("warning.deployment.deleted");
+		} else {
+			confirmDeleteCtrl = new ConfirmDeleteSharedToolDeploymentController(ureq, getWindowControl(), deployment);
+			listenTo(confirmDeleteCtrl);
+			
+			String title = translate("delete.deployment", new String[] { deployment.getPlatform().getIssuer() });
+			cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 	
 	private void doViewDeployment(UserRequest ureq, LTI13SharedToolDeployment deployment) {
-		if(guardModalController(editDeploymentCtrl)) return;
+		if(guardModalController(viewDeploymentCtrl)) return;
 		
-		viewDeploymentCtrl = new LTI13SharedToolDeploymentController(ureq, getWindowControl(), deployment);
-		listenTo(viewDeploymentCtrl);
-		
-		String title = translate("view.deployment.tool", new String[] { deployment.getPlatform().getIssuer() });
-		cmc = new CloseableModalController(getWindowControl(), "close", viewDeploymentCtrl.getInitialComponent(), true, title);
-		cmc.activate();
-		listenTo(cmc);
+		deployment = lti13Service.getSharedToolDeployment(deployment);
+		if(deployment == null) {
+			showWarning("warning.deployment.deleted");
+		} else {
+			viewDeploymentCtrl = new LTI13SharedToolDeploymentController(ureq, getWindowControl(), deployment);
+			listenTo(viewDeploymentCtrl);
+			
+			String title = translate("view.deployment.tool", new String[] { deployment.getPlatform().getIssuer() });
+			cmc = new CloseableModalController(getWindowControl(), "close", viewDeploymentCtrl.getInitialComponent(), true, title);
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 	
 	private void doAskDeployment(UserRequest ureq) {

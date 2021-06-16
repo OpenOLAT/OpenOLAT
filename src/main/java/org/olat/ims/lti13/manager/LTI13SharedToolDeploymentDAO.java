@@ -145,6 +145,14 @@ public class LTI13SharedToolDeploymentDAO {
 	public LTI13SharedToolDeployment loadByKey(Long deploymentKey) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select deployment from ltisharedtooldeployment deployment")
+		  .append(" inner join fetch deployment.platform platform")
+		  .append(" left join fetch deployment.entry v")
+		  .append(" left join fetch v.olatResource as vOres")
+		  .append(" left join fetch v.statistics as vStatistics")
+		  .append(" left join fetch v.lifecycle as vLifecycle")
+		  .append(" left join fetch deployment.businessGroup bgi")
+		  .append(" left join fetch bgi.baseGroup baseGroup")
+		  .append(" left join fetch bgi.resource resource")
 		  .append(" where deployment.key=:deploymentKey");
 		
 		List<LTI13SharedToolDeployment> deployments = dbInstance.getCurrentEntityManager()
