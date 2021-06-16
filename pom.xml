@@ -65,7 +65,7 @@
 		<org.springframework.version>5.3.7</org.springframework.version>
 		<org.hibernate.version>5.4.31.Final</org.hibernate.version>
 		<apache.cxf>3.4.3</apache.cxf>
-		<apache.pdfbox>2.0.23</apache.pdfbox>
+		<apache.pdfbox>2.0.24</apache.pdfbox>
 		<apache.poi>5.0.0</apache.poi>
 		<apache.log4j>2.14.1</apache.log4j>
 		<org.slf4j>1.7.30</org.slf4j>
