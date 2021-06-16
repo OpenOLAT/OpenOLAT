@@ -578,6 +578,7 @@ public class ForumWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPostAttachment(@PathParam("messageKey") Long messageKey, @FormParam("filename") String filename,
 			@FormParam("file") String file, @Context HttpServletRequest request) {
+		file = file.replace(' ', '+');
 		byte[] fileAsBytes = Base64.decodeBase64(file);
 		InputStream in = new ByteArrayInputStream(fileAsBytes);
 		return attachToPost(messageKey, filename, in, request);
