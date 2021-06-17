@@ -31,6 +31,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.course.nodes.FormCourseNode;
+import org.olat.course.nodes.form.FormSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
@@ -44,7 +45,7 @@ public class FormRunCoachController extends BasicController implements Activatea
 	private final FormParticipationListController participationCtrl;
 
 	public FormRunCoachController(UserRequest ureq, WindowControl wControl, FormCourseNode formCourseNode,
-			UserCourseEnvironment caochCourseEnv) {
+			UserCourseEnvironment caochCourseEnv, FormSecurityCallback secCallback) {
 		super(ureq, wControl);
 		
 		TooledStackedPanel stackPanel = new TooledStackedPanel("coachStackPanel", getTranslator(), this);
@@ -54,7 +55,7 @@ public class FormRunCoachController extends BasicController implements Activatea
 		stackPanel.setCssClass("o_identity_list_stack");
 		putInitialPanel(stackPanel);
 		
-		participationCtrl = new FormParticipationListController(ureq, wControl, stackPanel, formCourseNode, caochCourseEnv);
+		participationCtrl = new FormParticipationListController(ureq, wControl, stackPanel, formCourseNode, caochCourseEnv, secCallback);
 		listenTo(participationCtrl);
 		participationCtrl.activate(ureq, null, null);
 		

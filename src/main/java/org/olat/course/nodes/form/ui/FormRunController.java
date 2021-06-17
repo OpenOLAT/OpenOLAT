@@ -113,7 +113,7 @@ public class FormRunController extends BasicController {
 
 	private boolean checkDeadline() {
 		Date deadline = courseNode.getModuleConfiguration().getDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
-		return deadline == null || deadline.after(new Date());
+		return deadline == null || deadline.after(new Date()) || userCourseEnv.isCourseReadOnly();
 	}
 
 	private void doExecutionFinished(UserRequest ureq) {

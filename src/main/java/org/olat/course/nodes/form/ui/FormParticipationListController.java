@@ -62,6 +62,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.FormParticipation;
+import org.olat.course.nodes.form.FormSecurityCallback;
 import org.olat.course.nodes.form.ui.FormParticipationTableModel.ParticipationCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
@@ -105,6 +106,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	
 	private final FormCourseNode courseNode;
 	private final UserCourseEnvironment coachCourseEnv;
+	private final FormSecurityCallback secCallback;
 	private final RepositoryEntry courseEntry;
 	private final EvaluationFormSurvey survey;
 	private int counter = 0;
@@ -120,12 +122,13 @@ public class FormParticipationListController extends FormBasicController impleme
 	
 	
 	public FormParticipationListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			FormCourseNode courseNode, UserCourseEnvironment coachCourseEnv) {
+			FormCourseNode courseNode, UserCourseEnvironment coachCourseEnv, FormSecurityCallback secCallback) {
 		super(ureq, wControl, "participation_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
 		this.coachCourseEnv = coachCourseEnv;
+		this.secCallback = secCallback;
 		courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
@@ -145,7 +148,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		buttonsTopCont.setRootForm(mainForm);
 		formLayout.add(buttonsTopCont);
 			
-		if (coachCourseEnv.isAdmin()) {
+		if (secCallback.canResetAll()) {
 			resetAllButton = uifactory.addFormLink("reset.all", buttonsTopCont, Link.BUTTON); 
 			resetAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		}
@@ -169,11 +172,13 @@ public class FormParticipationListController extends FormBasicController impleme
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.status, new ParticipationStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.submissionDate));
-		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ParticipationCols.tools);
-		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsColumn.setExportable(false);
-		toolsColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		if (secCallback.canReset() || secCallback.canReopen()) {
+			DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ParticipationCols.tools);
+			toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolsColumn.setExportable(false);
+			toolsColumn.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(toolsColumn);
+		}
 		
 		dataModel = new FormParticipationTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -398,13 +403,15 @@ public class FormParticipationListController extends FormBasicController impleme
 			
 			VelocityContainer mainVC = createVelocityContainer("participation_tools");
 			
-			if (EvaluationFormParticipationStatus.done == formParticipation.getParticipationStatus()) {
+			if (secCallback.canReopen() && EvaluationFormParticipationStatus.done == formParticipation.getParticipationStatus()) {
 				reopenLink = LinkFactory.createLink("reopen", "reopen", getTranslator(), mainVC, this, Link.LINK);
 				reopenLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reopen");
 			}
-			resetLink = LinkFactory.createLink("reset", "reset", getTranslator(), mainVC, this, Link.LINK);
-			resetLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
-
+			if (secCallback.canReset()) {
+				resetLink = LinkFactory.createLink("reset", "reset", getTranslator(), mainVC, this, Link.LINK);
+				resetLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			}
+			
 			putInitialPanel(mainVC);
 		}
 
