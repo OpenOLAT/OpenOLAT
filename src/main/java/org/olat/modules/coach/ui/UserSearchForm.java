@@ -89,13 +89,9 @@ public class UserSearchForm extends FormBasicController {
 		login.setVisible(adminProps);
 		
 		List<UserPropertyHandler> allPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, adminProps);
-		if(!adminProps) {
-			userPropertyHandlers = allPropertyHandlers.stream()
-					.filter(prop -> !UserConstants.NICKNAME.equals(prop.getName()))
-					.collect(Collectors.toList());
-		} else {
-			userPropertyHandlers = allPropertyHandlers;
-		}
+		userPropertyHandlers = allPropertyHandlers.stream()
+			.filter(prop -> !UserConstants.NICKNAME.equals(prop.getName()))
+			.collect(Collectors.toList());
 
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler != null) {

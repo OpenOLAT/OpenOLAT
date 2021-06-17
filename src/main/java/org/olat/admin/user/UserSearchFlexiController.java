@@ -141,13 +141,9 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		List<UserPropertyHandler> allSearchFormPropertyHandlers = userManager.getUserPropertyHandlersFor(UserSearchForm.class.getCanonicalName(), isAdministrativeUser);
-		if(!isAdministrativeUser) {
-			userSearchFormPropertyHandlers = allSearchFormPropertyHandlers.stream()
-					.filter(prop -> !UserConstants.NICKNAME.equals(prop.getName()))
-					.collect(Collectors.toList());
-		} else {
-			userSearchFormPropertyHandlers = allSearchFormPropertyHandlers;
-		}
+		userSearchFormPropertyHandlers = allSearchFormPropertyHandlers.stream()
+				.filter(prop -> !UserConstants.NICKNAME.equals(prop.getName()))// admin. has the login search field
+				.collect(Collectors.toList());
 		
 		searchableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.valuesWithoutGuestAndInvitee());
