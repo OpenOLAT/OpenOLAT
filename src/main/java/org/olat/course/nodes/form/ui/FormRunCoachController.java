@@ -38,6 +38,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.FormCourseNode;
+import org.olat.course.nodes.form.FormSecurityCallback;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
@@ -63,7 +64,7 @@ public class FormRunCoachController extends BasicController implements Activatea
 	private CourseNodeReminderRunController remindersCtrl;
 
 	public FormRunCoachController(UserRequest ureq, WindowControl wControl, FormCourseNode formCourseNode,
-			UserCourseEnvironment userCourseEnv) {
+			UserCourseEnvironment userCourseEnv, FormSecurityCallback secCallback) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("segments");
@@ -78,7 +79,7 @@ public class FormRunCoachController extends BasicController implements Activatea
 		participantsPanel.setCssClass("o_segment_toolbar o_block_top");
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PARTICIPANTS), null);
-		participantsCtrl = new FormParticipationListController(ureq, swControl, participantsPanel, formCourseNode, userCourseEnv);
+		participantsCtrl = new FormParticipationListController(ureq, swControl, participantsPanel, formCourseNode, userCourseEnv, secCallback);
 		listenTo(participantsCtrl);
 		participantsCtrl.activate(ureq, null, null);
 		

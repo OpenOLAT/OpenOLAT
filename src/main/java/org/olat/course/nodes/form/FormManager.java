@@ -30,6 +30,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -75,21 +76,19 @@ public interface FormManager {
 	public List<EvaluationFormParticipation> getParticipations(EvaluationFormSurvey survey,
 			EvaluationFormParticipationStatus status, boolean fetchExecutor);
 
-	public void reopenParticipation(EvaluationFormParticipation participation, CourseNode courseNode, CourseEnvironment courseEnv);
+	public void reopenParticipation(EvaluationFormParticipationRef participationRef, CourseNode courseNode, CourseEnvironment courseEnv);
 
-	public void deleteParticipation(EvaluationFormParticipation participation, CourseNode courseNode, CourseEnvironment courseEnv);
+	public void deleteParticipation(EvaluationFormParticipationRef participationRef, CourseNode courseNode, CourseEnvironment courseEnv);
 
 	public EvaluationFormSession loadOrCreateSession(EvaluationFormParticipation participation);
 
 	public EvaluationFormSession getDoneSession(EvaluationFormSurvey survey, Identity identity);
 	
-	public List<EvaluationFormSession> getDoneSessions(EvaluationFormSurvey survey);
-
 	public void onQuickSave(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Double completion);
 
 	public void onExecutionFinished(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 	
-	public List<Identity> getCoachedIdentities(UserCourseEnvironment userCourseEnv);
+	public List<FormParticipation> getFormParticipations(EvaluationFormSurvey survey, UserCourseEnvironment userCourseEnv);
 
 	public Long getSessionsCount(SessionFilter filter);
 	

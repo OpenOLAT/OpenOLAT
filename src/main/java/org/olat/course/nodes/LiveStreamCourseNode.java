@@ -96,7 +96,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		Controller runCtrl;
 		if (userCourseEnv.isCourseReadOnly()) {
-			Translator trans = Util.createPackageTranslator(Card2BrainCourseNode.class, ureq.getLocale());
+			Translator trans = Util.createPackageTranslator(LiveStreamCourseNode.class, ureq.getLocale());
 			String title = trans.translate("freezenoaccess.title");
 			String message = trans.translate("freezenoaccess.message");
 			runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);

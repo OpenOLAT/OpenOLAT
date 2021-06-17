@@ -35,11 +35,11 @@ import org.olat.modules.forms.EvaluationFormParticipationStatus;
  */
 public class SurveyRunSecurityCallback {
 	
+	private final boolean admin;
 	private final boolean courseReadOnly;
 	private final boolean guestOnly;
 	private final boolean executor;
 	private final boolean reportViewer;
-	private final boolean canRunCommands;
 	
 	public SurveyRunSecurityCallback(ModuleConfiguration moduleConfiguration, UserCourseEnvironment userCourseEnv) {
 		this.courseReadOnly = userCourseEnv.isCourseReadOnly();
@@ -47,7 +47,7 @@ public class SurveyRunSecurityCallback {
 		NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
 		this.executor = nodeRightService.isGranted(moduleConfiguration, userCourseEnv, SurveyCourseNode.EXECUTION);
 		this.reportViewer = nodeRightService.isGranted(moduleConfiguration, userCourseEnv, SurveyCourseNode.REPORT);
-		this.canRunCommands = userCourseEnv.isAdmin();
+		this.admin = userCourseEnv.isAdmin();
 	}
 
 	public boolean isGuestOnly() {
@@ -93,8 +93,8 @@ public class SurveyRunSecurityCallback {
 		return courseReadOnly && isExecutor();
 	}
 
-	public boolean canRunCommands() {
-		return canRunCommands;
+	public boolean canResetAll() {
+		return !courseReadOnly && admin;
 	}
 
 }

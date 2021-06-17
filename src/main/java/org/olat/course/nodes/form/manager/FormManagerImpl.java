@@ -22,8 +22,14 @@ package org.olat.course.nodes.form.manager;
 import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -38,6 +44,8 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
+import org.olat.course.nodes.form.FormParticipation;
+import org.olat.course.nodes.form.model.FormParticipationImpl;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -47,6 +55,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
@@ -167,9 +176,10 @@ public class FormManagerImpl implements FormManager {
 	}
 	
 	@Override
-	public void reopenParticipation(EvaluationFormParticipation participation, CourseNode courseNode, CourseEnvironment courseEnv) {
-		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
-		if (session != null && EvaluationFormSessionStatus.done == session.getEvaluationFormSessionStatus()) {
+	public void reopenParticipation(EvaluationFormParticipationRef participationRef, CourseNode courseNode, CourseEnvironment courseEnv) {
+		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByKey(participationRef);
+		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participationRef);
+		if (session != null && participation != null && EvaluationFormSessionStatus.done == session.getEvaluationFormSessionStatus()) {
 			evaluationFormManager.reopenSession(session);
 			
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
@@ -184,16 +194,19 @@ public class FormManagerImpl implements FormManager {
 	}
 	
 	@Override
-	public void deleteParticipation(EvaluationFormParticipation participation, CourseNode courseNode, CourseEnvironment courseEnv) {
-		evaluationFormManager.deleteParticipations(Collections.singletonList(participation));
-		
-		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
-				participation.getExecutor(), courseEnv);
-		courseAssessmentService.updateCompletion(courseNode, assessedUserCourseEnv, Double.valueOf(0.0),
-				AssessmentEntryStatus.notStarted, Role.coach);
-		
-		log.info(Tracing.M_AUDIT, "Form data deleted: {}, course node {}, participant {}", 
-				courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent(), participation.getExecutor());
+	public void deleteParticipation(EvaluationFormParticipationRef participationRef, CourseNode courseNode, CourseEnvironment courseEnv) {
+		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByKey(participationRef);
+		if (participation != null) {
+			evaluationFormManager.deleteParticipations(Collections.singletonList(participationRef));
+			
+			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
+					participation.getExecutor(), courseEnv);
+			courseAssessmentService.updateCompletion(courseNode, assessedUserCourseEnv, Double.valueOf(0.0),
+					AssessmentEntryStatus.notStarted, Role.coach);
+			
+			log.info(Tracing.M_AUDIT, "Form data deleted: {}, course node {}, participant {}", 
+					courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent(), participation.getExecutor());
+		}
 	}
 
 	@Override
@@ -217,12 +230,6 @@ public class FormManagerImpl implements FormManager {
 		return null;
 	}
 	
-	@Override
-	public List<EvaluationFormSession> getDoneSessions(EvaluationFormSurvey survey) {
-		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
-		return evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
-	}
-
 	@Override
 	public void onQuickSave(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Double competion) {
 		courseAssessmentService.updateCompletion(courseNode, userCourseEnv, competion, AssessmentEntryStatus.inProgress,
@@ -259,13 +266,49 @@ public class FormManagerImpl implements FormManager {
 	}
 
 	@Override
-	public List<Identity> getCoachedIdentities(UserCourseEnvironment userCourseEnv) {
+	public List<FormParticipation> getFormParticipations(EvaluationFormSurvey survey, UserCourseEnvironment userCourseEnv) {
+		List<EvaluationFormParticipation> participations = getParticipations(survey, null, userCourseEnv.isAdmin());
+		
+		List<Identity> coachedIdentities = getCoachedIdentities(userCourseEnv);
+		Set<Identity> allIdentities = new HashSet<>(coachedIdentities);
+		if (userCourseEnv.isAdmin()) {
+			// User who are not members but have participated as well (e.g. if course has open access)
+			List<Identity> executors = participations.stream().map(EvaluationFormParticipation::getExecutor).collect(Collectors.toList());
+			allIdentities.addAll(executors);
+		}
+		
+		Map<Long, EvaluationFormParticipation> identityKeyToParticipations = participations
+				.stream()
+				.collect(Collectors.toMap(
+						participation -> participation.getExecutor().getKey(), 
+						Function.identity()));
+		SessionFilter doneSessionsFilter = SessionFilterFactory.createSelectDone(survey);
+		Map<Long, Date> participationKeyToSubmissionDate = evaluationFormManager.loadSessionsFiltered(doneSessionsFilter, 0, -1)
+				.stream()
+				.collect(Collectors.toMap(
+						session -> session.getParticipation().getKey(),
+						EvaluationFormSession::getSubmissionDate));
+		
+		List<FormParticipation> formParticipations = new ArrayList<>(coachedIdentities.size());
+		for (Identity identity : allIdentities) {
+			FormParticipationImpl formParticipationImpl = new FormParticipationImpl();
+			formParticipationImpl.setIdentity(identity);
+			EvaluationFormParticipation participation = identityKeyToParticipations.get(identity.getKey());
+			if (participation != null) {
+				formParticipationImpl.setEvaluationFormParticipation(participation);
+				if (EvaluationFormParticipationStatus.done == participation.getStatus()) {
+					formParticipationImpl.setSubmissionDate(participationKeyToSubmissionDate.get(participation.getKey()));
+				}
+			}
+			formParticipations.add(formParticipationImpl);
+		}
+		return formParticipations;
+	}
+	
+	private List<Identity> getCoachedIdentities(UserCourseEnvironment userCourseEnv) {
 		if (userCourseEnv.isAdmin()) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			return repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name())
-					.stream()
-					.distinct()
-					.collect(Collectors.toList());
+			return repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 		} else if (userCourseEnv.isCoach()) {
 			return repositoryService.getCoachedParticipants(
 					userCourseEnv.getIdentityEnvironment().getIdentity(),

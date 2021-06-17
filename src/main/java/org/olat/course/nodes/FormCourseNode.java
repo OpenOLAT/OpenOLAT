@@ -50,6 +50,8 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.form.FormManager;
+import org.olat.course.nodes.form.FormSecurityCallback;
+import org.olat.course.nodes.form.FormSecurityCallbackFactory;
 import org.olat.course.nodes.form.rule.FormReminderProvider;
 import org.olat.course.nodes.form.ui.FormEditController;
 import org.olat.course.nodes.form.ui.FormParticipationTableModel;
@@ -166,7 +168,8 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		} else if (userCourseEnv.isParticipant()) {
 			runCtrl = new FormRunController(ureq, wControl, this, userCourseEnv);
 		} else {
-			runCtrl = new FormRunCoachController(ureq, wControl, this, userCourseEnv);
+			FormSecurityCallback secCallback = FormSecurityCallbackFactory.createSecurityCallback(userCourseEnv);
+			runCtrl = new FormRunCoachController(ureq, wControl, this, userCourseEnv, secCallback);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, ICON_CSS);
 		return new NodeRunConstructionResult(ctrl);
