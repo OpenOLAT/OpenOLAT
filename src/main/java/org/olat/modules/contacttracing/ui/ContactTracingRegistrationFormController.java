@@ -146,6 +146,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         // Time recording
         FormLayoutContainer generalInformation = FormLayoutContainer.createDefaultFormLayout("timeRecording", getTranslator());
         generalInformation.setRootForm(mainForm);
+        generalInformation.setElementCssClass("o_sel_contacttracing_general");
         generalInformation.setFormTitle(translate("contact.tracing"));
         generalInformation.setFormDescription(translate("contact.tracing.registration.intro", new String[]{
                 String.valueOf(contactTracingModule.getRetentionPeriod()),
@@ -167,6 +168,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         // User identification
         FormLayoutContainer userIdentification = FormLayoutContainer.createDefaultFormLayout("userIdentification", getTranslator());
         userIdentification.setRootForm(mainForm);
+        userIdentification.setElementCssClass("o_sel_contacttracing_identification");
         userIdentification.setFormTitle(translate("contact.tracing.registration.user.identification"));
         formLayout.add(userIdentification);
 
@@ -179,12 +181,14 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         UserPropertyHandler firstNameHandler = userPropertiesConfig.getPropertyHandler(UserConstants.FIRSTNAME);
         firstNameEl = firstNameHandler.addFormItem(getLocale(), user, usageIdentifier, false, userIdentification);
         firstNameEl.setUserObject(contactTracingModule.getFirstNameState());
+        firstNameEl.setElementCssClass("o_sel_contacttracing_firstname");
         userPropertyHandlerFormItemMap.put(firstNameHandler, firstNameEl);
         updateablePropertyMap.put(firstNameHandler, firstNameEl.isEnabled());
 
         UserPropertyHandler lastNameHandler = userPropertiesConfig.getPropertyHandler(UserConstants.LASTNAME);
         lastNameEl = lastNameHandler.addFormItem(getLocale(), user, usageIdentifier, false, userIdentification);
         lastNameEl.setUserObject(contactTracingModule.getLastNameState());
+        lastNameEl.setElementCssClass("o_sel_contacttracing_lastname");
         userPropertyHandlerFormItemMap.put(lastNameHandler, lastNameEl);
         updateablePropertyMap.put(lastNameHandler, lastNameEl.isEnabled());
 
@@ -215,17 +219,20 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         // Contact information
         FormLayoutContainer contactInformation = FormLayoutContainer.createDefaultFormLayout("contactInformation", getTranslator());
         contactInformation.setRootForm(mainForm);
+        contactInformation.setElementCssClass("o_sel_contacttracing_contact");
         contactInformation.setFormTitle(translate("contact.tracing.registration.contact.information"));
         formLayout.add(contactInformation);
 
         UserPropertyHandler emailHandler = userPropertiesConfig.getPropertyHandler(UserConstants.EMAIL);
         emailEl = emailHandler.addFormItem(getLocale(), user, usageIdentifier, false, contactInformation);
+        emailEl.setElementCssClass("o_sel_contacttracing_email");
         emailEl.setUserObject(contactTracingModule.getEmailState());
         userPropertyHandlerFormItemMap.put(emailHandler, emailEl);
         updateablePropertyMap.put(emailHandler, emailEl.isEnabled());
 
         UserPropertyHandler institutionalEmailHandler = userPropertiesConfig.getPropertyHandler(UserConstants.INSTITUTIONALEMAIL);
         institutionalEmailEl = institutionalEmailHandler.addFormItem(getLocale(), user, usageIdentifier, false, contactInformation);
+        institutionalEmailEl.setElementCssClass("o_sel_contacttracing_institutional_email");
         institutionalEmailEl.setUserObject(contactTracingModule.getInstitutionalEMailState());
         userPropertyHandlerFormItemMap.put(institutionalEmailHandler, institutionalEmailEl);
         updateablePropertyMap.put(institutionalEmailHandler, institutionalEmailEl.isEnabled());
@@ -238,6 +245,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
 
         UserPropertyHandler mobilePhoneHandler = userPropertiesConfig.getPropertyHandler(UserConstants.TELMOBILE);
         mobilePhoneEl = mobilePhoneHandler.addFormItem(getLocale(), user, usageIdentifier, false, contactInformation);
+        mobilePhoneEl.setElementCssClass("o_sel_contacttracing_mobile");
         mobilePhoneEl.setUserObject(contactTracingModule.getMobilePhoneState());
         userPropertyHandlerFormItemMap.put(mobilePhoneHandler, mobilePhoneEl);
         updateablePropertyMap.put(mobilePhoneHandler, mobilePhoneEl.isEnabled());

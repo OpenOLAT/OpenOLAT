@@ -26,6 +26,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LectureAdminSettingsPage;
 import org.olat.selenium.page.qpool.QuestionPoolAdminPage;
 import org.olat.selenium.page.taxonomy.TaxonomyAdminPage;
+import org.olat.selenium.page.tracing.ContactTracingAdminPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -152,6 +153,15 @@ public class AdministrationPage {
 		OOGraphene.check(authorConfirmationCheckEl, Boolean.valueOf(mandatory));
 		OOGraphene.waitBusy(browser);
 		return this;
+	}
+	
+	public ContactTracingAdminPage openContactTracing() {
+		selectModules();
+		
+		By tracingBy = By.cssSelector(".o_sel_ContactTracing span.o_tree_level_label_leaf>a");
+		browser.findElement(tracingBy).click();
+		OOGraphene.waitBusy(browser);
+		return new ContactTracingAdminPage(browser);
 	}
 	
 	public LicensesAdminstrationPage openLicenses() {

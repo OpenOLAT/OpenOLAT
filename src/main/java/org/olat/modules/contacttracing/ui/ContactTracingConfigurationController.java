@@ -159,6 +159,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
 
         // Enable
         enabledEl = uifactory.addCheckboxesHorizontal("contact.tracing.enabled", generalConfig, ENABLED_KEYS, TranslatorHelper.translateAll(getTranslator(), ENABLED_KEYS));
+        enabledEl.setElementCssClass("o_sel_contacttracing_enable");
         enabledEl.addActionListener(FormEvent.ONCHANGE);
         // Retention period
         retentionPeriodEl = uifactory.addTextElement("contact.tracing.retention.period", 3, null, generalConfig);
@@ -169,6 +170,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
         // Allow anonymous registration for registered users
         allowAnonymousRegistrationEl = uifactory.addCheckboxesHorizontal("contact.tracing.registration.anonymous.allowed.always.label", generalConfig, ENABLED_KEYS, TranslatorHelper.translateAll(getTranslator(), ENABLED_KEYS));
         allowAnonymousRegistrationEl.setHelpTextKey("contact.tracing.registration.anonymous.allowed.always.help", null);
+        allowAnonymousRegistrationEl.setElementCssClass("o_sel_contacttracing_anonymous");
         allowAnonymousRegistrationEl.addActionListener(FormEvent.ONCHANGE);
 
         // Questionnaire config

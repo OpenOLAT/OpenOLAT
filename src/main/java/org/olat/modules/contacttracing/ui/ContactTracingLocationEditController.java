@@ -93,12 +93,16 @@ public class ContactTracingLocationEditController extends FormBasicController {
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
         FormLayoutContainer editForm = FormLayoutContainer.createDefaultFormLayout("editForm", getTranslator());
         editForm.setRootForm(mainForm);
+        editForm.setElementCssClass("o_sel_contacttracing_location");
         formLayout.add(editForm);
 
         // Add input fields
         referenceEl = uifactory.addTextElement("contact.tracing.cols.reference", 255, null, editForm);
+        referenceEl.setElementCssClass("o_sel_contacttracing_ref");
         titleEl = uifactory.addTextElement("contact.tracing.cols.title", 255, null, editForm);
+        titleEl.setElementCssClass("o_sel_contacttracing_title");
         buildingEl = uifactory.addTextElement("contact.tracing.cols.building", 255, null, editForm);
+        buildingEl.setElementCssClass("o_sel_contacttracing_building");
         roomEl = uifactory.addTextElement("contact.tracing.cols.room", 255, null, editForm);
         sectorEl = uifactory.addTextElement("contact.tracing.cols.sector", 255, null, editForm);
         tableEl = uifactory.addTextElement("contact.tracing.cols.table", 255, null, editForm);
@@ -107,6 +111,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
         qrIdEl = uifactory.addTextElement("contact.tracing.cols.qr.id", 255, null, editForm);
         qrIdEl.setNotEmptyCheck("contact.tracing.required");
         qrIdEl.setExampleKey("noTransOnlyParam", new String[]{""});
+        qrIdEl.setElementCssClass("o_sel_contacttracing_qrid");
         qrIdEl.addActionListener(FormEvent.ONCHANGE);
         qrIdEl.setMandatory(true);
         FormLayoutContainer qrCodeButtons = FormLayoutContainer.createButtonLayout("qrCodeButtons", getTranslator());
