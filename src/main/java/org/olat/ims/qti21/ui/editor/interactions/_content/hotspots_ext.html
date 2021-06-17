@@ -1,6 +1,6 @@
 <div id="${r.getCId()}_editor">
 
-<div class="o_qti_hotspots_editor $layoutCssClass" style="position:relative; #if($width && !${width.isEmpty()}) width:${width}px; #end #if($height && !${height.isEmpty()}) height:${height}px; #end #if($filename && !${filename.isEmpty()}) background-image: url('$mapperUri/${filename}?t=${r.getUniqueId()}'); #end">
+<div class="o_qti_hotspots_editor o_extended $layoutCssClass" style="position:relative; #if($width && !${width.isEmpty()}) width:${width}px; #end #if($height && !${height.isEmpty()}) height:${height}px; #end #if($filename && !${filename.isEmpty()}) background-image: url('$mapperUri/${filename}?t=${r.getUniqueId()}'); #end">
 	<input type="hidden" id="hotspots_selection" name="hotspots_selection" value="$hotspotSelections" />
 #foreach($hotspot in $hotspots)
 	<input type="hidden" id="${hotspot.identifier}_shape" name="${hotspot.identifier}_shape" value="${hotspot.shape}" />
@@ -19,14 +19,14 @@
 	<a id="spot-align-center-v" class="btn spot-align" href="javascript:;" title='$r.translate("position.distribute.v")'><i class="o_icon o_icon-lg o_icon_draw_distribute-h"> </i></a>
 	<a id="spot-align-bottom" class="btn spot-align" href="javascript:;" title='$r.translate("position.align.bottom")'><i class="o_icon o_icon-lg o_icon_draw_align-bottom"> </i></a>
 	<span>|</span>
-	<a id="spot-equalize-width" class="btn spot-align" href="javascript:;" title='$r.translate("position.equalize.width")'><i class="o_icon o_icon-lg o_icon_draw_distribute-v"> </i></a>
-	<a id="spot-equalize-height" class="btn spot-align" href="javascript:;" title='$r.translate("position.equalize.height")'><i class="o_icon o_icon-lg o_icon_draw_distribute-h"> </i></a>
+	<a id="spot-equalize-width" class="btn spot-align" href="javascript:;" title='$r.translate("position.equalize.width")'><i class="o_icon o_icon-lg o_icon_draw_equal-size-width"> </i></a>
+	<a id="spot-equalize-height" class="btn spot-align" href="javascript:;" title='$r.translate("position.equalize.height")'><i class="o_icon o_icon-lg o_icon_draw_equal-size-height"> </i></a>
 	<span>|</span>
 	<a id="spot-equalize-both" class="btn spot-align" href="javascript:;" title='$r.translate("position.equalize.both")'><i class="o_icon o_icon-lg o_icon_draw_equal-size"> </i></a>
 </div>
 <hr class="o_spacer" />
 <div class="o_button_group o_button_group_left form-inline">
- $r.render("form.imd.correct.spots")
+ $r.render("form.imd.select.spots")
 </div>
 <div class="form-inline">
 	<label for="spot-position-x">$r.translate("position.x")</label> <input id="spot-position-x" class="form-control" size="4" name="spot-position-x" type="text" value="">
@@ -53,10 +53,7 @@ jQuery(function() {
 			.addClass(#if($hotspot.correct) 'o_qti_hotspot_correct' #else 'o_qti_hotspot_not_correct' #end)
 			.append("<span class='o_qti_hotspot_label'>${foreach.count}.</span>")
 		#if(!${restrictedEdit})
-			.on("resizestop dragstop", function(event, ui) {
-				board.updateCoords();
-				board.updatePositionFields();
-			}).on('click', function(e) {
+			.on('click', function(e) {
 				board.select(e, this);
 				board.updatePositionFields();
 				e.stopPropagation();
@@ -64,9 +61,7 @@ jQuery(function() {
 			.append("<a class='o_qti_hotspot_delete' href='javascript:;' data-qti-hotspot='${hotspot.identifier}'><i class='o_icon o_icon_remove'> </i></a>")
 		#end ;
 	#end
-	board.updateButtons()
-	     .updatePositionFields()
-	     .scale();
+	board.init();
 	jQuery("#${r.getCId()}_editor a.o_qti_hotspot_delete").on('click', function(e) {
 		e.stopPropagation();
 		$f.openFfXHREvent(false, false, true), 'delete-hotspot', jQuery(this).data('qti-hotspot'));
@@ -105,29 +100,26 @@ jQuery(function() {
 	jQuery("#spot-position-x").on('keyup', function(e) {
 		var x = parseInt(jQuery(this).val());
 		if(Number.isInteger(x) && x >= 0) {
-			board.selectedSpots().css({ left : x + "px" });
-			board.updateCoords();
+			board.setLeft(x);
 		}
 	});
 	jQuery("#spot-position-y").on('keyup', function(e) {
 		var y = parseInt(jQuery(this).val());
 		if(Number.isInteger(y) && y >= 0) {
 			board.selectedSpots().css({ top : y + "px" });
-			board.updateCoords();
+			board.setTop(y);
 		}
 	});
 	jQuery("#spot-position-w").on('keyup', function(e) {
 		var width = parseInt(jQuery(this).val());
 		if(Number.isInteger(width) && width >= 0) {
-			board.selectedSpots().width(width);
-			board.updateCoords();
+			board.setWidth(width);
 		}
 	});
 	jQuery("#spot-position-h").on('keyup', function(e) {
 		var height = parseInt(jQuery(this).val());
 		if(Number.isInteger(height) && height >= 0) {
-			board.selectedSpots().height(height);
-			board.updateCoords();
+			board.setHeight(height);
 		}
 	});
 });

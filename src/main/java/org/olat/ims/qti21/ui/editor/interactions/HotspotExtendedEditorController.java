@@ -43,6 +43,7 @@ import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -66,7 +67,7 @@ public class HotspotExtendedEditorController extends FormBasicController {
 	private FormLink cloneButton;
 	private FormLink newRectButton;
 	private FormLink newCircleButton;
-	private MultipleSelectionElement correctHotspotsEl;
+	private MultipleSelectionElement selectedHotspotsEl;
 	
 	private final Size size;
 	private final File objectImg;
@@ -93,7 +94,7 @@ public class HotspotExtendedEditorController extends FormBasicController {
 		backgroundMapperUri = registerMapper(ureq, new BackgroundMapper(itemFile));
 		
 		initForm(ureq);
-		rebuildCorrectSelection();
+		rebuildSelectedSelection();
 	}
 	
 	public List<SpotWrapper> getSpots()  {
@@ -124,6 +125,7 @@ public class HotspotExtendedEditorController extends FormBasicController {
 		}
 		
 		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] {
+				(Settings.isDebuging() ? "js/interactjs/interact.js" : "js/interactjs/interact.min.js"),
 				"js/jquery/openolat/jquery.drawing.v2.js"
 			});
 		formLayout.add(js);
@@ -136,11 +138,10 @@ public class HotspotExtendedEditorController extends FormBasicController {
 		
 		cloneButton = uifactory.addFormLink("clone.hotspots", "clone.hotspots", null, formLayout, Link.BUTTON);
 		
-		
 		String[] emptyKeys = new String[0];
-		correctHotspotsEl = uifactory.addCheckboxesHorizontal("form.imd.correct.spots", formLayout, emptyKeys, emptyKeys);
-		correctHotspotsEl.setElementCssClass("o_sel_assessment_item_correct_spots");
-		correctHotspotsEl.addActionListener(FormEvent.ONCHANGE);
+		selectedHotspotsEl = uifactory.addCheckboxesHorizontal("form.imd.select.spots", null, formLayout, emptyKeys, emptyKeys);
+		selectedHotspotsEl.setElementCssClass("o_sel_assessment_item_correct_spots");
+		selectedHotspotsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("transfert", formLayout);
@@ -173,9 +174,9 @@ public class HotspotExtendedEditorController extends FormBasicController {
 		} else if(cloneButton == source) {
 			updateHotspots(ureq);
 			cloneHotspots(ureq.getParameter("hotspots_selection"));
-		} else if(correctHotspotsEl == source) {
+		} else if(selectedHotspotsEl == source) {
 			updateHotspots(ureq);
-			doCorrectAnswers(correctHotspotsEl.getSelectedKeys());
+			doSelectAnswers(selectedHotspotsEl.getSelectedKeys());
 			flc.setDirty(true);
 		} else if(flc == source) {
 			updateHotspots(ureq);
@@ -194,7 +195,7 @@ public class HotspotExtendedEditorController extends FormBasicController {
 			String translatedCoords = translateCoords(shape, wrapper.getCoords());
 			createHotspotChoice(shape, translatedCoords);
 		}
-		rebuildCorrectSelection();
+		rebuildSelectedSelection();
 	}
 	
 	private String translateCoords(Shape shape, String coords) {
@@ -238,8 +239,8 @@ public class HotspotExtendedEditorController extends FormBasicController {
 	
 	private void createHotspotChoice(Shape shape, String coords) {
 		Identifier identifier = IdentifierGenerator.newNumberAsIdentifier("hc");
-		choiceWrappers.add(new SpotWrapper(shape, coords, identifier, false));
-		rebuildCorrectSelection();
+		choiceWrappers.add(new SpotWrapper(shape, coords, identifier));
+		rebuildSelectedSelection();
 	}
 	
 	private void updateHotspots(UserRequest ureq) {
@@ -270,28 +271,35 @@ public class HotspotExtendedEditorController extends FormBasicController {
 		flc.contextPut("hotspotSelections", selection);
 	}
 	
-	private void rebuildCorrectSelection() {
+	private void rebuildSelectedSelection() {
 		KeyValues keyValues = new KeyValues();
 		for(int i=0; i<choiceWrappers.size(); i++) {
 			SpotWrapper choice = choiceWrappers.get(i);
 			keyValues.add(KeyValues.entry(choice.getIdentifier(), translate("position.hotspot", new String[] { Integer.toString(i + 1) })));
 		}
-		correctHotspotsEl.setKeysAndValues(keyValues.keys(), keyValues.values());
+		selectedHotspotsEl.setKeysAndValues(keyValues.keys(), keyValues.values());
 		for(SpotWrapper spot:choiceWrappers) {
-			correctHotspotsEl.select(spot.getIdentifier(), spot.isCorrect());
+			selectedHotspotsEl.select(spot.getIdentifier(), spot.isSelected());
 		}
 		flc.setDirty(true);
 	}
 	
-	private void doCorrectAnswers(Collection<String> correctResponseIds) {
+	private void doSelectAnswers(Collection<String> selectedResponseIds) {
+		StringBuilder sb = new StringBuilder();
 		for(SpotWrapper wrapper:choiceWrappers) {
-			wrapper.setCorrect(correctResponseIds.contains(wrapper.getIdentifier()));
+			boolean selected = selectedResponseIds.contains(wrapper.getIdentifier());
+			if(selected) {
+				if(sb.length() > 0) sb.append(" ");
+				sb.append(wrapper.getIdentifier());
+			}
+			wrapper.setSelected(selected);
 		}
+		flc.contextPut("hotspotSelections", sb.toString());
 	}
 	
 	private void doDeleteHotspot(String hotspotId) {
 		choiceWrappers.removeIf(w -> w.getIdentifier().equals(hotspotId));
-		rebuildCorrectSelection();
+		rebuildSelectedSelection();
 	}
 	
 	public static class SpotWrapper {
@@ -299,28 +307,26 @@ public class HotspotExtendedEditorController extends FormBasicController {
 		private String shape;
 		private String coords;
 		private String identifier;
-		private boolean correct;
+		private boolean selected = false;
 		
 		public SpotWrapper(HotspotWrapper hotspot) {
 			coords = hotspot.getCoords();
 			shape = hotspot.getShape();
 			identifier = hotspot.getIdentifier();
-			correct = hotspot.isCorrect();
 		}
 		
-		public SpotWrapper(Shape shape, String coords, Identifier identifier, boolean correct) {
+		public SpotWrapper(Shape shape, String coords, Identifier identifier) {
 			this.shape = shape.toQtiString();
 			this.coords = coords;
 			this.identifier = identifier.toString();
-			this.correct = correct;
 		}
-		
-		public boolean isCorrect() {
-			return correct;
+
+		public boolean isSelected() {
+			return selected;
 		}
-		
-		public void setCorrect(boolean correct) {
-			this.correct = correct;
+
+		public void setSelected(boolean selected) {
+			this.selected = selected;
 		}
 
 		public String getShape() {
@@ -342,6 +348,5 @@ public class HotspotExtendedEditorController extends FormBasicController {
 		public String getIdentifier() {
 			return identifier;
 		}
-		
 	}
 }

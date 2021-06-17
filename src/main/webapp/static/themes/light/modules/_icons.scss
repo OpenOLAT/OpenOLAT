@@ -578,6 +578,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_draw_distribute-h:before { content: '\E809'; font-family: openolat; }
 .o_icon_draw_distribute-v:before { content: '\E80a'; font-family: openolat; }
 .o_icon_draw_equal-size:before { content: '\E80b'; font-family: openolat; }
+.o_icon_draw_equal-size-width:before { content: '\e80c'; font-family: openolat; }
+.o_icon_draw_equal-size-height:before { content: '\e80d'; font-family: openolat; } 
 
 /* tests icons */
 .o_mi_qpool_import:before { content: $fa-var-database; }

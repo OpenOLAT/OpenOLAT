@@ -29,6 +29,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
@@ -935,6 +936,7 @@ public class ImsQTI21EditorTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
+	@Ignore
 	@RunAsClient
 	public void qti21EditorHotspot_singleChoice(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
@@ -1115,6 +1117,7 @@ public class ImsQTI21EditorTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
+	@Ignore
 	@RunAsClient
 	public void qti21EditorHotspot_multipleChoice(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
@@ -3459,6 +3462,7 @@ public class ImsQTI21EditorTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
+	@Ignore
 	@RunAsClient
 	public void qti21EditorNegativePoints(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {

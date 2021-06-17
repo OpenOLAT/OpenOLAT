@@ -22,15 +22,14 @@ jQuery(function() {
 			.addClass(#if($hotspot.correct) 'o_qti_hotspot_correct' #else 'o_qti_hotspot_not_correct' #end)
 			.append("<span class='o_qti_hotspot_label'>${foreach.count}.</span>")
 		#if(!${restrictedEdit})
-			.on("resizestop dragstop", function(event, ui) {
-				$r.openJavaScriptCommand("move-hotspot"),'hotspot',ui.helper.attr('id'),'coords',board.getCoords(ui.helper));
-			})
 			.append("<a class='o_qti_hotspot_delete' href='javascript:;' data-qti-hotspot='${hotspot.identifier}'><i class='o_icon o_icon_remove'> </i></a>")
 		#end ;
 	#end
+	board.init();
 	jQuery("#${r.getCId()}_editor a.o_qti_hotspot_delete").on('click', function(e) {
-		$r.openJavaScriptCommand("delete-hotspot"),'hotspot',jQuery(this).data('qti-hotspot'));
-	})
+		e.stopPropagation();
+		$f.openFfXHREvent(false, false, true), 'delete-hotspot', jQuery(this).data('qti-hotspot'));
+	});
 });
 </script>
 </div>

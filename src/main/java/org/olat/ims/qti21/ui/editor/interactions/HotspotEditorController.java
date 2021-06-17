@@ -34,7 +34,6 @@ import java.util.Set;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -56,6 +55,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -223,7 +223,10 @@ public class HotspotEditorController extends FormBasicController {
 		hotspotsCont.setRootForm(mainForm);
 		hotspotsCont.contextPut("mapperUri", backgroundMapperUri);
 		hotspotsCont.contextPut("restrictedEdit", restrictedEdit || readOnly);
-		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/openolat/jquery.drawing.v2.js" });
+		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] {
+				(Settings.isDebuging() ? "js/interactjs/interact.js" : "js/interactjs/interact.min.js"),		
+				"js/jquery/openolat/jquery.drawing.v2.js"
+			});
 		formLayout.add(js);
 		formLayout.add(hotspotsCont);
 		
@@ -304,6 +307,8 @@ public class HotspotEditorController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		updateHotspots(ureq);
+		
 		backgroundEl.clearError();
 		if(backgroundImage == null && initialBackgroundImage == null) {
 			backgroundEl.setErrorKey("form.legende.mandatory", null);
@@ -332,22 +337,9 @@ public class HotspotEditorController extends FormBasicController {
 	}
 
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if(hotspotsCont.getFormItemComponent() == source && extendedEditorCtrl == null) {
-			String cmd = event.getCommand();
-			if("delete-hotspot".equals(cmd)) {
-				doDeleteHotspot(ureq);
-			} else if("move-hotspot".equals(cmd)) {
-				doMoveHotspot(ureq);
-			}
-		}
-		super.event(ureq, source, event);
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(extendedEditorCtrl == source) {
-			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				doTransfert(extendedEditorCtrl.getSpots());
 
 				String dirtyOnLoad = FormJSHelper.setFlexiFormDirtyOnLoad(flc.getRootForm());
@@ -377,6 +369,7 @@ public class HotspotEditorController extends FormBasicController {
 			createHotspotChoice(Shape.RECT, "50,50,100,100");
 			updateHotspots(ureq);
 		} else if(extendedEditButton == source) {
+			updateHotspots(ureq);
 			doOpenExtendedEditor(ureq);
 		} else if(backgroundEl == source) {
 			// upload in item directory;
@@ -408,16 +401,23 @@ public class HotspotEditorController extends FormBasicController {
 			updateHotspots(ureq);
 			updateHotspotsPosition(backgroundSize);
 		} else if(correctHotspotsEl == source) {
+			updateHotspots(ureq);
 			doCorrectAnswers(correctHotspotsEl.getSelectedKeys());
 			flc.setDirty(true);
 		} else if(layoutEl == source) {
+			updateHotspots(ureq);
 			updateLayoutCssClass();
+		} else if(hotspotsCont == source) {
+			updateHotspots(ureq);
+			String deleteHotspot = ureq.getParameter("delete-hotspot");
+			if(StringHelper.containsNonWhitespace(deleteHotspot)) {
+				doDeleteHotspot(deleteHotspot);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
 	private void doTransfert(List<SpotWrapper> wrappers) {
-		List<String> correctResponsesIds = new ArrayList<>();
 		Map<String,HotspotWrapper> wrapperMap = new HashMap<>();
 		for(HotspotWrapper wrapper:choiceWrappers) {
 			wrapperMap.put(wrapper.getIdentifier(), wrapper);
@@ -432,9 +432,6 @@ public class HotspotEditorController extends FormBasicController {
 				itemBuilder.createHotspotChoice(Identifier.assumedLegal(wrapper.getIdentifier()),
 						Shape.parseShape(wrapper.getShape()), wrapper.getCoords());	
 			}
-			if(wrapper.isCorrect()) {
-				correctResponsesIds.add(wrapper.getIdentifier());
-			}
 		}
 		
 		for(HotspotWrapper wrapper:wrapperMap.values()) {
@@ -444,24 +441,9 @@ public class HotspotEditorController extends FormBasicController {
 			}
 		}
 		
-		doCorrectAnswers(correctResponsesIds);
 		rebuildWrappersAndCorrectSelection();
 
 		flc.setDirty(true);
-	}
-	
-	private void doMoveHotspot(UserRequest ureq) {
-		if(restrictedEdit || readOnly) return;
-		
-		String coords = ureq.getParameter("coords");
-		String hotspotId = ureq.getParameter("hotspot");
-		if(StringHelper.containsNonWhitespace(hotspotId) && StringHelper.containsNonWhitespace(coords)) {
-			for(HotspotWrapper choiceWrapper:choiceWrappers) {
-				if(choiceWrapper.getIdentifier().equals(hotspotId)) {
-					choiceWrapper.setCoords(coords);
-				}
-			}
-		}
 	}
 	
 	private void doOpenExtendedEditor(UserRequest ureq) {
@@ -483,10 +465,9 @@ public class HotspotEditorController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void doDeleteHotspot(UserRequest ureq) {
+	private void doDeleteHotspot(String hotspotId) {
 		if(restrictedEdit || readOnly) return;
 		
-		String hotspotId = ureq.getParameter("hotspot");
 		HotspotChoice choiceToDelete = itemBuilder.getHotspotChoice(hotspotId);
 		if(choiceToDelete != null) {
 			itemBuilder.deleteHotspotChoice(choiceToDelete);
@@ -507,7 +488,7 @@ public class HotspotEditorController extends FormBasicController {
 		KeyValues keyValues = new KeyValues();
 		for(int i=0; i<choices.size(); i++) {
 			HotspotChoice choice = choices.get(i);
-			keyValues.add(KeyValues.entry(choice.getIdentifier().toString(), Integer.toString(i + 1) + "."));
+			keyValues.add(KeyValues.entry(choice.getIdentifier().toString(), translate("position.hotspot", new String[] { Integer.toString(i + 1) })));
 			choiceWrappers.add(new HotspotWrapper(choice, itemBuilder));
 		}
 		correctHotspotsEl.setKeysAndValues(keyValues.keys(), keyValues.values());
@@ -588,6 +569,8 @@ public class HotspotEditorController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(readOnly) return;
+		
+		updateHotspots(ureq);
 		
 		itemBuilder.setTitle(titleEl.getValue());
 		//set the question with the text entries

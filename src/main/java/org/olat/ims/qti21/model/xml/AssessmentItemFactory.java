@@ -298,7 +298,7 @@ public class AssessmentItemFactory {
 		List<Integer> coords = new ArrayList<>();
 		coords.add(Integer.valueOf(55));
 		coords.add(Integer.valueOf(77));
-		coords.add(Integer.valueOf(8));
+		coords.add(Integer.valueOf(16));
 		choice.setCoords(coords);
 		hotspotInteraction.getHotspotChoices().add(choice);
 		
