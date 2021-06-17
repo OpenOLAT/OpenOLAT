@@ -41,6 +41,8 @@ import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupsPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
+import org.olat.selenium.page.tracing.ContactTracingAdminPage;
+import org.olat.selenium.page.tracing.ContactTracingPage;
 import org.olat.selenium.page.user.ImportUserPage;
 import org.olat.selenium.page.user.PortalPage;
 import org.olat.selenium.page.user.UserAdminPage;
@@ -840,5 +842,45 @@ public class UserTest extends Deployments {
 			.loginAs(newUser.getLogin(), password1)
 			.resume()
 			.assertLoggedInByLastName("Akashiya");
+	}
+	
+
+	/**
+	 * An administrator add a location for contact tracing. Somebody
+	 * use it as guest.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void contactTracingAsGuest()
+	throws IOException, URISyntaxException {
+		// configure the lectures module
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		ContactTracingAdminPage tracingAdmin = NavigationPage.load(browser)
+			.openAdministration()
+			.openContactTracing()
+			.enableTracing()
+			.selectLocations();
+		String url = tracingAdmin
+			.addLocation("Zurich", "Meeting-Room", "IT");
+		Assert.assertNotNull(url);
+		
+		//log out
+		new UserToolsPage(browser)
+			.logout();
+		
+		ContactTracingPage tracing = new ContactTracingPage(browser);
+		tracing.load(url)
+			.asGuest()
+			.fillIdentification("Jeremy K.", "Bloch")
+			.fillContact("jeremy@openolat.com", "07912345678")
+			.send()
+			.assertSent();
 	}
 }
