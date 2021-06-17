@@ -93,7 +93,6 @@ import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.component.ComponentTraverser;
@@ -257,7 +256,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		this.title = translator.translate("page.appname") + " - " + newTitle;
 		StringBuilder sb = new StringBuilder();
 		sb.append("document.title = \"");
-		sb.append(Formatter.escapeDoubleQuotes(this.title));
+		sb.append(StringHelper.escapeJavaScript(this.title));
 		sb.append("\";");
 		JSCommand jsc = new JSCommand(sb.toString());
 		if (getWindowBackOffice() != null) {
