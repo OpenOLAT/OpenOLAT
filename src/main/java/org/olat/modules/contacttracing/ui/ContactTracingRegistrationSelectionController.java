@@ -64,6 +64,7 @@ public class ContactTracingRegistrationSelectionController extends FormBasicCont
         setFormDescription("contact.tracing.registration.intro", new String[]{
                 String.valueOf(contactTracingModule.getRetentionPeriod()),
                 ContactTracingHelper.getLocationsDetails(getTranslator(), location, null)});
+        formLayout.setElementCssClass("o_sel_contacttracing_login");
 
         FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
         buttonLayout.setRootForm(mainForm);
@@ -74,6 +75,7 @@ public class ContactTracingRegistrationSelectionController extends FormBasicCont
         // Register without account
         if (allowRegistrationAsGuest) {
             registerAsGuestLink = uifactory.addFormLink("contact.tracing.registration.login.guest", buttonLayout, Link.BUTTON);
+            registerAsGuestLink.setElementCssClass("o_sel_contacttracing_guest");
         }
         // Cancel registration
         uifactory.addFormCancelButton("contact.tracing.registration.login.cancel", buttonLayout, ureq, getWindowControl());

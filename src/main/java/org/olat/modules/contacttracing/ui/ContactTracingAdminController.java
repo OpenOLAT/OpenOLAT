@@ -67,8 +67,11 @@ public class ContactTracingAdminController extends BasicController implements Ac
 
         mainVC = createVelocityContainer("contact_tracing_admin");
         configurationLink = LinkFactory.createLink("contact.tracing.configuration", mainVC, this);
+        configurationLink.setElementCssClass("o_sel_contacttracing_config");
         locationListLink= LinkFactory.createLink("contact.tracing.locations", mainVC, this);
+        locationListLink.setElementCssClass("o_sel_contacttracing_locations");
         reportLink = LinkFactory.createLink("contact.tracing.report", mainVC, this);
+        reportLink.setElementCssClass("o_sel_contacttracing_report");
 
         segments = SegmentViewFactory.createSegmentView("segments", mainVC, this);
         segments.setDontShowSingleSegment(true);

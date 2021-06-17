@@ -161,7 +161,7 @@ public class UserSearchForm extends FormBasicController {
 		Translator tr = Util.createPackageTranslator(UserPropertyHandler.class, getLocale(),  getTranslator());
 
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler == null || (userPropertyHandler.getName().equals(UserConstants.NICKNAME) && !isAdminProps)) {
+			if (userPropertyHandler == null || (userPropertyHandler.getName().equals(UserConstants.NICKNAME))) {
 				continue;
 			}
 			

@@ -176,6 +176,7 @@ public class ContactTracingLocationListController extends FormBasicController {
 
         // Create link to add a new location and import locations
         addLocationLink = uifactory.addFormLink("createNewLocation", "contact.tracing.location.add", null, formLayout, Link.BUTTON);
+        addLocationLink.setElementCssClass("o_sel_contacttracing_add_location");
         addLocationLink.setIconLeftCSS("o_icon o_icon_fw o_icon_add");
         importLocationsLink = uifactory.addFormLink("importLocations", "contact.tracing.locations.import", null, formLayout, Link.BUTTON);
         importLocationsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");

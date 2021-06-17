@@ -78,7 +78,6 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 	private SingleSelection layoutEl;
 	private SingleSelection recordEl;
 	private SingleSelection publishingEl;
-	private SingleSelection joinPolicyEl;
 
 	private RecurringMeetingsContext meetingsContext;
 	private List<BigBlueButtonMeetingTemplate> templates;
@@ -293,7 +292,6 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		allOk &= validateTime(followupTimeEl, 15l);
 
 		allOk &= validateSingleSelection(templateEl);
-		allOk &= validateSingleSelection(joinPolicyEl);
 		
 		// dates ok
 		if(allOk) {
@@ -397,7 +395,6 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 					templates, false);
 			boolean webcamAvailable = isWebcamLayoutAvailable(BigBlueButtonUIHelper.getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
-			BigBlueButtonUIHelper.updateJoinPolicy(templateEl, joinPolicyEl, templates, false);
 		} else if(recordEl == source || passwordEnableEl == source) {
 			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
 					templates, false);
