@@ -20,11 +20,7 @@
 package org.olat.course.nodes.form.ui;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -65,11 +61,11 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
+import org.olat.course.nodes.form.FormParticipation;
 import org.olat.course.nodes.form.ui.FormParticipationTableModel.ParticipationCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
-import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilterFactory;
@@ -213,32 +209,21 @@ public class FormParticipationListController extends FormBasicController impleme
 	}
 
 	private void loadModel() {
-		List<Identity> coachedIdentities = formManager.getCoachedIdentities(coachCourseEnv);
-		Map<Long, EvaluationFormParticipation> identityKeyToParticipations = formManager.getParticipations(survey, null, false)
-				.stream()
-				.collect(Collectors.toMap(
-						participation -> participation.getExecutor().getKey(), 
-						Function.identity()));
-		Map<Long, Date> participationKeyToSubmissionDate = formManager.getDoneSessions(survey)
-				.stream()
-				.collect(Collectors.toMap(
-						session -> session.getParticipation().getKey(),
-						EvaluationFormSession::getSubmissionDate));
+		List<FormParticipation> formParticipations = formManager.getFormParticipations(survey, coachCourseEnv);
 		
-		List<FormParticipationRow> rows = new ArrayList<>(coachedIdentities.size());
-		for (Identity identiy: coachedIdentities) {
-			FormParticipationRow row = new FormParticipationRow(identiy, userPropertyHandlers, getLocale());
-			EvaluationFormParticipation participation = identityKeyToParticipations.get(identiy.getKey());
-			if (participation != null) {
-				row.setStatus(participation.getStatus());
-				if (EvaluationFormParticipationStatus.done == participation.getStatus()) {
-					row.setSubmissionDate(participationKeyToSubmissionDate.get(participation.getKey()));
+		List<FormParticipationRow> rows = new ArrayList<>(formParticipations.size());
+		for (FormParticipation formParticipation: formParticipations) {
+			FormParticipationRow row = new FormParticipationRow(formParticipation.getIdentity(), userPropertyHandlers, getLocale());
+			if (formParticipation.getEvaluationFormParticipationRef() != null) {
+				row.setStatus(formParticipation.getParticipationStatus());
+				if (EvaluationFormParticipationStatus.done == formParticipation.getParticipationStatus()) {
+					row.setSubmissionDate(formParticipation.getSubmissionDate());
 				}
 				
 				String linkName = "tools-" + counter++;
 				FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
 				toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-				toolsLink.setUserObject(participation);
+				toolsLink.setUserObject(formParticipation);
 				row.setToolsLink(toolsLink);
 			}
 			rows.add(row);
@@ -267,8 +252,8 @@ public class FormParticipationListController extends FormBasicController impleme
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if(cmd != null && cmd.startsWith("tools-")) {
-				EvaluationFormParticipation participation = (EvaluationFormParticipation)link.getUserObject();
-				doOpenTools(ureq, participation, link);
+				FormParticipation formParticipation = (FormParticipation)link.getUserObject();
+				doOpenTools(ureq, formParticipation, link);
 			}
 
 		}
@@ -285,13 +270,13 @@ public class FormParticipationListController extends FormBasicController impleme
 			}
 		} else if (source == resetParticipationCtrl) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				EvaluationFormParticipation participation = (EvaluationFormParticipation)resetParticipationCtrl.getUserObject();
-				doResetParticipation(participation);
+				EvaluationFormParticipationRef participationRef = (EvaluationFormParticipationRef)resetParticipationCtrl.getUserObject();
+				doResetParticipation(participationRef);
 			}
 		} else if (source == reopenParticipationCtrl) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				EvaluationFormParticipation participation = (EvaluationFormParticipation)reopenParticipationCtrl.getUserObject();
-				doReopenParticipation(participation);
+				EvaluationFormParticipationRef participationRef= (EvaluationFormParticipationRef)reopenParticipationCtrl.getUserObject();
+				doReopenParticipation(participationRef);
 			}
 		} else if (source == resetDataConfirmationCtrl) {
 			if (event == Event.DONE_EVENT) {
@@ -340,11 +325,11 @@ public class FormParticipationListController extends FormBasicController impleme
 		stackPanel.pushController(fullName, particpationCtrl);
 	}
 	
-	private void doOpenTools(UserRequest ureq, EvaluationFormParticipation participation, FormLink link) {
+	private void doOpenTools(UserRequest ureq, FormParticipation formParticipation, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 
-		toolsCtrl = new ToolsController(ureq, getWindowControl(), participation);
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), formParticipation);
 		listenTo(toolsCtrl);
 	
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
@@ -375,27 +360,27 @@ public class FormParticipationListController extends FormBasicController impleme
 		loadModel();
 	}
 	
-	private void doConfirmReset(UserRequest ureq, EvaluationFormParticipation participation) {
+	private void doConfirmReset(UserRequest ureq, EvaluationFormParticipationRef evaluationFormParticipationRef) {
 		String title = translate("reset.title");
 		String text = translate("reset.text");
 		resetParticipationCtrl = activateYesNoDialog(ureq, title, text, resetParticipationCtrl);
-		resetParticipationCtrl.setUserObject(participation);
+		resetParticipationCtrl.setUserObject(evaluationFormParticipationRef);
 	}
 	
-	private void doResetParticipation(EvaluationFormParticipation participation) {
-		formManager.deleteParticipation(participation, courseNode, coachCourseEnv.getCourseEnvironment());
+	private void doResetParticipation(EvaluationFormParticipationRef participationRef) {
+		formManager.deleteParticipation(participationRef, courseNode, coachCourseEnv.getCourseEnvironment());
 		loadModel();
 	}
 	
-	private void doConfirmReopen(UserRequest ureq, EvaluationFormParticipation participation) {
+	private void doConfirmReopen(UserRequest ureq, EvaluationFormParticipationRef participationRef) {
 		String title = translate("reopen.title");
 		String text = translate("reopen.text");
 		reopenParticipationCtrl = activateYesNoDialog(ureq, title, text, resetParticipationCtrl);
-		reopenParticipationCtrl.setUserObject(participation);
+		reopenParticipationCtrl.setUserObject(participationRef);
 	}
 	
-	private void doReopenParticipation(EvaluationFormParticipation participation) {
-		formManager.reopenParticipation(participation, courseNode, coachCourseEnv.getCourseEnvironment());
+	private void doReopenParticipation(EvaluationFormParticipationRef participationRef) {
+		formManager.reopenParticipation(participationRef, courseNode, coachCourseEnv.getCourseEnvironment());
 		loadModel();
 	}
 	
@@ -405,15 +390,15 @@ public class FormParticipationListController extends FormBasicController impleme
 		private Link reopenLink;
 		private Link resetLink;
 		
-		private final EvaluationFormParticipation participation;
+		private final FormParticipation formParticipation;
 		
-		public ToolsController(UserRequest ureq, WindowControl wControl, EvaluationFormParticipation participation) {
+		public ToolsController(UserRequest ureq, WindowControl wControl, FormParticipation formParticipation) {
 			super(ureq, wControl);
-			this.participation = participation;
+			this.formParticipation = formParticipation;
 			
 			VelocityContainer mainVC = createVelocityContainer("participation_tools");
 			
-			if (EvaluationFormParticipationStatus.done == participation.getStatus()) {
+			if (EvaluationFormParticipationStatus.done == formParticipation.getParticipationStatus()) {
 				reopenLink = LinkFactory.createLink("reopen", "reopen", getTranslator(), mainVC, this, Link.LINK);
 				reopenLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reopen");
 			}
@@ -432,9 +417,9 @@ public class FormParticipationListController extends FormBasicController impleme
 		protected void event(UserRequest ureq, Component source, Event event) {
 			this.fireEvent(ureq, Event.DONE_EVENT);
 			if(reopenLink == source) {
-				doConfirmReopen(ureq, participation);
+				doConfirmReopen(ureq, formParticipation.getEvaluationFormParticipationRef());
 			} else if(resetLink == source) {
-				doConfirmReset(ureq, participation);
+				doConfirmReset(ureq, formParticipation.getEvaluationFormParticipationRef());
 			}
 		}
 		

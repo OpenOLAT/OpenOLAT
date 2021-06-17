@@ -187,6 +187,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.dialog.manager.DialogElementsManagerTest.class,
 	org.olat.course.nodes.en.EnrollmentManagerSerialTest.class,
 	org.olat.course.nodes.en.EnrollmentManagerConcurrentTest.class,
+	org.olat.course.nodes.form.FormManagerTest.class,
 	org.olat.course.nodes.form.rule.FormParticipationRuleSPITest.class,
 	org.olat.course.nodes.gta.manager.GTAManagerTest.class,
 	org.olat.course.nodes.gta.manager.GTATaskRevisionDAOTest.class,
