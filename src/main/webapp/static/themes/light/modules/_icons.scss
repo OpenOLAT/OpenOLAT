@@ -298,7 +298,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_refresh:before { content: $fa-var-refresh; }
 .o_icon_reject:before { content: $fa-var-times; color:$brand-danger; }
 .o_icon_rejected:before { content: $fa-var-thumbs-down;}
-.o_icon_reminder:before { content: $fa-var-hand-o-up; }
+.o_icon_reminder:before { content: $fa-var-bell-o; }
 .o_icon_remove:before { content: $fa-var-times; }
 .o_icon_remove_filters:before { content: $fa-var-times-circle; }
 .o_icon_remove_member:before { content: $fa-var-user-times; }
