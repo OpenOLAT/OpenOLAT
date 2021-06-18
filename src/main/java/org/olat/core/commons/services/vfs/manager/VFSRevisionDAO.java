@@ -24,9 +24,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -34,6 +36,7 @@ import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +48,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class VFSRevisionDAO {
+	
+	private static final Logger log = Tracing.createLoggerFor(VFSRevisionDAO.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -230,9 +235,13 @@ public class VFSRevisionDAO {
 	}
 
 	public void deleteRevision(VFSRevision revision) {
-		VFSRevision reloadedRev = dbInstance.getCurrentEntityManager()
-				.getReference(VFSRevisionImpl.class, ((VFSRevisionImpl)revision).getKey());
-		dbInstance.getCurrentEntityManager().remove(reloadedRev);
+		try {
+			VFSRevision reloadedRev = dbInstance.getCurrentEntityManager()
+					.getReference(VFSRevisionImpl.class, ((VFSRevisionImpl)revision).getKey());
+			dbInstance.getCurrentEntityManager().remove(reloadedRev);
+		} catch (EntityNotFoundException e) {
+			log.error("Entity not found", e);
+		}
 	}
 
 	public List<VFSRevision> getLargest(int maxResult, 

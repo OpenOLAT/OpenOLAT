@@ -281,6 +281,45 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(queryResult);
 	}
 	
+	@Test
+	public void deleteRevision() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/del/revs", "text.txt",
+				new Date(), 10l, false, "file:///del/text.tx", "file", null);
+		VFSRevision revision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, null, 25l, new Date(), "A comment", metadata);
+		dbInstance.commitAndCloseSession();
+		
+		revisionDao.deleteRevision(revision);
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSRevision> revisions = revisionDao.getRevisions(metadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertTrue(revisions.isEmpty());
+	}
+	
+	/**
+	 * This case can happen in the folder component. The unit test
+	 * check that the exception is swallowed and that the transaction
+	 * is not set to "rollback" (the implementation has changed several
+	 * times).
+	 */
+	@Test
+	public void doubleDeleteRevision() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/del/revs", "text.txt",
+				new Date(), 10l, false, "file:///del/text.tx", "file", null);
+		VFSRevision revision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, null, 25l, new Date(), "A comment", metadata);
+		dbInstance.commitAndCloseSession();
+		
+		revisionDao.deleteRevision(revision);
+		dbInstance.commitAndCloseSession();
+
+		revisionDao.deleteRevision(revision);
+		List<VFSRevision> revisions = revisionDao.getRevisions(metadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertTrue(revisions.isEmpty());
+	}
+	
 	private Date addMinutesToDate(int minutes, Date date) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
