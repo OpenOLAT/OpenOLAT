@@ -89,8 +89,8 @@ public class OLATUpgrade_15_4_0 extends OLATUpgrade {
 			try {
 				StringBuilder sb = new StringBuilder();
 				sb.append("update filemetadata meta");
-				sb.append("   set meta.fileLastModifiedBy = meta.author");
-				sb.append(" where meta.author is not null");
+				sb.append("   set meta.fileLastModifiedBy = meta.fileInitializedBy");
+				sb.append(" where meta.fileLastModifiedBy is not null and meta.fileInitializedBy is not null");
 				dbInstance.getCurrentEntityManager()
 						.createQuery(sb.toString())
 						.executeUpdate();
