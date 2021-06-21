@@ -764,7 +764,7 @@ public class GroupAssessmentController extends FormBasicController {
 		
 		if(withComment) {
 			String comment = groupCommentEl.getValue();
-			if(StringHelper.containsNonWhitespace(comment)) {
+			if(comment != null) {
 				for(AssessmentRow row:rows) {
 					UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 					courseAssessmentService.updatedUserComment(gtaNode, comment, userCourseEnv, getIdentity());

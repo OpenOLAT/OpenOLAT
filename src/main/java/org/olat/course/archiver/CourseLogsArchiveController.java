@@ -62,6 +62,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskRejectedException;
 
 /**
  * Description: Archives the user chosen courselogfiles
@@ -199,8 +200,13 @@ public class CourseLogsArchiveController extends BasicController implements Gene
 	    final Locale theLocale = getLocale();
 	    final String email = getIdentity().getUser().getProperty(UserConstants.EMAIL, getLocale());
 
-	    asyncExportManager.asyncArchiveCourseLogFiles(getIdentity(),
-	    		resId, targetDir, begin, end, logAdminChecked, logUserChecked, logStatisticChecked, theLocale, email);
+	    try {
+			asyncExportManager.asyncArchiveCourseLogFiles(getIdentity(),
+					resId, targetDir, begin, end, logAdminChecked, logUserChecked, logStatisticChecked, theLocale, email);
+		} catch (TaskRejectedException e) {
+			logError("", e);
+			showError("error.queue.course.log");
+		}
 	}
 	
 	private void doShowFiles(UserRequest ureq) {

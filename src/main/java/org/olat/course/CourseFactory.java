@@ -138,6 +138,7 @@ import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.core.task.TaskRejectedException;
 
 
 /**
@@ -776,8 +777,12 @@ public class CourseFactory {
 			// cause db connection timeout to be triggered
 			// rework when backgroundjob infrastructure exists
 			DBFactory.getInstance().intermediateCommit();
-			CoreSpringFactory.getImpl(AsyncExportManager.class).asyncArchiveCourseLogFiles(archiveOnBehalfOf,
-					course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, null, null);
+			try {
+				CoreSpringFactory.getImpl(AsyncExportManager.class).asyncArchiveCourseLogFiles(archiveOnBehalfOf,
+						course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, null, null);
+			} catch (TaskRejectedException e) {
+				log.error("The course log cannot be archived.", e);
+			}
 		}
 
 		course.getCourseEnvironment().getCourseGroupManager().archiveCourseGroups(exportDirectory);
