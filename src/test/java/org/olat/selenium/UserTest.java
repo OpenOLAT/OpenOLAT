@@ -883,4 +883,48 @@ public class UserTest extends Deployments {
 			.send()
 			.assertSent();
 	}
+	
+
+	/**
+	 * An administrator add a location for contact tracing. A user
+	 * use it to register itself.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void contactTracingWithLogin()
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl)
+				.createRandomUser("carole");
+		
+		// configure the lectures module
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		ContactTracingAdminPage tracingAdmin = NavigationPage.load(browser)
+			.openAdministration()
+			.openContactTracing()
+			.enableTracing()
+			.selectLocations();
+		String url = tracingAdmin
+			.addLocation("Biel", "IT-Room", "Development");
+		Assert.assertNotNull(url);
+		
+		//log out
+		new UserToolsPage(browser)
+			.logout();
+		
+		ContactTracingPage tracing = new ContactTracingPage(browser);
+		tracing.load(url)
+			.asAuthenticatedUser()
+			.loginAs(user);
+		
+		tracing
+			.send()
+			.assertSent();
+	}
 }

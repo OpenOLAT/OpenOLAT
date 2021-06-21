@@ -73,6 +73,11 @@ public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 	}
 
 	@Override
+	public boolean isInPath(String path) {
+		return false;
+	}
+
+	@Override
 	public VFSStatus copyFrom(VFSItem source, Identity savedBy) {
 		return VFSConstants.NO;
 	}

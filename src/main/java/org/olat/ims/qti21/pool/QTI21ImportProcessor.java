@@ -160,6 +160,11 @@ public class QTI21ImportProcessor {
 			if(Files.notExists(assessmentItemPath)) {
 				return null;
 			}
+			
+			Path normalizedPath = assessmentItemPath.normalize();
+			if(!normalizedPath.startsWith(parentPath)) {
+				throw new IOException("Invalid Item");
+			}
 	
 			String dir = qpoolFileStorage.generateDir();
 			//storage
@@ -212,6 +217,10 @@ public class QTI21ImportProcessor {
 			for(String material:materials) {
 				if(material.indexOf("://") < 0) {// material can be an external URL
 					Path materialFile = assessmentItemPath.getParent().resolve(material);
+					Path normalizedMaterialPath = materialFile.normalize();
+					if(!normalizedMaterialPath.startsWith(parentPath)) {
+						throw new IOException("Invalid Item");
+					}
 					PathUtils.copyFileToDir(materialFile, outputFile.getParentFile(), material);
 				}
 			}

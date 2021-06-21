@@ -20,6 +20,7 @@
 package org.olat.selenium.page.tracing;
 
 import org.olat.core.util.StringHelper;
+import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -38,17 +39,33 @@ public class ContactTracingPage {
 		this.browser = browser; 
 	}
 	
+	/**
+	 * Load and assert a contact tracing URL
+	 * 
+	 * @param url The contact tracing URL
+	 * @return Itself
+	 */
 	public ContactTracingPage load(String url) {
 		browser.navigate().to(url);
 		return assertOnContactTracing();
 	}
 	
+	/**
+	 * Assert on the selection page of the contract tracing.
+	 * 
+	 * @return Itself
+	 */
 	public ContactTracingPage assertOnContactTracing() {
 		By loginBy = By.cssSelector("form>fieldset.o_sel_contacttracing_login");
 		OOGraphene.waitElement(loginBy, browser);
 		return this;
 	}
 	
+	/**
+	 * Choose the "guest" option.
+	 * 
+	 * @return Itself
+	 */
 	public ContactTracingPage asGuest() {
 		By guestBy = By.cssSelector("fieldset.o_sel_contacttracing_login a.o_sel_contacttracing_guest");
 		browser.findElement(guestBy).click();
@@ -58,6 +75,26 @@ public class ContactTracingPage {
 		return this;
 	}
 	
+	/**
+	 * Choose the "login" option.
+	 * 
+	 * @return Itself
+	 */
+	public LoginPage asAuthenticatedUser() {
+		By loginBy = By.cssSelector("fieldset.o_sel_contacttracing_login button.btn.btn-primary");
+		browser.findElement(loginBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(LoginPage.loginFormBy, browser);
+		return new LoginPage(browser);
+	}
+	
+	/**
+	 * Fill the form with personal data.
+	 * 
+	 * @param firstName The first name
+	 * @param lastName The last name
+	 * @return Itself
+	 */
 	public ContactTracingPage fillIdentification(String firstName, String lastName) {
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contacttracing_identification"), browser);
 		
@@ -72,6 +109,13 @@ public class ContactTracingPage {
 		return this;
 	}
 	
+	/**
+	 * Fill the contact information.
+	 * 
+	 * @param email The e-mail
+	 * @param mobilePhone The mobile phone number
+	 * @return Itself
+	 */
 	public ContactTracingPage fillContact(String email, String mobilePhone) {
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contacttracing_contact"), browser);
 		
@@ -86,6 +130,11 @@ public class ContactTracingPage {
 		return this;
 	}
 	
+	/**
+	 * Send the contact tracing's form.
+	 * 
+	 * @return Itself
+	 */
 	public ContactTracingPage send() {
 		By saveBy = By.cssSelector("fieldset.o_sel_contacttracing_contact button.btn.btn-primary");
 		browser.findElement(saveBy).click();
@@ -93,6 +142,11 @@ public class ContactTracingPage {
 		return assertSent();
 	}
 	
+	/**
+	 * Assert that the form was successfully sent.
+	 * 
+	 * @return Itself
+	 */
 	public ContactTracingPage assertSent() {
 		By detailsBy = By.cssSelector("div.o_ct_confirmation_wrapper div.o_ct_confirmation_location_details");
 		OOGraphene.waitElement(detailsBy, browser);

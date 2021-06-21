@@ -96,6 +96,11 @@ public class VFSCPContainer extends AbstractVirtualContainer implements VFSConta
 	public String getRelPath() {
 		return null;
 	}
+	
+	@Override
+	public boolean isInPath(String path) {
+		return false;
+	}
 
 	@Override
 	public List<VFSItem> getItems() {

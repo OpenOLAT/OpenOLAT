@@ -37,6 +37,7 @@ import java.io.OutputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -189,20 +190,24 @@ public class ZipUtil {
 	private static boolean unzip(InputStream in, VFSContainer targetDir, Identity identity, boolean versioning) {
 		
 		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
-		
+
 		try(ZipInputStream oZip = new ZipInputStream(in)) {
 			// unzip files
 			ZipEntry oEntr = oZip.getNextEntry();
 			while (oEntr != null) {
-				if (oEntr.getName() != null && !oEntr.getName().startsWith(DIR_NAME__MACOSX)) {
+				String name = oEntr.getName();
+				if(!targetDir.isInPath(name)) {
+					throw new IOException("Invalip ZIP");
+				}
+
+				if (name != null && !name.startsWith(DIR_NAME__MACOSX)) {
 					if (oEntr.isDirectory()) {
 						// skip MacOSX specific metadata directory
 						// create directories
-						getAllSubdirs(targetDir, oEntr.getName(), identity, true);
+						getAllSubdirs(targetDir, name, identity, true);
 					} else {
 						// create file
 						VFSContainer createIn = targetDir;
-						String name = oEntr.getName();
 						// check if entry has directories which did not show up as
 						// directories above
 						int dirSepIndex = name.lastIndexOf('/');
@@ -304,7 +309,7 @@ public class ZipUtil {
 			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 			
 			// unzip files
-			net.sf.jazzlib.ZipEntry oEntr = oZip.getNextEntry();
+			net.sf.jazzlib.ZipEntry oEntr = oZip.getNextEntry();//TODO zip
 			
 			VFSLeaf lastLeaf = null;
 			while (oEntr != null) {
@@ -429,7 +434,7 @@ public class ZipUtil {
 						// skip MacOSX specific metadata directory
 						// directories aren't locked
 						oZip.closeEntry();
-						oEntr = oZip.getNextEntry();
+						oEntr = oZip.getNextEntry();//TODO zip
 						continue;
 					} else {
 						// search file
@@ -821,9 +826,17 @@ public class ZipUtil {
 	 * @param outdir, path to output directory, relative to cwd or absolute
 	 */
 	private static void xxunzip(InputStream is, String outdir) throws IOException {
+		final Path outPath = Paths.get(outdir);
+		
 		try(ZipInputStream zis = new ZipInputStream (new BufferedInputStream(is))) {
 			ZipEntry entry;
 			while ((entry = zis.getNextEntry()) != null) {
+				Path filePath = Paths.get(outdir, entry.getName());
+				Path normalizedPath = filePath.normalize();
+				if(!normalizedPath.startsWith(outPath)) {
+					throw new IOException("Invalid ZIP");
+				}
+				
 				File of = new File(outdir, entry.getName());
 				if (entry.isDirectory()) {
 					of.mkdirs();

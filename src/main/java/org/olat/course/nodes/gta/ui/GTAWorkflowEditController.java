@@ -677,7 +677,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
 		assignmentDeadlineEl.setVisible(assignment && !useRelativeDate);
 		assignmentRelDeadlineCont.setVisible(assignment && useRelativeDate);
-		updateDeadline(assignementDeadlineRelToEl, false);
+		updateDeadline(assignementDeadlineRelToEl, true);
 	}
 	
 	private void updateSubmissionDeadline() {
