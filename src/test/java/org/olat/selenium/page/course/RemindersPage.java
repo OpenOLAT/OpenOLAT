@@ -252,12 +252,35 @@ public class RemindersPage {
 		return this;
 	}
 	
+	/**
+	 * Check if the specified user is in the review list
+	 * in the wizard, step review.
+	 * 
+	 * @param user A user
+	 * @return Itself
+	 */
+	public RemindersPage assertOnReviewInList(UserVO user) {
+		By firstNameBy = By.xpath("//div[contains(@class,'modal-body')]//table//td[text()[contains(.,'" + user.getFirstName() + "')]]");
+		OOGraphene.waitElement(firstNameBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Go to the e-mail step of the wizard.
+	 * 
+	 * @return Itself
+	 */
 	public RemindersPage nextToEmail() {
 		OOGraphene.nextStep(browser);
 		OOGraphene.waitElement(By.cssSelector("div.o_sel_course_reminder_subject"), browser);
 		return this;
 	}
 	
+	/**
+	 * Finish the wizard.
+	 * 
+	 * @return Itself
+	 */
 	public RemindersPage finish() {
 		OOGraphene.finishStep(browser);
 		return this;

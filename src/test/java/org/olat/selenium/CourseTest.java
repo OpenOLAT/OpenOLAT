@@ -1197,6 +1197,7 @@ public class CourseTest extends Deployments {
 			.addRule("RepositoryEntryRoleRuleSPI")
 			.setRoleBasedRule("1", "RepositoryEntryRoleRuleSPI", "participant")
 			.nextToReview()
+			.assertOnReviewInList(kanu)
 			.nextToEmail()
 			.setSubject(reminderTitle)
 			.finish()
