@@ -122,13 +122,6 @@ public interface VideoManager {
 	public boolean getFrame(VFSLeaf video, int frameNumber, VFSLeaf frame) throws IOException;
 
 	/**
-	 * Read the the metdatadata-xml in the videoresource folder
-	 * @param videoResource
-	 * @return
-	 */
-	public VideoMetadata readVideoMetadataFile(OLATResource videoResource);
-
-	/**
 	 * Trigger the transcoding process to generate versions of the video
 	 * 
 	 * @param video
@@ -493,14 +486,6 @@ public interface VideoManager {
 	 * @return 
 	 */
 	public VideoTranscoding retranscodeFailedVideoTranscoding(VideoTranscoding videoTranscoding);
-
-	/**
-	 * Checks if is metadata file valid.
-	 *
-	 * @param videoResource
-	 * @return true, if is metadata file valid
-	 */
-	public boolean isMetadataFileValid(OLATResource videoResource);
 
 	/**
 	 * Checks for master container.

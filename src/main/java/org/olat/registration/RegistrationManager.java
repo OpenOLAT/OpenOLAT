@@ -96,7 +96,6 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	
 	private static final XStream xmlXStream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(xmlXStream);
 		Class<?>[] types = new Class[] {
 				HashMap.class
 			};

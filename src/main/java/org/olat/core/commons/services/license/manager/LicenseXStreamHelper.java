@@ -44,6 +44,7 @@ class LicenseXStreamHelper {
 	
 	private static final XStream licenseXStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
+		XStreamHelper.allowDefaultPackage(licenseXStream);
 		licenseXStream.alias("license", LicenseImpl.class);
 		licenseXStream.alias("license", ResourceLicenseImpl.class);
 		licenseXStream.alias("licenseType", LicenseTypeImpl.class);

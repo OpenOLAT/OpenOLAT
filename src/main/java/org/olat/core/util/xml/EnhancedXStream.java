@@ -43,9 +43,9 @@ import com.thoughtworks.xstream.mapper.MapperWrapper;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class EnhancedXStream extends XStream {
+class EnhancedXStream extends XStream {
 
-	public EnhancedXStream(boolean export) {
+	EnhancedXStream(boolean export) {
 		super();
 
 		if (export) {

@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -82,10 +83,22 @@ import com.thoughtworks.xstream.XStream;
  * @author Felix Jost, Florian Gnaegi
  */
 public class XStreamHelper {
-	private static final String ENCODING = "UTF-8";
 
-	private static XStream unconfiguredXStream = new XStream();
+	private static final String[] DEFAULT_PACKAGES = new String[] {
+			"org.olat.**",
+			"de.bps.**",
+			"at.ac.uibk.**",
+			"org.hibernate.**"
+		};
+	private static final XStream unconfiguredXStream = new XStream();
+	static {
+		XStream.setupDefaultSecurity(unconfiguredXStream);
+		allowDefaultPackage(unconfiguredXStream);
+	}
 	
+	public static final void allowDefaultPackage(XStream xstream) {
+		xstream.allowTypesByWildcard(DEFAULT_PACKAGES);
+	}
 
 	/**
 	 * Write a an object to an XML file. UTF-8 is used as encoding
@@ -228,7 +241,9 @@ public class XStreamHelper {
 	 * writing to a configured XML mapping
 	 */
 	public static XStream createXStreamInstance() {
-		return new EnhancedXStream(false);
+		XStream xstream = new EnhancedXStream(false);
+		XStream.setupDefaultSecurity(xstream);
+		return xstream;
 	}
 	
 	/**
@@ -238,7 +253,9 @@ public class XStreamHelper {
 	 * @return
 	 */
 	public static XStream createXStreamInstanceForDBObjects() {
-		return new EnhancedXStream(true);
+		XStream xstream = new EnhancedXStream(true);
+		XStream.setupDefaultSecurity(xstream);
+		return xstream;
 	}
 
 	/**
@@ -302,7 +319,7 @@ public class XStreamHelper {
 	 * @return
 	 */
 	public static Object readObject(XStream xStream, InputStream is) {
-		try(InputStreamReader isr = new InputStreamReader(is, ENCODING);) {
+		try(InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);) {
 			return xStream.fromXML(isr);
 		} catch (Exception e) {
 			throw new OLATRuntimeException(XStreamHelper.class,
@@ -318,7 +335,7 @@ public class XStreamHelper {
 	 * @return
 	 */
 	public static Object readObject(XStream xStream, String xml) {
-		try(InputStream is = new ByteArrayInputStream(xml.getBytes(ENCODING))) {
+		try(InputStream is = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))) {
 			return readObject(xStream, is);
 		} catch (Exception e) {
 			throw new OLATRuntimeException(XStreamHelper.class,
@@ -377,9 +394,9 @@ public class XStreamHelper {
 	 *            the object to be serialized
 	 */
 	public static void writeObject(XStream xStream, OutputStream os, Object obj) {
-		try(OutputStreamWriter osw = new OutputStreamWriter(os, ENCODING)) {
+		try(OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
 			String data = xStream.toXML(obj);
-			data = "<?xml version=\"1.0\" encoding=\"" + ENCODING + "\"?>\n"
+			data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 					+ data; // give a decent header with the encoding used
 			osw.write(data);
 			osw.flush();

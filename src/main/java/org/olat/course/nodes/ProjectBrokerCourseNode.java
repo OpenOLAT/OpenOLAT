@@ -430,6 +430,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 			File projectBrokerFile = new File(folderNodeData, "projectbroker.xml");
 			if (projectBrokerFile.exists()) {
 				XStream xstream = XStreamHelper.createXStreamInstance();
+				XStreamHelper.allowDefaultPackage(xstream);
 				ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 				ProjectBrokerConfig brokerConfig = (ProjectBrokerConfig) XStreamHelper.readObject(xstream,
 						projectBrokerFile);
@@ -456,6 +457,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 	private void importProject(File projectDir, File projectFile, ProjectBroker projectBroker, ICourse course,
 			CourseEnvironmentMapper envMapper) {
 		XStream xstream = XStreamHelper.createXStreamInstance();
+		XStreamHelper.allowDefaultPackage(xstream);
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
@@ -536,6 +538,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 		ProjectBroker pb = projectBrokerManager.getProjectBroker(projectBrokerManager.getProjectBrokerId(cpm, this));
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		XStream xstream = XStreamHelper.createXStreamInstance();
+		XStreamHelper.allowDefaultPackage(xstream);
 
 		// folder for the pb node
 		File pbNodeFolder = new File(exportDirectory, getIdent());

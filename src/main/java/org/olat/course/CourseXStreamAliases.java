@@ -97,6 +97,9 @@ public class CourseXStreamAliases {
 	 * @return
 	 */
 	static {
+		XStreamHelper.allowDefaultPackage(readXstream);
+		XStreamHelper.allowDefaultPackage(writeXstream);
+		
 		//write XStream
 		writeXstream.alias("com.frentix.olat.course.nodes.ViteroCourseNode", ViteroCourseNode.class);
 		writeXstream.alias("BookSection", BookSectionImpl.class);

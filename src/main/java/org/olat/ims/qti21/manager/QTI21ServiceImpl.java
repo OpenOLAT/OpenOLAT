@@ -194,7 +194,6 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(configXstream);
 		Class<?>[] types = new Class[] {
 				QTI21DeliveryOptions.class, QTI21AssessmentResultsOptions.class
 		};

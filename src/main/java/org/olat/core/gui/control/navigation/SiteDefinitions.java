@@ -77,6 +77,7 @@ public class SiteDefinitions extends AbstractSpringModule {
 	
 	private static final XStream xStream = XStreamHelper.createXStreamInstance();
 	static {
+		XStreamHelper.allowDefaultPackage(xStream);
 		xStream.alias("coursesite", CourseSiteConfiguration.class);
 		xStream.alias("languageConfig", LanguageConfiguration.class);
 		xStream.alias("siteconfig", SiteConfiguration.class);

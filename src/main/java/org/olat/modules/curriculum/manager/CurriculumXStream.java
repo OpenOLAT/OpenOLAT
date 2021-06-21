@@ -63,7 +63,6 @@ public class CurriculumXStream {
 	private static final XStream xstream = XStreamHelper.createXStreamInstanceForDBObjects();
 	
 	static {
-		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
 				Curriculum.class, CurriculumImpl.class, CurriculumElement.class, CurriculumElementImpl.class,
 				CurriculumElementType.class, CurriculumElementTypeImpl.class, CurriculumElementTypeManagedFlag.class,

@@ -34,6 +34,7 @@ public class MetadataXStream {
 
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
+		XStreamHelper.allowDefaultPackage(xstream);
 		xstream.alias("citation", org.olat.modules.portfolio.model.CitationXml.class);
 		xstream.aliasType("citation", org.olat.modules.portfolio.model.CitationXml.class);
 	}

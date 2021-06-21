@@ -36,7 +36,6 @@ import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.xml.XStreamHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -192,7 +191,7 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		ptask.setStatus(TaskStatus.inWork);
 		ptask.setExecutorBootId(UUID.randomUUID().toString());
 		ptask.setExecutorNode(Integer.toString(WebappHelper.getNodeId()));
-		ptask.setTask(XStreamHelper.createXStreamInstance().toXML(new DummyTask()));
+		ptask.setTask(PersistentTaskDAO.toXML(new DummyTask()));
 		dbInstance.getCurrentEntityManager().persist(ptask);
 
 		//simulate a task from an other node
@@ -203,7 +202,7 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		alienTask.setStatus(TaskStatus.inWork);
 		alienTask.setExecutorBootId(UUID.randomUUID().toString());
 		alienTask.setExecutorNode(Integer.toString(WebappHelper.getNodeId() + 1));
-		alienTask.setTask(XStreamHelper.createXStreamInstance().toXML(new DummyTask()));
+		alienTask.setTask(PersistentTaskDAO.toXML(new DummyTask()));
 		dbInstance.getCurrentEntityManager().persist(alienTask);
 
 		dbInstance.commitAndCloseSession();

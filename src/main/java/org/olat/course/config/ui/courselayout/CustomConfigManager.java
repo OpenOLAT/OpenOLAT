@@ -57,6 +57,10 @@ import com.thoughtworks.xstream.XStream;
 public class CustomConfigManager {
 	
 	private static final Logger log = Tracing.createLoggerFor(CustomConfigManager.class);
+	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+	static {
+		XStreamHelper.allowDefaultPackage(xstream);
+	}
 	
 	private static final String IFRAME_CSS = "iframe.css";
 	private static final String MAIN_CSS = "main.css";
@@ -91,8 +95,7 @@ public class CustomConfigManager {
 			configTarget = themeBase.createChildLeaf(CUSTOM_CONFIG_XML);
 		} 
 		
-		XStream xStream = XStreamHelper.createXStreamInstance();
-		xStream.toXML(customConfig, configTarget.getOutputStream(false));
+		xstream.toXML(customConfig, configTarget.getOutputStream(false));
 		
 		// compile the css-files
 		StringBuilder sbMain = new StringBuilder();
@@ -187,9 +190,8 @@ public class CustomConfigManager {
 		if (configTarget == null) {
 			return defaultConf;
 		}
-		XStream xStream = XStreamHelper.createXStreamInstance();
 		try(InputStream in=configTarget.getInputStream()) {
-			return (Map<String, Map<String, Object>>) xStream.fromXML(in);
+			return (Map<String, Map<String, Object>>) xstream.fromXML(in);
 		} catch(IOException e) {
 			log.error("", e);
 			return defaultConf;

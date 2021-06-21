@@ -32,7 +32,6 @@ import java.util.Locale;
 import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.pdfbox.io.IOUtils;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -72,18 +71,16 @@ public class ChatLogHelper {
 	@PostConstruct 
 	public void init() {
 		logXStream = XStreamHelper.createXStreamInstance();
+		XStreamHelper.allowDefaultPackage(logXStream);
 		logXStream.alias("message", InstantMessageImpl.class);
 		logXStream.alias("identity", IdentityImpl.class);
 		logXStream.omitField(IdentityImpl.class, "user");
 	}
 	
 	public void archive(OLATResourceable ores, File exportDirectory) {
-		ObjectOutputStream out = null;
-		try {
-			File file = new File(exportDirectory, "chat.xml");
-			Writer writer = new FileWriter(file);
-			out = logXStream.createObjectOutputStream(writer);
-			
+		File file = new File(exportDirectory, "chat.xml");
+		try(Writer writer = new FileWriter(file);
+			ObjectOutputStream out = logXStream.createObjectOutputStream(writer)) {		
 			int counter = 0;
 			List<InstantMessage> messages;
 			do {
@@ -95,8 +92,6 @@ public class ChatLogHelper {
 			} while(messages.size() == BATCH_SIZE);
 		} catch (IOException e) {
 			log.error("", e);
-		} finally {
-			IOUtils.closeQuietly(out);
 		}
 	}
 	

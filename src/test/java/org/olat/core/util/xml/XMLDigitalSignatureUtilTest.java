@@ -48,7 +48,7 @@ public class XMLDigitalSignatureUtilTest {
 	@BeforeClass
 	public static void loadBouncyCastle() {
 		new PersistedProperties(event -> {
-			//
+			// do nothing
 		});
 	}
 	
