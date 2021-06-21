@@ -39,6 +39,11 @@ public class ContactTracingAdminPage {
 		this.browser = browser; 
 	}
 	
+	/**
+	 * Enable contact tracing.
+	 * 
+	 * @return Itself
+	 */
 	public ContactTracingAdminPage enableTracing() {
 		By enableBy = By.xpath("//div[contains(@class,'o_sel_contacttracing_enable')]//label/input[@name='contact.tracing.enabled' and @value='on']");
 		OOGraphene.waitElement(enableBy, browser);
@@ -53,6 +58,11 @@ public class ContactTracingAdminPage {
 		return this;
 	}
 	
+	/**
+	 * Select the locations tab in administration overview.
+	 * 
+	 * @return Itself
+	 */
 	public ContactTracingAdminPage selectLocations() {
 		By locationsBy = By.cssSelector("div.o_segments a.btn.o_sel_contacttracing_locations");
 		OOGraphene.waitElement(locationsBy, browser);
@@ -63,6 +73,14 @@ public class ContactTracingAdminPage {
 		return this;
 	}
 	
+	/**
+	 * Add and save a new location.
+	 * 
+	 * @param reference The reference (optional)
+	 * @param title The title (optional)
+	 * @param building The building (optional)
+	 * @return
+	 */
 	public String addLocation(String reference, String title, String building) {
 		By addLocationBy = By.cssSelector("div.o_button_group a.o_sel_contacttracing_add_location");
 		OOGraphene.waitElement(addLocationBy, browser);
