@@ -44,6 +44,9 @@ public class BinderXStream {
 	
 	private static final Logger log = Tracing.createLoggerFor(BinderXStream.class);
 	private static final XStream myStream = XStreamHelper.createXStreamInstanceForDBObjects();
+	static {
+		XStreamHelper.allowDefaultPackage(myStream);
+	}
 	
 	public static final Binder copy(Binder binder) {
 		String stringuified = myStream.toXML(binder);
@@ -55,7 +58,7 @@ public class BinderXStream {
 		try(InputStream inStream = Files.newInputStream(path)) {
 			return (Binder)myStream.fromXML(inStream);
 		} catch (Exception e) {
-			log.error("Cannot import this map: " + path, e);
+			log.error("Cannot import this map: {}", path, e);
 			return null;
 		}
 	}
@@ -65,7 +68,7 @@ public class BinderXStream {
 		try(OutputStream out=new ShieldOutputStream(zout)) {
 			myStream.toXML(binder, out);
 		} catch (Exception e) {
-			log.error("Cannot export this map: " + binder, e);
+			log.error("Cannot export this map: {}", binder, e);
 		}
 	}
 }

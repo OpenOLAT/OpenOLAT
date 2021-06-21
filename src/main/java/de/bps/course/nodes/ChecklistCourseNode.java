@@ -309,6 +309,7 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 		XStream xstream = XStreamHelper.createXStreamInstance();
+		XStreamHelper.allowDefaultPackage(xstream);
 		ChecklistManager cm = ChecklistManager.getInstance();
 		Checklist checklist = loadOrCreateChecklist(course.getCourseEnvironment().getCoursePropertyManager());
 		Checklist copy = cm.copyChecklistInRAM(checklist);
@@ -328,13 +329,14 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		XStream xstream = XStreamHelper.createXStreamInstance();
+		XStreamHelper.allowDefaultPackage(xstream);
 		Checklist checklist = (Checklist) xstream.fromXML(importContent);
 		if(checklist != null) {
 			checklist = ChecklistManager.getInstance().copyChecklist(checklist);
 			setChecklistKey(cpm, checklist.getKey());
 		}
 	}
-	
+
 	@Override
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
 			ZipOutputStream exportStream, String archivePath, String charset) {
@@ -344,7 +346,9 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 		filename = ZipUtil.concat(archivePath, filename);
 		
 		Checklist checklist = loadOrCreateChecklist(course.getCourseEnvironment().getCoursePropertyManager());
-		String exportContent = XStreamHelper.createXStreamInstance().toXML(checklist);
+		XStream xstream = XStreamHelper.createXStreamInstance();
+		XStreamHelper.allowDefaultPackage(xstream);
+		String exportContent = xstream.toXML(checklist);
 		try {
 			exportStream.putNextEntry(new ZipEntry(filename));
 			IOUtils.write(exportContent, exportStream, "UTF-8");

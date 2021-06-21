@@ -31,11 +31,11 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
@@ -45,6 +45,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.xml.XStreamHelper;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -62,7 +63,13 @@ import com.thoughtworks.xstream.XStream;
 
 public abstract class UpgradeManager implements Initializable, GenericEventListener {
 	
-	protected final XStream upgradesXStream = XStreamHelper.createXStreamInstance();
+	protected static final XStream upgradesXStream = XStreamHelper.createXStreamInstance();
+	static {
+		Class<?>[] types = new Class[] {
+				UpgradeHistoryData.class
+			};
+		upgradesXStream.addPermission(new ExplicitTypePermission(types));
+	}
 	
 	private static final Logger log = Tracing.createLoggerFor(UpgradeManager.class);
 	
@@ -154,12 +161,11 @@ public abstract class UpgradeManager implements Initializable, GenericEventListe
 	/**
 	 * Load all persisted UpgradeHistoryData objects from the fileSystem
 	 */
-	@SuppressWarnings("unchecked")
 	protected void initUpgradesHistories() {
 		File upgradesDir = new File(WebappHelper.getUserDataRoot(), SYSTEM_DIR);
 		File upgradesHistoriesFile = new File(upgradesDir, INSTALLED_UPGRADES_XML);
 		if (upgradesHistoriesFile.exists()) {
-			upgradesHistories = (Map<String, UpgradeHistoryData>)upgradesXStream.fromXML(upgradesHistoriesFile);
+			upgradesHistories = read(upgradesHistoriesFile);
 		} else {
 			if (upgradesHistories == null) {
 				upgradesHistories = new HashMap<>();
@@ -168,6 +174,11 @@ public abstract class UpgradeManager implements Initializable, GenericEventListe
 			log.info("This looks like a new install or dropped data, will not do any upgrades.");
 			createUpgradeData();
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	protected static Map<String, UpgradeHistoryData> read(File file) {
+		return (Map<String, UpgradeHistoryData>)upgradesXStream.fromXML(file);
 	}
 	
 	/**

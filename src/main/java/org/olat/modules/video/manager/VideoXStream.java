@@ -47,7 +47,6 @@ public class VideoXStream {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
 				VideoMarker.class, VideoMarkerImpl.class, VideoMarkers.class, VideoMarkersImpl.class,
 				VideoQuestion.class, VideoQuestionImpl.class, VideoQuestions.class, VideoQuestionsImpl.class

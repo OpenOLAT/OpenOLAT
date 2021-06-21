@@ -1,0 +1,954 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map>
+  <entry>
+    <string>OLAT_11.0.6</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>RECERTIFICATION DATE</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_9.0.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.1.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>ADD BIG BLUE BUTTON URL TO CALENDAR</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE USER LIFECYCLE</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_11.0.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>ASSESSMENT PROPERTY TABLE</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>EFFICIENCY STATEMENT TABLE</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>PORTFOLIO SETTINGS</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.3.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>RESET FAILED THUMBNAILS</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE ONLYOFFICE CONFIGS</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_11.0.2</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>PORTFOLIO v2 USER TOOL</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.5.1</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>ADD MISSING ENTRY TECHNICAL TYPE</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>COPY PORTFOLIO PAGE EDITABLE FLAG</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_11.4.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>GROUP INFO MESSAGE</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_11.2.1</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>STATUS OLD TASK ELEMENT</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_14.1.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>SET MS ORES TYPE NAME</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.2.8.fx</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>RESET FAILED PDF THUMBNAILS</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_10.0.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_9.4.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_14.2.10</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>VIDEO VFS METADATA</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_10.4.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Calendar user configurations</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>Imported calendars</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>Calendar tokens</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>Imported calendars url</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_10.0.3</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_13.1.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>CLEAN META PATH ERRORS</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>CLEAN META FORUM</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>CLEAN META HOMEPAGES</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>CLEAN META TMP</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>CLEAN META RESOURCES</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>CLEAN META CTS</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>CLEAN META COURSES</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>CLEAN META HOMES</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_7.1.1</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_7.1.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_8.3.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_13.0.0.beta1</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE TEMP KEY VALID UNTIL</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE QUALITY DATA COLLECTION TO ORGANISATION</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_13.0.0.beta10</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE BOOKABLE</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.pre.8</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>DELETE PORTFOLIO V1</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_13.3.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE FILE METADATA</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE LIBRARY CONFIGURATION</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MOVE REPO IMAGES</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE CURRICULUM ROLES</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.pre.6</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>CATALOG ORDER INDEX</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_13.0.0.beta7</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE SURVEY SERIES</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_12.3.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE QPOOL TITLE</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE DIALOG ELEMENTS</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MOVE DOC POOL INFOS PAGE</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.pre.4</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>CATALOG ORDER INDEX</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_13.0.0.beta9</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE BOOKABLE</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.pre.5</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>CATALOG ORDER INDEX</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.pre.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>INIT ASESSMENT ENTRY ROOT</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_8.1.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_12.5.3</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE WEB FEED</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.hammed</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>CLEANUP CERTIFICATES</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.2.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE USER PROPERTY</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE USER NAME</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.2.2</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE CATALOG SORTING</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.4.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>INIT VFS MODIFIED BY</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>INIT ENTRY TECHNICAL TYPE</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.0.3</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>ASSESSMENT LAST ATTEMPTS</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.2.3</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>CLEAN UP REPOSITORY ENTRY TO GROUP RELATION</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.2.6</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>CLEAN UP APPOINTMENT ORGANIZERS</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_11.3.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>VIDEO XML</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.pre.6.ae</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>CONDITION COURSES COMPLETION</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.3.12</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>DELETE APPOINTMENT USER RESTRICTIONS</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_14.0.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE FILE METADATA</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE LIBRARY CONFIGURATION</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MOVE REPO IMAGES</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE CURRICULUM ROLES</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_10.1.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_12.5.17</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>UPDATE COURSE STATS</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_14.0.5</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>UPDATE UNKOWN VIDEO FORMAT</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_14.0.3</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>PASSWORD SYNTAX CHECK TYPO</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_14.2.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>TRANSFER INFOS NOTIFICATIONS NOT DESIRED</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>DATA COLLECTION ORGANISATIONS</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>LIVE STREAM LAUNCHES</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_14.2.7</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>BIGBLUEBUTTON SERVER TO DB</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_14.2.6</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>DELETE COURSE EXPORT DIRECTORY</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>DELETE DOWNLOAD ZIP</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_10.3.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Clean export folder</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_13.0.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>PORTFOLIO EVALUATION FORM</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE ROLE</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>LECTURES SEND APPEAL DATES</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE ADMIN SITE SECURITY CALLBACK</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE REPO ENTRY TO DEF ORG</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE LUCENE 7.5</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE INVITEE</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE REPO ENTRY ACCESS</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_13.2.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>UPDATE CURRICULUM CHILDREN</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_7.0.2</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData/>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_7.0.1</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_8.4.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_13.2.8</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>GUEST COURSE NODES PASSWORDS</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_13.2.4</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>ORPHAN IDENTITIES</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_8.4.5</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_12.2.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE QPOOL TAXONOMY</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MAIL CONFIG SPLITTING</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>KEEP INTERNAL MAIL DISABLED</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_15.3.6</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE BIGBLUEBUTTON JOIN FLAG</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_12.0.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>LAST USER MODIFICATION</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>USER PROPERTY CONTEXT RENAME</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>FEED XML TO DB</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_8.2.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>Database update</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_12.4.1</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE PASSWORD HISTORY</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>MIGRATE CHANGE PASSWORD</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+  <entry>
+    <string>OLAT_12.4.0</string>
+    <org.olat.upgrade.UpgradeHistoryData>
+      <upgradeData>
+        <entry>
+          <string>MIGRATE QPOOL LICENSE</string>
+          <boolean>true</boolean>
+        </entry>
+      </upgradeData>
+      <installationComplete>true</installationComplete>
+    </org.olat.upgrade.UpgradeHistoryData>
+  </entry>
+</map>

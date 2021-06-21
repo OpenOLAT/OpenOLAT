@@ -154,7 +154,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
 		configXstream.alias("deliveryOptions", BinderDeliveryOptions.class);
-		XStream.setupDefaultSecurity(configXstream);
 		Class<?>[] types = new Class[] {
 				BinderDeliveryOptions.class
 		};

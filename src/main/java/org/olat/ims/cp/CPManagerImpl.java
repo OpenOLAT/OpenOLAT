@@ -81,7 +81,6 @@ public class CPManagerImpl implements CPManager {
 
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(configXstream);
 		Class<?>[] types = new Class[] {
 				CPPackageConfig.class, DeliveryOptions.class
 			};

@@ -79,6 +79,7 @@ public class GlossaryItemManager {
 	
 	private static final XStream xstreamReader = XStreamHelper.createXStreamInstance();
 	static {
+		XStreamHelper.allowDefaultPackage(xstreamReader);
 		xstreamReader.alias(XML_GLOSSARY_ITEM_NAME, GlossaryItem.class);
 		xstreamReader.alias(XML_REVISION_NAME, Revision.class);
 	}
@@ -102,6 +103,7 @@ public class GlossaryItemManager {
 	});
 	
 	static {
+		XStreamHelper.allowDefaultPackage(xstreamReader);
 		xstreamWriter.alias(XML_GLOSSARY_ITEM_NAME, GlossaryItem.class);
 		xstreamWriter.alias(XML_REVISION_NAME, Revision.class);
 	}
@@ -229,7 +231,7 @@ public class GlossaryItemManager {
 	 * @param glossaryFile
 	 * @param glossaryItemArr
 	 */
-	private void saveToFile(VFSLeaf glossaryFile, List<GlossaryItem> glossaryItemArr) {
+	protected final void saveToFile(VFSLeaf glossaryFile, List<GlossaryItem> glossaryItemArr) {
 		// cdata-tags should be used instead of strings, overwrite writer.
 		glossaryItemArr = removeEmptyGlossaryItems(glossaryItemArr);
 		XStreamHelper.writeObject(xstreamWriter, glossaryFile, glossaryItemArr);
@@ -274,7 +276,7 @@ public class GlossaryItemManager {
 	 * @return list with GlossaryItem's
 	 */
 	@SuppressWarnings("unchecked")
-	private List<GlossaryItem> loadGlossaryItemListFromFile(VFSLeaf glossaryFile) {
+	protected final List<GlossaryItem> loadGlossaryItemListFromFile(VFSLeaf glossaryFile) {
 		List<GlossaryItem> glossaryItemList = new ArrayList<>();
 		if (glossaryFile == null) { return new ArrayList<>(); }
 		

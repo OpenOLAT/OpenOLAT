@@ -79,6 +79,15 @@ public class LinksPortlet extends AbstractPortlet {
 	private static final String ELEM_LINK_TARGET = "Target";
 	private static final String ELEM_LINK_LANG = "Language";
 	
+	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+	static {
+		XStreamHelper.allowDefaultPackage(xstream);
+		xstream.alias("LinksPortlet", Map.class);
+		xstream.alias(ELEM_LINK, PortletLink.class);
+		xstream.alias(ELEM_INSTITUTION, PortletInstitution.class);
+		xstream.aliasAttribute(PortletInstitution.class, ATTR_INSTITUTION_NAME, ATTR_INSTITUTION_NAME);
+	}
+	
 	private static HashMap<String, PortletInstitution> content;
 
 	private static File fxConfXStreamFile;
@@ -155,24 +164,13 @@ public class LinksPortlet extends AbstractPortlet {
 			saveLinkList(content);
 			FileUtils.copyFileToFile(fxConfFile, new File(fxConfFile + ".bak"), true);
 		} else {
-			XStream xstream = XStreamHelper.createXStreamInstance();
-			xstream.alias("LinksPortlet", Map.class);
-			xstream.alias(ELEM_LINK, PortletLink.class);
-			xstream.alias(ELEM_INSTITUTION, PortletInstitution.class);
-			xstream.aliasAttribute(PortletInstitution.class, ATTR_INSTITUTION_NAME, ATTR_INSTITUTION_NAME);
 			content = (HashMap<String, PortletInstitution>) XStreamHelper.readObject(xstream, fxConfXStreamFile);
 		}		
 	}
 	
-	public static boolean saveLinkList(HashMap<String, PortletInstitution> portletMap){
-		XStream xstream = XStreamHelper.createXStreamInstance();
-		xstream.alias("LinksPortlet", Map.class);
-		xstream.alias(ELEM_LINK, PortletLink.class);
-		xstream.alias(ELEM_INSTITUTION, PortletInstitution.class);
-		xstream.aliasAttribute(PortletInstitution.class, ATTR_INSTITUTION_NAME, ATTR_INSTITUTION_NAME);
-		String output = xstream.toXML(portletMap);
+	public static boolean saveLinkList(Map<String, PortletInstitution> portletMap){
 		XStreamHelper.writeObject(xstream, fxConfXStreamFile, portletMap);
-		return (output.length() != 0);		
+		return true;		
 	}
 	
 	public static PortletLink getLinkByIdentifier(String identifier){

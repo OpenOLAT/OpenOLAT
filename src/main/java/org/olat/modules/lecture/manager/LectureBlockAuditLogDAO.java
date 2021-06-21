@@ -69,6 +69,7 @@ public class LectureBlockAuditLogDAO {
 	
 	private static final XStream lectureBlockXStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
+		XStreamHelper.allowDefaultPackage(lectureBlockXStream);
 		lectureBlockXStream.ignoreUnknownElements();
 		
 		lectureBlockXStream.alias("lectureBlock", LectureBlockImpl.class);
@@ -85,6 +86,7 @@ public class LectureBlockAuditLogDAO {
 
 	private static final XStream rollCallXStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
+		XStreamHelper.allowDefaultPackage(rollCallXStream);
 		rollCallXStream.alias("rollcall", LectureBlockRollCallImpl.class);
 		rollCallXStream.ignoreUnknownElements();
 		rollCallXStream.omitField(LectureBlockRollCallImpl.class, "identity");
@@ -94,6 +96,7 @@ public class LectureBlockAuditLogDAO {
 	
 	private static final XStream summaryXStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
+		XStreamHelper.allowDefaultPackage(summaryXStream);
 		summaryXStream.alias("summary", LectureParticipantSummaryImpl.class);
 		summaryXStream.ignoreUnknownElements();
 		summaryXStream.omitField(LectureParticipantSummaryImpl.class, "identity");
@@ -102,6 +105,7 @@ public class LectureBlockAuditLogDAO {
 	
 	private static final XStream absenceNoticeXStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
+		XStreamHelper.allowDefaultPackage(absenceNoticeXStream);
 		absenceNoticeXStream.alias("absenceNotice", AbsenceNoticeImpl.class);
 		absenceNoticeXStream.ignoreUnknownElements();
 		absenceNoticeXStream.omitField(LectureParticipantSummaryImpl.class, "identity");
@@ -113,6 +117,7 @@ public class LectureBlockAuditLogDAO {
 	
 	private static final XStream absenceNoticeRelationsXStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
+		XStreamHelper.allowDefaultPackage(absenceNoticeRelationsXStream);
 		absenceNoticeRelationsXStream.alias("absenceNoticeRelations", AbsenceNoticeRelationsAuditImpl.class);
 		absenceNoticeRelationsXStream.ignoreUnknownElements();
 		

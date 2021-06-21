@@ -46,8 +46,6 @@ public class GroupXStream {
 	
 	public GroupXStream() {
 		xstream = XStreamHelper.createXStreamInstance();
-		
-		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
 				CollabTools.class, Group.class, Area.class, AreaCollection.class, GroupCollection.class,
 				OLATGroupExport.class, ArrayList.class

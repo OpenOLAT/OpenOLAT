@@ -52,6 +52,7 @@ public class QuestionItemAuditLogDAO {
 	
 	private static final XStream qitemXStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
+		XStreamHelper.allowDefaultPackage(qitemXStream);
 		qitemXStream.alias("questionItem", QuestionItemImpl.class);
 		qitemXStream.alias("taxonomyLevel", TaxonomyLevelImpl.class);
 		qitemXStream.alias("educationalContext", QEducationalContext.class);

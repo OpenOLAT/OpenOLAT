@@ -91,6 +91,7 @@ public class LTIManagerImpl implements LTIManager {
 	private BaseSecurity securityManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
 	private HttpClientService httpClientService;
 
 	@Override

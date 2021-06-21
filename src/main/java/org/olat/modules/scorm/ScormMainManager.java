@@ -56,7 +56,6 @@ public class ScormMainManager {
 	private static final Logger log = Tracing.createLoggerFor(ScormMainManager.class);
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(configXstream);
 		Class<?>[] types = new Class[] {
 				ScormPackageConfig.class, DeliveryOptions.class
 			};

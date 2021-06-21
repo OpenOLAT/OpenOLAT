@@ -37,7 +37,6 @@ public class FormXStream {
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 
 	static {
-		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] { Choice.class, Choices.class, ChoiceSelectedCondition.class, Container.class,
 				Disclaimer.class, FileStoredData.class, FileUpload.class, Form.class, HTMLParagraph.class,
 				HTMLRaw.class, Image.class, ImageSettings.class, InformationType.class, MultipleChoice.class,
