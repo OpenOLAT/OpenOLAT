@@ -127,7 +127,7 @@ public class GroupAssessmentController extends FormBasicController {
 		this.courseEntry = courseEntry;
 		this.assessedGroup = assessedGroup;
 
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);;
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		withScore = Mode.none != assessmentConfig.getScoreMode();
 		withPassed = Mode.none != assessmentConfig.getPassedMode();
 		if(withPassed) {
@@ -601,7 +601,7 @@ public class GroupAssessmentController extends FormBasicController {
 
 		if(withComment) {
 			String comment = groupCommentEl.getValue();
-			if(StringHelper.containsNonWhitespace(comment)) {
+			if(comment != null) {
 				for(AssessmentRow row:rows) {
 					UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 					courseAssessmentService.updatedUserComment(gtaNode, comment, userCourseEnv, getIdentity());
