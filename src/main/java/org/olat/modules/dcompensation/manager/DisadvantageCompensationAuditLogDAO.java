@@ -48,6 +48,7 @@ public class DisadvantageCompensationAuditLogDAO {
 	
 	private static final XStream disadvantageCompensationXStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
+		XStreamHelper.allowDefaultPackage(disadvantageCompensationXStream);
 		disadvantageCompensationXStream.alias("disadvantageCompensation", DisadvantageCompensationImpl.class);
 		disadvantageCompensationXStream.ignoreUnknownElements();
 		

@@ -60,6 +60,7 @@ public class BlogEntryMediaController extends BasicController {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
+		XStreamHelper.allowDefaultPackage(xstream);
 		xstream.alias("item", ItemImpl.class);
 	}
 	

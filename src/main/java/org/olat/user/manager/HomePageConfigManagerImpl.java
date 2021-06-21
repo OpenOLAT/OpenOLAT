@@ -54,7 +54,6 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 	
 	private static XStream homeConfigXStream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(homeConfigXStream);
 		Class<?>[] types = new Class[] {
 				HomePageConfig.class
 		};
@@ -85,8 +84,8 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 					}
 				}
 			} catch (Exception e) {
-				log.error("Error while loading homepage config from path::" + configFile.getAbsolutePath() + ", fallback to default configuration",
-						e);
+				log.error("Error while loading homepage config from path::{}, fallback to default configuration",
+						configFile.getAbsolutePath(), e);
 				FileUtils.deleteFile(configFile);
 				retVal = loadAndSaveDefaults(identity);
 				// show message to user

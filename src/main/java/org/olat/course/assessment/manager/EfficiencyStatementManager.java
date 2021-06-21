@@ -103,7 +103,18 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	@Autowired
 	private UserManager userManager;
 	
-	private final XStream xstream = XStreamHelper.createXStreamInstance();
+	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+	static {
+		XStreamHelper.allowDefaultPackage(xstream);
+	}
+	
+	public static EfficiencyStatement fromXML(String xml) {
+		return (EfficiencyStatement)xstream.fromXML(xml);
+	}
+	
+	public static String toXML(EfficiencyStatement statement) {
+		return xstream.toXML(statement);
+	}
 
 	/**
 	 * Updates the users efficiency statement for this course. <p>
@@ -341,7 +352,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		}
 
 		efficiencyProperty.setLastModified(new Date());
-		efficiencyProperty.setStatementXml(xstream.toXML(efficiencyStatement));
+		efficiencyProperty.setStatementXml(toXML(efficiencyStatement));
 	}
 	
 	/**
@@ -377,7 +388,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		if(s == null || s.getStatementXml() == null) {
 			return null;
 		}
-		return (EfficiencyStatement)xstream.fromXML(s.getStatementXml());
+		return fromXML(s.getStatementXml());
 	}
 	
 	public EfficiencyStatement getUserEfficiencyStatementByResourceKey(Long resourceKey, Identity identity){
@@ -393,7 +404,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		if(statement.isEmpty() || statement.get(0).getStatementXml() == null) {
 			return null;
 		}
-		return (EfficiencyStatement)xstream.fromXML(statement.get(0).getStatementXml());
+		return fromXML(statement.get(0).getStatementXml());
 	}
 	
 
@@ -532,7 +543,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		if(statement.isEmpty() || !StringHelper.containsNonWhitespace(statement.get(0).getStatementXml())) {
 			return null;
 		}
-		return (EfficiencyStatement)xstream.fromXML(statement.get(0).getStatementXml());
+		return fromXML(statement.get(0).getStatementXml());
 	}
 	
 	public UserEfficiencyStatementLight getUserEfficiencyStatementLightByKey(Long key) {
@@ -648,7 +659,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 				.getResultList();
 		for(UserEfficiencyStatementImpl statement:statements) {
 			if(StringHelper.containsNonWhitespace(statement.getStatementXml())) {
-				EfficiencyStatement s = (EfficiencyStatement)xstream.fromXML(statement.getStatementXml());
+				EfficiencyStatement s = fromXML(statement.getStatementXml());
 				efficiencyStatements.add(s);
 			}
 		}

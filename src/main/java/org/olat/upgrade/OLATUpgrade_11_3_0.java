@@ -33,11 +33,14 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.xml.XStreamHelper;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMetadata;
 import org.olat.modules.video.manager.VideoManagerImpl;
 import org.olat.modules.video.model.VideoMetaImpl;
+import org.olat.modules.video.model.VideoMetadataImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +54,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OLATUpgrade_11_3_0 extends OLATUpgrade {
 
 	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_11_3_0.class);
+
+	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
 	
 	private static final String VIDEO_XML = "VIDEO XML";
 	private static final String VERSION = "OLAT_11.3.0";
@@ -120,8 +125,8 @@ public class OLATUpgrade_11_3_0 extends OLATUpgrade {
 			}
 			// update track files on file system
 			VFSContainer masterContainer = videoManager.getMasterContainer(videoResource);
-			if (videoManager.isMetadataFileValid(videoResource)) {
-				VideoMetadata metafromXML = videoManager.readVideoMetadataFile(videoResource);
+			if (isMetadataFileValid(videoResource)) {
+				VideoMetadata metafromXML = readVideoMetadataFile(videoResource);
 				for (Entry<String, String> track : metafromXML.getAllTracks().entrySet()) {
 					VFSItem item = masterContainer.resolve(track.getValue());
 					if (item != null && item instanceof VFSLeaf) {
@@ -163,6 +168,32 @@ public class OLATUpgrade_11_3_0 extends OLATUpgrade {
 		} catch (Exception e) {
 			log.error("Update Metadata failed",e);
 			return false;
+		}
+	}
+	
+	private boolean isMetadataFileValid(OLATResource videoResource) {
+		VFSContainer baseContainer = FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		VFSLeaf metaDataFile = (VFSLeaf) baseContainer.resolve(FILENAME_VIDEO_METADATA_XML);
+		try {
+			VideoMetadata meta = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
+			return meta != null;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	private VideoMetadata readVideoMetadataFile(OLATResource videoResource){
+		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		VFSLeaf metaDataFile = (VFSLeaf) baseContainer.resolve(FILENAME_VIDEO_METADATA_XML);
+		try {
+			return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
+		} catch (Exception e) {
+			log.error("Error while parsing XStream file for videoResource::{}", videoResource, e);
+			// return an empty, so at least it displays something and not an error
+			VideoMetadata meta =  new VideoMetadataImpl();
+			meta.setWidth(800);
+			meta.setHeight(600);
+			return meta;
 		}
 	}
 }

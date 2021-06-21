@@ -25,7 +25,9 @@ import java.io.OutputStream;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.video.VideoMeta;
+import org.olat.modules.video.VideoMetadata;
 import org.olat.modules.video.model.VideoMetaImpl;
+import org.olat.modules.video.model.VideoMetadataImpl;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.ExplicitTypePermission;
@@ -40,9 +42,9 @@ public class VideoMetaXStream {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
-				VideoMeta.class, VideoMetaImpl.class
+				VideoMeta.class, VideoMetaImpl.class,
+				VideoMetadata.class, VideoMetadataImpl.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.ignoreUnknownElements();

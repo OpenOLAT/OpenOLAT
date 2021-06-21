@@ -44,6 +44,7 @@ public class LandingPagesModule extends AbstractSpringModule {
 	private static final XStream rulesXStream;
 	static {
 		rulesXStream = XStreamHelper.createXStreamInstance();
+		XStreamHelper.allowDefaultPackage(rulesXStream);
 		rulesXStream.alias("rules", Rules.class);
 		rulesXStream.alias("rule", Rule.class);
 	}

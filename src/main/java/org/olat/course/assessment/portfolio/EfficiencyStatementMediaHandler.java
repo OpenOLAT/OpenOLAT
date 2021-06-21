@@ -37,9 +37,9 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.EfficiencyStatement;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
@@ -57,8 +57,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.thoughtworks.xstream.XStream;
-
 /**
  * 
  * Initial date: 24.06.2016<br>
@@ -69,8 +67,7 @@ import com.thoughtworks.xstream.XStream;
 public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	
 	private static final Logger log = Tracing.createLoggerFor(EfficiencyStatementMediaHandler.class);
-	private static final XStream myXStream = XStreamHelper.createXStreamInstance();
-	
+
 	public static final String EFF_MEDIA = "EfficiencyStatement";
 	
 	@Autowired
@@ -114,7 +111,7 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 		Media media = null;
 		if (mediaObject instanceof EfficiencyStatement) {
 			EfficiencyStatement statement = (EfficiencyStatement) mediaObject;
-			String xml = myXStream.toXML(statement); 
+			String xml = EfficiencyStatementManager.toXML(statement); 
 			media = mediaDao.createMedia(title, description, xml, EFF_MEDIA, businessPath, null, 90, author);
 			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
 					LoggingResourceable.wrap(media));
@@ -128,7 +125,7 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 		EfficiencyStatement statement = null;
 		if(StringHelper.containsNonWhitespace(statementXml)) {
 			try {
-				statement = (EfficiencyStatement)myXStream.fromXML(statementXml);
+				statement = EfficiencyStatementManager.fromXML(statementXml);
 			} catch (Exception e) {
 				log.error("Cannot load efficiency statement from artefact", e);
 			}
@@ -148,7 +145,7 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 		EfficiencyStatement statement = null;
 		if(StringHelper.containsNonWhitespace(media.getContent())) {
 			try {
-				statement = (EfficiencyStatement)myXStream.fromXML(media.getContent());
+				statement = EfficiencyStatementManager.fromXML(media.getContent());
 			} catch (Exception e) {
 				log.error("Cannot load efficiency statement from artefact", e);
 			}

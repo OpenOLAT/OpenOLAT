@@ -64,6 +64,7 @@ public class UserInterestsPropertyHandler extends AbstractUserPropertyHandler {
 	
 	private static final XStream interestsXStream = XStreamHelper.createXStreamInstance();
 	static {
+		XStreamHelper.allowDefaultPackage(interestsXStream);
 		interestsXStream.alias("category", UserInterestsCategory.class);
 		interestsXStream.alias("categories", List.class);
 		interestsXStream.addImplicitCollection(UserInterestsCategory.class, "subcategories");

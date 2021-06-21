@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -79,6 +80,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * Description:
@@ -92,7 +94,10 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	
 	private static final XStream xmlXStream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(xmlXStream);
+		Class<?>[] types = new Class[] {
+				HashMap.class
+			};
+		xmlXStream.addPermission(new ExplicitTypePermission(types));
 	}
 
 	private static final int VALID_UNTIL_30_DAYS = 30*24;

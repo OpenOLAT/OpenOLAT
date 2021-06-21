@@ -42,7 +42,6 @@ public class FormatConfigHelper {
 	
 	private static final XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(configXstream);
 		Class<?>[] types = new Class[] { ExportFormat.class };
 		configXstream.addPermission(new ExplicitTypePermission(types));
 		configXstream.alias(QTI_EXPORT_ITEM_FORMAT_CONFIG, ExportFormat.class);

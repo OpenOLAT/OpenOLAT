@@ -38,6 +38,7 @@ public class ReminderRulesXStream {
 	
 	private static final XStream ruleXStream = XStreamHelper.createXStreamInstance();
 	static {
+		XStreamHelper.allowDefaultPackage(ruleXStream);
 		ruleXStream.alias("rule", org.olat.modules.reminder.model.ReminderRuleImpl.class);
 		ruleXStream.alias("rules", org.olat.modules.reminder.model.ReminderRules.class);
 		ruleXStream.alias("reminders", org.olat.modules.reminder.model.ImportExportReminders.class);

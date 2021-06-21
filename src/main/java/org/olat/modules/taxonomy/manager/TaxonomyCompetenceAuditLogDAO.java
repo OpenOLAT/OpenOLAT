@@ -46,6 +46,7 @@ public class TaxonomyCompetenceAuditLogDAO {
 	
 	private static final XStream competenceXStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
+		XStreamHelper.allowDefaultPackage(competenceXStream);
 		competenceXStream.alias("competence", TaxonomyCompetenceImpl.class);
 		competenceXStream.alias("taxonomyLevel", TaxonomyLevelImpl.class);
 		competenceXStream.ignoreUnknownElements();

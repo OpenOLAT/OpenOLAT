@@ -50,6 +50,9 @@ import com.thoughtworks.xstream.XStream;
 public class PersistentTaskDAO {
 	
 	private static XStream xstream = XStreamHelper.createXStreamInstance();
+	static {
+		XStreamHelper.allowDefaultPackage(xstream);
+	}
 	
 	@Autowired
 	private DB dbInstance;
@@ -61,7 +64,7 @@ public class PersistentTaskDAO {
 		ptask.setLastModified(currentDate);
 		ptask.setName(name);
 		ptask.setStatus(TaskStatus.newTask);
-		ptask.setTask(xstream.toXML(task));
+		ptask.setTask(toXML(task));
 		dbInstance.getCurrentEntityManager().persist(ptask);
 		return ptask;
 	}
@@ -78,7 +81,7 @@ public class PersistentTaskDAO {
 		ptask.setResource(resource);
 		ptask.setResSubPath(resSubPath);
 		ptask.setStatus(TaskStatus.newTask);
-		ptask.setTask(xstream.toXML(task));
+		ptask.setTask(toXML(task));
 		dbInstance.getCurrentEntityManager().persist(ptask);
 		return ptask;
 	}
@@ -189,7 +192,7 @@ public class PersistentTaskDAO {
 			ptask.setScheduledDate(scheduledDate);
 			ptask.setStatus(TaskStatus.newTask);
 			ptask.setStatusBeforeEditStr(null);
-			ptask.setTask(xstream.toXML(runnableTask));
+			ptask.setTask(toXML(runnableTask));
 
 			ptask = dbInstance.getCurrentEntityManager().merge(ptask);
 			if(modifier != null) {
@@ -247,6 +250,11 @@ public class PersistentTaskDAO {
 				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
 		task.setStatus(TaskStatus.failed);
 		dbInstance.commit();
+	}
+	
+	
+	protected static String toXML(Serializable task) {
+		return xstream.toXML(task);
 	}
 	
 	public Runnable deserializeTask(PersistentTask task) {

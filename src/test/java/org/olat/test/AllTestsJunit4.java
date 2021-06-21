@@ -81,6 +81,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.openxml.OpenXMLDocumentTest.class,
 	org.olat.core.util.pdf.PdfDocumentTest.class,
 	org.olat.core.util.xml.XMLDigitalSignatureUtilTest.class,
+	org.olat.core.util.xml.XStreamHelperTest.class,
 	org.olat.core.configuration.EDConfigurationTest.class,
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
 	org.olat.core.id.context.HistoryManagerTest.class,
@@ -100,6 +101,7 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.cluster.jms.JMSTest.class,
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,
 	org.olat.commons.coordinate.CoordinatorTest.class,
+	org.olat.core.commons.modules.glossary.GlossaryItemManagerTest.class,
 	org.olat.core.commons.services.csp.manager.CSPManagerTest.class,
 	org.olat.core.commons.services.doceditor.manager.DocEditorIdentityServiceTest.class,
 	org.olat.core.commons.services.doceditor.manager.AccessDAOTest.class,
@@ -575,7 +577,8 @@ import org.junit.runners.Suite;
 	 * tree is not available
 	 */
 	org.olat.core.commons.services.scheduler.SchedulerTest.class,
-	org.olat.upgrade.UpgradeDefinitionTest.class
+	org.olat.upgrade.UpgradeDefinitionTest.class,
+	org.olat.upgrade.UpgradeManagerTest.class
 })
 public class AllTestsJunit4 {
 	//

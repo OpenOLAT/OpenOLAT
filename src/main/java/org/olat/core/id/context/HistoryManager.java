@@ -57,6 +57,9 @@ public class HistoryManager {
 	private static XStream historyReadStream = XStreamHelper.createXStreamInstance();
 	private static XStream historyWriteStream = XStreamHelper.createXStreamInstance();
 	static {
+		XStreamHelper.allowDefaultPackage(historyReadStream);
+		XStreamHelper.allowDefaultPackage(historyWriteStream);
+		
 		//xstream config
 		historyReadStream.omitField(BusinessGroup.class, "type");
 		historyReadStream.omitField(BusinessGroup.class, "ownerGroup");

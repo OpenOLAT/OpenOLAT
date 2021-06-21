@@ -237,7 +237,7 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 			Item xmlItem = QTIEditHelper.readItemXml(leaf);
 			return xmlItem.getTitle();
 		} catch (NullPointerException e) {
-			log.warn("Cannot read files from dir: " + item.getDirectory());
+			log.warn("Cannot read files from dir: {}", item.getDirectory());
 		}
 		return null;
 	}
@@ -247,6 +247,7 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 		if (!uhd.getBooleanDataValue(MIGRATE_DIALOG)) {
 			try {
 				XStream xstream = XStreamHelper.createXStreamInstance();
+				XStreamHelper.allowDefaultPackage(xstream);
 				xstream.alias("org.olat.modules.dialog.DialogPropertyElements", DialogPropertyElements.class);
 				xstream.alias("org.olat.modules.dialog.DialogElement", DialogElement.class);
 
