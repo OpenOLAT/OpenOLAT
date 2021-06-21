@@ -89,6 +89,7 @@ public class RepositoryEntryImportExport {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
+		XStreamHelper.allowDefaultPackage(xstream);
 		xstream.alias(PROP_ROOT, RepositoryEntryImport.class);
 		xstream.aliasField(PROP_SOFTKEY, RepositoryEntryImport.class, "softkey");
 		xstream.aliasField(PROP_RESOURCENAME, RepositoryEntryImport.class, "resourcename");

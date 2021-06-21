@@ -34,12 +34,19 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.thoughtworks.xstream.XStream;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("mapperDao")
 public class MapperDAO {
+	
+	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+	static {
+		XStreamHelper.allowDefaultPackage(xstream);
+	}
 	
 	@Autowired
 	private DB dbInstance;
@@ -66,11 +73,19 @@ public class MapperDAO {
 		}
 		m.setOriginalSessionId(sessionId);
 		
-		String configuration = XStreamHelper.createXStreamInstance().toXML(mapper);
+		String configuration = xstream.toXML(mapper);
 		m.setXmlConfiguration(configuration);
 		
 		dbInstance.getCurrentEntityManager().persist(m);
 		return m;
+	}
+	
+	protected static String toXml(Object mapper) {
+		return xstream.toXML(mapper);
+	}
+	
+	public static Object fromXML(String configuration) {
+		return xstream.fromXML(configuration);
 	}
 	
 	/**
@@ -82,7 +97,7 @@ public class MapperDAO {
 	 * @return
 	 */
 	public boolean updateConfiguration(String mapperId, Serializable mapper, int expirationTime) {
-		String configuration = XStreamHelper.createXStreamInstance().toXML(mapper);
+		String configuration = xstream.toXML(mapper);
 		Date currentDate = new Date();
 		Date expirationDate = null;
 		if(expirationTime > 0) {
@@ -120,7 +135,7 @@ public class MapperDAO {
 		if(pm != null && StringHelper.containsNonWhitespace(pm.getXmlConfiguration())) {
 			String configuration = pm.getXmlConfiguration();
 			
-			Object obj = XStreamHelper.createXStreamInstance().fromXML(configuration);
+			Object obj = xstream.fromXML(configuration);
 			if(obj instanceof Mapper) {
 				return (Mapper)obj;
 			}

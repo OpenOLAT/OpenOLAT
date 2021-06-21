@@ -22,12 +22,16 @@ package org.olat.test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.file.Path;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -44,9 +48,15 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
+	
+	private static final Logger log = Tracing.createLoggerFor(VFSJavaIOFile.class);
 
 	private final String name;
 	private final File file;
+	
+	public VFSJavaIOFile(URI uri) {
+		this(new File(uri));
+	}
 	
 	public VFSJavaIOFile(File file) {
 		this(file.getName(), file);
@@ -189,6 +199,11 @@ public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 
 	@Override
 	public OutputStream getOutputStream(boolean append) {
-		return null;
+		try {
+			return new FileOutputStream(file);
+		} catch (FileNotFoundException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 }

@@ -44,6 +44,8 @@ public interface AppointmentsSecurityCallback {
 	
 	public boolean canJoinBBBMeeting(Appointment appointment, Collection<Organizer> organizers, Collection<Participation> participations);
 	
+	public boolean isMeetingOpen(Appointment appointment, Collection<Organizer> organizers);
+	
 	public boolean canWatchRecording(Collection<Organizer> organizers, Collection<Participation> participations);
 
 	public boolean canJoinTeamsMeeting(Appointment appointment, Collection<Organizer> organizers, List<Participation> participations);

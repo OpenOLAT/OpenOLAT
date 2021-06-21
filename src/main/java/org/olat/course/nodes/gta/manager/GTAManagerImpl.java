@@ -130,6 +130,9 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	private static final Logger log = Tracing.createLoggerFor(GTAManagerImpl.class);
 	
 	private static final XStream taskDefinitionsXstream = XStreamHelper.createXStreamInstance();
+	static {
+		XStreamHelper.allowDefaultPackage(taskDefinitionsXstream);
+	}
 	
 	@Autowired
 	private DB dbInstance;

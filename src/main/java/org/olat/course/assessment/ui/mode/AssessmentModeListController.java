@@ -324,7 +324,11 @@ public class AssessmentModeListController extends FormBasicController implements
 		removeAsListenerAndDispose(editCtrl);
 		
 		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
-		if(reloadedMode.getLectureBlock() != null) {
+		if(reloadedMode == null) {
+			showWarning("warning.assessment.mode.already.deleted");
+			loadModel();
+			return;
+		} else if(reloadedMode.getLectureBlock() != null) {
 			editCtrl = new AssessmentModeForLectureEditController(ureq, getWindowControl(), entry.getOlatResource(), mode);
 		} else {
 			editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry.getOlatResource(), mode);
@@ -351,12 +355,18 @@ public class AssessmentModeListController extends FormBasicController implements
 	private void doConfirmStop(UserRequest ureq, AssessmentMode mode) {
 		if(guardModalController(stopCtrl)) return;
 		
-		stopCtrl = new ConfirmStopAssessmentModeController(ureq, getWindowControl(), mode);
-		listenTo(stopCtrl);
-		
-		String title = translate("confirm.stop.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", stopCtrl.getInitialComponent(), true, title, true);
-		cmc.activate();
-		listenTo(cmc);
+		mode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
+		if(mode == null) {
+			showWarning("warning.assessment.mode.already.deleted");
+			loadModel();
+		} else {
+			stopCtrl = new ConfirmStopAssessmentModeController(ureq, getWindowControl(), mode);
+			listenTo(stopCtrl);
+			
+			String title = translate("confirm.stop.title");
+			cmc = new CloseableModalController(getWindowControl(), "close", stopCtrl.getInitialComponent(), true, title, true);
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 }

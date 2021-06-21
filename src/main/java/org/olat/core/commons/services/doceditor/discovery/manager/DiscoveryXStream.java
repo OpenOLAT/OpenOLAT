@@ -39,7 +39,6 @@ class DiscoveryXStream {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
 				DiscoveryImpl.class, NetZoneImpl.class, AppImpl.class, ActionImpl.class, ProofKeyImpl.class
 		};

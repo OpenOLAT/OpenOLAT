@@ -94,7 +94,7 @@ public class SurveyRunController extends BasicController {
 	private void initVelocityContainer(UserRequest ureq) {
 		mainVC.clear();
 		
-		if (secCallback.canRunCommands()) {
+		if (secCallback.canResetAll()) {
 			resetLink = LinkFactory.createButtonSmall("run.reset", mainVC, this);
 			resetLink.setIconLeftCSS("o_icon o_icon-fw o_icon_surv_reset");
 			mainVC.contextPut("withCmds", Boolean.TRUE);

@@ -25,7 +25,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -65,6 +65,9 @@ public class BulkSMSProvider extends AbstractSpringModule implements MessagesSPI
 	private String tokenId;
 	@Value("${bulksms.token.secret:}")
 	private String tokenSecret;
+	
+	@Autowired
+	private HttpClientService httpClientService;
 	
 	@Autowired
 	public BulkSMSProvider(CoordinatorManager coordinatorManager) {
@@ -137,7 +140,7 @@ public class BulkSMSProvider extends AbstractSpringModule implements MessagesSPI
 		HttpEntity smsEntity = new StringEntity(objectStr, ContentType.APPLICATION_JSON);
 		send.setEntity(smsEntity);
 		
-		try(CloseableHttpClient httpclient = HttpClientBuilder.create().build();
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClient();
 				CloseableHttpResponse response = httpclient.execute(send)) {
 			int returnCode = response.getStatusLine().getStatusCode();
 			String responseString = EntityUtils.toString(response.getEntity());

@@ -127,15 +127,16 @@ public class ReminderRuleDAO {
 		return dateMap;
 	}
 	
-	public Map<Long,Date> getInitialAttemptDates(RepositoryEntryRef entry, CourseNode node, List<Identity> identities) {
+	public Map<Long,Date> getLastAttemptsDates(RepositoryEntryRef entry, CourseNode node, List<Identity> identities) {
 		if(identities == null || identities.isEmpty()) {
 			return new HashMap<>();
 		}
 
 		Set<Long> identityKeySet = null;
 		StringBuilder sb = new StringBuilder();
-		sb.append("select data.identity.key, data.creationDate from assessmententry data")
-		  .append(" where data.repositoryEntry.key=:courseEntryKey and data.subIdent=:subIdent");
+		sb.append("select data.identity.key, data.lastAttempt from assessmententry data")
+		  .append(" where data.repositoryEntry.key=:courseEntryKey and data.subIdent=:subIdent")
+		  .append(" and data.lastAttempt is not null");
 		if(identities.size() < 50) {
 			sb.append(" and data.identity.key in (:identityKeys)");
 		}
@@ -155,8 +156,8 @@ public class ReminderRuleDAO {
 		for(Object[] infos:infoList) {
 			Long identityKey = (Long)infos[0];
 			if(identityKeySet == null || identityKeySet.contains(identityKey)) {
-				Date attempts = (Date)infos[1];
-				dateMap.put(identityKey, attempts);
+				Date lastAttempt = (Date)infos[1];
+				dateMap.put(identityKey, lastAttempt);
 			}
 		}
 		return dateMap;

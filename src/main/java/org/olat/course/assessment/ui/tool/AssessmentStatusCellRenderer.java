@@ -23,7 +23,6 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -37,7 +36,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentStatusCellRenderer implements FlexiCellRenderer, CustomCellRenderer {
+public class AssessmentStatusCellRenderer implements FlexiCellRenderer {
 	
 	private final Translator trans;
 	
@@ -48,11 +47,6 @@ public class AssessmentStatusCellRenderer implements FlexiCellRenderer, CustomCe
 	public AssessmentStatusCellRenderer(Translator trans) {
 		this.trans = trans;
 	}
-	
-	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		render(renderer, sb, val, -1, null, null, renderer.getTranslator());
-	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue,
@@ -60,14 +54,21 @@ public class AssessmentStatusCellRenderer implements FlexiCellRenderer, CustomCe
 		if(cellValue instanceof AssessmentEntryStatus) {
 			AssessmentEntryStatus status = (AssessmentEntryStatus)cellValue;
 			switch(status) {
-				case notReady: target.append("<i class='o_icon o_icon_status_not_ready o_icon-fw'> </i> ").append(trans.translate("assessment.status.notReady")); break;
-				case notStarted: target.append("<i class='o_icon o_icon_status_not_started o_icon-fw'> </i> ").append(trans.translate("assessment.status.notStart")); break;
-				case inProgress: target.append("<i class='o_icon o_icon_status_in_progress o_icon-fw'> </i> ").append(trans.translate("assessment.status.inProgress")); break;
-				case inReview: target.append("<i class='o_icon o_icon_status_in_review o_icon-fw'> </i> ").append(trans.translate("assessment.status.inReview")); break;
-				case done: target.append("<i class='o_icon o_icon_status_done o_icon-fw'> </i> ").append(trans.translate("assessment.status.done")); break;
+				case notReady: render(renderer, target, "o_icon_status_not_ready", "assessment.status.notReady"); break;
+				case notStarted: render(renderer, target, "o_icon_status_not_started", "assessment.status.notStart"); break;
+				case inProgress: render(renderer, target, "o_icon_status_in_progress", "assessment.status.inProgress"); break;
+				case inReview: render(renderer, target, "o_icon_status_in_review", "assessment.status.inReview"); break;
+				case done: render(renderer, target, "o_icon_status_done", "assessment.status.done"); break;
 			}	
 		} else {
 			target.append("-");
 		}
+	}
+	
+	private void render(Renderer renderer, StringOutput target, String iconCss, String i18nKey) {
+		if(renderer != null) {
+			target.append("<i class='o_icon ").append(iconCss).append(" o_icon-fw'> </i> ");
+		}
+		target.append(trans.translate(i18nKey));
 	}
 }

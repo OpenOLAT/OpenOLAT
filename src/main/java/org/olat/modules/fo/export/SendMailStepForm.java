@@ -76,12 +76,15 @@ public class SendMailStepForm extends StepFormBasicController {
 	private MailTemplate mailTemplate;
 	private MailTemplateForm templateForm;	
 	
-	private Message startMessage, parentMessage;
+	private Message startMessage;
+	private Message parentMessage;
 	
 	private List<Identity> threadMembers;
 	private Map<Identity, String> pseudonymes;
 	
-	private String targetForum, targetCourseTitle, startMessageTitle;
+	private String targetForum;
+	private String targetCourseTitle;
+	private String startMessageTitle;
 	
 	@Autowired
 	private ForumManager forumManager;
@@ -99,7 +102,7 @@ public class SendMailStepForm extends StepFormBasicController {
 		ICourse course = (ICourse)getFromRunContext(ICOURSE);		
 		targetCourseTitle = course.getCourseTitle();
 		RepositoryEntry startCourse = (RepositoryEntry)getFromRunContext(START_COURSE);
-		String startCourseTitle = startCourse.getDisplayname();
+		String startCourseTitle = startCourse == null ?  "" : startCourse.getDisplayname();
 		startMessage = (Message)getFromRunContext(MESSAGE_TO_MOVE);
 		if (startMessage.getThreadtop() == null) {
 			comment = thread;
@@ -169,14 +172,14 @@ public class SendMailStepForm extends StepFormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		if (mailTemplate == null || templateForm == null) {
 			allOk &= false;
 		}
 		if (getIdentity() == null) {
 			allOk &= false;
 		}
-		return allOk &= super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

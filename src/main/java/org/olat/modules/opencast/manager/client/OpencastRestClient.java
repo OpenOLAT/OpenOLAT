@@ -23,18 +23,17 @@ import java.net.URI;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.modules.opencast.AuthDelegate;
 import org.olat.modules.opencast.OpencastModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,15 +54,11 @@ public class OpencastRestClient {
 	
 	private static final Event[] NO_EVENTS = new Event[]{};
 	private static final Series[] NO_SERIES = new Series[]{};
-	private static final int TIMEOUT_5000_MILLIS = 5000;
-	private static final RequestConfig REQUEST_CONFIG = RequestConfig.copy(RequestConfig.DEFAULT)
-			.setSocketTimeout(TIMEOUT_5000_MILLIS)
-			.setConnectTimeout(TIMEOUT_5000_MILLIS)
-			.setConnectionRequestTimeout(TIMEOUT_5000_MILLIS)
-			.build();
 	
 	@Autowired
 	private OpencastModule opencastModule;
+	@Autowired
+	private HttpClientService httpClientService;
 	
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -72,7 +67,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = HttpClientBuilder.create().build();
+		try(CloseableHttpClient client = httpClientService.createHttpClient();
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -92,7 +87,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = HttpClientBuilder.create().build();
+		try(CloseableHttpClient client = httpClientService.createHttpClient();
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -127,7 +122,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request, params.getAuthDelegate());
 		
-		try(CloseableHttpClient client = HttpClientBuilder.create().build();
+		try(CloseableHttpClient client = httpClientService.createHttpClient();
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -159,7 +154,7 @@ public class OpencastRestClient {
 		HttpDelete request = new HttpDelete(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = HttpClientBuilder.create().build();
+		try(CloseableHttpClient client = httpClientService.createHttpClient();
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -177,7 +172,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = HttpClientBuilder.create().build();
+		try(CloseableHttpClient client = httpClientService.createHttpClient();
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -212,7 +207,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request, params.getAuthDelegate());
 		
-		try(CloseableHttpClient client = HttpClientBuilder.create().build();
+		try(CloseableHttpClient client = httpClientService.createHttpClient();
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -240,7 +235,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = HttpClientBuilder.create().build();
+		try(CloseableHttpClient client = httpClientService.createHttpClient();
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -260,7 +255,7 @@ public class OpencastRestClient {
 		HttpDelete request = new HttpDelete(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = HttpClientBuilder.create().build();
+		try(CloseableHttpClient client = httpClientService.createHttpClient();
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -283,7 +278,6 @@ public class OpencastRestClient {
 	}
 
 	private void decorateRequest(HttpRequestBase request) {
-		request.setConfig(REQUEST_CONFIG);
 		request.setHeader(HttpHeaders.AUTHORIZATION, opencastModule.getApiAuthorizationHeader());
 	}
 }

@@ -204,7 +204,6 @@ public class VideoQualityTableFormController extends FormBasicController {
 			VideoTranscoding videoTranscoding = (VideoTranscoding) link.getUserObject();
 			if (videoTranscoding == null) {
 				// this is the master video
-//				VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
 				VideoMeta videoMetadata = videoManager.getVideoMetadata(videoResource);
 				previewVC.contextPut("width", videoMetadata.getWidth());
 				previewVC.contextPut("height", videoMetadata.getHeight());

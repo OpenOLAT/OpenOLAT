@@ -131,7 +131,9 @@ public class CourseWebService {
 
 	private static final Logger log = Tracing.createLoggerFor(CourseWebService.class);
 	private static final XStream myXStream = XStreamHelper.createXStreamInstance();
-
+	static {
+		XStreamHelper.allowDefaultPackage(myXStream);
+	}
 	
 	public static final CacheControl cc = new CacheControl();
 	static {
@@ -694,6 +696,7 @@ public class CourseWebService {
 		Date lastModified = new Date(runStructureItem.getLastModified());
 		Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
 		if(response == null) {
+			//TODO xstream
 			return Response.ok(myXStream.toXML(course.getRunStructure())).build();
 		}
 		return response.build();	

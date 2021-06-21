@@ -20,16 +20,16 @@
 package org.olat.core.commons.services.doceditor.discovery.manager;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.discovery.Discovery;
 import org.olat.core.commons.services.doceditor.discovery.model.DiscoveryImpl;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.httpclient.HttpClientService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -43,12 +43,8 @@ class DiscoveryClient {
 	
 	private static final Logger log = Tracing.createLoggerFor(DiscoveryClient.class);
 	
-	private static final int TIMEOUT_5000_MILLIS = 5000;
-	private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()
-			.setSocketTimeout(TIMEOUT_5000_MILLIS)
-			.setConnectTimeout(TIMEOUT_5000_MILLIS)
-			.setConnectionRequestTimeout(TIMEOUT_5000_MILLIS)
-			.build();
+	@Autowired
+	private HttpClientService HttpClientService;
 
 	String getRegularDiscoveryPath() {
 		return "hosting/discovery";
@@ -56,9 +52,7 @@ class DiscoveryClient {
 	
 	Discovery getDiscovery(String discoveryUrl) {
 		HttpGet request = new HttpGet(discoveryUrl);
-		request.setConfig(REQUEST_CONFIG);
-		
-		try (CloseableHttpClient httpClient = HttpClients.createDefault();
+		try (CloseableHttpClient httpClient = HttpClientService.createHttpClient();
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode == 200) {

@@ -186,6 +186,7 @@ public class ViteroManager implements UserDataDeletable {
 	@PostConstruct
 	public void init() {
 		xStream = XStreamHelper.createXStreamInstance();
+		XStreamHelper.allowDefaultPackage(xStream);
 		xStream.alias("vBooking", ViteroBooking.class);
 		xStream.omitField(ViteroBooking.class, "property");
 	}

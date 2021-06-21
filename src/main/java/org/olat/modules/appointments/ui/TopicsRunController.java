@@ -361,15 +361,19 @@ public class TopicsRunController extends FormBasicController implements Activate
 
 	private void wrapBBBMeeting(TopicWrapper wrapper, Appointment appointment) {
 		BigBlueButtonMeeting meeting = appointment.getBBBMeeting();
-		boolean disabled = isDisabled(meeting);
-		if (disabled) {
+		boolean serverDisabled = isServerDisabled(meeting);
+		if (serverDisabled) {
 			wrapper.setServerWarning(translate("error.serverDisabled"));
+		}
+		boolean meetingOpen = secCallback.isMeetingOpen(appointment, wrapper.getOrganizers());
+		if (!serverDisabled && !meetingOpen) {
+			wrapper.setMeetingWarning(translate("error.meeting.not.open"));
 		}
 		
 		FormLink joinButton = uifactory.addFormLink("join" + counter++, CMD_JOIN, "meeting.join.button", null, flc, Link.BUTTON_LARGE);
 		joinButton.setNewWindow(true, true, true);
 		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
-		joinButton.setEnabled(!disabled);
+		joinButton.setEnabled(!serverDisabled && meetingOpen);
 		joinButton.setPrimary(joinButton.isEnabled());
 		joinButton.setUserObject(wrapper);
 		wrapper.setJoinLinkName(joinButton.getName());
@@ -387,7 +391,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 			wrapper.setAcknowledgeRecordingEl(acknowledgeRecordingEl);
 		}
 	}
-	
+
 	private void wrapRecordings(TopicWrapper wrapper, List<BigBlueButtonRecordingReference> recordingReferences) {
 		recordingReferences.sort((r1, r2) -> r1.getStartDate().compareTo(r2.getStartDate()));
 		List<String> recordingLinkNames = new ArrayList<>(recordingReferences.size());
@@ -418,7 +422,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 		wrapper.setJoinLinkName(joinButton.getName());
 	}
 
-	private boolean isDisabled(BigBlueButtonMeeting meeting) {
+	private boolean isServerDisabled(BigBlueButtonMeeting meeting) {
 		return meeting != null && meeting.getServer() != null && !meeting.getServer().isEnabled();
 	}
 	
@@ -716,6 +720,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 		private String openLinkName;
 		private String joinLinkName;
 		private String serverWarning;
+		private String meetingWarning;
 		private List<String> recordingLinkNames;
 
 		public TopicWrapper(Topic topic) {
@@ -920,6 +925,14 @@ public class TopicsRunController extends FormBasicController implements Activate
 
 		public void setServerWarning(String serverWarning) {
 			this.serverWarning = serverWarning;
+		}
+
+		public String getMeetingWarning() {
+			return meetingWarning;
+		}
+
+		public void setMeetingWarning(String meetingWarning) {
+			this.meetingWarning = meetingWarning;
 		}
 
 		public List<String> getRecordingLinkNames() {

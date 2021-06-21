@@ -57,6 +57,7 @@ public class DbStorage implements PreferencesStorage {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
+		XStreamHelper.allowDefaultPackage(xstream);
 		xstream.ignoreUnknownElements();
 	}
 

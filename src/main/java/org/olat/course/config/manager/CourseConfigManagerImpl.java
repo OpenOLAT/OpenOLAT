@@ -57,7 +57,6 @@ public class CourseConfigManagerImpl implements CourseConfigManager {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
 				CourseConfig.class, Hashtable.class, HashMap.class
 		};

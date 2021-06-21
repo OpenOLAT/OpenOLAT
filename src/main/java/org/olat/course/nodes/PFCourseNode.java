@@ -35,6 +35,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -229,11 +230,21 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		Controller runCtrl;
-		if (userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
+		if (ureq.getUserSession().getRoles().isGuestOnly()) {
+			Translator trans = Util.createPackageTranslator(PFCourseNode.class, ureq.getLocale());
+			String title = trans.translate("guestnoaccess.title");
+			String message = trans.translate("guestnoaccess.message");
+			runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		} else if (userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
 			runCtrl = new PFCoachController(ureq, wControl, this, userCourseEnv);
-		} else {
+		} else if (userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseParticipant(ureq.getIdentity())) {
 			runCtrl = new PFParticipantController(ureq, wControl, this, userCourseEnv,
 					userCourseEnv.getIdentityEnvironment().getIdentity(), false, false);
+		} else {
+			Translator trans = Util.createPackageTranslator(PFEditController.class, ureq.getLocale());
+			String title = trans.translate("no.membership.title");
+			String message = trans.translate("no.membership.message");
+			runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_pf_icon");
 		return new NodeRunConstructionResult(ctrl);

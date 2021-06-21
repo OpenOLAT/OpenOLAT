@@ -68,7 +68,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
-import org.olat.core.util.httpclient.HttpClientFactory;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -78,14 +78,12 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
-import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoMeta;
-import org.olat.modules.video.VideoMetadata;
 import org.olat.modules.video.VideoMetadataSearchParams;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
@@ -94,7 +92,6 @@ import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.TranscodingCount;
 import org.olat.modules.video.model.VideoMarkersImpl;
 import org.olat.modules.video.model.VideoMetaImpl;
-import org.olat.modules.video.model.VideoMetadataImpl;
 import org.olat.modules.video.model.VideoQuestionsImpl;
 import org.olat.modules.video.spi.youtube.YoutubeProvider;
 import org.olat.modules.video.spi.youtube.model.YoutubeMetadata;
@@ -163,6 +160,8 @@ public class VideoManagerImpl implements VideoManager {
 	private Scheduler scheduler;
 	@Autowired
 	private ImageService imageHelper;
+	@Autowired
+	private HttpClientService httpClientService;
 
 	/**
 	 * get the configured posterframe
@@ -391,34 +390,6 @@ public class VideoManagerImpl implements VideoManager {
 			return (VFSLeaf) item;
 		}else{
 			return null;
-		}
-	}
-
-	@Override
-	public boolean isMetadataFileValid(OLATResource videoResource) {
-		VFSContainer baseContainer = FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
-		VFSLeaf metaDataFile = (VFSLeaf) baseContainer.resolve(FILENAME_VIDEO_METADATA_XML);
-		try {
-			VideoMetadata meta = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
-			return meta != null;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-
-	@Override
-	public VideoMetadata readVideoMetadataFile(OLATResource videoResource){
-		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
-		VFSLeaf metaDataFile = (VFSLeaf) baseContainer.resolve(FILENAME_VIDEO_METADATA_XML);
-		try {
-			return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
-		} catch (Exception e) {
-			log.error("Error while parsing XStream file for videoResource::{}", videoResource, e);
-			// return an empty, so at least it displays something and not an error
-			VideoMetadata meta =  new VideoMetadataImpl();
-			meta.setWidth(800);
-			meta.setHeight(600);
-			return meta;
 		}
 	}
 
@@ -928,7 +899,7 @@ public class VideoManagerImpl implements VideoManager {
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "image/jpg");
 		
-		try(CloseableHttpClient httpClient = HttpClientFactory.getHttpClientInstance(true);
+		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true);
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			download(response, posterFile);	
 		} catch(Exception e) {
@@ -961,7 +932,7 @@ public class VideoManagerImpl implements VideoManager {
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "video/mp4");
 		
-		try(CloseableHttpClient httpClient = HttpClientFactory.getHttpClientInstance(true);
+		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true);
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			download(response, videoFile);	
 		} catch(Exception e) {

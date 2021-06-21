@@ -50,7 +50,6 @@ public class AnalysisPresentationXStream {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
 				MultiGroupBy.class, GroupBy.class, AnalysisSearchParameter.class, QualityDataCollectionRefImpl.class,
 				RepositoryEntryRefImpl.class, IdentityRefImpl.class, OrganisationRefImpl.class, CurriculumRefImpl.class,

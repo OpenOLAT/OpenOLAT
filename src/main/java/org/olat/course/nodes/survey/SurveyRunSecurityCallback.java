@@ -33,18 +33,18 @@ import org.olat.modules.forms.EvaluationFormParticipationStatus;
  */
 public class SurveyRunSecurityCallback {
 	
+	private final boolean admin;
 	private final boolean courseReadOnly;
 	private final boolean guestOnly;
 	private final boolean executor;
 	private final boolean reportViewer;
-	private final boolean canRunCommands;
 	
 	public SurveyRunSecurityCallback(ModuleConfiguration moduleConfiguration, UserCourseEnvironment userCourseEnv) {
 		this.courseReadOnly = userCourseEnv.isCourseReadOnly();
 		this.guestOnly = userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly();
 		this.executor = hasExecutionRole(moduleConfiguration, userCourseEnv);
 		this.reportViewer = hasReportRole(moduleConfiguration, userCourseEnv);
-		this.canRunCommands = userCourseEnv.isAdmin();
+		this.admin = userCourseEnv.isAdmin();
 	}
 
 	public boolean isGuestOnly() {
@@ -138,8 +138,8 @@ public class SurveyRunSecurityCallback {
 		return courseReadOnly && isExecutor();
 	}
 
-	public boolean canRunCommands() {
-		return canRunCommands;
+	public boolean canResetAll() {
+		return !courseReadOnly && admin;
 	}
 
 }

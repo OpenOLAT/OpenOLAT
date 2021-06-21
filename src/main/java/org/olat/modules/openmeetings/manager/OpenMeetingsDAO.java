@@ -54,6 +54,7 @@ public class OpenMeetingsDAO {
 	@PostConstruct
 	public void init() {
 		xStream = XStreamHelper.createXStreamInstance();
+		XStreamHelper.allowDefaultPackage(xStream);
 		xStream.alias("room", OpenMeetingsRoom.class);
 		xStream.omitField(OpenMeetingsRoom.class, "property");
 		xStream.omitField(OpenMeetingsRoom.class, "numOfUsers");

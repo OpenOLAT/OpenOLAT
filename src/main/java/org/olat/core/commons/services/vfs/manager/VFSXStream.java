@@ -53,7 +53,6 @@ public class VFSXStream {
 	private static XStream mystream;
 	static {
 		mystream = XStreamHelper.createXStreamInstance();
-		XStream.setupDefaultSecurity(mystream);
 		Class<?>[] types = new Class[] {
 				VersionsFileImpl.class, RevisionFileImpl.class, VFSRevision.class,
 				VFSMetadata.class, VFSMetadataImpl.class, Identity.class, IdentityImpl.class,

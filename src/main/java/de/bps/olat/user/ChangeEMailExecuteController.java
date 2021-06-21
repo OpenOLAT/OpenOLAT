@@ -108,6 +108,7 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 	 */
 	public boolean changeEMail(WindowControl wControl) {
 		XStream xml = XStreamHelper.createXStreamInstance();
+		XStreamHelper.allowDefaultPackage(xml);
 		@SuppressWarnings("unchecked")
 		HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(tempKey.getEmailAddress());
 		

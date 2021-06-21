@@ -1,0 +1,8 @@
+<java.util.HashMap>
+  <entry>
+    <string>Hello</string>
+    <org.springframework.scheduling.quartz.JobDetailFactoryBean>
+    	<name>World</name>
+    </org.springframework.scheduling.quartz.JobDetailFactoryBean>
+  </entry>
+</java.util.HashMap>

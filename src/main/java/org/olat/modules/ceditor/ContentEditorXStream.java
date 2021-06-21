@@ -47,7 +47,6 @@ public class ContentEditorXStream {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
 				ImageSettings.class, ImageHorizontalAlignment.class, ImageTitlePosition.class, ImageSize.class,
 				TextSettings.class, ContainerSettings.class, ContainerColumn.class,
