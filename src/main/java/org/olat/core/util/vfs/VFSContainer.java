@@ -90,6 +90,13 @@ public interface VFSContainer extends VFSItem {
 	public VFSLeaf createChildLeaf(String name);
 	
 	/**
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public boolean isInPath(String path);
+	
+	/**
 	 * Set a default filter that will be applied to this container getItems method
 	 * 
 	 * @param defaultFilter

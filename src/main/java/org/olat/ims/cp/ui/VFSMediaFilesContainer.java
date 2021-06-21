@@ -86,6 +86,11 @@ public class VFSMediaFilesContainer extends AbstractVirtualContainer implements 
 	}
 
 	@Override
+	public boolean isInPath(String path) {
+		return rootContainer.isInPath(path);
+	}
+
+	@Override
 	public VFSContainer getParentContainer() {
 		return null;
 	}
