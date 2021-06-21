@@ -88,7 +88,7 @@ public class XStreamHelper {
 			"org.olat.**",
 			"de.bps.**",
 			"at.ac.uibk.**",
-			"org.hibernate.**"
+			"org.hibernate.collection.**"
 		};
 	private static final XStream unconfiguredXStream = new XStream();
 	static {
