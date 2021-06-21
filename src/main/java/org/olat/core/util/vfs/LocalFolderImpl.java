@@ -336,6 +336,14 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	}
 
 	@Override
+	public boolean isInPath(String path) {
+		Path bFile = getBasefile().toPath();
+		Path filePath = bFile.resolve(path);
+		Path normalizedPath = filePath.normalize();
+		return normalizedPath.startsWith(bFile);
+	}
+
+	@Override
 	public String getRelPath() {
 		Path bFile = getBasefile().toPath();
 		Path bcRoot = FolderConfig.getCanonicalRootPath();

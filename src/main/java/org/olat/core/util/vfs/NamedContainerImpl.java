@@ -122,6 +122,11 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	}
 
 	@Override
+	public boolean isInPath(String path) {
+		return getDelegate().isInPath(path);
+	}
+
+	@Override
 	public VFSStatus delete() {
 		return getDelegate().delete();
 	}

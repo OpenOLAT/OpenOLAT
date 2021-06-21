@@ -115,8 +115,10 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 			if(filename.startsWith(".")) {
 				//ignore
 			} else if(filename.endsWith("xml") && !filename.equals("imsmanifest.xml")) {
+				checkPath(destFile);
 				convertXmlFile(file, destFile);
 			} else {
+				checkPath(destFile);
 				Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
 			}
 		}
@@ -127,11 +129,20 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 	public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
 	throws IOException {
 		Path relativeDir = source.relativize(dir);
-        final Path dirToCreate = Paths.get(destDir.toString(), relativeDir.toString());
+		final Path dirToCreate = Paths.get(destDir.toString(), relativeDir.toString());
+		checkPath(dirToCreate);
+       
         if(!dirToCreate.toFile().exists()) {
         	Files.createDirectory(dirToCreate);
         }
         return FileVisitResult.CONTINUE;
+	}
+	
+	private void checkPath(Path file) throws IOException {
+		Path normalizedPath = file.normalize();
+		if(!normalizedPath.startsWith(destDir)) {
+			throw new IOException("Invalid ZIP");
+		}
 	}
 	
 	/**

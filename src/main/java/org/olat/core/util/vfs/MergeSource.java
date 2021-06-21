@@ -203,6 +203,11 @@ public class MergeSource extends AbstractVirtualContainer {
 	}
 
 	@Override
+	public boolean isInPath(String path) {
+		return rootWriteContainer.isInPath(path);
+	}
+
+	@Override
 	public VFSStatus copyFrom(VFSItem source) {
 		if (canWrite() != VFSConstants.YES) {
 			throw new AssertException("Cannot create child container in merge source if not writable.");
