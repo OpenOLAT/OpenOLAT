@@ -113,6 +113,11 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 	}
 
 	@Override
+	public boolean isInPath(String path) {
+		return rootContainer.isInPath(path);
+	}
+
+	@Override
 	public VFSItem resolve(String path) {
 		// 1) try to resolve directly from root (HTML editor instance)
 		VFSItem item = rootContainer.resolve(path);

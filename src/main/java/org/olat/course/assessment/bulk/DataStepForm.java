@@ -366,7 +366,7 @@ public class DataStepForm extends StepFormBasicController {
 			try(InputStream is = target.getInputStream();
 					ZipInputStream zis = new ZipInputStream(is)) {
 				byte[] b = new byte[FileUtils.BSIZE];
-				while ((entry = zis.getNextEntry()) != null) {
+				while ((entry = zis.getNextEntry()) != null) {//TODO zip
 					if(!entry.isDirectory()) {
 						while (zis.read(b) > 0) {
 							//continue
