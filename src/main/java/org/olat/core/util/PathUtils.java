@@ -22,6 +22,7 @@ package org.olat.core.util;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -32,9 +33,11 @@ import java.nio.file.ProviderNotFoundException;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.EnumSet;
 import java.util.ServiceConfigurationError;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.core.logging.OLATRuntimeException;
 
 /**
  * 
@@ -62,7 +65,8 @@ public class PathUtils {
 	}
 	
 	/**
-	 * Use the closeSubsequentFS method to close the file system.
+	 * Use the closeSubsequentFS method to close the file system. The method doesn't
+	 * follow sym. links and its depth is limited.
 	 * 
 	 * @param file The file to visit
 	 * @param filename The filename
@@ -90,14 +94,14 @@ public class PathUtils {
 			fPath = file.toPath();
 		}
 		if(fPath != null) {
-		    Files.walkFileTree(fPath, visitor);
+		    Files.walkFileTree(fPath, EnumSet.noneOf(FileVisitOption.class), 32, visitor);
 		}
 		return fPath;
 	}
 	
 	public static void closeSubsequentFS(Path path) {
 		if(path != null && FileSystems.getDefault() != path.getFileSystem()) {
-			IOUtils.closeQuietly(path.getFileSystem());
+			IOUtils.closeQuietly(path.getFileSystem(), null);
 		}
 	}
 	
@@ -125,6 +129,10 @@ public class PathUtils {
 	    throws IOException {
 			Path relativeFile = source.relativize(file);
 	        final Path destFile = Paths.get(destDir.toString(), relativeFile.toString());
+	        Path normalizedPath = destFile.normalize();
+			if(!normalizedPath.startsWith(destDir)) {
+				throw new OLATRuntimeException("Invalid ZIP");
+			}
 	        if(filter.matches(file)) {
 	        	Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
 	        }

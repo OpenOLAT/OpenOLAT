@@ -74,6 +74,8 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.ims.resources.IMSEntityResolver;
 
+import com.thoughtworks.xstream.XStream;
+
 /**
  *Initial Date: 27.08.2003
  * @author Mike Stock
@@ -89,6 +91,12 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 	 */
 	private static final String SERIALIZED_QTI_DOCUMENT = "__qti.xstream.xml";
 	private static final String CURRENT_HISTORY ="__qti.history.xml";
+	
+
+	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+	static {
+		XStreamHelper.allowDefaultPackage(xstream);
+	}
 
 	private Identity identity = null;
 	private FileResource fileResource = null;
@@ -324,7 +332,7 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 	 *
 	 */
 	public void serializeQTIDocument() {
-		XStreamHelper.writeObject(new File(packageDir, SERIALIZED_QTI_DOCUMENT), qtiDocument);
+		XStreamHelper.writeObject(xstream, new File(packageDir, SERIALIZED_QTI_DOCUMENT), qtiDocument);
 	}
 	
 	private boolean hasSerializedQTIDocument() {
@@ -332,7 +340,7 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 	}
 	
 	private QTIDocument loadSerializedQTIDocument() {
-		return (QTIDocument)XStreamHelper.readObject(new File(packageDir, SERIALIZED_QTI_DOCUMENT));
+		return (QTIDocument)XStreamHelper.readObject(xstream, new File(packageDir, SERIALIZED_QTI_DOCUMENT));
 	}
 	
 	/**
@@ -340,7 +348,7 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 	 * @param history
 	 */
 	public void serializeChangelog(Map history){
-		XStreamHelper.writeObject(new File(packageDir, CURRENT_HISTORY), history);
+		XStreamHelper.writeObject(xstream, new File(packageDir, CURRENT_HISTORY), history);
 	}
 	/**
 	 * check if a serialized change log exists
@@ -354,7 +362,7 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 	 * @return
 	 */
 	public Map loadChangelog(){
-		return (Map)XStreamHelper.readObject(new File(packageDir, CURRENT_HISTORY));
+		return (Map)XStreamHelper.readObject(xstream, new File(packageDir, CURRENT_HISTORY));
 	}
 	
 	/**

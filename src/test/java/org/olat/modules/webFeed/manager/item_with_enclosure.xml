@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<item>
+  <creationDate class="sql-timestamp">2017-06-13 07:07:03.807</creationDate>
+  <lastModified class="sql-timestamp">2021-06-22 11:39:34.373</lastModified>
+  <title>Test XStream</title>
+  <description>&lt;p&gt;Test video&lt;/p&gt;</description>
+  <content></content>
+  <modifierKey>720898</modifierKey>
+  <guid>sropenpg_1_92435892740461</guid>
+  <draft>false</draft>
+  <publishDate class="sql-timestamp">2015-10-08 13:28:00</publishDate>
+  <enclosure>
+    <fileName>demo_movie.mp4</fileName>
+    <type>video/mp4</type>
+    <length>102779</length>
+  </enclosure>
+  <width>320</width>
+  <height>240</height>
+</item>

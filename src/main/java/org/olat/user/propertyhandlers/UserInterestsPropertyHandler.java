@@ -31,12 +31,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -45,6 +45,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.user.AbstractUserPropertyHandler;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * <h3>Description:</h3>
@@ -64,7 +65,11 @@ public class UserInterestsPropertyHandler extends AbstractUserPropertyHandler {
 	
 	private static final XStream interestsXStream = XStreamHelper.createXStreamInstance();
 	static {
-		XStreamHelper.allowDefaultPackage(interestsXStream);
+		Class<?>[] types = new Class[] {
+				UserInterestsCategory.class
+			};
+		interestsXStream.addPermission(new ExplicitTypePermission(types));
+
 		interestsXStream.alias("category", UserInterestsCategory.class);
 		interestsXStream.alias("categories", List.class);
 		interestsXStream.addImplicitCollection(UserInterestsCategory.class, "subcategories");
@@ -136,7 +141,7 @@ public class UserInterestsPropertyHandler extends AbstractUserPropertyHandler {
 					 availableUserInterests.addAll(available); 
 				 }
 			} catch (Exception e) {
-				log.warn("Unable to load user interests from configuration file " + userInterestsConfigurationFile.getAbsolutePath(), e);
+				log.warn("Unable to load user interests from configuration file {}", userInterestsConfigurationFile, e);
 			}
 		}
 		return availableUserInterests;

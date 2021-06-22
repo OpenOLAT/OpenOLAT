@@ -21,6 +21,8 @@ package org.olat.modules.webFeed.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -28,6 +30,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.BlogFileResource;
@@ -37,6 +40,7 @@ import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.model.FeedImpl;
 import org.olat.modules.webFeed.model.ItemImpl;
 import org.olat.test.OlatTestCase;
+import org.olat.test.VFSJavaIOFile;
 
 /**
  * Test the FeedFileStorage.
@@ -437,7 +441,7 @@ public class FeedFileStorgeTest extends OlatTestCase {
 
 	@Test
 	public void loadFeedFromXML_shortening_values() {
-		StringBuffer sb = new StringBuffer(5000);
+		StringBuilder sb = new StringBuilder(5000);
 		for (int i = 0; i < 5000; i++){
 		   sb.append("A");
 		}
@@ -488,6 +492,33 @@ public class FeedFileStorgeTest extends OlatTestCase {
 		Feed reloaded = FeedManager.getInstance().loadFeedFromXML(feedDir);
 
 		assertThat(reloaded).isNull();
+	}
+	
+	@Test
+	public void loadFeedFromXMLFile() throws URISyntaxException {
+		URL feedUrl = FeedFileStorgeTest.class.getResource("feed.xml");
+		VFSLeaf feedLeaf = new VFSJavaIOFile(feedUrl.toURI());
+
+		Feed loadedFeed = (Feed)FeedFileStorge.fromXML(feedLeaf);
+
+		assertThat(loadedFeed).isNotNull();
+		assertThat(loadedFeed.getAuthor()).isEqualTo("jeremy");
+		assertThat(loadedFeed.getTitle()).isEqualTo("XStream feed");
+		assertThat(loadedFeed.getResourceableTypeName()).isEqualTo("FileResource.BLOG");
+	}
+	
+	@Test
+	public void loadExternalFeedFromXMLFile() throws URISyntaxException {
+		URL feedUrl = FeedFileStorgeTest.class.getResource("feed_external.xml");
+		VFSLeaf feedLeaf = new VFSJavaIOFile(feedUrl.toURI());
+
+		Feed loadedFeed = (Feed)FeedFileStorge.fromXML(feedLeaf);
+
+		assertThat(loadedFeed).isNotNull();
+		assertThat(loadedFeed.getTitle()).isEqualTo("Blog OpenOlat");
+		assertThat(loadedFeed.isExternal()).isTrue();
+		assertThat(loadedFeed.getExternalFeedUrl()).isEqualTo("https://blog.openolat.ch/?feed=rss2");
+		assertThat(loadedFeed.getResourceableTypeName()).isEqualTo("FileResource.BLOG");
 	}
 
 	@Test
@@ -701,6 +732,18 @@ public class FeedFileStorgeTest extends OlatTestCase {
 		assertThat(reloadedItem.getTitle()).hasSize(1024);
 
 		fileResourceManager.deleteFileResource(resource);
+	}
+	
+	@Test
+	public void loadItemFromXMLFile() throws URISyntaxException {
+		URL itemUrl = FeedFileStorgeTest.class.getResource("item_with_enclosure.xml");
+		VFSLeaf itemLeaf = new VFSJavaIOFile(itemUrl.toURI());
+
+		Item loadedItem = (Item)FeedFileStorge.fromXML(itemLeaf);
+
+		assertThat(loadedItem).isNotNull();
+		assertThat(loadedItem.getTitle()).isEqualTo("Test XStream");
+		assertThat(loadedItem.getEnclosure().getFileName()).isEqualTo("demo_movie.mp4");
 	}
 
 	@Test

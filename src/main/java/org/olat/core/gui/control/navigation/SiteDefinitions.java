@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractSpringModule;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * Description:<br>
@@ -77,7 +78,12 @@ public class SiteDefinitions extends AbstractSpringModule {
 	
 	private static final XStream xStream = XStreamHelper.createXStreamInstance();
 	static {
-		XStreamHelper.allowDefaultPackage(xStream);
+		Class<?>[] types = new Class[] {
+				CourseSiteConfiguration.class, LanguageConfiguration.class,
+				SiteConfiguration.class
+			};
+		xStream.addPermission(new ExplicitTypePermission(types));
+		
 		xStream.alias("coursesite", CourseSiteConfiguration.class);
 		xStream.alias("languageConfig", LanguageConfiguration.class);
 		xStream.alias("siteconfig", SiteConfiguration.class);
@@ -226,7 +232,7 @@ public class SiteDefinitions extends AbstractSpringModule {
 	@Override
 	public void init() {
 		if(configurers != null) {
-			log.debug(configurers.size() + " sites configurers found.");
+			log.debug("{} sites configurers found.", configurers.size());
 		}
 		
 		String sitesObj = getStringPropertyValue("sites.config", true);

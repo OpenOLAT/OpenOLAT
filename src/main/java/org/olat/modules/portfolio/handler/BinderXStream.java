@@ -27,12 +27,25 @@ import java.nio.file.Path;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.model.AssignmentImpl;
+import org.olat.modules.portfolio.model.BinderImpl;
+import org.olat.modules.portfolio.model.PageBodyImpl;
+import org.olat.modules.portfolio.model.PageImpl;
+import org.olat.modules.portfolio.model.SectionImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResourceImpl;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -43,20 +56,23 @@ import com.thoughtworks.xstream.XStream;
 public class BinderXStream {
 	
 	private static final Logger log = Tracing.createLoggerFor(BinderXStream.class);
-	private static final XStream myStream = XStreamHelper.createXStreamInstanceForDBObjects();
+	private static final XStream xstream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
-		XStreamHelper.allowDefaultPackage(myStream);
-	}
-	
-	public static final Binder copy(Binder binder) {
-		String stringuified = myStream.toXML(binder);
-		return (Binder)myStream.fromXML(stringuified);
+		Class<?>[] types = new Class[] {
+				OLATResourceImpl.class, GroupImpl.class, RepositoryEntry.class,
+				Binder.class, BinderImpl.class,
+				Section.class, SectionImpl.class,
+				Page.class, PageImpl.class, PageBody.class, PageBodyImpl.class,
+				Assignment.class, AssignmentImpl.class,
+				org.hibernate.proxy.pojo.bytebuddy.SerializableProxy.class
+		};
+		xstream.addPermission(new ExplicitTypePermission(types));
 	}
 	
 	public static final Binder fromPath(Path path)
 	throws IOException {	
 		try(InputStream inStream = Files.newInputStream(path)) {
-			return (Binder)myStream.fromXML(inStream);
+			return (Binder)xstream.fromXML(inStream);
 		} catch (Exception e) {
 			log.error("Cannot import this map: {}", path, e);
 			return null;
@@ -66,9 +82,14 @@ public class BinderXStream {
 	public static final void toStream(Binder binder, ZipOutputStream zout)
 	throws IOException {
 		try(OutputStream out=new ShieldOutputStream(zout)) {
-			myStream.toXML(binder, out);
+			xstream.toXML(binder, out);
 		} catch (Exception e) {
 			log.error("Cannot export this map: {}", binder, e);
 		}
+	}
+	
+	public static final String toXML(Binder binder)
+	throws IOException {
+		return xstream.toXML(binder);
 	}
 }

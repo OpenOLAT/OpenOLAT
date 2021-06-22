@@ -20,10 +20,12 @@
 */
 package org.olat.course;
 
+
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ExtendedCondition;
+import org.olat.course.condition.additionalconditions.PasswordCondition;
 import org.olat.course.condition.operators.AttributeEndswithOperator;
 import org.olat.course.condition.operators.AttributeStartswithOperator;
 import org.olat.course.condition.operators.EqualsOperator;
@@ -68,11 +70,22 @@ import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.nodes.adobeconnect.compatibility.AdobeConnectCompatibilityConfiguration;
 import org.olat.course.nodes.adobeconnect.compatibility.MeetingCompatibilityDate;
 import org.olat.course.nodes.adobeconnect.compatibility.WimbaClassroomCompatibilityConfiguration;
+import org.olat.course.nodes.cl.model.Checkbox;
+import org.olat.course.nodes.cl.model.CheckboxList;
+import org.olat.course.nodes.gta.model.Solution;
+import org.olat.course.nodes.gta.model.SolutionList;
+import org.olat.course.nodes.gta.model.TaskDefinition;
+import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.edubase.model.BookSectionImpl;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
+
+import de.bps.course.nodes.ll.LLModel;
+import de.bps.olat.modules.cl.Checklist;
+import de.bps.olat.modules.cl.Checkpoint;
 
 /**
  * Helper class for course related aliases. The XStream object is
@@ -90,15 +103,29 @@ public class CourseXStreamAliases {
 	private static final XStream readXstream = XStreamHelper.createXStreamInstance();
 	private static final XStream writeXstream = XStreamHelper.createXStreamInstance();
 	
-
+	public static void courseSecurity(XStream xstream) {
+		Class<?>[] types = new Class[] {
+			Structure.class, CourseEditorTreeModel.class, CourseEditorTreeNode.class,
+			PasswordCondition.class,
+			TaskDefinitionList.class, TaskDefinition.class, SolutionList.class, Solution.class,
+			Checklist.class, Checkpoint.class, CheckboxList.class, Checkbox.class,
+			LLModel.class,
+			DeliveryOptions.class,
+			AdobeConnectCompatibilityConfiguration.class, WimbaClassroomCompatibilityConfiguration.class, MeetingCompatibilityDate.class
+		};
+		
+		xstream.addPermission(new ExplicitTypePermission(types));
+		xstream.allowTypeHierarchy(CourseNode.class);
+	}
+	
 	/**
 	 * Used for reading editortreemodel.xml and runstructure.xml.
 	 * Creates a new XStream with the aliases used in the mentioned xml files.
 	 * @return
 	 */
 	static {
-		XStreamHelper.allowDefaultPackage(readXstream);
-		XStreamHelper.allowDefaultPackage(writeXstream);
+		courseSecurity(readXstream);
+		courseSecurity(writeXstream);
 		
 		//write XStream
 		writeXstream.alias("com.frentix.olat.course.nodes.ViteroCourseNode", ViteroCourseNode.class);

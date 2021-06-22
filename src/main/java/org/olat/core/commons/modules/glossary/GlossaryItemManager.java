@@ -30,10 +30,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.control.generic.textmarker.TextMarker;
 import org.olat.core.gui.control.generic.textmarker.TextMarkerManager;
 import org.olat.core.helpers.Settings;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -52,6 +52,7 @@ import com.thoughtworks.xstream.core.util.QuickWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 import com.thoughtworks.xstream.io.xml.XppDriver;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * Description:<br>
@@ -78,12 +79,6 @@ public class GlossaryItemManager {
 	public static final String EDIT_USERS = "edit.by.users.enabled";
 	
 	private static final XStream xstreamReader = XStreamHelper.createXStreamInstance();
-	static {
-		XStreamHelper.allowDefaultPackage(xstreamReader);
-		xstreamReader.alias(XML_GLOSSARY_ITEM_NAME, GlossaryItem.class);
-		xstreamReader.alias(XML_REVISION_NAME, Revision.class);
-	}
-	
 	private static final XStream xstreamWriter = new XStream(new XppDriver() {
 		@Override
 		public HierarchicalStreamWriter createWriter(Writer out) {
@@ -103,9 +98,17 @@ public class GlossaryItemManager {
 	});
 	
 	static {
-		XStreamHelper.allowDefaultPackage(xstreamReader);
-		xstreamWriter.alias(XML_GLOSSARY_ITEM_NAME, GlossaryItem.class);
-		xstreamWriter.alias(XML_REVISION_NAME, Revision.class);
+		initXStream(xstreamReader);
+		initXStream(xstreamWriter);
+	}
+	
+	private static void initXStream(XStream xstream) {
+		Class<?>[] types = new Class[] {
+				GlossaryItem.class, Revision.class
+			};
+		xstream.addPermission(new ExplicitTypePermission(types));
+		xstream.alias(XML_GLOSSARY_ITEM_NAME, GlossaryItem.class);
+		xstream.alias(XML_REVISION_NAME, Revision.class);
 	}
 
 	private CacheWrapper<String, List<GlossaryItem>> glossaryCache;
@@ -285,7 +288,7 @@ public class GlossaryItemManager {
 			ArrayList<GlossaryItem> glossItemsFromFile = (ArrayList<GlossaryItem>) glossObj;
 			glossaryItemList.addAll(glossItemsFromFile);
 		} else {
-			log.error("The Glossary-XML-File " + glossaryFile.toString() + " seems not to be correct!");
+			log.error("The Glossary-XML-File {} seems not to be correct!", glossaryFile);
 		}
 
 		Collections.sort(glossaryItemList);

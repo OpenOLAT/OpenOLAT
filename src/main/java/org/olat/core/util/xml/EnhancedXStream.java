@@ -37,7 +37,7 @@ import com.thoughtworks.xstream.converters.collections.MapConverter;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 
 /**
- * This implmentation of XStream automatically convert hibernat list, set and
+ * This implementation of XStream automatically convert hibernate list, set and
  * map to standard java collections and convert by import / deserialization the
  * old hibernate 3 collection packages to the new one.
  * 

@@ -29,11 +29,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.EnumSet;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -79,7 +81,7 @@ public class ImsQTI21Resource extends FileResource {
 				Path manifestPath = fPath.resolve(realManifestPath);
 				
 				RootSearcher rootSearcher = new RootSearcher();
-				Files.walkFileTree(fPath, rootSearcher);
+				Files.walkFileTree(fPath, EnumSet.noneOf(FileVisitOption.class), 16, rootSearcher);
 				if(rootSearcher.foundRoot()) {
 					manifestPath = rootSearcher.getRoot().resolve(IMS_MANIFEST);
 				} else {

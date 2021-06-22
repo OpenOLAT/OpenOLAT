@@ -689,7 +689,6 @@ public class CourseWebService {
 		Date lastModified = new Date(runStructureItem.getLastModified());
 		Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
 		if(response == null) {
-			//TODO xstream
 			return Response.ok(myXStream.toXML(course.getRunStructure())).build();
 		}
 		return response.build();	
