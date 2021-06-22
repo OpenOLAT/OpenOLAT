@@ -48,7 +48,7 @@ public class ToolboxLE extends AbstractLayoutElement {
 		//
 	}
 
-	public ToolboxLE(Map<String, Object> config) {
+	public ToolboxLE(Map<String, String> config) {
 		super(config);
 
 		HashMap<String, Integer> iFrameRelativeChildren = new HashMap<>();
@@ -75,7 +75,7 @@ public class ToolboxLE extends AbstractLayoutElement {
 	}
 
 	@Override
-	public AbstractLayoutElement createInstance(Map<String, Object> config) {
+	public AbstractLayoutElement createInstance(Map<String, String> config) {
 		return new ToolboxLE(config);
 	}
 

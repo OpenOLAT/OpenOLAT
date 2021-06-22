@@ -1,0 +1,81 @@
+<RepositoryEntryProperties>
+  <key>86114306</key>
+  <Softkey>sropenpg_1_91372670216461</Softkey>
+  <ResourceName>-</ResourceName>
+  <DisplayName>Glossar</DisplayName>
+  <Description></Description>
+  <InitialAuthor>jeremy</InitialAuthor>
+  <outer-class>
+    <propertiesLoaded>false</propertiesLoaded>
+    <re>
+      <key>86114306</key>
+      <version>1</version>
+      <creationDate class="sql-timestamp">2015-03-30 06:48:20.771</creationDate>
+      <lastModified class="sql-timestamp">2015-03-30 06:48:20.771</lastModified>
+      <softkey>sropenpg_1_91372670216461</softkey>
+      <olatResource class="org.olat.resource.OLATResourceImpl">
+        <key>85983234</key>
+        <version>0</version>
+        <creationDate class="sql-timestamp">2015-03-30 06:48:20.715</creationDate>
+        <resName>FileResource.GLOSSARY</resName>
+        <resId>91372670216460</resId>
+      </olatResource>
+      <groups class="org.hibernate.collection.internal.PersistentSet">
+        <isTempSession>false</isTempSession>
+        <initialized>false</initialized>
+        <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+        <cachedSize>-1</cachedSize>
+        <role>org.olat.repository.RepositoryEntry.groups</role>
+        <key class="long">86114306</key>
+        <dirty>false</dirty>
+        <elementRemoved>false</elementRemoved>
+        <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+      </groups>
+      <organisations class="org.hibernate.collection.internal.PersistentSet">
+        <isTempSession>false</isTempSession>
+        <initialized>false</initialized>
+        <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+        <cachedSize>-1</cachedSize>
+        <role>org.olat.repository.RepositoryEntry.organisations</role>
+        <key class="long">86114306</key>
+        <dirty>false</dirty>
+        <elementRemoved>false</elementRemoved>
+        <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+      </organisations>
+      <taxonomyLevels class="org.hibernate.collection.internal.PersistentSet">
+        <isTempSession>false</isTempSession>
+        <initialized>false</initialized>
+        <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+        <cachedSize>-1</cachedSize>
+        <role>org.olat.repository.RepositoryEntry.taxonomyLevels</role>
+        <key class="long">86114306</key>
+        <dirty>false</dirty>
+        <elementRemoved>false</elementRemoved>
+        <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+      </taxonomyLevels>
+      <resourcename>-</resourcename>
+      <displayname>Glossar</displayname>
+      <description></description>
+      <initialAuthor>kanu</initialAuthor>
+      <statistics>
+        <key>86016002</key>
+        <creationDate class="sql-timestamp">2015-03-30 06:48:20.771</creationDate>
+        <lastModified class="sql-timestamp">2015-03-30 06:48:20.771</lastModified>
+        <numOfRatings>0</numOfRatings>
+        <numOfComments>0</numOfComments>
+        <launchCounter>3</launchCounter>
+        <downloadCounter>0</downloadCounter>
+        <lastUsage class="sql-timestamp">2018-02-09 09:07:15.809</lastUsage>
+      </statistics>
+      <status>preparation</status>
+      <allUsers>false</allUsers>
+      <guests>false</guests>
+      <bookable>false</bookable>
+      <canCopy>false</canCopy>
+      <canReference>false</canReference>
+      <canDownload>false</canDownload>
+      <allowToLeave>atAnyTime</allowToLeave>
+    </re>
+    <baseDirectory>/var/folders/jw/v2y7x32d1lg7v2lq5cr58__80000gn/T/24e46e19-509b-4daa-bd9e-631715e416fb/export/glossary/glossary</baseDirectory>
+  </outer-class>
+</RepositoryEntryProperties>

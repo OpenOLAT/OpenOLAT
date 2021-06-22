@@ -47,7 +47,7 @@ public class MenuLE extends AbstractLayoutElement {
 		// 
 	}
 
-	public MenuLE(Map<String, Object> config) {
+	public MenuLE(Map<String, String> config) {
 		super(config);
 		
 		HashMap<String, Integer> iFrameRelativeChildren = new HashMap<>();
@@ -74,7 +74,7 @@ public class MenuLE extends AbstractLayoutElement {
 	}
 
 	@Override
-	public AbstractLayoutElement createInstance(Map<String, Object> config) {
+	public AbstractLayoutElement createInstance(Map<String, String> config) {
 		return new MenuLE(config);
 	}
 

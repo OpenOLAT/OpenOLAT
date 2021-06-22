@@ -43,7 +43,7 @@ public class MetadataConverterHelper {
 	
 	private static XStream metadatXstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStreamHelper.allowDefaultPackage(metadatXstream);
+		XStreamHelper.allowDefaultPackage(metadatXstream);//TODO XStream
 		metadatXstream.alias("item", QuestionItemImpl.class);
 		metadatXstream.alias("educationalContext", QEducationalContext.class);
 		metadatXstream.alias("itemType", QItemType.class);

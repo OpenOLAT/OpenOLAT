@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map>
+  <entry>
+    <string>attachmentFileName</string>
+    <string></string>
+  </entry>
+  <entry>
+    <string>mailNotificationEnabled</string>
+    <boolean>true</boolean>
+  </entry>
+  <entry>
+    <string>description</string>
+    <string>&lt;p&gt;New Topic&lt;/p&gt;</string>
+  </entry>
+  <entry>
+    <string>customeFieldSize</string>
+    <int>5</int>
+  </entry>
+  <entry>
+    <string>title</string>
+    <string>Limited Topic</string>
+  </entry>
+  <entry>
+    <string>customFieldSize</string>
+    <int>5</int>
+  </entry>
+  <entry>
+    <string>businessGroupKey</string>
+    <long>134905858</long>
+  </entry>
+  <entry>
+    <string>maxMembers</string>
+    <int>3</int>
+  </entry>
+  <entry>
+    <string>customFieldValue4</string>
+    <string>social</string>
+  </entry>
+  <entry>
+    <string>customFieldValue3</string>
+    <string>nature</string>
+  </entry>
+  <entry>
+    <string>customFieldValue2</string>
+    <string>nature</string>
+  </entry>
+  <entry>
+    <string>customFieldValue1</string>
+    <string>vaccum</string>
+  </entry>
+  <entry>
+    <string>customFieldValue0</string>
+    <string>medical faculty</string>
+  </entry>
+  <entry>
+    <string>allowDeselection</string>
+    <boolean>true</boolean>
+  </entry>
+</map>

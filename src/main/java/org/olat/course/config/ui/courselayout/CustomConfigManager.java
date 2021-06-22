@@ -79,7 +79,7 @@ public class CustomConfigManager {
 	 * @param customConfig
 	 * @param courseEnvironment
 	 */
-	public void saveCustomConfigAndCompileCSS(Map<String, Map<String, Object>> customConfig, CourseEnvironment courseEnvironment){
+	public void saveCustomConfigAndCompileCSS(Map<String, Map<String, String>> customConfig, CourseEnvironment courseEnvironment){
 		VFSContainer themeBase = null;
 		VFSContainer base = null;
 		base = (VFSContainer) courseEnvironment.getCourseBaseContainer().resolve(CourseLayoutHelper.LAYOUT_COURSE_SUBFOLDER);
@@ -100,10 +100,10 @@ public class CustomConfigManager {
 		// compile the css-files
 		StringBuilder sbMain = new StringBuilder();
 		StringBuilder sbIFrame = new StringBuilder();
-		for (Entry<String, Map<String, Object>> iterator : customConfig.entrySet()) {
+		for (Entry<String, Map<String, String>> iterator : customConfig.entrySet()) {
 			String type = iterator.getKey();
-			Map<String, Object> elementConfig = iterator.getValue();			
-		  AbstractLayoutElement configuredLayEl = createLayoutElementByType(type, elementConfig);
+			Map<String, String> elementConfig = iterator.getValue();			
+			AbstractLayoutElement configuredLayEl = createLayoutElementByType(type, elementConfig);
 			sbIFrame.append(configuredLayEl.getCSSForIFrame());	
 			sbMain.append(configuredLayEl.getCSSForMain());	
 		}
@@ -175,9 +175,8 @@ public class CustomConfigManager {
 	 * @param courseEnvironment
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public Map<String, Map<String, Object>> getCustomConfig(CourseEnvironment courseEnvironment){
-		Map<String, Map<String, Object>> defaultConf = new HashMap<>();
+	public Map<String, Map<String, String>> getCustomConfig(CourseEnvironment courseEnvironment){
+		Map<String, Map<String, String>> defaultConf = new HashMap<>();
 		VFSContainer base = (VFSContainer) courseEnvironment.getCourseBaseContainer().resolve(CourseLayoutHelper.LAYOUT_COURSE_SUBFOLDER);
 		if (base == null) {
 			return defaultConf;
@@ -191,11 +190,16 @@ public class CustomConfigManager {
 			return defaultConf;
 		}
 		try(InputStream in=configTarget.getInputStream()) {
-			return (Map<String, Map<String, Object>>) xstream.fromXML(in);
+			return fromXML(in);
 		} catch(IOException e) {
 			log.error("", e);
 			return defaultConf;
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	protected static Map<String, Map<String, String>> fromXML(InputStream in) {
+		return (Map<String, Map<String, String>>) xstream.fromXML(in);
 	}
 	
 	/**
@@ -212,7 +216,7 @@ public class CustomConfigManager {
 	}
 
 	// creates an instance of the given type with the factory-method and sets config for its attributes
-	public AbstractLayoutElement createLayoutElementByType(String type, Map<String, Object> config){
+	public AbstractLayoutElement createLayoutElementByType(String type, Map<String, String> config){
 		List<AbstractLayoutElement> allElements = getAllAvailableElements();
 		for (AbstractLayoutElement abstractLayoutElement : allElements) {
 			if(abstractLayoutElement.getLayoutElementTypeName().equals(type)) {

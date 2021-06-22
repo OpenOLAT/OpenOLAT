@@ -102,7 +102,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private FormLayoutContainer previewImgFlc;
 	private FormLayoutContainer styleFlc;
 	private LinkedHashMap<String, Map<String, FormItem>> guiWrapper;
-	private Map<String, Map<String, Object>> persistedCustomConfig;
+	private Map<String, Map<String, String>> persistedCustomConfig;
 	private FormLayoutContainer logoImgFlc;
 	private FormLink logoDel;
 	private boolean elWithErrorExists = false;
@@ -430,10 +430,12 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		courseConfig.setCssLayoutRef(selection);
 		
 		if(CourseLayoutHelper.CONFIG_KEY_CUSTOM.equals(selection)){
-			Map<String, Map<String, Object>> customConfig = compileCustomConfigFromGuiWrapper();		
+			Map<String, Map<String, String>> customConfig = compileCustomConfigFromGuiWrapper();		
 			customCMgr.saveCustomConfigAndCompileCSS(customConfig, courseEnvironment);
 			persistedCustomConfig = customConfig;
-			if (!elWithErrorExists) prepareStyleEditor(customConfig);
+			if (!elWithErrorExists) {
+				prepareStyleEditor(customConfig);
+			}
 		}
 		
 		boolean menuEnabled = menuEl.isSelected(0);
@@ -451,14 +453,14 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private Map<String, Map<String, Object>> compileCustomConfigFromGuiWrapper(){
+	private Map<String, Map<String, String>> compileCustomConfigFromGuiWrapper(){
 		// get config from wrapper-object
 		elWithErrorExists = false;
-		Map<String, Map<String, Object>> customConfig = new HashMap<>();
+		Map<String, Map<String, String>> customConfig = new HashMap<>();
 		for (Iterator<Entry<String, Map<String, FormItem>>> iterator = guiWrapper.entrySet().iterator(); iterator.hasNext();) {
 			Entry<String, Map<String, FormItem>> type =  iterator.next();
 			String cIdent = type.getKey();
-			Map<String, Object> elementConfig = new HashMap<>();
+			Map<String, String> elementConfig = new HashMap<>();
 			Map<String, FormItem> element = type.getValue();
 			for (Entry<String, FormItem> entry : element.entrySet()) {
 				String attribName = entry.getKey();
@@ -486,7 +488,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	}
 	
 	
-	private void prepareStyleEditor(Map<String, Map<String, Object>> customConfig){
+	private void prepareStyleEditor(Map<String, Map<String, String>> customConfig){
 		guiWrapper = new LinkedHashMap<>(); //keep config order
 
 		List<AbstractLayoutElement> allElements = customCMgr.getAllAvailableElements();
@@ -496,7 +498,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		
 		for (AbstractLayoutElement abstractLayoutElement : allElements) {			
 			String elementType = abstractLayoutElement.getLayoutElementTypeName();
-			Map<String, Object> elConf = customConfig.get(elementType);
+			Map<String, String> elConf = customConfig.get(elementType);
 			AbstractLayoutElement concreteElmt = abstractLayoutElement.createInstance(elConf);
 			
 			HashMap<String, FormItem> elAttribGui = new HashMap<>();

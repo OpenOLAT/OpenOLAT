@@ -167,7 +167,7 @@ public class XStreamHelper {
 	 * @return the Object in XStream form as an xml-String
 	 */
 	@Deprecated
-	public static String toXML(Object obj) {
+	public static String toXML2(Object obj) {
 		return unconfiguredXStream.toXML(obj);
 	}
 
@@ -178,7 +178,7 @@ public class XStreamHelper {
 	 * @return the Object reconstructed from the xml structure
 	 */
 	@Deprecated
-	public static Object fromXML(String xml) {
+	public static Object fromXML2(String xml) {
 		return unconfiguredXStream.fromXML(xml);
 	}
 
