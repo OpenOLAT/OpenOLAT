@@ -236,6 +236,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.iq.IQManagerTest.class,
 	org.olat.modules.fo.ForumManagerTest.class,//fail
 	org.olat.modules.wiki.WikiUnitTest.class,
+	org.olat.modules.wiki.WikiManagerTest.class,
 	org.olat.modules.wiki.versioning.diff.CookbookDiffTest.class,
 	org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtilTest.class,
 	org.olat.modules.coach.manager.CoachingDAOTest.class,
@@ -359,6 +360,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.projectbroker.ProjectBrokerManagerTest.class,
 	org.olat.core.commons.persistence.DBTest.class,
 	org.olat.modules.ims.cp.CPManagerTest.class,
+	org.olat.modules.ims.cp.ImsCPHandlerTest.class,
 	org.olat.modules.ims.qti.fileresource.FileResourceValidatorTest.class,
 	org.olat.ims.qti.QTIResultManagerTest.class,
 	org.olat.ims.qti.qpool.QTIImportProcessorTest.class,
