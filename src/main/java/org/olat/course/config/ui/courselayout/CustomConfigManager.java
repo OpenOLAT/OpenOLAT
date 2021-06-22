@@ -58,9 +58,6 @@ public class CustomConfigManager {
 	
 	private static final Logger log = Tracing.createLoggerFor(CustomConfigManager.class);
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
-	static {
-		XStreamHelper.allowDefaultPackage(xstream);
-	}
 	
 	private static final String IFRAME_CSS = "iframe.css";
 	private static final String MAIN_CSS = "main.css";

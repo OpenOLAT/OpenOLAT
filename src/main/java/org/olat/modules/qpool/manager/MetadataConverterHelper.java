@@ -20,16 +20,7 @@
 package org.olat.modules.qpool.manager;
 
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.xml.XStreamHelper;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.LOMDuration;
-import org.olat.modules.qpool.model.QEducationalContext;
-import org.olat.modules.qpool.model.QItemType;
-import org.olat.modules.qpool.model.QLicense;
-import org.olat.modules.qpool.model.QuestionItemImpl;
-import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
-
-import com.thoughtworks.xstream.XStream;
 
 /**
  * 
@@ -40,20 +31,6 @@ import com.thoughtworks.xstream.XStream;
  *
  */
 public class MetadataConverterHelper {
-	
-	private static XStream metadatXstream = XStreamHelper.createXStreamInstance();
-	static {
-		XStreamHelper.allowDefaultPackage(metadatXstream);//TODO XStream
-		metadatXstream.alias("item", QuestionItemImpl.class);
-		metadatXstream.alias("educationalContext", QEducationalContext.class);
-		metadatXstream.alias("itemType", QItemType.class);
-		metadatXstream.alias("license", QLicense.class);
-		metadatXstream.alias("taxonomyLevel", TaxonomyLevelImpl.class);
-	}
-	
-	public static String toXml(QuestionItem item) {
-		return metadatXstream.toXML(item);
-	}
 
 	/**
 	 * P[yY][mM][dD][T[hH][nM][s[.s]S]] where:<br>

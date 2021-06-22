@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed>
+  <creationDate class="sql-timestamp">2017-06-13 07:07:03.795</creationDate>
+  <lastModified class="sql-timestamp">2015-10-08 13:29:51.696</lastModified>
+  <resourceableId>92307707729692</resourceableId>
+  <type>FileResource.BLOG</type>
+  <title>XStream feed</title>
+  <description>&lt;p&gt;Test&lt;/p&gt;</description>
+  <author>jeremy</author>
+  <isExternal>false</isExternal>
+  <modelVersion>3</modelVersion>
+</feed>

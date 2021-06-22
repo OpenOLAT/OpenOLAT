@@ -90,96 +90,14 @@ public class XStreamHelper {
 			"at.ac.uibk.**",
 			"org.hibernate.collection.**"
 		};
-	private static final XStream unconfiguredXStream = new XStream();
+	private static final XStream cloneXStream = new XStream();
 	static {
-		XStream.setupDefaultSecurity(unconfiguredXStream);
-		allowDefaultPackage(unconfiguredXStream);
+		XStream.setupDefaultSecurity(cloneXStream);
+		allowDefaultPackage(cloneXStream);
 	}
 	
 	public static final void allowDefaultPackage(XStream xstream) {
 		xstream.allowTypesByWildcard(DEFAULT_PACKAGES);
-	}
-
-	/**
-	 * Write a an object to an XML file. UTF-8 is used as encoding
-	 * <p>
-	 * This method uses an unconfigured XStream, thus a default mapping which
-	 * includes the object class name will be used. This should only be used for
-	 * quick prototyping. For long term persisting of data in real applications,
-	 * hide classnames and attributes by mapping attributes and fields on the
-	 * xStream instance.
-	 * <p>
-	 * Use writeObject(XStream stream, VFSLeaf vfsLeaf, Object obj) and
-	 * configure the mapping there!
-	 * 
-	 * @param vfsLeaf
-	 * @param obj
-	 */
-	@Deprecated
-	public static void writeObject(VFSLeaf vfsLeaf, Object obj) {
-		writeObject(unconfiguredXStream, vfsLeaf, obj);
-	}
-
-	/**
-	 * Write a an object to an XML file. UTF-8 is used as encoding
-	 * <p>
-	 * This method uses an unconfigured XStream, thus a default mapping which
-	 * includes the object class name will be used. This should only be used for
-	 * quick prototyping. For long term persisting of data in real applications,
-	 * hide classnames and attributes by mapping attributes and fields on the
-	 * xStream instance.
-	 * <p>
-	 * Use writeObject(XStream stream, File file, Object obj) and configure the
-	 * mapping there!
-	 * 
-	 * @param file
-	 * @param obj
-	 */
-	@Deprecated
-	public static void writeObject(File file, Object obj) {
-		writeObject(unconfiguredXStream, file, obj);
-	}
-
-	/**
-	 * Write a an object to an XML file. UTF-8 is used as encoding
-	 * <p>
-	 * This method uses an unconfigured XStream, thus a default mapping which
-	 * includes the object class name will be used. This should only be used for
-	 * quick prototyping. For long term persisting of data in real applications,
-	 * hide classnames and attributes by mapping attributes and fields on the
-	 * xStream instance.
-	 * <p>
-	 * Use writeObject(XStream stream, OutputStream os, Object obj) and
-	 * configure the mapping there!
-	 * 
-	 * @param file
-	 * @param obj
-	 */
-	@Deprecated
-	public static void writeObject(OutputStream os, Object obj) {
-		writeObject(unconfiguredXStream, os, obj);
-	}
-
-	/**
-	 * Create an XML string from the given object using an unconfigured XStream
-	 * 
-	 * @param obj
-	 * @return the Object in XStream form as an xml-String
-	 */
-	@Deprecated
-	public static String toXML2(Object obj) {
-		return unconfiguredXStream.toXML(obj);
-	}
-
-	/**
-	 * Create an object from the given XML using an unconfigured XStream
-	 * 
-	 * @param xml
-	 * @return the Object reconstructed from the xml structure
-	 */
-	@Deprecated
-	public static Object fromXML2(String xml) {
-		return unconfiguredXStream.fromXML(xml);
 	}
 
 	/**
@@ -190,50 +108,8 @@ public class XStreamHelper {
 	 * @return the clone Object
 	 */
 	public static Object xstreamClone(Object in) {
-		String data = unconfiguredXStream.toXML(in);
-		return unconfiguredXStream.fromXML(data);
-	}
-
-	/**
-	 * Read a structure from XML from the given input stream
-	 * <p>
-	 * This method uses an unconfigured XStream, thus a default mapping which
-	 * includes the object class name will be used. This should only be used for
-	 * quick prototyping. For long term persisting of data in real applications,
-	 * hide classnames and attributes by mapping attributes and fields on the
-	 * xStream instance.
-	 * <p>
-	 * Use readObject(XStream stream, InputStream is) and configure the mapping
-	 * there!
-	 * 
-	 * @param is
-	 * @return the object
-	 */
-	@Deprecated
-	public static Object readObject(InputStream is) {
-		return readObject(unconfiguredXStream, is);
-	}
-
-	/**
-	 * Read a structure from XML file within the provided folder.
-	 * <p>
-	 * This method uses an unconfigured XStream, thus a default mapping which
-	 * includes the object class name will be used. This should only be used for
-	 * quick prototyping. For long term persisting of data in real applications,
-	 * hide classnames and attributes by mapping attributes and fields on the
-	 * xStream instance.
-	 * <p>
-	 * Use readObject(XStream stream, File file) and configure the mapping
-	 * there!
-	 * 
-	 * @param file
-	 * @return de-serialized object
-	 * @throws OLATRuntimeException
-	 *             if de-serialization fails.
-	 */
-	@Deprecated
-	public static Object readObject(File file) {
-		return readObject(unconfiguredXStream, file);
+		String data = cloneXStream.toXML(in);
+		return cloneXStream.fromXML(data);
 	}
 
 	/**

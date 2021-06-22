@@ -19,7 +19,7 @@
  */
 package de.bps.olat.user;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
@@ -107,11 +107,7 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 	 * @return
 	 */
 	public boolean changeEMail(WindowControl wControl) {
-		XStream xml = XStreamHelper.createXStreamInstance();
-		XStreamHelper.allowDefaultPackage(xml);
-		@SuppressWarnings("unchecked")
-		HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(tempKey.getEmailAddress());
-		
+		Map<String, String> mails = getMails(tempKey.getEmailAddress());
 		Identity identity = securityManager.loadIdentityByKey(tempKey.getIdentityKey());
 		if (identity != null) {
 			String oldEmail = identity.getUser().getEmail();
@@ -139,6 +135,12 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 		rm.deleteTemporaryKeyWithId(tempKey.getRegistrationKey());
 		
 		return true;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected static Map<String, String> getMails(String emailAdress) {
+		XStream xstream = XStreamHelper.createXStreamInstance();
+		return (Map<String, String>)xstream.fromXML(emailAdress);
 	}
 	
 	public boolean isLinkClicked() {

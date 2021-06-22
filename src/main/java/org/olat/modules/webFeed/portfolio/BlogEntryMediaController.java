@@ -36,16 +36,13 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.MediaMetadataController;
 import org.olat.modules.webFeed.Item;
-import org.olat.modules.webFeed.model.ItemImpl;
+import org.olat.modules.webFeed.manager.FeedFileStorge;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.thoughtworks.xstream.XStream;
 
 /**
  * 
@@ -57,12 +54,6 @@ import com.thoughtworks.xstream.XStream;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BlogEntryMediaController extends BasicController {
-	
-	private static final XStream xstream = XStreamHelper.createXStreamInstance();
-	static {
-		XStreamHelper.allowDefaultPackage(xstream);
-		xstream.alias("item", ItemImpl.class);
-	}
 	
 	@Autowired
 	private PortfolioFileStorage fileStorage;
@@ -76,7 +67,7 @@ public class BlogEntryMediaController extends BasicController {
 			if(item instanceof VFSLeaf) {
 				VFSLeaf itemLeaf = (VFSLeaf)item;
 				try(InputStream in = itemLeaf.getInputStream()) {
-					Item blogItem = (ItemImpl)xstream.fromXML(in);
+					Item blogItem = (Item)FeedFileStorge.fromXML(in);
 					if(blogItem.getDate() != null) {
 						DateComponentFactory.createDateComponentWithYear("dateComp", blogItem.getDate(), mainVC);
 					}

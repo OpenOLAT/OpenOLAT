@@ -17,36 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.manager;
+package de.bps.olat.portal.links;
 
-import org.olat.core.util.xml.XStreamHelper;
-import org.olat.modules.portfolio.Citation;
-import org.olat.modules.portfolio.CitationSourceType;
-import org.olat.modules.portfolio.model.CitationXml;
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Map;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.security.ExplicitTypePermission;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * For XStream
  * 
- * Initial date: 21.07.2016<br>
+ * Initial date: 22 juin 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MetadataXStream {
-
-	private static final XStream xstream = XStreamHelper.createXStreamInstance();
-	static {
-		Class<?>[] types = new Class[] {
-				Citation.class, CitationSourceType.class, CitationXml.class
-			};
-		xstream.addPermission(new ExplicitTypePermission(types));
-		xstream.alias("citation", org.olat.modules.portfolio.model.CitationXml.class);
-		xstream.aliasType("citation", org.olat.modules.portfolio.model.CitationXml.class);
-	}
+public class LinksPortletTest {
 	
-	public static final XStream get() {
-		return xstream;
+	@Test
+	public void readPortletLinks() throws URISyntaxException {
+		URL xmlUrl = LinksPortletTest.class.getResource("portlet.xml");
+		File xmlFile = new File(xmlUrl.toURI());
+		
+		Map<String,PortletInstitution> institutions = LinksPortlet.readConfiguration(xmlFile);
+		Assert.assertNotNull(institutions);
+		PortletInstitution institution = institutions.get("*");
+		Assert.assertNotNull(institution);
 	}
+
 }
