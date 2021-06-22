@@ -27,11 +27,13 @@ package org.olat.fileresource.types;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -79,7 +81,7 @@ public class ScormCPFileResource extends FileResource {
 				Path manifestPath = fPath.resolve(realManifestPath);
 				
 				RootSearcher rootSearcher = new RootSearcher();
-				Files.walkFileTree(fPath, rootSearcher);
+				Files.walkFileTree(fPath, EnumSet.noneOf(FileVisitOption.class), 16, rootSearcher);
 				if(rootSearcher.foundRoot()) {
 					manifestPath = rootSearcher.getRoot().resolve(IMS_MANIFEST);
 				} else {

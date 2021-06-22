@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,13 +38,14 @@ import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.olat.core.id.OLATResourceable;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.PathUtils;
@@ -193,7 +195,7 @@ public class FileResource implements OLATResourceable {
 	protected static  RootSearcher searchRootDirectory(Path fPath)
 	throws IOException {
 		RootSearcher rootSearcher = new RootSearcher();
-		Files.walkFileTree(fPath, rootSearcher);
+		Files.walkFileTree(fPath, EnumSet.noneOf(FileVisitOption.class), 16, rootSearcher);
 		return rootSearcher;
 	}
 	
@@ -209,7 +211,7 @@ public class FileResource implements OLATResourceable {
 			}
 			
 			Path destDir = targetDirectory.toPath();
-			Files.walkFileTree(path, new CopyVisitor(path, destDir, filter));
+			Files.walkFileTree(path, EnumSet.noneOf(FileVisitOption.class), 24, new CopyVisitor(path, destDir, filter));
 			PathUtils.closeSubsequentFS(path);
 			return true;
 		} catch (IOException e) {
