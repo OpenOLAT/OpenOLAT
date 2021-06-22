@@ -149,8 +149,8 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		try {
-			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(filename));			
-			hres.setHeader("Content-Description",StringHelper.urlEncodeUTF8(filename));
+			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + StringHelper.transformDisplayNameToFileSystemName(filename) + ".pdf");			
+			hres.setHeader("Content-Description", StringHelper.transformDisplayNameToFileSystemName(filename));
 			document.save(hres.getOutputStream());
 		} catch (IOException e) {
 			log.error("", e);
