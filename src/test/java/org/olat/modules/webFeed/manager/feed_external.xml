@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed>
+  <creationDate class="sql-timestamp">2017-06-19 07:10:45.978</creationDate>
+  <lastModified class="sql-timestamp">2021-06-22 11:55:06.837</lastModified>
+  <resourceableId>91352657861130</resourceableId>
+  <type>FileResource.BLOG</type>
+  <title>Blog OpenOlat</title>
+  <description></description>
+  <externalFeedURL>https://blog.openolat.ch/?feed=rss2</externalFeedURL>
+  <isExternal>true</isExternal>
+  <modelVersion>3</modelVersion>
+</feed>

@@ -107,6 +107,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -412,6 +413,15 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 		condition.setConditionId("projectbroker");
 		this.conditionProjectBroker = condition;
 	}
+	
+	protected static XStream getXStream() {
+		XStream xstream = XStreamHelper.createXStreamInstance();
+		Class<?>[] types = new Class[] {
+				ProjectBrokerConfig.class
+			};
+		xstream.addPermission(new ExplicitTypePermission(types));
+		return xstream;
+	}
 
 	@Override
 	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper,
@@ -429,11 +439,9 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 			// for the broker prefs
 			File projectBrokerFile = new File(folderNodeData, "projectbroker.xml");
 			if (projectBrokerFile.exists()) {
-				XStream xstream = XStreamHelper.createXStreamInstance();
-				XStreamHelper.allowDefaultPackage(xstream);
+				XStream xstream = getXStream();
 				ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
-				ProjectBrokerConfig brokerConfig = (ProjectBrokerConfig) XStreamHelper.readObject(xstream,
-						projectBrokerFile);
+				ProjectBrokerConfig brokerConfig = (ProjectBrokerConfig)XStreamHelper.readObject(xstream, projectBrokerFile);
 				if (brokerConfig != null && brokerConfig.getAccountGroupKey() != null) {
 					Long accountGroupKey = envMapper.toGroupKeyFromOriginalKey(brokerConfig.getAccountGroupKey());
 					if (accountGroupKey != null) {
@@ -456,8 +464,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 
 	private void importProject(File projectDir, File projectFile, ProjectBroker projectBroker, ICourse course,
 			CourseEnvironmentMapper envMapper) {
-		XStream xstream = XStreamHelper.createXStreamInstance();
-		XStreamHelper.allowDefaultPackage(xstream);
+		XStream xstream = getXStream();
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
@@ -466,8 +473,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 		// read the projectConfiguration from the importDirectory
 		try {
 			@SuppressWarnings("unchecked")
-			Map<String, Object> projectConfig = (HashMap<String, Object>) XStreamHelper.readObject(xstream,
-					projectFile);
+			Map<String, Object> projectConfig = (Map<String, Object>) XStreamHelper.readObject(xstream, projectFile);
 			String projectTitle = (String) projectConfig.get("title");
 
 			Long originalGroupKey = null;
@@ -537,8 +543,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		ProjectBroker pb = projectBrokerManager.getProjectBroker(projectBrokerManager.getProjectBrokerId(cpm, this));
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
-		XStream xstream = XStreamHelper.createXStreamInstance();
-		XStreamHelper.allowDefaultPackage(xstream);
+		XStream xstream = getXStream();
 
 		// folder for the pb node
 		File pbNodeFolder = new File(exportDirectory, getIdent());
@@ -557,7 +562,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 			// create a hashmap with the project configuration and insert the
 			// project data
 			File projectFile = new File(projectFolder, project.getKey() + ".xml");
-			HashMap<String, Object> projectData = new HashMap<>();
+			Map<String, Object> projectData = new HashMap<>();
 			projectData.put("title", project.getTitle());
 			projectData.put("description", project.getDescription());
 			projectData.put("customFieldSize", project.getCustomFieldSize());

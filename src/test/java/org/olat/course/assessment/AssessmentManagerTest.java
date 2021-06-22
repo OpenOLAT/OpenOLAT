@@ -85,7 +85,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 	private CourseNode assessableCourseNode;
 	private Identity tutor;
 	private Identity student;
-	private final Float score = new Float(10);
+	private final Float score = Float.valueOf(10);
 	private final Boolean passed = Boolean.TRUE;
 	
 	@Autowired
@@ -152,7 +152,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 				
 		assessmentManager = course.getCourseEnvironment().getAssessmentManager();				
 		
-		Long assessmentID = new Long("123456");
+		Long assessmentID = Long.valueOf("123456");
 		Integer attempts = 1;
 		String coachComment = "SomeUselessCoachComment";
 		String userComment = "UselessUserComment";
@@ -275,12 +275,12 @@ public class AssessmentManagerTest extends OlatTestCase  {
 			if(assessmentMap.get(AssessmentHelper.KEY_IDENTIFYER).equals(assessableCourseNode.getIdent())) {
 				String scoreString = (String) assessmentMap.get(AssessmentHelper.KEY_SCORE);				
 				log.info("scoreString: " + scoreString);
-				assertEquals(score, new Float(scoreString));				
+				assertEquals(score, Float.valueOf(scoreString));				
 			}
 		}
 		Double scoreDouble = efficiencyStatementManager.getScore(assessableCourseNode.getIdent(), efficiencyStatement);
 		log.info("scoreDouble: " + scoreDouble);
-		assertEquals(new Double(score),efficiencyStatementManager.getScore(assessableCourseNode.getIdent(), efficiencyStatement));
+		assertEquals(Double.valueOf(score),efficiencyStatementManager.getScore(assessableCourseNode.getIdent(), efficiencyStatement));
 		assertEquals(passed,efficiencyStatementManager.getPassed(assessableCourseNode.getIdent(), efficiencyStatement));
 		return efficiencyStatement;
 	}

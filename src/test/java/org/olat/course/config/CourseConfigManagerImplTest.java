@@ -26,9 +26,9 @@
 
 package org.olat.course.config;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
@@ -95,6 +95,6 @@ public class CourseConfigManagerImplTest extends OlatTestCase {
 		 */
 		courseConfigManager.deleteConfigOf(course);
 		VFSItem cc1File = CourseConfigManagerImpl.getConfigFile(course);
-		assertFalse("CourseConfig file no longer exists.", cc1File != null);
+		Assert.assertNull("CourseConfig file no longer exists.", cc1File);
 	}
 }

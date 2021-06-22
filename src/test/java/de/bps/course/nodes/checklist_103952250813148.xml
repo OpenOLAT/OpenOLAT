@@ -1,0 +1,15 @@
+<de.bps.olat.modules.cl.Checklist>
+  <version>0</version>
+  <title>Checkliste (alt)</title>
+  <checkpoints>
+    <de.bps.olat.modules.cl.Checkpoint>
+      <version>0</version>
+      <title>Check</title>
+      <description>Frentix</description>
+      <mode>mode.editable</mode>
+      <lastModified>2021-06-22 06:37:10.119 UTC</lastModified>
+      <checklist reference="../../.."/>
+      <results/>
+    </de.bps.olat.modules.cl.Checkpoint>
+  </checkpoints>
+</de.bps.olat.modules.cl.Checklist>

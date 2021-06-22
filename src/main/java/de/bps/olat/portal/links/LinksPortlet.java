@@ -20,7 +20,6 @@
 package de.bps.olat.portal.links;
 
 import java.io.File;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -39,15 +39,16 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.portal.AbstractPortlet;
 import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.quality.analysis.MultiGroupBy;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
 *
@@ -81,21 +82,22 @@ public class LinksPortlet extends AbstractPortlet {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStreamHelper.allowDefaultPackage(xstream);
+		Class<?>[] types = new Class[] {
+				MultiGroupBy.class, PortletLink.class, PortletInstitution.class };
+		xstream.addPermission(new ExplicitTypePermission(types));
+
 		xstream.alias("LinksPortlet", Map.class);
 		xstream.alias(ELEM_LINK, PortletLink.class);
 		xstream.alias(ELEM_INSTITUTION, PortletInstitution.class);
 		xstream.aliasAttribute(PortletInstitution.class, ATTR_INSTITUTION_NAME, ATTR_INSTITUTION_NAME);
 	}
 	
-	private static HashMap<String, PortletInstitution> content;
+	private static Map<String, PortletInstitution> content;
 
 	private static File fxConfXStreamFile;
 	private Controller runCtr;
 	
-	/**
-	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.gui.control.WindowControl, org.olat.gui.UserRequest, java.util.Map)
-	 */
+	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		if(content == null) init();
 		LinksPortlet p = new LinksPortlet();
@@ -136,7 +138,7 @@ public class LinksPortlet extends AbstractPortlet {
 
 		if (!fxConfXStreamFile.exists()){
 			try {
-				SAXReader reader = SAXReader.createDefault();;
+				SAXReader reader = SAXReader.createDefault();
 				Document doc = reader.read(fxConfFile);
 				Element rootElement = doc.getRootElement();
 				List<Element> lstInst = rootElement.elements(ELEM_INSTITUTION);
@@ -164,8 +166,13 @@ public class LinksPortlet extends AbstractPortlet {
 			saveLinkList(content);
 			FileUtils.copyFileToFile(fxConfFile, new File(fxConfFile + ".bak"), true);
 		} else {
-			content = (HashMap<String, PortletInstitution>) XStreamHelper.readObject(xstream, fxConfXStreamFile);
+			content = readConfiguration(fxConfXStreamFile);
 		}		
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static Map<String, PortletInstitution> readConfiguration(File file) {
+		return (Map<String, PortletInstitution>) XStreamHelper.readObject(xstream, file);
 	}
 	
 	public static boolean saveLinkList(Map<String, PortletInstitution> portletMap){

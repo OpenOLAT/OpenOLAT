@@ -1,0 +1,98 @@
+<org.olat.course.assessment.EfficiencyStatement>
+  <assessmentNodes>
+    <map>
+      <entry>
+        <string>identifyer</string>
+        <string>103769899903862</string>
+      </entry>
+      <entry>
+        <string>indent</string>
+        <int>0</int>
+      </entry>
+      <entry>
+        <string>selectable</string>
+        <boolean>false</boolean>
+      </entry>
+      <entry>
+        <string>long.title</string>
+        <string>QTI Course</string>
+      </entry>
+      <entry>
+        <string>lastUserModified</string>
+        <sql-timestamp>2021-05-26 15:47:13.438</sql-timestamp>
+      </entry>
+      <entry>
+        <string>lastCoachModified</string>
+        <date>2021-06-04 15:22:47.56 UTC</date>
+      </entry>
+      <entry>
+        <string>type</string>
+        <string>st</string>
+      </entry>
+      <entry>
+        <string>short.title</string>
+        <string>QTI Course</string>
+      </entry>
+    </map>
+    <map>
+      <entry>
+        <string>minScore</string>
+        <float>0.0</float>
+      </entry>
+      <entry>
+        <string>indent</string>
+        <int>1</int>
+      </entry>
+      <entry>
+        <string>selectable</string>
+        <boolean>true</boolean>
+      </entry>
+      <entry>
+        <string>lastUserModified</string>
+        <sql-timestamp reference="../../../map/entry[5]/sql-timestamp"/>
+      </entry>
+      <entry>
+        <string>type</string>
+        <string>iqtest</string>
+      </entry>
+      <entry>
+        <string>short.title</string>
+        <string>Test QTI</string>
+      </entry>
+      <entry>
+        <string>maxScore</string>
+        <float>3.0</float>
+      </entry>
+      <entry>
+        <string>identifyer</string>
+        <string>103769899903897</string>
+      </entry>
+      <entry>
+        <string>score</string>
+        <string>3</string>
+      </entry>
+      <entry>
+        <string>long.title</string>
+        <string></string>
+      </entry>
+      <entry>
+        <string>lastCoachModified</string>
+        <date reference="../../../map/entry[6]/date"/>
+      </entry>
+      <entry>
+        <string>fscore</string>
+        <float>3.0</float>
+      </entry>
+      <entry>
+        <string>attempts</string>
+        <int>2</int>
+      </entry>
+    </map>
+  </assessmentNodes>
+  <courseTitle>QTI Course</courseTitle>
+  <courseRepoEntryKey>2446196736</courseRepoEntryKey>
+  <displayableUserInfo>Seibl, Karin Josepha</displayableUserInfo>
+  <lastUpdated>1622820167067</lastUpdated>
+  <lastUserModified>1622044033438</lastUserModified>
+  <lastCoachModified>1622820167056</lastCoachModified>
+</org.olat.course.assessment.EfficiencyStatement>

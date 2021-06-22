@@ -47,7 +47,7 @@ public class HeaderLE extends AbstractLayoutElement {
 		//
 	}
 
-	public HeaderLE(Map<String, Object> config) {
+	public HeaderLE(Map<String, String> config) {
 		super(config);
 
 		HashMap<String, Integer> iFrameRelativeChildren = new HashMap<>();
@@ -83,7 +83,7 @@ public class HeaderLE extends AbstractLayoutElement {
 	}
 
 	@Override
-	public AbstractLayoutElement createInstance(Map<String, Object> elConfig) {
+	public AbstractLayoutElement createInstance(Map<String, String> elConfig) {
 		return new HeaderLE(elConfig);
 	}
 

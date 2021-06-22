@@ -117,6 +117,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -131,7 +132,10 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	
 	private static final XStream taskDefinitionsXstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStreamHelper.allowDefaultPackage(taskDefinitionsXstream);
+		Class<?>[] types = new Class[] {
+				Solution.class, SolutionList.class, TaskDefinition.class, TaskDefinitionList.class
+			};
+		taskDefinitionsXstream.addPermission(new ExplicitTypePermission(types));
 	}
 	
 	@Autowired

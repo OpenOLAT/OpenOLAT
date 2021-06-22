@@ -45,7 +45,7 @@ import org.olat.course.config.ui.courselayout.attribs.PreviewLA;
 public abstract class AbstractLayoutElement {
 	
 	private List<AbstractLayoutAttribute> availableAttributes;
-	private Map<String, Object> config;
+	private Map<String, String> config;
 	private HashMap<String, Integer> iFrameRelativeChildren;
 	private HashMap<String, Integer> mainRelativeChilds;
 	
@@ -53,7 +53,7 @@ public abstract class AbstractLayoutElement {
 		//
 	}
 	
-	protected AbstractLayoutElement(Map<String, Object> config) {
+	protected AbstractLayoutElement(Map<String, String> config) {
 		this.config = config;
 	}
 
@@ -68,7 +68,7 @@ public abstract class AbstractLayoutElement {
 	 * @return
 	 */
 	private String loopChildren(HashMap<String, Integer> relativeChilds) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (Entry<String, Integer> relChild : relativeChilds.entrySet()) {
 			sb.append(relChild.getKey()).append(" { \n" );
 			int rel = relChild.getValue();
@@ -78,7 +78,7 @@ public abstract class AbstractLayoutElement {
 		return sb.toString();
 	}
 		
-	protected void prepareAttributePart(int rel, StringBuffer sb){
+	protected void prepareAttributePart(int rel, StringBuilder sb){
 		for (AbstractLayoutAttribute attrib : availableAttributes) {
 			if (StringHelper.containsNonWhitespace(attrib.getAttributeValue())){
 				sb.append("\t");
@@ -109,7 +109,7 @@ public abstract class AbstractLayoutElement {
 	public abstract String getLayoutElementTypeName();
 	
 	// factory method must be implemented to create a new instance of given type
-	public abstract AbstractLayoutElement createInstance(Map<String, Object> elConfig);
+	public abstract AbstractLayoutElement createInstance(Map<String, String> elConfig);
 	
 	protected void initAttributeConfig() {
 		if (getConfig() != null) {
@@ -117,11 +117,11 @@ public abstract class AbstractLayoutElement {
 			for (AbstractLayoutAttribute abstractLayoutAttribute : avAttribs) {
 				String type = abstractLayoutAttribute.getLayoutAttributeTypeName();
 				if (type.equals(PreviewLA.IDENTIFIER)){
-					StringBuffer sbPreviewStyle = new StringBuffer();
+					StringBuilder sbPreviewStyle = new StringBuilder();
 					prepareAttributePart(0, sbPreviewStyle);
 					abstractLayoutAttribute.setAttributeValue(sbPreviewStyle.toString());
 				} else {
-					abstractLayoutAttribute.setAttributeValue((String) getConfig().get(type));
+					abstractLayoutAttribute.setAttributeValue(getConfig().get(type));
 				}
 			}
 		}
@@ -130,7 +130,7 @@ public abstract class AbstractLayoutElement {
 	/**
 	 * @return Returns the config.
 	 */
-	public Map<String, Object> getConfig() {
+	public Map<String, String> getConfig() {
 		return config;
 	}
 	
