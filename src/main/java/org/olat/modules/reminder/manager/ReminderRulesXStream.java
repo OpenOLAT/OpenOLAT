@@ -23,10 +23,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.reminder.ReminderRule;
+import org.olat.modules.reminder.model.ImportExportReminder;
 import org.olat.modules.reminder.model.ImportExportReminders;
+import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.modules.reminder.model.ReminderRules;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -38,11 +42,16 @@ public class ReminderRulesXStream {
 	
 	private static final XStream ruleXStream = XStreamHelper.createXStreamInstance();
 	static {
-		XStreamHelper.allowDefaultPackage(ruleXStream);
-		ruleXStream.alias("rule", org.olat.modules.reminder.model.ReminderRuleImpl.class);
-		ruleXStream.alias("rules", org.olat.modules.reminder.model.ReminderRules.class);
-		ruleXStream.alias("reminders", org.olat.modules.reminder.model.ImportExportReminders.class);
-		ruleXStream.alias("reminder", org.olat.modules.reminder.model.ImportExportReminder.class);
+		Class<?>[] types = new Class[] {
+				ReminderRule.class, ReminderRuleImpl.class, ReminderRules.class,
+				ImportExportReminders.class, ImportExportReminder.class
+			};
+		ruleXStream.addPermission(new ExplicitTypePermission(types));
+
+		ruleXStream.alias("rule", ReminderRuleImpl.class);
+		ruleXStream.alias("rules", ReminderRules.class);
+		ruleXStream.alias("reminders", ImportExportReminders.class);
+		ruleXStream.alias("reminder", ImportExportReminder.class);
 	}
 	
 	public static ReminderRules toRules(String rulesXml) {

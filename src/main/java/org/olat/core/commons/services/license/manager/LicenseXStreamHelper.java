@@ -19,17 +19,19 @@
  */
 package org.olat.core.commons.services.license.manager;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.model.LicenseImpl;
 import org.olat.core.commons.services.license.model.LicenseTypeImpl;
 import org.olat.core.commons.services.license.model.ResourceLicenseImpl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.springframework.stereotype.Component;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -44,7 +46,12 @@ class LicenseXStreamHelper {
 	
 	private static final XStream licenseXStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
-		XStreamHelper.allowDefaultPackage(licenseXStream);
+		Class<?>[] types = new Class[] {
+				License.class, LicenseImpl.class, ResourceLicenseImpl.class,
+				LicenseType.class, LicenseTypeImpl.class,
+		};
+		licenseXStream.addPermission(new ExplicitTypePermission(types));
+		
 		licenseXStream.alias("license", LicenseImpl.class);
 		licenseXStream.alias("license", ResourceLicenseImpl.class);
 		licenseXStream.alias("licenseType", LicenseTypeImpl.class);

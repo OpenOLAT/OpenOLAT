@@ -77,7 +77,7 @@ public class ResourceLicenseImpl implements ResourceLicense, Persistable {
 	@Override
 	public Long getKey() {
 		return key;
-	};
+	}
 
 	@Override
 	public Date getCreationDate() {

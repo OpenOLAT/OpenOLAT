@@ -65,6 +65,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * Initial Date:  19.05.2005
@@ -89,7 +90,11 @@ public class RepositoryEntryImportExport {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStreamHelper.allowDefaultPackage(xstream);
+		Class<?>[] types = new Class[] {
+			RepositoryEntryImport.class
+		};
+		xstream.addPermission(new ExplicitTypePermission(types));
+		
 		xstream.alias(PROP_ROOT, RepositoryEntryImport.class);
 		xstream.aliasField(PROP_SOFTKEY, RepositoryEntryImport.class, "softkey");
 		xstream.aliasField(PROP_RESOURCENAME, RepositoryEntryImport.class, "resourcename");
@@ -376,7 +381,7 @@ public class RepositoryEntryImportExport {
 			} else {
 				File inputFile = new File(baseDirectory, PROPERTIES_FILE);
 				if(inputFile.exists()) {
-					repositoryProperties = (RepositoryEntryImport)XStreamHelper.readObject(xstream, inputFile);
+					repositoryProperties = readFromXml(inputFile);
 				} else {
 					repositoryProperties = new RepositoryEntryImport();
 				}
@@ -385,6 +390,10 @@ public class RepositoryEntryImportExport {
 			repositoryProperties = new RepositoryEntryImport();
 		}
 		propertiesLoaded = true;
+	}
+	
+	protected static RepositoryEntryImport readFromXml(File inputFile) {
+		return (RepositoryEntryImport)XStreamHelper.readObject(xstream, inputFile);
 	}
 	
 	/**
@@ -478,7 +487,7 @@ public class RepositoryEntryImportExport {
 		return repositoryProperties.getImageName();
 	}
 	
-	public class RepositoryEntryImport {
+	public static class RepositoryEntryImport {
 		
 		private Long key;
 		private String softkey;

@@ -73,6 +73,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 import de.bps.course.nodes.cl.ChecklistEditController;
 import de.bps.olat.modules.cl.Checklist;
@@ -80,6 +81,7 @@ import de.bps.olat.modules.cl.ChecklistDisplayController;
 import de.bps.olat.modules.cl.ChecklistManager;
 import de.bps.olat.modules.cl.Checkpoint;
 import de.bps.olat.modules.cl.CheckpointMode;
+import de.bps.olat.modules.cl.CheckpointResult;
 
 /**
  * Description:<br>
@@ -308,12 +310,10 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
-		XStream xstream = XStreamHelper.createXStreamInstance();
-		XStreamHelper.allowDefaultPackage(xstream);
 		ChecklistManager cm = ChecklistManager.getInstance();
 		Checklist checklist = loadOrCreateChecklist(course.getCourseEnvironment().getCoursePropertyManager());
 		Checklist copy = cm.copyChecklistInRAM(checklist);
-		String exportContent = xstream.toXML(copy);
+		String exportContent = getXStream().toXML(copy);
 		ExportUtil.writeContentToFile(getExportFilename(), exportContent, exportDirectory, WebappHelper.getDefaultCharset());
 	}
 	
@@ -328,9 +328,7 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 			return;
 		}
 		
-		XStream xstream = XStreamHelper.createXStreamInstance();
-		XStreamHelper.allowDefaultPackage(xstream);
-		Checklist checklist = (Checklist) xstream.fromXML(importContent);
+		Checklist checklist = (Checklist)getXStream().fromXML(importContent);
 		if(checklist != null) {
 			checklist = ChecklistManager.getInstance().copyChecklist(checklist);
 			setChecklistKey(cpm, checklist.getKey());
@@ -346,9 +344,7 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 		filename = ZipUtil.concat(archivePath, filename);
 		
 		Checklist checklist = loadOrCreateChecklist(course.getCourseEnvironment().getCoursePropertyManager());
-		XStream xstream = XStreamHelper.createXStreamInstance();
-		XStreamHelper.allowDefaultPackage(xstream);
-		String exportContent = xstream.toXML(checklist);
+		String exportContent = getXStream().toXML(checklist);
 		try {
 			exportStream.putNextEntry(new ZipEntry(filename));
 			IOUtils.write(exportContent, exportStream, "UTF-8");
@@ -357,6 +353,15 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 			log.error("", e);
 		}
 		return true;
+	}
+	
+	protected static XStream getXStream() {
+		XStream xstream = XStreamHelper.createXStreamInstance();
+		Class<?>[] types = new Class[] {
+				CheckpointResult.class, Checkpoint.class, Checklist.class,
+			};
+		xstream.addPermission(new ExplicitTypePermission(types));
+		return xstream;
 	}
 
 	private String getExportFilename() {

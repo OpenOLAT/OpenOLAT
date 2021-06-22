@@ -33,7 +33,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -55,22 +54,20 @@ import org.olat.user.UserManager;
  */
 @Entity(name="item")
 @Table(name="o_feed_item")
-@NamedQueries({
-	@NamedQuery(name="loadItemByGuid",
-			query="select data from item data where data.feed.key=:feedKey and data.guid=:guid"),
-	@NamedQuery(name="loadItemByGuidWithoutFeed",
-			query="select data from item data where data.guid=:guid"),
-	@NamedQuery(name="loadItemsByFeed",
-		query="select data from item data where data.feed=:feed"),
-	@NamedQuery(name="loadItemsByAuthorWithFeed",
-		query="select data from item data inner join fetch data.feed as feed where data.authorKey=:authorKey"),
-	@NamedQuery(name="loadItemsGuidByFeed",
-		query="select guid from item data where data.feed=:feed"),
-	@NamedQuery(name="removeItem",
-		query="delete from item data where data.key=:key"),
-	@NamedQuery(name="removeItemsForFeed",
-		query="delete from item data where data.feed.key=:feedKey")
-})
+@NamedQuery(name="loadItemByGuid",
+		query="select data from item data where data.feed.key=:feedKey and data.guid=:guid")
+@NamedQuery(name="loadItemByGuidWithoutFeed",
+		query="select data from item data where data.guid=:guid")
+@NamedQuery(name="loadItemsByFeed",
+	query="select data from item data where data.feed=:feed")
+@NamedQuery(name="loadItemsByAuthorWithFeed",
+	query="select data from item data inner join fetch data.feed as feed where data.authorKey=:authorKey")
+@NamedQuery(name="loadItemsGuidByFeed",
+	query="select guid from item data where data.feed=:feed")
+@NamedQuery(name="removeItem",
+	query="delete from item data where data.key=:key")
+@NamedQuery(name="removeItemsForFeed",
+	query="delete from item data where data.feed.key=:feedKey")
 public class ItemImpl implements Item, Serializable {
 
 	private static final long serialVersionUID = 4504634251127072211L;

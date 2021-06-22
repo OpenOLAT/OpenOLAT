@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinksPortlet>
+  <entry>
+    <string>*</string>
+    <University name="*">
+      <links>
+        <Link>
+          <title>OpenOLAT</title>
+          <url>http://www.openolat.org</url>
+          <target>blank</target>
+          <language>de</language>
+          <description>Projektseite zu OpenOLAT</description>
+          <identifier>905fc36d893f4e948fd77e8f5030b0e0</identifier>
+        </Link>
+      </links>
+    </University>
+  </entry>
+</LinksPortlet>

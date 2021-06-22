@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +38,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -164,7 +166,7 @@ public class WikiManager {
 			}
 			
 			Path destDir = targetDirectory.toPath();
-			Files.walkFileTree(path, new ImportVisitor(destDir));
+			Files.walkFileTree(path, EnumSet.noneOf(FileVisitOption.class), 16, new ImportVisitor(destDir));
 			PathUtils.closeSubsequentFS(path);
 			return true;
 		} catch (IOException e) {
@@ -301,25 +303,31 @@ public class WikiManager {
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
 	    throws IOException {
 			String filename = file.getFileName().toString();
-			Path normalizedPath = file.normalize();
-			if(!normalizedPath.startsWith(destDir)) {
-				throw new IOException("Invalid ZIP");
-			}
-			
+
 	        if(filename.endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
 	        	String f = convertAlternativeFilename(file.toString());
 	        	final Path destFile = Paths.get(wikiDir.toString(), f);
+	        	checkDestinationFile(destFile);
 	        	resetAndCopyProperties(file, destFile);
 	        } else if (filename.endsWith(WIKI_FILE_SUFFIX)) {
 	        	String f = convertAlternativeFilename(file.toString());
 	        	final Path destFile = Paths.get(wikiDir.toString(), f);
+	        	checkDestinationFile(destFile);
 	        	Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
 			} else if (!filename.contains(WIKI_FILE_SUFFIX + "-")
 					&& !filename.contains(WIKI_PROPERTIES_SUFFIX + "-")) {
 				final Path destFile = Paths.get(mediaDir.toString(), file.toString());
+				checkDestinationFile(destFile);
 				Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
 			}
 	        return FileVisitResult.CONTINUE;
+		}
+		
+		private void checkDestinationFile(Path destFile) throws IOException {
+			Path normalizedPath = destFile.normalize();
+			if(!normalizedPath.startsWith(destDir)) {
+				throw new OLATRuntimeException("Invalid ZIP");
+			}
 		}
 	 
 		@Override

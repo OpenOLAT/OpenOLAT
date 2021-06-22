@@ -58,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * This class helps to store data like images and videos in the file systems
@@ -83,25 +84,15 @@ import com.thoughtworks.xstream.XStream;
 public class FeedFileStorge {
 
 	private static final Logger log = Tracing.createLoggerFor(FeedFileStorge.class);
-
-	private static final String MEDIA_DIR = "media";
-	private static final String ITEMS_DIR = "items";
-	public static final String FEED_FILE_NAME = "feed.xml";
-	public static final String ITEM_FILE_NAME = "item.xml";
-
-	// same as in repository metadata image upload
-	private static final int PICTUREWIDTH = 570;
-
-	private FileResourceManager fileResourceManager;
-	private final XStream xstream;
-
-	@Autowired
-	private ImageService imageHelper;
-
-	public FeedFileStorge() {
-		fileResourceManager = FileResourceManager.getInstance();
-		xstream = XStreamHelper.createXStreamInstance();
-		XStreamHelper.allowDefaultPackage(xstream);
+	
+	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+	static {
+		Class<?>[] types = new Class[] {
+				Feed.class, FeedImpl.class, Item.class, ItemImpl.class,
+				Enclosure.class, EnclosureImpl.class
+			};
+		xstream.addPermission(new ExplicitTypePermission(types));
+		
 		xstream.alias("feed", FeedImpl.class);
 		xstream.aliasField("type", FeedImpl.class, "resourceableType");
 		xstream.omitField(FeedImpl.class, "id");
@@ -113,6 +104,23 @@ public class FeedFileStorge {
 		xstream.omitField(ItemImpl.class, "feed");
 		xstream.alias("enclosure", Enclosure.class, EnclosureImpl.class);
 		xstream.ignoreUnknownElements();
+	}
+
+	private static final String MEDIA_DIR = "media";
+	private static final String ITEMS_DIR = "items";
+	public static final String FEED_FILE_NAME = "feed.xml";
+	public static final String ITEM_FILE_NAME = "item.xml";
+
+	// same as in repository metadata image upload
+	private static final int PICTUREWIDTH = 570;
+
+	private FileResourceManager fileResourceManager;
+
+	@Autowired
+	private ImageService imageHelper;
+
+	public FeedFileStorge() {
+		fileResourceManager = FileResourceManager.getInstance();
 	}
 
 	/**
@@ -292,7 +300,7 @@ public class FeedFileStorge {
 			if (leaf == null) {
 				leaf = feedContainer.createChildLeaf(FEED_FILE_NAME);
 			}
-			XStreamHelper.writeObject(xstream, leaf, feed);
+			toXML(leaf, feed);
 		}
 	}
 
@@ -310,11 +318,11 @@ public class FeedFileStorge {
 		if (feedContainer != null) {
 			VFSLeaf leaf = (VFSLeaf) feedContainer.resolve(FEED_FILE_NAME);
 			if (leaf != null) {
-				feed = (FeedImpl) XStreamHelper.readObject(xstream, leaf);
+				feed = (FeedImpl)fromXML(leaf);
 				shorteningFeedToLengthOfDbAttribues(feed);
 			}
 		} else {
-			log.warn("Feed XML-File could not be found on file system. Feed container: " + feedContainer);
+			log.warn("Feed XML-File could not be found on file system. Feed container: {}", feedContainer);
 		}
 
 		return feed;
@@ -355,9 +363,9 @@ public class FeedFileStorge {
 			Path feedPath = feedDir.resolve(FeedFileStorge.FEED_FILE_NAME);
 			try (InputStream in = Files.newInputStream(feedPath);
 					BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
-				feed = (FeedImpl) XStreamHelper.readObject(xstream, bis);
+				feed = (FeedImpl)fromXML(bis);
 			} catch (IOException e) {
-				log.warn("Feed XML-File could not be found on file system. Feed path: " + feedPath, e);
+				log.warn("Feed XML-File could not be found on file system. Feed path: {}", feedPath, e);
 			}
 		}
 
@@ -391,7 +399,7 @@ public class FeedFileStorge {
 			if (leaf == null) {
 				leaf = itemContainer.createChildLeaf(ITEM_FILE_NAME);
 			}
-			XStreamHelper.writeObject(xstream, leaf, item);
+			toXML(leaf, item);
 		}
 	}
 
@@ -410,14 +418,26 @@ public class FeedFileStorge {
 			VFSLeaf leaf = (VFSLeaf) itemContainer.resolve(ITEM_FILE_NAME);
 			if (leaf != null) {
 				try {
-					item = (ItemImpl) XStreamHelper.readObject(xstream, leaf);
+					item = (ItemImpl)fromXML(leaf);
 				} catch (Exception e) {
-					log.warn("Item XML-File could not be read. Item container: " + leaf);
+					log.warn("Item XML-File could not be read. Item container: {}", leaf);
 				}
 			}
 		}
 
 		return item;
+	}
+	
+	public static Object fromXML(VFSLeaf leaf) {
+		return XStreamHelper.readObject(xstream, leaf);
+	}
+	
+	public static Object fromXML(InputStream in) {
+		return XStreamHelper.readObject(xstream, in);
+	}
+	
+	public static void toXML(VFSLeaf leaf, Object obj) {
+		XStreamHelper.writeObject(xstream, leaf, obj);
 	}
 
 	/**

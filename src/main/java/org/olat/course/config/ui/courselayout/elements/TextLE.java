@@ -47,7 +47,7 @@ public class TextLE extends AbstractLayoutElement {
 		//
 	}
 
-	public TextLE(Map<String, Object> config) {
+	public TextLE(Map<String, String> config) {
 		super(config);
 
 		HashMap<String, Integer> iFrameRelativeChildren = new HashMap<>();
@@ -73,7 +73,7 @@ public class TextLE extends AbstractLayoutElement {
 		initAttributeConfig();
 	}
 
-	public TextLE createInstance(Map<String, Object> config) {
+	public TextLE createInstance(Map<String, String> config) {
 		return new TextLE(config);
 	}
 

@@ -79,6 +79,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * Description:<br>
@@ -105,7 +106,10 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStreamHelper.allowDefaultPackage(xstream);
+		Class<?>[] types = new Class[] {
+				EfficiencyStatement.class
+			};
+		xstream.addPermission(new ExplicitTypePermission(types));
 	}
 	
 	public static EfficiencyStatement fromXML(String xml) {

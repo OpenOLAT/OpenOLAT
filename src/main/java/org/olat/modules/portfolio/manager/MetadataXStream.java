@@ -20,8 +20,12 @@
 package org.olat.modules.portfolio.manager;
 
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.portfolio.Citation;
+import org.olat.modules.portfolio.CitationSourceType;
+import org.olat.modules.portfolio.model.CitationXml;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * For XStream
@@ -34,7 +38,10 @@ public class MetadataXStream {
 
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		XStreamHelper.allowDefaultPackage(xstream);
+		Class<?>[] types = new Class[] {
+				Citation.class, CitationSourceType.class, CitationXml.class
+			};
+		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.alias("citation", org.olat.modules.portfolio.model.CitationXml.class);
 		xstream.aliasType("citation", org.olat.modules.portfolio.model.CitationXml.class);
 	}

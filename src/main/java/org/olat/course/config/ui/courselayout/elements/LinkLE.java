@@ -48,7 +48,7 @@ public class LinkLE extends AbstractLayoutElement {
 		//
 	}
 
-	public LinkLE(Map<String, Object> config) {
+	public LinkLE(Map<String, String> config) {
 		super(config);
 		HashMap<String, Integer> iFrameRelativeChildren = new HashMap<>();
 		iFrameRelativeChildren.put("a", 0);
@@ -75,7 +75,7 @@ public class LinkLE extends AbstractLayoutElement {
 	}
 
 	@Override
-	public AbstractLayoutElement createInstance(Map<String, Object> config) {
+	public AbstractLayoutElement createInstance(Map<String, String> config) {
 		return new LinkLE(config);
 	}
 

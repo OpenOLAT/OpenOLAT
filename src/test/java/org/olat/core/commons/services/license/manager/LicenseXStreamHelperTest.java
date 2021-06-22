@@ -25,6 +25,9 @@ import org.junit.Test;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.model.LicenseImpl;
 import org.olat.core.commons.services.license.model.LicenseTypeImpl;
+import org.olat.core.commons.services.license.model.ResourceLicenseImpl;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
@@ -49,6 +52,31 @@ public class LicenseXStreamHelperTest {
 		LicenseXStreamHelper licenseXStreamHelper = new LicenseXStreamHelper();
 		String licenseAsXml = licenseXStreamHelper.toXml(license);
 		System.out.println(licenseAsXml);
+		License licenseFromXml = licenseXStreamHelper.licenseFromXml(licenseAsXml);
+		
+		assertThat(licenseFromXml.getLicensor()).isEqualTo(licensor);
+		assertThat(licenseFromXml.getFreetext()).isEqualTo(freetext);
+		assertThat(licenseFromXml.getLicenseType().getName()).isEqualTo(licenseTypeName);
+	}
+	
+	@Test
+	public void shouldConvertResourceLicenseToXmlAndBack() {
+		String licensor = "licenseOR";
+		String freetext = "free";
+		String licenseTypeName = "strictlicense";
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Course", Long.valueOf(32));
+		
+		LicenseTypeImpl licenseType = new LicenseTypeImpl();
+		licenseType.setName(licenseTypeName);
+		ResourceLicenseImpl license = new ResourceLicenseImpl();
+		license.setLicensor(licensor);
+		license.setFreetext(freetext);
+		license.setLicenseType(licenseType);
+		license.setOLATResourceable(ores);
+		
+		LicenseXStreamHelper licenseXStreamHelper = new LicenseXStreamHelper();
+		String licenseAsXml = licenseXStreamHelper.toXml(license);
+		assertThat(licenseAsXml).isNotNull();
 		License licenseFromXml = licenseXStreamHelper.licenseFromXml(licenseAsXml);
 		
 		assertThat(licenseFromXml.getLicensor()).isEqualTo(licensor);

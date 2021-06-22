@@ -42,7 +42,7 @@ public class GlossarySecurityCallbackImpl implements GlossarySecurityCallback {
 	 * Constructor for read-only glossary
 	 */
 	public GlossarySecurityCallbackImpl() {
-		this(false, false, false, new Long(0));
+		this(false, false, false, Long.valueOf(0));
 	}
 	
 	public GlossarySecurityCallbackImpl(boolean hasGlossaryRights, boolean owner, boolean editByUserEnabled, Long identityKey) {

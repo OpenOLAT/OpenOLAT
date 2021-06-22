@@ -25,7 +25,6 @@ import java.net.URL;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.logging.OLATRuntimeException;
 
 import com.thoughtworks.xstream.converters.ConversionException;
 
@@ -52,14 +51,6 @@ public class XStreamHelperTest {
 		Object obj = XStreamHelper.createXStreamInstanceForDBObjects().fromXML(file);
 		Assert.assertNotNull(obj);
 	}
-	
-	@Test
-	public void readXmlMapUnconfiguredAllowed() throws URISyntaxException {
-		URL url = XStreamHelperTest.class.getResource("xstream_map_strings.xml");
-		File file = new File(url.toURI());
-		Object obj = XStreamHelper.readObject(file);
-		Assert.assertNotNull(obj);
-	}
 
 	@Test(expected = ConversionException.class)
 	public void readXmlMapNotAllowed() throws URISyntaxException {
@@ -73,12 +64,5 @@ public class XStreamHelperTest {
 		URL url = XStreamHelperTest.class.getResource("xstream_map_alien.xml");
 		File file = new File(url.toURI());
 		XStreamHelper.createXStreamInstanceForDBObjects().fromXML(file);
-	}
-	
-	@Test(expected = OLATRuntimeException.class)
-	public void readXmlMapUnconfiguredNotAllowed() throws URISyntaxException {
-		URL url = XStreamHelperTest.class.getResource("xstream_map_alien.xml");
-		File file = new File(url.toURI());
-		XStreamHelper.readObject(file);
 	}
 }
