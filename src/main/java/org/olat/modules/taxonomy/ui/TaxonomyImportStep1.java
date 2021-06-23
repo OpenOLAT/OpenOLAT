@@ -268,6 +268,23 @@ public class TaxonomyImportStep1 extends BasicStep {
 				String[] identifierArray = path.split("/");
 				String identifier = identifierArray[identifierArray.length - 1];
 				
+				// Check identifier lengt
+				if (identifier.length() > 64) {
+					allOk = false;
+					inputEl.setErrorKey("import.taxonomy.error.identifier.too.long", new String[] {"64"});
+					errorRows.add(i);
+					continue;
+				}
+				
+				// Check display name lenght
+				if (displayName.length() > 255) {
+					allOk = false;
+					inputEl.setErrorKey("import.taxonomy.error.displayname.too.long", new String[] {"255"});
+					errorRows.add(i);
+					continue;
+				}
+				
+				
 				if (!path.endsWith("/")) {
 					path += "/";
 				}
