@@ -57,6 +57,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.portfolio.model.export.BinderXML;
 import org.olat.modules.portfolio.ui.BinderController;
 import org.olat.modules.portfolio.ui.BinderPickerController;
 import org.olat.modules.portfolio.ui.BinderRuntimeController;
@@ -154,7 +155,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 			
 			//import binder
 			File binderFile = new File(zipRoot, BinderTemplateResource.BINDER_XML);
-			Binder transientBinder = BinderXStream.fromPath(binderFile.toPath());
+			BinderXML transientBinder = BinderXStream.fromPath(binderFile.toPath());
 			
 			File posterImage = null;
 			if(StringHelper.containsNonWhitespace(transientBinder.getImagePath())) {

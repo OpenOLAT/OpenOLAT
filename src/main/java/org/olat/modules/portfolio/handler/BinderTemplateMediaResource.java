@@ -39,6 +39,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.model.export.BinderXML;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.resource.OLATResource;
@@ -107,6 +108,7 @@ public class BinderTemplateMediaResource implements MediaResource {
 		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 			Binder loadedTemplate = portfolioService.getBinderByKey(template.getKey());
+			BinderXML xmlTemplate = portfolioService.exportBinderByKey(loadedTemplate);
 			String label = loadedTemplate.getTitle();
 			String secureLabel = StringHelper.transformDisplayNameToFileSystemName(label);
 
@@ -116,7 +118,7 @@ public class BinderTemplateMediaResource implements MediaResource {
 
 			zout.setLevel(9);
 			zout.putNextEntry(new ZipEntry("binder.xml"));
-			BinderXStream.toStream(loadedTemplate, zout);
+			BinderXStream.toStream(xmlTemplate, zout);
 			zout.closeEntry();
 			
 			if(StringHelper.containsNonWhitespace(loadedTemplate.getImagePath())) {

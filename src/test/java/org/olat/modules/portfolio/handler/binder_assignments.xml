@@ -1,120 +1,230 @@
-<org.olat.modules.portfolio.model.BinderImpl>
-  <key>78</key>
-  <creationDate class="sql-timestamp">2016-10-24 16:11:38.734</creationDate>
-  <lastModified class="sql-timestamp">2016-10-24 16:11:38.734</lastModified>
-  <title>Portfolio can add pages</title>
+<binder>
+  <title>New template v2 (2)</title>
   <summary></summary>
-  <olatResource class="org.olat.resource.OLATResourceImpl">
-    <key>559087616</key>
-    <version>0</version>
-    <creationDate class="sql-timestamp">2016-10-24 16:11:38.728</creationDate>
-    <resName>BinderTemplate</resName>
-    <resId>94548827393094</resId>
-  </olatResource>
+  <imagePath>portfolio/posters/binders/b9/Hi There.png</imagePath>
   <sections>
-    <org.olat.modules.portfolio.model.SectionImpl>
-      <key>158</key>
-      <creationDate class="sql-timestamp">2016-10-24 16:12:06.867</creationDate>
-      <lastModified class="sql-timestamp">2016-10-24 16:12:06.867</lastModified>
-      <pos>0</pos>
-      <title>Section 1</title>
-      <description></description>
-      <status>notStarted</status>
-      <overrideBeginEndDates>false</overrideBeginEndDates>
-      <binder class="org.olat.modules.portfolio.model.BinderImpl" reference="../../.."/>
-      <pages/>
+    <section>
+      <title>Section (1)</title>
+      <description>&lt;p&gt;This is the first section&apos;s description&lt;/p&gt;</description>
+      <beginDate class="sql-timestamp">2017-03-05 23:00:00</beginDate>
+      <endDate class="sql-timestamp">2017-03-30 22:00:00</endDate>
       <assignments>
-        <org.olat.modules.portfolio.model.AssignmentImpl>
-          <key>109</key>
-          <creationDate class="sql-timestamp">2016-11-03 20:42:49.222</creationDate>
-          <lastModified class="sql-timestamp">2016-11-03 20:42:49.222</lastModified>
-          <pos>0</pos>
+        <assignment>
           <status>template</status>
-          <type>essay</type>
+          <type>form</type>
           <version>0</version>
           <template>false</template>
-          <title>Task 3 of 1</title>
-          <summary></summary>
+          <title>Ceci est un test</title>
+          <summary>&lt;p&gt;Bla bla&lt;/p&gt;</summary>
           <content></content>
-          <storage>portfolio/assignments/40/00002</storage>
-          <section class="org.olat.modules.portfolio.model.SectionImpl" reference="../../.."/>
           <onlyAutoEvaluation>true</onlyAutoEvaluation>
           <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
-          <anonymousExternalEvaluation>true</anonymousExternalEvaluation>
-        </org.olat.modules.portfolio.model.AssignmentImpl>
-        <org.olat.modules.portfolio.model.AssignmentImpl>
-          <key>110</key>
-          <creationDate class="sql-timestamp">2016-11-03 20:43:00.362</creationDate>
-          <lastModified class="sql-timestamp">2016-11-03 20:43:00.362</lastModified>
-          <pos>1</pos>
-          <status>template</status>
-          <type>essay</type>
-          <version>0</version>
-          <template>false</template>
-          <title>Task 4 of 1</title>
-          <summary></summary>
-          <content></content>
-          <storage>portfolio/assignments/c7/00001</storage>
-          <section class="org.olat.modules.portfolio.model.SectionImpl" reference="../../.."/>
-          <onlyAutoEvaluation>true</onlyAutoEvaluation>
-          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
-          <anonymousExternalEvaluation>true</anonymousExternalEvaluation>
-        </org.olat.modules.portfolio.model.AssignmentImpl>
-        <org.olat.modules.portfolio.model.AssignmentImpl>
-          <key>106</key>
-          <creationDate class="sql-timestamp">2016-10-24 16:12:36.838</creationDate>
-          <lastModified class="sql-timestamp">2016-10-24 16:12:36.838</lastModified>
-          <pos>2</pos>
-          <status>template</status>
-          <type>essay</type>
-          <version>0</version>
-          <template>false</template>
-          <title>Task 1 of 1</title>
-          <summary>&lt;p&gt;Work&lt;/p&gt;</summary>
-          <content>&lt;p&gt;Make the task&lt;/p&gt;</content>
-          <storage>portfolio/assignments/40/00001</storage>
-          <section class="org.olat.modules.portfolio.model.SectionImpl" reference="../../.."/>
-          <onlyAutoEvaluation>true</onlyAutoEvaluation>
-          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
-          <anonymousExternalEvaluation>true</anonymousExternalEvaluation>
-        </org.olat.modules.portfolio.model.AssignmentImpl>
-        <org.olat.modules.portfolio.model.AssignmentImpl>
-          <key>108</key>
-          <creationDate class="sql-timestamp">2016-11-03 20:42:29.001</creationDate>
-          <lastModified class="sql-timestamp">2016-11-03 20:42:29.001</lastModified>
-          <pos>3</pos>
-          <status>template</status>
-          <type>essay</type>
-          <version>0</version>
-          <template>false</template>
-          <title>Task 2 of 1</title>
-          <summary></summary>
-          <content></content>
-          <storage>portfolio/assignments/65/00001</storage>
-          <section class="org.olat.modules.portfolio.model.SectionImpl" reference="../../.."/>
-          <onlyAutoEvaluation>true</onlyAutoEvaluation>
-          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
-          <anonymousExternalEvaluation>true</anonymousExternalEvaluation>
-        </org.olat.modules.portfolio.model.AssignmentImpl>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
       </assignments>
-    </org.olat.modules.portfolio.model.SectionImpl>
+    </section>
+    <section>
+      <title>Section (2)</title>
+      <description>&lt;p&gt;This is a whole new section&lt;/p&gt;</description>
+      <beginDate class="sql-timestamp">2017-05-09 22:00:00</beginDate>
+      <assignments>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Travail 1.</title>
+          <summary></summary>
+          <content></content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Travail 2.</title>
+          <summary></summary>
+          <content></content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Travail 3.</title>
+          <summary></summary>
+          <content></content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Travail 4.</title>
+          <summary></summary>
+          <content></content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+      </assignments>
+    </section>
+    <section>
+      <title>Section (3)</title>
+      <description></description>
+      <beginDate class="sql-timestamp">2016-08-01 22:00:00</beginDate>
+      <endDate class="sql-timestamp">2016-08-30 22:00:00</endDate>
+      <assignments>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Travail 1.</title>
+          <summary></summary>
+          <content></content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Travail 2</title>
+          <summary></summary>
+          <content></content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Travail 2</title>
+          <summary></summary>
+          <content></content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Travail 4</title>
+          <summary>&lt;p&gt;project list&lt;/p&gt;</summary>
+          <content>&lt;p&gt;Work with a project list&lt;/p&gt;</content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+      </assignments>
+    </section>
+    <section>
+      <title>Section (4)</title>
+      <description>&lt;p&gt;Et encore beaucoup de texte &amp;agrave; &amp;eacute;crire&lt;/p&gt;</description>
+      <beginDate class="sql-timestamp">2017-06-23 22:00:00</beginDate>
+      <endDate class="sql-timestamp">2017-07-28 22:00:00</endDate>
+      <assignments>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Upload a document</title>
+          <summary>&lt;p&gt;Upload a &lt;em&gt;document&lt;/em&gt; with &lt;strong&gt;some&lt;/strong&gt; formatting&lt;/p&gt;</summary>
+          <content>&lt;p&gt;Upload a document&lt;/p&gt;</content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>true</anonymousExternalEvaluation>
+        </assignment>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Essay</title>
+          <summary>Write an essay</summary>
+          <content>&lt;p&gt;Write an essay&lt;/p&gt;</content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>true</anonymousExternalEvaluation>
+        </assignment>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Essay</title>
+          <summary>&lt;p&gt;An essay&lt;/p&gt;</summary>
+          <content></content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Little test</title>
+          <summary>&lt;p&gt;Writing sample&lt;/p&gt;</summary>
+          <content>&lt;p&gt;Updated assignment&lt;/p&gt;</content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+      </assignments>
+    </section>
+    <section>
+      <title>Section (5) evaluation</title>
+      <description>&lt;p&gt;The final evaluation&lt;/p&gt;</description>
+      <assignments>
+        <assignment>
+          <status>template</status>
+          <type>form</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Evaluation and external evaluation (not visible)</title>
+          <summary>&lt;p&gt;Evaluation and external evaluation (not visible)&lt;/p&gt;</summary>
+          <content></content>
+          <onlyAutoEvaluation>false</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>true</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+      </assignments>
+    </section>
+    <section>
+      <title>Section (6) documents</title>
+      <description></description>
+      <assignments>
+        <assignment>
+          <status>template</status>
+          <type>essay</type>
+          <version>0</version>
+          <template>false</template>
+          <title>Documents</title>
+          <summary>&lt;p&gt;Documents&lt;/p&gt;</summary>
+          <content></content>
+          <onlyAutoEvaluation>true</onlyAutoEvaluation>
+          <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
+          <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
+        </assignment>
+      </assignments>
+    </section>
   </sections>
-  <assignments>
-    <org.olat.modules.portfolio.model.AssignmentImpl>
-      <key>440</key>
-      <creationDate class="sql-timestamp">2021-06-22 12:23:20.703</creationDate>
-      <lastModified class="sql-timestamp">2021-06-22 12:23:20.703</lastModified>
-      <pos>0</pos>
-      <status>template</status>
-      <type>document</type>
-      <version>0</version>
-      <template>true</template>
-      <title>FormuleGravi.odf</title>
-      <storage>portfolio/assignments/9b/00001</storage>
-      <binder class="org.olat.modules.portfolio.model.BinderImpl" reference="../../.."/>
-      <onlyAutoEvaluation>true</onlyAutoEvaluation>
-      <reviewerSeeAutoEvaluation>false</reviewerSeeAutoEvaluation>
-      <anonymousExternalEvaluation>false</anonymousExternalEvaluation>
-    </org.olat.modules.portfolio.model.AssignmentImpl>
-  </assignments>
-</org.olat.modules.portfolio.model.BinderImpl>
+</binder>

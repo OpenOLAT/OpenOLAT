@@ -43,6 +43,7 @@ import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.model.SearchSharePagesParameters;
 import org.olat.modules.portfolio.model.SynchedBinder;
+import org.olat.modules.portfolio.model.export.BinderXML;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
@@ -68,7 +69,10 @@ public interface PortfolioService {
 	
 	public Binder copyBinder(Binder transientBinder, RepositoryEntry templateEntry);
 	
-	public Binder importBinder(Binder transientBinder, RepositoryEntry templateEntry, File image);
+
+	public BinderXML exportBinderByKey(Binder binder);
+	
+	public Binder importBinder(BinderXML transientBinder, RepositoryEntry templateEntry, File image);
 	
 	/**
 	 * 

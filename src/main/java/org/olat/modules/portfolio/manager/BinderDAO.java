@@ -29,8 +29,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Hibernate;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -687,11 +691,32 @@ public class BinderDAO {
 	}
 	
 	public Binder loadByKey(Long key) {
-		List<Binder> binders = dbInstance.getCurrentEntityManager()
-			.createNamedQuery("loadBinderByKey", Binder.class)
-			.setParameter("portfolioKey", key)
-			.getResultList();
-		return binders == null || binders.isEmpty() ? null : binders.get(0);
+		CriteriaBuilder cb = dbInstance.getCurrentEntityManager()
+				.getCriteriaBuilder();
+		CriteriaQuery<BinderImpl> cq = cb.createQuery(BinderImpl.class);
+		Root<BinderImpl> productRoot = cq.from(BinderImpl.class);
+		cq.select(productRoot)
+		  .where(cb.equal(productRoot.get("key"), key));
+
+		BinderImpl binder = dbInstance.getCurrentEntityManager()
+				.createQuery(cq)
+				.getSingleResult();
+		Hibernate.unproxy(binder);
+		for(Section section:binder.getSections()) {
+			Hibernate.unproxy(section);
+			List<Assignment> assignments = section.getAssignments();
+			for(Assignment assignment:assignments) {
+				Hibernate.unproxy(assignment);
+				
+				RepositoryEntry formEntry = assignment.getFormEntry();
+				if(formEntry != null) {
+					Hibernate.unproxy(assignment.getFormEntry());
+				}
+			}
+			
+		}
+
+		return binder;
 	}
 	
 	public Binder loadByResource(OLATResource resource) {

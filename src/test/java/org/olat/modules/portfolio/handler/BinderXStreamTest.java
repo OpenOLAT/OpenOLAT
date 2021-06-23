@@ -26,7 +26,7 @@ import java.net.URL;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.model.export.BinderXML;
 
 /**
  * 
@@ -38,10 +38,10 @@ public class BinderXStreamTest {
 	
 	@Test
 	public void readBinderExportXML() throws URISyntaxException, IOException {
-		URL binderUrl = BinderXStreamTest.class.getResource("binder_simple.xml");
+		URL binderUrl = BinderXStreamTest.class.getResource("binder_assignments.xml");
 		File binderFile = new File(binderUrl.toURI());
 		
-		Binder binder = BinderXStream.fromPath(binderFile.toPath());
+		BinderXML binder = BinderXStream.fromPath(binderFile.toPath());
 		Assert.assertNotNull(binder);
 	}
 	
@@ -50,21 +50,27 @@ public class BinderXStreamTest {
 		URL binderUrl = BinderXStreamTest.class.getResource("binder_assignments.xml");
 		File binderFile = new File(binderUrl.toURI());
 		
-		Binder binder = BinderXStream.fromPath(binderFile.toPath());
+		BinderXML binder = BinderXStream.fromPath(binderFile.toPath());
 		Assert.assertNotNull(binder);
 	}
 	
 	@Test
+	public void readBinderOldExportXML() throws URISyntaxException, IOException {
+		URL binderUrl = BinderXStreamTest.class.getResource("binder_old.xml");
+		File binderFile = new File(binderUrl.toURI());
+		BinderXML binder = BinderXStream.fromPath(binderFile.toPath());
+		Assert.assertNull(binder);
+	}
+	
+	@Test
 	public void readWriteBinder() throws URISyntaxException, IOException {
-		URL binderUrl = BinderXStreamTest.class.getResource("binder_simple.xml");
+		URL binderUrl = BinderXStreamTest.class.getResource("binder_assignments.xml");
 		File binderFile = new File(binderUrl.toURI());
 		
-		Binder binder = BinderXStream.fromPath(binderFile.toPath());
+		BinderXML binder = BinderXStream.fromPath(binderFile.toPath());
 		Assert.assertNotNull(binder);
 		
 		String xml = BinderXStream.toXML(binder);
 		Assert.assertNotNull(xml);
-		
 	}
-
 }

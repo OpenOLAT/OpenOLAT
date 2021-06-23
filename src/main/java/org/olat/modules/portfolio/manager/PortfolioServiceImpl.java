@@ -117,6 +117,9 @@ import org.olat.modules.portfolio.model.SearchSharePagesParameters;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SectionKeyRef;
 import org.olat.modules.portfolio.model.SynchedBinder;
+import org.olat.modules.portfolio.model.export.AssignmentXML;
+import org.olat.modules.portfolio.model.export.BinderXML;
+import org.olat.modules.portfolio.model.export.SectionXML;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -240,15 +243,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 		}
 		return internalCopyTransientBinder(transientBinder, entry, imagePath, true);
 	}
-
-	@Override
-	public Binder importBinder(Binder transientBinder, RepositoryEntry templateEntry, File image) {
-		String imagePath = null;
-		if(StringHelper.containsNonWhitespace(transientBinder.getImagePath())) {
-			imagePath = addPosterImageForBinder(image, image.getName());
-		}
-		return internalCopyTransientBinder(transientBinder, templateEntry, imagePath, false);
-	}
 	
 	private Binder internalCopyTransientBinder(Binder transientBinder, RepositoryEntry entry, String imagePath, boolean copy) {
 		Binder binder = binderDao.createAndPersist(transientBinder.getTitle(), transientBinder.getSummary(), imagePath, entry);
@@ -298,6 +292,72 @@ public class PortfolioServiceImpl implements PortfolioService {
 			log.error("", e);
 			return null;
 		}
+	}
+	
+	@Override
+	public BinderXML exportBinderByKey(Binder binder) {
+		BinderXML binderXml = new BinderXML();
+		binderXml.setTitle(binder.getTitle());
+		binderXml.setSummary(binder.getSummary());
+		binderXml.setImagePath(binder.getImagePath());
+		List<SectionXML> sectionsXml = binderXml.getSections();
+		
+		for(Section section:((BinderImpl)binder).getSections()) {
+			SectionXML sectionXml = new SectionXML();
+			sectionsXml.add(sectionXml);
+			sectionXml.setTitle(section.getTitle());
+			sectionXml.setDescription(section.getDescription());
+			sectionXml.setBeginDate(section.getBeginDate());
+			sectionXml.setEndDate(section.getEndDate());
+			
+			List<Assignment> assignments = section.getAssignments();
+			if(assignments != null && !assignments.isEmpty()) {
+				List<AssignmentXML> assigmentsXml = sectionXml.getAssignments();
+				for(Assignment assignment:assignments) {
+					AssignmentXML assignmentXml = new AssignmentXML();
+					assigmentsXml.add(assignmentXml);
+					assignmentXml.setTitle(assignment.getTitle());
+					assignmentXml.setSummary(assignment.getSummary());
+					assignmentXml.setContent(assignment.getContent());
+					assignmentXml.setType(assignment.getAssignmentType().name());
+					assignmentXml.setTemplate(assignment.isTemplate());
+					assignmentXml.setAssignmentStatus(assignment.getAssignmentStatus());
+					assignmentXml.setAnonymousExternalEvaluation(assignment.isAnonymousExternalEvaluation());
+					assignmentXml.setOnlyAutoEvaluation(assignment.isOnlyAutoEvaluation());
+					assignmentXml.setReviewerSeeAutoEvaluation(assignment.isReviewerSeeAutoEvaluation());
+				}
+			}
+		}
+		return binderXml;
+	}
+
+	@Override
+	public Binder importBinder(BinderXML transientBinder, RepositoryEntry templateEntry, File image) {
+		String imagePath = null;
+		if(StringHelper.containsNonWhitespace(transientBinder.getImagePath())) {
+			imagePath = addPosterImageForBinder(image, image.getName());
+		}
+		
+		Binder binder = binderDao.createAndPersist(transientBinder.getTitle(), transientBinder.getSummary(), imagePath, templateEntry);
+		for(SectionXML transientSection:transientBinder.getSections()) {
+			SectionImpl section = binderDao.createSection(transientSection.getTitle(), transientSection.getDescription(),
+					transientSection.getBeginDate(), transientSection.getEndDate(), binder);
+			
+			List<AssignmentXML> transientAssignments = transientSection.getAssignments();
+			for(AssignmentXML transientAssignment:transientAssignments) {
+				if(transientAssignment != null) {
+					File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
+					String storage = portfolioFileStorage.getRelativePath(newStorage);
+					assignmentDao.createAssignment(transientAssignment.getTitle(), transientAssignment.getSummary(),
+							transientAssignment.getContent(), storage, transientAssignment.getAssignmentType(),
+							transientAssignment.isTemplate(), transientAssignment.getAssignmentStatus(), section, null,
+							transientAssignment.isOnlyAutoEvaluation(), transientAssignment.isReviewerSeeAutoEvaluation(),
+							transientAssignment.isAnonymousExternalEvaluation(), null);
+				}
+			}
+		}
+		
+		return binder;
 	}
 
 	@Override
