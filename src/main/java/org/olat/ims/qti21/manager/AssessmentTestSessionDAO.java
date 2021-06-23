@@ -489,6 +489,28 @@ public class AssessmentTestSessionDAO {
 		return sessions.isEmpty() ? null : sessions.get(0);
 	}
 	
+	public List<Long> getRunningTestSessionIdentitiesKey(RepositoryEntryRef entry, String courseSubIdent, RepositoryEntry testEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select assessedIdentity.key from qtiassessmenttestsession session")
+		  .append(" inner join session.identity assessedIdentity")
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.testEntry.key=:testEntryKey")
+		  .append(" and session.finishTime is null and session.terminationTime is null");
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			sb.append(" and session.subIdent=:subIdent");
+		} else {
+			sb.append(" and session.subIdent is null");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("testEntryKey", testEntry.getKey());
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			query.setParameter("subIdent", courseSubIdent);
+		}
+		return query.getResultList();
+	}
+	
 	public List<AssessmentTestSession> getRunningTestSessions(RepositoryEntryRef entry, String courseSubIdent, RepositoryEntry testEntry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")
@@ -567,7 +589,7 @@ public class AssessmentTestSessionDAO {
 			sb.append(" and session.subIdent is null");
 		}
 		if(identities != null && !identities.isEmpty()) {
-			sb.append(" and session.identity in (:identityKeys)");
+			sb.append(" and session.identity.key in (:identityKeys)");
 		}
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
@@ -580,7 +602,10 @@ public class AssessmentTestSessionDAO {
 			query.setParameter("subIdent", courseSubIdent);
 		}
 		if(identities != null && !identities.isEmpty()) {
-			query.setParameter("identityKeys", identities);
+			List<Long> identityKeys = identities.stream()
+					.map(IdentityRef::getKey)
+					.collect(Collectors.toList());
+			query.setParameter("identityKeys", identityKeys);
 		}
 		
 		List<Long> found = query.getResultList();
