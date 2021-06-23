@@ -381,6 +381,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti21.manager.AssessmentItemSessionDAOTest.class,
 	org.olat.ims.qti21.manager.AssessmentResponseDAOTest.class,
 	org.olat.ims.qti21.manager.CorrectResponsesUtilTest.class,
+	org.olat.ims.qti21.manager.QTI21ServiceTest.class,
 	org.olat.ims.qti21.model.xml.AssessmentItemBuilderTest.class,
 	org.olat.ims.qti21.model.xml.MultipleChoiceAssessmentItemBuilderTest.class,
 	org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilderTest.class,

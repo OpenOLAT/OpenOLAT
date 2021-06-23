@@ -106,11 +106,17 @@ public class EditTaxonomyController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
 			displayNameEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else if (displayNameEl.getValue().length() > 255) {
+			displayNameEl.setErrorKey("import.taxonomy.error.displayname.too.long", new String[] {"255"});
+			allOk &= false;
 		}
 		
 		identifierEl.clearError();
 		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
 			identifierEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if (identifierEl.getValue().length() > 64) {
+			identifierEl.setErrorKey("import.taxonomy.error.identifier.too.long", new String[] {"64"});
 			allOk &= false;
 		}
 		
