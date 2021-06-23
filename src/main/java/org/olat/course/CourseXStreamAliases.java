@@ -38,6 +38,9 @@ import org.olat.course.condition.operators.IsNotInAttributeOperator;
 import org.olat.course.condition.operators.LowerThanEqualsOperator;
 import org.olat.course.condition.operators.LowerThanOperator;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant;
+import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.model.NodeRightGrantImpl;
 import org.olat.course.noderight.model.NodeRightImpl;
 import org.olat.course.nodes.AdobeConnectCourseNode;
@@ -106,6 +109,7 @@ public class CourseXStreamAliases {
 	public static void courseSecurity(XStream xstream) {
 		Class<?>[] types = new Class[] {
 			Structure.class, CourseEditorTreeModel.class, CourseEditorTreeNode.class,
+			NodeRight.class, NodeRightImpl.class, NodeRightGrant.class, NodeRightGrantImpl.class, NodeRightRole.class,
 			PasswordCondition.class,
 			TaskDefinitionList.class, TaskDefinition.class, SolutionList.class, Solution.class,
 			Checklist.class, Checkpoint.class, CheckboxList.class, Checkbox.class,
