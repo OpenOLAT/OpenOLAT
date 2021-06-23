@@ -26,6 +26,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ExtendedCondition;
 import org.olat.course.condition.additionalconditions.PasswordCondition;
+import org.olat.course.condition.additionalconditions.PasswordStore;
 import org.olat.course.condition.operators.AttributeEndswithOperator;
 import org.olat.course.condition.operators.AttributeStartswithOperator;
 import org.olat.course.condition.operators.EqualsOperator;
@@ -38,6 +39,9 @@ import org.olat.course.condition.operators.IsNotInAttributeOperator;
 import org.olat.course.condition.operators.LowerThanEqualsOperator;
 import org.olat.course.condition.operators.LowerThanOperator;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant;
+import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.model.NodeRightGrantImpl;
 import org.olat.course.noderight.model.NodeRightImpl;
 import org.olat.course.nodes.AdobeConnectCourseNode;
@@ -78,6 +82,7 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.edubase.BookSection;
 import org.olat.modules.edubase.model.BookSectionImpl;
 
 import com.thoughtworks.xstream.XStream;
@@ -105,12 +110,23 @@ public class CourseXStreamAliases {
 	
 	public static void courseSecurity(XStream xstream) {
 		Class<?>[] types = new Class[] {
+			// course structure
 			Structure.class, CourseEditorTreeModel.class, CourseEditorTreeNode.class,
-			PasswordCondition.class,
+			// course node permissions
+			NodeRight.class, NodeRightImpl.class, NodeRightGrant.class, NodeRightGrantImpl.class, NodeRightRole.class,
+			// course node password
+			PasswordCondition.class, PasswordStore.class,
+			// group task element
 			TaskDefinitionList.class, TaskDefinition.class, SolutionList.class, Solution.class,
+			// check lists element
 			Checklist.class, Checkpoint.class, CheckboxList.class, Checkbox.class,
+			// link list element
 			LLModel.class,
+			// single page element
 			DeliveryOptions.class,
+			// edubook elements
+			BookSection.class, BookSectionImpl.class,
+			// adobe connect element
 			AdobeConnectCompatibilityConfiguration.class, WimbaClassroomCompatibilityConfiguration.class, MeetingCompatibilityDate.class
 		};
 		
