@@ -36,7 +36,7 @@ import com.thoughtworks.xstream.XStream;
 public class CourseXStreamAliasesTest {
 	
 	@Test
-	public void testRunStructure_bpsChecklist() throws IOException {
+	public void readRunStructureBpsChecklist() throws IOException {
 		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
 		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("runstructure_checklist.xml");
 		Object runStructure = xStream.fromXML(in);
@@ -45,9 +45,87 @@ public class CourseXStreamAliasesTest {
 	}
 	
 	@Test
-	public void testmapping_allInOne() throws IOException {
+	public void readRunStructureAllInOne() throws IOException {
 		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
 		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("runstructure_allinone.xml");
+		Object runStructure = xStream.fromXML(in);
+		Assert.assertNotNull(runStructure);
+		in.close();
+	}
+	
+	@Test
+	public void readEditorTreeModelWithNodeRightCondition() throws IOException {
+		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
+		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("editortreemodel_noderight.xml");
+		Object editortree = xStream.fromXML(in);
+		Assert.assertNotNull(editortree);
+		in.close();
+	}
+	
+	@Test
+	public void readEditorTreeModelWithShibbolethCondition() throws IOException {
+		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
+		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("editortreemodel_shibboleth_specific.xml");
+		Object runStructure = xStream.fromXML(in);
+		Assert.assertNotNull(runStructure);
+		in.close();
+	}
+	
+	@Test
+	public void readEditorTreeModelWithOldAdobeConnectConfiguration() throws IOException {
+		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
+		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("editortreemodel_old_classroom.xml");
+		Object runStructure = xStream.fromXML(in);
+		Assert.assertNotNull(runStructure);
+		in.close();
+	}
+	
+	@Test
+	public void readEditorTreeModelWithOlWimbaConfiguration() throws IOException {
+		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
+		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("editortreemodel_wimba.xml");
+		Object runStructure = xStream.fromXML(in);
+		Assert.assertNotNull(runStructure);
+		in.close();
+	}
+	
+	/**
+	 * Check the link list.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void readEditorTreeModelWithLinklist() throws IOException {
+		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
+		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("editortreemodel_ll.xml");
+		Object runStructure = xStream.fromXML(in);
+		Assert.assertNotNull(runStructure);
+		in.close();
+	}
+	
+	/**
+	 * Check some optional course element: edubase, edusharing and card2brain
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void readEditorTreeModelWithEdu() throws IOException {
+		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
+		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("editortreemodel_edu.xml");
+		Object runStructure = xStream.fromXML(in);
+		Assert.assertNotNull(runStructure);
+		in.close();
+	}
+	
+	/**
+	 * Check some optional course element: Opencast, Livestream
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void readEditorTreeModelWithOpencastLiveStream() throws IOException {
+		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
+		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("editortreemodel_opencast_livestream.xml");
 		Object runStructure = xStream.fromXML(in);
 		Assert.assertNotNull(runStructure);
 		in.close();

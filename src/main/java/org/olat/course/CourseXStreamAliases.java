@@ -27,6 +27,7 @@ import org.olat.course.condition.Condition;
 import org.olat.course.condition.ExtendedCondition;
 import org.olat.course.condition.additionalconditions.PasswordCondition;
 import org.olat.course.condition.additionalconditions.PasswordStore;
+import org.olat.course.condition.operators.AbstractOperator;
 import org.olat.course.condition.operators.AttributeEndswithOperator;
 import org.olat.course.condition.operators.AttributeStartswithOperator;
 import org.olat.course.condition.operators.EqualsOperator;
@@ -38,6 +39,7 @@ import org.olat.course.condition.operators.IsInAttributeOperator;
 import org.olat.course.condition.operators.IsNotInAttributeOperator;
 import org.olat.course.condition.operators.LowerThanEqualsOperator;
 import org.olat.course.condition.operators.LowerThanOperator;
+import org.olat.course.condition.operators.Operator;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant;
@@ -114,6 +116,8 @@ public class CourseXStreamAliases {
 			Structure.class, CourseEditorTreeModel.class, CourseEditorTreeNode.class,
 			// course node permissions
 			NodeRight.class, NodeRightImpl.class, NodeRightGrant.class, NodeRightGrantImpl.class, NodeRightRole.class,
+			// course node permissions
+			ExtendedCondition.class, Operator.class,
 			// course node password
 			PasswordCondition.class, PasswordStore.class,
 			// group task element
@@ -132,6 +136,7 @@ public class CourseXStreamAliases {
 		
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.allowTypeHierarchy(CourseNode.class);
+		xstream.allowTypeHierarchy(AbstractOperator.class);
 	}
 	
 	/**

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<org.olat.course.tree.CourseEditorTreeModel>
+  <rootNode class="org.olat.course.tree.CourseEditorTreeNode">
+    <ident>91799926870693</ident>
+    <children>
+      <org.olat.course.tree.CourseEditorTreeNode>
+        <ident>91799954862143</ident>
+        <parent class="org.olat.course.tree.CourseEditorTreeNode" reference="../../.."/>
+        <accessible>true</accessible>
+        <selected>false</selected>
+        <cn class="de.bps.course.nodes.VCCourseNode">
+          <ident>91799954862143</ident>
+          <type>vc</type>
+          <shortTitle>Classes virtuelles</shortTitle>
+          <longTitle>Elément de cours de type Classes virtuelles</longTitle>
+          <moduleConfiguration>
+            <config>
+              <entry>
+                <string>vc_configuration</string>
+                <de.bps.course.nodes.vc.provider.adobe.AdobeConnectConfiguration>
+                  <providerId>adobe</providerId>
+                  <meetingDatas>
+                    <de.bps.course.nodes.vc.MeetingDate>
+                      <title>Meeting 1</title>
+                      <description>A new meeting</description>
+                      <start>2019-02-28 15:14:00.0 UTC</start>
+                      <end>2019-02-28 16:14:00.0 UTC</end>
+                    </de.bps.course.nodes.vc.MeetingDate>
+                  </meetingDatas>
+                  <useMeetingDates>true</useMeetingDates>
+                  <createMeetingImmediately>false</createMeetingImmediately>
+                  <guestAccessAllowed>false</guestAccessAllowed>
+                  <guestStartMeetingAllowed>false</guestStartMeetingAllowed>
+                </de.bps.course.nodes.vc.provider.adobe.AdobeConnectConfiguration>
+              </entry>
+              <entry>
+                <string>vc_provider_id</string>
+                <string>adobe</string>
+              </entry>
+            </config>
+          </moduleConfiguration>
+          <noAccessExplanation>Cet élément de cours n&apos;est pas accessible. </noAccessExplanation>
+          <preConditionVisibility>
+            <expertMode>false</expertMode>
+            <easyModeCoachesAndAdmins>false</easyModeCoachesAndAdmins>
+            <easyModeAlwaysAllowCoachesAndAdmins>false</easyModeAlwaysAllowCoachesAndAdmins>
+            <assessmentMode>false</assessmentMode>
+          </preConditionVisibility>
+          <additionalConditions/>
+          <preConditionAccess>
+            <expertMode>false</expertMode>
+            <easyModeCoachesAndAdmins>false</easyModeCoachesAndAdmins>
+            <easyModeAlwaysAllowCoachesAndAdmins>false</easyModeAlwaysAllowCoachesAndAdmins>
+            <assessmentMode>false</assessmentMode>
+          </preConditionAccess>
+        </cn>
+        <dirty>false</dirty>
+        <deleted>false</deleted>
+        <newnode>false</newnode>
+      </org.olat.course.tree.CourseEditorTreeNode>
+      <org.olat.course.tree.CourseEditorTreeNode>
+        <ident>99203926995491</ident>
+        <parent class="org.olat.course.tree.CourseEditorTreeNode" reference="../../.."/>
+        <accessible>true</accessible>
+        <selected>false</selected>
+        <cn class="de.bps.course.nodes.VCCourseNode">
+          <ident>99203926995491</ident>
+          <type>vc</type>
+          <shortTitle>Virtuelles Klassenzimmer</shortTitle>
+          <moduleConfiguration>
+            <config>
+              <entry>
+                <string>vc_configuration</string>
+                <de.bps.course.nodes.vc.provider.adobe.AdobeConnectConfiguration>
+                  <providerId>adobe</providerId>
+                  <useMeetingDates>false</useMeetingDates>
+                  <createMeetingImmediately>false</createMeetingImmediately>
+                  <guestAccessAllowed>true</guestAccessAllowed>
+                  <guestStartMeetingAllowed>true</guestStartMeetingAllowed>
+                </de.bps.course.nodes.vc.provider.adobe.AdobeConnectConfiguration>
+              </entry>
+              <entry>
+                <string>vc_provider_id</string>
+                <string>adobe</string>
+              </entry>
+            </config>
+          </moduleConfiguration>
+          <noAccessExplanation>Dieses Kurselement ist nicht zugänglich.</noAccessExplanation>
+          <preConditionVisibility>
+            <expertMode>false</expertMode>
+            <easyModeCoachesAndAdmins>false</easyModeCoachesAndAdmins>
+            <easyModeAlwaysAllowCoachesAndAdmins>false</easyModeAlwaysAllowCoachesAndAdmins>
+            <assessmentMode>false</assessmentMode>
+          </preConditionVisibility>
+          <additionalConditions/>
+          <preConditionAccess>
+            <expertMode>false</expertMode>
+            <easyModeCoachesAndAdmins>false</easyModeCoachesAndAdmins>
+            <easyModeAlwaysAllowCoachesAndAdmins>false</easyModeAlwaysAllowCoachesAndAdmins>
+            <assessmentMode>false</assessmentMode>
+          </preConditionAccess>
+        </cn>
+        <dirty>false</dirty>
+        <deleted>false</deleted>
+        <newnode>false</newnode>
+      </org.olat.course.tree.CourseEditorTreeNode>
+    </children>
+    <accessible>true</accessible>
+    <selected>false</selected>
+    <cn class="org.olat.course.nodes.STCourseNode">
+      <ident>91799926870693</ident>
+      <type>st</type>
+      <shortTitle>Adobe connect</shortTitle>
+      <longTitle>Adobe connect</longTitle>
+      <learningObjectives></learningObjectives>
+      <moduleConfiguration>
+        <config>
+          <entry>
+            <string>columns</string>
+            <int>2</int>
+          </entry>
+          <entry>
+            <string>display</string>
+            <string>peekview</string>
+          </entry>
+          <entry>
+            <string>allowRelativeLinks</string>
+            <string>false</string>
+          </entry>
+          <entry>
+            <string>deliveryOptions</string>
+            <org.olat.core.gui.control.generic.iframe.DeliveryOptions>
+              <standardMode>false</standardMode>
+              <jQueryEnabled>true</jQueryEnabled>
+              <glossaryEnabled>true</glossaryEnabled>
+              <openolatCss>true</openolatCss>
+            </org.olat.core.gui.control.generic.iframe.DeliveryOptions>
+          </entry>
+          <entry>
+            <string>configversion</string>
+            <int>4</int>
+          </entry>
+        </config>
+      </moduleConfiguration>
+      <preConditionVisibility>
+        <expertMode>false</expertMode>
+        <easyModeCoachesAndAdmins>false</easyModeCoachesAndAdmins>
+        <easyModeAlwaysAllowCoachesAndAdmins>false</easyModeAlwaysAllowCoachesAndAdmins>
+        <assessmentMode>false</assessmentMode>
+      </preConditionVisibility>
+      <additionalConditions/>
+      <preConditionAccess>
+        <expertMode>false</expertMode>
+        <easyModeCoachesAndAdmins>false</easyModeCoachesAndAdmins>
+        <easyModeAlwaysAllowCoachesAndAdmins>false</easyModeAlwaysAllowCoachesAndAdmins>
+        <assessmentMode>false</assessmentMode>
+      </preConditionAccess>
+      <scoreCalculator>
+        <expertMode>false</expertMode>
+        <passedCutValue>0</passedCutValue>
+      </scoreCalculator>
+    </cn>
+    <dirty>false</dirty>
+    <deleted>false</deleted>
+    <newnode>false</newnode>
+  </rootNode>
+  <latestPublishTimestamp>1551366902574</latestPublishTimestamp>
+  <highestNodeId>9223372036853775807</highestNodeId>
+  <version>3</version>
+</org.olat.course.tree.CourseEditorTreeModel>
