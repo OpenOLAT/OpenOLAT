@@ -36,5 +36,6 @@ public class WizardConstants {
 	
 	public static final String MSG = "message";
 	public static final String PATH_TO_DELETE = "pathToDelete";
+	public static final String ATTACHEMENTS = "attachements";
 	
 }

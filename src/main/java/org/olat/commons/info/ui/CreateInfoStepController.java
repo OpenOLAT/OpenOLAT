@@ -45,11 +45,13 @@ public class CreateInfoStepController extends StepFormBasicController {
 	
 	private final StepsRunContext runContext;
 	private final InfoEditFormController editForm;
+	private final InfoMessage message;
 	
 	public CreateInfoStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm, InfoMessage message) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		
 		this.runContext = runContext;
+		this.message = message;
 		editForm = new InfoEditFormController(ureq, wControl, rootForm, true, message);
 		listenTo(editForm);
 		
@@ -75,7 +77,9 @@ public class CreateInfoStepController extends StepFormBasicController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(source == editForm) {
 			if(event == Event.CHANGED_EVENT) {
-				runContext.put(WizardConstants.PATH_TO_DELETE, editForm.getAttachmentPathToDelete());
+				if (message != null && message.getKey() == null) {
+					runContext.put(WizardConstants.PATH_TO_DELETE, editForm.getAttachmentPathToDelete());
+				} 
 			}
 		}
 		super.event(ureq, source, event);
@@ -90,6 +94,7 @@ public class CreateInfoStepController extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		runContext.put(WizardConstants.MSG, editForm.getInfoMessage());
 		runContext.put(WizardConstants.PATH_TO_DELETE, editForm.getAttachmentPathToDelete());
+		runContext.put(WizardConstants.ATTACHEMENTS, editForm.getAttachements());
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }
