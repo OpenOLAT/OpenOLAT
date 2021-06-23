@@ -65,9 +65,9 @@ public interface InfoMessageFrontendManager {
 	
 	public void saveInfoMessage(InfoMessage msg);
 	
-	public VFSLeaf getAttachment(InfoMessage msg);
+	//public VFSItem getAttachment(InfoMessage msg);
 	
-	public String storeAttachment(File file, String filename, OLATResourceable ores, String subPath);
+	public String storeAttachment(File file, String filename, OLATResourceable ores, Identity identity);
 	
 	public void deleteAttachments(Collection<String> paths);
 	
@@ -86,5 +86,9 @@ public interface InfoMessageFrontendManager {
 			Date after, Date before);
 	
 	public List<Identity> getInfoSubscribers(OLATResourceable resource, String subPath);
+	
+	public List<VFSLeaf> getAttachments(InfoMessage msg);
+	
+	public List<File> getAttachmentFiles(InfoMessage msg);
 
 }

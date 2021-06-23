@@ -21,10 +21,6 @@
 package org.olat.commons.info.manager;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageFrontendManager;
@@ -45,7 +42,6 @@ import org.olat.commons.info.model.InfoMessageImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -89,7 +85,7 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	private InfoMessageManager infoMessageManager;
 	@Autowired
 	private InfoSubscriptionManager infoSubscriptionManager;
-
+	
 	@Override
 	public InfoMessage loadInfoMessage(Long key) {
 		return infoMessageManager.loadInfoMessageByKey(key);
@@ -106,50 +102,44 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	}
 	
 	@Override
-	public VFSLeaf getAttachment(InfoMessage msg) {
-		VFSLeaf attachment = null;
-		if(StringHelper.containsNonWhitespace(msg.getAttachmentPath())) {
-			VFSItem item = getStoragePath().resolve(msg.getAttachmentPath());
-			if(item instanceof VFSLeaf) {
-				attachment = (VFSLeaf)item;
-			}
-		}
-		return attachment;
-	}
-	
-	@Override
 	public void deleteAttachments(Collection<String> paths) {
 		if(paths == null || paths.isEmpty()) return;
 		
 		VFSContainer ressourceContainer = getStoragePath();
 		for(String path:paths) {
 			VFSItem item = ressourceContainer.resolve(path);
-			if(item instanceof VFSLeaf) {
-				((VFSLeaf)item).deleteSilently();
+			if(item != null) {
+				item.deleteSilently();
 			}
 		}
 	}
 
 	@Override
-	public String storeAttachment(File file, String filename, OLATResourceable ores, String subPath) {
+	public String storeAttachment(File attachmentTempDirectory, String folderName, OLATResourceable ores, Identity identity) {
 		try {
-			File ressourceDir = getResourceDir(ores);
+			VFSContainer ressourceContainer = getResourceContainer(ores);
 
 			String datePart;
 			synchronized(formater) {
 				datePart = formater.format(new Date());
 			}
-			if(filename == null) {
-				filename = file.getName();
+			if(folderName == null) {
+				folderName = datePart + "_attachments";
+			} else {
+				// Get the folder name from relative path
+				String[] parts = folderName.split("/");
+				folderName = parts[parts.length - 1];
 			}
-			filename = datePart + "_" + filename;
-			File attachment = new File(ressourceDir, filename);
-			Files.copy(file.toPath(), attachment.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			
-			File root = getStoragePath().getBasefile();
-			Path relativePath = root.toPath().relativize(attachment.toPath());
-			return relativePath.toString();
-		} catch (IOException e) {
+			VFSContainer attachmentFolder = VFSManager.getOrCreateContainer(ressourceContainer, folderName);
+			
+			for(File file : attachmentTempDirectory.listFiles()) {
+				VFSLeaf leaf = attachmentFolder.createChildLeaf(file.getName());
+				VFSManager.copyContent(file, leaf, identity);
+			}
+			
+			return VFSManager.getRelativeItemPath(attachmentFolder, getStoragePath(), null);
+		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
@@ -222,10 +212,16 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 				if(!StringHelper.containsNonWhitespace(body)) {
 					body = infoMessage.getMessage();
 				}
-				File attachment = null;
+				File[] attachment = null;
 				if(StringHelper.containsNonWhitespace(infoMessage.getAttachmentPath())) {
 					File root = getStoragePath().getBasefile();
-					attachment = new File(root, infoMessage.getAttachmentPath());
+					File attachmentWrapper = new File(root, infoMessage.getAttachmentPath());
+					
+					if (attachmentWrapper.isDirectory() && attachmentWrapper.listFiles() != null) {
+						attachment = attachmentWrapper.listFiles();
+					} else {
+						attachment = new File[] { attachmentWrapper };
+					}
 				}
 				
 				MailContext context = new MailContextImpl(mailFormatter.getBusinessPath());
@@ -320,5 +316,52 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	@Override
 	public List<Identity> getInfoSubscribers(OLATResourceable resource, String subPath) {
 		return infoSubscriptionManager.getInfoSubscribers(resource, subPath);
+	}
+
+	@Override
+	public List<VFSLeaf> getAttachments(InfoMessage msg) {
+		VFSItem attachment = null;
+		List<VFSLeaf> attachments = new ArrayList<>();
+		
+		if(StringHelper.containsNonWhitespace(msg.getAttachmentPath())) {
+			attachment = getStoragePath().resolve(msg.getAttachmentPath());
+			
+			if (attachment instanceof VFSContainer) {
+				for (VFSItem file : ((VFSContainer) attachment).getItems()) {
+					if (file instanceof VFSLeaf) {
+						attachments.add((VFSLeaf) file);
+					}
+				}
+			} else if (attachment instanceof VFSLeaf) {
+				attachments.add((VFSLeaf) attachment);
+			}
+		}
+		
+		return attachments;
+	}
+	
+	@Override
+	public List<File> getAttachmentFiles(InfoMessage msg) {
+		if (!StringHelper.containsNonWhitespace(msg.getAttachmentPath())) {
+			return null;
+		}
+		
+		String[] attachmentsPath = msg.getAttachmentPath().split("/");
+		String attachmentsName = attachmentsPath[attachmentsPath.length - 1];
+		
+		File attachmentsDir = new File(getResourceDir(msg.getOLATResourceable()).getAbsolutePath() + "/" + attachmentsName);
+		List<File> attachments = new ArrayList<>();
+		
+		if (attachmentsDir.isDirectory()) {
+			if (attachmentsDir.listFiles() != null) {
+				for (File file : attachmentsDir.listFiles()) {
+					attachments.add(file);
+				}
+			}
+		} else {
+			attachments.add(attachmentsDir);
+		}
+		
+		return attachments;
 	}
 }

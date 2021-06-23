@@ -42,22 +42,18 @@
 				<div class="o_content">$info.getMessage()</div>
 			#end 
 			
-			#if($r.isNotEmpty($info.attachment))
-			<div class="o_attachment">
-				#set($attachment = $info.attachment)
-				#set($fname = $attachment.name)
-				<a href="${attachmentMapper}/$info.key/$fname" target="_blank">
-					<div class="o_filename">$r.escapeHtml($fname)</div>
-					<div class="o_size">
-						<i class="o_icon o_icon-fw $r.getFiletypeIconCss($fname)"></i>
-						 $r.formatBytes($attachment.getSize())
-					</div>
-					#if ($attachment.getMetaInfo() && $attachment.getMetaInfo().isThumbnailAvailable())										
-					<img src="${thumbnailMapper}/$info.key/$attachment.getMetaInfo().getUUID()/$fname" class="img-thumbnail" alt="$r.escapeHtml("$fname")" title="$r.escapeHtml("$fname")"/>
-					<i class="o_icon o_icon-lg o_icon_enlarge"> </i>
-					#end
-				</a>	
-			</div>
+			#if($r.isNotEmpty($info.attachments))
+			#foreach($attachment in $info.attachments)
+				<div class="o_attachment">
+					#set($fname = $attachment.name)
+					<a href="${attachmentMapper}/$info.key/$fname" target="_blank">
+						<span class="o_filename"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($fname)"></i> $r.escapeHtml($fname)</span>
+						<span class="o_size">
+							 - $r.formatBytes($attachment.getSize())
+						</span>
+					</a>	
+				</div>
+			#end
 			#end
 			#if($r.available("info.delete.${info.getKey()}") or $r.available("info.edit.${info.getKey()}"))
 				<div class="o_button_group">

@@ -1,0 +1,9 @@
+<ul class="list-unstyled form-control-static">
+	#foreach ($attachment in $attachments)
+	<li class='clearfix o_highlight_on_hover'>
+		<span class="pull-right">$r.render("$attachment.getName()")</span>
+		<i class="o_icon o_icon-fw $r.getFiletypeIconCss($attachment.getName())"> </i>${attachmentNames.get($attachment.getName())}  
+	</li>
+	#end
+</ul>
+

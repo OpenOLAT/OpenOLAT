@@ -20,11 +20,13 @@
 
 package org.olat.commons.info.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,8 +36,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.commons.info.manager.MailFormatter;
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -50,7 +50,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
@@ -70,7 +69,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.group.BusinessGroup;
@@ -96,18 +94,16 @@ public class InfoDisplayController extends FormBasicController {
 	private final List<FormLink> editLinks = new ArrayList<>();
 	private final List<FormLink> deleteLinks = new ArrayList<>();
 	private StepsMainRunController newInfoWizard;
+	private StepsMainRunController editInfoWizard;
 	private DialogBoxController confirmDelete;
-	private InfoEditController editController;
-	private CloseableModalController editDialogBox;
 	
 	private final List<Long> previousDisplayKeys = new ArrayList<>();
 	private final InfoSecurityCallback secCallback;
 	private final OLATResourceable ores;
 	private final String resSubPath;
 	private final String businessPath;
-	private final String thumbnailMapper;
-	private final String attachmentMapper;
-	private Map<Long,VFSLeaf> infoKeyToAttachment;
+	private String attachmentMapper;
+	private Map<String, VFSLeaf> infoKeysToAttachment;
 	
 	private int maxResults = 0;
 	private int maxResultsConfig = 0;
@@ -118,8 +114,6 @@ public class InfoDisplayController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private InfoMessageFrontendManager infoMessageManager;
-	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
 	
 	private LockResult lockEntry;
 	private MailFormatter sendMailFormatter;
@@ -136,7 +130,6 @@ public class InfoDisplayController extends FormBasicController {
 		this.businessPath = businessPath;
 		// default show 10 messages for groups
 		maxResults = maxResultsConfig = 10;
-		thumbnailMapper = registerCacheableMapper(ureq, "InfoMessagesThumbnail", new ThumbnailMapper());
 		attachmentMapper = registerCacheableMapper(ureq, "InfoMessages", new AttachmentMapper());
 		
 		initForm(ureq);	
@@ -155,7 +148,6 @@ public class InfoDisplayController extends FormBasicController {
 		this.maxResults = maxResults;
 		this.maxResultsConfig = maxResults;
 		
-		thumbnailMapper = registerCacheableMapper(ureq, "InfoMessagesThumbnail", new ThumbnailMapper());
 		attachmentMapper = registerCacheableMapper(ureq, "InfoMessages", new AttachmentMapper());
 		
 		if(duration > 0) {
@@ -241,13 +233,15 @@ public class InfoDisplayController extends FormBasicController {
 
 		List<InfoMessage> msgs = infoMessageManager.loadInfoMessageByResource(ores, resSubPath, businessPath, after, null, 0, maxResults);
 		List<InfoMessageForDisplay> infoDisplays = new ArrayList<>(msgs.size());
-		Map<Long,VFSLeaf> keyToDisplay = new HashMap<>();
+		Map<String, VFSLeaf> keysToDisplay = new HashMap<>();
 		for(InfoMessage info:msgs) {
 			previousDisplayKeys.add(info.getKey());
 			InfoMessageForDisplay infoDisplay = createInfoMessageForDisplay(info);
 			infoDisplays.add(infoDisplay);
-			if(infoDisplay.getAttachment() != null) {
-				keyToDisplay.put(info.getKey(), infoDisplay.getAttachment());
+			if(infoDisplay.getAttachments() != null) {
+				for (VFSLeaf attachment : infoDisplay.getAttachments()) {
+					keysToDisplay.put(info.getKey().toString() + "/" + attachment.getName(), attachment); 
+				}
 			}
 			
 			String dateCmpName = "info.date." + info.getKey();
@@ -272,7 +266,7 @@ public class InfoDisplayController extends FormBasicController {
 			}
 		}
 		flc.contextPut("infos", infoDisplays);
-		infoKeyToAttachment = keyToDisplay;
+		infoKeysToAttachment = keysToDisplay;
 
 		int numOfInfos = infoMessageManager.countInfoMessageByResource(ores, resSubPath, businessPath, null, null);
 		oldMsgsLink.setVisible((msgs.size() < numOfInfos));
@@ -306,8 +300,8 @@ public class InfoDisplayController extends FormBasicController {
 		} else {
 			infos = translate("display.info", new String[]{StringHelper.escapeHtml(authorName), creationDate});
 		}
-		VFSLeaf attachment = infoMessageManager.getAttachment(info);
-		return new InfoMessageForDisplay(info.getKey(), info.getTitle(), message, attachment, infos, modifier);
+		List<VFSLeaf> attachments = infoMessageManager.getAttachments(info);
+		return new InfoMessageForDisplay(info.getKey(), info.getTitle(), message, attachments, infos, modifier);
 	}
 	
 	@Override
@@ -325,7 +319,6 @@ public class InfoDisplayController extends FormBasicController {
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("thumbnailMapper", thumbnailMapper);
 			layoutCont.contextPut("attachmentMapper", attachmentMapper);
 		}
 	}
@@ -354,6 +347,19 @@ public class InfoDisplayController extends FormBasicController {
 			}	else if (event == Event.DONE_EVENT){
 				showError("failed");
 			}
+		} else if(source == editInfoWizard) {
+			if (event == Event.CANCELLED_EVENT) {
+				getWindowControl().pop();
+			} else if (event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				loadMessages();
+			}	else if (event == Event.DONE_EVENT){
+				showError("failed");
+			}
+			
+			//release lock
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
+			lockEntry = null;
 		} else if(source == confirmDelete) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				InfoMessage msgToDelete = (InfoMessage)confirmDelete.getUserObject();
@@ -367,22 +373,6 @@ public class InfoDisplayController extends FormBasicController {
 			confirmDelete.setUserObject(null);
 			
 			//release lock
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
-			lockEntry = null;
-		} else if (source == editController) {
-			if(event == Event.DONE_EVENT) {
-				loadMessages();
-			}
-			editDialogBox.deactivate();
-			removeAsListenerAndDispose(editController);
-			editDialogBox = null;
-			editController = null;
-			
-			//release lock
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
-			lockEntry = null;
-		} else if (source == editDialogBox) {
-			//release lock if the dialog is closed
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
 			lockEntry = null;
 		} else {
@@ -405,7 +395,7 @@ public class InfoDisplayController extends FormBasicController {
 			popupDelete(ureq, msg);
 		} else if(editLinks.contains(source)) {
 			InfoMessage msg = (InfoMessage)source.getUserObject();
-			popupEdit(ureq, msg);
+			launchEditWizard(ureq, msg);
 		} else if(source == oldMsgsLink) {
 			maxResults = -1;
 			after = null;
@@ -446,7 +436,7 @@ public class InfoDisplayController extends FormBasicController {
 		}
 	}
 	
-	protected void popupEdit(UserRequest ureq, InfoMessage msg) {
+	protected void launchEditWizard(UserRequest ureq, InfoMessage msg) {
 		OLATResourceable mres = OresHelper.createOLATResourceableInstance(InfoMessage.class, msg.getKey());
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(mres, ureq.getIdentity(), "", getWindow());
 		if(lockEntry.isSuccess()) {
@@ -457,14 +447,13 @@ public class InfoDisplayController extends FormBasicController {
 				lockEntry = null;
 				loadMessages();
 			} else {
-				removeAsListenerAndDispose(editController);
-				removeAsListenerAndDispose(editDialogBox);
-				editController = new InfoEditController(ureq, getWindowControl(), msg);
-				listenTo(editController);
-				editDialogBox = new CloseableModalController(getWindowControl(), translate("edit"),
-						editController.getInitialComponent(), true, translate("edit.title"), true);
-				editDialogBox.activate();
-				listenTo(editDialogBox);
+				removeAsListenerAndDispose(editInfoWizard);
+
+				start = new CreateInfoStep(ureq, sendMailOptions, groupsMailOptions, curriculaMailOptions, msg);
+				newInfoWizard = new StepsMainRunController(ureq, getWindowControl(), start, new FinishedCallback(),
+						new CancelCallback(), translate("create_message"), "o_sel_info_messages_create_wizard");
+				listenTo(newInfoWizard);
+				getWindowControl().pushAsModalDialog(newInfoWizard.getInitialComponent());
 			}
 		} else {
 			showLockError();
@@ -485,6 +474,9 @@ public class InfoDisplayController extends FormBasicController {
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 			
 			InfoMessage msg = (InfoMessage)runContext.get(WizardConstants.MSG);
+			File attachementsFolder = (File) runContext.get(WizardConstants.ATTACHEMENTS);
+			msg.setAttachmentPath(infoMessageManager.storeAttachment(attachementsFolder, msg.getAttachmentPath(), msg.getOLATResourceable(), getIdentity()));
+			
 			@SuppressWarnings("unchecked")
 			Set<String> selectedOptions = (Set<String>)runContext.get(WizardConstants.SEND_MAIL);
 			@SuppressWarnings("unchecked")
@@ -492,8 +484,19 @@ public class InfoDisplayController extends FormBasicController {
 			@SuppressWarnings("unchecked")
 			Set<String> selectedCurriculumOptions = (Set<String>)runContext.get(WizardConstants.SEND_CURRICULA);
 			@SuppressWarnings("unchecked")
-			Collection<String> pathToDelete = (Set<String>)runContext.get(WizardConstants.PATH_TO_DELETE);
-
+			Collection<String> fileNamesToDelete = (Set<String>)runContext.get(WizardConstants.PATH_TO_DELETE);
+			
+			// Delete files, which should be deleted
+			if (fileNamesToDelete != null && !fileNamesToDelete.isEmpty()) {
+				Collection<String> pathsToDelete = new HashSet<>();
+	
+				for (String fileName : fileNamesToDelete) {
+					pathsToDelete.add(msg.getAttachmentPath() + "/" + fileName);
+				}
+				
+				infoMessageManager.deleteAttachments(pathsToDelete);
+			}
+			
 			List<Identity> identities = new ArrayList<>();
 			for (SendMailOption option : sendMailOptions) {
 				if (selectedOptions != null && selectedOptions.contains(option.getOptionKey())) {
@@ -514,7 +517,6 @@ public class InfoDisplayController extends FormBasicController {
 			}
 			
 			infoMessageManager.sendInfoMessage(msg, sendMailFormatter, ureq.getLocale(), ureq.getIdentity(), identities);
-			infoMessageManager.deleteAttachments(pathToDelete);
 			
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.INFO_MESSAGE_CREATED, getClass(),
 					LoggingResourceable.wrap(msg.getOLATResourceable(), OlatResourceableType.infoMessage));
@@ -526,9 +528,6 @@ public class InfoDisplayController extends FormBasicController {
 	protected class CancelCallback implements StepRunnerCallback {
 		@Override
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-			@SuppressWarnings("unchecked")
-			Collection<String> pathToDelete = (Set<String>)runContext.get(WizardConstants.PATH_TO_DELETE);
-			infoMessageManager.deleteAttachments(pathToDelete);
 			return Step.NOSTEP;
 		}
 	}
@@ -536,46 +535,22 @@ public class InfoDisplayController extends FormBasicController {
 	private class AttachmentMapper implements Mapper {
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
-			if(infoKeyToAttachment == null) {
+			if(infoKeysToAttachment == null) {
 				return new NotFoundMediaResource();
 			}
 			
-			String[] query = relPath.split("/");
-			if(query.length > 1) {
+			String path; 
+			
+			if (relPath.startsWith("/")) {
+				path = relPath.substring(1);
+			} else {
+				path = relPath;
+			}
+			
+			if(StringHelper.containsNonWhitespace(path)) {
 				try {
-					Long infoKey = Long.valueOf(Long.parseLong(query[1]));
-					VFSLeaf attachment = infoKeyToAttachment.get(infoKey);
+					VFSLeaf attachment = infoKeysToAttachment.get(path);
 					return new VFSMediaResource(attachment);	
-				} catch (NumberFormatException e) {
-					//ignore them
-				}
-			}
-			return new NotFoundMediaResource();
-		}
-	}
-	
-	private class ThumbnailMapper implements Mapper {
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			if(infoKeyToAttachment == null) {
-				return new NotFoundMediaResource();
-			}
-			
-			String[] query = relPath.split("/");
-			if(query.length > 2) {
-				try {
-					Long infoKey = Long.valueOf(Long.parseLong(query[1]));
-					VFSLeaf attachment = infoKeyToAttachment.get(infoKey);
-					if(attachment != null && attachment.canMeta() == VFSConstants.YES) {
-						VFSMetadata meta = attachment.getMetaInfo();
-						if (meta.getUuid().equals(query[2])) {
-							VFSLeaf thumb = vfsRepositoryService.getThumbnail(attachment, meta, 200, 200, false);
-							if(thumb != null) {
-								// Positive lookup, send as response
-								return new VFSMediaResource(thumb);
-							}
-						}
-					}	
 				} catch (NumberFormatException e) {
 					//ignore them
 				}
