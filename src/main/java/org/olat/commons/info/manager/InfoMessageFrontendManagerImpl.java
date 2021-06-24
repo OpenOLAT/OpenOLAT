@@ -133,9 +133,11 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 			
 			VFSContainer attachmentFolder = VFSManager.getOrCreateContainer(ressourceContainer, folderName);
 			
-			for(File file : attachmentTempDirectory.listFiles()) {
-				VFSLeaf leaf = attachmentFolder.createChildLeaf(file.getName());
-				VFSManager.copyContent(file, leaf, identity);
+			if (attachmentTempDirectory != null) {
+				for(File file : attachmentTempDirectory.listFiles()) {
+					VFSLeaf leaf = attachmentFolder.createChildLeaf(file.getName());
+					VFSManager.copyContent(file, leaf, identity);
+				}
 			}
 			
 			return VFSManager.getRelativeItemPath(attachmentFolder, getStoragePath(), null);
