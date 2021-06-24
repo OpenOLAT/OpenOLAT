@@ -10,7 +10,7 @@
 		<property name="deploymentExportPath">target/arquillianDeployments</property>
 	</engine>
 
-    <container qualifier="tomcat-7-managed" default="true">
+    <container qualifier="tomcat-8-managed" default="true">
         <configuration>
             <property name="workDir">target/arquillianDeployments</property>
 			<property name="catalinaHome">target/arq-apache-tomcat-9.0.38</property>

@@ -1533,7 +1533,7 @@
 						<test.env.msgraph.app.secret>${test.env.msgraph.app.secret}</test.env.msgraph.app.secret>
 						<test.env.msgraph.app.tenant>${test.env.msgraph.app.tenant}</test.env.msgraph.app.tenant>
 						<test.env.msgraph.teams.producer>${test.env.msgraph.teams.producer}</test.env.msgraph.teams.producer>
-						<arquillian.launch>tomcat-7-managed</arquillian.launch>
+						<arquillian.launch>tomcat-8-managed</arquillian.launch>
 						<webdriver.browser>${test.env.webdriver.browser}</webdriver.browser>
 						<webdriver.firefox.version>${test.env.webdriver.firefox.version}</webdriver.firefox.version>
 						<webdriver.chrome.version>${test.env.webdriver.chrome.version}</webdriver.chrome.version>
@@ -2525,7 +2525,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
-			<artifactId>arquillian-tomcat-managed-7</artifactId>
+			<artifactId>arquillian-tomcat-managed-8</artifactId>
 			<version>1.1.0.Final</version>
 		<scope>test</scope>
       	</dependency>
