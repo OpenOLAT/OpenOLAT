@@ -27,8 +27,8 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 
-import com.microsoft.graph.models.generated.LobbyBypassScope;
-import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
+import com.microsoft.graph.models.LobbyBypassScope;
+import com.microsoft.graph.models.OnlineMeetingPresenters;
 
 /**
  * 

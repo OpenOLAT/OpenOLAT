@@ -44,8 +44,8 @@ import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.manager.MicrosoftGraphDAO;
 import org.olat.repository.RepositoryEntry;
 
-import com.microsoft.graph.models.generated.LobbyBypassScope;
-import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
+import com.microsoft.graph.models.LobbyBypassScope;
+import com.microsoft.graph.models.OnlineMeetingPresenters;
 
 /**
  * 

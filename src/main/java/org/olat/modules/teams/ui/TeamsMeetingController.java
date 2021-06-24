@@ -46,7 +46,7 @@ import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.microsoft.graph.models.extensions.User;
+import com.microsoft.graph.models.User;
 
 /**
  * 

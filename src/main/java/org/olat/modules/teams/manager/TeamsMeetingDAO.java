@@ -39,9 +39,9 @@ import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.microsoft.graph.models.generated.AccessLevel;
-import com.microsoft.graph.models.generated.LobbyBypassScope;
-import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
+import com.microsoft.graph.models.AccessLevel;
+import com.microsoft.graph.models.LobbyBypassScope;
+import com.microsoft.graph.models.OnlineMeetingPresenters;
 
 /**
  * 

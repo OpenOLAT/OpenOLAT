@@ -51,7 +51,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
+import com.microsoft.graph.models.OnlineMeetingPresenters;
 
 /**
  * 

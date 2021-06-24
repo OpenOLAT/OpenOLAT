@@ -19,8 +19,9 @@
  */
 package org.olat.modules.teams.manager;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -37,25 +38,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.microsoft.graph.core.ClientException;
-import com.microsoft.graph.models.extensions.Application;
-import com.microsoft.graph.models.extensions.IGraphServiceClient;
-import com.microsoft.graph.models.extensions.Identity;
-import com.microsoft.graph.models.extensions.IdentitySet;
-import com.microsoft.graph.models.extensions.ItemBody;
-import com.microsoft.graph.models.extensions.LobbyBypassSettings;
-import com.microsoft.graph.models.extensions.MeetingParticipantInfo;
-import com.microsoft.graph.models.extensions.MeetingParticipants;
-import com.microsoft.graph.models.extensions.OnlineMeeting;
-import com.microsoft.graph.models.extensions.Organization;
-import com.microsoft.graph.models.extensions.User;
-import com.microsoft.graph.models.generated.AccessLevel;
-import com.microsoft.graph.models.generated.BodyType;
-import com.microsoft.graph.models.generated.LobbyBypassScope;
-import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
-import com.microsoft.graph.models.generated.OnlineMeetingRole;
-import com.microsoft.graph.requests.extensions.GraphServiceClient;
-import com.microsoft.graph.requests.extensions.IApplicationCollectionPage;
-import com.microsoft.graph.requests.extensions.IUserCollectionPage;
+import com.microsoft.graph.models.AccessLevel;
+import com.microsoft.graph.models.Application;
+import com.microsoft.graph.models.BodyType;
+import com.microsoft.graph.models.Identity;
+import com.microsoft.graph.models.IdentitySet;
+import com.microsoft.graph.models.ItemBody;
+import com.microsoft.graph.models.LobbyBypassScope;
+import com.microsoft.graph.models.LobbyBypassSettings;
+import com.microsoft.graph.models.MeetingParticipantInfo;
+import com.microsoft.graph.models.MeetingParticipants;
+import com.microsoft.graph.models.OnlineMeeting;
+import com.microsoft.graph.models.OnlineMeetingPresenters;
+import com.microsoft.graph.models.OnlineMeetingRole;
+import com.microsoft.graph.models.Organization;
+import com.microsoft.graph.models.User;
+import com.microsoft.graph.requests.ApplicationCollectionPage;
+import com.microsoft.graph.requests.GraphServiceClient;
+import com.microsoft.graph.requests.UserCollectionPage;
+
+import okhttp3.Request;
 
 /**
  * 
@@ -95,9 +97,9 @@ public class MicrosoftGraphDAO {
 		return tokenProvider;
 	}
 	
-	public IGraphServiceClient client() {
+	public GraphServiceClient<Request> client() {
 		AuthenticationTokenProvider authProvider = getTokenProvider();
-		IGraphServiceClient graphClient = GraphServiceClient
+		GraphServiceClient<Request> graphClient = GraphServiceClient
 				.builder()
 				.authenticationProvider(authProvider)
 				.buildClient();
@@ -105,8 +107,8 @@ public class MicrosoftGraphDAO {
 		return graphClient;
 	}
 	
-	public IGraphServiceClient client(AuthenticationTokenProvider authProvider) {
-		IGraphServiceClient graphClient = GraphServiceClient
+	public GraphServiceClient<Request> client(AuthenticationTokenProvider authProvider) {
+		GraphServiceClient<Request> graphClient = GraphServiceClient
 				.builder()
 				.authenticationProvider(authProvider)
 				.buildClient();
@@ -215,7 +217,7 @@ public class MicrosoftGraphDAO {
 		}
 
 		try {
-			IUserCollectionPage user = client()
+			UserCollectionPage user = client()
 					.users()
 					.buildRequest()
 					.filter(sb.toString())
@@ -246,7 +248,7 @@ public class MicrosoftGraphDAO {
 		}
 
 		try {
-			IUserCollectionPage user = client().users()
+			UserCollectionPage user = client().users()
 					.buildRequest()
 					.filter(sb.toString())
 					.select("displayName,id,mail,otherMails")
@@ -261,7 +263,7 @@ public class MicrosoftGraphDAO {
 		}
 	}
 	
-	public User searchUserById(String id, IGraphServiceClient client, TeamsErrors errors) {
+	public User searchUserById(String id, GraphServiceClient<Request> client, TeamsErrors errors) {
 		try {
 			return client
 					.users(id)
@@ -276,7 +278,7 @@ public class MicrosoftGraphDAO {
 	}
 	
 	public List<User> getAllUsers() {
-		IUserCollectionPage user = client()
+		UserCollectionPage user = client()
 				.users()
 				.buildRequest()
 				.select("displayName,id,mail,otherMails")
@@ -284,7 +286,7 @@ public class MicrosoftGraphDAO {
 		return user.getCurrentPage();
 	}
 	
-	public Organization getOrganisation(String id, IGraphServiceClient client) {
+	public Organization getOrganisation(String id, GraphServiceClient<Request> client) {
 		try {
 			return client
 				.organization(id)
@@ -297,9 +299,9 @@ public class MicrosoftGraphDAO {
 		}
 	}
 	
-	public Application getApplication(String id, IGraphServiceClient client, TeamsErrors errors) {
+	public Application getApplication(String id, GraphServiceClient<Request> client, TeamsErrors errors) {
 		try {
-			IApplicationCollectionPage appsPage = client
+			ApplicationCollectionPage appsPage = client
 				.applications()
 				.buildRequest()
 				.filter("appId eq '" + id + "'")
@@ -321,7 +323,7 @@ public class MicrosoftGraphDAO {
 		try {
 			MicrosoftGraphAccessTokenManager accessTokenManager = new MicrosoftGraphAccessTokenManager(clientId, clientSecret, tenantGuid);
 			AuthenticationTokenProvider authProvider = new AuthenticationTokenProvider(accessTokenManager);
-			IGraphServiceClient client = client(authProvider);
+			GraphServiceClient<Request> client = client(authProvider);
 			
 			Organization org = getOrganisation(tenantGuid, client);
 			String organisation = org == null ? null : org.displayName;
@@ -346,7 +348,7 @@ public class MicrosoftGraphDAO {
 	
 	public final ConnectionInfos check(TeamsErrors errors) {
 		try {
-			IGraphServiceClient client = client();
+			GraphServiceClient<Request> client = client();
 			String tenantId = teamsModule.getTenantGuid();
 			Organization org = getOrganisation(tenantId, client);
 			String organisation = org == null ? null : org.displayName;
@@ -432,9 +434,8 @@ public class MicrosoftGraphDAO {
 		return createParticipantInfo(createIdentitySetById(id), role) ;
 	}
 	
-	private static final Calendar toCalendar(Date date) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		return cal;
+	private static final OffsetDateTime toCalendar(Date date) {
+		return date.toInstant()
+				  .atOffset(ZoneOffset.UTC);
 	}
 }
