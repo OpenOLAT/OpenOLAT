@@ -741,7 +741,8 @@ public class CourseElementTest extends Deployments {
 		infoMsgConfig
 			.editMessage("Information 2")
 			.setMessage("The latest information", "A very important info")
-			.save()
+			.next()
+			.finish()
 			.assertOnMessageTitle("The latest information");
 
 		//delete

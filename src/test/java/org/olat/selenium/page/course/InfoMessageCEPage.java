@@ -128,9 +128,8 @@ public class InfoMessageCEPage {
 	 */
 	public InfoMessageCEPage editMessage(String title) {
 		By editBy = By.xpath("//div[contains(@class,'o_msg')][div//h3[contains(text(),'" + title + "')]]//a[contains(@class,'o_sel_info_edit_msg')]");
-		List<WebElement> editEls = browser.findElements(editBy);
-		Assert.assertFalse(editEls.isEmpty());
-		editEls.get(0).click();
+		OOGraphene.waitElement(editBy, browser);
+		browser.findElement(editBy).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
