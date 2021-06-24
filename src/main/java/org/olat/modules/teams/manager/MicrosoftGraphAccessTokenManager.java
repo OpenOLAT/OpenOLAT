@@ -21,6 +21,7 @@ package org.olat.modules.teams.manager;
 
 import java.net.MalformedURLException;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -71,39 +72,55 @@ class MicrosoftGraphAccessTokenManager {
 		return tenantGuid;
 	}
 	
-	public IAuthenticationResult getAccessToken() {
+	public CompletableFuture<String> getAccessToken() {
 		return connect(clientId, clientSecret, tenantGuid);
 	}
 	
-	private IAuthenticationResult connect(String id, String secret, String tenant) {
+	private CompletableFuture<String> connect(String id, String secret, String tenant) {
 		ConfidentialClientApplication cca = createClientApplication(id, secret, tenant);
-		
-		IAuthenticationResult result = null;
-		if(cca != null) {
-	        try {
-	            SilentParameters silentParameters = SilentParameters
-	            	.builder(SCOPES)
-	            	.build();
-	            // try to acquire token silently. This call will fail since the token cache does not
-	            // have a token for the application you are requesting an access token for
-	            result = cca.acquireTokenSilently(silentParameters).join();
-	        } catch (Exception ex) {
-	            if (ex.getCause() instanceof MsalException) {
-	                ClientCredentialParameters parameters = ClientCredentialParameters
-	                		.builder(SCOPES)
-	                		.build();
-	                // Try to acquire a token. If successful, you should see
-	                // the token information printed out to console
-	                result = cca.acquireToken(parameters).join();
-	            } else {
-	                log.error("", ex);
-	            }
-	        }
+
+		CompletableFuture<IAuthenticationResult> result = null;
+		if (cca != null) {
+			try {
+				if (cache.isEmpty()) {
+					ClientCredentialParameters parameters = ClientCredentialParameters
+							.builder(SCOPES)
+							.build();
+					result = cca
+							.acquireToken(parameters);
+				} else {
+					SilentParameters silentParameters = SilentParameters
+							.builder(SCOPES)
+							.build();
+					// try to acquire token silently. This call will fail since the token cache does not
+					// have a token for the application you are requesting an access token for
+					result = cca
+							.acquireTokenSilently(silentParameters);
+				}
+			} catch (Exception ex) {
+				if (ex.getCause() instanceof MsalException) {
+					ClientCredentialParameters parameters = ClientCredentialParameters
+							.builder(SCOPES)
+							.build();
+					result = cca
+							.acquireToken(parameters);
+				} else {
+					log.error("", ex);
+				}
+			}
 		}
-        
-       	String accessToken = result == null ? null : result.accessToken();
-       	log.debug(Tracing.M_AUDIT, "Access token: {}", accessToken);
-       	return result;
+		if(result != null) {
+			return result.handleAsync((res, ex) -> {
+				if (ex != null && (ex instanceof MsalException || ex.getCause() instanceof MsalException)) {
+					ClientCredentialParameters parameters = ClientCredentialParameters
+							.builder(SCOPES)
+							.build();
+					return cca.acquireToken(parameters).join();
+				}
+				return res;
+			}).thenApply(IAuthenticationResult::accessToken);
+		}
+		return CompletableFuture.completedFuture((String)null);
 	}
 	
 	private ConfidentialClientApplication createClientApplication(String id, String secret, String tenant) {
@@ -121,9 +138,13 @@ class MicrosoftGraphAccessTokenManager {
 		}
 	}
 	
-	private class TokenCacheAccessAspect implements ITokenCacheAccessAspect {
-		
+	private static class TokenCacheAccessAspect implements ITokenCacheAccessAspect {
+
 		private String data;
+		
+		public boolean isEmpty() {
+			return data == null;
+		}
 
 		@Override
 		public void beforeCacheAccess(ITokenCacheAccessContext iTokenCacheAccessContext) {

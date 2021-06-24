@@ -34,7 +34,7 @@ import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.model.TeamsError;
 import org.olat.modules.teams.model.TeamsErrors;
 
-import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
+import com.microsoft.graph.models.OnlineMeetingPresenters;
 
 /**
  * 

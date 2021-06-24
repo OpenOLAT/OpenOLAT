@@ -103,7 +103,7 @@ public class IdentityDAO {
 		
 		List<Identity> identities = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
-				.setParameter("username", username)
+				.setParameter("username", username.toLowerCase())
 				.getResultList();
 		// deduplicate in Java, quicker than a distinct
 		return new ArrayList<>(new HashSet<>(identities));

@@ -41,7 +41,7 @@ import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.ui.EditTeamsMeetingController;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.microsoft.graph.models.generated.OnlineMeetingPresenters;
+import com.microsoft.graph.models.OnlineMeetingPresenters;
 
 /**
  * 

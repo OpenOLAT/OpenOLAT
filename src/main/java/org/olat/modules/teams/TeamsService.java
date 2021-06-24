@@ -29,7 +29,7 @@ import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.model.TeamsMeetingsSearchParameters;
 import org.olat.repository.RepositoryEntry;
 
-import com.microsoft.graph.models.extensions.User;
+import com.microsoft.graph.models.User;
 
 /**
  * 

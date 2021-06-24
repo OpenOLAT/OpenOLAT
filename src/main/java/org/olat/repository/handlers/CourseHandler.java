@@ -498,8 +498,9 @@ public class CourseHandler implements RepositoryHandler {
 						clonedRules.getRules().add(clonedRule);
 				}
 			}
-
-			Reminder clonedReminder = reminderService.createReminder(target, author);
+			
+			Identity creator = author == null ? reminder.getCreator() : author;
+			Reminder clonedReminder = reminderService.createReminder(target, creator);
 			clonedReminder.setDescription(reminder.getDescription());
 			clonedReminder.setEmailSubject(reminder.getEmailSubject());
 			clonedReminder.setEmailBody(reminder.getEmailBody());

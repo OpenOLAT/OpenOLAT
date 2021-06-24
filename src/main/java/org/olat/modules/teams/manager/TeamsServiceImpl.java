@@ -59,9 +59,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.microsoft.graph.core.ClientException;
-import com.microsoft.graph.models.extensions.OnlineMeeting;
-import com.microsoft.graph.models.extensions.User;
-import com.microsoft.graph.models.generated.OnlineMeetingRole;
+import com.microsoft.graph.models.OnlineMeeting;
+import com.microsoft.graph.models.OnlineMeetingRole;
+import com.microsoft.graph.models.User;
 
 /**
  * 

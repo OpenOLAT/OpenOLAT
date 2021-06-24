@@ -19,12 +19,13 @@
  */
 package org.olat.modules.teams.manager;
 
+import java.net.URL;
+import java.util.concurrent.CompletableFuture;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
-import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.graph.authentication.IAuthenticationProvider;
-import com.microsoft.graph.http.IHttpRequest;
 
 /**
  * 
@@ -53,16 +54,14 @@ public class AuthenticationTokenProvider implements IAuthenticationProvider {
 	public String getTenantGuid() {
 		return accessTokenManager.getTenantGuid();
 	}
-
+	
 	@Override
-	public void authenticateRequest(IHttpRequest request) {
+	public CompletableFuture<String> getAuthorizationTokenAsync(URL url) {
         try {
-        	IAuthenticationResult result = accessTokenManager.getAccessToken();
-        	if(result != null) {
-        		request.addHeader("Authorization", "Bearer " + result.accessToken());
-        	}
+        	return accessTokenManager.getAccessToken();
         } catch (Exception e) {
         	log.error("", e);
+        	return null;
         }
 	}
 }
