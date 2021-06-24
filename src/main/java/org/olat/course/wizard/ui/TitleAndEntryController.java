@@ -94,7 +94,11 @@ public class TitleAndEntryController extends StepFormBasicController {
 	private void updateUI(boolean updateTitle) {
 		nodeCont.setVisible(!referencableCtrl.isSearch());
 		if (updateTitle && !StringHelper.containsNonWhitespace(shortTitleEl.getValue()) && referencableCtrl.getEntry() != null) {
-			shortTitleEl.setValue(referencableCtrl.getEntry().getDisplayname());
+			String displayname = referencableCtrl.getEntry().getDisplayname();
+			String shortTitle = NodeConfigFormController.SHORT_TITLE_MAX_LENGTH < displayname.length()
+					? displayname.substring(0, NodeConfigFormController.SHORT_TITLE_MAX_LENGTH)
+					: displayname;
+			shortTitleEl.setValue(shortTitle);
 		}
 		flc.setDirty(true);
 	}
