@@ -20,6 +20,7 @@
 package org.olat.modules.reminder;
 
 import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.repository.RepositoryEntry;
 
@@ -34,6 +35,8 @@ public interface Reminder extends CreateInfo, ModifiedInfo {
 	public Long getKey();
 	
 	public RepositoryEntry getEntry();
+	
+	public Identity getCreator();
 	
 	public String getDescription();
 	
