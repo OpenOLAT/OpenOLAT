@@ -228,7 +228,7 @@ public class TeamsServiceImpl implements TeamsService {
 					lockedMeeting = teamsMeetingDao.updateMeeting(lockedMeeting);
 				}
 			}
-		}catch (ClientException e) {
+		}catch (ClientException | NullPointerException | IllegalArgumentException e) {
 			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
 			log.error("Cannot create teams meeting", e);
 		} catch (Exception e) {
