@@ -45,17 +45,20 @@ import org.olat.core.util.ValidationStatusImpl;
  */
 public class SingleSelectionImpl extends FormItemImpl implements SingleSelection {
 
-	private String[] values;
-	private String[] keys;
-	private String original = null;
-	private boolean originalSelect = false;
-	private int selectedIndex = -1;
+	protected String[] values;
+	protected String[] keys;
+	protected String[] descriptions;
+	protected String[] iconsCssClasses;
+	protected String original = null;
+	protected boolean originalSelect = false;
+	protected int selectedIndex = -1;
 	private boolean allowNoSelection = false;
 	private boolean noSelectionElement = false;
+	private boolean renderAsCard = false;
 	private String translatedNoSelectionValue;
 
 	private final Layout layout;
-	private final SingleSelectionComponent component;
+	protected final SingleSelectionComponent component;
 	private final Locale locale;
 	
 	public SingleSelectionImpl(String name, Locale locale) {
@@ -129,6 +132,21 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		}
 		initSelectionElements();
 	}
+
+	/**
+	 * 
+	 * @param keys
+	 * @param values
+	 * @param descriptions
+	 * @param iconsCssClasses
+	 */
+	public void setKeysAndValuesAndEnableCardStyle(String[] keys, String[] values, String[] descriptions, String[] iconsCssClasses) {
+		this.descriptions = descriptions;
+		this.iconsCssClasses = iconsCssClasses;
+		this.setKeysAndValues(keys, values, null);
+		this.renderAsCard = true;
+	}
+
 	
 	@Override
 	public String[] getKeys() {
@@ -349,7 +367,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		return DISPPREFIX + component.getDispatchID();
 	}
 
-	private void initSelectionElements() {
+	protected void initSelectionElements() {
 		boolean createValues = (values == null) || (values.length == 0);
 		if (createValues) {
 			values = new String[keys.length];
@@ -361,7 +379,10 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		// create and add radio elements
 		RadioElementComponent[] radios = new RadioElementComponent[keys.length];
 		for (int i = 0; i < keys.length; i++) {
-			radios[i] = new RadioElementComponent(this, i, keys[i], values[i], selectedIndex == i);
+			String desc = (descriptions != null ? descriptions[i] : null);
+			String icon = (iconsCssClasses != null ? iconsCssClasses[i] : null);
+			
+			radios[i] = new RadioElementComponent(this, i, keys[i], values[i],  desc, icon, selectedIndex == i);
 		}
 		component.setRadioComponents(radios);
 	}
@@ -379,14 +400,24 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		if (keys != null && values != null) {
 			String[] movedKeys = new String[keys.length + 1];
 			String[] movedValues = new String[values.length + 1];
+			String[] movedDescriptions = (descriptions != null ? new String[descriptions.length + 1] : null);
+			String[] movedIcons = (iconsCssClasses != null ? new String[iconsCssClasses.length + 1] : null);
 			movedKeys[0] = SingleSelection.NO_SELECTION_KEY;
 			movedValues[0] = getTranslatedNoSelectioValue();
 			for (int i=keys.length; i-->0;) {
 				movedKeys[i + 1] = keys[i];
 				movedValues[i + 1] = values[i];
+				if (movedDescriptions != null) { 
+					movedDescriptions[i + 1] = descriptions[i];
+				}
+				if (movedIcons != null) { 
+					movedIcons[i + 1] = iconsCssClasses[i];
+				}
 			}
 			keys = movedKeys;
 			values = movedValues;
+			descriptions = movedDescriptions;
+			iconsCssClasses = movedIcons;
 			selectedIndex = selectedIndex + getNoValueOffset();
 		}
 	}
@@ -403,14 +434,32 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		if (keys != null && values != null) {
 			String[] movedKeys = new String[keys.length - 1];
 			String[] movedValues = new String[values.length - 1];
+			String[] movedDescriptions = (descriptions != null ? new String[descriptions.length - 1] : null);
+			String[] movedIcons = (iconsCssClasses != null ? new String[iconsCssClasses.length - 1] : null);
 			for (int i=keys.length; i-->1;) {
 				movedKeys[i - 1] = keys[i];
 				movedValues[i -1] = values[i];
+				if (movedDescriptions != null) { 
+					movedDescriptions[i - 1] = descriptions[i];
+				}
+				if (movedIcons != null) { 
+					movedIcons[i - 1] = iconsCssClasses[i];
+				}
+
 			}
 			keys = movedKeys;
 			values = movedValues;
+			descriptions = movedDescriptions;
+			iconsCssClasses = movedIcons;
 			selectedIndex = selectedIndex - getNoValueOffset();
 		}
+	}
+
+	/**
+	 * @return true if the single selection should be rendered as radio button card; false for standard rendering
+	 */
+	public boolean isRenderAsCard() {
+		return this.renderAsCard;
 	}
 
 }

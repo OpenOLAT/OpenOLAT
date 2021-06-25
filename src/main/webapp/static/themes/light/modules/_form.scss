@@ -173,7 +173,141 @@
 		text-align: left;
 		margin-right: 0.2em;
 	}
+
+	
+/* Card Radio Buttons */
+/* Markup:
+	<div class="form-inline o_radio_cards ">
+		<label class="radio-inline">
+			<input type="radio" name="guidemo.form.card2" value="advanced_form.yes">
+			<span class="o_radio_card">
+				<span class="o_radio_text_wrapper">
+					<span class="o_radio_label">Ja </span> 
+					<span class="o_radio_desc">Yes means yes, really! </span>
+				</span> 
+				<span class="o_radio_icon o_icon_yes"> </span>
+			</span> 
+		</label>
+		<label .... >
+	</div>
+*/
+.o_radio_cards {
+		display: flex;
+		flex-flow: column wrap;
+		align-items : stretch;
+	
+		&.form-inline { /* for vertical alignment style */
+			flex-flow: row wrap;
+		}
+		.radio {
+			flex-grow: 0;
+			flex-shrink: 0;
+			display: flex;
+		}				
+		label {
+			flex-grow: 0;
+			flex-shrink: 0;
+			flex-basis: $o-radio-card-width;
+			margin: 0 10px 10px 0;
+			padding: 0;
+		 	position: relative;
+		 	display: inline-block;
+		 	
+		 	.o_radio_card {		 	
+		 		display: flex;
+				flex-flow: row no-wrap;
+		 		width: 100%;
+		 		height: 100%;
+			 	padding: 10px 10px 10px 30px;
+			 	border-radius: $o-radio-card-border-radius;
+			 	border: 1px solid $o-radio-card-border-color;			  			 	
+				background-color: $o-radio-card-bg;			 	
+			  	&:hover {
+					background-color: $o-radio-card-bg-hover;
+				 	border: 1px solid $o-radio-card-border-color-hover;			  
+				 	.o_radio_label {
+				 		color: $o-radio-card-label-color-hover;
+					}
+			  	}
+			}		  	
+		  	input {
+				margin: auto;
+				height: 100%;
+				left: 10px;	
+		  	}		  	
+		  	.o_radio_text_wrapper {		  	
+		  		flex-grow: 1;
+				flex-shrink: 1;
+		  	}
+		  	.o_radio_label {
+		  		font-weight: bold;
+		  		display: block;
+		  	}
+		  	.o_radio_desc {
+		  		font-size: 90%;
+		  		display: block;
+		  	}
+		  	.o_radio_icon {
+		  		display: inline-block;
+		  		flex-grow: 0;
+				flex-shrink: 0;
+				margin: auto 0 auto 10px;
+				width: ($o-radio-card-width / 3);
+				height: ($o-radio-card-width / 3 / 3 * 2);
+				border: 1px solid $o-radio-card-image-border-color;
+				border-radius: $o-radio-card-image-border-radius;
+				background-position: 50% 50%;		
+				background-size: contain;
+		  	}
+
+			/* Checked and disabled states */		  	
+		  	input:checked {
+		  		~ .o_radio_card {		  		
+					background-color: $o-radio-card-bg-checked;
+				 	border: 1px solid $o-radio-card-border-color-checked;	
+					.o_radio_label {
+						color: $o-radio-card-label-color-checked;
+					}	  		  	
+				}
+		  	}
+		  	input:disabled {
+		  		~ .o_radio_card {		  		
+		  			cursor: not-allowed;
+					background-color: $input-bg-disabled;
+				 	border: 1px solid $o-radio-card-border-color;	
+					.o_radio_label, .o_radio_desc {
+						color: $text-muted;
+					}	  		  	
+				}
+		  	}
+		  	
+		}
+	}
+	/* Small and large rendering styles */
+	.o_radio_cards_sm label {
+		flex-basis: $o-radio-card-width-sm;
+		.o_radio_icon {
+			width: ($o-radio-card-width-sm / 3);
+			height: ($o-radio-card-width-sm / 3 / 3 * 2);	
+		}
+	}
+	.o_radio_cards_lg label {
+		flex-basis: $o-radio-card-width-lg;
+		.o_radio_icon {
+			width: ($o-radio-card-width-lg / 3);
+			height: ($o-radio-card-width-lg / 3 / 3 * 2);	
+		}
+	}
+
+	/* Example Image for GUI demo */
+	.o_icon_yes { 
+		background-image:url('#{$o-images-path}no_preview.png');
+	}
+	.o_icon_no { 
+		background-image:url('#{$o-images-path}no_preview_bg.png');
+	}
 }
+
 
 /* file chooser */
 .o_filepreview {

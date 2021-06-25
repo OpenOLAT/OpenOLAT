@@ -258,6 +258,17 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		// A default value is needed for show/hide rules
 		horizontalRadioButtons.select(yesOrNoKeys[0], true);
 		horizontalRadioButtons.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+		// Radio cards
+		// For card buttons
+		String[] descs = new String[] { "Yes means yes, really!", "No does not necessarily mean no, it could also be yes." };
+		String[] icons = new String[] { "o_icon_yes", "o_icon_no" };
+		SingleSelection cs0 = uifactory.addCardSingleSelectVertical("guidemo.form.card0", form, yesOrNoKeys, yesOrNoOptions, null, null);
+		cs0.enableNoneSelection();
+		SingleSelection cs1 = uifactory.addCardSingleSelectVertical("guidemo.form.card1", form, yesOrNoKeys, yesOrNoOptions, descs, null);
+		cs1.setElementCssClass("o_radio_cards_sm");
+		SingleSelection cs2 = uifactory.addCardSingleSelectVertical("guidemo.form.card2", form, yesOrNoKeys, yesOrNoOptions, descs, icons);
+		SingleSelection cs3 = uifactory.addCardSingleSelectHorizontal("guidemo.form.card3", form, yesOrNoKeys, yesOrNoOptions, descs, icons);
+		cs3.setElementCssClass("o_radio_cards_lg");
 	}
 	
 	private void updateSubLayoutVisibility() {

@@ -53,13 +53,28 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 	
 	private void renderVertical(StringOutput sb, SingleSelectionComponent source) {
 		RadioElementComponent[] radios = source.getRadioComponents();
+		String css = source.getElementCssClass();
+		boolean hasCss = css != null || source.getSingleSelectionImpl().isRenderAsCard();
+
+		if (hasCss) {
+			sb.append("<div class=\"")
+				.append(css, css != null)
+				.append(" o_radio_cards", source.getSingleSelectionImpl().isRenderAsCard())
+				.append("\">");
+			
+		}
 		for(RadioElementComponent radio:radios) {
 			renderRadio(sb, source, radio, false);
 		}
+		sb.append("</div>", hasCss);
 	}
 	
 	private void renderHorizontal(StringOutput sb, SingleSelectionComponent source) {
-		sb.append("<div class='form-inline'>");
+		String css = source.getElementCssClass();
+		sb.append("<div class=\"form-inline ")
+			.append("o_radio_cards ", source.getSingleSelectionImpl().isRenderAsCard())
+			.append(css, css != null)
+			.append("\">");
 		RadioElementComponent[] radios = source.getRadioComponents();
 		for(RadioElementComponent radio:radios) {
 			renderRadio(sb, source, radio, true);
@@ -98,17 +113,49 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 			//mark as disabled and do not add javascript
 			sb.append(" disabled='disabled' ");
 		}
-		sb.append(" />");
-		if (StringHelper.containsNonWhitespace(value)) {
-			sb.append(" ");
-			if(source.isEscapeHtml()) {
-				sb.append(StringHelper.escapeHtml(value));
-			} else {
-				sb.append(value);
+		sb.append(">");
+		
+		if (source.getSingleSelectionImpl().isRenderAsCard()) {
+			// Card style rendering
+			sb.append("<span class='o_radio_card'><span class='o_radio_text_wrapper'>");
+			if (StringHelper.containsNonWhitespace(value)) {
+				sb.append(" <span class='o_radio_label'>");
+				if(source.isEscapeHtml()) {
+					sb.append(StringHelper.escapeHtml(value));
+				} else {
+					sb.append(value);
+				}
+				sb.append(" </span>");
 			}
-		} else if(inline) {
-			// at least something in label required for properly aligned rendering, nbsp is important for bootstrap
-			sb.append("&nbsp;"); 
+			String desc = ssec.getDescription();
+			if (StringHelper.containsNonWhitespace(desc)) {
+				sb.append(" <span class='o_radio_desc'>");
+				if(source.isEscapeHtml()) {
+					sb.append(StringHelper.escapeHtml(desc));
+				} else {
+					sb.append(desc);
+				}
+				sb.append(" </span>");
+			}
+			sb.append("</span>"); // END o_radio_text_wrapper
+			String iconCssClass = ssec.getIconCssClass();
+			if (StringHelper.containsNonWhitespace(iconCssClass)) {
+				sb.append(" <span class='o_radio_icon ").append(iconCssClass).append("'> </span>");
+			}
+			sb.append("</span>"); // END o_radio_card
+			
+		} else {
+			// Standard radio button rendering
+			if (StringHelper.containsNonWhitespace(value)) {
+				if(source.isEscapeHtml()) {
+					sb.append(StringHelper.escapeHtml(value));
+				} else {
+					sb.append(value);
+				}
+			} else if(inline) {
+				// at least something in label required for properly aligned rendering, nbsp is important for bootstrap
+				sb.append("&nbsp;"); 
+			}
 		}
 		
 		if(source.isEnabled()){

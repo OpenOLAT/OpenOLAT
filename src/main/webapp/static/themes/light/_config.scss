@@ -238,6 +238,23 @@ $o-toolbar-nav-size-icon-md 		: ceil($font-size-base * 1.5) !default;
 $o-toolbar-nav-size-icon-sm 		: ceil($font-size-base * 1.25) !default;
 $o-toolbar-nav-size-icon-xs 		: ceil($font-size-base * 1.4) !default;
 
+/* Form styles */
+$o-radio-card-width					: 260px !default;
+$o-radio-card-width-sm				: 150px !default;
+$o-radio-card-width-lg				: 350px !default;
+$o-radio-card-border-radius			: $border-radius-base !default;
+$o-radio-card-border-color			: $input-border !default;
+$o-radio-card-bg					: $input-bg !default;
+$o-radio-card-label-color			: $text-color !default;
+$o-radio-card-border-color-checked	: darken($input-border-focus,20%) !default;
+$o-radio-card-bg-checked			: lighten($input-border-focus,30%) !default;
+$o-radio-card-label-color-checked	: darken($input-border-focus,20%) !default;
+$o-radio-card-border-color-hover	: $input-border-focus !default;
+$o-radio-card-bg-hover				: $o-radio-card-bg !default;
+$o-radio-card-label-color-hover		: darken($input-border-focus,10%) !default;
+$o-radio-card-image-border-radius	: $border-radius-small !default;
+$o-radio-card-image-border-color	: $input-border !default;
+
 /* Left side menu tree */
 $o-tree-bg						: none !default;
 $o-tree-border-color			: $list-group-border !default;

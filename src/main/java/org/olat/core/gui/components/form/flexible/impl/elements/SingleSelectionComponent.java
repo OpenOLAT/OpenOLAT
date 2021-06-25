@@ -100,20 +100,30 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		private final int which;
 		private final String key;
 		private final String value;
+		private final String description;
+		private final String iconCssClass;
 		private final boolean selected;
 
-		RadioElementComponent(SingleSelection selectionWrapper, int which, String key, String value, boolean selected) {
+		RadioElementComponent(SingleSelection selectionWrapper, int which, String key, String value, String description, String iconCssClass, boolean selected) {
 			this.selectionWrapper = selectionWrapper;
 			this.which = which;
 			this.key = key;
 			this.value = value;
+			this.description = description;
+			this.iconCssClass = iconCssClass;
 			this.selected = selected;
 		}
 
+		/**
+		 * The name of the radio button group in the DOM tree
+		 */
 		String getGroupingName(){
 			return selectionWrapper.getName();
 		}
 
+		/**
+		 * The identifier for the radio button
+		 */
 		String getKey() {
 			return key;
 		}
@@ -122,10 +132,30 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 			return selectionWrapper.getFormDispatchId() + "_R_" + which;
 		}
 
+		/**
+		 * The value displayed as the main label
+		 */
 		public String getValue() {
 			return value;
 		}
 
+		/**
+		 * The optional description in card-style rendering
+		 */
+		public String getDescription() {
+			return description;
+		}
+
+		/**
+		 * The optional icon class in card-style rendering
+		 */
+		public String getIconCssClass() {
+			return iconCssClass;
+		}
+		
+		/**
+		 * Equivalent to the checked attribute in the DOM
+		 */
 		public boolean isSelected() {
 			return selected;
 		}
@@ -143,4 +173,5 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		}
 		
 	}
+
 }
