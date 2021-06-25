@@ -19,6 +19,8 @@
  */
 package org.olat.modules.reminder;
 
+import java.util.Set;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
@@ -53,5 +55,13 @@ public interface Reminder extends CreateInfo, ModifiedInfo {
 	public String getEmailBody();
 
 	public void setEmailBody(String emailBody);
+	
+	public Set<EmailCopy> getEmailCopy();
+	
+	public void setEmailCopy(Set<EmailCopy> emailCopy);
+	
+	public String getCustomEmailCopy();
+	
+	public void setCustomEmailCopy(String customEmailCopy);
 
 }

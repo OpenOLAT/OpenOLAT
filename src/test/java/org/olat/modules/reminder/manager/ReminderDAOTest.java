@@ -23,12 +23,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.reminder.EmailCopy;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.SentReminder;
 import org.olat.modules.reminder.model.ReminderImpl;
@@ -68,6 +70,8 @@ public class ReminderDAOTest extends OlatTestCase {
 		reminder.setDescription("Reminder - 1");
 		reminder.setEmailSubject("This is a subject");
 		reminder.setEmailBody("Hello world");
+		reminder.setEmailCopy(Set.of(EmailCopy.owner, EmailCopy.custom));
+		reminder.setCustomEmailCopy("email@adress");
 
 		//save and check
 		Reminder savedReminder = reminderDao.save(reminder);
@@ -82,6 +86,9 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertEquals("<rules></rules>", savedReminder.getConfiguration());
 		Assert.assertEquals("This is a subject", savedReminder.getEmailSubject());
 		Assert.assertEquals("Hello world", savedReminder.getEmailBody());
+		Assert.assertTrue(savedReminder.getEmailCopy().contains(EmailCopy.owner));
+		Assert.assertTrue(savedReminder.getEmailCopy().contains(EmailCopy.custom));
+		Assert.assertEquals("email@adress", savedReminder.getCustomEmailCopy());
 		
 		//reload and double check
 		Reminder reloadedReminder = reminderDao.loadByKey(savedReminder.getKey());
@@ -187,6 +194,8 @@ public class ReminderDAOTest extends OlatTestCase {
 		reminder.setDescription("Reminder - 4");
 		reminder.setEmailSubject("This is a subject");
 		reminder.setEmailBody("Hello world");
+		reminder.setEmailCopy(Set.of(EmailCopy.owner, EmailCopy.custom));
+		reminder.setCustomEmailCopy("email@adress");
 		Reminder savedReminder = reminderDao.save(reminder);
 		Assert.assertNotNull(savedReminder);
 		dbInstance.commitAndCloseSession();
@@ -202,6 +211,9 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertEquals("Reminder - 4", loadedReminder.getDescription());
 		Assert.assertEquals("This is a subject", loadedReminder.getEmailSubject());
 		Assert.assertEquals("Hello world", loadedReminder.getEmailBody());
+		Assert.assertTrue(savedReminder.getEmailCopy().contains(EmailCopy.owner));
+		Assert.assertTrue(savedReminder.getEmailCopy().contains(EmailCopy.custom));
+		Assert.assertEquals("email@adress", savedReminder.getCustomEmailCopy());
 	}
 	
 	@Test
@@ -354,6 +366,8 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertEquals(reminderToCopy.getEmailSubject(), reloadedDuplicate.getEmailSubject());
 		Assert.assertTrue(reloadedDuplicate.getDescription().startsWith(reminderToCopy.getDescription()));
 		Assert.assertEquals(reminderToCopy.getConfiguration(), reloadedDuplicate.getConfiguration());
+		Assert.assertEquals(reminderToCopy.getEmailCopy(), reloadedDuplicate.getEmailCopy());
+		Assert.assertEquals(reminderToCopy.getCustomEmailCopy(), reloadedDuplicate.getCustomEmailCopy());
 	}
 	
 	@Test
@@ -445,6 +459,8 @@ public class ReminderDAOTest extends OlatTestCase {
 		reminder.setDescription("Reminder - " + num);
 		reminder.setEmailSubject("This is a subject - " + num);
 		reminder.setEmailBody("Hello world - " + num);
+		reminder.setEmailCopy(Set.of(EmailCopy.owner, EmailCopy.custom));
+		reminder.setCustomEmailCopy("email@adress");
 		return reminderDao.save(reminder);
 	}
 	

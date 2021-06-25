@@ -25,12 +25,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -38,13 +42,15 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.modules.reminder.EmailCopy;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
@@ -59,6 +65,9 @@ import org.olat.modules.reminder.rule.DateRuleSPI;
 import org.olat.modules.reminder.ui.ReminderAdminController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryService;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -78,7 +87,11 @@ public class ReminderServiceImpl implements ReminderService {
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private ReminderRuleEngine ruleEngine;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	@Override
 	public Reminder createReminder(RepositoryEntry entry, Identity creator) {
@@ -220,8 +233,8 @@ public class ReminderServiceImpl implements ReminderService {
 	@Override
 	public MailerResult sendReminder(Reminder reminder, List<Identity> identitiesToRemind) {
 		RepositoryEntry entry = reminder.getEntry();
-		ContactList contactList = new ContactList("Infos");
-		contactList.addAllIdentites(identitiesToRemind);
+		Set<Identity> copyOwners = getCopyOwners(reminder);
+		List<String> copyAddresses = getCopyAdresses(reminder);
 		
 		MailContext context = new MailContextImpl("[RepositoryEntry:" + entry.getKey() + "]");
 		Locale locale = I18nModule.getDefaultLocale();
@@ -253,11 +266,104 @@ public class ReminderServiceImpl implements ReminderService {
 					status = "error";
 				} else {
 					status = "ok";
+					sendReminderCopies(reminder, bundle, copyOwners, copyAddresses);
 				}
 			}
 			reminderDao.markAsSend(reminder, identityToRemind, status);
 		}
 		
 		return overviewResult;
+	}
+
+	private Set<Identity> getCopyRevievers(Reminder reminder, Identity remindedIdentity, Set<Identity> copyOwners) {
+		List<Identity> assignedCoaches = getCopyAssignedCoaches(reminder, remindedIdentity);
+		Set<Identity> copyRecivers = new HashSet<>();
+		copyRecivers.addAll(copyOwners);
+		copyRecivers.addAll(assignedCoaches);
+		copyRecivers.removeIf(copyReviever -> copyReviever.equalsByPersistableKey(remindedIdentity));
+		return copyRecivers;
+	}
+
+	private Set<Identity> getCopyOwners(Reminder reminder) {
+		if (reminder.getEmailCopy().contains(EmailCopy.owner)) {
+			return new HashSet<>(repositoryService.getMembers(reminder.getEntry(), RepositoryEntryRelationType.all, GroupRoles.owner.name()));
+		}
+		return Collections.emptySet();
+	}
+	
+	private List<Identity> getCopyAssignedCoaches(Reminder reminder, Identity participant) {
+		if (reminder.getEmailCopy().contains(EmailCopy.assignedCoach)) {
+			return repositoryService.getAssignedCoaches(participant, reminder.getEntry());
+		}
+		return Collections.emptyList();
+	}
+	
+	private List<String> getCopyAdresses(Reminder reminder) {
+		if (reminder.getEmailCopy().contains(EmailCopy.custom)) {
+			List<String> copyAdresses = new ArrayList<>(2);
+			for (String email : reminder.getCustomEmailCopy().split(",")) {
+				if (!MailHelper.isValidEmailAddress(email.toLowerCase().trim())) {
+					copyAdresses.add(email);
+				}
+			}
+			return copyAdresses;
+		}
+		return null;
+	}
+
+	private void sendReminderCopies(Reminder reminder, MailBundle remindedMailBundle, Set<Identity> copyOwners, List<String> copyAddresses) {
+		getCopyRevievers(reminder, remindedMailBundle.getToId(), copyOwners)
+				.forEach(copyReciever -> sendReminderCopyIntern(reminder, copyReciever, remindedMailBundle));
+		sendReminderCopiesExtern(reminder, copyAddresses, remindedMailBundle);
+	}
+	
+	private void sendReminderCopyIntern(Reminder reminder, Identity copyReciever, MailBundle remindedMailBundle) {
+		try {
+			Locale locale = I18nManager.getInstance().getLocaleOrDefault(copyReciever.getUser().getPreferences().getLanguage());
+			Translator translator = Util.createPackageTranslator(ReminderAdminController.class, locale);
+			
+			MailBundle bundle = createCopyMailBundle(remindedMailBundle, translator);
+			bundle.setToId(copyReciever);
+			MailerResult result = mailManager.sendMessage(bundle);
+			if (!result.isSuccessful()) {
+				log.warn("Sending reminder copy [key={}] to {} failed: {}", reminder.getKey(), copyReciever,
+						result.getErrorMessage());
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	private void sendReminderCopiesExtern(Reminder reminder, List<String> copyAddresses, MailBundle remindedMailBundle) {
+		if (copyAddresses != null && !copyAddresses.isEmpty()) {
+			Translator translator = Util.createPackageTranslator(ReminderAdminController.class, I18nModule.getDefaultLocale());
+			MailBundle bundle = createCopyMailBundle(remindedMailBundle, translator);
+			for (String copyAddress : copyAddresses) {
+				try {
+					bundle.setTo(copyAddress);
+					MailerResult result = mailManager.sendExternMessage(bundle, null, false);
+					if (!result.isSuccessful()) {
+						log.warn("Sending reminder copy [key={}] to {} failed: {}", reminder.getKey(), copyAddress,
+								result.getErrorMessage());
+					}
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			}
+		}
+	}
+
+	private MailBundle createCopyMailBundle(MailBundle remindedMailBundle, Translator translator) {
+		String remindedUser = userManager.getUserDisplayName(remindedMailBundle.getToId().getKey());
+		String copySubject = translator.translate("email.copy.subject", new String[] {
+				remindedMailBundle.getContent().getSubject()});
+		String copyBody = translator.translate("email.copy.body", new String[] {
+				remindedUser,
+				remindedMailBundle.getContent().getSubject(),
+				remindedMailBundle.getContent().getBody()});
+		MailBundle bundle = new MailBundle();
+		bundle.setContext(remindedMailBundle.getContext());
+		bundle.setContent(copySubject, copyBody);
+		return bundle;
 	}
 }

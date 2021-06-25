@@ -659,6 +659,18 @@ div.o_assessment_mode_row {
 		padding: $o-reminder-marker-padding;
 	}
 }
+div.o_reminder_recipients {
+	margin-bottom: 0px;
+}
+div.o_reminder_custom_email {
+	margin-top: -35px;
+	margin-left: 20px;
+	margin-right: 10px;
+	margin-bottom: 10px;
+	.form-control-feedback {
+		top: 30px;
+	}
+}
 
 /* Segmented view wrapper */
 .o_segments.btn-group a span {

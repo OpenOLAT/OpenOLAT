@@ -104,6 +104,8 @@ public class ReminderDAO {
 		reminder.setConfiguration(toCopy.getConfiguration());
 		reminder.setEmailSubject(toCopy.getEmailSubject());
 		reminder.setEmailBody(toCopy.getEmailBody());
+		reminder.setEmailCopy(new HashSet<>(toCopy.getEmailCopy()));
+		reminder.setCustomEmailCopy(toCopy.getCustomEmailCopy());
 		dbInstance.getCurrentEntityManager().persist(reminder);
 		return reminder;
 	}

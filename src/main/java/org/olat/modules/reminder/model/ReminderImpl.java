@@ -20,6 +20,7 @@
 package org.olat.modules.reminder.model;
 
 import java.util.Date;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -39,6 +40,8 @@ import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.reminder.EmailCopy;
 import org.olat.modules.reminder.Reminder;
 import org.olat.repository.RepositoryEntry;
 
@@ -97,6 +100,11 @@ public class ReminderImpl implements Reminder, Persistable {
 	private String emailSubject;
 	@Column(name="r_email_body", nullable=true, insertable=true, updatable=true)
 	private String emailBody;
+	@Column(name = "r_email_copy", nullable = true, insertable = true, updatable = true)
+	private String emailCopyStr;
+	private transient Set<EmailCopy> emailCopy;
+	@Column(name="r_email_custom_copy", nullable=true, insertable=true, updatable=true)
+	private String customEmailCopy;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_entry", nullable=true, insertable=true, updatable=false)
@@ -192,6 +200,30 @@ public class ReminderImpl implements Reminder, Persistable {
 	@Override
 	public void setEmailBody(String emailBody) {
 		this.emailBody = emailBody;
+	}
+
+	@Override
+	public Set<EmailCopy> getEmailCopy() {
+		if (emailCopy == null && StringHelper.containsNonWhitespace(emailCopyStr)) {
+			emailCopy = EmailCopy.split(emailCopyStr);
+		}
+		return emailCopy;
+	}
+
+	@Override
+	public void setEmailCopy(Set<EmailCopy> emailCopy) {
+		this.emailCopy = emailCopy;
+		this.emailCopyStr = EmailCopy.join(emailCopy);
+	}
+
+	@Override
+	public String getCustomEmailCopy() {
+		return customEmailCopy;
+	}
+
+	@Override
+	public void setCustomEmailCopy(String customEmailCopy) {
+		this.customEmailCopy = customEmailCopy;
 	}
 
 	@Override

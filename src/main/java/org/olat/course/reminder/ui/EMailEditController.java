@@ -19,11 +19,21 @@
  */
 package org.olat.course.reminder.ui;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -32,6 +42,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.modules.reminder.EmailCopy;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.manager.CourseReminderTemplate;
 import org.olat.modules.reminder.ui.ReminderAdminController;
@@ -46,14 +57,18 @@ public class EMailEditController extends StepFormBasicController {
 
 	private TextElement subjectEl;
 	private RichTextElement emailEl;
+	private MultipleSelectionElement emailCopyEl;
+	private FormLayoutContainer customEmailCont;
+	private TextElement customEmailEl;
 	
 	private final Reminder reminder;
 
 	public EMailEditController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
-		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
+		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		setTranslator(Util.createPackageTranslator(ReminderAdminController.class, getLocale(), getTranslator()));
 		reminder = (Reminder)runContext.get(RulesEditStep.CONTEXT_KEY);
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -71,8 +86,52 @@ public class EMailEditController extends StepFormBasicController {
 		emailEl = uifactory.addRichTextElementForStringDataMinimalistic("email.content", "email.content", emailContent, 10, 60, formLayout, getWindowControl());
 		emailEl.setMandatory(true);
 		MailHelper.setVariableNamesAsHelp(emailEl, CourseReminderTemplate.variableNames(), getLocale());
+		
+		FormLayoutContainer recipientsCont = FormLayoutContainer.createVerticalFormLayout("recipients", getTranslator());
+		recipientsCont.setFormTitle(translate("email.recipients"));
+		recipientsCont.setElementCssClass("o_reminder_recipients");
+		recipientsCont.setRootForm(mainForm);
+		formLayout.add(recipientsCont);
+		
+		uifactory.addStaticTextElement("email.to", translate("email.to.text"), recipientsCont);
+		
+		KeyValues emailCopyKV = new KeyValues();
+		emailCopyKV.add(entry(EmailCopy.owner.name(), translate("email.copy.owner")));
+		emailCopyKV.add(entry(EmailCopy.assignedCoach.name(), translate("email.copy.assignedCoach")));
+		emailCopyKV.add(entry(EmailCopy.custom.name(), translate("email.copy.custom")));
+		emailCopyEl = uifactory.addCheckboxesVertical("email.copy", recipientsCont, emailCopyKV.keys(), emailCopyKV.values(), 1);
+		emailCopyEl.addActionListener(FormEvent.ONCHANGE);
+		if (reminder.getEmailCopy() != null) {
+			for (EmailCopy value : reminder.getEmailCopy()) {
+				if (emailCopyEl.getKeys().contains(value.name())) {
+					emailCopyEl.select(value.name(), true);
+				}
+			}
+			
+		}
+		
+		customEmailCont = FormLayoutContainer.createVerticalFormLayout("customEmail", getTranslator());
+		customEmailCont.setElementCssClass("o_reminder_custom_email");
+		customEmailCont.setRootForm(mainForm);
+		formLayout.add(customEmailCont);
+		
+		customEmailEl = uifactory.addTextElement("email.custom", 1024, reminder.getCustomEmailCopy(), customEmailCont);
+		customEmailEl.setPlaceholderKey("email.custom.placeholder", null);
+	}
+
+	private void updateUI() {
+		boolean customEmailVisible = emailCopyEl.getSelectedKeys().contains(EmailCopy.custom.name());
+		customEmailCont.setVisible(customEmailVisible);
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == emailCopyEl) {
+			updateUI();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
@@ -89,7 +148,27 @@ public class EMailEditController extends StepFormBasicController {
 			allOk &= false;
 		}
 		
+		customEmailEl.clearError();
+		if (customEmailEl.isVisible()) {
+			if (!StringHelper.containsNonWhitespace(customEmailEl.getValue())) {
+				customEmailEl.setErrorKey("form.mandatory.hover", null);
+				allOk &= false;
+			} else if (invalidEmailSyntax()) {
+				customEmailEl.setErrorKey("error.email.invalid", null);
+				allOk &= false;
+			}
+		}
+		
 		return allOk;
+	}
+
+	private boolean invalidEmailSyntax() {
+		for (String email : customEmailEl.getValue().split(",")) {
+			if (!MailHelper.isValidEmailAddress(email.toLowerCase().trim())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -99,6 +178,18 @@ public class EMailEditController extends StepFormBasicController {
 		
 		String emailBody = emailEl.getValue();
 		reminder.setEmailBody(emailBody);
+		
+		Set<EmailCopy> emailCopy = null;
+		if (emailCopyEl.isAtLeastSelected(1)) {
+			emailCopy = emailCopyEl.getSelectedKeys().stream()
+					.filter(EmailCopy::isValid)
+					.map(EmailCopy::valueOf)
+					.collect(Collectors.toSet());
+		}
+		reminder.setEmailCopy(emailCopy);
+		
+		String customEmailCopy = customEmailEl.isVisible()? customEmailEl.getValue(): null;
+		reminder.setCustomEmailCopy(customEmailCopy);
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
