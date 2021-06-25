@@ -48,16 +48,15 @@ public enum EmailCopy {
 	}
 	
 	public static Set<EmailCopy> split(String emailCopies) {
+		Set<EmailCopy> values = new HashSet<>();
 		if (StringHelper.containsNonWhitespace(emailCopies)) {
-			Set<EmailCopy> values = new HashSet<>();
 			for (String value : emailCopies.split(",")) {
 				if (isValid(value)) {
 					values.add(EmailCopy.valueOf(value));
 				}
 			}
-			return values;
 		}
-		return null;
+		return values;
 	}
 	
 	public static boolean isValid(String string) {

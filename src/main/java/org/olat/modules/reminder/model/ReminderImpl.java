@@ -20,6 +20,7 @@
 package org.olat.modules.reminder.model;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -40,7 +41,6 @@ import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.reminder.EmailCopy;
 import org.olat.modules.reminder.Reminder;
 import org.olat.repository.RepositoryEntry;
@@ -138,6 +138,7 @@ public class ReminderImpl implements Reminder, Persistable {
 		this.lastModified = lastModified;
 	}
 	
+	@Override
 	public Identity getCreator() {
 		return creator;
 	}
@@ -204,7 +205,7 @@ public class ReminderImpl implements Reminder, Persistable {
 
 	@Override
 	public Set<EmailCopy> getEmailCopy() {
-		if (emailCopy == null && StringHelper.containsNonWhitespace(emailCopyStr)) {
+		if (emailCopy == null) {
 			emailCopy = EmailCopy.split(emailCopyStr);
 		}
 		return emailCopy;
@@ -212,7 +213,7 @@ public class ReminderImpl implements Reminder, Persistable {
 
 	@Override
 	public void setEmailCopy(Set<EmailCopy> emailCopy) {
-		this.emailCopy = emailCopy;
+		this.emailCopy = emailCopy != null? emailCopy: new HashSet<>();
 		this.emailCopyStr = EmailCopy.join(emailCopy);
 	}
 

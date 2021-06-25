@@ -21,6 +21,7 @@ package org.olat.course.reminder.ui;
 
 import static org.olat.core.gui.components.util.KeyValues.entry;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -101,13 +102,10 @@ public class EMailEditController extends StepFormBasicController {
 		emailCopyKV.add(entry(EmailCopy.custom.name(), translate("email.copy.custom")));
 		emailCopyEl = uifactory.addCheckboxesVertical("email.copy", recipientsCont, emailCopyKV.keys(), emailCopyKV.values(), 1);
 		emailCopyEl.addActionListener(FormEvent.ONCHANGE);
-		if (reminder.getEmailCopy() != null) {
-			for (EmailCopy value : reminder.getEmailCopy()) {
-				if (emailCopyEl.getKeys().contains(value.name())) {
-					emailCopyEl.select(value.name(), true);
-				}
+		for (EmailCopy value : reminder.getEmailCopy()) {
+			if (emailCopyEl.getKeys().contains(value.name())) {
+				emailCopyEl.select(value.name(), true);
 			}
-			
 		}
 		
 		customEmailCont = FormLayoutContainer.createVerticalFormLayout("customEmail", getTranslator());
@@ -149,7 +147,7 @@ public class EMailEditController extends StepFormBasicController {
 		}
 		
 		customEmailEl.clearError();
-		if (customEmailEl.isVisible()) {
+		if (customEmailCont.isVisible()) {
 			if (!StringHelper.containsNonWhitespace(customEmailEl.getValue())) {
 				customEmailEl.setErrorKey("form.mandatory.hover", null);
 				allOk &= false;
@@ -179,7 +177,7 @@ public class EMailEditController extends StepFormBasicController {
 		String emailBody = emailEl.getValue();
 		reminder.setEmailBody(emailBody);
 		
-		Set<EmailCopy> emailCopy = null;
+		Set<EmailCopy> emailCopy = new HashSet<>();
 		if (emailCopyEl.isAtLeastSelected(1)) {
 			emailCopy = emailCopyEl.getSelectedKeys().stream()
 					.filter(EmailCopy::isValid)
