@@ -180,8 +180,8 @@ public class RemindersStep extends BasicStep {
 				tableItems.setRootForm(mainForm);
 				formLayout.add(tableItems);
 				
-				List<Reminder> reminders = reminderManager.getReminders(context.getRepositoryEntry());
-				List<ReminderInfos> reminderInfos = reminderManager.getReminderInfos(context.getRepositoryEntry());
+				List<Reminder> reminders = reminderManager.getReminders(context.getSourceRepositoryEntry());
+				List<ReminderInfos> reminderInfos = reminderManager.getReminderInfos(context.getSourceRepositoryEntry());
 				
 				List<ReminderRow> rows = new ArrayList<>(reminders.size());
 				

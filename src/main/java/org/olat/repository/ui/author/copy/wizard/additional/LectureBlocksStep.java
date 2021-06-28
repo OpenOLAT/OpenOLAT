@@ -185,11 +185,11 @@ public class LectureBlocksStep extends BasicStep {
 			int counter = 0;
 			
 			if (context.getLectureBlockRows() == null) {
-				List<LectureBlockWithTeachers> blocks = lectureService.getLectureBlocksWithTeachers(context.getRepositoryEntry());
+				List<LectureBlockWithTeachers> blocks = lectureService.getLectureBlocksWithTeachers(context.getSourceRepositoryEntry());
 				List<LectureBlockRow> rows = new ArrayList<>(blocks.size());
 							
 				for(LectureBlockWithTeachers block:blocks) {
-					LectureBlockRow row = new LectureBlockRow(block.getLectureBlock(), context.getRepositoryEntry().getDisplayname(), context.getRepositoryEntry().getExternalRef(),
+					LectureBlockRow row = new LectureBlockRow(block.getLectureBlock(), context.getSourceRepositoryEntry().getDisplayname(), context.getSourceRepositoryEntry().getExternalRef(),
 							null, false, block.isAssessmentMode());
 					
 					DateChooser dateChooser = uifactory.addDateChooser("lecture_block_date_" + counter, block.getLectureBlock().getStartDate(), tableItems);

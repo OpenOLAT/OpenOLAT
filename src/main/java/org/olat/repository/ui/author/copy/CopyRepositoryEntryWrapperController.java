@@ -29,6 +29,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.repository.RepositoryEntry;
@@ -58,21 +59,23 @@ public class CopyRepositoryEntryWrapperController extends BasicController {
 		
 		this.repositoryEntry = repositoryEntry;
 		
-		ICourse course = CourseFactory.loadCourse(repositoryEntry);
-		
-		// Show the simple copy controller for non learning path repository entries
-		if (course == null || !LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
-			copyRepositoryEntryController = new CopyRepositoryEntryController(ureq, getWindowControl(), repositoryEntry);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), copyRepositoryEntryController.getInitialComponent(), true, translate("details.copy"));
+		if (repositoryEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.ORES_TYPE_COURSE)) {
+			ICourse course = CourseFactory.loadCourse(repositoryEntry);
 			
-			listenTo(cmc);
-			listenTo(copyRepositoryEntryController);
-			
-			cmc.activate();
-		} else {
-			copyLearningPathCourseWizardController = new CopyCourseWizardController(ureq, wControl, repositoryEntry, course);
-			listenTo(copyLearningPathCourseWizardController);
+			if (course != null && LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
+				copyLearningPathCourseWizardController = new CopyCourseWizardController(ureq, wControl, repositoryEntry, course);
+				listenTo(copyLearningPathCourseWizardController);
+				return;
+			}
 		}
+		
+		copyRepositoryEntryController = new CopyRepositoryEntryController(ureq, getWindowControl(), repositoryEntry);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), copyRepositoryEntryController.getInitialComponent(), true, translate("details.copy"));
+		
+		listenTo(cmc);
+		listenTo(copyRepositoryEntryController);
+		
+		cmc.activate();
 	}
 
 	@Override

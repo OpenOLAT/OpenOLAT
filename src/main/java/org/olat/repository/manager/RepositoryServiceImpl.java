@@ -98,7 +98,6 @@ import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
-import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
@@ -328,12 +327,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, copyEntry.getKey());
 		return copyEntry;
-	}
-	
-	@Override
-	public RepositoryEntry copy(RepositoryEntry sourceEntry, CopyCourseContext copyContext) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

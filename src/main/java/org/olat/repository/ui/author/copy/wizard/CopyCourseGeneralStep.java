@@ -102,7 +102,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 			setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 			
-			lifecycleController = new RepositoryEntryLifecycleController(ureq, getWindowControl(), context.getRepositoryEntry(), rootForm);
+			lifecycleController = new RepositoryEntryLifecycleController(ureq, getWindowControl(), context.getSourceRepositoryEntry(), rootForm);
 			listenTo(lifecycleController);
 			
 			initForm(ureq);
@@ -142,13 +142,13 @@ public class CopyCourseGeneralStep extends BasicStep {
 			formLayout.add(referenceAndTitleLayout);
 			
 			// Course name
-			displayNameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, context.getRepositoryEntry().getDisplayname() + " " + translate("copy.suffix"), referenceAndTitleLayout);
+			displayNameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, context.getSourceRepositoryEntry().getDisplayname() + " " + translate("copy.suffix"), referenceAndTitleLayout);
 			displayNameEl.setDisplaySize(30);
 			displayNameEl.setMandatory(true);
 			displayNameEl.addActionListener(FormEvent.ONCHANGE);
 			
 			// Course reference
-			externalRefEl = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, context.getRepositoryEntry().getExternalRef(), referenceAndTitleLayout);
+			externalRefEl = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, context.getSourceRepositoryEntry().getExternalRef(), referenceAndTitleLayout);
 			externalRefEl.setHelpText(translate("cif.externalref.hover"));
 			externalRefEl.setHelpUrlForManualPage("Set up info page");
 			externalRefEl.addActionListener(FormEvent.ONCHANGE);

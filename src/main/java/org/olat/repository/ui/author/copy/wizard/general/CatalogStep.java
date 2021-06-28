@@ -165,7 +165,7 @@ public class CatalogStep extends BasicStep {
 				catalogCopyModeEl.select(CopyType.copy.name(), true);
 			}
 			
-			List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(context.getRepositoryEntry());
+			List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(context.getSourceRepositoryEntry());
 			model.setObjects(catalogEntries);
 			flc.contextPut("hasContent", Boolean.valueOf(!catalogEntries.isEmpty()));
 			tableEl.reset();

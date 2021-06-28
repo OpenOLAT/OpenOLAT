@@ -230,7 +230,7 @@ public class GroupStep extends BasicStep {
 			if (context.getGroups() != null) {
 				groupTableModel.setObjects(context.getGroups());
 			} else {
-				groupTableModel.setObjects(loadGroups(context.getRepositoryEntry()));
+				groupTableModel.setObjects(loadGroups(context.getSourceRepositoryEntry()));
 			}
 			
 			tableEl.reset();

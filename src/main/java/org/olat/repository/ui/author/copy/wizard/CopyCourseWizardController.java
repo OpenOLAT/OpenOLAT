@@ -59,6 +59,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.reminder.ReminderService;
 import org.olat.modules.reminder.model.ReminderInfos;
+import org.olat.repository.CopyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,17 +78,19 @@ public class CopyCourseWizardController extends BasicController {
 	private final RepositoryEntry sourceEntry;
 	
 	@Autowired
-	RepositoryService repositoryService;
+	private AssessmentModeManager assessmentModeManager;
 	@Autowired
-	private LearningPathService learningPathService;
+	CopyService copyService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
+	private LearningPathService learningPathService;
+	@Autowired
 	private LectureService lectureService;
 	@Autowired
-	private AssessmentModeManager assessmentModeManager;
-	@Autowired
 	private ReminderService reminderManager;
+	@Autowired
+	RepositoryService repositoryService;
 
 	public CopyCourseWizardController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, ICourse course) {
 		super(ureq, wControl);
@@ -104,7 +107,7 @@ public class CopyCourseWizardController extends BasicController {
         CopyCourseSteps copySteps = new CopyCourseSteps();
         copyContext = new CopyCourseContext();
         copyContext.setExecutingIdentity(getIdentity());
-        copyContext.setRepositoryEntry(repositoryEntry);
+        copyContext.setSourceRepositoryEntry(repositoryEntry);
         copyContext.setCourse(course);
 		copyContext.setLearningPath(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType()));
 		
@@ -332,7 +335,7 @@ public class CopyCourseWizardController extends BasicController {
 		@Override
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 			CopyCourseContext copyContext = (CopyCourseContext) runContext.get(CopyCourseContext.CONTEXT_KEY);
-			copyEntry = repositoryService.copy(sourceEntry, getIdentity(), copyContext.getDisplayName());
+			copyEntry = copyService.copyLearningPathCourse(copyContext);
 			
 			return StepsMainRunController.DONE_MODIFIED;
 		}		

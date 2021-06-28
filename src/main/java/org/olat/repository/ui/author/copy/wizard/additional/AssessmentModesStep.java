@@ -170,7 +170,7 @@ public class AssessmentModesStep extends BasicStep {
 				tableItems.setRootForm(mainForm);
 				formLayout.add(tableItems);
 				
-				List<AssessmentMode> modes = assessmentModeMgr.getAssessmentModeFor(context.getRepositoryEntry());
+				List<AssessmentMode> modes = assessmentModeMgr.getAssessmentModeFor(context.getSourceRepositoryEntry());
 				Map<AssessmentMode, AssessmentModeCopyInfos> copyInfos = new HashMap<>();
 				
 				int counter = 0;

@@ -106,6 +106,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.author.CreateCourseRepositoryEntryController;
 import org.olat.repository.ui.author.CreateEntryController;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
@@ -472,6 +473,28 @@ public class CourseHandler implements RepositoryHandler {
 		
 		cloneReminders(author, envMapper, source, target);
 		cloneLectureConfig(source, target);
+		
+		return target;
+	}
+	
+	@Override
+	public RepositoryEntry copyCourse(CopyCourseContext context, RepositoryEntry target) {
+		final OLATResource sourceResource = context.getSourceRepositoryEntry().getOlatResource();
+		final OLATResource targetResource = target.getOlatResource();
+		
+		CourseFactory.copyCourse(sourceResource, targetResource, context.getExecutingIdentity());
+		 
+		//transaction copied
+		ICourse sourceCourse = CourseFactory.loadCourse(context.getSourceRepositoryEntry());
+			
+		ICourse course = CourseFactory.loadCourse(target);
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+		CourseEnvironmentMapper envMapper = cgm.getBusinessGroupEnvironment();
+		envMapper.setAuthor(context.getExecutingIdentity());
+
+		//upgrade to the current version of the course
+		course = CourseFactory.loadCourse(cgm.getCourseResource());
+		course.postCopy(envMapper, sourceCourse);
 		
 		return target;
 	}

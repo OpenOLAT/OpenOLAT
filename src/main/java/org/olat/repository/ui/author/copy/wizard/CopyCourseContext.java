@@ -49,7 +49,7 @@ public class CopyCourseContext {
 	private Identity executingIdentity;
 	
 	// Repository entry and course
-	private RepositoryEntry repositoryEntry;
+	private RepositoryEntry sourceRepositoryEntry;
 	private ICourse course;
 	private List<OverviewRow> courseNodes;
 	private boolean isLearningPath;
@@ -62,25 +62,25 @@ public class CopyCourseContext {
 	private boolean hasAssessmentModes;
 	
 	// ReferenceAndTitleStep
-	private String displayName;
-	private String externalRef;
+	private String displayName; //
+	private String externalRef; //
 	
 	// MetadataStep
-	private CopyType metadataCopyType;
-	private String authors;
+	private CopyType metadataCopyType; // 
+	private String authors; // 
 	
 	// GroupStep
-	private CopyType groupCopyType;
+	private CopyType groupCopyType;			 // 
 	private CopyType customGroupCopyType;
 	private List<BGTableItem> groups;
 	
 	// OwnersStep
-	private CopyType ownersCopyType;
+	private CopyType ownersCopyType;	//
 	private CopyType customOwnersCopyType;
 	private List<Identity> newOwners;
 	
 	// CoachesStep
-	private CopyType coachesCopyType;
+	private CopyType coachesCopyType;	//
 	private CopyType customCoachesCopyType;
 	private List<Identity> newCoaches;
 	
@@ -138,12 +138,12 @@ public class CopyCourseContext {
 		this.executingIdentity = executingIdentity;
 	}
 	
-	public RepositoryEntry getRepositoryEntry() {
-		return repositoryEntry;
+	public RepositoryEntry getSourceRepositoryEntry() {
+		return sourceRepositoryEntry;
 	}
 	
-	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
-		this.repositoryEntry = repositoryEntry;
+	public void setSourceRepositoryEntry(RepositoryEntry repositoryEntry) {
+		this.sourceRepositoryEntry = repositoryEntry;
 	}	
 	
 	public ICourse getCourse() {
@@ -199,8 +199,8 @@ public class CopyCourseContext {
 	}
 	
 	public RepositoryEntryLifecycle getRepositoryLifeCycle() {
-		if (repositoryEntry != null) {
-			return repositoryEntry.getLifecycle();
+		if (sourceRepositoryEntry != null) {
+			return sourceRepositoryEntry.getLifecycle();
 		} else {
 			return null;
 		}
@@ -243,7 +243,7 @@ public class CopyCourseContext {
 	}
 	
 	public String getDisplayName() {
-		return getValue(displayName, repositoryEntry.getDisplayname());
+		return getValue(displayName, sourceRepositoryEntry.getDisplayname());
 	}
 	
 	public void setDisplayName(String displayName) {
@@ -251,7 +251,7 @@ public class CopyCourseContext {
 	}
 	
 	public String getExternalRef() {
-		return getValue(externalRef, repositoryEntry.getExternalRef());
+		return getValue(externalRef, sourceRepositoryEntry.getExternalRef());
 	}
 	
 	public void setExternalRef(String externalRef) {
@@ -275,7 +275,7 @@ public class CopyCourseContext {
 	}
 	
 	public String getAuthors() {
-		return getValue(authors, repositoryEntry.getAuthors());
+		return getValue(authors, sourceRepositoryEntry.getAuthors());
 	}
 	
 	public void setAuthors(String authors) {
@@ -354,14 +354,6 @@ public class CopyCourseContext {
 		this.newCoaches = newCoaches;
 	}
 	
-	public CopyType getExecutionCopyType() {
-		return executionCopyType;
-	}
-	
-	public void setExecutionCopyType(CopyType executionCopyType) {
-		this.executionCopyType = executionCopyType;
-	}
-	
 	public ExecutionType getExecutionType() {
 		return executionType;
 	}
@@ -409,8 +401,8 @@ public class CopyCourseContext {
 	public String getLocation() {
 		if (location != null) {
 			return location;
-		} else if (repositoryEntry != null) {
-			return repositoryEntry.getLocation();
+		} else if (sourceRepositoryEntry != null) {
+			return sourceRepositoryEntry.getLocation();
 		} else {
 			return null;
 		}

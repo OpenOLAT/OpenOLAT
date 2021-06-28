@@ -95,6 +95,14 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		initForm(ureq);
 	}
 	
+	/**
+	 * Used in wizard 
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param entry
+	 * @param rootForm
+	 */
 	public RepositoryEntryLifecycleController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT_2_10, null, rootForm);
 		setBasePackage(RepositoryService.class);
@@ -102,6 +110,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		this.usedInWizard = true;
 		readOnly = false;
 		initForm(ureq);
+		initEventListeners();
 	}
 
 	/**
@@ -132,6 +141,13 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 			buttonContainer.setElementCssClass("o_sel_repo_save_details");
 			uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 			uifactory.addFormSubmitButton("submit", buttonContainer);
+		}
+	}
+	
+	private void initEventListeners() {
+		if (startDateEl != null && endDateEl != null) {
+			startDateEl.addActionListener(FormEvent.ONCHANGE);
+			endDateEl.addActionListener(FormEvent.ONCHANGE);
 		}
 	}
 	
@@ -278,6 +294,14 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == dateTypesEl) {
 			updateDatesVisibility();
+		} else if (source == startDateEl) {
+			if (startDateEl.getInitialDate() != null && endDateEl != null && endDateEl.getDate() != null) {
+				Date startDate = startDateEl.getDate();
+				long difference = startDate.getTime() - startDateEl.getInitialDate().getTime();
+				Date endDate = endDateEl.getDate();
+				endDate.setTime(endDate.getTime() + difference);
+				endDateEl.setDate(endDate);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

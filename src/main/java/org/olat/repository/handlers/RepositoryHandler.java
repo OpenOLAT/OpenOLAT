@@ -49,6 +49,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.author.CreateEntryController;
 import org.olat.repository.ui.author.CreateRepositoryEntryController;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
  * Initial Date: Apr 5, 2004
@@ -129,6 +130,18 @@ public interface RepositoryHandler {
 	 * @return The target repository entry
 	 */
 	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target);
+	
+	/**
+	 * Copy a course
+	 * Used by the Course Copy Wizard
+	 * 
+	 * @param context
+	 * @param target
+	 * @return
+	 */
+	public default RepositoryEntry copyCourse(CopyCourseContext context, RepositoryEntry target) {
+		return null;
+	}
 
 	/**
 	 * @return true if this handler supports donwloading Resourceables of its type.

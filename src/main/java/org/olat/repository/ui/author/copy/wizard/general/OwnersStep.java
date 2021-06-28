@@ -221,7 +221,7 @@ public class OwnersStep extends BasicStep {
 			} else {
 				List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
 				SearchMembersParams params = new SearchMembersParams(false, GroupRoles.owner);
-				List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(context.getRepositoryEntry(), params, userPropertyHandlers, getLocale());
+				List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(context.getSourceRepositoryEntry(), params, userPropertyHandlers, getLocale());
 				List<Long> identityKeys = memberViews.stream().map(memberView -> memberView.getIdentityKey()).collect(Collectors.toList());
 				List<Identity> coaches = securityManager.loadIdentityByKeys(identityKeys);
 				

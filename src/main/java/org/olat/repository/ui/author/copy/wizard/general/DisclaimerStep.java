@@ -90,7 +90,7 @@ public class DisclaimerStep extends BasicStep {
 			setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 			
 			context = (CopyCourseContext) runContext.get(CopyCourseContext.CONTEXT_KEY);
-			disclaimerController = new CourseDisclaimerController(ureq, wControl, rootForm, context.getRepositoryEntry());
+			disclaimerController = new CourseDisclaimerController(ureq, wControl, rootForm, context.getSourceRepositoryEntry());
 			
 			initForm (ureq);
 		}
