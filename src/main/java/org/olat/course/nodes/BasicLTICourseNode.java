@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.basiclti.LTIAssessmentConfig;
@@ -222,20 +224,16 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public StatusDescription isConfigValid() {
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
-
-		String host = (String) getModuleConfiguration().get(LTIConfigForm.CONFIGKEY_HOST);
-		boolean isValid = host != null;
-		StatusDescription sd = StatusDescription.NOERROR;
-		if (!isValid) {
-			// FIXME: refine statusdescriptions
-			String[] params = new String[] { this.getShortTitle() };
-			sd = new StatusDescription(StatusDescription.ERROR, NLS_ERROR_HOSTMISSING_SHORT, NLS_ERROR_HOSTMISSING_LONG, params, TRANSLATOR_PACKAGE);
-			sd.setDescriptionForUnit(getIdent());
-			// set which pane is affected by error
-			sd.setActivateableViewIdentifier(LTIEditController.PANE_TAB_LTCONFIG);
+		if (oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			return oneClickStatusCache[0];
 		}
-		return sd;
+
+		List<StatusDescription> statusDescs = validateInternalConfiguration();
+		if(statusDescs.isEmpty()) {
+			statusDescs.add(StatusDescription.NOERROR);
+		}
+		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
+		return oneClickStatusCache[0];
 	}
 
 	@Override
@@ -261,6 +259,20 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 		if (isFullyAssessedPassedConfigError()) {
 			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
 					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		
+		ModuleConfiguration config = getModuleConfiguration();
+		String host = (String)config.get(LTIConfigForm.CONFIGKEY_HOST);
+		if (!StringHelper.containsNonWhitespace(host)) {
+			addStatusErrorDescription(NLS_ERROR_HOSTMISSING_SHORT, NLS_ERROR_HOSTMISSING_LONG,
+					LTIEditController.PANE_TAB_LTCONFIG, sdList);
+		}
+		
+		String ltiVersion = (String)config.get(LTIConfigForm.CONFIGKEY_LTI_VERSION);
+		if((LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion) || StringHelper.isLong(ltiVersion))
+				&& !config.has(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY)) {	
+			addStatusErrorDescription("error.deployment.missing", "error.deployment.missing",
+					LTIEditController.PANE_TAB_LTCONFIG, sdList);
 		}
 		
 		return sdList;
@@ -313,10 +325,34 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 		CoreSpringFactory.getImpl(LTI13Service.class)
 			.deleteToolsAndDeployments(cgm.getCourseEntry(), getIdent());
 	}
+	
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
+		super.postCopy(envMapper, processType, course, sourceCrourse);
+		removeLTI13DeploymentReference();
+	}
+
+	@Override
+	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
+		super.postImport(importDirectory, course, envMapper, processType);
+		removeLTI13DeploymentReference();
+	}
+	
+	private void removeLTI13DeploymentReference() {
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		String ltiVersion = (String)config.get(LTIConfigForm.CONFIGKEY_LTI_VERSION);
+		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {	
+			config.remove(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY);
+		} else if(StringHelper.isLong(ltiVersion)) {
+			config.remove(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY);
+			config.setStringValue(LTIConfigForm.CONFIGKEY_LTI_VERSION, LTIConfigForm.CONFIGKEY_LTI_13);
+		}
+	}
 
 	/**
 	 * Update the module configuration to have all mandatory configuration flags
-	 * set to usefull default values
+	 * set to useful default values
 	 * @param isNewNode true: an initial configuration is set; false: upgrading
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour

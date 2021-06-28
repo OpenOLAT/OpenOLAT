@@ -321,7 +321,7 @@ public class PageMetadataEditController extends FormBasicController {
 		imageUpload.setPreview(ureq.getUserSession(), true);
 		imageUpload.addActionListener(FormEvent.ONCHANGE);
 		imageUpload.setDeleteEnabled(true);
-		imageUpload.limitToMimeType(imageMimeTypes, null, null);
+		imageUpload.limitToMimeType(imageMimeTypes, "error.mimetype", new String[]{ imageMimeTypes.toString()} );
 		imageUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		if(page != null) {
 			File posterImg = portfolioService.getPosterImage(page);

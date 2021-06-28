@@ -155,7 +155,6 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 						continue;
 					}
 					
-					counter++;
 					repositoryEntry = reloadedRepositoryEntry;
 					if (debug) {
 						log.debug("Index repositoryEntry={} counter={} with ResourceableId={}", repositoryEntry, counter, repositoryEntry.getOlatResource().getResourceableId());

@@ -1236,7 +1236,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(popedController != null && popedController == assessmentToolCtr) {
 			setCourseClosedMessage();
 		}
-		if(popedController != null && popedController == editorCtrl) {
+		if(popedController != null && (popedController == editorCtrl || popedController == settingsCtrl)) {
 			loadRepositoryEntry();
 			reloadStatus();
 		}

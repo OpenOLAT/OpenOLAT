@@ -44,6 +44,7 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.portfolio.ui.model.AssessableBinderResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -63,6 +64,13 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	public BinderRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
+	}
+	
+	@Override
+	protected void initToolsMenuEditor(Dropdown toolsDropdown) {
+		if (reSecurity.getWrappedSecurity().isEntryAdmin() && reSecurity.getWrappedSecurity().isParticipant()) {
+			super.initToolsMenuEditor(toolsDropdown);
+		}
 	}
 
 	@Override
@@ -97,7 +105,11 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		entries = removeRepositoryEntry(entries);
-		if(entries != null && !entries.isEmpty()) {
+		if(entries == null  || entries.isEmpty()) {
+			if(reSecurity.isEntryAdmin()) {
+				doEdit(ureq);
+			}
+		} else {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("AssessmentTool".equalsIgnoreCase(type) && assessmentLink != null && assessmentLink.isVisible()) {
 				activateSubEntries(ureq, doAssessmentTool(ureq), entries);
@@ -144,6 +156,17 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	}
 	
 	@Override
+	protected void doSwitchRole(UserRequest ureq, Role role) {
+		super.doSwitchRole(ureq, role);
+		
+		launchContent(ureq);
+		initToolbar();
+		if(getRuntimeController() instanceof BinderController) {
+			((BinderController)getRuntimeController()).activate(ureq, null, null);
+		}
+	}
+	
+	@Override
 	protected Activateable2 doSettings(UserRequest ureq, List<ContextEntry> entries) {
 		Activateable2 ctrl = super.doSettings(ureq, entries);
 		enableRuntimeNavBar(false);
@@ -158,7 +181,11 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	@Override
 	protected void doEdit(UserRequest ureq) {
 		super.doEdit(ureq);
-		enableRuntimeNavBar(false);
+		if(editorCtrl instanceof BinderController) {
+			BinderController binderCtrl = (BinderController)editorCtrl;
+			binderCtrl.activate(ureq, null, null);
+		}
+		enableRuntimeNavBar(true);
 	}
 
 	@Override

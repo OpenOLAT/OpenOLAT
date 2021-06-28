@@ -249,19 +249,19 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control, TooledStackedPanel toolbar) {
+	public Controller createEditorController(RepositoryEntry entry, UserRequest ureq, WindowControl control, TooledStackedPanel toolbar) {
 		return null;
 	}
 
 	@Override
-	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
+	public MainLayoutController createLaunchController(final RepositoryEntry re, final RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
 		return new BinderRuntimeController(ureq, wControl, re, reSecurity, (uureq, wwControl, toolbarPanel, entry, security, assessmentMode) -> {
-				PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-				if(reSecurity.isParticipant()) {
+				if(security.isParticipant() || security.isCoach()) {
 					//pick up the template
-					
 					return new BinderPickerController(uureq, wwControl, entry);
-				} else {
+				}
+				if(reSecurity.isEntryAdmin()) {
+					PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 					Binder binder = portfolioService.getBinderByResource(entry.getOlatResource());
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
@@ -269,6 +269,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 					BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForTemplate(reSecurity);
 					return new BinderController(uureq, wwControl, toolbarPanel, secCallback, binder, bConfig);
 				}
+				return new BinderPickerController(uureq, wwControl, entry);
 			});
 	}
 

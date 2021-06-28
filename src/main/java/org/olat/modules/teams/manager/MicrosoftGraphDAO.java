@@ -224,7 +224,8 @@ public class MicrosoftGraphDAO {
 					.select("displayName,id,mail,otherMails")
 					.get();
 			return user.getCurrentPage();
-		} catch (ClientException e) {
+		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
+			log.error("Cannot find user with email: {} {}", email, institutionalEmail, e);
 			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
 			return new ArrayList<>();
 		}
@@ -257,8 +258,9 @@ public class MicrosoftGraphDAO {
 			
 			List<User> users = user.getCurrentPage();
 			return users.isEmpty() ? null : users.get(0);
-		} catch (ClientException e) {
+		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
 			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
+			log.error("Cannot find user with principal names", e);
 			return null;
 		}
 	}
@@ -270,7 +272,7 @@ public class MicrosoftGraphDAO {
 					.buildRequest()
 					.select("displayName,id,mail,otherMails")
 					.get();
-		} catch (ClientException e) {
+		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
 			errors.append(new TeamsError(e.getMessage(), ""));
 			log.error("Cannot find user with id: {}", id, e);
 			return null;
@@ -293,7 +295,7 @@ public class MicrosoftGraphDAO {
 				.buildRequest()
 				.select("id,displayName")
 				.get();
-		} catch (ClientException e) {
+		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
 			log.error("", e);
 			return null;
 		}
@@ -310,7 +312,7 @@ public class MicrosoftGraphDAO {
 			
 			List<Application> apps = appsPage.getCurrentPage();
 			return apps == null || apps.isEmpty() ? null : apps.get(0);
-		} catch (ClientException e) {
+		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
 			errors.append(new TeamsError(e.getMessage(), ""));
 			log.error("", e);
 			return null;
@@ -335,7 +337,7 @@ public class MicrosoftGraphDAO {
 			}
 
 			return new ConnectionInfos(organisation, producerDisplayName);
-		} catch (ClientException e) {
+		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
 			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
 			log.error("", e);
 			return null;
@@ -360,7 +362,7 @@ public class MicrosoftGraphDAO {
 			}
 
 			return new ConnectionInfos(organisation, producerDisplayName);
-		} catch (ClientException e) {
+		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
 			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
 			log.error("", e);
 			return null;
