@@ -911,7 +911,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 	}
 
-	private void doSwitchRole(UserRequest ureq, Role role) {
+	protected void doSwitchRole(UserRequest ureq, Role role) {
 		reSecurity.setCurrentRole(role);
 		onSecurityReloaded(ureq);
 		initToolbar();
