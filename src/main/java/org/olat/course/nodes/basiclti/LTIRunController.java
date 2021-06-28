@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -149,15 +150,23 @@ public class LTIRunController extends BasicController {
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
-		String displayStr = deployment.getDisplay();
-		display = LTIDisplayOptions.valueOfOrDefault(displayStr);
-		
-		ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), deployment, userCourseEnv);
-		listenTo(ltiCtrl);
 
 		mainPanel = new SimpleStackedPanel("ltiContainer");
 		putInitialPanel(mainPanel);
-		doRun(ureq);
+		if(deployment == null) {
+			String title = translate("error.configuration.title");
+			String text = translate("error.configuration.text");
+			Controller ctrl = MessageUIFactory.createErrorMessage(ureq, getWindowControl(), title, text);
+			mainPanel.setContent(ctrl.getInitialComponent());
+			display = LTIDisplayOptions.iframe;
+		} else {
+			String displayStr = deployment.getDisplay();
+			display = LTIDisplayOptions.valueOfOrDefault(displayStr);
+			
+			ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), deployment, userCourseEnv);
+			listenTo(ltiCtrl);
+			doRun(ureq);
+		}
 	}
 
 	/**

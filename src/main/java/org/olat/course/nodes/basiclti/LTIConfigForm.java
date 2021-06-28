@@ -468,7 +468,7 @@ public class LTIConfigForm extends FormBasicController {
 		cutValueEl.setVisible(assessEnabled);
 		ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && assessEnabled);
 		
-		boolean newWindow = LTIDisplayOptions.window.name().equals(displayEl.getSelectedKey());
+		boolean newWindow = displayEl.isOneSelected() && LTIDisplayOptions.window.name().equals(displayEl.getSelectedKey());
 		boolean sizeVisible = !newWindow || !lti13;
 		heightEl.setVisible(sizeVisible);
 		widthEl.setVisible(sizeVisible); 
@@ -602,6 +602,9 @@ public class LTIConfigForm extends FormBasicController {
 			if(displayKey.equals(display)) {
 				displayEl.select(displayKey, true);
 			}
+		}
+		if(!displayEl.isOneSelected()) {
+			displayEl.select(LTIDisplayOptions.iframe.name(), true);
 		}
 		
 		String height = toolDeployement != null ? toolDeployement.getDisplayHeight()
@@ -756,9 +759,10 @@ public class LTIConfigForm extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) { 
 		boolean allOk = super.validateFormLogic(ureq);
+		boolean lti13 = ltiVersionEl.isOneSelected()
+				&& (CONFIGKEY_LTI_13.equals(ltiVersionEl.getSelectedKey()) || StringHelper.isLong(ltiVersionEl.getSelectedKey()));
 		try {
 			thost.clearError();
-			boolean lti13 = CONFIGKEY_LTI_13.equals(ltiVersionEl.getSelectedKey()) || StringHelper.isLong(ltiVersionEl.getSelectedKey());
 			URL url = new URL(thost.getValue());
 			if(url.getHost() == null) {
 				thost.setErrorKey("LTConfigForm.invalidurl", null);
@@ -779,8 +783,36 @@ public class LTIConfigForm extends FormBasicController {
 		}
 		
 		//lti 1.3
+		if(clientIdEl != null) {
+			clientIdEl.clearError();
+		}
+		if(publicKeyTypeEl != null) {
+			publicKeyTypeEl.clearError();
+			publicKeyEl.clearError();
+			publicKeyUrlEl.clearError();
+		}
+		if(lti13) {
+			if(publicKeyTypeEl != null && publicKeyTypeEl.isOneSelected()
+					&& PublicKeyType.URL.name().equals(publicKeyTypeEl.getSelectedKey())) {
+				allOk &= validateTextElement(publicKeyUrlEl, 32000, true);
+			} else {
+				allOk &= validateTextElement(publicKeyEl, 128000, true);
+			}
+			
+			if(clientIdEl != null && !StringHelper.containsNonWhitespace(clientIdEl.getValue())) {
+				clientIdEl.setErrorKey("error.missing.clientid.or.deployment", customTypeKeys);
+				allOk &= false;
+			}
+		}
+		
 		allOk &= validateTextElement(initiateLoginUrlEl, 2000, true);
 		allOk &= validateTextElement(redirectUrlEl, 2000, false);
+		
+		displayEl.clearError();
+		if(!displayEl.isOneSelected()) {
+			displayEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 		
 		return allOk;
 	}
@@ -970,7 +1002,7 @@ public class LTIConfigForm extends FormBasicController {
 		toolDeployement.setCoachRoles(getRoles(coachRoleEl));
 		toolDeployement.setParticipantRoles(getRoles(participantRoleEl));
 		
-		String display = displayEl.isOneSelected() ?displayEl.getSelectedKey() : LTIDisplayOptions.iframe.name();
+		String display = displayEl.isOneSelected() ? displayEl.getSelectedKey() : LTIDisplayOptions.iframe.name();
 		toolDeployement.setDisplay(display);
 		String height = heightEl.isOneSelected() ? heightEl.getSelectedKey() : null;
 		toolDeployement.setDisplayHeight(height);
@@ -1014,7 +1046,7 @@ public class LTIConfigForm extends FormBasicController {
 		if(displayEl.isOneSelected()) {
 			config.set(BasicLTICourseNode.CONFIG_DISPLAY, displayEl.getSelectedKey());
 		} else {
-			config.set(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
+			config.set(BasicLTICourseNode.CONFIG_DISPLAY, LTIDisplayOptions.iframe.name());
 		}
 		if(heightEl.isOneSelected()) {
 			config.set(BasicLTICourseNode.CONFIG_HEIGHT, heightEl.getSelectedKey());
