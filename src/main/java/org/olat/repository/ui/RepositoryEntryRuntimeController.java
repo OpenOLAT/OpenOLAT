@@ -664,9 +664,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void processReloadSettingsEvent(ReloadSettingsEvent event) {
+		RepositoryEntry entry = getRepositoryEntry();
+		if(event.isChangedTitle() || event.isChangedToolbar() || event.isChangedStatus()) {
+			entry = refreshRepositoryEntry(repositoryService.loadByKey(entry.getKey()));
+		}
+		
 		if(event.isChangedTitle()) {
-			RepositoryEntry entry = repositoryService.loadByKey(getRepositoryEntry().getKey());
-			refreshRepositoryEntry(entry);
 			handler.onDescriptionChanged(entry, getIdentity());
 			// update name of root bread crumb and opened tabs in top nav in case the title has been modified
 			if (!toolbarPanel.getBreadCrumbs().isEmpty()) {					
@@ -682,8 +685,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		}
 		if(event.isChangedToolbar()) {
-			RepositoryEntry entry = repositoryService.loadByKey(getRepositoryEntry().getKey());
-			refreshRepositoryEntry(entry);
 			initToolsMenu(tools);
 		}
 		if(event.isChangedStatus()) {
