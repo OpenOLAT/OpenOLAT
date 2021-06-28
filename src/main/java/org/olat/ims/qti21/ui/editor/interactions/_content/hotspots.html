@@ -15,7 +15,8 @@ jQuery(function() {
 	var board = jQuery("#${r.getCId()}_editor").drawingV2({
 		resize: !${restrictedEdit},
 		drag: !${restrictedEdit},
-		mixedLabel: '$r.translate("mixed")'
+		mixedLabel: '$r.translate("mixed")',
+		prefix: ''
 	});
 	#foreach($hotspot in $hotspots)
 		board.shape('${hotspot.identifier}','${hotspot.shape}','${hotspot.coords}')

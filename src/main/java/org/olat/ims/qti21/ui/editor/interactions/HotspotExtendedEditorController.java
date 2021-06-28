@@ -64,6 +64,9 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class HotspotExtendedEditorController extends FormBasicController {
 	
+	private static final String SHAPE_SUFFIX = "_ext_shape";
+	private static final String COORDS_SUFFIX = "_ext_coords";
+	
 	private FormLink cloneButton;
 	private FormLink newRectButton;
 	private FormLink newCircleButton;
@@ -252,14 +255,14 @@ public class HotspotExtendedEditorController extends FormBasicController {
 		for(Enumeration<String> parameterNames = ureq.getHttpReq().getParameterNames(); parameterNames.hasMoreElements(); ) {
 			String name = parameterNames.nextElement();
 			String value = ureq.getHttpReq().getParameter(name);
-			if(name.endsWith("_shape")) {
-				String hotspotIdentifier = name.substring(0, name.length() - 6);
+			if(name.endsWith(SHAPE_SUFFIX)) {
+				String hotspotIdentifier = name.substring(0, name.length() - SHAPE_SUFFIX.length());
 				SpotWrapper spot = wrapperMap.get(hotspotIdentifier);
 				if(spot != null) {
 					spot.setShape(value);
 				}
-			} else if(name.endsWith("_coords")) {
-				String hotspotIdentifier = name.substring(0, name.length() - 7);
+			} else if(name.endsWith(COORDS_SUFFIX)) {
+				String hotspotIdentifier = name.substring(0, name.length() - COORDS_SUFFIX.length());
 				SpotWrapper spot = wrapperMap.get(hotspotIdentifier);
 				if(spot != null) {
 					spot.setCoords(value);

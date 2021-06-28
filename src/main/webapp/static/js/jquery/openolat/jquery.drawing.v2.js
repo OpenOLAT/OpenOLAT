@@ -38,7 +38,8 @@
     		drag: true,
     		selection: '',
     		scale: 1.0,
-    		mixedLabel: 'mixed'
+    		mixedLabel: 'mixed',
+    		prefix: ''
         }, params);
 		
 		this.divPanel = panels.get(0);
@@ -226,8 +227,8 @@
         var top = this.unscaleVal(position.top + radius) + 1;
         radius =  this.unscaleVal(radius);
         var coords = left + "," + top + "," + radius;
-        jQuery("#" + id + "_shape").val("circle");
-        jQuery("#" + id + "_coords").val(coords);
+        jQuery("#" + id + this.settings.prefix + "_shape").val("circle");
+        jQuery("#" + id + this.settings.prefix + "_coords").val(coords);
         return coords;
 	};
 	
@@ -242,15 +243,15 @@
         var right = this.unscaleVal(position.left + width) + 3;
         var bottom = this.unscaleVal(position.top + height) + 3;
         var coords = left + "," + top + "," + right + "," + bottom;
-        jQuery("#" + id + "_shape").val("rect");
-        jQuery("#" + id + "_coords").val(coords);
+        jQuery("#" + id + this.settings.prefix + "_shape").val("rect");
+        jQuery("#" + id + this.settings.prefix + "_coords").val(coords);
         return coords;
 	};
 	
 	DrawingV2.prototype.getAbsolutePosition = function(spot) {
 		var id = spot.getAttribute("id");
-		var coords = this.editorPanel.querySelector("#" + id + "_coords").getAttribute("value");
-		var shape = this.editorPanel.querySelector("#" + id + "_shape").getAttribute("value");
+		var coords = this.editorPanel.querySelector("#" + id + this.settings.prefix + "_coords").getAttribute("value");
+		var shape = this.editorPanel.querySelector("#" + id + this.settings.prefix + "_shape").getAttribute("value");
 		if(shape === "circle") {
 			return this.toAbsoluteCirclePosition(coords);
 		} else if(shape === "rect") {
@@ -290,8 +291,8 @@
 			prefix = "id";
 		}
 		var newId = prefix + Math.round(new Date().getTime());
-		jQuery(this.editorPanel).append("<input type='hidden' id='" + newId + "_shape' name='" + newId + "_shape' value='" + shape + "' />");
-		jQuery(this.editorPanel).append("<input type='hidden' id='" + newId + "_coords' name='" + newId + "_coords' value='" + coords + "' />");
+		jQuery(this.editorPanel).append("<input type='hidden' id='" + newId + this.settings.prefix + "_shape' name='" + newId + this.settings.prefix + "_shape' value='" + shape + "' />");
+		jQuery(this.editorPanel).append("<input type='hidden' id='" + newId + this.settings.prefix + "_coords' name='" + newId + this.settings.prefix + "_coords' value='" + coords + "' />");
 		return newId;
 	};
 	
@@ -299,18 +300,17 @@
 		for(var i=spots.length; i-->0; ) {
 			var id = spots[i].getAttribute("id");
 			var coords = this.calculateCoords(spots[i]);
-			var inputEl = this.editorPanel.querySelector("#" + id + "_coords");
+			var inputEl = this.editorPanel.querySelector("#" + id + this.settings.prefix + "_coords");
 			inputEl.setAttribute("value", coords);
 		}
 		return this;
 	};
 	
 	DrawingV2.prototype.updateHotspotCoords = function(hotspot) {
-
 		var spot = jQuery(hotspot);
 		var id = spot.attr("id");
 		var coords = this.getCoords(spot);
-		var inputEl = this.editorPanel.querySelector("#" + id + "_coords");
+		var inputEl = this.editorPanel.querySelector("#" + id + this.settings.prefix + "_coords");
 		inputEl.setAttribute("value", coords);
 		return this;
 	};
@@ -433,7 +433,8 @@
 		if(minLeft != 32000) {
 			var scaledLeft = this.scaleVal(minLeft);
 			for(var i=selectedSpots.length; i-->0; ) {
-				jQuery(selectedSpots[i]).css({ left: scaledLeft });
+				selectedSpots[i].style.left = scaledLeft + "px";
+				this.resetTransformX(selectedSpots[i]);
 			}
 			this.updateCoords(selectedSpots)
 		        .updatePositionFields();
@@ -460,7 +461,8 @@
 			for(var i=selectedSpots.length; i-->0; ) {
 				var position = this.getAbsolutePosition(selectedSpots[i]);
 				var left = this.scaleVal(averageCenter - (position.width / 2));
-				jQuery(selectedSpots[i]).css({ left: left });
+				selectedSpots[i].style.left = left + "px";
+				this.resetTransformX(selectedSpots[i]);
 			}
 			this.updateCoords(selectedSpots)
 			    .updatePositionFields();
@@ -482,7 +484,8 @@
 			for(var i=selectedSpots.length; i-->0; ) {
 				var position = this.getAbsolutePosition(selectedSpots[i]);
 				var left = this.scaleVal(maxRight - position.width);
-				jQuery(selectedSpots[i]).css({ left: left });
+				selectedSpots[i].style.left = left + "px";
+				this.resetTransformX(selectedSpots[i]);
 			}
 			this.updateCoords(selectedSpots)
 			    .updatePositionFields();
@@ -502,7 +505,8 @@
 		if(minTop != 32000) {
 			var scaledTop = this.scaleVal(minTop);
 			for(var i=selectedSpots.length; i-->0; ) {
-				jQuery(selectedSpots[i]).css({ top: scaledTop });
+				selectedSpots[i].style.top = scaledTop + "px";
+				this.resetTransformY(selectedSpots[i]);
 			}
 			this.updateCoords(selectedSpots)
 			    .updatePositionFields();
@@ -527,7 +531,8 @@
 			for(var i=selectedSpots.length; i-->0; ) {
 				var position = this.getAbsolutePosition(selectedSpots[i]);
 				var top = this.scaleVal(averageCenter - (position.height / 2));
-				jQuery(selectedSpots[i]).css({ top: top });
+				selectedSpots[i].style.top = top + "px";
+				this.resetTransformY(selectedSpots[i]);
 			}
 			this.updateCoords(selectedSpots)
 		        .updatePositionFields();
@@ -548,12 +553,25 @@
 			for(var i=selectedSpots.length; i-->0; ) {
 				var position = this.getAbsolutePosition(selectedSpots[i]);
 				var top = this.scaleVal(maxBottom - position.height);
-				jQuery(selectedSpots[i]).css({ top: top });
+				selectedSpots[i].style.top = top + "px";
+				this.resetTransformY(selectedSpots[i]);
 			}
 			this.updateCoords(selectedSpots)
 			    .updatePositionFields();
 		}
 		return this;
+	};
+	
+	DrawingV2.prototype.resetTransformY = function(el) {
+		var transformX = el.getAttribute("data-x");
+		el.setAttribute("data-y", "0");
+		el.style.transform = "translate(" + transformX + "px,0px)";
+	};
+	
+	DrawingV2.prototype.resetTransformX = function(el) {
+		var transformY = el.getAttribute("data-y");
+		el.setAttribute("data-x", "0");
+		el.style.transform = "translate(0px," + transformY + "px)";
 	};
 	
 	DrawingV2.prototype.equalizeWidth = function() {
@@ -590,7 +608,8 @@
 		var selectedSpots = this.selectedSpots();
 		var scaledLeft = this.scaleVal(left);
 		for(var i=selectedSpots.length; i-->0; ) {
-			jQuery(selectedSpots[i]).css({ left : scaledLeft });
+			selectedSpots[i].style.left = scaledLeft + "px";
+			this.resetTransformX(selectedSpots[i]);
 		}
 		this.updateCoords(selectedSpots)
 		    .updatePositionFields();
@@ -601,7 +620,8 @@
 		var selectedSpots = this.selectedSpots();
 		var scaledTop = this.scaleVal(top);
 		for(var i=selectedSpots.length; i-->0; ) {
-			jQuery(selectedSpots[i]).css({ top : scaledTop });
+			selectedSpots[i].style.top = scaledTop + "px";
+			this.resetTransformY(selectedSpots[i]);
 		}
 		this.updateCoords(selectedSpots)
 		    .updatePositionFields();

@@ -3,8 +3,8 @@
 <div class="o_qti_hotspots_editor o_extended $layoutCssClass" style="position:relative; #if($width && !${width.isEmpty()}) width:${width}px; #end #if($height && !${height.isEmpty()}) height:${height}px; #end #if($filename && !${filename.isEmpty()}) background-image: url('$mapperUri/${filename}?t=${r.getUniqueId()}'); #end">
 	<input type="hidden" id="hotspots_selection" name="hotspots_selection" value="$hotspotSelections" />
 #foreach($hotspot in $hotspots)
-	<input type="hidden" id="${hotspot.identifier}_shape" name="${hotspot.identifier}_shape" value="${hotspot.shape}" />
-	<input type="hidden" id="${hotspot.identifier}_coords" name="${hotspot.identifier}_coords" value="${hotspot.coords}" />
+	<input type="hidden" id="${hotspot.identifier}_ext_shape" name="${hotspot.identifier}_ext_shape" value="${hotspot.shape}" />
+	<input type="hidden" id="${hotspot.identifier}_ext_coords" name="${hotspot.identifier}_ext_coords" value="${hotspot.coords}" />
 #end
 </div>
 <div class="o_button_group o_button_group_left btn-toolbar">
@@ -45,7 +45,8 @@ jQuery(function() {
 		drag: !${restrictedEdit},
 		selection: '$hotspotSelections',
 		scale: scaleFactor,
-		mixedLabel: '$r.translate("mixed")'
+		mixedLabel: '$r.translate("mixed")',
+		prefix: '_ext'
 	});
 	
 	#foreach($hotspot in $hotspots)
