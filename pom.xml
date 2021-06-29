@@ -68,7 +68,7 @@
 		<apache.pdfbox>2.0.24</apache.pdfbox>
 		<apache.poi>5.0.0</apache.poi>
 		<apache.log4j>2.14.1</apache.log4j>
-		<org.slf4j>1.7.30</org.slf4j>
+		<org.slf4j>1.7.31</org.slf4j>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
 		<io.undertow>2.2.8.Final</io.undertow>
 		<jackson.version>2.12.3</jackson.version>
@@ -1832,7 +1832,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.0.25</version>
+			<version>3.0.27</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2334,7 +2334,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.10.0</version>
+			<version>1.10.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
@@ -2492,7 +2492,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.20.0</version>
+			<version>3.20.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
