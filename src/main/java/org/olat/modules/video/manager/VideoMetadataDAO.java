@@ -139,6 +139,7 @@ public class VideoMetadataDAO {
 		OLATResource videoResource = repoEntry.getOlatResource();
 		videometa.setVideoResource(videoResource);
 		videometa.setVideoFormat(format);
+		videometa.setDownloadEnabled(false);
 		videometa.setUrl(url);
 		videometa.setCreationDate(new Date());
 		videometa.setLastModified(videometa.getCreationDate());		

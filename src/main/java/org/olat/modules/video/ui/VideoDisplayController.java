@@ -776,6 +776,7 @@ public class VideoDisplayController extends BasicController {
 				}
 				
 				mainVC.put("downloadOptions", downloadDropDown);
+				mainVC.contextPut("downloadSpacing", true);
 			}
 		}
 	}
