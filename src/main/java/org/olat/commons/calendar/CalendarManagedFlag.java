@@ -78,7 +78,7 @@ public enum CalendarManagedFlag {
 	
 	public static CalendarManagedFlag[] toEnum(String flags) {
 		if(StringHelper.containsNonWhitespace(flags)) {
-			String[] flagArr = flags.split(",");
+			String[] flagArr = flags.split("[\\\\,]");
 			CalendarManagedFlag[] flagEnums = new CalendarManagedFlag[flagArr.length];
 	
 			int count = 0;
@@ -88,7 +88,7 @@ public enum CalendarManagedFlag {
 						CalendarManagedFlag flagEnum = valueOf(flag);
 						flagEnums[count++] = flagEnum;
 					} catch (Exception e) {
-						log.warn("Cannot parse this managed flag: " + flag, e);
+						log.warn("Cannot parse this managed flag: {}", flag, e);
 					}
 				}
 			}
