@@ -38,7 +38,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
-import org.olat.modules.video.ui.VideoSettingsControllerOld;
+import org.olat.modules.video.ui.VideoSettingsController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,7 +64,7 @@ public class QuestionConfigurationController extends FormBasicController {
 	private VideoModule videoModule;
 	
 	public QuestionConfigurationController(UserRequest ureq, WindowControl wControl, VideoQuestion question, Long videoDurationInSecs) {
-		super(ureq, wControl, Util.createPackageTranslator(VideoSettingsControllerOld.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale()));
 		this.question = question;
 		this.videoDurationInSecs = videoDurationInSecs;
 		displayDateFormat = new SimpleDateFormat("HH:mm:ss");
