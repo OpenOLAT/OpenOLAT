@@ -24,8 +24,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -41,10 +43,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -85,18 +92,24 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private BigBlueButtonMeetingTableModel tableModel;
 	
+	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDelete;
 	private DialogBoxController confirmBatchDelete;
 	private StepsMainRunController addDailyMeetingCtrl;
 	private StepsMainRunController addWeeklyMeetingCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditBigBlueButtonMeetingController editMeetingCtlr;
+
 	
+	private int count = 0;
 	private final boolean readOnly;
 	private final String subIdent;
 	private final RepositoryEntry entry;
 	private final BusinessGroup businessGroup;
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -158,7 +171,12 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 			editViewCol.setExportable(false);
 			editViewCol.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(editViewCol);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+
+			StickyActionColumnModel toolsCol = new StickyActionColumnModel(BMeetingsCols.tools);
+			toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolsCol.setExportable(false);
+			toolsCol.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(toolsCol);
 		}
 		
 		tableModel = new BigBlueButtonMeetingTableModel(columnsModel, getLocale());
@@ -183,8 +201,21 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	
 	public void updateModel() {
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(entry, subIdent, businessGroup, false);
-		tableModel.setObjects(meetings);
+		List<BigBlueButtonMeetingRow> rows = meetings.stream()
+				.map(this::forgeRow)
+				.collect(Collectors.toList());
+		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);	
+	}
+	
+	private BigBlueButtonMeetingRow forgeRow(BigBlueButtonMeeting meeting) {
+		BigBlueButtonMeetingRow row = new BigBlueButtonMeetingRow(meeting);
+		
+		FormLink toolsLink = uifactory.addFormLink("tools_" + count++, "tools", "", null, null, Link.NONTRANSLATED);
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		toolsLink.setUserObject(row);
+		row.setToolsLink(toolsLink);
+		return row;
 	}
 	
 	@Override
@@ -216,7 +247,10 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 				}
 				cleanUp();
 			}
-		} else if(cmc == source) {
+		} else if(toolsCtrl == source) {
+			toolsCalloutCtrl.deactivate();
+			cleanUp();
+		} else if(cmc == source || toolsCalloutCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -226,14 +260,18 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		removeAsListenerAndDispose(addWeeklyMeetingCtrl);
 		removeAsListenerAndDispose(addDailyMeetingCtrl);
 		removeAsListenerAndDispose(confirmBatchDelete);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(editMeetingCtlr);
 		removeAsListenerAndDispose(confirmDelete);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		addWeeklyMeetingCtrl = null;
 		addDailyMeetingCtrl = null;
 		confirmBatchDelete = null;
+		toolsCalloutCtrl = null;
 		editMeetingCtlr = null;
 		confirmDelete = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 	
@@ -259,10 +297,15 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				if("edit".equals(se.getCommand())) {
-					doEditMeeting(ureq, tableModel.getObject(se.getIndex()));
+					doEditMeeting(ureq, tableModel.getMeeting(se.getIndex()));
 				} else if("delete".equals(se.getCommand())) {
-					doConfirmDelete(ureq, tableModel.getObject(se.getIndex()));
+					doConfirmDelete(ureq, tableModel.getMeeting(se.getIndex()));
 				}
+			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("tools".equals(link.getCmd()) && link.getUserObject() instanceof BigBlueButtonMeetingRow) {
+				doOpenTools(ureq, (BigBlueButtonMeetingRow)link.getUserObject(), link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -271,7 +314,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private List<BigBlueButtonMeeting> getSelectedMeetings() {
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		return selectedIndex.stream()
-				.map(index -> tableModel.getObject(index.intValue()))
+				.map(index -> tableModel.getMeeting(index.intValue()))
 				.collect(Collectors.toList());
 	}
 	
@@ -392,7 +435,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		listenTo(editMeetingCtlr);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
-				true, translate("add.meeting"));
+				true, translate("edit.meeting"));
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -450,6 +493,70 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));
 		} else {
 			showInfo("meeting.deleted");
+		}
+	}
+	
+	private void doCopy(BigBlueButtonMeeting meeting) {
+		String newName = translate("copy.name", new String[] { meeting.getName() });
+		bigBlueButtonManager.copyMeeting(newName, meeting, getIdentity());
+		dbInstance.commit();
+		updateModel();
+	}
+	
+	private void doOpenTools(UserRequest ureq, BigBlueButtonMeetingRow row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		BigBlueButtonMeeting meeting = bigBlueButtonManager.getMeeting(row.getMeeting());
+		if(meeting == null) {
+			updateModel();
+			showWarning("warning.no.meeting");
+		} else {
+			toolsCtrl = new ToolsController(ureq, getWindowControl(), meeting);
+			listenTo(toolsCtrl);
+	
+			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+			listenTo(toolsCalloutCtrl);
+			toolsCalloutCtrl.activate();
+		}
+	}
+
+	private class ToolsController extends BasicController {
+
+		private final Link copyLink;
+		private final Link deleteLink;
+		private final VelocityContainer mainVC;
+
+		private final BigBlueButtonMeeting meeting;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, BigBlueButtonMeeting meeting) {
+			super(ureq, wControl);
+			this.meeting = meeting;
+			mainVC = createVelocityContainer("tools");
+			
+			copyLink = LinkFactory.createLink("copy", "copy", getTranslator(), mainVC, this, Link.LINK);
+			copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+			
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void doDispose() {
+			//
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(copyLink == source) {
+				doCopy(meeting);
+			} else if(deleteLink == source) {
+				doConfirmDelete(ureq, meeting);
+			}
 		}
 	}
 }

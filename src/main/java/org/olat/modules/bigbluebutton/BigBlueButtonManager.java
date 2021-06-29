@@ -129,6 +129,8 @@ public interface BigBlueButtonManager {
 	
 	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting);
 	
+	public BigBlueButtonMeeting copyMeeting(String name, BigBlueButtonMeeting meeting, Identity creator);
+	
 	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
 	
 	public BigBlueButtonMeetingTemplate createAndPersistTemplate(String name);

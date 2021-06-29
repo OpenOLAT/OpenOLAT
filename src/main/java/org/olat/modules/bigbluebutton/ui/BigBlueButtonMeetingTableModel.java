@@ -38,8 +38,8 @@ import org.olat.modules.bigbluebutton.BigBlueButtonServer;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BigBlueButtonMeetingTableModel extends DefaultFlexiTableDataModel<BigBlueButtonMeeting>
-implements SortableFlexiTableDataModel<BigBlueButtonMeeting> {
+public class BigBlueButtonMeetingTableModel extends DefaultFlexiTableDataModel<BigBlueButtonMeetingRow>
+implements SortableFlexiTableDataModel<BigBlueButtonMeetingRow> {
 	
 	private static final BMeetingsCols[] COLS = BMeetingsCols.values();
 	
@@ -53,19 +53,24 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeeting> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<BigBlueButtonMeeting> views = new BigBlueButtonMeetingTableSort(orderBy, this, locale).sort();
+			List<BigBlueButtonMeetingRow> views = new BigBlueButtonMeetingTableSort(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}
 	
+	public BigBlueButtonMeeting getMeeting(int row) {
+		BigBlueButtonMeetingRow r = getObject(row);
+		return r == null ? null : r.getMeeting();
+	}
+	
 	@Override
 	public Object getValueAt(int row, int col) {
-		BigBlueButtonMeeting meeting = getObject(row);
+		BigBlueButtonMeetingRow meeting = getObject(row);
 		return getValueAt(meeting, col);
 	}
 
 	@Override
-	public Object getValueAt(BigBlueButtonMeeting row, int col) {
+	public Object getValueAt(BigBlueButtonMeetingRow row, int col) {
 		switch(COLS[col]) {
 			case name: return row.getName();
 			case permanent: return Boolean.valueOf(row.isPermanent());
@@ -75,26 +80,27 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeeting> {
 			case server: return getServer(row);
 			case resource: return getResourceName(row);
 			case edit: return editable(row);
+			case tools: return row.getToolsLink();
 			default: return "ERROR";
 		}
 	}
 	
-	private Boolean editable(BigBlueButtonMeeting row) {
+	private Boolean editable(BigBlueButtonMeetingRow row) {
 		return row.isPermanent()
 				|| (row.getEndDate() != null && !row.getEndDate().before(new Date()));
 	}
 	
-	private String getServer(BigBlueButtonMeeting meeting) {
+	private String getServer(BigBlueButtonMeetingRow meeting) {
 		BigBlueButtonServer server = meeting.getServer();
 		return server == null ? null : server.getUrl();
 	}
 	
-	private String getTemplate(BigBlueButtonMeeting meeting) {
+	private String getTemplate(BigBlueButtonMeetingRow meeting) {
 		BigBlueButtonMeetingTemplate template = meeting.getTemplate();
 		return template == null ? null: template.getName();
 	}
 	
-	private String getResourceName(BigBlueButtonMeeting row) {
+	private String getResourceName(BigBlueButtonMeetingRow row) {
 		String displayName = null;
 		if(row.getEntry() != null) {
 			displayName = row.getEntry().getDisplayname();
@@ -118,7 +124,8 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeeting> {
 		template("table.header.template"),
 		server("table.header.server"),
 		resource("meeting.resource"),
-		edit("edit");
+		edit("edit"),
+		tools("tools");
 		
 		private final String i18nHeaderKey;
 		

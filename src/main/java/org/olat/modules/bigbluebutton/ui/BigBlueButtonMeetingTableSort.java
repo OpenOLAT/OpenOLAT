@@ -27,7 +27,6 @@ import java.util.Locale;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeetingsCols;
 
 /**
@@ -36,14 +35,14 @@ import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeeting
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BigBlueButtonMeetingTableSort extends SortableFlexiTableModelDelegate<BigBlueButtonMeeting> {
+public class BigBlueButtonMeetingTableSort extends SortableFlexiTableModelDelegate<BigBlueButtonMeetingRow> {
 	
-	public BigBlueButtonMeetingTableSort(SortKey orderBy, SortableFlexiTableDataModel<BigBlueButtonMeeting> tableModel, Locale locale) {
+	public BigBlueButtonMeetingTableSort(SortKey orderBy, SortableFlexiTableDataModel<BigBlueButtonMeetingRow> tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
 	}
 	
 	@Override
-	protected void sort(List<BigBlueButtonMeeting> rows) {
+	protected void sort(List<BigBlueButtonMeetingRow> rows) {
 		int columnIndex = getColumnIndex();
 		BMeetingsCols column = BMeetingsCols.values()[columnIndex];
 		switch(column) {
@@ -53,7 +52,7 @@ public class BigBlueButtonMeetingTableSort extends SortableFlexiTableModelDelega
 		}
 	}
 	
-	private class StartDateComparator implements Comparator<BigBlueButtonMeeting> {
+	private class StartDateComparator implements Comparator<BigBlueButtonMeetingRow> {
 		
 		private final boolean ascending;
 		
@@ -62,7 +61,7 @@ public class BigBlueButtonMeetingTableSort extends SortableFlexiTableModelDelega
 		}
 		
 		@Override
-		public int compare(BigBlueButtonMeeting m1, BigBlueButtonMeeting m2) {
+		public int compare(BigBlueButtonMeetingRow m1, BigBlueButtonMeetingRow m2) {
 			int c = 0;
 			if(m1.getStartDate() == null && m2.getStartDate() == null) {
 				c = 0;
@@ -81,7 +80,7 @@ public class BigBlueButtonMeetingTableSort extends SortableFlexiTableModelDelega
 		}
 	}
 	
-	private class EndDateComparator implements Comparator<BigBlueButtonMeeting> {
+	private class EndDateComparator implements Comparator<BigBlueButtonMeetingRow> {
 
 		private final boolean ascending;
 		
@@ -90,7 +89,7 @@ public class BigBlueButtonMeetingTableSort extends SortableFlexiTableModelDelega
 		}
 		
 		@Override
-		public int compare(BigBlueButtonMeeting m1, BigBlueButtonMeeting m2) {
+		public int compare(BigBlueButtonMeetingRow m1, BigBlueButtonMeetingRow m2) {
 			int c = 0;
 			if(m1.getEndDate() == null && m2.getEndDate() == null) {
 				c = 0;

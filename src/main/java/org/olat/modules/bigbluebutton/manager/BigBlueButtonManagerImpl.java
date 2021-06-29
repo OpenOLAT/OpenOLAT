@@ -63,6 +63,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
@@ -71,6 +72,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -486,6 +488,50 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			}
 		}
 		return meeting;
+	}
+	
+	@Override
+	public BigBlueButtonMeeting copyMeeting(String name, BigBlueButtonMeeting meeting, Identity creator) {
+		// move the dates in the future
+		Date start = meeting.getStartDate();
+		Date end = meeting.getEndDate();
+		if(start != null && end != null) {
+			Date startWith = meeting.getStartWithLeadTime();
+			Date now = new Date();
+			if(startWith.before(now)) {
+				start = DateUtils.copyTime(now, meeting.getStartDate());
+				Date nextStartWith = bigBlueButtonMeetingDao.calculateStartWithLeadTime(start, meeting.getLeadTime() + 5);
+				if(nextStartWith.before(now)) {
+					start = DateUtils.addDays(start, 1);
+				}
+				
+				long diff = meeting.getEndDate().getTime() - meeting.getStartDate().getTime();
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(start);
+				cal.add(Calendar.MILLISECOND, (int)diff);
+				end = cal.getTime();
+			}
+		}
+		
+		// copy the meeting with new dates
+		BigBlueButtonMeeting copy = bigBlueButtonMeetingDao.copyMeeting(name, meeting, start, end, creator);
+		dbInstance.commit();
+		
+		// slides
+		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
+			List<VFSLeaf> slides = getSlides(meeting);
+			if(!slides.isEmpty()) {
+				VFSContainer copyContainer = bigBlueButtonSlidesStorage.createStorage(copy);
+				for(VFSLeaf slide:slides) {
+					VFSLeaf copySlide = copyContainer.createChildLeaf(slide.getName());
+					VFSManager.copyContent(slide, copySlide, true, creator);
+				}
+				copy = bigBlueButtonMeetingDao.updateMeeting(copy);
+				dbInstance.commit();
+			}	
+		}
+		
+		return copy;
 	}
 
 	@Override

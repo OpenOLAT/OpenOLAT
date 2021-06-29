@@ -20,6 +20,7 @@
 package org.olat.course.nodes.bigbluebutton;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
@@ -37,6 +38,7 @@ import org.olat.course.nodes.BigBlueButtonCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingRow;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeetingsCols;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
@@ -91,7 +93,10 @@ public class BigBlueButtonPeekViewController extends FormBasicController {
 	
 	private void loadModel() {
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getUpcomingsMeetings(courseEntry, subIdent, 5);
-		upcomingTableModel.setObjects(meetings);
+		List<BigBlueButtonMeetingRow> rows = meetings.stream()
+				.map(BigBlueButtonMeetingRow::new)
+				.collect(Collectors.toList());
+		upcomingTableModel.setObjects(rows);
 	}
 
 	@Override

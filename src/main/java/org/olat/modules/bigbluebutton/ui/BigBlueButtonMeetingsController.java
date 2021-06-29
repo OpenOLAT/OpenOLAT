@@ -134,14 +134,14 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(entry, subIdent, businessGroup, guest);
 		
 		Date now = new Date();
-		List<BigBlueButtonMeeting> pastMeetings = new ArrayList<>();
-		List<BigBlueButtonMeeting> upcomingMeetings = new ArrayList<>();
+		List<BigBlueButtonMeetingRow> pastMeetings = new ArrayList<>();
+		List<BigBlueButtonMeetingRow> upcomingMeetings = new ArrayList<>();
 		for(BigBlueButtonMeeting meeting:meetings) {
 			if(meeting.getStartDate() == null || meeting.getEndDate() == null
 					|| now.compareTo(meeting.getEndDate()) <= 0) {
-				upcomingMeetings.add(meeting);
+				upcomingMeetings.add(new BigBlueButtonMeetingRow(meeting));
 			} else {
-				pastMeetings.add(meeting);
+				pastMeetings.add(new BigBlueButtonMeetingRow(meeting));
 			}
 		}
 		
@@ -160,13 +160,14 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 	}
 	
 	public BigBlueButtonMeeting getMeetingByKey(Long meetingKey) {
-		Optional<BigBlueButtonMeeting> has = upcomingTableModel.getObjects().stream()
+		Optional<BigBlueButtonMeetingRow> has = upcomingTableModel.getObjects().stream()
 				.filter(m -> meetingKey.equals(m.getKey())).findFirst();
 		if(!has.isPresent()) {
 			has = pastTableModel.getObjects().stream()
-					.filter(m -> meetingKey.equals(m.getKey())).findFirst();
+					.filter(m -> meetingKey.equals(m.getKey()))
+					.findFirst();
 		}
-		return has.isPresent() ? has.get() : null;
+		return has.isPresent() ? has.get().getMeeting() : null;
 	}
 	
 	@Override
@@ -175,14 +176,14 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				if("select".equals(se.getCommand())) {
-					doSelect(ureq, upcomingTableModel.getObject(se.getIndex()));
+					doSelect(ureq, upcomingTableModel.getMeeting(se.getIndex()));
 				}
 			}
 		} else if(pastTableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				if("select".equals(se.getCommand())) {
-					doSelect(ureq, pastTableModel.getObject(se.getIndex()));
+					doSelect(ureq, pastTableModel.getMeeting(se.getIndex()));
 				}
 			}
 		}

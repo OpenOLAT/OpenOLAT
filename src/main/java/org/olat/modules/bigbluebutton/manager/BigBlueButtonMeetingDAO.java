@@ -85,6 +85,33 @@ public class BigBlueButtonMeetingDAO {
 		return meeting;
 	}
 	
+	public BigBlueButtonMeeting copyMeeting(String name, BigBlueButtonMeeting meeting, Date start, Date end, Identity creator) {
+		BigBlueButtonMeetingImpl copy = (BigBlueButtonMeetingImpl)createAndPersistMeeting(name,
+				meeting.getEntry(), meeting.getSubIdent(), meeting.getBusinessGroup(), creator);
+
+		copy.setDescription(meeting.getDescription());
+		copy.setWelcome(meeting.getWelcome());
+		
+		updateDates(copy, start, meeting.getLeadTime(), end, meeting.getFollowupTime());
+
+		copy.setPermanent(meeting.isPermanent());
+		copy.setGuest(meeting.isGuest());
+		copy.setPassword(meeting.getPassword());
+		
+		copy.setMeetingLayout(meeting.getMeetingLayout());
+		copy.setJoinPolicyEnum(meeting.getJoinPolicyEnum());
+		
+		copy.setMainPresenter(meeting.getMainPresenter());
+		
+		copy.setRecordingsPublishingEnum(meeting.getRecordingsPublishingEnum());
+		copy.setRecord(meeting.getRecord());
+		
+		copy.setTemplate(meeting.getTemplate());
+		copy.setServer(meeting.getServer());
+
+		return dbInstance.getCurrentEntityManager().merge(copy);
+	}
+	
 	public BigBlueButtonMeeting loadByKey(Long key) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select meeting from bigbluebuttonmeeting as meeting")
