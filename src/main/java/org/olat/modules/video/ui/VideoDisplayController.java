@@ -38,8 +38,12 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -57,7 +61,9 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.VideoCourseNode;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.video.VideoFormat;
@@ -188,6 +194,9 @@ public class VideoDisplayController extends BasicController {
 			mainVC.contextPut("showDescription", displayOptions.isShowDescription());
 			mainVC.contextPut("alwaysShowControls", displayOptions.isAlwaysShowControls());
 			mainVC.contextPut("clickToPlayPause", displayOptions.isClickToPlayPause());
+			
+			initDownloadOptions();
+			
 			// Finally load the video, transcoded versions and tracks
 			if(video != null) {
 				loadVideo(ureq, video);
@@ -513,6 +522,23 @@ public class VideoDisplayController extends BasicController {
 			} else if("marker_resized".equals(event.getCommand())) {
 				doMarkerResized(ureq);
 			}
+		} else if (source instanceof Link) {
+			Link sourceLink = (Link) source;
+			if (sourceLink.getCommand().equals("download_video")) {
+				VideoTranscoding transcoding = (VideoTranscoding) sourceLink.getUserObject();
+				VFSItem videoFile = videoManager.getTranscodingContainer(videoMetadata.getVideoResource()).resolve(transcoding.getResolution() + "video.mp4");
+				
+				if (videoFile != null && videoFile.exists()) {
+					VFSMediaResource resource = new VFSMediaResource((VFSLeaf) videoFile);
+					resource.setDownloadable(true);
+					ureq.getDispatchResult().setResultingMediaResource(resource);
+				}
+				
+			} else if (sourceLink.getCommand().equals("download_master_video")) {
+				VFSMediaResource resource = new VFSMediaResource((VFSLeaf) sourceLink.getUserObject());
+				resource.setDownloadable(true);
+				ureq.getDispatchResult().setResultingMediaResource(resource);
+			}
 		}
 	}
 	
@@ -691,6 +717,65 @@ public class VideoDisplayController extends BasicController {
 						logDebug("Error parsing the users preferred resolution from url::" + src);
 					}
 				}
+			}
+		}
+	}
+	
+	private void initDownloadOptions() {
+		// Only show download for local videos
+		if (videoMetadata.getVideoFormat().equals(VideoFormat.mp4) && videoMetadata.isDownloadEnabled()) {
+			List<Link> downloadLinks = new ArrayList<>();
+			List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodings(videoMetadata.getVideoResource());
+			int i = 0;
+			
+			for(VideoTranscoding videoTranscoding : videoTranscodings){
+				if (videoTranscoding.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE) {
+					break;
+				}
+				
+				String fileSize = "";
+				
+				if (videoTranscoding.getSize() != 0) {
+					fileSize = Formatter.formatBytes(videoTranscoding.getSize());
+				} 
+				
+				String title = videoManager.getDisplayTitleForResolution(videoTranscoding.getResolution(), getTranslator()) + " - " + fileSize;
+				
+				Link downloadLink = LinkFactory.createLink("download_" + i++, "download_video", getTranslator(), mainVC, this, Link.LINK);
+				downloadLink.setCustomDisplayText(title);
+				downloadLink.setUserObject(videoTranscoding);
+				
+				downloadLinks.add(downloadLink);
+			}
+			
+			String masterFileSize = Formatter.formatBytes(videoManager.getMasterVideoFile(videoMetadata.getVideoResource()).getSize());			
+			String masterTitle = videoManager.getDisplayTitleForResolution(videoManager.getVideoResolutionFromOLATResource(videoMetadata.getVideoResource()).getHeight(), getTranslator()) + " - " + masterFileSize;
+			
+			mainVC.contextPut("downloadEnabled", true);
+			
+			if (downloadLinks.isEmpty()) {
+				Link downloadMasterFileLink = LinkFactory.createLink("download_" + i++, "download_master_video", getTranslator(), mainVC, this, Link.BUTTON);
+				downloadMasterFileLink.setElementCssClass("pull-right o_video_download_btn");
+				downloadMasterFileLink.setCustomDisplayText(translate("download.options") + " - " + masterTitle);
+				downloadMasterFileLink.setUserObject(videoManager.getMasterVideoFile(videoMetadata.getVideoResource()));
+				
+				mainVC.put("downloadOptions", downloadMasterFileLink);
+			} else {
+				Dropdown downloadDropDown = new Dropdown("downloadOptions", "download.options", true, getTranslator());
+				downloadDropDown.setButton(true);
+				downloadDropDown.setEmbbeded(true);
+				downloadDropDown.setOrientation(DropdownOrientation.right);
+				
+				Link downloadMasterFileLink = LinkFactory.createLink("download_" + i++, "download_master_video", getTranslator(), mainVC, this, Link.LINK);
+				downloadMasterFileLink.setCustomDisplayText(translate("download.original") + " - " + masterTitle);
+				downloadMasterFileLink.setUserObject(videoManager.getMasterVideoFile(videoMetadata.getVideoResource()));
+				downloadDropDown.addComponent(downloadMasterFileLink);
+				
+				for (Link downloadLink : downloadLinks) {
+					downloadDropDown.addComponent(downloadLink);
+				}
+				
+				mainVC.put("downloadOptions", downloadDropDown);
 			}
 		}
 	}

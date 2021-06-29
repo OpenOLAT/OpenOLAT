@@ -120,4 +120,8 @@ public interface VideoMeta extends CreateInfo {
 	 */
 	public void setVideoResource(OLATResource videoResource);
 	
+	public boolean isDownloadEnabled();
+	
+	public void setDownloadEnabled(boolean downloadEnabled);
+	
 }

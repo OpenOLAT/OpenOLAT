@@ -58,7 +58,6 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 	private Link executionSettingsLink;
 	private Link disclaimerLink;
 	
-	
 	private CourseOptionsController optionsCtrl;
 	private CourseToolbarController toolbarCtrl;
 	private CourseLayoutGeneratorController layoutCtrl;

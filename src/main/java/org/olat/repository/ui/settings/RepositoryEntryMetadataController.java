@@ -84,6 +84,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryEntryMetadataController extends FormBasicController {
 
 	private final boolean readOnly;
+	private final boolean showHeading;
 	private ResourceLicense license;
 	private RepositoryEntry repositoryEntry;
 	private Set<TaxonomyLevel> taxonomyLevels;
@@ -123,12 +124,17 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	 * @param wControl
 	 * @param sourceEntry
 	 */
-	public RepositoryEntryMetadataController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
+	public RepositoryEntryMetadataController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly, boolean showHeading) {
 		super(ureq, wControl);
 		setBasePackage(RepositoryService.class);
 		this.repositoryEntry = entry;
 		this.readOnly = readOnly;
+		this.showHeading = showHeading;
 		initForm(ureq);
+	}
+	
+	public RepositoryEntryMetadataController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
+		this(ureq, wControl, entry, readOnly, true);
 	}
 
 	/**
@@ -140,9 +146,11 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Set up info page");
 		formLayout.setElementCssClass("o_sel_repo_metadata");
-		setFormTitle("details.metadata.title");
+		if (showHeading) {
+			setFormContextHelp("Set up info page");
+			setFormTitle("details.metadata.title");
+		}
 		
 		// Add resource type
 		String typeName = null;

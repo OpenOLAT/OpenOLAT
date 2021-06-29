@@ -141,10 +141,16 @@
 		</script>
 	</div>
 	
+	#if($r.isTrue($downloadEnabled))
+		<div class="pull-right o_block_top">
+			$r.render("downloadOptions")
+		</div>
+	#end
+	
 	#if($r.isTrue($showTitle) && $r.isNotEmpty($title))
 	<h1>$title</h1>
 	#end
-
+	
 	#if($authors)
 	<div class="o_author o_block">
 		<span class="text-muted">$r.translateWithPackage("org.olat.repository", "course.made.by")</span> 
