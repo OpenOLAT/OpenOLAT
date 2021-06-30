@@ -374,6 +374,7 @@ create table if not exists o_userproperty (
    propvalue varchar(255),
    primary key (fk_user_id, propname)
 );
+
 create table o_user_data_export (
    id bigint not null auto_increment,
    creationdate datetime,
@@ -385,6 +386,16 @@ create table o_user_data_export (
    fk_request_by bigint,
    primary key (id)
 );
+create table o_user_data_delete (
+   id bigint not null auto_increment,
+   creationdate datetime,
+   lastmodified datetime,
+   u_user_data mediumtext,
+   u_resource_ids mediumtext,
+   u_current_resource_id varchar(64),
+   primary key (id)
+);
+
 create table o_user_absence_leave (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -3567,6 +3578,7 @@ alter table o_lti_key ENGINE = InnoDB;
 alter table o_user ENGINE = InnoDB;
 alter table o_userproperty ENGINE = InnoDB;
 alter table o_user_data_export ENGINE = InnoDB;
+alter table o_user_data_delete ENGINE = InnoDB;
 alter table o_user_absence_leave ENGINE = InnoDB;
 alter table o_message ENGINE = InnoDB;
 alter table o_temporarykey ENGINE = InnoDB;

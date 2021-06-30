@@ -29,7 +29,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -56,11 +55,9 @@ import org.olat.resource.OLATResourceImpl;
  */
 @Entity(name="extask")
 @Table(name="o_ex_task")
-@NamedQueries({
-	@NamedQuery(name="loadTaskByKey", query="select task from extask where task.key=:taskKey"),
-	@NamedQuery(name="loadTaskByResource", query="select task from extask task where task.resource.key=:resourceKey"),
-	@NamedQuery(name="taskToDos", query="select task.key from extask task where (task.statusStr='newTask' or (task.statusStr='inWork' and task.executorNode=:executorNode and task.executorBootId!=:executorBootId)) and (task.scheduledDate is null or task.scheduledDate <=:currentDate)")
-})
+@NamedQuery(name="loadTaskByKey", query="select task from extask where task.key=:taskKey")
+@NamedQuery(name="loadTaskByResource", query="select task from extask task where task.resource.key=:resourceKey")
+@NamedQuery(name="taskToDos", query="select task.key from extask task where (task.statusStr='newTask' or (task.statusStr='inWork' and task.executorNode=:executorNode and task.executorBootId!=:executorBootId)) and (task.scheduledDate is null or task.scheduledDate <=:currentDate)")
 public class PersistentTask implements Task, CreateInfo, ModifiedInfo, Persistable {
 	
 	private static final long serialVersionUID = 800884851125711998L;

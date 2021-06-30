@@ -17,19 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.taskexecutor;
+package org.olat.user;
+
+import java.util.List;
+
+import org.olat.user.model.UserData;
 
 /**
  * 
- * Initial date: 02.07.2013<br>
+ * Initial date: 30 juin 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum TaskStatus {
-	newTask,
-	inWork,
-	edition,
-	failed,
-	done,
-	ignore
+public interface UserDataDeleteManager {
+	
+	public List<UserData> fromXML(String xml);
+	
+	public String toXML(List<UserData> data);
+	
+	public boolean startAll();
+	
+	public boolean startResources();
+	
+	public void interrupt();
+
 }

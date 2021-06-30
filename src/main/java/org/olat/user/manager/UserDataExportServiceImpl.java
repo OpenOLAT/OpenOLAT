@@ -128,7 +128,7 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 	}
 	
 	private void deleteExport(UserDataExport dataExport) {
-		log.info(Tracing.M_AUDIT, "Delete user data export: " + dataExport.getIdentity().getKey());
+		log.info(Tracing.M_AUDIT, "Delete user data export: {}", dataExport.getIdentity().getKey());
 		dbInstance.commitAndCloseSession();
 		File archiveDirectory = getArchiveDirectory(dataExport);
 		FileUtils.deleteDirsAndFiles(archiveDirectory, true, true);

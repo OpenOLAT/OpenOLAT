@@ -371,6 +371,7 @@ create table o_userproperty (
    propvalue varchar(255),
    primary key (fk_user_id, propname)
 );
+
 create table o_user_data_export (
    id bigserial,
    creationdate timestamp,
@@ -382,6 +383,16 @@ create table o_user_data_export (
    fk_request_by int8,
    primary key (id)
 );
+create table o_user_data_delete (
+   id bigserial,
+   creationdate timestamp,
+   lastmodified timestamp,
+   u_user_data text,
+   u_resource_ids text,
+   u_current_resource_id varchar(64),
+   primary key (id)
+);
+
 create table o_user_absence_leave (
    id bigserial,
    creationdate timestamp not null,

@@ -386,6 +386,18 @@ public class AssessmentEntryDAO {
 				.setParameter("identityKey", assessedIdentity.getKey())
 				.getResultList();
 	}
+	
+	public List<Long> loadResourceIds(Identity assessedIdentity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct ores.resId from assessmententry data")
+		  .append(" inner join data.repositoryEntry as v")
+		  .append(" inner join v.olatResource as ores")
+		  .append(" where data.identity.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("identityKey", assessedIdentity.getKey())
+				.getResultList();
+	}
 
 	/**
 	 * Load all the assessment entry of the specific group. But aware that the query exclude the default group
