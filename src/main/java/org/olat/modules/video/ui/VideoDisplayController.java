@@ -765,6 +765,7 @@ public class VideoDisplayController extends BasicController {
 				downloadDropDown.setButton(true);
 				downloadDropDown.setEmbbeded(true);
 				downloadDropDown.setOrientation(DropdownOrientation.right);
+				downloadDropDown.setExpandContentHeight(true);
 				
 				Link downloadMasterFileLink = LinkFactory.createLink("download_" + i++, "download_master_video", getTranslator(), mainVC, this, Link.LINK);
 				downloadMasterFileLink.setCustomDisplayText(translate("download.original") + " - " + masterTitle);
@@ -776,7 +777,6 @@ public class VideoDisplayController extends BasicController {
 				}
 				
 				mainVC.put("downloadOptions", downloadDropDown);
-				mainVC.contextPut("downloadSpacing", true);
 			}
 		}
 	}
