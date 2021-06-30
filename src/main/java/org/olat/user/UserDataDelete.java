@@ -17,19 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.taskexecutor;
+package org.olat.user;
+
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 
 /**
  * 
- * Initial date: 02.07.2013<br>
+ * Initial date: 29 juin 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum TaskStatus {
-	newTask,
-	inWork,
-	edition,
-	failed,
-	done,
-	ignore
+public interface UserDataDelete extends ModifiedInfo, CreateInfo {
+	
+	public Long getKey();
+	
+	/**
+	 * @return A XStreamed list of identity keys and names 
+	 */
+	public String getUserData();
+
+	public String getResourceIds();
+	
+	public String getCurrentResourceId();
+
 }

@@ -32,7 +32,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -53,10 +52,8 @@ import org.olat.user.UserDataExport;
  */
 @Entity(name="userdataexport")
 @Table(name="o_user_data_export")
-@NamedQueries({
-	@NamedQuery(name="loadUserExportDataByKey", query="select data from userdataexport data where data.key=:dataKey"),
-	@NamedQuery(name="loadUserExportDataByIdentity", query="select data from userdataexport data where data.identity.key=:identityKey")
-})
+@NamedQuery(name="loadUserExportDataByKey", query="select data from userdataexport data where data.key=:dataKey")
+@NamedQuery(name="loadUserExportDataByIdentity", query="select data from userdataexport data where data.identity.key=:identityKey")
 public class UserDataExportImpl implements UserDataExport, Persistable {
 
 	private static final long serialVersionUID = 3359965105813614815L;

@@ -292,6 +292,7 @@
 		<class>org.olat.user.UserImpl</class>
 		<class>org.olat.user.model.AbsenceLeaveImpl</class>
 		<class>org.olat.user.model.UserDataExportImpl</class>
+		<class>org.olat.user.model.UserDataDeleteImpl</class>
 		
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>

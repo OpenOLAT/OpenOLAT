@@ -438,6 +438,15 @@ CREATE TABLE o_user_data_export (
    fk_request_by number(20),
    PRIMARY KEY (id)
 );
+CREATE TABLE o_user_data_delete (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date,
+   lastmodified date,
+   u_user_data CLOB,
+   u_resource_ids CLOB,
+   u_current_resource_id varchar2(64 char),
+   PRIMARY KEY (id)
+);
 
 CREATE TABLE o_user_absence_leave (
    id number(20) generated always as identity,

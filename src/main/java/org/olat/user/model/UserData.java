@@ -17,19 +17,41 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.taskexecutor;
+package org.olat.user.model;
 
 /**
  * 
- * Initial date: 02.07.2013<br>
+ * Initial date: 30 juin 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum TaskStatus {
-	newTask,
-	inWork,
-	edition,
-	failed,
-	done,
-	ignore
+public class UserData {
+
+	private Long identityKey;
+	private String identityName;
+	
+	public UserData() {
+		//
+	}
+	
+	public UserData(Long identityKey, String identityName) {
+		this.identityKey = identityKey;
+		this.identityName = identityName;
+	}
+	
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+	
+	public void setIdentityKey(Long identityKey) {
+		this.identityKey = identityKey;
+	}
+
+	public String getIdentityName() {
+		return identityName;
+	}
+	
+	public void setIdentityName(String identityName) {
+		this.identityName = identityName;
+	}
 }

@@ -387,4 +387,18 @@
 	<bean id="lifecycleUserJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
+	
+	<bean id="fileDeleteUserTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+    	<property name="jobDetail" ref="fileDeleteUserJob.${cluster.singleton.services}" />
+	    <property name="cronExpression" value="32 */15 * * * ?" />
+    	<property name="startDelay" value="45000" />
+	</bean>
+	
+	<bean id="fileDeleteUserJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.user.manager.lifecycle.UserDataDeleteJob" />
+	</bean>
+
+	<bean id="fileDeleteUserJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
 </beans>
