@@ -107,13 +107,15 @@ public class OLATUpgrade_15_5_4 extends OLATUpgrade {
 				dbInstance.commitAndCloseSession();
 				
 				// save userDatas
-				String userDataXml = userFileDataManager.toXML(userDatas);
-				userDataDeleteDao.create(userDataXml, "all");
-				dbInstance.commitAndCloseSession();
-				
-				// delete tasks
-				deleteTasks();
-				dbInstance.commitAndCloseSession();
+				if(!userDatas.isEmpty()) {
+					String userDataXml = userFileDataManager.toXML(userDatas);
+					userDataDeleteDao.create(userDataXml, "all");
+					dbInstance.commitAndCloseSession();
+					
+					// delete tasks
+					deleteTasks();
+					dbInstance.commitAndCloseSession();
+				}
 				log.info("Migrate {} delete user data tasks.", userDatas.size());
 			} catch (Exception e) {
 				log.error("", e);
